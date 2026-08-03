@@ -81,39 +81,42 @@ none push it down:
 - The 512-sample basis is not a settled delivery spec. 640 samples was measured at
   roughly +25 %.
 
-### THE DISK BLOCKER — no longer blocking, but it is close, and it is now the FILMS
+### THE DISK BLOCKER WAS NEVER REAL — the 34.3 MB/frame figure is wrong
 
-At the measured **34.3 MB/frame**, 2,978 frames is **102.1 GB**.
-
-**Re-measured 2026-08-03: 143 GB free.** The master fits, with ~41 GB of margin. The
-earlier figure of 78 GB — and the prediction that a 4K master would die at about frame
-2,274, ten days and $100 of GPU in — **no longer holds.** Nothing was deleted to achieve
-this; the box simply has more room than the note assumed.
-
-**What now dominates local disk is not the assemblies, it is the film scenes.**
+**MEASURED 2026-08-03, on actual 4K frames on disk:**
 
 ```
-render/world/assembly/     49 GB    the worlds, incl. assembly8 (the ship)
-render/film*.blend         48 GB    15 scenes at ~4.5 GB each
+render/breach_f9/f9_3840_f0866.png    7.22 MB
+render/breach_f9/f9_3840_f1030.png    7.81 MB
+render/breach_f9/f9_1920_f0866.png    1.96 MB
 ```
 
-**Each film scene is ~4.53 GB and a new one is built whenever the camera or the world
-moves** — which today happened four times (film9 → film10 → film11 → film12, with
-film13 building). At 4.5 GB apiece that is an 18 GB day. **This is the growth curve to
-watch, not the assemblies**, which change far less often.
+**~7.5 MB/frame at 4K, not 34.3.** The 34.3 figure appears nowhere in this repo as a
+frame size; the only `34.3` in the docs is `5.0 x 34.3 mm` from an unrelated defect
+measurement. It looks transcribed from something else, and **every disk conclusion
+drawn from it was wrong by 4.6x** — including an earlier rewrite of this very section,
+which re-published it without measuring.
 
-**Do NOT bulk-delete either directory.** Four of those films are load-bearing:
-
-| keep | why |
+| | corrected |
 |---|---|
-| the newest | the ship |
-| `film10.blend` | the deliberate **assembly6 control** — `socket_index_audit --blend` FAILs it with 27 findings, which is what makes the newest film's PASS non-vacuous |
-| `film9.blend` | the un-relit historical reference, 3,737 W against 46,203 |
-| every assembly | the only existing worlds if a rebuild fails |
+| 4K master, 2,978 frames | **~22 GB** (was claimed 102.1 GB) |
+| 1080p full pass | ~5.8 GB |
+| 720p full pass | under 3 GB |
+| ProRes 422 HQ, 124.08 s | ~11 GB |
+| H.265 delivery | **under 1 GB** |
+| **whole delivery** | **~34 GB** |
 
-Superseded *intermediate* films (film11, film12 once film13 verifies) are the safe
-reclaim, at ~4.5 GB each. **Ask before deleting** — the user has offered another 128 GB
-on request, and asking costs less than losing a control.
+**There is no disk blocker and there never was.** The prediction that a 4K master would
+die at about frame 2,274 was an artefact of the bad constant. With 136 GB free the master
+fits five times over, rehearsal passes cost single-digit GB, and **nothing needs deleting.**
+
+**What does occupy real space is the working set, and that is fine:** 49 GB of assemblies
+and 55 GB of film scenes, growing ~8 GB per world+film iteration and ~4.65 GB per breach
+apply. That is a burn rate to watch, not a blocker — and it is *build* artefacts, not
+deliverables.
+
+**The lesson is the one this project keeps re-learning:** a per-frame size is one `ls`
+away, and it was quoted for weeks instead. **Measure the artefact.**
 
 The *instance* disk was never the problem: `collect` deletes each frame the moment its
 fetch verifies, and the scene cache is now derived from measured room (23.0 GB on a
