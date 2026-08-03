@@ -216,6 +216,137 @@ def ray_attribute(objs, n_rays, seed=7):
     return out
 
 
+def sheet_facing(objs, cos_flat=0.99, min_area=0.05):
+    """THE CLASS SIGNED VOLUME CANNOT SEE, AND THIS FILE'S REPAIR ABSTAINS ON.
+
+    `winding_audit` decides inward/outward from the SIGN OF A PIECE'S VOLUME,
+    and a zero-thickness sheet has no volume -- `enclosure_q` falls under
+    `q_min`, the piece is classed `sheet`/`undecidable`, and `--fix` correctly
+    leaves it alone.  That is the right call for a lone plate whose "correct"
+    side is genuinely undefined.  It is the WRONG call for a plate that is one
+    face of a slab, because there the correct side IS defined: by the other
+    face.
+
+    MEASURED, `timing_stand`: the repair flipped 1,310 pieces and drove
+    `inward_area_frac` 0.3436 -> 0.0, and afterwards `TS_Stand00_BOREAL#piece4721`
+    was STILL the largest single back-face contributor in the ray attribution --
+    28 of 500 hits, UP from 26.  The number that was being watched went to zero
+    while the defect it was watching for got worse.
+
+    So: find every planar piece, pair the ones that share a footprint and are
+    separated in z, and report a pair as INVERTED when the UPPER sheet faces
+    down and the LOWER faces up.  A slab built the right way round is silent
+    here; a slab built upside down is a named pair with an area attached, and
+    neither verdict depends on a piece being closed.
+    """
+    rows = []
+    for ob in objs:
+        me = ob.data
+        r = K.mesh_winding_report(me, with_tri_piece=True)
+        if not r.get("triangles"):
+            continue
+        P = r["verts"]
+        T = r["tri_index"].astype(np.int64)
+        pc = r["tri_piece"]
+        M = np.array(ob.matrix_world)
+        det = float(np.linalg.det(M[:3, :3]))
+        Pw = P @ M[:3, :3].T + M[:3, 3]
+        n = np.cross(Pw[T[:, 1]] - Pw[T[:, 0]], Pw[T[:, 2]] - Pw[T[:, 0]])
+        if det < 0.0:
+            n = -n
+        L = np.linalg.norm(n, axis=1)
+        area = 0.5 * L
+        u = n / np.maximum(L, 1e-30)[:, None]
+        npc = int(pc.max()) + 1 if len(pc) else 0
+        for p in range(npc):
+            s = pc == p
+            if not s.any():
+                continue
+            A = float(area[s].sum())
+            if A < min_area:
+                continue
+            mu = (u[s] * area[s][:, None]).sum(0) / A
+            if abs(mu[2]) < cos_flat:
+                continue                       # not a horizontal sheet
+            z = Pw[T[s].ravel()][:, 2]
+            xy = Pw[T[s].ravel()][:, :2]
+            rows.append({"object": ob.name, "piece": int(p), "area_m2": A,
+                         "mean_nz": float(mu[2]),
+                         "z": float(0.5 * (z.min() + z.max())),
+                         "xy": [float(v) for v in
+                                (xy.min(0)[0], xy.min(0)[1],
+                                 xy.max(0)[0], xy.max(0)[1])]})
+    # pair by footprint
+    pairs, used = [], set()
+    for i, a in enumerate(rows):
+        if i in used:
+            continue
+        for j in range(i + 1, len(rows)):
+            if j in used or rows[j]["object"] != a["object"]:
+                continue
+            b = rows[j]
+            if abs(b["area_m2"] - a["area_m2"]) > 0.02 * max(a["area_m2"], 1e-9):
+                continue
+            if max(abs(np.array(a["xy"]) - np.array(b["xy"]))) > 0.02:
+                continue
+            if not (1e-5 < abs(a["z"] - b["z"]) < 0.30):
+                continue
+            lo, hi = (a, b) if a["z"] < b["z"] else (b, a)
+            pairs.append({"object": a["object"],
+                          "lower_piece": lo["piece"], "upper_piece": hi["piece"],
+                          "z_lower": lo["z"], "z_upper": hi["z"],
+                          "area_m2": round(a["area_m2"], 5),
+                          "lower_nz": round(lo["mean_nz"], 4),
+                          "upper_nz": round(hi["mean_nz"], 4),
+                          "inverted": bool(hi["mean_nz"] < 0 and lo["mean_nz"] > 0)})
+            used.add(i); used.add(j)
+            break
+    tot = sum(r["area_m2"] for r in rows)
+    down = sum(r["area_m2"] for r in rows if r["mean_nz"] < 0)
+    inv = [p for p in pairs if p["inverted"]]
+    return {"flat_pieces": len(rows), "flat_area_m2": round(tot, 4),
+            "down_facing_area_m2": round(down, 4),
+            "slab_pairs": len(pairs), "inverted_pairs": len(inv),
+            "inverted_area_m2": round(sum(p["area_m2"] for p in inv) * 2.0, 4),
+            "inverted": sorted(inv, key=lambda p: -p["area_m2"])[:40]}
+
+
+def sheet_facing_selftest():
+    """Both controls, on synthetic slabs, before any module is believed.
+
+    A slab built right way round must be SILENT; the same slab with both faces
+    swapped must be NAMED. A checker that only ever ran on the broken case
+    cannot tell you the broken case is broken.
+    """
+    import bmesh
+    ok = True
+    # IT BUILDS AND REMOVES ONLY ITS OWN OBJECTS. The first version wiped the
+    # scene, so it ran before `collect()` and the audit then measured an EMPTY
+    # blend and printed SHEET_FACING_OK on a module with 20.3 m2 of upside-down
+    # deck in it -- a verdict that reads the same whether the subject is present
+    # or absent, which is this project's most expensive recurring mistake.
+    for tag, invert in (("correct", False), ("inverted", True)):
+        me = bpy.data.meshes.new("CTL_slab")
+        bm = bmesh.new()
+        for z, up in ((0.0, False), (0.028, True)):
+            f = 1.0 if (up != invert) else -1.0
+            vs = [bm.verts.new((x, y, z)) for x, y in
+                  ((0, 0), (2, 0), (2, 2), (0, 2))]
+            bm.faces.new(vs if f > 0 else vs[::-1])
+        bm.to_mesh(me); bm.free()
+        ob = bpy.data.objects.new("CTL_slab", me)
+        bpy.context.scene.collection.objects.link(ob)
+        r = sheet_facing([ob])
+        want = 1 if invert else 0
+        got = r["inverted_pairs"]
+        print("   CONTROL %-9s slab -> %d inverted pair(s), expected %d  %s"
+              % (tag, got, want, "ok" if got == want else "FAIL"))
+        ok = ok and got == want
+        bpy.data.objects.remove(ob, do_unlink=True)
+        bpy.data.meshes.remove(me)
+    return ok
+
+
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     ap = argparse.ArgumentParser()
@@ -230,12 +361,45 @@ def main():
                          "geometry, at its real scale, through the same code "
                          "path -- and that the ray statistic moves with it. "
                          "Never saved.")
+    ap.add_argument("--sheet-facing", action="store_true",
+                    help="report horizontal SHEETS whose normal points at the "
+                         "ground, and slab pairs built upside down. See "
+                         "`sheet_facing` -- signed volume is blind to this "
+                         "class and `--fix` abstains on it by design.")
     ap.add_argument("--fix", action="store_true")
     ap.add_argument("--save", default=None)
     ap.add_argument("--out", default=None)
     a = ap.parse_args(argv)
 
     t0 = time.time()
+    if a.sheet_facing:
+        objs = collect(a.collection, a.item)
+        sf = sheet_facing(objs)
+        sf["controls_pass"] = sheet_facing_selftest()
+        sf["objects_audited"] = len(objs)
+        ctl = sf["controls_pass"]
+        txt = json.dumps({"item": a.item, "blend": bpy.data.filepath,
+                          "sheet_facing": sf,
+                          "seconds": round(time.time() - t0, 1)}, indent=1)
+        print(txt)
+        if a.out:
+            os.makedirs(os.path.dirname(a.out), exist_ok=True)
+            open(a.out, "w", encoding="utf-8").write(txt)
+        if not ctl:
+            verdict = "CONTROL_FAIL"
+        elif not sf["flat_pieces"]:
+            # NOT a pass. Nothing horizontal was found at all, which on a real
+            # module means the audit measured the wrong thing or nothing.
+            verdict = "UNMEASURED"
+        elif sf["inverted_pairs"]:
+            verdict = "DIRTY"
+        else:
+            verdict = "OK"
+        print(">> STAGE RESULT: SHEET_FACING_%s (%d objects, %d flat pieces, "
+              "%d inverted slab pairs, %.3f m2)"
+              % (verdict, sf["objects_audited"], sf["flat_pieces"],
+                 sf["inverted_pairs"], sf["inverted_area_m2"]))
+        return
     objs = collect(a.collection, a.item)
     planted = None
     if a.plant_fault:
