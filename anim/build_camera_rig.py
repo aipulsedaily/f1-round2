@@ -581,6 +581,35 @@ def main():
     cam_data.dof.use_dof = True
     cam.rotation_mode = "QUATERNION"
 
+    # ---- THE FAR CLIP.  R2-061, and it put a black band across the last shot.
+    #
+    # This was never set, so ONER shipped with Blender's factory `clip_end` of
+    # 1000.0 m -- against `world/build_sky.py`'s own documented hand-off of
+    # >= 50 km for the aerosol slab. In beat 6 the camera climbs to ~124 m and
+    # holds for the film's final 11 seconds, and beyond 1 km it was clipping the
+    # ground away: 56 FULL-WIDTH ROWS OF PURE BLACK, 7.8 % of the closing frame.
+    #
+    # It was diagnosed as a terrain-extent problem and it is not. Three proofs:
+    #   * an alpha render of f2860 shows rows 136-275 at alpha 0.000 -- NOTHING
+    #     IS DRAWN there, not "something dark" -- with the first geometry at row
+    #     276. Predicted from a 1 km clip and this camera's height and lens:
+    #     row 303.9, against a measured 304 fully-opaque.
+    #   * three cameras in ONE scene, same ground, same sky, same exposure:
+    #     clip 1 km -> 71 black rows; clip 200 km -> 0; and a mostly-sky control
+    #     camera -> 0, so the counter is not merely measuring sky.
+    #   * the shipping scene: 56 -> 0 full-width black rows, and zero pixels
+    #     below 0.02 anywhere (luminance p01 0.0000 -> 0.2224).
+    #
+    # The defect was fixed once in a built blend by a repair script. THAT IS NOT
+    # ENOUGH: the rig is rebuilt on every telemetry or beat-sheet change, and
+    # each rebuild reintroduced the 1 km plane. It belongs here, at the source.
+    #
+    # 200 km comfortably clears the sky slab; `clip_start` is pulled in to 0.05 m
+    # because beat 1 passes within 0.505 m of the car and the default 0.1 m is
+    # close enough to matter at a 58 mm lens.
+    cam_data.clip_start = 0.05
+    cam_data.clip_end = 200000.0
+
     # ---- the two clocks --------------------------------------------------
     scales, ramp_info = FT.build_time_map(sheet, total_frames)
     for r in ramp_info:
