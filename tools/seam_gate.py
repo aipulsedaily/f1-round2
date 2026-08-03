@@ -55,8 +55,8 @@ WHAT IS MEASURED, and every number is in real units
      WHERE 1.80 COMES FROM — a census, not a preference. `--census` walks every
      key interval of the whole 2,978-frame film and prints the distribution. On
      the pre-fix build the worst GATED interval outside this window is 1.570x
-     (f2313-2321, beat 5) and the worst inside it is 2.655x (f793-795). 1.80
-     sits 15 % above everything the film already does and 32 % below the
+     (f2313-2321, beat 5) and the worst inside it is 2.247x (f812-820). 1.80
+     sits 15 % above everything the film already does and 21 % below the
      defect. `--selftest` RE-RUNS that census and refuses to certify the bound
      if it has stopped separating the two, so the number cannot quietly go
      stale.
@@ -92,16 +92,21 @@ path. It cannot tell you the seam LOOKS right; it can only tell you the camera
 is not doing something the authoring never asked for. A picture is still
 required and this is not a substitute for one.
 
-CONTROLS — `--selftest` runs five cases whose verdicts are known in advance,
-two that must FAIL and three that must PASS, plus the census assertion above,
+CONTROLS — `--selftest` runs six cases whose verdicts are known in advance,
+three that must FAIL and three that must PASS, plus the census assertion above,
 and exits non-zero unless every one of them behaves:
 
   P1  the shipped pre-fix path at the seam, kept at
       `work/campath/seam_pre_R2064.json`                          must FAIL
-      It fails on all three of BULGE, SPIKE and HOLD, so none of the
-      three is dead code carried by the other two.
+      It fails on BULGE and on SPIKE independently.
   P2  beat 3 frames 900-1000 — which passes clean — with a +25 %
       overshoot injected inside one key interval                  must FAIL
+  P3  the current build against a sheet in which one beat-2 key
+      pair has been collapsed onto a single position, i.e. a
+      declared hold that the path does not hold                   must FAIL
+      This one exists because the HOLD branch is the only test a
+      BULGE ratio cannot express, and an untested branch in a gate
+      is not a test.
   N1  beat 3 frames 900-1000, untouched. REAL material at the same
       3-10 m/s the seam runs at, and nothing to do with any fix
       applied here                                                must PASS
@@ -122,6 +127,7 @@ camera that also flies at 100 m/s.
 """
 
 import argparse
+import copy
 import json
 import math
 import os
@@ -503,28 +509,56 @@ def inject_overshoot(src, lo, hi, sheet, frac):
     return out
 
 
-def selftest(sheet, live_path, pre_path):
-    if not os.path.exists(pre_path):
-        print(f"   FAIL positive control missing: {pre_path}")
-        return 1
+def collapse_pair(sheet, lo, hi):
+    """A sheet in which one key pair inside the window is a declared HOLD.
+
+    The two keys are moved onto the same world position and nothing else is
+    touched, so the PATH still moves between them exactly as it did. That is
+    what a hold that does not hold looks like, and it is the only case the
+    BULGE ratio cannot express — which is why the HOLD branch exists and why it
+    needs a control of its own rather than riding on the others.
+    """
+    sh = copy.deepcopy(sheet)
+    ks = sorted(sh["beat2"]["camera_keys"], key=lambda k: float(k["t"]))
+    for i in range(len(ks) - 1):
+        fa = int(round(float(ks[i]["t"]) * FPS))
+        fb = int(round(float(ks[i + 1]["t"]) * FPS))
+        if lo <= fa and fb <= hi and 2 <= fb - fa <= MAX_BULGE_GAP:
+            ks[i + 1]["world"] = list(ks[i]["world"])
+            return sh, fa, fb
+    raise SystemExit(">> FAIL: no beat-2 key pair available to collapse")
+
+
+def selftest(sheet, live_path, pre_path, pre_sheet_path):
+    for f in (pre_path, pre_sheet_path):
+        if not os.path.exists(f):
+            print(f"   FAIL positive control missing: {f}")
+            return 1
     pre = load_path(pre_path)
+    pre_sheet = json.load(open(pre_sheet_path))
     live = load_path(live_path)
 
     cases = [
-        ("P1 shipped pre-fix path, seam window", pre, W_LO, W_HI, True, "FAIL"),
+        ("P1 shipped pre-fix path against ITS OWN sheet, seam window",
+         pre, W_LO, W_HI, True, "FAIL", pre_sheet),
         ("P2 beat 3 f900-1000 with a +25 % overshoot injected inside one "
          "key interval",
          inject_overshoot(live, 900, 1000, sheet, 0.25), 900, 1000, False,
-         "FAIL"),
+         "FAIL", None),
         ("N1 beat 3 f900-1000, untouched (3-10 m/s, keys ~4 frames apart)",
-         live, 900, 1000, False, "PASS"),
+         live, 900, 1000, False, "PASS", None),
         ("N2 beat 5 f1100-1180, untouched (73 m/s)", live, 1100, 1180, False,
-         "PASS"),
-        ("N3 the current build, seam window", live, W_LO, W_HI, True, "PASS"),
+         "PASS", None),
+        ("N3 the current build, seam window", live, W_LO, W_HI, True, "PASS",
+         None),
     ]
+    hold_sheet, ha, hb = collapse_pair(sheet, W_LO, W_HI)
+    cases.insert(2, (f"P3 the current build against a sheet whose f{ha}-{hb} "
+                     f"pair is collapsed into a declared hold",
+                     live, W_LO, W_HI, True, "FAIL", hold_sheet))
     bad = 0
-    for name, p, lo, hi, sc, want in cases:
-        o = measure(p, sheet, lo, hi, seam_checks=sc)
+    for name, p, lo, hi, sc, want, sh in cases:
+        o = measure(p, sh or sheet, lo, hi, seam_checks=sc)
         fails, _w = verdict(o)
         got = "FAIL" if fails else "PASS"
         print(f"  {got}  (want {want})  {name}")
@@ -538,7 +572,7 @@ def selftest(sheet, live_path, pre_path):
             bad += 1
 
     # ---- the bound must still SEPARATE the film from the defect ----------
-    c = census(pre, sheet)
+    c = census(pre, pre_sheet)
     ob = c["bulge_outside"][0][0] if c["bulge_outside"] else 0.0
     ib = c["bulge_inside"][0][0] if c["bulge_inside"] else 0.0
     ok = ob < TOL_BULGE < ib
@@ -558,8 +592,17 @@ def main():
     ap.add_argument("--path", default=os.path.join(R2, "render/film9_path.json"))
     ap.add_argument("--sheet", default=os.path.join(R2, "docs/beat_sheet.json"))
     ap.add_argument("--pre", default=os.path.join(
-        R2, "work/campath/seam_pre_R2064.json"),
-        help="the shipped pre-fix path, kept as the positive control")
+        R2, "docs/seam_pre_R2064_path.json"),
+        help="the shipped pre-fix path, kept as the positive control. In "
+             "docs/ and not in work/ because work/ is gitignored and a "
+             "control that can be deleted by a tidy-up is not a control")
+    ap.add_argument("--pre-sheet", default=os.path.join(
+        R2, "docs/seam_pre_R2064_sheet.json"),
+        help="THE SHEET THAT PATH WAS BUILT FROM. Measuring the pre-fix path "
+             "against the CURRENT sheet's keys compares a curve to keys it was "
+             "never built from: it still fails, but the ratio it prints is "
+             "meaningless. A control judged against the wrong reference is the "
+             "failure this project keeps logging, so the pair is kept together")
     ap.add_argument("--window", type=int, nargs=2, default=[W_LO, W_HI])
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--census", action="store_true")
@@ -570,7 +613,7 @@ def main():
 
     sheet = json.load(open(a.sheet))
     if a.selftest:
-        bad = selftest(sheet, a.path, a.pre)
+        bad = selftest(sheet, a.path, a.pre, a.pre_sheet)
         print(">> STAGE RESULT: " + ("SEAM_GATE_SELFTEST_OK" if not bad
                                      else "SEAM_GATE_SELFTEST_BROKEN"))
         sys.exit(1 if bad else 0)
