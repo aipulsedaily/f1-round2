@@ -61,6 +61,27 @@ because no check measured the thing that mattered.
    film. Rotation for beat 6 is now derived from the beat's declared subject in
    `sheet["aim"]["6_ending"]` without moving one of its keys.
 
+5. **Beat 6 does not start on a frame, and its keys were rounded onto one.**
+   R2-063. The beat begins at 113.1 s, so 113.1 x 24 = 2714.4 and every one of
+   its eight declared keys lands at .4 of a frame. This file forced each
+   declared POSITION onto `round(t * FPS)` and called that "reproduced
+   exactly". At the peel-off the camera is doing 83.1 m/s, so 0.4 of a frame is
+   **1.385 m of position error placed on frame 2642** — and the campath gate
+   measured the consequence as a -473 m/s^2 spike, a 25 m/s speed swing across
+   f2642-2646, and a 19.1 deg/frame aim swing at f2644 that is **32 % of the
+   frame width in one frame**, the second-worst smear in the film. The
+   beat-5/beat-6 hand-off is now blended over 36 frames and the rounding is not
+   applied inside that window. See the block in main().
+
+THE FAILURE MODE ALL FIVE SHARE
+-------------------------------
+Not one of them was a bad camera move. Every one was an artefact of HOW THE
+KEYS WERE ASSEMBLED — a beat nobody read, an offset nobody checked, a branch
+that never fired, a rounding nobody measured — and every one passed whatever
+gate existed at the time. The gates that catch them are `tools/continuity_gate
+--campath` (render-free, per frame) and the AIM GATE below, and the reason both
+exist is that a claim about a camera is not a measurement of one.
+
 TIME REMAPPING AND MOTION BLUR — AND THE ARGUMENT THAT WAS WRONG HERE
 ---------------------------------------------------------------------
 Beat 3 slows WORLD time while the camera keeps flying in real time — the brief
@@ -694,11 +715,18 @@ def main():
     #
     # The reconciliation is the same cubic Hermite the rest of this function
     # uses: from beat 5's last key with beat 5's own arrival velocity, to beat
-    # 6's curve one second later with beat 6's own velocity there.  Spread over
-    # 24 frames the 1.5 m is a 1.7 % speed adjustment instead of a 25 % step.
+    # 6's curve `HANDOFF_FRAMES` later with beat 6's own velocity there.  Spread
+    # over 1.5 s the 1.5 m is a ~1 % speed adjustment instead of a 25 % step.
     # Inside that window the declared-position override is NOT applied, because
     # applying it is the defect.
-    HANDOFF_FRAMES = 24
+    #
+    # THE LENGTH IS SWEPT, NOT PICKED.  Built and measured with the campath gate
+    # at each value:
+    #     24 frames   the FAIL is gone; a 14 % rotation WARN is left at 2649-53
+    #     36 frames   clean: no FAIL and no WARN anywhere in 2637-2714
+    #     48 frames   also clean, and disturbs 12 more frames for nothing
+    # so 36 is the shortest length that leaves the region clean.
+    HANDOFF_FRAMES = 36
 
     def _b6_vel(t, dt=1.0 / (FPS * 64)):
         a, _ = b6_at(t - dt)
@@ -727,10 +755,25 @@ def main():
                         + v_in * span * (u3 - 2 * u2 + u)
                         + p_end * (-2 * u3 + 3 * u2)
                         + v_end * span * (u3 - u2))
-            # sample the blend densely enough that Blender's handles cannot
-            # reintroduce a step: beat 5 arrives on 1-frame keys.
-            for g in range(b6_f0, f_end + 1):
+            # SAMPLE ON A RAMP, NOT FLAT OUT.  The first draft keyed every frame
+            # of the blend, on the argument that beat 5 arrives on 1-frame keys
+            # and Blender's handles must not reintroduce a step.  That fixed the
+            # position and BROKE THE ROLL: look_quat() corrects the transported
+            # roll toward level by at most 3 deg per FRAME OF KEY GAP, so
+            # 1-frame keys give it 3 deg per key, and the camera came out of the
+            # top-down follow still 43 deg off a level horizon at f2678 and did
+            # not recover until f2694 -- against f2670 on the shipped path. A
+            # 43 deg horizon righting itself over 16 frames is a barrel roll,
+            # which is the exact defect look_quat's docstring exists to prevent.
+            #
+            # So the spacing MATCHES beat 5 at the junction and relaxes: 1, 2,
+            # 3, ... up to 8 frames. Dense where the handles need it, loose
+            # where the roll needs it.
+            g, step = f_in, 1
+            while g < f_end:
+                g = min(g + step, f_end)
                 b6_frames.add(g)
+                step = min(step + 1, 8)
             print(f">> beat 5 -> beat 6 hand-off: blended over frames "
                   f"{f_in}-{f_end}. Beat 5 arrives at {v_in.length:.1f} m/s; "
                   f"beat 6's curve is at {v_end.length:.1f} m/s there; the "

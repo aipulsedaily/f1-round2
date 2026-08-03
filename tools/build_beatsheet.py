@@ -29,15 +29,34 @@ So this schedules two interleaved sequences over 33 s:
     before topside, aero late, wheels last, simultaneous).
 
 These orders are NOT independent. A cluster must be presented before it seats,
-or the brief is violated. They are reconciled by exploiting a property of the
-seat order: it runs core -> inboard -> bodywork -> aero -> outboard corners, i.e.
-roughly CENTRE-OUTWARD. A camera path that begins tight on the monocoque and
-spirals outward therefore presents clusters in very nearly seat order for free,
-and the schedule below only has to nudge the exceptions.
+or the brief is violated.
 
-Flyability is checked, not assumed: the path length is divided by the available
-time and reported as a mean camera speed. A drone that has to average 12 m/s
-through a 9.84 m field is not weaving, it is fleeing.
+THEY USED TO BE RECONCILED BY AN ARGUMENT, AND THE ARGUMENT WAS FALSE. It ran:
+the seat order goes core -> inboard -> bodywork -> aero -> outboard corners,
+i.e. roughly CENTRE-OUTWARD, so a camera that begins tight on the monocoque and
+spirals outward presents clusters in very nearly seat order for free. Seat
+order is centre-outward in ASSEMBLY. It is not centre-outward in SPACE: its
+9th, 10th and 11th entries are NOSE at x = +3.75, FW at x = +4.38 and RW at
+x = -4.59, and the camera was given ONE 1.76 s slot to cross all 9 m of that.
+
+The measured cost, on the shipped film (`render/film9_path.json`, campath gate):
+**1.25 s at up to 7.82 m/s** in a beat that declares a 1.994 m/s weave, 8.5 %
+of the beat above twice its own design speed, and a contact-sheet review of
+three independent renders reading the middle of it as an illegible streak
+field. THE AIM GATE PASSED ALL OF IT at 7.24 deg worst, because a camera can be
+pointed exactly at its subject and still be moving far too fast to photograph
+it.
+
+So the visiting order is no longer inherited from the inventory: it is SOLVED,
+against the cost of the move, subject to every cluster being presented before
+it starts flying. See `move_seconds` and `present_order`.
+
+Flyability is checked, not assumed, and now in the units the picture is in:
+metres per second against the beat's own declared weave speed, and FRAME WIDTHS
+PER FRAME against the rate at which a pan stops being readable. A drone that
+has to average 12 m/s through a 9.84 m field is not weaving, it is fleeing --
+and one that turns 87 degrees in 18 frames through a 58 mm lens is not
+presenting anything, whatever its speed.
 """
 
 import csv

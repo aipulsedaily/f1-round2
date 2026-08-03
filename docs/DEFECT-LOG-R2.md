@@ -3144,3 +3144,115 @@ silent pass, so **every existing `gate.json` is stale** until re-run. And
 **`catch_fence_post` cannot be measured at all** — its witness frame is **66 % crushed to
 black** and the analyser rejects it as unfit, confirmed identical at committed HEAD, so one
 of the eight passes currently has no supporting measurement in either direction.
+
+## R2-061 — the film camera shipped with Blender's 1 km factory far clip
+
+`anim/build_camera_rig.py` created the camera datablock and never touched
+`clip_start` / `clip_end`, so every rig carried the factory `0.1 m / 1000 m`.
+
+Beat 6 is the closing wide. It sees terrain **past 1 km**, and everything beyond the
+far plane is not drawn — **56 full-width rows of literal black across the top of the
+frame**, which reads as a letterbox bar rather than as a clipped horizon, which is
+exactly why it survived being looked at.
+
+**The instructive part is not the defect, it is that it was fixed twice.** It was
+found once and corrected *in a built blend*, and the built blend is a build artefact:
+every subsequent rig rebuild reintroduced it, silently, because the source that
+generates the camera still had no opinion about clipping. **A fix applied to an
+artefact rather than to the thing that generates the artefact is not a fix, it is a
+manual step nobody wrote down.**
+
+Fixed at source:
+
+```python
+cam_data.clip_start = 0.05      # the camera passes within centimetres at the breach
+cam_data.clip_end   = 200000.0  # beat 6 sees the far terrain ring
+```
+
+`0.05` is not cosmetic either — at the breach the lens passes within centimetres of
+the glass, and the factory `0.1` would clip the wall the shot is about.
+
+## R2-062 — beat 1's tour was ordered by ASSEMBLY, not by SPACE, so the camera had to sprint
+
+`present_order()` in `tools/build_beatsheet.py` used the **seat order** as its spine,
+on the stated argument that assembly order is "roughly centre-outward".
+
+**Seat order is centre-outward in assembly. It is not centre-outward in space.** Its
+9th, 10th and 11th entries are NOSE (x = +3.75), FW (x = +4.38), RW (x = −4.59) — and
+every cluster was given the same 1.76 s slot regardless of how far apart they sat. The
+camera was therefore *required* to cross **9.14 m in one slot**: the f387–416 dash, at
+**7.817 m/s in a beat whose design speed is 1.994 m/s**, with 67 frames (8.5 %) over
+twice that.
+
+**Why every gate passed it, and this is the finding worth keeping:**
+
+> **The rig's aim gate scored it 7.24°, a pass. A camera can be pointed exactly at its
+> subject and still be moving far too fast to photograph it.** Aim error and
+> photographability are independent, and only one of them was being measured.
+
+**Fixed** by solving the visiting order (exact Held-Karp over 11 nodes) subject to each
+cluster being presented before it starts *flying* — not merely before it lands, since a
+station is solved against the cluster's **exploded** centre — and by allocating time to
+whichever constraint binds: dwell, transit at the peak-speed limit, or the turn at the
+pan limit. Solved times are quantised to frames because the rig quantises them anyway.
+
+| beat 1, f1–792 | before | after |
+|---|---|---|
+| max speed | 7.817 m/s | **3.897 m/s** |
+| frames over 2× design speed | 67 (8.5 %) | **0** |
+| max rotation | 23.42 % width/frame | 16.40 % |
+| rig aim gate, worst | 7.24° | **0.00°** |
+
+Two new gates were added that **FAIL the shipped sheet** — predicting 7.06–7.89 m/s on
+the dash against 7.82 measured, and 21.1–23.6 % / 18.9–21.1 % on the two pans against
+22.8 % and 23.4 % — and pass the new one, with predictions stated as *ranges* so a gate
+can never fail inside its own resolution.
+
+**A second-order trap was closed in the same file.** The beat-to-beat carry-forward was
+top-level only, so every run silently deleted
+`speed_ramps[3_breach].min_world_time_scale_note` — the paragraph another tool wrote
+recording that the 0.153719 floor is *solved*. The merge is now recursive, and lists are
+walked **only** where their elements carry a unique identity key, so `camera_keys` (22
+elements all tagged `1_assembly`) is never zipped by position.
+
+**Still open, and deliberately not fixed here:** f487 remains a 16.4 % WARN — crossing
+behind the rear axle, the bisector of the two corner view directions is within 5° of
+straight down, so roll must spin through the vertical singularity, and more time barely
+helps (49 frames gave 16.4 %, 35 gave 17.3 %). The real fix is a third bridge key at a
+wider lens, which is hand-placed geometry and needs a frame to look at.
+
+## R2-063 — beat 6 does not start on a frame, and the rig rounded its keys onto one
+
+The f2643 smear (32 % of frame width, 19.1°/frame) and the f2642–2646 speed swing
+(88.3 → 68.5 → 78.0 → 85.3 m/s) were logged as two defects. **They are one.**
+
+**Beat 6 begins at 113.1 s. 113.1 × 24 = 2714.4.** Every declared key in the beat lands
+at **.4 of a frame**. `build_camera_rig.py` forced each declared *position* onto
+`round(t · FPS)` and called that "reproduced exactly".
+
+At 83.1 m/s, four tenths of a frame is **1.385 m of position error, placed on f2642**.
+The camera lurched onto it and then decelerated at **−473 m/s²** to catch up. Because the
+camera is only metres from the car it is following, **1.4 m of position error *is* a 19°
+per-frame aim swing** — the smear and the swing are the same event measured two ways.
+
+Separately, beat 5's last key and beat 6's peel are **3.6775 m apart across 1.40 frames**
+— 63.0 m/s, against a beat-5 arrival of 88.2 and a beat-6 declared 83.1. **About 1.5 m of
+the two authored paths simply do not meet.**
+
+**Fixed** by blending the hand-off over 36 frames with the same cubic-Hermite technique
+`beat6_path()` already uses, suppressing the rounding inside the window:
+
+```
+f2641-2650  before   88.1, 88.3, 68.5, 63.7, 78.0, 85.3, ...   worst |accel| 474 m/s2
+f2641-2650  after    88.1, 87.5, 86.4, 85.3, ...               worst |accel|  27 m/s2
+max rotation f2636-2660   32.45 %  ->  13.03 %
+```
+
+**The blend length was swept, not picked** — 24 frames clears the FAIL but leaves a 14 %
+WARN; 36 and 48 are both clean; 36 is the shortest that is clean.
+
+**And the first draft of the fix created a new defect that names the mechanism.** Keying
+every frame of the blend starved `look_quat`'s 3°-per-frame roll correction and produced a
+**43° tilted horizon** — precisely the defect that function exists to prevent. The blend is
+now sampled on a ramp (1, 2, 3, … 8 frames) so the correction always has headroom.
+**A dense fix can defeat a corrector by leaving it no room to correct in.**
