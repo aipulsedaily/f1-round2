@@ -236,6 +236,80 @@ BEAT1_PEAK_FACTOR = 2.00
 # lost is a presentation that did not happen.
 BEAT1_PAN_LIMIT_WIDTHS = 0.12
 
+# ---- the closing lens push.  R2-113. ---------------------------------------
+#
+# The brief names three things in the last frame -- "the circuit, the car
+# streaking on, the breached showroom visible in the distance with its wound".
+# R2-090 closed the third of those as geometrically unavailable: at f2978 the
+# wound and the car are 966 m apart, and requiring both in frame pushes the
+# camera back at exactly the rate a longer lens gains, so the car is pinned at
+# about 11.3 px = 1920 * 5.698 / 966 from ANY position at ANY focal length. The
+# focal length falls out of the expression entirely. The car's beat is real and
+# it lives at f2756-2832, where the car is still 20 to 40 px; it is not the last
+# frame, and the last frame is about the wound.
+#
+# THE REMAINING TWO STILL FIGHT, AND THEY ARE RESOLVED IN SEQUENCE RATHER THAN
+# IN ONE FRAME. Measured at the hold, 595.4 m out and 140 m up:
+#
+#   lens     mullion pitch   sky in frame   the wound        the circuit
+#   18.75    3.7 px          29.3 %         20 px, a blob    1143 m, reads
+#   40       7.9 px           5.7 %         37 px            536 m, reads best
+#   74      14.6 px           0.0 %         65 px, reads     290 m, gone
+#
+# At 18.75 mm the mullion grid is not resolvable, so the bright opening has no
+# grid to be a hole IN and reads as a specular hit. At 74 mm the grid is crisp
+# either side of the opening and absent across it, and the empty dais ring is
+# legible through the gap -- but the circuit has left the frame and so has the
+# sky. So the hold OPENS at 40 mm, where the circuit reads, and PUSHES to 74 mm,
+# where the wound reads.
+#
+# AND THE HOLD WAS A FREEZE. The camera is stationary for the last 3 s -- 0.00 m
+# over 72 frames, measured -- so at a fixed lens f2906 and f2978 are the same
+# picture: mean |difference| 0.8/255, 56 pixels of 2.07 M differing by more than
+# 16. The push is the only motion in the last three seconds, and it leaves the
+# camera path untouched: every seam, the aim gate and the 0.00 m hold stay
+# exactly as measured.
+CLOSING_LENS_HOLD_START_MM = 40.0
+CLOSING_LENS_HOLD_END_MM = 74.0
+
+
+def closing_lens_push(beat6):
+    """Retarget beat 6's last two declared lens values. R2-113.
+
+    Nothing else about beat 6 is touched: no key moves, no time changes, and the
+    hold's two keys keep their identical positions, so the 3 s hold is still a
+    hold. `hold_lens_mm` is updated alongside the key so the summary field and
+    the key it summarises cannot disagree -- R2-100 is a fact with two copies
+    going stale, and this block would otherwise create one.
+    """
+    b6 = json.loads(json.dumps(beat6))            # never mutate the spec's dict
+    ks = sorted(b6["keys"], key=lambda k: k["t"])
+    t0, t1 = b6["hold_start_t"], b6["hold_end_t"]
+    hit = 0
+    for k in ks:
+        if k["t"] == t0:
+            k["lens_mm"] = CLOSING_LENS_HOLD_START_MM
+            hit += 1
+        elif k["t"] == t1:
+            k["lens_mm"] = CLOSING_LENS_HOLD_END_MM
+            hit += 1
+    if hit != 2:
+        # A silent no-op here would ship the freeze back. Refuse instead.
+        raise SystemExit(
+            "R2-113: beat 6's hold keys t=%s and t=%s are not both in "
+            "spec['beat6']['keys'] (matched %d) — the closing lens push has "
+            "nothing to attach to" % (t0, t1, hit))
+    b6["hold_lens_mm"] = CLOSING_LENS_HOLD_END_MM
+    b6["closing_lens_push"] = {
+        "from_mm": CLOSING_LENS_HOLD_START_MM,
+        "to_mm": CLOSING_LENS_HOLD_END_MM,
+        "over_t": [t0, t1],
+        "why": "R2-113. The circuit reads at 40 mm and the wound does not; the "
+               "wound reads at 74 mm and the circuit is gone. The hold was a "
+               "freeze, so the push is the only motion in the last 3 s.",
+    }
+    return b6
+
 
 def hfov_deg(lens_mm):
     return math.degrees(2.0 * math.atan(SENSOR_W_MM / (2.0 * lens_mm)))
@@ -1129,7 +1203,7 @@ def main(check=None):
             "audio": "all layers time-stretch AND pitch with world time",
         }],
         "doppler": spec["doppler"],
-        "beat6": spec["beat6"],
+        "beat6": closing_lens_push(spec["beat6"]),
         "sources": {
             "circuit": "docs/circuit_spec.json",
             "explode": "docs/explode_plan.json",
