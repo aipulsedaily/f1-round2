@@ -1373,20 +1373,30 @@ def main():
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--preview", action="store_true")
     ap.add_argument("--seed", type=int, default=20260803)
+    ap.add_argument("--out", default=None,
+                    help="where to write the plan.  DEFAULTS TO THE SHIPPING "
+                         "PLAN, sim/out/fracture_wall.npz, which every baked "
+                         "table, every applied scene and every instrument is "
+                         "keyed to by shard id.  Give a different path for a "
+                         "second seed: overwriting the shipping plan would "
+                         "silently re-number 3,796 shards under a bake that "
+                         "still refers to the old ones.")
     a = ap.parse_args()
     if a.selftest:
         sys.exit(selftest())
     panes, meta = build_wall_plan(seed=a.seed, verbose=True)
     os.makedirs(OUT, exist_ok=True)
-    p = save(panes, meta)
+    p = save(panes, meta, path=a.out)
     print("\nwrote %s" % p)
     print(json.dumps(partition_report(panes), indent=1, default=float))
     print(json.dumps(convexity_report(panes), indent=1, default=float))
     if a.preview:
-        print(preview_png(panes, os.path.join(OUT, "fracture_wall.png")))
+        stem = os.path.splitext(a.out)[0] if a.out else os.path.join(
+            OUT, "fracture_wall")
+        print(preview_png(panes, stem + ".png"))
         mid = [p_ for p_ in panes if p_.bay in (3, 4, 5, 6)]
-        print(preview_png(mid, os.path.join(OUT, "fracture_aperture.png"),
-                          px_per_m=420))
+        print(preview_png(mid, stem + "_aperture.png", px_per_m=420))
+    print("STAGE RESULT: fracture plan seed=%d -> %s" % (a.seed, p))
 
 
 if __name__ == "__main__":
