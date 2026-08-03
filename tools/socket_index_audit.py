@@ -61,15 +61,38 @@ SOCKET TABLE PROVENANCE
 
 Re-measure at any time with `--refresh-sockets` (requires blender on PATH).
 
+TWO ARMS -- R2-070
+------------------
+The AST arm above reads SOURCE.  It is fast and needs no Blender, but it can
+only see indices that are written down: a computed index is a NOTICE, and
+there are 997 of those here.  So there is now a second, independent arm that
+reads the BUILT BLEND and asks the artefact directly -- because a build log
+saying "linked Normal" and a blend actually having `Normal` linked are
+different claims, and this project has shipped the difference twice.
+
+    python3 tools/socket_index_audit.py --blend render/.../x.blend
+
+fails when a Bump / Normal Map / Bevel output lands on a socket that is not a
+normal input (on 5.2 the off-by-one puts it on `Thin Wall`), when a relief
+node's output goes nowhere, when a Bump's `Height` is a constant, or when a
+Bump's `Filter Width` is driven.  It prints each offending material's
+transmission / subsurface / alpha / coat state, so whether a stray link is
+"merely flat" or "a per-pixel shell flip" is MEASURED and not assumed.
+
+Scope is now every source directory (world, tools, anim, sim, audio, render).
+`--include-builds` is a no-op kept for old invocations.  There is no flag that
+turns a directory off: "the sweep did not cover it" must not be reachable.
+
 USAGE
 -----
     python3 tools/socket_index_audit.py                   # audit default scope
     python3 tools/socket_index_audit.py world/items/foo.py
-    python3 tools/socket_index_audit.py --include-builds  # + world/build_*.py
     python3 tools/socket_index_audit.py --json out.json
     python3 tools/socket_index_audit.py --strict          # STABLE tier fails too
     python3 tools/socket_index_audit.py --allow waivers.txt
-    python3 tools/socket_index_audit.py --selftest        # +/- controls
+    python3 tools/socket_index_audit.py --selftest        # +/- controls, AST arm
+    python3 tools/socket_index_audit.py --blend a.blend   # ARTEFACT ARM
+    python3 tools/socket_index_audit.py --selftest-blend  # +/- controls, artefact
     python3 tools/socket_index_audit.py --refresh-sockets # re-measure vs blender
 
 EXIT CODES
@@ -1092,16 +1115,41 @@ def report(hits, errors, assume_src, nfiles, args, out=sys.stdout):
 # ---------------------------------------------------------------------------
 # scope
 # ---------------------------------------------------------------------------
+# R2-070.  The scope used to be `world/items/*.py` + itemkit + humankit, with
+# `world/build_*.py` behind an OPT-IN flag and `tools/`, `anim/`, `sim/` and
+# `audio/` not swept at all.  That is a blind spot of exactly the shape this
+# tool exists to close: a private index helper living in `tools/` or `anim/`
+# was invisible to the only instrument that can see private index helpers, and
+# the guard's own default run would have called the tree clean.  It is also
+# how the R2-070 pair survived -- not because the check could not see them
+# (it can, at LETHAL), but because nothing ran it over anything.
+#
+# The default is now EVERY source directory.  There is no flag that turns a
+# directory off, because "the sweep did not cover it" must never again be a
+# reachable state.  `--include-builds` is kept so old invocations still work
+# and is now a no-op; it prints a note saying so.
+SCOPE_DIRS = (
+    ("world",),
+    ("world", "items"),
+    ("tools",),
+    ("anim",),
+    ("sim",),
+    ("audio",),
+    ("render",),
+)
+
+
 def default_paths(include_builds=False):
     import glob
-    ps = sorted(glob.glob(os.path.join(ROOT, "world", "items", "*.py")))
-    for extra in ("humankit.py", "itemkit.py"):
-        f = os.path.join(ROOT, "world", extra)
-        if os.path.exists(f):
-            ps.append(f)
-    if include_builds:
-        ps += sorted(glob.glob(os.path.join(ROOT, "world", "build_*.py")))
-    return ps
+    ps = []
+    for parts in SCOPE_DIRS:
+        d = os.path.join(ROOT, *parts)
+        if os.path.isdir(d):
+            ps += glob.glob(os.path.join(d, "*.py"))
+    # de-duplicate and drop this file: auditing the guard's own fixtures and
+    # its own baked socket table produces nothing but noise about itself.
+    me = os.path.abspath(__file__)
+    return sorted({os.path.abspath(p) for p in ps} - {me})
 
 
 # ---------------------------------------------------------------------------
@@ -1156,6 +1204,457 @@ def refresh_sockets(dest):
         return 1
     print("baked SOCKETS_5_2 matches live Blender exactly.")
     return 0
+
+
+# ===========================================================================
+# R2-070 -- THE ARTEFACT ARM.  `--blend <file>`
+#
+# WHY A SECOND ARM AT ALL
+# -----------------------
+# Everything above is AST.  AST is fast, needs no Blender, and fires at
+# authoring time -- but it can only see indices that are written down.  It
+# cannot see:
+#
+#   * a computed index (`pin(nd, base + k, v)`), which it can only mark
+#     NOTICE, and there are 997 of those in this tree;
+#   * a graph assembled correctly in source and then mutated afterwards;
+#   * a module it was never pointed at.
+#
+# And this project's standing lesson is that a build log saying "linked
+# Normal" and a blend actually having `Normal` linked are different claims.
+# So this arm asks the artefact, in the artefact's own terms, and it does not
+# care how the wire got there:
+#
+#   R1  RELIEF_INTO_NON_NORMAL   a Bump / Normal Map / Bevel output landing on
+#                                a socket that is not a normal input.  This is
+#                                the R2-057 / R2-070 signature seen from the
+#                                far end: on Blender 5.2 the off-by-one puts
+#                                it on `Thin Wall`.
+#   R2  RELIEF_ORPHANED          a Bump / Normal Map whose output goes nowhere
+#                                at all -- the same defect when the stray
+#                                index lands past the end of the socket list
+#                                and the link is silently dropped.
+#   R3  BUMP_HEIGHT_UNLINKED     R2-038: `Height` on a constant. No gradient,
+#                                so no relief, whatever the strength says.
+#   R4  BUMP_FILTER_WIDTH_DRIVEN R2-038's other half: a texture in `Filter
+#                                Width`, which is where the height lands when
+#                                the Bump node is addressed one socket short.
+#
+# WHAT IT ALSO REPORTS, AND WHY
+# -----------------------------
+# For every offending material it prints Transmission Weight, Subsurface
+# Weight, Alpha and Coat Weight.  That is not decoration.  A relief chain
+# landing on `Thin Wall` is merely FLAT if the material is opaque, but on a
+# material that carries transmission it switches the BSDF's shell
+# interpretation per pixel, which is a different and worse defect.  The tool
+# refuses to let that distinction be assumed: it prints the numbers that
+# decide it, so the blast radius is measured every time.
+# ===========================================================================
+
+# Sockets a normal-producing node is ALLOWED to drive.  Deliberately short.
+NORMAL_SINKS = {
+    "Normal",            # every BSDF
+    "Coat Normal",       # Principled's coat layer
+    "Height",            # Bump -> Bump chaining (the previous stage's normal)
+    "Tangent",           # anisotropy chains
+    "Displacement",
+}
+RELIEF_NODES = ("ShaderNodeBump", "ShaderNodeNormalMap", "ShaderNodeBevel")
+
+# WHERE A STRAY RELIEF LINK IS A DEFECT, AND WHERE IT IS A TECHNIQUE.
+#
+# The first version of this rule failed `armco_w_beam`'s AWB_WBeam, which does
+#
+#     bev    = t.bevel(0.0035, 10)
+#     facing = t.vmath("DOT_PRODUCT", bev, (NewGeometry, 1))   # 1 = Normal
+#
+# -- a bevelled normal dotted with the true geometry normal, which is the
+# standard way to build an edge-wear mask.  That is a Bevel output on a
+# `Vector` socket and it is entirely correct.  A rule that fails it would have
+# been switched off within a day, and a guard that is switched off catches
+# nothing.
+#
+# So the sink decides the severity.  A relief output on a non-normal input of
+# a SHADING node -- `Thin Wall`, `Metallic`, `Alpha`, `Base Color` -- cannot be
+# anything but a miswire, because those sockets do not take a normal.  A
+# relief output on a Vector/Math/Mix node is somebody computing with it, which
+# is what `facing` is.  The first FAILS; the second is printed and does not.
+# Nothing is dropped: the distinction is reported, not hidden.
+SHADER_SINK_TYPES = {
+    "ShaderNodeOutputMaterial", "ShaderNodeOutputWorld", "ShaderNodeOutputLight",
+    "ShaderNodeEmission", "ShaderNodeBackground", "ShaderNodeHoldout",
+    "ShaderNodeSubsurfaceScattering", "ShaderNodeVolumeScatter",
+    "ShaderNodeVolumeAbsorption", "ShaderNodeVolumePrincipled",
+    "ShaderNodeMixShader", "ShaderNodeAddShader",
+    "ShaderNodeDisplacement", "ShaderNodeVectorDisplacement",
+    "ShaderNodeAmbientOcclusion",
+}
+SHADER_SINK_PREFIX = "ShaderNodeBsdf"
+
+BLEND_SNIPPET = r'''
+import bpy, json, sys
+
+NORMAL_SINKS = %(SINKS)s
+RELIEF_NODES = %(RELIEF)s
+SHADER_SINK_TYPES = %(SHSINK)s
+SHADER_SINK_PREFIX = %(SHPFX)s
+
+
+def _is_shader_sink(nd):
+    return (nd.bl_idname in SHADER_SINK_TYPES
+            or nd.bl_idname.startswith(SHADER_SINK_PREFIX))
+
+
+def _f(sock):
+    try:
+        return float(sock.default_value)
+    except Exception:
+        return None
+
+
+def _shell(nt):
+    """Transmission / subsurface / alpha / coat state of every Principled in
+    this tree.  This is what decides whether a stray relief link is 'flat' or
+    'a per-pixel shell flip', so it is measured, never assumed."""
+    out = []
+    for nd in nt.nodes:
+        if nd.bl_idname != "ShaderNodeBsdfPrincipled":
+            continue
+        d = {"node": nd.name}
+        for nm in ("Transmission Weight", "Subsurface Weight", "Alpha",
+                   "Coat Weight", "Normal", "Thin Wall"):
+            if nm in nd.inputs:
+                s = nd.inputs[nm]
+                d[nm] = {"linked": s.is_linked, "value": _f(s)}
+        out.append(d)
+    return out
+
+
+def scan_tree(kind, owner, nt, findings):
+    for nd in nt.nodes:
+        if nd.bl_idname not in RELIEF_NODES:
+            continue
+        links = list(nd.outputs[0].links)
+        if not links:
+            findings.append({
+                "rule": "RELIEF_ORPHANED", "severity": "FAIL", "kind": kind,
+                "owner": owner,
+                "node": nd.name, "node_type": nd.bl_idname,
+                "detail": "%%s output is not connected to anything" %% nd.bl_idname,
+                "shell": _shell(nt)})
+        for l in links:
+            if l.to_socket.name in NORMAL_SINKS:
+                continue
+            if _is_shader_sink(l.to_node):
+                findings.append({
+                    "rule": "RELIEF_INTO_NON_NORMAL", "severity": "FAIL",
+                    "kind": kind,
+                    "owner": owner, "node": nd.name, "node_type": nd.bl_idname,
+                    "to_node": l.to_node.bl_idname,
+                    "to_socket": l.to_socket.name,
+                    "detail": "%%s -> %%s.%%r. That is a shading node and %%r "
+                              "does not take a normal, so this is a miswire."
+                              %% (nd.bl_idname, l.to_node.bl_idname,
+                                 l.to_socket.name, l.to_socket.name),
+                    "shell": _shell(nt)})
+            else:
+                findings.append({
+                    "rule": "RELIEF_INTO_COMPUTATION", "severity": "NOTE",
+                    "kind": kind,
+                    "owner": owner, "node": nd.name, "node_type": nd.bl_idname,
+                    "to_node": l.to_node.bl_idname,
+                    "to_socket": l.to_socket.name,
+                    "detail": "%%s -> %%s.%%r -- computed with, not shaded "
+                              "with. The edge-wear idiom (Bevel dotted with "
+                              "the geometry normal) looks exactly like this."
+                              %% (nd.bl_idname, l.to_node.bl_idname,
+                                 l.to_socket.name),
+                    "shell": _shell(nt)})
+        if nd.bl_idname == "ShaderNodeBump":
+            if "Height" in nd.inputs and not nd.inputs["Height"].is_linked:
+                findings.append({
+                    "rule": "BUMP_HEIGHT_UNLINKED", "kind": kind,
+                    "owner": owner, "node": nd.name, "node_type": nd.bl_idname,
+                    "detail": "Height is a constant (%%r): no gradient, so no "
+                              "relief whatever Strength says"
+                              %% _f(nd.inputs["Height"]),
+                    "shell": _shell(nt)})
+            if ("Filter Width" in nd.inputs
+                    and nd.inputs["Filter Width"].is_linked):
+                findings.append({
+                    "rule": "BUMP_FILTER_WIDTH_DRIVEN", "kind": kind,
+                    "owner": owner, "node": nd.name, "node_type": nd.bl_idname,
+                    "detail": "Filter Width is driven by %%s -- that is where a "
+                              "height lands when Bump is addressed by index"
+                              %% nd.inputs["Filter Width"].links[0].from_node.bl_idname,
+                    "shell": _shell(nt)})
+
+
+def run():
+    findings = []
+    scanned = 0
+    for m in bpy.data.materials:
+        if m.use_nodes and m.node_tree:
+            scanned += 1
+            scan_tree("material", m.name, m.node_tree, findings)
+    for w in bpy.data.worlds:
+        if w.use_nodes and w.node_tree:
+            scanned += 1
+            scan_tree("world", w.name, w.node_tree, findings)
+    for g in bpy.data.node_groups:
+        scanned += 1
+        scan_tree("node_group", g.name, g, findings)
+    return {"blend": bpy.data.filepath, "scanned_trees": scanned,
+            "blender": bpy.app.version_string, "findings": findings}
+
+
+%(EXTRA)s
+
+open(sys.argv[-1], "w").write(json.dumps(run(), indent=1))
+'''
+
+
+def _run_blend_scan(blend, extra="", label=None):
+    """Open `blend` (or nothing, if blend is None) in Blender and scan it."""
+    src = BLEND_SNIPPET % {"SINKS": repr(sorted(NORMAL_SINKS)),
+                           "RELIEF": repr(list(RELIEF_NODES)),
+                           "SHSINK": repr(sorted(SHADER_SINK_TYPES)),
+                           "SHPFX": repr(SHADER_SINK_PREFIX),
+                           "EXTRA": extra}
+    tmpdir = os.path.join(ROOT, "tmp")
+    os.makedirs(tmpdir, exist_ok=True)
+    script = os.path.join(tmpdir, "_sia_blendscan.py")
+    dest = os.path.join(tmpdir, "_sia_blendscan.json")
+    open(script, "w").write(src)
+    cmd = [BLENDER_BIN, "-b", "--factory-startup", "-noaudio"]
+    if blend:
+        cmd.append(blend)
+    cmd += ["--python", script, "--", dest]
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    try:
+        data = json.load(open(dest))
+    except Exception:
+        sys.stderr.write("blend scan produced no report for %s\n"
+                         % (blend or label))
+        sys.stderr.write(r.stdout[-4000:] + r.stderr[-4000:])
+        return None
+    finally:
+        for f in (script, dest):
+            if os.path.exists(f):
+                os.unlink(f)
+    # Blender 5.2 exits 0 on an uncaught script exception, so the return code
+    # is not evidence and is not consulted.  The presence of the report is.
+    data["label"] = label or blend
+    return data
+
+
+# `/usr/bin/blender` has no CUDA kernels on this box; this arm never renders,
+# but it must be the same binary the world is built with or the socket order
+# it reads is not the socket order that shipped.
+BLENDER_BIN = os.environ.get("BLENDER_BIN",
+                             "/opt/blender-5.2.0-linux-x64/blender")
+
+
+def report_blend(data, out=sys.stdout):
+    p = out.write
+    p("=" * 78 + "\n")
+    p("ARTEFACT SOCKET AUDIT  (R2-070)\n")
+    p("  blend   : %s\n" % (data.get("blend") or data.get("label")))
+    p("  blender : %s\n" % data.get("blender"))
+    p("  trees   : %d scanned\n" % data.get("scanned_trees", 0))
+    p("=" * 78 + "\n")
+    allf = data.get("findings") or []
+    fs = [f for f in allf if f.get("severity") != "NOTE"]
+    notes = [f for f in allf if f.get("severity") == "NOTE"]
+    if not fs:
+        p("PASS -- no relief chain reaches a shading node on anything but a\n"
+          "        normal input, every Bump drives Height, no Bump has a\n"
+          "        driven Filter Width.\n")
+        if notes:
+            p("        (%d relief output(s) feed a computation rather than a\n"
+              "        shader -- the edge-wear idiom. Listed, not failing:)\n"
+              % len(notes))
+            for f in notes:
+                p("        NOTE  %s %r: %s\n"
+                  % (f["kind"], f["owner"], f["detail"]))
+        p("=" * 78 + "\n")
+        return []
+    for f in sorted(fs, key=lambda x: (x["rule"], x["owner"], x["node"])):
+        p("\n%-26s %s %r\n" % (f["rule"], f["kind"], f["owner"]))
+        p("    %s\n" % f["detail"])
+        for sh in f.get("shell") or []:
+            tr = sh.get("Transmission Weight") or {}
+            ss = sh.get("Subsurface Weight") or {}
+            al = sh.get("Alpha") or {}
+            co = sh.get("Coat Weight") or {}
+            nm = sh.get("Normal") or {}
+            tw = sh.get("Thin Wall") or {}
+            p("    shell: Normal.linked=%s  ThinWall.linked=%s  "
+              "transmission=%s/%s  subsurface=%s/%s  alpha=%s  coat=%s\n"
+              % (nm.get("linked"), tw.get("linked"),
+                 tr.get("value"), tr.get("linked"),
+                 ss.get("value"), ss.get("linked"),
+                 al.get("value"), co.get("value")))
+            if tr.get("value") or tr.get("linked") or ss.get("value") \
+                    or ss.get("linked"):
+                p("    ^^ THIS MATERIAL CARRIES TRANSMISSION OR SUBSURFACE.\n"
+                  "       A stray relief link on `Thin Wall` here is NOT merely\n"
+                  "       flat -- it switches the shell interpretation per\n"
+                  "       pixel.  Do not report this one as 'degenerates to\n"
+                  "       flat'.\n")
+    p("\n" + "=" * 78 + "\n")
+    p("FAIL -- %d finding(s) in the built artefact.\n" % len(fs))
+    p("=" * 78 + "\n")
+    return fs
+
+
+# ---------------------------------------------------------------------------
+# --selftest-blend : the artefact arm's own controls.
+#
+# Both arms are built in ONE Blender session from ONE shader graph, and the
+# only difference between them is which socket the bump output is linked to.
+# That matters: a negative control that is a separately authored "clean"
+# material proves only that two different graphs differ.  Here the negative
+# control IS the positive control with one link moved, so a pass on the
+# negative and a fail on the positive can only be about that link.
+# ---------------------------------------------------------------------------
+CONTROL_EXTRA = r'''
+def _build_controls():
+    """POSITIVE: bump -> inputs[5], which is `Thin Wall` on Blender 5.2 -- the
+       shipped R2-070 wiring, reproduced verbatim rather than described.
+       NEGATIVE: the same graph with that one link moved to `Normal`.
+       Neither is written from memory: the positive indexes by integer exactly
+       as the defect did, so if a future Blender moves the socket again this
+       control moves with it."""
+    for nm, by_name in (("SIA_POSITIVE_thinwall", False),
+                        ("SIA_NEGATIVE_byname", True)):
+        m = bpy.data.materials.new(nm)
+        m.use_nodes = True
+        nt = m.node_tree
+        nt.nodes.clear()
+        out = nt.nodes.new("ShaderNodeOutputMaterial")
+        b = nt.nodes.new("ShaderNodeBsdfPrincipled")
+        nt.links.new(b.outputs[0], out.inputs[0])
+        tex = nt.nodes.new("ShaderNodeTexNoise")
+        bump = nt.nodes.new("ShaderNodeBump")
+        nt.links.new(tex.outputs["Factor"], bump.inputs["Height"])
+        if by_name:
+            nt.links.new(bump.outputs["Normal"], b.inputs["Normal"])
+        else:
+            nt.links.new(bump.outputs["Normal"], b.inputs[5])
+
+    # SECOND NEGATIVE CONTROL, and the one that matters more, because it is
+    # not synthetic.  This is `armco_w_beam.mat_wbeam`'s edge-wear mask,
+    # reproduced: a Bevel normal dotted with the true geometry normal.  The
+    # first version of this arm FAILED it.  A guard that fails a correct,
+    # shipped, deliberate idiom gets switched off, so it has to stay here and
+    # stay passing.
+    m = bpy.data.materials.new("SIA_NEGATIVE_edgewear")
+    m.use_nodes = True
+    nt = m.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    b = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    nt.links.new(b.outputs[0], out.inputs[0])
+    bev = nt.nodes.new("ShaderNodeBevel")
+    geo = nt.nodes.new("ShaderNodeNewGeometry")
+    dot = nt.nodes.new("ShaderNodeVectorMath")
+    dot.operation = 'DOT_PRODUCT'
+    nt.links.new(bev.outputs["Normal"], dot.inputs[0])
+    nt.links.new(geo.outputs["Normal"], dot.inputs[1])
+    nt.links.new(dot.outputs["Value"], b.inputs["Metallic"])
+
+
+_build_controls()
+'''
+
+
+def selftest_blend(args):
+    print("=" * 78)
+    print("ARTEFACT ARM SELFTEST -- proving it FAILS the broken input")
+    print("=" * 78)
+    data = _run_blend_scan(None, extra=CONTROL_EXTRA, label="<in-memory controls>")
+    if data is None:
+        print("  => INCONCLUSIVE: Blender produced no report. %s" % BLENDER_BIN)
+        return 2
+    fs = [f for f in data["findings"] if f.get("severity") != "NOTE"]
+    pos = [f for f in fs if f["owner"] == "SIA_POSITIVE_thinwall"]
+    neg = [f for f in fs if f["owner"] == "SIA_NEGATIVE_byname"]
+    idi = [f for f in fs if f["owner"] == "SIA_NEGATIVE_edgewear"]
+    ok = True
+
+    print("\n[POSITIVE CONTROL] SIA_POSITIVE_thinwall")
+    print("  bump output linked to Principled.inputs[5] by INTEGER INDEX --")
+    print("  the shipped R2-070 wiring, reproduced rather than described.")
+    hit = [f for f in pos if f["rule"] == "RELIEF_INTO_NON_NORMAL"]
+    for f in hit:
+        print("  FIRED  %s -> %s.%r" % (f["node_type"], f["to_node"],
+                                        f["to_socket"]))
+    if hit and any(f["to_socket"] == "Thin Wall" for f in hit):
+        print("  => POSITIVE CONTROL PASSES: the artefact arm FAILS the broken")
+        print("     input, and names the socket it actually landed on.")
+    else:
+        print("  => POSITIVE CONTROL FAILS: the planted stray link was not")
+        print("     detected. Do not trust a clean run of this arm.")
+        ok = False
+
+    print("\n[NEGATIVE CONTROL] SIA_NEGATIVE_byname")
+    print("  bit-for-bit the same graph with that ONE link moved to `Normal`.")
+    if neg:
+        print("  => NEGATIVE CONTROL FAILS: %d finding(s) on the by-name "
+              "graph -- the arm false-positives:" % len(neg))
+        for f in neg:
+            print("       %s %s" % (f["rule"], f["detail"]))
+        ok = False
+    else:
+        print("  => NEGATIVE CONTROL PASSES: clean, and it is a verdict rather")
+        print("     than a no-op -- the same scan read %d trees and returned %d"
+              % (data["scanned_trees"], len(fs)))
+        print("     failing finding(s) in total, all on the positive arm.")
+
+    print("\n[IDIOM CONTROL] SIA_NEGATIVE_edgewear")
+    print("  a Bevel normal dotted with the geometry normal, driving Metallic")
+    print("  -- armco_w_beam's real, shipped edge-wear mask.  This is a relief")
+    print("  node reaching a non-normal socket and it is CORRECT.")
+    if idi:
+        print("  => IDIOM CONTROL FAILS: %d failing finding(s) on a correct "
+              "shipped idiom. This arm would be switched off:" % len(idi))
+        for f in idi:
+            print("       %s %s" % (f["rule"], f["detail"]))
+        ok = False
+    else:
+        noted = [f for f in data["findings"]
+                 if f["owner"] == "SIA_NEGATIVE_edgewear"]
+        print("  => IDIOM CONTROL PASSES: not failed, and not ignored either "
+              "-- %d NOTE-level finding(s) recorded." % len(noted))
+
+    # A control that only ever sees graphs THIS FILE built is a control on
+    # itself.  The real shipped artefacts are the honest positive input.
+    print("\n[REAL SHIPPED ARTEFACT]")
+    real = [os.path.join(ROOT, "world", "items", b) for b in
+            ("gantry_truss_test.blend", "pont_girder_test.blend")]
+    real = [f for f in real if os.path.exists(f)]
+    if not real:
+        print("  (skipped: neither item test blend is on disk)")
+    else:
+        print("  These were built BEFORE the R2-070 fix and are on disk now.")
+        print("  If the arm is real, it fails them without being told to.")
+        for f in real:
+            d = _run_blend_scan(f, label=f)
+            if d is None:
+                print("  %s: INCONCLUSIVE" % rel(f))
+                ok = False
+                continue
+            bad = [x for x in d["findings"]
+                   if x["rule"] == "RELIEF_INTO_NON_NORMAL"]
+            print("  %-46s %d stray relief link(s): %s"
+                  % (rel(f), len(bad),
+                     sorted({x["owner"] + "." + x["to_socket"] for x in bad})))
+
+    print("\n" + "=" * 78)
+    print("STAGE RESULT: %s" % ("PASS" if ok else "FAIL"))
+    print("=" * 78)
+    return 0 if ok else 1
 
 
 # ---------------------------------------------------------------------------
@@ -1336,10 +1835,21 @@ def main(argv=None):
     ap = argparse.ArgumentParser(
         description="R2-057 guard: fail when a module sets a node input by "
                     "integer index.")
-    ap.add_argument("paths", nargs="*", help="files to audit (default: "
-                                             "world/items/*.py + itemkit + humankit)")
+    ap.add_argument("paths", nargs="*",
+                    help="files to audit (default: every *.py under world/, "
+                         "world/items/, tools/, anim/, sim/, audio/, render/)")
     ap.add_argument("--include-builds", action="store_true",
-                    help="also audit world/build_*.py")
+                    help="DEPRECATED no-op: world/build_*.py, tools/, anim/, "
+                         "sim/ and audio/ are always in the default scope now "
+                         "(R2-070). Accepted so old invocations keep working.")
+    ap.add_argument("--blend", metavar="PATH", nargs="+",
+                    help="ARTEFACT ARM (R2-070): open built .blend file(s) and "
+                         "fail if any relief chain lands on a socket that is "
+                         "not a normal input, or if any Bump has an unlinked "
+                         "Height / a driven Filter Width")
+    ap.add_argument("--selftest-blend", action="store_true",
+                    help="run the artefact arm's positive and negative "
+                         "controls, plus the real shipped blends")
     ap.add_argument("--strict", action="store_true",
                     help="make the STABLE tier fail too")
     ap.add_argument("--json", metavar="PATH", help="write machine-readable report")
@@ -1357,6 +1867,22 @@ def main(argv=None):
         return refresh_sockets(args.refresh_sockets)
     if args.selftest:
         return selftest(args)
+    if args.selftest_blend:
+        return selftest_blend(args)
+    if args.blend:
+        rc = 0
+        for b in args.blend:
+            data = _run_blend_scan(os.path.abspath(b), label=b)
+            if data is None:
+                rc = 2
+                continue
+            if report_blend(data):
+                rc = max(rc, 1)
+        return rc
+    if args.include_builds:
+        sys.stdout.write(
+            "note: --include-builds is a no-op since R2-070; world/build_*.py, "
+            "tools/, anim/, sim/ and audio/ are always in scope.\n")
 
     if args.allow:
         loud = []
