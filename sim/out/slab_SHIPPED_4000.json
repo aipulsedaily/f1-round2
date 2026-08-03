@@ -1,0 +1,193 @@
+{
+ "film": "sim/out/breach_film.npz",
+ "frames": [
+  845,
+  1165
+ ],
+ "bays": {
+  "3": {
+   "swap_frame": 860,
+   "ref_frame": 845,
+   "n": 202,
+   "moved_by_the_swap_frame_median_mm": 4.0,
+   "moved_by_the_swap_frame_max_mm": 19.5,
+   "at": {
+    "866": {
+     "depth_median_mm": 5.6,
+     "depth_p90_mm": 13.2,
+     "depth_spread_p10_p90_m": 0.021,
+     "align_median_deg": 0.73,
+     "align_p90_deg": 0.94
+    },
+    "880": {
+     "depth_median_mm": 10.4,
+     "depth_p90_mm": 29.5,
+     "depth_spread_p10_p90_m": 0.031,
+     "align_median_deg": 1.02,
+     "align_p90_deg": 1.32
+    },
+    "900": {
+     "depth_median_mm": 1.8,
+     "depth_p90_mm": 3.2,
+     "depth_spread_p10_p90_m": 0.005,
+     "align_median_deg": 0.12,
+     "align_p90_deg": 0.26
+    },
+    "920": {
+     "depth_median_mm": 3.8,
+     "depth_p90_mm": 7.8,
+     "depth_spread_p10_p90_m": 0.008,
+     "align_median_deg": 0.28,
+     "align_p90_deg": 0.31
+    }
+   },
+   "peak_depth_median_mm": 25.7,
+   "peak_at_frame": 891,
+   "last_frame": 1165,
+   "last_depth_median_mm": 5.0,
+   "return_ratio_last_over_peak": 0.1929,
+   "verdict": "LEAVES",
+   "monotone_after_swap": false,
+   "ref_is_home": true,
+   "role": "destroyed"
+  },
+  "4": {
+   "swap_frame": 860,
+   "ref_frame": 845,
+   "n": 1531,
+   "moved_by_the_swap_frame_median_mm": 128.9,
+   "moved_by_the_swap_frame_max_mm": 350.2,
+   "at": {
+    "866": {
+     "depth_median_mm": 483.1,
+     "depth_p90_mm": 826.9,
+     "depth_spread_p10_p90_m": 0.636,
+     "align_median_deg": 80.65,
+     "align_p90_deg": 136.17
+    },
+    "880": {
+     "depth_median_mm": 646.2,
+     "depth_p90_mm": 1037.7,
+     "depth_spread_p10_p90_m": 0.77,
+     "align_median_deg": 70.9,
+     "align_p90_deg": 145.32
+    },
+    "900": {
+     "depth_median_mm": 16.7,
+     "depth_p90_mm": 255.7,
+     "depth_spread_p10_p90_m": 0.27,
+     "align_median_deg": 9.95,
+     "align_p90_deg": 109.37
+    },
+    "920": {
+     "depth_median_mm": 16.5,
+     "depth_p90_mm": 68.0,
+     "depth_spread_p10_p90_m": 0.103,
+     "align_median_deg": 12.94,
+     "align_p90_deg": 40.95
+    }
+   },
+   "peak_depth_median_mm": 785.7,
+   "peak_at_frame": 886,
+   "last_frame": 1165,
+   "last_depth_median_mm": 40.7,
+   "return_ratio_last_over_peak": 0.0517,
+   "verdict": "RETURNS",
+   "monotone_after_swap": false,
+   "ref_is_home": true,
+   "role": "destroyed"
+  },
+  "5": {
+   "swap_frame": 860,
+   "ref_frame": 845,
+   "n": 1485,
+   "moved_by_the_swap_frame_median_mm": 130.8,
+   "moved_by_the_swap_frame_max_mm": 308.4,
+   "at": {
+    "866": {
+     "depth_median_mm": 697.9,
+     "depth_p90_mm": 1182.0,
+     "depth_spread_p10_p90_m": 0.748,
+     "align_median_deg": 88.99,
+     "align_p90_deg": 108.96
+    },
+    "880": {
+     "depth_median_mm": 1132.7,
+     "depth_p90_mm": 1512.0,
+     "depth_spread_p10_p90_m": 0.812,
+     "align_median_deg": 76.54,
+     "align_p90_deg": 101.65
+    },
+    "900": {
+     "depth_median_mm": 330.5,
+     "depth_p90_mm": 438.4,
+     "depth_spread_p10_p90_m": 0.286,
+     "align_median_deg": 24.01,
+     "align_p90_deg": 137.72
+    },
+    "920": {
+     "depth_median_mm": 117.5,
+     "depth_p90_mm": 172.8,
+     "depth_spread_p10_p90_m": 0.095,
+     "align_median_deg": 6.54,
+     "align_p90_deg": 11.31
+    }
+   },
+   "peak_depth_median_mm": 1167.0,
+   "peak_at_frame": 879,
+   "last_frame": 1165,
+   "last_depth_median_mm": 190.5,
+   "return_ratio_last_over_peak": 0.1633,
+   "verdict": "RETURNS",
+   "monotone_after_swap": false,
+   "ref_is_home": true,
+   "role": "destroyed"
+  },
+  "7": {
+   "swap_frame": 860,
+   "ref_frame": 845,
+   "n": 183,
+   "moved_by_the_swap_frame_median_mm": 0.6,
+   "moved_by_the_swap_frame_max_mm": 2.7,
+   "at": {
+    "866": {
+     "depth_median_mm": 2.0,
+     "depth_p90_mm": 3.1,
+     "depth_spread_p10_p90_m": 0.005,
+     "align_median_deg": 0.13,
+     "align_p90_deg": 0.18
+    },
+    "880": {
+     "depth_median_mm": 1.9,
+     "depth_p90_mm": 3.1,
+     "depth_spread_p10_p90_m": 0.005,
+     "align_median_deg": 0.1,
+     "align_p90_deg": 0.15
+    },
+    "900": {
+     "depth_median_mm": 4.2,
+     "depth_p90_mm": 7.4,
+     "depth_spread_p10_p90_m": 0.009,
+     "align_median_deg": 0.21,
+     "align_p90_deg": 0.29
+    },
+    "920": {
+     "depth_median_mm": 4.2,
+     "depth_p90_mm": 8.5,
+     "depth_spread_p10_p90_m": 0.01,
+     "align_median_deg": 0.2,
+     "align_p90_deg": 0.28
+    }
+   },
+   "peak_depth_median_mm": 8.6,
+   "peak_at_frame": 1153,
+   "last_frame": 1165,
+   "last_depth_median_mm": 2.0,
+   "return_ratio_last_over_peak": 0.2374,
+   "verdict": "LEAVES",
+   "monotone_after_swap": false,
+   "ref_is_home": true,
+   "role": "retained"
+  }
+ }
+}

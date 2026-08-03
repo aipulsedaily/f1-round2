@@ -2,16 +2,13 @@
  "written_by": "breach owner, BEFORE the re-bake finished and BEFORE any frame was re-rendered",
  "written_at": "2026-08-03, while the 1,657-frame bake at bond 100 / mullion 40/120 was at frame ~1 of 1657",
  "what_this_is": "A prediction, recorded so it can be wrong. Nothing in this file was read off the new bake. The only numbers here that come from a bake are the SHIPPED 4000 figures I am predicting AGAINST, which are the previous agent's and are quoted as the null hypothesis.",
-
  "THE_ARTEFACT_BEING_PREDICTED": {
   "seen": "render/breach_f9/f9_1920_f0866.png. The east wall reads as a soup of hard-edged translucent slabs, several deep, at multiple orientations, spanning the whole glazing. I have looked at it; it is real and it is gross.",
   "the_falsified_hypothesis": "that the intact pane and its shards both render for ~12 frames. apply_breach.py hides the pane and shows the shards at the SAME frame r = min(release) per bay, and no frame renders both. The only real doubling is 9 shards in bays 5 and 7 that appear at 861, which is a ONE-frame 9-shard HOLE, not a 12-frame whole-wall double.",
   "the_surviving_explanation": "the shard field itself. At t_bond_per_m 4000 the glass does not leave: bay 4's panes bulge outboard AS A COHERENT SHEET and then spring back. Bay 4's median depth offset is 483 mm at f866 and 17 mm by f900. ~3,000 flat plates spread through ~1.4 m of depth, seen through one another, and then RE-ASSEMBLING. The take therefore contains a shatter-and-un-shatter: the wall un-breaks on camera, in a film with no cuts.",
   "frame_facts": "impact is film frame 859.88; RELEASE_FRAME = 860; every fractured bay's pane hides and its shards appear at 860. So f0855-f0859 is intact pane, f0860 onward is shards."
  },
-
  "THE_MECHANISM_I_AM_BETTING_ON": "at 4000 the bond network is 40x stronger than the glass it represents, so the impact cannot part the sheet: it loads it, the sheet stores the energy elastically across 12,756 inter-shard constraints, and the constraint network gives it back. That is a trampoline, not a fracture. At 100 the bonds part where they are loaded, each shard's momentum becomes its own, and there is nothing left to pull it home. A field that has separated has no restoring force.",
-
  "PREDICTIONS": {
   "P1_no_spring_back": {
    "claim": "bay 4's median depth offset |x - x0| is MONOTONICALLY NON-DECREASING from f860 to f900, to within noise, and at f900 it is at least 5x its f866 value.",
@@ -35,8 +32,48 @@
    "falsified_if": "release_frame_min is 860 and every fractured bay's shards appear at 860 with none at 861."
   }
  },
-
  "WHAT_WOULD_MAKE_ME_WRONG_IN_AN_INTERESTING_WAY": "if the glass leaves cleanly (P1 and P2 hold) but the picture still reads as slabs (P3 fails). That would mean the artefact was never about the wall's motion at all, and the whole shatter-and-un-shatter reading - which is a good reading and explains the 483 -> 17 mm collapse - would still be TRUE and still be a defect, but not THIS defect. I would then look at the shard material's thickness, its IOR, and whether apply_breach is instancing a flat plate rather than the fractured solid.",
-
- "WHAT_I_CANNOT_PREDICT": "whether the field is at rest by the end. Every sweep point so far ended with the field still in flight, and the bake is frozen by CONSTANT extrapolation at its last key with 2,375 bodies still moving over 1 mm/frame. That is off camera, so nothing is SEEN to stop, but it means the aperture I measure at the last frame is a lower bound and the settled aperture is unknown."
+ "WHAT_I_CANNOT_PREDICT": "whether the field is at rest by the end. Every sweep point so far ended with the field still in flight, and the bake is frozen by CONSTANT extrapolation at its last key with 2,375 bodies still moving over 1 mm/frame. That is off camera, so nothing is SEEN to stop, but it means the aperture I measure at the last frame is a lower bound and the settled aperture is unknown.",
+ "ADDENDUM_1_written_before_the_new_bake_landed": {
+  "when": "after building sim/slabcheck.py and running it on the SHIPPED 4000 bake, still before the new bake finished and before any frame was re-rendered",
+  "why_this_is_here": "P2's REASONING is falsified by the shipped data, before the new bake has anything to say. I am recording that rather than quietly dropping it.",
+  "P2_reasoning_was_wrong": {
+   "I_claimed": "at 4000 a sheet that bulges keeps its normals, so the slab look is an ALIGNMENT effect and the honest test is angular. I set the falsifier at 'median normal rotation under ~5 deg at f866'.",
+   "the_shipped_bake_says": "bay 4's median normal rotation at f866 is 80.7 deg and bay 5's is 89.0 deg. The shards have comprehensively rotated. The field at f866 is NOT a coherent sheet, so the slab look cannot be an alignment-preserving sheet, and my falsifier would have 'passed' the new bake for the wrong reason.",
+   "what_is_actually_diagnostic": "the RETURN, and it is a return in BOTH quantities. Bay 4: depth 483 mm and 80.7 deg at f866, back to 16.7 mm and 9.9 deg at f900. The field rotates out and then rotates BACK. That is the strongest single statement of the defect available: a field that has genuinely fractured cannot un-rotate. Twelve thousand seven hundred and fifty-six bonds that never broke are holding every shard on a rubber band."
+  },
+  "P1_stands_and_is_now_quantified_with_a_shared_instrument": {
+   "instrument": "sim/slabcheck.py, six controls, all firing, referenced to HOME and not to the swap frame",
+   "shipped_4000_bay_4": {
+    "f866_mm": 483.1,
+    "peak_mm": 785.7,
+    "peak_at_frame": 886,
+    "f900_mm": 16.7,
+    "last_frame_mm": 40.7,
+    "return_ratio": 0.05,
+    "verdict": "RETURNS"
+   },
+   "shipped_4000_bay_5": {
+    "f866_mm": 697.9,
+    "peak_mm": 1167.0,
+    "peak_at_frame": 879,
+    "f900_mm": 330.5,
+    "last_frame_mm": 190.5,
+    "verdict": "RETURNS"
+   },
+   "shipped_4000_bay_3": {
+    "f866_mm": 5.6,
+    "peak_mm": 25.7,
+    "verdict": "LEAVES",
+    "note": "bay 3 barely moves at all at 4000, so its 'LEAVES' is not a departure, it is a bay that never went anywhere. The verdict word is about the SHAPE of the curve, not about the size of the hole. Read it with the peak."
+   },
+   "the_prediction_restated_against_this_instrument": "at bond 100 / mullion 40/120, bays 4 and 5 must come back LEAVES with a peak that keeps rising, and their alignment at the last frame must NOT fall back toward zero. If bay 4 comes back RETURNS the fix has failed on its own terms."
+  },
+  "A_MISTAKE_OF_MINE_WORTH_RECORDING": {
+   "what": "slabcheck first referenced depth to the SWAP FRAME rather than to home. It read 361 mm at f866 where the previous agent read 483 mm, and I nearly reported their figure as unreproducible.",
+   "the_reason": "by the swap frame the glass HAS ALREADY MOVED - a median 128.9 mm and a maximum 350.2 mm for bay 4. One film frame spans the entire impact: frame 859 is 36.5 ms before contact and frame 860 is 5.1 ms after it. The swap frame is not a state of rest and is not a valid zero.",
+   "checked_against_the_raw_bake_because_a_resample_could_have_faked_it": "no. In the 240 Hz world-time bake bay 4 is at 0.00 mm at sim frame 141, 1.66 mm at 144, 35 mm at 145 and 105 mm at 146, advancing at 16.8 m/s - the car's own speed, to three digits. The motion is physical and the resample is faithful to it. There is no pop at the swap beyond what the car does.",
+   "so": "the previous agent's numbers were right and my instrument was wrong. It now reproduces 483.1 and 16.7 exactly, and it reports `moved_by_the_swap_frame` on every bay so this particular trap is visible in the output rather than in someone's memory."
+  }
+ }
 }
