@@ -69,8 +69,8 @@
  ],
  "worst_position_jump_m": 4.2469,
  "worst_jump_frame": 1209,
- "worst_rotation_step_deg": 7.822,
- "worst_rotation_frame": 2271,
+ "worst_rotation_step_deg": 12.957,
+ "worst_rotation_frame": 2634,
  "worst_aim_deg": 16.887,
  "worst_aim_beat": "2_launch",
  "worst_aim_frame": 817,
@@ -121,9 +121,9 @@
    "bound_deg": 22.0
   },
   "6_ending": {
-   "ang": 0.05257229399816169,
+   "ang": 0.05703527361941508,
    "ang_f": 2780,
-   "off": 0.00110166492343494,
+   "off": 0.0011014538624261434,
    "off_f": 2779,
    "dist_m": 595.3656627652474,
    "n": 264,
