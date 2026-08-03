@@ -620,6 +620,19 @@ def census(P):
     Refuses to certify if the maximum OUTSIDE the known region has crept up to
     meet the WARN bound — the same idiom `tools/seam_gate.py --census` uses so
     a threshold cannot quietly go stale.
+
+    THE UPPER HALF OF THE SANDWICH COMES FROM THE STORED CONTROL, NOT FROM THE
+    LIVE FILM. R2-115, second instance. This test used to read
+
+        m_other < WARN < FAIL < m_known_ON_THE_LIVE_PATH
+
+    which requires the film still to CONTAIN the defect for the bounds to be
+    certified. R2-112 levelled beat 6's roll, the live f2640-2700 maximum fell
+    from 122.93 deg to 1.71 deg, and the census started reporting
+    HORIZON_CENSUS_STALE on a film that had just been fixed. The property being
+    checked is that the bounds SEPARATE a level camera from a rolled one, and
+    the rolled one is docs/horizon_pre_R2112_path.json -- kept precisely so that
+    fixing the film cannot take the gate's discrimination away with it.
     """
     rows = measure(P, min(P), max(P))
     judged, _f, _w = judge(rows)
@@ -627,15 +640,28 @@ def census(P):
     other = [r for r in judged if not (2640 <= r["f"] <= 2700)]
     m_other = max((abs(r["tilt_deg"]) for r in other), default=0.0)
     m_known = max((abs(r["tilt_deg"]) for r in known), default=0.0)
+    PRE = os.path.join(R2, "docs/horizon_pre_R2112_path.json")
+    m_ctl = None
+    if os.path.exists(PRE):
+        Ppre = {e["f"]: e for e in json.load(open(PRE))["path"]}
+        cjudged, _cf, _cw = judge(measure(Ppre, 2640, 2700))
+        m_ctl = max((abs(r["tilt_deg"]) for r in cjudged), default=0.0)
     print(f"=== CENSUS over {len(rows)} frames, {len(judged)} judged "
           f"(pitch < {HORIZON_PITCH_DEG:.0f} deg, beat 1 refused)")
     print(f"  worst tilt OUTSIDE f2640-2700   {m_other:6.2f} deg")
     print(f"  worst tilt INSIDE  f2640-2700   {m_known:6.2f} deg")
     print(f"  the shipped bounds are {TILT_WARN_DEG:.0f} deg WARN / "
           f"{TILT_FAIL_DEG:.0f} deg FAIL")
-    ok = m_other < TILT_WARN_DEG < TILT_FAIL_DEG < m_known
-    print(f"  {'PASS' if ok else 'FAIL'}  the bounds still lie strictly between "
-          f"what the film does and what it is being judged for")
+    if m_ctl is None:
+        print("  FAIL  the stored rolled control is MISSING, so the upper bound "
+              "of this test has nothing to stand on")
+        return False
+    print(f"  the stored ROLLED control does {m_ctl:6.2f} deg over the same "
+          f"frames  ({os.path.relpath(PRE, R2)})")
+    ok = m_other < TILT_WARN_DEG < TILT_FAIL_DEG < m_ctl
+    print(f"  {'PASS' if ok else 'FAIL'}  the bounds lie strictly between what "
+          f"the film does ({m_other:.2f} deg) and what a rolled camera does "
+          f"({m_ctl:.2f} deg)")
     return ok
 
 
