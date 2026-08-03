@@ -1,6 +1,6 @@
 {
  "item": "paddock_personnel_figure",
- "written": "2026-08-02T13:01:33",
+ "written": "2026-08-03T20:49:46",
  "contract": {
   "ground_z": "world_contract.world_ground_z(x, y)",
   "base_embed_m": 0.02,
@@ -8,8 +8,8 @@
  },
  "collection": "W_Item_PaddockPersonnelFigure",
  "prefix": "PPF_",
- "figures": 12,
- "triangles": 971807,
+ "figures": 260,
+ "triangles": 15150788,
  "materials": [
   "PPF_Skin",
   "PPF_Top",

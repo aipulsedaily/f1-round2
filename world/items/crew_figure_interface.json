@@ -1,6 +1,6 @@
 {
  "item": "crew_figure",
- "written": "2026-08-02T14:00:39",
+ "written": "2026-08-03T20:53:17",
  "contract": {
   "ground_z": "world_contract.world_ground_z(x, y)",
   "base_embed_m": 0.02,
@@ -9,7 +9,7 @@
  "collection": "W_Item_CrewFigure",
  "prefix": "CRF_",
  "figures": 120,
- "triangles": 5942025,
+ "triangles": 5958729,
  "materials": [
   "CRF_Skin",
   "CRF_Top",
