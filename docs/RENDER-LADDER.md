@@ -122,6 +122,30 @@ The *instance* disk was never the problem: `collect` deletes each frame the mome
 fetch verifies, and the scene cache is now derived from measured room (23.0 GB on a
 32.2 GB box) rather than a constant sized for a 16 GB disk that never arrived.
 
+## THE DELIVERY SPEC IS SETTLED: 4K MAXIMUM
+
+**The user's instruction, 2026-08-03: "video i want in max 4k ... for final".**
+
+    resolution   3840 x 2160          <- the CEILING, not a stepping stone
+    frame rate   24 fps
+    frames       2,978  (1 .. 2978)
+    duration     124.0833 s
+    cuts         zero
+    grade        AgX / look None / exposure -3.628   (world/film_exposure.py)
+
+**Do not render above 4K for any reason.** There is no 6K or 8K rung above rung 4, and
+nothing downstream expects one. An 8K attempt (7680x4320 @ 8192 samples) was made earlier
+in this project and **failed with `RuntimeError: worker closed connection without replying`
+after ~4 minutes** — suspected instance RAM or disk, never diagnosed, and now moot. If
+anyone proposes an 8K pass "for safety" or "to downsample from", the answer is no: it is
+undiagnosed, unbudgeted, roughly 4x the master's cost, and the delivery is 4K.
+
+**What this settles about storage** (see the corrected figures above): the 4K frame
+sequence is ~22 GB, a ProRes 422 HQ master ~11 GB, an H.265 delivery under 1 GB. The
+whole delivery is ~34 GB against 136 GB free.
+
+**Rung 4 IS the master.** The ladder's purpose is to arrive there once, clean.
+
 ## The ladder
 
 **RUNG 1 IS NOW MEASURED, and the scaled estimates below it were wrong by ~10×.**
