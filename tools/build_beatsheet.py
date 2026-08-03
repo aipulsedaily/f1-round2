@@ -1209,8 +1209,8 @@ def main(check=None):
             print(">> RE-RUN tools/author_beats2_5.py if beat 1's timing or the "
                   "beat durations changed, because beats 2-5 are splined "
                   "against them.")
-            if "seam_1_2" in out:
-                print(">> IN PARTICULAR the `seam_1_2` block just carried "
+            if "beat1_2_seam" in out:
+                print(">> IN PARTICULAR the `beat1_2_seam` block just carried "
                       "forward is the beat-1 -> beat-2 bridge (R2-064). Its "
                       "first anchor IS beat 1's last key, transcribed, so if "
                       "beat 1's last key moved, that block is now spliced to a "

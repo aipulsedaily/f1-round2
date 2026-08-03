@@ -263,7 +263,7 @@ def load_keys(sheet):
     # Absent block = the pre-R2-064 sheet, and it is reported rather than
     # skipped in silence, because "a beat block quietly missing" is the exact
     # shape of the defect that left four beats with no camera at all.
-    bridge = (sheet.get("seam_1_2") or {}).get("camera_keys") or []
+    bridge = (sheet.get("beat1_2_seam") or {}).get("camera_keys") or []
     per_beat["1_2_seam"] = len(bridge)
     if not bridge:
         missing.append("1_2_seam (beat1->beat2 bridge, frames 755-792)")

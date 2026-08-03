@@ -176,8 +176,17 @@ B1_LAST_ZOFF = 0.75                                     # beat 1's look_at z
 # The bridge occupies the frames between the two, exclusive of both: beat 1's
 # key list and beat 2's key list are not touched, so `work/campath/beat1_probe.py`
 # measures the same pair of keys before and after and reports the same four
-# numbers. The bridge is written to its own `seam_1_2` block and
+# numbers. The bridge is written to its own `beat1_2_seam` block and
 # `anim/build_camera_rig.py` loads it by name.
+#
+# THE NAME IS NOT COSMETIC. `sim/apply_breach.py` and `sim/witness.py` both walk
+# `sheet.keys()` and take every block whose name `startswith("beat")` — the
+# convention that already exists here, and a comment in each of them records
+# that missing a block through this filter has bitten before. A block called
+# `seam_1_2` is invisible to both: apply_breach's camera polyline would run the
+# 2.09 m seam as a straight chord and witness's key interpolation would span a
+# 39-frame hole. Naming it `beat1_2_seam` makes both of them see it with no
+# change to either file, which is worth more than a tidier name.
 SEAM_BRIDGE_F0 = int(round(B1_LAST_T * FPS)) + 1        # 755
 SEAM_BRIDGE_F1 = SEAM_F - 1                             # 792
 
@@ -908,7 +917,12 @@ def main():
         print(">> dry run: beat_sheet.json not written")
         return
 
-    sheet["seam_1_2"] = {
+    # The bridge shipped for a few hours under the name `seam_1_2`, which the
+    # `startswith("beat")` consumers could not see. Drop the old key rather
+    # than leaving two blocks of camera keys in the file, which is precisely
+    # the way a stale duplicate gets picked up later.
+    sheet.pop("seam_1_2", None)
+    sheet["beat1_2_seam"] = {
         "authored_by": "tools/author_beats2_5.py",
         "defect": "R2-064",
         "why": "beat 1's last key (t=31.4, frame 754) and beat 2's first "
