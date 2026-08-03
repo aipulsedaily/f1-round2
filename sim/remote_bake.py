@@ -115,11 +115,15 @@ def main():
     # RELEASE is measured from the state at IMPACT, not at frame 1: the bonded
     # wall settles a fraction of a millimetre under its own weight before the
     # car arrives, and a 0.2 mm trigger would fire the intact-pane swap on every
-    # shard at frame 855 — the wall would shatter five frames before the car
+    # shard at frame 853 — the wall would shatter seven frames before the car
     # touched it and nothing in the transform table would look wrong.
-    i0 = int(np.argmin(np.abs(frames - int(round(car.impact_frame())))))
-    rel = RS.release_frames(frames[i0:], L[i0:], eps=0.002)
-    rep["release_reference_frame"] = int(frames[i0])
+    #
+    # This used to be written out here AND differently in resample.main(), so
+    # the two entry points to the same pipeline disagreed about the frame the
+    # wall breaks.  One rule now, in resample.release_for_film, with the
+    # controls that show the two answers differ.
+    rel, ref = RS.release_for_film(frames, L, car)
+    rep["release_reference_frame"] = ref
     kf = np.concatenate([frames[np.array(k)] for k in keys]).astype(np.int32)
     kl = np.concatenate([L[np.array(k), j] for j, k in enumerate(keys)])
     kq = np.concatenate([Q[np.array(k), j] for j, k in enumerate(keys)])

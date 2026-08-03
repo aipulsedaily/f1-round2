@@ -242,6 +242,32 @@ def release_frames(frames, loc, eps=2.0e-4):
     return out
 
 
+RELEASE_EPS_M = 0.002
+
+
+def release_for_film(frames, loc, car=None):
+    """THE release rule, in ONE place, because it was in two and they differed.
+
+    `main()` used to call `release_frames(frames, loc)` -- from the FIRST frame
+    of the table, with the 0.2 mm default.  `sim/remote_bake.py` measured it
+    from the state at IMPACT with a 2 mm threshold, and wrote down why:
+
+        the bonded wall settles a fraction of a millimetre under its own
+        weight before the car arrives, and a 0.2 mm trigger would fire the
+        intact-pane swap on EVERY shard at frame 855 -- the wall would shatter
+        five frames before the car touched it, and nothing in the transform
+        table would look wrong.
+
+    Both are entry points to the same pipeline and they disagreed about the
+    frame the wall breaks.  Whichever ran, the other was wrong.  This is the
+    rule; both call it now.
+    """
+    car = car or BL.Car()
+    i0 = int(np.argmin(np.abs(frames - int(round(car.impact_frame())))))
+    rel = release_frames(frames[i0:], loc[i0:], eps=RELEASE_EPS_M)
+    return rel, int(frames[i0])
+
+
 # --------------------------------------------------------------------------- #
 
 def selftest():
@@ -326,6 +352,30 @@ def selftest():
           abs(float(c.world_t(1056.0) - c.world_t(864.0)) - 1.6) < 1e-6,
           "%.6f s" % float(c.world_t(1056.0) - c.world_t(864.0)))
 
+    # ---- THE RELEASE RULE, AND THE TWO ANSWERS IT USED TO HAVE ---------- #
+    # A synthetic wall: 40 bodies, dead still except for a 0.4 mm settle that
+    # creeps in before the impact, then a real departure afterwards.  This is
+    # the shape of the actual bake and it is what separates the two rules.
+    car = BL.Car()
+    imp = int(round(car.impact_frame()))
+    fr = np.arange(imp - 15, imp + 40)
+    n = 40
+    L = np.zeros((len(fr), n, 3))
+    settle = np.linspace(0.0, 0.0004, 15)                 # 0.4 mm of creep
+    L[:15, :, 2] = -settle[:, None]
+    L[15:, :, 2] = -0.0004
+    L[20:, :, 0] = np.linspace(0, 2.0, len(fr) - 20)[:, None]
+    naive = release_frames(fr, L)                          # 0.2 mm from f[0]
+    good, ref = release_for_film(fr, L, car)
+    check("+ve control: the 0.2 mm rule from frame 1 fires BEFORE the impact",
+          naive.min() < imp, "fires at %d, impact %d" % (naive.min(), imp))
+    check("-ve control: the impact-referenced 2 mm rule does not",
+          good.min() >= imp and ref == imp,
+          "fires at %d, reference %d" % (good.min(), ref))
+    check("and the two rules disagree, which is the point",
+          int(naive.min()) != int(good.min()),
+          "%d vs %d" % (naive.min(), good.min()))
+
     print("\n%d check(s) FAILED" % len(fails) if fails else "\nall checks passed")
     return 1 if fails else 0
 
@@ -392,7 +442,8 @@ def main():
     keys = decimate(frames, loc, quat, a.pos_tol, a.ang_tol,
                     progress=lambda j, n: print("  decimate %d/%d" % (j, n)))
     rep = decimation_report(frames, loc, quat, keys, sample=400)
-    rel = release_frames(frames, loc)
+    rel, ref = release_for_film(frames, loc)
+    rep["release_reference_frame"] = ref
     # RAGGED: only the keys that survived.  Storing the full per-frame table
     # alongside them would put back exactly the bytes the decimation removed,
     # and `push_scene` is not resumable (#80).
