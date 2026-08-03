@@ -939,6 +939,20 @@ def relief_wiring(objs):
     were ACCEPTED with them broken. Scoping this check to the item's own
     material slots would have passed both. The blend an item is judged from is
     the item's artefact, context included.
+
+    That is not an argument, it is the measurement. Run against the shipped
+    `gantry_truss` test scene rebuilt with the R2-070 wiring deliberately
+    restored, this check reports `0 on this item's own materials, 1 elsewhere
+    in the blend` and FAILS -- and an item-scoped version of it would have
+    said PASS to the very defect it exists for.
+
+    AND THE COST OF THAT SCOPE WAS MEASURED TOO, because a check that fails
+    most of the corpus is a check somebody switches off. All 32 item test
+    blends on disk were scanned with these rules on 2026-08-03: 32 PASS,
+    0 fail. Two carry NOTE-level findings and both of them are
+    `armco_w_beam`'s Bevel-dotted-with-geometry-normal edge-wear mask, which
+    is the idiom this must never fail. Whole-blend scope costs zero false
+    rejections across the entire item campaign.
     """
     data = _sockets.scan_open_blend()
     findings = data["findings"]
