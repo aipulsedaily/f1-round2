@@ -56,6 +56,7 @@ import time
 
 import bpy                                                        # noqa: E402
 import numpy as np                                                # noqa: E402
+from mathutils import Vector                                      # noqa: E402
 
 R2 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 for _p in (os.path.join(R2, "sim"), os.path.join(R2, "anim")):
@@ -173,6 +174,35 @@ def requirements_json(path=None):
     return path
 
 
+def _world_aabb(o):
+    """World-space AABB from the object's 8 bound-box corners.  Cheap: 8 points
+    per object regardless of mesh size."""
+    import numpy as _np
+    bb = _np.array([tuple(o.matrix_world @ Vector(c)) for c in o.bound_box])
+    return bb.min(axis=0), bb.max(axis=0)
+
+
+def _world_verts(o):
+    """All vertices in world space, via foreach_get and ONE matrix multiply.
+
+    NOT `[o.matrix_world @ v.co for v in o.data.vertices]`.  That is a Python
+    loop per vertex, and the scene this has to check is 28,781 objects and
+    1.28e9 vertices — the loop version does not finish, ever, which meant R5
+    was uncheckable by the very tool that publishes it.
+    """
+    n = len(o.data.vertices)
+    flat = np.empty(3 * n, dtype=np.float32)
+    o.data.vertices.foreach_get("co", flat)
+    V = flat.reshape(n, 3).astype(np.float64)
+    m = np.array(o.matrix_world)
+    return V @ m[:3, :3].T + m[:3, 3]
+
+
+def _aabb_hits(lo, hi, box_lo, box_hi):
+    return bool(np.all(hi >= np.asarray(box_lo))
+                and np.all(lo <= np.asarray(box_hi)))
+
+
 def preflight(scene, strict=True):
     """Check what can be checked in the target scene.  Refuse, do not adapt."""
     import bpy as _b
@@ -194,33 +224,47 @@ def preflight(scene, strict=True):
     # R3: anything that looks like round 1's east wall — by name OR by being a
     # flat object standing on x = 15.000 over the wall's own y/z extent
     sus = []
+    scanned = 0
     for o in scene.objects:
         if any(h in o.name for h in R1_EAST_GLASS_HINTS):
             sus.append((o.name, "name"))
             continue
         if o.type != "MESH" or o.data is None or not len(o.data.vertices):
             continue
-        V = np.array([tuple(o.matrix_world @ v.co) for v in o.data.vertices])
-        lo, hi = V.min(axis=0), V.max(axis=0)
+        scanned += 1
+        lo, hi = _world_aabb(o)          # 8 corners, not every vertex
         if (abs(lo[0] - 15.0) < 0.02 and hi[0] - lo[0] < 0.02
                 and hi[1] - lo[1] > 8.0 and hi[2] - lo[2] > 4.0):
             sus.append((o.name, "a flat object on x = 15.000, %.2f x %.2f m"
                         % (hi[1] - lo[1], hi[2] - lo[2])))
+    out["meshes_scanned"] = scanned
     chk("R3", not sus, "found %d: %s" % (len(sus), sus[:4]) if sus else "clear")
 
     # R5: nothing in the glazing pocket
+    # THE POCKET: x 14.945..14.970, z 0.0865..6.1125, |y| < 11.  Two stages,
+    # because the target is 4.5 GB and a per-vertex sweep of it does not
+    # terminate: reject on the world AABB first (8 corners an object), then
+    # test vertices only for the handful that survive.
+    POCKET_LO = (14.9455, -11.0, 0.0870)
+    POCKET_HI = (14.9695, 11.0, 6.1120)
     intr = []
+    cand = 0
     for o in scene.objects:
         if o.type != "MESH" or o.data is None or not len(o.data.vertices):
             continue
         if o.name.startswith(("GP_b", "GS_b")):
             continue
-        V = np.array([tuple(o.matrix_world @ v.co) for v in o.data.vertices])
-        m = ((V[:, 0] > 14.9455) & (V[:, 0] < 14.9695)
-             & (V[:, 2] > 0.0870) & (V[:, 2] < 6.1120)
+        lo, hi = _world_aabb(o)
+        if not _aabb_hits(lo, hi, POCKET_LO, POCKET_HI):
+            continue
+        cand += 1
+        V = _world_verts(o)
+        m = ((V[:, 0] > POCKET_LO[0]) & (V[:, 0] < POCKET_HI[0])
+             & (V[:, 2] > POCKET_LO[2]) & (V[:, 2] < POCKET_HI[2])
              & (np.abs(V[:, 1]) < 11.0))
         if m.any():
             intr.append((o.name, int(m.sum())))
+    out["pocket_aabb_candidates"] = cand
     chk("R5", not intr, "found %d: %s" % (len(intr), intr[:4]) if intr
         else "clear")
     return out

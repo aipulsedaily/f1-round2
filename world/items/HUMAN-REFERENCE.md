@@ -188,6 +188,31 @@ the hair got a lock structure, a parting and a fringe **and got cheaper**.
 strand counts — as the positive control, the way `FOLD_MODE = "isotropic"` and
 `plan_block(legacy_gaze=True)` do. `human_bench --hair-legacy` builds it.
 
+**AND THEN IT WAS LOOKED AT, AND THE FIRST VERSION HAD A NEW DEFECT.**
+`render/hairab/hair_old.png` and `hair_new.png` are a true A/B — same five
+bodies, same poses, same garments, same camera, same sun, 3840x2160 / 1024
+samples / dof off at −3.628 EV, differing in `HAIR_LEGACY` and nothing else.
+Both are on disk; the crops are `ab_long`, `ab_dark_back`, `ab_short_blonde`.
+
+* **The crust is gone and it is not a close call.** The legacy frame is a
+  spiked, black-flecked porcupine — the strand tubes read as a lattice of dark
+  commas exactly as the fifth pass described. The new frame is a mass with a
+  parting, a highlight band that runs the right way round the head, and locks
+  that carry down into the fall.
+* **The long and the back-of-head cases read as hair.** The nape has a broken
+  edge; the fall has separation.
+* **The SHORT case came back as a FLUTED MELON.** The lock ridges are
+  MERIDIANS of a polar grid and I ran them the whole way to the crown, so all
+  36 of them converged on the pole: a segmented gourd, or a ribbed swim cap.
+  **That is the beanie's own `sin(PH * 9)` defect in a new costume, committed
+  in the same file, in the same session, by the person who had just written
+  the note about it.** Fixed with `conv` (fade the ridges out over the top
+  30 deg — a real crown has a whorl, not 36 ribs meeting at a point) and `brk`
+  (break each lock along its own length so it starts and stops). The gloss came
+  down with it: 0.26 roughness at the tips read as moulded plastic, so
+  0.34–0.50 and `Anisotropic` 0.72 → 0.55.
+  **`render/hairab/hair_v2.png` is that revision, at the same framing.**
+
 ### 000000.2 DEFECT 1, THE BLANK FACE — the lobes are there and the MESH IS NOT
 
 **The fifth pass's ladder was right about everything it measured and the
@@ -388,6 +413,33 @@ caps, the pale props and the skin highlights, which are the three things
 §0000.5 and §00000.8 complain are too bright. Every A/B in §0, §00 and §000 was
 shot 0.58 stops over on `human_bench`, and `crew_figure`'s ITEM_ACCEPTED 8-of-8
 was too.
+
+### 000000.6a FIVE FRAMES ARE BUILT, SUBMITTED AND NOT YET BACK — collect them
+
+The farm filled with another agent's 29-blend `relief_pvg` campaign plus a
+10-frame `film8` sequence while these were queued, and the broker picks the
+**oldest waiting SCENE** (`db.oldest_waiting_scene` orders by `created` and
+IGNORES `--prio` entirely; prio only breaks ties inside a scene already
+chosen). So these are behind roughly fifty other jobs. **The blends exist, the
+jobs are submitted, and the only thing left is to collect them:**
+
+    render/hairab/hair_v2.blend       -> hair_v2.png     the melon fix, same framing as the A/B
+    render/hairab/face6_fix.blend     -> face6_fix.png   3 heads, --aim head --px 900
+    render/hairab/face6_ctl.blend     -> face6_ctl.png   the SAME bodies at --face-warp 0 --face-floor 0
+    render/hairab/face6_63px.blend    -> face6_63px.png  --px 479, i.e. a 63 px HEAD: the film's own question
+    render/spx6.blend                 -> render/items/spectator_crowd/p6/{CAM_CROWD_ALONG,
+                                          CAM_ATTN_ONAXIS,CAM_ATTN_PROFILE}.png  3840x2160 / 1536 / dof off
+
+`rq status` will show them under `hairab/` and `spx6.blend`; `rq get <id>` if a
+submitting shell has died. **`face6_fix` beside `face6_ctl` is the picture that
+decides whether §000000.2 is right**, and `face6_63px` is the one that answers
+"does the face read at the size the film actually shows it". Do not re-derive
+any of it — look at the four frames.
+
+`item_gate` is also staged and running on the new build
+(`gate_witness/spectator_seated/witness.blend`, out to
+`render/items/spectator_crowd/gate.json`). The gate that was there described a
+build **four** revisions old.
 
 ### 000000.7 WHAT IS STILL NOT GOOD ENOUGH
 

@@ -141,9 +141,45 @@ def printed_material(name, base=0.18, mark=0.09, pitch=RIB_PITCH_M,
     # with no geometry behind it. A control that runs at a different frequency
     # from the thing it decoys is not a control.
     #
-    # NOTE FOR WHOEVER RE-RUNS THIS: `world/relief_control.blend` on disk was
-    # built by the old line and its decoy panel is at 9.42 mm. Rebuild it
-    # before trusting panel (f) again.
+    # REBUILT 2026-08-03. `world/relief_control.blend` now carries the corrected
+    # factor; MEASURED through `itemkit.emitted_wavelength_m`, not read back:
+    # 9.425 mm before, 30.000 mm after, against a 30 mm rib.
+    #
+    # R2-060. THE FREQUENCY WAS ONLY HALF THE FAULT, AND FIXING IT EXPOSED THE
+    # OTHER HALF. These bands run along OBJECT X. The ribs do not: `plate()`
+    # lays them on the sun's ground direction so the light rakes across them,
+    # which is 32 deg away from object X. So the decoy is 30.000 mm along its
+    # own normal but 35.375 mm ALONG THE LIGHT -- and along the light is the
+    # only direction `relief_anisotropy` looks in.
+    #
+    # That 32 deg is doing the work. Same scene, same renderer, one Mapping node
+    # rotating these coordinates by 148 deg onto the rib normal (MEASURED, CPU,
+    # both panels from the same blend):
+    #
+    #     a_flat        0 mm  plain grey                      dip 0.1003
+    #     c_rib_2mm     2 mm  real trapezoidal ribs            dip 0.6082
+    #     f_printed     0 mm  paint, 30 mm, 32 deg off         dip 0.0231
+    #     g_printed     0 mm  paint, 30 mm, ALIGNED            dip 0.6308
+    #
+    # A flat quad -- four verts, z identically 0, no displacement, no normal map
+    # -- outscores the 2 mm ribs. The check reads a sharp albedo STEP running
+    # across the light as a lip-and-shadow dipole, because after the DoG band
+    # pass a step and a lip both leave a bipolar pair at the same ~2r spacing.
+    # Panel (f) passes on its 32 deg misalignment, which splits the response
+    # near-equally between the along- and across-light terms so the two cancel.
+    #
+    # SO THIS CONTROL DOES NOT PROVE WHAT ITS DOCSTRING CLAIMS. It establishes
+    # that the check FINDS relief and is monotonic in height. It does NOT
+    # establish that the check can tell paint from geometry.
+    #
+    # It does not overturn the FAIL verdicts: the error is over-detection, which
+    # can only manufacture false PASSES, and the gate's in-frame smooth controls
+    # are untextured primitives with no painted anisotropy to inflate them. The
+    # verdicts at risk are the relief PASSES, not the failures.
+    #
+    # Panel (g) is deliberately NOT added here. Gating on it flips this tool's
+    # verdict to RELIEF_CHECK_SUSPECT while other agents are mid-flight; that is
+    # a call for whoever owns the gate, not a side effect of a rebuild.
     wave.inputs["Scale"].default_value = K.wave_scale_for(pitch)
     wave.inputs["Distortion"].default_value = 0.0
     wave.inputs["Detail"].default_value = 0.0

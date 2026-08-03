@@ -23,11 +23,21 @@ WHAT THE MANIFEST OBLIGES
 
     px_per_m = 3840 x 35 / 36 / 10.0 = 373.3 px/m  ->  2.679 mm per pixel
 
-`docs/screen_presence.json` measures this family at a peak SHARP 767.2 px and a
-minimum depth of 7.537 m -- i.e. closer than the manifest says. That figure is
-an UPPER BOUND (five people-zone items share one 28-host set and inherit its
+`docs/screen_presence.json` measures this family at a peak SHARP **551.8 px**
+and a minimum depth of **7.602 m** (regenerated 2026-08-03 03:58). That figure
+is an UPPER BOUND (five people-zone items share one 28-host set and inherit its
 best moment), so the module is gated at the manifest's 10.0 m and ALSO re-gated
-with `--filmed-distance-m 7.537`, which is the hardest reading of the evidence.
+with `--filmed-distance-m 7.602`, which is the hardest reading of the evidence.
+
+**767.2 / 7.537 WAS WRONG IN THREE PLACES AND 39 % HIGH, AND IT WAS IN THIS
+FILE FOUR TIMES.** `screen_presence.json` has no `peak_sharp_px` field at all,
+only `peak_sharp_px_4k`; 767.2 was a pre-shutter-fix RAMPED number superseded
+by R2-037. Corrected in `humankit`'s header and in `crew_figure` by the fifth
+pass, and here by the sixth. `PEEP_PX` is deliberately LEFT at 767.2 and
+documented below for the same reason `crew_figure.PEEP_PX` is: every peep
+render and every gate run on this item was framed at 8.513 m when the film
+never gets closer than 11.845 m sharp, which is a HARDER test than the evidence
+requires, so those passes stand and do not have to be re-earned.
 
     /opt/blender-5.2.0-linux-x64/blender -b --factory-startup \
         -P world/items/paddock_personnel_figure.py -- --test-scene
@@ -60,8 +70,18 @@ COLL = "W_Item_PaddockPersonnelFigure"
 PFX = "PPF_"
 
 FILMED_AT_M, LENS_MM = 10.0, 35.0
-MEASURED_CLOSEST_M = 7.537            # docs/screen_presence.json, min_depth_m
-PEEP_PX = 767.2                       # ... peak_sharp_px_4k, on a 1.750 m figure
+MEASURED_CLOSEST_M = 7.602            # docs/screen_presence.json, min_depth_m
+#: The HONEST measurement of this family's macro resolve, regenerated
+#: 2026-08-03: `peak_sharp_px_4k` on a 1.750 m figure. The 767.2 that stood
+#: here was a pre-shutter-fix ramped figure, superseded by R2-037, and 39.0 %
+#: high. Use this for any NEW judgement about what has to be built.
+PRESENCE_PX = 551.8
+#: What every peep and every gate run on this item was actually framed at.
+#: Kept at 767.2 ON PURPOSE -- it is 8.513 m against the film's 11.845 m sharp
+#: closest, i.e. a harder test than the evidence requires -- so the passes
+#: earned under it stand. Do not "correct" it; correcting it would silently
+#: make every previous verdict incomparable. See crew_figure.PEEP_PX.
+PEEP_PX = 767.2
 N_DECLARED = 260
 PX_PER_M = K.px_per_m(FILMED_AT_M, LENS_MM)
 SEED = 20260802
@@ -222,10 +242,11 @@ def _test_scene(scene, root, objs, figs, samples):
                 scene=scene, samples=samples, want_distance_m=FILMED_AT_M)
 
     # ---- THE 767 px PEEP -------------------------------------------------
-    # `docs/screen_presence.json` measures this family at a peak SHARP 767.2 px
-    # on a declared 1.750 m figure. That is 438.4 px/m, and on the film's 35 mm
-    # lens it is 8.513 m -- closer than the manifest's 10.0 m and further than
-    # the measured 7.537 m minimum depth. The gate is scored at the manifest
+    # 767.2 px on a declared 1.750 m figure is 438.4 px/m, and on the film's
+    # 35 mm lens it is 8.513 m -- closer than the manifest's 10.0 m and further
+    # than the measured 7.602 m minimum depth. It is NOT the measured presence:
+    # that is PRESENCE_PX = 551.8 (see its note). This framing is kept because
+    # it is HARDER than the film, not because it is the film. The gate is scored at the manifest
     # distance; this camera exists because the brief's last instruction is
     # "then render at 767 px and ask whether it is a person", and a question
     # about a face cannot be answered at a framing nobody looks at.

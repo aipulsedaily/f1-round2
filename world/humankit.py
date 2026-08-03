@@ -4550,14 +4550,26 @@ def build_hair(mesh, sk, b, lod, seed, mat, squash=1.0):
     #    odd or even because the absolute value kills the sign flip. The
     #    irregularity real hair has then comes from a phase JITTER and a
     #    strength modulation, both from `wrap_noise`, which is periodic too.
+    #
+    #    AND THEY MUST NOT REACH THE POLE. The first build of this ran the
+    #    ridges the whole way from hairline to crown, and because they are
+    #    MERIDIANS of a polar grid they all converge there: the render of a
+    #    short blonde came back as a **fluted melon** -- a segmented gourd, or
+    #    a ribbed swim cap -- which is the beanie's own `sin(PH * 9)` defect in
+    #    a new costume. A real crown has a WHORL, not 36 ribs meeting at a
+    #    point. `conv` fades them out over the top 30 deg, and `brk` breaks
+    #    each lock along its own length so a lock starts and stops instead of
+    #    running unbroken from the parting to the nape.
     n_lock = max(6, int(n // 4))
     jit = (0.34 / n_lock) * wrap_noise(
         seed + 14, uu2, TH / math.pi, fbm_scale(0.22, oct=2),
         fbm_scale(0.60, oct=2), oct=2)
     lock = 1.0 - 2.0 * np.abs(np.cos(math.pi * n_lock * (uu2 + jit)))
-    lock = lock * (0.45 + 0.55 * (0.5 + 0.5 * wrap_noise(
+    brk = 0.34 + 0.66 * (0.5 + 0.5 * wrap_noise(
         seed + 15, uu2, TH / math.pi, fbm_scale(0.16, oct=2),
-        fbm_scale(0.50, oct=2), oct=2)))
+        fbm_scale(0.13, oct=2), oct=2))
+    conv = np.clip(TH / 0.52, 0.0, 1.0) ** 0.85
+    lock = lock * brk * conv
     lock_amp = min(0.16 * thick, 0.0018)
     # 3. THE PARTING. `HAIR_STYLES` has carried `part_frac` since it was written
     #    and nothing read it (see `sample_body`). A parting is a gutter along
@@ -7423,9 +7435,14 @@ def hair_material(prefix, name="Hair"):
     # --- gloss. Roughness falls from root to tip; the anisotropy is what makes
     # the highlight a BAND rather than a spot, and it needs a tangent that is
     # not the Principled default.
-    rough = nt.maprange(v, 0.0, 1.0, 0.42, 0.26)
+    # 0.26 at the tips was too low and the first render shows it: the crown
+    # came back as moulded plastic with one hard highlight. Hair is glossy but
+    # it is a bundle of rough fibres, not a lacquer; 0.34-0.50 with the
+    # anisotropy doing the shaping is the read, and `Anisotropic` came down
+    # from 0.72 with it.
+    rough = nt.maprange(v, 0.0, 1.0, 0.50, 0.34)
     rough = nt.fmix(nt.maprange(drift, 0.3, 0.7, 0.0, 1.0), rough,
-                    nt.math("ADD", rough, 0.10))
+                    nt.math("ADD", rough, 0.09))
     b = nt.principled_out(base_color=base, roughness=rough, normal=nrm,
                           metallic=0.0)
     if "Tangent" in b.inputs:
@@ -7436,7 +7453,7 @@ def hair_material(prefix, name="Hair"):
             "anisotropy would silently use the default tangent, which runs "
             "round the head instead of down it. Sockets: %s"
             % sorted(i.name for i in b.inputs))
-    for nm, v2 in (("Specular IOR Level", 0.55), ("Anisotropic", 0.72),
+    for nm, v2 in (("Specular IOR Level", 0.48), ("Anisotropic", 0.55),
                    ("Anisotropic Rotation", 0.0), ("Sheen Weight", 0.18)):
         if nm in b.inputs:
             b.inputs[nm].default_value = v2

@@ -236,6 +236,14 @@ def main():
                         "volume, parting); 0 leaves a smooth shell")
     p.add_argument("--hair-strands", type=float, default=None,
                    help="gain on the strand COUNT; 0 emits no strand tubes")
+    # THE FACE LADDER'S SECOND HALF -- defect 1's actual mechanism. See
+    # humankit.FACE_GRID_WARP: the sharp face lobes were narrower than the head
+    # grid and never reached the mesh. 0 on both rebuilds the shipped face.
+    p.add_argument("--face-warp", type=float, default=None,
+                   help="gain on the head grid's face-ward reparameterisation")
+    p.add_argument("--face-floor", type=float, default=None,
+                   help="gain on the minimum lobe sigma; 0 = the shipped grid, "
+                        "where the mouth realises 31 %% of its own depth")
     p.add_argument("--hair-legacy", action="store_true",
                    help="build the SHIPPED hair -- shader, mesh and strands -- "
                         "as the positive control. See humankit.HAIR_LEGACY")
@@ -259,6 +267,13 @@ def main():
         HK.FACE_TINT = float(a.face_tint)
     if a.hair_legacy:
         HK.HAIR_LEGACY = True
+    for _flag, _name in (("face_warp", "FACE_GRID_WARP"),
+                         ("face_floor", "FACE_LOBE_FLOOR")):
+        _v = getattr(a, _flag)
+        if _v is not None:
+            setattr(HK, _name, float(_v))
+    HK.log("face grid:    warp=%.2f lobe_floor=%.2f"
+           % (HK.FACE_GRID_WARP, HK.FACE_LOBE_FLOOR))
     for _flag, _name in (("hair_relief", "HAIR_RELIEF"),
                          ("hair_lump", "HAIR_LUMP"),
                          ("hair_strands", "HAIR_STRAND_GAIN")):
