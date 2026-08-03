@@ -541,7 +541,13 @@ def build(args):
 # --------------------------------------------------------------------------- #
 
 def east_wall_census(plan, at_frame=1):
-    """IS THERE ANY GLASS IN THE EAST WALL AT ALL?  R2-100.
+    """IS THERE ANY GLASS IN THE EAST WALL AT ALL?
+
+    Defect number PENDING.  The block issued to the breach, R2-092..R2-099,
+    was fully consumed by the eight findings inherited with this work, and
+    R2-100 was claimed by another agent while this was being written.  The
+    log's owner assigns it; this note is here so the citation is not silently
+    wrong.
 
     This check exists because the answer was NO, in the shipping film, for
     beats 1 to 3 — roughly a third of a film that has no cuts to hide it in.
@@ -753,8 +759,8 @@ def parse_args():
     p.add_argument("--detail-hero", type=int, default=2)
     p.add_argument("--detail-bulk", type=int, default=1)
     p.add_argument("--selftest", action="store_true",
-                   help="the east-wall census against four synthetic scenes "
-                        "(R2-100).  Needs no target blend.")
+                   help="the east-wall census against six synthetic scenes. "
+                        "Needs no target blend.")
     p.add_argument("--preflight-only", action="store_true",
                    help="report what this scene would need and write nothing")
     p.add_argument("--force", action="store_true",
