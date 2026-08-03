@@ -225,6 +225,31 @@ def main():
               "appended in %.1f s"
               % (xs[0], want_x, top, ftop, time.time() - t1))
 
+        # ---- THE PRACTICALS, LEVELLED TO THE FILM'S EXPOSURE -------------
+        # The showroom's interior rig is ROUND 1'S, carried forward untouched:
+        # opus5-car-render/build/s05_lighting_v2.py -> f1_showroom.blend ->
+        # beat1_anim.blend -> car_anim.blend, from which the LIGHTS collection
+        # is appended whole above. Nothing in f1-round2 authors it.
+        #
+        # That rig was tuned on a transfer curve its own docstring pins to
+        # "AgX + Medium High Contrast, EXPOSURE 0". This film grades at -3.628.
+        # Without this call the set renders 3.628 stops under the level it was
+        # lit for, and beat 1 loses 1.30 % of the frame to literal 0/0/0 -- a
+        # continuous band along the car's floor edge and sidepod undercut, the
+        # defining line on an F1 car. Erased, not merely dark.
+        #
+        # The lift is an IDENTITY, not a taste number: LIFT = -FILM_EXPOSURE, so
+        # practicals x 2**3.628 viewed at -3.628 reproduce pixel-for-pixel what
+        # they produced at 0.000 -- which is why every argument in s05_lighting_v2
+        # (clip thresholds, radiance-vs-watts, source widening) survives intact.
+        # Daylight through the glass is the one term that does NOT move, and that
+        # is the entire point.
+        #
+        # Idempotent: it records `_sl_base` per datablock and always writes
+        # base * 2**stops, so applying twice equals applying once.
+        import showroom_lighting as SL
+        SL.apply(scene)
+
         # ---- R3: ROUND 1'S EAST GLASS COMES OUT -------------------------
         # `sim/out/apply_requirements.json` R3, measured by the breach agent and
         # not negotiable: the ten `GW_Right_Glass_00..09` are round 1's
@@ -321,6 +346,13 @@ def main():
         spec_mod.loader.exec_module(mod)
         mod.main()
         sys.argv = argv_save
+
+        # The rig runs through `fix_audit_blend.save_clean`, which rebuilds
+        # datablocks. Re-assert the practicals AFTER it rather than trusting the
+        # apply above to have survived -- an un-levelled set is a 2,978-frame
+        # render of a showroom 3.628 stops under, and the only symptom is that
+        # beat 1 looks a bit dark. Refuse at build time instead.
+        SL.assert_levelled(scene)
 
         world_after = scene.world.name if scene.world else None
         imgs_after = sorted(i.name for i in bpy.data.images if i.source == "FILE")

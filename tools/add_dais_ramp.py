@@ -106,12 +106,26 @@ def verify(D, frames):
     vl = bpy.context.view_layer
     excluded = []
 
-    def kill(lc):
-        if lc.collection.name == "CAR":
-            lc.exclude = True
-            excluded.append(lc.collection.name)
-            return True
-        return any(kill(c) for c in lc.children)
+    # KEEP ONLY THE SURFACES THAT CAN BE UNDER A WHEEL ON THE LAUNCH, and say
+    # why. `scene.ray_cast` needs a BVH over the whole view layer, and this
+    # world is 13.9 G instanced triangles: on this box that never finishes.
+    # Excluding everything but the showroom set and the ramp takes it to a few
+    # million and costs nothing, because the launch runs from x = 0 to x = 15
+    # INSIDE the showroom -- the only meshes that can be beneath a contact patch
+    # are Floor, Turntable_Deck, Platform_Dais, the props on the showroom floor
+    # and the ramp itself. That is not an assumption: `surfaces_hit` below names
+    # every object the rays actually landed on, so if something outside this set
+    # were the ground the report would come back with nothing under the wheels
+    # rather than with a quietly wrong number.
+    KEEP = {"SHOWROOM", "PROPS", "LIGHTS", "W_Item_DaisDeliveryRamp",
+            "W_Item_DaisDeliveryRamp/Cameras", "W_Item_DaisDeliveryRamp/Standins"}
+
+    def prune(lc):
+        for c in list(lc.children):
+            if c.collection.name in KEEP:
+                continue
+            c.exclude = True
+            excluded.append(c.collection.name)
 
     CORN = ("FL", "FR", "RL", "RR")
     hubs = {c: bpy.data.objects.get("CARRIG_SPIN_%s" % c) for c in CORN}
@@ -127,9 +141,15 @@ def verify(D, frames):
                       **{c: [float(x) for x in hubs[c].matrix_world.translation]
                          for c in CORN}})
 
-    kill(vl.layer_collection)
-    if not excluded:
-        return {"verdict": "VACUOUS", "why": "no CAR layer collection to exclude"}
+    prune(vl.layer_collection)
+    if "CAR" not in excluded:
+        return {"verdict": "VACUOUS",
+                "why": "the CAR collection was not excluded, so a ray fired "
+                       "from a wheel centre would stop on the inside of that "
+                       "same tyre and report a 0.000 m gap for a car in orbit"}
+    print(">> raycast view layer: kept %s, excluded %d collection(s) %s"
+          % (sorted(KEEP & set(c.name for c in bpy.data.collections)),
+             len(excluded), excluded[:8]))
     vl.update()
     dg = bpy.context.evaluated_depsgraph_get()
 
@@ -187,6 +207,12 @@ def main():
 
     # The ramp must not have landed inside the dais it is scribed to.
     import numpy as np
+    # UPDATE THE VIEW LAYER FIRST. A freshly created object's `matrix_world` is
+    # still identity until the depsgraph runs, and `new_mesh(recentre=True)`
+    # puts the whole ramp 4.7 m from its own origin -- so reading it early said
+    # the deck reached r = 0.00239 and this check REFUSED a correct build. It
+    # was right to refuse: an unevaluated matrix is not a position.
+    bpy.context.view_layer.update()
     deck = bpy.data.objects.get(D.PFX + "Deck")
     M = deck.matrix_world
     V = np.array([tuple(M @ v.co) for v in deck.data.vertices])

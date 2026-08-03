@@ -1,5 +1,9 @@
 """R2-060. Is a module's relief PASS carried by GEOMETRY or by PAINT?
 
+    # one blend per item holding ALL FIVE arms, five cameras
+    /opt/blender-5.2.0-linux-x64/blender -b --factory-startup \
+        -P tools/relief_paint_vs_geometry.py -- --mode consolidate
+    # ... rendered with `rq render --scene <item>__all.blend --cam CAM_<arm>`
     /opt/blender-5.2.0-linux-x64/blender -b --factory-startup \
         -P tools/relief_paint_vs_geometry.py -- --mode measure --item crew_figure
 
@@ -24,21 +28,36 @@ either. Instead the SCENE is separated and the SAME statistic is re-run:
               (base colour, roughness, metallic, specular, emission, alpha);
               mesh, bump and normal maps untouched.  GEOMETRY + BUMP ONLY.
     geonb     `geo`, and the Normal input unlinked too.  MESH GEOMETRY ONLY.
+    truegeo   every surface emits max(0, TrueNormal . sun): Lambert off the
+              EVALUATED MESH, ignoring bump nodes and normal maps entirely.
+              MESH GEOMETRY ONLY, answered by the model rather than the picture.
     paint     the whole surface replaced by an Emission of its own base colour.
               No sun, no shadow, no normal, no bump.  PAINT ONLY.
 
 Same blend, same camera, same sun, same sampler, same denoiser -- and crucially
 THE SAME PIXEL MASK, computed once from the shipped frame and reused for all
-four, so a variant cannot move the goalposts by changing which pixels are lit.
+five, so a variant cannot move the goalposts by changing which pixels are lit.
 
-    dip(geo)   ~ dip(orig)  and dip(paint) low   ->  PASS IS REAL
-    dip(paint) ~ dip(orig)  and dip(geo)   low   ->  PASS IS PAINT
-    both high, or neither                        ->  INCONCLUSIVE
+THE GEOMETRY ARM DECIDES; the paint arm speaks only when it collapses. See
+`verdict()` -- "could paint have produced this number" is nearly always yes for a
+textured object, because a material boundary IS a sharp albedo step. The question
+that means something is whether the module still clears the gate's own floor with
+its paint taken away.
 
-THE NULL IS PROVEN, NOT ASSUMED. `--mode measure` first recomputes the dip from
-the SHIPPED png and asserts it reproduces `relief_subject` in the item's
-gate.json to 1e-4. If the reproduction fails, the mask is not the gate's mask and
-nothing downstream is comparable -- so it refuses rather than reporting.
+    dip(geo) carries it   ->  PASS IS REAL     (and say so if paint inflates it)
+    dip(geo) collapses,
+        dip(paint) carries it   ->  PASS IS PAINT
+    neither                     ->  INCONCLUSIVE
+
+TWO NULLS, BOTH PROVEN RATHER THAN ASSUMED.
+
+ 1. `--mode measure` recomputes the dip from the SHIPPED png and asserts it
+    reproduces `relief_subject` in the item's gate.json to 1e-4. If it does not,
+    the mask is not the gate's mask and nothing downstream is comparable.
+ 2. `--mode consolidate` puts all five arms in ONE blend as rigid translations of
+    the whole staged scene, and arm `orig` is the untouched original. If the
+    merged `orig` does not give back the shipped number, the merge changed the
+    picture and every other arm beside it is void.
 """
 
 import argparse
@@ -541,10 +560,130 @@ def measure_item(G, item, vdir):
         Lv = (0.2126 * r[:, :, 0] + 0.7152 * r[:, :, 1]
               + 0.0722 * r[:, :, 2]).astype(np.float64)
         d, dd = G.relief_anisotropy(Lv, sub_ok, sun_rc)
+        # BAND ENERGY, REPORTED FOR EVERY ARM. A `dip` near zero can mean "no
+        # relief" or "no picture", and those are opposite conclusions: if
+        # `paint_only` ever fell back to a constant colour -- which it does when
+        # the surface is a shader MIX with no Base Color of its own -- the paint
+        # arm would be a blank grey object and its silence would read as
+        # exoneration. `band_sd` makes that visible instead of invisible.
+        mm = G._erode(sub_ok, 6)
+        b = G._dog(Lv, 2)
         rec[v] = {"dip": d, "along": dd.get("dip_along"),
                   "across": dd.get("dip_across"), "lag": dd.get("best_lag_px"),
-                  "mean_linear": round(float(Lv[sub_ok].mean()), 6)}
+                  "mean_linear": round(float(Lv[sub_ok].mean()), 6),
+                  "band_sd": round(float(b[mm].std()), 8),
+                  "band_sd_over_mean": round(float(b[mm].std())
+                                             / max(float(Lv[sub_ok].mean()),
+                                                   1e-12), 5)}
+    # ---- THE CONSOLIDATION'S OWN CONTROL -----------------------------------
+    # Arm `orig` is the untouched scene, translated 500 m sideways in the merged
+    # blend and shot by a camera translated with it. If it does not give back the
+    # shipped `relief_subject`, the merge changed the picture and every other arm
+    # measured beside it is void. This is the internal control for the cost
+    # optimisation, not for the finding -- and it has to be measured, not argued.
+    po = os.path.join(vdir, f"{item}__orig.png")
+    if os.path.exists(po):
+        r = G.load_linear_rgba(po)
+        Lo = (0.2126 * r[:, :, 0] + 0.7152 * r[:, :, 1]
+              + 0.0722 * r[:, :, 2]).astype(np.float64)
+        d, _ = G.relief_anisotropy(Lo, sub_ok, sun_rc)
+        ok = d is not None and abs(d - dip0) <= 0.02
+        rec["consolidation_control"] = {
+            "merged_orig_dip": d, "shipped_frame_dip": dip0,
+            "delta": (round(d - dip0, 5) if d is not None else None),
+            "VALID": ok,
+            "means": [round(float(Lo[sub_ok].mean()), 6),
+                      round(float(L0[sub_ok].mean()), 6)]}
+    else:
+        rec["consolidation_control"] = {"missing": po}
+
+    L0m = G._erode(sub_ok, 6)
+    b0 = G._dog(L0, 2)
+    rec["orig"]["band_sd"] = round(float(b0[L0m].std()), 8)
+    rec["orig"]["band_sd_over_mean"] = round(
+        float(b0[L0m].std()) / max(float(L0[sub_ok].mean()), 1e-12), 5)
     return rec
+
+
+def mesh_crease_census(item):
+    """How much GEOMETRIC relief the subject MESH carries, with no render at all.
+
+    THE THIRD LEG, AND THE ONLY ONE THAT NEVER TOUCHES A PIXEL. `geo` and
+    `truegeo` still ask Cycles; this asks the model. A painted flat panel has no
+    creases except its own silhouette, whatever its albedo does; a ribbed,
+    bolted or trussed one has metres of them.
+
+    Reported as CREASE LENGTH PER SUBJECT PIXEL: the on-screen length of every
+    edge whose dihedral angle exceeds 20 deg, divided by the subject's projected
+    area in pixels. A surface with 1 crease-pixel per 100 subject-pixels has a
+    crease every ~100 px and cannot be producing structure in a 2 px band; one
+    with 1 per 5 has a crease every few pixels and certainly can.
+
+    Silhouette edges (one adjacent face) are EXCLUDED -- an outline is not
+    relief, and counting it would give a smooth sphere a score.
+    """
+    import bmesh
+    from mathutils import Vector
+    from bpy_extras.object_utils import world_to_camera_view
+
+    wdir = os.path.join(R2, f"render/gate_witness/{item}")
+    spec = json.load(open(os.path.join(wdir, "witness_spec.json")))
+    bpy.ops.wm.open_mainfile(filepath=os.path.join(wdir, "witness.blend"))
+    scn = bpy.context.scene
+    cam = scn.objects["GATE_CAM"]
+    scn.camera = cam
+    W, H = spec["resolution"]
+    name = spec["subject_object"]
+    ob = scn.objects.get(name)
+    if ob is None:
+        return {"item": item, "error": f"no object {name}"}
+
+    deps = bpy.context.evaluated_depsgraph_get()
+    obe = ob.evaluated_get(deps)
+    me = obe.to_mesh()
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bm.transform(obe.matrix_world)
+    bm.normal_update()
+
+    cam_pos = cam.matrix_world.translation
+    thr = math.radians(20.0)
+    crease_px = 0.0
+    n_crease = 0
+    n_edges = 0
+    for e in bm.edges:
+        n_edges += 1
+        if len(e.link_faces) != 2:
+            continue                          # silhouette / boundary: not relief
+        try:
+            ang = e.calc_face_angle()
+        except ValueError:
+            continue
+        if ang < thr:
+            continue
+        # visible only: at least one adjacent face turned toward the camera
+        mid = (e.verts[0].co + e.verts[1].co) * 0.5
+        view = (mid - cam_pos).normalized()
+        if not any(f.normal.dot(view) < 0.0 for f in e.link_faces):
+            continue
+        a = world_to_camera_view(scn, cam, e.verts[0].co)
+        b = world_to_camera_view(scn, cam, e.verts[1].co)
+        if a.z <= 0 or b.z <= 0:
+            continue
+        d = math.hypot((a.x - b.x) * W, (a.y - b.y) * H)
+        crease_px += d
+        n_crease += 1
+    obe.to_mesh_clear()
+    bm.free()
+
+    gj = json.load(open(os.path.join(R2, f"render/items/{item}/gate.json")))
+    subj_px = gj["witness"]["image"]["frame"].get("subject_px") or 0
+    dens = crease_px / max(subj_px, 1)
+    return {"item": item, "edges": n_edges, "creases_ge_20deg_visible": n_crease,
+            "crease_px": round(crease_px, 1), "subject_px": subj_px,
+            "crease_px_per_subject_px": round(dens, 5),
+            "mean_px_between_creases": (round(1.0 / dens, 1) if dens > 0
+                                        else None)}
 
 
 def two_light_rho(G, png_a, png_b, mask, r=2):
@@ -559,9 +698,22 @@ def two_light_rho(G, png_a, png_b, mask, r=2):
         a painted albedo step belongs to the SURFACE.    Move the sun and the
         pattern does not move at all.                    ->  rho strongly POSITIVE
 
-    It needs no new statistic, no new threshold family and no new failure mode --
-    just one more render of a frame the gate already stages both sides of
-    (`sun_side_chosen` in every witness_spec.json is picked from two candidates).
+    It needs no new statistic and no new threshold family -- just one more render
+    of a frame the gate already stages both sides of (`sun_side_chosen` in every
+    witness_spec.json is picked from two candidates).
+
+    IT IS NOT SUFFICIENT ON ITS OWN, AND ITS OWN CONTROL SAYS SO. Measured on the
+    ladder, the FLAT GREY PLATE returns rho = -0.9798 -- it "reads as relief".
+    That is not a bug in the physics, it is the physics: on a surface with no
+    structure at all the only thing left in the band is the plate's own
+    directional shading, and THAT inverts with the sun too. Write the lit plate
+    as base + s and the flipped one as base - s; with `base` flat, DoG gives
+    exactly da = -db and rho -> -1 on nothing whatsoever.
+
+    So the test only means something where there IS fine structure to invert, and
+    the gate already measures that: `fine_over_control >= FINE_OVER_CONTROL`.
+    The proposal is a CONJUNCTION of the two, never rho alone. `fine_sd` is
+    reported beside rho here for exactly that reason.
 
     This function is the MEASUREMENT ONLY. Nothing in item_gate.py calls it; see
     the report on R2-060 for the proposed wiring.
@@ -640,7 +792,8 @@ def main():
     argv = argv[argv.index("--") + 1:] if "--" in argv else []
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode",
-                    choices=["build", "consolidate", "measure", "twolight"],
+                    choices=["build", "consolidate", "measure", "twolight",
+                             "mesh"],
                     required=True)
     ap.add_argument("--dir-a", default=os.path.join(R2, "render/relief_control"))
     ap.add_argument("--dir-b", default=os.path.join(R2,
@@ -651,6 +804,24 @@ def main():
     ap.add_argument("--out", default=os.path.join(R2,
                                                   "render/relief_pvg/verdicts.json"))
     a = ap.parse_args(argv)
+
+    if a.mode == "mesh":
+        rows = []
+        print(f"{'item':<22}{'edges':>10}{'creases':>9}{'crease px':>12}"
+              f"{'subj px':>11}{'px/px':>9}{'1 crease per':>14}")
+        for it in ([a.item] if a.item else PASSING):
+            r = mesh_crease_census(it)
+            rows.append(r)
+            if "error" in r:
+                print(f"  {it:<20}  {r['error']}")
+                continue
+            print(f"  {r['item']:<20}{r['edges']:>10,}"
+                  f"{r['creases_ge_20deg_visible']:>9,}{r['crease_px']:>12,.0f}"
+                  f"{r['subject_px']:>11,}{r['crease_px_per_subject_px']:>9.4f}"
+                  f"{(r['mean_px_between_creases'] or 0):>11.1f} px")
+        json.dump(rows, open(os.path.join(a.vdir, "mesh_census.json"), "w"),
+                  indent=1)
+        return 0
 
     if a.mode == "consolidate":
         for it in ([a.item] if a.item else PASSING):
@@ -673,8 +844,9 @@ def main():
         # NEGATIVE. Negative control: the aligned decoy -- the panel that
         # defeats the shipped statistic -- must come out POSITIVE.
         G = load_gate()
+        flat_sd = [None]
         print(f"{'panel':<24}{'rho(A,B)':>10}{'dip A':>9}{'dip B':>9}"
-              f"{'px':>10}   reads as")
+              f"{'fine/flat':>11}   reads as")
         for name in ("a_flat_0mm", "b_rib_0p5mm", "c_rib_2mm", "d_rib_8mm",
                      "e_bolts_3mm", "f_printed_0mm", "g_printed_aligned_0mm"):
             pa = os.path.join(a.dir_a, name + ".png")
@@ -692,14 +864,31 @@ def main():
                   + 0.0722 * B[:, :, 2]).astype(np.float64)
             da, _ = G.relief_anisotropy(LA, mask, sun_rc)
             db, _ = G.relief_anisotropy(LB, mask, (-sun_rc[0], -sun_rc[1]))
-            reads = ("RELIEF (the dipole inverted)" if rho is not None
-                     and rho < -0.2 else
-                     "PAINT (the pattern did not move)" if rho is not None
-                     and rho > 0.2 else "neither")
+            # THE GATE'S OWN fine-contrast measure, not an ad-hoc one: percent
+            # of mean in the FINE_BANDS, exactly what `fine_over_control`
+            # compares. Reported against the flat plate, which is this ladder's
+            # smooth control.
+            bands, _, _ = G.contrast_bands(LA, mask)
+            fine = G._agg(bands or {}, G.FINE_BANDS)
+            if name == "a_flat_0mm":
+                flat_sd[0] = fine
+            ratio = (fine / flat_sd[0]) if (fine and flat_sd[0]) else float("nan")
+            # THE FINE-STRUCTURE GATE FIRST, then the light test. Without the
+            # first clause the flat plate reads as relief -- see the docstring.
+            if not (ratio == ratio) or ratio < G.FINE_OVER_CONTROL:
+                reads = (f"fine {fine} = {ratio:.2f}x the flat plate, under the "
+                         f"gate's own {G.FINE_OVER_CONTROL}x bar -- rho is not "
+                         f"consulted")
+            elif rho is not None and rho < -0.2:
+                reads = "RELIEF (the dipole inverted with the light)"
+            elif rho is not None and rho > 0.2:
+                reads = "PAINT (the pattern did not move with the light)"
+            else:
+                reads = "neither"
             print(f"  {name:<22}{rho if rho is not None else float('nan'):>10.4f}"
                   f"{da if da is not None else float('nan'):>9.4f}"
                   f"{db if db is not None else float('nan'):>9.4f}"
-                  f"{det.get('px', 0):>10,}   {reads}")
+                  f"{ratio:>11.2f}   {reads}")
         return 0
 
     G = load_gate()
@@ -723,6 +912,12 @@ def main():
               f"{st.get('sep_from_light_deg', float('nan')):>8.1f}"
               f"  {r['verdict']}  [{r.get('REPRODUCTION')}]")
         print(f"      {r['verdict_because']}")
+        cc = r.get("consolidation_control") or {}
+        if "VALID" in cc:
+            print(f"      merge control: orig arm {cc['merged_orig_dip']} vs "
+                  f"shipped frame {cc['shipped_frame_dip']} "
+                  f"(delta {cc['delta']}) -> "
+                  f"{'VALID' if cc['VALID'] else '*** MERGE CHANGED THE PICTURE'}")
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     json.dump(out, open(a.out, "w"), indent=1)
     print(f"\n>> wrote {a.out}")

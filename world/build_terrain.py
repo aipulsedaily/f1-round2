@@ -80,6 +80,42 @@ CELL      = 2.5 if not FAST else 5.0
 FAR_STEPS = 26                    # geometrically-growing rings out to the horizon
 FAR_GROW  = 1.30
 
+# --- THE HORIZON --------------------------------------------------------------------
+# A FLAT PLATE CANNOT MAKE A HORIZON FOR AN ELEVATED CAMERA, AND THAT IS GEOMETRY,
+# NOT AN OPINION.  Beat 6 holds for its last 11 seconds from z = 140 m.  Ground at
+# z = 0 always subtends a NEGATIVE elevation from up there, so however far the plate
+# is pushed, a wedge of sky-direction-but-not-sky is left between the plate's edge and
+# the true horizon — and Blender's Nishita sky returns BLACK for every direction below
+# the horizon, so that wedge renders as a void.  Measured on the plate as it stands
+# (`work/ramp/skyline.json`, `Ground.height` walked outward on 48 bearings from the
+# beat-6 hold):
+#
+#     plate edge          10 233 .. 15 840 m   ->  -0.51 .. -0.78 deg
+#     skyline of the      even sampled to 60 km the height field never
+#     height field        exceeds +11 m, so 48 of 48 bearings are BELOW the horizon
+#
+# Pushing FAR_STEPS to 32 buys 48 km and -0.16 deg, still 6 black rows at 4K, and it
+# takes the outermost cell from 2.3 km to 49 km.  The honest fix is the one real
+# landscapes use: THE FAR GROUND RISES.  A range whose crest stands above the
+# camera's eye level puts sky on land instead of sky on nothing, and it costs no new
+# source mesh and no new instance — it is the ground's own height field.
+#
+# The wavelengths are set by the GRID, not by taste.  The outermost rings are 1.0-2.3
+# km wide, so anything shorter than about 12 km out there is below Nyquist and will
+# alias into a saw edge on the skyline; the second octave is therefore faded out
+# before the cells get coarse rather than left to sparkle.  (The existing +-34 m a3
+# term already runs a 2.1 km wavelength through 1.4-2.3 km cells between 5.2 and
+# 11 km, which is marginal; it is left alone here, and noted.)
+HORIZON_RISE_M   = 3600.0     # Dc where the far field begins to climb
+HORIZON_CREST_M  = 9500.0     # Dc where it has fully climbed
+HORIZON_Z_M      = 300.0      # mean crest height above the datum
+HORIZON_LAM_M    = 15500.0    # along-range wavelength of the crest line
+HORIZON_RELIEF_M = 118.0      # p-p modulation of the crest at HORIZON_LAM_M
+HORIZON_LAM2_M   = 6400.0     # second octave: foothills and spurs
+HORIZON_REL2_M   = 46.0
+HORIZON_LAM3_M   = 2400.0     # third octave, alive only where the cells are fine
+HORIZON_REL3_M   = 14.0
+
 # --- corridor ----------------------------------------------------------------------
 # THE HOLE.  world_contract.road_corridor_mask is the region the road programme owns;
 # this module builds no ground inside it at all.  PLATFORM_DROP (0.12 m) and the old
@@ -493,6 +529,49 @@ def cut_field(x, y):
 # 3.  THE HEIGHT FIELD
 # ----------------------------------------------------------------------------------
 
+def far_horizon(x, y, Dc):
+    """The distant range that gives the closing wide a skyline.
+
+    See the HORIZON_* block at the top of this file for why a flat plate cannot
+    produce a horizon for a camera at 140 m and why the answer is elevation
+    rather than extent.
+
+    THREE THINGS THIS IS DELIBERATELY NOT
+    --------------------------------------
+    * It is not a backdrop, a skirt or a horizon ring.  It is a term in the
+      ground's own height field, so it is the same mesh, the same material and
+      the same weld; there is no LOD boundary to crack and no second surface to
+      keep in step.
+    * It is not new geometry.  `build_ground` already emits a vertex at every
+      station of the graded axes out to 10.8 km; this changes their z.  Zero
+      extra vertices, zero extra source meshes, zero extra instances — which is
+      what the red line on asset reuse is actually about.
+    * It is not visible from the circuit.  `Dc` is distance to the CENTRELINE,
+      and this is identically zero inside HORIZON_RISE_M = 3.6 km.  The lap, the
+      paddock, the showroom, every declared empty-zone camera volume and the
+      whole 1 150 m vegetation field are further inside that than the term ever
+      reaches, so nothing the car drives past or the lens gets near moves by a
+      millimetre.  `selftest` measures exactly that.
+
+    The third octave is windowed OFF beyond 6 km because the cells there pass
+    2.4 km wavelengths at under two samples each.  A skyline that sparkles
+    between frames is worse than a skyline that is smooth, and this shot holds
+    for three seconds without a cut.
+    """
+    w = smoothstep(HORIZON_RISE_M, HORIZON_CREST_M, Dc)
+    if not np.any(w):
+        return np.zeros_like(np.asarray(x, float))
+    crest = (0.5 + 0.5 * ridged(x / HORIZON_LAM_M, y / HORIZON_LAM_M,
+                                2, seed=71))
+    z = HORIZON_Z_M + HORIZON_RELIEF_M * (crest - 0.5)
+    z = z + HORIZON_REL2_M * fbm(x / HORIZON_LAM2_M, y / HORIZON_LAM2_M,
+                                 2, seed=73)
+    z = z + (HORIZON_REL3_M * fbm(x / HORIZON_LAM3_M, y / HORIZON_LAM3_M,
+                                  2, seed=79)
+             * (1.0 - smoothstep(4200.0, 6400.0, Dc)))
+    return w * z
+
+
 class Ground:
     """h(x,y) for the world OUTSIDE the road corridor, plus the shader's attributes.
 
@@ -611,7 +690,9 @@ class Ground:
         z += smoothstep(0.5, 26.0, Dp) * 0.42 * fbm(x / 26.0, y / 26.0, 2, seed=53) \
             * (0.35 + 0.65 * k)
         z += smoothstep(1.0, 12.0, Dp) * 0.11 * fbm(x / 7.4, y / 7.4, 2, seed=59) * k
+        z += far_horizon(x, y, Dc)
         return z
+
 
     # -- the whole thing ------------------------------------------------------------
     def height(self, x, y, want_attr=False):
@@ -4572,6 +4653,42 @@ def selftest(nsamp=200000, seed=7):
     # 4.  WIDTHS.  This module no longer has its own; assert that.
     out["half_width_3115"] = float(C.half_width(3115.0))
     out["half_width_250"] = float(C.half_width(250.0))
+
+    # 4b. THE HORIZON.  Two numbers, and the second is the one that matters.
+    #
+    #     `horizon_min_elev_deg` walks the BUILT MESH outward from beat 6's own
+    #     hold — docs/beat_sheet.json beat 6, world (594.19, 16.05, 140.0) — on 48
+    #     bearings and takes the largest elevation angle the ground reaches on
+    #     each. If the smallest of those is not POSITIVE, some bearing has sky
+    #     where it should have land, and Blender's Nishita sky returns black below
+    #     the horizon, so that bearing renders as a void. Measured before this
+    #     module grew a far field: -0.13 deg on 48 of 48 bearings.
+    #
+    #     `horizon_intrusion_m` is the negative control, and it is the reason the
+    #     first number is allowed to be large: the SAME far-field term, sampled
+    #     everywhere within HORIZON_RISE_M of the centreline, must be identically
+    #     zero. A range that lifts the horizon by lifting the circuit would score
+    #     just as well on the first number and would be a catastrophe.
+    cam6 = np.array([594.19, 16.05, 140.0])
+    D2 = np.hypot(V[:, 0] - cam6[0], V[:, 1] - cam6[1])
+    B2 = np.degrees(np.arctan2(V[:, 1] - cam6[1], V[:, 0] - cam6[0])) % 360.0
+    EL = np.degrees(np.arctan2(V[:, 2] - cam6[2], np.maximum(D2, 1.0)))
+    far = D2 > 2000.0                          # the skyline is a far-field fact
+    nb = 48
+    sect = np.floor(B2 / (360.0 / nb)).astype(int)
+    best = np.full(nb, -90.0)
+    for k in range(nb):
+        m = far & (sect == k)
+        if m.any():
+            best[k] = float(EL[m].max())
+    out["horizon_min_elev_deg"] = round(float(best.min()), 4)
+    out["horizon_max_elev_deg"] = round(float(best.max()), 4)
+    out["horizon_bearings_below_zero"] = int((best <= 0.0).sum())
+    _f, _zr, _s, _u, _lim, Dc_v = corridor_fz(V[:, 0], V[:, 1])
+    near = Dc_v < HORIZON_RISE_M
+    hz_near = far_horizon(V[near][:, 0], V[near][:, 1], Dc_v[near])
+    out["horizon_intrusion_m"] = round(float(np.abs(hz_near).max()), 9)
+    out["horizon_verts_within_rise"] = int(near.sum())
 
     # 5.  VEGETATION.  How much of it is inside the corridor, and is any of it in a
     #     gravel trap or on runoff asphalt?

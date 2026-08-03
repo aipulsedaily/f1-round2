@@ -102,7 +102,36 @@ FILM_EXPOSURE = round(CONTRACT_EXPOSURE + ATMOSPHERE_STOPS
 #: The brief's interior-to-daylight ramp. The camera rig keys FILM_EXPOSURE
 #: minus this at the interior end. Kept here so the ramp's two ends come from
 #: one file as well.
-INTERIOR_STOPS = 0.85
+#:
+#: **0.0 SINCE 2026-08-03, AND IT WAS POINTING THE WRONG WAY.**
+#:
+#: The rig computes ``interior = daylight - INTERIOR_STOPS``, so 0.85 made the
+#: interior DARKER -- and the interior was the end that was already black. Beat 1
+#: was losing 1.30 % of the frame to literal 0/0/0, a continuous band along the
+#: car's floor edge and sidepod undercut. The compensation was deepening the
+#: defect it looked like it was there to solve.
+#:
+#: The real cause was never the ramp: the showroom's practicals are round 1's
+#: rig, tuned on a curve its own docstring pins to "exposure 0", carried into a
+#: film that grades at -3.628. ``world/showroom_lighting.py`` levels them by
+#: exactly ``-FILM_EXPOSURE`` and the crush goes to 0.0000 % on every frame of
+#: beats 1-2, measured on matched pairs at a flat -3.628.
+#:
+#: With the practicals levelled, 0.85 is not merely unnecessary -- it is
+#: harmful. Measured both ways: at 0.0 the interior sits at mean 0.32-0.48 with
+#: **0.0000 % pure black on every frame and the exposure never moves across all
+#: 2,978 cut-free frames**; at 0.85 it is survivable (pure black <= 0.0010 %) but
+#: **puts an 0.85-stop iris move on screen at the breach**.
+#:
+#: That last point decides it. This is ONE UNBROKEN TAKE WITH ZERO CUTS. An
+#: exposure ramp across the breach is a camera visibly adjusting, with no cut to
+#: hide it behind -- precisely what the brief forbids and exactly the option that
+#: was rejected when this was decided. Choosing 0.85 here would reintroduce
+#: through the back door the thing the relight was chosen instead of.
+#:
+#: If a deliberate interior/exterior ramp is ever wanted as a LOOK, it belongs in
+#: the grade as an authored decision, not as a correction constant.
+INTERIOR_STOPS = 0.0
 
 #: The measurement's own resolution, from tools/exposure_calibration.py's
 #: leave-one-out control. Nothing here is meaningful below this.

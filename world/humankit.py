@@ -4565,12 +4565,19 @@ def build_hair(mesh, sk, b, lod, seed, mat, squash=1.0):
         seed + 14, uu2, TH / math.pi, fbm_scale(0.22, oct=2),
         fbm_scale(0.60, oct=2), oct=2)
     lock = 1.0 - 2.0 * np.abs(np.cos(math.pi * n_lock * (uu2 + jit)))
-    brk = 0.34 + 0.66 * (0.5 + 0.5 * wrap_noise(
+    brk = (0.12 + 0.88 * (0.5 + 0.5 * wrap_noise(
         seed + 15, uu2, TH / math.pi, fbm_scale(0.16, oct=2),
-        fbm_scale(0.13, oct=2), oct=2))
-    conv = np.clip(TH / 0.52, 0.0, 1.0) ** 0.85
+        fbm_scale(0.13, oct=2), oct=2))) ** 1.6
+    conv = np.clip(TH / 0.62, 0.0, 1.0) ** 1.20
     lock = lock * brk * conv
-    lock_amp = min(0.16 * thick, 0.0018)
+    # AND A LOCK IS A PROPERTY OF LENGTH, NOT ONLY OF VOLUME. Scaling the
+    # ridge depth off `thick` alone gave a 1.5 mm gutter on a 15 mm pitch to a
+    # 20 mm crop, and the render of a short blonde came back as a **ribbed
+    # gourd** -- v1 and v2 both. Hair that is 20 mm long cannot form a lock; it
+    # is a close pelt with a parting and almost no relief. `lk_len` takes the
+    # crop to a quarter depth and leaves anything past a bob at full.
+    lk_len = float(np.clip(b.hair_len / 0.090, 0.22, 1.0))
+    lock_amp = min(0.16 * thick, 0.0018) * lk_len
     # 3. THE PARTING. `HAIR_STYLES` has carried `part_frac` since it was written
     #    and nothing read it (see `sample_body`). A parting is a gutter along
     #    ONE meridian, deepest at the hairline and closing over the crown, and

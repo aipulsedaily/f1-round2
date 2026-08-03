@@ -436,10 +436,40 @@ decides whether §000000.2 is right**, and `face6_63px` is the one that answers
 "does the face read at the size the film actually shows it". Do not re-derive
 any of it — look at the four frames.
 
-`item_gate` is also staged and running on the new build
-(`gate_witness/spectator_seated/witness.blend`, out to
-`render/items/spectator_crowd/gate.json`). The gate that was there described a
-build **four** revisions old.
+### 000000.6b THE GATE RAN, AND ITS VERDICT IS ABOUT THE TRANSPORT
+
+`render/items/spectator_crowd/gate.json` is **regenerated on the sixth-pass
+build** (2026-08-03 08:05) — the one it replaced described a build four
+revisions old. Witness subject `SPECX_Lib0889_turned_b4`, the median-triangle
+instance of **894 objects at 26,965 tris**.
+
+    no_external_assets               PASS      witness_frame_valid            FAIL
+    material_depth                   PASS      surface_microstructure         NOT MEASURED
+    geometry_resolves_at_distance    PASS      relief_reads_as_lip_and_shade  NOT MEASURED
+    per_instance_variation           PASS      silhouette_departs_from_analytic NOT MEASURED
+
+    >> ITEM_REJECTED
+
+**READ THE VERDICT TEXT, NOT THE VERDICT.** All four checks that were measured
+PASS. The four that were not are the four that need a rendered witness frame,
+and the witness frame never arrived: `unmeasurable` records
+
+    RuntimeError: witness render failed (rc=1). rq said:
+    72d18cbd523d queued (depth 35) ... http.client.RemoteDisconnected:
+    Remote end closed connection without response
+
+i.e. `rq`'s HTTP poll was dropped by the broker while the queue stood at depth
+35. **Nothing in this verdict is a statement about the crowd.** It is the
+twentieth time on this project that the instrument was the broken thing, and it
+is the second time in one session — the first was `rq status`'s own display
+(§000000.6a's note on `oldest_waiting_scene`).
+
+**TO FINISH IT, DO NOT REBUILD ANYTHING.** The witness blend is already staged
+at `render/gate_witness/spectator_seated/witness.blend` and its job is still in
+the queue. When the PNG lands, re-run the gate with `--from-png <that png>` and
+the four pixel checks will score against the same witness the gate chose
+itself. `tools/gate_exit.py` will exit non-zero either way, so the exit code is
+not the answer here — the `check_notes` are.
 
 ### 000000.7 WHAT IS STILL NOT GOOD ENOUGH
 
