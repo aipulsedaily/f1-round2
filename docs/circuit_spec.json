@@ -1,0 +1,2500 @@
+{
+ "schema": "f1-round2/circuit_spec/1.0",
+ "name": "Circuit Vitrine",
+ "datum": {
+  "description": "world origin = round-1 showroom floor centre; +X east, +Y north, +Z up; Z=0 is the showroom finished floor AND the pit-straight surface",
+  "circuit_design_frame": {
+   "rotation_deg_about_z": 40.0,
+   "pivot_design": [
+    -350.0,
+    72.0
+   ],
+   "pivot_world": [
+    15.0,
+    0.0
+   ],
+   "note": "world = Rz(40deg)*(design - pivot_design) + pivot_world"
+  },
+  "start_finish_world": [
+   329.396,
+   169.82,
+   0.0
+  ],
+  "racing_direction_world_deg": 40.0,
+  "lap_direction": "counter-clockwise"
+ },
+ "headline": {
+  "length_m": 3675.0,
+  "corners": 15,
+  "lap_time_s": 63.545,
+  "onscreen_lap_time_s": 63.704,
+  "avg_speed_kph": 208.2,
+  "vmax_kph": 330.8,
+  "vmin_kph": 79.6,
+  "line_speed_flying_kph": 323.4,
+  "line_speed_outlap_kph": 288.6,
+  "elevation_range_m": 11.63,
+  "max_grade_pct": 5.2,
+  "min_grade_pct": -4.45,
+  "closure_residual_m": [
+   0.0,
+   4.948105647516469e-15
+  ],
+  "elevation_closure_m": 0.0
+ },
+ "elements": [
+  {
+   "name": "S0  pit straight S/F->T1",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 250.0,
+   "s_start": 0.0,
+   "start_world": [
+    329.4,
+    169.82
+   ],
+   "heading_world_deg": 40.0
+  },
+  {
+   "name": "T1  Vitrine",
+   "type": "A",
+   "radius_m": 100.0,
+   "turn_deg": 62.0,
+   "length_m": 108.2104,
+   "s_start": 250.0,
+   "start_world": [
+    520.91,
+    330.52
+   ],
+   "heading_world_deg": 40.0
+  },
+  {
+   "name": "S1  T1-T2 link",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 40.0,
+   "s_start": 358.2104,
+   "start_world": [
+    554.44,
+    427.91
+   ],
+   "heading_world_deg": 102.0
+  },
+  {
+   "name": "T2  Threshold",
+   "type": "A",
+   "radius_m": 110.0,
+   "turn_deg": 30.0,
+   "length_m": 57.5959,
+   "s_start": 398.2104,
+   "start_world": [
+    546.13,
+    467.04
+   ],
+   "heading_world_deg": 102.0
+  },
+  {
+   "name": "S2  east chute",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 265.0461,
+   "s_start": 455.8063,
+   "start_world": [
+    520.28,
+    517.77
+   ],
+   "heading_world_deg": 132.0
+  },
+  {
+   "name": "T3  Long Kink",
+   "type": "A",
+   "radius_m": 140.0,
+   "turn_deg": -28.0,
+   "length_m": 68.4169,
+   "s_start": 720.8524,
+   "start_world": [
+    342.93,
+    714.74
+   ],
+   "heading_world_deg": 132.0
+  },
+  {
+   "name": "S3  hairpin approach",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 150.0,
+   "s_start": 789.2693,
+   "start_world": [
+    311.13,
+    774.55
+   ],
+   "heading_world_deg": 104.0
+  },
+  {
+   "name": "T4  LE PIN (hairpin)",
+   "type": "A",
+   "radius_m": 28.0,
+   "turn_deg": 176.0,
+   "length_m": 86.0098,
+   "s_start": 939.2693,
+   "start_world": [
+    274.84,
+    920.09
+   ],
+   "heading_world_deg": 104.0
+  },
+  {
+   "name": "S4  hairpin exit ramp",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 175.0,
+   "s_start": 1025.2791,
+   "start_world": [
+    220.09,
+    908.46
+   ],
+   "heading_world_deg": 280.0
+  },
+  {
+   "name": "T5  Rampe",
+   "type": "A",
+   "radius_m": 75.0,
+   "turn_deg": -88.0,
+   "length_m": 115.1917,
+   "s_start": 1200.2791,
+   "start_world": [
+    250.48,
+    736.12
+   ],
+   "heading_world_deg": 280.0
+  },
+  {
+   "name": "S5  climb straight",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 230.0,
+   "s_start": 1315.4708,
+   "start_world": [
+    192.22,
+    649.73
+   ],
+   "heading_world_deg": 192.0
+  },
+  {
+   "name": "T6  Weave 1",
+   "type": "A",
+   "radius_m": 88.0,
+   "turn_deg": 38.0,
+   "length_m": 58.3638,
+   "s_start": 1545.4708,
+   "start_world": [
+    -32.76,
+    601.91
+   ],
+   "heading_world_deg": 192.0
+  },
+  {
+   "name": "S6  esse link a",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 42.0,
+   "s_start": 1603.8346,
+   "start_world": [
+    -81.87,
+    572.4
+   ],
+   "heading_world_deg": 230.0
+  },
+  {
+   "name": "T7  Weave 2",
+   "type": "A",
+   "radius_m": 82.0,
+   "turn_deg": -44.0,
+   "length_m": 62.9715,
+   "s_start": 1645.8346,
+   "start_world": [
+    -108.87,
+    540.23
+   ],
+   "heading_world_deg": 230.0
+  },
+  {
+   "name": "S7  esse link b",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 40.0,
+   "s_start": 1708.8061,
+   "start_world": [
+    -163.12,
+    511.38
+   ],
+   "heading_world_deg": 186.0
+  },
+  {
+   "name": "T8  Crest",
+   "type": "A",
+   "radius_m": 76.0,
+   "turn_deg": 46.0,
+   "length_m": 61.0167,
+   "s_start": 1748.8061,
+   "start_world": [
+    -202.9,
+    507.2
+   ],
+   "heading_world_deg": 186.0
+  },
+  {
+   "name": "S8  esse link c",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 45.0,
+   "s_start": 1809.8228,
+   "start_world": [
+    -254.84,
+    478.41
+   ],
+   "heading_world_deg": 232.0
+  },
+  {
+   "name": "T9  Weave 4",
+   "type": "A",
+   "radius_m": 94.0,
+   "turn_deg": -30.0,
+   "length_m": 49.2183,
+   "s_start": 1854.8228,
+   "start_world": [
+    -282.55,
+    442.95
+   ],
+   "heading_world_deg": 232.0
+  },
+  {
+   "name": "S9  summit run",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 238.765,
+   "s_start": 1904.0411,
+   "start_world": [
+    -321.41,
+    413.67
+   ],
+   "heading_world_deg": 202.0
+  },
+  {
+   "name": "T10 Panorama 1",
+   "type": "A",
+   "radius_m": 125.0,
+   "turn_deg": 44.0,
+   "length_m": 95.9931,
+   "s_start": 2142.8061,
+   "start_world": [
+    -542.79,
+    324.22
+   ],
+   "heading_world_deg": 202.0
+  },
+  {
+   "name": "T10b release",
+   "type": "A",
+   "radius_m": 400.0,
+   "turn_deg": 8.0,
+   "length_m": 55.8505,
+   "s_start": 2238.7992,
+   "start_world": [
+    -610.15,
+    259.17
+   ],
+   "heading_world_deg": 246.0
+  },
+  {
+   "name": "T11 Panorama 2",
+   "type": "A",
+   "radius_m": 150.0,
+   "turn_deg": 41.4,
+   "length_m": 108.3849,
+   "s_start": 2294.6497,
+   "start_world": [
+    -629.24,
+    206.73
+   ],
+   "heading_world_deg": 254.0
+  },
+  {
+   "name": "S11 doppler straight",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 297.6055,
+   "s_start": 2403.0347,
+   "start_world": [
+    -620.55,
+    101.04
+   ],
+   "heading_world_deg": 295.4
+  },
+  {
+   "name": "T12 Doppler",
+   "type": "A",
+   "radius_m": 50.0,
+   "turn_deg": 52.0,
+   "length_m": 45.3786,
+   "s_start": 2700.6401,
+   "start_world": [
+    -492.9,
+    -167.8
+   ],
+   "heading_world_deg": 295.4
+  },
+  {
+   "name": "S12 T12-T13 link",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 55.0,
+   "s_start": 2746.0187,
+   "start_world": [
+    -458.64,
+    -195.14
+   ],
+   "heading_world_deg": 347.4
+  },
+  {
+   "name": "T13 Hook",
+   "type": "A",
+   "radius_m": 70.0,
+   "turn_deg": 22.0,
+   "length_m": 26.8781,
+   "s_start": 2801.0187,
+   "start_world": [
+    -404.96,
+    -207.14
+   ],
+   "heading_world_deg": 347.4
+  },
+  {
+   "name": "S13 T13-T14 link",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 70.0,
+   "s_start": 2827.8968,
+   "start_world": [
+    -378.26,
+    -207.89
+   ],
+   "heading_world_deg": 9.4
+  },
+  {
+   "name": "T14 Flick",
+   "type": "A",
+   "radius_m": 90.0,
+   "turn_deg": -19.4,
+   "length_m": 30.4734,
+   "s_start": 2897.8968,
+   "start_world": [
+    -309.2,
+    -196.46
+   ],
+   "heading_world_deg": 9.4
+  },
+  {
+   "name": "S14 T14-T15 link",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 95.0,
+   "s_start": 2928.3702,
+   "start_world": [
+    -278.87,
+    -196.61
+   ],
+   "heading_world_deg": 350.0
+  },
+  {
+   "name": "T15 Gate",
+   "type": "A",
+   "radius_m": 105.0,
+   "turn_deg": 50.0,
+   "length_m": 91.6298,
+   "s_start": 3023.3702,
+   "start_world": [
+    -185.31,
+    -213.11
+   ],
+   "heading_world_deg": 350.0
+  },
+  {
+   "name": "S15 pit straight T15->S/F",
+   "type": "S",
+   "radius_m": null,
+   "turn_deg": null,
+   "length_m": 560.0,
+   "s_start": 3115.0,
+   "start_world": [
+    -99.59,
+    -190.14
+   ],
+   "heading_world_deg": 40.0
+  }
+ ],
+ "corner_count": 15,
+ "corners": [
+  {
+   "index": 1,
+   "is_numbered_corner": true,
+   "name": "T1 Vitrine",
+   "type": "fast left",
+   "radius_m": 100.0,
+   "turn_deg": 62.0,
+   "arc_m": 108.21,
+   "direction": "left",
+   "s_apex": 304.11,
+   "apex_world": [
+    551.14,
+    374.45,
+    0.0
+   ],
+   "entry_kph": 197.2,
+   "apex_kph": 197.2,
+   "exit_kph": 197.4,
+   "lateral_g": 3.06,
+   "banking_deg": 2,
+   "grade_pct": 0.0,
+   "lap_t_s": 4.01
+  },
+  {
+   "index": 2,
+   "is_numbered_corner": true,
+   "name": "T2 Threshold",
+   "type": "linked left",
+   "radius_m": 110.0,
+   "turn_deg": 30.0,
+   "arc_m": 57.6,
+   "direction": "left",
+   "s_apex": 427.01,
+   "apex_world": [
+    536.54,
+    494.11,
+    0.0
+   ],
+   "entry_kph": 218.0,
+   "apex_kph": 218.0,
+   "exit_kph": 218.1,
+   "lateral_g": 3.4,
+   "banking_deg": 2,
+   "grade_pct": 0.0,
+   "lap_t_s": 6.16
+  },
+  {
+   "index": 3,
+   "is_numbered_corner": true,
+   "name": "T3 Long Kink",
+   "type": "fast right kink",
+   "radius_m": 140.0,
+   "turn_deg": -28.0,
+   "arc_m": 68.42,
+   "direction": "right",
+   "s_apex": 755.06,
+   "apex_world": [
+    323.35,
+    742.69,
+    -0.606
+   ],
+   "entry_kph": 295.1,
+   "apex_kph": 295.1,
+   "exit_kph": 295.2,
+   "lateral_g": 4.89,
+   "banking_deg": 3,
+   "grade_pct": -0.28,
+   "lap_t_s": 10.67
+  },
+  {
+   "index": 4,
+   "is_numbered_corner": true,
+   "name": "T4 LE PIN",
+   "type": "HAIRPIN 176deg",
+   "radius_m": 28.0,
+   "turn_deg": 176.0,
+   "arc_m": 86.01,
+   "direction": "left",
+   "s_apex": 982.27,
+   "apex_world": [
+    241.85,
+    940.71,
+    -3.213
+   ],
+   "entry_kph": 79.6,
+   "apex_kph": 79.6,
+   "exit_kph": 80.0,
+   "lateral_g": 1.78,
+   "banking_deg": 0,
+   "grade_pct": -0.57,
+   "lap_t_s": 16.12
+  },
+  {
+   "index": 5,
+   "is_numbered_corner": true,
+   "name": "T5 La Rampe",
+   "type": "medium right, uphill",
+   "radius_m": 75.0,
+   "turn_deg": -88.0,
+   "arc_m": 115.19,
+   "direction": "right",
+   "s_apex": 1257.87,
+   "apex_world": [
+    238.87,
+    681.26,
+    6.11
+   ],
+   "entry_kph": 152.7,
+   "apex_kph": 152.7,
+   "exit_kph": 153.0,
+   "lateral_g": 2.45,
+   "banking_deg": 1,
+   "grade_pct": 0.48,
+   "lap_t_s": 23.45
+  },
+  {
+   "index": 6,
+   "is_numbered_corner": true,
+   "name": "T6 Weave 1",
+   "type": "esse left",
+   "radius_m": 88.0,
+   "turn_deg": 38.0,
+   "arc_m": 58.36,
+   "direction": "left",
+   "s_apex": 1574.65,
+   "apex_world": [
+    -59.89,
+    591.2,
+    7.236
+   ],
+   "entry_kph": 174.8,
+   "apex_kph": 174.8,
+   "exit_kph": 175.0,
+   "lateral_g": 2.73,
+   "banking_deg": 0,
+   "grade_pct": 0.35,
+   "lap_t_s": 29.29
+  },
+  {
+   "index": 7,
+   "is_numbered_corner": true,
+   "name": "T7 Weave 2",
+   "type": "esse right",
+   "radius_m": 82.0,
+   "turn_deg": -44.0,
+   "arc_m": 62.97,
+   "direction": "right",
+   "s_apex": 1677.32,
+   "apex_world": [
+    -133.19,
+    520.53,
+    7.6
+   ],
+   "entry_kph": 164.4,
+   "apex_kph": 164.4,
+   "exit_kph": 164.6,
+   "lateral_g": 2.59,
+   "banking_deg": 0,
+   "grade_pct": 0.35,
+   "lap_t_s": 31.41
+  },
+  {
+   "index": 8,
+   "is_numbered_corner": true,
+   "name": "T8 Crest",
+   "type": "esse left (summit)",
+   "radius_m": 76.0,
+   "turn_deg": 46.0,
+   "arc_m": 61.02,
+   "direction": "left",
+   "s_apex": 1779.31,
+   "apex_world": [
+    -231.8,
+    498.09,
+    7.945
+   ],
+   "entry_kph": 154.4,
+   "apex_kph": 154.4,
+   "exit_kph": 154.6,
+   "lateral_g": 2.47,
+   "banking_deg": -1,
+   "grade_pct": 0.18,
+   "lap_t_s": 33.65
+  },
+  {
+   "index": 9,
+   "is_numbered_corner": true,
+   "name": "T9 Weave 4",
+   "type": "esse right",
+   "radius_m": 94.0,
+   "turn_deg": -30.0,
+   "arc_m": 49.22,
+   "direction": "right",
+   "s_apex": 1879.43,
+   "apex_world": [
+    -300.15,
+    425.68,
+    7.837
+   ],
+   "entry_kph": 185.7,
+   "apex_kph": 185.7,
+   "exit_kph": 185.9,
+   "lateral_g": 2.89,
+   "banking_deg": 0,
+   "grade_pct": -0.18,
+   "lap_t_s": 35.76
+  },
+  {
+   "index": 10,
+   "is_numbered_corner": true,
+   "name": "T10 Panorama 1",
+   "type": "double-apex A",
+   "radius_m": 125.0,
+   "turn_deg": 44.0,
+   "arc_m": 95.99,
+   "direction": "left",
+   "s_apex": 2190.8,
+   "apex_world": [
+    -582.79,
+    298.24,
+    4.6
+   ],
+   "entry_kph": 254.6,
+   "apex_kph": 254.6,
+   "exit_kph": 254.6,
+   "lateral_g": 4.08,
+   "banking_deg": 4,
+   "grade_pct": -0.31,
+   "lap_t_s": 40.45
+  },
+  {
+   "index": null,
+   "is_numbered_corner": false,
+   "name": "(release)",
+   "type": "release arc",
+   "radius_m": 400.0,
+   "turn_deg": 8.0,
+   "arc_m": 55.85,
+   "direction": "left",
+   "s_apex": 2266.72,
+   "apex_world": [
+    -620.65,
+    233.16,
+    4.361
+   ],
+   "entry_kph": 254.6,
+   "apex_kph": 254.6,
+   "exit_kph": 271.3,
+   "lateral_g": 1.28,
+   "banking_deg": 4,
+   "grade_pct": -0.31,
+   "lap_t_s": 41.52
+  },
+  {
+   "index": 11,
+   "is_numbered_corner": true,
+   "name": "T11 Panorama 2",
+   "type": "double-apex B",
+   "radius_m": 150.0,
+   "turn_deg": 41.4,
+   "arc_m": 108.38,
+   "direction": "left",
+   "s_apex": 2348.84,
+   "apex_world": [
+    -634.55,
+    153.09,
+    4.104
+   ],
+   "entry_kph": 271.3,
+   "apex_kph": 271.3,
+   "exit_kph": 293.7,
+   "lateral_g": 3.86,
+   "banking_deg": 4,
+   "grade_pct": -0.31,
+   "lap_t_s": 42.59
+  },
+  {
+   "index": 12,
+   "is_numbered_corner": true,
+   "name": "T12 Plongee",
+   "type": "heavy-braking left",
+   "radius_m": 50.0,
+   "turn_deg": 52.0,
+   "arc_m": 45.38,
+   "direction": "left",
+   "s_apex": 2723.33,
+   "apex_world": [
+    -478.92,
+    -185.42,
+    -3.556
+   ],
+   "entry_kph": 113.8,
+   "apex_kph": 113.8,
+   "exit_kph": 114.2,
+   "lateral_g": 2.04,
+   "banking_deg": 0,
+   "grade_pct": -1.03,
+   "lap_t_s": 48.37
+  },
+  {
+   "index": 13,
+   "is_numbered_corner": true,
+   "name": "T13 Hook",
+   "type": "slow left",
+   "radius_m": 70.0,
+   "turn_deg": 22.0,
+   "arc_m": 26.88,
+   "direction": "left",
+   "s_apex": 2814.46,
+   "apex_world": [
+    -391.65,
+    -208.8,
+    -3.41
+   ],
+   "entry_kph": 144.7,
+   "apex_kph": 144.7,
+   "exit_kph": 145.0,
+   "lateral_g": 2.35,
+   "banking_deg": 0,
+   "grade_pct": 0.85,
+   "lap_t_s": 50.82
+  },
+  {
+   "index": 14,
+   "is_numbered_corner": true,
+   "name": "T14 Flick",
+   "type": "right kink",
+   "radius_m": 90.0,
+   "turn_deg": -19.4,
+   "arc_m": 30.47,
+   "direction": "right",
+   "s_apex": 2913.13,
+   "apex_world": [
+    -294.03,
+    -195.25,
+    -2.311
+   ],
+   "entry_kph": 178.4,
+   "apex_kph": 178.4,
+   "exit_kph": 178.4,
+   "lateral_g": 2.78,
+   "banking_deg": 0,
+   "grade_pct": 1.14,
+   "lap_t_s": 52.9
+  },
+  {
+   "index": 15,
+   "is_numbered_corner": true,
+   "name": "T15 Gate",
+   "type": "fast final left",
+   "radius_m": 105.0,
+   "turn_deg": 50.0,
+   "arc_m": 91.63,
+   "direction": "left",
+   "s_apex": 3069.19,
+   "apex_world": [
+    -140.03,
+    -211.16,
+    -0.535
+   ],
+   "entry_kph": 207.7,
+   "apex_kph": 207.3,
+   "exit_kph": 207.3,
+   "lateral_g": 3.22,
+   "banking_deg": 3,
+   "grade_pct": 1.01,
+   "lap_t_s": 55.63
+  }
+ ],
+ "centerline": {
+  "units": "metres, world frame",
+  "spline": "POLY, cyclic",
+  "sagitta_tolerance_m": 0.12,
+  "count": 202,
+  "points": [
+   [
+    329.4,
+    169.82,
+    0.0
+   ],
+   [
+    356.78,
+    192.8,
+    0.0
+   ],
+   [
+    384.17,
+    215.78,
+    0.0
+   ],
+   [
+    411.55,
+    238.76,
+    0.0
+   ],
+   [
+    438.75,
+    261.58,
+    0.0
+   ],
+   [
+    466.14,
+    284.56,
+    0.0
+   ],
+   [
+    493.52,
+    307.54,
+    0.0
+   ],
+   [
+    520.91,
+    330.52,
+    0.0
+   ],
+   [
+    527.53,
+    336.6,
+    0.0
+   ],
+   [
+    533.58,
+    343.26,
+    0.0
+   ],
+   [
+    539.01,
+    350.43,
+    0.0
+   ],
+   [
+    543.77,
+    358.06,
+    0.0
+   ],
+   [
+    547.82,
+    366.09,
+    0.0
+   ],
+   [
+    551.14,
+    374.45,
+    0.0
+   ],
+   [
+    553.75,
+    383.31,
+    0.0
+   ],
+   [
+    555.5,
+    392.14,
+    0.0
+   ],
+   [
+    556.45,
+    401.08,
+    0.0
+   ],
+   [
+    556.59,
+    410.07,
+    0.0
+   ],
+   [
+    555.92,
+    419.04,
+    0.0
+   ],
+   [
+    554.44,
+    427.91,
+    0.0
+   ],
+   [
+    546.13,
+    467.04,
+    0.0
+   ],
+   [
+    543.75,
+    476.25,
+    0.0
+   ],
+   [
+    540.49,
+    485.45,
+    0.0
+   ],
+   [
+    536.54,
+    494.11,
+    0.0
+   ],
+   [
+    531.86,
+    502.39,
+    -0.001
+   ],
+   [
+    526.33,
+    510.43,
+    -0.004
+   ],
+   [
+    520.28,
+    517.77,
+    -0.009
+   ],
+   [
+    495.01,
+    545.83,
+    -0.054
+   ],
+   [
+    469.58,
+    574.08,
+    -0.131
+   ],
+   [
+    444.32,
+    602.13,
+    -0.211
+   ],
+   [
+    418.89,
+    630.38,
+    -0.291
+   ],
+   [
+    393.62,
+    658.44,
+    -0.371
+   ],
+   [
+    368.19,
+    686.68,
+    -0.452
+   ],
+   [
+    342.93,
+    714.74,
+    -0.532
+   ],
+   [
+    335.6,
+    723.58,
+    -0.556
+   ],
+   [
+    329.16,
+    732.78,
+    -0.58
+   ],
+   [
+    323.35,
+    742.69,
+    -0.606
+   ],
+   [
+    318.38,
+    753.04,
+    -0.648
+   ],
+   [
+    314.36,
+    763.53,
+    -0.708
+   ],
+   [
+    311.13,
+    774.55,
+    -0.787
+   ],
+   [
+    302.05,
+    810.94,
+    -1.176
+   ],
+   [
+    292.98,
+    847.32,
+    -1.75
+   ],
+   [
+    283.91,
+    883.71,
+    -2.359
+   ],
+   [
+    274.84,
+    920.09,
+    -2.855
+   ],
+   [
+    273.2,
+    924.81,
+    -2.909
+   ],
+   [
+    270.75,
+    929.17,
+    -2.959
+   ],
+   [
+    267.4,
+    933.19,
+    -3.008
+   ],
+   [
+    263.55,
+    936.38,
+    -3.052
+   ],
+   [
+    259.2,
+    938.83,
+    -3.093
+   ],
+   [
+    254.49,
+    940.48,
+    -3.131
+   ],
+   [
+    249.3,
+    941.27,
+    -3.167
+   ],
+   [
+    244.31,
+    941.12,
+    -3.199
+   ],
+   [
+    239.43,
+    940.08,
+    -3.227
+   ],
+   [
+    234.81,
+    938.19,
+    -3.253
+   ],
+   [
+    230.39,
+    935.36,
+    -3.276
+   ],
+   [
+    226.75,
+    931.94,
+    -3.296
+   ],
+   [
+    223.78,
+    927.93,
+    -3.312
+   ],
+   [
+    221.57,
+    923.45,
+    -3.315
+   ],
+   [
+    220.13,
+    918.41,
+    -3.294
+   ],
+   [
+    219.67,
+    913.43,
+    -3.25
+   ],
+   [
+    220.09,
+    908.46,
+    -3.183
+   ],
+   [
+    226.17,
+    873.99,
+    -2.075
+   ],
+   [
+    232.25,
+    839.52,
+    -0.265
+   ],
+   [
+    238.33,
+    805.05,
+    1.555
+   ],
+   [
+    244.4,
+    770.59,
+    3.375
+   ],
+   [
+    250.48,
+    736.12,
+    4.948
+   ],
+   [
+    251.47,
+    727.93,
+    5.224
+   ],
+   [
+    251.54,
+    719.69,
+    5.463
+   ],
+   [
+    250.72,
+    711.49,
+    5.666
+   ],
+   [
+    249.0,
+    703.43,
+    5.832
+   ],
+   [
+    246.4,
+    695.61,
+    5.962
+   ],
+   [
+    242.97,
+    688.12,
+    6.055
+   ],
+   [
+    238.87,
+    681.26,
+    6.11
+   ],
+   [
+    233.9,
+    674.68,
+    6.141
+   ],
+   [
+    228.25,
+    668.69,
+    6.17
+   ],
+   [
+    221.96,
+    663.35,
+    6.199
+   ],
+   [
+    215.14,
+    658.74,
+    6.229
+   ],
+   [
+    207.84,
+    654.9,
+    6.258
+   ],
+   [
+    200.17,
+    651.89,
+    6.287
+   ],
+   [
+    192.22,
+    649.73,
+    6.316
+   ],
+   [
+    154.8,
+    641.78,
+    6.452
+   ],
+   [
+    117.14,
+    633.77,
+    6.589
+   ],
+   [
+    79.73,
+    625.82,
+    6.724
+   ],
+   [
+    42.31,
+    617.87,
+    6.86
+   ],
+   [
+    4.66,
+    609.87,
+    6.997
+   ],
+   [
+    -32.76,
+    601.91,
+    7.132
+   ],
+   [
+    -40.75,
+    599.82,
+    7.162
+   ],
+   [
+    -48.74,
+    596.88,
+    7.192
+   ],
+   [
+    -56.19,
+    593.31,
+    7.221
+   ],
+   [
+    -63.28,
+    589.06,
+    7.251
+   ],
+   [
+    -69.93,
+    584.15,
+    7.28
+   ],
+   [
+    -76.27,
+    578.47,
+    7.31
+   ],
+   [
+    -81.87,
+    572.4,
+    7.34
+   ],
+   [
+    -95.37,
+    556.31,
+    7.414
+   ],
+   [
+    -108.87,
+    540.23,
+    7.489
+   ],
+   [
+    -114.3,
+    534.36,
+    7.517
+   ],
+   [
+    -120.08,
+    529.21,
+    7.544
+   ],
+   [
+    -126.32,
+    524.63,
+    7.572
+   ],
+   [
+    -133.19,
+    520.53,
+    7.6
+   ],
+   [
+    -140.42,
+    517.13,
+    7.629
+   ],
+   [
+    -147.71,
+    514.52,
+    7.656
+   ],
+   [
+    -155.22,
+    512.61,
+    7.684
+   ],
+   [
+    -163.12,
+    511.38,
+    7.712
+   ],
+   [
+    -202.9,
+    507.2,
+    7.854
+   ],
+   [
+    -210.31,
+    506.05,
+    7.88
+   ],
+   [
+    -217.81,
+    504.1,
+    7.907
+   ],
+   [
+    -225.07,
+    501.4,
+    7.929
+   ],
+   [
+    -231.8,
+    498.09,
+    7.945
+   ],
+   [
+    -238.17,
+    494.14,
+    7.957
+   ],
+   [
+    -244.31,
+    489.41,
+    7.963
+   ],
+   [
+    -249.94,
+    484.08,
+    7.964
+   ],
+   [
+    -254.84,
+    478.41,
+    7.959
+   ],
+   [
+    -268.69,
+    460.68,
+    7.923
+   ],
+   [
+    -282.55,
+    442.95,
+    7.882
+   ],
+   [
+    -287.9,
+    436.68,
+    7.867
+   ],
+   [
+    -293.78,
+    430.91,
+    7.852
+   ],
+   [
+    -299.95,
+    425.83,
+    7.838
+   ],
+   [
+    -306.74,
+    421.15,
+    7.823
+   ],
+   [
+    -313.91,
+    417.09,
+    7.808
+   ],
+   [
+    -321.41,
+    413.67,
+    7.793
+   ],
+   [
+    -358.26,
+    398.78,
+    7.626
+   ],
+   [
+    -395.12,
+    383.88,
+    7.114
+   ],
+   [
+    -432.21,
+    368.9,
+    6.329
+   ],
+   [
+    -469.07,
+    354.01,
+    5.562
+   ],
+   [
+    -505.93,
+    339.12,
+    5.023
+   ],
+   [
+    -542.79,
+    324.22,
+    4.751
+   ],
+   [
+    -552.57,
+    319.77,
+    4.716
+   ],
+   [
+    -561.72,
+    314.63,
+    4.684
+   ],
+   [
+    -570.6,
+    308.59,
+    4.65
+   ],
+   [
+    -578.94,
+    301.81,
+    4.616
+   ],
+   [
+    -586.49,
+    294.52,
+    4.583
+   ],
+   [
+    -593.56,
+    286.42,
+    4.55
+   ],
+   [
+    -599.91,
+    277.75,
+    4.516
+   ],
+   [
+    -605.36,
+    268.79,
+    4.483
+   ],
+   [
+    -610.15,
+    259.17,
+    4.449
+   ],
+   [
+    -617.39,
+    241.83,
+    4.39
+   ],
+   [
+    -623.72,
+    224.42,
+    4.332
+   ],
+   [
+    -629.31,
+    206.49,
+    4.273
+   ],
+   [
+    -631.88,
+    196.06,
+    4.24
+   ],
+   [
+    -633.73,
+    185.24,
+    4.205
+   ],
+   [
+    -634.77,
+    174.55,
+    4.172
+   ],
+   [
+    -635.04,
+    163.82,
+    4.138
+   ],
+   [
+    -634.55,
+    153.09,
+    4.104
+   ],
+   [
+    -633.24,
+    142.18,
+    4.07
+   ],
+   [
+    -631.21,
+    131.64,
+    4.036
+   ],
+   [
+    -628.42,
+    121.27,
+    4.003
+   ],
+   [
+    -624.81,
+    110.9,
+    3.968
+   ],
+   [
+    -620.55,
+    101.04,
+    3.935
+   ],
+   [
+    -604.57,
+    67.38,
+    3.82
+   ],
+   [
+    -588.58,
+    33.72,
+    3.699
+   ],
+   [
+    -572.6,
+    0.06,
+    3.298
+   ],
+   [
+    -556.62,
+    -33.6,
+    2.485
+   ],
+   [
+    -540.74,
+    -67.04,
+    1.27
+   ],
+   [
+    -524.76,
+    -100.7,
+    -0.323
+   ],
+   [
+    -508.77,
+    -134.36,
+    -1.978
+   ],
+   [
+    -492.79,
+    -168.02,
+    -3.189
+   ],
+   [
+    -489.61,
+    -173.66,
+    -3.323
+   ],
+   [
+    -485.73,
+    -178.85,
+    -3.434
+   ],
+   [
+    -481.21,
+    -183.49,
+    -3.523
+   ],
+   [
+    -476.33,
+    -187.36,
+    -3.587
+   ],
+   [
+    -470.78,
+    -190.72,
+    -3.631
+   ],
+   [
+    -464.85,
+    -193.32,
+    -3.653
+   ],
+   [
+    -458.64,
+    -195.14,
+    -3.661
+   ],
+   [
+    -431.8,
+    -201.14,
+    -3.64
+   ],
+   [
+    -404.96,
+    -207.14,
+    -3.512
+   ],
+   [
+    -398.34,
+    -208.29,
+    -3.464
+   ],
+   [
+    -391.65,
+    -208.8,
+    -3.41
+   ],
+   [
+    -384.93,
+    -208.67,
+    -3.35
+   ],
+   [
+    -378.26,
+    -207.89,
+    -3.283
+   ],
+   [
+    -343.73,
+    -202.17,
+    -2.886
+   ],
+   [
+    -309.2,
+    -196.46,
+    -2.485
+   ],
+   [
+    -301.76,
+    -195.54,
+    -2.399
+   ],
+   [
+    -294.28,
+    -195.25,
+    -2.313
+   ],
+   [
+    -286.55,
+    -195.6,
+    -2.225
+   ],
+   [
+    -279.12,
+    -196.57,
+    -2.139
+   ],
+   [
+    -247.85,
+    -202.08,
+    -1.776
+   ],
+   [
+    -216.83,
+    -207.55,
+    -1.415
+   ],
+   [
+    -185.56,
+    -213.07,
+    -1.052
+   ],
+   [
+    -176.41,
+    -214.29,
+    -0.946
+   ],
+   [
+    -167.43,
+    -214.71,
+    -0.843
+   ],
+   [
+    -158.2,
+    -214.33,
+    -0.737
+   ],
+   [
+    -149.05,
+    -213.15,
+    -0.633
+   ],
+   [
+    -140.03,
+    -211.16,
+    -0.535
+   ],
+   [
+    -131.45,
+    -208.48,
+    -0.448
+   ],
+   [
+    -122.91,
+    -204.96,
+    -0.367
+   ],
+   [
+    -114.71,
+    -200.71,
+    -0.294
+   ],
+   [
+    -107.12,
+    -195.9,
+    -0.23
+   ],
+   [
+    -99.78,
+    -190.3,
+    -0.173
+   ],
+   [
+    -69.14,
+    -164.59,
+    -0.02
+   ],
+   [
+    -38.5,
+    -138.88,
+    0.0
+   ],
+   [
+    -7.85,
+    -113.17,
+    0.0
+   ],
+   [
+    22.79,
+    -87.46,
+    0.0
+   ],
+   [
+    53.43,
+    -61.74,
+    0.0
+   ],
+   [
+    84.07,
+    -36.03,
+    0.0
+   ],
+   [
+    114.71,
+    -10.32,
+    0.0
+   ],
+   [
+    145.35,
+    15.39,
+    0.0
+   ],
+   [
+    176.0,
+    41.1,
+    0.0
+   ],
+   [
+    206.64,
+    66.81,
+    0.0
+   ],
+   [
+    237.28,
+    92.53,
+    0.0
+   ],
+   [
+    267.92,
+    118.24,
+    0.0
+   ],
+   [
+    298.56,
+    143.95,
+    0.0
+   ],
+   [
+    329.4,
+    169.82,
+    0.0
+   ]
+  ]
+ },
+ "elevation": {
+  "method": "tangent grades joined by parabolic vertical curves",
+  "station_z_pvi": [
+   {
+    "s": 0.0,
+    "z": 0.0,
+    "vertical_curve_len_m": 0.0
+   },
+   {
+    "s": 470.0,
+    "z": 0.0,
+    "vertical_curve_len_m": 80.0
+   },
+   {
+    "s": 800.0,
+    "z": -0.7,
+    "vertical_curve_len_m": 100.0
+   },
+   {
+    "s": 950.0,
+    "z": -3.15,
+    "vertical_curve_len_m": 110.0
+   },
+   {
+    "s": 1035.0,
+    "z": -3.4,
+    "vertical_curve_len_m": 60.0
+   },
+   {
+    "s": 1215.0,
+    "z": 5.96,
+    "vertical_curve_len_m": 90.0
+   },
+   {
+    "s": 1790.0,
+    "z": 8.0,
+    "vertical_curve_len_m": 60.0
+   },
+   {
+    "s": 1955.0,
+    "z": 7.7,
+    "vertical_curve_len_m": 80.0
+   },
+   {
+    "s": 2095.0,
+    "z": 4.9,
+    "vertical_curve_len_m": 100.0
+   },
+   {
+    "s": 2430.0,
+    "z": 3.85,
+    "vertical_curve_len_m": 70.0
+   },
+   {
+    "s": 2540.0,
+    "z": 3.52,
+    "vertical_curve_len_m": 140.0
+   },
+   {
+    "s": 2700.0,
+    "z": -3.6,
+    "vertical_curve_len_m": 80.0
+   },
+   {
+    "s": 2790.0,
+    "z": -3.72,
+    "vertical_curve_len_m": 90.0
+   },
+   {
+    "s": 3115.0,
+    "z": 0.0,
+    "vertical_curve_len_m": 120.0
+   },
+   {
+    "s": 3675.0,
+    "z": 0.0,
+    "vertical_curve_len_m": 0.0
+   }
+  ]
+ },
+ "track_section": {
+  "pit_straight_m": 16.0,
+  "standard_m": 14.0,
+  "hairpin_m": 15.0,
+  "esses_m": 13.0,
+  "access_road_m": 12.0,
+  "transition_len_m": 60.0,
+  "kerb": {
+   "width_m": 1.5,
+   "outer_lip_mm": 50,
+   "inner_lip_mm": 25,
+   "serration_pitch_mm": 250,
+   "serration_amplitude_mm": 25,
+   "alternation_m": 1.0
+  },
+  "negative_kerb": {
+   "locations": [
+    "T8 apex",
+    "T12 exit"
+   ],
+   "depth_mm": -60,
+   "width_m": 0.8
+  }
+ },
+ "vehicle_model": {
+  "mass_kg": 830.0,
+  "a_lat": "min(15.0 + 0.0050*v^2, 48.0) m/s^2",
+  "a_traction": "min(11.0 + 0.0022*v^2, 20.0) m/s^2",
+  "a_power": "800/v m/s^2 (664 kW at the wheels)",
+  "a_drag": "0.00092*v^2 m/s^2",
+  "a_brake": "min(1.25 + 2.2e-4*v^2, 5.0)*9.81 m/s^2 + drag  [grafted from layout A]",
+  "grade_term": "-g*dz/ds",
+  "mu_derate": {
+   "circuit": 1.0,
+   "access_road": 0.9,
+   "showroom_floor": 0.85
+  }
+ },
+ "showroom": {
+  "transform": "IDENTITY - round-1 geometry is NOT moved",
+  "floor_centre_world": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "interior_m": [
+   30.0,
+   22.0,
+   6.5
+  ],
+  "clear_head_m": 6.2,
+  "breach_wall": "GW_Right, plane X=+15.00, 10 glass panels of 2.125 m, 11 mullions at 2.20 m centres (one on the launch axis Y=0), 3 transoms, head, sill, base reveal",
+  "breach_face_centre_world": [
+   15.0,
+   0.0,
+   3.1
+  ],
+  "breach_exit_vector": [
+   1.0,
+   0.0,
+   0.0
+  ],
+  "breach_aperture_m": {
+   "width": 9.6,
+   "height": 5.6,
+   "centre_world": [
+    15.0,
+    0.0,
+    2.85
+   ],
+   "y_range": [
+    -4.8,
+    4.8
+   ],
+   "z_range": [
+    0.11,
+    5.71
+   ]
+  },
+  "dais": {
+   "radius_m": 3.7,
+   "deck_top_z": 0.34,
+   "delivery_ramp": "0.340 m rise over 2.60 m (13.1%), full 3.0 m width, from the dais lip X=+3.70 to X=+6.30"
+  },
+  "launch_run_m": 11.98,
+  "impact_speed_kph": 53.8,
+  "exterior_ground_fix": "raise round-1 ExteriorGround from z -0.14..-0.08 to exactly 0.000 over X 10..90, Y -40..+40, then blend over 20 m"
+ },
+ "paddock": {
+  "frame": "design frame, then transformed to world by the datum block",
+  "pit_wall_design_y": 11.5,
+  "pit_lane_design_y": [
+   11.5,
+   23.5
+  ],
+  "garages_design": {
+   "x": [
+    -245.0,
+    75.0
+   ],
+   "y": [
+    23.5,
+    40.5
+   ],
+   "roof_z": 12.0,
+   "bays": 14
+  },
+  "paddock_design": {
+   "x": [
+    -480.0,
+    100.0
+   ],
+   "y": [
+    40.5,
+    115.0
+   ]
+  },
+  "apron_design": {
+   "x": [
+    -480.0,
+    -245.0
+   ],
+   "y": [
+    0.0,
+    45.0
+   ]
+  },
+  "showroom_design_footprint": {
+   "x": [
+    -380.5,
+    -342.9
+   ],
+   "y": [
+    63.6,
+    100.1
+   ]
+  },
+  "grandstands_design": {
+   "y": [
+    -34.0,
+    -62.0
+   ],
+   "x": [
+    -420.0,
+    180.0
+   ],
+   "height_m": 14.0,
+   "protected_gap": "none required - Beat-6 rays clear by >=36 m; see sightline block"
+  },
+  "gantry_design": {
+   "x": 0.0,
+   "legs_y": [
+    -11.0,
+    11.0
+   ],
+   "soffit_z": 9.0,
+   "depth_m": 2.2
+  },
+  "footbridge_design": {
+   "x": -450.0,
+   "soffit_z": 7.5,
+   "depth_m": 4.0,
+   "span_y": [
+    -24.0,
+    28.0
+   ]
+  },
+  "plunge_bridge_design": {
+   "s": 2410.0,
+   "soffit_z": 6.8,
+   "span_m": 30.0,
+   "deck_width_m": 6.0
+  }
+ },
+ "transit": {
+  "legs": [
+   {
+    "name": "launch inside showroom",
+    "from_world": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "to_world": [
+     15.0,
+     0.0,
+     0.0
+    ],
+    "length_m": 11.98,
+    "grade_pct": 0.0,
+    "exit_kph": 53.8,
+    "time_s": 1.78
+   },
+   {
+    "name": "apron run (flat, unrubbered)",
+    "from_world": [
+     15.0,
+     0.0,
+     0.0
+    ],
+    "to_world": [
+     64.6,
+     0.0,
+     0.0
+    ],
+    "length_m": 49.6,
+    "grade_pct": 0.0,
+    "exit_kph": 129.0,
+    "time_s": 1.97
+   },
+   {
+    "name": "merge arc R150 / 40 deg left",
+    "from_world": [
+     64.6,
+     0.0,
+     0.0
+    ],
+    "to_world": [
+     161.02,
+     35.09,
+     0.0
+    ],
+    "length_m": 104.7,
+    "grade_pct": 0.0,
+    "exit_kph": 219.5,
+    "time_s": 2.16
+   },
+   {
+    "name": "pit straight to the line",
+    "from_world": [
+     161.02,
+     35.09,
+     0.0
+    ],
+    "to_world": [
+     329.4,
+     169.82,
+     0.0
+    ],
+    "length_m": 215.6,
+    "grade_pct": 0.0,
+    "exit_kph": 288.6,
+    "time_s": 3.0
+   }
+  ],
+  "total_length_dais_to_line_m": 381.88,
+  "total_time_dais_to_line_s": 8.9,
+  "total_length_glass_to_line_m": 369.9,
+  "total_time_glass_to_line_s": 7.12,
+  "beat4_world_time_s": 5.6,
+  "beat4_note": "Beat 4 is 5.6 s of world time: the 7.13 s glass-to-line figure less the ~1.6 s of world time consumed inside Beat 3's speed ramp over the first 30 m past the glass"
+ },
+ "doppler": {
+  "station_s": 2555.0,
+  "camera_world": [
+   -578.82,
+   -47.47,
+   4.802
+  ],
+  "offset_from_centreline_m": 26.0,
+  "height_above_grade_m": 2.4,
+  "peak_kph": 313.2,
+  "slant_range_m": 26.1,
+  "dwell_s": 7.46,
+  "semitone_sweep": 7.55,
+  "fallback_station_s": 2600.0
+ },
+ "beat6": {
+  "peel_off_t": -3.0,
+  "peel_off_world": [
+   129.84,
+   2.37,
+   2.8
+  ],
+  "key0_world": [
+   315.64,
+   89.61,
+   27.8
+  ],
+  "key0_lens_mm": 24.0,
+  "hold_world": [
+   594.19,
+   16.05,
+   140.0
+  ],
+  "hold_lens_mm": 18.75,
+  "hold_start_t": 8.0,
+  "hold_end_t": 11.0,
+  "trajectory": "minimum-energy cubic from (peel, v=83.1 m/s along the pit straight) to (hold, v=0) in 11.0 s; peak |a| 19.9 m/s^2 (2.03 g) at the peel-off, easing monotonically",
+  "keys": [
+   {
+    "t": -3.0,
+    "world": [
+     129.84,
+     2.37,
+     2.8
+    ],
+    "lens_mm": 32.0,
+    "speed": 83.1
+   },
+   {
+    "t": -1.0,
+    "world": [
+     255.52,
+     75.07,
+     14.8
+    ],
+    "lens_mm": 28.0,
+    "speed": 65.8
+   },
+   {
+    "t": 0.0,
+    "world": [
+     315.64,
+     89.61,
+     27.8
+    ],
+    "lens_mm": 24.0,
+    "speed": 61.1
+   },
+   {
+    "t": 2.0,
+    "world": [
+     425.14,
+     87.77,
+     62.1
+    ],
+    "lens_mm": 21.0,
+    "speed": 54.2
+   },
+   {
+    "t": 4.0,
+    "world": [
+     513.55,
+     61.43,
+     98.8
+    ],
+    "lens_mm": 19.5,
+    "speed": 44.3
+   },
+   {
+    "t": 6.0,
+    "world": [
+     572.69,
+     30.78,
+     128.0
+    ],
+    "lens_mm": 18.75,
+    "speed": 27.0
+   },
+   {
+    "t": 8.0,
+    "world": [
+     594.19,
+     16.05,
+     140.0
+    ],
+    "lens_mm": 18.75,
+    "speed": 0.0
+   },
+   {
+    "t": 11.0,
+    "world": [
+     594.19,
+     16.05,
+     140.0
+    ],
+    "lens_mm": 18.75,
+    "speed": 0.0
+   }
+  ],
+  "facade_px": [
+   109,
+   119
+  ],
+  "aperture_px": [
+   48,
+   52
+  ],
+  "wound_enters_frame_t": 6.0,
+  "sightline_clearance_m": 29.4
+ },
+ "sun": {
+  "direction_to_sun": [
+   0.518,
+   -0.828,
+   0.216
+  ],
+  "bearing_world_deg": -58.0,
+  "elevation_deg": 12.5,
+  "shadow_length_ratio": 4.51,
+  "note": "round 1 has NO sun lamp (23 interior lamps only), so this is a free choice; -58 deg puts the sun 34 deg off the GW_Front normal (key light for beat 1), 58 deg off the GW_Right breach-wall normal (raking, so the wound reads as a deep notch in beat 6), and 98 deg to the right of the racing direction (cross-light, long shadows across the pit straight)"
+ },
+ "terrain": {
+  "frame": "circuit",
+  "landforms": [
+   {
+    "name": "the plateau",
+    "x": [
+     -620,
+     300
+    ],
+    "y": [
+     -120,
+     140
+    ],
+    "z": "flat 0.000"
+   },
+   {
+    "name": "north-east escarpment",
+    "x": [
+     300,
+     520
+    ],
+    "y": [
+     680,
+     1000
+    ],
+    "z": "falls at -8% from the edge of T4 gravel to -9.5 m at 120 m out",
+    "purpose": "silhouette background for the kerb-height hairpin camera"
+   },
+   {
+    "name": "the ridge",
+    "x": [
+     -380,
+     260
+    ],
+    "y": [
+     400,
+     760
+    ],
+    "z": "rises with La Rampe, carries the esses; infield banked to +11 m behind T7/T8"
+   },
+   {
+    "name": "the west hillside",
+    "x": [
+     -960,
+     -560
+    ],
+    "y": [
+     80,
+     400
+    ],
+    "z": "falls to -12 m at the world edge west of the sweeper/doppler straight"
+   },
+   {
+    "name": "the return hollow",
+    "x": [
+     -620,
+     -240
+    ],
+    "y": [
+     -260,
+     -80
+    ],
+    "z": "-3.7 m bowl at T12/T13"
+   }
+  ]
+ },
+ "runoff": [
+  {
+   "corner": "T1",
+   "asphalt_m": 45,
+   "gravel_m": 12,
+   "barrier": "TecPro"
+  },
+  {
+   "corner": "T3",
+   "asphalt_m": 40,
+   "gravel_m": 15,
+   "barrier": "Armco"
+  },
+  {
+   "corner": "T4",
+   "asphalt_m": 0,
+   "gravel_m": 30,
+   "barrier": "TecPro x3"
+  },
+  {
+   "corner": "T5",
+   "asphalt_m": 0,
+   "grass_m": 20,
+   "barrier": "Armco"
+  },
+  {
+   "corner": "T8",
+   "asphalt_m": 20,
+   "gravel_m": 25,
+   "barrier": "Armco"
+  },
+  {
+   "corner": "T10_T11",
+   "asphalt_m": 55,
+   "gravel_m": 15,
+   "barrier": "Armco"
+  },
+  {
+   "corner": "T12",
+   "asphalt_m": 0,
+   "gravel_m": 30,
+   "barrier": "TecPro x3"
+  },
+  {
+   "corner": "T15",
+   "asphalt_m": 30,
+   "barrier": "Armco"
+  },
+  {
+   "corner": "default",
+   "grass_m": [
+    18,
+    25
+   ],
+   "barrier": "Armco + 3.6 m debris fence"
+  }
+ ],
+ "empty_zones": [
+  {
+   "name": "infield bowl",
+   "frame": "circuit",
+   "x": [
+    -340,
+    160
+   ],
+   "y": [
+    180,
+    420
+   ],
+   "max_height_m": 4.0,
+   "purpose": "helicopter arc over the esses"
+  },
+  {
+   "name": "west outfield",
+   "frame": "circuit",
+   "x": [
+    -1010,
+    -860
+   ],
+   "y": [
+    150,
+    560
+   ],
+   "max_height_m": 3.0,
+   "purpose": "doppler sight line both ways"
+  },
+  {
+   "name": "south apron",
+   "frame": "circuit",
+   "x": [
+    -120,
+    260
+   ],
+   "y": [
+    -340,
+    -62
+   ],
+   "max_height_m": 4.0,
+   "purpose": "Beat-6 crane-out volume and held-frame ground"
+  }
+ ],
+ "camber_overrides": [
+  {
+   "corner": "T4",
+   "entry_pct": -1.5,
+   "apex_pct": 0.0,
+   "note": "adverse camber falling away from the turn, grafted from C"
+  }
+ ],
+ "verification": {
+  "plan_closure_m": [
+   0.0,
+   4.948105647516469e-15
+  ],
+  "heading_closure_deg": 0.0,
+  "elevation_closure_m": 0.0,
+  "length_m": 3675.0,
+  "lap_s": 63.545,
+  "min_nonadjacent_separation_m": 60.6,
+  "control_point_max_chord_error_m": 0.123,
+  "net_turn_deg": 360.0
+ }
+}

@@ -1,0 +1,204 @@
+{
+ "seed": 20260803,
+ "section": {
+  "breach_plane_x": 15.0,
+  "note": "x = 15.000 is the OUTERMOST surface of the wall (the cover cap face).  Nothing in this assembly is east of it.  Glass is at 14.96650 / 14.95500, NOT at 15.000.",
+  "cap_face_x": 15.0,
+  "plate_front_x": 14.976,
+  "plate_back_x": 14.97,
+  "glass_outer_x": 14.9665,
+  "glass_inner_x": 14.955,
+  "gasket_inner_back_x": 14.951,
+  "rebate_face_x": 14.945,
+  "body_back_x": 14.84,
+  "sightline_m": 0.075,
+  "depth_m": 0.16,
+  "plate_width_m": 0.062,
+  "pane_gap_m": 0.03,
+  "edge_bite_m": 0.016,
+  "glass_thickness_m": 0.011499999999999996,
+  "glass_makeup": "5 mm HS / 1.5 mm PVB / 5 mm HS laminated",
+  "exterior_gasket_compressed_m": 0.003500000000000003,
+  "interior_gasket_compressed_m": 0.0040000000000000036,
+  "isolator_thickness_m": 0.005999999999999998,
+  "wall_thickness_m": {
+   "rebate": 0.0032,
+   "side": 0.0032,
+   "back": 0.0035,
+   "web": 0.0035,
+   "steel": 0.004
+  },
+  "extrusion_alloy": "6063-T6",
+  "isolator_material": "PA6.6 GF25",
+  "fastener_grade": "A2-70 stainless",
+  "cap_projection_m": 0.024,
+  "cap_overhang_each_side_m": 0.006499999999999999
+ },
+ "breach_state": [
+  {
+   "uid": 0,
+   "y": -11.0,
+   "beat1": "intact",
+   "beat3": "intact",
+   "becomes": null
+  },
+  {
+   "uid": 1,
+   "y": -8.8,
+   "beat1": "intact",
+   "beat3": "intact",
+   "becomes": null
+  },
+  {
+   "uid": 2,
+   "y": -6.6,
+   "beat1": "intact",
+   "beat3": "intact",
+   "becomes": null
+  },
+  {
+   "uid": 3,
+   "y": -4.3999999999999995,
+   "beat1": "intact",
+   "beat3": "bent_stub",
+   "becomes": "mullion_bent_stub"
+  },
+  {
+   "uid": 4,
+   "y": -2.1999999999999993,
+   "beat1": "intact",
+   "beat3": "destroyed",
+   "becomes": null
+  },
+  {
+   "uid": 5,
+   "y": 0.0,
+   "beat1": "intact",
+   "beat3": "destroyed",
+   "becomes": null
+  },
+  {
+   "uid": 6,
+   "y": 2.200000000000001,
+   "beat1": "intact",
+   "beat3": "destroyed",
+   "becomes": null
+  },
+  {
+   "uid": 7,
+   "y": 4.400000000000002,
+   "beat1": "intact",
+   "beat3": "bent_stub",
+   "becomes": "mullion_bent_stub"
+  },
+  {
+   "uid": 8,
+   "y": 6.600000000000001,
+   "beat1": "intact",
+   "beat3": "intact",
+   "becomes": null
+  },
+  {
+   "uid": 9,
+   "y": 8.8,
+   "beat1": "intact",
+   "beat3": "intact",
+   "becomes": null
+  },
+  {
+   "uid": 10,
+   "y": 11.0,
+   "beat1": "intact",
+   "beat3": "intact",
+   "becomes": null
+  }
+ ],
+ "n_panes": 10,
+ "n_shards": 3800,
+ "adjacency": {
+  "2": {
+   "shards": 195,
+   "bonds": 541,
+   "bonds_per_shard": 5.5487179487179485,
+   "isolated": 0,
+   "degree_min": 2,
+   "degree_median": 5.0,
+   "degree_max": 13,
+   "shared_len_m": {
+    "min": 0.003,
+    "median": 0.10200000000000001,
+    "max": 0.327
+   }
+  },
+  "3": {
+   "shards": 202,
+   "bonds": 551,
+   "bonds_per_shard": 5.455445544554456,
+   "isolated": 0,
+   "degree_min": 2,
+   "degree_median": 5.0,
+   "degree_max": 11,
+   "shared_len_m": {
+    "min": 0.003,
+    "median": 0.10200000000000001,
+    "max": 0.441
+   }
+  },
+  "4": {
+   "shards": 1531,
+   "bonds": 5355,
+   "bonds_per_shard": 6.995427824951013,
+   "isolated": 0,
+   "degree_min": 2,
+   "degree_median": 7.0,
+   "degree_max": 13,
+   "shared_len_m": {
+    "min": 0.003,
+    "median": 0.018000000000000002,
+    "max": 0.387
+   }
+  },
+  "5": {
+   "shards": 1485,
+   "bonds": 5246,
+   "bonds_per_shard": 7.065319865319865,
+   "isolated": 0,
+   "degree_min": 2,
+   "degree_median": 7.0,
+   "degree_max": 20,
+   "shared_len_m": {
+    "min": 0.003,
+    "median": 0.018000000000000002,
+    "max": 0.441
+   }
+  },
+  "6": {
+   "shards": 200,
+   "bonds": 562,
+   "bonds_per_shard": 5.62,
+   "isolated": 0,
+   "degree_min": 2,
+   "degree_median": 5.0,
+   "degree_max": 11,
+   "shared_len_m": {
+    "min": 0.003,
+    "median": 0.0975,
+    "max": 0.47700000000000004
+   }
+  },
+  "7": {
+   "shards": 183,
+   "bonds": 501,
+   "bonds_per_shard": 5.475409836065574,
+   "isolated": 0,
+   "degree_min": 2,
+   "degree_median": 5.0,
+   "degree_max": 12,
+   "shared_len_m": {
+    "min": 0.003,
+    "median": 0.105,
+    "max": 0.459
+   }
+  }
+ }
+}

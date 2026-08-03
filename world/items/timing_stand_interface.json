@@ -1,0 +1,9103 @@
+{
+ "item": "timing_stand",
+ "version": "1.0.0",
+ "collection": "W_Item_TimingStand",
+ "prefix": "TS_",
+ "filmed_at_m": 10.0,
+ "lens_mm": 35.0,
+ "px_per_m_at_filmed_distance": 373.33,
+ "section": {
+  "front_leg_y": 12.42,
+  "console_y": 12.06,
+  "wall_pit_face_y": 11.89,
+  "wall_top_z": 1.2,
+  "clear_of_wall_m": 0.53,
+  "embed_m": 0.022,
+  "pad_thickness_m": 0.036,
+  "console_h": 0.74,
+  "console_d": 0.52,
+  "rail_h": 0.3,
+  "seat_mount_plate": [
+   0.15,
+   0.15,
+   0.008
+  ],
+  "seat_boss_d": 0.062,
+  "seat_bolt_pcd": 0.1,
+  "vesa": [
+   0.1,
+   0.1
+  ],
+  "valance_h": 0.28,
+  "canopy_tube_r": 0.0215,
+  "eyelet_pitch_m": 0.3,
+  "eyelet_d": 0.025
+ },
+ "instances_built": 10,
+ "instances_declared": 10,
+ "population_note": "10 stands, 4 seat stations each = 40 (matches timing_stand_seat), 5-7 monitor bays each = 59 (timing_stand_monitor declares 60), 1 standing principal station each = 10 (team_principal_figure). engineer_on_timing_stand declares 40; this module reports occupied=True on 28 of them, because 3 of the 10 stands are STRUCK -- covered, arms folded, loom coiled -- which is the manifest's own 'occupied/empty' variation axis. Populating a covered stand would contradict the geometry.",
+ "ownership": {
+  "owned": [
+   "chassis",
+   "levelling feet",
+   "castors",
+   "deck and its surface",
+   "steps",
+   "handrail",
+   "console carcass and worktop",
+   "fascia and its livery",
+   "monitor rail, shade hood and every VESA arm up to and including the plate",
+   "seat rail, pedestals and mount plates up to the top of the boss",
+   "canopy frame, purlins, eyelet studs, roll mandrel and lashings",
+   "the rigid valance board and its lettering",
+   "the stand's own cable loom, tray, ties and ramp",
+   "the tarpaulin on a struck stand",
+   "the extinguisher bracket and umbrella socket, left EMPTY"
+  ],
+  "not_owned": [
+   "seat stems and shells (timing_stand_seat)",
+   "screens (timing_stand_monitor)",
+   "canopy fabric and its roll (timing_stand_canopy)",
+   "figures (engineer_on_timing_stand, team_principal_figure)",
+   "extinguishers, bottles, bags, crates, cable drums and gaffer tape -- all separate manifest items"
+  ]
+ },
+ "stands": [
+  {
+   "uid": 0,
+   "bay": 1,
+   "team": "BOREAL",
+   "col1": [
+    0.11443537382697373,
+    0.3467040563550296,
+    0.6307571363461468
+   ],
+   "col2": [
+    0.8879231178819663,
+    0.9215818562772946,
+    0.938685728457888
+   ],
+   "hexes": [
+    "#5f9fd0",
+    "#f2f6f8"
+   ],
+   "seed": 4100,
+   "x0": -206.984,
+   "L": 4.637,
+   "D": 1.766,
+   "tiers": 1,
+   "deck": 0.6793,
+   "rise": [
+    0.0
+   ],
+   "y_splits": [
+    0.0,
+    1.766
+   ],
+   "fam": 0,
+   "family": "45-series T-slot",
+   "deck_kind": "chequer",
+   "deck_i": 0,
+   "fascia": "ribbed",
+   "fascia_i": 1,
+   "canopy": "up",
+   "dressed": true,
+   "post_x": [
+    -2.2635,
+    -0.7545,
+    0.7545,
+    2.2635
+   ],
+   "nbay": 3,
+   "seat_x": [
+    -1.3153,
+    -0.4297,
+    0.4559,
+    1.3415
+   ],
+   "seat_pitch": 0.8856,
+   "nseat": 4,
+   "prin_end": 1.0,
+   "eaves_f": 2.997,
+   "eaves_r": 2.9229,
+   "post_top": 3.2538,
+   "nraft": 5,
+   "feet": [
+    {
+     "i": 0,
+     "j": 0,
+     "lx": -2.2635,
+     "ly": 0.0,
+     "cx": -209.24751787663394,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 0,
+     "j": 1,
+     "lx": -2.2635,
+     "ly": 1.766,
+     "cx": -209.24751787663394,
+     "cy": 14.186,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 0,
+     "lx": -0.7545,
+     "ly": 0.0,
+     "cx": -207.73851787663395,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 1,
+     "lx": -0.7545,
+     "ly": 1.766,
+     "cx": -207.73851787663395,
+     "cy": 14.186,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 0,
+     "lx": 0.7545,
+     "ly": 0.0,
+     "cx": -206.22951787663393,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 1,
+     "lx": 0.7545,
+     "ly": 1.766,
+     "cx": -206.22951787663393,
+     "cy": 14.186,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 0,
+     "lx": 2.2635,
+     "ly": 0.0,
+     "cx": -204.72051787663395,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 1,
+     "lx": 2.2635,
+     "ly": 1.766,
+     "cx": -204.72051787663395,
+     "cy": 14.186,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    }
+   ],
+   "base_z": 0.0,
+   "ground_min": 0.0,
+   "ground_max": 0.0,
+   "owners": [
+    "build_architecture:paving"
+   ],
+   "castors": true,
+   "ballast": "plates",
+   "rail": "rear+ends",
+   "step_end": 1.0,
+   "steps": 3,
+   "brand": "VOLTAIC",
+   "age": 0.693,
+   "grime": 0.765,
+   "mast": false,
+   "console_h": 0.7356,
+   "worktop_d": 0.5134,
+   "nmon": 6,
+   "hood": false,
+   "height": 3.254
+  },
+  {
+   "uid": 1,
+   "bay": 2,
+   "team": "CORVUS",
+   "col1": [
+    0.006995410187265387,
+    0.006995410187265387,
+    0.008023192985384994
+   ],
+   "col2": [
+    0.5775804404296506,
+    0.3613067797835095,
+    0.06847816984440017
+   ],
+   "hexes": [
+    "#141416",
+    "#c8a24a"
+   ],
+   "seed": 4137,
+   "x0": -186.4015,
+   "L": 5.211,
+   "D": 2.16,
+   "tiers": 2,
+   "deck": 0.6692,
+   "rise": [
+    0.0,
+    0.3388
+   ],
+   "y_splits": [
+    0.0,
+    1.236,
+    2.16
+   ],
+   "fam": 1,
+   "family": "60-series T-slot",
+   "deck_kind": "grating",
+   "deck_i": 1,
+   "fascia": "flat",
+   "fascia_i": 0,
+   "canopy": "down",
+   "dressed": true,
+   "post_x": [
+    -2.5505,
+    -0.8502,
+    0.8502,
+    2.5505
+   ],
+   "nbay": 3,
+   "seat_x": [
+    -1.3126,
+    -0.4315,
+    0.4496,
+    1.3307
+   ],
+   "seat_pitch": 0.8811,
+   "nseat": 4,
+   "prin_end": 1.0,
+   "eaves_f": 3.0081,
+   "eaves_r": 2.8893,
+   "post_top": 3.2409,
+   "nraft": 6,
+   "feet": [
+    {
+     "i": 0,
+     "j": 0,
+     "lx": -2.5505,
+     "ly": 0.0,
+     "cx": -188.95200464792606,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 0,
+     "j": 1,
+     "lx": -2.5505,
+     "ly": 2.16,
+     "cx": -188.95200464792606,
+     "cy": 14.58,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 0,
+     "lx": -0.8502,
+     "ly": 0.0,
+     "cx": -187.25170464792606,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 1,
+     "lx": -0.8502,
+     "ly": 2.16,
+     "cx": -187.25170464792606,
+     "cy": 14.58,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 0,
+     "lx": 0.8502,
+     "ly": 0.0,
+     "cx": -185.55130464792606,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 1,
+     "lx": 0.8502,
+     "ly": 2.16,
+     "cx": -185.55130464792606,
+     "cy": 14.58,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 0,
+     "lx": 2.5505,
+     "ly": 0.0,
+     "cx": -183.85100464792606,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 1,
+     "lx": 2.5505,
+     "ly": 2.16,
+     "cx": -183.85100464792606,
+     "cy": 14.58,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    }
+   ],
+   "base_z": 0.0,
+   "ground_min": 0.0,
+   "ground_max": 0.0,
+   "owners": [
+    "build_architecture:paving"
+   ],
+   "castors": true,
+   "ballast": "plates",
+   "rail": "full",
+   "step_end": 1.0,
+   "steps": 2,
+   "brand": "MERIDIAN",
+   "age": 0.566,
+   "grime": 0.662,
+   "mast": false,
+   "console_h": 0.7351,
+   "worktop_d": 0.5258,
+   "nmon": 5,
+   "hood": true,
+   "height": 3.241
+  },
+  {
+   "uid": 2,
+   "bay": 3,
+   "team": "DELMAR",
+   "col1": [
+    0.008023192985384994,
+    0.0295568344378088,
+    0.10702310297826761
+   ],
+   "col2": [
+    0.7605245046752924,
+    0.1301364766903643,
+    0.010329823029626936
+   ],
+   "hexes": [
+    "#16305c",
+    "#e2651a"
+   ],
+   "seed": 4174,
+   "x0": -164.9105,
+   "L": 5.351,
+   "D": 2.116,
+   "tiers": 2,
+   "deck": 0.7832,
+   "rise": [
+    0.0,
+    0.3871
+   ],
+   "y_splits": [
+    0.0,
+    1.158,
+    2.116
+   ],
+   "fam": 2,
+   "family": "50 SHS welded",
+   "deck_kind": "ply",
+   "deck_i": 2,
+   "fascia": "louvred",
+   "fascia_i": 2,
+   "canopy": "up",
+   "dressed": false,
+   "post_x": [
+    -2.6205,
+    -0.8735,
+    0.8735,
+    2.6205
+   ],
+   "nbay": 3,
+   "seat_x": [
+    -1.4542,
+    -0.5045,
+    0.4452,
+    1.3949
+   ],
+   "seat_pitch": 0.9497,
+   "nseat": 4,
+   "prin_end": -1.0,
+   "eaves_f": 2.9354,
+   "eaves_r": 2.8631,
+   "post_top": 3.1324,
+   "nraft": 7,
+   "feet": [
+    {
+     "i": 0,
+     "j": 0,
+     "lx": -2.6205,
+     "ly": 0.0,
+     "cx": -167.53104810092844,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 0,
+     "j": 1,
+     "lx": -2.6205,
+     "ly": 2.116,
+     "cx": -167.53104810092844,
+     "cy": 14.536,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 0,
+     "lx": -0.8735,
+     "ly": 0.0,
+     "cx": -165.78404810092846,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 1,
+     "lx": -0.8735,
+     "ly": 2.116,
+     "cx": -165.78404810092846,
+     "cy": 14.536,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 0,
+     "lx": 0.8735,
+     "ly": 0.0,
+     "cx": -164.03704810092844,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 1,
+     "lx": 0.8735,
+     "ly": 2.116,
+     "cx": -164.03704810092844,
+     "cy": 14.536,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 0,
+     "lx": 2.6205,
+     "ly": 0.0,
+     "cx": -162.29004810092846,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 1,
+     "lx": 2.6205,
+     "ly": 2.116,
+     "cx": -162.29004810092846,
+     "cy": 14.536,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    }
+   ],
+   "base_z": 0.0,
+   "ground_min": 0.0,
+   "ground_max": 0.0,
+   "owners": [
+    "build_architecture:paving"
+   ],
+   "castors": true,
+   "ballast": "sandbags",
+   "rail": "rear+ends",
+   "step_end": -1.0,
+   "steps": 2,
+   "brand": "CIRRUS",
+   "age": 0.557,
+   "grime": 0.61,
+   "mast": false,
+   "console_h": 0.7364,
+   "worktop_d": 0.5233,
+   "nmon": 7,
+   "hood": true,
+   "height": 3.132
+  },
+  {
+   "uid": 3,
+   "bay": 4,
+   "team": "ESTIVAL",
+   "col1": [
+    0.5775804404296506,
+    0.4072402119017367,
+    0.17464740365558504
+   ],
+   "col2": [
+    0.06847816984440017,
+    0.042311410620809675,
+    0.021219010376003555
+   ],
+   "hexes": [
+    "#c8ab74",
+    "#4a3a28"
+   ],
+   "seed": 4211,
+   "x0": -136.9188,
+   "L": 4.564,
+   "D": 1.683,
+   "tiers": 1,
+   "deck": 0.7582,
+   "rise": [
+    0.0
+   ],
+   "y_splits": [
+    0.0,
+    1.683
+   ],
+   "fam": 0,
+   "family": "45-series T-slot",
+   "deck_kind": "chequer",
+   "deck_i": 0,
+   "fascia": "perforated",
+   "fascia_i": 3,
+   "canopy": "up",
+   "dressed": true,
+   "post_x": [
+    -2.227,
+    -0.7423,
+    0.7423,
+    2.227
+   ],
+   "nbay": 3,
+   "seat_x": [
+    -1.3887,
+    -0.4359,
+    0.517,
+    1.4699
+   ],
+   "seat_pitch": 0.9529,
+   "nseat": 4,
+   "prin_end": -1.0,
+   "eaves_f": 3.0234,
+   "eaves_r": 2.9449,
+   "post_top": 3.3034,
+   "nraft": 5,
+   "feet": [
+    {
+     "i": 0,
+     "j": 0,
+     "lx": -2.227,
+     "ly": 0.0,
+     "cx": -139.14584659371613,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 0,
+     "j": 1,
+     "lx": -2.227,
+     "ly": 1.683,
+     "cx": -139.14584659371613,
+     "cy": 14.103,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 0,
+     "lx": -0.7423,
+     "ly": 0.0,
+     "cx": -137.66114659371613,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 1,
+     "lx": -0.7423,
+     "ly": 1.683,
+     "cx": -137.66114659371613,
+     "cy": 14.103,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 0,
+     "lx": 0.7423,
+     "ly": 0.0,
+     "cx": -136.17654659371613,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 1,
+     "lx": 0.7423,
+     "ly": 1.683,
+     "cx": -136.17654659371613,
+     "cy": 14.103,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 0,
+     "lx": 2.227,
+     "ly": 0.0,
+     "cx": -134.69184659371612,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 1,
+     "lx": 2.227,
+     "ly": 1.683,
+     "cx": -134.69184659371612,
+     "cy": 14.103,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    }
+   ],
+   "base_z": 0.0,
+   "ground_min": 0.0,
+   "ground_max": 0.0,
+   "owners": [
+    "build_architecture:paving"
+   ],
+   "castors": true,
+   "ballast": "sandbags",
+   "rail": "full",
+   "step_end": -1.0,
+   "steps": 3,
+   "brand": "ARDENT",
+   "age": 0.458,
+   "grime": 0.553,
+   "mast": false,
+   "console_h": 0.7403,
+   "worktop_d": 0.5198,
+   "nmon": 7,
+   "hood": true,
+   "height": 3.303
+  },
+  {
+   "uid": 4,
+   "bay": 5,
+   "team": "FULGOR",
+   "col1": [
+    0.768151147247507,
+    0.4969329950608704,
+    0.006995410187265387
+   ],
+   "col2": [
+    0.024157632448504756,
+    0.026241221894849898,
+    0.030713443732993635
+   ],
+   "hexes": [
+    "#e3bb14",
+    "#2b2d31"
+   ],
+   "seed": 4248,
+   "x0": -116.7984,
+   "L": 5.399,
+   "D": 2.398,
+   "tiers": 3,
+   "deck": 0.7567,
+   "rise": [
+    0.0,
+    0.3394,
+    0.7398
+   ],
+   "y_splits": [
+    0.0,
+    0.963,
+    1.814,
+    2.398
+   ],
+   "fam": 1,
+   "family": "60-series T-slot",
+   "deck_kind": "rubber",
+   "deck_i": 3,
+   "fascia": "ribbed",
+   "fascia_i": 1,
+   "canopy": "down",
+   "dressed": true,
+   "post_x": [
+    -2.6445,
+    -0.8815,
+    0.8815,
+    2.6445
+   ],
+   "nbay": 3,
+   "seat_x": [
+    -1.1253,
+    -0.3523,
+    0.4206,
+    1.1936
+   ],
+   "seat_pitch": 0.7729,
+   "nseat": 4,
+   "prin_end": -1.0,
+   "eaves_f": 2.9997,
+   "eaves_r": 2.8691,
+   "post_top": 3.2933,
+   "nraft": 6,
+   "feet": [
+    {
+     "i": 0,
+     "j": 0,
+     "lx": -2.6445,
+     "ly": 0.0,
+     "cx": -119.44294590758736,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 0,
+     "j": 1,
+     "lx": -2.6445,
+     "ly": 2.398,
+     "cx": -119.44294590758736,
+     "cy": 14.818,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 0,
+     "lx": -0.8815,
+     "ly": 0.0,
+     "cx": -117.67994590758737,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 1,
+     "lx": -0.8815,
+     "ly": 2.398,
+     "cx": -117.67994590758737,
+     "cy": 14.818,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 0,
+     "lx": 0.8815,
+     "ly": 0.0,
+     "cx": -115.91694590758736,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 1,
+     "lx": 0.8815,
+     "ly": 2.398,
+     "cx": -115.91694590758736,
+     "cy": 14.818,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 0,
+     "lx": 2.6445,
+     "ly": 0.0,
+     "cx": -114.15394590758737,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 1,
+     "lx": 2.6445,
+     "ly": 2.398,
+     "cx": -114.15394590758737,
+     "cy": 14.818,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    }
+   ],
+   "base_z": 0.0,
+   "ground_min": 0.0,
+   "ground_max": 0.0,
+   "owners": [
+    "build_architecture:paving"
+   ],
+   "castors": false,
+   "ballast": "none",
+   "rail": "full",
+   "step_end": -1.0,
+   "steps": 2,
+   "brand": "CALIBRE",
+   "age": 0.579,
+   "grime": 0.555,
+   "mast": true,
+   "console_h": 0.7409,
+   "worktop_d": 0.5236,
+   "nmon": 5,
+   "hood": true,
+   "height": 3.713
+  },
+  {
+   "uid": 5,
+   "bay": 6,
+   "team": "GRISAILLE",
+   "col1": [
+    0.15292615199615017,
+    0.1589608350608804,
+    0.17464740365558504
+   ],
+   "col2": [
+    0.5271151257058131,
+    0.02315336617811041,
+    0.18782077230067787
+   ],
+   "hexes": [
+    "#6d6f74",
+    "#c02a78"
+   ],
+   "seed": 4285,
+   "x0": -95.2255,
+   "L": 5.847,
+   "D": 2.074,
+   "tiers": 2,
+   "deck": 0.6835,
+   "rise": [
+    0.0,
+    0.3246
+   ],
+   "y_splits": [
+    0.0,
+    1.141,
+    2.074
+   ],
+   "fam": 0,
+   "family": "45-series T-slot",
+   "deck_kind": "grating",
+   "deck_i": 1,
+   "fascia": "louvred",
+   "fascia_i": 2,
+   "canopy": "up",
+   "dressed": true,
+   "post_x": [
+    -2.8685,
+    -1.4343,
+    0.0,
+    1.4342,
+    2.8685
+   ],
+   "nbay": 4,
+   "seat_x": [
+    -1.4525,
+    -0.4949,
+    0.4627,
+    1.4203
+   ],
+   "seat_pitch": 0.9576,
+   "nseat": 4,
+   "prin_end": -1.0,
+   "eaves_f": 2.9195,
+   "eaves_r": 2.8402,
+   "post_top": 3.2121,
+   "nraft": 6,
+   "feet": [
+    {
+     "i": 0,
+     "j": 0,
+     "lx": -2.8685,
+     "ly": 0.0,
+     "cx": -98.0940012417931,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 0,
+     "j": 1,
+     "lx": -2.8685,
+     "ly": 2.074,
+     "cx": -98.0940012417931,
+     "cy": 14.494,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 0,
+     "lx": -1.4343,
+     "ly": 0.0,
+     "cx": -96.65980124179309,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 1,
+     "lx": -1.4343,
+     "ly": 2.074,
+     "cx": -96.65980124179309,
+     "cy": 14.494,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 0,
+     "lx": 0.0,
+     "ly": 0.0,
+     "cx": -95.2255012417931,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 1,
+     "lx": 0.0,
+     "ly": 2.074,
+     "cx": -95.2255012417931,
+     "cy": 14.494,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 0,
+     "lx": 1.4342,
+     "ly": 0.0,
+     "cx": -93.7913012417931,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 1,
+     "lx": 1.4342,
+     "ly": 2.074,
+     "cx": -93.7913012417931,
+     "cy": 14.494,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 4,
+     "j": 0,
+     "lx": 2.8685,
+     "ly": 0.0,
+     "cx": -92.3570012417931,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 4,
+     "j": 1,
+     "lx": 2.8685,
+     "ly": 2.074,
+     "cx": -92.3570012417931,
+     "cy": 14.494,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    }
+   ],
+   "base_z": 0.0,
+   "ground_min": 0.0,
+   "ground_max": 0.0,
+   "owners": [
+    "build_architecture:paving"
+   ],
+   "castors": false,
+   "ballast": "none",
+   "rail": "rear+ends",
+   "step_end": 1.0,
+   "steps": 2,
+   "brand": "KESTREL",
+   "age": 0.672,
+   "grime": 0.824,
+   "mast": false,
+   "console_h": 0.7301,
+   "worktop_d": 0.5284,
+   "nmon": 6,
+   "hood": true,
+   "height": 3.212
+  },
+  {
+   "uid": 6,
+   "bay": 7,
+   "team": "HALCYON",
+   "col1": [
+    0.006048833022857054,
+    0.21223075741405523,
+    0.1946178304415758
+   ],
+   "col2": [
+    0.9046611743911496,
+    0.9301108583754237,
+    0.9215818562772946
+   ],
+   "hexes": [
+    "#127f7a",
+    "#f4f7f6"
+   ],
+   "seed": 4322,
+   "x0": -73.9531,
+   "L": 4.531,
+   "D": 1.772,
+   "tiers": 1,
+   "deck": 0.7679,
+   "rise": [
+    0.0
+   ],
+   "y_splits": [
+    0.0,
+    1.772
+   ],
+   "fam": 2,
+   "family": "50 SHS welded",
+   "deck_kind": "chequer",
+   "deck_i": 0,
+   "fascia": "flat",
+   "fascia_i": 0,
+   "canopy": "down",
+   "dressed": false,
+   "post_x": [
+    -2.2105,
+    -0.7368,
+    0.7368,
+    2.2105
+   ],
+   "nbay": 3,
+   "seat_x": [
+    -1.1401,
+    -0.3289,
+    0.4822,
+    1.2934
+   ],
+   "seat_pitch": 0.8112,
+   "nseat": 4,
+   "prin_end": -1.0,
+   "eaves_f": 2.8899,
+   "eaves_r": 2.7698,
+   "post_top": 3.1574,
+   "nraft": 6,
+   "feet": [
+    {
+     "i": 0,
+     "j": 0,
+     "lx": -2.2105,
+     "ly": 0.0,
+     "cx": -76.1636271831467,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 0,
+     "j": 1,
+     "lx": -2.2105,
+     "ly": 1.772,
+     "cx": -76.1636271831467,
+     "cy": 14.192,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 0,
+     "lx": -0.7368,
+     "ly": 0.0,
+     "cx": -74.68992718314671,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 1,
+     "lx": -0.7368,
+     "ly": 1.772,
+     "cx": -74.68992718314671,
+     "cy": 14.192,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 0,
+     "lx": 0.7368,
+     "ly": 0.0,
+     "cx": -73.2163271831467,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 1,
+     "lx": 0.7368,
+     "ly": 1.772,
+     "cx": -73.2163271831467,
+     "cy": 14.192,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 0,
+     "lx": 2.2105,
+     "ly": 0.0,
+     "cx": -71.74262718314671,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 1,
+     "lx": 2.2105,
+     "ly": 1.772,
+     "cx": -71.74262718314671,
+     "cy": 14.192,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    }
+   ],
+   "base_z": 0.0,
+   "ground_min": 0.0,
+   "ground_max": 0.0,
+   "owners": [
+    "build_architecture:paving"
+   ],
+   "castors": true,
+   "ballast": "sandbags",
+   "rail": "full",
+   "step_end": 1.0,
+   "steps": 2,
+   "brand": "NORDVAL",
+   "age": 0.566,
+   "grime": 0.727,
+   "mast": true,
+   "console_h": 0.7428,
+   "worktop_d": 0.5194,
+   "nmon": 5,
+   "hood": true,
+   "height": 3.577
+  },
+  {
+   "uid": 7,
+   "bay": 8,
+   "team": "IRIDIA",
+   "col1": [
+    0.10461648409110419,
+    0.04970656598412723,
+    0.32314320911295075
+   ],
+   "col2": [
+    0.4851499400560704,
+    0.5149176653765214,
+    0.5520114015120001
+   ],
+   "hexes": [
+    "#5b3f9a",
+    "#b9bec4"
+   ],
+   "seed": 4359,
+   "x0": -52.0826,
+   "L": 5.192,
+   "D": 2.039,
+   "tiers": 2,
+   "deck": 0.6226,
+   "rise": [
+    0.0,
+    0.3401
+   ],
+   "y_splits": [
+    0.0,
+    1.131,
+    2.039
+   ],
+   "fam": 1,
+   "family": "60-series T-slot",
+   "deck_kind": "ply",
+   "deck_i": 2,
+   "fascia": "perforated",
+   "fascia_i": 3,
+   "canopy": "up",
+   "dressed": true,
+   "post_x": [
+    -2.541,
+    -0.847,
+    0.847,
+    2.541
+   ],
+   "nbay": 3,
+   "seat_x": [
+    -1.2686,
+    -0.4041,
+    0.4603,
+    1.3248
+   ],
+   "seat_pitch": 0.8645,
+   "nseat": 4,
+   "prin_end": 1.0,
+   "eaves_f": 3.0316,
+   "eaves_r": 2.9495,
+   "post_top": 3.2189,
+   "nraft": 6,
+   "feet": [
+    {
+     "i": 0,
+     "j": 0,
+     "lx": -2.541,
+     "ly": 0.0,
+     "cx": -54.62356287150163,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 0,
+     "j": 1,
+     "lx": -2.541,
+     "ly": 2.039,
+     "cx": -54.62356287150163,
+     "cy": 14.459,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 0,
+     "lx": -0.847,
+     "ly": 0.0,
+     "cx": -52.92956287150164,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 1,
+     "lx": -0.847,
+     "ly": 2.039,
+     "cx": -52.92956287150164,
+     "cy": 14.459,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 0,
+     "lx": 0.847,
+     "ly": 0.0,
+     "cx": -51.235562871501635,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 1,
+     "lx": 0.847,
+     "ly": 2.039,
+     "cx": -51.235562871501635,
+     "cy": 14.459,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 0,
+     "lx": 2.541,
+     "ly": 0.0,
+     "cx": -49.54156287150164,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 1,
+     "lx": 2.541,
+     "ly": 2.039,
+     "cx": -49.54156287150164,
+     "cy": 14.459,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    }
+   ],
+   "base_z": 0.0,
+   "ground_min": 0.0,
+   "ground_max": 0.0,
+   "owners": [
+    "build_architecture:paving"
+   ],
+   "castors": true,
+   "ballast": "sandbags",
+   "rail": "full",
+   "step_end": 1.0,
+   "steps": 2,
+   "brand": "ALTIS",
+   "age": 0.533,
+   "grime": 0.551,
+   "mast": false,
+   "console_h": 0.7413,
+   "worktop_d": 0.5157,
+   "nmon": 5,
+   "hood": false,
+   "height": 3.219
+  },
+  {
+   "uid": 8,
+   "bay": 9,
+   "team": "JUNIPER",
+   "col1": [
+    0.028426039504420793,
+    0.14702726649759498,
+    0.042311410620809675
+   ],
+   "col2": [
+    0.8631572134541023,
+    0.7912979403326302,
+    0.6104955708078648
+   ],
+   "hexes": [
+    "#2f6b3a",
+    "#efe6cd"
+   ],
+   "seed": 4396,
+   "x0": -26.277,
+   "L": 6.042,
+   "D": 2.388,
+   "tiers": 3,
+   "deck": 0.6945,
+   "rise": [
+    0.0,
+    0.385,
+    0.7745
+   ],
+   "y_splits": [
+    0.0,
+    1.077,
+    1.717,
+    2.388
+   ],
+   "fam": 0,
+   "family": "45-series T-slot",
+   "deck_kind": "grating",
+   "deck_i": 1,
+   "fascia": "ribbed",
+   "fascia_i": 1,
+   "canopy": "up",
+   "dressed": true,
+   "post_x": [
+    -2.966,
+    -1.483,
+    0.0,
+    1.483,
+    2.966
+   ],
+   "nbay": 4,
+   "seat_x": [
+    -1.3971,
+    -0.4936,
+    0.41,
+    1.3135
+   ],
+   "seat_pitch": 0.9035,
+   "nseat": 4,
+   "prin_end": -1.0,
+   "eaves_f": 3.0216,
+   "eaves_r": 2.9026,
+   "post_top": 3.206,
+   "nraft": 7,
+   "feet": [
+    {
+     "i": 0,
+     "j": 0,
+     "lx": -2.966,
+     "ly": 0.0,
+     "cx": -29.24301686281277,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 0,
+     "j": 1,
+     "lx": -2.966,
+     "ly": 2.388,
+     "cx": -29.24301686281277,
+     "cy": 14.808,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 0,
+     "lx": -1.483,
+     "ly": 0.0,
+     "cx": -27.76001686281277,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 1,
+     "lx": -1.483,
+     "ly": 2.388,
+     "cx": -27.76001686281277,
+     "cy": 14.808,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 0,
+     "lx": 0.0,
+     "ly": 0.0,
+     "cx": -26.27701686281277,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 1,
+     "lx": 0.0,
+     "ly": 2.388,
+     "cx": -26.27701686281277,
+     "cy": 14.808,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 0,
+     "lx": 1.483,
+     "ly": 0.0,
+     "cx": -24.794016862812768,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 1,
+     "lx": 1.483,
+     "ly": 2.388,
+     "cx": -24.794016862812768,
+     "cy": 14.808,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 4,
+     "j": 0,
+     "lx": 2.966,
+     "ly": 0.0,
+     "cx": -23.311016862812767,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 4,
+     "j": 1,
+     "lx": 2.966,
+     "ly": 2.388,
+     "cx": -23.311016862812767,
+     "cy": 14.808,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    }
+   ],
+   "base_z": 0.0,
+   "ground_min": 0.0,
+   "ground_max": 0.0,
+   "owners": [
+    "build_architecture:paving"
+   ],
+   "castors": false,
+   "ballast": "plates",
+   "rail": "rear",
+   "step_end": -1.0,
+   "steps": 3,
+   "brand": "VERITAS",
+   "age": 0.545,
+   "grime": 0.816,
+   "mast": false,
+   "console_h": 0.7459,
+   "worktop_d": 0.5071,
+   "nmon": 6,
+   "hood": false,
+   "height": 3.206
+  },
+  {
+   "uid": 9,
+   "bay": 10,
+   "team": "KESTREL",
+   "col1": [
+    0.012286488356915872,
+    0.042311410620809675,
+    0.02315336617811041
+   ],
+   "col2": [
+    0.6866853124353135,
+    0.12743768043564743,
+    0.011612245179743885
+   ],
+   "hexes": [
+    "#1d3a2a",
+    "#d8641c"
+   ],
+   "seed": 4433,
+   "x0": -4.2907,
+   "L": 4.257,
+   "D": 1.751,
+   "tiers": 1,
+   "deck": 0.7373,
+   "rise": [
+    0.0
+   ],
+   "y_splits": [
+    0.0,
+    1.751
+   ],
+   "fam": 2,
+   "family": "50 SHS welded",
+   "deck_kind": "chequer",
+   "deck_i": 0,
+   "fascia": "louvred",
+   "fascia_i": 2,
+   "canopy": "down",
+   "dressed": false,
+   "post_x": [
+    -2.0735,
+    -0.6912,
+    0.6912,
+    2.0735
+   ],
+   "nbay": 3,
+   "seat_x": [
+    -1.2139,
+    -0.424,
+    0.366,
+    1.1559
+   ],
+   "seat_pitch": 0.7899,
+   "nseat": 4,
+   "prin_end": -1.0,
+   "eaves_f": 2.8879,
+   "eaves_r": 2.8249,
+   "post_top": 3.1717,
+   "nraft": 5,
+   "feet": [
+    {
+     "i": 0,
+     "j": 0,
+     "lx": -2.0735,
+     "ly": 0.0,
+     "cx": -6.364168576342956,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 0,
+     "j": 1,
+     "lx": -2.0735,
+     "ly": 1.751,
+     "cx": -6.364168576342956,
+     "cy": 14.171,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 0,
+     "lx": -0.6912,
+     "ly": 0.0,
+     "cx": -4.981868576342956,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 1,
+     "j": 1,
+     "lx": -0.6912,
+     "ly": 1.751,
+     "cx": -4.981868576342956,
+     "cy": 14.171,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 0,
+     "lx": 0.6912,
+     "ly": 0.0,
+     "cx": -3.5994685763429555,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 2,
+     "j": 1,
+     "lx": 0.6912,
+     "ly": 1.751,
+     "cx": -3.5994685763429555,
+     "cy": 14.171,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 0,
+     "lx": 2.0735,
+     "ly": 0.0,
+     "cx": -2.2171685763429556,
+     "cy": 12.42,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    },
+    {
+     "i": 3,
+     "j": 1,
+     "lx": 2.0735,
+     "ly": 1.751,
+     "cx": -2.2171685763429556,
+     "cy": 14.171,
+     "gz": 0.0,
+     "owner": "build_architecture:paving"
+    }
+   ],
+   "base_z": 0.0,
+   "ground_min": 0.0,
+   "ground_max": 0.0,
+   "owners": [
+    "build_architecture:paving"
+   ],
+   "castors": false,
+   "ballast": "sandbags",
+   "rail": "rear",
+   "step_end": -1.0,
+   "steps": 3,
+   "brand": "OBSIDIAN",
+   "age": 0.743,
+   "grime": 0.507,
+   "mast": true,
+   "console_h": 0.7407,
+   "worktop_d": 0.5245,
+   "nmon": 7,
+   "hood": true,
+   "height": 3.592
+  }
+ ],
+ "seat_stations": [
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "k": 0,
+   "tier": 0,
+   "mount_top_world": [
+    161.14253,
+    46.28127,
+    0.7423
+   ],
+   "deck_z_world": 0.6793,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8856,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "k": 1,
+   "tier": 0,
+   "mount_top_world": [
+    161.82094,
+    46.85052,
+    0.7423
+   ],
+   "deck_z_world": 0.6793,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8856,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "k": 2,
+   "tier": 0,
+   "mount_top_world": [
+    162.49935,
+    47.41977,
+    0.7423
+   ],
+   "deck_z_world": 0.6793,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8856,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "k": 3,
+   "tier": 0,
+   "mount_top_world": [
+    163.17776,
+    47.98903,
+    0.7423
+   ],
+   "deck_z_world": 0.6793,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8856,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "k": 0,
+   "tier": 0,
+   "mount_top_world": [
+    177.12293,
+    59.26146,
+    0.7322
+   ],
+   "deck_z_world": 0.6692,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8811,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "k": 1,
+   "tier": 0,
+   "mount_top_world": [
+    177.79789,
+    59.82782,
+    0.7322
+   ],
+   "deck_z_world": 0.6692,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8811,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "k": 2,
+   "tier": 0,
+   "mount_top_world": [
+    178.47285,
+    60.39418,
+    0.7322
+   ],
+   "deck_z_world": 0.6692,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8811,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "k": 3,
+   "tier": 1,
+   "mount_top_world": [
+    178.51923,
+    61.70965,
+    1.071
+   ],
+   "deck_z_world": 1.008,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8811,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "k": 0,
+   "tier": 0,
+   "mount_top_world": [
+    193.50857,
+    72.94759,
+    0.8462
+   ],
+   "deck_z_world": 0.7832,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9497,
+   "state": "covered",
+   "occupied": false
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "k": 1,
+   "tier": 0,
+   "mount_top_world": [
+    194.23608,
+    73.55804,
+    0.8462
+   ],
+   "deck_z_world": 0.7832,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9497,
+   "state": "covered",
+   "occupied": false
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "k": 2,
+   "tier": 0,
+   "mount_top_world": [
+    194.96359,
+    74.1685,
+    0.8462
+   ],
+   "deck_z_world": 0.7832,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9497,
+   "state": "covered",
+   "occupied": false
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "k": 3,
+   "tier": 1,
+   "mount_top_world": [
+    195.06959,
+    75.51964,
+    1.2333
+   ],
+   "deck_z_world": 1.1703,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9497,
+   "state": "covered",
+   "occupied": false
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "k": 0,
+   "tier": 0,
+   "mount_top_world": [
+    214.7924,
+    91.23176,
+    0.8212
+   ],
+   "deck_z_world": 0.7582,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9529,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "k": 1,
+   "tier": 0,
+   "mount_top_world": [
+    215.52229,
+    91.8442,
+    0.8212
+   ],
+   "deck_z_world": 0.7582,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9529,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "k": 2,
+   "tier": 0,
+   "mount_top_world": [
+    216.25225,
+    92.45672,
+    0.8212
+   ],
+   "deck_z_world": 0.7582,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9529,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "k": 3,
+   "tier": 0,
+   "mount_top_world": [
+    216.98221,
+    93.06923,
+    0.8212
+   ],
+   "deck_z_world": 0.7582,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9529,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "k": 0,
+   "tier": 0,
+   "mount_top_world": [
+    230.69424,
+    103.99225,
+    0.8197
+   ],
+   "deck_z_world": 0.7567,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.7729,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "k": 1,
+   "tier": 0,
+   "mount_top_world": [
+    231.28639,
+    104.48912,
+    0.8197
+   ],
+   "deck_z_world": 0.7567,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.7729,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "k": 2,
+   "tier": 1,
+   "mount_top_world": [
+    231.9346,
+    106.12161,
+    1.1591
+   ],
+   "deck_z_world": 1.0961,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.7729,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "k": 3,
+   "tier": 2,
+   "mount_top_world": [
+    231.48195,
+    106.66106,
+    1.5595
+   ],
+   "deck_z_world": 1.4965,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.7729,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "k": 0,
+   "tier": 0,
+   "mount_top_world": [
+    246.89849,
+    117.73321,
+    0.7465
+   ],
+   "deck_z_world": 0.6835,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9576,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "k": 1,
+   "tier": 0,
+   "mount_top_world": [
+    247.63205,
+    118.34875,
+    0.7465
+   ],
+   "deck_z_world": 0.6835,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9576,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "k": 2,
+   "tier": 0,
+   "mount_top_world": [
+    248.36562,
+    118.96428,
+    0.7465
+   ],
+   "deck_z_world": 0.6835,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9576,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "k": 3,
+   "tier": 1,
+   "mount_top_world": [
+    248.49059,
+    120.30511,
+    1.0711
+   ],
+   "deck_z_world": 1.0081,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9576,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "k": 0,
+   "tier": 0,
+   "mount_top_world": [
+    263.18195,
+    131.90733,
+    0.8309
+   ],
+   "deck_z_world": 0.7679,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8112,
+   "state": "covered",
+   "occupied": false
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "k": 1,
+   "tier": 0,
+   "mount_top_world": [
+    263.80336,
+    132.42876,
+    0.8309
+   ],
+   "deck_z_world": 0.7679,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8112,
+   "state": "covered",
+   "occupied": false
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "k": 2,
+   "tier": 0,
+   "mount_top_world": [
+    264.4247,
+    132.95013,
+    0.8309
+   ],
+   "deck_z_world": 0.7679,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8112,
+   "state": "covered",
+   "occupied": false
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "k": 3,
+   "tier": 0,
+   "mount_top_world": [
+    265.04611,
+    133.47156,
+    0.8309
+   ],
+   "deck_z_world": 0.7679,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8112,
+   "state": "covered",
+   "occupied": false
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "k": 0,
+   "tier": 0,
+   "mount_top_world": [
+    280.09273,
+    145.5784,
+    0.6856
+   ],
+   "deck_z_world": 0.6226,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8645,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "k": 1,
+   "tier": 0,
+   "mount_top_world": [
+    280.75497,
+    146.13409,
+    0.6856
+   ],
+   "deck_z_world": 0.6226,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8645,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "k": 2,
+   "tier": 0,
+   "mount_top_world": [
+    281.41714,
+    146.68971,
+    0.6856
+   ],
+   "deck_z_world": 0.6226,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8645,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "k": 3,
+   "tier": 1,
+   "mount_top_world": [
+    281.48211,
+    147.95721,
+    1.0257
+   ],
+   "deck_z_world": 0.9627,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.8645,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "k": 0,
+   "tier": 0,
+   "mount_top_world": [
+    299.78406,
+    162.05765,
+    0.7575
+   ],
+   "deck_z_world": 0.6945,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9035,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "k": 1,
+   "tier": 0,
+   "mount_top_world": [
+    300.47618,
+    162.63841,
+    0.7575
+   ],
+   "deck_z_world": 0.6945,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9035,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "k": 2,
+   "tier": 1,
+   "mount_top_world": [
+    301.37115,
+    164.38318,
+    1.1425
+   ],
+   "deck_z_world": 1.0795,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9035,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "k": 3,
+   "tier": 2,
+   "mount_top_world": [
+    300.94877,
+    164.88655,
+    1.532
+   ],
+   "deck_z_world": 1.469,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.9035,
+   "state": "fitted",
+   "occupied": true
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "k": 0,
+   "tier": 0,
+   "mount_top_world": [
+    316.49826,
+    176.62806,
+    0.8003
+   ],
+   "deck_z_world": 0.7373,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.7899,
+   "state": "covered",
+   "occupied": false
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "k": 1,
+   "tier": 0,
+   "mount_top_world": [
+    317.10336,
+    177.1358,
+    0.8003
+   ],
+   "deck_z_world": 0.7373,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.7899,
+   "state": "covered",
+   "occupied": false
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "k": 2,
+   "tier": 0,
+   "mount_top_world": [
+    317.70854,
+    177.6436,
+    0.8003
+   ],
+   "deck_z_world": 0.7373,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.7899,
+   "state": "covered",
+   "occupied": false
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "k": 3,
+   "tier": 0,
+   "mount_top_world": [
+    318.31363,
+    178.15134,
+    0.8003
+   ],
+   "deck_z_world": 0.7373,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ],
+   "boss_d": 0.062,
+   "bolt_pcd": 0.1,
+   "plate": [
+    0.15,
+    0.15,
+    0.008
+   ],
+   "pitch": 0.7899,
+   "state": "covered",
+   "occupied": false
+  }
+ ],
+ "monitor_bays": [
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "k": 0,
+   "vesa_centre_world": [
+    161.12749,
+    45.16485,
+    1.76859
+   ],
+   "normal_world": [
+    -0.632881,
+    0.746022,
+    -0.207152
+   ],
+   "up_world": [
+    -0.134009,
+    0.157966,
+    0.978309
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    161.13508,
+    45.1559,
+    1.77107
+   ]
+  },
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "k": 1,
+   "vesa_centre_world": [
+    161.75167,
+    45.68794,
+    1.77579
+   ],
+   "normal_world": [
+    -0.635508,
+    0.723255,
+    -0.270244
+   ],
+   "up_world": [
+    -0.17838,
+    0.203009,
+    0.962792
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    161.75929,
+    45.67926,
+    1.77904
+   ]
+  },
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "k": 2,
+   "vesa_centre_world": [
+    162.37685,
+    46.21267,
+    1.7537
+   ],
+   "normal_world": [
+    -0.643522,
+    0.722314,
+    -0.253264
+   ],
+   "up_world": [
+    -0.168473,
+    0.189101,
+    0.967397
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.456,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    162.38457,
+    46.204,
+    1.75674
+   ]
+  },
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "k": 3,
+   "vesa_centre_world": [
+    163.0074,
+    46.74181,
+    1.76496
+   ],
+   "normal_world": [
+    -0.618455,
+    0.742257,
+    -0.258007
+   ],
+   "up_world": [
+    -0.165157,
+    0.198219,
+    0.966143
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    163.01482,
+    46.73291,
+    1.76806
+   ]
+  },
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "k": 4,
+   "vesa_centre_world": [
+    163.63406,
+    47.26753,
+    1.77577
+   ],
+   "normal_world": [
+    -0.614303,
+    0.742235,
+    -0.267803
+   ],
+   "up_world": [
+    -0.170749,
+    0.206309,
+    0.963474
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    163.64143,
+    47.25862,
+    1.77898
+   ]
+  },
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "k": 5,
+   "vesa_centre_world": [
+    164.25302,
+    47.78669,
+    1.78537
+   ],
+   "normal_world": [
+    -0.654733,
+    0.708177,
+    -0.264217
+   ],
+   "up_world": [
+    -0.179365,
+    0.194006,
+    0.964463
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    164.26088,
+    47.77819,
+    1.78854
+   ]
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "k": 0,
+   "vesa_centre_world": [
+    176.67634,
+    58.21153,
+    1.7381
+   ],
+   "normal_world": [
+    -0.619001,
+    0.745618,
+    -0.246761
+   ],
+   "up_world": [
+    -0.15762,
+    0.189861,
+    0.969076
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    176.68377,
+    58.20258,
+    1.74106
+   ]
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "k": 1,
+   "vesa_centre_world": [
+    177.56031,
+    58.95357,
+    1.76341
+   ],
+   "normal_world": [
+    -0.677057,
+    0.717635,
+    -0.163078
+   ],
+   "up_world": [
+    -0.111911,
+    0.118618,
+    0.986613
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    177.56843,
+    58.94496,
+    1.76536
+   ]
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "k": 2,
+   "vesa_centre_world": [
+    178.44636,
+    59.69636,
+    1.76311
+   ],
+   "normal_world": [
+    -0.719108,
+    0.686727,
+    -0.106257
+   ],
+   "up_world": [
+    -0.076845,
+    0.073385,
+    0.994339
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    178.45499,
+    59.68812,
+    1.76439
+   ]
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "k": 3,
+   "vesa_centre_world": [
+    179.34655,
+    60.45173,
+    1.74534
+   ],
+   "normal_world": [
+    -0.660856,
+    0.706961,
+    -0.251942
+   ],
+   "up_world": [
+    -0.172048,
+    0.18405,
+    0.967742
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    179.35448,
+    60.44324,
+    1.74837
+   ]
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "k": 4,
+   "vesa_centre_world": [
+    180.24216,
+    61.20446,
+    1.76911
+   ],
+   "normal_world": [
+    -0.658341,
+    0.74314,
+    -0.119706
+   ],
+   "up_world": [
+    -0.079378,
+    0.089603,
+    0.992809
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    180.25006,
+    61.19554,
+    1.77055
+   ]
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "k": 0,
+   "vesa_centre_world": [
+    193.10175,
+    71.96023,
+    1.83086
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    193.10256,
+    71.95927,
+    1.8428
+   ]
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "k": 1,
+   "vesa_centre_world": [
+    193.71474,
+    72.47459,
+    1.86826
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    193.71555,
+    72.47363,
+    1.8802
+   ]
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "k": 2,
+   "vesa_centre_world": [
+    194.32765,
+    72.98888,
+    1.86196
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    194.32846,
+    72.98792,
+    1.8739
+   ]
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "k": 3,
+   "vesa_centre_world": [
+    194.94064,
+    73.50324,
+    1.86996
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    194.94145,
+    73.50228,
+    1.8819
+   ]
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "k": 4,
+   "vesa_centre_world": [
+    195.55363,
+    74.0176,
+    1.85406
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.456,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    195.55443,
+    74.01664,
+    1.866
+   ]
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "k": 5,
+   "vesa_centre_world": [
+    196.16654,
+    74.53189,
+    1.85426
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    196.16735,
+    74.53093,
+    1.8662
+   ]
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "k": 6,
+   "vesa_centre_world": [
+    196.77953,
+    75.04625,
+    1.86966
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    196.78034,
+    75.04529,
+    1.8816
+   ]
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "k": 0,
+   "vesa_centre_world": [
+    214.81581,
+    90.21397,
+    1.85792
+   ],
+   "normal_world": [
+    -0.711235,
+    0.689006,
+    -0.139342
+   ],
+   "up_world": [
+    -0.100081,
+    0.096953,
+    0.990244
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    214.82435,
+    90.2057,
+    1.85959
+   ]
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "k": 1,
+   "vesa_centre_world": [
+    215.34731,
+    90.66038,
+    1.85049
+   ],
+   "normal_world": [
+    -0.59598,
+    0.77219,
+    -0.220298
+   ],
+   "up_world": [
+    -0.1346,
+    0.174396,
+    0.975433
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.456,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    215.35446,
+    90.65112,
+    1.85313
+   ]
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "k": 2,
+   "vesa_centre_world": [
+    215.84793,
+    91.08029,
+    1.86992
+   ],
+   "normal_world": [
+    -0.661199,
+    0.714292,
+    -0.229354
+   ],
+   "up_world": [
+    -0.155802,
+    0.168312,
+    0.973343
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    215.85586,
+    91.07172,
+    1.87267
+   ]
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "k": 3,
+   "vesa_centre_world": [
+    216.37247,
+    91.52037,
+    1.83615
+   ],
+   "normal_world": [
+    -0.591852,
+    0.767923,
+    -0.244961
+   ],
+   "up_world": [
+    -0.149537,
+    0.194023,
+    0.969533
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    216.37958,
+    91.51115,
+    1.83909
+   ]
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "k": 4,
+   "vesa_centre_world": [
+    216.8883,
+    91.95351,
+    1.86829
+   ],
+   "normal_world": [
+    -0.581314,
+    0.796345,
+    -0.16706
+   ],
+   "up_world": [
+    -0.098499,
+    0.134934,
+    0.985947
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    216.89527,
+    91.94396,
+    1.87029
+   ]
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "k": 5,
+   "vesa_centre_world": [
+    217.38718,
+    92.37263,
+    1.85482
+   ],
+   "normal_world": [
+    -0.659727,
+    0.73653,
+    -0.149278
+   ],
+   "up_world": [
+    -0.099599,
+    0.111193,
+    0.988795
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    217.39509,
+    92.3638,
+    1.85661
+   ]
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "k": 6,
+   "vesa_centre_world": [
+    217.90383,
+    92.80534,
+    1.84344
+   ],
+   "normal_world": [
+    -0.623448,
+    0.736712,
+    -0.261856
+   ],
+   "up_world": [
+    -0.169156,
+    0.199887,
+    0.965107
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    217.91131,
+    92.7965,
+    1.84659
+   ]
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "k": 0,
+   "vesa_centre_world": [
+    229.92239,
+    102.89092,
+    1.84961
+   ],
+   "normal_world": [
+    -0.633436,
+    0.754975,
+    -0.169623
+   ],
+   "up_world": [
+    -0.109025,
+    0.129944,
+    0.985509
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    229.92999,
+    102.88186,
+    1.85165
+   ]
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "k": 1,
+   "vesa_centre_world": [
+    230.84431,
+    103.66323,
+    1.85197
+   ],
+   "normal_world": [
+    -0.657543,
+    0.701666,
+    -0.274414
+   ],
+   "up_world": [
+    -0.187642,
+    0.200233,
+    0.961612
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.456,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    230.85221,
+    103.65481,
+    1.85526
+   ]
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "k": 2,
+   "vesa_centre_world": [
+    231.78066,
+    104.44967,
+    1.84797
+   ],
+   "normal_world": [
+    -0.620701,
+    0.748179,
+    -0.234432
+   ],
+   "up_world": [
+    -0.149683,
+    0.180425,
+    0.972133
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    231.78811,
+    104.44069,
+    1.85078
+   ]
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "k": 3,
+   "vesa_centre_world": [
+    232.70596,
+    105.22608,
+    1.8332
+   ],
+   "normal_world": [
+    -0.640146,
+    0.73298,
+    -0.230115
+   ],
+   "up_world": [
+    -0.15137,
+    0.173321,
+    0.973163
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    232.71364,
+    105.21728,
+    1.83596
+   ]
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "k": 4,
+   "vesa_centre_world": [
+    233.62503,
+    105.99622,
+    1.8612
+   ],
+   "normal_world": [
+    -0.692453,
+    0.681563,
+    -0.236603
+   ],
+   "up_world": [
+    -0.168624,
+    0.165972,
+    0.971607
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.456,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    233.63334,
+    105.98805,
+    1.86404
+   ]
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "k": 0,
+   "vesa_centre_world": [
+    246.28024,
+    116.61623,
+    1.75632
+   ],
+   "normal_world": [
+    -0.60655,
+    0.761202,
+    -0.229495
+   ],
+   "up_world": [
+    -0.143017,
+    0.179482,
+    0.97331
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    246.28752,
+    116.6071,
+    1.75907
+   ]
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "k": 1,
+   "vesa_centre_world": [
+    247.09469,
+    117.30017,
+    1.7831
+   ],
+   "normal_world": [
+    -0.599678,
+    0.79014,
+    -0.126752
+   ],
+   "up_world": [
+    -0.076628,
+    0.100966,
+    0.991934
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    247.10189,
+    117.29069,
+    1.78462
+   ]
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "k": 2,
+   "vesa_centre_world": [
+    247.89715,
+    117.97326,
+    1.7567
+   ],
+   "normal_world": [
+    -0.644664,
+    0.737853,
+    -0.199954
+   ],
+   "up_world": [
+    -0.13156,
+    0.150577,
+    0.979805
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    247.90489,
+    117.96441,
+    1.7591
+   ]
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "k": 3,
+   "vesa_centre_world": [
+    248.70754,
+    118.65369,
+    1.78948
+   ],
+   "normal_world": [
+    -0.657828,
+    0.74232,
+    -0.12737
+   ],
+   "up_world": [
+    -0.084476,
+    0.095326,
+    0.991855
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    248.71543,
+    118.64478,
+    1.79101
+   ]
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "k": 4,
+   "vesa_centre_world": [
+    249.51701,
+    119.33249,
+    1.7903
+   ],
+   "normal_world": [
+    -0.665333,
+    0.725358,
+    -0.176601
+   ],
+   "up_world": [
+    -0.119375,
+    0.130144,
+    0.984283
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.456,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    249.525,
+    119.32378,
+    1.79242
+   ]
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "k": 5,
+   "vesa_centre_world": [
+    250.32772,
+    120.01263,
+    1.7719
+   ],
+   "normal_world": [
+    -0.669386,
+    0.719968,
+    -0.183218
+   ],
+   "up_world": [
+    -0.124755,
+    0.134182,
+    0.983072
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": true,
+   "cable_exit_world": [
+    250.33575,
+    120.00399,
+    1.7741
+   ]
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "k": 0,
+   "vesa_centre_world": [
+    263.09324,
+    130.69006,
+    1.86226
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    263.09405,
+    130.6891,
+    1.8742
+   ]
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "k": 1,
+   "vesa_centre_world": [
+    263.85568,
+    131.32983,
+    1.82346
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.456,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    263.85649,
+    131.32887,
+    1.8354
+   ]
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "k": 2,
+   "vesa_centre_world": [
+    264.61805,
+    131.96953,
+    1.83066
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.456,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    264.61886,
+    131.96857,
+    1.8426
+   ]
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "k": 3,
+   "vesa_centre_world": [
+    265.38042,
+    132.60923,
+    1.82356
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    265.38122,
+    132.60827,
+    1.8355
+   ]
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "k": 4,
+   "vesa_centre_world": [
+    266.14286,
+    133.249,
+    1.83576
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    266.14367,
+    133.24804,
+    1.8477
+   ]
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "k": 0,
+   "vesa_centre_world": [
+    279.56928,
+    144.54861,
+    1.7355
+   ],
+   "normal_world": [
+    -0.667765,
+    0.704601,
+    -0.240056
+   ],
+   "up_world": [
+    -0.16513,
+    0.174239,
+    0.970759
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    279.57729,
+    144.54016,
+    1.73838
+   ]
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "k": 1,
+   "vesa_centre_world": [
+    280.45818,
+    145.29511,
+    1.72632
+   ],
+   "normal_world": [
+    -0.677104,
+    0.716947,
+    -0.165883
+   ],
+   "up_world": [
+    -0.113898,
+    0.1206,
+    0.986145
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    280.4663,
+    145.28651,
+    1.72831
+   ]
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "k": 2,
+   "vesa_centre_world": [
+    281.34699,
+    146.04109,
+    1.70747
+   ],
+   "normal_world": [
+    -0.680882,
+    0.719971,
+    -0.134317
+   ],
+   "up_world": [
+    -0.09229,
+    0.097589,
+    0.990938
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.456,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    281.35516,
+    146.03245,
+    1.70908
+   ]
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "k": 3,
+   "vesa_centre_world": [
+    282.24205,
+    146.79203,
+    1.71253
+   ],
+   "normal_world": [
+    -0.639825,
+    0.740523,
+    -0.205547
+   ],
+   "up_world": [
+    -0.134383,
+    0.155533,
+    0.978647
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    282.24972,
+    146.78314,
+    1.715
+   ]
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "k": 4,
+   "vesa_centre_world": [
+    283.12574,
+    147.5325,
+    1.71256
+   ],
+   "normal_world": [
+    -0.659848,
+    0.69941,
+    -0.274639
+   ],
+   "up_world": [
+    -0.188467,
+    0.199766,
+    0.961548
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    283.13365,
+    147.52411,
+    1.71586
+   ]
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "k": 0,
+   "vesa_centre_world": [
+    299.01396,
+    160.86446,
+    1.77638
+   ],
+   "normal_world": [
+    -0.651477,
+    0.7075,
+    -0.273899
+   ],
+   "up_world": [
+    -0.185534,
+    0.201489,
+    0.961758
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    299.02178,
+    160.85597,
+    1.77967
+   ]
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "k": 1,
+   "vesa_centre_world": [
+    299.86632,
+    161.58074,
+    1.79708
+   ],
+   "normal_world": [
+    -0.604097,
+    0.781213,
+    -0.157394
+   ],
+   "up_world": [
+    -0.096281,
+    0.12451,
+    0.987536
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    299.87357,
+    161.57137,
+    1.79897
+   ]
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "k": 2,
+   "vesa_centre_world": [
+    300.70133,
+    162.28165,
+    1.81355
+   ],
+   "normal_world": [
+    -0.641398,
+    0.75339,
+    -0.144958
+   ],
+   "up_world": [
+    -0.093969,
+    0.110376,
+    0.989438
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    300.70903,
+    162.27261,
+    1.81529
+   ]
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "k": 3,
+   "vesa_centre_world": [
+    301.54434,
+    162.98822,
+    1.79656
+   ],
+   "normal_world": [
+    -0.621426,
+    0.743241,
+    -0.247836
+   ],
+   "up_world": [
+    -0.158971,
+    0.190133,
+    0.968802
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    301.5518,
+    162.9793,
+    1.79954
+   ]
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "k": 4,
+   "vesa_centre_world": [
+    302.383,
+    163.69199,
+    1.79347
+   ],
+   "normal_world": [
+    -0.638239,
+    0.732243,
+    -0.237636
+   ],
+   "up_world": [
+    -0.156141,
+    0.179139,
+    0.971354
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    302.39065,
+    163.6832,
+    1.79632
+   ]
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "k": 5,
+   "vesa_centre_world": [
+    303.23238,
+    164.40467,
+    1.77942
+   ],
+   "normal_world": [
+    -0.595283,
+    0.77112,
+    -0.225857
+   ],
+   "up_world": [
+    -0.138015,
+    0.178782,
+    0.974161
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": true,
+   "hood": false,
+   "cable_exit_world": [
+    303.23952,
+    164.39541,
+    1.78213
+   ]
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "k": 0,
+   "vesa_centre_world": [
+    316.56268,
+    175.55625,
+    1.79186
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    316.56349,
+    175.55529,
+    1.8038
+   ]
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "k": 1,
+   "vesa_centre_world": [
+    317.03594,
+    175.95337,
+    1.80986
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    317.03675,
+    175.95241,
+    1.8218
+   ]
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "k": 2,
+   "vesa_centre_world": [
+    317.50928,
+    176.35054,
+    1.80166
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    317.51009,
+    176.34958,
+    1.8136
+   ]
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "k": 3,
+   "vesa_centre_world": [
+    317.98255,
+    176.74766,
+    1.80746
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    317.98335,
+    176.7467,
+    1.8194
+   ]
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "k": 4,
+   "vesa_centre_world": [
+    318.45581,
+    177.14477,
+    1.81496
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.456,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    318.45661,
+    177.14381,
+    1.8269
+   ]
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "k": 5,
+   "vesa_centre_world": [
+    318.92915,
+    177.54195,
+    1.80626
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.513,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    318.92995,
+    177.54099,
+    1.8182
+   ]
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "k": 6,
+   "vesa_centre_world": [
+    319.40241,
+    177.93907,
+    1.81386
+   ],
+   "normal_world": [
+    -0.06719,
+    0.080073,
+    -0.994522
+   ],
+   "up_world": [
+    -0.639266,
+    0.761848,
+    0.104528
+   ],
+   "vesa": [
+    0.1,
+    0.1
+   ],
+   "diag_m": 0.608,
+   "deployed": false,
+   "hood": true,
+   "cable_exit_world": [
+    319.40321,
+    177.9381,
+    1.8258
+   ]
+  }
+ ],
+ "canopy_frame": [
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "state": "up",
+   "eaves_front_world": [
+    [
+     161.0625,
+     44.78483,
+     2.997
+    ],
+    [
+     164.64529,
+     47.79114,
+     2.997
+    ]
+   ],
+   "eaves_rear_world": [
+    [
+     159.92734,
+     46.13766,
+     2.9229
+    ],
+    [
+     163.51013,
+     49.14398,
+     2.9229
+    ]
+   ],
+   "rafters_world": [
+    [
+     [
+      161.41674,
+      44.53379,
+      3.04462
+     ],
+     [
+      159.94733,
+      46.28497,
+      2.9529
+     ]
+    ],
+    [
+     [
+      162.2703,
+      45.25002,
+      3.04462
+     ],
+     [
+      160.80089,
+      47.0012,
+      2.9529
+     ]
+    ],
+    [
+     [
+      163.12387,
+      45.96625,
+      3.04462
+     ],
+     [
+      161.65446,
+      47.71742,
+      2.9529
+     ]
+    ],
+    [
+     [
+      163.97743,
+      46.68247,
+      3.04462
+     ],
+     [
+      162.50802,
+      48.43365,
+      2.9529
+     ]
+    ],
+    [
+     [
+      164.831,
+      47.3987,
+      3.04462
+     ],
+     [
+      163.36159,
+      49.14988,
+      2.9529
+     ]
+    ]
+   ],
+   "eyelets_world": [
+    [
+     161.20173,
+     44.88338,
+     3.042
+    ],
+    [
+     161.43154,
+     45.07621,
+     3.042
+    ],
+    [
+     161.66136,
+     45.26905,
+     3.042
+    ],
+    [
+     161.89117,
+     45.46188,
+     3.042
+    ],
+    [
+     162.12098,
+     45.65472,
+     3.042
+    ],
+    [
+     162.3508,
+     45.84756,
+     3.042
+    ],
+    [
+     162.58061,
+     46.04039,
+     3.042
+    ],
+    [
+     162.81042,
+     46.23323,
+     3.042
+    ],
+    [
+     163.04024,
+     46.42607,
+     3.042
+    ],
+    [
+     163.27005,
+     46.6189,
+     3.042
+    ],
+    [
+     163.49986,
+     46.81174,
+     3.042
+    ],
+    [
+     163.72968,
+     47.00457,
+     3.042
+    ],
+    [
+     163.95949,
+     47.19741,
+     3.042
+    ],
+    [
+     164.1893,
+     47.39025,
+     3.042
+    ],
+    [
+     164.41912,
+     47.58308,
+     3.042
+    ],
+    [
+     160.04857,
+     46.25766,
+     2.9679
+    ],
+    [
+     160.27838,
+     46.4505,
+     2.9679
+    ],
+    [
+     160.5082,
+     46.64333,
+     2.9679
+    ],
+    [
+     160.73801,
+     46.83617,
+     2.9679
+    ],
+    [
+     160.96782,
+     47.029,
+     2.9679
+    ],
+    [
+     161.19764,
+     47.22184,
+     2.9679
+    ],
+    [
+     161.42745,
+     47.41468,
+     2.9679
+    ],
+    [
+     161.65726,
+     47.60751,
+     2.9679
+    ],
+    [
+     161.88708,
+     47.80035,
+     2.9679
+    ],
+    [
+     162.11689,
+     47.99319,
+     2.9679
+    ],
+    [
+     162.3467,
+     48.18602,
+     2.9679
+    ],
+    [
+     162.57652,
+     48.37886,
+     2.9679
+    ],
+    [
+     162.80633,
+     48.57169,
+     2.9679
+    ],
+    [
+     163.03614,
+     48.76453,
+     2.9679
+    ],
+    [
+     163.26596,
+     48.95737,
+     2.9679
+    ]
+   ],
+   "valance_world": [
+    [
+     161.33247,
+     44.46309,
+     2.727
+    ],
+    [
+     164.91526,
+     47.46941,
+     2.727
+    ],
+    [
+     164.91526,
+     47.46941,
+     3.007
+    ],
+    [
+     161.33247,
+     44.46309,
+     3.007
+    ]
+   ],
+   "valance_h": 0.28,
+   "tube_r": 0.0215,
+   "roll_mandrel_world": [
+    [
+     161.01408,
+     44.71808,
+     3.1345
+    ],
+    [
+     164.71943,
+     47.82725,
+     3.1345
+    ]
+   ],
+   "roll_mandrel_r": 0.0215,
+   "covers_local_y": [
+    -0.42,
+    1.866
+   ],
+   "note": "fabric roof + skirt for state 'up'; a rolled bundle on the published mandrel for state 'down'.  The rigid valance BOARD is already built by timing_stand."
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "state": "down",
+   "eaves_front_world": [
+    [
+     176.60976,
+     57.83052,
+     3.0081
+    ],
+    [
+     180.63226,
+     61.2058,
+     3.0081
+    ]
+   ],
+   "eaves_rear_world": [
+    [
+     175.22134,
+     59.48518,
+     2.8893
+    ],
+    [
+     179.24384,
+     62.86046,
+     2.8893
+    ]
+   ],
+   "rafters_world": [],
+   "eyelets_world": [],
+   "valance_world": [
+    [
+     176.6419,
+     57.79222,
+     2.6881
+    ],
+    [
+     180.6644,
+     61.1675,
+     2.6881
+    ],
+    [
+     180.6644,
+     61.1675,
+     2.9681
+    ],
+    [
+     176.6419,
+     57.79222,
+     2.9681
+    ]
+   ],
+   "valance_h": 0.28,
+   "tube_r": 0.0215,
+   "roll_mandrel_world": [
+    [
+     176.56133,
+     57.76378,
+     3.1531
+    ],
+    [
+     180.7064,
+     61.2419,
+     3.1531
+    ]
+   ],
+   "roll_mandrel_r": 0.0215,
+   "covers_local_y": [
+    -0.42,
+    2.26
+   ],
+   "note": "fabric roof + skirt for state 'up'; a rolled bundle on the published mandrel for state 'down'.  The rigid valance BOARD is already built by timing_stand."
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "state": "up",
+   "eaves_front_world": [
+    [
+     193.0192,
+     71.59968,
+     2.9354
+    ],
+    [
+     197.14894,
+     75.06494,
+     2.9354
+    ]
+   ],
+   "eaves_rear_world": [
+    [
+     191.65906,
+     73.22063,
+     2.8631
+    ],
+    [
+     195.7888,
+     76.68589,
+     2.8631
+    ]
+   ],
+   "rafters_world": [
+    [
+     [
+      193.37343,
+      71.34864,
+      2.97975
+     ],
+     [
+      191.67904,
+      73.36794,
+      2.8931
+     ]
+    ],
+    [
+     [
+      194.03363,
+      71.90262,
+      2.97975
+     ],
+     [
+      192.33925,
+      73.92191,
+      2.8931
+     ]
+    ],
+    [
+     [
+      194.69384,
+      72.45659,
+      2.97975
+     ],
+     [
+      192.99945,
+      74.47589,
+      2.8931
+     ]
+    ],
+    [
+     [
+      195.35404,
+      73.01057,
+      2.97975
+     ],
+     [
+      193.65965,
+      75.02986,
+      2.8931
+     ]
+    ],
+    [
+     [
+      196.01424,
+      73.56455,
+      2.97975
+     ],
+     [
+      194.31985,
+      75.58384,
+      2.8931
+     ]
+    ],
+    [
+     [
+      196.67444,
+      74.11852,
+      2.97975
+     ],
+     [
+      194.98006,
+      76.13782,
+      2.8931
+     ]
+    ],
+    [
+     [
+      197.33465,
+      74.6725,
+      2.97975
+     ],
+     [
+      195.64026,
+      76.69179,
+      2.8931
+     ]
+    ]
+   ],
+   "eyelets_world": [
+    [
+     193.15842,
+     71.69822,
+     2.9829
+    ],
+    [
+     193.38824,
+     71.89106,
+     2.9829
+    ],
+    [
+     193.61805,
+     72.0839,
+     2.9829
+    ],
+    [
+     193.84786,
+     72.27673,
+     2.9829
+    ],
+    [
+     194.07768,
+     72.46957,
+     2.9829
+    ],
+    [
+     194.30749,
+     72.66241,
+     2.9829
+    ],
+    [
+     194.5373,
+     72.85524,
+     2.9829
+    ],
+    [
+     194.76712,
+     73.04808,
+     2.9829
+    ],
+    [
+     194.99693,
+     73.24091,
+     2.9829
+    ],
+    [
+     195.22674,
+     73.43375,
+     2.9829
+    ],
+    [
+     195.45656,
+     73.62659,
+     2.9829
+    ],
+    [
+     195.68637,
+     73.81942,
+     2.9829
+    ],
+    [
+     195.91618,
+     74.01226,
+     2.9829
+    ],
+    [
+     196.146,
+     74.2051,
+     2.9829
+    ],
+    [
+     196.37581,
+     74.39793,
+     2.9829
+    ],
+    [
+     196.60562,
+     74.59077,
+     2.9829
+    ],
+    [
+     196.83544,
+     74.78361,
+     2.9829
+    ],
+    [
+     197.06525,
+     74.97644,
+     2.9829
+    ],
+    [
+     191.78029,
+     73.34062,
+     2.9106
+    ],
+    [
+     192.0101,
+     73.53346,
+     2.9106
+    ],
+    [
+     192.23991,
+     73.7263,
+     2.9106
+    ],
+    [
+     192.46973,
+     73.91913,
+     2.9106
+    ],
+    [
+     192.69954,
+     74.11197,
+     2.9106
+    ],
+    [
+     192.92935,
+     74.30481,
+     2.9106
+    ],
+    [
+     193.15917,
+     74.49764,
+     2.9106
+    ],
+    [
+     193.38898,
+     74.69048,
+     2.9106
+    ],
+    [
+     193.61879,
+     74.88331,
+     2.9106
+    ],
+    [
+     193.84861,
+     75.07615,
+     2.9106
+    ],
+    [
+     194.07842,
+     75.26899,
+     2.9106
+    ],
+    [
+     194.30823,
+     75.46182,
+     2.9106
+    ],
+    [
+     194.53805,
+     75.65466,
+     2.9106
+    ],
+    [
+     194.76786,
+     75.8475,
+     2.9106
+    ],
+    [
+     194.99767,
+     76.04033,
+     2.9106
+    ],
+    [
+     195.22749,
+     76.23317,
+     2.9106
+    ],
+    [
+     195.4573,
+     76.426,
+     2.9106
+    ],
+    [
+     195.68711,
+     76.61884,
+     2.9106
+    ]
+   ],
+   "valance_world": [
+    [
+     193.28917,
+     71.27794,
+     2.6654
+    ],
+    [
+     197.41891,
+     74.7432,
+     2.6654
+    ],
+    [
+     197.41891,
+     74.7432,
+     2.9454
+    ],
+    [
+     193.28917,
+     71.27794,
+     2.9454
+    ]
+   ],
+   "valance_h": 0.28,
+   "tube_r": 0.0215,
+   "roll_mandrel_world": [
+    [
+     192.97077,
+     71.53293,
+     3.0754
+    ],
+    [
+     197.22308,
+     75.10105,
+     3.0754
+    ]
+   ],
+   "roll_mandrel_r": 0.0215,
+   "covers_local_y": [
+    -0.42,
+    2.216
+   ],
+   "note": "fabric roof + skirt for state 'up'; a rolled bundle on the published mandrel for state 'down'.  The rigid valance BOARD is already built by timing_stand."
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "state": "up",
+   "eaves_front_world": [
+    [
+     214.76352,
+     89.84533,
+     3.0234
+    ],
+    [
+     218.29039,
+     92.80472,
+     3.0234
+    ]
+   ],
+   "eaves_rear_world": [
+    [
+     213.68171,
+     91.13458,
+     2.9449
+    ],
+    [
+     217.20858,
+     94.09398,
+     2.9449
+    ]
+   ],
+   "rafters_world": [
+    [
+     [
+      215.11776,
+      89.5943,
+      3.07299
+     ],
+     [
+      213.7017,
+      91.28189,
+      2.9749
+     ]
+    ],
+    [
+     [
+      215.95734,
+      90.29879,
+      3.07299
+     ],
+     [
+      214.54128,
+      91.98639,
+      2.9749
+     ]
+    ],
+    [
+     [
+      216.79693,
+      91.00329,
+      3.07299
+     ],
+     [
+      215.38086,
+      92.69088,
+      2.9749
+     ]
+    ],
+    [
+     [
+      217.63651,
+      91.70778,
+      3.07299
+     ],
+     [
+      216.22045,
+      93.39538,
+      2.9749
+     ]
+    ],
+    [
+     [
+      218.4761,
+      92.41228,
+      3.07299
+     ],
+     [
+      217.06003,
+      94.09987,
+      2.9749
+     ]
+    ]
+   ],
+   "eyelets_world": [
+    [
+     214.90275,
+     89.94388,
+     3.0684
+    ],
+    [
+     215.13256,
+     90.13672,
+     3.0684
+    ],
+    [
+     215.36237,
+     90.32955,
+     3.0684
+    ],
+    [
+     215.59219,
+     90.52239,
+     3.0684
+    ],
+    [
+     215.822,
+     90.71522,
+     3.0684
+    ],
+    [
+     216.05181,
+     90.90806,
+     3.0684
+    ],
+    [
+     216.28163,
+     91.1009,
+     3.0684
+    ],
+    [
+     216.51144,
+     91.29373,
+     3.0684
+    ],
+    [
+     216.74125,
+     91.48657,
+     3.0684
+    ],
+    [
+     216.97107,
+     91.67941,
+     3.0684
+    ],
+    [
+     217.20088,
+     91.87224,
+     3.0684
+    ],
+    [
+     217.43069,
+     92.06508,
+     3.0684
+    ],
+    [
+     217.66051,
+     92.25791,
+     3.0684
+    ],
+    [
+     217.89032,
+     92.45075,
+     3.0684
+    ],
+    [
+     218.12013,
+     92.64359,
+     3.0684
+    ],
+    [
+     213.80294,
+     91.25458,
+     2.9899
+    ],
+    [
+     214.03275,
+     91.44742,
+     2.9899
+    ],
+    [
+     214.26256,
+     91.64025,
+     2.9899
+    ],
+    [
+     214.49238,
+     91.83309,
+     2.9899
+    ],
+    [
+     214.72219,
+     92.02593,
+     2.9899
+    ],
+    [
+     214.952,
+     92.21876,
+     2.9899
+    ],
+    [
+     215.18182,
+     92.4116,
+     2.9899
+    ],
+    [
+     215.41163,
+     92.60444,
+     2.9899
+    ],
+    [
+     215.64144,
+     92.79727,
+     2.9899
+    ],
+    [
+     215.87126,
+     92.99011,
+     2.9899
+    ],
+    [
+     216.10107,
+     93.18294,
+     2.9899
+    ],
+    [
+     216.33088,
+     93.37578,
+     2.9899
+    ],
+    [
+     216.5607,
+     93.56862,
+     2.9899
+    ],
+    [
+     216.79051,
+     93.76145,
+     2.9899
+    ],
+    [
+     217.02032,
+     93.95429,
+     2.9899
+    ]
+   ],
+   "valance_world": [
+    [
+     215.03349,
+     89.52359,
+     2.7534
+    ],
+    [
+     218.56036,
+     92.48299,
+     2.7534
+    ],
+    [
+     218.56036,
+     92.48299,
+     3.0334
+    ],
+    [
+     215.03349,
+     89.52359,
+     3.0334
+    ]
+   ],
+   "valance_h": 0.28,
+   "tube_r": 0.0215,
+   "roll_mandrel_world": [
+    [
+     214.71509,
+     89.77859,
+     3.1609
+    ],
+    [
+     218.36453,
+     92.84083,
+     3.1609
+    ]
+   ],
+   "roll_mandrel_r": 0.0215,
+   "covers_local_y": [
+    -0.42,
+    1.783
+   ],
+   "note": "fabric roof + skirt for state 'up'; a rolled bundle on the published mandrel for state 'down'.  The rigid valance BOARD is already built by timing_stand."
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "state": "down",
+   "eaves_front_world": [
+    [
+     229.85682,
+     102.51011,
+     2.9997
+    ],
+    [
+     234.02333,
+     106.00623,
+     2.9997
+    ]
+   ],
+   "eaves_rear_world": [
+    [
+     228.31541,
+     104.34708,
+     2.8691
+    ],
+    [
+     232.48193,
+     107.84321,
+     2.8691
+    ]
+   ],
+   "rafters_world": [],
+   "eyelets_world": [],
+   "valance_world": [
+    [
+     229.88896,
+     102.47181,
+     2.6797
+    ],
+    [
+     234.05547,
+     105.96793,
+     2.6797
+    ],
+    [
+     234.05547,
+     105.96793,
+     2.9597
+    ],
+    [
+     229.88896,
+     102.47181,
+     2.9597
+    ]
+   ],
+   "valance_h": 0.28,
+   "tube_r": 0.0215,
+   "roll_mandrel_world": [
+    [
+     229.80839,
+     102.44337,
+     3.1447
+    ],
+    [
+     234.09747,
+     106.04233,
+     3.1447
+    ]
+   ],
+   "roll_mandrel_r": 0.0215,
+   "covers_local_y": [
+    -0.42,
+    2.498
+   ],
+   "note": "fabric roof + skirt for state 'up'; a rolled bundle on the published mandrel for state 'down'.  The rigid valance BOARD is already built by timing_stand."
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "state": "up",
+   "eaves_front_world": [
+    [
+     246.21102,
+     116.23292,
+     2.9195
+    ],
+    [
+     250.72073,
+     120.01701,
+     2.9195
+    ]
+   ],
+   "eaves_rear_world": [
+    [
+     244.87788,
+     117.82169,
+     2.8402
+    ],
+    [
+     249.38759,
+     121.60579,
+     2.8402
+    ]
+   ],
+   "rafters_world": [
+    [
+     [
+      246.56526,
+      115.98189,
+      2.96556
+     ],
+     [
+      244.89787,
+      117.96901,
+      2.8702
+     ]
+    ],
+    [
+     [
+      247.43349,
+      116.71042,
+      2.96556
+     ],
+     [
+      245.7661,
+      118.69754,
+      2.8702
+     ]
+    ],
+    [
+     [
+      248.30173,
+      117.43896,
+      2.96556
+     ],
+     [
+      246.63434,
+      119.42608,
+      2.8702
+     ]
+    ],
+    [
+     [
+      249.16996,
+      118.16749,
+      2.96556
+     ],
+     [
+      247.50257,
+      120.15461,
+      2.8702
+     ]
+    ],
+    [
+     [
+      250.0382,
+      118.89603,
+      2.96556
+     ],
+     [
+      248.37081,
+      120.88315,
+      2.8702
+     ]
+    ],
+    [
+     [
+      250.90643,
+      119.62456,
+      2.96556
+     ],
+     [
+      249.23904,
+      121.61168,
+      2.8702
+     ]
+    ]
+   ],
+   "eyelets_world": [
+    [
+     246.35025,
+     116.33147,
+     2.9645
+    ],
+    [
+     246.58006,
+     116.5243,
+     2.9645
+    ],
+    [
+     246.80988,
+     116.71714,
+     2.9645
+    ],
+    [
+     247.03969,
+     116.90998,
+     2.9645
+    ],
+    [
+     247.2695,
+     117.10281,
+     2.9645
+    ],
+    [
+     247.49932,
+     117.29565,
+     2.9645
+    ],
+    [
+     247.72913,
+     117.48849,
+     2.9645
+    ],
+    [
+     247.95894,
+     117.68132,
+     2.9645
+    ],
+    [
+     248.18876,
+     117.87416,
+     2.9645
+    ],
+    [
+     248.41857,
+     118.06699,
+     2.9645
+    ],
+    [
+     248.64838,
+     118.25983,
+     2.9645
+    ],
+    [
+     248.8782,
+     118.45267,
+     2.9645
+    ],
+    [
+     249.10801,
+     118.6455,
+     2.9645
+    ],
+    [
+     249.33782,
+     118.83834,
+     2.9645
+    ],
+    [
+     249.56764,
+     119.03118,
+     2.9645
+    ],
+    [
+     249.79745,
+     119.22401,
+     2.9645
+    ],
+    [
+     250.02726,
+     119.41685,
+     2.9645
+    ],
+    [
+     250.25708,
+     119.60968,
+     2.9645
+    ],
+    [
+     250.48689,
+     119.80252,
+     2.9645
+    ],
+    [
+     244.99911,
+     117.94169,
+     2.8852
+    ],
+    [
+     245.22892,
+     118.13453,
+     2.8852
+    ],
+    [
+     245.45874,
+     118.32737,
+     2.8852
+    ],
+    [
+     245.68855,
+     118.5202,
+     2.8852
+    ],
+    [
+     245.91836,
+     118.71304,
+     2.8852
+    ],
+    [
+     246.14818,
+     118.90587,
+     2.8852
+    ],
+    [
+     246.37799,
+     119.09871,
+     2.8852
+    ],
+    [
+     246.6078,
+     119.29155,
+     2.8852
+    ],
+    [
+     246.83762,
+     119.48438,
+     2.8852
+    ],
+    [
+     247.06743,
+     119.67722,
+     2.8852
+    ],
+    [
+     247.29724,
+     119.87006,
+     2.8852
+    ],
+    [
+     247.52706,
+     120.06289,
+     2.8852
+    ],
+    [
+     247.75687,
+     120.25573,
+     2.8852
+    ],
+    [
+     247.98668,
+     120.44856,
+     2.8852
+    ],
+    [
+     248.2165,
+     120.6414,
+     2.8852
+    ],
+    [
+     248.44631,
+     120.83424,
+     2.8852
+    ],
+    [
+     248.67612,
+     121.02707,
+     2.8852
+    ],
+    [
+     248.90594,
+     121.21991,
+     2.8852
+    ],
+    [
+     249.13575,
+     121.41275,
+     2.8852
+    ]
+   ],
+   "valance_world": [
+    [
+     246.48099,
+     115.91118,
+     2.6495
+    ],
+    [
+     250.9907,
+     119.69527,
+     2.6495
+    ],
+    [
+     250.9907,
+     119.69527,
+     2.9295
+    ],
+    [
+     246.48099,
+     115.91118,
+     2.9295
+    ]
+   ],
+   "valance_h": 0.28,
+   "tube_r": 0.0215,
+   "roll_mandrel_world": [
+    [
+     246.1626,
+     116.16617,
+     3.057
+    ],
+    [
+     250.79487,
+     120.05311,
+     3.057
+    ]
+   ],
+   "roll_mandrel_r": 0.0215,
+   "covers_local_y": [
+    -0.42,
+    2.174
+   ],
+   "note": "fabric roof + skirt for state 'up'; a rolled bundle on the published mandrel for state 'down'.  The rigid valance BOARD is already built by timing_stand."
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "state": "down",
+   "eaves_front_world": [
+    [
+     263.01068,
+     130.32951,
+     2.8899
+    ],
+    [
+     266.51227,
+     133.26769,
+     2.8899
+    ]
+   ],
+   "eaves_rear_world": [
+    [
+     261.87167,
+     131.68694,
+     2.7698
+    ],
+    [
+     265.37325,
+     134.62512,
+     2.7698
+    ]
+   ],
+   "rafters_world": [],
+   "eyelets_world": [],
+   "valance_world": [
+    [
+     263.03961,
+     130.29504,
+     2.5699
+    ],
+    [
+     266.5412,
+     133.23322,
+     2.5699
+    ],
+    [
+     266.5412,
+     133.23322,
+     2.8499
+    ],
+    [
+     263.03961,
+     130.29504,
+     2.8499
+    ]
+   ],
+   "valance_h": 0.28,
+   "tube_r": 0.0215,
+   "roll_mandrel_world": [
+    [
+     262.96226,
+     130.26276,
+     3.0299
+    ],
+    [
+     266.58641,
+     133.30379,
+     3.0299
+    ]
+   ],
+   "roll_mandrel_r": 0.0215,
+   "covers_local_y": [
+    -0.42,
+    1.872
+   ],
+   "note": "fabric roof + skirt for state 'up'; a rolled bundle on the published mandrel for state 'down'.  The rigid valance BOARD is already built by timing_stand."
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "state": "up",
+   "eaves_front_world": [
+    [
+     279.51128,
+     144.17515,
+     3.0316
+    ],
+    [
+     283.51923,
+     147.53822,
+     3.0316
+    ]
+   ],
+   "eaves_rear_world": [
+    [
+     278.20064,
+     145.73712,
+     2.9495
+    ],
+    [
+     282.20858,
+     149.10018,
+     2.9495
+    ]
+   ],
+   "rafters_world": [
+    [
+     [
+      279.86552,
+      143.92412,
+      3.07851
+     ],
+     [
+      278.22062,
+      145.88443,
+      2.9795
+     ]
+    ],
+    [
+     [
+      280.6334,
+      144.56845,
+      3.07851
+     ],
+     [
+      278.98851,
+      146.52876,
+      2.9795
+     ]
+    ],
+    [
+     [
+      281.40128,
+      145.21278,
+      3.07851
+     ],
+     [
+      279.75639,
+      147.17309,
+      2.9795
+     ]
+    ],
+    [
+     [
+      282.16917,
+      145.85711,
+      3.07851
+     ],
+     [
+      280.52427,
+      147.81742,
+      2.9795
+     ]
+    ],
+    [
+     [
+      282.93705,
+      146.50144,
+      3.07851
+     ],
+     [
+      281.29216,
+      148.46175,
+      2.9795
+     ]
+    ],
+    [
+     [
+      283.70493,
+      147.14577,
+      3.07851
+     ],
+     [
+      282.06004,
+      149.10608,
+      2.9795
+     ]
+    ]
+   ],
+   "eyelets_world": [
+    [
+     279.65051,
+     144.2737,
+     3.0841
+    ],
+    [
+     279.88032,
+     144.46654,
+     3.0841
+    ],
+    [
+     280.11014,
+     144.65937,
+     3.0841
+    ],
+    [
+     280.33995,
+     144.85221,
+     3.0841
+    ],
+    [
+     280.56976,
+     145.04505,
+     3.0841
+    ],
+    [
+     280.79958,
+     145.23788,
+     3.0841
+    ],
+    [
+     281.02939,
+     145.43072,
+     3.0841
+    ],
+    [
+     281.2592,
+     145.62356,
+     3.0841
+    ],
+    [
+     281.48902,
+     145.81639,
+     3.0841
+    ],
+    [
+     281.71883,
+     146.00923,
+     3.0841
+    ],
+    [
+     281.94864,
+     146.20207,
+     3.0841
+    ],
+    [
+     282.17846,
+     146.3949,
+     3.0841
+    ],
+    [
+     282.40827,
+     146.58774,
+     3.0841
+    ],
+    [
+     282.63808,
+     146.78057,
+     3.0841
+    ],
+    [
+     282.8679,
+     146.97341,
+     3.0841
+    ],
+    [
+     283.09771,
+     147.16625,
+     3.0841
+    ],
+    [
+     283.32752,
+     147.35908,
+     3.0841
+    ],
+    [
+     278.32187,
+     145.85712,
+     3.002
+    ],
+    [
+     278.55168,
+     146.04995,
+     3.002
+    ],
+    [
+     278.78149,
+     146.24279,
+     3.002
+    ],
+    [
+     279.01131,
+     146.43563,
+     3.002
+    ],
+    [
+     279.24112,
+     146.62846,
+     3.002
+    ],
+    [
+     279.47093,
+     146.8213,
+     3.002
+    ],
+    [
+     279.70075,
+     147.01413,
+     3.002
+    ],
+    [
+     279.93056,
+     147.20697,
+     3.002
+    ],
+    [
+     280.16037,
+     147.39981,
+     3.002
+    ],
+    [
+     280.39019,
+     147.59264,
+     3.002
+    ],
+    [
+     280.62,
+     147.78548,
+     3.002
+    ],
+    [
+     280.84981,
+     147.97832,
+     3.002
+    ],
+    [
+     281.07963,
+     148.17115,
+     3.002
+    ],
+    [
+     281.30944,
+     148.36399,
+     3.002
+    ],
+    [
+     281.53925,
+     148.55682,
+     3.002
+    ],
+    [
+     281.76907,
+     148.74966,
+     3.002
+    ],
+    [
+     281.99888,
+     148.9425,
+     3.002
+    ]
+   ],
+   "valance_world": [
+    [
+     279.78125,
+     143.85341,
+     2.7616
+    ],
+    [
+     283.7892,
+     147.21648,
+     2.7616
+    ],
+    [
+     283.7892,
+     147.21648,
+     3.0416
+    ],
+    [
+     279.78125,
+     143.85341,
+     3.0416
+    ]
+   ],
+   "valance_h": 0.28,
+   "tube_r": 0.0215,
+   "roll_mandrel_world": [
+    [
+     279.46285,
+     144.10841,
+     3.1766
+    ],
+    [
+     283.59337,
+     147.57432,
+     3.1766
+    ]
+   ],
+   "roll_mandrel_r": 0.0215,
+   "covers_local_y": [
+    -0.42,
+    2.139
+   ],
+   "note": "fabric roof + skirt for state 'up'; a rolled bundle on the published mandrel for state 'down'.  The rigid valance BOARD is already built by timing_stand."
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "state": "up",
+   "eaves_front_world": [
+    [
+     298.95395,
+     160.48949,
+     3.0216
+    ],
+    [
+     303.61303,
+     164.39892,
+     3.0216
+    ]
+   ],
+   "eaves_rear_world": [
+    [
+     297.41897,
+     162.3188,
+     2.9026
+    ],
+    [
+     302.07806,
+     166.22824,
+     2.9026
+    ]
+   ],
+   "rafters_world": [
+    [
+     [
+      299.30819,
+      160.23846,
+      3.07253
+     ],
+     [
+      297.43896,
+      162.46611,
+      2.9326
+     ]
+    ],
+    [
+     [
+      300.05661,
+      160.86646,
+      3.07253
+     ],
+     [
+      298.18738,
+      163.09412,
+      2.9326
+     ]
+    ],
+    [
+     [
+      300.80504,
+      161.49446,
+      3.07253
+     ],
+     [
+      298.93581,
+      163.72212,
+      2.9326
+     ]
+    ],
+    [
+     [
+      301.55346,
+      162.12247,
+      3.07253
+     ],
+     [
+      299.68424,
+      164.35012,
+      2.9326
+     ]
+    ],
+    [
+     [
+      302.30189,
+      162.75047,
+      3.07253
+     ],
+     [
+      300.43266,
+      164.97813,
+      2.9326
+     ]
+    ],
+    [
+     [
+      303.05031,
+      163.37847,
+      3.07253
+     ],
+     [
+      301.18109,
+      165.60613,
+      2.9326
+     ]
+    ],
+    [
+     [
+      303.79874,
+      164.00648,
+      3.07253
+     ],
+     [
+      301.92951,
+      166.23413,
+      2.9326
+     ]
+    ]
+   ],
+   "eyelets_world": [
+    [
+     299.09318,
+     160.58804,
+     3.0666
+    ],
+    [
+     299.32299,
+     160.78087,
+     3.0666
+    ],
+    [
+     299.5528,
+     160.97371,
+     3.0666
+    ],
+    [
+     299.78262,
+     161.16655,
+     3.0666
+    ],
+    [
+     300.01243,
+     161.35938,
+     3.0666
+    ],
+    [
+     300.24224,
+     161.55222,
+     3.0666
+    ],
+    [
+     300.47206,
+     161.74506,
+     3.0666
+    ],
+    [
+     300.70187,
+     161.93789,
+     3.0666
+    ],
+    [
+     300.93168,
+     162.13073,
+     3.0666
+    ],
+    [
+     301.1615,
+     162.32356,
+     3.0666
+    ],
+    [
+     301.39131,
+     162.5164,
+     3.0666
+    ],
+    [
+     301.62112,
+     162.70924,
+     3.0666
+    ],
+    [
+     301.85094,
+     162.90207,
+     3.0666
+    ],
+    [
+     302.08075,
+     163.09491,
+     3.0666
+    ],
+    [
+     302.31056,
+     163.28775,
+     3.0666
+    ],
+    [
+     302.54038,
+     163.48058,
+     3.0666
+    ],
+    [
+     302.77019,
+     163.67342,
+     3.0666
+    ],
+    [
+     303.0,
+     163.86625,
+     3.0666
+    ],
+    [
+     303.22982,
+     164.05909,
+     3.0666
+    ],
+    [
+     303.45963,
+     164.25193,
+     3.0666
+    ],
+    [
+     297.5402,
+     162.4388,
+     2.9476
+    ],
+    [
+     297.77001,
+     162.63164,
+     2.9476
+    ],
+    [
+     297.99983,
+     162.82447,
+     2.9476
+    ],
+    [
+     298.22964,
+     163.01731,
+     2.9476
+    ],
+    [
+     298.45945,
+     163.21015,
+     2.9476
+    ],
+    [
+     298.68927,
+     163.40298,
+     2.9476
+    ],
+    [
+     298.91908,
+     163.59582,
+     2.9476
+    ],
+    [
+     299.14889,
+     163.78865,
+     2.9476
+    ],
+    [
+     299.37871,
+     163.98149,
+     2.9476
+    ],
+    [
+     299.60852,
+     164.17433,
+     2.9476
+    ],
+    [
+     299.83833,
+     164.36716,
+     2.9476
+    ],
+    [
+     300.06815,
+     164.56,
+     2.9476
+    ],
+    [
+     300.29796,
+     164.75284,
+     2.9476
+    ],
+    [
+     300.52777,
+     164.94567,
+     2.9476
+    ],
+    [
+     300.75759,
+     165.13851,
+     2.9476
+    ],
+    [
+     300.9874,
+     165.33135,
+     2.9476
+    ],
+    [
+     301.21721,
+     165.52418,
+     2.9476
+    ],
+    [
+     301.44703,
+     165.71702,
+     2.9476
+    ],
+    [
+     301.67684,
+     165.90985,
+     2.9476
+    ],
+    [
+     301.90665,
+     166.10269,
+     2.9476
+    ]
+   ],
+   "valance_world": [
+    [
+     299.22392,
+     160.16775,
+     2.7516
+    ],
+    [
+     303.883,
+     164.07718,
+     2.7516
+    ],
+    [
+     303.883,
+     164.07718,
+     3.0316
+    ],
+    [
+     299.22392,
+     160.16775,
+     3.0316
+    ]
+   ],
+   "valance_h": 0.28,
+   "tube_r": 0.0215,
+   "roll_mandrel_world": [
+    [
+     298.90552,
+     160.42274,
+     3.1591
+    ],
+    [
+     303.68717,
+     164.43502,
+     3.1591
+    ]
+   ],
+   "roll_mandrel_r": 0.0215,
+   "covers_local_y": [
+    -0.42,
+    2.488
+   ],
+   "note": "fabric roof + skirt for state 'up'; a rolled bundle on the published mandrel for state 'down'.  The rigid valance BOARD is already built by timing_stand."
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "state": "down",
+   "eaves_front_world": [
+    [
+     316.48013,
+     175.1957,
+     2.8879
+    ],
+    [
+     319.77182,
+     177.95776,
+     2.8879
+    ]
+   ],
+   "eaves_rear_world": [
+    [
+     315.35461,
+     176.53704,
+     2.8249
+    ],
+    [
+     318.6463,
+     179.2991,
+     2.8249
+    ]
+   ],
+   "rafters_world": [],
+   "eyelets_world": [],
+   "valance_world": [
+    [
+     316.50905,
+     175.16123,
+     2.5679
+    ],
+    [
+     319.80075,
+     177.92328,
+     2.5679
+    ],
+    [
+     319.80075,
+     177.92328,
+     2.8479
+    ],
+    [
+     316.50905,
+     175.16123,
+     2.8479
+    ]
+   ],
+   "valance_h": 0.28,
+   "tube_r": 0.0215,
+   "roll_mandrel_world": [
+    [
+     316.4317,
+     175.12895,
+     3.0279
+    ],
+    [
+     319.84596,
+     177.99386,
+     3.0279
+    ]
+   ],
+   "roll_mandrel_r": 0.0215,
+   "covers_local_y": [
+    -0.42,
+    1.851
+   ],
+   "note": "fabric roof + skirt for state 'up'; a rolled bundle on the published mandrel for state 'down'.  The rigid valance BOARD is already built by timing_stand."
+  }
+ ],
+ "figure_stations": [
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "role": "engineer",
+   "k": 0,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    161.14253,
+    46.28127,
+    0.7423
+   ],
+   "deck_z_world": 0.6793,
+   "foot_rail_world": [
+    161.30966,
+    46.0821,
+    0.8643
+   ],
+   "console_edge_world": [
+    162.07772,
+    45.16675,
+    1.4149
+   ],
+   "console_top_z": 1.4149,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "role": "engineer",
+   "k": 1,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    161.82094,
+    46.85052,
+    0.7423
+   ],
+   "deck_z_world": 0.6793,
+   "foot_rail_world": [
+    161.98807,
+    46.65135,
+    0.8643
+   ],
+   "console_edge_world": [
+    162.75613,
+    45.736,
+    1.4149
+   ],
+   "console_top_z": 1.4149,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "role": "engineer",
+   "k": 2,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    162.49935,
+    47.41977,
+    0.7423
+   ],
+   "deck_z_world": 0.6793,
+   "foot_rail_world": [
+    162.66647,
+    47.2206,
+    0.8643
+   ],
+   "console_edge_world": [
+    163.43454,
+    46.30526,
+    1.4149
+   ],
+   "console_top_z": 1.4149,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "role": "engineer",
+   "k": 3,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    163.17776,
+    47.98903,
+    0.7423
+   ],
+   "deck_z_world": 0.6793,
+   "foot_rail_world": [
+    163.34488,
+    47.78985,
+    0.8643
+   ],
+   "console_edge_world": [
+    164.11295,
+    46.87451,
+    1.4149
+   ],
+   "console_top_z": 1.4149,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "role": "principal",
+   "k": 0,
+   "tier": 0,
+   "occupied": true,
+   "standing": true,
+   "stand_point_world": [
+    163.25347,
+    48.5631,
+    0.6793
+   ],
+   "deck_z_world": 0.6793,
+   "lean_rail_world": [
+    163.10562,
+    48.73929,
+    1.7243
+   ],
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "role": "engineer",
+   "k": 0,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    177.12293,
+    59.26146,
+    0.7322
+   ],
+   "deck_z_world": 0.6692,
+   "foot_rail_world": [
+    177.29005,
+    59.06229,
+    0.8542
+   ],
+   "console_edge_world": [
+    177.8469,
+    58.39866,
+    1.4043
+   ],
+   "console_top_z": 1.4043,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "role": "engineer",
+   "k": 1,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    177.79789,
+    59.82782,
+    0.7322
+   ],
+   "deck_z_world": 0.6692,
+   "foot_rail_world": [
+    177.96502,
+    59.62865,
+    0.8542
+   ],
+   "console_edge_world": [
+    178.52186,
+    58.96502,
+    1.4043
+   ],
+   "console_top_z": 1.4043,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "role": "engineer",
+   "k": 2,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    178.47285,
+    60.39418,
+    0.7322
+   ],
+   "deck_z_world": 0.6692,
+   "foot_rail_world": [
+    178.63998,
+    60.19501,
+    0.8542
+   ],
+   "console_edge_world": [
+    179.19682,
+    59.53138,
+    1.4043
+   ],
+   "console_top_z": 1.4043,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "role": "engineer",
+   "k": 3,
+   "tier": 1,
+   "occupied": true,
+   "seat_mount_world": [
+    178.51923,
+    61.70965,
+    1.071
+   ],
+   "deck_z_world": 1.008,
+   "foot_rail_world": [
+    178.68636,
+    61.51048,
+    1.193
+   ],
+   "console_edge_world": [
+    179.87179,
+    60.09774,
+    1.4043
+   ],
+   "console_top_z": 1.4043,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "role": "principal",
+   "k": 0,
+   "tier": 1,
+   "occupied": true,
+   "standing": true,
+   "stand_point_world": [
+    178.98717,
+    62.27957,
+    1.008
+   ],
+   "deck_z_world": 1.008,
+   "lean_rail_world": [
+    178.83933,
+    62.45576,
+    2.053
+   ],
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "role": "engineer",
+   "k": 0,
+   "tier": 0,
+   "occupied": false,
+   "seat_mount_world": [
+    193.50857,
+    72.94759,
+    0.8462
+   ],
+   "deck_z_world": 0.7832,
+   "foot_rail_world": [
+    193.67569,
+    72.74842,
+    0.9682
+   ],
+   "console_edge_world": [
+    194.20149,
+    72.12179,
+    1.5196
+   ],
+   "console_top_z": 1.5196,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "role": "engineer",
+   "k": 1,
+   "tier": 0,
+   "occupied": false,
+   "seat_mount_world": [
+    194.23608,
+    73.55804,
+    0.8462
+   ],
+   "deck_z_world": 0.7832,
+   "foot_rail_world": [
+    194.4032,
+    73.35887,
+    0.9682
+   ],
+   "console_edge_world": [
+    194.929,
+    72.73225,
+    1.5196
+   ],
+   "console_top_z": 1.5196,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "role": "engineer",
+   "k": 2,
+   "tier": 0,
+   "occupied": false,
+   "seat_mount_world": [
+    194.96359,
+    74.1685,
+    0.8462
+   ],
+   "deck_z_world": 0.7832,
+   "foot_rail_world": [
+    195.13072,
+    73.96933,
+    0.9682
+   ],
+   "console_edge_world": [
+    195.65652,
+    73.3427,
+    1.5196
+   ],
+   "console_top_z": 1.5196,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "role": "engineer",
+   "k": 3,
+   "tier": 1,
+   "occupied": false,
+   "seat_mount_world": [
+    195.06959,
+    75.51964,
+    1.2333
+   ],
+   "deck_z_world": 1.1703,
+   "foot_rail_world": [
+    195.23672,
+    75.32047,
+    1.3553
+   ],
+   "console_edge_world": [
+    196.38403,
+    73.95316,
+    1.5196
+   ],
+   "console_top_z": 1.5196,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "role": "principal",
+   "k": 0,
+   "tier": 1,
+   "occupied": false,
+   "standing": true,
+   "stand_point_world": [
+    192.27568,
+    73.37252,
+    1.1703
+   ],
+   "deck_z_world": 1.1703,
+   "lean_rail_world": [
+    192.12784,
+    73.54871,
+    2.2153
+   ],
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "role": "engineer",
+   "k": 0,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    214.7924,
+    91.23176,
+    0.8212
+   ],
+   "deck_z_world": 0.7582,
+   "foot_rail_world": [
+    214.95952,
+    91.03258,
+    0.9432
+   ],
+   "console_edge_world": [
+    215.69455,
+    90.15661,
+    1.4985
+   ],
+   "console_top_z": 1.4985,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "role": "engineer",
+   "k": 1,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    215.52229,
+    91.8442,
+    0.8212
+   ],
+   "deck_z_world": 0.7582,
+   "foot_rail_world": [
+    215.68941,
+    91.64503,
+    0.9432
+   ],
+   "console_edge_world": [
+    216.42444,
+    90.76906,
+    1.4985
+   ],
+   "console_top_z": 1.4985,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "role": "engineer",
+   "k": 2,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    216.25225,
+    92.45672,
+    0.8212
+   ],
+   "deck_z_world": 0.7582,
+   "foot_rail_world": [
+    216.41938,
+    92.25754,
+    0.9432
+   ],
+   "console_edge_world": [
+    217.1544,
+    91.38157,
+    1.4985
+   ],
+   "console_top_z": 1.4985,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "role": "engineer",
+   "k": 3,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    216.98221,
+    93.06923,
+    0.8212
+   ],
+   "deck_z_world": 0.7582,
+   "foot_rail_world": [
+    217.14934,
+    92.87006,
+    0.9432
+   ],
+   "console_edge_world": [
+    217.88437,
+    91.99408,
+    1.4985
+   ],
+   "console_top_z": 1.4985,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "role": "principal",
+   "k": 0,
+   "tier": 0,
+   "occupied": true,
+   "standing": true,
+   "stand_point_world": [
+    214.29833,
+    91.28648,
+    0.7582
+   ],
+   "deck_z_world": 0.7582,
+   "lean_rail_world": [
+    214.15049,
+    91.46267,
+    1.8032
+   ],
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "role": "engineer",
+   "k": 0,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    230.69424,
+    103.99225,
+    0.8197
+   ],
+   "deck_z_world": 0.7567,
+   "foot_rail_world": [
+    230.86136,
+    103.79308,
+    0.9417
+   ],
+   "console_edge_world": [
+    231.30945,
+    103.25907,
+    1.4976
+   ],
+   "console_top_z": 1.4976,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "role": "engineer",
+   "k": 1,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    231.28639,
+    104.48912,
+    0.8197
+   ],
+   "deck_z_world": 0.7567,
+   "foot_rail_world": [
+    231.45351,
+    104.28995,
+    0.9417
+   ],
+   "console_edge_world": [
+    231.9016,
+    103.75594,
+    1.4976
+   ],
+   "console_top_z": 1.4976,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "role": "engineer",
+   "k": 2,
+   "tier": 1,
+   "occupied": true,
+   "seat_mount_world": [
+    231.9346,
+    106.12161,
+    1.1591
+   ],
+   "deck_z_world": 1.0961,
+   "foot_rail_world": [
+    232.10172,
+    105.92244,
+    1.2811
+   ],
+   "console_edge_world": [
+    233.08583,
+    104.74963,
+    1.4976
+   ],
+   "console_top_z": 1.4976,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "role": "engineer",
+   "k": 3,
+   "tier": 2,
+   "occupied": true,
+   "seat_mount_world": [
+    231.48195,
+    106.66106,
+    1.5595
+   ],
+   "deck_z_world": 1.4965,
+   "foot_rail_world": [
+    231.64907,
+    106.46189,
+    1.6815
+   ],
+   "console_edge_world": [
+    233.08583,
+    104.74963,
+    1.4976
+   ],
+   "console_top_z": 1.4976,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "role": "principal",
+   "k": 0,
+   "tier": 2,
+   "occupied": true,
+   "standing": true,
+   "stand_point_world": [
+    228.93204,
+    104.49898,
+    1.4965
+   ],
+   "deck_z_world": 1.4965,
+   "lean_rail_world": [
+    228.7842,
+    104.67517,
+    2.5415
+   ],
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "role": "engineer",
+   "k": 0,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    246.89849,
+    117.73321,
+    0.7465
+   ],
+   "deck_z_world": 0.6835,
+   "foot_rail_world": [
+    247.06561,
+    117.53404,
+    0.8685
+   ],
+   "console_edge_world": [
+    247.5846,
+    116.91554,
+    1.4136
+   ],
+   "console_top_z": 1.4136,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "role": "engineer",
+   "k": 1,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    247.63205,
+    118.34875,
+    0.7465
+   ],
+   "deck_z_world": 0.6835,
+   "foot_rail_world": [
+    247.79918,
+    118.14958,
+    0.8685
+   ],
+   "console_edge_world": [
+    248.31816,
+    117.53107,
+    1.4136
+   ],
+   "console_top_z": 1.4136,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "role": "engineer",
+   "k": 2,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    248.36562,
+    118.96428,
+    0.7465
+   ],
+   "deck_z_world": 0.6835,
+   "foot_rail_world": [
+    248.53274,
+    118.76511,
+    0.8685
+   ],
+   "console_edge_world": [
+    249.05173,
+    118.14661,
+    1.4136
+   ],
+   "console_top_z": 1.4136,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "role": "engineer",
+   "k": 3,
+   "tier": 1,
+   "occupied": true,
+   "seat_mount_world": [
+    248.49059,
+    120.30511,
+    1.0711
+   ],
+   "deck_z_world": 1.0081,
+   "foot_rail_world": [
+    248.65771,
+    120.10593,
+    1.1931
+   ],
+   "console_edge_world": [
+    249.78529,
+    118.76214,
+    1.4136
+   ],
+   "console_top_z": 1.4136,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "role": "principal",
+   "k": 0,
+   "tier": 1,
+   "occupied": true,
+   "standing": true,
+   "stand_point_world": [
+    245.49451,
+    117.97359,
+    1.0081
+   ],
+   "deck_z_world": 1.0081,
+   "lean_rail_world": [
+    245.34667,
+    118.14978,
+    2.0531
+   ],
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "role": "engineer",
+   "k": 0,
+   "tier": 0,
+   "occupied": false,
+   "seat_mount_world": [
+    263.18195,
+    131.90733,
+    0.8309
+   ],
+   "deck_z_world": 0.7679,
+   "foot_rail_world": [
+    263.34907,
+    131.70816,
+    0.9529
+   ],
+   "console_edge_world": [
+    264.11952,
+    130.78998,
+    1.5107
+   ],
+   "console_top_z": 1.5107,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "role": "engineer",
+   "k": 1,
+   "tier": 0,
+   "occupied": false,
+   "seat_mount_world": [
+    263.80336,
+    132.42876,
+    0.8309
+   ],
+   "deck_z_world": 0.7679,
+   "foot_rail_world": [
+    263.97049,
+    132.22959,
+    0.9529
+   ],
+   "console_edge_world": [
+    264.74093,
+    131.31141,
+    1.5107
+   ],
+   "console_top_z": 1.5107,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "role": "engineer",
+   "k": 2,
+   "tier": 0,
+   "occupied": false,
+   "seat_mount_world": [
+    264.4247,
+    132.95013,
+    0.8309
+   ],
+   "deck_z_world": 0.7679,
+   "foot_rail_world": [
+    264.59182,
+    132.75096,
+    0.9529
+   ],
+   "console_edge_world": [
+    265.36227,
+    131.83278,
+    1.5107
+   ],
+   "console_top_z": 1.5107,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "role": "engineer",
+   "k": 3,
+   "tier": 0,
+   "occupied": false,
+   "seat_mount_world": [
+    265.04611,
+    133.47156,
+    0.8309
+   ],
+   "deck_z_world": 0.7679,
+   "foot_rail_world": [
+    265.21324,
+    133.27239,
+    0.9529
+   ],
+   "console_edge_world": [
+    265.98368,
+    132.3542,
+    1.5107
+   ],
+   "console_top_z": 1.5107,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "role": "principal",
+   "k": 0,
+   "tier": 0,
+   "occupied": false,
+   "standing": true,
+   "stand_point_world": [
+    262.48829,
+    131.83884,
+    0.7679
+   ],
+   "deck_z_world": 0.7679,
+   "lean_rail_world": [
+    262.34045,
+    132.01503,
+    1.8129
+   ],
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "role": "engineer",
+   "k": 0,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    280.09273,
+    145.5784,
+    0.6856
+   ],
+   "deck_z_world": 0.6226,
+   "foot_rail_world": [
+    280.25985,
+    145.37922,
+    0.8076
+   ],
+   "console_edge_world": [
+    280.77485,
+    144.76547,
+    1.3639
+   ],
+   "console_top_z": 1.3639,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "role": "engineer",
+   "k": 1,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    280.75497,
+    146.13409,
+    0.6856
+   ],
+   "deck_z_world": 0.6226,
+   "foot_rail_world": [
+    280.9221,
+    145.93491,
+    0.8076
+   ],
+   "console_edge_world": [
+    281.4371,
+    145.32116,
+    1.3639
+   ],
+   "console_top_z": 1.3639,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "role": "engineer",
+   "k": 2,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    281.41714,
+    146.68971,
+    0.6856
+   ],
+   "deck_z_world": 0.6226,
+   "foot_rail_world": [
+    281.58427,
+    146.49054,
+    0.8076
+   ],
+   "console_edge_world": [
+    282.09927,
+    145.87678,
+    1.3639
+   ],
+   "console_top_z": 1.3639,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "role": "engineer",
+   "k": 3,
+   "tier": 1,
+   "occupied": true,
+   "seat_mount_world": [
+    281.48211,
+    147.95721,
+    1.0257
+   ],
+   "deck_z_world": 0.9627,
+   "foot_rail_world": [
+    281.64923,
+    147.75804,
+    1.1477
+   ],
+   "console_edge_world": [
+    282.76151,
+    146.43247,
+    1.3639
+   ],
+   "console_top_z": 1.3639,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "role": "principal",
+   "k": 0,
+   "tier": 1,
+   "occupied": true,
+   "standing": true,
+   "stand_point_world": [
+    281.95192,
+    148.5193,
+    0.9627
+   ],
+   "deck_z_world": 0.9627,
+   "lean_rail_world": [
+    281.80408,
+    148.69549,
+    2.0077
+   ],
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "role": "engineer",
+   "k": 0,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    299.78406,
+    162.05765,
+    0.7575
+   ],
+   "deck_z_world": 0.6945,
+   "foot_rail_world": [
+    299.95119,
+    161.85848,
+    0.8795
+   ],
+   "console_edge_world": [
+    300.44465,
+    161.27039,
+    1.4404
+   ],
+   "console_top_z": 1.4404,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "role": "engineer",
+   "k": 1,
+   "tier": 0,
+   "occupied": true,
+   "seat_mount_world": [
+    300.47618,
+    162.63841,
+    0.7575
+   ],
+   "deck_z_world": 0.6945,
+   "foot_rail_world": [
+    300.64331,
+    162.43924,
+    0.8795
+   ],
+   "console_edge_world": [
+    301.13678,
+    161.85115,
+    1.4404
+   ],
+   "console_top_z": 1.4404,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "role": "engineer",
+   "k": 2,
+   "tier": 1,
+   "occupied": true,
+   "seat_mount_world": [
+    301.37115,
+    164.38318,
+    1.1425
+   ],
+   "deck_z_world": 1.0795,
+   "foot_rail_world": [
+    301.53827,
+    164.18401,
+    1.2645
+   ],
+   "console_edge_world": [
+    302.52109,
+    163.01273,
+    1.4404
+   ],
+   "console_top_z": 1.4404,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "role": "engineer",
+   "k": 3,
+   "tier": 2,
+   "occupied": true,
+   "seat_mount_world": [
+    300.94877,
+    164.88655,
+    1.532
+   ],
+   "deck_z_world": 1.469,
+   "foot_rail_world": [
+    301.1159,
+    164.68738,
+    1.654
+   ],
+   "console_edge_world": [
+    302.52109,
+    163.01273,
+    1.4404
+   ],
+   "console_top_z": 1.4404,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "role": "principal",
+   "k": 0,
+   "tier": 2,
+   "occupied": true,
+   "standing": true,
+   "stand_point_world": [
+    298.0356,
+    162.4707,
+    1.469
+   ],
+   "deck_z_world": 1.469,
+   "lean_rail_world": [
+    297.88776,
+    162.64689,
+    2.514
+   ],
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "role": "engineer",
+   "k": 0,
+   "tier": 0,
+   "occupied": false,
+   "seat_mount_world": [
+    316.49826,
+    176.62806,
+    0.8003
+   ],
+   "deck_z_world": 0.7373,
+   "foot_rail_world": [
+    316.66539,
+    176.42889,
+    0.9223
+   ],
+   "console_edge_world": [
+    317.42748,
+    175.52067,
+    1.478
+   ],
+   "console_top_z": 1.478,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "role": "engineer",
+   "k": 1,
+   "tier": 0,
+   "occupied": false,
+   "seat_mount_world": [
+    317.10336,
+    177.1358,
+    0.8003
+   ],
+   "deck_z_world": 0.7373,
+   "foot_rail_world": [
+    317.27049,
+    176.93663,
+    0.9223
+   ],
+   "console_edge_world": [
+    318.03257,
+    176.02841,
+    1.478
+   ],
+   "console_top_z": 1.478,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "role": "engineer",
+   "k": 2,
+   "tier": 0,
+   "occupied": false,
+   "seat_mount_world": [
+    317.70854,
+    177.6436,
+    0.8003
+   ],
+   "deck_z_world": 0.7373,
+   "foot_rail_world": [
+    317.87566,
+    177.44443,
+    0.9223
+   ],
+   "console_edge_world": [
+    318.63775,
+    176.53621,
+    1.478
+   ],
+   "console_top_z": 1.478,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "role": "engineer",
+   "k": 3,
+   "tier": 0,
+   "occupied": false,
+   "seat_mount_world": [
+    318.31363,
+    178.15134,
+    0.8003
+   ],
+   "deck_z_world": 0.7373,
+   "foot_rail_world": [
+    318.48076,
+    177.95217,
+    0.9223
+   ],
+   "console_edge_world": [
+    319.24285,
+    177.04395,
+    1.478
+   ],
+   "console_top_z": 1.478,
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "role": "principal",
+   "k": 0,
+   "tier": 0,
+   "occupied": false,
+   "standing": true,
+   "stand_point_world": [
+    315.97123,
+    176.68894,
+    0.7373
+   ],
+   "deck_z_world": 0.7373,
+   "lean_rail_world": [
+    315.82339,
+    176.86513,
+    1.7823
+   ],
+   "facing_world": [
+    0.642788,
+    -0.766044,
+    -0.0
+   ]
+  }
+ ],
+ "deck_rects": [
+  {
+   "stand": 0,
+   "tier": 0,
+   "top_z": 0.6793,
+   "surface": "chequer",
+   "corners_world": [
+    [
+     161.07782,
+     44.79768,
+     0.6793
+    ],
+    [
+     164.62997,
+     47.77829,
+     0.6793
+    ],
+    [
+     163.49481,
+     49.13112,
+     0.6793
+    ],
+    [
+     159.94266,
+     46.15052,
+     0.6793
+    ]
+   ]
+  },
+  {
+   "stand": 1,
+   "tier": 0,
+   "top_z": 0.6692,
+   "surface": "grating",
+   "corners_world": [
+    [
+     176.62508,
+     57.84338,
+     0.6692
+    ],
+    [
+     180.61694,
+     61.19294,
+     0.6692
+    ],
+    [
+     179.82245,
+     62.13977,
+     0.6692
+    ],
+    [
+     175.83059,
+     58.79021,
+     0.6692
+    ]
+   ]
+  },
+  {
+   "stand": 1,
+   "tier": 1,
+   "top_z": 1.008,
+   "surface": "grating",
+   "corners_world": [
+    [
+     175.83059,
+     58.79021,
+     1.008
+    ],
+    [
+     179.82245,
+     62.13977,
+     1.008
+    ],
+    [
+     179.22852,
+     62.8476,
+     1.008
+    ],
+    [
+     175.23666,
+     59.49803,
+     1.008
+    ]
+   ]
+  },
+  {
+   "stand": 2,
+   "tier": 0,
+   "top_z": 0.7832,
+   "surface": "ply",
+   "corners_world": [
+    [
+     193.03452,
+     71.61253,
+     0.7832
+    ],
+    [
+     197.13362,
+     75.05209,
+     0.7832
+    ],
+    [
+     196.38927,
+     75.93917,
+     0.7832
+    ],
+    [
+     192.29017,
+     72.49961,
+     0.7832
+    ]
+   ]
+  },
+  {
+   "stand": 2,
+   "tier": 1,
+   "top_z": 1.1703,
+   "surface": "ply",
+   "corners_world": [
+    [
+     192.29017,
+     72.49961,
+     1.1703
+    ],
+    [
+     196.38927,
+     75.93917,
+     1.1703
+    ],
+    [
+     195.77348,
+     76.67304,
+     1.1703
+    ],
+    [
+     191.67438,
+     73.23348,
+     1.1703
+    ]
+   ]
+  },
+  {
+   "stand": 3,
+   "tier": 0,
+   "top_z": 0.7582,
+   "surface": "chequer",
+   "corners_world": [
+    [
+     214.77884,
+     89.85819,
+     0.7582
+    ],
+    [
+     218.27507,
+     92.79187,
+     0.7582
+    ],
+    [
+     217.19326,
+     94.08112,
+     0.7582
+    ],
+    [
+     213.69703,
+     91.14744,
+     0.7582
+    ]
+   ]
+  },
+  {
+   "stand": 4,
+   "tier": 0,
+   "top_z": 0.7567,
+   "surface": "rubber",
+   "corners_world": [
+    [
+     229.87214,
+     102.52297,
+     0.7567
+    ],
+    [
+     234.00801,
+     105.99338,
+     0.7567
+    ],
+    [
+     233.38901,
+     106.73108,
+     0.7567
+    ],
+    [
+     229.25313,
+     103.26067,
+     0.7567
+    ]
+   ]
+  },
+  {
+   "stand": 4,
+   "tier": 1,
+   "top_z": 1.0961,
+   "surface": "rubber",
+   "corners_world": [
+    [
+     229.25313,
+     103.26067,
+     1.0961
+    ],
+    [
+     233.38901,
+     106.73108,
+     1.0961
+    ],
+    [
+     232.842,
+     107.38298,
+     1.0961
+    ],
+    [
+     228.70612,
+     103.91257,
+     1.0961
+    ]
+   ]
+  },
+  {
+   "stand": 4,
+   "tier": 2,
+   "top_z": 1.4965,
+   "surface": "rubber",
+   "corners_world": [
+    [
+     228.70612,
+     103.91257,
+     1.4965
+    ],
+    [
+     232.842,
+     107.38298,
+     1.4965
+    ],
+    [
+     232.46661,
+     107.83035,
+     1.4965
+    ],
+    [
+     228.33073,
+     104.35994,
+     1.4965
+    ]
+   ]
+  },
+  {
+   "stand": 5,
+   "tier": 0,
+   "top_z": 0.6835,
+   "surface": "grating",
+   "corners_world": [
+    [
+     246.22634,
+     116.24577,
+     0.6835
+    ],
+    [
+     250.70541,
+     120.00415,
+     0.6835
+    ],
+    [
+     249.97199,
+     120.87821,
+     0.6835
+    ],
+    [
+     245.49292,
+     117.11983,
+     0.6835
+    ]
+   ]
+  },
+  {
+   "stand": 5,
+   "tier": 1,
+   "top_z": 1.0081,
+   "surface": "grating",
+   "corners_world": [
+    [
+     245.49292,
+     117.11983,
+     1.0081
+    ],
+    [
+     249.97199,
+     120.87821,
+     1.0081
+    ],
+    [
+     249.37227,
+     121.59293,
+     1.0081
+    ],
+    [
+     244.8932,
+     117.83455,
+     1.0081
+    ]
+   ]
+  },
+  {
+   "stand": 6,
+   "tier": 0,
+   "top_z": 0.7679,
+   "surface": "chequer",
+   "corners_world": [
+    [
+     263.02601,
+     130.34236,
+     0.7679
+    ],
+    [
+     266.49695,
+     133.25483,
+     0.7679
+    ],
+    [
+     265.35793,
+     134.61227,
+     0.7679
+    ],
+    [
+     261.88699,
+     131.69979,
+     0.7679
+    ]
+   ]
+  },
+  {
+   "stand": 7,
+   "tier": 0,
+   "top_z": 0.6226,
+   "surface": "ply",
+   "corners_world": [
+    [
+     279.5266,
+     144.18801,
+     0.6226
+    ],
+    [
+     283.50391,
+     147.52536,
+     0.6226
+    ],
+    [
+     282.77691,
+     148.39176,
+     0.6226
+    ],
+    [
+     278.79961,
+     145.05441,
+     0.6226
+    ]
+   ]
+  },
+  {
+   "stand": 7,
+   "tier": 1,
+   "top_z": 0.9627,
+   "surface": "ply",
+   "corners_world": [
+    [
+     278.79961,
+     145.05441,
+     0.9627
+    ],
+    [
+     282.77691,
+     148.39176,
+     0.9627
+    ],
+    [
+     282.19326,
+     149.08733,
+     0.9627
+    ],
+    [
+     278.21596,
+     145.74997,
+     0.9627
+    ]
+   ]
+  },
+  {
+   "stand": 8,
+   "tier": 0,
+   "top_z": 0.6945,
+   "surface": "grating",
+   "corners_world": [
+    [
+     298.96927,
+     160.50234,
+     0.6945
+    ],
+    [
+     303.59771,
+     164.38607,
+     0.6945
+    ],
+    [
+     302.90543,
+     165.2111,
+     0.6945
+    ],
+    [
+     298.27699,
+     161.32737,
+     0.6945
+    ]
+   ]
+  },
+  {
+   "stand": 8,
+   "tier": 1,
+   "top_z": 1.0795,
+   "surface": "grating",
+   "corners_world": [
+    [
+     298.27699,
+     161.32737,
+     1.0795
+    ],
+    [
+     302.90543,
+     165.2111,
+     1.0795
+    ],
+    [
+     302.49404,
+     165.70137,
+     1.0795
+    ],
+    [
+     297.8656,
+     161.81764,
+     1.0795
+    ]
+   ]
+  },
+  {
+   "stand": 8,
+   "tier": 2,
+   "top_z": 1.469,
+   "surface": "grating",
+   "corners_world": [
+    [
+     297.8656,
+     161.81764,
+     1.469
+    ],
+    [
+     302.49404,
+     165.70137,
+     1.469
+    ],
+    [
+     302.06273,
+     166.21538,
+     1.469
+    ],
+    [
+     297.43429,
+     162.33166,
+     1.469
+    ]
+   ]
+  },
+  {
+   "stand": 9,
+   "tier": 0,
+   "top_z": 0.7373,
+   "surface": "chequer",
+   "corners_world": [
+    [
+     316.49545,
+     175.20855,
+     0.7373
+    ],
+    [
+     319.7565,
+     177.9449,
+     0.7373
+    ],
+    [
+     318.63098,
+     179.28624,
+     0.7373
+    ],
+    [
+     315.36993,
+     176.5499,
+     0.7373
+    ]
+   ]
+  }
+ ],
+ "kit_sites": [
+  {
+   "stand": 0,
+   "team": "BOREAL",
+   "extinguisher_bracket_world": [
+    163.4031,
+    48.99151,
+    1.0693
+   ],
+   "extinguisher_axis_world": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "extinguisher_for": "fire_extinguisher_handheld",
+   "umbrella_socket_world": [
+    160.02501,
+    46.21962,
+    1.2993
+   ],
+   "umbrella_socket_id": 0.039
+  },
+  {
+   "stand": 1,
+   "team": "CORVUS",
+   "extinguisher_bracket_world": [
+    179.1368,
+    62.70798,
+    1.0592
+   ],
+   "extinguisher_axis_world": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "extinguisher_for": "fire_extinguisher_handheld",
+   "umbrella_socket_world": [
+    175.32475,
+    59.57195,
+    1.2892
+   ],
+   "umbrella_socket_id": 0.039
+  },
+  {
+   "stand": 2,
+   "team": "DELMAR",
+   "extinguisher_bracket_world": [
+    191.8278,
+    73.29956,
+    1.1732
+   ],
+   "extinguisher_axis_world": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "extinguisher_for": "fire_extinguisher_handheld",
+   "umbrella_socket_world": [
+    195.77348,
+    76.67304,
+    1.4032
+   ],
+   "umbrella_socket_id": 0.039
+  },
+  {
+   "stand": 3,
+   "team": "ESTIVAL",
+   "extinguisher_bracket_world": [
+    213.85045,
+    91.21351,
+    1.1482
+   ],
+   "extinguisher_axis_world": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "extinguisher_for": "fire_extinguisher_handheld",
+   "umbrella_socket_world": [
+    217.19134,
+    94.07951,
+    1.3782
+   ],
+   "umbrella_socket_id": 0.039
+  },
+  {
+   "stand": 4,
+   "team": "FULGOR",
+   "extinguisher_bracket_world": [
+    228.48415,
+    104.42602,
+    1.1467
+   ],
+   "extinguisher_axis_world": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "extinguisher_for": "fire_extinguisher_handheld",
+   "umbrella_socket_world": [
+    232.47044,
+    107.83356,
+    1.3767
+   ],
+   "umbrella_socket_id": 0.039
+  },
+  {
+   "stand": 5,
+   "team": "GRISAILLE",
+   "extinguisher_bracket_world": [
+    245.04662,
+    117.90063,
+    1.0735
+   ],
+   "extinguisher_axis_world": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "extinguisher_for": "fire_extinguisher_handheld",
+   "umbrella_socket_world": [
+    249.37035,
+    121.59132,
+    1.3035
+   ],
+   "umbrella_socket_id": 0.039
+  },
+  {
+   "stand": 6,
+   "team": "HALCYON",
+   "extinguisher_bracket_world": [
+    262.04041,
+    131.76587,
+    1.1579
+   ],
+   "extinguisher_axis_world": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "extinguisher_for": "fire_extinguisher_handheld",
+   "umbrella_socket_world": [
+    265.35793,
+    134.61227,
+    1.3879
+   ],
+   "umbrella_socket_id": 0.039
+  },
+  {
+   "stand": 7,
+   "team": "IRIDIA",
+   "extinguisher_bracket_world": [
+    282.10155,
+    148.94771,
+    1.0126
+   ],
+   "extinguisher_axis_world": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "extinguisher_for": "fire_extinguisher_handheld",
+   "umbrella_socket_world": [
+    278.30405,
+    145.82389,
+    1.2426
+   ],
+   "umbrella_socket_id": 0.039
+  },
+  {
+   "stand": 8,
+   "team": "JUNIPER",
+   "extinguisher_bracket_world": [
+    297.58771,
+    162.39773,
+    1.0845
+   ],
+   "extinguisher_axis_world": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "extinguisher_for": "fire_extinguisher_handheld",
+   "umbrella_socket_world": [
+    302.06082,
+    166.21377,
+    1.3145
+   ],
+   "umbrella_socket_id": 0.039
+  },
+  {
+   "stand": 9,
+   "team": "KESTREL",
+   "extinguisher_bracket_world": [
+    315.52335,
+    176.61597,
+    1.1273
+   ],
+   "extinguisher_axis_world": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "extinguisher_for": "fire_extinguisher_handheld",
+   "umbrella_socket_world": [
+    318.63098,
+    179.28624,
+    1.3573
+   ],
+   "umbrella_socket_id": 0.039
+  }
+ ]
+}

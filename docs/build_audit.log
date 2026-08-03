@@ -1,0 +1,25 @@
+00:00.414  blend            | Read blend: "/home/zany/opus5-car-render/work/iter.blend"
+>> applied exploded offsets to 599 objects
+>> presentation normals: 15 clusters
+>> camera MACRO_BB               r= 0.895m  focus= 2.10m
+>> camera MACRO_CORNER_FL        r= 0.699m  focus= 1.90m
+>> camera MACRO_CORNER_FR        r= 0.699m  focus= 1.90m
+>> camera MACRO_CORNER_RL        r= 0.717m  focus= 1.92m
+>> camera MACRO_CORNER_RR        r= 0.717m  focus= 1.92m
+>> camera MACRO_CI               r= 0.684m  focus= 1.88m
+>> camera MACRO_EC               r= 1.347m  focus= 2.55m
+>> camera MACRO_FD               r= 2.095m  focus= 3.29m
+>> camera MACRO_FW               r= 1.070m  focus= 2.27m
+>> camera MACRO_halo_assembly    r= 0.942m  focus= 2.14m
+>> camera MACRO_MB               r= 2.864m  focus= 4.06m
+>> camera MACRO_NOSE             r= 0.618m  focus= 1.82m
+>> camera MACRO_RW               r= 0.716m  focus= 1.92m
+>> camera MACRO_SP               r= 1.335m  focus= 2.54m
+>> camera MACRO_SW               r= 0.192m  focus= 1.39m
+Info: Total files 1 | Changed 0 | Failed 0
+Info: Saved as "beat1_audit.blend"
+>> saved /home/zany/f1-round2/world/beat1_audit.blend  (275.0 MB), 15 macro cameras
+>> STAGE RESULT: BEAT1_AUDIT_BLEND_OK
+Blender 5.2.0 LTS (hash fbe6228777e7 built 2026-07-14 01:32:04)
+
+Blender quit

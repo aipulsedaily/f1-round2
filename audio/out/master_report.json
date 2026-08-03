@@ -1,0 +1,560 @@
+{
+ "generated_utc": "2026-08-02T14:06:41Z",
+ "sr_internal": 96000,
+ "sr_out": 48000,
+ "bit_depth": 24,
+ "speed_source": "v_world",
+ "clock": {
+  "sr_internal": 96000,
+  "fps": 24,
+  "total_frames": 2978,
+  "duration_s": 124.08333333333333,
+  "samples": 11912000,
+  "launch_film_t": 34.0718,
+  "glass_world_t": 1.92815,
+  "world_t_at_first_sample": -34.0718,
+  "world_t_at_last_sample": 83.61152291787803,
+  "world_t_at_end_of_film": 83.6115333345447,
+  "permanent_offset_s": 6.399999998788623,
+  "ramp": [
+   {
+    "beat": "3_breach",
+    "frames": [
+     865,
+     1056
+    ],
+    "n": 192,
+    "declared_world_s": 1.6,
+    "achieved_world_s": 1.6000000000000003,
+    "solved_floor": 0.15371900826446283,
+    "ease_in_frames": 6,
+    "ease_out_frames": 15,
+    "declared_floor": 0.153719
+   }
+  ],
+  "ramp_sample_span": [
+   3448000,
+   4232000
+  ],
+  "ramp_declared_offset_s": 6.4,
+  "ramp_pchip_offset_before_correction_s": 6.4,
+  "ramp_correction_eps": 0.0,
+  "scale_min": 0.15371900826446283,
+  "scale_max": 1.0,
+  "max_scale_step_per_frame_piecewise_const": 0.20373431282522192,
+  "max_scale_step_per_sample_smoothed": 5.314808147893757e-05,
+  "agreement_with_filmtime_at_frames_max_s": 0.00038964507453309594
+ },
+ "telemetry_r2026": {
+  "declared_total_s_m": 4052.7297,
+  "walked_world_arc_m": 4056.1990828387175,
+  "global_ratio": 1.0008560607530075,
+  "x_over_s_launch_median": 1.2520869169334,
+  "launch_rows": 47,
+  "max_speed_ratio_launch": 1.2497042880800777,
+  "max_speed_error_pct_launch": 24.97042880800777,
+  "semitones_error_at_worst": 3.8590410817722307,
+  "ratio_at_glass": 1.1173422634669228,
+  "p99_abs_ratio_error_past_20m": 0.009457156945765228,
+  "implied_wheel_radius_m": 0.3599998509961956,
+  "seam_v_world_step_ms2": -7.8705656069042504
+ },
+ "speed_of_sound_ms": 342.041837354473,
+ "air": {
+  "temp_c": 18.0,
+  "rh_pct": 55.0,
+  "iso9613_alpha_db_per_m": {
+   "29": 2.7272548042155147e-05,
+   "125": 0.0004253779010669595,
+   "250": 0.0012484248146033097,
+   "500": 0.0025607904924123005,
+   "999": 0.004409516330264915,
+   "1999": 0.009599034677627426,
+   "3999": 0.02936065241082459,
+   "8000": 0.10472355295912561,
+   "15042": 0.32488193462802395
+  }
+ },
+ "camera": {
+  "frames": 2978,
+  "peak_speed_ms": 101.94569283123813,
+  "mean_speed_ms": 35.472965181988286,
+  "min_camera_car_m": 2.1222151218659913,
+  "max_camera_car_m": 1000.1466979432674,
+  "ear_separation_m": 0.175
+ },
+ "racing_line": {
+  "max_abs_lateral_offset_m": 0.01155504347359168,
+  "note": "the telemetry drives the CENTRELINE: the maximum lateral offset anywhere on the lap is 10 mm, so there is no racing line to cross a kerb with. Kerb and gravel layers are implemented and positive-control tested, and they correctly never trigger on this telemetry. Fabricating kerb strikes the picture will not show would be a desync defect, not a feature."
+ },
+ "breach_sim": {
+  "shards": 351,
+  "contact_events": 995,
+  "glass_area_m2": 54.12699007772122,
+  "aperture_m2": 53.76,
+  "contact_speed_ms": 16.70928590302728,
+  "shard_size_min_m": 0.040221481180213035,
+  "shard_size_max_m": 0.75,
+  "ring_hz_min": 54.388662149885974,
+  "ring_hz_max": 18911.012580817234,
+  "settle_world_s": 3.147916666666648,
+  "drag_coefficient_per_m": 0.024079999999999997,
+  "debris_p80_x_m": 30.15042082529262,
+  "debris_p95_x_m": 34.081609397543616,
+  "debris_max_x_m": 42.10075431526175,
+  "debris_surface_end_x_m": 30.15042082529262
+ },
+ "engine": {
+  "rpm_min_running": 4299.999868475319,
+  "rpm_max": 14351.180395573447,
+  "gear_min": 0,
+  "gear_max": 7,
+  "upshifts": 31,
+  "downshifts": 24,
+  "final_drive": 6.4471,
+  "gear_ratios": [
+   2.94,
+   2.4582,
+   2.0554,
+   1.7186,
+   1.437,
+   1.2015,
+   1.0046,
+   0.84
+  ],
+  "rpm_at_vmax": 13143.309712833301,
+  "vmax_ms": 91.88832092285156,
+  "c_exhaust_ms": 686.5902089610557,
+  "primary_quarter_wave_hz": [
+   276.8508907101031,
+   260.0720488488847
+  ],
+  "collector_half_wave_hz": 298.5174821569808,
+  "turbo_shaft_rpm_max": 121337.828125,
+  "overrun_fraction": 0.0965067624560102,
+  "throttle_mean": 0.6271269986349395,
+  "clutch_lock_at_t0": 0.029089356289559474
+ },
+ "tyres": {
+  "cavity_resonance_hz": 176.4602678148805,
+  "kerb_serration_pitch_m": 0.25,
+  "kerb_contact_fraction": 0.0,
+  "gravel_contact_fraction": 0.0,
+  "max_slip": 0.9623347520828247,
+  "max_lateral_g": 4.892966270446777,
+  "surface_time_fraction": {
+   "dais": 0.5545029044151306,
+   "ramp": 0.002851896919310093,
+   "showroom_floor": 0.007204863242805004,
+   "glass_debris": 0.010569640435278416,
+   "apron": 0.01921711303293705,
+   "access_road": 0.025933342054486275,
+   "asphalt": 0.36163613200187683,
+   "paint": 2.8540256607811898e-05,
+   "kerb": 0.0,
+   "gravel": 0.0
+  },
+  "surface_time_fraction_while_moving": {
+   "dais": 0.3710629343986511,
+   "ramp": 0.00402620667591691,
+   "showroom_floor": 0.01017157081514597,
+   "glass_debris": 0.014921844005584717,
+   "apron": 0.027130039408802986,
+   "access_road": 0.03661177679896355,
+   "asphalt": 0.5105450749397278,
+   "paint": 4.029212141176686e-05,
+   "kerb": 0.0,
+   "gravel": 0.0
+  }
+ },
+ "structure": {
+  "pane_m": [
+   2.125,
+   5.6
+  ],
+  "thickness_m": 0.012,
+  "modes_computed_below_1600hz": 351,
+  "modes_rendered": 72,
+  "plate_fundamental_f11_hz": 7.477696805317212,
+  "critical_frequency_hz": 998.511132481189,
+  "rendered_mode_range_hz": [
+   164.35339509779146,
+   1584.5960060441043
+  ],
+  "eight_strongest_rendered_modes_hz": [
+   1105.6075848526368,
+   1471.65088086841,
+   791.8561882676885,
+   530.3966911135647,
+   1113.1372598643497,
+   1479.180555880123,
+   799.3858632794014,
+   1128.1966098877758
+  ]
+ },
+ "assembly": {
+  "impacts": 616,
+  "clusters": 15
+ },
+ "breach_impact": {
+  "mullion_modes_hz": [
+   31.569791372623378,
+   87.02030984634342,
+   170.61566089167252,
+   282.0096349670288
+  ],
+  "thud_hz": [
+   41.0,
+   58.0,
+   79.0
+  ]
+ },
+ "reflections": [
+  {
+   "surface": "pit garage facade",
+   "plane_point": [
+    314.29075416143945,
+    187.82250789901832,
+    6.0
+   ],
+   "normal": [
+    -0.6427876096865266,
+    0.7660444431189887,
+    0.0
+   ],
+   "active_fraction_of_film": 0.062386920752182676
+  },
+  {
+   "surface": "showroom facade x=+15",
+   "plane_point": [
+    15.0,
+    0.0,
+    3.0
+   ],
+   "normal": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "active_fraction_of_film": 0.062305322364002685
+  }
+ ],
+ "showroom": {
+  "camera_inside_frames": 902,
+  "last_frame_inside": 903,
+  "camera_crosses_glass_plane_x15_at_frame": 903
+ },
+ "room": {
+  "delays_m": [
+   6.5,
+   11.0,
+   15.0,
+   15.348045478170828,
+   18.601075237738275,
+   18.882862600781692,
+   22.940139493908923,
+   37.765725201563384
+  ],
+  "rt60_low_s": 2.4,
+  "rt60_high_s": 0.85,
+  "volume_m3": 4290.0
+ },
+ "wind": {
+  "peak_camera_airspeed_ms": 101.9456928312376
+ },
+ "crowd_stands_world": [
+  [
+   167.20686858804459,
+   -28.93214742499649,
+   7.0
+  ],
+  [
+   369.44260157145476,
+   140.76378153224985,
+   7.0
+  ]
+ ],
+ "propagation": {
+  "engine": {
+   "min_range_m": 1.86748206615448,
+   "max_range_m": 805.5414428710938,
+   "arrival_monotonic_min_dt_s": 0.0008067730861966993,
+   "max_itd_us": 481.2970886230469
+  },
+  "tyres": {
+   "min_range_m": 2.0778307914733887,
+   "max_range_m": 806.6700439453125,
+   "arrival_monotonic_min_dt_s": 0.0008076435111945557,
+   "max_itd_us": 486.4872741699219
+  },
+  "assembly": {
+   "min_range_m": 2.117403507232666,
+   "max_range_m": 806.8514404296875,
+   "arrival_monotonic_min_dt_s": 0.0008077794720549036,
+   "max_itd_us": 482.9804382324219
+  },
+  "glass_pane": {
+   "min_range_m": 2.037132501602173,
+   "max_range_m": 981.9259033203125,
+   "arrival_monotonic_min_dt_s": 0.0008179853229535183,
+   "max_itd_us": 511.77606201171875
+  },
+  "impact": {
+   "min_range_m": 2.1554622650146484,
+   "max_range_m": 981.9195556640625,
+   "arrival_monotonic_min_dt_s": 0.0008180065299541184,
+   "max_itd_us": 511.77606201171875
+  },
+  "shards0": {
+   "min_range_m": 8.537141799926758,
+   "max_range_m": 985.5597534179688,
+   "arrival_monotonic_min_dt_s": 0.0008146994633193572,
+   "max_itd_us": 511.77606201171875
+  },
+  "shards1": {
+   "min_range_m": 6.0163774490356445,
+   "max_range_m": 981.8646850585938,
+   "arrival_monotonic_min_dt_s": 0.0008149521923428438,
+   "max_itd_us": 511.77606201171875
+  },
+  "shards2": {
+   "min_range_m": 3.5079238414764404,
+   "max_range_m": 976.819580078125,
+   "arrival_monotonic_min_dt_s": 0.0008158325335756444,
+   "max_itd_us": 511.77606201171875
+  },
+  "shards3": {
+   "min_range_m": 5.14214563369751,
+   "max_range_m": 973.1767578125,
+   "arrival_monotonic_min_dt_s": 0.0008161927432865923,
+   "max_itd_us": 511.77606201171875
+  },
+  "reflect_garage": {
+   "min_range_m": 12.871173858642578,
+   "max_range_m": 1300.17333984375,
+   "arrival_monotonic_min_dt_s": 0.0007567339405483153,
+   "max_itd_us": 599.7487182617188
+  },
+  "reflect_showroom": {
+   "min_range_m": 2.9295201301574707,
+   "max_range_m": 1264.40771484375,
+   "arrival_monotonic_min_dt_s": 0.0007188348526341315,
+   "max_itd_us": 545.8588256835938
+  },
+  "aperture": {
+   "min_range_m": 1.9294592142105103,
+   "max_range_m": 981.9249267578125,
+   "arrival_monotonic_min_dt_s": 0.0008179866374433686,
+   "max_itd_us": 511.77606201171875
+  },
+  "crowd0": {
+   "min_range_m": 47.98652648925781,
+   "max_range_m": 985.5191650390625,
+   "arrival_monotonic_min_dt_s": 0.0008129743929998767,
+   "max_itd_us": 511.77606201171875
+  },
+  "crowd1": {
+   "min_range_m": 46.95852279663086,
+   "max_range_m": 1026.3604736328125,
+   "arrival_monotonic_min_dt_s": 0.0008102607067996814,
+   "max_itd_us": 511.77606201171875
+  },
+  "fence": {
+   "min_range_m": 4.406111240386963,
+   "max_range_m": 806.6828002929688,
+   "arrival_monotonic_min_dt_s": 0.0008187510764798844,
+   "max_itd_us": 634.4476318359375
+  }
+ },
+ "buses": {
+  "engine": {
+   "measured_max_short_term_lufs": -37.79046693238049,
+   "target_lufs": -10.0,
+   "trim_db": 27.79046693238049,
+   "raw_peak": 0.05609995499253273
+  },
+  "tyres": {
+   "measured_max_short_term_lufs": -10.000599304208771,
+   "target_lufs": -19.0,
+   "trim_db": -8.999400695791229,
+   "raw_peak": 1.3967182636260986
+  },
+  "assembly": {
+   "measured_max_short_term_lufs": -31.7885698694618,
+   "target_lufs": -27.0,
+   "trim_db": 4.788569869461799,
+   "raw_peak": 0.15968015789985657
+  },
+  "structure": {
+   "measured_max_short_term_lufs": -85.75522669507309,
+   "target_lufs": -30.0,
+   "trim_db": 55.75522669507309,
+   "raw_peak": 0.00037171991425566375
+  },
+  "impact": {
+   "measured_max_short_term_lufs": -30.14276429381145,
+   "target_lufs": -6.5,
+   "trim_db": 23.64276429381145,
+   "raw_peak": 0.4932014048099518
+  },
+  "shards": {
+   "measured_max_short_term_lufs": 37.12323415730596,
+   "target_lufs": -9.0,
+   "trim_db": -46.12323415730596,
+   "raw_peak": 547.343017578125
+  },
+  "reflect_garage": {
+   "measured_max_short_term_lufs": -37.66767549197416,
+   "target_lufs": -22.0,
+   "trim_db": 15.667675491974158,
+   "raw_peak": 0.057570282369852066
+  },
+  "reflect_showroom": {
+   "measured_max_short_term_lufs": -32.98667253104786,
+   "target_lufs": -25.0,
+   "trim_db": 7.986672531047859,
+   "raw_peak": 0.32727891206741333
+  },
+  "room": {
+   "measured_max_short_term_lufs": -18.029143013399423,
+   "target_lufs": -23.0,
+   "trim_db": -4.970856986600577,
+   "raw_peak": 1.1160411834716797
+  },
+  "aperture": {
+   "measured_max_short_term_lufs": -27.287447419710325,
+   "target_lufs": -27.0,
+   "trim_db": 0.2874474197103254,
+   "raw_peak": 0.2975463271141052
+  },
+  "wind": {
+   "measured_max_short_term_lufs": -15.444779847454056,
+   "target_lufs": -18.0,
+   "trim_db": -2.555220152545944,
+   "raw_peak": 0.7898415327072144
+  },
+  "bed": {
+   "measured_max_short_term_lufs": -46.56920146577766,
+   "target_lufs": -31.0,
+   "trim_db": 15.56920146577766,
+   "raw_peak": 0.015325086191296577
+  },
+  "crowd": {
+   "measured_max_short_term_lufs": -18.351058702348087,
+   "target_lufs": -27.0,
+   "trim_db": -8.648941297651913,
+   "raw_peak": 0.5932208299636841
+  },
+  "fence": {
+   "measured_max_short_term_lufs": -66.40488400393434,
+   "target_lufs": -31.0,
+   "trim_db": 35.40488400393434,
+   "raw_peak": 0.0022293704096227884
+  }
+ },
+ "target_lufs_s_table": {
+  "engine": -10.0,
+  "tyres": -19.0,
+  "assembly": -27.0,
+  "structure": -30.0,
+  "impact": -6.5,
+  "shards": -9.0,
+  "reflect_garage": -22.0,
+  "reflect_showroom": -25.0,
+  "room": -23.0,
+  "aperture": -27.0,
+  "wind": -18.0,
+  "bed": -31.0,
+  "crowd": -27.0,
+  "fence": -31.0
+ },
+ "mix_pre": {
+  "peak": 7.614573955535889,
+  "integrated_lufs": -13.844746048254253,
+  "short_term_lufs_p05": -42.60422314237677,
+  "short_term_lufs_p95": -7.078367636220127,
+  "short_term_range_db": 35.52585550615664
+ },
+ "program_gain": {
+  "min_db": -3.100498605856384,
+  "max_db": 7.111933883863788,
+  "range_db": 10.212432489720172,
+  "attack_s": 6.0,
+  "release_s": 12.0,
+  "max_boost_db": 7.0,
+  "max_cut_db": 3.0,
+  "note": "a slow bounded mastering gain, NOT a compressor. The raw mix's short-term loudness spans 35 dB between a dark showroom and a 313 km/h pass at 26 m, which is physically correct and too wide to deliver at -14 LUFS. 10 dB of that range is taken back over 6 s / 12 s time constants; the remaining ~25 dB is left in. An earlier setting (+12/-6 dB over 4 s / 8 s) took back 24 dB and flattened the film to a 10.3 dB short-term range."
+ },
+ "limiter": {
+  "ceiling_dbtp": -1.15,
+  "max_gain_reduction_db": -0.07720348424569778,
+  "loudness_iterations_lufs": [
+   -16.122805647480742,
+   -17.14309021405426,
+   -15.404354310029555,
+   -14.626073822883805,
+   -14.291826753312954,
+   -14.14134351948836,
+   -14.074724947910005,
+   -14.037520442474639
+  ]
+ },
+ "mix_internal": {
+  "integrated_lufs": -14.037520442474639,
+  "peak": 0.8759738206863403,
+  "true_peak_dbtp": -1.1499997555950772
+ },
+ "master": {
+  "samples": 5956000,
+  "duration_s": 124.08333333333333,
+  "frames_at_24fps": 2978.0,
+  "sample_rate": 48000,
+  "bit_depth": 24,
+  "channels": 2,
+  "integrated_lufs": -14.021779428300006,
+  "target_lufs": -14.0,
+  "true_peak_dbtp": -1.1048827098559542,
+  "sample_peak": 0.8802245033498558,
+  "sample_peak_dbfs": -1.1081309176539345,
+  "dc_offset_l": 2.501606455058383e-05,
+  "dc_offset_r": 2.468541481932085e-05,
+  "short_term_lufs_min": -29.143294600976997,
+  "short_term_lufs_max": -8.852761928088281,
+  "short_term_range_db": 20.290532672888716,
+  "clipped_samples": 0,
+  "silent_1s_windows": 0,
+  "limiter_gr_db": [
+   -0.07720348424569778,
+   0.0,
+   0.0
+  ],
+  "loudness_iterations_48k_lufs": [
+   -14.021779428300006
+  ]
+ },
+ "output_wav": "audio/out/master.wav",
+ "wall_clock_s": 1340.0015008449554,
+ "log": [
+  "[    3.3s] world grid 11520001 samples, -35.0..85.0 s world",
+  "[    7.9s] surfaces classified",
+  "[   47.6s] engine: 31 upshifts, 24 downshifts, 14351 rpm max",
+  "[   58.2s] tyres",
+  "[   61.1s] glass pane: 351 modes, f11 = 7.48 Hz",
+  "[   66.1s] assembly: 616 part impacts",
+  "[   70.4s] breach: 995 shard contacts in 3.15 s of world time",
+  "[   89.1s] warped world -> film",
+  "[  149.5s] engine propagated",
+  "[  210.9s] tyres propagated",
+  "[  836.5s] breach propagated",
+  "[  925.4s] garage reflection",
+  "[ 1015.7s] showroom reflection",
+  "[ 1082.0s] showroom acoustic",
+  "[ 1091.8s] wind + bed",
+  "[ 1204.4s] crowd",
+  "[ 1272.8s] fence",
+  "[ 1278.6s] pre-mix: peak 7.615, -13.84 LUFS, short-term range 35.5 dB",
+  "[ 1280.5s] program gain",
+  "[ 1332.2s] internal: -14.04 LUFS, tp -1.15 dBTP",
+  "[ 1340.0s] WROTE audio/out/master.wav  124.083 s  -14.02 LUFS  -1.10 dBTP"
+ ]
+}

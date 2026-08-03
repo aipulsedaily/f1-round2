@@ -1,0 +1,40 @@
+{
+ "item": "paddock_personnel_figure",
+ "written": "2026-08-02T13:01:33",
+ "contract": {
+  "ground_z": "world_contract.world_ground_z(x, y)",
+  "base_embed_m": 0.02,
+  "view_transform": "AgX"
+ },
+ "collection": "W_Item_PaddockPersonnelFigure",
+ "prefix": "PPF_",
+ "figures": 12,
+ "triangles": 971807,
+ "materials": [
+  "PPF_Skin",
+  "PPF_Top",
+  "PPF_Leg",
+  "PPF_Hair",
+  "PPF_Shoe",
+  "PPF_Sole",
+  "PPF_Eye",
+  "PPF_Acc",
+  "PPF_Nail",
+  "PPF_Helm",
+  "PPF_Visor"
+ ],
+ "vertex_attributes": [
+  "hk_u",
+  "hk_v",
+  "hk_zone",
+  "hk_wear",
+  "hk_ao",
+  "hk_id",
+  "hk_lip",
+  "hk_brow",
+  "hk_dark",
+  "hk_col"
+ ],
+ "foot_embed_m": 0.008,
+ "humankit": "world/humankit.py"
+}

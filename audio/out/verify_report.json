@@ -1,0 +1,509 @@
+{
+ "wav": "audio/out/master.wav",
+ "sr": 48000,
+ "samples": 5956000,
+ "duration_s": 124.08333333333333,
+ "frames_at_24fps": 2978.0,
+ "levels": {
+  "integrated_lufs": -14.021779428679862,
+  "true_peak_dbtp": -1.1048835964424633,
+  "sample_peak": 0.8802245855331421,
+  "sample_peak_dbfs": -1.1081301066847797,
+  "clipped_samples": 0,
+  "dc_offset": [
+   2.49566931585244e-05,
+   2.4626040754901072e-05
+  ],
+  "short_term_lufs_min": -29.14329463881864,
+  "short_term_lufs_max": -8.852761926829784,
+  "short_term_range_db": 20.29053271198886,
+  "silent_1s_windows_below_-80dB": 0,
+  "channel_correlation": 0.8013363772391865,
+  "PASS": true
+ },
+ "levels_ffmpeg_ebur128": {
+  "integrated_lufs": -14.0,
+  "loudness_range_lu": 14.5,
+  "true_peak_dbfs": -1.1
+ },
+ "seam": {
+  "label": "master",
+  "statistic": "|3rd difference| at the boundary sample, percentile against the local +/-0.5 s",
+  "boundaries": [
+   {
+    "beat": "2_launch",
+    "frame": 793,
+    "sample": 1584000,
+    "d3": 0.03399127721786499,
+    "d3_local_percentile": 88.4875,
+    "d3_local_p99_9": 0.08101457637548448,
+    "hp20k": 0.0001365530368900042,
+    "hp20k_local_percentile": 62.672916666666666,
+    "spectral_jump_db": 1.4205433478374625,
+    "max_sample_delta_pm2ms": 0.08237850666046143
+   },
+   {
+    "beat": "3_breach",
+    "frame": 865,
+    "sample": 1728000,
+    "d3": 0.006074965000152588,
+    "d3_local_percentile": 51.85833333333333,
+    "d3_local_p99_9": 0.260110115647317,
+    "hp20k": 5.1786630136384724e-05,
+    "hp20k_local_percentile": 46.141666666666666,
+    "spectral_jump_db": 14.911296200833785,
+    "max_sample_delta_pm2ms": 0.0198746919631958
+   },
+   {
+    "beat": "4_transit",
+    "frame": 1057,
+    "sample": 2112000,
+    "d3": 0.011428475379943848,
+    "d3_local_percentile": 71.39375,
+    "d3_local_p99_9": 0.08835105502605867,
+    "hp20k": 0.00034789586462846234,
+    "hp20k_local_percentile": 57.62916666666666,
+    "spectral_jump_db": 3.361703370839415,
+    "max_sample_delta_pm2ms": 0.06801509857177734
+   },
+   {
+    "beat": "5_lap",
+    "frame": 1191,
+    "sample": 2380000,
+    "d3": 0.045012474060058594,
+    "d3_local_percentile": 78.75833333333333,
+    "d3_local_p99_9": 0.12516964524984434,
+    "hp20k": 0.0016581563707314042,
+    "hp20k_local_percentile": 58.88541666666667,
+    "spectral_jump_db": 3.700252783531511,
+    "max_sample_delta_pm2ms": 0.12100112438201904
+   },
+   {
+    "beat": "6_ending",
+    "frame": 2715,
+    "sample": 5428000,
+    "d3": 0.02690720558166504,
+    "d3_local_percentile": 87.69791666666666,
+    "d3_local_p99_9": 0.06126768910884909,
+    "hp20k": 0.0008327166882524409,
+    "hp20k_local_percentile": 62.264583333333334,
+    "spectral_jump_db": 3.207163009475579,
+    "max_sample_delta_pm2ms": 0.06373894214630127
+   }
+  ],
+  "worst_d3_local_percentile": 88.4875,
+  "worst_hp20k_local_percentile": 62.672916666666666,
+  "max_spectral_jump_db": 14.911296200833785,
+  "threshold_percentile": 99.9,
+  "PASS": true,
+  "CONTROLS_FAIL_AS_EXPECTED": true
+ },
+ "seam_controls": [
+  {
+   "label": "CONTROL: 977-sample splice at beat 4",
+   "statistic": "|3rd difference| at the boundary sample, percentile against the local +/-0.5 s",
+   "boundaries": [
+    {
+     "beat": "2_launch",
+     "frame": 793,
+     "sample": 1584000,
+     "d3": 0.03399127721786499,
+     "d3_local_percentile": 88.4875,
+     "d3_local_p99_9": 0.08101457637548448,
+     "hp20k": 0.0001365530368900042,
+     "hp20k_local_percentile": 62.672916666666666,
+     "spectral_jump_db": 1.4205433478374625,
+     "max_sample_delta_pm2ms": 0.08237850666046143
+    },
+    {
+     "beat": "3_breach",
+     "frame": 865,
+     "sample": 1728000,
+     "d3": 0.006074965000152588,
+     "d3_local_percentile": 51.85833333333333,
+     "d3_local_p99_9": 0.260110115647317,
+     "hp20k": 5.1786630136384724e-05,
+     "hp20k_local_percentile": 46.141666666666666,
+     "spectral_jump_db": 14.911296200833785,
+     "max_sample_delta_pm2ms": 0.0198746919631958
+    },
+    {
+     "beat": "4_transit",
+     "frame": 1057,
+     "sample": 2112000,
+     "d3": 0.36379241943359375,
+     "d3_local_percentile": 99.99583333333332,
+     "d3_local_p99_9": 0.09505287718773087,
+     "hp20k": 0.0022998659617925778,
+     "hp20k_local_percentile": 99.42708333333333,
+     "spectral_jump_db": 11.929866381281842,
+     "max_sample_delta_pm2ms": 0.3565584421157837
+    },
+    {
+     "beat": "5_lap",
+     "frame": 1191,
+     "sample": 2380000,
+     "d3": 0.026574254035949707,
+     "d3_local_percentile": 54.63333333333333,
+     "d3_local_p99_9": 0.12516964524984434,
+     "hp20k": 0.004267987996069108,
+     "hp20k_local_percentile": 95.89583333333334,
+     "spectral_jump_db": 3.018785785075862,
+     "max_sample_delta_pm2ms": 0.12725043296813965
+    },
+    {
+     "beat": "6_ending",
+     "frame": 2715,
+     "sample": 5428000,
+     "d3": 0.05098128318786621,
+     "d3_local_percentile": 99.48125,
+     "d3_local_p99_9": 0.06140202164650009,
+     "hp20k": 0.0027901961451375383,
+     "hp20k_local_percentile": 99.35416666666667,
+     "spectral_jump_db": 2.874758533107614,
+     "max_sample_delta_pm2ms": 0.07360696792602539
+    }
+   ],
+   "worst_d3_local_percentile": 99.99583333333332,
+   "worst_hp20k_local_percentile": 99.42708333333333,
+   "max_spectral_jump_db": 14.911296200833785,
+   "threshold_percentile": 99.9,
+   "PASS": false
+  },
+  {
+   "label": "CONTROL: 3 dB level step at beat 4",
+   "statistic": "|3rd difference| at the boundary sample, percentile against the local +/-0.5 s",
+   "boundaries": [
+    {
+     "beat": "2_launch",
+     "frame": 793,
+     "sample": 1584000,
+     "d3": 0.03399127721786499,
+     "d3_local_percentile": 88.4875,
+     "d3_local_p99_9": 0.08101457637548448,
+     "hp20k": 0.0001365530368900042,
+     "hp20k_local_percentile": 62.672916666666666,
+     "spectral_jump_db": 1.4205433478374625,
+     "max_sample_delta_pm2ms": 0.08237850666046143
+    },
+    {
+     "beat": "3_breach",
+     "frame": 865,
+     "sample": 1728000,
+     "d3": 0.006074965000152588,
+     "d3_local_percentile": 51.85833333333333,
+     "d3_local_p99_9": 0.260110115647317,
+     "hp20k": 5.1786630136384724e-05,
+     "hp20k_local_percentile": 46.141666666666666,
+     "spectral_jump_db": 14.911296200833785,
+     "max_sample_delta_pm2ms": 0.0198746919631958
+    },
+    {
+     "beat": "4_transit",
+     "frame": 1057,
+     "sample": 2112000,
+     "d3": 0.14727954525195497,
+     "d3_local_percentile": 99.925,
+     "d3_local_p99_9": 0.1263807248662612,
+     "hp20k": 0.0014771068572302266,
+     "hp20k_local_percentile": 88.59166666666667,
+     "spectral_jump_db": 4.025585766899457,
+     "max_sample_delta_pm2ms": 0.1526046494669392
+    },
+    {
+     "beat": "5_lap",
+     "frame": 1191,
+     "sample": 2380000,
+     "d3": 0.0635818095861907,
+     "d3_local_percentile": 78.75833333333333,
+     "d3_local_p99_9": 0.17680682336251627,
+     "hp20k": 0.00234220812851354,
+     "hp20k_local_percentile": 58.88541666666667,
+     "spectral_jump_db": 3.700252783531511,
+     "max_sample_delta_pm2ms": 0.17091863113116965
+    },
+    {
+     "beat": "6_ending",
+     "frame": 2715,
+     "sample": 5428000,
+     "d3": 0.03800743810498479,
+     "d3_local_percentile": 87.69791666666666,
+     "d3_local_p99_9": 0.08654291113852398,
+     "hp20k": 0.0011762435861904928,
+     "hp20k_local_percentile": 62.264583333333334,
+     "spectral_jump_db": 3.207163009475583,
+     "max_sample_delta_pm2ms": 0.0900336488361882
+    }
+   ],
+   "worst_d3_local_percentile": 99.925,
+   "worst_hp20k_local_percentile": 88.59166666666667,
+   "max_spectral_jump_db": 14.911296200833785,
+   "threshold_percentile": 99.9,
+   "PASS": false
+  },
+  {
+   "label": "CONTROL: 40 ms crossfade to elsewhere at beat 4",
+   "statistic": "|3rd difference| at the boundary sample, percentile against the local +/-0.5 s",
+   "boundaries": [
+    {
+     "beat": "2_launch",
+     "frame": 793,
+     "sample": 1584000,
+     "d3": 0.03399127721786499,
+     "d3_local_percentile": 88.4875,
+     "d3_local_p99_9": 0.08101457637548448,
+     "hp20k": 0.0001365530368900042,
+     "hp20k_local_percentile": 62.672916666666666,
+     "spectral_jump_db": 1.4205433478374625,
+     "max_sample_delta_pm2ms": 0.08237850666046143
+    },
+    {
+     "beat": "3_breach",
+     "frame": 865,
+     "sample": 1728000,
+     "d3": 0.006074965000152588,
+     "d3_local_percentile": 51.85833333333333,
+     "d3_local_p99_9": 0.260110115647317,
+     "hp20k": 5.1786630136384724e-05,
+     "hp20k_local_percentile": 46.141666666666666,
+     "spectral_jump_db": 14.911296200833785,
+     "max_sample_delta_pm2ms": 0.0198746919631958
+    },
+    {
+     "beat": "4_transit",
+     "frame": 1057,
+     "sample": 2112000,
+     "d3": 0.011416458505836197,
+     "d3_local_percentile": 97.41250000000001,
+     "d3_local_p99_9": 0.02552832829952361,
+     "hp20k": 0.00034768832360775585,
+     "hp20k_local_percentile": 92.51666666666667,
+     "spectral_jump_db": 4.314728820929342,
+     "max_sample_delta_pm2ms": 0.06801509857177734
+    },
+    {
+     "beat": "5_lap",
+     "frame": 1191,
+     "sample": 2380000,
+     "d3": 0.013561367988586426,
+     "d3_local_percentile": 75.75,
+     "d3_local_p99_9": 0.04564886218309421,
+     "hp20k": 0.0005723012357030046,
+     "hp20k_local_percentile": 70.5125,
+     "spectral_jump_db": 2.4920163880643447,
+     "max_sample_delta_pm2ms": 0.07109081745147705
+    },
+    {
+     "beat": "6_ending",
+     "frame": 2715,
+     "sample": 5428000,
+     "d3": 0.05940711498260498,
+     "d3_local_percentile": 84.48750000000001,
+     "d3_local_p99_9": 0.14443843507766835,
+     "hp20k": 0.003029387792813553,
+     "hp20k_local_percentile": 77.17916666666666,
+     "spectral_jump_db": 4.579666858083822,
+     "max_sample_delta_pm2ms": 0.16208124160766602
+    }
+   ],
+   "worst_d3_local_percentile": 97.41250000000001,
+   "worst_hp20k_local_percentile": 92.51666666666667,
+   "max_spectral_jump_db": 14.911296200833785,
+   "threshold_percentile": 99.9,
+   "PASS": true
+  },
+  {
+   "label": "CONTROL: 0.5 dB level step at beat 4 (below the gate's sensitivity, stated)",
+   "statistic": "|3rd difference| at the boundary sample, percentile against the local +/-0.5 s",
+   "boundaries": [
+    {
+     "beat": "2_launch",
+     "frame": 793,
+     "sample": 1584000,
+     "d3": 0.03399127721786499,
+     "d3_local_percentile": 88.4875,
+     "d3_local_p99_9": 0.08101457637548448,
+     "hp20k": 0.0001365530368900042,
+     "hp20k_local_percentile": 62.672916666666666,
+     "spectral_jump_db": 1.4205433478374625,
+     "max_sample_delta_pm2ms": 0.08237850666046143
+    },
+    {
+     "beat": "3_breach",
+     "frame": 865,
+     "sample": 1728000,
+     "d3": 0.006074965000152588,
+     "d3_local_percentile": 51.85833333333333,
+     "d3_local_p99_9": 0.260110115647317,
+     "hp20k": 5.1786630136384724e-05,
+     "hp20k_local_percentile": 46.141666666666666,
+     "spectral_jump_db": 14.911296200833785,
+     "max_sample_delta_pm2ms": 0.0198746919631958
+    },
+    {
+     "beat": "4_transit",
+     "frame": 1057,
+     "sample": 2112000,
+     "d3": 0.01613984560538284,
+     "d3_local_percentile": 79.23541666666667,
+     "d3_local_p99_9": 0.09358618415969623,
+     "hp20k": 0.0005100870607873095,
+     "hp20k_local_percentile": 67.01875000000001,
+     "spectral_jump_db": 3.353611432217633,
+     "max_sample_delta_pm2ms": 0.06801509857177734
+    },
+    {
+     "beat": "5_lap",
+     "frame": 1191,
+     "sample": 2380000,
+     "d3": 0.04767963082756316,
+     "d3_local_percentile": 78.75833333333333,
+     "d3_local_p99_9": 0.1325864130100173,
+     "hp20k": 0.0017564083126237393,
+     "hp20k_local_percentile": 58.88541666666667,
+     "spectral_jump_db": 3.7002527835315107,
+     "max_sample_delta_pm2ms": 0.12817089175229415
+    },
+    {
+     "beat": "6_ending",
+     "frame": 2715,
+     "sample": 5428000,
+     "d3": 0.028501557746489846,
+     "d3_local_percentile": 87.69791666666666,
+     "d3_local_p99_9": 0.0648980279215524,
+     "hp20k": 0.0008820582540486958,
+     "hp20k_local_percentile": 62.264583333333334,
+     "spectral_jump_db": 3.207163009475581,
+     "max_sample_delta_pm2ms": 0.06751571190732933
+    }
+   ],
+   "worst_d3_local_percentile": 88.4875,
+   "worst_hp20k_local_percentile": 67.01875000000001,
+   "max_spectral_jump_db": 14.911296200833785,
+   "threshold_percentile": 99.9,
+   "PASS": true
+  }
+ ],
+ "external_assets": {
+  "render_path_hits": [],
+  "whole_package_hits": [],
+  "scanned": [
+   "__init__.py",
+   "clock.py",
+   "dsp.py",
+   "engine.py",
+   "layers.py",
+   "master.py",
+   "scene.py",
+   "spatial.py",
+   "verify.py"
+  ],
+  "declared_exception": "verify.py calls sf.read once, on the FINISHED MASTER, to measure it. It contributes nothing to the render; `render_path_hits` excludes verify.py and must be empty.",
+  "PASS": true,
+  "control_hits_per_case": {
+   "sf_read": 1,
+   "librosa": 3,
+   "download": 3
+  },
+  "CONTROL_FAILS_AS_EXPECTED": true
+ },
+ "bandsplit_reconstruction_max_abs_err": 8.940696716308594e-08,
+ "bandsplit_PASS": true,
+ "kerb_classifier_control": {
+  "kerb_fraction_on_control_track": 1.0,
+  "CONTROL_TRIGGERS_AS_EXPECTED": true
+ },
+ "pitch": {
+  "method": "f0 measured from the DRY world-clock engine every 0.25 s of world time and compared with rpm/60*3, where rpm is the gearbox solution from the telemetry's v_world. Measured on the dry voice because 'the engine pitch tracks the telemetry' is a claim about the SOURCE; what the ears hear is that times the Doppler ratio, which the doppler gate tests separately.",
+  "firing": {
+   "n_windows": 221,
+   "corr_measured_f0_vs_predicted_f0": 0.9983001276800387,
+   "corr_measured_f0_vs_v_world": 0.4068741993084641,
+   "median_abs_error_cents": 0.9787987484962505,
+   "p95_abs_error_cents": 13.211356984769784,
+   "within_50_cents_fraction": 0.9909502262443439
+  },
+  "overrun": {
+   "n_windows": 66,
+   "corr_measured_f0_vs_predicted_f0": -0.34102470971433085,
+   "corr_measured_f0_vs_v_world": -0.13177431713460966,
+   "median_abs_error_cents": 6.488379951828579,
+   "p95_abs_error_cents": 2781.316325344647,
+   "within_50_cents_fraction": 0.5606060606060606
+  },
+  "all": {
+   "n_windows": 287,
+   "corr_measured_f0_vs_predicted_f0": 0.24545654599466274,
+   "corr_measured_f0_vs_v_world": 0.2610349919357018,
+   "median_abs_error_cents": 1.2249233312670365,
+   "p95_abs_error_cents": 2411.6922554541707,
+   "within_50_cents_fraction": 0.89198606271777
+  },
+  "overrun_note": "with the injectors cut there is no combustion and therefore no firing fundamental to find; the tracker reports the pumping and turbo content instead. The overrun rows are listed, not hidden, and they are NOT part of the pass criterion.",
+  "CONTROL_tracker_on_known_chirp_max_err_cents": 4.818573074656553,
+  "CONTROL_constant_speed_corr_vs_v_world": 0.09934539278318795,
+  "PASS": true,
+  "CONTROL_FAILS_AS_EXPECTED": true
+ },
+ "doppler": {
+  "declared": {
+   "station_s": 2555.0,
+   "peak_kph": 313.2,
+   "slant_range_m": 26.1,
+   "dwell_s": 7.46,
+   "semitone_sweep": 7.55,
+   "offset_from_centreline_m": 26.0
+  },
+  "measured_frame_of_closest_approach": 2271,
+  "measured_film_t_closest_approach_s": 94.62291666666667,
+  "measured_slant_range_m": 26.236205424151546,
+  "measured_car_speed_kph": 312.7992980738193,
+  "measured_camera_speed_ms": 1.0954486818465428,
+  "speed_of_sound_ms": 342.041837354473,
+  "measured_approach_closing_speed_ms": 77.11087614434655,
+  "measured_recession_speed_ms": 61.81699960087644,
+  "predicted_sweep_semitones_from_closing_speeds": 7.298815840686906,
+  "ratio_max_from_retarded_solve": 1.291060266370992,
+  "ratio_min_from_retarded_solve": 0.8469341414769064,
+  "predicted_sweep_semitones_from_retarded_solve": 7.298815840445373,
+  "measured_sweep_semitones_in_master": 11.06186340296572,
+  "measured_ratio_span_semitones_in_master": 12.778808454428413,
+  "measured_ratio_max": 1.2896765012550513,
+  "measured_ratio_min": 0.6164725344000587,
+  "corr_measured_ratio_vs_predicted_ratio": 0.8366881245263068,
+  "corr_on_tracked_windows": 0.9980029824760634,
+  "tracked_windows": 78,
+  "tracker_failure_windows": 5,
+  "tracker_failure_fraction": 0.06024096385542166,
+  "tracker_failure_definition_cents": 200.0,
+  "median_abs_error_vs_prediction_cents": 5.1170825663044255,
+  "p90_abs_error_vs_prediction_cents": 30.27170264504397,
+  "usable_windows": 83,
+  "window_film_t_s": [
+   91.62291666666667,
+   95.82291666666643
+  ],
+  "emission_lead_at_window_start_s": 0.6605297723025387,
+  "emission_lead_at_closest_approach_s": 0.08049860003623621,
+  "windows_on_throttle": 63,
+  "windows_on_overrun": 20,
+  "windows_measured_on_engine_comb": 59,
+  "windows_measured_on_tyre_scrub_comb": 24,
+  "max_lateral_g_in_window": 4.510670898434509,
+  "CONTROL_estimator_on_wrong_f_emit_median_ratio": 0.8460711273862295,
+  "CONTROL_permuted_windows_corr": -0.17184762985008012,
+  "CONTROL_null_static_source_and_static_ears_semitones": 2.519277112229843e-10,
+  "listener_motion_only_sweep_semitones": 3.076089296262526,
+  "PASS": true,
+  "CONTROL_FAILS_AS_EXPECTED": true
+ },
+ "spectrogram": "audio/out/master_spectrogram.png",
+ "ALL_PASS": true,
+ "gate_summary": {
+  "levels": true,
+  "seam": true,
+  "external_assets": true,
+  "pitch": true,
+  "doppler": true
+ }
+}

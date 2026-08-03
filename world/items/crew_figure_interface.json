@@ -1,0 +1,40 @@
+{
+ "item": "crew_figure",
+ "written": "2026-08-02T14:00:39",
+ "contract": {
+  "ground_z": "world_contract.world_ground_z(x, y)",
+  "base_embed_m": 0.02,
+  "view_transform": "AgX"
+ },
+ "collection": "W_Item_CrewFigure",
+ "prefix": "CRF_",
+ "figures": 120,
+ "triangles": 5942025,
+ "materials": [
+  "CRF_Skin",
+  "CRF_Top",
+  "CRF_Leg",
+  "CRF_Hair",
+  "CRF_Shoe",
+  "CRF_Sole",
+  "CRF_Eye",
+  "CRF_Acc",
+  "CRF_Nail",
+  "CRF_Helm",
+  "CRF_Visor"
+ ],
+ "vertex_attributes": [
+  "hk_u",
+  "hk_v",
+  "hk_zone",
+  "hk_wear",
+  "hk_ao",
+  "hk_id",
+  "hk_lip",
+  "hk_brow",
+  "hk_dark",
+  "hk_col"
+ ],
+ "foot_embed_m": 0.008,
+ "humankit": "world/humankit.py"
+}

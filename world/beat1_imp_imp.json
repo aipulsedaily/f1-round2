@@ -1,0 +1,267 @@
+{
+ "strength": 1.0,
+ "K": {
+  "dust_rough": 0.07,
+  "dust_tint": 0.07,
+  "wear_rough": 0.035,
+  "wear_polish": 0.045,
+  "wear_lift": 0.055,
+  "wear_coat": 0.16,
+  "wear_anod": 0.04,
+  "micro_rough": 0.018,
+  "micro_bump": 3.2e-05,
+  "micro_bump_str": 0.18,
+  "coat_micro_rel": 0.2,
+  "coat_scratch_rel": 0.18,
+  "coat_dust_rel": 0.5,
+  "coat_bump": 0.00012,
+  "coat_bump_str": 0.2,
+  "scratch_rough": 0.02,
+  "oil_rough": 0.058,
+  "oil_sheen": 0.03,
+  "oil_spec": 0.045,
+  "oil_darken": 0.075,
+  "glass_wave": 0.00022,
+  "glass_wave_str": 0.22,
+  "glass_rough": 0.013,
+  "glass_base": 0.01,
+  "glass_smudge": 0.005,
+  "paint_peel_scale": 140.0,
+  "paint_peel": 3e-05,
+  "paint_peel_str": 0.2
+ },
+ "GRP": {
+  "ao_distance": 0.02,
+  "edge_start": 0.515,
+  "edge_full": 0.615,
+  "cavity_start": 0.2,
+  "cavity_full": 0.62,
+  "micro_scale": 380.0,
+  "patch_scale": 14.0,
+  "scratch_scale": 125.0
+ },
+ "materials": {
+  "CarbonFibre": {
+   "class": "carbon",
+   "sockets": [
+    "Base Color",
+    "Coat Normal",
+    "Coat Roughness",
+    "Coat Weight",
+    "Roughness"
+   ],
+   "amounts": {
+    "cls": "carbon",
+    "dust": 0.85,
+    "wear": 0.85,
+    "micro": 0.5,
+    "scratch": 0.45,
+    "coat": true
+   },
+   "mesh_slots": 140
+  },
+  "CarbonMatte": {
+   "class": "carbon",
+   "sockets": [
+    "Base Color",
+    "Normal",
+    "Roughness"
+   ],
+   "amounts": {
+    "cls": "carbon",
+    "dust": 1.0,
+    "wear": 0.7,
+    "micro": 0.85,
+    "scratch": 0.35,
+    "coat": false
+   },
+   "mesh_slots": 92
+  },
+  "LiveryPaint": {
+   "class": "paint",
+   "sockets": [
+    "Base Color",
+    "Coat Normal",
+    "Coat Roughness",
+    "Coat Weight",
+    "Roughness"
+   ],
+   "amounts": {
+    "cls": "paint",
+    "dust": 0.8,
+    "wear": 0.7,
+    "micro": 0.45,
+    "scratch": 0.12
+   },
+   "mesh_slots": 14
+  },
+  "Titanium": {
+   "class": "metal",
+   "sockets": [
+    "Base Color",
+    "Normal",
+    "Roughness"
+   ],
+   "amounts": {
+    "cls": "metal",
+    "dust": 0.9,
+    "wear": 1.0,
+    "micro": 0.65,
+    "scratch": 0.6
+   },
+   "mesh_slots": 145
+  },
+  "SteelFastener": {
+   "class": "metal",
+   "sockets": [
+    "Base Color",
+    "Normal",
+    "Roughness"
+   ],
+   "amounts": {
+    "cls": "metal",
+    "dust": 1.0,
+    "wear": 1.1,
+    "micro": 0.7,
+    "scratch": 0.65
+   },
+   "mesh_slots": 132
+  },
+  "WheelRim": {
+   "class": "metal",
+   "sockets": [
+    "Base Color",
+    "Normal",
+    "Roughness"
+   ],
+   "amounts": {
+    "cls": "metal",
+    "dust": 0.9,
+    "wear": 0.8,
+    "micro": 0.6,
+    "scratch": 0.5
+   },
+   "mesh_slots": 26
+  },
+  "AnodisedRed": {
+   "class": "anodised",
+   "sockets": [
+    "Base Color",
+    "Normal",
+    "Roughness"
+   ],
+   "amounts": {
+    "cls": "anodised",
+    "dust": 0.85,
+    "wear": 0.6,
+    "micro": 0.45,
+    "scratch": 0.4
+   },
+   "mesh_slots": 33
+  },
+  "AnodisedGold": {
+   "class": "anodised",
+   "sockets": [
+    "Base Color",
+    "Normal",
+    "Roughness"
+   ],
+   "amounts": {
+    "cls": "anodised",
+    "dust": 0.85,
+    "wear": 0.6,
+    "micro": 0.45,
+    "scratch": 0.4
+   },
+   "mesh_slots": 8
+  },
+  "MatteBlack": {
+   "class": "matte",
+   "sockets": [
+    "Base Color",
+    "Normal",
+    "Roughness"
+   ],
+   "amounts": {
+    "cls": "matte",
+    "dust": 1.0,
+    "wear": 0.7,
+    "micro": 0.8,
+    "scratch": 0.4
+   },
+   "mesh_slots": 57
+  },
+  "CarbonCeramic": {
+   "class": "matte",
+   "sockets": [
+    "Base Color",
+    "Normal",
+    "Roughness"
+   ],
+   "amounts": {
+    "cls": "matte",
+    "dust": 0.6,
+    "wear": 0.45,
+    "micro": 0.7,
+    "scratch": 0.3
+   },
+   "mesh_slots": 11
+  },
+  "SuedeGrip": {
+   "class": "grip",
+   "sockets": [
+    "Base Color",
+    "Normal",
+    "Roughness",
+    "Sheen Weight",
+    "Specular IOR Level"
+   ],
+   "amounts": {
+    "cls": "grip",
+    "dust": 0.35,
+    "wear": 1.0,
+    "micro": 1.0,
+    "scratch": 0.0
+   },
+   "mesh_slots": 6
+  },
+  "TyreRubber": {
+   "class": "rubber",
+   "sockets": [
+    "Base Color",
+    "Normal",
+    "Roughness"
+   ],
+   "amounts": {
+    "cls": "rubber",
+    "dust": 0.9,
+    "wear": 0.5,
+    "micro": 0.6,
+    "scratch": 0.0
+   },
+   "mesh_slots": 12
+  },
+  "DisplayGlass": {
+   "class": "glass",
+   "sockets": [
+    "Base Color",
+    "Normal",
+    "Roughness"
+   ],
+   "amounts": {
+    "cls": "glass",
+    "dust": 0.55,
+    "wear": 0.0,
+    "micro": 1.0,
+    "scratch": 0.0
+   },
+   "mesh_slots": 8
+  }
+ },
+ "skipped": {
+  "DisplayEmit": "emissive readout; dirt belongs on the glass in front of it, not on the light source",
+  "*SHOWROOM*": "room shell, not the car; out of the defect's scope",
+  "*PROPS*": "set dressing, not the car",
+  "*LIGHTS*": "emitters and fixtures"
+ }
+}

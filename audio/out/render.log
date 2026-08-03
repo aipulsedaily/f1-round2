@@ -1,0 +1,23 @@
+[    3.2s] world grid 11520001 samples, -35.0..85.0 s world
+[    7.8s] surfaces classified
+[   35.4s] engine: 31 upshifts, 24 downshifts, 14351 rpm max
+[   45.1s] tyres
+[   47.7s] glass pane: 351 modes, f11 = 7.48 Hz
+[   52.4s] assembly: 616 part impacts
+[   56.6s] breach: 995 shard contacts in 3.15 s of world time
+[   68.7s] warped world -> film
+[  123.3s] engine propagated
+[  181.6s] tyres propagated
+[  804.8s] breach propagated
+[  893.1s] garage reflection
+[  981.9s] showroom reflection
+[ 1047.5s] showroom acoustic
+[ 1057.4s] wind + bed
+[ 1169.2s] crowd
+[ 1235.6s] fence
+[ 1241.3s] pre-mix: peak 7.615, -13.82 LUFS, short-term range 35.6 dB
+[ 1243.0s] program gain
+[ 1292.6s] internal: -14.03 LUFS, tp -1.15 dBTP
+[ 1300.4s] WROTE audio/out/master.wav  124.083 s  -14.02 LUFS  -1.06 dBTP
+>> report audio/out/master_report.json
+>> STAGE RESULT: AUDIO_MASTER_OK -14.02 LUFS -1.06 dBTP

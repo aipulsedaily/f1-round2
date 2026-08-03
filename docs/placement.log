@@ -1,0 +1,40 @@
+00:00.691  blend            | Read blend: "/home/zany/f1-round2/render/world/assembly/assembly.blend"
+>> road corridor volume: 904 stations, radius 7.00-8.50 m (per-station)
+>> car path volume: 581 stations
+>> camera path volume: 25 keys
+>> tested 28360 objects against 3 keep-out volumes
+>> 37 PLACEMENT VIOLATIONS
+     road_corridor   ARCH_PitWall                          15165 tri pairs
+     road_corridor   BR_Stones_apex_L_242                   3238 tri pairs
+     road_corridor   BR_FenceMesh_L03                       2252 tri pairs
+     road_corridor   BR_Concrete_L13                        1961 tri pairs
+     road_corridor   BR_Trap_apex_L_242                     1824 tri pairs
+     road_corridor   ARCH_Gantry                            1354 tri pairs
+     road_corridor   BR_FenceStruct_L03                     1177 tri pairs
+     road_corridor   BR_Concrete_L00                        1122 tri pairs
+     road_corridor   BR_Trap_outer_R_2579                    875 tri pairs
+     road_corridor   BR_Subbase_L                            638 tri pairs
+     road_corridor   BR_Trap_apex_L_2129                     546 tri pairs
+     road_corridor   BR_FenceStruct_L04                      368 tri pairs
+     road_corridor   ARCH_RetainEdge                         339 tri pairs
+     car_path        BR_FenceMesh_L03                        334 tri pairs
+     road_corridor   BR_FenceMesh_L04                        246 tri pairs
+     road_corridor   BR_Trap_apex_L_3010                     232 tri pairs
+     road_corridor   BR_Trap_apex_L_2281                     230 tri pairs
+     road_corridor   DR_Kerb_004                             163 tri pairs
+     car_path        BR_Transit_NorthWall                    156 tri pairs
+     road_corridor   BR_Subbase_R                            120 tri pairs
+     road_corridor   BR_Trap_outer_R_252                      98 tri pairs
+     car_path        ARCH_PitWall                             78 tri pairs
+     car_path        BR_Concrete_L13                          76 tri pairs
+     car_path        BR_FenceStruct_L03                       74 tri pairs
+     road_corridor   DR_Kerb_000                              72 tri pairs
+     road_corridor   DR_Kerb_027                              68 tri pairs
+     car_path        ARCH_RetainEdge                          58 tri pairs
+     road_corridor   BR_Concrete_L14                          57 tri pairs
+     road_corridor   DR_Kerb_005                              49 tri pairs
+     road_corridor   DR_Kerb_021                              48 tri pairs
+>> STAGE RESULT: PLACEMENT_FAIL
+Blender 5.2.0 LTS (hash fbe6228777e7 built 2026-07-14 01:32:04)
+
+Blender quit

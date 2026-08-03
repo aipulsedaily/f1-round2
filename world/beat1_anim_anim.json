@@ -1,0 +1,101 @@
+{
+ "animated_objects": 616,
+ "clusters": {
+  "BB": {
+   "parts": 10,
+   "seat_frame": 399,
+   "first_land": 399,
+   "last_land": 407
+  },
+  "CORNER_FL": {
+   "parts": 41,
+   "seat_frame": 696,
+   "first_land": 696,
+   "last_land": 704
+  },
+  "CORNER_FR": {
+   "parts": 41,
+   "seat_frame": 696,
+   "first_land": 696,
+   "last_land": 704
+  },
+  "CORNER_RL": {
+   "parts": 44,
+   "seat_frame": 696,
+   "first_land": 696,
+   "last_land": 704
+  },
+  "CORNER_RR": {
+   "parts": 44,
+   "seat_frame": 696,
+   "first_land": 696,
+   "last_land": 704
+  },
+  "CI": {
+   "parts": 15,
+   "seat_frame": 465,
+   "first_land": 465,
+   "last_land": 473
+  },
+  "EC": {
+   "parts": 13,
+   "seat_frame": 432,
+   "first_land": 432,
+   "last_land": 440
+  },
+  "FD": {
+   "parts": 10,
+   "seat_frame": 366,
+   "first_land": 366,
+   "last_land": 374
+  },
+  "FW": {
+   "parts": 120,
+   "seat_frame": 630,
+   "first_land": 630,
+   "last_land": 638
+  },
+  "halo_assembly": {
+   "parts": 53,
+   "seat_frame": 531,
+   "first_land": 531,
+   "last_land": 539
+  },
+  "MB": {
+   "parts": 17,
+   "seat_frame": 333,
+   "first_land": 333,
+   "last_land": 341
+  },
+  "NOSE": {
+   "parts": 33,
+   "seat_frame": 597,
+   "first_land": 597,
+   "last_land": 605
+  },
+  "RW": {
+   "parts": 97,
+   "seat_frame": 663,
+   "first_land": 663,
+   "last_land": 671
+  },
+  "SP": {
+   "parts": 13,
+   "seat_frame": 564,
+   "first_land": 564,
+   "last_land": 572
+  },
+  "SW": {
+   "parts": 65,
+   "seat_frame": 498,
+   "first_land": 498,
+   "last_land": 506
+  }
+ },
+ "frame_start": 1,
+ "frame_end": 792,
+ "fps": 24,
+ "settle_frames": 3,
+ "flight_s": 1.55,
+ "blend": "world/beat1_anim.blend"
+}

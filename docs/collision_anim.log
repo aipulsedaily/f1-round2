@@ -1,0 +1,117 @@
+00:00.433  blend            | Read blend: "/home/zany/f1-round2/world/beat1_anim.blend"
+>> 15 clusters, 303 environment objects, frames [1, 80, 160, 240, 320, 400, 480, 560, 640, 700, 760, 792]
+>> frame     1: 4 INTERSECTIONS
+     environment  CORNER_RL        x Turntable_Deck               202 triangle pairs
+     environment  CORNER_RR        x Turntable_Deck               202 triangle pairs
+     environment  CORNER_FL        x Turntable_Deck               158 triangle pairs
+     environment  CORNER_FR        x Turntable_Deck               158 triangle pairs
+>> frame    80: 4 INTERSECTIONS
+     environment  CORNER_RL        x Turntable_Deck               202 triangle pairs
+     environment  CORNER_RR        x Turntable_Deck               202 triangle pairs
+     environment  CORNER_FL        x Turntable_Deck               158 triangle pairs
+     environment  CORNER_FR        x Turntable_Deck               158 triangle pairs
+>> frame   160: 4 INTERSECTIONS
+     environment  CORNER_RL        x Turntable_Deck               202 triangle pairs
+     environment  CORNER_RR        x Turntable_Deck               202 triangle pairs
+     environment  CORNER_FL        x Turntable_Deck               158 triangle pairs
+     environment  CORNER_FR        x Turntable_Deck               158 triangle pairs
+>> frame   240: 4 INTERSECTIONS
+     environment  CORNER_RL        x Turntable_Deck               202 triangle pairs
+     environment  CORNER_RR        x Turntable_Deck               202 triangle pairs
+     environment  CORNER_FL        x Turntable_Deck               158 triangle pairs
+     environment  CORNER_FR        x Turntable_Deck               158 triangle pairs
+>> frame   320: 4 INTERSECTIONS
+     environment  CORNER_RL        x Turntable_Deck               202 triangle pairs
+     environment  CORNER_RR        x Turntable_Deck               202 triangle pairs
+     environment  CORNER_FL        x Turntable_Deck               158 triangle pairs
+     environment  CORNER_FR        x Turntable_Deck               158 triangle pairs
+>> frame   400: 7 INTERSECTIONS
+     cluster      FD               x MB                         26440 triangle pairs
+     cluster      BB               x MB                          8302 triangle pairs
+     cluster      BB               x FD                          7033 triangle pairs
+     environment  CORNER_RL        x Turntable_Deck               202 triangle pairs
+     environment  CORNER_RR        x Turntable_Deck               202 triangle pairs
+     environment  CORNER_FL        x Turntable_Deck               158 triangle pairs
+     environment  CORNER_FR        x Turntable_Deck               158 triangle pairs
+>> frame   480: 11 INTERSECTIONS
+     cluster      FD               x MB                         26440 triangle pairs
+     cluster      EC               x MB                         21531 triangle pairs
+     cluster      EC               x FD                          4317 triangle pairs
+     cluster      BB               x MB                          1650 triangle pairs
+     cluster      BB               x FD                          1448 triangle pairs
+     cluster      CI               x EC                          1254 triangle pairs
+     cluster      CI               x MB                           954 triangle pairs
+     environment  CORNER_RL        x Turntable_Deck               202 triangle pairs
+     environment  CORNER_RR        x Turntable_Deck               202 triangle pairs
+     environment  CORNER_FL        x Turntable_Deck               158 triangle pairs
+     environment  CORNER_FR        x Turntable_Deck               158 triangle pairs
+>> frame   560: 17 INTERSECTIONS
+     cluster      FD               x MB                         26440 triangle pairs
+     cluster      EC               x MB                         21531 triangle pairs
+     cluster      MB               x SP                         13388 triangle pairs
+     cluster      EC               x halo_assembly              10909 triangle pairs
+     cluster      MB               x halo_assembly               5023 triangle pairs
+     cluster      EC               x FD                          4317 triangle pairs
+     cluster      CI               x SW                          3179 triangle pairs
+     cluster      BB               x MB                          1650 triangle pairs
+     cluster      BB               x FD                          1448 triangle pairs
+     cluster      CI               x EC                          1254 triangle pairs
+     cluster      CI               x MB                           954 triangle pairs
+     cluster      MB               x SW                           910 triangle pairs
+>> frame   640: 19 INTERSECTIONS
+     cluster      FD               x MB                         26440 triangle pairs
+     cluster      MB               x SP                         23312 triangle pairs
+     cluster      MB               x NOSE                       22627 triangle pairs
+     cluster      EC               x MB                         21531 triangle pairs
+     cluster      EC               x SP                         13038 triangle pairs
+     cluster      EC               x halo_assembly              10909 triangle pairs
+     cluster      MB               x halo_assembly               5023 triangle pairs
+     cluster      EC               x FD                          4317 triangle pairs
+     cluster      CI               x SW                          3179 triangle pairs
+     cluster      BB               x MB                          1650 triangle pairs
+     cluster      BB               x FD                          1448 triangle pairs
+     cluster      CI               x EC                          1254 triangle pairs
+>> frame   700: 35 INTERSECTIONS
+     cluster      FD               x MB                         26440 triangle pairs
+     cluster      MB               x SP                         23312 triangle pairs
+     cluster      MB               x NOSE                       22627 triangle pairs
+     cluster      EC               x MB                         21531 triangle pairs
+     cluster      CORNER_RL        x EC                         13501 triangle pairs
+     cluster      CORNER_RR        x EC                         13501 triangle pairs
+     cluster      EC               x SP                         13038 triangle pairs
+     cluster      EC               x halo_assembly              10909 triangle pairs
+     cluster      CORNER_RR        x MB                          8022 triangle pairs
+     cluster      CORNER_RL        x MB                          7998 triangle pairs
+     cluster      MB               x halo_assembly               5023 triangle pairs
+     cluster      EC               x FD                          4317 triangle pairs
+>> frame   760: 31 INTERSECTIONS
+     cluster      FD               x MB                         26440 triangle pairs
+     cluster      MB               x SP                         23312 triangle pairs
+     cluster      MB               x NOSE                       22627 triangle pairs
+     cluster      EC               x MB                         21531 triangle pairs
+     cluster      EC               x SP                         13038 triangle pairs
+     cluster      EC               x halo_assembly              10909 triangle pairs
+     cluster      CORNER_RL        x EC                          7592 triangle pairs
+     cluster      CORNER_RR        x EC                          7520 triangle pairs
+     cluster      CORNER_FR        x MB                          6425 triangle pairs
+     cluster      CORNER_FL        x MB                          6321 triangle pairs
+     cluster      MB               x halo_assembly               5023 triangle pairs
+     cluster      EC               x FD                          4317 triangle pairs
+>> frame   792: 31 INTERSECTIONS
+     cluster      FD               x MB                         26440 triangle pairs
+     cluster      MB               x SP                         23312 triangle pairs
+     cluster      MB               x NOSE                       22627 triangle pairs
+     cluster      EC               x MB                         21531 triangle pairs
+     cluster      EC               x SP                         13038 triangle pairs
+     cluster      EC               x halo_assembly              10909 triangle pairs
+     cluster      CORNER_RL        x EC                          7592 triangle pairs
+     cluster      CORNER_RR        x EC                          7520 triangle pairs
+     cluster      CORNER_FR        x MB                          6425 triangle pairs
+     cluster      CORNER_FL        x MB                          6321 triangle pairs
+     cluster      MB               x halo_assembly               5023 triangle pairs
+     cluster      EC               x FD                          4317 triangle pairs
+>> wrote docs/collision_anim.json
+>> STAGE RESULT: COLLISION_FAIL (171 hits)
+Blender 5.2.0 LTS (hash fbe6228777e7 built 2026-07-14 01:32:04)
+
+Blender quit

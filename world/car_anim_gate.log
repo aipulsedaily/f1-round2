@@ -1,0 +1,24 @@
+>> measured /home/zany/f1-round2/world/car_anim_measured.json
+>> blend /home/zany/f1-round2/world/car_anim.blend  300235801 bytes  mtime 1785729448.672049  (2978 frames, 955 objects, CAR_ROOT has 510 children)
+--- car_anim.blend
+    A  2978 frames, total 14026.0 rad (2232.3 rev); min step +0.000e+00 rad at f2; 0 backwards
+       F-curve vs hub local matrix 1.17e-07 rad; witness tyre rigid to its hub to 1.45e-04 over 2186 frames (float32 floor 2.44e-04); tyre vs F-curve 0.0421 rad over 745 samples (the suspension can explain 0.0524); corner spread 0.00e+00 rad
+       steer: max 7.326 deg, Ackermann to 3.15e-07 deg, wrong way on 0 of 702 cornering frames
+    B  ground 5046.05 m from the keyed transform; `s_m` says 4052.73 m (short by 993.324 m = R2-026/047, and this gate never reads it)
+       2232.3002 rev turned = 2230.8455 rev rolling + 1.4547 rev slip; worst off-window slip 0.3657 mm of road at f2289 (tol 1.00)
+    C  sanctioned window: 11 frames from f818 carrying 9.13984 rad (1.4547 rev); telemetry declares 9.14001 rad
+    D  beat seams, in WORLD time (the declared beat-3 ramp is not a discontinuity and this metric does not see it):
+       f792   1_assembly|2_launch    v   0.000 ->   0.000 m/s  dv  +0.000 (nbhd 0.000, x  0.00)   domega +0.00000 rad/s (nbhd 0.00000, x  0.00)   on screen 0.00000 -> 0.00000 m/frame
+       f864   2_launch|3_breach      v  17.603 ->  15.432 m/s  dv  -1.722 (nbhd 0.357, x  4.83)   domega +0.00930 rad/s (nbhd 0.00000, x63986.46)   on screen 0.73344 -> 0.50192 m/frame
+       f1056  3_breach|4_transit     v  31.838 ->  32.732 m/s  dv  +0.450 (nbhd 0.420, x  1.07)   domega +0.00002 rad/s (nbhd 0.00002, x  0.85)   on screen 1.32658 -> 1.36382 m/frame
+       f1190  4_transit|5_lap        v  84.332 ->  91.889 m/s  dv  +5.793 (nbhd 0.131, x 44.37)   domega +0.34258 rad/s (nbhd 0.00418, x 81.91)   on screen 3.51382 -> 3.82871 m/frame
+       f2714  5_lap|6_ending         v  89.757 ->  89.767 m/s  dv  +0.088 (nbhd 0.032, x  2.78)   domega -0.02439 rad/s (nbhd 0.00725, x  3.36)   on screen 3.73986 -> 3.74030 m/frame
+       KNOWN  2_launch|3_breach f864 dv_ms = -1.7224 (allowance 1.7500, +20% headroom)
+              R2-026 / R2-047: leg 0's `length_m` is measured from the car's NOSE and its endpoints from the ORIGIN, so `transit_path` runs 11.980 m of arc length across 15.000 m of world X and the car's world speed is 25.2 % high for the whole launch. The ratio decays back to 1.0 over three rows, and those rows are the glass plane, so the correction lands on this seam as -1.72 m/s. NOT FIXED DELIBERATELY (R2-047): the honest fix moves the breach frame and with it beat 3's ramp, filmtime.GLASS_WORLD_T and the 124.0833 s master. Nothing a car rig can do about it without moving the car off the telemetry everything else reads.
+       KNOWN  4_transit|5_lap f1190 dv_ms = +5.7931 (allowance 5.8000, +20% headroom)
+              R2-046: the transit solve and the lap solve each produce their own speed at the start/finish line and nothing reconciles them, so the car crosses 42.6 km/h faster than it arrives (288.16 -> 330.80 km/h in one telemetry row). The time map spreads it over three film frames: +4.48, +5.79, +1.76 m/s.
+    E  tyre contact patches (wheel centre less the 0.360 m rolling radius) vs the ground the road is built from: worst +0.0036 m at f850 RL, rms 0.0001 m over 3972 samples
+    F  beat 1 untouched: CAR_ROOT 3.58e-09 m / 0.00e+00 rad off its rest pose over 792 frames; hubs 4.77e-08 m; spin 0.00e+00 rad
+       against beat1_anim.blend: worst witness part 0.00e+00 m over 25 parts x 16 frames (None)
+    PASS
+>> STAGE RESULT: CAR_ANIM_OK

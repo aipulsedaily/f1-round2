@@ -1,0 +1,4197 @@
+{
+ "item": "hospitality_deck",
+ "generated": "2026-07-29",
+ "frame": "deck-local: +x width along the hospitality frontage, +y from the paddock lane TOWARDS the unit, +z up; the origin is ON THE GROUND at the deck's plan centre",
+ "laws": {
+  "base_embed_m": 0.02,
+  "ground_z_source": "world_contract.world_ground_z",
+  "apron_z": 0.0
+ },
+ "dependants": [
+  "motorhome_unit",
+  "folding_chair",
+  "folding_table",
+  "parasol"
+ ],
+ "decks": [
+  {
+   "n": 1,
+   "name": "Versant",
+   "circuit_x": -141.5,
+   "circuit_y_rear": 65.85,
+   "world_origin": [
+    179.914,
+    127.8316,
+    0.0
+   ],
+   "R": [
+    [
+     0.763570675,
+     -0.645724264,
+     0.0
+    ],
+    [
+     0.645724264,
+     0.763570675,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "yaw_deg": 0.22,
+   "deck": {
+    "W": 12.6,
+    "D": 3.86,
+    "H": 0.548,
+    "board_axis": "y",
+    "board_w": 0.145,
+    "board_t": 0.028,
+    "gap": 0.0055,
+    "profile": "reeded",
+    "species": "thermo_ash",
+    "fastening": "face",
+    "frame": "two_tier",
+    "boards": 85,
+    "pedestals": 55,
+    "top_z_at_centre": 0.550946
+   },
+   "footprint_world": [
+    [
+     176.3497,
+     122.2898
+    ],
+    [
+     185.9707,
+     130.4259
+    ],
+    [
+     183.4782,
+     133.3733
+    ],
+    [
+     173.8572,
+     125.2372
+    ]
+   ],
+   "threshold": {
+    "rear_y": 1.93,
+    "gap": 0.15,
+    "face_y": 2.08,
+    "face_cy_circuit": 66.0,
+    "deck_level": 0.548,
+    "deck_level_at_threshold": 0.5495312417112688,
+    "flashing": {
+     "width": 0.15,
+     "thickness": 0.0015,
+     "top_z": 0.55,
+     "material": "folded mill aluminium, 1.5 mm"
+    },
+    "landings": [
+     {
+      "x": -2.772,
+      "y": 1.51,
+      "w": 1.2,
+      "dpth": 0.78,
+      "top_z": 0.5525,
+      "kind": "chequer plate, 4.5 mm, raised diamond"
+     },
+     {
+      "x": 2.7719999999999994,
+      "y": 1.51,
+      "w": 1.2,
+      "dpth": 0.78,
+      "top_z": 0.5525,
+      "kind": "chequer plate, 4.5 mm, raised diamond"
+     }
+    ],
+    "note": "motorhome_unit builds its floor to deck_level and its face to face_y; the 0.150 m gap is where its own drip and this deck's closure flashing meet."
+   },
+   "unit_bays": [
+    {
+     "side": "west",
+     "x_inner": -6.42,
+     "x_outer": -8.969999999999999,
+     "y0": 1.73,
+     "y1": 13.93,
+     "apron_z": 0.0,
+     "abuts": {
+      "fascia": "alu_angle",
+      "face_x": -6.3,
+      "deck_level": 0.548
+     },
+     "clear_width": 2.55
+    },
+    {
+     "side": "east",
+     "x_inner": 6.42,
+     "x_outer": 8.969999999999999,
+     "y0": 1.73,
+     "y1": 13.93,
+     "apron_z": 0.0,
+     "abuts": {
+      "fascia": "alu_angle",
+      "face_x": 6.3,
+      "deck_level": 0.548
+     },
+     "clear_width": 2.55
+    }
+   ],
+   "awning_anchors": [
+    {
+     "x": -3.15,
+     "y": -1.51,
+     "top_z": 0.5502101777026631,
+     "plate": {
+      "w": 0.2,
+      "d": 0.2,
+      "t": 0.01,
+      "material": "mill aluminium"
+     },
+     "studs": {
+      "n": 4,
+      "dia": 0.012,
+      "pitch": 0.15,
+      "proud": 0.026,
+      "thread": "M12"
+     },
+     "note": "hospitality_awning stands its leg on the plate and bolts to the four studs; do not re-drill."
+    },
+    {
+     "x": 3.1499999999999995,
+     "y": -1.51,
+     "top_z": 0.5479346970249462,
+     "plate": {
+      "w": 0.2,
+      "d": 0.2,
+      "t": 0.01,
+      "material": "mill aluminium"
+     },
+     "studs": {
+      "n": 4,
+      "dia": 0.012,
+      "pitch": 0.15,
+      "proud": 0.026,
+      "thread": "M12"
+     },
+     "note": "hospitality_awning stands its leg on the plate and bolts to the four studs; do not re-drill."
+    }
+   ],
+   "parasol_bases": [
+    {
+     "x": -4.249708266053348,
+     "y": 0.03695391662772751,
+     "top_z": 0.5491868553167584,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    },
+    {
+     "x": -0.04473163423128426,
+     "y": 0.03748910442739706,
+     "top_z": 0.548902045667738,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    },
+    {
+     "x": 4.151475006425754,
+     "y": 0.3813865999629724,
+     "top_z": 0.5499837548883009,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    }
+   ],
+   "floor_slots": [
+    {
+     "x": -5.5,
+     "y": 1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5475458498504483,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -4.5,
+     "y": 1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5508781933026631,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -1.5,
+     "y": 1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5483815874484295,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -0.5,
+     "y": 1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5487066863503562,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": 0.5,
+     "y": 1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.548585667229695,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": 5.5,
+     "y": 1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5479629849910287,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -5.5,
+     "y": 0.0,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5472690867331989,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": -2.5,
+     "y": 0.0,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5476486403165891,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": -1.5,
+     "y": 0.0,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5483514175230303,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": 1.5,
+     "y": 0.0,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5473589432742223,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": 5.5,
+     "y": 0.0,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5470583460812272,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": 4.5,
+     "y": 1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5496619568308794,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "rear",
+     "quality": 0.8643
+    },
+    {
+     "x": 1.5,
+     "y": 1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5479777475854564,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "rear",
+     "quality": 0.7824
+    },
+    {
+     "x": -3.5,
+     "y": 0.0,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5481087975341191,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "middle",
+     "quality": 0.7598
+    },
+    {
+     "x": -5.5,
+     "y": -1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5471927984138438,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -4.5,
+     "y": -1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5514790352562651,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -1.5,
+     "y": -1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5488656444361242,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -0.5,
+     "y": -1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5482706663348389,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": 4.5,
+     "y": -1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5492908906483892,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": 5.5,
+     "y": -1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5481670701098704,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": 3.5,
+     "y": 0.0,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5492352641690694,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "middle",
+     "quality": 0.7492
+    },
+    {
+     "x": -3.5,
+     "y": 1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5483660394911861,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "rear",
+     "quality": 0.7338
+    },
+    {
+     "x": -2.5,
+     "y": -1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5487555667995322,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "front",
+     "quality": 0.6984
+    },
+    {
+     "x": 3.5,
+     "y": 1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5491854071969114,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "rear",
+     "quality": 0.67
+    },
+    {
+     "x": 0.5,
+     "y": 0.0,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5463410652109273,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "middle",
+     "quality": 0.6212
+    },
+    {
+     "x": 0.5,
+     "y": -1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5481955782784688,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "front",
+     "quality": 0.612
+    },
+    {
+     "x": -3.5,
+     "y": -1.0866666666666664,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5479003068724164,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "front",
+     "quality": 0.6073
+    },
+    {
+     "x": 4.5,
+     "y": 0.0,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5470911535744499,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "middle",
+     "quality": 0.6072
+    },
+    {
+     "x": -0.5,
+     "y": 0.0,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5483838975354495,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "middle",
+     "quality": 0.5607
+    },
+    {
+     "x": 2.5,
+     "y": 0.0,
+     "hx": 0.5,
+     "hy": 0.5433333333333333,
+     "top_z": 0.5487820916674712,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.8719999999999999,
+     "faces": "middle",
+     "quality": 0.0898
+    }
+   ],
+   "step_runs": [
+    {
+     "x": 2.3,
+     "width": 2.4,
+     "risers": 3,
+     "rise": 0.18266666666666667,
+     "going": 0.3,
+     "y_nose": -1.93,
+     "y_foot": -2.83,
+     "wear": 0.75,
+     "apron_z": 0.0,
+     "nosing": "alu_carborundum"
+    }
+   ],
+   "edge_trim": {
+    "kind": "alu_angle",
+    "section": "angle",
+    "projection": 0.04,
+    "drop": 0.06,
+    "outer_y_front": -1.97,
+    "outer_x_west": -6.34,
+    "outer_x_east": 6.34,
+    "top_z": 0.548
+   },
+   "rail": {
+    "kind": "cable",
+    "height": 1.1,
+    "posts": [
+     {
+      "x": -6.3,
+      "y": -1.875,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -4.9,
+      "y": -1.875,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -3.5,
+      "y": -1.875,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -2.1000000000000005,
+      "y": -1.875,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -0.7000000000000002,
+      "y": -1.875,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 0.7000000000000002,
+      "y": -1.875,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 4.8999999999999995,
+      "y": -1.875,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 6.3,
+      "y": -1.875,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -6.245,
+      "y": -1.93,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": -6.245,
+      "y": -0.6433333333333333,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": -6.245,
+      "y": 0.6433333333333333,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": -6.245,
+      "y": 1.93,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 6.245,
+      "y": -1.93,
+      "nx": 1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 6.245,
+      "y": -0.6433333333333333,
+      "nx": 1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 6.245,
+      "y": 0.6433333333333333,
+      "nx": 1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 6.245,
+      "y": 1.93,
+      "nx": 1.0,
+      "ny": 0.0
+     }
+    ],
+    "clear": 0.3,
+    "anod": 0.58
+   },
+   "under_deck": {
+    "clear": {
+     "x0": -6.2,
+     "x1": 6.2,
+     "y0": -1.8299999999999998,
+     "y1": 1.8299999999999998,
+     "z0": 0.0,
+     "z1": 0.31999999999999995
+    },
+    "occupied": [
+     {
+      "what": "cable tray + bundles",
+      "x0": -6.0,
+      "x1": 6.0,
+      "y0": 1.2899999999999998,
+      "y1": 1.47,
+      "z0": 0.23999999999999996,
+      "z1": 0.31999999999999995
+     }
+    ],
+    "pedestals": 55,
+    "visible_through": "board gaps of 5.5 mm; a composite skirt closes the front"
+   }
+  },
+  {
+   "n": 2,
+   "name": "Ardent",
+   "circuit_x": -100.6,
+   "circuit_y_rear": 65.85,
+   "world_origin": [
+    211.4895,
+    153.8305,
+    0.0
+   ],
+   "R": [
+    [
+     0.769511029,
+     -0.638633522,
+     0.0
+    ],
+    [
+     0.638633522,
+     0.769511029,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "yaw_deg": -0.31,
+   "deck": {
+    "W": 15.85,
+    "D": 4.62,
+    "H": 0.612,
+    "board_axis": "x",
+    "board_w": 0.12,
+    "board_t": 0.032,
+    "gap": 0.009,
+    "profile": "smooth",
+    "species": "bangkirai",
+    "fastening": "face",
+    "frame": "two_tier",
+    "boards": 148,
+    "pedestals": 65,
+    "top_z_at_centre": 0.614377
+   },
+   "footprint_world": [
+    [
+     206.8663,
+     146.9918
+    ],
+    [
+     219.0631,
+     157.1141
+    ],
+    [
+     216.1126,
+     160.6692
+    ],
+    [
+     203.9158,
+     150.5469
+    ]
+   ],
+   "threshold": {
+    "rear_y": 2.31,
+    "gap": 0.15,
+    "face_y": 2.46,
+    "face_cy_circuit": 66.0,
+    "deck_level": 0.612,
+    "deck_level_at_threshold": 0.6155809099767121,
+    "flashing": {
+     "width": 0.15,
+     "thickness": 0.0015,
+     "top_z": 0.614,
+     "material": "folded mill aluminium, 1.5 mm"
+    },
+    "landings": [
+     {
+      "x": -3.486999999999999,
+      "y": 1.8900000000000001,
+      "w": 1.2,
+      "dpth": 0.78,
+      "top_z": 0.6164999999999999,
+      "kind": "chequer plate, 4.5 mm, raised diamond"
+     },
+     {
+      "x": 3.486999999999999,
+      "y": 1.8900000000000001,
+      "w": 1.2,
+      "dpth": 0.78,
+      "top_z": 0.6164999999999999,
+      "kind": "chequer plate, 4.5 mm, raised diamond"
+     }
+    ],
+    "note": "motorhome_unit builds its floor to deck_level and its face to face_y; the 0.150 m gap is where its own drip and this deck's closure flashing meet."
+   },
+   "unit_bays": [
+    {
+     "side": "west",
+     "x_inner": -8.045,
+     "x_outer": -10.594999999999999,
+     "y0": 2.11,
+     "y1": 14.31,
+     "apron_z": 0.0,
+     "abuts": {
+      "fascia": "timber_fascia",
+      "face_x": -7.925,
+      "deck_level": 0.612
+     },
+     "clear_width": 2.55
+    },
+    {
+     "side": "east",
+     "x_inner": 8.045,
+     "x_outer": 10.594999999999999,
+     "y0": 2.11,
+     "y1": 14.31,
+     "apron_z": 0.0,
+     "abuts": {
+      "fascia": "timber_fascia",
+      "face_x": 7.925,
+      "deck_level": 0.612
+     },
+     "clear_width": 2.55
+    }
+   ],
+   "awning_anchors": [
+    {
+     "x": -5.283333333333333,
+     "y": -1.8900000000000001,
+     "top_z": 0.6125042663060863,
+     "plate": {
+      "w": 0.2,
+      "d": 0.2,
+      "t": 0.01,
+      "material": "mill aluminium"
+     },
+     "studs": {
+      "n": 4,
+      "dia": 0.012,
+      "pitch": 0.15,
+      "proud": 0.026,
+      "thread": "M12"
+     },
+     "note": "hospitality_awning stands its leg on the plate and bolts to the four studs; do not re-drill."
+    },
+    {
+     "x": 0.0,
+     "y": -1.8900000000000001,
+     "top_z": 0.6129407208377051,
+     "plate": {
+      "w": 0.2,
+      "d": 0.2,
+      "t": 0.01,
+      "material": "mill aluminium"
+     },
+     "studs": {
+      "n": 4,
+      "dia": 0.012,
+      "pitch": 0.15,
+      "proud": 0.026,
+      "thread": "M12"
+     },
+     "note": "hospitality_awning stands its leg on the plate and bolts to the four studs; do not re-drill."
+    },
+    {
+     "x": 5.283333333333334,
+     "y": -1.8900000000000001,
+     "top_z": 0.6107215450907284,
+     "plate": {
+      "w": 0.2,
+      "d": 0.2,
+      "t": 0.01,
+      "material": "mill aluminium"
+     },
+     "studs": {
+      "n": 4,
+      "dia": 0.012,
+      "pitch": 0.15,
+      "proud": 0.026,
+      "thread": "M12"
+     },
+     "note": "hospitality_awning stands its leg on the plate and bolts to the four studs; do not re-drill."
+    }
+   ],
+   "parasol_bases": [
+    {
+     "x": -6.108990548960864,
+     "y": 0.33151462535653264,
+     "top_z": 0.610925474384384,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    },
+    {
+     "x": -1.8058748656511308,
+     "y": 0.54416439895425,
+     "top_z": 0.6132585933794719,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    },
+    {
+     "x": 1.828406344437972,
+     "y": -0.48995126351863116,
+     "top_z": 0.6132194316305818,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    },
+    {
+     "x": 5.89370606363751,
+     "y": 0.2287520157035443,
+     "top_z": 0.6131027141079215,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    }
+   ],
+   "floor_slots": [
+    {
+     "x": -7.3359375,
+     "y": 1.6574999999999998,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6120411912055901,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -6.3578125,
+     "y": 1.6574999999999998,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6109100359460952,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -5.3796875,
+     "y": 1.6574999999999998,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6111722692695508,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -1.4671874999999996,
+     "y": 1.6574999999999998,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.609498049716098,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -0.4890625000000002,
+     "y": 1.6574999999999998,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6103798984261392,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": 5.3796875,
+     "y": 1.6574999999999998,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6142461188698022,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": 6.3578125000000005,
+     "y": 1.6574999999999998,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6137795670334808,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": 7.335937500000001,
+     "y": 1.6574999999999998,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6136283125638702,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -7.3359375,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6112507602020385,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": -4.401562500000001,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6120763276066715,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": -3.4234375000000004,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6133687887511352,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": 0.4890625000000002,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6120792309539841,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": 1.4671875000000005,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6123020986607763,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": 2.445312500000001,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6135469059040025,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": 3.4234374999999995,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6134631194463973,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": 4.4015625,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6123196217556163,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": 7.335937500000001,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6125220407741652,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": -2.4453125,
+     "y": 1.6574999999999998,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6094046838601991,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "rear",
+     "quality": 0.878
+    },
+    {
+     "x": 2.445312500000001,
+     "y": 1.6574999999999998,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6122836847337726,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "rear",
+     "quality": 0.878
+    },
+    {
+     "x": -7.3359375,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6106769663248683,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": -4.401562500000001,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6114242911174543,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": -3.4234375000000004,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6106495411355262,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": -1.4671874999999996,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6111671486729192,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": -0.4890625000000002,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6104955339640913,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": 0.4890625000000002,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6136050741287267,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": 3.4234374999999995,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6141561228412465,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": 4.4015625,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6119554857206639,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": 7.335937500000001,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6114324336678162,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": -5.3796875,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6097022856065561,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.8211
+    },
+    {
+     "x": -5.3796875,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6113163293539726,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.8021
+    },
+    {
+     "x": -6.3578125,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6096542014014724,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.7883
+    },
+    {
+     "x": -4.401562500000001,
+     "y": 1.6574999999999998,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6121507293916821,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "rear",
+     "quality": 0.7853
+    },
+    {
+     "x": 4.4015625,
+     "y": 1.6574999999999998,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6138619415079629,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "rear",
+     "quality": 0.7853
+    },
+    {
+     "x": 5.3796875,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6105512880748065,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.7751
+    },
+    {
+     "x": 6.3578125000000005,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6106396908150675,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.7677
+    },
+    {
+     "x": -7.3359375,
+     "y": -1.6575,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6127613144727978,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -6.3578125,
+     "y": -1.6575,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6115924459990757,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -2.4453125,
+     "y": -1.6575,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6111100570924425,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -1.4671874999999996,
+     "y": -1.6575,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6112449192510672,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": 1.4671875000000005,
+     "y": -1.6575,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6151672261765312,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": 2.445312500000001,
+     "y": -1.6575,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6153207961069525,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -2.4453125,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6132954143770292,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.7246
+    },
+    {
+     "x": 5.3796875,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6122029865760538,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.6993
+    },
+    {
+     "x": 6.3578125000000005,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6127577705329614,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.6718
+    },
+    {
+     "x": 2.445312500000001,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6149936009470799,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.6441
+    },
+    {
+     "x": 7.335937500000001,
+     "y": -1.6575,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6133987239233883,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "front",
+     "quality": 0.609
+    },
+    {
+     "x": -0.4890625000000002,
+     "y": -1.6575,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6115894779699158,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "front",
+     "quality": 0.6079
+    },
+    {
+     "x": 0.4890625000000002,
+     "y": -1.6575,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6133064615547644,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "front",
+     "quality": 0.6079
+    },
+    {
+     "x": 1.4671875000000005,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6148843509730498,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.4785
+    },
+    {
+     "x": 1.4671875000000005,
+     "y": 1.6574999999999998,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6123896052950684,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "rear",
+     "quality": 0.4311
+    },
+    {
+     "x": -3.4234375000000004,
+     "y": -1.6575,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6121296676334351,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "front",
+     "quality": 0.4291
+    },
+    {
+     "x": 0.4890625000000002,
+     "y": 1.6574999999999998,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6126368955431067,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "rear",
+     "quality": 0.4215
+    },
+    {
+     "x": -1.4671874999999996,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6118366365915064,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.2998
+    },
+    {
+     "x": -0.4890625000000002,
+     "y": 0.5525000000000002,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6118516516487078,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.1832
+    },
+    {
+     "x": -2.4453125,
+     "y": -0.5525,
+     "hx": 0.4890625,
+     "hy": 0.5525,
+     "top_z": 0.6107260746347818,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.8079999999999998,
+     "faces": "middle",
+     "quality": 0.0
+    }
+   ],
+   "step_runs": [
+    {
+     "x": -4.6,
+     "width": 1.6,
+     "risers": 3,
+     "rise": 0.204,
+     "going": 0.3,
+     "y_nose": -2.31,
+     "y_foot": -3.21,
+     "wear": 0.3,
+     "apron_z": 0.0,
+     "nosing": "alu_carborundum"
+    },
+    {
+     "x": 5.1,
+     "width": 3.2,
+     "risers": 3,
+     "rise": 0.204,
+     "going": 0.3,
+     "y_nose": -2.31,
+     "y_foot": -3.21,
+     "wear": 0.55,
+     "apron_z": 0.0,
+     "nosing": "alu_carborundum"
+    }
+   ],
+   "edge_trim": {
+    "kind": "timber_fascia",
+    "section": "fascia",
+    "projection": 0.022,
+    "drop": 0.145,
+    "outer_y_front": -2.332,
+    "outer_x_west": -7.947,
+    "outer_x_east": 7.947,
+    "top_z": 0.612
+   },
+   "rail": {
+    "kind": "none",
+    "height": 0.0,
+    "posts": [],
+    "clear": 0.0
+   },
+   "under_deck": {
+    "clear": {
+     "x0": -7.825,
+     "x1": 7.825,
+     "y0": -2.21,
+     "y1": 2.21,
+     "z0": 0.0,
+     "z1": 0.3799999999999999
+    },
+    "occupied": [
+     {
+      "what": "cable tray + bundles",
+      "x0": -7.625,
+      "x1": 7.625,
+      "y0": 1.67,
+      "y1": 1.85,
+      "z0": 0.29999999999999993,
+      "z1": 0.3799999999999999
+     }
+    ],
+    "pedestals": 65,
+    "visible_through": "board gaps of 9.0 mm; the front is OPEN \u2014 the frame reads in silhouette"
+   }
+  },
+  {
+   "n": 3,
+   "name": "Zephyr",
+   "circuit_x": -56.4,
+   "circuit_y_rear": 65.85,
+   "world_origin": [
+    245.1301,
+    182.5022,
+    0.0
+   ],
+   "R": [
+    [
+     0.76503381,
+     -0.643990116,
+     0.0
+    ],
+    [
+     0.643990116,
+     0.76503381,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "yaw_deg": 0.09,
+   "deck": {
+    "W": 10.35,
+    "D": 3.94,
+    "H": 0.585,
+    "board_axis": "y",
+    "board_w": 0.168,
+    "board_t": 0.026,
+    "gap": 0.004,
+    "profile": "micro_ribbed",
+    "species": "wpc_grey",
+    "fastening": "hidden",
+    "frame": "single",
+    "boards": 65,
+    "pedestals": 90,
+    "top_z_at_centre": 0.586215
+   },
+   "footprint_world": [
+    [
+     242.4397,
+     177.6624
+    ],
+    [
+     250.3578,
+     184.3277
+    ],
+    [
+     247.8205,
+     187.3419
+    ],
+    [
+     239.9024,
+     180.6766
+    ]
+   ],
+   "threshold": {
+    "rear_y": 1.97,
+    "gap": 0.15,
+    "face_y": 2.12,
+    "face_cy_circuit": 66.0,
+    "deck_level": 0.585,
+    "deck_level_at_threshold": 0.5855292239790936,
+    "flashing": {
+     "width": 0.15,
+     "thickness": 0.0015,
+     "top_z": 0.587,
+     "material": "folded mill aluminium, 1.5 mm"
+    },
+    "landings": [
+     {
+      "x": -2.2769999999999997,
+      "y": 1.55,
+      "w": 1.2,
+      "dpth": 0.78,
+      "top_z": 0.5894999999999999,
+      "kind": "chequer plate, 4.5 mm, raised diamond"
+     },
+     {
+      "x": 2.2769999999999992,
+      "y": 1.55,
+      "w": 1.2,
+      "dpth": 0.78,
+      "top_z": 0.5894999999999999,
+      "kind": "chequer plate, 4.5 mm, raised diamond"
+     }
+    ],
+    "note": "motorhome_unit builds its floor to deck_level and its face to face_y; the 0.150 m gap is where its own drip and this deck's closure flashing meet."
+   },
+   "unit_bays": [
+    {
+     "side": "west",
+     "x_inner": -5.295,
+     "x_outer": -7.845,
+     "y0": 1.77,
+     "y1": 13.97,
+     "apron_z": 0.0,
+     "abuts": {
+      "fascia": "stainless_drip",
+      "face_x": -5.175,
+      "deck_level": 0.585
+     },
+     "clear_width": 2.55
+    },
+    {
+     "side": "east",
+     "x_inner": 5.295,
+     "x_outer": 7.845,
+     "y0": 1.77,
+     "y1": 13.97,
+     "apron_z": 0.0,
+     "abuts": {
+      "fascia": "stainless_drip",
+      "face_x": 5.175,
+      "deck_level": 0.585
+     },
+     "clear_width": 2.55
+    }
+   ],
+   "awning_anchors": [
+    {
+     "x": -2.5875,
+     "y": -1.55,
+     "top_z": 0.5850660639400518,
+     "plate": {
+      "w": 0.2,
+      "d": 0.2,
+      "t": 0.01,
+      "material": "mill aluminium"
+     },
+     "studs": {
+      "n": 4,
+      "dia": 0.012,
+      "pitch": 0.15,
+      "proud": 0.026,
+      "thread": "M12"
+     },
+     "note": "hospitality_awning stands its leg on the plate and bolts to the four studs; do not re-drill."
+    },
+    {
+     "x": 2.5874999999999995,
+     "y": -1.55,
+     "top_z": 0.5839399984553656,
+     "plate": {
+      "w": 0.2,
+      "d": 0.2,
+      "t": 0.01,
+      "material": "mill aluminium"
+     },
+     "studs": {
+      "n": 4,
+      "dia": 0.012,
+      "pitch": 0.15,
+      "proud": 0.026,
+      "thread": "M12"
+     },
+     "note": "hospitality_awning stands its leg on the plate and bolts to the four studs; do not re-drill."
+    }
+   ],
+   "parasol_bases": [
+    {
+     "x": -3.4546932558342816,
+     "y": 0.017524210818484542,
+     "top_z": 0.5868242179890856,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    },
+    {
+     "x": 0.19626619664020836,
+     "y": -0.11122115396726873,
+     "top_z": 0.5831819714671431,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    },
+    {
+     "x": 3.6437889660988003,
+     "y": -0.5700255602259188,
+     "top_z": 0.584793777341307,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    }
+   ],
+   "floor_slots": [
+    {
+     "x": -4.3875,
+     "y": 1.1133333333333333,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5854207385158708,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -0.4874999999999998,
+     "y": 1.1133333333333333,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5828145836972246,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": 4.387499999999999,
+     "y": 1.1133333333333333,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5863434884155595,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -3.4125,
+     "y": 1.1133333333333333,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5854653696770502,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "rear",
+     "quality": 0.961
+    },
+    {
+     "x": 3.4124999999999996,
+     "y": 1.1133333333333333,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5839312830663403,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "rear",
+     "quality": 0.961
+    },
+    {
+     "x": -4.3875,
+     "y": 0.0,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5854073988274007,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": -2.4375,
+     "y": 0.0,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5852543143005147,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": -1.4625,
+     "y": 0.0,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5816225594761816,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": 2.4375,
+     "y": 0.0,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5863521296239901,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": 1.4625000000000004,
+     "y": 0.0,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5830255755909635,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "middle",
+     "quality": 0.8642
+    },
+    {
+     "x": 4.387499999999999,
+     "y": 0.0,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5868976169461002,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "middle",
+     "quality": 0.8213
+    },
+    {
+     "x": -1.4625,
+     "y": 1.1133333333333333,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5823751134537314,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "rear",
+     "quality": 0.7871
+    },
+    {
+     "x": -4.3875,
+     "y": -1.1133333333333333,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5853410935238373,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -3.4125,
+     "y": -1.1133333333333333,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5855256373708858,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -0.4874999999999998,
+     "y": 0.0,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5820350581176637,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "middle",
+     "quality": 0.7235
+    },
+    {
+     "x": 4.387499999999999,
+     "y": -1.1133333333333333,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5863022027106937,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "front",
+     "quality": 0.701
+    },
+    {
+     "x": 3.4124999999999996,
+     "y": 0.0,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5847938742956357,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "middle",
+     "quality": 0.6533
+    },
+    {
+     "x": 3.4124999999999996,
+     "y": -1.1133333333333333,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.586307860700776,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "front",
+     "quality": 0.5475
+    },
+    {
+     "x": -2.4375,
+     "y": -1.1133333333333333,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5852522275357139,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "front",
+     "quality": 0.4449
+    },
+    {
+     "x": 2.4375,
+     "y": -1.1133333333333333,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5856450078612151,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "front",
+     "quality": 0.4449
+    },
+    {
+     "x": 0.4874999999999998,
+     "y": 1.1133333333333333,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.5862871615856604,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "rear",
+     "quality": 0.4186
+    },
+    {
+     "x": 1.4625000000000004,
+     "y": 1.1133333333333333,
+     "hx": 0.4875,
+     "hy": 0.5566666666666666,
+     "top_z": 0.583585562213234,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.835,
+     "faces": "rear",
+     "quality": 0.305
+    }
+   ],
+   "step_runs": [
+    {
+     "x": 0.0,
+     "width": 3.6,
+     "risers": 3,
+     "rise": 0.19499999999999998,
+     "going": 0.3,
+     "y_nose": -1.97,
+     "y_foot": -2.87,
+     "wear": 0.15,
+     "apron_z": 0.0,
+     "nosing": "alu_carborundum"
+    }
+   ],
+   "edge_trim": {
+    "kind": "stainless_drip",
+    "section": "drip",
+    "projection": 0.018,
+    "drop": 0.052,
+    "outer_y_front": -1.988,
+    "outer_x_west": -5.193,
+    "outer_x_east": 5.193,
+    "top_z": 0.585
+   },
+   "rail": {
+    "kind": "glass",
+    "height": 1.0,
+    "posts": [
+     {
+      "x": -5.175,
+      "y": -1.915,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -4.025,
+      "y": -1.915,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -2.875,
+      "y": -1.915,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 2.875000000000001,
+      "y": -1.915,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 4.0249999999999995,
+      "y": -1.915,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 5.175,
+      "y": -1.915,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -5.12,
+      "y": -1.97,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": -5.12,
+      "y": -0.6566666666666667,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": -5.12,
+      "y": 0.6566666666666665,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": -5.12,
+      "y": 1.97,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 5.12,
+      "y": -1.97,
+      "nx": 1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 5.12,
+      "y": -0.6566666666666667,
+      "nx": 1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 5.12,
+      "y": 0.6566666666666665,
+      "nx": 1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 5.12,
+      "y": 1.97,
+      "nx": 1.0,
+      "ny": 0.0
+     }
+    ],
+    "clear": 0.3,
+    "anod": 0.74
+   },
+   "under_deck": {
+    "clear": {
+     "x0": -5.075,
+     "x1": 5.075,
+     "y0": -1.8699999999999999,
+     "y1": 1.8699999999999999,
+     "z0": 0.0,
+     "z1": 0.43899999999999995
+    },
+    "occupied": [
+     {
+      "what": "cable tray + bundles",
+      "x0": -4.875,
+      "x1": 4.875,
+      "y0": 1.3299999999999998,
+      "y1": 1.51,
+      "z0": 0.359,
+      "z1": 0.43899999999999995
+     }
+    ],
+    "pedestals": 90,
+    "visible_through": "board gaps of 4.0 mm; a louvre skirt closes the front"
+   }
+  },
+  {
+   "n": 4,
+   "name": "Pallas",
+   "circuit_x": -11.3,
+   "circuit_y_rear": 65.85,
+   "world_origin": [
+    279.9294,
+    211.1931,
+    0.0
+   ],
+   "R": [
+    [
+     0.767612781,
+     -0.640913893,
+     0.0
+    ],
+    [
+     0.640913893,
+     0.767612781,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "yaw_deg": -0.14,
+   "deck": {
+    "W": 16.9,
+    "D": 4.72,
+    "H": 0.66,
+    "board_axis": "y",
+    "board_w": 0.14,
+    "board_t": 0.03,
+    "gap": 0.007,
+    "profile": "reeded_wide",
+    "species": "euro_oak",
+    "fastening": "face",
+    "frame": "two_tier",
+    "boards": 181,
+    "pedestals": 75,
+    "top_z_at_centre": 0.658404
+   },
+   "footprint_world": [
+    [
+     274.9556,
+     203.9658
+    ],
+    [
+     287.9283,
+     214.7973
+    ],
+    [
+     284.9031,
+     218.4204
+    ],
+    [
+     271.9305,
+     207.589
+    ]
+   ],
+   "threshold": {
+    "rear_y": 2.36,
+    "gap": 0.15,
+    "face_y": 2.51,
+    "face_cy_circuit": 66.0,
+    "deck_level": 0.66,
+    "deck_level_at_threshold": 0.6604378352513943,
+    "flashing": {
+     "width": 0.15,
+     "thickness": 0.0015,
+     "top_z": 0.662,
+     "material": "folded mill aluminium, 1.5 mm"
+    },
+    "landings": [
+     {
+      "x": -3.717999999999999,
+      "y": 1.94,
+      "w": 1.2,
+      "dpth": 0.78,
+      "top_z": 0.6645,
+      "kind": "chequer plate, 4.5 mm, raised diamond"
+     },
+     {
+      "x": 3.718,
+      "y": 1.94,
+      "w": 1.2,
+      "dpth": 0.78,
+      "top_z": 0.6645,
+      "kind": "chequer plate, 4.5 mm, raised diamond"
+     }
+    ],
+    "note": "motorhome_unit builds its floor to deck_level and its face to face_y; the 0.150 m gap is where its own drip and this deck's closure flashing meet."
+   },
+   "unit_bays": [
+    {
+     "side": "west",
+     "x_inner": -8.569999999999999,
+     "x_outer": -11.119999999999997,
+     "y0": 2.1599999999999997,
+     "y1": 14.36,
+     "apron_z": 0.0,
+     "abuts": {
+      "fascia": "pvc_bullnose",
+      "face_x": -8.45,
+      "deck_level": 0.66
+     },
+     "clear_width": 2.55
+    },
+    {
+     "side": "east",
+     "x_inner": 8.569999999999999,
+     "x_outer": 11.119999999999997,
+     "y0": 2.1599999999999997,
+     "y1": 14.36,
+     "apron_z": 0.0,
+     "abuts": {
+      "fascia": "pvc_bullnose",
+      "face_x": 8.45,
+      "deck_level": 0.66
+     },
+     "clear_width": 2.55
+    }
+   ],
+   "awning_anchors": [
+    {
+     "x": -5.633333333333333,
+     "y": -1.94,
+     "top_z": 0.6593953558184087,
+     "plate": {
+      "w": 0.2,
+      "d": 0.2,
+      "t": 0.01,
+      "material": "mill aluminium"
+     },
+     "studs": {
+      "n": 4,
+      "dia": 0.012,
+      "pitch": 0.15,
+      "proud": 0.026,
+      "thread": "M12"
+     },
+     "note": "hospitality_awning stands its leg on the plate and bolts to the four studs; do not re-drill."
+    },
+    {
+     "x": 0.0,
+     "y": -1.94,
+     "top_z": 0.6595991806530607,
+     "plate": {
+      "w": 0.2,
+      "d": 0.2,
+      "t": 0.01,
+      "material": "mill aluminium"
+     },
+     "studs": {
+      "n": 4,
+      "dia": 0.012,
+      "pitch": 0.15,
+      "proud": 0.026,
+      "thread": "M12"
+     },
+     "note": "hospitality_awning stands its leg on the plate and bolts to the four studs; do not re-drill."
+    },
+    {
+     "x": 5.633333333333335,
+     "y": -1.94,
+     "top_z": 0.6608596604827842,
+     "plate": {
+      "w": 0.2,
+      "d": 0.2,
+      "t": 0.01,
+      "material": "mill aluminium"
+     },
+     "studs": {
+      "n": 4,
+      "dia": 0.012,
+      "pitch": 0.15,
+      "proud": 0.026,
+      "thread": "M12"
+     },
+     "note": "hospitality_awning stands its leg on the plate and bolts to the four studs; do not re-drill."
+    }
+   ],
+   "parasol_bases": [
+    {
+     "x": -6.354493010016157,
+     "y": -0.6154980623491106,
+     "top_z": 0.6605661005168344,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    },
+    {
+     "x": -2.1304058342054484,
+     "y": -0.316719937395304,
+     "top_z": 0.66,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    },
+    {
+     "x": 2.12623906753026,
+     "y": -0.7500588750042021,
+     "top_z": 0.6622684550558695,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    },
+    {
+     "x": 6.315561126535757,
+     "y": -0.075034297887981,
+     "top_z": 0.6587765326215224,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    }
+   ],
+   "floor_slots": [
+    {
+     "x": -7.670588235294116,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6617695296710487,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -6.711764705882352,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6611346380482921,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -5.752941176470587,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6614519728972547,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -1.9176470588235288,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6590673902629203,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": 1.9176470588235297,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6612196258745461,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": 5.752941176470587,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6595718473074045,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": 6.711764705882352,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6585115692401288,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": 7.670588235294115,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6625619407213394,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -4.7941176470588225,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6591706701249516,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 0.9266
+    },
+    {
+     "x": 4.7941176470588225,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6603009212676985,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 0.9266
+    },
+    {
+     "x": -7.670588235294116,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6623718278619484,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": -6.711764705882352,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6599153267437332,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": -5.752941176470587,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6625535266650738,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": -4.7941176470588225,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6602060563043662,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": -3.8352941176470576,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6603878173383646,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": -0.9588235294117649,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.66,
+     "board_axis": "y",
+     "over_gap": true,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": 0.0,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6583860751641036,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": 3.8352941176470594,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6604467555791198,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": 4.7941176470588225,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6620173837144298,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": 7.670588235294115,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.66271020923295,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.9167
+    },
+    {
+     "x": -0.9588235294117649,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.66,
+     "board_axis": "y",
+     "over_gap": true,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 0.9096
+    },
+    {
+     "x": -2.8764705882352937,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6629384207155179,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.902
+    },
+    {
+     "x": 2.876470588235293,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6609912454922091,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.8648
+    },
+    {
+     "x": -1.9176470588235288,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6591701347698345,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.8508
+    },
+    {
+     "x": -7.670588235294116,
+     "y": -0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.659960836803017,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": -4.7941176470588225,
+     "y": -0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6624967324924977,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": -3.8352941176470576,
+     "y": -0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6597921042177551,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": -0.9588235294117649,
+     "y": -0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.66,
+     "board_axis": "y",
+     "over_gap": true,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": 0.0,
+     "y": -0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6591171572330186,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": 0.9588235294117649,
+     "y": -0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6624556608272217,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": 4.7941176470588225,
+     "y": -0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6597598777971837,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": 7.670588235294115,
+     "y": -0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6626623632303617,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.8333
+    },
+    {
+     "x": 5.752941176470587,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6589521442621138,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.8088
+    },
+    {
+     "x": -2.8764705882352937,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6628566312371948,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 0.7869
+    },
+    {
+     "x": 2.876470588235293,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6621041174518106,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 0.7869
+    },
+    {
+     "x": 6.711764705882352,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6589506902024627,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.7555
+    },
+    {
+     "x": -7.670588235294116,
+     "y": -1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6606615744328344,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -4.7941176470588225,
+     "y": -1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6621190356841983,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -3.8352941176470576,
+     "y": -1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6594839780723386,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -2.8764705882352937,
+     "y": -1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6603012315814613,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -1.9176470588235288,
+     "y": -1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6607925121139588,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -0.9588235294117649,
+     "y": -1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.66,
+     "board_axis": "y",
+     "over_gap": true,
+     "clear_h": 1.7599999999999998,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": 0.9588235294117649,
+     "y": -1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6610980688570385,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": 7.670588235294115,
+     "y": -1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6625346947907754,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -6.711764705882352,
+     "y": -1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6610312171939938,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "front",
+     "quality": 0.7477
+    },
+    {
+     "x": -2.8764705882352937,
+     "y": -0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6608047812454584,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.738
+    },
+    {
+     "x": 5.752941176470587,
+     "y": -0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6603008800825513,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.6927
+    },
+    {
+     "x": 1.9176470588235297,
+     "y": -1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.66059218629152,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "front",
+     "quality": 0.6765
+    },
+    {
+     "x": -5.752941176470587,
+     "y": -0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6618408468470229,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.6236
+    },
+    {
+     "x": 6.711764705882352,
+     "y": -0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.660386505938925,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.6231
+    },
+    {
+     "x": 3.8352941176470594,
+     "y": -0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6578957121374248,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.5799
+    },
+    {
+     "x": 6.711764705882352,
+     "y": -1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6606323283309601,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "front",
+     "quality": 0.557
+    },
+    {
+     "x": 2.876470588235293,
+     "y": -1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6595482350444059,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "front",
+     "quality": 0.5483
+    },
+    {
+     "x": 0.0,
+     "y": -1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6593899943429259,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "front",
+     "quality": 0.5361
+    },
+    {
+     "x": -5.752941176470587,
+     "y": -1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6614069204313696,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "front",
+     "quality": 0.5349
+    },
+    {
+     "x": 0.9588235294117649,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6608758639530687,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 0.4065
+    },
+    {
+     "x": 0.9588235294117649,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6621124040513998,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.3859
+    },
+    {
+     "x": 0.0,
+     "y": 1.545,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.658913872091816,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "rear",
+     "quality": 0.3394
+    },
+    {
+     "x": 1.9176470588235297,
+     "y": 0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6607373099540418,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.1668
+    },
+    {
+     "x": 2.876470588235293,
+     "y": -0.5150000000000001,
+     "hx": 0.47941176470588226,
+     "hy": 0.515,
+     "top_z": 0.6587140522776651,
+     "board_axis": "y",
+     "over_gap": false,
+     "clear_h": 1.7599999999999998,
+     "faces": "middle",
+     "quality": 0.0073
+    }
+   ],
+   "step_runs": [
+    {
+     "x": 4.8,
+     "width": 2.8,
+     "risers": 4,
+     "rise": 0.165,
+     "going": 0.3,
+     "y_nose": -2.36,
+     "y_foot": -3.5599999999999996,
+     "wear": 0.55,
+     "apron_z": 0.0,
+     "nosing": "alu_carborundum"
+    }
+   ],
+   "edge_trim": {
+    "kind": "pvc_bullnose",
+    "section": "bullnose",
+    "projection": 0.026,
+    "drop": 0.048,
+    "outer_y_front": -2.3859999999999997,
+    "outer_x_west": -8.475999999999999,
+    "outer_x_east": 8.475999999999999,
+    "top_z": 0.66
+   },
+   "rail": {
+    "kind": "mesh",
+    "height": 1.05,
+    "posts": [
+     {
+      "x": -8.45,
+      "y": -2.3049999999999997,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -7.242857142857142,
+      "y": -2.3049999999999997,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -6.035714285714285,
+      "y": -2.3049999999999997,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -4.828571428571428,
+      "y": -2.3049999999999997,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -3.621428571428571,
+      "y": -2.3049999999999997,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -2.4142857142857137,
+      "y": -2.3049999999999997,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -1.2071428571428573,
+      "y": -2.3049999999999997,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 0.0,
+      "y": -2.3049999999999997,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 1.2071428571428573,
+      "y": -2.3049999999999997,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 2.4142857142857146,
+      "y": -2.3049999999999997,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 7.242857142857142,
+      "y": -2.3049999999999997,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 8.45,
+      "y": -2.3049999999999997,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -8.395,
+      "y": -2.36,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": -8.395,
+      "y": -1.18,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": -8.395,
+      "y": 0.0,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": -8.395,
+      "y": 1.1800000000000002,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": -8.395,
+      "y": 2.36,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 8.395,
+      "y": -2.36,
+      "nx": 1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 8.395,
+      "y": -1.18,
+      "nx": 1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 8.395,
+      "y": 0.0,
+      "nx": 1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 8.395,
+      "y": 1.1800000000000002,
+      "nx": 1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 8.395,
+      "y": 2.36,
+      "nx": 1.0,
+      "ny": 0.0
+     }
+    ],
+    "clear": 0.3,
+    "anod": 0.1
+   },
+   "under_deck": {
+    "clear": {
+     "x0": -8.35,
+     "x1": 8.35,
+     "y0": -2.26,
+     "y1": 2.26,
+     "z0": 0.0,
+     "z1": 0.43000000000000005
+    },
+    "occupied": [
+     {
+      "what": "cable tray + bundles",
+      "x0": -8.149999999999999,
+      "x1": 8.149999999999999,
+      "y0": 1.7199999999999998,
+      "y1": 1.9,
+      "z0": 0.3500000000000001,
+      "z1": 0.43000000000000005
+     }
+    ],
+    "pedestals": 75,
+    "visible_through": "board gaps of 7.0 mm; a painted_ply skirt closes the front"
+   }
+  },
+  {
+   "n": 5,
+   "name": "Halcyon",
+   "circuit_x": 40.3,
+   "circuit_y_rear": 65.85,
+   "world_origin": [
+    319.1359,
+    244.744,
+    0.0
+   ],
+   "R": [
+    [
+     0.761764498,
+     -0.647854035,
+     0.0
+    ],
+    [
+     0.647854035,
+     0.761764498,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ],
+   "yaw_deg": 0.38,
+   "deck": {
+    "W": 13.7,
+    "D": 3.72,
+    "H": 0.574,
+    "board_axis": "x",
+    "board_w": 0.155,
+    "board_t": 0.028,
+    "gap": 0.011,
+    "profile": "smooth_wide",
+    "species": "iroko",
+    "fastening": "face",
+    "frame": "single",
+    "boards": 79,
+    "pedestals": 128,
+    "top_z_at_centre": 0.575425
+   },
+   "footprint_world": [
+    [
+     315.1228,
+     238.8893
+    ],
+    [
+     325.559,
+     247.7649
+    ],
+    [
+     323.149,
+     250.5987
+    ],
+    [
+     312.7128,
+     241.7231
+    ]
+   ],
+   "threshold": {
+    "rear_y": 1.86,
+    "gap": 0.15,
+    "face_y": 2.0100000000000002,
+    "face_cy_circuit": 66.0,
+    "deck_level": 0.574,
+    "deck_level_at_threshold": 0.5764311426514175,
+    "flashing": {
+     "width": 0.15,
+     "thickness": 0.0015,
+     "top_z": 0.576,
+     "material": "folded mill aluminium, 1.5 mm"
+    },
+    "landings": [
+     {
+      "x": -3.0139999999999993,
+      "y": 1.4400000000000002,
+      "w": 1.2,
+      "dpth": 0.78,
+      "top_z": 0.5784999999999999,
+      "kind": "chequer plate, 4.5 mm, raised diamond"
+     },
+     {
+      "x": 3.0139999999999993,
+      "y": 1.4400000000000002,
+      "w": 1.2,
+      "dpth": 0.78,
+      "top_z": 0.5784999999999999,
+      "kind": "chequer plate, 4.5 mm, raised diamond"
+     }
+    ],
+    "note": "motorhome_unit builds its floor to deck_level and its face to face_y; the 0.150 m gap is where its own drip and this deck's closure flashing meet."
+   },
+   "unit_bays": [
+    {
+     "side": "west",
+     "x_inner": -6.97,
+     "x_outer": -9.52,
+     "y0": 1.6600000000000001,
+     "y1": 13.86,
+     "apron_z": 0.0,
+     "abuts": {
+      "fascia": "alu_channel",
+      "face_x": -6.85,
+      "deck_level": 0.574
+     },
+     "clear_width": 2.55
+    },
+    {
+     "side": "east",
+     "x_inner": 6.97,
+     "x_outer": 9.52,
+     "y0": 1.6600000000000001,
+     "y1": 13.86,
+     "apron_z": 0.0,
+     "abuts": {
+      "fascia": "alu_channel",
+      "face_x": 6.85,
+      "deck_level": 0.574
+     },
+     "clear_width": 2.55
+    }
+   ],
+   "awning_anchors": [
+    {
+     "x": -3.425,
+     "y": -1.4400000000000002,
+     "top_z": 0.5741753172471391,
+     "plate": {
+      "w": 0.2,
+      "d": 0.2,
+      "t": 0.01,
+      "material": "mill aluminium"
+     },
+     "studs": {
+      "n": 4,
+      "dia": 0.012,
+      "pitch": 0.15,
+      "proud": 0.026,
+      "thread": "M12"
+     },
+     "note": "hospitality_awning stands its leg on the plate and bolts to the four studs; do not re-drill."
+    },
+    {
+     "x": 3.424999999999999,
+     "y": -1.4400000000000002,
+     "top_z": 0.574686490414466,
+     "plate": {
+      "w": 0.2,
+      "d": 0.2,
+      "t": 0.01,
+      "material": "mill aluminium"
+     },
+     "studs": {
+      "n": 4,
+      "dia": 0.012,
+      "pitch": 0.15,
+      "proud": 0.026,
+      "thread": "M12"
+     },
+     "note": "hospitality_awning stands its leg on the plate and bolts to the four studs; do not re-drill."
+    }
+   ],
+   "parasol_bases": [
+    {
+     "x": -4.606017952018107,
+     "y": -0.19388022613227363,
+     "top_z": 0.5765327108391403,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    },
+    {
+     "x": 0.16429890378378245,
+     "y": 0.16511526600234228,
+     "top_z": 0.5757839229230798,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    },
+    {
+     "x": 4.487529981282229,
+     "y": -0.41427986700274033,
+     "top_z": 0.5751850173976604,
+     "plate": {
+      "w": 0.32,
+      "d": 0.32,
+      "t": 0.006
+     },
+     "doubled": true,
+     "max_base_kg": 60.0
+    }
+   ],
+   "floor_slots": [
+    {
+     "x": -6.046153846153846,
+     "y": 1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5747666039161505,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -5.038461538461538,
+     "y": 1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5752338872481682,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -1.0076923076923077,
+     "y": 1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5745438077803754,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": 5.038461538461539,
+     "y": 1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5743247212149833,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": 6.046153846153847,
+     "y": 1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5744827029114892,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "rear",
+     "quality": 1.0
+    },
+    {
+     "x": -8.881784197001252e-16,
+     "y": 1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5748292456253324,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "rear",
+     "quality": 0.9528
+    },
+    {
+     "x": 1.0076923076923077,
+     "y": 1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5755280993220189,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "rear",
+     "quality": 0.9076
+    },
+    {
+     "x": -4.030769230769231,
+     "y": 1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5739664119668421,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "rear",
+     "quality": 0.8838
+    },
+    {
+     "x": 4.03076923076923,
+     "y": 1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5744287142292164,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "rear",
+     "quality": 0.8838
+    },
+    {
+     "x": -6.046153846153846,
+     "y": -2.220446049250313e-16,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5756821863955023,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": -3.023076923076923,
+     "y": -2.220446049250313e-16,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5750208116985639,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": -2.0153846153846153,
+     "y": -2.220446049250313e-16,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5756761672723588,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": 2.0153846153846144,
+     "y": -2.220446049250313e-16,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.576124143064564,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": 3.023076923076924,
+     "y": -2.220446049250313e-16,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5755183768286853,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": 6.046153846153847,
+     "y": -2.220446049250313e-16,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5724582344096935,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "middle",
+     "quality": 0.875
+    },
+    {
+     "x": -2.0153846153846153,
+     "y": 1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5751998254812767,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "rear",
+     "quality": 0.8736
+    },
+    {
+     "x": 1.0076923076923077,
+     "y": -2.220446049250313e-16,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5762236078115343,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "middle",
+     "quality": 0.8229
+    },
+    {
+     "x": -6.046153846153846,
+     "y": -1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.574,
+     "board_axis": "x",
+     "over_gap": true,
+     "clear_h": 1.846,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -2.0153846153846153,
+     "y": -1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.574,
+     "board_axis": "x",
+     "over_gap": true,
+     "clear_h": 1.846,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -1.0076923076923077,
+     "y": -1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.574,
+     "board_axis": "x",
+     "over_gap": true,
+     "clear_h": 1.846,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": -8.881784197001252e-16,
+     "y": -1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.574,
+     "board_axis": "x",
+     "over_gap": true,
+     "clear_h": 1.846,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": 1.0076923076923077,
+     "y": -1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.574,
+     "board_axis": "x",
+     "over_gap": true,
+     "clear_h": 1.846,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": 2.0153846153846144,
+     "y": -1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.574,
+     "board_axis": "x",
+     "over_gap": true,
+     "clear_h": 1.846,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": 6.046153846153847,
+     "y": -1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.574,
+     "board_axis": "x",
+     "over_gap": true,
+     "clear_h": 1.846,
+     "faces": "front",
+     "quality": 0.75
+    },
+    {
+     "x": 5.038461538461539,
+     "y": -2.220446049250313e-16,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5719462457649436,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "middle",
+     "quality": 0.7113
+    },
+    {
+     "x": 4.03076923076923,
+     "y": -2.220446049250313e-16,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5723336766091509,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "middle",
+     "quality": 0.67
+    },
+    {
+     "x": 5.038461538461539,
+     "y": -1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.574,
+     "board_axis": "x",
+     "over_gap": true,
+     "clear_h": 1.846,
+     "faces": "front",
+     "quality": 0.6661
+    },
+    {
+     "x": -4.030769230769231,
+     "y": -2.220446049250313e-16,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5759094757115422,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "middle",
+     "quality": 0.6578
+    },
+    {
+     "x": 3.023076923076924,
+     "y": -1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.574,
+     "board_axis": "x",
+     "over_gap": true,
+     "clear_h": 1.846,
+     "faces": "front",
+     "quality": 0.6171
+    },
+    {
+     "x": 4.03076923076923,
+     "y": -1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.574,
+     "board_axis": "x",
+     "over_gap": true,
+     "clear_h": 1.846,
+     "faces": "front",
+     "quality": 0.5763
+    },
+    {
+     "x": -5.038461538461538,
+     "y": -2.220446049250313e-16,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5763012757550491,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "middle",
+     "quality": 0.5689
+    },
+    {
+     "x": -1.0076923076923077,
+     "y": -2.220446049250313e-16,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5750995931876545,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "middle",
+     "quality": 0.4585
+    },
+    {
+     "x": 2.0153846153846144,
+     "y": 1.04,
+     "hx": 0.5038461538461538,
+     "hy": 0.52,
+     "top_z": 0.5754025143878126,
+     "board_axis": "x",
+     "over_gap": false,
+     "clear_h": 1.846,
+     "faces": "rear",
+     "quality": 0.2373
+    }
+   ],
+   "step_runs": [
+    {
+     "x": -3.9,
+     "width": 2.0,
+     "risers": 3,
+     "rise": 0.19133333333333333,
+     "going": 0.3,
+     "y_nose": -1.86,
+     "y_foot": -2.76,
+     "wear": 0.9,
+     "apron_z": 0.0,
+     "nosing": "alu_carborundum"
+    }
+   ],
+   "edge_trim": {
+    "kind": "alu_channel",
+    "section": "channel",
+    "projection": 0.014,
+    "drop": 0.07,
+    "outer_y_front": -1.874,
+    "outer_x_west": -6.864,
+    "outer_x_east": 6.864,
+    "top_z": 0.574
+   },
+   "rail": {
+    "kind": "rope",
+    "height": 0.95,
+    "posts": [
+     {
+      "x": -6.85,
+      "y": -1.8050000000000002,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -5.3277777777777775,
+      "y": -1.8050000000000002,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -2.283333333333333,
+      "y": -1.8050000000000002,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -0.7611111111111111,
+      "y": -1.8050000000000002,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 0.7611111111111111,
+      "y": -1.8050000000000002,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 2.283333333333333,
+      "y": -1.8050000000000002,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 3.8055555555555554,
+      "y": -1.8050000000000002,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 5.3277777777777775,
+      "y": -1.8050000000000002,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": 6.85,
+      "y": -1.8050000000000002,
+      "nx": 0.0,
+      "ny": -1.0
+     },
+     {
+      "x": -6.795,
+      "y": -1.86,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": -6.795,
+      "y": 0.0,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": -6.795,
+      "y": 1.86,
+      "nx": -1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 6.795,
+      "y": -1.86,
+      "nx": 1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 6.795,
+      "y": 0.0,
+      "nx": 1.0,
+      "ny": 0.0
+     },
+     {
+      "x": 6.795,
+      "y": 1.86,
+      "nx": 1.0,
+      "ny": 0.0
+     }
+    ],
+    "clear": 0.3,
+    "anod": 0.0
+   },
+   "under_deck": {
+    "clear": {
+     "x0": -6.75,
+     "x1": 6.75,
+     "y0": -1.76,
+     "y1": 1.76,
+     "z0": 0.0,
+     "z1": 0.42599999999999993
+    },
+    "occupied": [
+     {
+      "what": "cable tray + bundles",
+      "x0": -6.55,
+      "x1": 6.55,
+      "y0": 1.22,
+      "y1": 1.4000000000000001,
+      "z0": 0.346,
+      "z1": 0.42599999999999993
+     }
+    ],
+    "pedestals": 128,
+    "visible_through": "board gaps of 11.0 mm; a half skirt closes the front"
+   }
+  }
+ ]
+}

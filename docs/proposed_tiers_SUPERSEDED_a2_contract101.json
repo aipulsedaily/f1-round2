@@ -1,0 +1,2536 @@
+{
+ "generated": "2026-08-02T12:19:19",
+ "SOURCE": "docs/screen_presence.json -- measured, not assigned. This file is a PROPOSAL; docs/item_manifest.json is deliberately untouched, because changing the manifest is a decision and this is a measurement.",
+ "RULE": "HERO = >=300 px, sharp (measured smear <= 6 px at a FLAT 180-degree shutter, 0.5 of a frame, for the whole take), unoccluded, on >=24 frames (1.0 s) in total across the take. MID = >=150 px on the same terms, on >=12 frames. BULK = on screen but never both big enough and sharp enough for long enough; it exists as tone and is emitted by the class-level placement system. NEVER = not in frustum on any of the 2,978 frames -- 0 items qualify. Thresholds are the scope plan's own and are named so they can be argued with; the 6 px smear figure is tools/item_gate.py's own hero resolve threshold. THE SHUTTER: this tiering was re-derived under R2-037's fix. The rig previously keyed motion_blur_shutter = 0.5 * world_time_scale[f], which during beat 3's speed ramp fell to 27.7 degrees and left beat 3's static geometry 6.5x too crisp; the world-time slowdown is already baked into the per-film-frame animation, so scaling the shutter applied it a second time. anim/build_camera_rig.py now takes --shutter-mode {flat,world} and defaults to flat, and screen_presence.py was run with --uniform-shutter to match.",
+ "tier_counts": {
+  "BULK": 297,
+  "MID": 63,
+  "HERO": 75
+ },
+ "agents_per_round": {
+  "hero_build": {
+   "items": 75,
+   "agents": 51,
+   "unit": "(module, name-family); one agent owns the family and emits its children"
+  },
+  "reads_at_speed": {
+   "items": 63,
+   "agents": 45,
+   "unit": "(module, name-family); silhouette, mass, value, per-instance variation"
+  },
+  "texture_and_mass": {
+   "items": 297,
+   "agents": 22,
+   "unit": "(module, zone) cells of >=6 items get an agent each (16 cells, 257 items); the 20 cells under 6 items (40 items) roll into their module owner (architecture, barriers, car, dressing, surface, terrain)"
+  },
+  "adversarial_review": {
+   "agents": 51,
+   "unit": "36 FRAME-peeps -- one per vantage regime MEASURED in the built rig (beat x speed-band x lens-band x altitude-band, >=24 frames each; 36 of them covering 89% of the take), each judged at the real camera, lens, distance and shutter. Plus 15 MACRO-peeps, one per name-family among the 25 HERO items whose measured sharp peak exceeds 1000 px -- the only items in the film that genuinely receive macro scrutiny. NOT one peep per item in a test scene at nearest_camera_m."
+  },
+  "TOTAL_PER_ROUND": 169
+ },
+ "comparison": {
+  "naive_1_agent_per_item_x2_rounds": 1740,
+  "scope_plan_proposal": {
+   "hero": 69,
+   "mid": 11,
+   "bulk": 16,
+   "review": 60,
+   "per_round": 160,
+   "from_bucket_sizes": [
+    151,
+    27,
+    257
+   ]
+  },
+  "measured_proposal": {
+   "hero": 51,
+   "mid": 45,
+   "bulk": 22,
+   "review": 51,
+   "per_round": 169,
+   "from_bucket_sizes": [
+    75,
+    63,
+    297
+   ]
+  }
+ },
+ "bulk_cells": [
+  {
+   "module": "architecture",
+   "zone": "pit_lane",
+   "items": 53,
+   "own_agent": true
+  },
+  {
+   "module": "architecture",
+   "zone": "paddock",
+   "items": 26,
+   "own_agent": true
+  },
+  {
+   "module": "dressing",
+   "zone": "trackside",
+   "items": 25,
+   "own_agent": true
+  },
+  {
+   "module": "barriers",
+   "zone": "barriers",
+   "items": 18,
+   "own_agent": true
+  },
+  {
+   "module": "architecture",
+   "zone": "grandstand",
+   "items": 18,
+   "own_agent": true
+  },
+  {
+   "module": "showroom",
+   "zone": "showroom_breach",
+   "items": 15,
+   "own_agent": true
+  },
+  {
+   "module": "surface",
+   "zone": "track_surface",
+   "items": 15,
+   "own_agent": true
+  },
+  {
+   "module": "architecture",
+   "zone": "pit_building",
+   "items": 15,
+   "own_agent": true
+  },
+  {
+   "module": "architecture",
+   "zone": "pit_straight",
+   "items": 14,
+   "own_agent": true
+  },
+  {
+   "module": "surface",
+   "zone": "kerbs_markings",
+   "items": 12,
+   "own_agent": true
+  },
+  {
+   "module": "dressing",
+   "zone": "pit_straight",
+   "items": 11,
+   "own_agent": true
+  },
+  {
+   "module": "architecture",
+   "zone": "crowd",
+   "items": 11,
+   "own_agent": true
+  },
+  {
+   "module": "terrain",
+   "zone": "vegetation",
+   "items": 6,
+   "own_agent": true
+  },
+  {
+   "module": "architecture",
+   "zone": "bridges",
+   "items": 6,
+   "own_agent": true
+  },
+  {
+   "module": "barriers",
+   "zone": "runoff",
+   "items": 6,
+   "own_agent": true
+  },
+  {
+   "module": "dressing",
+   "zone": "ephemera",
+   "items": 6,
+   "own_agent": true
+  },
+  {
+   "module": "architecture",
+   "zone": "transit_corridor",
+   "items": 5,
+   "own_agent": false
+  },
+  {
+   "module": "dressing",
+   "zone": "pit_lane",
+   "items": 5,
+   "own_agent": false
+  },
+  {
+   "module": "barriers",
+   "zone": "ephemera",
+   "items": 3,
+   "own_agent": false
+  },
+  {
+   "module": "car",
+   "zone": "people",
+   "items": 3,
+   "own_agent": false
+  },
+  {
+   "module": "dressing",
+   "zone": "crowd",
+   "items": 3,
+   "own_agent": false
+  },
+  {
+   "module": "dressing",
+   "zone": "transit_corridor",
+   "items": 2,
+   "own_agent": false
+  },
+  {
+   "module": "barriers",
+   "zone": "transit_corridor",
+   "items": 2,
+   "own_agent": false
+  },
+  {
+   "module": "dressing",
+   "zone": "barriers",
+   "items": 2,
+   "own_agent": false
+  },
+  {
+   "module": "terrain",
+   "zone": "runoff",
+   "items": 2,
+   "own_agent": false
+  },
+  {
+   "module": "dressing",
+   "zone": "runoff",
+   "items": 2,
+   "own_agent": false
+  },
+  {
+   "module": "dressing",
+   "zone": "grandstand",
+   "items": 2,
+   "own_agent": false
+  },
+  {
+   "module": "surface",
+   "zone": "ephemera",
+   "items": 1,
+   "own_agent": false
+  },
+  {
+   "module": "surface",
+   "zone": "transit_corridor",
+   "items": 1,
+   "own_agent": false
+  },
+  {
+   "module": "dressing",
+   "zone": "bridges",
+   "items": 1,
+   "own_agent": false
+  },
+  {
+   "module": "terrain",
+   "zone": "ephemera",
+   "items": 1,
+   "own_agent": false
+  },
+  {
+   "module": "architecture",
+   "zone": "people",
+   "items": 1,
+   "own_agent": false
+  },
+  {
+   "module": "dressing",
+   "zone": "pit_building",
+   "items": 1,
+   "own_agent": false
+  },
+  {
+   "module": "terrain",
+   "zone": "crowd",
+   "items": 1,
+   "own_agent": false
+  },
+  {
+   "module": "dressing",
+   "zone": "people",
+   "items": 1,
+   "own_agent": false
+  },
+  {
+   "module": "barriers",
+   "zone": "grandstand",
+   "items": 1,
+   "own_agent": false
+  }
+ ],
+ "groups": {
+  "BULK": [
+   {
+    "family": [
+     "architecture",
+     "access"
+    ],
+    "items": [
+     "access_road_kerb"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "air"
+    ],
+    "items": [
+     "air_hose_reel",
+     "air_line_drop"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "bin"
+    ],
+    "items": [
+     "bin_liner"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "bodywork"
+    ],
+    "items": [
+     "bodywork_trolley"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "cable"
+    ],
+    "items": [
+     "cable_ramp"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "crew"
+    ],
+    "items": [
+     "crew_engineer_at_monitor",
+     "crew_fireproof_overall",
+     "crew_front_wing_adjuster",
+     "crew_garage_technician",
+     "crew_gloves_and_boots",
+     "crew_headset",
+     "crew_headset_full",
+     "crew_helmet_visor",
+     "crew_jack_operator_front",
+     "crew_jack_operator_rear",
+     "crew_kneeling_pad",
+     "crew_mechanic_kneeling",
+     "crew_mechanic_standing",
+     "crew_pitlane_fire_marshal",
+     "crew_radio_beltpack",
+     "crew_release_operator",
+     "crew_stabiliser",
+     "crew_starter_operator",
+     "crew_tyre_carrier_off",
+     "crew_tyre_carrier_on",
+     "crew_visor_cleaner",
+     "crew_wheel_gunner"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "engine"
+    ],
+    "items": [
+     "engine_starter_trolley"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "engineer"
+    ],
+    "items": [
+     "engineer_on_timing_stand"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "fire"
+    ],
+    "items": [
+     "fire_extinguisher_wheeled"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "ga"
+    ],
+    "items": [
+     "ga_picnic_group"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "gantry"
+    ],
+    "items": [
+     "gantry_soffit_panel",
+     "gantry_truss",
+     "gantry_walkway"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "garage"
+    ],
+    "items": [
+     "garage_awning",
+     "garage_ceiling_gantry",
+     "garage_curtain_divider",
+     "garage_door_concertina",
+     "garage_door_guide_rail",
+     "garage_door_overhead",
+     "garage_door_roller",
+     "garage_door_sectional",
+     "garage_engineering_desk",
+     "garage_facade_panel",
+     "garage_interior_floor",
+     "garage_light_batten",
+     "garage_pier",
+     "garage_rear_door",
+     "garage_spare_car_covered",
+     "garage_toolboard",
+     "garage_tyre_allocation"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "grandstand"
+    ],
+    "items": [
+     "grandstand_bracing",
+     "grandstand_camera_platform",
+     "grandstand_cladding",
+     "grandstand_concourse",
+     "grandstand_front_rail",
+     "grandstand_gutter",
+     "grandstand_handrail",
+     "grandstand_litter_bin",
+     "grandstand_nosing",
+     "grandstand_riser_unit",
+     "grandstand_roof_sheet",
+     "grandstand_roof_truss",
+     "grandstand_row_letter",
+     "grandstand_seat",
+     "grandstand_seat_bracket",
+     "grandstand_skirt",
+     "grandstand_stair",
+     "grandstand_vomitory"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "heras"
+    ],
+    "items": [
+     "heras_fence_coupler",
+     "heras_fence_foot"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "hospitality"
+    ],
+    "items": [
+     "hospitality_awning",
+     "hospitality_building",
+     "hospitality_deck"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "jerry"
+    ],
+    "items": [
+     "jerry_can"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "la_passerelle"
+    ],
+    "items": [
+     "la_passerelle_deck",
+     "la_passerelle_mesh",
+     "la_passerelle_truss"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "media"
+    ],
+    "items": [
+     "media_camera_operator",
+     "media_pen_structure"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "medical"
+    ],
+    "items": [
+     "medical_car"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "monitor"
+    ],
+    "items": [
+     "monitor_bank_trolley"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "motorhome"
+    ],
+    "items": [
+     "motorhome_unit"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "paddock"
+    ],
+    "items": [
+     "paddock_duct_cover",
+     "paddock_paving_bay",
+     "paddock_slot_drain"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "passerelle"
+    ],
+    "items": [
+     "passerelle_crowd_at_parapet"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pit_box"
+    ],
+    "items": [
+     "pit_box_marking"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pit_building"
+    ],
+    "items": [
+     "pit_building_balustrade",
+     "pit_building_roof_deck",
+     "pit_building_soffit",
+     "pit_building_window_band"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pit_jack"
+    ],
+    "items": [
+     "pit_jack_front",
+     "pit_jack_rear"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pit_lane"
+    ],
+    "items": [
+     "pit_lane_bollard",
+     "pit_lane_speed_line",
+     "pit_lane_surface"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pit_wall"
+    ],
+    "items": [
+     "pit_wall_coping",
+     "pit_wall_padding",
+     "pit_wall_terminal",
+     "pit_wall_unit"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "podium"
+    ],
+    "items": [
+     "podium_structure"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pont"
+    ],
+    "items": [
+     "pont_bearing_pad",
+     "pont_deck_slab",
+     "pont_parapet",
+     "pont_scupper",
+     "pont_service_duct",
+     "pont_soffit_panel"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "portal"
+    ],
+    "items": [
+     "portal_boom_gate"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "race"
+    ],
+    "items": [
+     "race_control_building"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "safety"
+    ],
+    "items": [
+     "safety_car",
+     "safety_car_light_bar"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "spectator"
+    ],
+    "items": [
+     "spectator_backpack_coolbox",
+     "spectator_bag_and_coat",
+     "spectator_child",
+     "spectator_clothing",
+     "spectator_ear_defenders",
+     "spectator_folding_stool",
+     "spectator_headwear",
+     "spectator_umbrella"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "team_truck"
+    ],
+    "items": [
+     "team_principal_figure",
+     "team_truck_tractor",
+     "team_truck_trailer"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "timing"
+    ],
+    "items": [
+     "timing_stand",
+     "timing_stand_canopy",
+     "timing_stand_monitor",
+     "timing_stand_seat"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "tool"
+    ],
+    "items": [
+     "tool_chest"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "truck"
+    ],
+    "items": [
+     "truck_air_line_coil",
+     "truck_landing_leg",
+     "truck_light_cluster",
+     "truck_livery_decal",
+     "truck_loading_ramp",
+     "truck_mirror_arm",
+     "truck_mud_flap",
+     "truck_rear_door",
+     "truck_side_skirt",
+     "truck_tyre",
+     "truck_wheel_steer",
+     "truck_wheel_trailer"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "tyre_blanket"
+    ],
+    "items": [
+     "tyre_blanket",
+     "tyre_blanket_controller"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "tyre_trolley"
+    ],
+    "items": [
+     "tyre_trolley"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "water"
+    ],
+    "items": [
+     "water_bottle",
+     "water_bottle_crate"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "wheel"
+    ],
+    "items": [
+     "wheel_gun",
+     "wheel_gun_hose"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "wing"
+    ],
+    "items": [
+     "wing_rack"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "apron"
+    ],
+    "items": [
+     "apron_wall_coping",
+     "apron_wall_weep_pipe"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "armco"
+    ],
+    "items": [
+     "armco_reflector",
+     "armco_spacer_block",
+     "armco_splice_bolt",
+     "armco_terminal",
+     "armco_w_beam"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "barrier"
+    ],
+    "items": [
+     "barrier_foot_kerb"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "catch_fence"
+    ],
+    "items": [
+     "catch_fence_base_collar",
+     "catch_fence_cranked_head",
+     "catch_fence_woven_wire"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "concrete"
+    ],
+    "items": [
+     "concrete_barrier_block",
+     "concrete_lifting_eye"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "footprint"
+    ],
+    "items": [
+     "footprint_in_gravel"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "gate"
+    ],
+    "items": [
+     "gate_latch_hardware"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "grandstand"
+    ],
+    "items": [
+     "grandstand_debris_fence"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "gravel"
+    ],
+    "items": [
+     "gravel_bed_surface",
+     "gravel_rake_furrow",
+     "gravel_retaining_kerb",
+     "gravel_stone"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "runoff"
+    ],
+    "items": [
+     "runoff_asphalt_mat",
+     "runoff_edge_lip"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "rust"
+    ],
+    "items": [
+     "rust_streak"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "scuff"
+    ],
+    "items": [
+     "scuff_mark_barrier"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "tecpro"
+    ],
+    "items": [
+     "tecpro_anchor",
+     "tecpro_block_blue",
+     "tecpro_block_red",
+     "tecpro_strap"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "tyre_wall"
+    ],
+    "items": [
+     "tyre_wall_bolt_plate",
+     "tyre_wall_through_rod"
+    ]
+   },
+   {
+    "family": [
+     "car",
+     "driver"
+    ],
+    "items": [
+     "driver_boots_and_feet",
+     "driver_gloves",
+     "driver_helmet"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "advertising"
+    ],
+    "items": [
+     "advertising_board"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "apex"
+    ],
+    "items": [
+     "apex_sponsor_board"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "barrier"
+    ],
+    "items": [
+     "barrier_cable_conduit",
+     "barrier_junction_box"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "cable"
+    ],
+    "items": [
+     "cable_tie_offcut"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "chalk"
+    ],
+    "items": [
+     "chalk_mark"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "cigarette"
+    ],
+    "items": [
+     "cigarette_end"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "cone"
+    ],
+    "items": [
+     "cone_connector_bar"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "corner"
+    ],
+    "items": [
+     "corner_name_plate",
+     "corner_number_plate"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "crowd"
+    ],
+    "items": [
+     "crowd_flag_handheld",
+     "crowd_litter_drift"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "crushed"
+    ],
+    "items": [
+     "crushed_can"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "distance"
+    ],
+    "items": [
+     "distance_marker_board"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "fire"
+    ],
+    "items": [
+     "fire_extinguisher_handheld"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "flagpole"
+    ],
+    "items": [
+     "flagpole"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "gaffer"
+    ],
+    "items": [
+     "gaffer_tape_strip"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "gantry"
+    ],
+    "items": [
+     "gantry_fascia",
+     "gantry_tv_pod"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "garage"
+    ],
+    "items": [
+     "garage_bay_number",
+     "garage_team_signage"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "grandstand"
+    ],
+    "items": [
+     "grandstand_banner",
+     "grandstand_block_letter"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "info"
+    ],
+    "items": [
+     "info_gate_sign"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "la_passerelle"
+    ],
+    "items": [
+     "la_passerelle_banner"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "litter"
+    ],
+    "items": [
+     "litter_paper_scrap"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "marshal"
+    ],
+    "items": [
+     "marshal_absorbent_bin",
+     "marshal_chair",
+     "marshal_flag",
+     "marshal_flag_rack",
+     "marshal_light_panel",
+     "marshal_post_column",
+     "marshal_post_deck",
+     "marshal_post_handrail",
+     "marshal_post_roof",
+     "marshal_post_screen",
+     "marshal_post_sign",
+     "marshal_post_stair",
+     "marshal_telephone",
+     "marshal_water_cooler"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "pa"
+    ],
+    "items": [
+     "pa_horn_speaker"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "photographer"
+    ],
+    "items": [
+     "photographer_rig"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "pit_board"
+    ],
+    "items": [
+     "pit_board"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "pit_exit"
+    ],
+    "items": [
+     "pit_exit_portal_sign"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "pit_lane"
+    ],
+    "items": [
+     "pit_lane_light_panel"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "pit_wall"
+    ],
+    "items": [
+     "pit_wall_advert"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "podium"
+    ],
+    "items": [
+     "podium_backdrop"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "pont"
+    ],
+    "items": [
+     "pont_banner"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "press"
+    ],
+    "items": [
+     "press_photographer_pitwall"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "runoff"
+    ],
+    "items": [
+     "runoff_sponsor_paint"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "sponsor"
+    ],
+    "items": [
+     "sponsor_flag"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "start"
+    ],
+    "items": [
+     "start_light_backing",
+     "start_light_panel"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "stop"
+    ],
+    "items": [
+     "stop_go_board"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "tv"
+    ],
+    "items": [
+     "tv_camera_body",
+     "tv_camera_cable",
+     "tv_camera_housing",
+     "tv_camera_platform"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "tyre_stack"
+    ],
+    "items": [
+     "tyre_stack_trackside"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "verge"
+    ],
+    "items": [
+     "verge_gully_grate"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "windsock"
+    ],
+    "items": [
+     "windsock"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "concrete"
+    ],
+    "items": [
+     "concrete_spall_debris"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "curtain"
+    ],
+    "items": [
+     "curtain_wall_head_extrusion",
+     "curtain_wall_sill_extrusion",
+     "curtain_wall_transom"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "dais"
+    ],
+    "items": [
+     "dais_deck",
+     "dais_delivery_ramp"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "exterior"
+    ],
+    "items": [
+     "exterior_ground_apron"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "floor"
+    ],
+    "items": [
+     "floor_shard_scatter"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "forecourt"
+    ],
+    "items": [
+     "forecourt_paving_bay"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "glass"
+    ],
+    "items": [
+     "glass_shard",
+     "glass_shard_fan_settled"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "glazing"
+    ],
+    "items": [
+     "glazing_gasket_set"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "showroom"
+    ],
+    "items": [
+     "showroom_floor_slab",
+     "showroom_parapet_coping",
+     "showroom_signage_lettering"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "access"
+    ],
+    "items": [
+     "access_road_saw_joint"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "asphalt"
+    ],
+    "items": [
+     "asphalt_crack_seal",
+     "asphalt_patch_repair",
+     "asphalt_paver_mat_joint",
+     "asphalt_transverse_joint",
+     "asphalt_wearing_course"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "bridge"
+    ],
+    "items": [
+     "bridge_expansion_joint"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "dust"
+    ],
+    "items": [
+     "dust_drift"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "grid"
+    ],
+    "items": [
+     "grid_box_marking",
+     "grid_numeral"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "kerb"
+    ],
+    "items": [
+     "kerb_bedding_joint",
+     "kerb_end_ramp",
+     "kerb_hero_t4",
+     "kerb_negative_trough",
+     "kerb_precast_unit"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "launch"
+    ],
+    "items": [
+     "launch_rubber_stripe"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "lockup"
+    ],
+    "items": [
+     "lockup_skid_mark"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "marble"
+    ],
+    "items": [
+     "marble_drift_bank"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "pit_exit"
+    ],
+    "items": [
+     "pit_exit_blend_line",
+     "pit_exit_gore"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "rubber"
+    ],
+    "items": [
+     "rubber_line_deposit"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "start"
+    ],
+    "items": [
+     "start_finish_line"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "timing"
+    ],
+    "items": [
+     "timing_loop_sawcut"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "track"
+    ],
+    "items": [
+     "track_drain_slot",
+     "track_gully_lid",
+     "track_manhole_cover"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "tyre_marble"
+    ],
+    "items": [
+     "tyre_marble"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "verge"
+    ],
+    "items": [
+     "verge_green_paint"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "white"
+    ],
+    "items": [
+     "white_line_edge"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "fallen"
+    ],
+    "items": [
+     "fallen_branch"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "ga"
+    ],
+    "items": [
+     "ga_terrace_step"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "grass_clump"
+    ],
+    "items": [
+     "grass_clipping_drift",
+     "grass_runoff_turf"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "leaf"
+    ],
+    "items": [
+     "leaf_litter"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "moss"
+    ],
+    "items": [
+     "moss_patch"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "rock"
+    ],
+    "items": [
+     "rock_scree_stone"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "terrain"
+    ],
+    "items": [
+     "terrain_ground"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "verge"
+    ],
+    "items": [
+     "verge_swale"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "weed"
+    ],
+    "items": [
+     "weed_joint_colonist"
+    ]
+   }
+  ],
+  "MID": [
+   {
+    "family": [
+     "architecture",
+     "access"
+    ],
+    "items": [
+     "access_road_gully"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "ambulance"
+    ],
+    "items": [
+     "ambulance"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "big"
+    ],
+    "items": [
+     "big_screen",
+     "big_screen_tower"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "cable"
+    ],
+    "items": [
+     "cable_reel_drum"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "catering"
+    ],
+    "items": [
+     "catering_counter"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "crowd"
+    ],
+    "items": [
+     "crowd_density_field",
+     "crowd_idle_motion"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "fire"
+    ],
+    "items": [
+     "fire_tender"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "flight"
+    ],
+    "items": [
+     "flight_case"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "folding"
+    ],
+    "items": [
+     "folding_chair",
+     "folding_table"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "fuel"
+    ],
+    "items": [
+     "fuel_drum"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "gantry"
+    ],
+    "items": [
+     "gantry_ladder",
+     "gantry_leg"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "la_passerelle"
+    ],
+    "items": [
+     "la_passerelle_stair",
+     "la_passerelle_tower"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "lighting"
+    ],
+    "items": [
+     "lighting_mast_head"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "paddock"
+    ],
+    "items": [
+     "paddock_manhole_cover",
+     "paddock_planter"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pedestrian"
+    ],
+    "items": [
+     "pedestrian_crowd_barrier"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pit_building"
+    ],
+    "items": [
+     "pit_building_stair_core",
+     "pit_building_west_gable"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pit_exit"
+    ],
+    "items": [
+     "pit_exit_portal_frame"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pont"
+    ],
+    "items": [
+     "pont_girder"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "power"
+    ],
+    "items": [
+     "power_distribution_board"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "recovery"
+    ],
+    "items": [
+     "recovery_crane_truck",
+     "recovery_tractor"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "spectator"
+    ],
+    "items": [
+     "spectator_seated",
+     "spectator_seated_leaning",
+     "spectator_standing_at_rail",
+     "spectator_standing_ga",
+     "spectator_standing_in_row",
+     "spectator_with_phone"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "trash"
+    ],
+    "items": [
+     "trash_can"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "wheelie"
+    ],
+    "items": [
+     "wheelie_bin"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "apron"
+    ],
+    "items": [
+     "apron_wall_panel"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "armco"
+    ],
+    "items": [
+     "armco_post"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "tyre_wall"
+    ],
+    "items": [
+     "tyre_wall_tyre"
+    ]
+   },
+   {
+    "family": [
+     "car",
+     "driver"
+    ],
+    "items": [
+     "driver_figure",
+     "driver_race_suit"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "absorbent"
+    ],
+    "items": [
+     "absorbent_granule_residue"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "catch_fence"
+    ],
+    "items": [
+     "catch_fence_banner"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "crowd"
+    ],
+    "items": [
+     "crowd_banner_draped"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "discarded"
+    ],
+    "items": [
+     "discarded_bottle"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "free"
+    ],
+    "items": [
+     "free_standing_hoarding"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "fuel"
+    ],
+    "items": [
+     "fuel_spill_stain"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "hi"
+    ],
+    "items": [
+     "hi_vis_tabard"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "hoarding"
+    ],
+    "items": [
+     "hoarding_leg"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "marshal"
+    ],
+    "items": [
+     "marshal_broom",
+     "marshal_figure_flagging"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "oil"
+    ],
+    "items": [
+     "oil_stain"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "tv"
+    ],
+    "items": [
+     "tv_camera_mast"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "showroom"
+    ],
+    "items": [
+     "showroom_facade_panel"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "access"
+    ],
+    "items": [
+     "access_road_slab"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "bare"
+    ],
+    "items": [
+     "bare_soil_scar"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "fern"
+    ],
+    "items": [
+     "fern_clump"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "grass_clump"
+    ],
+    "items": [
+     "grass_clump_dry",
+     "grass_clump_fescue",
+     "grass_clump_meadow",
+     "grass_clump_tussock"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "planter"
+    ],
+    "items": [
+     "planter_shrub"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "puddle"
+    ],
+    "items": [
+     "puddle"
+    ]
+   }
+  ],
+  "HERO": [
+   {
+    "family": [
+     "architecture",
+     "awning"
+    ],
+    "items": [
+     "awning_leg"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "crew"
+    ],
+    "items": [
+     "crew_figure"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "finger"
+    ],
+    "items": [
+     "finger_post_sign"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "fire"
+    ],
+    "items": [
+     "fire_point_station"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "food"
+    ],
+    "items": [
+     "food_concession_unit"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "forklift"
+    ],
+    "items": [
+     "forklift_truck"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "gas"
+    ],
+    "items": [
+     "gas_bottle",
+     "gas_bottle_cage"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "generator"
+    ],
+    "items": [
+     "generator_unit"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "grandstand"
+    ],
+    "items": [
+     "grandstand_column",
+     "grandstand_tower"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "heras"
+    ],
+    "items": [
+     "heras_fence_panel"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "jersey"
+    ],
+    "items": [
+     "jersey_barrier"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "lighting"
+    ],
+    "items": [
+     "lighting_mast"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "media"
+    ],
+    "items": [
+     "media_centre_building"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "medical"
+    ],
+    "items": [
+     "medical_centre_building"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "merchandise"
+    ],
+    "items": [
+     "merchandise_stall"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "paddock"
+    ],
+    "items": [
+     "paddock_gate",
+     "paddock_personnel_figure"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pallet"
+    ],
+    "items": [
+     "pallet_stack",
+     "pallet_truck"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "parasol"
+    ],
+    "items": [
+     "parasol"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pont"
+    ],
+    "items": [
+     "pont_abutment"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "portable"
+    ],
+    "items": [
+     "portable_toilet_block"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "skip"
+    ],
+    "items": [
+     "skip_container"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "spectator"
+    ],
+    "items": [
+     "spectator_entrance_gate"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "steward"
+    ],
+    "items": [
+     "steward_figure"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "timing"
+    ],
+    "items": [
+     "timing_tower"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "water"
+    ],
+    "items": [
+     "water_tank_ibc"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "catch_fence"
+    ],
+    "items": [
+     "catch_fence_mesh_panel",
+     "catch_fence_post"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "marshal"
+    ],
+    "items": [
+     "marshal_access_gate"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "transit"
+    ],
+    "items": [
+     "transit_debris_fence",
+     "transit_tyre_wall_stack"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "tyre_wall"
+    ],
+    "items": [
+     "tyre_wall_belt_facing"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "heras"
+    ],
+    "items": [
+     "heras_banner_scrim"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "marshal"
+    ],
+    "items": [
+     "marshal_figure_seated",
+     "marshal_figure_standing",
+     "marshal_overall"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "photographer"
+    ],
+    "items": [
+     "photographer_figure"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "traffic"
+    ],
+    "items": [
+     "traffic_cone"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "breach"
+    ],
+    "items": [
+     "breach_dust_column",
+     "breach_dust_ground_burst"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "forecourt"
+    ],
+    "items": [
+     "forecourt_bollard"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "glass"
+    ],
+    "items": [
+     "glass_panel_prefractured"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "mullion"
+    ],
+    "items": [
+     "mullion_bent_stub",
+     "mullion_intact"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "showroom"
+    ],
+    "items": [
+     "showroom_rainwater_goods"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "wall"
+    ],
+    "items": [
+     "wall_stud_framing"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "drainage"
+    ],
+    "items": [
+     "drainage_ditch"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "escarpment"
+    ],
+    "items": [
+     "escarpment_skyline"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "farm"
+    ],
+    "items": [
+     "farm_gate"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "field"
+    ],
+    "items": [
+     "field_boundary_fence"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "ga"
+    ],
+    "items": [
+     "ga_viewing_bank"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "grass_clump"
+    ],
+    "items": [
+     "grass_clump_reed"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "hedgerow"
+    ],
+    "items": [
+     "hedgerow_section"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "log"
+    ],
+    "items": [
+     "log_pile"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "paddock"
+    ],
+    "items": [
+     "paddock_avenue_tree"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "rock"
+    ],
+    "items": [
+     "rock_boulder"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "shrub"
+    ],
+    "items": [
+     "shrub_bramble",
+     "shrub_broom",
+     "shrub_gorse",
+     "shrub_hazel",
+     "shrub_juniper"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "tree"
+    ],
+    "items": [
+     "tree_crack_willow",
+     "tree_dead_standing",
+     "tree_hawthorn",
+     "tree_italian_cypress",
+     "tree_lombardy_poplar",
+     "tree_london_plane",
+     "tree_oak",
+     "tree_rowan",
+     "tree_sapling",
+     "tree_scots_pine",
+     "tree_silver_birch"
+    ]
+   }
+  ]
+ }
+}

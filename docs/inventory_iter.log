@@ -1,0 +1,16 @@
+00:00.445  blend            | Read blend: "/home/zany/opus5-car-render/work/iter.blend"
+/home/zany/f1-round2/tools/inventory.py:203: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  "use_nodes": m.use_nodes,
+/home/zany/f1-round2/tools/inventory.py:204: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  "node_count": len(m.node_tree.nodes) if m.use_nodes and m.node_tree else 0,
+/home/zany/f1-round2/tools/inventory.py:205: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  "has_image_texture": bool(m.use_nodes and m.node_tree and any(
+>> INVENTORY iter.blend
+>>   objects 947  meshes 919  materials 51  cameras 4  lights 23
+>>   base polys 4,598,601  ->  evaluated tris 10,122,867
+>>   collections 6  warnings 35
+>> wrote docs/inventory_iter.json
+>> STAGE RESULT: INVENTORY_OK
+Blender 5.2.0 LTS (hash fbe6228777e7 built 2026-07-14 01:32:04)
+
+Blender quit

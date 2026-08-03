@@ -1,0 +1,1147 @@
+"""THE BREACH SIM — build the scene, bake it, and export the transforms.
+
+    blender -b --factory-startup -P sim/build_breach_sim.py -- \
+        --out sim/out/breach_sim.blend --bake --export sim/out/breach_bake.npz
+
+WHAT THIS IS
+============
+A rigid-body destruction sim of the showroom's east curtain wall, run on a
+uniform WORLD-time grid at 240 Hz and exported as a transform table.  It is a
+SEPARATE, SMALL scene on purpose: the shipping world is 4.0 GB / 28,781 objects
+and `push_scene` is not resumable, so a sim that lived inside it would have to be
+re-uploaded in full every time a threshold moved.  What ships is the TABLE.
+
+WHY THE SIM RUNS IN WORLD TIME
+------------------------------
+See `sim/breachlib.py`.  Baking on film frames would integrate gravity per film
+frame while the ramp holds the car at 15.4 %, making the debris 6.5x too heavy
+for the picture during the only 8 s anyone is looking at it.
+
+WHAT IS SIMULATED, AND WHAT IS NOT
+==================================
+SIMULATED
+    every glass shard from `sim/fracture.py`                     ~3,000 bodies
+    the five mullions in and beside the aperture, in 8 segments each, joined by
+    breakable FIXED constraints — so mullion 5 fails where it is hit, and 3 and
+    7 articulate into the bent stubs `mullion_bent_stub` is specified to be
+    the transom rails across those bays, bolted to the mullions with breakable
+    constraints at their real shear-block positions
+    the PVB bridges: 15 % of shards keep a stretchy link to a neighbour, which
+    is what stops laminated glass behaving like a bag of gravel
+
+NOT SIMULATED, AND SAID PLAINLY
+    the car.  It is a PASSIVE KINEMATIC boundary condition following the
+    animation in `world/car_anim.blend` exactly.  Through beat 3 that animation
+    is one continuous rigid motion with no yaw, no pitch response and no lock-up,
+    and this sim does not change it: an F1 car is 798 kg against 4.9 kg of glass
+    per pane, and the honest response to 26 kJ of pane is a few mm/s the
+    telemetry cannot represent.  If the car SHOULD react, that is a change to
+    `anim/carrig.py` and belongs in a report, not here.
+    the dust.  A rigid-body solver has nothing to say about it.
+
+THE APERTURE IS MEASURED, NOT DRAWN
+-----------------------------------
+`mullion_intact.breach_state()` declares mullions 4, 5 and 6 destroyed, 3 and 7
+bent, and the camera anchors frame "the 9.6 x 5.6 m hole".  Those are the
+ACCEPTANCE CRITERIA, not the construction: this scene sets constraint thresholds
+from section properties and then MEASURES the aperture the sim produces.
+`--calibrate` sweeps the thresholds and prints the resulting aperture so the
+number that ships is one the solver agreed to.
+"""
+
+import argparse
+import json
+import math
+import os
+import sys
+import time
+
+import bpy                                                        # noqa: E402
+from mathutils import Euler, Matrix, Vector                       # noqa: E402
+import numpy as np                                                # noqa: E402
+
+R2 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+for _p in (os.path.join(R2, "sim"), os.path.join(R2, "anim"),
+           os.path.join(R2, "world")):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
+import breachlib as BL                                            # noqa: E402
+import fracture as FR                                             # noqa: E402
+import shardmesh as SM                                            # noqa: E402
+
+T0 = time.time()
+
+
+def log(msg):
+    print("[breach %7.1fs] %s" % (time.time() - T0, msg))
+    sys.stdout.flush()
+
+
+# --------------------------------------------------------------------------- #
+#  SOLVER SETTINGS.  Every one of these has a reason and a failure mode.
+# --------------------------------------------------------------------------- #
+SUBSTEPS = 8            # 240 Hz x 8 = 1,920 Hz integration.  A 12 mm shard at
+                        # 16 m/s moves 8 mm per substep at this rate, i.e. less
+                        # than its own thickness, which is the condition for not
+                        # tunnelling through the floor.
+SOLVER_ITER = 24        # the default 10 leaves a 3,000-body pile visibly soft
+MARGIN = 0.00015        # 0.15 mm.  BLENDER'S DEFAULT IS 0.040 m, which is THREE
+                        # AND A HALF TIMES the thickness of this glass: every
+                        # shard would rest 40 mm off its neighbour and the wall
+                        # would look like a cloud before anything hit it.
+                        # It must ALSO be smaller than `shardmesh.KERF_M`, or
+                        # the margin re-creates exactly the initial overlap the
+                        # kerf exists to remove.  0.15 vs 0.40 mm leaves 0.5 mm
+                        # of real air between neighbours.
+                        # This is the single most important number in the file,
+                        # and the still test is what proves it.
+FRICTION_GLASS = 0.32
+REST_GLASS = 0.14       # glass on concrete barely bounces; it skitters
+FRICTION_ALU = 0.45
+REST_ALU = 0.10
+DAMP_LIN, DAMP_ANG = 0.02, 0.06
+SLEEP_LIN, SLEEP_ANG = 0.010, 0.030      # m/s and rad/s
+
+# Constraint breaking thresholds.  Bullet's threshold is an IMPULSE budget, not
+# a force, so these are calibrated (see --calibrate) from a starting point that
+# is at least dimensionally motivated:
+#   glass edge bite: 16 mm of 11.5 mm laminate under a pressure plate fails in
+#   bending at a few hundred N per 100 mm of edge; the shard masses are grams to
+#   kilograms, so the impulse that frees one is small.
+THRESH_GLASS_EDGE = 2.5
+THRESH_PVB = 0.9        # the interlayer tears at a much lower impulse than the
+                        # glass edge but at a much larger displacement, which is
+                        # why it is a spring and not a fixed joint
+THRESH_MULLION_JOINT = 900.0     # segment-to-segment, 6063-T6, 0.075 x 0.160
+THRESH_MULLION_BASE = 1400.0     # the anchor studs into the slab
+THRESH_TRANSOM = 260.0           # M6 self-tappers into the front screw port
+# THE BOND.  Every pair of shards that shares boundary is joined, and the joint
+# is as strong as the glass across that boundary — so the threshold is PER METRE
+# of shared edge, not per pair.  This is the constraint set that makes the crack
+# PROPAGATE instead of appearing: the impact breaks what it can reach, those
+# shards load their neighbours, and the aperture is whatever survives.
+# Without it a pre-fractured wall is a stack of loose tiles; see
+# `fracture.adjacency`'s note and the wake-all null control.
+# CALIBRATED, not guessed.  40.0 was a dimensional guess and it was ~100x too
+# low: the wake-all null control (no car in the scene at all) shed 1,287 of
+# 3,796 shards under gravity alone.  At 4000 the same control sheds ZERO — max
+# displacement 15.84 m -> 0.709 m, nothing over the 0.25 m "gone" threshold.
+# The residual is 70 mm of SAG, which is a different defect: 3,948 bodies in one
+# constraint island is more than 24 sequential-impulse iterations can hold
+# rigid.  It does not appear in the shipping configuration, where the wall is
+# `start_deactivated` and measures 0.000 m of motion, but it will appear the
+# moment the impact wakes the island, and SOLVER_ITER / SUBSTEPS have to be
+# raised until it does not.  Both numbers are open; see the report.
+THRESH_BOND_PER_M = 4000.0
+
+GLASS_X_IN, GLASS_X_OUT = 14.955, 14.9665
+
+
+# --------------------------------------------------------------------------- #
+#  small helpers
+# --------------------------------------------------------------------------- #
+
+def new_mesh_obj(name, V, F, coll, origin=(0, 0, 0), mat=None):
+    me = bpy.data.meshes.new(name)
+    me.from_pydata([tuple(v) for v in V], [], [list(f) for f in F])
+    me.validate(verbose=False)
+    me.update()
+    if mat is not None:
+        me.materials.append(mat)
+    ob = bpy.data.objects.new(name, me)
+    ob.location = tuple(origin)
+    coll.objects.link(ob)
+    return ob
+
+
+def _add_box_to_mesh(ob, lo, hi):
+    """Append a second box to an existing object's mesh, in WORLD coordinates.
+
+    Used to give one rigid body two disjoint lumps — a mullion's extrusion and
+    its pressure plate, with the glazing pocket between them.  The body's
+    collision shape must therefore be COMPOUND or MESH, not CONVEX_HULL: a
+    convex hull of the two lumps would fill the pocket straight back in and
+    reintroduce the very penetration this exists to remove.
+    """
+    import bmesh
+    lo = np.asarray(lo, float) - np.asarray(ob.location, float)
+    hi = np.asarray(hi, float) - np.asarray(ob.location, float)
+    me = ob.data
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    vs = [bm.verts.new((float(x), float(y), float(z)))
+          for x in (lo[0], hi[0]) for y in (lo[1], hi[1])
+          for z in (lo[2], hi[2])]
+    bm.verts.ensure_lookup_table()
+    for f in ([0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1],
+              [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3]):
+        bm.faces.new([vs[i] for i in f])
+    bm.to_mesh(me)
+    bm.free()
+    me.update()
+    # the second lump is a collider too, and the penetration gate must see it —
+    # the pressure plate sits 3.5 mm in front of the glass and that clearance is
+    # exactly the kind of number nobody checks until it is negative
+    BOX_COLLIDERS.append((ob.name + "_plate",
+                          np.asarray(lo, float) + np.asarray(ob.location,
+                                                             float),
+                          np.asarray(hi, float) + np.asarray(ob.location,
+                                                             float)))
+    return ob
+
+
+def box_obj(name, lo, hi, coll, mat=None):
+    lo, hi = np.asarray(lo, float), np.asarray(hi, float)
+    c = 0.5 * (lo + hi)
+    V = np.array([[x, y, z] for x in (lo[0] - c[0], hi[0] - c[0])
+                  for y in (lo[1] - c[1], hi[1] - c[1])
+                  for z in (lo[2] - c[2], hi[2] - c[2])], float)
+    F = [[0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1],
+         [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3]]
+    ob = new_mesh_obj(name, V, F, coll, origin=c, mat=mat)
+    BOX_COLLIDERS.append((name, lo.copy(), hi.copy()))
+    return ob
+
+
+def simple_mat(name, base, rough=0.2, metal=0.0, trans=0.0, ior=1.52):
+    """A minimal but not dishonest shader.  The film's real glass and anodising
+    live in `world/items/`; this scene exists to be SIMULATED and to be LOOKED
+    AT frame by frame, and both need the glass to refract rather than be grey.
+
+    Every socket is addressed BY NAME.  Blender 5.2 moved Principled `Normal`
+    from index 5 to 6 and an index-addressed bump chain lands silently in
+    `Thin Wall`, rendering a plausible flat surface that is wrong.
+    """
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    b = m.node_tree.nodes.get("Principled BSDF")
+    b.inputs["Base Color"].default_value = tuple(base) + (1.0,)
+    b.inputs["Roughness"].default_value = rough
+    b.inputs["Metallic"].default_value = metal
+    if "Transmission Weight" in b.inputs:
+        b.inputs["Transmission Weight"].default_value = trans
+    if "IOR" in b.inputs:
+        b.inputs["IOR"].default_value = ior
+    return m
+
+
+# --------------------------------------------------------------------------- #
+#  RIGID BODIES AND CONSTRAINTS, IN BATCHES.
+#
+#  `bpy.ops.rigidbody.object_add` costs 22.8 ms per call and `constraint_add`
+#  costs 43.2 ms, MEASURED on this box, and both get worse as the scene fills
+#  because each one runs a depsgraph update over everything already in it.  At
+#  3,000 shards and 1,000 constraints that is not a slow build, it is an
+#  unfinishable one — the first attempt was still inside the operator loop four
+#  minutes in with 175 MB resident and nothing to show.
+#
+#  Two fast paths, both measured against the operators they replace:
+#    * `rigidbody.objects_add` (PLURAL) does 1,200 objects in 0.21 s and the
+#      per-body settings are then plain property writes: 0.01 s for 1,200.
+#    * a constraint empty COPIES with its `rigid_body_constraint` intact, so one
+#      operator call makes the template and `obj.copy()` makes the other 899 at
+#      0.09 ms each.  500x.
+#
+#  The copy path is only safe because the copy is linked into the SAME
+#  `rigidbody_world.constraints` collection; `_check_world()` asserts the counts
+#  at the end rather than assuming it worked.
+# --------------------------------------------------------------------------- #
+
+WAKE_ALL = False
+_RB_QUEUE = {"ACTIVE": [], "PASSIVE": []}
+_RB_PROPS = {}
+
+
+def add_rb(ob, kind="ACTIVE", mass=1.0, shape="CONVEX_HULL", friction=0.4,
+           rest=0.1, start_asleep=False, kinematic=False):
+    """Queue a rigid body.  `flush_rb()` creates them all in two operator
+    calls."""
+    _RB_QUEUE[kind].append(ob)
+    _RB_PROPS[ob.name] = dict(kind=kind, mass=mass, shape=shape,
+                              friction=friction, rest=rest,
+                              start_asleep=start_asleep, kinematic=kinematic)
+    return None
+
+
+def flush_rb():
+    n = 0
+    for kind, obs in _RB_QUEUE.items():
+        if not obs:
+            continue
+        for o in bpy.context.selected_objects:
+            o.select_set(False)
+        for o in obs:
+            o.select_set(True)
+        bpy.context.view_layer.objects.active = obs[0]
+        bpy.ops.rigidbody.objects_add(type=kind)
+        for o in obs:
+            o.select_set(False)
+        for o in obs:
+            p = _RB_PROPS[o.name]
+            rb = o.rigid_body
+            if rb is None:
+                raise RuntimeError("no rigid body on %s after objects_add"
+                                   % o.name)
+            rb.collision_shape = p["shape"]
+            rb.mass = max(p["mass"], 1e-5)
+            rb.friction = p["friction"]
+            rb.restitution = p["rest"]
+            rb.use_margin = True
+            rb.collision_margin = MARGIN
+            rb.linear_damping = DAMP_LIN
+            rb.angular_damping = DAMP_ANG
+            rb.use_deactivation = True
+            rb.deactivate_linear_velocity = SLEEP_LIN
+            rb.deactivate_angular_velocity = SLEEP_ANG
+            rb.use_start_deactivated = bool(p["start_asleep"]) and not WAKE_ALL
+            if p["kind"] == "PASSIVE":
+                rb.kinematic = bool(p["kinematic"])
+            n += 1
+    for k in _RB_QUEUE:
+        _RB_QUEUE[k] = []
+    return n
+
+
+_CON_TEMPLATE = {}
+
+
+def _template(kind, coll):
+    if kind in _CON_TEMPLATE:
+        return _CON_TEMPLATE[kind]
+    e = bpy.data.objects.new("CONTPL_%s" % kind, None)
+    e.empty_display_size = 0.05
+    coll.objects.link(e)
+    bpy.context.view_layer.objects.active = e
+    e.select_set(True)
+    bpy.ops.rigidbody.constraint_add(type=kind)
+    e.select_set(False)
+    _CON_TEMPLATE[kind] = e
+    return e
+
+
+_CON_QUEUE = []
+
+
+def add_constraint(name, a, b, coll, kind="FIXED", thresh=None, loc=None,
+                   post=None):
+    """Queue a constraint.  Deferred because a constraint needs BOTH its bodies
+    to exist, and the bodies are created in one batch at the end of the build."""
+    _CON_QUEUE.append((name, a, b, coll, kind, thresh, loc, post))
+    return None
+
+
+def flush_constraints():
+    made = []
+    for (name, a, b, coll, kind, thresh, loc, post) in _CON_QUEUE:
+        e = _make_constraint(name, a, b, coll, kind, thresh, loc)
+        if post is not None:
+            post(e.rigid_body_constraint)
+        made.append(e)
+    del _CON_QUEUE[:]
+    # the templates are constraint empties with no bodies; leaving them in the
+    # world would be 2 dangling constraints and a solver warning per bake
+    for kind, tpl in list(_CON_TEMPLATE.items()):
+        bpy.data.objects.remove(tpl, do_unlink=True)
+        del _CON_TEMPLATE[kind]
+    return made
+
+
+def _make_constraint(name, a, b, coll, kind="FIXED", thresh=None, loc=None):
+    tpl = _template(kind, coll)
+    e = tpl.copy()
+    e.name = name
+    e.empty_display_size = 0.05
+    e.location = tuple(loc if loc is not None else a.location)
+    # `Object.copy()` in 5.x carries the source's collection membership, so both
+    # links have to be guarded or the second one raises.
+    if e.name not in coll.objects:
+        coll.objects.link(e)
+    rbc = bpy.context.scene.rigidbody_world.constraints
+    if rbc is not None and e.name not in rbc.objects:
+        rbc.objects.link(e)
+    c = e.rigid_body_constraint
+    if c is None:
+        raise RuntimeError("the copied empty %s carries no constraint" % name)
+    c.object1, c.object2 = a, b
+    c.disable_collisions = False
+    if thresh is not None:
+        c.use_breaking = True
+        c.breaking_threshold = float(thresh)
+    return e
+
+
+# --------------------------------------------------------------------------- #
+#  THE SCENE
+# --------------------------------------------------------------------------- #
+
+def wipe():
+    for c in list(bpy.data.collections):
+        bpy.data.collections.remove(c)
+    for o in list(bpy.data.objects):
+        bpy.data.objects.remove(o, do_unlink=True)
+    for d in (bpy.data.meshes, bpy.data.materials, bpy.data.actions):
+        for x in list(d):
+            d.remove(x)
+
+
+def coll(name, parent=None):
+    c = bpy.data.collections.new(name)
+    (parent or bpy.context.scene.collection).children.link(c)
+    return c
+
+
+def build(args):
+    global WAKE_ALL
+    WAKE_ALL = bool(getattr(args, "wake_all", False))
+    wipe()
+    sc = bpy.context.scene
+    # The rigid body world has to exist BEFORE any constraint empty is made:
+    # `_make_constraint` links its copies straight into
+    # `rigidbody_world.constraints`, and a copy that is not in that collection
+    # is an empty with settings nobody reads.
+    if sc.rigidbody_world is None:
+        bpy.ops.rigidbody.world_add()
+    car = BL.Car()
+    ok, why = car.identity_ok()
+    if not ok:
+        raise SystemExit("REFUSING: %s.  The sim must be driven by the car the "
+                         "film renders." % why)
+    log("car identity ok: %s" % why)
+
+    t0, t1, nsim = BL.sim_window(car)
+    if args.frames:
+        nsim = min(nsim, int(args.frames))
+        t1 = t0 + (nsim - 1) / float(BL.SIM_FPS)
+    wts = BL.sim_frame_world_t(t0, nsim)
+    sc.render.fps = BL.SIM_FPS
+    sc.render.fps_base = 1.0
+    sc.frame_start, sc.frame_end = 1, nsim
+    log("world window %.4f .. %.4f s, %d sim frames at %d Hz"
+        % (t0, t1, nsim, BL.SIM_FPS))
+
+    C_glass = coll("SIM_Glass")
+    C_frame = coll("SIM_Frame")
+    C_static = coll("SIM_Static")
+    C_car = coll("SIM_Car")
+    C_con = coll("SIM_Constraints")
+
+    M_glass = simple_mat("SIM_Glass", (0.86, 0.91, 0.89), rough=0.03,
+                         trans=1.0, ior=1.52)
+    M_alu = simple_mat("SIM_Alu", (0.35, 0.356, 0.362), rough=0.30, metal=1.0)
+    M_conc = simple_mat("SIM_Conc", (0.34, 0.34, 0.33), rough=0.75)
+    M_car = simple_mat("SIM_Car", (0.05, 0.06, 0.09), rough=0.35)
+
+    # ---- 1. static ground ------------------------------------------------- #
+    # The showroom floor (round 1's, top z = 0.000 exactly) and the forecourt
+    # outside it, which is the same plane -- that coincidence is the scale key
+    # for the whole building and it is why shards slide straight out of the hole.
+    floor_in = box_obj("SIM_FloorIn", (-15.0, -11.0, -0.30), (14.94, 11.0, 0.0),
+                       C_static, M_conc)
+    floor_out = box_obj("SIM_FloorOut", (15.0, -14.0, -0.30), (46.0, 14.0, 0.0),
+                        C_static, M_conc)
+    # THE SILL, AS A POCKET AND NOT A BLOCK.
+    #
+    # `glazing_pockets()` is explicit that THE PANE IS BIGGER THAN THE HOLE:
+    # 22.5 mm of every edge is hidden, 16.0 of it clamped under the pressure
+    # plate.  Modelled as one solid box from z = 0 to 0.110 the sill therefore
+    # OCCUPIES 22.5 mm of every bottom-edge shard, and 582 clamped shards start
+    # the sim penetrating static geometry by twenty times their own collision
+    # margin.  The wake-all null control found it: with no car in the scene at
+    # all the wall left at a peak of 151 m/s and 1,891 of 2,987 shards were
+    # "gone".  Bonding the shards to each other had halved the number and hidden
+    # the cause.
+    #
+    # So the sill is built as the two pieces it actually is — the pocket floor
+    # BEHIND the glass line and the pressure-plate upstand IN FRONT of it — with
+    # the glazing pocket itself (x 14.945 .. 14.970, z below 0.0865) left open
+    # for the glass to sit in.  The capture is then mechanical: the glass is
+    # between the isolator and the plate, touching neither at frame 1.
+    sill = box_obj("SIM_Sill", (14.84, -11.05, 0.0), (14.945, 11.05, 0.110),
+                   C_static, M_alu)
+    sill_f = box_obj("SIM_SillPlate", (14.970, -11.05, 0.0),
+                     (15.0, 11.05, 0.110), C_static, M_alu)
+    sill_b = box_obj("SIM_SillPocket", (14.945, -11.05, 0.0),
+                     (14.970, 11.05, 0.0865), C_static, M_alu)
+    # the threshold strip the ribbon starts on, x 14.94 .. 15.0, so nothing
+    # falls down a 60 mm slot at the breach plane
+    thr = box_obj("SIM_Threshold", (14.94, -14.0, -0.30), (15.0, 14.0, 0.0),
+                  C_static, M_conc)
+    # the head, the same way: open pocket, closed either side of it
+    head = box_obj("SIM_Head", (14.84, -11.05, 6.1125), (14.945, 11.05, 6.30),
+                   C_static, M_alu)
+    head_f = box_obj("SIM_HeadPlate", (14.970, -11.05, 6.1125),
+                     (15.0, 11.05, 6.30), C_static, M_alu)
+    head_b = box_obj("SIM_HeadPocket", (14.945, -11.05, 6.1135),
+                     (14.970, 11.05, 6.30), C_static, M_alu)
+    for ob in (floor_in, floor_out, sill, sill_f, sill_b, thr, head, head_f,
+               head_b):
+        add_rb(ob, "PASSIVE", shape="BOX", friction=0.62, rest=0.06)
+    log("static ground built")
+
+    # ---- 2. the frame ----------------------------------------------------- #
+    W = BL.wall_iface()
+    S = W["section"]
+    st = W["stations"]
+    bs = {b["uid"]: b["beat3"] for b in W["breach_state"]}
+    NSEG = args.mullion_segments
+    mull = {}                    # uid -> [segment objects, bottom first]
+    for r in st:
+        uid, y = r["uid"], r["y"]
+        z0, z1 = r["foot_z"], r["head_z"]
+        active = bs[uid] in ("destroyed", "bent_stub")
+        # THE MULLION IS TWO BOXES, NOT ONE.  Same defect as the sill: a solid
+        # 14.840 .. 15.000 box fills the glazing pocket the glass lives in, and
+        # every clamped shard starts 22.5 mm inside it.  The extrusion stops at
+        # the rebate face (14.945) and the cap and pressure plate start at
+        # 14.970; between them is the pocket, which is where the glass is.
+        # Both pieces are ONE rigid body per segment, joined rigidly, because a
+        # pressure plate screwed to a mullion is one structural member.
+        xb0, xb1 = S["body_back_x"], S["rebate_face_x"]
+        xf0, xf1 = S["plate_back_x"], S["cap_face_x"]
+        segs = []
+        n = NSEG if active else 1
+        hs = 0.5 * S["sightline_m"]
+        for k in range(n):
+            a = z0 + (z1 - z0) * k / n
+            b = z0 + (z1 - z0) * (k + 1) / n
+            # TWO BODIES, not one body with two lumps.  Blender's COMPOUND
+            # collision shape takes its geometry from an object's CHILDREN; on
+            # an object with none it is degenerate, and the wake-all null went
+            # from 1,891 shards leaving on their own to 220 but kept a 188 m/s
+            # peak because the mullions had no usable collider.  Two convex
+            # boxes joined by a FIXED constraint at ten times the mullion's own
+            # joint threshold is the same member, and it is a shape Bullet can
+            # actually integrate.
+            ob = box_obj("MUL%02d_S%02d" % (uid, k),
+                         (xb0, y - hs, a), (xb1, y + hs, b), C_frame, M_alu)
+            pl = box_obj("MUL%02d_S%02d_P" % (uid, k),
+                         (xf0, y - hs, a), (xf1, y + hs, b), C_frame, M_alu)
+            # a real 6063-T6 mullion is 4.7 kg/m of metal, not a solid billet
+            m = 4.7 * (b - a)
+            if active:
+                add_rb(ob, "ACTIVE", mass=0.72 * m, shape="BOX",
+                       friction=FRICTION_ALU, rest=REST_ALU,
+                       start_asleep=True)
+                add_rb(pl, "ACTIVE", mass=0.28 * m, shape="BOX",
+                       friction=FRICTION_ALU, rest=REST_ALU,
+                       start_asleep=True)
+                add_constraint("CON_MUL%02d_S%02d_P" % (uid, k), ob, pl, C_con,
+                               thresh=args.t_mullion_joint * 10.0,
+                               loc=(0.5 * (xb1 + xf0), y, 0.5 * (a + b)))
+            else:
+                add_rb(ob, "PASSIVE", shape="BOX", friction=FRICTION_ALU,
+                       rest=REST_ALU)
+                add_rb(pl, "PASSIVE", shape="BOX", friction=FRICTION_ALU,
+                       rest=REST_ALU)
+            segs.append(ob)
+        mull[uid] = segs
+        if active:
+            # base anchor, then segment-to-segment
+            add_constraint("CON_MUL%02d_BASE" % uid, segs[0], sill, C_con,
+                           thresh=args.t_mullion_base * (
+                               3.0 if bs[uid] == "bent_stub" else 1.0),
+                           loc=(xf1, y, z0))
+            for k in range(len(segs) - 1):
+                z = z0 + (z1 - z0) * (k + 1) / n
+                add_constraint("CON_MUL%02d_J%02d" % (uid, k), segs[k],
+                               segs[k + 1], C_con,
+                               thresh=args.t_mullion_joint * (
+                                   3.0 if bs[uid] == "bent_stub" else 1.0),
+                               loc=(xf1, y, z))
+            add_constraint("CON_MUL%02d_HEAD" % uid, segs[-1], head, C_con,
+                           thresh=args.t_mullion_joint * 0.5,
+                           loc=(xf1, y, z1))
+    log("mullions: %d bodies" % sum(len(v) for v in mull.values()))
+
+    # transoms: three full-width rails, bolted into the front screw port
+    trans = []
+    for zi, z in enumerate(W["transom_landings"]["z"]
+                           if isinstance(W.get("transom_landings"), dict)
+                           and "z" in W.get("transom_landings", {})
+                           else (1.600, 3.100, 4.600)):
+        for i in range(len(st) - 1):
+            y0, y1 = st[i]["y"], st[i + 1]["y"]
+            a, b = mull[st[i]["uid"]], mull[st[i + 1]["uid"]]
+            act = (bs[st[i]["uid"]] != "intact" or
+                   bs[st[i + 1]["uid"]] != "intact")
+            # two lumps again: a transom that spans 14.840 .. 14.976 fills the
+            # glazing pocket and puts every shard it crosses inside it
+            ob = box_obj("TRN_z%d_b%02d" % (zi, i),
+                         (S["body_back_x"], y0 + 0.0375, z - 0.030),
+                         (S["rebate_face_x"], y1 - 0.0375, z + 0.030),
+                         C_frame, M_alu)
+            pl = box_obj("TRN_z%d_b%02d_P" % (zi, i),
+                         (S["plate_back_x"], y0 + 0.0375, z - 0.030),
+                         (S["cap_face_x"], y1 - 0.0375, z + 0.030),
+                         C_frame, M_alu)
+            m = 2.9 * (y1 - y0)
+            if act:
+                add_rb(ob, "ACTIVE", mass=0.7 * m, shape="BOX",
+                       friction=FRICTION_ALU, rest=REST_ALU, start_asleep=True)
+                add_rb(pl, "ACTIVE", mass=0.3 * m, shape="BOX",
+                       friction=FRICTION_ALU, rest=REST_ALU, start_asleep=True)
+                add_constraint("CON_TRN%d_%02d_P" % (zi, i), ob, pl, C_con,
+                               thresh=args.t_transom * 10.0,
+                               loc=(S["rebate_face_x"], 0.5 * (y0 + y1), z))
+                for segs, yy in ((a, y0), (b, y1)):
+                    tgt = _seg_at(segs, z)
+                    add_constraint("CON_TRN%d_%02d_%s" % (zi, i,
+                                                          "a" if yy == y0
+                                                          else "b"),
+                                   ob, tgt, C_con, thresh=args.t_transom,
+                                   loc=(S["plate_front_x"], yy, z))
+            else:
+                add_rb(ob, "PASSIVE", shape="BOX", friction=FRICTION_ALU,
+                       rest=REST_ALU)
+                add_rb(pl, "PASSIVE", shape="BOX", friction=FRICTION_ALU,
+                       rest=REST_ALU)
+            trans.append(ob)
+    log("transoms: %d" % len(trans))
+
+    # ---- 3. the glass ----------------------------------------------------- #
+    plan = FR.load(args.shards)
+    rects, roles = plan["rects"], plan["roles"]
+    shards = []
+    meta = []
+    thick = GLASS_X_OUT - GLASS_X_IN
+    for bay in sorted(plan["panes"]):
+        role = roles[bay]
+        if role == "intact":
+            continue                      # built, but not as a rigid body
+        u0, u1, v0, v1 = rects[bay]
+        uidA = bay
+        uidB = bay + 1
+        for s in plan["panes"][bay]:
+            V, F = SM.prism(s["poly"], GLASS_X_IN, GLASS_X_OUT,
+                            detail=args.detail, seed=1000 * bay + s["id"])
+            org = SM.origin_of(s["poly"], GLASS_X_IN, GLASS_X_OUT)
+            nm = "GS_b%02d_%05d" % (bay, s["id"])
+            ob = new_mesh_obj(nm, V, F, C_glass, origin=org, mat=M_glass)
+            vol = SM.volume(V, F)
+            add_rb(ob, "ACTIVE", mass=vol * BL.RHO_GLASS, shape="CONVEX_HULL",
+                   friction=FRICTION_GLASS, rest=REST_GLASS, start_asleep=True)
+            shards.append(ob)
+            meta.append(dict(name=nm, bay=bay, id=s["id"], area=s["area"],
+                             volume=vol, mass=vol * BL.RHO_GLASS,
+                             origin=org.tolist(), clamped=bool(s["clamped"]),
+                             laminated=bool(s["laminated"]),
+                             r_impact=s["r_impact"], aspect=s["aspect"]))
+        log("bay %d (%s): %d shards" % (bay, role, len(plan["panes"][bay])))
+
+    # the intact panes are ONE passive body each -- they are pre-fractured in
+    # the pattern but nothing in this beat touches them, and 439 sleeping bodies
+    # that never wake are 439 bodies of solver cost for no picture.
+    for bay in sorted(plan["panes"]):
+        if roles[bay] != "intact":
+            continue
+        u0, u1, v0, v1 = rects[bay]
+        ob = box_obj("GP_intact_b%02d" % bay, (GLASS_X_IN, u0, v0),
+                     (GLASS_X_OUT, u1, v1), C_glass, M_glass)
+        add_rb(ob, "PASSIVE", shape="BOX", friction=FRICTION_GLASS,
+               rest=REST_GLASS)
+
+    # ---- 4. glass held by the frame, and the PVB -------------------------- #
+    by_name = {o.name: o for o in shards}
+    n_edge = n_pvb = 0
+    cent = {}
+    for m in meta:
+        cent[m["name"]] = np.array(m["origin"])
+    for bay in sorted(plan["panes"]):
+        if roles[bay] == "intact":
+            continue
+        u0, u1, v0, v1 = rects[bay]
+        hid = 0.0225
+        for s in plan["panes"][bay]:
+            nm = "GS_b%02d_%05d" % (bay, s["id"])
+            ob = by_name.get(nm)
+            if ob is None or not s["clamped"]:
+                continue
+            c = s["centroid"]
+            # which of the four clamped edges is it on?
+            d = [(c[0] - u0, "L"), (u1 - c[0], "R"),
+                 (c[1] - v0, "B"), (v1 - c[1], "T")]
+            d.sort()
+            side = d[0][1]
+            if side == "L":
+                tgt = _seg_at(mull[bay], c[1])
+            elif side == "R":
+                tgt = _seg_at(mull[bay + 1], c[1])
+            elif side == "B":
+                tgt = sill
+            else:
+                tgt = head
+            add_constraint("CONG_%s" % nm, ob, tgt, C_con,
+                           thresh=args.t_glass_edge,
+                           loc=(GLASS_X_IN, c[0], c[1]))
+            n_edge += 1
+    # THE BONDS: the pane is a solid until its cracks open
+    n_bond = 0
+    for bay, rows in plan.get("bonds", {}).items():
+        if roles.get(bay) == "intact":
+            continue
+        for (ia, ib, L) in rows:
+            a = by_name.get("GS_b%02d_%05d" % (bay, ia))
+            b = by_name.get("GS_b%02d_%05d" % (bay, ib))
+            if a is None or b is None:
+                continue
+            add_constraint("CONB_b%02d_%05d_%05d" % (bay, ia, ib), a, b, C_con,
+                           thresh=args.t_bond_per_m * L,
+                           loc=(0.5 * (a.location[0] + b.location[0]),
+                                0.5 * (a.location[1] + b.location[1]),
+                                0.5 * (a.location[2] + b.location[2])))
+            n_bond += 1
+    log("shard-to-shard bonds: %d" % n_bond)
+
+    # PVB: each laminated shard springs to its nearest neighbour in the SAME bay
+    for bay in sorted(plan["panes"]):
+        if roles[bay] == "intact":
+            continue
+        ss = plan["panes"][bay]
+        cs = np.array([s["centroid"] for s in ss])
+        lam = [i for i, s in enumerate(ss) if s["laminated"]]
+        for i in lam:
+            dd = np.linalg.norm(cs - cs[i], axis=1)
+            dd[i] = 1e9
+            j = int(np.argmin(dd))
+            a = by_name.get("GS_b%02d_%05d" % (bay, ss[i]["id"]))
+            b = by_name.get("GS_b%02d_%05d" % (bay, ss[j]["id"]))
+            if a is None or b is None:
+                continue
+            add_constraint("CONP_b%02d_%05d" % (bay, ss[i]["id"]), a, b,
+                           C_con, kind="GENERIC_SPRING", thresh=args.t_pvb,
+                           loc=(GLASS_X_IN,
+                                0.5 * (cs[i][0] + cs[j][0]),
+                                0.5 * (cs[i][1] + cs[j][1])),
+                           post=_pvb_post)
+            n_pvb += 1
+    log("queued constraints: %d glass edge, %d bond, %d PVB, %d total"
+        % (n_edge, n_bond, n_pvb, len(_CON_QUEUE)))
+
+    # ---- 5. the car ------------------------------------------------------- #
+    parts = [] if args.no_car else BL.car_proxy_parts()
+    # Blender 5.x SLOTTED actions: `Action.fcurves` is gone.  An action is
+    # layers -> strips -> channelbag(slot) -> fcurves, and an object binds to
+    # BOTH the action and a slot.  Sharing one action across the 18 proxy parts
+    # is the whole reason the car costs 6 curves instead of 108.
+    act = bpy.data.actions.new("CAR_PROXY")
+    slot = act.slots.new(id_type="OBJECT", name="Object")
+    cbag = act.layers.new("L").strips.new(type="KEYFRAME").channelbag(
+        slot, ensure=True)
+    fcs = []
+    for path, n in (("location", 3), ("rotation_euler", 3)):
+        for i in range(n):
+            fcs.append(cbag.fcurves.new(path, index=i))
+    loc, rot = car.at_world_t(wts)
+    for i, fc in enumerate(fcs):
+        vals = loc[:, i] if i < 3 else rot[:, i - 3]
+        fc.keyframe_points.add(count=nsim)
+        flat = np.empty(2 * nsim)
+        flat[0::2] = np.arange(1, nsim + 1)
+        flat[1::2] = vals
+        fc.keyframe_points.foreach_set("co", flat)
+        # keyframe_new_interpolation_type is NOT honoured by keyframe_insert in
+        # 5.2 (71,472 of 71,472 keys came out BEZIER).  foreach_set does not go
+        # through it at all, so set the enum on every point and PROVE it by
+        # evaluating the curve, below.
+        fc.keyframe_points.foreach_set(
+            "interpolation", [1] * nsim)          # 1 == LINEAR
+        fc.update()
+    car_objs = []
+    for nm, pts in parts:
+        P = np.asarray(pts, float)
+        hull_f = _hull_faces(P)
+        ob = new_mesh_obj("CARP_%s" % nm, P, hull_f, C_car, origin=(0, 0, 0),
+                          mat=M_car)
+        ob.animation_data_create()
+        ob.animation_data.action = act
+        ob.animation_data.action_slot = slot
+        add_rb(ob, "PASSIVE", shape="CONVEX_HULL", friction=0.55, rest=0.05,
+               kinematic=True)
+        car_objs.append(ob)
+    log("car proxy: %d convex parts on one shared %d-key LINEAR action%s"
+        % (len(car_objs), nsim,
+           "  [NULL CONTROL: NO CAR]" if args.no_car else ""))
+
+    # ---- 6. the rigid body world ------------------------------------------ #
+    n_rb = flush_rb()
+    log("rigid bodies created: %d" % n_rb)
+    cons = flush_constraints()
+    log("constraints created: %d" % len(cons))
+    w = sc.rigidbody_world
+    w.substeps_per_frame = SUBSTEPS
+    w.solver_iterations = SOLVER_ITER
+    w.time_scale = 1.0
+    w.point_cache.frame_start = 1
+    w.point_cache.frame_end = nsim
+    sc.gravity = (0.0, 0.0, -9.81)
+    sc.use_gravity = True
+
+    _check_world(sc, info_expect=dict(bodies=n_rb, constraints=len(cons)))
+    pen = penetration_gate(shards, plan)
+    log("penetration gate: %s" % json.dumps(pen, default=float))
+    if pen.get("penetrating"):
+        raise SystemExit(
+            "REFUSING TO BAKE: %d shards start inside static geometry, worst "
+            "%.4f m (%s into %s).  A destruction sim that begins with "
+            "penetration measures its own initial condition, not the impact."
+            % (pen["penetrating"], pen["worst"][0]["depth_m"],
+               pen["worst"][0]["shard"], pen["worst"][0]["into"]))
+    info = dict(
+        world_t0=t0, world_t1=t1, sim_fps=BL.SIM_FPS, sim_frames=nsim,
+        origin_rule=SM.ORIGIN_RULE,
+        impact_world_t=car.impact_world_t(),
+        impact_film_frame=car.impact_frame(),
+        n_shards=len(shards), n_frame_bodies=len(C_frame.objects),
+        n_constraints=len(sc.rigidbody_world.constraints.objects),
+        n_bodies=len(sc.rigidbody_world.collection.objects),
+        substeps=SUBSTEPS, solver_iterations=SOLVER_ITER,
+        collision_margin=MARGIN,
+        thresholds=dict(glass_edge=args.t_glass_edge, pvb=args.t_pvb,
+                        mullion_joint=args.t_mullion_joint,
+                        mullion_base=args.t_mullion_base,
+                        transom=args.t_transom,
+                        bond_per_m=args.t_bond_per_m),
+        detail=args.detail,
+        penetration_gate=pen,
+        shard_meta=meta)
+    return info, dict(shards=shards, car=car_objs, frame=list(C_frame.objects),
+                      action=act)
+
+
+def _check_world(sc, info_expect):
+    """The batch paths above are fast BECAUSE they bypass the operators, so the
+    thing the operators would have guaranteed has to be asserted here."""
+    w = sc.rigidbody_world
+    if w is None or w.collection is None or w.constraints is None:
+        raise SystemExit("REFUSING: no rigid body world / collections")
+    nb = len([o for o in w.collection.objects if o.rigid_body is not None])
+    nc = len([o for o in w.constraints.objects
+              if o.rigid_body_constraint is not None])
+    if nb < info_expect["bodies"]:
+        raise SystemExit("REFUSING: %d bodies in the world, %d were created"
+                         % (nb, info_expect["bodies"]))
+    if nc < info_expect["constraints"]:
+        raise SystemExit("REFUSING: %d constraints in the world, %d created"
+                         % (nc, info_expect["constraints"]))
+    dangling = [o.name for o in w.constraints.objects
+                if o.rigid_body_constraint is not None and
+                (o.rigid_body_constraint.object1 is None or
+                 o.rigid_body_constraint.object2 is None)]
+    if dangling:
+        raise SystemExit("REFUSING: %d constraints have a missing body: %s"
+                         % (len(dangling), dangling[:5]))
+    log("world check: %d bodies, %d constraints, 0 dangling" % (nb, nc))
+
+
+BOX_COLLIDERS = []          # (name, lo, hi) in WORLD, filled by box_obj
+
+
+def penetration_gate(shard_objs, plan, tol=0.0):
+    """NOTHING MAY START INSIDE ANYTHING.
+
+    The wake-all null control caught a wall that left at 151 m/s with no car in
+    the scene, and the cause was 582 clamped shards initialised 22.5 mm inside
+    the sill and the mullions — their own declared edge bite, modelled as solid
+    metal.  A null control is a slow way to find that; this is the fast one, and
+    it runs before every bake.
+
+    Exact for boxes: every shard vertex is tested against every static box, in
+    the shard's own world placement.  Refuses on any penetration deeper than
+    `tol`, and reports the worst offenders by name.
+    """
+    if not BOX_COLLIDERS:
+        return dict(status="VACUOUS: no box colliders registered")
+    lo = np.array([b[1] for b in BOX_COLLIDERS])
+    hi = np.array([b[2] for b in BOX_COLLIDERS])
+    names = [b[0] for b in BOX_COLLIDERS]
+    worst = []
+    for ob in shard_objs:
+        V = np.array([tuple(ob.matrix_world @ v.co) for v in ob.data.vertices])
+        # depth inside box k = min over axes of min(v-lo, hi-v), >0 == inside
+        d = np.minimum(V[:, None, :] - lo[None, :, :],
+                       hi[None, :, :] - V[:, None, :]).min(axis=2)
+        if d.max() > tol:
+            k = int(np.unravel_index(np.argmax(d), d.shape)[1])
+            worst.append((float(d.max()), ob.name, names[k]))
+    worst.sort(reverse=True)
+    return dict(shards=len(shard_objs), boxes=len(BOX_COLLIDERS),
+                penetrating=len(worst), tol_m=tol,
+                worst=[dict(depth_m=w[0], shard=w[1], into=w[2])
+                       for w in worst[:8]])
+
+
+def _pvb_post(c):
+    """The interlayer STRETCHES: 1.5 mm of PVB pulls to several times its own
+    length before it tears, which is the whole reason laminated glass hangs
+    together in sheets instead of raining down."""
+    for ax in ("x", "y", "z"):
+        setattr(c, "use_limit_lin_%s" % ax, True)
+        setattr(c, "limit_lin_%s_lower" % ax, -0.045)
+        setattr(c, "limit_lin_%s_upper" % ax, 0.045)
+        setattr(c, "use_spring_%s" % ax, True)
+        setattr(c, "spring_stiffness_%s" % ax, 55.0)
+        setattr(c, "spring_damping_%s" % ax, 0.6)
+
+
+def _seg_at(segs, z):
+    """The mullion segment whose z span contains z (nearest if outside)."""
+    best, bd = segs[0], 1e9
+    for ob in segs:
+        c = ob.location[2]
+        d = abs(c - z)
+        if d < bd:
+            best, bd = ob, d
+    return best
+
+
+def _hull_faces(P):
+    """Convex hull faces of a small point cloud, via bmesh."""
+    import bmesh
+    bm = bmesh.new()
+    for p in P:
+        bm.verts.new((float(p[0]), float(p[1]), float(p[2])))
+    bm.verts.ensure_lookup_table()
+    import mathutils                                              # noqa: F401
+    res = bmesh.ops.convex_hull(bm, input=bm.verts, use_existing_faces=False)
+    bmesh.ops.delete(bm, geom=res["geom_interior"], context="VERTS")
+    bm.verts.ensure_lookup_table()
+    idx = {v: i for i, v in enumerate(bm.verts)}
+    faces = [[idx[v] for v in f.verts] for f in bm.faces]
+    verts = [tuple(v.co) for v in bm.verts]
+    bm.free()
+    return faces if len(verts) == len(P) else _hull_faces_reindexed(P, verts,
+                                                                   faces)
+
+
+def _hull_faces_reindexed(P, verts, faces):
+    """convex_hull dropped interior points, so the caller's P no longer matches.
+    Map back by nearest vertex; the clouds are tiny so this is exact."""
+    P = np.asarray(P, float)
+    out = []
+    for f in faces:
+        out.append([int(np.argmin(np.linalg.norm(P - np.array(verts[i]),
+                                                 axis=1))) for i in f])
+    return out
+
+
+# --------------------------------------------------------------------------- #
+#  PROOF that the car curve is linear, by EVALUATION
+# --------------------------------------------------------------------------- #
+
+def _act_fcurves(act):
+    out = []
+    for lay in act.layers:
+        for st in lay.strips:
+            for sl in act.slots:
+                cb = st.channelbag(sl)
+                if cb:
+                    out.extend(list(cb.fcurves))
+    return out
+
+
+def prove_linear(act, nsim, car, wts):
+    """Read the flag AND evaluate the curve.  The flag has lied before."""
+    out = {"n_keys": 0, "flag_linear": 0, "max_eval_err_m": 0.0,
+           "max_bezier_err_m": 0.0}
+    loc, rot = car.at_world_t(wts)
+    for fc in _act_fcurves(act):
+        kps = fc.keyframe_points
+        out["n_keys"] += len(kps)
+        out["flag_linear"] += sum(1 for k in kps if k.interpolation == "LINEAR")
+        ref = loc[:, fc.array_index] if fc.data_path == "location" \
+            else rot[:, fc.array_index]
+        # evaluate at half-frames: LINEAR must land on the mean of neighbours
+        for f in range(1, min(nsim, 400)):
+            got = fc.evaluate(f + 0.5)
+            want = 0.5 * (ref[f - 1] + ref[f])
+            out["max_eval_err_m"] = max(out["max_eval_err_m"],
+                                        abs(got - want))
+    out["max_eval_err_m"] = float(out["max_eval_err_m"])
+    out["all_flags_linear"] = bool(out["flag_linear"] == out["n_keys"])
+    # POSITIVE CONTROL: a bezier curve must FAIL the same test
+    fc = _act_fcurves(act)[0]
+    saved = [k.interpolation for k in fc.keyframe_points]
+    for k in fc.keyframe_points:
+        k.interpolation = "BEZIER"
+    fc.update()
+    ref = loc[:, fc.array_index]
+    for f in range(1, min(nsim, 400)):
+        out["max_bezier_err_m"] = max(
+            out["max_bezier_err_m"],
+            abs(fc.evaluate(f + 0.5) - 0.5 * (ref[f - 1] + ref[f])))
+    for k, s in zip(fc.keyframe_points, saved):
+        k.interpolation = s
+    fc.update()
+    out["max_bezier_err_m"] = float(out["max_bezier_err_m"])
+    out["control_fires"] = bool(out["max_bezier_err_m"] > 10.0 * max(
+        out["max_eval_err_m"], 1e-12))
+    return out
+
+
+# --------------------------------------------------------------------------- #
+#  BAKE and EXPORT
+# --------------------------------------------------------------------------- #
+
+def bake(nsim):
+    sc = bpy.context.scene
+    log("baking %d frames ..." % nsim)
+    ctx = bpy.context.copy()
+    ctx["point_cache"] = sc.rigidbody_world.point_cache
+    with bpy.context.temp_override(**ctx):
+        bpy.ops.ptcache.bake(bake=True)
+    log("bake done")
+
+
+def export(objs, info, path):
+    """Step the baked cache and record every body's world transform.
+
+    Positions as float32 metres and rotations as float32 quaternions.  The table
+    IS the deliverable: `push_scene` is not resumable and a multi-GB scene that
+    drops at 90 % restarts from zero, so what crosses the wire is 3,000 x N x 7
+    floats and not a point cache.
+    """
+    sc = bpy.context.scene
+    names = [o.name for o in objs]
+    n, nf = len(objs), info["sim_frames"]
+    loc = np.zeros((nf, n, 3), np.float32)
+    quat = np.zeros((nf, n, 4), np.float32)
+    dg = bpy.context.evaluated_depsgraph_get()
+    for fi in range(nf):
+        sc.frame_set(fi + 1)
+        dg.update()
+        for j, o in enumerate(objs):
+            m = o.matrix_world
+            loc[fi, j] = (m[0][3], m[1][3], m[2][3])
+            q = m.to_quaternion()
+            quat[fi, j] = (q.w, q.x, q.y, q.z)
+        if fi % 100 == 0:
+            log("  export frame %d/%d" % (fi + 1, nf))
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    np.savez_compressed(path, loc=loc, quat=quat,
+                        names=np.array(names),
+                        world_t=BL.sim_frame_world_t(info["world_t0"], nf))
+    info["export"] = dict(path=path, bodies=n, frames=nf,
+                          bytes=os.path.getsize(path))
+    return loc, quat
+
+
+def motion_report(loc, quat, names, info):
+    """Did anything actually MOVE?  A null must be proven, not accepted."""
+    d = np.linalg.norm(loc[-1] - loc[0], axis=1)
+    per = np.linalg.norm(np.diff(loc, axis=0), axis=2)     # (nf-1, n)
+    return dict(
+        bodies=len(names),
+        moved_gt_1mm=int((d > 0.001).sum()),
+        moved_gt_100mm=int((d > 0.100).sum()),
+        max_displacement_m=float(d.max()),
+        median_displacement_m=float(np.median(d)),
+        peak_speed_ms=float((per.max() * BL.SIM_FPS)),
+        never_moved=int((d <= 1e-6).sum()),
+        below_floor=int((loc[:, :, 2].min(axis=0) < -0.02).sum()),
+        outside_x=int((loc[:, :, 0].max(axis=0) > 60.0).sum()),
+        nan=int(np.isnan(loc).sum() + np.isnan(quat).sum()))
+
+
+def aperture_report(loc, meta, info, settle_frac=0.75):
+    """THE APERTURE THE SIM PRODUCED, measured on the wall plane.
+
+    A shard counts as GONE if it ended more than `GONE_M` from where it started.
+    The hole is the bounding box of the gone shards in (y, z).  This is the
+    number that has to agree with `mullion_intact.breach_state()`'s 9.6 m and
+    the camera anchor's "9.6 x 5.6 m hole", and it is measured, not set.
+    """
+    GONE_M = 0.25
+    st = np.array([m["origin"] for m in meta])
+    en = loc[-1]
+    gone = np.linalg.norm(en - st, axis=1) > GONE_M
+    if not gone.any():
+        return dict(gone=0, note="NOTHING MOVED")
+    y, z = st[gone][:, 1], st[gone][:, 2]
+    return dict(
+        gone=int(gone.sum()), of=len(meta),
+        y_min=float(y.min()), y_max=float(y.max()),
+        z_min=float(z.min()), z_max=float(z.max()),
+        width_m=float(y.max() - y.min()), height_m=float(z.max() - z.min()),
+        declared_width_m=9.6, declared_height_m=5.6,
+        gone_mass_kg=float(sum(m["mass"] for m, g in zip(meta, gone) if g)),
+        total_mass_kg=float(sum(m["mass"] for m in meta)))
+
+
+# --------------------------------------------------------------------------- #
+
+def parse_args():
+    argv = sys.argv
+    argv = argv[argv.index("--") + 1:] if "--" in argv else []
+    p = argparse.ArgumentParser()
+    p.add_argument("--shards",
+                   default=os.path.join(R2, "sim/out/fracture_wall.npz"))
+    p.add_argument("--out", default=os.path.join(R2, "sim/out/breach_sim.blend"))
+    p.add_argument("--export",
+                   default=os.path.join(R2, "sim/out/breach_bake.npz"))
+    p.add_argument("--report",
+                   default=os.path.join(R2, "sim/out/breach_sim.json"))
+    p.add_argument("--frames", type=int, default=0,
+                   help="truncate the sim window (pilot runs only)")
+    p.add_argument("--detail", type=int, default=0)
+    p.add_argument("--mullion-segments", type=int, default=8)
+    p.add_argument("--bake", action="store_true")
+    p.add_argument("--wake-all", action="store_true",
+                   help="THE NULL THAT CAN FAIL: clear `use_start_deactivated` "
+                        "so every body is AWAKE at frame 1.  With --no-car the "
+                        "wall must then stand under gravity on its own.  A "
+                        "sleeping wall standing still proves only that Bullet "
+                        "left it asleep.")
+    p.add_argument("--no-car", action="store_true",
+                   help="THE NULL CONTROL: build the wall with no car in the "
+                        "scene.  Nothing may move.  A destruction sim that "
+                        "cannot pass this is measuring its own initial "
+                        "penetration, not the impact.")
+    p.add_argument("--t-glass-edge", type=float, default=THRESH_GLASS_EDGE)
+    p.add_argument("--t-pvb", type=float, default=THRESH_PVB)
+    p.add_argument("--t-mullion-joint", type=float,
+                   default=THRESH_MULLION_JOINT)
+    p.add_argument("--t-mullion-base", type=float, default=THRESH_MULLION_BASE)
+    p.add_argument("--t-transom", type=float, default=THRESH_TRANSOM)
+    p.add_argument("--t-bond-per-m", type=float, default=THRESH_BOND_PER_M)
+    return p.parse_args(argv)
+
+
+def main():
+    a = parse_args()
+    info, objs = build(a)
+    car = BL.Car()
+    t0 = info["world_t0"]
+    wts = BL.sim_frame_world_t(t0, info["sim_frames"])
+    info["linearity"] = prove_linear(objs["action"], info["sim_frames"], car,
+                                     wts)
+    log("linearity: %s" % json.dumps(info["linearity"]))
+    if not info["linearity"]["all_flags_linear"] or \
+            info["linearity"]["max_eval_err_m"] > 1e-5 or \
+            not info["linearity"]["control_fires"]:
+        raise SystemExit("REFUSING: the car proxy's curve is not LINEAR by "
+                         "evaluation.  %s" % info["linearity"])
+    if a.bake:
+        bake(info["sim_frames"])
+        loc, quat = export(objs["shards"] + objs["frame"], info, a.export)
+        meta = info["shard_meta"] + [
+            dict(name=o.name, origin=list(o.location), mass=0.0, bay=-1,
+                 id=-1, area=0.0, volume=0.0, clamped=False, laminated=False,
+                 r_impact=0.0, aspect=1.0) for o in objs["frame"]]
+        names = [o.name for o in objs["shards"] + objs["frame"]]
+        info["motion"] = motion_report(loc, quat, names, info)
+        info["aperture"] = aperture_report(
+            loc[:, :len(objs["shards"])], info["shard_meta"], info)
+        log("motion: %s" % json.dumps(info["motion"]))
+        log("aperture: %s" % json.dumps(info["aperture"]))
+    bpy.ops.wm.save_as_mainfile(filepath=a.out)
+    info["blend"] = a.out
+    info["blend_bytes"] = os.path.getsize(a.out)
+    with open(a.report, "w") as fh:
+        json.dump(info, fh, indent=1, default=float)
+    log("wrote %s (%.1f MB) and %s"
+        % (a.out, info["blend_bytes"] / 1e6, a.report))
+
+
+if __name__ == "__main__":
+    main()

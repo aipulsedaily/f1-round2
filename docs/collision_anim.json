@@ -1,0 +1,1062 @@
+{
+ "frames": {
+  "1": [
+   {
+    "a": "CORNER_RL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   }
+  ],
+  "80": [
+   {
+    "a": "CORNER_RL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   }
+  ],
+  "160": [
+   {
+    "a": "CORNER_RL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   }
+  ],
+  "240": [
+   {
+    "a": "CORNER_RL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   }
+  ],
+  "320": [
+   {
+    "a": "CORNER_RL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   }
+  ],
+  "400": [
+   {
+    "a": "FD",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 26440
+   },
+   {
+    "a": "BB",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 8302
+   },
+   {
+    "a": "BB",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 7033
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   }
+  ],
+  "480": [
+   {
+    "a": "FD",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 26440
+   },
+   {
+    "a": "EC",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 21531
+   },
+   {
+    "a": "EC",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 4317
+   },
+   {
+    "a": "BB",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 1650
+   },
+   {
+    "a": "BB",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 1448
+   },
+   {
+    "a": "CI",
+    "b": "EC",
+    "kind": "cluster",
+    "tri_pairs": 1254
+   },
+   {
+    "a": "CI",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 954
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   }
+  ],
+  "560": [
+   {
+    "a": "FD",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 26440
+   },
+   {
+    "a": "EC",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 21531
+   },
+   {
+    "a": "MB",
+    "b": "SP",
+    "kind": "cluster",
+    "tri_pairs": 13388
+   },
+   {
+    "a": "EC",
+    "b": "halo_assembly",
+    "kind": "cluster",
+    "tri_pairs": 10909
+   },
+   {
+    "a": "MB",
+    "b": "halo_assembly",
+    "kind": "cluster",
+    "tri_pairs": 5023
+   },
+   {
+    "a": "EC",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 4317
+   },
+   {
+    "a": "CI",
+    "b": "SW",
+    "kind": "cluster",
+    "tri_pairs": 3179
+   },
+   {
+    "a": "BB",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 1650
+   },
+   {
+    "a": "BB",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 1448
+   },
+   {
+    "a": "CI",
+    "b": "EC",
+    "kind": "cluster",
+    "tri_pairs": 1254
+   },
+   {
+    "a": "CI",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 954
+   },
+   {
+    "a": "MB",
+    "b": "SW",
+    "kind": "cluster",
+    "tri_pairs": 910
+   },
+   {
+    "a": "SP",
+    "b": "halo_assembly",
+    "kind": "cluster",
+    "tri_pairs": 395
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   }
+  ],
+  "640": [
+   {
+    "a": "FD",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 26440
+   },
+   {
+    "a": "MB",
+    "b": "SP",
+    "kind": "cluster",
+    "tri_pairs": 23312
+   },
+   {
+    "a": "MB",
+    "b": "NOSE",
+    "kind": "cluster",
+    "tri_pairs": 22627
+   },
+   {
+    "a": "EC",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 21531
+   },
+   {
+    "a": "EC",
+    "b": "SP",
+    "kind": "cluster",
+    "tri_pairs": 13038
+   },
+   {
+    "a": "EC",
+    "b": "halo_assembly",
+    "kind": "cluster",
+    "tri_pairs": 10909
+   },
+   {
+    "a": "MB",
+    "b": "halo_assembly",
+    "kind": "cluster",
+    "tri_pairs": 5023
+   },
+   {
+    "a": "EC",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 4317
+   },
+   {
+    "a": "CI",
+    "b": "SW",
+    "kind": "cluster",
+    "tri_pairs": 3179
+   },
+   {
+    "a": "BB",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 1650
+   },
+   {
+    "a": "BB",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 1448
+   },
+   {
+    "a": "CI",
+    "b": "EC",
+    "kind": "cluster",
+    "tri_pairs": 1254
+   },
+   {
+    "a": "CI",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 954
+   },
+   {
+    "a": "MB",
+    "b": "SW",
+    "kind": "cluster",
+    "tri_pairs": 910
+   },
+   {
+    "a": "FW",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 706
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 202
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 158
+   }
+  ],
+  "700": [
+   {
+    "a": "FD",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 26440
+   },
+   {
+    "a": "MB",
+    "b": "SP",
+    "kind": "cluster",
+    "tri_pairs": 23312
+   },
+   {
+    "a": "MB",
+    "b": "NOSE",
+    "kind": "cluster",
+    "tri_pairs": 22627
+   },
+   {
+    "a": "EC",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 21531
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "EC",
+    "kind": "cluster",
+    "tri_pairs": 13501
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "EC",
+    "kind": "cluster",
+    "tri_pairs": 13501
+   },
+   {
+    "a": "EC",
+    "b": "SP",
+    "kind": "cluster",
+    "tri_pairs": 13038
+   },
+   {
+    "a": "EC",
+    "b": "halo_assembly",
+    "kind": "cluster",
+    "tri_pairs": 10909
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 8022
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 7998
+   },
+   {
+    "a": "MB",
+    "b": "halo_assembly",
+    "kind": "cluster",
+    "tri_pairs": 5023
+   },
+   {
+    "a": "EC",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 4317
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 4281
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 4242
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 3488
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 3392
+   },
+   {
+    "a": "CI",
+    "b": "SW",
+    "kind": "cluster",
+    "tri_pairs": 3179
+   },
+   {
+    "a": "EC",
+    "b": "RW",
+    "kind": "cluster",
+    "tri_pairs": 2977
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "NOSE",
+    "kind": "cluster",
+    "tri_pairs": 2947
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "NOSE",
+    "kind": "cluster",
+    "tri_pairs": 2900
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "RW",
+    "kind": "cluster",
+    "tri_pairs": 2540
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "RW",
+    "kind": "cluster",
+    "tri_pairs": 2454
+   },
+   {
+    "a": "BB",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 1650
+   },
+   {
+    "a": "MB",
+    "b": "RW",
+    "kind": "cluster",
+    "tri_pairs": 1523
+   },
+   {
+    "a": "BB",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 1448
+   },
+   {
+    "a": "CI",
+    "b": "EC",
+    "kind": "cluster",
+    "tri_pairs": 1254
+   },
+   {
+    "a": "CI",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 954
+   },
+   {
+    "a": "MB",
+    "b": "SW",
+    "kind": "cluster",
+    "tri_pairs": 910
+   },
+   {
+    "a": "FW",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 706
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 138
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 138
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 128
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 110
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "Turntable_Deck",
+    "kind": "environment",
+    "tri_pairs": 108
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 94
+   }
+  ],
+  "760": [
+   {
+    "a": "FD",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 26440
+   },
+   {
+    "a": "MB",
+    "b": "SP",
+    "kind": "cluster",
+    "tri_pairs": 23312
+   },
+   {
+    "a": "MB",
+    "b": "NOSE",
+    "kind": "cluster",
+    "tri_pairs": 22627
+   },
+   {
+    "a": "EC",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 21531
+   },
+   {
+    "a": "EC",
+    "b": "SP",
+    "kind": "cluster",
+    "tri_pairs": 13038
+   },
+   {
+    "a": "EC",
+    "b": "halo_assembly",
+    "kind": "cluster",
+    "tri_pairs": 10909
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "EC",
+    "kind": "cluster",
+    "tri_pairs": 7592
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "EC",
+    "kind": "cluster",
+    "tri_pairs": 7520
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 6425
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 6321
+   },
+   {
+    "a": "MB",
+    "b": "halo_assembly",
+    "kind": "cluster",
+    "tri_pairs": 5023
+   },
+   {
+    "a": "EC",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 4317
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 4240
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 4223
+   },
+   {
+    "a": "CI",
+    "b": "SW",
+    "kind": "cluster",
+    "tri_pairs": 3179
+   },
+   {
+    "a": "EC",
+    "b": "RW",
+    "kind": "cluster",
+    "tri_pairs": 2977
+   },
+   {
+    "a": "BB",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 1650
+   },
+   {
+    "a": "MB",
+    "b": "RW",
+    "kind": "cluster",
+    "tri_pairs": 1523
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "NOSE",
+    "kind": "cluster",
+    "tri_pairs": 1483
+   },
+   {
+    "a": "BB",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 1448
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "NOSE",
+    "kind": "cluster",
+    "tri_pairs": 1437
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 1417
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 1383
+   },
+   {
+    "a": "CI",
+    "b": "EC",
+    "kind": "cluster",
+    "tri_pairs": 1254
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 1202
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 1201
+   },
+   {
+    "a": "CI",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 954
+   },
+   {
+    "a": "MB",
+    "b": "SW",
+    "kind": "cluster",
+    "tri_pairs": 910
+   },
+   {
+    "a": "FW",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 706
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "RW",
+    "kind": "cluster",
+    "tri_pairs": 340
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "RW",
+    "kind": "cluster",
+    "tri_pairs": 88
+   }
+  ],
+  "792": [
+   {
+    "a": "FD",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 26440
+   },
+   {
+    "a": "MB",
+    "b": "SP",
+    "kind": "cluster",
+    "tri_pairs": 23312
+   },
+   {
+    "a": "MB",
+    "b": "NOSE",
+    "kind": "cluster",
+    "tri_pairs": 22627
+   },
+   {
+    "a": "EC",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 21531
+   },
+   {
+    "a": "EC",
+    "b": "SP",
+    "kind": "cluster",
+    "tri_pairs": 13038
+   },
+   {
+    "a": "EC",
+    "b": "halo_assembly",
+    "kind": "cluster",
+    "tri_pairs": 10909
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "EC",
+    "kind": "cluster",
+    "tri_pairs": 7592
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "EC",
+    "kind": "cluster",
+    "tri_pairs": 7520
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 6425
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 6321
+   },
+   {
+    "a": "MB",
+    "b": "halo_assembly",
+    "kind": "cluster",
+    "tri_pairs": 5023
+   },
+   {
+    "a": "EC",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 4317
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 4240
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 4223
+   },
+   {
+    "a": "CI",
+    "b": "SW",
+    "kind": "cluster",
+    "tri_pairs": 3179
+   },
+   {
+    "a": "EC",
+    "b": "RW",
+    "kind": "cluster",
+    "tri_pairs": 2977
+   },
+   {
+    "a": "BB",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 1650
+   },
+   {
+    "a": "MB",
+    "b": "RW",
+    "kind": "cluster",
+    "tri_pairs": 1523
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "NOSE",
+    "kind": "cluster",
+    "tri_pairs": 1483
+   },
+   {
+    "a": "BB",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 1448
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "NOSE",
+    "kind": "cluster",
+    "tri_pairs": 1437
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 1417
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 1383
+   },
+   {
+    "a": "CI",
+    "b": "EC",
+    "kind": "cluster",
+    "tri_pairs": 1254
+   },
+   {
+    "a": "CORNER_FR",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 1202
+   },
+   {
+    "a": "CORNER_FL",
+    "b": "FD",
+    "kind": "cluster",
+    "tri_pairs": 1201
+   },
+   {
+    "a": "CI",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 954
+   },
+   {
+    "a": "MB",
+    "b": "SW",
+    "kind": "cluster",
+    "tri_pairs": 910
+   },
+   {
+    "a": "FW",
+    "b": "MB",
+    "kind": "cluster",
+    "tri_pairs": 706
+   },
+   {
+    "a": "CORNER_RL",
+    "b": "RW",
+    "kind": "cluster",
+    "tri_pairs": 340
+   },
+   {
+    "a": "CORNER_RR",
+    "b": "RW",
+    "kind": "cluster",
+    "tri_pairs": 88
+   }
+  ]
+ },
+ "worst": {
+  "a": "FD",
+  "b": "MB",
+  "kind": "cluster",
+  "tri_pairs": 26440,
+  "frame": 400
+ },
+ "total_hits": 171
+}

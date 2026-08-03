@@ -1,0 +1,264 @@
+{
+ "source": "/home/zany/opus5-car-render/work/iter.blend",
+ "blend": "/home/zany/f1-round2/world/beat1_audit.blend",
+ "dist": 1.2,
+ "lens": 50.0,
+ "fstop": 2.8,
+ "cameras": {
+  "BB": {
+   "camera": "MACRO_BB",
+   "centre": [
+    -0.2543,
+    0.0,
+    1.6292
+   ],
+   "radius": 0.8955,
+   "cam_loc": [
+    -0.4511,
+    0.732,
+    3.5827
+   ],
+   "focus_m": 2.0955,
+   "n_parts": 10,
+   "tris": 534848
+  },
+  "CORNER_FL": {
+   "camera": "MACRO_CORNER_FL",
+   "centre": [
+    2.2228,
+    1.7342,
+    1.0633
+   ],
+   "radius": 0.6988,
+   "cam_loc": [
+    0.8085,
+    2.46,
+    2.1017
+   ],
+   "focus_m": 1.8988,
+   "n_parts": 41,
+   "tris": 690930
+  },
+  "CORNER_FR": {
+   "camera": "MACRO_CORNER_FR",
+   "centre": [
+    2.2228,
+    -1.7342,
+    1.0633
+   ],
+   "radius": 0.6988,
+   "cam_loc": [
+    0.7526,
+    -2.4309,
+    2.0424
+   ],
+   "focus_m": 1.8988,
+   "n_parts": 41,
+   "tris": 690930
+  },
+  "CORNER_RL": {
+   "camera": "MACRO_CORNER_RL",
+   "centre": [
+    -2.2674,
+    1.7411,
+    1.0624
+   ],
+   "radius": 0.717,
+   "cam_loc": [
+    -1.9916,
+    0.5152,
+    2.5101
+   ],
+   "focus_m": 1.917,
+   "n_parts": 44,
+   "tris": 745562
+  },
+  "CORNER_RR": {
+   "camera": "MACRO_CORNER_RR",
+   "centre": [
+    -2.2674,
+    -1.7411,
+    1.0624
+   ],
+   "radius": 0.717,
+   "cam_loc": [
+    -2.7859,
+    -0.5021,
+    2.4302
+   ],
+   "focus_m": 1.917,
+   "n_parts": 44,
+   "tris": 745562
+  },
+  "CI": {
+   "camera": "MACRO_CI",
+   "centre": [
+    1.0694,
+    0.0,
+    3.3132
+   ],
+   "radius": 0.6844,
+   "cam_loc": [
+    1.4325,
+    -0.7761,
+    4.9915
+   ],
+   "focus_m": 1.8844,
+   "n_parts": 15,
+   "tris": 459202
+  },
+  "EC": {
+   "camera": "MACRO_EC",
+   "centre": [
+    -2.8769,
+    0.0011,
+    2.0737
+   ],
+   "radius": 1.3468,
+   "cam_loc": [
+    -2.948,
+    1.538,
+    4.1031
+   ],
+   "focus_m": 2.5468,
+   "n_parts": 13,
+   "tris": 394122
+  },
+  "FD": {
+   "camera": "MACRO_FD",
+   "centre": [
+    -4.5122,
+    0.0,
+    0.5298
+   ],
+   "radius": 2.0947,
+   "cam_loc": [
+    -4.1764,
+    0.0,
+    3.8073
+   ],
+   "focus_m": 3.2947,
+   "n_parts": 10,
+   "tris": 685308
+  },
+  "FW": {
+   "camera": "MACRO_FW",
+   "centre": [
+    4.3794,
+    0.0,
+    0.4396
+   ],
+   "radius": 1.0697,
+   "cam_loc": [
+    4.7489,
+    0.4819,
+    2.6266
+   ],
+   "focus_m": 2.2697,
+   "n_parts": 120,
+   "tris": 720048
+  },
+  "halo_assembly": {
+   "camera": "MACRO_halo_assembly",
+   "centre": [
+    0.9529,
+    0.0005,
+    3.9076
+   ],
+   "radius": 0.9425,
+   "cam_loc": [
+    1.2241,
+    -1.9434,
+    4.7668
+   ],
+   "focus_m": 2.1425,
+   "n_parts": 53,
+   "tris": 329722
+  },
+  "MB": {
+   "camera": "MACRO_MB",
+   "centre": [
+    0.265,
+    0.0,
+    0.8267
+   ],
+   "radius": 2.8641,
+   "cam_loc": [
+    0.6793,
+    0.0,
+    4.8696
+   ],
+   "focus_m": 4.0641,
+   "n_parts": 17,
+   "tris": 1844927
+  },
+  "NOSE": {
+   "camera": "MACRO_NOSE",
+   "centre": [
+    3.7518,
+    0.0,
+    1.4484
+   ],
+   "radius": 0.6178,
+   "cam_loc": [
+    3.9371,
+    0.0,
+    3.2567
+   ],
+   "focus_m": 1.8178,
+   "n_parts": 33,
+   "tris": 477818
+  },
+  "RW": {
+   "camera": "MACRO_RW",
+   "centre": [
+    -4.5911,
+    -0.0,
+    1.1635
+   ],
+   "radius": 0.716,
+   "cam_loc": [
+    -4.3477,
+    1.4162,
+    2.4308
+   ],
+   "focus_m": 1.916,
+   "n_parts": 97,
+   "tris": 535588
+  },
+  "SP": {
+   "camera": "MACRO_SP",
+   "centre": [
+    -1.0959,
+    0.0,
+    3.515
+   ],
+   "radius": 1.335,
+   "cam_loc": [
+    -0.8375,
+    0.0,
+    6.0368
+   ],
+   "focus_m": 2.535,
+   "n_parts": 13,
+   "tris": 485712
+  },
+  "SW": {
+   "camera": "MACRO_SW",
+   "centre": [
+    0.8056,
+    0.0,
+    2.0289
+   ],
+   "radius": 0.1923,
+   "cam_loc": [
+    -0.4186,
+    0.1526,
+    2.6743
+   ],
+   "focus_m": 1.3923,
+   "n_parts": 65,
+   "tris": 288904
+  }
+ }
+}

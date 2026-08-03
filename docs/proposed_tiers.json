@@ -1,0 +1,1246 @@
+{
+ "generated": "2026-08-03T03:58:55",
+ "SOURCE": "/home/zany/f1-round2/work/tier2/item_presence_a6_full.json -- measured, not assigned. This file is a PROPOSAL; docs/item_manifest.json is deliberately untouched, because changing the manifest is a decision and this is a measurement.",
+ "RULE": "HERO = >=300 px, sharp, unoccluded, on >=24 frames (1.0 s) in total. MID = >=150 px on >=12 frames. BULK = on screen but never both big and sharp for long enough. NEVER = not in frustum on any of the 2,978 frames. Only NEVER is a fact rather than a threshold.",
+ "INPUT_IDENTITY": {
+  "stamped_at": "2026-08-03T03:44:06",
+  "host": "zed",
+  "WHY": "Defect #97: a report changed on an unchanged blend because the telemetry and camera were rebuilt underneath it and nothing recorded it. sha256 is the load-bearing field; mtime and the declared version are context. A result that cannot be told apart from a stale one is not a result.",
+  "inputs": [
+   {
+    "role": "world",
+    "path": "/home/zany/f1-round2/render/world/assembly/r2/assembly6.blend",
+    "bytes": 4214168011,
+    "mtime": "2026-08-02T15:51:49",
+    "mtime_epoch": 1785685909,
+    "sha256": "82cd7065d66b24ec484eb5cc70e6a16883cf9e5fd524dfaa84037fcfca707dd1",
+    "declares": "1.2.0"
+   },
+   {
+    "role": "camera_path",
+    "path": "/home/zany/f1-round2/world/camera_rig_path.json",
+    "bytes": 335596,
+    "mtime": "2026-08-02T13:55:55",
+    "mtime_epoch": 1785678955,
+    "sha256": "635b7f3c6e8abcf40ddbd7403e81337a020bc10495d04aeac52226dcc84dc206",
+    "declares": "frames=2978"
+   },
+   {
+    "role": "telemetry",
+    "path": "/home/zany/f1-round2/telemetry/telemetry.csv",
+    "bytes": 246441,
+    "mtime": "2026-08-02T13:54:11",
+    "mtime_epoch": 1785678851,
+    "sha256": "2d2bc724dace125f28559e7c88f80680b6eaaf6b326dac33d8f70b8c44738726",
+    "declares": null
+   },
+   {
+    "role": "beat_sheet",
+    "path": "/home/zany/f1-round2/docs/beat_sheet.json",
+    "bytes": 139334,
+    "mtime": "2026-08-02T13:55:12",
+    "mtime_epoch": 1785678912,
+    "sha256": "dbcbc2296c97dd9d489866db77b7e3a6cbb8d4891f68168ffd246c9dc437022f",
+    "declares": "frames=2978 beats=6"
+   },
+   {
+    "role": "item_manifest",
+    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "bytes": 299660,
+    "mtime": "2026-07-28T18:44:54",
+    "mtime_epoch": 1785264294,
+    "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505",
+    "declares": null
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "bytes": 224176,
+    "mtime": "2026-08-02T15:30:02",
+    "mtime_epoch": 1785684602,
+    "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a",
+    "declares": "1.2.1"
+   },
+   {
+    "role": "points",
+    "path": "/home/zany/f1-round2/work/tier2/world_points_a6_full.npz",
+    "bytes": 8870932,
+    "mtime": "2026-08-03T03:32:56",
+    "mtime_epoch": 1785727976,
+    "sha256": "8213083e50434ecf0a754ea9c5ac27f29ae3ba488f7e695d79290c3a93a42ec7",
+    "declares": null
+   },
+   {
+    "role": "sweep_npz",
+    "path": "/home/zany/f1-round2/work/tier2/sp_points_a6_full.npz",
+    "bytes": 70460728,
+    "mtime": "2026-08-03T03:43:49",
+    "mtime_epoch": 1785728629,
+    "sha256": "153ba6ff79c4d4225174493a1064591ab8b841b332bc34ca17405c1e1b502941",
+    "declares": null
+   }
+  ]
+ },
+ "tier_counts": {
+  "BULK": 308,
+  "MID": 56,
+  "HERO": 71
+ },
+ "agents_per_round": {
+  "hero_build": {
+   "items": 71,
+   "agents": 47,
+   "unit": "(module, name-family); one agent owns the family and emits its children"
+  },
+  "reads_at_speed": {
+   "items": 56,
+   "agents": 40,
+   "unit": "(module, name-family); silhouette, mass, value, per-instance variation"
+  },
+  "texture_and_mass": {
+   "items": 308,
+   "agents": 22,
+   "unit": "(module, zone) cells of >=6 items get an agent each (16 cells, 267 items); the 20 cells under 6 items (41 items) roll into their module owner (architecture, barriers, car, dressing, surface, terrain)"
+  },
+  "adversarial_review": {
+   "agents": 39,
+   "frame_peeps": 28,
+   "macro_peeps": 11,
+   "macro_items": 21,
+   "unit": "28 FRAME-peeps -- one per vantage regime MEASURED in the built rig (beat x speed-band x lens-band x altitude-band, >=24 frames each), each judged at the real camera, lens, distance and shutter. Plus 11 MACRO-peeps, one per name-family among the 21 HERO items whose measured peak_sharp_px_4k exceeds 1000 -- the only items in the film that genuinely receive macro scrutiny. NOT one peep per item in a test scene at nearest_camera_m.",
+   "FRAME_PEEP_ROUTE": "VANTAGE REGIMES of the built camera rig -- the FRAME-peep count, derived.\n\n    python3 tools/frame_peeps.py --path world/camera_rig_path.json         --sheet docs/beat_sheet.json --out work/tier2/frame_peeps.json\n\nWHY THIS FILE EXISTS AT ALL\n---------------------------\n`docs/proposed_tiers.json` has, since 2026-08-02, asserted:\n\n    \"36 FRAME-peeps -- one per vantage regime MEASURED in the built rig\n     (beat x speed-band x lens-band x altitude-band, >=24 frames each;\n     36 of them covering 89% of the take)\"\n\nand **the script that produced it is not in the repository.**  It is not in\n`tools/`, not in `work/`, not in `anim/`; the strings \"FRAME-peep\",\n\"frame_peep\" and \"agents_per_round\" appear in exactly one file in the whole\nproject, which is the output itself.  So the 36 was, until this file, a\nnumber nobody could re-derive, sitting in the plan that decides how many\nadversarial reviewers a build round gets.\n\nCAN THE ORIGINAL BE RECOVERED FROM ITS OWN SIGNATURE?  NO -- AND THAT WAS\nTESTED RATHER THAN ASSUMED.  The old camera is recoverable (the `campos` and\n`lens` arrays inside `docs/screen_presence_points.npz` are the exact per-frame\ncamera the 12:19 run used), so the binning could be searched for directly.\n1,296 combinations of speed / lens / altitude band edges were swept against\nthat camera.  **Twelve of them land on exactly 36 regimes at 88-90 % coverage**\n-- among them speed edges as unlike each other as [1, 10, 40, 80] m/s and\n[2.78, 16.7, 55.6] m/s.  \"36 regimes, 89 %\" therefore does not identify a\nbinning.  Any band set reproducing it would be a coincidence dressed as a\nrecovery, so this file does NOT try to reproduce 36.  It states its own bands,\non stated grounds, and reports whatever they give.\n\nTHE ROUTE, WHICH IS THE POINT OF THIS FILE\n------------------------------------------\nA FRAME-peep judges one frame at the real camera, lens, distance and shutter.\nTwo frames need separate judging when what a reviewer would look at differs.\nFour axes, each cut where the PERCEPTUAL class changes, not on round numbers:\n\n  BEAT           the film's own six declared segments.  Different subject,\n                 different intent, and the beat is what a reviewer is told\n                 they are looking at.\n\n  SPEED BAND     film-time speed of the camera body, m/s, cut at 1 / 10 / 30.\n                 <1     the camera is effectively locked; the reviewer is\n                        judging static detail and every flaw holds still.\n                 1-10   walking to fast-jog; detail readable, edges softening.\n                 10-30  road speed; silhouette and value survive, macro does not.\n                 >=30   108 km/h and up -- beat 4 and 5's pace, where the\n                        measured smear exceeds the 6 px sharp threshold for\n                        anything close and only mass and tone are judgeable.\n                 Speed is FILM time (position delta x 24 fps), because the\n                 shutter is a flat 180 degrees of a FILM frame since R2-037 and\n                 the smear a reviewer sees is a film-frame quantity.\n\n  LENS BAND      cut at 28 / 50 / 85 mm, the photographic classes on this\n                 rig's 36 mm horizontal sensor: wide, normal, short tele, tele.\n                 These are the boundaries at which the relationship between\n                 subject size and background compression visibly changes, and\n                 they are not tuned to this film.\n\n  ALTITUDE BAND  camera z, cut at 2 / 6 / 15 m.\n                 <2     eye height -- the viewer reads it as standing there.\n                 2-6    vehicle / low crane.\n                 6-15   grandstand and gantry height.\n                 >=15   aerial.\n                 Absolute z, not height above terrain: the circuit's ground is\n                 within about a metre of z=0 across the whole camera corridor,\n                 and using absolute z keeps this tool free of any dependency on\n                 the terrain build, which is owned by another agent and moves.\n\n  MIN_FRAMES     24 (1.0 s).  A regime the camera passes through for under a\n                 second is not a vantage anyone can review; its frames are\n                 reported as UNCOVERED rather than silently folded into a\n                 neighbour, so the coverage figure is honest.\n\nThe band edges are CLI arguments.  Changing them changes the answer and the\noutput records the edges used, so two runs can be compared.\n",
+   "frame_peep_bands": {
+    "speed_ms_edges": [
+     1.0,
+     10.0,
+     30.0
+    ],
+    "lens_mm_edges": [
+     28.0,
+     50.0,
+     85.0
+    ],
+    "alt_m_edges": [
+     2.0,
+     6.0,
+     15.0
+    ],
+    "min_frames": 24
+   },
+   "frame_peep_coverage_pct": 94.5,
+   "macro_families": [
+    "breach",
+    "escarpment",
+    "glass",
+    "hedgerow",
+    "heras",
+    "lighting",
+    "mullion",
+    "paddock",
+    "showroom",
+    "shrub",
+    "tree"
+   ]
+  },
+  "TOTAL_PER_ROUND": 148
+ },
+ "bulk_cells": [
+  {
+   "module": "architecture",
+   "zone": "pit_lane",
+   "items": 53,
+   "own_agent": true
+  },
+  {
+   "module": "architecture",
+   "zone": "paddock",
+   "items": 26,
+   "own_agent": true
+  },
+  {
+   "module": "dressing",
+   "zone": "trackside",
+   "items": 24,
+   "own_agent": true
+  },
+  {
+   "module": "barriers",
+   "zone": "barriers",
+   "items": 18,
+   "own_agent": true
+  },
+  {
+   "module": "architecture",
+   "zone": "grandstand",
+   "items": 18,
+   "own_agent": true
+  },
+  {
+   "module": "showroom",
+   "zone": "showroom_breach",
+   "items": 15,
+   "own_agent": true
+  },
+  {
+   "module": "surface",
+   "zone": "track_surface",
+   "items": 15,
+   "own_agent": true
+  },
+  {
+   "module": "architecture",
+   "zone": "pit_building",
+   "items": 15,
+   "own_agent": true
+  },
+  {
+   "module": "architecture",
+   "zone": "pit_straight",
+   "items": 14,
+   "own_agent": true
+  },
+  {
+   "module": "terrain",
+   "zone": "vegetation",
+   "items": 13,
+   "own_agent": true
+  },
+  {
+   "module": "surface",
+   "zone": "kerbs_markings",
+   "items": 12,
+   "own_agent": true
+  },
+  {
+   "module": "dressing",
+   "zone": "pit_straight",
+   "items": 11,
+   "own_agent": true
+  },
+  {
+   "module": "architecture",
+   "zone": "crowd",
+   "items": 11,
+   "own_agent": true
+  },
+  {
+   "module": "dressing",
+   "zone": "ephemera",
+   "items": 10,
+   "own_agent": true
+  },
+  {
+   "module": "architecture",
+   "zone": "bridges",
+   "items": 6,
+   "own_agent": true
+  },
+  {
+   "module": "barriers",
+   "zone": "runoff",
+   "items": 6,
+   "own_agent": true
+  },
+  {
+   "module": "architecture",
+   "zone": "transit_corridor",
+   "items": 5,
+   "own_agent": false,
+   "rolls_into": "architecture"
+  },
+  {
+   "module": "dressing",
+   "zone": "pit_lane",
+   "items": 5,
+   "own_agent": false,
+   "rolls_into": "dressing"
+  },
+  {
+   "module": "barriers",
+   "zone": "ephemera",
+   "items": 3,
+   "own_agent": false,
+   "rolls_into": "barriers"
+  },
+  {
+   "module": "car",
+   "zone": "people",
+   "items": 3,
+   "own_agent": false,
+   "rolls_into": "car"
+  },
+  {
+   "module": "terrain",
+   "zone": "runoff",
+   "items": 3,
+   "own_agent": false,
+   "rolls_into": "terrain"
+  },
+  {
+   "module": "dressing",
+   "zone": "crowd",
+   "items": 3,
+   "own_agent": false,
+   "rolls_into": "dressing"
+  },
+  {
+   "module": "dressing",
+   "zone": "transit_corridor",
+   "items": 2,
+   "own_agent": false,
+   "rolls_into": "dressing"
+  },
+  {
+   "module": "barriers",
+   "zone": "transit_corridor",
+   "items": 2,
+   "own_agent": false,
+   "rolls_into": "barriers"
+  },
+  {
+   "module": "dressing",
+   "zone": "barriers",
+   "items": 2,
+   "own_agent": false,
+   "rolls_into": "dressing"
+  },
+  {
+   "module": "dressing",
+   "zone": "runoff",
+   "items": 2,
+   "own_agent": false,
+   "rolls_into": "dressing"
+  },
+  {
+   "module": "dressing",
+   "zone": "grandstand",
+   "items": 2,
+   "own_agent": false,
+   "rolls_into": "dressing"
+  },
+  {
+   "module": "surface",
+   "zone": "ephemera",
+   "items": 1,
+   "own_agent": false,
+   "rolls_into": "surface"
+  },
+  {
+   "module": "surface",
+   "zone": "transit_corridor",
+   "items": 1,
+   "own_agent": false,
+   "rolls_into": "surface"
+  },
+  {
+   "module": "dressing",
+   "zone": "bridges",
+   "items": 1,
+   "own_agent": false,
+   "rolls_into": "dressing"
+  },
+  {
+   "module": "terrain",
+   "zone": "ephemera",
+   "items": 1,
+   "own_agent": false,
+   "rolls_into": "terrain"
+  },
+  {
+   "module": "architecture",
+   "zone": "people",
+   "items": 1,
+   "own_agent": false,
+   "rolls_into": "architecture"
+  },
+  {
+   "module": "dressing",
+   "zone": "pit_building",
+   "items": 1,
+   "own_agent": false,
+   "rolls_into": "dressing"
+  },
+  {
+   "module": "terrain",
+   "zone": "crowd",
+   "items": 1,
+   "own_agent": false,
+   "rolls_into": "terrain"
+  },
+  {
+   "module": "dressing",
+   "zone": "people",
+   "items": 1,
+   "own_agent": false,
+   "rolls_into": "dressing"
+  },
+  {
+   "module": "barriers",
+   "zone": "grandstand",
+   "items": 1,
+   "own_agent": false,
+   "rolls_into": "barriers"
+  }
+ ],
+ "groups": {
+  "HERO": [
+   {
+    "family": [
+     "architecture",
+     "awning"
+    ],
+    "items": [
+     "awning_leg"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "crew"
+    ],
+    "items": [
+     "crew_figure"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "finger"
+    ],
+    "items": [
+     "finger_post_sign"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "fire"
+    ],
+    "items": [
+     "fire_point_station"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "food"
+    ],
+    "items": [
+     "food_concession_unit"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "forklift"
+    ],
+    "items": [
+     "forklift_truck"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "gas"
+    ],
+    "items": [
+     "gas_bottle",
+     "gas_bottle_cage"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "generator"
+    ],
+    "items": [
+     "generator_unit"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "grandstand"
+    ],
+    "items": [
+     "grandstand_column",
+     "grandstand_tower"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "heras"
+    ],
+    "items": [
+     "heras_fence_panel"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "jersey"
+    ],
+    "items": [
+     "jersey_barrier"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "lighting"
+    ],
+    "items": [
+     "lighting_mast"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "media"
+    ],
+    "items": [
+     "media_centre_building"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "medical"
+    ],
+    "items": [
+     "medical_centre_building"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "merchandise"
+    ],
+    "items": [
+     "merchandise_stall"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "paddock"
+    ],
+    "items": [
+     "paddock_gate",
+     "paddock_personnel_figure"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pallet"
+    ],
+    "items": [
+     "pallet_stack",
+     "pallet_truck"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "parasol"
+    ],
+    "items": [
+     "parasol"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pont"
+    ],
+    "items": [
+     "pont_abutment"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "portable"
+    ],
+    "items": [
+     "portable_toilet_block"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "skip"
+    ],
+    "items": [
+     "skip_container"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "spectator"
+    ],
+    "items": [
+     "spectator_entrance_gate"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "steward"
+    ],
+    "items": [
+     "steward_figure"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "timing"
+    ],
+    "items": [
+     "timing_tower"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "water"
+    ],
+    "items": [
+     "water_tank_ibc"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "catch_fence"
+    ],
+    "items": [
+     "catch_fence_mesh_panel",
+     "catch_fence_post"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "marshal"
+    ],
+    "items": [
+     "marshal_access_gate"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "transit"
+    ],
+    "items": [
+     "transit_debris_fence",
+     "transit_tyre_wall_stack"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "tyre_wall"
+    ],
+    "items": [
+     "tyre_wall_belt_facing"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "heras"
+    ],
+    "items": [
+     "heras_banner_scrim"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "marshal"
+    ],
+    "items": [
+     "marshal_figure_seated",
+     "marshal_figure_standing",
+     "marshal_overall"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "photographer"
+    ],
+    "items": [
+     "photographer_figure"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "traffic"
+    ],
+    "items": [
+     "traffic_cone"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "breach"
+    ],
+    "items": [
+     "breach_dust_column",
+     "breach_dust_ground_burst"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "forecourt"
+    ],
+    "items": [
+     "forecourt_bollard"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "glass"
+    ],
+    "items": [
+     "glass_panel_prefractured"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "mullion"
+    ],
+    "items": [
+     "mullion_bent_stub",
+     "mullion_intact"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "showroom"
+    ],
+    "items": [
+     "showroom_rainwater_goods"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "wall"
+    ],
+    "items": [
+     "wall_stud_framing"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "escarpment"
+    ],
+    "items": [
+     "escarpment_skyline"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "ga"
+    ],
+    "items": [
+     "ga_viewing_bank"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "grass_clump"
+    ],
+    "items": [
+     "grass_clump_reed"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "hedgerow"
+    ],
+    "items": [
+     "hedgerow_section"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "log"
+    ],
+    "items": [
+     "log_pile"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "paddock"
+    ],
+    "items": [
+     "paddock_avenue_tree"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "shrub"
+    ],
+    "items": [
+     "shrub_bramble",
+     "shrub_broom",
+     "shrub_gorse",
+     "shrub_hazel",
+     "shrub_juniper"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "tree"
+    ],
+    "items": [
+     "tree_crack_willow",
+     "tree_dead_standing",
+     "tree_hawthorn",
+     "tree_italian_cypress",
+     "tree_lombardy_poplar",
+     "tree_london_plane",
+     "tree_oak",
+     "tree_rowan",
+     "tree_sapling",
+     "tree_scots_pine",
+     "tree_silver_birch"
+    ]
+   }
+  ],
+  "MID": [
+   {
+    "family": [
+     "architecture",
+     "access"
+    ],
+    "items": [
+     "access_road_gully"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "ambulance"
+    ],
+    "items": [
+     "ambulance"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "big"
+    ],
+    "items": [
+     "big_screen",
+     "big_screen_tower"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "cable"
+    ],
+    "items": [
+     "cable_reel_drum"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "catering"
+    ],
+    "items": [
+     "catering_counter"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "crowd"
+    ],
+    "items": [
+     "crowd_density_field",
+     "crowd_idle_motion"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "fire"
+    ],
+    "items": [
+     "fire_tender"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "flight"
+    ],
+    "items": [
+     "flight_case"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "folding"
+    ],
+    "items": [
+     "folding_chair",
+     "folding_table"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "fuel"
+    ],
+    "items": [
+     "fuel_drum"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "gantry"
+    ],
+    "items": [
+     "gantry_ladder",
+     "gantry_leg"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "la_passerelle"
+    ],
+    "items": [
+     "la_passerelle_stair",
+     "la_passerelle_tower"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "lighting"
+    ],
+    "items": [
+     "lighting_mast_head"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "paddock"
+    ],
+    "items": [
+     "paddock_manhole_cover",
+     "paddock_planter"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pedestrian"
+    ],
+    "items": [
+     "pedestrian_crowd_barrier"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pit_building"
+    ],
+    "items": [
+     "pit_building_stair_core",
+     "pit_building_west_gable"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pit_exit"
+    ],
+    "items": [
+     "pit_exit_portal_frame"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "pont"
+    ],
+    "items": [
+     "pont_girder"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "power"
+    ],
+    "items": [
+     "power_distribution_board"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "recovery"
+    ],
+    "items": [
+     "recovery_crane_truck",
+     "recovery_tractor"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "spectator"
+    ],
+    "items": [
+     "spectator_seated",
+     "spectator_seated_leaning",
+     "spectator_standing_at_rail",
+     "spectator_standing_ga",
+     "spectator_standing_in_row",
+     "spectator_with_phone"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "trash"
+    ],
+    "items": [
+     "trash_can"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "wheelie"
+    ],
+    "items": [
+     "wheelie_bin"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "apron"
+    ],
+    "items": [
+     "apron_wall_panel"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "armco"
+    ],
+    "items": [
+     "armco_post"
+    ]
+   },
+   {
+    "family": [
+     "barriers",
+     "tyre_wall"
+    ],
+    "items": [
+     "tyre_wall_tyre"
+    ]
+   },
+   {
+    "family": [
+     "car",
+     "driver"
+    ],
+    "items": [
+     "driver_figure",
+     "driver_race_suit"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "catch_fence"
+    ],
+    "items": [
+     "catch_fence_banner"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "crowd"
+    ],
+    "items": [
+     "crowd_banner_draped"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "free"
+    ],
+    "items": [
+     "free_standing_hoarding"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "hi"
+    ],
+    "items": [
+     "hi_vis_tabard"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "hoarding"
+    ],
+    "items": [
+     "hoarding_leg"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "marshal"
+    ],
+    "items": [
+     "marshal_broom",
+     "marshal_figure_flagging",
+     "marshal_post_column"
+    ]
+   },
+   {
+    "family": [
+     "dressing",
+     "tv"
+    ],
+    "items": [
+     "tv_camera_mast"
+    ]
+   },
+   {
+    "family": [
+     "showroom",
+     "showroom"
+    ],
+    "items": [
+     "showroom_facade_panel"
+    ]
+   },
+   {
+    "family": [
+     "surface",
+     "access"
+    ],
+    "items": [
+     "access_road_slab"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "fern"
+    ],
+    "items": [
+     "fern_clump"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "grass_clump"
+    ],
+    "items": [
+     "grass_clump_tussock"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "planter"
+    ],
+    "items": [
+     "planter_shrub"
+    ]
+   },
+   {
+    "family": [
+     "terrain",
+     "puddle"
+    ],
+    "items": [
+     "puddle"
+    ]
+   }
+  ]
+ },
+ "comparison": {
+  "against": "/home/zany/f1-round2/docs/proposed_tiers_SUPERSEDED_a2_contract101.json",
+  "against_generated": "2026-08-02T12:19:19",
+  "previous": {
+   "tier_counts": {
+    "BULK": 297,
+    "MID": 63,
+    "HERO": 75
+   },
+   "agents": {
+    "hero_build": 51,
+    "reads_at_speed": 45,
+    "texture_and_mass": 22,
+    "adversarial_review": 51,
+    "TOTAL_PER_ROUND": 169
+   }
+  },
+  "now": {
+   "tier_counts": {
+    "BULK": 308,
+    "MID": 56,
+    "HERO": 71
+   },
+   "agents": {
+    "hero_build": 47,
+    "reads_at_speed": 40,
+    "texture_and_mass": 22,
+    "adversarial_review": 39,
+    "TOTAL_PER_ROUND": 148
+   }
+  }
+ }
+}

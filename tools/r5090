@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Render on the rented RTX 5090 instead of the local GTX 1070. USE THIS.
+#
+#   tools/r5090 <scene.blend> <CameraName> <out.png> [samples] [W H]
+#
+# The 5090 is ~25x the local card and the user pays for it precisely so quality
+# is never traded for speed. The local 1070 is a fallback for when the broker is
+# genuinely down, not a default.
+#
+# The scene must live under a permitted root (f1-round2/world, f1-round2/render,
+# or opus5-car-render/work) — that containment check is a deliberate traversal
+# guard, not an obstacle to route around.
+#
+# NOTE ON CAMERAS: the worker discovers cameras from the blend at load and
+# PREWARMS EVERY ONE (~4 s each). A blend with 19 cameras blew the readiness
+# probe and got a healthy instance destroyed. Keep test blends to a few cameras.
+#
+# NOTE ON DOF: not passing --nodof leaves the camera's own authored/animated
+# depth of field alone, which is what you almost always want. `--nodof` is an
+# override that FORCES it off.
+set -euo pipefail
+SCENE=$(readlink -f "${1:?scene.blend}")
+CAM="${2:?camera name}"
+OUT=$(readlink -f "${3:?out.png}")
+SAMPLES="${4:-512}"
+W="${5:-3840}"; H="${6:-2160}"
+mkdir -p "$(dirname "$OUT")"
+cd /home/zany/vast-render
+echo ">> 5090: $(basename "$SCENE") cam=$CAM ${W}x${H} @${SAMPLES}"
+./rq render --scene "$SCENE" --cam "$CAM" --res "$W" "$H" \
+            --samples "$SAMPLES" --wait -o "$OUT"
+echo ">> saved $OUT  ($(stat -c%s "$OUT" 2>/dev/null | awk '{printf "%.1f MB",$1/1048576}'))"

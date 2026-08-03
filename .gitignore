@@ -1,0 +1,44 @@
+# Version control exists here for ONE reason: on 2026-08-03 an agent's edit sliced
+# world/items/HUMAN-REFERENCE.md from a heading to end of file, 1,655 lines -> 538.
+# There was no git, no backup, and the content was not recoverable from the
+# transcript. Sections 000 and 1-7 -- the layer map, the LOD table, and the
+# amplitude/frequency traps and guard rails, i.e. the "how to build a figure"
+# half -- are PERMANENTLY LOST.
+#
+# So: track the SOURCE and the REASONING. Do not track the artefacts, which are
+# large, regenerable, and would make commits useless.
+
+# Renders, blends, caches, bakes -- all regenerable, all enormous
+*.blend
+*.blend1
+*.blend2
+*.png
+*.jpg
+*.exr
+*.npz
+*.wav
+*.flac
+*.mp4
+*.bphys
+render/
+work/
+sim/tmp/
+__pycache__/
+*.pyc
+.venv/
+
+# Large generated data. The DOCS in docs/ are tracked; these are not.
+docs/screen_presence*.json
+docs/screen_presence*_objects.json
+docs/*_points.npz
+docs/beat_sheet.json
+docs/collision_report.json
+docs/placement*.json
+docs/depth_probe.json
+docs/instance_variety.json
+docs/presentation_normals.json
+docs/inventory_iter.json
+
+# Telemetry is generated from the spec, but it IS the single source of truth for
+# motion AND audio and it has been wrong in ways that took a day to find. Track it.
+!telemetry/telemetry.csv

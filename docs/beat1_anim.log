@@ -1,0 +1,26 @@
+00:00.393  blend            | Read blend: "/home/zany/opus5-car-render/work/iter.blend"
+>> seat check: worst deviation 0.0000 mm over 616 parts, 0 stragglers
+Info: Total files 1 | Changed 0 | Failed 0
+Info: Saved as "beat1_anim.blend"
+>> animated 616 objects across 15 clusters
+>> frames 1..792 @ 24 fps (33.0 s)
+   MB                17 parts  land f333-341
+   FD                10 parts  land f366-374
+   BB                10 parts  land f399-407
+   EC                13 parts  land f432-440
+   CI                15 parts  land f465-473
+   SW                65 parts  land f498-506
+   halo_assembly     53 parts  land f531-539
+   SP                13 parts  land f564-572
+   NOSE              33 parts  land f597-605
+   FW               120 parts  land f630-638
+   RW                97 parts  land f663-671
+   CORNER_FL         41 parts  land f696-704
+   CORNER_FR         41 parts  land f696-704
+   CORNER_RL         44 parts  land f696-704
+   CORNER_RR         44 parts  land f696-704
+>> saved /home/zany/f1-round2/world/beat1_anim.blend (277.7 MB)
+>> STAGE RESULT: BEAT1_ANIM_OK
+Blender 5.2.0 LTS (hash fbe6228777e7 built 2026-07-14 01:32:04)
+
+Blender quit

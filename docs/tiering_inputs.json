@@ -1,0 +1,79 @@
+{
+ "stamped_at": "2026-08-03T03:44:06",
+ "host": "zed",
+ "WHY": "Defect #97: a report changed on an unchanged blend because the telemetry and camera were rebuilt underneath it and nothing recorded it. sha256 is the load-bearing field; mtime and the declared version are context. A result that cannot be told apart from a stale one is not a result.",
+ "inputs": [
+  {
+   "role": "world",
+   "path": "/home/zany/f1-round2/render/world/assembly/r2/assembly6.blend",
+   "bytes": 4214168011,
+   "mtime": "2026-08-02T15:51:49",
+   "mtime_epoch": 1785685909,
+   "sha256": "82cd7065d66b24ec484eb5cc70e6a16883cf9e5fd524dfaa84037fcfca707dd1",
+   "declares": "1.2.0"
+  },
+  {
+   "role": "camera_path",
+   "path": "/home/zany/f1-round2/world/camera_rig_path.json",
+   "bytes": 335596,
+   "mtime": "2026-08-02T13:55:55",
+   "mtime_epoch": 1785678955,
+   "sha256": "635b7f3c6e8abcf40ddbd7403e81337a020bc10495d04aeac52226dcc84dc206",
+   "declares": "frames=2978"
+  },
+  {
+   "role": "telemetry",
+   "path": "/home/zany/f1-round2/telemetry/telemetry.csv",
+   "bytes": 246441,
+   "mtime": "2026-08-02T13:54:11",
+   "mtime_epoch": 1785678851,
+   "sha256": "2d2bc724dace125f28559e7c88f80680b6eaaf6b326dac33d8f70b8c44738726",
+   "declares": null
+  },
+  {
+   "role": "beat_sheet",
+   "path": "/home/zany/f1-round2/docs/beat_sheet.json",
+   "bytes": 139334,
+   "mtime": "2026-08-02T13:55:12",
+   "mtime_epoch": 1785678912,
+   "sha256": "dbcbc2296c97dd9d489866db77b7e3a6cbb8d4891f68168ffd246c9dc437022f",
+   "declares": "frames=2978 beats=6"
+  },
+  {
+   "role": "item_manifest",
+   "path": "/home/zany/f1-round2/docs/item_manifest.json",
+   "bytes": 299660,
+   "mtime": "2026-07-28T18:44:54",
+   "mtime_epoch": 1785264294,
+   "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505",
+   "declares": null
+  },
+  {
+   "role": "world_contract",
+   "path": "/home/zany/f1-round2/world/world_contract.py",
+   "bytes": 224176,
+   "mtime": "2026-08-02T15:30:02",
+   "mtime_epoch": 1785684602,
+   "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a",
+   "declares": "1.2.1"
+  },
+  {
+   "role": "points",
+   "path": "/home/zany/f1-round2/work/tier2/world_points_a6_full.npz",
+   "bytes": 8870932,
+   "mtime": "2026-08-03T03:32:56",
+   "mtime_epoch": 1785727976,
+   "sha256": "8213083e50434ecf0a754ea9c5ac27f29ae3ba488f7e695d79290c3a93a42ec7",
+   "declares": null
+  },
+  {
+   "role": "sweep_npz",
+   "path": "/home/zany/f1-round2/work/tier2/sp_points_a6_full.npz",
+   "bytes": 70460728,
+   "mtime": "2026-08-03T03:43:49",
+   "mtime_epoch": 1785728629,
+   "sha256": "153ba6ff79c4d4225174493a1064591ab8b841b332bc34ca17405c1e1b502941",
+   "declares": null
+  }
+ ]
+}

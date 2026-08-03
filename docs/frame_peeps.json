@@ -1,0 +1,1020 @@
+{
+ "generated": "2026-08-03T03:44:06",
+ "camera_source": "/home/zany/f1-round2/world/camera_rig_path.json",
+ "beat_sheet": "/home/zany/f1-round2/docs/beat_sheet.json",
+ "frames": 2978,
+ "bands": {
+  "speed_ms_edges": [
+   1.0,
+   10.0,
+   30.0
+  ],
+  "lens_mm_edges": [
+   28.0,
+   50.0,
+   85.0
+  ],
+  "alt_m_edges": [
+   2.0,
+   6.0,
+   15.0
+  ],
+  "min_frames": 24
+ },
+ "FRAME_PEEPS": 28,
+ "regimes_total": 43,
+ "coverage_pct": 94.5,
+ "uncovered_frames": 165,
+ "ROUTE": "VANTAGE REGIMES of the built camera rig -- the FRAME-peep count, derived.\n\n    python3 tools/frame_peeps.py --path world/camera_rig_path.json         --sheet docs/beat_sheet.json --out work/tier2/frame_peeps.json\n\nWHY THIS FILE EXISTS AT ALL\n---------------------------\n`docs/proposed_tiers.json` has, since 2026-08-02, asserted:\n\n    \"36 FRAME-peeps -- one per vantage regime MEASURED in the built rig\n     (beat x speed-band x lens-band x altitude-band, >=24 frames each;\n     36 of them covering 89% of the take)\"\n\nand **the script that produced it is not in the repository.**  It is not in\n`tools/`, not in `work/`, not in `anim/`; the strings \"FRAME-peep\",\n\"frame_peep\" and \"agents_per_round\" appear in exactly one file in the whole\nproject, which is the output itself.  So the 36 was, until this file, a\nnumber nobody could re-derive, sitting in the plan that decides how many\nadversarial reviewers a build round gets.\n\nCAN THE ORIGINAL BE RECOVERED FROM ITS OWN SIGNATURE?  NO -- AND THAT WAS\nTESTED RATHER THAN ASSUMED.  The old camera is recoverable (the `campos` and\n`lens` arrays inside `docs/screen_presence_points.npz` are the exact per-frame\ncamera the 12:19 run used), so the binning could be searched for directly.\n1,296 combinations of speed / lens / altitude band edges were swept against\nthat camera.  **Twelve of them land on exactly 36 regimes at 88-90 % coverage**\n-- among them speed edges as unlike each other as [1, 10, 40, 80] m/s and\n[2.78, 16.7, 55.6] m/s.  \"36 regimes, 89 %\" therefore does not identify a\nbinning.  Any band set reproducing it would be a coincidence dressed as a\nrecovery, so this file does NOT try to reproduce 36.  It states its own bands,\non stated grounds, and reports whatever they give.\n\nTHE ROUTE, WHICH IS THE POINT OF THIS FILE\n------------------------------------------\nA FRAME-peep judges one frame at the real camera, lens, distance and shutter.\nTwo frames need separate judging when what a reviewer would look at differs.\nFour axes, each cut where the PERCEPTUAL class changes, not on round numbers:\n\n  BEAT           the film's own six declared segments.  Different subject,\n                 different intent, and the beat is what a reviewer is told\n                 they are looking at.\n\n  SPEED BAND     film-time speed of the camera body, m/s, cut at 1 / 10 / 30.\n                 <1     the camera is effectively locked; the reviewer is\n                        judging static detail and every flaw holds still.\n                 1-10   walking to fast-jog; detail readable, edges softening.\n                 10-30  road speed; silhouette and value survive, macro does not.\n                 >=30   108 km/h and up -- beat 4 and 5's pace, where the\n                        measured smear exceeds the 6 px sharp threshold for\n                        anything close and only mass and tone are judgeable.\n                 Speed is FILM time (position delta x 24 fps), because the\n                 shutter is a flat 180 degrees of a FILM frame since R2-037 and\n                 the smear a reviewer sees is a film-frame quantity.\n\n  LENS BAND      cut at 28 / 50 / 85 mm, the photographic classes on this\n                 rig's 36 mm horizontal sensor: wide, normal, short tele, tele.\n                 These are the boundaries at which the relationship between\n                 subject size and background compression visibly changes, and\n                 they are not tuned to this film.\n\n  ALTITUDE BAND  camera z, cut at 2 / 6 / 15 m.\n                 <2     eye height -- the viewer reads it as standing there.\n                 2-6    vehicle / low crane.\n                 6-15   grandstand and gantry height.\n                 >=15   aerial.\n                 Absolute z, not height above terrain: the circuit's ground is\n                 within about a metre of z=0 across the whole camera corridor,\n                 and using absolute z keeps this tool free of any dependency on\n                 the terrain build, which is owned by another agent and moves.\n\n  MIN_FRAMES     24 (1.0 s).  A regime the camera passes through for under a\n                 second is not a vantage anyone can review; its frames are\n                 reported as UNCOVERED rather than silently folded into a\n                 neighbour, so the coverage figure is honest.\n\nThe band edges are CLI arguments.  Changing them changes the answer and the\noutput records the edges used, so two runs can be compared.\n",
+ "regimes": [
+  {
+   "beat": "5_lap",
+   "speed_band": "race_gte30",
+   "lens_band": "normal_28_50",
+   "alt_band": "low_2_6",
+   "frames": 456,
+   "frame_first": 1191,
+   "frame_last": 2664,
+   "representative_frame": 1458,
+   "speed_ms": [
+    33.37,
+    101.92
+   ],
+   "lens_mm": [
+    30.3,
+    49.93
+   ],
+   "alt_m": [
+    2.03,
+    5.98
+   ],
+   "kept": true
+  },
+  {
+   "beat": "1_assembly",
+   "speed_band": "slow_1_10",
+   "lens_band": "normal_28_50",
+   "alt_band": "low_2_6",
+   "frames": 359,
+   "frame_first": 3,
+   "frame_last": 741,
+   "representative_frame": 271,
+   "speed_ms": [
+    1.0,
+    7.82
+   ],
+   "lens_mm": [
+    35.0,
+    49.75
+   ],
+   "alt_m": [
+    2.0,
+    5.96
+   ],
+   "kept": true
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "race_gte30",
+   "lens_band": "shorttele_50_85",
+   "alt_band": "aerial_gte15",
+   "frames": 355,
+   "frame_first": 1825,
+   "frame_last": 2179,
+   "representative_frame": 2002,
+   "speed_ms": [
+    47.57,
+    97.81
+   ],
+   "lens_mm": [
+    50.0,
+    82.96
+   ],
+   "alt_m": [
+    15.1,
+    55.6
+   ],
+   "kept": true
+  },
+  {
+   "beat": "1_assembly",
+   "speed_band": "slow_1_10",
+   "lens_band": "shorttele_50_85",
+   "alt_band": "low_2_6",
+   "frames": 175,
+   "frame_first": 153,
+   "frame_last": 527,
+   "representative_frame": 413,
+   "speed_ms": [
+    1.01,
+    7.28
+   ],
+   "lens_mm": [
+    50.0,
+    58.0
+   ],
+   "alt_m": [
+    2.01,
+    4.63
+   ],
+   "kept": true
+  },
+  {
+   "beat": "6_ending",
+   "speed_band": "race_gte30",
+   "lens_band": "wide_lt28",
+   "alt_band": "aerial_gte15",
+   "frames": 141,
+   "frame_first": 2715,
+   "frame_last": 2855,
+   "representative_frame": 2785,
+   "speed_ms": [
+    30.11,
+    62.65
+   ],
+   "lens_mm": [
+    18.76,
+    23.97
+   ],
+   "alt_m": [
+    28.45,
+    126.49
+   ],
+   "kept": true
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "race_gte30",
+   "lens_band": "shorttele_50_85",
+   "alt_band": "low_2_6",
+   "frames": 128,
+   "frame_first": 2410,
+   "frame_last": 2537,
+   "representative_frame": 2473,
+   "speed_ms": [
+    52.22,
+    63.21
+   ],
+   "lens_mm": [
+    50.49,
+    84.98
+   ],
+   "alt_m": [
+    4.69,
+    5.61
+   ],
+   "kept": true
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "race_gte30",
+   "lens_band": "normal_28_50",
+   "alt_band": "high_6_15",
+   "frames": 109,
+   "frame_first": 1356,
+   "frame_last": 2690,
+   "representative_frame": 1741,
+   "speed_ms": [
+    39.09,
+    82.12
+   ],
+   "lens_mm": [
+    28.0,
+    40.0
+   ],
+   "alt_m": [
+    6.02,
+    14.8
+   ],
+   "kept": true
+  },
+  {
+   "beat": "3_breach",
+   "speed_band": "slow_1_10",
+   "lens_band": "wide_lt28",
+   "alt_band": "low_2_6",
+   "frames": 95,
+   "frame_first": 897,
+   "frame_last": 1002,
+   "representative_frame": 944,
+   "speed_ms": [
+    2.52,
+    9.99
+   ],
+   "lens_mm": [
+    21.0,
+    27.99
+   ],
+   "alt_m": [
+    2.0,
+    4.86
+   ],
+   "kept": true
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "fast_10_30",
+   "lens_band": "normal_28_50",
+   "alt_band": "eye_lt2",
+   "frames": 91,
+   "frame_first": 1527,
+   "frame_last": 1647,
+   "representative_frame": 1602,
+   "speed_ms": [
+    19.86,
+    29.95
+   ],
+   "lens_mm": [
+    28.11,
+    45.78
+   ],
+   "alt_m": [
+    -0.82,
+    1.1
+   ],
+   "kept": true
+  },
+  {
+   "beat": "1_assembly",
+   "speed_band": "slow_1_10",
+   "lens_band": "shorttele_50_85",
+   "alt_band": "eye_lt2",
+   "frames": 83,
+   "frame_first": 528,
+   "frame_last": 617,
+   "representative_frame": 576,
+   "speed_ms": [
+    1.03,
+    3.58
+   ],
+   "lens_mm": [
+    50.04,
+    58.0
+   ],
+   "alt_m": [
+    1.83,
+    2.0
+   ],
+   "kept": true
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "race_gte30",
+   "lens_band": "normal_28_50",
+   "alt_band": "eye_lt2",
+   "frames": 76,
+   "frame_first": 1516,
+   "frame_last": 1682,
+   "representative_frame": 1568,
+   "speed_ms": [
+    30.12,
+    43.72
+   ],
+   "lens_mm": [
+    28.89,
+    49.73
+   ],
+   "alt_m": [
+    -0.81,
+    2.0
+   ],
+   "kept": true
+  },
+  {
+   "beat": "6_ending",
+   "speed_band": "locked_lt1",
+   "lens_band": "wide_lt28",
+   "alt_band": "aerial_gte15",
+   "frames": 74,
+   "frame_first": 2905,
+   "frame_last": 2978,
+   "representative_frame": 2941,
+   "speed_ms": [
+    0.0,
+    0.42
+   ],
+   "lens_mm": [
+    18.75,
+    18.75
+   ],
+   "alt_m": [
+    139.99,
+    140.0
+   ],
+   "kept": true
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "race_gte30",
+   "lens_band": "tele_gte85",
+   "alt_band": "high_6_15",
+   "frames": 66,
+   "frame_first": 2194,
+   "frame_last": 2399,
+   "representative_frame": 2366,
+   "speed_ms": [
+    39.95,
+    58.15
+   ],
+   "lens_mm": [
+    85.0,
+    119.62
+   ],
+   "alt_m": [
+    6.01,
+    13.18
+   ],
+   "kept": true
+  },
+  {
+   "beat": "2_launch",
+   "speed_band": "slow_1_10",
+   "lens_band": "normal_28_50",
+   "alt_band": "eye_lt2",
+   "frames": 63,
+   "frame_first": 793,
+   "frame_last": 864,
+   "representative_frame": 833,
+   "speed_ms": [
+    1.34,
+    9.82
+   ],
+   "lens_mm": [
+    28.0,
+    39.95
+   ],
+   "alt_m": [
+    0.58,
+    1.5
+   ],
+   "kept": true
+  },
+  {
+   "beat": "1_assembly",
+   "speed_band": "locked_lt1",
+   "lens_band": "shorttele_50_85",
+   "alt_band": "low_2_6",
+   "frames": 55,
+   "frame_first": 166,
+   "frame_last": 483,
+   "representative_frame": 354,
+   "speed_ms": [
+    0.1,
+    1.0
+   ],
+   "lens_mm": [
+    50.53,
+    58.0
+   ],
+   "alt_m": [
+    2.14,
+    4.64
+   ],
+   "kept": true
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "race_gte30",
+   "lens_band": "normal_28_50",
+   "alt_band": "aerial_gte15",
+   "frames": 55,
+   "frame_first": 1770,
+   "frame_last": 1824,
+   "representative_frame": 1797,
+   "speed_ms": [
+    46.39,
+    61.15
+   ],
+   "lens_mm": [
+    37.3,
+    49.99
+   ],
+   "alt_m": [
+    15.09,
+    32.61
+   ],
+   "kept": true
+  },
+  {
+   "beat": "1_assembly",
+   "speed_band": "locked_lt1",
+   "lens_band": "normal_28_50",
+   "alt_band": "low_2_6",
+   "frames": 50,
+   "frame_first": 1,
+   "frame_last": 380,
+   "representative_frame": 355,
+   "speed_ms": [
+    0.1,
+    0.99
+   ],
+   "lens_mm": [
+    35.0,
+    49.75
+   ],
+   "alt_m": [
+    2.44,
+    5.99
+   ],
+   "kept": true
+  },
+  {
+   "beat": "4_transit",
+   "speed_band": "race_gte30",
+   "lens_band": "normal_28_50",
+   "alt_band": "high_6_15",
+   "frames": 47,
+   "frame_first": 1095,
+   "frame_last": 1186,
+   "representative_frame": 1163,
+   "speed_ms": [
+    30.59,
+    79.19
+   ],
+   "lens_mm": [
+    33.22,
+    35.0
+   ],
+   "alt_m": [
+    6.1,
+    14.85
+   ],
+   "kept": true
+  },
+  {
+   "beat": "1_assembly",
+   "speed_band": "slow_1_10",
+   "lens_band": "normal_28_50",
+   "alt_band": "eye_lt2",
+   "frames": 45,
+   "frame_first": 618,
+   "frame_last": 792,
+   "representative_frame": 752,
+   "speed_ms": [
+    1.02,
+    3.33
+   ],
+   "lens_mm": [
+    39.72,
+    49.61
+   ],
+   "alt_m": [
+    1.3,
+    2.0
+   ],
+   "kept": true
+  },
+  {
+   "beat": "4_transit",
+   "speed_band": "race_gte30",
+   "lens_band": "normal_28_50",
+   "alt_band": "aerial_gte15",
+   "frames": 45,
+   "frame_first": 1108,
+   "frame_last": 1152,
+   "representative_frame": 1130,
+   "speed_ms": [
+    40.97,
+    70.18
+   ],
+   "lens_mm": [
+    34.91,
+    35.0
+   ],
+   "alt_m": [
+    15.02,
+    16.97
+   ],
+   "kept": true
+  },
+  {
+   "beat": "3_breach",
+   "speed_band": "slow_1_10",
+   "lens_band": "normal_28_50",
+   "alt_band": "low_2_6",
+   "frames": 43,
+   "frame_first": 1003,
+   "frame_last": 1045,
+   "representative_frame": 1024,
+   "speed_ms": [
+    8.19,
+    9.81
+   ],
+   "lens_mm": [
+    28.01,
+    32.0
+   ],
+   "alt_m": [
+    4.89,
+    5.59
+   ],
+   "kept": true
+  },
+  {
+   "beat": "6_ending",
+   "speed_band": "fast_10_30",
+   "lens_band": "wide_lt28",
+   "alt_band": "aerial_gte15",
+   "frames": 35,
+   "frame_first": 2856,
+   "frame_last": 2890,
+   "representative_frame": 2873,
+   "speed_ms": [
+    10.07,
+    29.77
+   ],
+   "lens_mm": [
+    18.75,
+    18.75
+   ],
+   "alt_m": [
+    127.02,
+    138.46
+   ],
+   "kept": true
+  },
+  {
+   "beat": "3_breach",
+   "speed_band": "slow_1_10",
+   "lens_band": "wide_lt28",
+   "alt_band": "eye_lt2",
+   "frames": 32,
+   "frame_first": 865,
+   "frame_last": 896,
+   "representative_frame": 880,
+   "speed_ms": [
+    2.33,
+    5.23
+   ],
+   "lens_mm": [
+    21.0,
+    27.98
+   ],
+   "alt_m": [
+    1.52,
+    1.99
+   ],
+   "kept": true
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "race_gte30",
+   "lens_band": "shorttele_50_85",
+   "alt_band": "high_6_15",
+   "frames": 32,
+   "frame_first": 2180,
+   "frame_last": 2229,
+   "representative_frame": 2213,
+   "speed_ms": [
+    30.62,
+    81.54
+   ],
+   "lens_mm": [
+    81.8,
+    85.0
+   ],
+   "alt_m": [
+    9.56,
+    14.97
+   ],
+   "kept": true
+  },
+  {
+   "beat": "4_transit",
+   "speed_band": "fast_10_30",
+   "lens_band": "normal_28_50",
+   "alt_band": "high_6_15",
+   "frames": 30,
+   "frame_first": 1065,
+   "frame_last": 1094,
+   "representative_frame": 1079,
+   "speed_ms": [
+    15.63,
+    29.98
+   ],
+   "lens_mm": [
+    32.0,
+    33.07
+   ],
+   "alt_m": [
+    6.14,
+    12.02
+   ],
+   "kept": true
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "locked_lt1",
+   "lens_band": "normal_28_50",
+   "alt_band": "low_2_6",
+   "frames": 25,
+   "frame_first": 2263,
+   "frame_last": 2289,
+   "representative_frame": 2277,
+   "speed_ms": [
+    0.35,
+    0.98
+   ],
+   "lens_mm": [
+    40.1,
+    49.63
+   ],
+   "alt_m": [
+    4.77,
+    4.83
+   ],
+   "kept": true
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "fast_10_30",
+   "lens_band": "shorttele_50_85",
+   "alt_band": "high_6_15",
+   "frames": 24,
+   "frame_first": 2230,
+   "frame_last": 2253,
+   "representative_frame": 2241,
+   "speed_ms": [
+    12.63,
+    29.88
+   ],
+   "lens_mm": [
+    55.73,
+    81.59
+   ],
+   "alt_m": [
+    6.04,
+    9.47
+   ],
+   "kept": true
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "race_gte30",
+   "lens_band": "wide_lt28",
+   "alt_band": "aerial_gte15",
+   "frames": 24,
+   "frame_first": 2691,
+   "frame_last": 2714,
+   "representative_frame": 2702,
+   "speed_ms": [
+    56.9,
+    70.78
+   ],
+   "lens_mm": [
+    24.0,
+    27.97
+   ],
+   "alt_m": [
+    15.21,
+    27.8
+   ],
+   "kept": true
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "slow_1_10",
+   "lens_band": "shorttele_50_85",
+   "alt_band": "low_2_6",
+   "frames": 23,
+   "frame_first": 2303,
+   "frame_last": 2325,
+   "representative_frame": 2314,
+   "speed_ms": [
+    1.11,
+    9.32
+   ],
+   "lens_mm": [
+    62.49,
+    73.66
+   ],
+   "alt_m": [
+    4.76,
+    4.77
+   ],
+   "kept": false
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "race_gte30",
+   "lens_band": "tele_gte85",
+   "alt_band": "low_2_6",
+   "frames": 20,
+   "frame_first": 2342,
+   "frame_last": 2409,
+   "representative_frame": 2375,
+   "speed_ms": [
+    30.04,
+    54.48
+   ],
+   "lens_mm": [
+    85.11,
+    98.78
+   ],
+   "alt_m": [
+    5.18,
+    5.97
+   ],
+   "kept": false
+  },
+  {
+   "beat": "1_assembly",
+   "speed_band": "locked_lt1",
+   "lens_band": "normal_28_50",
+   "alt_band": "eye_lt2",
+   "frames": 18,
+   "frame_first": 756,
+   "frame_last": 773,
+   "representative_frame": 764,
+   "speed_ms": [
+    0.74,
+    0.98
+   ],
+   "lens_mm": [
+    39.99,
+    40.0
+   ],
+   "alt_m": [
+    1.74,
+    1.89
+   ],
+   "kept": false
+  },
+  {
+   "beat": "6_ending",
+   "speed_band": "slow_1_10",
+   "lens_band": "wide_lt28",
+   "alt_band": "aerial_gte15",
+   "frames": 14,
+   "frame_first": 2891,
+   "frame_last": 2904,
+   "representative_frame": 2897,
+   "speed_ms": [
+    1.23,
+    9.46
+   ],
+   "lens_mm": [
+    18.75,
+    18.75
+   ],
+   "alt_m": [
+    138.64,
+    139.97
+   ],
+   "kept": false
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "locked_lt1",
+   "lens_band": "shorttele_50_85",
+   "alt_band": "low_2_6",
+   "frames": 13,
+   "frame_first": 2290,
+   "frame_last": 2302,
+   "representative_frame": 2296,
+   "speed_ms": [
+    0.37,
+    1.0
+   ],
+   "lens_mm": [
+    50.53,
+    61.64
+   ],
+   "alt_m": [
+    4.76,
+    4.77
+   ],
+   "kept": false
+  },
+  {
+   "beat": "3_breach",
+   "speed_band": "fast_10_30",
+   "lens_band": "wide_lt28",
+   "alt_band": "low_2_6",
+   "frames": 11,
+   "frame_first": 982,
+   "frame_last": 992,
+   "representative_frame": 987,
+   "speed_ms": [
+    10.0,
+    10.18
+   ],
+   "lens_mm": [
+    25.69,
+    27.18
+   ],
+   "alt_m": [
+    4.01,
+    4.47
+   ],
+   "kept": false
+  },
+  {
+   "beat": "3_breach",
+   "speed_band": "fast_10_30",
+   "lens_band": "normal_28_50",
+   "alt_band": "low_2_6",
+   "frames": 11,
+   "frame_first": 1046,
+   "frame_last": 1056,
+   "representative_frame": 1051,
+   "speed_ms": [
+    10.01,
+    13.05
+   ],
+   "lens_mm": [
+    32.0,
+    32.0
+   ],
+   "alt_m": [
+    5.4,
+    5.47
+   ],
+   "kept": false
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "fast_10_30",
+   "lens_band": "shorttele_50_85",
+   "alt_band": "low_2_6",
+   "frames": 10,
+   "frame_first": 2254,
+   "frame_last": 2334,
+   "representative_frame": 2329,
+   "speed_ms": [
+    10.3,
+    19.16
+   ],
+   "lens_mm": [
+    52.62,
+    84.62
+   ],
+   "alt_m": [
+    4.78,
+    5.69
+   ],
+   "kept": false
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "slow_1_10",
+   "lens_band": "normal_28_50",
+   "alt_band": "low_2_6",
+   "frames": 10,
+   "frame_first": 2255,
+   "frame_last": 2272,
+   "representative_frame": 2259,
+   "speed_ms": [
+    1.09,
+    9.19
+   ],
+   "lens_mm": [
+    40.0,
+    49.8
+   ],
+   "alt_m": [
+    4.81,
+    5.39
+   ],
+   "kept": false
+  },
+  {
+   "beat": "4_transit",
+   "speed_band": "fast_10_30",
+   "lens_band": "normal_28_50",
+   "alt_band": "low_2_6",
+   "frames": 8,
+   "frame_first": 1057,
+   "frame_last": 1064,
+   "representative_frame": 1060,
+   "speed_ms": [
+    13.14,
+    15.2
+   ],
+   "lens_mm": [
+    32.0,
+    32.0
+   ],
+   "alt_m": [
+    5.41,
+    6.0
+   ],
+   "kept": false
+  },
+  {
+   "beat": "1_assembly",
+   "speed_band": "locked_lt1",
+   "lens_band": "shorttele_50_85",
+   "alt_band": "eye_lt2",
+   "frames": 7,
+   "frame_first": 546,
+   "frame_last": 552,
+   "representative_frame": 549,
+   "speed_ms": [
+    0.15,
+    0.94
+   ],
+   "lens_mm": [
+    58.0,
+    58.0
+   ],
+   "alt_m": [
+    1.83,
+    1.84
+   ],
+   "kept": false
+  },
+  {
+   "beat": "5_lap",
+   "speed_band": "fast_10_30",
+   "lens_band": "tele_gte85",
+   "alt_band": "low_2_6",
+   "frames": 7,
+   "frame_first": 2335,
+   "frame_last": 2341,
+   "representative_frame": 2338,
+   "speed_ms": [
+    20.35,
+    28.43
+   ],
+   "lens_mm": [
+    85.7,
+    89.12
+   ],
+   "alt_m": [
+    4.92,
+    5.13
+   ],
+   "kept": false
+  },
+  {
+   "beat": "2_launch",
+   "speed_band": "locked_lt1",
+   "lens_band": "normal_28_50",
+   "alt_band": "eye_lt2",
+   "frames": 6,
+   "frame_first": 816,
+   "frame_last": 821,
+   "representative_frame": 818,
+   "speed_ms": [
+    0.16,
+    0.96
+   ],
+   "lens_mm": [
+    35.0,
+    35.0
+   ],
+   "alt_m": [
+    0.58,
+    0.59
+   ],
+   "kept": false
+  },
+  {
+   "beat": "4_transit",
+   "speed_band": "race_gte30",
+   "lens_band": "normal_28_50",
+   "alt_band": "low_2_6",
+   "frames": 4,
+   "frame_first": 1187,
+   "frame_last": 1190,
+   "representative_frame": 1188,
+   "speed_ms": [
+    80.35,
+    84.38
+   ],
+   "lens_mm": [
+    35.0,
+    35.0
+   ],
+   "alt_m": [
+    5.63,
+    5.94
+   ],
+   "kept": false
+  },
+  {
+   "beat": "2_launch",
+   "speed_band": "fast_10_30",
+   "lens_band": "normal_28_50",
+   "alt_band": "eye_lt2",
+   "frames": 3,
+   "frame_first": 794,
+   "frame_last": 798,
+   "representative_frame": 795,
+   "speed_ms": [
+    10.04,
+    11.34
+   ],
+   "lens_mm": [
+    38.54,
+    39.83
+   ],
+   "alt_m": [
+    1.06,
+    1.22
+   ],
+   "kept": false
+  }
+ ]
+}
