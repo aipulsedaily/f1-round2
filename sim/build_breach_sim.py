@@ -71,6 +71,7 @@ import fracture as FR                                             # noqa: E402
 import shardmesh as SM                                            # noqa: E402
 
 T0 = time.time()
+plan_for_sag = {}
 
 
 def log(msg):
@@ -457,25 +458,52 @@ def build(args):
     # the glazing pocket itself (x 14.945 .. 14.970, z below 0.0865) left open
     # for the glass to sit in.  The capture is then mechanical: the glass is
     # between the isolator and the plate, touching neither at frame 1.
-    sill = box_obj("SIM_Sill", (14.84, -11.05, 0.0), (14.945, 11.05, 0.110),
-                   C_static, M_alu)
-    sill_f = box_obj("SIM_SillPlate", (14.970, -11.05, 0.0),
-                     (15.0, 11.05, 0.110), C_static, M_alu)
-    sill_b = box_obj("SIM_SillPocket", (14.945, -11.05, 0.0),
-                     (14.970, 11.05, 0.0865), C_static, M_alu)
+    #
+    # AND IT SPANS BETWEEN THE MULLIONS, NOT THROUGH THEM.  A sill box running
+    # the full width in the mullion's own x band puts every mullion foot 88 mm
+    # inside it, and the head beam puts every head 110 mm inside that.  The
+    # wake-all null control found it as a mullion travelling 0.709 m in 0.225 s
+    # — FASTER THAN FREE FALL, which is the signature of an ejection rather than
+    # a collapse.  The penetration gate did not see it because the gate only
+    # tested SHARDS; it now tests every body.
+    W0 = BL.wall_iface()
+    _st = W0["stations"]
+    _hs = 0.5 * W0["section"]["sightline_m"]
+    sill_parts, head_parts = [], []
+    _spans = ([(-11.05, _st[0]["y"] - _hs)]
+              + [(_st[i]["y"] + _hs, _st[i + 1]["y"] - _hs)
+                 for i in range(len(_st) - 1)]
+              + [(_st[-1]["y"] + _hs, 11.05)])
+    for _i, (_y0, _y1) in enumerate(_spans):
+        if _y1 - _y0 < 1e-6:
+            continue
+        sill_parts.append(box_obj("SIM_Sill%02d" % _i, (14.84, _y0, 0.0),
+                                  (14.945, _y1, 0.110), C_static, M_alu))
+        sill_parts.append(box_obj("SIM_SillPlate%02d" % _i, (14.970, _y0, 0.0),
+                                  (15.0, _y1, 0.110), C_static, M_alu))
+        sill_parts.append(box_obj("SIM_SillPocket%02d" % _i,
+                                  (14.945, _y0, 0.0),
+                                  (14.970, _y1, 0.0865), C_static, M_alu))
+        head_parts.append(box_obj("SIM_Head%02d" % _i, (14.84, _y0, 6.1125),
+                                  (14.945, _y1, 6.30), C_static, M_alu))
+        head_parts.append(box_obj("SIM_HeadPlate%02d" % _i,
+                                  (14.970, _y0, 6.1125),
+                                  (15.0, _y1, 6.30), C_static, M_alu))
+        head_parts.append(box_obj("SIM_HeadPocket%02d" % _i,
+                                  (14.945, _y0, 6.1135),
+                                  (14.970, _y1, 6.30), C_static, M_alu))
+    # the two the constraints attach to: a thin structural bracket BEHIND the
+    # mullion line, clear of every mullion body (which stops at x = 14.945)
+    sill = box_obj("SIM_SillBracket", (14.80, -11.05, 0.0),
+                   (14.84, 11.05, 0.110), C_static, M_alu)
+    head = box_obj("SIM_HeadBracket", (14.80, -11.05, 6.1125),
+                   (14.84, 11.05, 6.30), C_static, M_alu)
     # the threshold strip the ribbon starts on, x 14.94 .. 15.0, so nothing
     # falls down a 60 mm slot at the breach plane
     thr = box_obj("SIM_Threshold", (14.94, -14.0, -0.30), (15.0, 14.0, 0.0),
                   C_static, M_conc)
-    # the head, the same way: open pocket, closed either side of it
-    head = box_obj("SIM_Head", (14.84, -11.05, 6.1125), (14.945, 11.05, 6.30),
-                   C_static, M_alu)
-    head_f = box_obj("SIM_HeadPlate", (14.970, -11.05, 6.1125),
-                     (15.0, 11.05, 6.30), C_static, M_alu)
-    head_b = box_obj("SIM_HeadPocket", (14.945, -11.05, 6.1135),
-                     (14.970, 11.05, 6.30), C_static, M_alu)
-    for ob in (floor_in, floor_out, sill, sill_f, sill_b, thr, head, head_f,
-               head_b):
+    for ob in ([floor_in, floor_out, thr, sill, head]
+               + sill_parts + head_parts):
         add_rb(ob, "PASSIVE", shape="BOX", friction=0.62, rest=0.06)
     log("static ground built")
 
@@ -769,8 +797,8 @@ def build(args):
     cons = flush_constraints()
     log("constraints created: %d" % len(cons))
     w = sc.rigidbody_world
-    w.substeps_per_frame = SUBSTEPS
-    w.solver_iterations = SOLVER_ITER
+    w.substeps_per_frame = int(args.substeps)
+    w.solver_iterations = int(args.solver_iter)
     w.time_scale = 1.0
     w.point_cache.frame_start = 1
     w.point_cache.frame_end = nsim
@@ -778,11 +806,12 @@ def build(args):
     sc.use_gravity = True
 
     _check_world(sc, info_expect=dict(bodies=n_rb, constraints=len(cons)))
-    pen = penetration_gate(shards, plan)
+    pen = penetration_gate(shards + list(C_frame.objects)
+                           + list(C_static.objects))
     log("penetration gate: %s" % json.dumps(pen, default=float))
     if pen.get("penetrating"):
         raise SystemExit(
-            "REFUSING TO BAKE: %d shards start inside static geometry, worst "
+            "REFUSING TO BAKE: %d bodies start inside other geometry, worst "
             "%.4f m (%s into %s).  A destruction sim that begins with "
             "penetration measures its own initial condition, not the impact."
             % (pen["penetrating"], pen["worst"][0]["depth_m"],
@@ -795,7 +824,7 @@ def build(args):
         n_shards=len(shards), n_frame_bodies=len(C_frame.objects),
         n_constraints=len(sc.rigidbody_world.constraints.objects),
         n_bodies=len(sc.rigidbody_world.collection.objects),
-        substeps=SUBSTEPS, solver_iterations=SOLVER_ITER,
+        substeps=int(args.substeps), solver_iterations=int(args.solver_iter),
         collision_margin=MARGIN,
         thresholds=dict(glass_edge=args.t_glass_edge, pvb=args.t_pvb,
                         mullion_joint=args.t_mullion_joint,
@@ -837,7 +866,15 @@ def _check_world(sc, info_expect):
 BOX_COLLIDERS = []          # (name, lo, hi) in WORLD, filled by box_obj
 
 
-def penetration_gate(shard_objs, plan, tol=0.0):
+# Bodies that TOUCH share a face, and a shared face is two float evaluations of
+# the same plane: the gate measures 5.7e-7 m of "penetration" at every mullion
+# plate sitting on its sill pocket.  10 microns is 0.05 px at the closest a
+# shard is ever filmed and four orders below the 88 mm this gate exists to
+# catch, so it separates contact from interpenetration without inventing slack.
+PEN_TOL_M = 1.0e-5
+
+
+def penetration_gate(bodies, plan=None, tol=PEN_TOL_M, skip_own=True):
     """NOTHING MAY START INSIDE ANYTHING.
 
     The wake-all null control caught a wall that left at 151 m/s with no car in
@@ -846,9 +883,17 @@ def penetration_gate(shard_objs, plan, tol=0.0):
     metal.  A null control is a slow way to find that; this is the fast one, and
     it runs before every bake.
 
-    Exact for boxes: every shard vertex is tested against every static box, in
-    the shard's own world placement.  Refuses on any penetration deeper than
-    `tol`, and reports the worst offenders by name.
+    Exact for boxes: every body's vertices are tested against every registered
+    box, in that body's own world placement.  Refuses on any penetration deeper
+    than `tol` and names the worst offenders.
+
+    IT TESTS EVERY BODY, NOT JUST THE GLASS.  The first version tested shards
+    only, and missed a mullion foot sitting 88 mm inside the sill and a mullion
+    head 110 mm inside the head beam — full-width boxes laid across the mullion
+    line.  That showed up in the null as a body travelling 0.709 m in 0.225 s,
+    FASTER THAN FREE FALL, which is what an ejection looks like and what a
+    collapse never does.  A gate that only looks where you already suspect is
+    not a gate.
     """
     if not BOX_COLLIDERS:
         return dict(status="VACUOUS: no box colliders registered")
@@ -856,16 +901,24 @@ def penetration_gate(shard_objs, plan, tol=0.0):
     hi = np.array([b[2] for b in BOX_COLLIDERS])
     names = [b[0] for b in BOX_COLLIDERS]
     worst = []
-    for ob in shard_objs:
+    for ob in bodies:
+        if ob.data is None or not len(ob.data.vertices):
+            continue
         V = np.array([tuple(ob.matrix_world @ v.co) for v in ob.data.vertices])
         # depth inside box k = min over axes of min(v-lo, hi-v), >0 == inside
         d = np.minimum(V[:, None, :] - lo[None, :, :],
                        hi[None, :, :] - V[:, None, :]).min(axis=2)
+        if skip_own:
+            # a box is trivially "inside itself"; and the plate lump shares its
+            # parent's name with a suffix
+            for kk, nm in enumerate(names):
+                if nm == ob.name or nm == ob.name + "_plate":
+                    d[:, kk] = -1.0
         if d.max() > tol:
             k = int(np.unravel_index(np.argmax(d), d.shape)[1])
             worst.append((float(d.max()), ob.name, names[k]))
     worst.sort(reverse=True)
-    return dict(shards=len(shard_objs), boxes=len(BOX_COLLIDERS),
+    return dict(bodies_tested=len(bodies), boxes=len(BOX_COLLIDERS),
                 penetrating=len(worst), tol_m=tol,
                 worst=[dict(depth_m=w[0], shard=w[1], into=w[2])
                        for w in worst[:8]])
@@ -1043,6 +1096,41 @@ def motion_report(loc, quat, names, info):
         nan=int(np.isnan(loc).sum() + np.isnan(quat).sum()))
 
 
+def sag_report(loc, names, meta, plan):
+    """WHERE the wall moved, split by class and by pane role.
+
+    A single median over 4,000 bodies hides the only distinction that matters:
+    bays 3-6 leave the wall anyway, so their motion is the shot; bays 2 and 7
+    are the RETAINED panes that have to hang in the frame spider-webbed for the
+    rest of the film, and a millimetre of sag there is a defect that never
+    recovers.
+    """
+    import re
+    d = np.linalg.norm(loc[-1] - loc[0], axis=1)
+    out = {}
+    cls = {}
+    for i, n in enumerate(names):
+        cls.setdefault(re.match(r"[A-Z]+", n).group(0), []).append(i)
+    for k, idx in sorted(cls.items()):
+        dd = d[idx]
+        out[k] = dict(n=len(idx), median_m=float(np.median(dd)),
+                      p95_m=float(np.percentile(dd, 95)),
+                      max_m=float(dd.max()))
+    roles = plan.get("roles", {})
+    by_role = {}
+    for i, m in enumerate(meta):
+        r = roles.get(m.get("bay", -1))
+        if r is None:
+            continue
+        by_role.setdefault(r, []).append(d[i])
+    for r, v in by_role.items():
+        v = np.array(v)
+        out["role_" + r] = dict(n=len(v), median_m=float(np.median(v)),
+                                p95_m=float(np.percentile(v, 95)),
+                                max_m=float(v.max()))
+    return out
+
+
 def aperture_report(loc, meta, info, settle_frac=0.75):
     """THE APERTURE THE SIM PRODUCED, measured on the wall plane.
 
@@ -1104,12 +1192,16 @@ def parse_args():
     p.add_argument("--t-mullion-base", type=float, default=THRESH_MULLION_BASE)
     p.add_argument("--t-transom", type=float, default=THRESH_TRANSOM)
     p.add_argument("--t-bond-per-m", type=float, default=THRESH_BOND_PER_M)
+    p.add_argument("--substeps", type=int, default=SUBSTEPS)
+    p.add_argument("--solver-iter", type=int, default=SOLVER_ITER)
     return p.parse_args(argv)
 
 
 def main():
     a = parse_args()
     info, objs = build(a)
+    global plan_for_sag
+    plan_for_sag = FR.load(a.shards)
     car = BL.Car()
     t0 = info["world_t0"]
     wts = BL.sim_frame_world_t(t0, info["sim_frames"])
@@ -1130,9 +1222,11 @@ def main():
                  r_impact=0.0, aspect=1.0) for o in objs["frame"]]
         names = [o.name for o in objs["shards"] + objs["frame"]]
         info["motion"] = motion_report(loc, quat, names, info)
+        info["sag"] = sag_report(loc, names, info["shard_meta"], plan_for_sag)
         info["aperture"] = aperture_report(
             loc[:, :len(objs["shards"])], info["shard_meta"], info)
         log("motion: %s" % json.dumps(info["motion"]))
+        log("sag: %s" % json.dumps(info["sag"], default=float))
         log("aperture: %s" % json.dumps(info["aperture"]))
     bpy.ops.wm.save_as_mainfile(filepath=a.out)
     info["blend"] = a.out

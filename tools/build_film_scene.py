@@ -57,6 +57,9 @@ def parse_args():
     p.add_argument("--out", required=True)
     p.add_argument("--no-rig", action="store_true",
                    help="append the car only; leave the world's own camera")
+    p.add_argument("--no-showroom", action="store_true",
+                   help="append the CAR collection only. Beats 1, 2 and 3 — "
+                        "1,056 frames, 35 %% of the film — then have no set.")
     return p.parse_args(argv)
 
 
@@ -115,6 +118,96 @@ def main():
                          "world/car_anim.blend with anim/build_car_anim.py.")
     print(">> CAR_ROOT %r animated, %d children, %d hub empties"
           % (root.name, len(root.children), len(hubs)))
+
+    # ---- the showroom ----------------------------------------------------
+    # THE SET FOR 1,056 OF THE FILM'S 2,978 FRAMES, AND IT WAS BEING LEFT OUT.
+    #
+    # Beats 1 (assembly), 2 (launch) and 3 (breach) all happen INSIDE the
+    # showroom, and the shipping world does not contain one: assembly6.blend's
+    # object prefixes are VEG/DR/BR/SURF/ARCH/TER and the only showroom-ish
+    # object in it is `ARCH_ShowroomSurrounds`. No floor, no dais, no glass.
+    # MEASURED, first run of this file, 2026-08-03: with only `CAR` appended the
+    # car's tyres sit +0.4400 m above `ARCH_Paving_Forecourt` for every one of
+    # beat 1's frames -- the dais deck top (0.340) over the exterior paving
+    # (-0.100) -- with nothing between them.
+    #
+    # It does not need a third file. `world/car_anim.blend` ALREADY carries the
+    # set, in its own collections, because build_car_anim.py was run on the
+    # showroom blend:
+    #
+    #     CAR       625   the car, CAR_ROOT, the 8 CARRIG_* hubs
+    #     SHOWROOM   76   Floor, GW_* curtain wall, Turntable_Deck, Platform_Dais
+    #     PROPS     189   including all 28 Vitrine_*, ALREADY UNPARENTED
+    #     LIGHTS     61   the showroom's interior rig
+    #     CAMERAS     4   dropped by the rig anyway, so not appended
+    #
+    # Appending from THIS file rather than from `world/verify_showroom.blend` is
+    # the point: car_anim.blend is the post-unparent artefact. Its Vitrines are
+    # in PROPS with parent None (MEASURED: 0 of 28 parented to CAR_ROOT), so the
+    # display case full of brake discs stays bolted to the showroom floor instead
+    # of flying round the circuit at 330 km/h. Appending the set from a second
+    # file would also give the scene two copies of every vitrine.
+    #
+    # The transform is identity and the datum is exact, so this is a plain
+    # append with no fitting: MEASURED on car_anim.blend, GW_Right_Glass_00 lies
+    # in the plane x = 15.0000 == `world_contract.ACCESS_GLASS_X`, the breach
+    # plane build_architecture calls a butt joint with no allowance, and
+    # Turntable_Deck's top is z = 0.3400 == the spec's deck_top_z. Both are
+    # re-asserted below rather than trusted.
+    SET_COLLECTIONS = ("SHOWROOM", "PROPS", "LIGHTS")
+    if a.no_showroom:
+        print(">> --no-showroom: beats 1-3 (frames 1-1056) will have NO SET")
+    else:
+        t1 = time.time()
+        with bpy.data.libraries.load(a.car, link=False) as (src_data, dst_data):
+            missing = [c for c in SET_COLLECTIONS if c not in src_data.collections]
+            if missing:
+                raise SystemExit(
+                    "%s has no %s collection(s). The showroom is the set for "
+                    "beats 1-3; rebuild it with anim/build_car_anim.py."
+                    % (a.car, missing))
+            dst_data.collections = list(SET_COLLECTIONS)
+            got_set = dst_data.collections
+        for col in got_set:
+            scene.collection.children.link(col)
+            print(">> appended %s (%d objects)" % (col.name, len(col.objects)))
+
+        # THE VITRINES. 28 of them, and 16 were parented to CAR_ROOT before
+        # build_car_anim.py unparented them. If that ever regresses, this build
+        # is where it must stop.
+        vit = [o for o in bpy.data.objects if o.name.startswith("Vitrine_")]
+        flying = [o.name for o in vit if o.parent is root]
+        if flying:
+            raise SystemExit(
+                "REFUSING: %d Vitrine_* display cases are parented to CAR_ROOT "
+                "and would be flown round the circuit at 330 km/h: %s"
+                % (len(flying), flying[:6]))
+        print(">> %d Vitrine_* appended, 0 parented to CAR_ROOT" % len(vit))
+
+        # THE BREACH PLANE. world_contract.ACCESS_GLASS_X, asserted in the
+        # scene's own coordinates after the append.
+        import world_contract as WC
+        bpy.context.view_layer.update()
+        glass = bpy.data.objects.get("GW_Right_Glass_00")
+        if glass is None or glass.type != "MESH":
+            raise SystemExit("no GW_Right_Glass_00 mesh after appending SHOWROOM")
+        xs = [(glass.matrix_world @ v.co).x for v in glass.data.vertices]
+        want_x = float(getattr(WC, "ACCESS_GLASS_X", 15.0))
+        if max(abs(x - want_x) for x in xs) > 1e-3:
+            raise SystemExit(
+                "REFUSING: GW_Right_Glass_00 spans x %.4f..%.4f, not the "
+                "declared breach plane ACCESS_GLASS_X = %.4f. The car breaches "
+                "the glass at a station the whole film is timed against."
+                % (min(xs), max(xs), want_x))
+        deck = bpy.data.objects.get("Turntable_Deck")
+        top = max((deck.matrix_world @ v.co).z for v in deck.data.vertices)
+        if abs(top - 0.340) > 1e-3:
+            raise SystemExit(
+                "REFUSING: Turntable_Deck top is z = %.4f, not the 0.340 the "
+                "car's contact solve stands it on." % top)
+        print(">> SET DATUMS: breach plane x = %.4f (ACCESS_GLASS_X %.4f), "
+              "Turntable_Deck top z = %.4f, appended in %.1f s"
+              % (xs[0], want_x, top, time.time() - t1))
 
     # ---- the grade, BEFORE the rig (the rig keys a delta from it) ---------
     import film_exposure as FX

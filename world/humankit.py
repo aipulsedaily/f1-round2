@@ -142,6 +142,21 @@ def rng_for(*keys):
     return Rng(*[int(k) for k in keys])
 
 
+def _hash01(*vals):
+    """A deterministic float in [0, 1) from floats, drawing no randomness.
+
+    For deriving a per-person property from numbers that person already has,
+    where taking another draw off a live `Rng` would shift every subsequent
+    draw and silently change the whole population. Uses the fractional part of a
+    large irrational multiple, which decorrelates inputs that differ in the
+    fourth decimal (two statures 1 mm apart give unrelated outputs).
+    """
+    a = 0.0
+    for i, x in enumerate(vals):
+        a += (float(x) + 1.0) * (12.9898 + 7.233 * i) * 1e4
+    return float(math.sin(a) * 43758.5453 % 1.0)
+
+
 # ===========================================================================
 # 1.  LOD -- budgeted against the MEASURED screen presence, not against ambition
 # ===========================================================================
@@ -347,7 +362,8 @@ class Body(object):
         "waist_depth", "chest_half", "neck_r", "head_w", "head_d",
         "girth", "arm_r", "thigh_r", "calf_r", "wrist_r", "ankle_r",
         "belly", "bust", "melanin", "haemo", "skin_rgb", "hair_rgb",
-        "hair_name", "hair_style", "hair_len", "hair_vol", "beard",
+        "hair_name", "hair_style", "hair_len", "hair_vol", "hair_part",
+        "hair_part_az", "beard",
         "params",
     )
 
@@ -517,8 +533,25 @@ def sample_body(rng, sex=None, age_band=None, adult_only=False):
     idx = 5 if sex_f else 4
     st = _pick_weighted(rng.u(), [(s, s[idx]) for s in HAIR_STYLES])
     b.hair_style, b.hair_len, b.hair_vol = st[0], st[1], st[2]
+    # `part_frac` -- column 3 of HAIR_STYLES -- had been declared since the
+    # table was written and READ NOWHERE. Eight styles that reach the mesh only
+    # as a length and a volume are three styles, which is a quiet contributor to
+    # "16 visible identical twins": two people with the same length and volume
+    # were the same hair. It is now a real per-person parting.
+    b.hair_part = float(st[3])
+    # DELIBERATELY NOT A DRAW. Taking one more number off `rng` here shifts
+    # every subsequent draw in `sample_body`, so every body in the library
+    # changes and the hair A/B stops being an A/B -- two frames that differ in
+    # the hair AND in who is standing there answer nothing. This is a hash of
+    # numbers already drawn, so the stream is untouched and the old library
+    # rebuilds identically.
+    # +-0.12 turns = +-43 deg of azimuth off the centre line, which spans a
+    # centre parting to a deep side parting and no further; a parting behind the
+    # ear is not a parting.
+    b.hair_part_az = float(_hash01(b.stature, b.age_years, b.melanin) - 0.5) * 0.24
     if age_band == "child" and b.hair_style == "bald":
         b.hair_style, b.hair_len, b.hair_vol = "short", 0.050, 0.55
+        b.hair_part = 0.25
     b.beard = 0.0
     if not sex_f and age_band in ("adult", "elder"):
         b.beard = 0.0 if rng.u() < 0.62 else rng.u(0.25, 1.0)
@@ -3182,6 +3215,57 @@ looking like the shipped one is the layer that owns the read -- and if NEITHER
 does, the answer is the light, which is where this project's fifth systemic
 error lives."""
 
+HAIR_RELIEF = 1.0
+HAIR_LUMP = 1.0
+HAIR_STRAND_GAIN = 1.0
+"""THE HAIR LADDER -- defect 3, "the hair is a granular crust at every distance".
+
+Same instrument as `FOLD_GAIN`/`SHADER_RELIEF` one layer up, and it exists for
+the same reason: the crust could be the SHADER's bumps or the MESH's thickness
+field or the strand tubes, and no amount of reading the three settles it.
+
+    HAIR_RELIEF        gain on every bump amplitude in `hair_material`
+    HAIR_LUMP          gain on the geometric thickness modulation in `build_hair`
+    HAIR_STRAND_GAIN   gain on the strand COUNT; 0.0 emits no strand tubes
+
+Read at call time, so `human_bench --hair-relief 0` builds the control.
+
+**WHAT THE ARITHMETIC ALREADY SAYS, before any render.** The shipped hair
+shader was never given the discipline `fabric_stages` was given after the crew
+bench was rejected as stucco. Its two stages, through this file's own
+`max_slope_deg` and `slope_for_modulation`:
+
+    stage                  lambda   amp pp   slope     m = 2 theta / tan(12.47)
+    fibre (Wave)           1.20 mm   0.150    21.44 deg     3.384
+    clump (Noise d4)       8.00 mm   1.100    23.36 deg     3.688
+
+against `fabric_stages`' own targets of **m 0.21-0.30 fine, 0.28-0.42 mid** and
+0.90-1.30 for a stage that is SPARSE. The garment shader that was rejected by
+eye as "coarse stucco, a uniform crawl over shirt and trouser alike" was
+carrying **m = 1.57**. The hair carries **2.2x that**, isotropically, over the
+whole mass.
+
+**AND THE FINE STAGE IS A TENTH OF THE NYQUIST FLOOR.** `fabric_stages` drops
+any stage below `2 / px_per_m` -- 5.36 mm at this item's 373.3 px/m -- with the
+reason stated in its docstring: *"Cycles does not filter a bump by the pixel
+footprint, so a 1.3 mm weave at 373 px/m -- 0.49 px -- does not render as a
+fine weave, it renders as per-pixel noise."* The hair's 1.2 mm fibre is 0.53 px
+at the 400 px face framing and **0.33 px at the crowd's 63 px head**. It is
+per-pixel noise at m = 3.4. That is a granular crust, it is a crust at EVERY
+distance because it is pinned to the pixel rather than to the surface, and it
+is on every uncovered head -- which is exactly what the frames show.
+
+The colour layer does the same thing: `strand` was a Noise at **1.1 mm**
+driving a 0.74-1.28 value multiplier, i.e. sub-pixel COLOUR speckle on top of
+the sub-pixel bump.
+
+So the hair now goes through `hair_stages()`, which is `fabric_stages()`'s
+discipline applied to hair: wavelengths EMITTED via `tex_scale`, amplitudes set
+from a target RADIANCE MODULATION rather than from millimetres, and everything
+below the Nyquist floor DROPPED rather than shrunk. What a sub-pixel fibre
+actually does to light is give the mass an anisotropic sheen, and that is
+where it went -- see `hair_material`."""
+
 CLOTH_ROLL_U_M = 0.0
 """OFF, and the reason is a measurement, not a preference. The same ball run
 AROUND the ring operates on radius-versus-COLUMN-INDEX, and the polar radius of
@@ -4169,6 +4253,24 @@ def build_hair(mesh, sk, b, lod, seed, mat, squash=1.0):
     The strands on top are what break the OUTLINE, which is what makes hair read
     as hair rather than as a moulded cap, and what supplies the head's share of
     `silhouette_departs_from_analytic`.
+
+    THE MASS IS LOCKED, IN THE MESH, AND THAT IS WHY THIS GRID IS DENSER THAN
+    THE HEAD'S. Defect 3 was "a granular crust ... the ugliest thing in both
+    frames". Half of it was the shader (see `HAIR_RELIEF`); the other half is
+    that the mass had no structure of its own at all -- one smooth ellipsoid
+    carrying an ISOTROPIC thickness noise, so every hair-like signal in the
+    picture came from a bump map, and a bump map cannot move a silhouette. A
+    lock of hair is 10-20 mm across at the scalp, which is 4 px at the crowd's
+    63 px head and 26 px at the 400 px face framing -- resolvable at both, so it
+    has to be geometry at both.
+
+    A ridge needs about three columns to read, so `n` is now 2x `head_u`
+    rather than 0.75x: 144 columns at L0 gives 36 locks at 15 mm, 88 at L1
+    gives 22 at 25 mm. Measured cost on a seated L1 figure: +2.2 k triangles on
+    29.8 k, **+7.2 %**, all of it in the one part of the figure the frames say
+    is worst. The shader's own `lock` stage sits at 7.2 mm, i.e. BELOW what this
+    grid can carry, so the two do not fight: the mesh owns the lock and its
+    outline, the shader owns the texture between locks.
     """
     if b.hair_style == "bald" or b.hair_len <= 0.001:
         return 0
@@ -4178,8 +4280,8 @@ def build_hair(mesh, sk, b, lod, seed, mat, squash=1.0):
     rr = rng_for(seed, 131)
     zc, ax, ay, az = 0.16 * hh, 0.5 * hw, 0.5 * hd, 0.50 * hh
     yc = -0.06 * hd
-    n = max(24, 3 * lod.head_u // 4)
-    m = max(6, lod.head_v // 3)
+    n = max(36, 2 * lod.head_u)
+    m = max(8, lod.head_v // 2)
     ph = np.linspace(0.0, TAU, n, endpoint=False) - math.pi / 2.0
     u = ((ph + math.pi / 2.0) / TAU) % 1.0
     recede = 0.0
@@ -4219,26 +4321,77 @@ def build_hair(mesh, sk, b, lod, seed, mat, squash=1.0):
     # thickness is handed to `build_headwear` so the dome clears it.
     thick = (0.008 + 0.030 * b.hair_vol) * hh / 0.23 * float(squash)
     taper = np.sin(math.pi * 0.5 * np.clip(1.0 - i / (m - 1.0), 0.0, 1.0)) ** 0.7
-    lump = 1.0 + 0.42 * wrap_noise(seed + 10, ((PH + math.pi / 2.0) / TAU) % 1.0,
-                                   TH / math.pi, 7.0, 4.0, oct=3)
-    grow = 1.0 + (thick * taper * lump) / max(0.5 * hw, 1e-6)
+    uu2 = ((PH + math.pi / 2.0) / TAU) % 1.0
+    # --- the thickness field. Three terms, and each is a different scale of the
+    # same object. `HAIR_LUMP` gains all three so the control exists.
+    #
+    # 1. VOLUME -- how the mass sits on the skull. Coarse (~200 mm), and this is
+    #    what the shipped `lump` was, at 0.42 amplitude and nothing else.
+    vol = 0.22 * wrap_noise(seed + 10, uu2, TH / math.pi,
+                            fbm_scale(0.55, oct=3), fbm_scale(0.42, oct=3),
+                            oct=3)
+    # 2. LOCKS -- gutters that RUN DOWN THE HEAD, at the grid's own resolvable
+    #    wavelength, NOT at a millimetre constant. A ridge and its valley need
+    #    four columns to be a shape rather than an alias, so the lock count is
+    #    `n // 4` and follows the tier: 36 locks at 15.4 mm at L0, 22 at 25 mm
+    #    at L1. Asking for 7 mm locks on a 33-column grid is the frequency trap
+    #    in the MESH, and it is how the crown became a needle once already.
+    #
+    #    The carrier is `|cos|` rather than a noise, for a reason that is not
+    #    taste: a ridged noise puts its gutters wherever its zero crossings
+    #    happen to fall -- about two per wavelength, but only on average -- so
+    #    setting the wavelength does not set the spacing and half the locks come
+    #    out at half the pitch, i.e. aliased. `|cos(pi N u)|` puts exactly N
+    #    gutters around for any integer N, and is periodic in u whether N is
+    #    odd or even because the absolute value kills the sign flip. The
+    #    irregularity real hair has then comes from a phase JITTER and a
+    #    strength modulation, both from `wrap_noise`, which is periodic too.
+    n_lock = max(6, int(n // 4))
+    jit = (0.34 / n_lock) * wrap_noise(
+        seed + 14, uu2, TH / math.pi, fbm_scale(0.22, oct=2),
+        fbm_scale(0.60, oct=2), oct=2)
+    lock = 1.0 - 2.0 * np.abs(np.cos(math.pi * n_lock * (uu2 + jit)))
+    lock = lock * (0.45 + 0.55 * (0.5 + 0.5 * wrap_noise(
+        seed + 15, uu2, TH / math.pi, fbm_scale(0.16, oct=2),
+        fbm_scale(0.50, oct=2), oct=2)))
+    lock_amp = min(0.16 * thick, 0.0018)
+    # 3. THE PARTING. `HAIR_STYLES` has carried `part_frac` since it was written
+    #    and nothing read it (see `sample_body`). A parting is a gutter along
+    #    ONE meridian, deepest at the hairline and closing over the crown, and
+    #    it is the single most identity-carrying thing about a head of hair.
+    d_az = np.abs(((uu2 - (0.25 + b.hair_part_az)) + 0.5) % 1.0 - 0.5)
+    part = np.exp(-(d_az / 0.028) ** 2) * np.clip(TH / (0.30 + 1e-9), 0.0, 1.0)
+    part = part * float(b.hair_part) * 1.00
+    field = (1.0 + (vol + lock_amp / max(thick, 1e-6) * lock - part)
+             * float(HAIR_LUMP))
+    grow = 1.0 + (thick * taper * np.clip(field, 0.05, 3.0)) \
+        / max(0.5 * hw, 1e-6)
     P = np.stack([fx * ax * grow,
                   yc + fy * ay * grow * (1.0 - 0.10 * np.clip(-fz, 0, 1) ** 1.6),
                   zc + fz * az * grow], axis=-1)
     apex = np.array([0.0, yc, zc + az * (1.0 + thick / max(0.5 * hw, 1e-6))])
     W = O + np.einsum("ij,srj->sri", B, P)
-    emit_grid(mesh, W, mat, closed_u=True, cap_lo=O + B @ apex, zone=ZONE_SCALP)
+    # `hk_v` RUNS CROWN -> TIP ACROSS BOTH PIECES. `emit_grid`'s default gives
+    # each grid its own 0..1, so the cap ran 0..1 and the hanging mass ran 0..1
+    # again -- and `hair_material`'s root-to-tip value ramp therefore restarted
+    # at the hairline, putting the brightest hair on the crown AND on the
+    # hairline with a step between them. The cap owns 0..0.5, the fall 0.5..1.
+    emit_grid(mesh, W, mat, closed_u=True, cap_lo=O + B @ apex, zone=ZONE_SCALP,
+              vv=np.repeat(np.linspace(0.0, 0.5, m), n))
     # THE LENGTH LIVES IN A HANGING MASS, NOT IN THE STRANDS. Giving 700 tubes
     # the full hair length produced a straw wig -- every hair individually
     # visible and none of them touching. Real hair at 176 px is a solid mass
     # whose EDGE is broken; so the mass is a surface that hangs from the
     # hairline, and the strands are a fringe on top of it a few millimetres wide.
     if b.hair_len > 0.055:
-        P = np.concatenate([P, _hair_fall(P[-1], fz_b, b, lod, seed, ph)])
+        P = np.concatenate([P, _hair_fall(P[-1], fz_b, b, lod, seed, ph,
+                                          lock, lock_amp)])
         W2 = O + np.einsum("ij,srj->sri", B, P[m - 1:])
-        emit_grid(mesh, W2, mat, closed_u=True, zone=ZONE_SCALP)
-    n_str = int(lod.hair_strands * (0.5 + 0.9 * b.hair_vol) * (0.35 + 0.65
-                                                               * float(squash)))
+        nf = P.shape[0] - (m - 1)
+        emit_grid(mesh, W2, mat, closed_u=True, zone=ZONE_SCALP,
+                  vv=np.repeat(np.linspace(0.5, 1.0, nf), n))
+    n_str = int(lod.hair_strands * (0.5 + 0.9 * b.hair_vol)
+                * (0.35 + 0.65 * float(squash)) * float(HAIR_STRAND_GAIN))
     if n_str <= 0:
         return thick
     N = _grid_normals(P, closed_u=True)
@@ -4247,7 +4400,6 @@ def build_hair(mesh, sk, b, lod, seed, mat, squash=1.0):
     amt[m:] = 1.0
     _hair_strands(mesh, O, B, P, N, amt, None, b, lod, seed, mat, n_str)
     return thick
-    return 1
 
 
 def _hair_fall(ring, fz_b, b, lod, seed, ph):
@@ -6460,37 +6612,208 @@ def fabric_material(prefix, name, stiff=0.7, sheen=0.42, weave_mm=1.3,
     return nt.m
 
 
+HAIR_STAGES_MM = None            # filled by the first hair_material() call
+
+#: The head circumference the hair's angular texture frequencies are set from.
+#: `head_w` and `head_d` average ~0.152/0.190 m over the population and the
+#: scalp's own ring sits at roughly half of each, so this is the arc a lock
+#: actually has to fit into. It is a CONSTANT on purpose: the material is one
+#: datablock for the whole population (Mesh.CHANNELS' note), so it cannot be a
+#: function of the body, and a lock is 7 mm on a big head and a small one.
+HAIR_HEAD_CIRC_M = math.pi * 0.176
+
+#: Value bands around the head in `hair_material`'s colour layer. Coarser than
+#: the relief locks: real hair varies in tone over groups of locks, not lock by
+#: lock, and lock-by-lock colour at this wavelength is speckle again.
+HAIR_TONE_LOCKS = 26.0
+
+
+def hair_stages(px_per_m=FIGURE_PX_PER_M):
+    """The relief stages of the hair shader, as (name, lambda_m, amp_mm).
+
+    `fabric_stages`' discipline, applied to the one surface that never got it.
+    Read `HAIR_RELIEF`'s docstring for what the shipped numbers were and why
+    they are a crust; this is what replaces them, and the three decisions in it
+    are decisions rather than taste:
+
+    **1. THE SUB-PIXEL FIBRE IS DROPPED, NOT SHRUNK.** A 1.2 mm ridge is 0.53 px
+    at the 400 px face framing and 0.33 px at the crowd's 63 px head. Cycles
+    does not filter a bump by the pixel footprint, so it renders as per-pixel
+    noise at whatever amplitude it is given, and it does so IDENTICALLY at every
+    distance -- which is why the defect is "a granular crust at every distance"
+    rather than a texture that softens as the figure recedes. The floor is
+    `2 / px_per_m`, the same one `fabric_stages` uses.
+
+    **2. WHAT A SUB-PIXEL FIBRE ACTUALLY DOES TO LIGHT IS NOT A BUMP.** A hair
+    is 0.07 mm; there is no framing in this film where one is a pixel. A bundle
+    of parallel cylinders does not scatter like a rough surface, it scatters
+    into a CONE about the fibre axis -- which is a highlight stretched
+    perpendicular to the flow, i.e. the band around the head that reads as
+    gloss. So the fibre moved out of the bump chain and into anisotropy with a
+    real meridional tangent. See `hair_material`.
+
+    **3. THE CLUMP MOVED TO THE MESH.** A lock of hair genuinely stands 1-2 mm
+    proud of its neighbours over 8 mm, which is 20-30 deg, which is m = 3-5 --
+    saturated. That is not a reason to render it saturated; it is a reason it
+    cannot be a bump map at all, because a real lock also BREAKS THE
+    SILHOUETTE and a normal perturbation never can. `build_hair`'s thickness
+    field carries it now, directionally, and this shader is left with the
+    sub-clump texture between locks. Same conclusion `fabric_stages` reached
+    when it deleted `drape` -- "anything coarser than ~25 mm is GEOMETRY", and
+    on hair the crossover is lower because the mesh is denser there.
+
+    Targets are RADIANCE MODULATION under the film's 12.47 deg sun, not
+    millimetres. Hair is allowed to run hotter than cloth -- it is a broken
+    fibrous mass, not a woven sheet -- but 0.75 is a 75 % peak-to-peak swing and
+    3.4 is a black-and-white stipple.
+    """
+    nyq_m = 2.0 / max(float(px_per_m), 1e-6)
+    lam_lock, lam_mass = 0.0072, 0.0175
+    all_stages = [
+        # between-lock shading: the finest thing hair may still carry as a bump
+        ("lock", lam_lock, amp_mm_for_modulation(0.75, lam_lock)),
+        # the grouping of locks into a mass; sits above the crease band
+        ("mass", lam_mass, amp_mm_for_modulation(0.50, lam_mass)),
+    ]
+    return [(n_, l_, a_ * HAIR_RELIEF)
+            for (n_, l_, a_) in all_stages if l_ >= nyq_m]
+
+
+def _hair_ring_coord(nt, u, v, n_around, v_cells, phase):
+    """A texture coordinate in the HAIR GRID's own parameterisation that is
+    exactly periodic around the head, so a band texture on it has no seam.
+
+    TWO TRAPS ARE CLOSED HERE AND BOTH HAVE BITTEN THIS PROJECT ALREADY.
+
+    **The seam.** `hk_u` runs 0 .. (R-1)/R and then wraps to 0, so any noise
+    evaluated on `u` directly jumps across that wrap and draws a line down the
+    head at whatever azimuth the grid happened to start at. `wrap_noise` exists
+    thirty lines up in the GEOMETRY for exactly this reason and there is no
+    shader equivalent, so the coordinate is put on a CIRCLE instead:
+    `(r cos 2 pi u, r sin 2 pi u, ...)` is periodic by construction, for any r.
+
+    **The 1.60x.** With the coordinate on a circle of radius r, an angular
+    period of 2 pi / N is an arc of `2 pi r / N` texture units -- and a Noise
+    emits features of `NODE_K["noise"] / scale`, i.e. 1.60 units at scale 1. So
+    `N` features around the head needs `r = N * 1.60 / (2 pi)`, and writing
+    `r = N / (2 pi)` gets 1.60x too few. That factor is HUMAN-REFERENCE sec 3b's
+    frequency trap and it is the same 1.60 that put a declared 8.6 mm crumple on
+    the garment at 13.8 mm.
+    """
+    r = float(n_around) * NODE_K["noise"] / TAU
+    th = nt.math("MULTIPLY", u, TAU)
+    return nt.comb(nt.math("MULTIPLY", nt.math("COSINE", th), r),
+                   nt.math("MULTIPLY", nt.math("SINE", th), r),
+                   nt.math("ADD", nt.math("MULTIPLY", v,
+                                          float(v_cells) * NODE_K["noise"]),
+                           phase))
+
+
+def _meridional_tangent(nt):
+    """The surface tangent pointing along the head's meridians -- the direction
+    hair falls -- built from the shading normal and world up, with no attribute.
+
+        a = normalise(up x N)      the azimuthal direction (a horizontal ring)
+        t = normalise(N x a)       the meridional direction (crown -> nape)
+
+    Degenerate only where N is parallel to up, i.e. exactly at the crown, where
+    the tangent is undefined for the same reason a pole is; the normalise leaves
+    a bounded vector there and the anisotropy simply loses its axis on a few
+    quads at the top of the head.
+
+    WHY NOT `ShaderNodeTangent`: its RADIAL mode about Z returns `a`, not `t` --
+    the ring, not the fall -- which stretches the highlight vertically down the
+    head. That is the mirror image of the hair highlight and it would have
+    looked deliberate.
+    """
+    N = nt.n("ShaderNodeNewGeometry")
+    a = nt.vmath("CROSS_PRODUCT", (0.0, 0.0, 1.0), (N, 1))
+    a = nt.vmath("NORMALIZE", a)
+    t = nt.vmath("CROSS_PRODUCT", (N, 1), a)
+    return nt.vmath("NORMALIZE", t)
+
+
 def hair_material(prefix, name="Hair"):
+    """The hair shader. See `HAIR_RELIEF` for what this replaces and why.
+
+    THE READ OF HAIR IS THREE THINGS AND ONLY ONE OF THEM IS A BUMP: a mass
+    whose OUTLINE is broken (geometry -- `build_hair`), a highlight band that
+    runs the wrong way round the head from every other highlight on the figure
+    (anisotropy, below), and value variation from lock to lock (colour, below).
+    The shipped version tried to get all three out of two isotropic bumps at
+    1.2 mm and 8 mm, and got a crust.
+    """
+    global HAIR_STAGES_MM
     nt = K.NT(prefix + name)
     P = nt.object_coords()
     col = _attr_col(nt)
     v = _attr_f(nt, "hk_v")
+    u = _attr_f(nt, "hk_u")
     fid = _attr_f(nt, "hk_id")
     Pj = nt.vmath("ADD", P, nt.comb(nt.math("MULTIPLY", fid, 71.3), 0.0, 0.0))
-    # strand-scale value variation -- hair is never one colour
-    strand = nt.noise(Pj, tex_scale("noise", 0.0011), detail=3.0, rough=0.5)
-    tone = nt.maprange(strand, 0.30, 0.70, 0.74, 1.28)
-    base = nt.cmix(0.85, col, nt.cmix(tone, nt.cmix(1.0, col, (0.55, 0.52, 0.50),
+    # --- colour. LOCK-scale, not strand-scale.
+    # The shipped value noise was a Noise at 1.1 mm -- 0.48 px at this item's
+    # own 373.3 px/m -- driving a 0.74..1.28 multiplier, which is sub-pixel
+    # colour speckle and is half of what the frames show. Hair is never one
+    # colour, but the unit it varies over is a LOCK, and a lock is a band that
+    # runs down the head rather than a blob. `hk_u` is the hair grid's own
+    # azimuth and it is periodic by construction, so an integer number of bands
+    # in u has no seam -- which a 3-D noise in object space cannot promise.
+    band_n = nt.noise(_hair_ring_coord(nt, u, v, HAIR_TONE_LOCKS, 2.6,
+                                       nt.math("MULTIPLY", fid, 19.7)),
+                      1.0, detail=2.0, rough=0.5)
+    tone = nt.maprange(band_n, 0.32, 0.68, 0.82, 1.20)
+    base = nt.cmix(0.85, col, nt.cmix(tone, nt.cmix(1.0, col, (0.66, 0.63, 0.60),
                                                     "MULTIPLY"),
-                                      nt.cmix(1.0, col, (1.55, 1.45, 1.35),
+                                      nt.cmix(1.0, col, (1.42, 1.34, 1.26),
                                               "MULTIPLY")))
+    # a slow drift over the whole head so the mass is not one flat value
+    drift = nt.noise(Pj, tex_scale("noise", 0.075), detail=3.0, rough=0.5)
+    base = nt.cmix(nt.maprange(drift, 0.30, 0.70, 0.0, 0.30), base,
+                   nt.cmix(0.6, base, (1.22, 1.18, 1.12), "MULTIPLY"))
     # roots darker than ends
-    base = nt.cmix(nt.maprange(v, 0.0, 1.0, 0.0, 0.35), base,
-                   nt.cmix(0.5, base, (1.35, 1.28, 1.20), "MULTIPLY"))
-    # Strand ridges at 1.2 mm and clump valleys at 8.0 mm, both EMITTED. Hair is
-    # the steepest surface on the figure: 21-23 deg. Under a 12.5 deg sun that
-    # is what puts a lit side and a dark side on every clump, which is the whole
-    # read of hair at 300 px -- a smooth cap reads as a swim hat.
-    fibre = nt.wave(Pj, tex_scale("wave_x", 0.0012), distortion=6.0, detail=3.0)
-    nrm = relief(nt, fibre, NODE_PP["wave"], 0.0012, 0.15)          # 21.4 deg
-    clump = nt.noise(Pj, tex_scale("noise", 0.0080), detail=4.0)
-    nrm = relief(nt, clump, NODE_PP["noise_d4"], 0.0080, 1.10, normal=nrm)
-    rough = nt.maprange(nt.noise(Pj, tex_scale("noise", 0.008)), 0.3, 0.7,
-                        0.24, 0.46)
+    base = nt.cmix(nt.maprange(v, 0.0, 1.0, 0.0, 0.30), base,
+                   nt.cmix(0.5, base, (1.30, 1.24, 1.17), "MULTIPLY"))
+    # --- relief, through the same budget the garment goes through -----------
+    stages = hair_stages()
+    HAIR_STAGES_MM = relief_budget(stages)
+    nrm = None
+    for nm_, lam, amp in stages:
+        if nm_ == "lock":
+            # DIRECTIONAL. A lock runs down the head, so its shading signal is
+            # a function of azimuth that varies only slowly along the fall --
+            # in the hair's OWN parameterisation, which is the only place that
+            # direction exists. An isotropic 3-D noise at this wavelength is a
+            # field of blobs and it is what the shipped shader had. 2.2 cells
+            # along v against `n_lock` around is a 30:1 anisotropy, i.e. a lock
+            # rather than a blob.
+            n_lock = max(4.0, round(HAIR_HEAD_CIRC_M / lam))
+            src = nt.noise(_hair_ring_coord(nt, u, v, n_lock, 2.2,
+                                            nt.math("MULTIPLY", fid, 7.3)),
+                           1.0, detail=3.0, rough=0.55)
+            pp = NODE_PP["noise_d3"]
+        else:
+            src = nt.noise(Pj, tex_scale("noise", lam), detail=4.0, rough=0.55)
+            pp = NODE_PP["noise_d4"]
+        nrm = relief(nt, src, pp, lam, amp, normal=nrm)
+    # --- gloss. Roughness falls from root to tip; the anisotropy is what makes
+    # the highlight a BAND rather than a spot, and it needs a tangent that is
+    # not the Principled default.
+    rough = nt.maprange(v, 0.0, 1.0, 0.42, 0.26)
+    rough = nt.fmix(nt.maprange(drift, 0.3, 0.7, 0.0, 1.0), rough,
+                    nt.math("ADD", rough, 0.10))
     b = nt.principled_out(base_color=base, roughness=rough, normal=nrm,
                           metallic=0.0)
-    for nm, v2 in (("Specular IOR Level", 0.62), ("Anisotropic", 0.60),
-                   ("Sheen Weight", 0.25)):
+    if "Tangent" in b.inputs:
+        nt.pin(b, b.inputs.find("Tangent"), _meridional_tangent(nt))
+    else:                                                  # pragma: no cover
+        raise RuntimeError(
+            "Principled BSDF has no `Tangent` input on this Blender; the hair "
+            "anisotropy would silently use the default tangent, which runs "
+            "round the head instead of down it. Sockets: %s"
+            % sorted(i.name for i in b.inputs))
+    for nm, v2 in (("Specular IOR Level", 0.55), ("Anisotropic", 0.72),
+                   ("Anisotropic Rotation", 0.0), ("Sheen Weight", 0.18)):
         if nm in b.inputs:
             b.inputs[nm].default_value = v2
     return nt.m

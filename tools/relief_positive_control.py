@@ -65,6 +65,8 @@ from mathutils import Vector
 R2 = "/home/zany/f1-round2"
 sys.path.insert(0, os.path.join(R2, "world"))
 
+import itemkit as K                                          # noqa: E402
+
 # The contract sun. Same numbers the gate stages its own witness frame with, so
 # a result here transfers directly.
 SUN_ELEV_DEG = 12.5
@@ -124,11 +126,25 @@ def printed_material(name, base=0.18, mark=0.09, pitch=RIB_PITCH_M,
     wave.wave_type = "BANDS"
     wave.bands_direction = "X"
     wave.wave_profile = "SAW"
-    # Blender's Wave scale is "bands per unit along the axis", so the pitch is
-    # 1/scale directly. The first version rendered visibly finer stripes than
-    # the ribs, which made the decoy a different spatial frequency and therefore
-    # not a fair comparison at all.
-    wave.inputs["Scale"].default_value = 1.0 / pitch
+    # R2-058. THIS LINE USED TO READ `1.0 / pitch` AND THE DECOY WAS AT THE
+    # WRONG FREQUENCY -- the one thing it must not be.
+    #
+    # The comment it replaces said: "Blender's Wave scale is 'bands per unit
+    # along the axis', so the pitch is 1/scale directly. The first version
+    # rendered visibly finer stripes than the ribs, which made the decoy a
+    # different spatial frequency and therefore not a fair comparison at all."
+    # The symptom was seen and the cause was misdiagnosed: 1/scale IS the finer
+    # one. Blender multiplies the coordinate by 20 before the sine, so the
+    # emitted pitch is 2*pi/20 = 0.31416 of 1/Scale. `Scale = 1/0.030` therefore
+    # emitted a 9.42 mm stripe against a 30 mm rib -- 3.183x finer, in the
+    # DECOY, whose entire job is to be the same spatial frequency as the ribs
+    # with no geometry behind it. A control that runs at a different frequency
+    # from the thing it decoys is not a control.
+    #
+    # NOTE FOR WHOEVER RE-RUNS THIS: `world/relief_control.blend` on disk was
+    # built by the old line and its decoy panel is at 9.42 mm. Rebuild it
+    # before trusting panel (f) again.
+    wave.inputs["Scale"].default_value = K.wave_scale_for(pitch)
     wave.inputs["Distortion"].default_value = 0.0
     wave.inputs["Detail"].default_value = 0.0
     ramp = nt.nodes.new("ShaderNodeValToRGB")

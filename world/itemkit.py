@@ -256,7 +256,7 @@ __all__ = [
     "NOISE_WAVELENGTH_FACTOR", "VORONOI_WAVELENGTH_FACTOR",
     "WAVE_WAVELENGTH_FACTOR", "WAVE_DIAGONAL_FACTOR",
     "noise_scale_for", "voronoi_scale_for", "wave_scale_for",
-    "geometry_relief_report",
+    "geometry_relief_report", "emitted_wavelength_m",
     "NT", "object_coords", "srgb_linear",
     "contract_sun", "add_camera", "macro_rig", "ground_plane",
     "ground_z", "ground_owner", "seat_on_ground", "brands", "brand", "pick_brand",

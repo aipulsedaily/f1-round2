@@ -120,6 +120,38 @@ values from the modulations to a worst error of 4.4e-05, and shows that a
 modulation 10 % wrong would miss by 11.7 %. State the target; do not re-tune
 what has already been looked at.
 
+**But `[8b]` ALONE CANNOT FAIL, and that is R2-058.** It states a wavelength and
+then asks whether `relief_amplitude_for(m, lam)` reproduces a `Distance` that
+was derived from the *same* `lam`. That is an algebraic identity: it passes for
+any value of the wavelength constant, including a wrong one. The ply row read
+`1.0 / 230.0` for three weeks — 3.183× too long, because a `ShaderNodeTexWave`
+multiplies the coordinate by 20 before the sine and so emits `2π/20 = 0.31416`
+of `1/Scale` — and `[8b]` passed every single time, because `itemkit`'s
+`_tex_wavelength_m` carried the identical error and the two agreed with each
+other. The correct value was sitting in a comment sixteen lines above the wrong
+code, as the *control* for a different measurement.
+
+So `[8c]` was added, and **copy that instead**. It renders the module's own wave
+node alone through an orthographic camera and counts the bands:
+
+```
+[8c] the ply veneer's wavelength, MEASURED OFF A RENDER
+  ok   the ply wave EMITS the wavelength this module declares
+       declared 1.3659 mm, rendered and counted 1.3659 mm, 0.00 % apart
+       (the 1/Scale reading would be 4.3478 mm, 3.18x out); the probe's own
+       control, a 10.000 mm ask, comes back 10.0000 mm
+```
+
+`K.emitted_wavelength_m(build)` is the helper; it builds its own scene, refuses
+if that scene is not exactly its plane and camera, and turns the denoiser off.
+**A check that uses the constant under test on both sides is not a check.** If
+your module declares a wavelength, render it and count.
+
+**Ask for the pitch by name.** `K.wave_scale_for(lam)`, or
+`nt.wave(vec, wavelength_m=lam)` — never `scale=1/lam`, which is the shape of
+this defect. `noise()` and `vor()` have taken `wavelength_m=` all along; `wave()`
+does now too.
+
 **Check the geometry layer too.** Once the human figures' fabric *shader* was
 corrected, the same misconception turned out to be one layer down in the
 fold-field *geometry* at m = 2.32, and became the dominant defect.

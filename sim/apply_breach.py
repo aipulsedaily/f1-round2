@@ -76,6 +76,155 @@ def log(m):
 
 
 # --------------------------------------------------------------------------- #
+#  WHAT THIS APPLIER NEEDS FROM THE SCENE IT IS POINTED AT
+# --------------------------------------------------------------------------- #
+#  It does NOT build a target.  `tools/build_film_scene.py` owns the join, and a
+#  second joiner would be a second answer to "where is the showroom".  What this
+#  publishes is the contract that join has to satisfy, machine-readable, plus a
+#  preflight that checks it and REFUSES rather than writing a plausible wrong
+#  scene.
+#
+#  The load-bearing one is R3.  Round 1's east wall is `GW_Right_Glass`, a
+#  ZERO-THICKNESS PLANE ON x = 15.000.  This applier supplies the glazing
+#  itself — ten panes with the real 11.5 mm laminate make-up, outer face at
+#  14.96650 — because `mullion_intact.section()` is explicit that "Glass is at
+#  14.96650 / 14.95500, NOT at 15.000" and that nothing in the assembly may sit
+#  east of the breach plane.  If the join brings round 1's plane too, the film
+#  has two east walls 33.5 mm apart: coplanar-ish transmissive surfaces that
+#  z-fight in beat 1 and leave a ghost pane hanging in the aperture for the rest
+#  of the take.  So the plane must be removed, and the 33.5 mm move is a real,
+#  intended change to beat 1's reflections that somebody should look at.
+
+REQUIREMENTS = dict(
+    R1=dict(id="frame_range", need="scene.frame_start == 1 and frame_end == "
+                                   "2978 at 24 fps",
+            why="every curve written here is keyed in film frames and "
+                "extrapolates CONSTANT to the last one"),
+    R2=dict(id="units_metres", need="scene.unit_settings.scale_length == 1.0",
+            why="every transform in the bake is world metres"),
+    R3=dict(id="no_round1_east_glass",
+            need="DELETE the ten objects GW_Right_Glass_00 .. GW_Right_Glass_09"
+                 " (4 verts each, zero-thickness planes on x = 15.000) from "
+                 "world/verify_showroom.blend before applying.  Measured "
+                 "2026-08-03; everything else in that file stays.",
+            correspondence="round 1's ten panes are this module's ten bays, "
+                           "one for one: GW_Right_Glass_04 is y -2.1625.. "
+                           "-0.0375, bay 4 is y -2.1850..-0.0150.  Round 1 cut "
+                           "them to the CLEAR OPENING (2.125 x 5.980); this "
+                           "module cuts them to the CUT SIZE (2.170 x 6.025), "
+                           "bigger by exactly the 22.5 mm hidden edge on all "
+                           "four sides that glazing_pockets() specifies.  That "
+                           "agreement was not arranged and is the best "
+                           "independent check that these rects are right.",
+            visible_change="the glass surface the camera sees moves 33.5 mm "
+                           "INBOARD, from a zero-thickness plane on 15.000 to "
+                           "an 11.5 mm laminate at 14.96650/14.95500.  Beat 1 "
+                           "spends 33 s looking at its reflections and "
+                           "somebody should look at that change on purpose.",
+            why="this applier supplies that glazing at 14.95500..14.96650 "
+                "with real thickness; two east walls 33.5 mm apart z-fight in "
+                "beat 1 and leave a ghost pane in the aperture afterwards",
+            note="GW_Front_Glass (the SOUTH wall, y = -11.000) is NOT ours "
+                 "and must stay"),
+    R4=dict(id="floor_top_z_zero",
+            need="showroom floor top at z = 0.000 and forecourt top at "
+                 "z = 0.000 for x in [15, 46], |y| <= 14",
+            why="the shards' resting transforms were baked against those two "
+                "planes; a floor 20 mm low leaves 3,796 shards hovering"),
+    R5=dict(id="glazing_pocket_clear",
+            need="nothing occupying x 14.945..14.970 between z 0.0865 and "
+                 "6.1125 across the ten bays",
+            why="that is the pocket the glass lives in; a solid mullion or "
+                "sill laid through it starts every clamped shard inside "
+                "metal, which is exactly what the null control caught"),
+    R6=dict(id="frame_transform_binding",
+            need="whoever meshes mullion_intact / mullion_bent_stub / "
+                 "curtain_wall_transom binds to the MUL*/TRN* names in "
+                 "sim/out/breach_film.npz",
+            why="this module writes those bodies' TRANSFORMS; their geometry "
+                "belongs to world/items/"),
+    R7=dict(id="no_parent_on_breach",
+            need="the BREACH collection is not parented or offset",
+            why="the keys are absolute world transforms, not local"),
+)
+
+# Objects that supply round 1's east wall.  Matched by name AND by geometry, so
+# a rename does not silently defeat the check.
+R1_EAST_GLASS_HINTS = ("GW_Right_Glass",)
+R1_EAST_GLASS_MEASURED = ["GW_Right_Glass_%02d" % i for i in range(10)]
+
+
+def requirements_json(path=None):
+    path = path or os.path.join(R2, "sim", "out", "apply_requirements.json")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as fh:
+        json.dump(dict(module="sim/apply_breach.py",
+                       requirements=REQUIREMENTS,
+                       breach_plane_x=15.0,
+                       delete_from_target=R1_EAST_GLASS_MEASURED,
+                       target_measured="world/verify_showroom.blend, "
+                                       "949 objects, 2026-08-03",
+                       glass_faces_x=[GLASS_X_IN, GLASS_X_OUT],
+                       supplies=["GP_b00..GP_b09 (ten panes)",
+                                 "GS_b*_* (the shards)"],
+                       consumes=["sim/out/breach_film.npz",
+                                 "sim/out/fracture_wall.npz"],
+                       origin_rule=SM.ORIGIN_RULE), fh, indent=1)
+    return path
+
+
+def preflight(scene, strict=True):
+    """Check what can be checked in the target scene.  Refuse, do not adapt."""
+    import bpy as _b
+    out = {"checks": [], "ok": True}
+
+    def chk(rid, cond, detail=""):
+        out["checks"].append(dict(id=REQUIREMENTS[rid]["id"], passed=bool(cond),
+                                  detail=detail,
+                                  why=REQUIREMENTS[rid]["why"]))
+        if not cond:
+            out["ok"] = False
+
+    total = int(json.load(open(BL.SHEET))["total_frames"])
+    chk("R1", scene.frame_end >= total,
+        "frame_end = %d, need >= %d" % (scene.frame_end, total))
+    chk("R2", abs(scene.unit_settings.scale_length - 1.0) < 1e-9,
+        "scale_length = %s" % scene.unit_settings.scale_length)
+
+    # R3: anything that looks like round 1's east wall — by name OR by being a
+    # flat object standing on x = 15.000 over the wall's own y/z extent
+    sus = []
+    for o in scene.objects:
+        if any(h in o.name for h in R1_EAST_GLASS_HINTS):
+            sus.append((o.name, "name"))
+            continue
+        if o.type != "MESH" or o.data is None or not len(o.data.vertices):
+            continue
+        V = np.array([tuple(o.matrix_world @ v.co) for v in o.data.vertices])
+        lo, hi = V.min(axis=0), V.max(axis=0)
+        if (abs(lo[0] - 15.0) < 0.02 and hi[0] - lo[0] < 0.02
+                and hi[1] - lo[1] > 8.0 and hi[2] - lo[2] > 4.0):
+            sus.append((o.name, "a flat object on x = 15.000, %.2f x %.2f m"
+                        % (hi[1] - lo[1], hi[2] - lo[2])))
+    chk("R3", not sus, "found %d: %s" % (len(sus), sus[:4]) if sus else "clear")
+
+    # R5: nothing in the glazing pocket
+    intr = []
+    for o in scene.objects:
+        if o.type != "MESH" or o.data is None or not len(o.data.vertices):
+            continue
+        if o.name.startswith(("GP_b", "GS_b")):
+            continue
+        V = np.array([tuple(o.matrix_world @ v.co) for v in o.data.vertices])
+        m = ((V[:, 0] > 14.9455) & (V[:, 0] < 14.9695)
+             & (V[:, 2] > 0.0870) & (V[:, 2] < 6.1120)
+             & (np.abs(V[:, 1]) < 11.0))
+        if m.any():
+            intr.append((o.name, int(m.sum())))
+    chk("R5", not intr, "found %d: %s" % (len(intr), intr[:4]) if intr
+        else "clear")
+    return out
+
 
 def camera_polyline(sheet_path=BL.SHEET):
     """The one camera's world positions, as an N x 3 polyline."""
@@ -376,18 +525,41 @@ def parse_args():
     p.add_argument("--film", default=os.path.join(R2, "sim/out/breach_film.npz"))
     p.add_argument("--shards",
                    default=os.path.join(R2, "sim/out/fracture_wall.npz"))
-    p.add_argument("--out", required=True)
+    p.add_argument("--out", default="")
     p.add_argument("--report",
                    default=os.path.join(R2, "sim/out/apply_breach.json"))
     p.add_argument("--glass-material", default="BREACH_Glass")
     p.add_argument("--hero-m", type=float, default=6.0)
     p.add_argument("--detail-hero", type=int, default=2)
     p.add_argument("--detail-bulk", type=int, default=1)
+    p.add_argument("--preflight-only", action="store_true",
+                   help="report what this scene would need and write nothing")
+    p.add_argument("--force", action="store_true",
+                   help="apply even though preflight failed.  Deliberate, "
+                        "logged, and never the default.")
     return p.parse_args(argv)
 
 
 def main():
     a = parse_args()
+    rq = requirements_json()
+    pre = preflight(bpy.context.scene)
+    log("requirements published to %s" % rq)
+    for c in pre["checks"]:
+        log("  preflight %-24s %s  %s"
+            % (c["id"], "PASS" if c["passed"] else "FAIL", c["detail"]))
+    if a.preflight_only:
+        with open(a.report, "w") as fh:
+            json.dump(dict(preflight=pre, requirements=REQUIREMENTS,
+                           scene=bpy.data.filepath), fh, indent=1)
+        log("preflight-only: wrote %s" % a.report)
+        return
+    if not pre["ok"] and not a.force:
+        raise SystemExit(
+            "REFUSING: the target scene does not satisfy this applier's "
+            "requirements (see %s).  Writing into it would produce a scene "
+            "that looks right and is not.  --force to override deliberately."
+            % rq)
     stats, C_shard, C_pane = build(a)
     proof = prove_curves(C_shard)
     log("curve proof: %s" % json.dumps(proof))
@@ -396,7 +568,7 @@ def main():
         raise SystemExit("REFUSING: the applied curves are not LINEAR by "
                          "evaluation: %s" % proof)
     bpy.ops.wm.save_as_mainfile(filepath=a.out)
-    rep = dict(stats=stats, proof=proof, out=a.out,
+    rep = dict(stats=stats, proof=proof, preflight=pre, out=a.out,
                bytes=os.path.getsize(a.out), origin_rule=SM.ORIGIN_RULE)
     with open(a.report, "w") as fh:
         json.dump(rep, fh, indent=1, default=float)

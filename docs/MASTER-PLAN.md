@@ -306,14 +306,33 @@ the naive 24-day projection exactly.
                                        than reality on 220 of 435 items.
     screen_presence_objects.json       raw per-object and per-point measurement, so any
     screen_presence_points.npz         number can be re-derived without the 1.77 B sweep
-    proposed_tiers.json                HERO 91 / MID 55 / BULK 289, 178 agents per round.
+    proposed_tiers.json                HERO 71 / MID 56 / BULK 308, 148 agents per round.
+                                       Re-derived on assembly6 (contract 1.2.1) 2026-08-03.
                                        A PROPOSAL — the manifest is deliberately untouched.
+                                       The previous 75/63/297 was measured on assembly2 and
+                                       FOUR OF ITS HERO ITEMS WERE AN ARTEFACT: the old
+                                       terrain sheet ran UNDER THE SHOWROOM, so a farm gate
+                                       scored 1,604 sharp px because ground poked through the
+                                       building floor 1.5 m from the lens.
+                                       Superseded copies: docs/*_SUPERSEDED_a2_contract101.*
+    frame_peeps.json                   28 peeps / 43 regimes / 94.5 % coverage, with the
+                                       binning DECLARED in the output. The old "36 peeps"
+                                       could not be reproduced — twelve different binnings
+                                       give 36 at 88–90 %, so the figure never identified one.
+    tiering_inputs.json                sha256 of every input the tiering read
   world/
-    world_contract.py                  THE single source of truth. NOW 1.1.0.
-                                       --selftest is 114 checks incl. continuity;
+    world_contract.py                  THE single source of truth. NOW 1.2.1.
+                                       --selftest is 149 checks incl. continuity;
                                        --gate-selftest <old> proves it fails a bad revision
+    film_exposure.py                   THE film's exposure, −3.628, MEASURED.
+                                       C.REFERENCE_EXPOSURE_EXTERIOR (−3.048) is DERIVED and
+                                       REFUTED — it over-exposes by 0.586 stops. Never use it.
     itemkit.py                         the shared item scaffold. contract_sun() and
                                        macro_rig() REFUSE the two bugs that bit wave 1.
+                                       CAUTION: _tex_wavelength_m() is 3.18× wrong for
+                                       ShaderNodeTexWave (returns 1.0/Scale, should be
+                                       0.31416/Scale) — under repair. Its selftest cannot see
+                                       it because it round-trips against the same constant.
     build_{surface,barriers,architecture,terrain,dressing,sky}.py
     items/<id>.py                      per-item modules (28 built)
     items/<id>_test.blend              per-item test scenes
@@ -455,7 +474,37 @@ Ten more, and the *shape* is what generalises — each is a distinct way to be w
     absolute world-z band while this circuit's ground runs −3.670…+7.964 m: it tests
     **empty air over 28 % of the lap**, and it guards every item placement.
 
-And two failures of *reasoning* rather than of instruments, worth the same suspicion:
+Nine more from 2026-08-03 alone. By this point the count is not the point — **the
+shapes are**, and they repeat:
+
+18. **A selftest that round-trips against the constant it is testing.**
+    `itemkit._tex_wavelength_m()` is **3.18× wrong** for Wave textures — and *the correct
+    value is quoted in itemkit's own header, three lines from the wrong code*. The check
+    used the wrong value on **both sides**, so it could never fail. This survived the
+    frequency API, the relief law and a 14-module rebuild.
+19. **A control artefact that was a second positive control.** `ctl_depth_neg.blend` put
+    the wheel **200 mm in the air**. The battery ran with two cases that must fail and
+    **none that must pass**.
+20. **Measuring which pairs share a sampler seed.** A high-pass *correlation* against
+    undenoised Cycles came back floor 0.146 / signal 0.883 — exactly backwards, because
+    the sampler owns the high frequencies. Use a high-pass **energy ratio** (null = 1.0)
+    with the floor rows seed-crossed like the signal rows.
+21. **`--factory-startup` is not an empty scene.** The default Cube sat between an ortho
+    camera and a measurement plane and returned **one identical number for all fourteen
+    stages**.
+22. **A summary statistic hiding a comb.** Realised head bearings occupied 10° of every
+    18°, with −10..−5° holding **1,089 people** and +5..+10° holding **one** — while the
+    gate scored 73 % either way. **Check the distribution, not the summary.**
+23. **A checker with no depth floor** declared "PREFLIGHT IS WRONG" when *the checker* was
+    wrong: one near-camera head produced 165 px of nonsense.
+24. **A quantity that is identically zero for any valid input.** `convexity_defect`
+    measured something mathematically zero for every simple polygon.
+25. **A control evaluated where the two methods are equal.** An nlerp-vs-slerp control run
+    at t = 0.5 — where they are identical — reported 0.000° and proved nothing.
+26. **A global median hiding local behaviour.** A pop test reported **8,101 false pops** on
+    smooth 16 m/s motion; 311 with a per-body local median.
+
+And three failures of *reasoning* rather than of instruments, worth the same suspicion:
 
 - **Publishing before looking.** "The check fails every single test" was written about the
   relief control before anyone opened the frames. The check was sound; the *scene* had four
@@ -463,6 +512,14 @@ And two failures of *reasoning* rather than of instruments, worth the same suspi
 - **Extrapolating one sample across a varying subject.** The 4K master was costed at both
   $15 and $185 from two real measurements — of two *different scenes*, on a continuous take
   whose per-frame cost varies **8.5×** along its own length.
+- **Repeating a stated cause without testing it.** The block cameras were said to be
+  ruined by `macro_rig`'s depth of field. **There is no depth of field** — `use_dof=False`
+  on all six, confirmed twice, and the gradient energy rises *monotonically* across the
+  block, which a defocus cannot do. The real fault was arithmetic: **8.0 px median head**.
+  Had the aperture been "fixed", the reshoot would have come back identical.
+  The same shape produced `itemkit.socket_audit()` — a guard named by three docstrings that
+  **does not exist** — and `v122/battery.sh`'s header citing "grep -c lines at the bottom"
+  as a safeguard when the file contains none. **Grep for the guard before you cite it.**
 
 **The rules that follow, and they are not optional:**
 - A gate reports a **physical quantity in real units**. Counts are not measurements.
