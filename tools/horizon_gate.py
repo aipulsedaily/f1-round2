@@ -27,9 +27,31 @@ was never a number. This file makes it one.
 
 WHAT IS MEASURED
 ----------------
-  TILT: the angle between the camera's own right axis and the world horizontal
-  plane, per frame, in degrees. Zero is a level horizon. It is computed from
-  the path's quaternion and nothing else.
+  TILT: the image rotation, `atan2(right.z, up.z)`, per frame, in degrees.
+  Zero is a level horizon; +-180 is upside down. Computed from the path's
+  quaternion and nothing else.
+
+  **THE FIRST VERSION OF THIS FILE USED `asin(right.z)` AND IT WAS WRONG.**
+  That is the angle of the right axis above the horizontal plane, and it
+  SATURATES: it cannot tell a camera rolled theta from one rolled 180-theta,
+  and it returns to zero as the camera passes through fully inverted. On this
+  film's own beat 6 the consequence was not subtle -- the camera is inverted
+  (`up.z < 0`) for **28 consecutive frames, f2636-f2663**, reaching **176.65 deg
+  at f2651, 3.3 deg from perfectly upside-down, where the old metric reported
+  +1.99 deg**. It called the worst frame in the film level.
+
+      frame   asin(right.z)   atan2(right.z, up.z)   up.z
+      f2651        + 1.99            +176.65        -0.594   inverted
+      f2661        -52.92            -101.23        -0.158   inverted
+      f2666        -59.88            - 81.71        +0.126
+      f2680        -33.83            - 36.97        +0.740
+
+  Found by a render agent who looked at f2666, measured the dominant
+  straight-edge direction in the PIXELS at +83 deg from horizontal, and did
+  not accept a geometry number that disagreed with the picture. The
+  measurement that settles it is the sign of `up.z`, which the old metric
+  discards entirely. Selftest P4 is now a camera rolled 170 deg, which the old
+  metric scored as 10 deg.
 
   PITCH is measured alongside it and is the reason this gate does not simply
   threshold tilt. **A top-down shot has no horizon in it**, and "tilt" on a
@@ -49,34 +71,55 @@ WHAT IS MEASURED
   TILT RATE is reported and does not gate: `continuity_gate` already owns
   rotation rate and two gates owning one quantity is how they drift apart.
 
-BEAT 6'S ROLL HAS NOW BEEN SEEN, AND IT SHOULD PROBABLY NOT BE FIXED. R2-091.
+BEAT 6'S ROLL: THE WAIVER I WROTE DOES NOT HOLD, AND THE NUMBER IT WAS WRITTEN
+ON WAS WRONG. R2-091, corrected.
 
-This gate FAILs beat 6 on 32 frames and I wrote it expecting that to be a
-defect. Two frames were then rendered and they do not support the reading:
+I waived this roll as "a banked peel-off, not a defect" on the strength of
+f2680 (reads as a banked aerial) and f2694 (levelled, clean). Both bracket the
+peak. The peak was then rendered and it does not read:
 
-  f2680, tilt -33.8 deg   the pit wall runs diagonally across the frame, the
-                          car sharp and centred, the pit lane legible. It reads
-                          as a BANKED AERIAL -- the shot a helicopter makes
-                          peeling away from a subject -- not as a camera
-                          falling over.
-  f2694, tilt  -0.07 deg  levelled, a clean legible aerial down the pit straight
-                          with the pit lane, garage doors and timing gantry.
+  f2666   the frame is on its SIDE. The track runs top-to-bottom, the pit
+          garages are a vertical stripe against the left edge, and there is no
+          sky and no horizon anywhere in it. Measured from the pixels, the
+          dominant straight-edge direction is **+83 deg from horizontal**,
+          against -44 deg at f2680 and -29 deg at f2694 -- and -29 deg is the
+          LEVEL reference, because the pit straight recedes diagonally even
+          with the camera level. Quadrant luma agrees: the bright pit-building
+          band is across the TOP at f2694, on a diagonal at f2680, and a
+          VERTICAL band down the LEFT at f2666.
 
-Beat 6's first declared move IS a peel-off. A camera that banks as it peels and
-rolls level into the closing wide is that move, and the roll is smooth
-throughout -- about 5.5 deg/frame with no discontinuity anywhere in it.
+  f2680   reads as a bank, and the reason is visible: it has sky in its
+          top-left corner, so the viewer can see which way up is. f2666 has no
+          sky at all.
 
-So the number is real, the instrument is right, and the verdict is a WAIVER
-rather than a bug: **this is a known accepted exception pending a human
-decision, not a defect to be fixed.** It is deliberately NOT tuned out of the
-gate. A gate quietly re-tuned so it stops firing on something someone accepted
-is worse than a gate with a waiver written next to it, because the next
-regression in the same place would then be invisible too -- which is precisely
-how the 79.77 deg roll at f1487 survived in the shipped film.
+So the waiver is supported from about **f2673** onward, where the true tilt has
+come back inside -59 deg, and is NOT supported across roughly **f2658-f2670**.
 
-STILL UNSEEN: **f2666, the -59.88 deg peak.** f2680 and f2694 bracket it and
-both read, but the peak itself has not been looked at. That is the frame to
-queue before anyone acts on this either way.
+TWO THINGS THE OLD METRIC HID, both found by rendering the peak rather than
+trusting the geometry:
+
+  * The camera goes **fully inverted** -- `up.z < 0` -- for **28 consecutive
+    frames, f2636-f2663**, peaking at **176.65 deg at f2651**, 3.3 deg from
+    perfectly upside-down. The old `asin(right.z)` reported **+1.99 deg** there.
+  * f2666 is not the peak. It is -81.71 deg, not the -59.88 deg first reported.
+
+MOST OF THE INVERSION IS HARMLESS, AND THAT WAS CHECKED RATHER THAN ASSUMED.
+f2646 and f2651 were rendered: they are near-nadir shots in which the car fills
+the frame and there is no world reference at all, so being upside down is
+invisible and they look good. The `|pitch| <= 45 deg` scope is doing exactly
+its job there. The damage is confined to the frames where the world re-enters
+shot while the roll is still past vertical -- **f2661 (-101 deg) and f2666
+(-82 deg)**.
+
+WHAT STANDS AND WHAT DOES NOT:
+  * the gate FAILing beat 6 is correct and is not waived;
+  * the peel-off reads from ~f2673 on, so the shape of the move is sound;
+  * f2658-f2670 is a real defect, ~13 frames, and needs a fix that R2-089's
+    two rejected candidates do not provide;
+  * the film-wide waiver I proposed is withdrawn.
+
+**A waiver written from bracketing frames is an assumption. This one was, and
+the peak refuted it.**
 
 TWO FIXES WERE COSTED AND BOTH WERE REJECTED, R2-089. The numbers are here so
 the next agent does not pay for them again.
@@ -175,7 +218,7 @@ occluded, whether the shot reads, or whether a deliberate dutch angle is
 deliberate. It reports geometry. A gate that says "10.4 deg at f2660" is a
 reason to look at frame 2660, not a verdict about it.
 
-CONTROLS — `--selftest`, six cases
+CONTROLS — `--selftest`, seven cases
 -----------------------------------
   P1  SYNTHETIC, closed form: a camera at the origin looking along +X with a
       known roll of exactly 30.000 deg applied about its own view axis. The
@@ -186,14 +229,22 @@ CONTROLS — `--selftest`, six cases
       gate must report the tilt and must NOT judge it, because there is no
       horizon in the frame. This is the arm that stops the gate firing on
       beat 5's declared top-down.
+  P4  SYNTHETIC: a camera rolled exactly 170 deg. The gate must read 170 deg
+      and `up.z` must be negative. The metric this file shipped with read it
+      as 10 deg. This arm exists because that metric survived a six-control
+      selftest, a census and a published finding.
   P3  the live `--path` over frames 2640-2700                   must FAIL
   N1  the live `--path` over frames 793-2600, beats 2 to 5    must PASS
       1,808 frames, every lens the film uses, from a 7.5 m/s launch to a
       101.9 m/s helicopter arc.
-  N3  the live `--path` over beat 1, frames 1-792             must PASS
+  N3  the live `--path` over beat 1, frames 1-792         must be VACUOUS
       **THIS ARM EXISTS BECAUSE IT CAUGHT THIS FILE OUT.** Beat 1 reaches
-      20.83 deg at f135 and the first draft failed it on 34 frames. Any
-      future change to the scope has to walk past the weave and stay quiet.
+      20.83 deg at f135 and the first draft failed it on 34 frames. Beat 1 is
+      refused wholesale, so nothing in it is judged and the verdict is a
+      REFUSAL, not a pass -- the distinction another agent added to this file
+      on 2026-08-03, and the right one: a gate that judged nothing has proven
+      nothing. Any future change to the scope has to walk past the weave and
+      still refuse rather than quietly approve.
   N2  the live `--path` over frames 2700-2978, the closing hold must PASS
 """
 
@@ -251,6 +302,15 @@ def _asin_deg(v):
     return math.degrees(math.asin(max(-1.0, min(1.0, v))))
 
 
+def tilt_deg(right, up):
+    """Image rotation about the view axis. 0 level, +-180 upside down.
+
+    NOT `asin(right.z)`. See the docstring: that saturates at +-90 and reported
+    a camera 3.3 deg from inverted as 1.99 deg from level.
+    """
+    return math.degrees(math.atan2(right[2], up[2]))
+
+
 def measure(P, lo, hi):
     rows = []
     prev = None
@@ -258,12 +318,17 @@ def measure(P, lo, hi):
         if f not in P:
             continue
         r, u, fw = axes(P[f]["q"])
-        tilt = _asin_deg(r[2])
+        tilt = tilt_deg(r, u)
         pitch = abs(_asin_deg(-fw[2]))
         row = {"f": f, "tilt_deg": tilt, "pitch_deg": pitch,
+               "inverted": bool(u[2] < 0.0),
                "horizon_in_shot": pitch < HORIZON_PITCH_DEG,
                "lens_mm": float(P[f].get("lens", 35.0))}
-        row["tilt_rate_deg"] = (tilt - prev) if prev is not None else 0.0
+        if prev is None:
+            row["tilt_rate_deg"] = 0.0
+        else:                              # wrap: 179 -> -179 is 2 deg, not 358
+            d = (tilt - prev + 180.0) % 360.0 - 180.0
+            row["tilt_rate_deg"] = d
         rows.append(row)
         prev = tilt
     return rows
@@ -325,6 +390,8 @@ def summarise(rows, label, beat1_last=None):
             "worst_tilt_anywhere_deg": worst_any["tilt_deg"],
             "worst_tilt_anywhere_frame": worst_any["f"],
             "worst_tilt_anywhere_pitch_deg": worst_any["pitch_deg"],
+            "inverted_frames": sum(1 for r in rows if r.get("inverted")),
+            "inverted_runs": _runs([r["f"] for r in rows if r.get("inverted")]),
             "fail_frames": _runs([r["f"] for r in fails]),
             "warn_frames": _runs([r["f"] for r in warns]),
             "n_fail": len(fails), "n_warn": len(warns),
@@ -352,6 +419,10 @@ def report(s):
           f"at f{s['worst_tilt_anywhere_frame']} (pitch "
           f"{s['worst_tilt_anywhere_pitch_deg']:.1f} deg — not judged if over "
           f"{HORIZON_PITCH_DEG:.0f})")
+    if s.get("inverted_frames"):
+        print(f"    CAMERA INVERTED (up.z < 0) on {s['inverted_frames']} frames "
+              f"{s['inverted_runs']} — the old asin(right.z) metric read these "
+              f"as approaching LEVEL")
     print(f"    {s['n_fail']} FAIL frames {s['fail_frames'] or ''}")
     print(f"    {s['n_warn']} WARN frames {s['warn_frames'] or ''}")
     print(f"    -> {s['verdict']}")
@@ -403,25 +474,41 @@ def selftest(path_json):
 
     q = _synth(80.0, 30.0)
     r, u, fw = axes(q)
-    tilt, pitch = _asin_deg(r[2]), abs(_asin_deg(-fw[2]))
+    tilt, pitch = tilt_deg(r, u), abs(_asin_deg(-fw[2]))
     rows = [{"f": 10 ** 6, "tilt_deg": tilt, "pitch_deg": pitch,
+             "inverted": bool(u[2] < 0.0),
              "horizon_in_shot": pitch < HORIZON_PITCH_DEG, "lens_mm": 24.0,
              "tilt_rate_deg": 0.0}]
     s = summarise(rows, "P2")
-    ok = (pitch > HORIZON_PITCH_DEG and s["verdict"] == "PASS")
+    ok = (pitch > HORIZON_PITCH_DEG and s["verdict"] == "VACUOUS")
     print(f"  {'PASS' if ok else 'FAIL'}  P2 synthetic: the same 30 deg roll "
           f"pitched 80 deg down reads pitch {pitch:.3f} deg, so it is REPORTED "
-          f"({tilt:.3f} deg) and NOT judged. This is the arm that stops the "
-          f"gate firing on beat 5's declared top-down.")
+          f"({tilt:.3f} deg) and NOT judged -- verdict {s['verdict']}, which is "
+          f"a REFUSAL and not a pass. This is the arm that stops the gate "
+          f"firing on beat 5's declared top-down.")
     if not ok:
         bad.append("P2")
+
+    q = _synth(0.0, 170.0)
+    r, u, fw = axes(q)
+    true, old = tilt_deg(r, u), _asin_deg(r[2])
+    ok = abs(abs(true) - 170.0) < 1e-6 and abs(abs(old) - 10.0) < 1e-6 and u[2] < 0
+    print(f"  {'PASS' if ok else 'FAIL'}  P4 synthetic, THE ARM THAT WOULD HAVE "
+          f"CAUGHT THIS FILE: a camera rolled exactly 170.000 deg -- 10 deg from "
+          f"upside down -- reads {abs(true):.6f} deg on atan2(right.z, up.z) and "
+          f"{abs(old):.6f} deg on the asin(right.z) this file used to use. up.z "
+          f"= {u[2]:+.4f}, so the sign alone settles it.")
+    if not ok:
+        bad.append("P4")
 
     P = {e["f"]: e for e in json.load(open(path_json))["path"]}
     for tag, lo, hi, want, note in (
             ("P3", 2640, 2700, "FAIL", "the beat-5 -> beat-6 peel-off"),
             ("N1", 793, 2600, "PASS", "beats 2-5, every lens the film uses"),
             ("N2", 2700, 2978, "PASS", "the closing hold"),
-            ("N3", 1, 792, "PASS", "beat 1, the weave, which is refused")):
+            ("N3", 1, 792, "VACUOUS",
+             "beat 1, the weave: refused wholesale, so NOTHING is judged and "
+             "the verdict is a refusal rather than a pass")):
         s = summarise(measure(P, lo, hi), tag)
         ok = s["verdict"] == want
         print(f"  {'PASS' if ok else 'FAIL'}  {tag} f{lo}-{hi} ({note}): "
