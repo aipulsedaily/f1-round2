@@ -233,7 +233,13 @@ CONTROLS — `--selftest`, seven cases
       and `up.z` must be negative. The metric this file shipped with read it
       as 10 deg. This arm exists because that metric survived a six-control
       selftest, a census and a published finding.
-  P3  the live `--path` over frames 2640-2700                   must FAIL
+  P3  the STORED pre-R2112 path over frames 2640-2700           must FAIL
+      docs/horizon_pre_R2112_path.json, the shipped rolled camera. It was the
+      LIVE path until R2-112 fixed the roll, at which point the arm started
+      failing on a healthy film -- and the dangerous version of that same
+      mistake is an arm written as "no worse than", which would have gone
+      quietly green and left this gate with no positive control at all. R2-072,
+      for the second time.
   N1  the live `--path` over frames 793-2600, beats 2 to 5    must PASS
       1,808 frames, every lens the film uses, from a 7.5 m/s launch to a
       101.9 m/s helicopter arc.
@@ -559,15 +565,45 @@ def selftest(path_json):
     if not ok:
         bad.append("P4")
 
+    # P3 IS MEASURED ON A STORED PATH, NOT ON THE LIVE ONE.  R2-115.
+    #
+    # It used to read "the live --path over f2640-2700 must FAIL", which is a
+    # positive control anchored to a defect. R2-112 fixed that defect and P3
+    # turned into a failing selftest arm on a healthy film -- and the failure
+    # mode that matters is the other one: had the arm been written as "must not
+    # be worse than", it would have gone quietly green and this gate would have
+    # had no positive control at all from that moment on. R2-072 is exactly this
+    # and it has now happened twice.
+    #
+    # So the rolled camera is KEPT. docs/horizon_pre_R2112_path.json is the
+    # shipped pre-fix path, the one with 28 inverted frames and -122.93 deg at
+    # f2657, and P3 asks this gate to fail it forever. It is in docs/ and not
+    # work/ for seam_gate's reason: work/ is gitignored and a control that a
+    # tidy-up can delete is not a control.
+    PRE = os.path.join(R2, "docs/horizon_pre_R2112_path.json")
     P = {e["f"]: e for e in json.load(open(path_json))["path"]}
+    if os.path.exists(PRE):
+        Ppre = {e["f"]: e for e in json.load(open(PRE))["path"]}
+    else:
+        Ppre = None
+        print("  FAIL  P3 the stored pre-R2112 rolled path is MISSING (%s). "
+              "This gate now has no positive control." % PRE)
+        bad.append("P3")
     for tag, lo, hi, want, note in (
-            ("P3", 2640, 2700, "FAIL", "the beat-5 -> beat-6 peel-off"),
+            ("P3", 2640, 2700, "FAIL",
+             "the SHIPPED PRE-R2112 peel-off, stored: 28 inverted frames and "
+             "-122.93 deg at f2657. NOT the live path — see R2-115"),
             ("N1", 793, 2600, "PASS", "beats 2-5, every lens the film uses"),
             ("N2", 2700, 2978, "PASS", "the closing hold"),
             ("N3", 1, 792, "VACUOUS",
              "beat 1, the weave: refused wholesale, so NOTHING is judged and "
              "the verdict is a refusal rather than a pass")):
-        s = summarise(measure(P, lo, hi), tag)
+        if tag == "P3":
+            if Ppre is None:
+                continue
+            s = summarise(measure(Ppre, lo, hi), tag)
+        else:
+            s = summarise(measure(P, lo, hi), tag)
         ok = s["verdict"] == want
         print(f"  {'PASS' if ok else 'FAIL'}  {tag} f{lo}-{hi} ({note}): "
               f"{s['verdict']}, expected {want}. worst tilt with a horizon "
