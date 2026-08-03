@@ -4452,3 +4452,113 @@ puts on a frame-edge pixel, the push peaks at **0.659 % of frame width per frame
 at f2935**, against **2.787 % at f2254** which beat 5 already ships. The push is
 4.2× gentler than a lens move already in the film. That is a measurement, not a
 gate, and the gap is real.
+
+## R2-116 — `spectator_seated` is UNMEASURABLE, not failing, and `distinct_shapes` never had a case to answer
+
+The standing suspicion was that this foundation item — **8 dependants** — passed `distinct_shapes`
+on a technicality. **Refuted, with numbers**: 7,420 realized instances, 420 sources, **420
+distinct shapes against a required 40**, commonest shape **0.4 %** against a 25 % limit.
+
+That check exists specifically to catch *"420 datablocks holding 6 poses"*, so the agent did not
+stop at the shape count. `build_library` stamps `ob["posture"]` on every source, making the
+posture vocabulary **readable rather than inferable**: **14 distinct base postures, top posture
+13.67 %**, against the manifest's own "8–12 base postures". Artefact arm and runtime arm agree at
+14. The positive control — 420 specs with `force_posture` fixed — returns **1 and FAILS**, so the
+instrument can see the defect it exists for. **The "~6 poses" charge belongs to the wave-1
+*render* in `HUMAN-FIGURE-BRIEF.md`, not to this module.**
+
+**Under the current 8-check gate the verdict is `ITEM_UNMEASURABLE`** — 7 PASS, **0 FAIL**, 2 NOT
+MEASURED. The gate's own words: *"nothing FAILED, but 2 checks could not be measured at all. That
+is not a rejection, it is a gate that could not look."*
+
+So the 8 dependants are **not standing on a failing foundation** — the interface they read is
+unchanged and the geometry is bit-identical to the build they were written against. **They are
+also not standing on an accepted one.**
+
+**Two things had to be unpicked to get there.** The first gate run returned `ITEM_REJECTED` **on
+0 subject pixels**: the median-triangle subject picker chose one of the 420 library sources that
+`build_library` sets `hide_render=True` on by design — confirmed by opening the witness blend,
+not inferred. Re-run against the median-triangle *renderable* object (381 renderable, 420
+excluded), `surface_microstructure` moved **NOT MEASURED → PASS** at ×352.22 against ×2.00.
+
+## R2-117 — `item_gate`'s `result` field is two-valued and there are three outcomes
+
+`item_gate.py:3317` writes `"result": "ITEM_REJECTED"` **before** `:3449` decides to refuse. The
+stored JSON therefore says REJECTED while the run says UNMEASURABLE.
+
+**`result` has no cell for the third outcome**, and R2-108 records that reports are read
+canonically from exactly that field. A gate that cannot look and a gate that looked and rejected
+are opposite findings — one is "fix the item", the other is "fix the gate" — and they are
+indistinguishable on disk. Annotated in place with a `REPORT_STATUS` block; **the field itself is
+unfixed and owned elsewhere.**
+
+## R2-118 — `relief_sweep.sh` was structurally unable to refresh anything
+
+It skipped any item that **already had a report**. Over a corpus where **28 of 30 reports
+predated their own witness**, it printed `HAVE` thirty times and **exited 0** — a clean run that
+could not have refreshed a single stale number under any circumstances. It also called bare
+`blender`, i.e. the CUDA-less one.
+
+Now it skips only a report **newer than its witness**, supersedes stale ones, and judges on the
+file it wrote.
+
+**Result of actually running it: 28 of 30 relief reports moved.** `bump_height_unlinked` cleared
+to **0 on 14 items and is now 0 across all 31 current reports** — no item in the corpus has a
+dead Bump Height. **Three moved *down*** — `heras_fence_panel` 8.996 → 3.181, `tyre_wall_tyre`
+7.656 → 1.577, `paddock_personnel_figure` 3.586 → 3.014 — so those published numbers were
+*inflated*, not merely stale. Two genuinely did not move, and one of those (`terrain_ground`) is
+an item whose **geometry did move**, which makes it a real null rather than an untouched row.
+
+Witnesses were restaged before auditing, because **re-auditing an old witness republishes a
+number about an artefact that no longer exists.** The new `relief_audit_control.py` generates a
+procedural Bump-on-noise and the same scene with that one Height link removed **live each run**,
+so it cannot expire (R2-072).
+
+## R2-119 — the staleness census under-counted by half: 30 of 32, not 15
+
+`--stale-census` compares a blend against `world/items/<module>.py` **and nothing else**.
+Measured against the whole import closure — two arms, static AST and a live `sys.modules` read —
+**30 of 32 blends are stale, not 15.** Sixteen rows the own-mtime rule scores CLEAN are older
+than `itemkit.py`, `world_contract.py`, `build_surface.py` or `humankit.py`.
+
+> **This is R2-070's shape again, with the census standing in for the author who can only see
+> call sites inside their own file.** A staleness rule that looks only at the module's own source
+> is blind to exactly the dependency that made the last twenty defects.
+
+**The runtime arm was wrong first, and its own census said so:** importing 32 modules into one
+interpreter meant a `sys.modules` diff credited a shared helper only to whichever module loaded
+it first — **"runtime 0" on 31 of 32 rows.** Fixed with a per-row purge and a second-import
+control. The two arms now disagree on **8 of 32, in both directions**, so both earn their keep.
+
+## R2-120 — 16 rebuilds, 6 moved, and not one verdict moved with them
+
+10 of 16 rebuilt **bit-identical**; 6 moved. **Not one socket verdict changed** — 16 PASS before,
+16 PASS after, with `--selftest-blend` passing all four arms on both sides, so it is a
+discriminating pass rather than a blind one.
+
+Build flags are **not uniform** and assuming they were is R2-108: **9 `--save`, 7 `--out`, 3 with
+a verb other than `--test`, and `showroom_facade_panel` takes no build verb at all.** Two modules
+are STATIC ONLY (hand-rolled parser) — `crew_fireproof_overall` and `marshal_post_column` — both
+verified by sha256 *and* by reading the rebuilt file.
+
+**A determinism arm was added because these modules are procedural**: *"the geometry moved" is not
+evidence of a source change if the module reseeds.* Every mover was built twice and returned
+identical. Where a rebuild was bit-identical to a days-old build the arm was skipped as
+`DETERMINISM_ENTAILED_BY_BIT_IDENTITY` — **validated first on `spectator_seated` by running it
+both ways**, where the arm agreed with the entailment.
+
+Largest movers: `gravel_bed_surface` max bbox shift **19.39 m** (3 objects gone, 3 new);
+`paddock_personnel_figure` figures **12 → 260**, triangles **971,807 → 15,150,788** — and **its
+tracked `*_interface.json` was written 2.6 h *after* the blend beside it**, so the published
+contract was never describing that artefact.
+
+## R2-121 — the gate overwrote a witness pair that a previous defect had deliberately protected
+
+`item_gate` derives the witness **blend** path from the item id, and `--witness-dir` does not move
+it. So re-gating `spectator_seated` overwrote `spectator_crowd`'s witness — **the pair R2-061 was
+written to protect.** Caught and restored; backup at
+`render/gate_witness/_r2116_spectator_crowd_witness_backup/`, wave-1 pair preserved at
+`render/gate_witness/spectator_seated_wave1/`.
+
+**A flag that redirects some of a tool's outputs and not others is worse than one that redirects
+none** — it reads as isolation while writing outside the sandbox.
