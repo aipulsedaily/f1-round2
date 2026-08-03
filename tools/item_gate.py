@@ -101,9 +101,26 @@ is that the peep's "STANDIN head" was not a clean primitive -- at 1.52 % it was
 carrying something. `relief_reads_as_lip_and_shade` is the check that does the
 discriminating work here. Said plainly rather than tuned around.
 
-THE SEVEN CHECKS
+THE EIGHT CHECKS
 ----------------
   1. no_external_assets              binary, unchanged
+ 1b. relief_wiring_reaches_the_shader
+                                     R2-072. Reads the BLEND, not the source:
+                                     fails when a Bump / Normal Map / Bevel
+                                     output lands on a shading node's
+                                     non-normal input (on 5.2 the `Normal`
+                                     off-by-one puts it on `Thin Wall`), when a
+                                     relief node's output goes nowhere, when a
+                                     Bump's Height is a constant or its Filter
+                                     Width is driven. Rules shared with
+                                     `tools/socket_index_audit.py --blend` via
+                                     `tools/socket_blend_scan.py`; the
+                                     edge-wear idiom is a NOTE, not a failure.
+                                     Scoped to the WHOLE blend including
+                                     context materials -- see `relief_wiring`.
+                                     Pre-render, so a miswired item costs no
+                                     GPU job and check 6 never gets to measure
+                                     a flat surface without saying why.
   2. material_depth                  procedural texture nodes, unchanged.
                                      KEPT as a free pre-render floor: it can
                                      only ever add rejections, and a failure
@@ -877,6 +894,100 @@ def material_depth(objs):
                     tex_nodes += 1
     return {"materials": len(seen_mats), "reachable_nodes": all_nodes,
             "procedural_texture_nodes": tex_nodes, "image_texture_nodes": img_nodes}
+
+
+def relief_wiring(objs):
+    """CHECK 1b -- R2-072. Does the relief actually REACH the shader?
+
+    WHY THIS CHECK IS HERE AND NOT SOMEWHERE ELSE
+    ---------------------------------------------
+    R2-057 and R2-070 are the same defect twice: a bump chain built in full and
+    then wired to a socket that is not `Normal`, because Blender 5.2 moved
+    `Normal` from index 5 to 6 and put `Thin Wall` where it used to be. No
+    error, no black frame, a completely plausible render, and the relief
+    repair it was meant to deliver moves 0.00 % of the pixels.
+
+    `tools/socket_index_audit.py` catches it two ways -- an AST arm over source
+    and an artefact arm over a built blend. The artefact arm was the one that
+    mattered, and R2-071 recorded why: a source fix is not landed until the
+    artefact downstream of it has been rebuilt AND RE-READ. Four blends sat on
+    disk carrying a defect whose source fix was months old.
+
+    So the artefact arm needed a gate that runs it. The two candidates were
+    `campaign_preflight` and this file, and this file wins on three counts:
+
+      * PREFLIGHT IS PER-ITEM AND PRE-BUILD. It checks a module before its
+        agent starts. There is no artefact at that point -- the whole content
+        of R2-071 is that source and artefact disagree, so a check that can
+        only see source cannot close it.
+      * THIS GATE ALREADY HAS THE BLEND OPEN. It is invoked as
+        `blender -b <item>.blend -P item_gate.py`, so the scan costs a few
+        milliseconds of graph walk. Running the same arm from preflight would
+        mean spawning a second Blender to reopen a file up to 2.4 GB.
+      * A VERDICT ALREADY DEPENDS ON THE ANSWER. Check 6 asks whether the
+        surface reads as lip and shade. If the bump never reached the shader,
+        check 6 is measuring a flat surface and will say so without ever
+        saying WHY. This check names the cause, and it fails BEFORE the GPU
+        job, so a miswired item costs no render.
+
+    WHOSE MATERIALS COUNT
+    ---------------------
+    Every node tree in the blend, and the report says which are the item's own
+    and which are not. That is deliberate. In R2-070 the miswired materials
+    were `CTX_*` CONTEXT materials -- the ground and abutments an item module
+    builds to light and site itself -- and `gantry_truss` and `pont_girder`
+    were ACCEPTED with them broken. Scoping this check to the item's own
+    material slots would have passed both. The blend an item is judged from is
+    the item's artefact, context included.
+    """
+    data = _sockets.scan_open_blend()
+    findings = data["findings"]
+    fails = _sockets.failing(findings)
+    notes = [f for f in findings if f.get("severity") == "NOTE"]
+
+    mine = set()
+    for ob in objs:
+        for slot in ob.material_slots:
+            if slot.material:
+                mine.add(slot.material.name)
+
+    def bucket(f):
+        return "item" if (f["kind"] == "material" and f["owner"] in mine) \
+            else "other"
+
+    rows = []
+    for f in sorted(fails, key=lambda x: (x["rule"], x["owner"], x["node"])):
+        shell = f.get("shell") or []
+        carries = any((s.get("Transmission Weight") or {}).get("value")
+                      or (s.get("Transmission Weight") or {}).get("linked")
+                      or (s.get("Subsurface Weight") or {}).get("value")
+                      or (s.get("Subsurface Weight") or {}).get("linked")
+                      for s in shell)
+        rows.append({
+            "rule": f["rule"], "scope": bucket(f), "kind": f["kind"],
+            "owner": f["owner"], "node": f["node"],
+            "to_socket": f.get("to_socket"),
+            "detail": f["detail"],
+            # A stray relief link is merely FLAT on an opaque material and a
+            # per-pixel shell flip on one that carries transmission or
+            # subsurface. Measured here, never assumed.
+            "shell_carries_transmission_or_subsurface": bool(carries),
+        })
+    return {
+        "ok": not fails,
+        "trees_scanned": data["scanned_trees"],
+        "item_materials": sorted(mine),
+        "failing": rows,
+        "failing_on_item_materials": len([r for r in rows if r["scope"] == "item"]),
+        "failing_elsewhere_in_blend": len([r for r in rows if r["scope"] == "other"]),
+        # The edge-wear idiom -- a Bevel normal dotted with the geometry
+        # normal -- looks exactly like the defect and is correct. Recorded, not
+        # failed. See socket_blend_scan's docstring.
+        "computation_notes": [
+            {"owner": f["owner"], "node": f["node"],
+             "to_node": f.get("to_node"), "to_socket": f.get("to_socket")}
+            for f in notes],
+    }
 
 
 def _shape_signature(me):
@@ -2816,6 +2927,13 @@ def main():
     mat = material_depth(objs)
     ext_ok = not ext_imgs and mat["image_texture_nodes"] == 0
 
+    # ---- 1b. RELIEF WIRING (R2-072) --------------------------------------
+    # Runs before the GPU job on purpose: if the bump never reached the shader,
+    # check 6 would measure a flat surface and never say why, and the render
+    # would be paid for to learn nothing.
+    wiring = relief_wiring(objs)
+    wiring_ok = wiring["ok"]
+
     # ---- 2. MATERIAL DEPTH (node floor; NOT an appearance measurement) ----
     need_tex = 6 if hero else 3
     mat_ok = mat["procedural_texture_nodes"] >= need_tex
@@ -2856,6 +2974,7 @@ def main():
                   and var["distinct_topologies"] >= 2)
 
     pre = {"no_external_assets": ext_ok, "material_depth": mat_ok,
+           "relief_wiring_reaches_the_shader": wiring_ok,
            "geometry_resolves_at_distance": geo_ok,
            "per_instance_variation": var_ok}
     pre_ok = all(pre.values())
@@ -3137,6 +3256,7 @@ def main():
             "image_texture_nodes": mat["image_texture_nodes"],
             "materials": mat["materials"],
             "procedural_texture_nodes": mat["procedural_texture_nodes"],
+            "relief_wiring": wiring,
             "objects": len(objs),
             "triangles": tris,
             # Reported, deliberately NOT gated. A trash can and a human need
@@ -3217,6 +3337,19 @@ def main():
         print(f">>        med {es['median']*1000:7.2f} mm = {med_px:8.2f} px   (advisory)")
     print(f">> procedural texture nodes {mat['procedural_texture_nodes']} "
           f"(need {need_tex}) -- a node floor, NOT an appearance measurement")
+    print(f">> relief wiring: {wiring['trees_scanned']} node tree(s) read from "
+          f"the BLEND, {len(wiring['failing'])} miswired "
+          f"({wiring['failing_on_item_materials']} on this item's own "
+          f"materials, {wiring['failing_elsewhere_in_blend']} elsewhere in the "
+          f"blend), {len(wiring['computation_notes'])} relief output(s) feeding "
+          f"a computation (the edge-wear idiom -- noted, not failed)")
+    for r in wiring["failing"]:
+        print(f">>   MISWIRED [{r['scope']}] {r['kind']} {r['owner']!r} "
+              f"{r['node']}: {r['detail']}")
+        if r["shell_carries_transmission_or_subsurface"]:
+            print(">>     ** this material CARRIES TRANSMISSION OR SUBSURFACE: "
+                  "a stray relief link here is not merely flat, it switches "
+                  "the shell interpretation per pixel.")
     print(f">> {px_per_m:.0f} px/m at the filmed distance = "
           f"{1000.0/px_per_m:.3f} mm per pixel. Band radii in world units: "
           + ", ".join(f"r{r}={1000.0*r/px_per_m:.1f}mm" for r in BANDS))
