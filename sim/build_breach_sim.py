@@ -32,11 +32,22 @@ SIMULATED
 NOT SIMULATED, AND SAID PLAINLY
     the car.  It is a PASSIVE KINEMATIC boundary condition following the
     animation in `world/car_anim.blend` exactly.  Through beat 3 that animation
-    is one continuous rigid motion with no yaw, no pitch response and no lock-up,
-    and this sim does not change it: an F1 car is 798 kg against 4.9 kg of glass
-    per pane, and the honest response to 26 kJ of pane is a few mm/s the
-    telemetry cannot represent.  If the car SHOULD react, that is a change to
-    `anim/carrig.py` and belongs in a report, not here.
+    is one continuous rigid motion with no yaw, no pitch response and no
+    lock-up, and this sim does not change it.
+
+    THE JUSTIFICATION THAT USED TO BE HERE WAS WRONG BY 75x, AND IS WITHDRAWN.
+    It read "an F1 car is 798 kg against 4.9 kg of glass per pane, and the
+    honest response to 26 kJ of pane is a few mm/s".  A pane is 2.17 x 6.025 m
+    of 11.5 mm laminate = 375 kg, and the six fractured bays total 2,240.9 kg
+    in this file's OWN `shard_meta`.  The car carries 798 x 16.4 =
+    13,087 kg.m/s and the shard field takes up to 5,946 kg.m/s of it — 45 %.
+    "A few mm/s" is not supported by any number in this file.  The kinematic
+    proxy is a DECISION, not a consequence: the car's motion through beat 3 is
+    authored, continuity-gated and shared with the camera rig, and making it
+    dynamic would put a solver in the middle of the one continuous take.  What
+    it costs is that the car does not decelerate through the wall, and that
+    cost is real and is not measured here.  If the car SHOULD react, that is a
+    change to `anim/carrig.py` and belongs in a report, not here.
     the dust.  A rigid-body solver has nothing to say about it.
 
 THE APERTURE IS MEASURED, NOT DRAWN
@@ -114,8 +125,34 @@ THRESH_GLASS_EDGE = 2.5
 THRESH_PVB = 0.9        # the interlayer tears at a much lower impulse than the
                         # glass edge but at a much larger displacement, which is
                         # why it is a spring and not a fixed joint
-THRESH_MULLION_JOINT = 900.0     # segment-to-segment, 6063-T6, 0.075 x 0.160
-THRESH_MULLION_BASE = 1400.0     # the anchor studs into the slab
+# THE MULLION THRESHOLDS, AND WHY THEY ARE THE SECOND PARAMETER THE WALL OPENS
+# ON.  `t_bond_per_m` decides whether the glass leaves.  THESE decide whether
+# the opening is wider than the car.  Across a 40x sweep of the bond threshold
+# (4000, 1000, 400, 200, 100) mullions 3, 4, 6 and 7 never moved more than
+# 45 mm; only mullion 5, which the car strikes head-on at y = 0, responded at
+# all.  The bond sweep alone therefore could never widen the hole past the bay
+# it hit, and every attempt to open the wall by moving the bond alone was
+# pulling on the wrong lever.
+#
+# THE DIMENSIONAL CHECK THAT CONDEMNS 900/1400.  Blender hands
+# `breaking_threshold` to Bullet's setBreakingImpulseThreshold, which compares
+# it against the impulse applied in ONE substep.  At 240 Hz x 8 substeps a
+# threshold T is a sustained force of T x 1920 N.  So 900 = 1.73 MN and
+# 1400 = 2.69 MN.  The real member is a 75 x 160 mm 6063-T6 extrusion: it
+# fails in bending at roughly 30 kN (T = 16) and its base studs go in shear at
+# roughly 200 kN (T = 104).  The shipped numbers were 55x and 13x too strong —
+# not a tuned value, a value that had never been converted into units.
+#
+# WHAT IT COSTS THE NULL: NOTHING.  Over 480 wake-all frames with no car, the
+# null bake at 40/120 is BIT-IDENTICAL to the same bake at 900/1400 on every
+# statistic — the frame bodies move 0.175 mm under dead load, so these
+# thresholds are never approached.  The bracket is clean and it is measured:
+# 15/50 breaks the null (the wall begins to shed itself, bay 7 sag 200 px), and
+# 40/120 sits a comfortable 3x above that.  See sim/tmp/{n1,n2}.json.
+THRESH_MULLION_JOINT = 40.0      # segment-to-segment, 6063-T6, 0.075 x 0.160
+                                 # = 76.8 kN sustained.  Was 900 = 1.73 MN.
+THRESH_MULLION_BASE = 120.0      # the anchor studs into the slab
+                                 # = 230 kN sustained.  Was 1400 = 2.69 MN.
 THRESH_TRANSOM = 260.0           # M6 self-tappers into the front screw port
 # THE BOND.  Every pair of shards that shares boundary is joined, and the joint
 # is as strong as the glass across that boundary — so the threshold is PER METRE
@@ -126,15 +163,24 @@ THRESH_TRANSOM = 260.0           # M6 self-tappers into the front screw port
 # `fracture.adjacency`'s note and the wake-all null control.
 # CALIBRATED, not guessed.  40.0 was a dimensional guess and it was ~100x too
 # low: the wake-all null control (no car in the scene at all) shed 1,287 of
-# 3,796 shards under gravity alone.  At 4000 the same control sheds ZERO — max
-# displacement 15.84 m -> 0.709 m, nothing over the 0.25 m "gone" threshold.
-# The residual is 70 mm of SAG, which is a different defect: 3,948 bodies in one
-# constraint island is more than 24 sequential-impulse iterations can hold
-# rigid.  It does not appear in the shipping configuration, where the wall is
-# `start_deactivated` and measures 0.000 m of motion, but it will appear the
-# moment the impact wakes the island, and SOLVER_ITER / SUBSTEPS have to be
-# raised until it does not.  Both numbers are open; see the report.
-THRESH_BOND_PER_M = 4000.0
+# 3,796 shards under gravity alone.  4000 stopped that, and 4000 is what
+# shipped — but 4000 BOUGHT THE NULL WITH THE PICTURE, and it did not even buy
+# the null.  Over the same 480 wake-all frames the shipped 4000 has a MEDIAN
+# displacement of 15.21 mm against 100's 8.48, and 264 shards over 50 mm
+# against 100's 5.  It is WORSE on the wall as a whole.  All 4000 buys is the
+# binary "nothing over 0.25 m", and it buys that by making the glass
+# unbreakable, which is the exact failure mode "a null that passes because
+# nothing can move".  A stiffer constraint network is HARDER for 24
+# sequential-impulse iterations to satisfy, not easier — see `null_verdict`'s
+# `mobility` field, which exists so that this can never again be invisible.
+#
+# THE RESIDUAL IS STILL OPEN.  At 100 the wake-all null loses 3 shards of
+# 3,796 and the panes that stay sag 11.5 px against a 1 px criterion.  It also
+# missed that criterion at 4000 (10.75 px) and it has never met it at any
+# threshold.  That is a SOLVER_ITER / SUBSTEPS defect in a 14,075-constraint
+# island, not a threshold defect, and it is unpriced: the old >=40 h estimate
+# was chasing a bay-2 figure that `camera_ranges` had inflated 6.5x.
+THRESH_BOND_PER_M = 100.0
 
 GLASS_X_IN, GLASS_X_OUT = 14.955, 14.9665
 
@@ -1250,7 +1296,10 @@ def null_verdict(loc, meta, plan):
     out = dict(criterion="retained/intact bays sag < 1 px at their own "
                          "measured camera range", bays={})
     for bay, v in sorted(per_bay.items()):
-        if bay not in rng:
+        if bay not in rng or "mm_per_px" not in rng[bay]:
+            # a bay the camera never frames after release has no pixel scale.
+            # Skipping it silently is how a KeyError becomes a clean exit 0.
+            out.setdefault("bays_never_in_shot", []).append(bay)
             continue
         v = np.array(v)
         mm = 1000.0 * v.max()
@@ -1266,6 +1315,24 @@ def null_verdict(loc, meta, plan):
     out["worst_bay"] = worst_bay
     out["nothing_left"] = bool(d.max() <= 0.25)
     out["max_displacement_m"] = float(d.max())
+    out["px_figure_is"] = ("an UPPER BOUND: this bay's worst sag times its best "
+                           "in-shot pixel scale, which need not be the same "
+                           "frame.  sim/sagpx.py measures the per-frame "
+                           "product.")
+    # THE MOBILITY CHECK.  A null that passes because nothing CAN move is not a
+    # null.  If the wall barely moves at all under --wake-all, that is a report
+    # about the constraint network being unbreakable, not about it being sound,
+    # and it is exactly how THRESH_BOND_PER_M reached 4000.
+    out["mobility"] = dict(
+        moved_gt_1mm=int((d > 0.001).sum()), of=int(len(d)),
+        moved_gt_10mm=int((d > 0.010).sum()),
+        moved_gt_50mm=int((d > 0.050).sum()),
+        median_mm=float(1000.0 * np.median(d)),
+        note="compare across thresholds, not against a limit.  Over 480 "
+             "wake-all frames the SHIPPED 4000 gives median 15.21 mm and 264 "
+             "shards over 50 mm; 100 gives 8.48 mm and 5.  The stiffer network "
+             "moves MORE, because 24 sequential-impulse iterations satisfy it "
+             "less well.")
     out["PASS"] = bool(out["nothing_left"] and worst_px <= 1.0)
     return out
 

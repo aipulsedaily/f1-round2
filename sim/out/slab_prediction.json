@@ -1,0 +1,42 @@
+{
+ "written_by": "breach owner, BEFORE the re-bake finished and BEFORE any frame was re-rendered",
+ "written_at": "2026-08-03, while the 1,657-frame bake at bond 100 / mullion 40/120 was at frame ~1 of 1657",
+ "what_this_is": "A prediction, recorded so it can be wrong. Nothing in this file was read off the new bake. The only numbers here that come from a bake are the SHIPPED 4000 figures I am predicting AGAINST, which are the previous agent's and are quoted as the null hypothesis.",
+
+ "THE_ARTEFACT_BEING_PREDICTED": {
+  "seen": "render/breach_f9/f9_1920_f0866.png. The east wall reads as a soup of hard-edged translucent slabs, several deep, at multiple orientations, spanning the whole glazing. I have looked at it; it is real and it is gross.",
+  "the_falsified_hypothesis": "that the intact pane and its shards both render for ~12 frames. apply_breach.py hides the pane and shows the shards at the SAME frame r = min(release) per bay, and no frame renders both. The only real doubling is 9 shards in bays 5 and 7 that appear at 861, which is a ONE-frame 9-shard HOLE, not a 12-frame whole-wall double.",
+  "the_surviving_explanation": "the shard field itself. At t_bond_per_m 4000 the glass does not leave: bay 4's panes bulge outboard AS A COHERENT SHEET and then spring back. Bay 4's median depth offset is 483 mm at f866 and 17 mm by f900. ~3,000 flat plates spread through ~1.4 m of depth, seen through one another, and then RE-ASSEMBLING. The take therefore contains a shatter-and-un-shatter: the wall un-breaks on camera, in a film with no cuts.",
+  "frame_facts": "impact is film frame 859.88; RELEASE_FRAME = 860; every fractured bay's pane hides and its shards appear at 860. So f0855-f0859 is intact pane, f0860 onward is shards."
+ },
+
+ "THE_MECHANISM_I_AM_BETTING_ON": "at 4000 the bond network is 40x stronger than the glass it represents, so the impact cannot part the sheet: it loads it, the sheet stores the energy elastically across 12,756 inter-shard constraints, and the constraint network gives it back. That is a trampoline, not a fracture. At 100 the bonds part where they are loaded, each shard's momentum becomes its own, and there is nothing left to pull it home. A field that has separated has no restoring force.",
+
+ "PREDICTIONS": {
+  "P1_no_spring_back": {
+   "claim": "bay 4's median depth offset |x - x0| is MONOTONICALLY NON-DECREASING from f860 to f900, to within noise, and at f900 it is at least 5x its f866 value.",
+   "null_it_is_against": "the shipped 4000: 483 mm at f866 falling to 17 mm at f900 - a 28x COLLAPSE.",
+   "falsified_if": "the f900 median is below the f866 median at all. Any net return of the field is the shatter-and-un-shatter surviving the fix, and that is a second defect.",
+   "instrument": "sim/out/breach_film.npz (the resampled film-frame table) for the new bake, bay 4 shards only, median over shards of |x(f) - x(860)|. Same instrument the 483/17 figures came from."
+  },
+  "P2_the_stack_does_not_form": {
+   "claim": "the DEPTH SPREAD of bay 4's shards (p90 minus p10 of x) at f866 will be LARGER than the 4000 bake's 1.4 m, not smaller - the glass is leaving faster - but the field will be SPARSE rather than a stack: the shards will not be co-planar, because they will have parted and rotated.",
+   "why_this_matters": "the slab look is not caused by depth spread alone. It is caused by ~3,000 plates that are still ALIGNED WITH EACH OTHER and with the wall plane, offset in depth. Alignment is what makes a stack of glass read as slabs; a genuinely fractured field reads as a cloud. So the honest picture-side test is angular, not positional.",
+   "instrument": "per-shard quaternion from the bake: the angle between each shard's normal at f866 and its normal at f859. At 4000 a sheet that bulges keeps its normals; at 100 they should scatter.",
+   "falsified_if": "the median normal rotation at f866 is under ~5 deg, i.e. the field is still a sheet."
+  },
+  "P3_the_picture": {
+   "claim": "re-rendered f0855-f0890 will show, at f0866, discrete separating fragments with OPEN AIR and the outdoor plaza visible between them across bay 4, and NOT a continuous field of overlapping parallel translucent plates. By f0880-f0890 there will be a visibly growing hole with the car through it.",
+   "how_I_will_judge_it": "by looking at the frames, at 1920 first and then at 3840 on the one that matters, exactly as the artefact was found. Plus the bay rectangles projected through the real camera onto the render, the way sim/tmp/f0866_bays.png was made, so the claim 'inside bay 4' is measured and not eyeballed.",
+   "falsified_if": "the slabs are still there. If they survive the new configuration then the cause is NOT the bond threshold, it is something in apply_breach.py's shard material or its hide keys, and it is a second, separate defect that I want to name."
+  },
+  "P4_the_one_frame_hole_survives": {
+   "claim": "the 9-shard one-frame hole at 860/861 is NOT fixed by this change - it comes from release frames that are not all equal within a bay, which is a resample/apply artefact and has nothing to do with thresholds. I predict it is still present after the re-bake and re-apply.",
+   "falsified_if": "release_frame_min is 860 and every fractured bay's shards appear at 860 with none at 861."
+  }
+ },
+
+ "WHAT_WOULD_MAKE_ME_WRONG_IN_AN_INTERESTING_WAY": "if the glass leaves cleanly (P1 and P2 hold) but the picture still reads as slabs (P3 fails). That would mean the artefact was never about the wall's motion at all, and the whole shatter-and-un-shatter reading - which is a good reading and explains the 483 -> 17 mm collapse - would still be TRUE and still be a defect, but not THIS defect. I would then look at the shard material's thickness, its IOR, and whether apply_breach is instancing a flat plate rather than the fractured solid.",
+
+ "WHAT_I_CANNOT_PREDICT": "whether the field is at rest by the end. Every sweep point so far ended with the field still in flight, and the bake is frozen by CONSTANT extrapolation at its last key with 2,375 bodies still moving over 1 mm/frame. That is off camera, so nothing is SEEN to stop, but it means the aperture I measure at the last frame is a lower bound and the settled aperture is unknown."
+}
