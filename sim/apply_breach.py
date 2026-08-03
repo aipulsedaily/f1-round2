@@ -307,7 +307,21 @@ def preflight(scene, strict=True):
     # test vertices only for the handful that survive.
     POCKET_LO = (14.9455, -11.0, 0.0870)
     POCKET_HI = (14.9695, 11.0, 6.1120)
-    intr = []
+    # the CLEAR OPENINGS: each bay's cut size inset by the 22.5 mm edge that is
+    # meant to be captured in the mullion.
+    # 22.5 mm of captured edge, plus 1 mm so that a member whose face lands
+    # EXACTLY on the clear-opening boundary is not charged with obstructing it.
+    # The separating-axis test counts touching as intersecting, correctly, and
+    # round 1's mullion face sits exactly on bay 4's clear edge at y = -0.0375.
+    EDGE = 0.0225 + 0.001
+    try:
+        _plan = FR.load(os.path.join(R2, "sim/out/fracture_wall.npz"))
+        clear_rects = {b: (r[0] + EDGE, r[1] - EDGE, r[2] + EDGE, r[3] - EDGE)
+                       for b, r in _plan["rects"].items()}
+    except Exception:                                          # noqa: BLE001
+        clear_rects = {0: (-11.0 + EDGE, 11.0 - EDGE,
+                           0.0870 + EDGE, 6.1120 - EDGE)}
+    intr, captured = [], []
     cand = 0
     for o in scene.objects:
         if o.type != "MESH" or o.data is None or not len(o.data.vertices):
@@ -335,16 +349,41 @@ def preflight(scene, strict=True):
         # convex member that straddles a 24 mm slab must have an edge crossing
         # it, which is exactly the case the vertex test cannot see.  Slab
         # method, vectorised over all edges at once.
-        n_tri = 0
-        if n_in == 0:
-            loops = [list(pl.vertices) for pl in o.data.polygons]
-            n_tri = _tris_hit_box(V, loops,
-                                  (POCKET_LO[0], -11.0, POCKET_LO[2]),
-                                  (POCKET_HI[0], 11.0, POCKET_HI[2]))
-        if n_in or n_tri:
-            intr.append((o.name, n_in, n_tri))
+        loops = [list(pl.vertices) for pl in o.data.polygons]
+        n_tri = _tris_hit_box(V, loops,
+                              (POCKET_LO[0], -11.0, POCKET_LO[2]),
+                              (POCKET_HI[0], 11.0, POCKET_HI[2]))
+        if not (n_in or n_tri):
+            continue
+        # THROUGH THE GLASS, OR CAPTURING ITS EDGE?  These are not the same
+        # thing and only one of them is a defect.
+        #
+        # Every pane is cut 22.5 mm oversize on all four sides -- the CUT SIZE
+        # 2.170 x 6.025 against the CLEAR OPENING 2.125 x 5.980 -- and that
+        # 22.5 mm is MEANT to be buried in the mullion.  That is what a glazing
+        # pocket IS.  So a member that meets the pocket only inside the capture
+        # band is doing its job, and refusing on it would refuse on correctly
+        # glazed glass.  A member that reaches into the CLEAR OPENING is
+        # standing in front of the picture.
+        #
+        # So the test is run again against the clear openings alone, and only
+        # that arm can refuse.  The capture-band hits are reported, loudly,
+        # because they are how you find out WHICH frame is in the scene.
+        n_clear = 0
+        for _b, (_u0, _u1, _v0, _v1) in clear_rects.items():
+            n_clear += _tris_hit_box(V, loops,
+                                     (POCKET_LO[0], _u0, _v0),
+                                     (POCKET_HI[0], _u1, _v1))
+            if n_clear:
+                break
+        if n_clear:
+            intr.append((o.name, n_in, n_tri, n_clear))
+        else:
+            captured.append((o.name, n_tri))
     out["pocket_aabb_candidates"] = cand
-    out["pocket_intruders"] = [list(x) for x in intr]
+    out["pocket_intruders_in_the_clear_opening"] = [list(x) for x in intr]
+    out["pocket_capture_band_only"] = [list(x) for x in sorted(captured)[:20]]
+    out["pocket_capture_band_only_n"] = len(captured)
     out["R5_measures"] = ("vertices inside the pocket, AND triangles "
                           "intersecting it by the separating-axis theorem. "
                           "The triangle arm exists because round 1's east "
@@ -785,9 +824,35 @@ def census_selftest():
     pre = preflight(bpy.context.scene, strict=False)
     r5 = [c for c in pre["checks"] if c["id"] == "glazing_pocket_clear"][0]
     check("+ve control: a SOLID BOX through the pocket with ZERO vertices "
-          "inside it is caught", (not r5["passed"]) and inside == 0,
-          "%d verts inside, R5 %s" % (inside,
-                                      "PASS" if r5["passed"] else "FAIL"))
+          "inside it is SEEN", (inside == 0) and (
+              pre.get("pocket_capture_band_only_n", 0)
+              + len(pre.get("pocket_intruders_in_the_clear_opening", []))) == 1,
+          "%d verts inside, seen=%s"
+          % (inside, pre.get("pocket_capture_band_only")))
+
+    # ...and the same box moved 200 mm INTO bay 4 is a bar across the picture.
+    for o in list(bpy.data.objects):
+        bpy.data.objects.remove(o, do_unlink=True)
+    box("Bar_across_bay4", 14.920, 15.080, -1.30, -1.20, 0.0, 6.2)
+    pre = preflight(bpy.context.scene, strict=False)
+    r5 = [c for c in pre["checks"] if c["id"] == "glazing_pocket_clear"][0]
+    check("+ve control: a bar across the middle of bay 4 is caught",
+          not r5["passed"],
+          str(pre.get("pocket_intruders_in_the_clear_opening")))
+
+    # THE DISCRIMINATION THAT MATTERS: round 1's mullion sits ON a bay
+    # boundary, so it meets the pocket only in the 22.5 mm capture band.  That
+    # is a glazing pocket doing its job and it must NOT refuse -- but it must
+    # be REPORTED, because it is how you find out which frame is in the scene.
+    for o in list(bpy.data.objects):
+        bpy.data.objects.remove(o, do_unlink=True)
+    box("GW_Right_Mull_05", 14.920, 15.080, -0.0375, 0.0375, 0.0, 6.2)
+    pre = preflight(bpy.context.scene, strict=False)
+    r5 = [c for c in pre["checks"] if c["id"] == "glazing_pocket_clear"][0]
+    check("-ve/report: a mullion ON a bay boundary captures the edge, does "
+          "not refuse, and IS reported",
+          r5["passed"] and pre.get("pocket_capture_band_only_n") == 1,
+          "capture-band %s" % pre.get("pocket_capture_band_only"))
 
     for o in list(bpy.data.objects):
         bpy.data.objects.remove(o, do_unlink=True)
@@ -795,7 +860,8 @@ def census_selftest():
     pre = preflight(bpy.context.scene, strict=False)
     r5 = [c for c in pre["checks"] if c["id"] == "glazing_pocket_clear"][0]
     check("-ve control: a bar entirely EAST of the pocket is not charged",
-          r5["passed"], str(pre.get("pocket_intruders")))
+          r5["passed"] and not pre.get("pocket_capture_band_only_n"),
+          str(pre.get("pocket_capture_band_only")))
 
     for o in list(bpy.data.objects):
         bpy.data.objects.remove(o, do_unlink=True)
@@ -803,7 +869,8 @@ def census_selftest():
     pre = preflight(bpy.context.scene, strict=False)
     r5 = [c for c in pre["checks"] if c["id"] == "glazing_pocket_clear"][0]
     check("-ve control: a bar below the pocket's z range is not charged",
-          r5["passed"], str(pre.get("pocket_intruders")))
+          r5["passed"] and not pre.get("pocket_capture_band_only_n"),
+          str(pre.get("pocket_capture_band_only")))
 
     print("\nSTAGE RESULT: census selftest %s (%d failed)"
           % ("FAIL" if fails else "PASS", len(fails)))
