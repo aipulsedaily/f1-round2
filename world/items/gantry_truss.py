@@ -3384,7 +3384,21 @@ def context_ground(centre, size=90.0, name="CTX_Track"):
     g._feed(b, 2, g.math('SUBTRACT', 0.72, g.math('MULTIPLY', (fine, 0), 0.10)))
     bm = g.bump(g.math('ADD', g.math('MULTIPLY', (agg, 0), 0.5),
                        g.math('MULTIPLY', n1, 0.25)), 0.30, 0.004)
-    g._feed(b, 5, g.bump((fine, 0), 0.14, 0.0009, normal=bm))
+    # R2-070.  This was `g._feed(b, 5, ...)`, written when index 5 of
+    # ShaderNodeBsdfPrincipled was `Normal`.  Blender 5.2's live order is
+    #   [4] Alpha  [5] THIN WALL  [6] Normal  [7] Weight ...
+    # so CTX_Track's relief chain went into `Thin Wall` and its Principled
+    # BSDF shipped with `Normal` unconnected -- verified in
+    # world/items/gantry_truss_test.blend, not inferred from the source.  The
+    # material is opaque (Transmission Weight 0, Subsurface Weight 0, Alpha
+    # 1.0, Coat Weight 0, all unlinked), so Thin Wall had nothing to switch
+    # and this degenerated to "the context ground is flat".  Measured, not
+    # assumed: a material carrying transmission would have been worse.
+    #
+    # The DSL is `marshal_post_column.NG` (imported as HS), repaired for
+    # R2-057; its two importers -- this file and pont_girder.py -- were missed.
+    # BY NAME, so the next socket insertion raises instead of sliding.
+    g._feed_named(b, "Normal", g.bump((fine, 0), 0.14, 0.0009, normal=bm))
     n = 220
     xs = np.linspace(-size, size, n)
     ys = np.linspace(-size, size, n)

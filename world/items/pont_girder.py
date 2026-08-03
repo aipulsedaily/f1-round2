@@ -3048,7 +3048,24 @@ def _simple_mat(name, cols, rough, bumps):
     g._feed(b, 2, g.math('SUBTRACT', rough, g.math('MULTIPLY', (fine, 0), 0.10)))
     bm = g.bump(g.math('ADD', g.math('MULTIPLY', (agg, 0), 0.5),
                        g.math('MULTIPLY', n1, 0.25)), 0.30, 0.004)
-    g._feed(b, 5, g.bump((fine, 0), 0.14, 0.0009, normal=bm))
+    # R2-070.  This was `g._feed(b, 5, ...)`, written when index 5 of
+    # ShaderNodeBsdfPrincipled was `Normal`.  Blender 5.2's live order is
+    #   [4] Alpha  [5] THIN WALL  [6] Normal  [7] Weight ...
+    # so the whole relief chain of CTX_Track / CTX_Deck / CTX_Abut went into
+    # `Thin Wall` and those three Principled BSDFs shipped with `Normal`
+    # unconnected -- verified in world/items/pont_girder_test.blend, not
+    # inferred from the source.  All three are opaque (Transmission Weight 0,
+    # Subsurface Weight 0, Alpha 1.0, Coat Weight 0, every one of them
+    # unlinked), so Thin Wall had nothing to switch and the defect degenerated
+    # to "the context ground is flat" rather than to a per-pixel shell flip.
+    # That was luck, and it was measured rather than assumed.
+    #
+    # This module reaches the DSL through `marshal_post_column.NG` (imported as
+    # HS).  That class was repaired for R2-057 and its OWN call sites moved to
+    # `_feed_named`; the two importers -- this file and gantry_truss.py -- were
+    # not.  Addressing the socket BY NAME is the fix, because correcting the
+    # index would only survive until the next insertion.
+    g._feed_named(b, "Normal", g.bump((fine, 0), 0.14, 0.0009, normal=bm))
     return mat
 
 
