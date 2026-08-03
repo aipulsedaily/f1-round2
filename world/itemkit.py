@@ -3334,8 +3334,11 @@ def selftest(verbose=True):
         h3 = nt3.noise(nt3.object_coords(), wavelength_m=0.008)
         b1 = nt3.n("ShaderNodeBump")
         b2 = nt3.n("ShaderNodeBump")
-        nt3.pin(b1, 2, h3)                       # Filter Width  <- the height
-        nt3.pin(b2, 3, (b1, 0))                  # Height        <- the normal
+        # R2-070: these two MUST stay by index -- they ARE the fault this
+        # check detects, reproduced verbatim.  Naming them would turn the
+        # positive control into a second negative control.
+        nt3.pin(b1, 2, h3)                       # Filter Width  <- the height  # socket-index-audit: waive(R2-038 positive control, must stay by index)
+        nt3.pin(b2, 3, (b1, 0))                  # Height        <- the normal  # socket-index-audit: waive(R2-038 positive control, must stay by index)
         bad = bump_relief_report(nt3.t)
         good = bump_relief_report(nt2.t)
         chk("bump_report_detects_the_r2038_miswiring",

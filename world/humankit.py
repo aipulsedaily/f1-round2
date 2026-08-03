@@ -9442,11 +9442,16 @@ def selftest(verbose=True, n=96):
         prev = None
         for _k in range(2):
             nd = ctl.n("ShaderNodeBump")
-            ctl.pin(nd, 0, 1.0)                          # Strength
-            ctl.pin(nd, 1, 0.001)                        # Distance
-            ctl.pin(nd, 2, cn)                # -> Filter Width on Blender 5.2
+            # R2-070: these four MUST stay by index.  This is the positive
+            # control for R2-038 -- it reproduces the miswiring verbatim so the
+            # check below can always fail, and for the reason it names.  Wire
+            # it by name and the control silently becomes correct and stops
+            # controlling anything.  See the paragraph above.
+            ctl.pin(nd, 0, 1.0)                          # Strength  # socket-index-audit: waive(R2-038 positive control, must stay by index)
+            ctl.pin(nd, 1, 0.001)                        # Distance  # socket-index-audit: waive(R2-038 positive control, must stay by index)
+            ctl.pin(nd, 2, cn)                # -> Filter Width on Blender 5.2  # socket-index-audit: waive(R2-038 positive control, must stay by index)
             if prev is not None:
-                ctl.pin(nd, 3, prev)          # -> Height, i.e. a NORMAL vector
+                ctl.pin(nd, 3, prev)          # -> Height, i.e. a NORMAL vector  # socket-index-audit: waive(R2-038 positive control, must stay by index)
             prev = (nd, 0)
         cbad = 0
         for nd in ctl.t.nodes:
