@@ -3342,3 +3342,115 @@ R2-057 and **the blend was built nine hours before the fix** and never rebuilt.
 landed until that artefact has been rebuilt *and re-read*. Keep a list of what a fix
 invalidates, or a guard that reads artefacts will keep finding fixes that were made months ago
 and never arrived.
+
+## R2-064 — the beat 1→2 seam had 39 frames of nothing in it, and an anchor could never have fixed it
+
+The seam is specified at **1.2727 m/s**, and beat 2's second key sits 0.78 m from its first
+two frames later — **9.4 m/s**. Between them lay a 39-frame chord with no keys at all, so
+Blender's `AUTO_CLAMPED` handle at f793 was computed from a 39-frame neighbour on one side and
+a 2-frame neighbour on the other. Result: **11.3447 m/s at f795**, 14.3 % faster than the
+fastest authored pair anywhere in the film.
+
+**The recommended fix was an anchor at t≈32.6 in `tools/author_beats2_5.py`, and it cannot
+work.** Beat 2's emission window starts at f793 (`f0 = round(33.0·24)+1`), so **an anchor
+placed before that window emits no key and controls nothing.** The recommendation was carried
+forward twice — by the agent that diagnosed the seam and by me when I relayed it — and neither
+of us checked that the file it named could act at the time it named.
+
+> **The fix has to put keys in the hole.** A curve with no keys across 39 frames is not
+> under-specified by a little; it is being authored entirely by a handle solver.
+
+Both seam keys are now transcribed anchors of the same spline, the hole is emitted from that
+spline on a spacing ramping `1,2,3,4,5,7,5,4,3,2,1`, and the t=33.70 arrival station is deleted
+— it sat 1.0 m from the ignition station 9 frames later and forced 5.67 m of descent into 16
+frames.
+
+| `tools/seam_gate.py`, f738–832 | before | after |
+|---|---|---|
+| peak speed | 11.3447 m/s @f795 | **8.9124 @f804** |
+| vs fastest authored pair | +14.3 % | **+0.0 %** |
+| worst BULGE | 2.247× (f812–820) | **1.407×** |
+| worst \|accel\| | 98.49 m/s² @f794 | **39.66 @f817** |
+| verdict | SEAM_DEFECT | **SEAM_OK** |
+
+The four seam invariants are untouched: chord 2.0893 m, speed 1.2727 m/s, look 13.2504°, lens
+−0.051 mm. Beat 1 f1–754 is **bit-identical across the bridge insertion** — 0.0000 nm, 0
+quaternion, 0 lens — enforced by pinning every beat-1 handle and re-sampling both sides inside
+the rig, which refuses to save otherwise.
+
+`seam_gate --selftest` is **7/7**, with three must-fail arms — the shipped pre-fix path judged
+against **its own** sheet, beat 3 with an injected overshoot, and a sheet with one key pair
+collapsed into a hold the path does not hold — and a census assertion that re-derives
+`TOL_BULGE` every run and refuses if 1.570× outside and 2.247× inside stop straddling 1.80.
+
+## R2-065 — beat 2's keys reach backwards into beat 1 through Blender's handle solver
+
+Re-profiling beat 2 moves **f740 by 34.35 mm**, on a segment whose own two keys never change.
+`AUTO_CLAMPED` handles are solved from neighbours, so the f718→f754 segment always depends on
+what follows f754 — there is no "beat 1 alone" handle value to pin to.
+
+**FOUND, NOT FIXED.** The consequence is operational and must not be forgotten: **beat 1's
+frames ~686–753 must be re-rendered whenever beat 2's keys move**, even though beat 1 was not
+edited and its keys are provably identical.
+
+Attributed three ways before being written down — and the first attribution was wrong. A source
+comment blaming `FCurve.update()` was written *before* it was tested; running `update()` on the
+pre-fix rig moves f1–754 by **0.000000 mm**. The comment was corrected. **Writing the cause into
+a comment before measuring it is how a wrong explanation acquires a citation.**
+
+## R2-066 — the lens passed 2 mm from a plaque and blew frame 808 white
+
+**Frame 808 of the shipped beat 2 is a grey-white wash over ~60 % of the picture.** Mean
+luminance **0.5743** against 0.4722 and 0.4637 either side — one frame, **21.6 % brighter than
+both neighbours**.
+
+The beat-2 arrival station put the lens **2 mm** from `Plaque_Surround`. The surface is *behind
+the lens at the key*, which is why every geometric check passed it — but at a **180° shutter
+the camera sweeps past it during the exposure**, and the plaque crosses the sensor. Clearance
+is now 130 mm.
+
+**Found by looking at a picture.** No gate on this project was measuring near-clearance across
+the shutter interval, and a still at the key would have shown nothing wrong.
+
+**Fixed as a side-effect of a pacing change — which is luck, not design.** The station was
+deleted for its 5.67 m descent, and the clearance came with it. `tools/cam_clearance.py` now
+exists so the next one is caught deliberately.
+
+`continuity_gate` on 85 rendered frames: **BEFORE FAIL with 3 FAIL-class** (D1_pop f808,
+D4_seam f809, D6_stepped f809–816, plus D5_kink at f794/795/799 — exactly where the geometry
+gate put the spike). **AFTER PASS, 0 FAIL-class.**
+
+## R2-067 — beat 2 measured clean, and the 2.04 % wheelspin figure belonged to another beat
+
+Recorded as a result rather than a defect, because `tools/beat2_probe.py` and
+`tools/dump_exposure.py` cite it in their docstrings — **and a docstring citing a defect number
+that does not exist is its own defect on this project.**
+
+- Wheelspin **f818–827, exactly 10 frames, 1.4547 rev** — sanctioned, and present.
+- **Zero phantom slip in the other 2,967 frames.** The 2.04 % figure that has been circulating
+  was **beat 4's leg 2**, fixed under R2-045; it was never beat 2's.
+- Exposure span across the beat: **0.000e+00 stops.** With `INTERIOR_STOPS = 0.0` the iris does
+  not move, which is what a cut-free take requires.
+
+## R2-068 — the continuity gate's image-motion estimate is blind on a tracking shot
+
+`continuity_gate`'s whole-frame phase correlation reports **0.29 px/frame** on a shot whose
+background moves **−24 px** and whose car moves **+36 px**. A whole-frame estimate averages two
+halves moving in opposite directions and returns approximately zero — the one situation a
+tracking shot is *always* in.
+
+**D5, D7 and the pacing "translation" figure are all downstream of it.**
+
+The finding that makes this publishable rather than merely embarrassing is the author's own
+limit on their result:
+
+> **Its PASS on my sequence is not evidence about the camera kink.** The A/B is — because
+> D1/D4/D6 do not use that estimate.
+
+`tools/frame_motion.py` now **refuses** rather than returning a number it cannot support.
+Two further instruments were caught the same way: a `2·acos(|q·q|)` metric reporting 0.069° of
+rotation change on frames whose quaternion components are **bit-identical** (it was measuring
+float32 normalisation error), and the `FCurve.update()` misattribution recorded under R2-065.
+
+**Three instruments wrong, all three caught by their own author before publishing.** That is
+the standard.
