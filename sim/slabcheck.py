@@ -32,7 +32,7 @@ ALIGNMENT  the median angle between each shard's face normal now and at the
            Depth without alignment is a bulging sheet, which is exactly the
            thing that looks wrong.
 
-CONTROLS — `selftest()` runs six and every one must fire:
+CONTROLS — `selftest()` runs nine and every one must fire:
   RIGID       a field that does not move reads 0.000 m and 0.00 deg
   TRANSLATE   a field moved bodily 500 mm reads 0.500 m and 0.00 deg -- depth
               must not leak into alignment
@@ -41,7 +41,11 @@ CONTROLS — `selftest()` runs six and every one must fire:
   BULGE       a sheet that goes out 500 mm and comes back is reported as
               RETURNS, with the return measured
   LEAVE       a sheet that goes out and keeps going is reported as LEAVES
-  ONE_FLYER   999 still shards and 1 at 50 m must NOT read as a departure.
+  LEAVE_SIDEWAYS
+              a field whose DEPTH returns to zero but which has gone 6 m
+              sideways must read LEAVES.  This control was missing, and its
+              absence produced a wrong verdict on the real bake.
+  ONE_FLYER   199 still shards and 1 at 50 m must NOT read as a departure.
               The median exists for this control.
 """
 import argparse
@@ -102,6 +106,19 @@ def profile(frames, L, Q, sel, swap_frame, at=(866, 880, 900, 920)):
     R = R.reshape(L.shape[0], len(sel) if hasattr(sel, "__len__") else -1, 3, 3)
     nrm0 = R[iref, :, :, 0]                   # the pane's own outward axis
     dep = np.abs(P[:, :, 0] - P[iref, :, 0][None])
+    # DEPTH IS NOT A DEPARTURE MEASURE, and using it as one cost me a wrong
+    # verdict.  While the glass is still IN the wall, |dx| is exactly the
+    # bulge and it is the right number for the slab artefact.  Once the field
+    # is airborne it tumbles and falls and lands on a floor east of the wall,
+    # and its x wanders back across the wall plane on the way: bay 4 at bond
+    # 100 reads |dx| 1122 mm at f866, 132 mm at f900 and 938 mm at f920 while
+    # its 3D displacement is 2050, 2199 and 1879 mm and 98 % of it is more
+    # than 250 mm from home the whole time.  Read as depth that is a field
+    # that came home.  It is a field on the forecourt.
+    #
+    # So the VERDICT is taken on 3D displacement, and depth stays as the
+    # bulge diagnostic it is good at.  Control: LEAVE_SIDEWAYS.
+    d3 = np.linalg.norm(P - P[iref][None], axis=2)
     dot = np.clip((R[:, :, :, 0] * nrm0[None]).sum(-1), -1.0, 1.0)
     ang = np.degrees(np.arccos(dot))
     out = dict(swap_frame=int(frames[i0]), ref_frame=int(frames[iref]),
@@ -116,6 +133,9 @@ def profile(frames, L, Q, sel, swap_frame, at=(866, 880, 900, 920)):
         if abs(frames[i] - f) > 0:
             continue
         per[str(f)] = dict(
+            net_median_mm=round(float(1000 * np.median(d3[i])), 1),
+            net_p10_mm=round(float(1000 * np.percentile(d3[i], 10)), 1),
+            gone_over_250mm=int((d3[i] > 0.25).sum()),
             depth_median_mm=round(float(1000 * np.median(dep[i])), 1),
             depth_p90_mm=round(float(1000 * np.percentile(dep[i], 90)), 1),
             depth_spread_p10_p90_m=round(
@@ -124,18 +144,46 @@ def profile(frames, L, Q, sel, swap_frame, at=(866, 880, 900, 920)):
             align_median_deg=round(float(np.median(ang[i])), 2),
             align_p90_deg=round(float(np.percentile(ang[i], 90)), 2))
     out["at"] = per
-    med = np.median(dep, axis=1)
+    dmed = np.median(dep, axis=1)
+    med = np.median(d3, axis=1)
+    jd = int(np.argmax(dmed))
     j = int(np.argmax(med))
-    out["peak_depth_median_mm"] = round(float(1000 * med[j]), 1)
+    out["peak_depth_median_mm"] = round(float(1000 * dmed[jd]), 1)
+    out["peak_depth_at_frame"] = int(frames[jd])
+    out["peak_net_median_mm"] = round(float(1000 * med[j]), 1)
     out["peak_at_frame"] = int(frames[j])
     out["last_frame"] = int(frames[-1])
-    out["last_depth_median_mm"] = round(float(1000 * med[-1]), 1)
-    # RETURNS if the median depth falls back appreciably from its peak.  The
-    # test is a RATIO, because "17 mm after a 483 mm peak" and "17 mm after a
-    # 20 mm peak" are not the same event.
+    out["last_depth_median_mm"] = round(float(1000 * dmed[-1]), 1)
+    out["last_net_median_mm"] = round(float(1000 * med[-1]), 1)
+    out["gone_over_250mm_last"] = int((d3[-1] > 0.25).sum())
+    out["gone_over_250mm_pct_last"] = round(
+        100.0 * float((d3[-1] > 0.25).mean()), 1)
+    # RETURNS if the median NET displacement falls back appreciably from its
+    # peak.  The test is a RATIO, because "48 mm after a 799 mm peak" and
+    # "48 mm after a 60 mm peak" are not the same event, and it is gated on the
+    # peak being big enough to be an event at all -- a bay that never moved
+    # more than 25 mm has not "returned" from anywhere.
     ret = float(med[-1] / med[j]) if med[j] > 1e-9 else 1.0
     out["return_ratio_last_over_peak"] = round(ret, 4)
-    out["verdict"] = ("RETURNS" if (ret < 0.5 and med[j] > 0.05) else "LEAVES")
+    # AND THE RATIO IS NOT ENOUGH EITHER.  A field that flies 2.3 m, falls, and
+    # settles on the forecourt 400 mm from where it started has a ratio of 0.4
+    # and has not returned to anything -- it is lying on the ground outside the
+    # building.  RETURNS has to mean the glass is BACK IN THE WALL, so it is
+    # gated on the fraction still further than 250 mm from home at the end,
+    # which is the same "gone" threshold the aperture uses.
+    gone_pct = 100.0 * float((d3[-1] > 0.25).mean())
+    if med[j] <= 0.05:
+        out["verdict"] = "DID_NOT_MOVE"
+    elif gone_pct >= 50.0:
+        out["verdict"] = "LEAVES"
+    elif ret < 0.5:
+        out["verdict"] = "RETURNS"
+    else:
+        out["verdict"] = "LEAVES"
+    out["verdict_measured_on"] = ("net 3D displacement from home, gated on the "
+                                  "fraction still over 250 mm at the end")
+    dret = float(dmed[-1] / dmed[jd]) if dmed[jd] > 1e-9 else 1.0
+    out["depth_return_ratio"] = round(dret, 4)
     out["monotone_after_swap"] = bool(
         np.all(np.diff(med[i0:]) > -1e-4))
     out["ref_is_home"] = True
@@ -227,8 +275,8 @@ def selftest():
     check("BULGE: a sheet that goes out and comes back is RETURNS",
           r["verdict"] == "RETURNS" and not r["monotone_after_swap"],
           "peak %.0f mm at %d, last %.0f mm, ratio %.3f"
-          % (r["peak_depth_median_mm"], r["peak_at_frame"],
-             r["last_depth_median_mm"], r["return_ratio_last_over_peak"]))
+          % (r["peak_net_median_mm"], r["peak_at_frame"],
+             r["last_net_median_mm"], r["return_ratio_last_over_peak"]))
 
     # LEAVE: out and keeps going.
     L, Q = field(np.linspace(0, 3.0, nf), np.linspace(0, 90.0, nf))
@@ -236,15 +284,57 @@ def selftest():
     check("LEAVE: a sheet that keeps going is LEAVES, and monotone",
           r["verdict"] == "LEAVES" and r["monotone_after_swap"],
           "last %.0f mm, %.1f deg"
-          % (r["last_depth_median_mm"], r["at"]["880"]["align_median_deg"]))
+          % (r["last_net_median_mm"], r["at"]["880"]["align_median_deg"]))
+
+    # LEAVE_SIDEWAYS: the control that was missing, and its absence produced a
+    # wrong verdict on real data.  The field leaves in Y, its DEPTH returns
+    # exactly to zero, and it must still read LEAVES.
+    L = np.zeros((nf, n, 3))
+    L[:, :, 0] = 14.96 + np.concatenate([np.linspace(0, 1.2, 20),
+                                         np.linspace(1.2, 0.0, nf - 20)])[:, None]
+    L[:, :, 1] = np.linspace(0, 6.0, nf)[:, None]
+    Q = np.zeros((nf, n, 4))
+    Q[:, :, 0] = 1.0
+    r = profile(frames, L, Q, sel, 860)
+    check("LEAVE_SIDEWAYS: a field whose DEPTH returns but which has gone "
+          "6 m sideways is LEAVES",
+          r["verdict"] == "LEAVES" and r["depth_return_ratio"] < 0.01
+          and r["gone_over_250mm_pct_last"] == 100.0,
+          "net %s, depth ratio %.3f, %.0f%% gone"
+          % (r["verdict"], r["depth_return_ratio"],
+             r["gone_over_250mm_pct_last"]))
+
+    # SETTLE: out to 2.3 m, falls back to 400 mm, but every shard is still
+    # more than 250 mm from home.  That is a field on the forecourt, not a
+    # field back in the wall, and it must read LEAVES.
+    dx = np.concatenate([np.linspace(0, 2.3, 25),
+                         np.linspace(2.3, 0.4, nf - 25)])
+    L, Q = field(dx, z)
+    r = profile(frames, L, Q, sel, 860)
+    check("SETTLE: a field that flies 2.3 m and settles 400 mm out is LEAVES, "
+          "not RETURNS",
+          r["verdict"] == "LEAVES" and r["return_ratio_last_over_peak"] < 0.5
+          and r["gone_over_250mm_pct_last"] == 100.0,
+          "%s, ratio %.2f, %.0f%% gone"
+          % (r["verdict"], r["return_ratio_last_over_peak"],
+             r["gone_over_250mm_pct_last"]))
+
+    # ...and the same shape that ends INSIDE 250 mm must read RETURNS.
+    dx = np.concatenate([np.linspace(0, 2.3, 25),
+                         np.linspace(2.3, 0.02, nf - 25)])
+    L, Q = field(dx, z)
+    r = profile(frames, L, Q, sel, 860)
+    check("RETURN: the same flight that ends 20 mm from home is RETURNS",
+          r["verdict"] == "RETURNS" and r["gone_over_250mm_pct_last"] == 0.0,
+          "%s, %.0f%% gone" % (r["verdict"], r["gone_over_250mm_pct_last"]))
 
     # ONE_FLYER: 199 still, 1 at 50 m.  A max would call this a departure.
     L, Q = field(z, z)
     L[:, 0, 0] += np.linspace(0, 50.0, nf)
     r = profile(frames, L, Q, sel, 860)
     check("ONE_FLYER: 1 shard of 200 at 50 m does not move the median",
-          r["last_depth_median_mm"] == 0.0,
-          "%.1f mm" % r["last_depth_median_mm"])
+          r["last_net_median_mm"] == 0.0,
+          "%.1f mm" % r["last_net_median_mm"])
 
     print("\nSTAGE RESULT: slabcheck selftest %s (%d failed)"
           % ("FAIL" if fails else "PASS", len(fails)))

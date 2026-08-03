@@ -75,5 +75,62 @@
    "checked_against_the_raw_bake_because_a_resample_could_have_faked_it": "no. In the 240 Hz world-time bake bay 4 is at 0.00 mm at sim frame 141, 1.66 mm at 144, 35 mm at 145 and 105 mm at 146, advancing at 16.8 m/s - the car's own speed, to three digits. The motion is physical and the resample is faithful to it. There is no pop at the swap beyond what the car does.",
    "so": "the previous agent's numbers were right and my instrument was wrong. It now reproduces 483.1 and 16.7 exactly, and it reports `moved_by_the_swap_frame` on every bay so this particular trap is visible in the output rather than in someone's memory."
   }
+ },
+ "ADDENDUM_2_P1_TESTED_EARLY_ON_THE_300_FRAME_WINDOW": {
+  "when": "while the full 1,657-frame bake was still running. The 300-frame m1 bake the recommendation was made on covers film frames 845..925, which is the ENTIRE prediction window (f866, f880, f900, f920), so P1 could be tested without waiting. The prediction was already written and committed.",
+  "caveat": "this is 300 sim frames = impact +0.646 s. It is not the full bake and the field is still in flight at its last frame.",
+  "result": "P1 IS CONFIRMED at the recommended configuration.",
+  "table": {
+   "SHIPPED_4000_mul900_1400": {
+    "bay4": {
+     "verdict": "RETURNS",
+     "peak_net_mm": 818,
+     "last_net_mm": 60,
+     "gone_pct": 0.0,
+     "align_f866_deg": 80.7
+    },
+    "bay5": {
+     "verdict": "RETURNS",
+     "peak_net_mm": 1210,
+     "last_net_mm": 209,
+     "gone_pct": 30.8,
+     "align_f866_deg": 89.0
+    }
+   },
+   "sw_b100_mul900_1400": {
+    "bay4": {
+     "verdict": "LEAVES",
+     "peak_net_mm": 3963,
+     "last_net_mm": 3963,
+     "gone_pct": 90.1
+    },
+    "bay5": {
+     "verdict": "LEAVES",
+     "peak_net_mm": 6836,
+     "last_net_mm": 6836,
+     "gone_pct": 84.9
+    }
+   },
+   "m1_RECOMMENDED_b100_mul40_120": {
+    "bay4": {
+     "verdict": "LEAVES",
+     "peak_net_mm": 2348,
+     "last_net_mm": 1839,
+     "gone_pct": 97.8,
+     "align_f866_deg": 107.6
+    },
+    "bay5": {
+     "verdict": "LEAVES",
+     "peak_net_mm": 1025,
+     "last_net_mm": 410,
+     "gone_pct": 87.1,
+     "align_f866_deg": 108.7
+    }
+   }
+  },
+  "reading": "at the shipped 4000, bay 4 ends with ZERO PER CENT of its glass more than 250 mm from home after peaking at 818 mm. That is the un-shatter, stated as plainly as it can be. At the recommended configuration 97.8 % of bay 4 is gone and stays gone. The stack cannot form because there is no stack.",
+  "an_unexpected_one": "m1's glass does not fly as FAR as sw_b100's (peak 2,348 mm against 3,963 mm) but far MORE of it leaves (97.8 % against 90.1 %). That is what breaking the mullion does: the frame absorbs energy instead of holding the glass, so the field is slower and larger. It also matches the previous agent's aperture figure (96.8 % vacated) from a completely different instrument, which is the best independent check available that either is right.",
+  "bays_3_and_6_do_not_move_at_any_setting": "DID_NOT_MOVE, 0.0 % and 0.5 % gone at the recommended configuration, against a plan that marks them `destroyed`. This is R2-095 seen from a second instrument: the impact reaches bays 4 and 5 and mullion 5 and nothing else.",
+  "P2_and_P3_still_open": "P2's ALIGNMENT figure is 107.6 deg at f866, but I have withdrawn P2's reasoning (see addendum 1) so this neither confirms nor refutes anything. P3 is a picture claim and is not settled until frames are rendered and looked at."
  }
 }
