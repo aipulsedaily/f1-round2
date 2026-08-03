@@ -51,6 +51,7 @@ import bpy
 R2 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(R2, "anim"))
 sys.path.insert(0, os.path.join(R2, "world"))
+sys.path.insert(0, os.path.join(R2, "tools"))   # shipping_world, gate_exit
 
 
 SHIPPING_MD = os.path.join(
@@ -77,18 +78,20 @@ def declared_shipping_world(path=SHIPPING_MD):
     disagree. If it cannot parse a declaration it RAISES -- an unreadable
     declaration must not degrade into "anything goes", which is the state this
     replaces.
+
+    THE PARSER MOVED OUT (2026-08-03, R2-100). It was inline here, and
+    `tools/input_stamp.py` -- which stamps WHICH world every screen-presence
+    number was measured against -- carried a hardcoded `assembly6.blend`
+    instead. One declaration deserves one reader: two parsers of the same file
+    is a smaller version of the same defect, and the plain-python caller could
+    not import this module at all because this one imports `bpy`. Both now go
+    through `tools/shipping_world.py`, which is stdlib-only and has its own
+    controls (`--selftest`). Behaviour here is unchanged except that a
+    SHIPPING.md with no declaration HEADING now raises too, instead of
+    searching the whole file for a bold assembly name.
     """
-    import re
-    with open(path) as fh:
-        text = fh.read()
-    # the first `assemblyN.blend` inside a bold run, after the title
-    head = text.split("# WHICH ASSEMBLY IS THE SHIPPING WORLD", 1)[-1]
-    m = re.search(r"\*\*`(assembly\d+\.blend)`", head)
-    if not m:
-        raise SystemExit(
-            "REFUSING: cannot read the declared shipping world out of %s. The "
-            "film scene will not be built against an undeclared world." % path)
-    return m.group(1)
+    import shipping_world
+    return shipping_world.declared_shipping_world(path)
 
 
 def refuse_unless_world_is_declared(src, override):
