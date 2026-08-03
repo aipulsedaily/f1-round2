@@ -64,7 +64,8 @@ BENCH = (
 
 
 def build(n=5, role="paddock", px=767.2, seed=SEED, lod=None, samples=256,
-          spacing=1.15, archetypes=None, kind=None, yaws=None, aim="body"):
+          spacing=1.15, archetypes=None, kind=None, yaws=None, aim="body",
+          headwear=None, hair_styles=None):
     if bpy is None:
         raise RuntimeError("human_bench needs Blender")
     # CLEAR THE FACTORY SCENE FIRST. `--factory-startup` ships a Cube, a Camera
@@ -82,6 +83,12 @@ def build(n=5, role="paddock", px=767.2, seed=SEED, lod=None, samples=256,
     stand = K.coll(COLL + "/Standins", root)
     cams = K.coll(COLL + "/Cameras", root)
     K.contract_sun(PFX, scene=bpy.context.scene, coll_=stand)
+    # AND THEN OFF THE REFUTED EXPOSURE IT LEAVES BEHIND. The A/B ladders in
+    # HUMAN-REFERENCE secs 0, 00 and 000 -- every appearance judgement about
+    # cloth, skin and the face that this project has made -- were all shot on
+    # this bench at world_contract's -3.048, which is 0.580 stops over the
+    # film's own measured -3.628. See humankit.film_exposure.
+    HK.film_exposure(bpy.context.scene)
 
     gm = K.NT(PFX + "Ground")
     _gp = gm.object_coords()
@@ -113,6 +120,19 @@ def build(n=5, role="paddock", px=767.2, seed=SEED, lod=None, samples=256,
             wd = HK.sample_wardrobe(HK.rng_for(fseed, 2), b, role="crew",
                                     team=K.pick_brand(seed, 4441, i * 7 + 3),
                                     team_frac=1.0)
+        # THE HAIR BENCH HAS TO PUT HAIR ON TRIAL, and the wardrobe draw will
+        # not: `HEADWEAR` puts a hat on 42 % of people and 30 % of the styles
+        # drawn are `crop` or `bald`, so a five-figure row can easily contain
+        # one head of hair. `--headwear none --hair-styles ...` forces the
+        # subject, which is the same reason `--yaws` exists.
+        if hair_styles:
+            st = next(s for s in HK.HAIR_STYLES
+                      if s[0] == hair_styles[i % len(hair_styles)])
+            b.hair_style, b.hair_len, b.hair_vol = st[0], st[1], st[2]
+            b.hair_part = float(st[3])
+        if headwear is not None:
+            wd = wd or HK.sample_wardrobe(HK.rng_for(fseed, 2), b, role=role)
+            wd["headwear"] = headwear
         fig = HK.build_figure(seed=fseed, lod=tier, role=role, body=b,
                               kind=kind, wardrobe=wd,
                               archetype=tbl[i % len(tbl)],
@@ -140,9 +160,14 @@ def build(n=5, role="paddock", px=767.2, seed=SEED, lod=None, samples=256,
     mid = objs[len(objs) // 2]
     bb = [mid.matrix_world @ Vector(c) for c in mid.bound_box]
     top_z = max(float(c.z) for c in bb)
-    drop = 0.115 if aim == "head" else 0.62
+    # `hair` aims at the CROWN and looks slightly down on it from behind the
+    # shoulder line. `head` frames a face, which is the wrong question for a
+    # hair mass: the crown, the parting and the hairline are all above and
+    # behind the eyeline and a face framing puts every one of them off frame.
+    drop = {"head": 0.115, "hair": 0.045}.get(aim, 0.62)
     ctr = np.array([mid.location[0], mid.location[1], top_z - drop])
-    az, el = math.radians(206.0), math.radians(7.0 if aim != "head" else 2.0)
+    az = math.radians(206.0 if aim != "hair" else 246.0)
+    el = math.radians({"head": 2.0, "hair": 15.0}.get(aim, 7.0))
     loc = ctr + d * np.array([math.cos(el) * math.cos(az),
                               math.cos(el) * math.sin(az), math.sin(el)])
     K.macro_rig(PFX + "CAM", tuple(loc), tuple(ctr), LENS_MM, cams,
@@ -176,7 +201,12 @@ def main():
     p.add_argument("--samples", type=int, default=256)
     p.add_argument("--archetypes", default=None)
     p.add_argument("--yaws", default=None)
-    p.add_argument("--aim", default="body", choices=("body", "head"))
+    p.add_argument("--aim", default="body", choices=("body", "head", "hair"))
+    p.add_argument("--headwear", default=None,
+                   help="force every figure's headwear (`none` for bare heads)")
+    p.add_argument("--hair-styles", default=None,
+                   help="comma list from humankit.HAIR_STYLES, cycled over the "
+                        "row, so a five-figure bench can hold five styles")
     # THE CLOTH LADDER. Each of these names a stage of the garment shell that
     # was superseded, or a half of the relief that can be switched off, so the
     # A/B is rendered rather than argued. See humankit.relax_spec / FOLD_GAIN.
@@ -196,6 +226,19 @@ def main():
     p.add_argument("--face-tint", type=float, default=None,
                    help="gain on the lip/brow/orbital COLOUR masks; 0 = the "
                         "same geometry with no face tinting at all")
+    # THE HAIR LADDER -- defect 3, "a granular crust at every distance". Same
+    # instrument again: three layers can own the crust and only a rendered pair
+    # can say which. See humankit.HAIR_RELIEF.
+    p.add_argument("--hair-relief", type=float, default=None,
+                   help="gain on the hair SHADER's bumps; 0 turns them off")
+    p.add_argument("--hair-lump", type=float, default=None,
+                   help="gain on the hair MESH's thickness field (locks, "
+                        "volume, parting); 0 leaves a smooth shell")
+    p.add_argument("--hair-strands", type=float, default=None,
+                   help="gain on the strand COUNT; 0 emits no strand tubes")
+    p.add_argument("--hair-legacy", action="store_true",
+                   help="build the SHIPPED hair -- shader, mesh and strands -- "
+                        "as the positive control. See humankit.HAIR_LEGACY")
     p.add_argument("--out", default=os.path.join(_WORLD, "items",
                                                  "human_bench.blend"))
     a = p.parse_args(argv)
@@ -214,6 +257,17 @@ def main():
         HK.FACE_RELIEF = float(a.face_relief)
     if a.face_tint is not None:
         HK.FACE_TINT = float(a.face_tint)
+    if a.hair_legacy:
+        HK.HAIR_LEGACY = True
+    for _flag, _name in (("hair_relief", "HAIR_RELIEF"),
+                         ("hair_lump", "HAIR_LUMP"),
+                         ("hair_strands", "HAIR_STRAND_GAIN")):
+        _v = getattr(a, _flag)
+        if _v is not None:
+            setattr(HK, _name, float(_v))
+    HK.log("hair ladder:  legacy=%s relief=%.2f lump=%.2f strands=%.2f"
+           % (HK.HAIR_LEGACY, HK.HAIR_RELIEF, HK.HAIR_LUMP,
+              HK.HAIR_STRAND_GAIN))
     HK.log("cloth ladder: relax=%s roll=%.3f m fold_gain=%.2f shader_relief=%.2f"
            % (HK.GARMENT_RELAX, HK.CLOTH_ROLL_M, HK.FOLD_GAIN,
               HK.SHADER_RELIEF))
@@ -221,6 +275,9 @@ def main():
            % (HK.FACE_RELIEF, HK.FACE_TINT))
     res = build(n=a.n, role=a.role, px=a.px, seed=a.seed, lod=lod,
                 samples=a.samples, kind=a.kind, aim=a.aim,
+                headwear=a.headwear,
+                hair_styles=(a.hair_styles.split(",") if a.hair_styles
+                             else None),
                 yaws=([float(v) for v in a.yaws.split(",")] if a.yaws else None),
                 archetypes=(a.archetypes.split(",") if a.archetypes else None))
     bpy.ops.wm.save_as_mainfile(filepath=a.out, compress=True)

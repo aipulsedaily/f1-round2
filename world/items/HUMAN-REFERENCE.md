@@ -71,7 +71,344 @@ amplitude trap's arithmetic with docstrings; `NODE_PP` carries the measured node
 response that §3b was about; `LOD` and `LOD.for_px` carry the tier table.
 **Rebuild §1-§7 by reading those and re-deriving, not by trusting memory.**
 
+**HOW TO EDIT THIS FILE SO IT DOES NOT HAPPEN AGAIN.** Find a marker, keep
+everything on BOTH sides of it, and assert the line count only grows and the
+last 200 characters survive verbatim before writing:
+
+    s = open(p).read(); i = s.index(marker)
+    out = s[:i] + new + s[i:]
+    assert out.count("\n") > s.count("\n")
+    assert s[-200:] in out
+
+Never compute `s[s.index(x):]` on this file. The sixth pass's section was
+inserted with exactly the four lines above.
+
 ---
+
+---
+
+## 000000. UPDATE 2026-08-03 (sixth pass) — THE CRUST AND THE BLANK FACE ARE THE SAME BUG, AND IT IS SAMPLING
+
+Sections 00000 and below are the five previous passes and this one does not
+contradict any of them. It adds a mechanism under two of their findings, and
+the mechanism turns out to be **one mechanism**: on this project, over and over,
+a feature has been declared in millimetres and then built on a grid or into a
+pixel that cannot hold it. §3b called it the frequency trap in a texture node.
+It is also in the head mesh, in the hair mesh, in the cap mesh, and in the hair
+shader, and it is the whole of defects 1 and 3.
+
+### 000000.0 THE ONE-LINE STATE
+
+**Defect 3 (hair) and defect 1 (the blank face) both have a measured cause, a
+fix, and a control that reproduces the fault.** The hair shader was carrying
+**m = 3.38 at a 1.2 mm wavelength — 0.45 px at this item's own 373 px/m**, i.e.
+per-pixel noise at 3.4x the modulation the garment shader was rejected as
+stucco for; the hair mesh had no lock structure at all, so every hair-like
+signal in the picture came from a bump map, and a bump map cannot move a
+silhouette. **The face carries m = 2.22 in the lobe field and at L1 delivers
+31 % of its mouth, 25 % of its nostril and 55 % of its lid crease to the
+mesh**, because twenty of its thirty-two face lobes are narrower than the grid
+spacing — and the twenty are exactly the sharp ones. `humankit --selftest` is
+**27 checks, 0 failed**, with two new ones carrying those numbers and their
+controls. Two more defects are closed with them: the caps have six panels, a
+crown break and a button, and **every prop was the colour of that person's
+hat** — which is why 43 % of the block was holding a bright rectangle.
+**Visible identical twins: 4,753 neighbour pairs → 6**, at zero geometry cost
+and without touching `ROLE_CELL`.
+
+### 000000.1 DEFECT 3, THE HAIR — a crust in two layers, and neither was the strands
+
+Arithmetic first, because it needs no render and it is decisive. Both shipped
+hair stages through this file's own `max_slope_deg` and `slope_for_modulation`:
+
+    stage                lambda   amp pp   slope    m = 2 theta / tan(12.47)   px @373
+    fibre (Wave)         1.20 mm   0.150   21.4 deg          3.384              0.45
+    clump (Noise d4)     8.00 mm   1.100   23.4 deg          3.688              2.99
+
+against `fabric_stages`' targets of **m 0.21–0.30 fine and 0.28–0.42 mid**, and
+against the **m = 1.57** that made the crew bench read as *"coarse stucco, a
+uniform crawl over shirt and trouser alike"*. **The hair was 2.2x the rejected
+stucco, isotropically, over the whole mass.**
+
+And the fine stage is **a fifth of the Nyquist floor** `fabric_stages` drops
+stages below. That floor's docstring already says why: *"Cycles does not filter
+a bump by the pixel footprint, so a 1.3 mm weave at 373 px/m — 0.49 px — does
+not render as a fine weave, it renders as per-pixel noise."* **That is why the
+defect is "a granular crust AT EVERY DISTANCE": the feature is pinned to the
+pixel, not to the surface, so it does not soften as the figure recedes.** The
+colour layer did the same thing on top — a Noise at **1.1 mm** driving a
+0.74–1.28 value multiplier, which is the speckle.
+
+`hair_stages()` now puts hair through `fabric_stages`' discipline: **lock at
+9.0 mm, m = 0.78; swell at 34 mm, m = 0.30**, both above the floor, amplitudes
+set from a target radiance modulation rather than from millimetres, and the
+1.2 mm fibre **dropped rather than shrunk**. What a sub-pixel fibre actually
+does to light is not a bump — a bundle of parallel cylinders scatters into a
+cone about its axis — so it moved into **anisotropy with a real meridional
+tangent** (`_meridional_tangent`; `ShaderNodeTangent`'s RADIAL mode returns the
+ring round the head, not the fall, which would have stretched the highlight
+90° wrong and looked deliberate).
+
+**THE OTHER HALF WAS THAT THE MASS HAD NO STRUCTURE.** `build_hair` was one
+smooth ellipsoid carrying an isotropic thickness noise. A lock of hair is
+10–20 mm at the scalp, which is 4 px at the crowd's 63 px head and 26 px at the
+400 px face framing — resolvable at both, so it has to be geometry at both. The
+grid is now `2 x head_u` instead of `0.75 x` (144 columns at L0, 88 at L1) and
+carries **`n // 4` lock gutters — 36 at 15.4 mm at L0, 22 at 25 mm at L1**,
+plus **a parting**: `HAIR_STYLES` has carried `part_frac` since the table was
+written and **nothing read it**, so eight hair styles reached the mesh as three
+(a length and a volume).
+
+Two traps closed while doing it, both of them this file's own:
+
+* the lock carrier is **`|cos(pi N u)|`, not a ridged noise**. A ridged noise
+  puts its gutters at its zero crossings — about two per wavelength, but only
+  on average — so setting the wavelength does not set the spacing and half the
+  locks come out at half the pitch, i.e. aliased. `|cos|` puts exactly N
+  gutters around for any integer N and is periodic in u either way.
+* the shader's angular textures are on a **circle**, `(r cos 2pi u, r sin 2pi
+  u, ...)`, because `hk_u` wraps 0.97 → 0 and a noise on it draws a seam down
+  the head. And `r = N * 1.60 / 2pi`, not `N / 2pi` — the 1.60 is §3b's factor
+  and it is the same one that put a declared 8.6 mm crumple at 13.8 mm.
+
+**AND THE STRANDS WERE HALF THE FIGURE.** Measured before the rewrite:
+**12,324 hair triangles on a 24,287-triangle L1 person — 51 % — and 11,400 of
+them were strand tubes**, rooted on grid vertices (190 strands on a 33 x 14
+grid is one on every other vertex, so the render shows a regular LATTICE of
+dark commas), each standing clear of the mass with sky behind it. They are now
+sampled at continuous (fi, fj) with the surface bilinearly interpolated, drawn
+in **wisps** of six sharing a direction and a length, kept hugging the surface
+for their root 60 % (`hug = g*g`), thinned from 0.7–1.9 mm to 0.35–0.9 mm, and
+moved off the dome onto the **hairline and the tips**, which are the only two
+places a strand can break an outline. Counts cut 620/190/48 → **260/96/28**.
+Net: **L1 hair 12,324 → 9,383 triangles, a whole figure 24,287 → 23,156**, i.e.
+the hair got a lock structure, a parting and a fringe **and got cheaper**.
+
+`HAIR_LEGACY = True` rebuilds the shipped hair — shader, mesh, strands and
+strand counts — as the positive control, the way `FOLD_MODE = "isotropic"` and
+`plan_block(legacy_gaze=True)` do. `human_bench --hair-legacy` builds it.
+
+### 000000.2 DEFECT 1, THE BLANK FACE — the lobes are there and the MESH IS NOT
+
+**The fifth pass's ladder was right about everything it measured and the
+conclusion it could not reach is a sampling failure.** It measured
+`HEAD_LOBES` at **m = 2.22**, correctly, and concluded the face is not flat. It
+is not flat. But it measured the **analytic lobe field**, and Cycles shades the
+**sampled mesh**.
+
+Measured on `head_points`, over the face (fy > 0.45), on the shipped grid:
+
+    tier   face row spacing   face col spacing   lobes with sigma < spacing
+    L0          6.8 mm             6.6 mm             17 of 32
+    L1         11.0 mm            10.7 mm             **20 of 32**
+
+and the twenty at L1 are not a random twenty:
+
+    lobe          sigma_z   its own slope   sigma/spacing   REALISED DEPTH
+    lip_line       1.83 mm      56.6 deg       **0.17**       **31 %**
+    nostril        3.78         47.8           0.31             25 %
+    subnasale      3.44         40.3           0.31             41 %
+    lid_upper      4.82         40.9           0.44             55 %
+    philtrum       6.31         14.8           0.32             95 %
+    nasolabial    14.91          7.4           0.51             67 %
+    ---- the survivors, and they are every BROAD lobe ----
+    brow_ridge    12.04         19.1           1.10             87 %
+    orbit         13.19         26.9           1.20             95 %
+    chin          20.07         14.8           1.83             96 %
+    cheek         26.38          4.8           2.18            100 %
+
+`REALISED DEPTH` is a twin build — the head built twice off one body, once with
+a lobe and once with its amplitude zeroed, largest vertex displacement between
+the twins — so it assumes nothing about what a good face is. **The mouth
+arrives at 31 % of its depth, reconstructed by linear interpolation across an
+11 mm cell: a 7 deg ramp where the lobe asks for a 57 deg wall. m = 1.10
+instead of 8.9.**
+
+**THIS EXPLAINS EVERY RESULT THE FACE LADDER GOT, INCLUDING THE ONES THAT LOOKED
+CONTRADICTORY:**
+
+* *"the face reads in PROFILE as silhouette, not front-on as shade"* — the
+  twelve survivors are brow, nose, chin, cheek, orbit, temporal. **Broad lobes
+  are what a silhouette is made of.** The sharp ones — the lip line, the lid
+  crease, the alar crease, the nasolabial — are what a FRONTAL face is made of,
+  and none of them reached the mesh.
+* *"turning the tint off changes 0.05 % of pixels"* — the masks are
+  accumulated from the same Gaussians, so they are sub-grid too.
+* *"turning the relief off leaves an egg"* — correct: the survivors ARE the
+  head shape.
+* **and it is why adding shader contrast cannot help. There is no geometry
+  there to shade.** The fifth pass's instruction *"do not add shader contrast;
+  that lever is measured and spent"* was right for a reason it had not found.
+
+**The realised fraction has a standard deviation of 0.000 over 40 bodies**,
+because `th` and `ph` are fixed linspaces and the lobe centres are in
+unit-sphere coordinates. This is not sampling noise that averages out over a
+crowd of 3,803. **Every person in the grandstand has the same 30 % of a mouth.**
+
+**THE FIX IS TWO HALVES OF ONE IDEA AND BOTH ARE GAINS SO BOTH HAVE CONTROLS.**
+
+`FACE_GRID_WARP` reparameterises `th` and `ph` through a monotone CDF warp so
+rows and columns bunch on the face — the occiput is smooth and was getting the
+same density as the mouth. Face spacing **L1 11.0 → 8.6 mm and 10.7 → 6.9 mm,
+L0 6.8 → 5.4 and 6.6 → 4.2**, for no extra vertices and no silhouette change.
+
+`FACE_LOBE_FLOOR` stops a lobe being narrower than the mesh it is built on: any
+sigma below **1.15 x the grid's own measured face spacing** is floored to it
+**at unchanged depth**. Widening at unchanged depth lowers the analytic slope
+and RAISES the realised one, because what arrives stops being a fraction of the
+lobe. This is §00.3's welt argument moved into the geometry — *"a colour edge
+inside a quad is a soft edge; the welt is the line the eye reads"* — and it is
+**tier-dependent by construction**, which is what a LOD is for.
+
+Measured at L1, realised depth as a fraction of what the lobe asks for:
+
+    lobe          shipped    warp + floor
+    lip_line       0.31        **1.03**
+    lid_upper      0.55        **0.93**
+    nostril        0.25        **0.90**
+    subnasale      0.41        **0.85**
+    ---- NEGATIVE CONTROL: the lobes that were never sub-grid ----
+    chin           0.96          0.96
+    cheek          1.00          1.00
+    brow_ridge     0.87          0.88
+
+The negative control is load-bearing. If the broad lobes had moved, the
+statistic would be measuring the change rather than the feature.
+
+**A SIZE THAT HAD TO BE CHECKED, AND IT IS NOT WHAT THE BENCH SUGGESTS.** A
+floored lip line is a 5–6 mm groove, which at the 400 px head the faceab crops
+were shot at looks coarse. **The film never resolves a head above about 72 px**
+— `screen_presence.json`'s covered tier peaks at 551.8 px of FIGURE, which is
+72 px of head, and the crowd is 63 px. At 72 px a 6 mm feature is 1.9 px, i.e.
+exactly the finest thing that can read. The bench's 400 px framing is
+deliberately harder than the film and must not be used to reject this.
+
+**A SECOND DEFECT FELL OUT OF IT.** *"Head-grid facets visible at 400 px"*:
+the p95 normal step between adjacent face quads was **39.1 deg at L1 and
+31.4 at L0**, and `emit_mesh` auto-smooths at **38 deg** — so ~5 % of face
+edges were rendering FLAT SHADED. That is the facets, and they were the
+sub-grid lobes being reconstructed as spikes between two samples rather than
+any feature. After the warp and the floor: **23.2 and 23.3 deg**, clear of the
+threshold, with the max still 67–71 deg where it should be (nostril, lip).
+
+### 000000.3 DEFECT 4, THE CAPS — and a grid that could not hold a seam
+
+The cap dome had **48 columns at L0, 10 mm apart on a 478 mm crown**, and the
+defect is *"no six-panel seams, no button, no crown break"* — i.e. exactly the
+features that live at 3–8 mm. **Same trap, third object.** The grid is now
+`4 x head_u // 3` (96 columns at L0, 5.0 mm; 58 at L1, 8.2 mm) and the seam
+width is **floored to the spacing** rather than declared in millimetres.
+
+What a cap now has: **six panels** with the front seam on the centre line, as a
+constant-width arc ridge (`d_ang * r_loc`, so it does not pinch to nothing at
+the crown) with a slight bulge between seams; a **crown break**, 7.5 mm of
+forward rise, because a hemisphere is a hard hat and that is the word the
+defect report uses; and a **button**, 12 x 5 mm on its own grid at the apex.
+The beanie's ribbing was **9 ribs on a 478 mm crown — a 53 mm rib, which is a
+pumpkin** — now 26 at 18 mm, with the turn-up it never had.
+
+**AND THE WHITE ONES WERE THE BRIGHTEST OBJECTS IN THE FRAME BECAUSE THEY
+LITERALLY WERE.** `NEUTRALS`' `#f2f0eb` is **0.87 linear**, on the one surface
+of a figure that points at the sky, under a 12.47 deg sun. New cotton twill is
+about 0.72 and a worn cap is well below it. Headwear albedo is now capped at
+0.62–0.72 and carries its own `wear`. The neutral book is shared with shirts,
+where 0.87 is a fine white shirt in shadow, so the cap is fixed at the cap and
+not in the book.
+
+### 000000.4 DEFECT 5, THE FLAT PROPS — a phone is the colour of that person's hat
+
+*"`phone` (28 %) and `programme` (15 %) are both a pale flat slab, so 43 % of
+the block is holding a bright rectangle against dark clothing."* The cause is
+not the modelling and no amount of geometry would have fixed it:
+
+**every prop is emitted into `MAT_ACC`, and `hk_col` for `MAT_ACC` is set once
+at the end of `build_figure` from `w["headwear_rgb"]`.** A phone is the colour
+of that person's cap. With `#f2f0eb` in the headwear book, a phone in one hand
+and a programme in the other are two white slabs at the brightest value on the
+figure. Found by reading `colour_by_material` while looking for something else.
+
+`PROP_COLS` gives every prop kind its own colour book — graphite/silver/blue
+phones, printed and newsprint programmes, hardboard clipboards, pale PET
+bottles, black radios and cameras — emitted as **LOCKED** colours
+(`Mesh.add(col=...)`), the same mechanism a livery panel uses to hold its own
+colour on a garment that shares its material. Every prop piece is now locked;
+before this the antenna, the lens barrel, the binocular tubes, the flag staff
+and the clipboard clip were all the colour of that person's SHOES.
+
+The programme is also no longer a slab: `_programme` builds two leaves meeting
+at a spine with a per-person curl, so it has a lit face and a shaded face
+instead of one value.
+
+### 000000.5 THE TWINS — 4,753 pairs to 6, without touching `ROLE_CELL`
+
+§00000.3a item 3 names `ROLE_CELL["sit"]` as the lever for *"16 visible pairs
+of identical twins"*, and it is A lever — but doubling it costs **~20 M library
+polygons to halve a rate**, because a uniform hash over a deeper cell still
+collides, just less often. **The collisions that matter are the ones that land
+next to each other, and those can be removed outright for nothing.**
+
+`_separate_twins` sweeps the plan in seat order and, where a person's source is
+already in use within **`TWIN_RADIUS_M` = 2.6 m** (a little over two seat
+pitches and two rows), rehashes their `k` and tries again, up to 24 times. The
+cell is unchanged, the library is unchanged, and *"the same person goes back in
+the same chair"* survives because both the sweep order and the rehash are
+functions of the seat. Measured over all 18,408 seats with
+`visible_twin_pairs`, and the positive control is the shipped assignment with
+the pass disabled:
+
+    BEFORE   4,753 twin pairs of 607,255 neighbour pairs within 2.6 m   0.783 %
+    AFTER        6                                                      0.001 %
+
+It is fixed in the WORLD and not on the screen on purpose: the plan does not
+know the camera and must not: this module ships six framings and a de-duplication
+tuned for `CAM_CROWD_ALONG` would leave the twins in for the other five.
+
+### 000000.6 THE EXPOSURE — three of the four are corrected, the fourth is NOT -3.048
+
+`humankit.film_exposure(scene)` is the one place it now happens, called after
+`itemkit.contract_sun` in **`human_bench`, `crew_figure` and
+`paddock_personnel_figure`**. It raises rather than falling back.
+
+**`driver_figure` is NOT at -3.048 and was not corrected, deliberately.** It
+does not use `contract_sun` at all — it builds its own `procedural_world()`, a
+Sky Texture rather than `build_sky`'s slab, and sets
+`SCENE_EXPOSURE_EV = -2.8`. `FILM_EXPOSURE` was measured under `build_sky`'s
+sun + sky + atmosphere and does not transfer to a different world. **What that
+file does have is a three-way disagreement with itself:** its own docstring
+measures an 18 % card at 1.99 linear, which puts mid grey at **-3.47**, then
+says *"-3.2 is the 0.28 of a stop of headroom"*, and the constant is **-2.8**.
+Three numbers, 0.67 stops apart, in one file. Reported rather than changed:
+correcting it without re-rendering its gate is shipping an unrendered change,
+which is how this project got its broken instruments. **R2-058 is free; this is
+what I would file it as.**
+
+**WHAT CHANGES WHEN YOU RE-JUDGE ANYTHING AT -3.628.** 0.58 stops off the top.
+Everything that was reading as pale clay comes down; specifically the white
+caps, the pale props and the skin highlights, which are the three things
+§0000.5 and §00000.8 complain are too bright. Every A/B in §0, §00 and §000 was
+shot 0.58 stops over on `human_bench`, and `crew_figure`'s ITEM_ACCEPTED 8-of-8
+was too.
+
+### 000000.7 WHAT IS STILL NOT GOOD ENOUGH
+
+1. **The GA tier still does not exist**, and its host `ga_viewing_bank` still
+   has no module. Unchanged from §00000.7 item 3, including the unresolved
+   424 px / 279 px tier disagreement.
+2. **`paddock_personnel_figure.py` still carries the wrong 767.2 / 7.537 in
+   four places.**
+3. **`driver_figure`'s three exposures.** See §000000.6.
+4. **The nasolabial only reaches 0.74 of its depth even after the floor**, and
+   it is one of the two folds that carry a frontal face at a distance. Its
+   sigma_y is broad while its sigma_x is narrow, so the floor widens it across
+   and not along, which is the right shape but not enough of it.
+5. **The hair fall is still a surface of revolution with a flare**, not
+   separate locks. The lock ridges carry down it and separate with depth, which
+   is new, but long hair is still one shell rather than three or four masses
+   that overlap. At 63 px this is invisible; at the bench's 900 px it is not.
+6. **Nothing has been done about §00.6's five polish items** — the balaclava
+   aperture, ears at a 400 px head, waxy skin, the hip skin sliver.
+7. **`build_hair` is still called once per figure and the cap squashes it by a
+   flat 0.40.** A hat does not squash a lock field uniformly.
 
 ---
 

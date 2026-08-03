@@ -57,6 +57,10 @@ def parse_args():
     p.add_argument("--out", required=True)
     p.add_argument("--no-rig", action="store_true",
                    help="append the car only; leave the world's own camera")
+    p.add_argument("--keep-r1-glass", action="store_true",
+                   help="keep round 1's ten GW_Right_Glass_* placeholder panes. "
+                        "sim/out/apply_requirements.json R3 requires them GONE; "
+                        "this exists only for an A/B of the 33.5 mm move.")
     p.add_argument("--no-showroom", action="store_true",
                    help="append the CAR collection only. Beats 1, 2 and 3 — "
                         "1,056 frames, 35 %% of the film — then have no set.")
@@ -205,9 +209,66 @@ def main():
             raise SystemExit(
                 "REFUSING: Turntable_Deck top is z = %.4f, not the 0.340 the "
                 "car's contact solve stands it on." % top)
+        floor = bpy.data.objects.get("Floor")
+        ftop = max((floor.matrix_world @ v.co).z for v in floor.data.vertices)
+        if abs(ftop) > 1e-3:                       # sim/out R4
+            raise SystemExit(
+                "REFUSING: showroom Floor top is z = %.4f, not 0.000. The "
+                "breach sim baked 3,796 shard resting transforms against that "
+                "plane; a floor 20 mm low leaves every one of them hovering."
+                % ftop)
+        if abs(scene.unit_settings.scale_length - 1.0) > 1e-9:   # sim/out R2
+            raise SystemExit("REFUSING: scene unit scale_length is %r, not 1.0"
+                             % scene.unit_settings.scale_length)
         print(">> SET DATUMS: breach plane x = %.4f (ACCESS_GLASS_X %.4f), "
-              "Turntable_Deck top z = %.4f, appended in %.1f s"
-              % (xs[0], want_x, top, time.time() - t1))
+              "Turntable_Deck top z = %.4f, Floor top z = %.4f, "
+              "appended in %.1f s"
+              % (xs[0], want_x, top, ftop, time.time() - t1))
+
+        # ---- R3: ROUND 1'S EAST GLASS COMES OUT -------------------------
+        # `sim/out/apply_requirements.json` R3, measured by the breach agent and
+        # not negotiable: the ten `GW_Right_Glass_00..09` are round 1's
+        # placeholder east wall -- four verts each, zero-thickness planes lying
+        # exactly on x = 15.000 -- and `sim/apply_breach.py` replaces them with
+        # real 11.5 mm laminate at x 14.95500..14.96650. Leaving them in puts two
+        # east walls 33.5 mm apart: they z-fight through the 33 s of beat 1 that
+        # is spent on this glass's reflections, and after the breach the deleted
+        # wall's ghost pane is still standing in the aperture.
+        #
+        # They are deleted AFTER the datum assertion above and not before, so the
+        # incoming x = 15.000 is still proved on the way past. The contract's
+        # `ACCESS_GLASS_X` is unchanged by this: what moves 33.5 mm inboard is
+        # the laminate's outer FACE, not the declared plane.
+        if not a.keep_r1_glass:
+            req = os.path.join(R2, "sim/out/apply_requirements.json")
+            names = ["GW_Right_Glass_%02d" % i for i in range(10)]
+            if os.path.exists(req):
+                names = json.load(open(req)).get("delete_from_target", names)
+            gone = []
+            for n in names:
+                ob = bpy.data.objects.get(n)
+                if ob is not None:
+                    bpy.data.objects.remove(ob, do_unlink=True)
+                    gone.append(n)
+            left = [n for n in names if bpy.data.objects.get(n) is not None]
+            if left:
+                raise SystemExit("failed to delete round 1 east glass: %s" % left)
+            stray = [o.name for o in bpy.data.objects
+                     if o.name.startswith("GW_Right_Glass")]
+            if stray:
+                raise SystemExit(
+                    "GW_Right_Glass objects survive the R3 deletion: %s. The "
+                    "breach sim would leave a ghost pane in the aperture."
+                    % stray)
+            front = len([o for o in bpy.data.objects
+                         if o.name.startswith("GW_Front_")])
+            print(">> R3: deleted %d round-1 east panes %s; %d GW_Front_* (the "
+                  "SOUTH wall, y = -11.000) kept, as the contract requires"
+                  % (len(gone), gone[:3] + ["..."] if len(gone) > 3 else gone,
+                     front))
+        else:
+            print(">> --keep-r1-glass: the round-1 east wall STAYS. "
+                  "sim/apply_breach.py will z-fight against it.")
 
     # ---- the grade, BEFORE the rig (the rig keys a delta from it) ---------
     import film_exposure as FX

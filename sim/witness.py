@@ -60,9 +60,12 @@ def beat3_key_at(frame, sheet=None):
     sheet = sheet or json.load(open(BL.SHEET))
     keys = []
     for k in sorted(sheet.keys()):
-        if not k.startswith("beat"):
+        # "beats" is a LIST of beat records; "beat1".."beat6" are the dicts that
+        # carry the camera keys.  Same trap as apply_breach hit.
+        b = sheet[k]
+        if not k.startswith("beat") or not isinstance(b, dict):
             continue
-        keys.extend(sheet[k].get("camera_keys", []))
+        keys.extend(b.get("camera_keys", []))
     keys.sort(key=lambda x: x["t"])
     t = (frame - 1) / float(BL.FPS)
     ts = [k["t"] for k in keys]
@@ -128,6 +131,27 @@ def main():
         raise SystemExit("REFUSING: could not build the contract sun (%s). "
                          "The witness must be lit by the film's own rig." % e)
 
+    # STRIP THE RIGID BODY WORLD.  The broker refused this scene's first
+    # submission and was right to: a blend carrying a rigidbody_world with no
+    # cache makes Blender SIMULATE the frame instead of reading it, and a
+    # simulation reached by jumping to a frame does not continue the previous
+    # one.  Nothing rendered here ever needs live physics — the wall standing is
+    # geometry, and everything after it arrives as baked F-curves from
+    # `apply_breach`.  A render scene that can still simulate is a render scene
+    # that can disagree with the bake.
+    stripped = False
+    if sc.rigidbody_world is not None:
+        try:
+            bpy.ops.rigidbody.world_remove()
+            stripped = True
+        except Exception:                                  # noqa: BLE001
+            sc.rigidbody_world = None
+            stripped = True
+    # No per-object `rigidbody.object_remove()` loop: that operator is ~20 ms a
+    # call and gets worse as the scene fills, so on 4,025 bodies it is minutes,
+    # and it buys nothing — with no world, per-object rigid body settings are
+    # inert and the broker's guard reads `scene.rigidbody_world`.
+
     sc.render.engine = "CYCLES"
     sc.cycles.device = "GPU"
     sc.view_settings.view_transform = "AgX"
@@ -142,6 +166,7 @@ def main():
         sc.render.motion_blur_shutter = 0.5 * clock.scales[max(0, f - 1)]
 
     info = dict(frames=[], lit_by=lit, exposure=FILM_EXPOSURE,
+                rigidbody_world_stripped=stripped,
                 shutter_mode=a.shutter_mode,
                 shutter=sc.render.motion_blur_shutter)
     clock = BL.Clock()

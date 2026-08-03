@@ -130,6 +130,37 @@ def log(msg):
     sys.stdout.flush()
 
 
+def film_exposure(scene):
+    """Move a scene off `itemkit.contract_sun`'s exposure and onto the film's.
+
+    EVERY ITEM FRAME EVER JUDGED ON THIS PROJECT IS 0.580 STOPS OVER.
+    `itemkit.contract_sun` sets `scene.view_settings.exposure =
+    world_contract.REFERENCE_EXPOSURE_EXTERIOR = -3.048`. The film renders at
+    `film_exposure.FILM_EXPOSURE = -3.628`, which is a MEASUREMENT -- an 18 %
+    lambertian card rendered under the contract sun and read back, good to
+    0.006 stops -- and `tools/build_verify_scene.py` calls -3.048 *"the refuted
+    contract value"* in terms. 0.58 stops is not a rounding error on a face: it
+    is most of the shading range a brow ridge has to work in, and defect 1 is
+    "the face is a featureless oval".
+
+    `contract_sun` belongs to `itemkit` and another agent owns it, so this is
+    the correction applied loudly at every figure item's own scene setup rather
+    than quietly at the source. Call it AFTER `contract_sun`.
+
+    It RAISES rather than falling back. A figure item that cannot read the
+    film's exposure must not render: shipping a frame at an exposure nobody has
+    checked is R2-020 with a different constant, and this project has now spent
+    five passes judging faces under a light the film does not use.
+    """
+    import film_exposure as FX                                # noqa: E402
+    was = float(scene.view_settings.exposure)
+    scene.view_settings.exposure = float(FX.FILM_EXPOSURE)
+    log("EXPOSURE: %+.3f EV -> film_exposure.FILM_EXPOSURE %+.3f (a %.3f stop "
+        "correction; frames judged before 2026-08-03 are that much over)"
+        % (was, FX.FILM_EXPOSURE, was - FX.FILM_EXPOSURE))
+    return float(FX.FILM_EXPOSURE)
+
+
 def rng_for(*keys):
     """A stream keyed by (figure seed, channel). Channels must be DISTINCT ints.
 
@@ -252,10 +283,19 @@ class LOD(object):
         return LOD.for_px(K.px_per_m(dist_m, lens_mm) * height_m)
 
 
+# `hair_strands` WAS 620/190/48 AND THE HAIR WAS MORE THAN HALF THE FIGURE.
+# Measured on this file's own builder before the strand rewrite: 12,324 hair
+# triangles on a 24,287-triangle L1 person -- **51 %** -- and 11,400 of those
+# 12,324 were strand tubes. What the frames show for that spend is a regular
+# lattice of dark commas (see `_hair_strands`). The outline break is now the
+# MESH's lock ridges, which cost a tenth as much and also move the silhouette,
+# and the strands are back to being what their own docstring always said they
+# were: a fringe on the edge, not a coat over the whole dome. L2 keeps a token
+# 28 because a 60-150 px head still has an edge; L3 has none and never did.
 #                name  px   ring stn  hu  hv  ear fing nail hair cap shoe seam oct eye prop
-LOD_L0 = LOD("L0", 300, 26, 7, 72, 52, 2, 5, 1, 620, 5, 2, 1, 5, 1, 1)
-LOD_L1 = LOD("L1", 150, 18, 5, 44, 32, 1, 3, 0, 190, 4, 1, 1, 4, 1, 1)
-LOD_L2 = LOD("L2", 60, 12, 4, 26, 20, 0, 2, 0, 48, 3, 1, 0, 3, 0, 1)
+LOD_L0 = LOD("L0", 300, 26, 7, 72, 52, 2, 5, 1, 260, 5, 2, 1, 5, 1, 1)
+LOD_L1 = LOD("L1", 150, 18, 5, 44, 32, 1, 3, 0, 96, 4, 1, 1, 4, 1, 1)
+LOD_L2 = LOD("L2", 60, 12, 4, 26, 20, 0, 2, 0, 28, 3, 1, 0, 3, 0, 1)
 LOD_L3 = LOD("L3", 0, 8, 3, 16, 12, 0, 1, 0, 0, 2, 0, 0, 2, 0, 0)
 LOD_TIERS = (LOD_L0, LOD_L1, LOD_L2, LOD_L3)
 
@@ -2041,6 +2081,100 @@ ZONE_KEY = {"lip": ZONE_LIP, "brow": ZONE_BROW, "eye": ZONE_EYE,
             "jaw": ZONE_JAW, "chin": ZONE_CHIN, "nose": ZONE_NOSE}
 
 
+FACE_GRID_WARP = 1.0
+FACE_LOBE_FLOOR = 1.0
+"""DEFECT 1 -- "the face is a blank egg" -- AND ITS MECHANISM, WHICH IS SAMPLING.
+
+The fifth pass measured `HEAD_LOBES` at **m = 2.22**, more relief than anything
+on the garment, and concluded correctly that the face is not flat and that the
+tint does 0.05 % of the work. What it measured was the ANALYTIC LOBE FIELD. A
+renderer shades the SAMPLED MESH, and on the head grid most of that field does
+not survive being sampled.
+
+Measured on this file's own `head_points`, over the face (fy > 0.45):
+
+    tier   face row spacing   face col spacing   lobes with sigma < spacing
+    L0          6.8 mm             6.6 mm             17 of 32
+    L1         11.0 mm            10.7 mm             **20 of 32**
+
+and the twenty at L1 are not a random twenty. They are **every lobe that
+carries a sharp shading step**, and the twelve that survive are **every lobe
+that is broad**:
+
+    lobe          sigma_z   its own slope   sigma / grid spacing   realised peak
+    lip_line       1.83 mm      56.6 deg          **0.17**            **29.7 %**
+    nostril        3.78         47.8              0.31                26.2
+    subnasale      3.44         40.3              0.31                --
+    philtrum       6.31         14.8              0.32                93.7
+    lid_upper      4.82         40.9              0.44                55.4
+    nasolabial    14.91          7.4              0.51                86.6
+    ---- the survivors ----
+    brow_ridge    12.04         19.1              1.10                97.2
+    orbit         13.19         26.9              1.20                94.9
+    chin          20.07         14.8              1.83                99.3
+    cheek         26.38          4.8              2.18                97.5
+
+**THE MOUTH REALISES 29.7 % OF ITS OWN DEPTH AND IS RECONSTRUCTED BY LINEAR
+INTERPOLATION ACROSS AN 11 mm CELL.** A 4.59 mm groove at sigma 1.83 mm is a
+56.6 deg wall; the same groove sampled at 1.36 mm deep and spread over one cell
+is a **7.0 deg ramp** -- m = 1.10 instead of 8.9. The eyelid crease goes the
+same way, and so do the nostril, the subnasale and the philtrum.
+
+**AND IT IS THE SAME TWELVE SURVIVORS THAT THE FIFTH PASS'S OWN FRAMES SHOW.**
+Its finding was *"the face reads in PROFILE as silhouette, not front-on as
+shade"*: brow, nose, chin, cheek and orbit are exactly the broad lobes, and
+broad lobes are what a silhouette is made of. The sharp ones -- the lip line,
+the lid crease, the nasolabial, the alar crease -- are what a FRONTAL face is
+made of, and none of them reaches the mesh. That is why turning the tint off
+changed 0.05 % of pixels (the masks are sub-grid too), why turning the relief
+off left an egg (the survivors ARE the head shape), and why adding shader
+contrast cannot help: **there is no geometry there to shade.**
+
+The realised fraction has a standard deviation of **0.000 across 40 bodies**,
+because `th` and `ph` are fixed linspaces and the lobe centres are in
+unit-sphere coordinates. This is not sampling noise that averages out over a
+crowd. Every person in the grandstand has the same 30 % of a mouth.
+
+**TWO FIXES, AND THEY ARE THE SAME FIX AT TWO SCALES.**
+
+`FACE_GRID_WARP` puts the samples where the features are. The head grid spends
+its rows and columns uniformly over a sphere, so the occiput -- which is smooth
+-- gets the same density as the mouth. A monotone reparameterisation
+concentrates both on the face; it costs no vertices and changes no silhouette.
+
+`FACE_LOBE_FLOOR` stops a lobe being narrower than the mesh it is built on. Any
+sigma below one grid cell is floored to it, AT UNCHANGED DEPTH, so the feature
+arrives as the steepest thing the grid can carry instead of as a fraction of
+itself. This is section 00.3's welt argument in the geometry: *"a colour edge
+inside a quad is a soft edge; the welt is the line the eye reads."* The floor
+is TIER-DEPENDENT by construction, which is what a LOD is for -- L0 is seen at
+400 px and gets a fine mouth, L1 is seen at 63 px and gets the mouth its own
+mesh can represent.
+
+Both default to 1.0 and both are gains, so `0.0` on either is the control that
+rebuilds the shipped face. `human_bench --face-warp 0 --face-floor 0`."""
+
+
+def _warp_param(t, centre, width, gain, periodic=False):
+    """Reparameterise [0,1) so samples bunch around `centre`.
+
+    A density `1 + gain * exp(-((t-c)/w)^2)` is integrated to a CDF and
+    inverted, which is monotone by construction -- so no sample can cross
+    another and no quad can invert, which a naive `t + a sin(...)` warp can do
+    for large `a`. `periodic` wraps the distance, so the azimuth stays a circle.
+    """
+    if gain <= 0.0:
+        return np.asarray(t, float)
+    g = np.linspace(0.0, 1.0, 2049)
+    d = np.abs(g - centre)
+    if periodic:
+        d = np.minimum(d, 1.0 - d)
+    dens = 1.0 + float(gain) * np.exp(-(d / float(width)) ** 2)
+    cdf = np.concatenate([[0.0], np.cumsum(0.5 * (dens[1:] + dens[:-1]))])
+    cdf = cdf / cdf[-1]
+    return np.interp(np.asarray(t, float), cdf, g)
+
+
 def head_points(b, lod, seed, rows=None, cols=None):
     """The head surface as an (S, R, 3) grid in the HEAD BONE's local frame,
     plus the per-vertex zone code and the unit-sphere coordinates.
@@ -2049,6 +2183,8 @@ def head_points(b, lod, seed, rows=None, cols=None):
     surface: hair that is offset from the actual skull sits on the skull, and
     hair generated from its own sphere floats or clips, which is what a painted
     cap looks like in three dimensions.
+
+    THE GRID IS NOT UNIFORM AND THAT IS THE POINT -- see `FACE_GRID_WARP`.
     """
     hh, hw, hd = b.head_h, b.head_w, b.head_d
     V = int(rows or lod.head_v)
@@ -2056,8 +2192,14 @@ def head_points(b, lod, seed, rows=None, cols=None):
     zc, ax, ay, az = 0.16 * hh, 0.5 * hw, 0.5 * hd, 0.50 * hh
     yc = -0.06 * hd
 
-    th = np.linspace(0.0, math.pi, V + 2)[1:-1]           # 0 = vertex
-    ph = np.linspace(0.0, TAU, R, endpoint=False) - math.pi / 2.0   # col 0 = occiput
+    # `th` runs crown (0) to chin (pi); the face occupies about 0.34..0.86 of
+    # it, centred on the nose. `ph` runs from the occiput and reaches the face
+    # at parameter 0.5, by construction of the -pi/2 offset below.
+    tv = np.linspace(0.0, math.pi, V + 2)[1:-1] / math.pi
+    tu = np.linspace(0.0, 1.0, R, endpoint=False)
+    th = math.pi * _warp_param(tv, 0.60, 0.26, 1.45 * FACE_GRID_WARP)
+    ph = TAU * _warp_param(tu, 0.50, 0.19, 1.70 * FACE_GRID_WARP,
+                           periodic=True) - math.pi / 2.0   # col 0 = occiput
     TH, PH = np.meshgrid(th, ph, indexing="ij")
     fx = np.sin(TH) * np.cos(PH - math.pi / 2.0) * 0.0 + np.sin(TH) * np.sin(PH - math.pi / 2.0) * 0.0
     # unit-sphere direction with fy = +1 straight ahead
@@ -2102,11 +2244,38 @@ def head_points(b, lod, seed, rows=None, cols=None):
     disp = np.zeros(P.shape[:2])
     soft = {"hk_lip": np.zeros(P.shape[:2]), "hk_brow": np.zeros(P.shape[:2]),
             "hk_dark": np.zeros(P.shape[:2])}
+    # --- THE LOBE FLOOR. See `FACE_LOBE_FLOOR`. The grid's OWN spacing on the
+    # face, measured off the shaped surface rather than assumed, converted back
+    # into the unit-sphere units the lobe table is written in. Measured here so
+    # it follows the tier, the warp and the body -- a constant would be the
+    # frequency trap in a third costume.
+    face_m = fy > 0.45
+    if face_m.sum() >= 8:
+        d_v = float(np.median(np.linalg.norm(P[1:] - P[:-1], axis=-1)
+                              [face_m[1:] & face_m[:-1]]))
+        d_u = float(np.median(np.linalg.norm(np.roll(P, -1, axis=1) - P,
+                                             axis=-1)[face_m]))
+    else:                                                  # pragma: no cover
+        d_v = d_u = 0.011
+    # a Gaussian of sigma = one cell is about the sharpest thing a grid can
+    # reconstruct; 1.15 buys a little margin against the phase of the samples
+    floor_z = FACE_LOBE_FLOOR * 1.15 * d_v / max(az, 1e-6)
+    floor_x = FACE_LOBE_FLOOR * 1.15 * d_u / max(ax, 1e-6)
+    floor_y = FACE_LOBE_FLOOR * 1.15 * d_v / max(ay, 1e-6)
     for (nm, cx, cy, cz2, sx, sy, sz, amp, key) in HEAD_LOBES:
         k = keyk.get(key, 1.0)
         if nm.startswith("nasolabial"):
             k = 0.35 + age_k
         jit = 1.0 + rr.clipn(0.16, 0.42)
+        # WIDENED AT UNCHANGED DEPTH, only where the mesh could not hold it.
+        # Widening at unchanged depth REDUCES the analytic slope and RAISES the
+        # realised one, because what arrives stops being a fraction of the
+        # lobe -- the lip line goes from a 56.6 deg wall that realises 30 % of
+        # 4.59 mm to a 14-27 deg wall that realises all of it. The steepness
+        # the grid loses was never in the render.
+        sx = max(sx, floor_x)
+        sy = max(sy, floor_y)
+        sz = max(sz, floor_z)
         g = np.exp(-0.5 * (((fx - cx) / sx) ** 2 + ((fy - cy) / sy) ** 2
                            + ((fz - cz2) / sz) ** 2))
         # FACE_RELIEF is the geometry half of the defect-1 ladder. It gains the
@@ -3215,6 +3384,28 @@ looking like the shipped one is the layer that owns the read -- and if NEITHER
 does, the answer is the light, which is where this project's fifth systemic
 error lives."""
 
+HAIR_LEGACY = False
+"""THE SHIPPED HAIR, KEPT REACHABLE AS THE POSITIVE CONTROL.
+
+`FOLD_MODE = "isotropic"` and `plan_block(legacy_gaze=True)` are the same idea
+and are in this repository for the same reason: a control has to REPRODUCE THE
+FAULT or it proves nothing. Sixteen times on this project the instrument was
+the broken thing, and the specific way it broke most recently was a control
+reconstructed from the new code's own residual -- which returned a clean result
+for both arms, i.e. could not fail.
+
+`HAIR_LEGACY = True` restores, exactly: the 1.2 mm / 8.0 mm bump pair at m 3.38
+and 3.69, the 1.1 mm colour noise, the untangented Anisotropic 0.60, the
+0.75 x head_u grid, the isotropic thickness lump with no locks and no parting,
+the taper that goes to zero at every azimuth, the lattice-rooted strands and
+the 620/190/48 strand counts. Everything the fifth pass's frames were shot
+with. It is what `work/hairab/hair_old.blend` is built from, and the pair of
+frames is the whole of the hair argument.
+
+It covers the GEOMETRY as well as the shader on purpose: rendering only the new
+mesh under the old shader would have said which layer changed, and the question
+the frames have to answer is whether the thing a viewer sees is better."""
+
 HAIR_RELIEF = 1.0
 HAIR_LUMP = 1.0
 HAIR_STRAND_GAIN = 1.0
@@ -4280,8 +4471,8 @@ def build_hair(mesh, sk, b, lod, seed, mat, squash=1.0):
     rr = rng_for(seed, 131)
     zc, ax, ay, az = 0.16 * hh, 0.5 * hw, 0.5 * hd, 0.50 * hh
     yc = -0.06 * hd
-    n = max(36, 2 * lod.head_u)
-    m = max(8, lod.head_v // 2)
+    n = (max(24, 3 * lod.head_u // 4) if HAIR_LEGACY else max(36, 2 * lod.head_u))
+    m = (max(6, lod.head_v // 3) if HAIR_LEGACY else max(8, lod.head_v // 2))
     ph = np.linspace(0.0, TAU, n, endpoint=False) - math.pi / 2.0
     u = ((ph + math.pi / 2.0) / TAU) % 1.0
     recede = 0.0
@@ -4320,8 +4511,21 @@ def build_hair(mesh, sk, b, lod, seed, mat, squash=1.0):
     # crown anywhere. `squash` is what a hat does to hair, and the residual
     # thickness is handed to `build_headwear` so the dome clears it.
     thick = (0.008 + 0.030 * b.hair_vol) * hh / 0.23 * float(squash)
-    taper = np.sin(math.pi * 0.5 * np.clip(1.0 - i / (m - 1.0), 0.0, 1.0)) ** 0.7
     uu2 = ((PH + math.pi / 2.0) / TAU) % 1.0
+    # THE MASS MUST NOT TAPER TO ZERO WHERE IT CARRIES ON. The taper exists so
+    # hair MEETS SKIN at the forehead instead of ending in a cliff, and that is
+    # right at the face -- but it was applied at every azimuth, so at the sides
+    # and nape the hanging mass left the hairline at zero thickness and the
+    # frames show it: a hard cut-out edge round the ear with no volume behind
+    # it. The taper now ends at a per-column value that is 0 at the face and
+    # 0.72 where the fall hangs, which is the same `back` weight `_hair_fall`
+    # uses for its length -- one quantity, used twice, instead of two that can
+    # disagree.
+    back = np.clip(0.55 - fz_b, 0.0, 1.6) / 1.6                     # (n,)
+    edge = 0.72 * back * (1.0 if b.hair_len > 0.055 else 0.0)
+    tap0 = np.sin(math.pi * 0.5 * np.clip(1.0 - i / (m - 1.0), 0.0, 1.0)) ** 0.7
+    taper = tap0 if HAIR_LEGACY else (edge[None, :]
+                                      + (1.0 - edge[None, :]) * tap0)
     # --- the thickness field. Three terms, and each is a different scale of the
     # same object. `HAIR_LUMP` gains all three so the control exists.
     #
@@ -4362,8 +4566,15 @@ def build_hair(mesh, sk, b, lod, seed, mat, squash=1.0):
     d_az = np.abs(((uu2 - (0.25 + b.hair_part_az)) + 0.5) % 1.0 - 0.5)
     part = np.exp(-(d_az / 0.028) ** 2) * np.clip(TH / (0.30 + 1e-9), 0.0, 1.0)
     part = part * float(b.hair_part) * 1.00
-    field = (1.0 + (vol + lock_amp / max(thick, 1e-6) * lock - part)
-             * float(HAIR_LUMP))
+    if HAIR_LEGACY:
+        # the shipped field: one ISOTROPIC noise at 0.42, no locks, no parting
+        lock = lock * 0.0
+        lock_amp = 0.0
+        field = 1.0 + 0.42 * wrap_noise(seed + 10, uu2, TH / math.pi,
+                                        7.0, 4.0, oct=3) * float(HAIR_LUMP)
+    else:
+        field = (1.0 + (vol + lock_amp / max(thick, 1e-6) * lock - part)
+                 * float(HAIR_LUMP))
     grow = 1.0 + (thick * taper * np.clip(field, 0.05, 3.0)) \
         / max(0.5 * hw, 1e-6)
     P = np.stack([fx * ax * grow,
@@ -4377,7 +4588,8 @@ def build_hair(mesh, sk, b, lod, seed, mat, squash=1.0):
     # at the hairline, putting the brightest hair on the crown AND on the
     # hairline with a step between them. The cap owns 0..0.5, the fall 0.5..1.
     emit_grid(mesh, W, mat, closed_u=True, cap_lo=O + B @ apex, zone=ZONE_SCALP,
-              vv=np.repeat(np.linspace(0.0, 0.5, m), n))
+              vv=(None if HAIR_LEGACY
+                  else np.repeat(np.linspace(0.0, 0.5, m), n)))
     # THE LENGTH LIVES IN A HANGING MASS, NOT IN THE STRANDS. Giving 700 tubes
     # the full hair length produced a straw wig -- every hair individually
     # visible and none of them touching. Real hair at 176 px is a solid mass
@@ -4389,8 +4601,9 @@ def build_hair(mesh, sk, b, lod, seed, mat, squash=1.0):
         W2 = O + np.einsum("ij,srj->sri", B, P[m - 1:])
         nf = P.shape[0] - (m - 1)
         emit_grid(mesh, W2, mat, closed_u=True, zone=ZONE_SCALP,
-                  vv=np.repeat(np.linspace(0.5, 1.0, nf), n))
-    n_str = int(lod.hair_strands * (0.5 + 0.9 * b.hair_vol)
+                  vv=(None if HAIR_LEGACY
+                      else np.repeat(np.linspace(0.5, 1.0, nf), n)))
+    n_str = int(_hair_strand_budget(lod) * (0.5 + 0.9 * b.hair_vol)
                 * (0.35 + 0.65 * float(squash)) * float(HAIR_STRAND_GAIN))
     if n_str <= 0:
         return thick
@@ -4398,62 +4611,88 @@ def build_hair(mesh, sk, b, lod, seed, mat, squash=1.0):
     amt = np.zeros(P.shape[:2])
     amt[:m] = taper
     amt[m:] = 1.0
-    _hair_strands(mesh, O, B, P, N, amt, None, b, lod, seed, mat, n_str)
+    _hair_strands(mesh, O, B, P, N, amt, m, b, lod, seed, mat, n_str)
     return thick
 
 
-def _hair_fall(ring, fz_b, b, lod, seed, ph):
+#: `LOD.hair_strands` before the strand rewrite. `HAIR_LEGACY` restores it, so
+#: the control frame carries the count the shipped frames were made with.
+LEGACY_HAIR_STRANDS = {"L0": 620, "L1": 190, "L2": 48, "L3": 0}
+
+
+def _hair_strand_budget(lod):
+    if HAIR_LEGACY:
+        return LEGACY_HAIR_STRANDS.get(lod.name.split("+")[0],
+                                       lod.hair_strands)
+    return lod.hair_strands
+
+
+def _hair_fall(ring, fz_b, b, lod, seed, ph, lock=None, lock_amp=0.0):
     """The hanging mass below the hairline: long at the back and sides, ~0 at
-    the face. Flares slightly and is broken by noise so its outline is not an arc."""
-    rr = rng_for(seed, 139)
+    the face. Flares slightly and is broken by noise so its outline is not an arc.
+
+    THE LOCKS CARRY ON DOWN IT, AND THEY SEPARATE. `ring` is the cap's last row
+    and already has the lock relief in it, so the fall inherits the ridges for
+    free -- but real hair does not hang in parallel columns, it separates into
+    heavier locks that drift apart as they fall, and that separation is most of
+    what breaks the outline of long hair. `sep` grows with depth, so the ridges
+    that leave the hairline 15 mm apart are 40 % deeper and displaced by the
+    time they reach the tips.
+    """
     n = ring.shape[0]
-    rows = max(4, lod.head_v // 6)
+    rows = max(4, lod.head_v // 6) if HAIR_LEGACY else max(5, lod.head_v // 4)
     u = ((ph + math.pi / 2.0) / TAU) % 1.0
     back = np.clip(0.55 - fz_b, 0.0, 1.6) / 1.6
     Lj = b.hair_len * (0.25 + 1.15 * back ** 1.2)
-    Lj = Lj * (1.0 + 0.30 * wrap_noise(seed + 11, u, np.zeros(n), 6.0, 1.0, oct=3))
+    Lj = Lj * (1.0 + 0.30 * wrap_noise(
+        seed + 11, u, np.zeros(n),
+        6.0 if HAIR_LEGACY else fbm_scale(0.16, oct=3), 1.0, oct=3))
+    rad = np.hypot(ring[:, 0], ring[:, 1])
+    rad = np.where(rad > 1e-6, rad, 1e-6)
+    lk = None if lock is None else np.asarray(lock, float)[-1]
     out = []
     for i in range(1, rows + 1):
         f = i / float(rows)
         P = ring.copy()
         P[:, 2] -= Lj * f
         flare = 1.0 + 0.10 * f + 0.05 * wrap_noise(
-            seed + 12, u, np.full(n, f), 8.0, 2.0, oct=3)
+            seed + 12, u, np.full(n, f),
+            8.0 if HAIR_LEGACY else fbm_scale(0.12, oct=3), 2.0, oct=3)
+        if lk is not None and not HAIR_LEGACY:
+            # deepen the inherited gutters with depth, radially, so the locks
+            # part rather than staying a fluted tube
+            sep = 1.0 + (0.40 * f) * lock_amp * lk / rad
+            flare = flare * sep
         P[:, 0] *= flare
         P[:, 1] = P[:, 1] * flare
         out.append(P)
     return np.stack(out)
 
 
-def _hair_strands(mesh, O, B, P, N, amt, _f, b, lod, seed, mat, n):
-    """Tapered clump tubes flowing off the scalp under gravity and style."""
+def _hair_strands_legacy(mesh, O, B, P, N, amt, b, lod, seed, mat, n):
+    """The SHIPPED strand layer, verbatim, as the positive control -- roots on
+    grid vertices, 0.7-1.9 mm tubes, gravity from the first segment. This is
+    what `render/faceab/face_base.png` shows as a lattice of dark commas across
+    the dome. `HAIR_LEGACY`. Do not tune it."""
     rr = rng_for(seed, 137)
     S, R = amt.shape
     ii, jj = np.nonzero(amt > 0.02)
     if not len(ii):
         return
-    # weighted to the PERIPHERY: a strand in the middle of the mass is
-    # invisible, a strand at the edge is the whole point
     wgt = (ii / max(S - 1.0, 1.0)) ** 1.6 + 0.06
     pick = rr.r.choice(len(ii), size=n, p=wgt / wgt.sum())
     hh = b.head_h
     L0 = max(b.hair_len, 0.012)
     style = b.hair_style
-    # the head's own local down/back, so a strand falls the way gravity says
     down = np.array([0.0, 0.0, -1.0])
     back = np.array([0.0, -1.0, 0.0])
-    segs = 4 if lod.hair_strands >= 80 else 3
+    segs = 4 if _hair_strand_budget(lod) >= 80 else 3
     for k in pick:
         i, j = int(ii[k]), int(jj[k])
         nrm = N[i, j]
         L = L0 * (0.08 + 0.17 * rr.u()) * (1.0 + 0.15 * rr.clipn(0.4, 1.0))
         wid = (0.0006 + 0.0013 * b.hair_vol) * (0.55 + rr.u()) * hh / 0.23
         p0 = P[i, j] + nrm * (wid * 0.4)
-        # HAIR LIES ALONG THE SCALP BEFORE IT LEAVES IT. The first build sent
-        # each clump along the surface NORMAL, which on the forehead points
-        # forward: the render showed spikes growing out of the face. The flow
-        # direction is the gravity/style vector PROJECTED ONTO THE TANGENT
-        # PLANE, with only a small normal component for loft.
         flow = down * 0.62 + back * 0.38
         tang = flow - nrm * float(np.dot(flow, nrm))
         if np.linalg.norm(tang) < 1e-6:
@@ -4480,6 +4719,148 @@ def _hair_strands(mesh, O, B, P, N, amt, _f, b, lod, seed, mat, n):
         W = Sweep(O + np.einsum("ij,sj->si", B, sw.C),
                   np.einsum("ij,sjk->sik", B, sw.B), sw.LX, sw.LY)
         W.emit(mesh, mat, cap_end=True, zone=ZONE_SCALP)
+
+
+def _bilerp_grid(A, fi, fj):
+    """Bilinear sample of an (S, R, 3) grid at float (fi, fj), wrapping in j."""
+    S, R = A.shape[0], A.shape[1]
+    i0 = int(np.clip(math.floor(fi), 0, S - 1))
+    i1 = min(i0 + 1, S - 1)
+    ti = float(np.clip(fi - i0, 0.0, 1.0))
+    j0 = int(math.floor(fj)) % R
+    j1 = (j0 + 1) % R
+    tj = float(fj - math.floor(fj))
+    return ((A[i0, j0] * (1 - tj) + A[i0, j1] * tj) * (1 - ti)
+            + (A[i1, j0] * (1 - tj) + A[i1, j1] * tj) * ti)
+
+
+def _hair_strands(mesh, O, B, P, N, amt, m_cap, b, lod, seed, mat, n):
+    """The broken EDGE of the mass -- wisps that lie along it, not pins in it.
+
+    WHAT THE RENDER SHOWED, and it is why this was rewritten rather than tuned.
+    In `render/faceab/face_base.png` at a 400 px head the strand layer is a
+    REGULAR LATTICE OF DARK COMMAS across the whole dome -- rows and columns of
+    them, evenly spaced, reading as a pin cushion or a scattering of flies.
+    Three separate causes, all of them structural:
+
+    * **The lattice.** Roots were `np.nonzero(amt > 0.02)`, i.e. GRID VERTICES,
+      and 190 strands on a 33 x 14 grid is one on every other vertex. A random
+      choice from a lattice is still on the lattice. Roots are now sampled at
+      continuous (fi, fj) and the surface is bilinearly interpolated, so the
+      grid is no longer visible in the distribution.
+
+    * **The pin cushion.** Each tube left along the tangent and was immediately
+      taken by gravity, so it stood clear of the mass along its whole length
+      with sky behind it -- an isolated 3 px object, lit on one side, over a
+      lit surface. Real flyaways HUG the mass for most of their length and only
+      the last few millimetres leave it. `hug` keeps the first 60 % of the
+      strand within a hair's breadth of the surface it grew from.
+
+    * **The scatter.** They were independent draws, so no two agreed. Hair
+      leaves in WISPS. Roots are now drawn as `clusters` of `per` neighbours
+      sharing a direction and a length, which is also what makes them read at
+      63 px, where an individual strand is 0.2 px and a wisp of six is 1.5.
+
+    And they are moved OFF the dome and ONTO the boundary: `w_row` puts them at
+    the hairline and at the tips of the fall, which are the only two places a
+    strand can break an outline. A strand in the middle of a lit mass costs
+    triangles and contributes nothing but noise.
+    """
+    rr = rng_for(seed, 137)
+    S, R = amt.shape
+    if S < 2 or n <= 0:
+        return
+    if HAIR_LEGACY:
+        return _hair_strands_legacy(mesh, O, B, P, N, amt, b, lod, seed, mat, n)
+    m_cap = int(m_cap if m_cap else S)
+    # WHERE, in rows: a bump at the hairline (the cap's last row) and a ramp to
+    # the tips, with a small floor everywhere so the dome is not bald of them.
+    rows = np.arange(S, dtype=float)
+    w_row = (0.05
+             + 0.85 * np.exp(-((rows - (m_cap - 1)) / 1.4) ** 2)
+             + 1.00 * np.clip((rows - (m_cap - 1))
+                              / max(S - m_cap, 1.0), 0.0, 1.0) ** 2.0)
+    w_row = w_row * (amt.mean(axis=1) > 0.02)
+    if w_row.sum() <= 0:
+        return
+    w_row = w_row / w_row.sum()
+    hh = b.head_h
+    L0 = max(b.hair_len, 0.012)
+    style = b.hair_style
+    down = np.array([0.0, 0.0, -1.0])
+    back = np.array([0.0, -1.0, 0.0])
+    segs = 4 if _hair_strand_budget(lod) >= 80 else 3
+    per = 6 if n >= 42 else 3
+    clusters = max(1, int(n // per))
+    for _c in range(clusters):
+        ci = float(rr.r.choice(S, p=w_row)) + rr.u() - 0.5
+        cj = rr.u() * R
+        # ONE direction and ONE length for the whole wisp
+        c_len = L0 * (0.10 + 0.26 * rr.u()) * (1.0 + 0.15 * rr.clipn(0.4, 1.0))
+        c_wob = np.array([rr.n(0, 0.10), rr.n(0, 0.10), rr.n(0, 0.06)])
+        for _s in range(per):
+            fi = float(np.clip(ci + rr.n(0.0, 0.55), 0.0, S - 1.0))
+            fj = cj + rr.n(0.0, 1.1)
+            nrm = _bilerp_grid(N, fi, fj)
+            nn = float(np.linalg.norm(nrm))
+            if nn < 1e-9:
+                continue
+            nrm = nrm / nn
+            base = _bilerp_grid(P, fi, fj)
+            L = c_len * (0.75 + 0.50 * rr.u())
+            # THINNER. A wisp is not a rod: 0.35-0.9 mm against the 0.7-1.9 mm
+            # the shipped tubes carried, which at a 400 px head is 0.6-1.6 px
+            # rather than 1.2-3.4 -- a soft fringe instead of a hard comma.
+            wid = (0.00035 + 0.00055 * b.hair_vol) * (0.6 + 0.8 * rr.u()) \
+                * hh / 0.23
+            p0 = base + nrm * (wid * 0.5)
+            flow = down * 0.62 + back * 0.38
+            tang = flow - nrm * float(np.dot(flow, nrm))
+            if np.linalg.norm(tang) < 1e-6:
+                tang = back - nrm * float(np.dot(back, nrm))
+            tang = tang / max(np.linalg.norm(tang), 1e-9)
+            pts = [p0]
+            d = tang * 0.99 + nrm * 0.01
+            d = d / np.linalg.norm(d)
+            for s in range(segs):
+                g = (s + 1.0) / segs
+                # HUG, THEN LEAVE. Gravity and wobble are gated by g^2, so the
+                # root half of the strand stays along the surface and only the
+                # tip departs from it.
+                grav = down * (0.80 if style in ("long", "medium", "ponytail")
+                               else 0.45) + back * 0.15
+                curl = (0.55 if style == "curly" else 0.13)
+                wob = c_wob + np.array([rr.n(0, curl * 0.35),
+                                        rr.n(0, curl * 0.35),
+                                        rr.n(0, curl * 0.20)])
+                hug = g * g
+                d = d * (1.0 - 0.30 * hug) + grav * (0.40 * hug) \
+                    + wob * (0.30 * hug)
+                d = d / max(np.linalg.norm(d), 1e-9)
+                pts.append(pts[-1] + d * (L / segs))
+            pts = np.array(pts)
+            t = np.linspace(0.0, 1.0, 5)
+            r = wid * np.array([1.0, 0.88, 0.66, 0.38, 0.10])
+            sw = _tube_impl(pts, t, r, 4, int(rr.u() * 1e6), 0.80, 2.0,
+                            smooth_r=wid * 1.5, noise_amp=0.0, noise_su=1,
+                            noise_sv=1, twist=0.0, n_st=segs + 3)
+            W = Sweep(O + np.einsum("ij,sj->si", B, sw.C),
+                      np.einsum("ij,sjk->sik", B, sw.B), sw.LX, sw.LY)
+            # A STRAND'S `hk_u` IS THE AZIMUTH IT GREW AT, NOT ITS OWN RING.
+            # `Sweep.emit`'s default runs u 0..1 AROUND the tube, and
+            # `hair_material` reads `hk_u` as the head's azimuth to place 61
+            # lock bands on it -- so a 0.5 mm tube would carry all 61 of them
+            # across its own diameter, which is per-pixel noise on a 1 px
+            # object and is how the black commas got their contrast. Held
+            # constant, a wisp takes the shade of the lock it came out of.
+            uc = (fj % R) / float(R)
+            if fi <= m_cap - 1:
+                vr = 0.5 * fi / max(m_cap - 1.0, 1.0)
+            else:
+                vr = 0.5 + 0.5 * (fi - (m_cap - 1)) / max(S - m_cap, 1.0)
+            W.emit(mesh, mat, cap_end=True, zone=ZONE_SCALP,
+                   u0=uc, u1=uc, v0=float(np.clip(vr, 0.0, 1.0)),
+                   v1=float(np.clip(vr + 0.12, 0.0, 1.0)))
 
 
 # ===========================================================================
@@ -4545,7 +4926,7 @@ PROP_ROLE_W = {
 
 
 def _slab(mesh, O, B, w, h, d, mat, seed, r=0.004, rows=9, ring=16,
-          zone=ZONE_SKIN):
+          zone=ZONE_SKIN, col=None):
     """A rounded rectangular solid in the hand's frame. Phones, boards, passes.
 
     The corner radius is what makes it an object rather than a cuboid: at 438
@@ -4566,7 +4947,89 @@ def _slab(mesh, O, B, w, h, d, mat, seed, r=0.004, rows=9, ring=16,
     C = np.stack([O + B @ np.array([0.0, 0.0, h * u]) for u in tt])
     BB = np.repeat(B[None, :, :], rows, axis=0)
     Sweep(C, BB, LX, LY).emit(mesh, mat, cap_start=True, cap_end=True,
-                              zone=zone)
+                              zone=zone, col=col)
+
+
+#: WHAT A PROP IS MADE OF, and it is not what the person's HAT is made of.
+#:
+#: Defect 5, *"the flat props are conspicuous and samey: `phone` (28 %) and
+#: `programme` (15 %) are both a pale flat slab, so 43 % of the block is
+#: holding a bright rectangle against dark clothing"*, has a cause and it is
+#: not the modelling. Every prop is emitted into `MAT_ACC`, and `hk_col` for
+#: `MAT_ACC` is set once at the end of `build_figure` from
+#: `w["headwear_rgb"]` -- so **a phone is the colour of that person's cap**.
+#: With `#f2f0eb` (0.87 linear) in the headwear book, a phone in one hand and
+#: a programme in the other are two white slabs, at the brightest value on the
+#: figure, held out in front of dark clothing. Nothing was ever going to fix
+#: that by adding geometry to the programme.
+#:
+#: These are LOCKED colours (`Mesh.add(col=...)`), which is the same mechanism
+#: a livery panel uses to keep its own colour on a garment that shares its
+#: material, so `colour_by_material` cannot repaint them.
+PROP_COLS = {
+    "phone":     ((0.012, 0.013, 0.016), 0.42),      # graphite
+    "phone2":    ((0.055, 0.056, 0.060), 0.24),      # silver
+    "phone3":    ((0.140, 0.130, 0.120), 0.20),      # champagne / rose
+    "phone4":    ((0.020, 0.038, 0.075), 0.14),      # deep blue
+    "programme": ((0.320, 0.075, 0.055), 0.30),      # printed cover
+    "programme2": ((0.055, 0.090, 0.230), 0.26),
+    "programme3": ((0.480, 0.400, 0.130), 0.22),
+    "programme4": ((0.520, 0.520, 0.500), 0.22),     # newsprint
+    "clipboard": ((0.190, 0.120, 0.060), 0.70),      # hardboard
+    "clipboard2": ((0.030, 0.032, 0.036), 0.30),
+    "radio":     ((0.014, 0.014, 0.016), 1.00),
+    "bottle":    ((0.300, 0.330, 0.310), 0.55),      # pale PET
+    "bottle2":   ((0.090, 0.110, 0.190), 0.25),
+    "bottle3":   ((0.055, 0.048, 0.040), 0.20),
+    "cup":       ((0.520, 0.500, 0.470), 0.55),
+    "cup2":      ((0.230, 0.060, 0.045), 0.45),
+    "camera":    ((0.011, 0.011, 0.013), 1.00),
+    "binocular": ((0.013, 0.014, 0.016), 1.00),
+    "flag":      ((0.330, 0.060, 0.050), 0.34),
+    "flag2":     ((0.050, 0.110, 0.290), 0.33),
+    "flag3":     ((0.520, 0.470, 0.100), 0.33),
+}
+
+
+def _prop_colour(kind, rr):
+    """Pick from `PROP_COLS`' variants for `kind`. None if it has none."""
+    cands = [(v[0], v[1]) for k, v in PROP_COLS.items()
+             if k.rstrip("0123456789") == kind]
+    if not cands:
+        return None
+    c = _pick_weighted(rr.u(), tuple(cands))
+    j = 1.0 + rr.clipn(0.10, 0.26)
+    return tuple(float(np.clip(x * j, 0.004, 0.72)) for x in c)
+
+
+def _programme(mesh, O, B, w, h, d, mat, lod, rr, col):
+    """A folded programme, not a slab: two leaves meeting at a spine, curled.
+
+    Defect 5's other half. A race programme held in a hand is never flat -- it
+    is a saddle-stitched booklet that has been rolled, so the free edge stands
+    off the spine and the cover takes a cylindrical curl. That curl is the
+    whole read: it puts a lit face and a shaded face on an object that as a
+    slab has exactly one value, which is why 15 % of the block was holding an
+    identical bright rectangle.
+    """
+    nu = max(7, lod.station + 3)
+    nv = max(5, lod.station + 1)
+    uu, vv = np.meshgrid(np.linspace(-1.0, 1.0, nu),
+                         np.linspace(0.0, 1.0, nv), indexing="ij")
+    curl = 0.30 + 0.55 * rr.u()
+    open_a = 0.10 + 0.30 * rr.u()               # how far the leaves part
+    # each leaf sweeps an arc away from the spine at u = 0
+    a = np.abs(uu) * curl
+    x = 0.5 * w * np.sign(uu) * np.sin(a) / np.maximum(a, 1e-6) * np.abs(uu)
+    y = -0.5 * w * open_a * (1.0 - np.cos(a)) - 0.5 * d * np.sign(uu) * 0.0
+    # the pages sag along the height, more toward the free edge
+    z = h * (vv - 0.5) + 0.010 * (uu ** 2) * (vv - 0.35)
+    P = np.stack([x, y, z], axis=-1)
+    Pw = O[None, None, :] + np.einsum("ij,uvj->uvi", B, P)
+    emit_grid(mesh, Pw, mat, closed_u=False, col=col)
+    # the spine, so the two leaves are one object and not two loose sheets
+    _slab(mesh, O, B, 0.006, h * 0.99, max(d, 0.004), mat, 0, r=0.0018,
+          rows=4, ring=8, col=col)
 
 
 def build_prop(mesh, sk, side, b, lod, seed, kind, mats):
@@ -4597,25 +5060,31 @@ def build_prop(mesh, sk, side, b, lod, seed, kind, mats):
     Bp = B @ tilt
     Op = O + B @ off
     ac, sc = mats.get("acc", MAT_ACC), mats.get("shoe", MAT_SHOE)
+    pcol = _prop_colour(kind, rr)
 
     if kind in ("phone", "programme", "clipboard"):
-        _slab(mesh, Op, Bp, w, h, d, ac, seed,
-              r=0.006 if kind != "clipboard" else 0.003,
-              rows=9 if kind != "clipboard" else 7, ring=max(12, lod.ring - 10))
+        if kind == "programme":
+            _programme(mesh, Op, Bp, w, h, d, ac, lod, rr, pcol)
+        else:
+            _slab(mesh, Op, Bp, w, h, d, ac, seed,
+                  r=0.006 if kind != "clipboard" else 0.003,
+                  rows=9 if kind != "clipboard" else 7,
+                  ring=max(12, lod.ring - 10), col=pcol)
         if kind == "phone":
             # the screen, inset 1.2 mm -- a black slab with no screen reads as
             # a bar of soap at any distance where the phone reads at all
             _slab(mesh, Op + Bp @ np.array([0.0, -0.5 * d - 0.0003, 0.0]), Bp,
                   w - 0.0062, h - 0.0125, 0.0012, mats.get("eye", MAT_EYE),
-                  seed, r=0.0035, rows=5, ring=12)
+                  seed, r=0.0035, rows=5, ring=12, col=(0.008, 0.009, 0.012))
         if kind == "clipboard":
             # the sheet stack, then the spring clip across the head
             _slab(mesh, Op + Bp @ np.array([0.0, -0.5 * d - 0.0009, -0.004]),
                   Bp, w - 0.012, h - 0.020, 0.0016, ac, seed, r=0.001,
-                  rows=5, ring=10)
+                  rows=5, ring=10, col=(0.560, 0.550, 0.525))
             _slab(mesh, Op + Bp @ np.array([0.0, -0.5 * d - 0.0035,
                                             0.5 * h - 0.021]),
-                  Bp, 0.062, 0.030, 0.0075, sc, seed, r=0.003, rows=4, ring=12)
+                  Bp, 0.062, 0.030, 0.0075, sc, seed, r=0.003, rows=4,
+                  ring=12, col=(0.115, 0.120, 0.128))
     elif kind == "bottle":
         # a revolved profile: base, body, shoulder, neck, cap -- 7 stations, so
         # the shoulder is a curve and not a chamfer
@@ -4632,10 +5101,11 @@ def build_prop(mesh, sk, side, b, lod, seed, kind, mats):
         C = np.stack([Op + Bp @ np.array([0.0, 0.0, h * (u - 0.42)])
                       for u in tt])
         BB = np.repeat(Bp[None, :, :], rows, axis=0)
-        Sweep(C, BB, LX, LY).emit(mesh, ac, cap_start=True, cap_end=True)
+        Sweep(C, BB, LX, LY).emit(mesh, ac, cap_start=True, cap_end=True,
+                                  col=pcol)
     elif kind == "radio":
         _slab(mesh, Op, Bp, w, h, d, sc, seed, r=0.005, rows=7,
-              ring=max(12, lod.ring - 10))
+              ring=max(12, lod.ring - 10), col=pcol)
         # antenna: a 118 mm stub, 5 mm at the root and 3 at the tip
         rows = 5
         tt = np.linspace(0.0, 1.0, rows)
@@ -4646,13 +5116,14 @@ def build_prop(mesh, sk, side, b, lod, seed, kind, mats):
         base = Op + Bp @ np.array([0.30 * w, 0.0, 0.5 * h])
         C = np.stack([base + Bp @ np.array([0.0, 0.0, 0.118 * u]) for u in tt])
         BB = np.repeat(Bp[None, :, :], rows, axis=0)
-        Sweep(C, BB, LX, LY).emit(mesh, sc, cap_start=True, cap_end=True)
+        Sweep(C, BB, LX, LY).emit(mesh, sc, cap_start=True, cap_end=True,
+                                  col=(0.020, 0.020, 0.022))
         # speaker grille: three proud bars, 1.5 mm, on the front face
         for i in range(3):
             _slab(mesh, Op + Bp @ np.array([0.0, -0.5 * d - 0.0006,
                                             0.24 * h + 0.010 * i]),
                   Bp, w * 0.60, 0.0042, 0.0015, sc, seed, r=0.0008,
-                  rows=3, ring=8)
+                  rows=3, ring=8, col=(0.020, 0.020, 0.022))
     elif kind == "flag":
         # A STAFF AND A CLOTH THAT IS NOT FLAT. A flag rendered as a rectangle
         # is a signboard; what makes it read is that the free edge is longer
@@ -4660,7 +5131,7 @@ def build_prop(mesh, sk, side, b, lod, seed, kind, mats):
         # grid, with the amplitude ramped from 0 at the staff to full at the
         # fly, which is exactly how a real flag behaves and costs nothing.
         _prop_rod(mesh, Op, Bp, np.array([0.0, 0.0, 1.0]), 0.560, 0.0045,
-                  sc, lod, lift=-0.16)
+                  sc, lod, lift=-0.16, col=(0.170, 0.130, 0.080))
         nu = max(9, 2 * lod.station + 3)
         nv = max(6, lod.station + 2)
         uu, vv = np.meshgrid(np.linspace(0.0, 1.0, nu),
@@ -4672,27 +5143,28 @@ def build_prop(mesh, sk, side, b, lod, seed, kind, mats):
         sag = -0.030 * uu ** 2 * (1.0 - 0.35 * vv)
         P = np.stack([w * uu, yv, 0.24 + h * (vv - 0.5) + sag], axis=-1)
         Pw = Op[None, None, :] + np.einsum("ij,uvj->uvi", Bp, P)
-        emit_grid(mesh, Pw, ac, closed_u=False)
+        emit_grid(mesh, Pw, ac, closed_u=False, col=pcol)
     elif kind == "camera":
         # body, then a lens barrel with a hood -- the barrel is the whole read
         # at any distance where a camera reads at all
         _slab(mesh, Op, Bp, w, h, d, sc, seed, r=0.008, rows=7,
-              ring=max(12, lod.ring - 10))
+              ring=max(12, lod.ring - 10), col=pcol)
         _slab(mesh, Op + Bp @ np.array([0.0, 0.0, 0.5 * h + 0.008]), Bp,
-              0.036, 0.016, 0.030, sc, seed, r=0.004, rows=4, ring=10)
+              0.036, 0.016, 0.030, sc, seed, r=0.004, rows=4, ring=10,
+              col=pcol)
         _prop_rod(mesh, Op + Bp @ np.array([0.0, -0.5 * d, -0.004]), Bp,
                   np.array([0.0, -1.0, 0.0]), 0.098, 0.0355, sc, lod,
-                  taper=1.10, lift=0.0)
+                  taper=1.10, lift=0.0, col=(0.014, 0.014, 0.016))
         _prop_rod(mesh, Op + Bp @ np.array([0.0, -0.5 * d - 0.098, -0.004]),
                   Bp, np.array([0.0, -1.0, 0.0]), 0.020, 0.0385, ac, lod,
-                  taper=1.0, lift=0.0)
+                  taper=1.0, lift=0.0, col=(0.009, 0.009, 0.010))
     elif kind == "binocular":
         for sx in (-1.0, +1.0):
             _prop_rod(mesh, Op + Bp @ np.array([sx * 0.032, 0.0, 0.0]), Bp,
                       np.array([0.0, -1.0, 0.0]), h, 0.0245, sc, lod,
-                      taper=1.14, lift=-0.5 * h)
+                      taper=1.14, lift=-0.5 * h, col=pcol)
         _slab(mesh, Op, Bp, 0.064, 0.030, 0.026, sc, seed, r=0.004,
-              rows=4, ring=10)
+              rows=4, ring=10, col=pcol)
     elif kind == "cup":
         # a tapered cup with a rolled rim -- the rim is 1.4 mm proud and is
         # the only thing that separates a cup from a cone at 260 px
@@ -4706,11 +5178,12 @@ def build_prop(mesh, sk, side, b, lod, seed, kind, mats):
         C = np.stack([Op + Bp @ np.array([0.0, 0.0, h * (u - 0.40)])
                       for u in tt])
         Sweep(C, np.repeat(Bp[None, :, :], rows, axis=0), LX, LY).emit(
-            mesh, ac, cap_start=True, cap_end=True)
+            mesh, ac, cap_start=True, cap_end=True, col=pcol)
     return float(spec["grip_r"])
 
 
-def _prop_rod(mesh, O, B, axis, length, rad, mat, lod, taper=1.0, lift=0.0):
+def _prop_rod(mesh, O, B, axis, length, rad, mat, lod, taper=1.0, lift=0.0,
+              col=None):
     """A capped cylinder in a hand frame: flag staff, lens barrel, binocular."""
     rows = max(4, lod.station)
     tt = np.linspace(0.0, 1.0, rows)
@@ -4722,11 +5195,11 @@ def _prop_rod(mesh, O, B, axis, length, rad, mat, lod, taper=1.0, lift=0.0):
     Sweep(C, np.repeat(B[None, :, :], rows, axis=0),
           r[:, None] * np.cos(th)[None, :],
           r[:, None] * np.sin(th)[None, :]).emit(
-              mesh, mat, cap_start=True, cap_end=True)
+              mesh, mat, cap_start=True, cap_end=True, col=col)
 
 
 def build_headwear(mesh, sk, b, lod, seed, kind, mat, legacy=False,
-                   hair_thick=0.0):
+                   hair_thick=0.0, wear=0.0):
     """cap / beanie / bucket / visor as a clean dome of revolution over the skull.
 
     NOT a row-slice of the head grid. The first build cut the head's own (u, v)
@@ -4766,8 +5239,15 @@ def build_headwear(mesh, sk, b, lod, seed, kind, mat, legacy=False,
                "beanie": (0.150, -0.340),
                "bucket": (0.245, 0.020),
                "visor":  (0.320, 0.320)}[kind]
-    n = max(18, 2 * lod.head_u // 3)
-    m = max(6, lod.head_v // 4)
+    # THE GRID HAS TO BE ABLE TO HOLD A SEAM. It was `2 * head_u // 3` -- 48
+    # columns at L0, 10 mm apart on a 478 mm crown -- and defect 4 is "no
+    # six-panel seams, no button, no crown break", i.e. exactly the features
+    # that live at 3-8 mm. Putting a 3 mm ridge on a 10 mm grid is the sampling
+    # failure `FACE_LOBE_FLOOR` documents, one object along. 96 columns at L0
+    # is 5.0 mm and 58 at L1 is 8.2 mm, and the seam width is floored to the
+    # spacing below rather than declared in millimetres.
+    n = max(28, 4 * lod.head_u // 3)
+    m = max(8, lod.head_v // 3)
     ph = np.linspace(0.0, TAU, n, endpoint=False)
     frontness = 0.5 + 0.5 * np.sin(ph)                   # 1 at the face, 0 aft
     hem_col = HEM[1] + (HEM[0] - HEM[1]) * frontness
@@ -4794,7 +5274,45 @@ def build_headwear(mesh, sk, b, lod, seed, kind, mat, legacy=False,
     grow0 = 1.0 + gap / max(0.5 * hw, 1e-6)
     grow = grow0
     if kind == "beanie":
-        grow = grow + 0.0016 * np.sin(PH * 9.0) / max(0.5 * hw, 1e-6)
+        # RIBBING, at a wavelength the grid can hold and an amplitude that is
+        # knitwear rather than corrugation. `sin(PH * 9)` was 9 ribs round a
+        # 478 mm crown -- a 53 mm rib, which is a pumpkin, not a hat -- and the
+        # turn-up, which is the one thing that says "beanie" at any distance,
+        # did not exist at all. 26 ribs is 18 mm, 5.6 px at the film's biggest
+        # head, and the turn-up is a doubled band at the hem.
+        rib = 0.0022 * np.cos(PH * 26.0) * np.clip(np.sin(TH), 0.0, 1.0)
+        turn = np.clip((TH - (th_hi_col[None, :] - 0.30)) / 0.30, 0.0, 1.0)
+        grow = grow + (rib + 0.0060 * turn ** 1.5) / max(0.5 * hw, 1e-6)
+    elif kind in ("cap", "bucket"):
+        # SIX PANELS, A CROWN BREAK AND A BUTTON -- defect 4, "the caps still
+        # read as hard hats: a smooth dome, no six-panel seam, no button".
+        #
+        # A cap is six wedges of twill joined by a topstitched seam, and the
+        # seams are the whole read: they run from the button to the hem, they
+        # catch the sun as six bright lines on a dome that would otherwise
+        # have one highlight, and each panel bulges slightly between them so
+        # the crown is a hexagonal dome rather than a sphere. The front seam
+        # sits on the centre line (`ph = pi/2` is the face here) so a cap seen
+        # head-on shows a seam down the middle, which is what a cap does.
+        s6 = 3.0 * (PH - math.pi / 2.0)
+        # angular distance to the nearest seam meridian, as an ARC in metres,
+        # so the ridge is a constant physical width up the dome instead of
+        # pinching to nothing at the crown
+        d_ang = np.abs(((s6 + math.pi / 2.0) % math.pi) - math.pi / 2.0) / 3.0
+        r_loc = np.maximum(ax * np.sin(TH), 1e-4)
+        seam_w = max(1.15 * TAU * ax / n, 0.0035)
+        seam = np.exp(-((d_ang * r_loc) / seam_w) ** 2)
+        panel = np.sin(s6) ** 2
+        # both fade out at the pole, where six seams are one point
+        fade = np.clip(np.sin(TH) / math.sin(0.45), 0.0, 1.0)
+        crown = (0.0016 * seam + 0.0014 * panel) * fade
+        # THE CROWN BREAK: a structured cap stands up at the front and slopes
+        # away to the back. A hemisphere is a hard hat, and that is the word
+        # the defect report uses.
+        crown = crown + (0.0075 if kind == "cap" else 0.0030) \
+            * np.clip(np.sin(PH), 0.0, 1.0) ** 1.4 * np.clip(
+                1.0 - TH / max(float(th_hi), 1e-6), 0.0, 1.0) ** 0.8
+        grow = grow + crown / max(0.5 * hw, 1e-6)
     px = fx * ax * grow
     py = yc + fy * ay * grow * (1.0 - 0.14 * np.clip(-fz, 0, 1) ** 1.6)
     pz = zc + fz * az * grow
@@ -4807,7 +5325,14 @@ def build_headwear(mesh, sk, b, lod, seed, kind, mat, legacy=False,
     P[..., 2] -= 0.0030 * roll
     apex = np.array([0.0, yc, zc + az * grow if np.isscalar(grow) else zc + az])
     W = O + np.einsum("ij,srj->sri", B, P)
-    emit_grid(mesh, W, mat, closed_u=True, cap_lo=O + B @ apex)
+    emit_grid(mesh, W, mat, closed_u=True, cap_lo=O + B @ apex,
+              wear=float(wear))
+    if kind == "cap":
+        # THE BUTTON. 12 mm across and 5 mm proud, which is 3.7 x 1.6 px at the
+        # film's biggest head -- small, and the one detail that is unambiguous
+        # about what the object is. It is where the six panels meet, so it has
+        # to sit exactly on the apex the dome was closed at.
+        _button(mesh, O, B, apex, ax, az, grow0, lod, mat)
     if kind in ("cap", "visor", "bucket"):
         # THE PEAK ATTACHES TO THE HEM THIS DOME ACTUALLY HAS. It used to be
         # placed at hard-coded head-frame coordinates and the 767 px bench
@@ -4822,6 +5347,29 @@ def build_headwear(mesh, sk, b, lod, seed, kind, mat, legacy=False,
             y_hem, z_hem = 0.5 * hd * 0.30 + 0.012, 0.075 * hh
         _peak(mesh, O, B, b, lod, kind, rr, mat, y_hem, z_hem,
               droop=(0.24 if legacy else None))
+
+
+def _button(mesh, O, B, apex, ax, az, grow0, lod, mat):
+    """The fabric-covered button at the crown of a six-panel cap.
+
+    A squashed hemisphere sitting on the apex, closed with a pole fan, built on
+    its own grid for the same reason `build_headwear` is: cutting one out of
+    the dome's grid means cutting on whole rows.
+    """
+    n = max(10, lod.head_u // 4)
+    m = max(3, lod.head_v // 10)
+    r = 0.0060
+    h = 0.0050
+    ph = np.linspace(0.0, TAU, n, endpoint=False)
+    th = np.linspace(math.pi * 0.5, 0.0, m + 1)[:-1]      # rim -> pole
+    TH, PH = np.meshgrid(th, ph, indexing="ij")
+    P = np.stack([r * np.sin(TH) * np.cos(PH),
+                  r * np.sin(TH) * np.sin(PH),
+                  h * np.cos(TH)], axis=-1)
+    P = P + np.asarray(apex, float)[None, None, :]
+    top = np.asarray(apex, float) + np.array([0.0, 0.0, h])
+    emit_grid(mesh, O + np.einsum("ij,srj->sri", B, P), mat, closed_u=True,
+              cap_hi=O + B @ top)
 
 
 def _peak(mesh, O, B, b, lod, kind, rr, mat, y_hem, z_hem, droop=None):
@@ -5897,6 +6445,29 @@ def sample_wardrobe(rng, b, team=None, team_frac=0.30, role=None):
     w["headwear"] = hw
     w["headwear_rgb"] = (w["top_rgb"] if (on_team and rng.u() < 0.5)
                          else _hexw(rng, NEUTRALS))
+    # A WHITE CAP IS NOT A WHITE CARD. Defect 4's second half: *"the white ones
+    # are the brightest objects in the frame"*, and they were -- `#f2f0eb` is
+    # 0.87 linear, which under a 12.47 deg sun on the TOP of a head (the one
+    # surface pointed at the sky) out-reads the sky itself. New cotton twill is
+    # about 0.72 and a cap that has been worn outdoors is well below that,
+    # because the crown is the part that sits in the sun and the band is the
+    # part that soaks up sweat. Headwear is therefore capped and then
+    # weathered, not left at whatever the shared neutral book says. The book is
+    # shared with shirts, where 0.87 is a fine white shirt in shadow.
+    #
+    # DERIVED, NOT DRAWN, for the reason `sample_body.hair_part_az` is: two
+    # more `rng` calls here shift every later draw in this function, so the
+    # prop, the shoe and the grip of every person in the library change and a
+    # headwear A/B stops being an A/B. `_hash01` of numbers already drawn.
+    _h = _hash01(w["headwear_rgb"][0], w["headwear_rgb"][2], b.stature)
+    _cap_lin = 0.62 + 0.10 * _h
+    _mx = max(w["headwear_rgb"])
+    if _mx > _cap_lin:
+        w["headwear_rgb"] = tuple(c * (_cap_lin / _mx)
+                                  for c in w["headwear_rgb"])
+    w["headwear_wear"] = float(np.clip(
+        0.16 + 0.74 * _hash01(b.stature, w["headwear_rgb"][1], b.age_years),
+        0.10, 1.0))
     w["wear"] = float(np.clip(rng.n(0.35, 0.22), 0.0, 1.0))
     w["grip"] = float(np.clip(rng.n(0.18, 0.14), 0.0, 0.7))
     # HELD PROPS -- defect 3. Drawn by plausible frequency per role, and the
@@ -6013,7 +6584,8 @@ def build_figure(seed, lod=None, kind=None, archetype=None, gaze=None,
         ht = build_hair(m, sk, b, lod, seed, MAT_HAIR,
                         squash=(0.40 if hat else 1.0))
         build_headwear(m, sk, b, lod, seed, w["headwear"], MAT_ACC,
-                       hair_thick=(ht if hat else 0.0))
+                       hair_thick=(ht if hat else 0.0),
+                       wear=w.get("headwear_wear", 0.0))
 
     # ---- surface SIDE ----------------------------------------------------
     # Every piece is checked to be facing outward, and reversed if it is not.
@@ -6667,13 +7239,24 @@ def hair_stages(px_per_m=FIGURE_PX_PER_M):
     fibrous mass, not a woven sheet -- but 0.75 is a 75 % peak-to-peak swing and
     3.4 is a black-and-white stipple.
     """
+    if HAIR_LEGACY:
+        # THE SHIPPED PAIR, with no Nyquist floor -- which is the defect.
+        return [("fibre", 0.0012, 0.15 * HAIR_RELIEF),
+                ("clump", 0.0080, 1.10 * HAIR_RELIEF)]
     nyq_m = 2.0 / max(float(px_per_m), 1e-6)
-    lam_lock, lam_mass = 0.0072, 0.0175
+    # THE TWO STAGES STRADDLE WHAT THE MESH CAN CARRY AND NEITHER SITS ON IT.
+    # `build_hair` builds `n // 4` lock ridges, which is 15.4 mm at L0 and
+    # 25 mm at L1, and its volume term is ~200 mm. A shader stage inside the
+    # 15-25 mm band would be a normal map arguing with a shape -- which is what
+    # `fabric_stages` deleted `drape` for. So the fine stage sits BELOW
+    # everything the mesh can represent at any tier and the coarse one sits
+    # between the locks and the volume.
+    lam_lock, lam_swell = 0.0090, 0.0340
     all_stages = [
         # between-lock shading: the finest thing hair may still carry as a bump
-        ("lock", lam_lock, amp_mm_for_modulation(0.75, lam_lock)),
-        # the grouping of locks into a mass; sits above the crease band
-        ("mass", lam_mass, amp_mm_for_modulation(0.50, lam_mass)),
+        ("lock", lam_lock, amp_mm_for_modulation(0.78, lam_lock)),
+        # groups of locks catching the light together, below the volume term
+        ("swell", lam_swell, amp_mm_for_modulation(0.30, lam_swell)),
     ]
     return [(n_, l_, a_ * HAIR_RELIEF)
             for (n_, l_, a_) in all_stages if l_ >= nyq_m]
@@ -6727,10 +7310,49 @@ def _meridional_tangent(nt):
     looked deliberate.
     """
     N = nt.n("ShaderNodeNewGeometry")
-    a = nt.vmath("CROSS_PRODUCT", (0.0, 0.0, 1.0), (N, 1))
+    # `comb`, not a literal 3-tuple: `NT.pin` appends alpha to any length-3
+    # sequence (it is written for colour sockets) and a VectorMath input takes
+    # three floats, so a literal raises. One more socket-shape trap of exactly
+    # the kind `pin`'s `expect=` was added for.
+    up = nt.comb(0.0, 0.0, 1.0)
+    a = nt.vmath("CROSS_PRODUCT", up, (N, 1))
     a = nt.vmath("NORMALIZE", a)
     t = nt.vmath("CROSS_PRODUCT", (N, 1), a)
     return nt.vmath("NORMALIZE", t)
+
+
+def _hair_material_legacy(nt, col, v, Pj):
+    """The SHIPPED hair shader, verbatim, as the positive control. `HAIR_LEGACY`.
+
+    Do not tune this. Its whole value is that it is the graph the frames in
+    `render/items/spectator_crowd/p5/` and `render/faceab/` were made with, so
+    a new frame beside an old one differs in the hair and in nothing else.
+    """
+    global HAIR_STAGES_MM
+    strand = nt.noise(Pj, tex_scale("noise", 0.0011), detail=3.0, rough=0.5)
+    tone = nt.maprange(strand, 0.30, 0.70, 0.74, 1.28)
+    base = nt.cmix(0.85, col, nt.cmix(tone, nt.cmix(1.0, col, (0.55, 0.52, 0.50),
+                                                    "MULTIPLY"),
+                                      nt.cmix(1.0, col, (1.55, 1.45, 1.35),
+                                              "MULTIPLY")))
+    base = nt.cmix(nt.maprange(v, 0.0, 1.0, 0.0, 0.35), base,
+                   nt.cmix(0.5, base, (1.35, 1.28, 1.20), "MULTIPLY"))
+    stages = hair_stages()
+    HAIR_STAGES_MM = relief_budget(stages)
+    fibre = nt.wave(Pj, tex_scale("wave_x", 0.0012), distortion=6.0, detail=3.0)
+    nrm = relief(nt, fibre, NODE_PP["wave"], 0.0012, stages[0][2])
+    clump = nt.noise(Pj, tex_scale("noise", 0.0080), detail=4.0)
+    nrm = relief(nt, clump, NODE_PP["noise_d4"], 0.0080, stages[1][2],
+                 normal=nrm)
+    rough = nt.maprange(nt.noise(Pj, tex_scale("noise", 0.008)), 0.3, 0.7,
+                        0.24, 0.46)
+    b = nt.principled_out(base_color=base, roughness=rough, normal=nrm,
+                          metallic=0.0)
+    for nm, v2 in (("Specular IOR Level", 0.62), ("Anisotropic", 0.60),
+                   ("Sheen Weight", 0.25)):
+        if nm in b.inputs:
+            b.inputs[nm].default_value = v2
+    return nt.m
 
 
 def hair_material(prefix, name="Hair"):
@@ -6751,6 +7373,8 @@ def hair_material(prefix, name="Hair"):
     u = _attr_f(nt, "hk_u")
     fid = _attr_f(nt, "hk_id")
     Pj = nt.vmath("ADD", P, nt.comb(nt.math("MULTIPLY", fid, 71.3), 0.0, 0.0))
+    if HAIR_LEGACY:
+        return _hair_material_legacy(nt, col, v, Pj)
     # --- colour. LOCK-scale, not strand-scale.
     # The shipped value noise was a Noise at 1.1 mm -- 0.48 px at this item's
     # own 373.3 px/m -- driving a 0.74..1.28 multiplier, which is sub-pixel
@@ -8183,6 +8807,98 @@ def selftest(verbose=True, n=96):
         "controls. A face with no area has no normal."
         % (n_deg, ctlA, ctlB))
 
+    # [26] THE HAIR IS NOT A CRUST -- defect 3, in the same arithmetic the
+    # garment was rescued with. Two claims, one check: every hair relief stage
+    # must sit inside a plausible radiance modulation AND above the pixel
+    # floor. The POSITIVE CONTROL is `HAIR_LEGACY`, which re-runs the SHIPPED
+    # `hair_stages` -- not a reconstruction of it -- and must fail both.
+    def _hair_m(stages):
+        te = math.tan(math.radians(SUN_ELEV_DEG))
+        return [2.0 * math.radians(max_slope_deg(a, l)) / te
+                for _n, l, a in stages], [l for _n, l, _a in stages]
+
+    global HAIR_LEGACY
+    _was = HAIR_LEGACY
+    HAIR_LEGACY = False
+    m_new, lam_new = _hair_m(hair_stages())
+    HAIR_LEGACY = True
+    m_old, lam_old = _hair_m(hair_stages())
+    HAIR_LEGACY = _was
+    nyq = 2.0 / FIGURE_PX_PER_M
+    ok_new = (max(m_new) <= 1.30 and min(lam_new) >= nyq)
+    ok_old = (max(m_old) > 2.0 and min(lam_old) < nyq)
+    chk("hair_relief_is_not_a_crust", ok_new and ok_old,
+        "hair shader stages modulate the rendered radiance by %s peak-to-peak "
+        "at wavelengths %s mm, all of them above the %.2f mm pixel floor at "
+        "%.1f px/m. The SHIPPED stages, re-run here as the control via "
+        "HAIR_LEGACY, measure %s at %s mm -- %.1fx the modulation, with the "
+        "fine stage at %.2f of the floor, i.e. per-pixel noise at every "
+        "distance. Cloth was rejected by eye as stucco at 1.57."
+        % ([round(x, 2) for x in m_new], [round(1000 * l, 1) for l in lam_new],
+           1000 * nyq, FIGURE_PX_PER_M, [round(x, 2) for x in m_old],
+           [round(1000 * l, 1) for l in lam_old],
+           max(m_old) / max(max(m_new), 1e-9), min(lam_old) / nyq))
+
+    # [27] THE FACE'S SHARP LOBES REACH THE MESH -- defect 1, and its mechanism.
+    # The fifth pass measured the ANALYTIC lobe field at m = 2.22 and concluded
+    # the face was not flat. It is not; but on the L1 grid most of the sharp
+    # half of it was never sampled. Measured the only way that cannot be argued
+    # with: build the head twice off one body, once with a lobe and once with
+    # its amplitude zeroed, and take the largest vertex displacement between
+    # the twins. That IS the realised depth.
+    #
+    # THE CONTROLS ARE BOTH REQUIRED AND THEY PULL OPPOSITE WAYS:
+    #   * FACE_LOBE_FLOOR = 0 (the shipped build) must FAIL on the sharp lobes;
+    #   * the BROAD lobes -- chin, cheek -- must be unmoved by the fix in both
+    #     builds, or the statistic is measuring the change and not the feature.
+    global FACE_GRID_WARP, FACE_LOBE_FLOOR
+    _w0, _f0 = FACE_GRID_WARP, FACE_LOBE_FLOOR
+
+    def _realised(lod_, name, seeds_):
+        full = HEAD_LOBES
+        row = next(r for r in full if r[0] == name)
+        frac = []
+        try:
+            for sd in seeds_:
+                bb = sample_body(rng_for(sd, 1), adult_only=True)
+                P1 = head_points(bb, lod_, sd)[0]
+                globals()["HEAD_LOBES"] = tuple(
+                    r if r[0] != name else r[:7] + (0.0,) + r[8:] for r in full)
+                P0 = head_points(bb, lod_, sd)[0]
+                globals()["HEAD_LOBES"] = full
+                got = float(np.linalg.norm(P1 - P0, axis=-1).max())
+                frac.append(got / max(abs(row[7]) * bb.head_h, 1e-9))
+        finally:
+            globals()["HEAD_LOBES"] = full
+        return float(np.mean(frac))
+
+    _sds = [4000 + i * 7919 for i in range(8)]
+    SHARP = ("lip_line", "lid_upper_L", "nostril_L", "subnasale")
+    BROAD = ("chin", "cheek_L", "brow_ridge_L")
+    FACE_GRID_WARP, FACE_LOBE_FLOOR = 0.0, 0.0
+    sharp_old = {k: _realised(LOD_L1, k, _sds) for k in SHARP}
+    broad_old = {k: _realised(LOD_L1, k, _sds) for k in BROAD}
+    FACE_GRID_WARP, FACE_LOBE_FLOOR = 1.0, 1.0
+    sharp_new = {k: _realised(LOD_L1, k, _sds) for k in SHARP}
+    broad_new = {k: _realised(LOD_L1, k, _sds) for k in BROAD}
+    FACE_GRID_WARP, FACE_LOBE_FLOOR = _w0, _f0
+    ok_sharp = min(sharp_new.values()) >= 0.80
+    ok_ctl = max(sharp_old.values()) < 0.65
+    ok_broad = all(abs(broad_new[k] - broad_old[k]) < 0.05 for k in BROAD)
+    chk("face_lobes_survive_the_head_grid",
+        ok_sharp and ok_ctl and ok_broad,
+        "at L1 -- 85 %% of a grandstand -- the sharp face lobes now realise %s "
+        "of their own depth on the MESH. The shipped grid, re-run here as the "
+        "control, realises %s: the mouth arrives at %.0f %% and is "
+        "reconstructed across an 11 mm cell, which is a 7 deg ramp where the "
+        "lobe asks for a 57 deg wall. NEGATIVE CONTROL, the lobes that were "
+        "never sub-grid: %s shipped vs %s now, unmoved."
+        % ({k: round(v, 2) for k, v in sharp_new.items()},
+           {k: round(v, 2) for k, v in sharp_old.items()},
+           100 * sharp_old["lip_line"],
+           {k: round(v, 2) for k, v in broad_old.items()},
+           {k: round(v, 2) for k, v in broad_new.items()}))
+
     if HAVE_BPY:
         for ob in list(bpy.data.objects):
             bpy.data.objects.remove(ob, do_unlink=True)
@@ -8193,6 +8909,29 @@ def selftest(verbose=True, n=96):
         chk("materials_wired_and_deep", wired and tot >= 6 * len(mats),
             "%d procedural texture/bump nodes over %d materials (gate hero "
             "floor is 6 reachable nodes): %s" % (tot, len(mats), per))
+        # THE HAIR'S ANISOTROPY HAS A TANGENT, AND IT IS THE RIGHT SOCKET.
+        # `Tangent` is input **18** of the Blender 5.2 Principled BSDF, so this
+        # is exactly the shape of the trap `bump_by_name` documents: an
+        # index-pinned write would land on something else entirely, and an
+        # anisotropy with no tangent silently uses the default, which runs
+        # ROUND the head instead of down it -- the mirror image of a hair
+        # highlight, which would have looked deliberate.
+        hm = bpy.data.materials.get("HKSELF_Hair")
+        hb = next((n for n in hm.node_tree.nodes
+                   if n.bl_idname == "ShaderNodeBsdfPrincipled"), None) \
+            if hm else None
+        tg = hb.inputs["Tangent"] if (hb and "Tangent" in hb.inputs) else None
+        aniso = float(hb.inputs["Anisotropic"].default_value) if hb else 0.0
+        chk("hair_anisotropy_has_a_tangent",
+            tg is not None and tg.is_linked and aniso > 0.2,
+            "Principled `Tangent` is input [%s] on this Blender and is wired "
+            "from %s; Anisotropic = %.2f. Wired BY NAME -- an index write "
+            "would land on socket 18 of something else, and an unwired "
+            "Tangent is the default one, which circles the head instead of "
+            "running down it."
+            % (hb.inputs.find("Tangent") if hb else "?",
+               tg.links[0].from_node.bl_idname if (tg and tg.is_linked)
+               else None, aniso))
         # EVERY BUMP'S HEIGHT MUST BE LINKED, AND FILTER WIDTH MUST NOT BE.
         # This is the check that would have caught the defect described at
         # length in `bump_by_name`: on Blender 5.2 the Bump node grew a

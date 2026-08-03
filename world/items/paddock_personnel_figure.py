@@ -183,6 +183,12 @@ def _test_scene(scene, root, objs, figs, samples):
     cams = K.coll(COLL + "/Cameras", root)
     stand = K.coll(COLL + "/Standins", root)
     K.contract_sun(PFX, scene=scene, coll_=stand)
+    # AND THEN OFF THE REFUTED EXPOSURE `contract_sun` LEAVES BEHIND.
+    # Every frame this item has ever been judged on -- including the
+    # ITEM_ACCEPTED 8-of-8 gate run -- was shot 0.580 stops over, at
+    # world_contract's -3.048 rather than the film's measured -3.628.
+    # See humankit.film_exposure; it raises rather than falling back.
+    HK.film_exposure(scene)
     # THE STANDIN GROUND NEEDS A MATERIAL, and it is not cosmetic.
     # `K.ground_plane(material=None)` leaves Blender's default 0.8-albedo grey.
     # Under the contract sun that is a 58 m reflector, and the first 767 px peep

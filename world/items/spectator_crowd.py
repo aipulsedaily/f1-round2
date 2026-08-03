@@ -286,6 +286,8 @@ def plan_block(seed, seats, facings, focus, n_want=None,
         k = int(HK.hash01(int(seed), r["row"] * 977 + max(r["col"], 0) * 13
                           + (1 if r["col"] < 0 else 0)) * 1e6)
         r["src"] = library_index(r["role"], r["head_yaw_deg"], k)
+        r["_k"] = k
+    _separate_twins(plan, seats, key, seed)
     if n_want is not None and len(plan) > n_want:
         # thin by GROUP, never by seat: dropping every third person out of a
         # clumped field puts the speckle straight back in.
@@ -340,6 +342,121 @@ def library_index(role, head_deg, k):
     a plan built in one process indexes a library built in another."""
     return (_role_base(role) + role_bin(role, head_deg) * ROLE_CELL[role]
             + (int(k) % ROLE_CELL[role]))
+
+
+#: How far apart two copies of the same source have to be, in metres.
+#: The defect is measured on screen -- *"on-screen neighbour pairs within 4
+#: head-widths ... of which the SAME SOURCE MESH: 16, closest 31 px apart on a
+#: 63 px head"* -- but it is FIXED in the world, because the plan does not know
+#: the camera and must not: a plan that de-duplicates for `CAM_CROWD_ALONG`
+#: leaves the twins in for every other framing, and this module ships six.
+#: 2.6 m is a little over two seat pitches and two rows, which is the
+#: neighbourhood a viewer reads as "these two are next to each other".
+TWIN_RADIUS_M = 2.6
+
+
+def _separate_twins(plan, seats, key, seed):
+    """Re-roll `k` where two nearby people drew the SAME library source.
+
+    DEFECT: *"16 visible pairs of identical twins in one frame, one of them
+    overlapping ... 0.42 % of on-screen neighbour pairs"*. A source carries its
+    own garment colour in `hk_col`, so two instances of one source are the same
+    person down to the shirt.
+
+    HUMAN-REFERENCE names `ROLE_CELL["sit"]` as the lever, and it is A lever --
+    but doubling it costs ~20 M library polygons to halve a rate, because a
+    uniform hash over a deeper cell still collides, just less often. The
+    collisions that MATTER are the ones that land next to each other, and those
+    can be removed outright for nothing: sweep the plan in a deterministic
+    order and, where a person's source is already in use within
+    `TWIN_RADIUS_M`, rehash their `k` and try again. The cell is unchanged, the
+    library is unchanged, and the property that makes a plan reproducible --
+    the same person goes back in the same chair -- survives because both the
+    sweep order and the rehash are functions of the seat.
+
+    It cannot always succeed: a cell of 64 in a bin holding a thousand people
+    WILL exhaust its attempts somewhere, and where it does the person keeps
+    their original draw rather than being moved to a worse one. What it removes
+    is the visible cases, and `plan` records how many it could not.
+    """
+    pos = {}
+    for r in plan:
+        i = key.get((r["row"], r["col"]))
+        if i is not None:
+            pos[id(r)] = (float(seats[i][2]), float(seats[i][3]))
+        elif r.get("x") is not None and r.get("y") is not None:
+            pos[id(r)] = (float(r["x"]), float(r["y"]))
+    have = [r for r in plan if id(r) in pos]
+    if not have:
+        return 0
+    # a uniform grid at the exclusion radius: any pair within R is in the same
+    # cell or one of its eight neighbours, so this is linear rather than N^2
+    R = TWIN_RADIUS_M
+    have.sort(key=lambda r: (r["row"], r["col"]))
+    cells = {}
+    stuck = 0
+    for r in have:
+        x, y = pos[id(r)]
+        cx, cy = int(math.floor(x / R)), int(math.floor(y / R))
+        near = [q for dx in (-1, 0, 1) for dy in (-1, 0, 1)
+                for q in cells.get((cx + dx, cy + dy), ())]
+        for attempt in range(24):
+            clash = False
+            for q, qx, qy in near:
+                if q["src"] == r["src"] and (qx - x) ** 2 + (qy - y) ** 2 \
+                        <= R * R:
+                    clash = True
+                    break
+            if not clash:
+                break
+            k2 = int(HK.hash01(int(seed) + 7919 * (attempt + 1),
+                               r["row"] * 977 + max(r["col"], 0) * 13
+                               + (1 if r["col"] < 0 else 0)) * 1e6)
+            r["_k"] = k2
+            r["src"] = library_index(r["role"], r["head_yaw_deg"], k2)
+        else:
+            stuck += 1
+        cells.setdefault((cx, cy), []).append((r, x, y))
+    return stuck
+
+
+def visible_twin_pairs(plan, seats, key=None, radius_m=TWIN_RADIUS_M):
+    """Pairs of people within `radius_m` who share a library source.
+
+    The statistic `_separate_twins` is judged on. Counted on the PLAN, so it
+    needs no render and no camera -- and so a control can be run against it.
+    """
+    if key is None:
+        key = {(int(s[0]), int(s[1])): i for i, s in enumerate(seats)}
+    P, S = [], []
+    for r in plan:
+        i = key.get((r["row"], r["col"]))
+        if i is None:
+            continue
+        P.append((float(seats[i][2]), float(seats[i][3])))
+        S.append(int(r["src"]))
+    if not P:
+        return 0, 0
+    P = np.asarray(P)
+    S = np.asarray(S)
+    R = float(radius_m)
+    cells = {}
+    for i, (x, y) in enumerate(P):
+        cells.setdefault((int(x // R), int(y // R)), []).append(i)
+    n_pair = n_twin = 0
+    for (cx, cy), ids in cells.items():
+        near = [j for dx in (-1, 0, 1) for dy in (-1, 0, 1)
+                for j in cells.get((cx + dx, cy + dy), ())]
+        for i in ids:
+            for j in near:
+                if j <= i:
+                    continue
+                if (P[j][0] - P[i][0]) ** 2 + (P[j][1] - P[i][1]) ** 2 > R * R:
+                    continue
+                n_pair += 1
+                if S[i] == S[j]:
+                    n_twin += 1
+    return n_twin, n_pair
 
 
 def _slot_index(role, rbin, k):
@@ -1522,6 +1639,31 @@ def selftest(verbose=True):
         "leaves %d of 30 empty over %d -- a crowd occupying 10 deg out of "
         "every 18, which every attention statistic in this file scores "
         "identically" % (n_e, n_c, c_e, c_c))
+
+    # [10a] NO TWO PEOPLE STANDING NEXT TO EACH OTHER ARE THE SAME PERSON.
+    # The red line, counted on the PLAN so it needs no render: pairs within
+    # `TWIN_RADIUS_M` that share a library source. The POSITIVE CONTROL is the
+    # shipped assignment -- the same `plan_block`, with `_separate_twins`
+    # neutered for the duration -- which must FAIL, or the check is measuring
+    # a bar rather than the fix.
+    _sep = globals()["_separate_twins"]
+    globals()["_separate_twins"] = lambda *a, **k: 0
+    try:
+        tplan = plan_block(4242, seats, face, focus)
+    finally:
+        globals()["_separate_twins"] = _sep
+    t_new, p_new = visible_twin_pairs(plan, seats)
+    t_old, p_old = visible_twin_pairs(tplan, seats)
+    chk("neighbours_are_not_the_same_person",
+        p_new > 1000 and t_new <= max(4, p_new // 20000) and t_old > 20 * max(
+            t_new, 1),
+        "%d pairs of people within %.1f m share a library source, out of %d "
+        "such pairs (%.3f %%). The shipped assignment -- a uniform hash with "
+        "no spatial term, re-run here as the control -- leaves %d (%.3f %%). "
+        "A source carries its own garment colour in `hk_col`, so two "
+        "instances of one source are the same person down to the shirt."
+        % (t_new, TWIN_RADIUS_M, p_new, 100.0 * t_new / max(p_new, 1),
+           t_old, 100.0 * t_old / max(p_old, 1)))
 
     # ----------------------------------------------------------------------
     # CAMERA PRE-FLIGHT. Four checks and every one of them has a control that

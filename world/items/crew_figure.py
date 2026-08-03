@@ -209,6 +209,12 @@ def _test_scene(scene, root, objs, figs, samples):
     cams = K.coll(COLL + "/Cameras", root)
     stand = K.coll(COLL + "/Standins", root)
     K.contract_sun(PFX, scene=scene, coll_=stand)
+    # AND THEN OFF THE REFUTED EXPOSURE `contract_sun` LEAVES BEHIND.
+    # Every frame this item has ever been judged on -- including the
+    # ITEM_ACCEPTED 8-of-8 gate run -- was shot 0.580 stops over, at
+    # world_contract's -3.048 rather than the film's measured -3.628.
+    # See humankit.film_exposure; it raises rather than falling back.
+    HK.film_exposure(scene)
     gm = K.NT(PFX + "StandinGround")
     _gp = gm.object_coords()
     _gn = gm.noise(_gp, HK.tex_scale("noise", 0.55), detail=5.0, rough=0.55)

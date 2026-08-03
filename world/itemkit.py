@@ -173,12 +173,13 @@ VORONOI_WAVELENGTH_FACTOR = 2.17
 # WAVE IS NOT AN ESTIMATE. IT IS A CLOSED FORM, AND THIS FILE HAD IT WRONG.
 #
 # R2-058. `_tex_wavelength_m()` returned `1.0 / Scale` for ShaderNodeTexWave,
-# which is 3.183x too COARSE, and the correct value was sitting sixteen lines
-# above it in this same header: the paragraph on NOISE_WAVELENGTH_FACTOR uses
-# Blender's Wave as its CONTROL and quotes "2*pi/20 = 0.31416". The constant was
-# right in the comment and wrong in the code, and nothing caught it because the
-# one selftest that exercised it round-tripped `1.0/230.0` against itself —
-# an algebraic identity cannot fail.
+# which is 3.183x too COARSE — and the correct value was already written in this
+# same header, a few lines up: the NOISE/VORONOI paragraph uses Blender's Wave
+# as its CONTROL precisely because it has a closed form, and quotes
+# "2*pi/20 = 0.31416" while doing so. The constant was right in the comment and
+# wrong in the code. Nothing caught it because the one selftest that exercised
+# it round-tripped `1.0/230.0` against itself, and an algebraic identity cannot
+# fail for any value of the constant, including a wrong one.
 #
 # Blender computes, for BANDS:   n = 20 * (P * Scale)[axis]
 # and the SIN profile is 0.5 + 0.5*sin(n - pi/2), so the spatial period is
@@ -210,8 +211,9 @@ WAVE_WAVELENGTH_FACTOR = 2.0 * math.pi / 20.0            # 0.3141593
 # band-normal on a z = 0 plane, where only x and y vary: 2*pi/(10*sqrt(2)) =
 # 0.44429). The band-normal figure is the one reported, on the same principle as
 # `_vector_gain`: THE FINEST DIRECTION IS THE ONE THAT SETS THE SLOPE.
-# Five modules use DIAGONAL (driver_figure, spectator_seated) or RINGS
-# (forecourt_paving_bay, access_road_slab, marshal_post_deck).
+# Seven built modules use one of these: DIAGONAL in driver_figure (4 nodes) and
+# spectator_seated (1); RINGS/X in access_road_slab, forecourt_paving_bay (3),
+# marshal_post_deck, pont_deck_slab and pont_girder.
 WAVE_DIAGONAL_FACTOR = 2.0 * math.pi / (10.0 * math.sqrt(3.0))   # 0.3627599
 # RINGS: n = 20 * |P*Scale| along the ring normal, so the RADIAL period is the
 # same 2*pi/20. Measured 0.3127 / 0.3136 by 2-D peak, 0.3143 by row fit.
@@ -1707,11 +1709,56 @@ def contract_sun(prefix, scene=None, coll_=None, sky=True):
         scene.view_settings.look = C.VIEW_LOOK
     except Exception:                                   # noqa: BLE001
         pass
-    scene.view_settings.exposure = C.REFERENCE_EXPOSURE_EXTERIOR
+
+    # --- THE GRADE. R2-059. THIS SET `C.REFERENCE_EXPOSURE_EXTERIOR`. --------
+    #
+    # -3.048 is the contract's DERIVED exposure and it is REFUTED. The measured
+    # value is `world/film_exposure.py`'s FILM_EXPOSURE = -3.628, correct to
+    # 0.006 stops against an 18 % card with two view transforms agreeing to
+    # 0.0141 stops. The difference is 0.580 stops, and it went OVER: every item
+    # test frame ever judged through this helper was 0.58 stops bright,
+    # including the crew macro that passed 8/8 and the frames the human-figure
+    # brief was written from.
+    #
+    # THIS FUNCTION IS WHY IT WAS SO EXPENSIVE. `contract_sun` exists precisely
+    # so that no item agent quotes the light independently — it is the one place
+    # the lamp, the sky and the grade come from. A wrong number here is not one
+    # module's mistake, it is every module's, and none of them can see it,
+    # because the helper's whole promise is that you do not have to check.
+    #
+    # It stayed invisible because the ONE caller that checked was accidentally
+    # immune: the beat-3 sim's `witness.py` overwrites the exposure AFTER
+    # calling this, so its saved scenes really are at -3.628.
+    #
+    # IMPORTED, NEVER SPELLED. Writing -3.628 here would make a second copy of a
+    # measured number and this defect is what a second copy costs. And it is now
+    # ASSERTED rather than merely set, the way tools/build_verify_scene.py
+    # asserts its grade: a helper that silently sets a value the caller then
+    # overwrites is how the sim agent's scenes came out right while everyone
+    # else's came out 0.58 stops over, with nothing on either side saying so.
+    import film_exposure as FX                          # noqa: E402
+    scene.view_settings.exposure = FX.FILM_EXPOSURE
+    got = float(scene.view_settings.exposure)
+    if abs(got - FX.FILM_EXPOSURE) > 1e-4:
+        raise RuntimeError(
+            "REFUSING: view exposure read back %+.4f after being set to "
+            "film_exposure.FILM_EXPOSURE %+.4f. The grade is the film's, "
+            "measured; it is not this scene's to choose." % (got, FX.FILM_EXPOSURE))
+    if abs(FX.FILM_EXPOSURE - C.REFERENCE_EXPOSURE_EXTERIOR) < 1e-6:
+        raise RuntimeError(
+            "REFUSING: film_exposure.FILM_EXPOSURE has become equal to "
+            "world_contract.REFERENCE_EXPOSURE_EXTERIOR (%+.4f). The measured "
+            "value and the refuted derived one must not be the same number; if "
+            "the contract has genuinely been re-measured, delete this check "
+            "deliberately rather than let R2-059 land again unnoticed."
+            % (FX.FILM_EXPOSURE,))
     log("sun %.3f W/m2, elev %.2f deg, bearing %.2f deg, emitting z %+.4f; "
-        "%s look=%s exposure %+.3f EV"
+        "%s look=%s exposure %+.3f EV (film_exposure.FILM_EXPOSURE, MEASURED; "
+        "the contract's derived %+.3f is refuted and is %+.3f stops over)"
         % (C.SUN_ENERGY, C.SUN_ELEV_DEG, C.SUN_BEARING_DEG, emit.z,
-           C.VIEW_TRANSFORM, C.VIEW_LOOK, C.REFERENCE_EXPOSURE_EXTERIOR))
+           C.VIEW_TRANSFORM, C.VIEW_LOOK, FX.FILM_EXPOSURE,
+           C.REFERENCE_EXPOSURE_EXTERIOR,
+           C.REFERENCE_EXPOSURE_EXTERIOR - FX.FILM_EXPOSURE))
     return ob
 
 
@@ -3022,6 +3069,29 @@ def selftest(verbose=True):
             "emit (%.4f, %.4f, %.4f); lamp energy %.3f"
             % (e.x, e.y, e.z, sun.data.energy))
 
+        # [10b] R2-059. THE GRADE contract_sun LEAVES ON THE SCENE IS THE
+        #       FILM'S MEASURED ONE, NOT THE CONTRACT'S DERIVED ONE.
+        #       This helper set C.REFERENCE_EXPOSURE_EXTERIOR = -3.048 for the
+        #       whole item campaign, which is 0.580 stops OVER the measured
+        #       -3.628, so every frame judged through it was bright by that
+        #       much. The check reads the live scene rather than the constant,
+        #       and it names the refuted number so a regression is legible
+        #       rather than a bare number mismatch.
+        import film_exposure as FX
+        got_ev = float(sc.view_settings.exposure)
+        over = C.REFERENCE_EXPOSURE_EXTERIOR - FX.FILM_EXPOSURE
+        chk("contract_sun_grades_at_the_measured_exposure",
+            abs(got_ev - FX.FILM_EXPOSURE) < 1e-4
+            and abs(got_ev - C.REFERENCE_EXPOSURE_EXTERIOR) > 0.5
+            and sc.view_settings.view_transform == C.VIEW_TRANSFORM,
+            "the live scene reads %+.4f EV = film_exposure.FILM_EXPOSURE "
+            "(MEASURED, 0.006 stops against an 18 %% card); the contract's "
+            "DERIVED and refuted REFERENCE_EXPOSURE_EXTERIOR is %+.4f, which "
+            "is %+.3f stops over and is what this helper used to set; "
+            "view transform %s look %s"
+            % (got_ev, C.REFERENCE_EXPOSURE_EXTERIOR, over,
+               sc.view_settings.view_transform, C.VIEW_LOOK))
+
         # [11] and the refusal is REACHABLE -- flip it and confirm it fires.
         sun.rotation_quaternion = Vector(C.SUN_DIR).to_track_quat("-Z", "Y")
         bpy.context.view_layer.update()
@@ -3332,6 +3402,33 @@ def selftest(verbose=True):
         audit_lam = _tex_wavelength_m(wnd)
         audit_err = abs(audit_lam - askw[1][1]) / askw[1][1]
 
+        #      AND THE DIAGONAL BRANCH, which is the one that is NOT 2*pi/20.
+        #      Blender sums the components and multiplies by TEN, so along a
+        #      single axis the period is 2*pi/(10*Scale) and normal to the bands
+        #      in 3-D it is that over sqrt(3). The probe's row runs along local
+        #      x, so what it measures is the along-axis figure, and the audit
+        #      function reports the band-normal one: the two must differ by
+        #      exactly sqrt(3), and if the branch were missing they would differ
+        #      by 2 instead. A relation, not a repeated constant.
+        S_D = 40.0
+        nt_d = NT("IKT_wavediag")
+        dnd = nt_d.wave(nt_d.object_coords(), S_D, direction="DIAGONAL")[0]
+        diag_audit = _tex_wavelength_m(dnd)
+        diag_row = emitted_wavelength_m(
+            lambda ntx: ntx.wave(ntx.object_coords(), S_D,
+                                 direction="DIAGONAL"))
+        diag_ratio = diag_row / diag_audit
+        chk("wave_diagonal_is_not_the_bands_factor",
+            abs(diag_ratio - math.sqrt(3.0)) < 0.03
+            and abs(diag_row - 2 * math.pi / (10.0 * S_D)) / diag_row < 0.03,
+            "BANDS DIAGONAL at Scale %g renders a %.4f mm period along x "
+            "(closed form 2*pi/(10*S) = %.4f mm) and _tex_wavelength_m reports "
+            "the band-normal %.4f mm; the ratio is %.4f against sqrt(3) = "
+            "%.4f — a BANDS-X reading would have made it %.4f"
+            % (S_D, 1000 * diag_row, 1000 * 2 * math.pi / (10.0 * S_D),
+               1000 * diag_audit, diag_ratio, math.sqrt(3.0),
+               diag_row / (WAVE_WAVELENGTH_FACTOR / S_D)))
+
         chk("wavelength_constants_measured_off_a_render",
             cal_err < 0.02 and ask_err < 0.03
             and 3.0 < old_ratio < 3.4 and audit_err < 0.03,
@@ -3363,7 +3460,23 @@ def selftest(verbose=True):
 
 
 if __name__ == "__main__":
-    argv = sys.argv
-    argv = argv[argv.index("--") + 1:] if "--" in argv else argv[1:]
-    if "--selftest" in argv or not argv:
-        sys.exit(0 if selftest() else 1)
+    # BLENDER RETURNS 0 FOR A SCRIPT THAT RAISED. `blender -b -P itemkit.py --
+    # --selftest` printed a traceback and exited 0, MEASURED on this box while
+    # landing R2-059: the positive control for the new exposure assertion made
+    # `contract_sun` raise, the selftest never reached its own verdict, and the
+    # shell saw success. A selftest whose crash is indistinguishable from a pass
+    # is not a selftest. `gate_exit.guard` maps an uncaught exception to 2 and
+    # passes a real verdict through unchanged (0 pass, 1 fail, 3 vacuous).
+    _TOOLS = os.path.join(_ROOT, "tools")
+    if _TOOLS not in sys.path:
+        sys.path.insert(0, _TOOLS)
+    import gate_exit                                             # noqa: E402
+
+    def _cli():
+        argv = sys.argv
+        argv = argv[argv.index("--") + 1:] if "--" in argv else argv[1:]
+        if "--selftest" in argv or not argv:
+            return 0 if selftest() else 1
+        return 0
+
+    gate_exit.guard(_cli, tool="itemkit")

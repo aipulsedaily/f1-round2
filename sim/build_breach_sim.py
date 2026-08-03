@@ -1096,6 +1096,122 @@ def motion_report(loc, quat, names, info):
         nan=int(np.isnan(loc).sum() + np.isnan(quat).sum()))
 
 
+# The closest the ONE camera ever gets to each bay, and the pixel scale there,
+# measured off `docs/beat_sheet.json`'s own keys by `camera_ranges()`.  This is
+# what turns "is 11 mm of sag acceptable?" from a judgement into a number.
+def camera_ranges(plan):
+    with open(BL.SHEET) as fh:
+        sheet = json.load(fh)
+    pts, lens = [], []
+    for k in sorted(sheet):
+        b = sheet[k]
+        if not k.startswith("beat") or not isinstance(b, dict):
+            continue
+        for key in b.get("camera_keys", []):
+            pts.append(key["world"])
+            lens.append(key.get("lens_mm", 35.0))
+    if not pts:
+        return {}
+    P = np.array(pts, float)
+    L = np.array(lens, float)
+    out = {}
+    for bay, (u0, u1, v0, v1) in plan.get("rects", {}).items():
+        c = np.array([GLASS_X_OUT, 0.5 * (u0 + u1), 0.5 * (v0 + v1)])
+        d = np.linalg.norm(P - c, axis=1)
+        i = int(np.argmin(d))
+        ppm = (3840.0 * L[i] / 36.0) / max(d[i], 1e-6)
+        out[bay] = dict(closest_m=float(d[i]), lens_mm=float(L[i]),
+                        px_per_m=float(ppm), mm_per_px=float(1000.0 / ppm))
+    return out
+
+
+def creep_vs_ring(loc, meta, plan, roles_wanted=("retained", "intact")):
+    """Is the residual motion CREEPING or RINGING?
+
+    They look identical in a single end-frame number and they are completely
+    different defects.  Creep at 11 mm per 0.25 s is 300 mm by the end of the
+    sim window and the wall is on the floor.  A bounded ring at 3 mm is a soft
+    constraint network humming, which is a shimmer to fix, not a collapse.
+
+    Measured over the second half of the window, where the initial settle is
+    over: DRIFT is the least-squares slope extrapolated to the whole window,
+    RING is the peak-to-peak of the same series about that trend.
+    """
+    roles = plan.get("roles", {})
+    keep = [i for i, m in enumerate(meta)
+            if roles.get(m.get("bay", -1)) in roles_wanted]
+    if not keep:
+        return dict(status="no retained/intact shards in this plan")
+    d = np.linalg.norm(loc - loc[0][None], axis=2)[:, keep]
+    med = np.median(d, axis=1)
+    n = len(med)
+    h = med[n // 2:]
+    t = np.arange(len(h), dtype=float)
+    if len(h) < 4:
+        return dict(status="window too short")
+    A = np.vstack([t, np.ones_like(t)]).T
+    slope, icpt = np.linalg.lstsq(A, h, rcond=None)[0]
+    resid = h - (slope * t + icpt)
+    return dict(
+        frames=n, measured_over="second half",
+        drift_mm_per_frame=float(1000.0 * slope),
+        drift_mm_over_window=float(1000.0 * slope * n),
+        ring_peak_to_peak_mm=float(1000.0 * (resid.max() - resid.min())),
+        median_mm=float(1000.0 * np.median(h)),
+        verdict=("CREEP" if abs(slope) * n > 2.0 * (resid.max() - resid.min())
+                 else "RING"))
+
+
+def null_verdict(loc, meta, plan):
+    """THE NULL'S PASS CRITERION, IN PIXELS.
+
+    Two parts, and the second is the one that was a judgement until now:
+
+      1. NOTHING LEAVES.  No shard may move more than 0.25 m with no car in the
+         scene.  This is binary and it now passes.
+      2. NOTHING THAT STAYS MAY BE SEEN TO MOVE.  The panes that are still
+         there in beat 6 — the retained and intact bays — may not sag more than
+         ONE PIXEL at the range the camera actually films them at.  Bay 2 is
+         approached to 3.53 m on a 21.7 mm lens, where one 4K pixel is 1.52 mm;
+         bay 7 to 7.24 m, where it is 3.23 mm.  A millimetre is not a tolerance
+         on its own — it is only a tolerance next to a distance and a lens.
+
+    The destroyed bays are excluded on purpose: they leave the wall, and their
+    motion is the shot rather than a defect.
+    """
+    rng = camera_ranges(plan)
+    roles = plan.get("roles", {})
+    d = np.linalg.norm(loc[-1] - loc[0], axis=1)
+    per_bay, worst_px, worst_bay = {}, 0.0, None
+    for i, m in enumerate(meta):
+        per_bay.setdefault(m.get("bay", -1), []).append(d[i])
+    out = dict(criterion="retained/intact bays sag < 1 px at their own "
+                         "measured camera range", bays={})
+    for bay, v in sorted(per_bay.items()):
+        if bay not in rng:
+            continue
+        v = np.array(v)
+        mm = 1000.0 * v.max()
+        px = mm / rng[bay]["mm_per_px"]
+        keeps = roles.get(bay) in ("retained", "intact")
+        out["bays"][str(bay)] = dict(
+            role=roles.get(bay), n=len(v), max_sag_mm=float(mm),
+            closest_m=rng[bay]["closest_m"], mm_per_px=rng[bay]["mm_per_px"],
+            max_sag_px=float(px), counts=bool(keeps))
+        if keeps and px > worst_px:
+            worst_px, worst_bay = px, bay
+    out["worst_px_on_a_pane_that_stays"] = float(worst_px)
+    out["worst_bay"] = worst_bay
+    out["nothing_left"] = bool(d.max() <= 0.25)
+    out["max_displacement_m"] = float(d.max())
+    out["PASS"] = bool(out["nothing_left"] and worst_px <= 1.0)
+    return out
+
+
+def _unused_placeholder():
+    return None
+
+
 def sag_report(loc, names, meta, plan):
     """WHERE the wall moved, split by class and by pane role.
 
@@ -1223,10 +1339,21 @@ def main():
         names = [o.name for o in objs["shards"] + objs["frame"]]
         info["motion"] = motion_report(loc, quat, names, info)
         info["sag"] = sag_report(loc, names, info["shard_meta"], plan_for_sag)
+        info["null_verdict"] = null_verdict(
+            loc[:, :len(objs["shards"])], info["shard_meta"], plan_for_sag)
+        info["creep_vs_ring"] = creep_vs_ring(
+            loc[:, :len(objs["shards"])], info["shard_meta"], plan_for_sag)
         info["aperture"] = aperture_report(
             loc[:, :len(objs["shards"])], info["shard_meta"], info)
         log("motion: %s" % json.dumps(info["motion"]))
         log("sag: %s" % json.dumps(info["sag"], default=float))
+        log("creep_vs_ring: %s" % json.dumps(info["creep_vs_ring"],
+                                             default=float))
+        log("NULL VERDICT: %s  worst %.2f px on bay %s (%s)"
+            % ("PASS" if info["null_verdict"]["PASS"] else "FAIL",
+               info["null_verdict"]["worst_px_on_a_pane_that_stays"],
+               info["null_verdict"]["worst_bay"],
+               json.dumps(info["null_verdict"]["bays"], default=float)[:300]))
         log("aperture: %s" % json.dumps(info["aperture"]))
     bpy.ops.wm.save_as_mainfile(filepath=a.out)
     info["blend"] = a.out
