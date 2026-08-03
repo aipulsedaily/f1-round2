@@ -2153,8 +2153,16 @@ def mat_wall():
     t.pin(bs, 0, col)
     t.pin(bs, 1, metal)
     t.pin(bs, 2, rgh)
-    t.pin(bs, 6, b)
-    t.pin(bs, 14, 0.20)
+    # R2-070.  BY NAME, and this file matters more than one material: it is the
+    # reference item every campaign agent copies from, so `t.pin(bs, 6, b)`
+    # here was not one by-index write, it was the house style for `Normal`.
+    # Index 6 IS `Normal` on Blender 5.2 -- this line rendered correctly -- but
+    # it is the socket directly behind the one 5.2 inserted, and that insertion
+    # is exactly what turned the identical line into R2-057 the last time it
+    # moved.  Correcting an index survives until the next insertion; naming the
+    # socket raises instead of sliding.  Copy THIS line, not the old one.
+    t.pin_named(bs, "Normal", b)
+    t.pin(bs, 14, 0.20)                      # Specular IOR Level
     out = t.n("ShaderNodeOutputMaterial")
     t.t.links.new(bs.outputs[0], out.inputs[0])
     return t.m
@@ -2566,7 +2574,7 @@ def _mat_ground():
     b = t.bump(t.maprange(v1, 0.0, 0.3, 1.0, 0.0),
                t.math("MULTIPLY", near, 0.40), 0.0010, normal=b)
     bs = t.n("ShaderNodeBsdfPrincipled")
-    t.pin(bs, 0, col); t.pin(bs, 2, rgh); t.pin(bs, 6, b)
+    t.pin(bs, 0, col); t.pin(bs, 2, rgh); t.pin_named(bs, "Normal", b)
     o = t.n("ShaderNodeOutputMaterial")
     t.t.links.new(bs.outputs[0], o.inputs[0])
     return t.m

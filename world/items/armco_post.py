@@ -2057,7 +2057,12 @@ def mat_post():
     t.pin(bs, 0, col)
     t.pin(bs, 1, metal)
     t.pin(bs, 2, rough)
-    t.pin(bs, 6, bump)
+    # R2-070.  BY NAME.  Index 6 is `Normal` on Blender 5.2 and all three of
+    # this module's sites were correct, but 6 is the socket directly behind
+    # `Thin Wall`, the one 5.2 inserted -- the same insertion that silently
+    # emptied nine DR_ materials (R2-057) and four CTX_ ones (R2-070).  A
+    # correct index is a fragile index.
+    t.pin_named(bs, "Normal", bump)
     out = t.n("ShaderNodeOutputMaterial")
     t.t.links.new(bs.outputs[0], out.inputs[0])
     return t.m
@@ -2157,7 +2162,7 @@ def mat_collar():
     bs = t.n("ShaderNodeBsdfPrincipled")
     t.pin(bs, 0, col)
     t.pin(bs, 2, t.maprange(n2, 0.2, 0.8, 0.78, 0.98))
-    t.pin(bs, 6, b)
+    t.pin_named(bs, "Normal", b)
     t.pin(bs, 14, 0.10)
     out = t.n("ShaderNodeOutputMaterial")
     t.t.links.new(bs.outputs[0], out.inputs[0])
@@ -2441,7 +2446,7 @@ def _standin_mat():
     t.pin(bs, 0, col)
     t.pin(bs, 1, 0.86)
     t.pin(bs, 2, t.maprange(n2, 0.2, 0.8, 0.32, 0.58))
-    t.pin(bs, 6, b)
+    t.pin_named(bs, "Normal", b)
     o = t.n("ShaderNodeOutputMaterial")
     t.t.links.new(bs.outputs[0], o.inputs[0])
     return t.m
