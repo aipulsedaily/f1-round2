@@ -1,0 +1,18 @@
+{
+ "blend": "/home/zany/f1-round2/render/film13_breach.blend",
+ "blend_bytes": 4991837228,
+ "camera": "ONER",
+ "n_cameras_in_scene": 1,
+ "frame_start": 1,
+ "frame_end": 2978,
+ "rows": 2978,
+ "sensor_width_mm": 36.0,
+ "sensor_fit": "AUTO",
+ "res_x": 3840,
+ "res_y": 2160,
+ "res_pct": 100,
+ "lens_mm_first": 35.0,
+ "lens_mm_last": 73.99686431884766,
+ "lens_is_animated": true,
+ "note": "sim/sagpx.py assumes SENSOR = 36.0 and 3840x2160.  If sensor_width_mm or res_x above disagree with that, every pixel figure taken through this track is wrong by the ratio, and sagpx must be corrected rather than the track."
+}

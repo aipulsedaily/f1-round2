@@ -193,7 +193,18 @@
    "the_stated_falsifier": "'median normal rotation at f866 under ~5 deg'. It is 133.5 deg, so not falsified - but as recorded before the data, this falsifier could not have failed for the right reason."
   },
   "P3_the_picture": {
-   "result": "PENDING - f0855-f0890 submitted to the farm as sequence breach_m1_slabs. Nothing is settled until it has been seen."
+   "result": "PASS",
+   "what_was_rendered": "f0855-f0890, all 36 frames, 1920x1080, 256 samples, CYCLES + OIDN, from render/film13_breach.blend on the 5090. Sequence breach_m1_slabs, VERIFIED: every frame present, complete, consistent and not blank.",
+   "the_claim_as_written": "'discrete separating fragments with OPEN AIR and the outdoor plaza visible between them across bay 4, and NOT a continuous field of overlapping parallel translucent plates. By f0880-f0890 there will be a visibly growing hole with the car through it.'",
+   "what_the_frames_show": {
+    "f0858": "the last frame before the swap. The east wall is GLAZED - reflections and transmission through ten panes with the mullion grid. This is also the east-wall fix seen: the same frame in the current joiner output is bare bars with the paddock through them.",
+    "f0862": "two frames after the swap. Glass fragmenting around the car's nose. No stack.",
+    "f0866": "THE FRAME THE ARTEFACT WAS FOUND ON. Clear glass with a localised burst of fragments where the car is. The soup of hard-edged translucent slabs, several deep, at multiple orientations, that fills the shipped f0866 is GONE.",
+    "f0874": "the car is out on the forecourt; a real opening at bays 4 and 5 with the plaza visible straight through it.",
+    "f0890": "large angular fragments dispersing through space at varied orientations, glass on the ground, the hole open and growing. It reads as fracture."
+   },
+   "MEASURED_NOT_EYEBALLED": "the bay rectangles were projected through film13_breach's OWN camera track onto the delivered frames (sim/out/bays_f0874.png). The open region is inside bays 4 and 5; at f874 bay 5 has 1,378 of 1,485 shards in raster at a median 824 mm from home. The claim 'inside bay 4' is a measurement.",
+   "AND_ONE_THING_THE_PICTURE_SHOWS_THAT_THE_NUMBERS_ALREADY_SAID": "bays 2, 3, 6 and 7 render as CRACKED GLASS STANDING IN PLACE across most of the wall's width, because the impact never reaches them - 0.8 % and 9.0 % vacated for the two the plan calls `destroyed`. That is R2-095 seen rather than computed. It is not a defect in this change and this change did not cause it; it is the authored decision about whether to widen the impact event or release bays 2 and 7, and it should be taken looking at these frames."
   },
   "P4_the_one_frame_hole_survives": {
    "result": "FALSIFIED, BY MY OWN HAND, exactly as recorded in addendum 3",
