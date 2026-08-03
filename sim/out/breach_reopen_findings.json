@@ -277,8 +277,8 @@
   },
   {
    "id": "R2-096",
-   "title": "66 shards reverse to 137 m/s on one frame, 6 m downstream of the car, at every bond threshold including the shipped one",
-   "evidence": "sim/tmp/an_where.json, sim/tmp/an_wing.py"
+   "title": "828 shards -- a fifth of the field by count -- exceed 60 m/s and 661 of them are on screen when they do it; the shipped threshold is the WORST case for it at 7.6x the bond-100 population",
+   "evidence": "sim/tmp/bu*.json; streaks 2-3x the ordinary field's on twelve film frames, worst 297 px"
   },
   {
    "id": "R2-097",
@@ -435,5 +435,85 @@
   },
   "STILL_NOT_DONE": "the seed-2 BAKE. It is a 300-frame run at the recommended configuration, about 30 minutes of one core, and the command is: blender -b --factory-startup -P sim/build_breach_sim.py -- --shards sim/tmp/fracture_wall_seed2.npz --frames 300 --bake --out sim/tmp/s2.blend --export sim/tmp/s2.npz --report sim/tmp/s2.json, then sim/breach_metrics.py on the pair. It was not run because the box has one core free and the 1,657-frame bake owns it, and because the farm's exec refuses to deploy over a running render, which it was doing.",
   "what_the_seed_2_bake_would_settle": "whether the 96.8 % / 97.8 % vacated figure for bay 4 is a property of the impact or of one particular set of crack lines. Given how close the two plans are, I expect it to be the impact - but that is a prediction and it has not been tested."
+ },
+ "R2_096_THE_DOWNSTREAM_BLOW_UP__RE_MEASURED_AND_IT_IS_ON_SCREEN": {
+  "inherited_as": "'66 shards reverse to 137 m/s on one frame, 6 m downstream of the car, at every bond threshold including the shipped one. 0.02% of the field by mass. Not the car proxy. Not traced.'",
+  "IT_IS_828_NOT_66": {
+   "over_60ms": 828,
+   "pct_by_count": 21.8,
+   "mass_kg": 11.479,
+   "pct_by_mass": 0.512,
+   "over_80ms": 336,
+   "over_100ms": 115,
+   "over_120ms": 15,
+   "note": "scanned over all 1,657 frames of the shipped bake. The 0.02%-by-mass framing is right and it is also why it was under-counted: by COUNT it is more than a fifth of the field."
+  },
+  "A_CORRECTION_TO_THE_INHERITED_RECORD": "GS_b04_00502 at 137.6 m/s on frame 261 is NOT in the shipped bake. It is in sim/tmp/sw_b100.npz, the bond-100 sweep point. In the SHIPPED bake that shard peaks at 70.5 m/s on frame 243. Two bakes were being quoted as one.",
+  "AND_THE_SHIPPED_CONFIGURATION_IS_THE_WORST_ONE_FOR_IT": {
+   "shipped_4000": 828,
+   "bond_100": 109,
+   "factor": 7.6,
+   "reading": "the change I am applying reduces the blow-up population by 7.6x. It was recorded as happening 'at every threshold including the shipped one', which is true, but not at every threshold EQUALLY. This is an argument FOR the change that nobody had."
+  },
+  "IT_IS_ON_SCREEN": {
+   "in_raster_at_their_own_peak": 661,
+   "of": 828,
+   "range_m": [
+    2.17,
+    6.71
+   ],
+   "film_frames_carrying_a_hot_shard_in_raster": [
+    860,
+    863,
+    864,
+    865,
+    881,
+    886,
+    887,
+    888,
+    889,
+    890,
+    891,
+    892
+   ],
+   "worst": {
+    "f863": "410 shards simultaneously over 60 m/s, all 410 in raster",
+    "f890": 269
+   },
+   "occlusion": "at f863, 291 of 410 are NOT behind the car proxy. At f888-891, none are.",
+   "and_they_are_not_hidden": "all 828 have release frame 860, so they render from the swap onward."
+  },
+  "WHAT_IT_DRAWS": {
+   "method": "180 deg shutter = half a film frame of world time, through the applied scene's own camera track, on the decimated film table (decimation error 0.00000 m on these shards)",
+   "streak_px_median_by_frame": {
+    "860": 188,
+    "863": 75,
+    "881": 89,
+    "888": 156,
+    "889": 170,
+    "890": 217,
+    "891": 229
+   },
+   "worst_single": "GS_b04_00009 at f891, 297.5 px, 76.1 m/s at 2.31 m",
+   "THE_CONTROL_THAT_DECIDES_HOW_BAD_IT_IS": "the same measurement on the ORDINARY shards on the same frames: median 34-77 px against the blow-up's 69-155. It is 2 to 3 times the correct field's streak, not a hundred times. A distinctly longer dash among many dashes, not a lone scar on a still wall.",
+   "not_a_2p9_m_streak": "a sustained 137 m/s shard would cover 2.85 m in an unramped exposure, but the spike lasts 2-3 sim frames (8-12 ms) and is aliased by the 1/24 s sampling, so the rendered travel is 0.23-0.44 m."
+  },
+  "WHERE_IT_COMES_FROM__what_the_data_supports": {
+   "the_discriminator_is_POSITION": "bays 4 and 5 only, origins in the bottom metre (z 0.091..0.730 in bays that run to 6.067). 52.6% of every bay-4/5 shard originating below z = 0.30 m blows up. Mass is not the discriminator (median 10.38 g against the bays' 11.34 g) and neither is the clamp flag (253 clamped, 575 not).",
+   "it_is_a_ramp_not_a_step": "the fastest shard runs 13.8 -> 31.3 -> 52.2 -> 103.6 -> 137.1 -> 116.3 -> 5.7 m/s over seven sim frames while x goes 16.10 -> 16.32 -> 15.21. Accelerate, reverse, stop dead. That is a constraint/contact resolution signature, not a collision.",
+   "TWO_clusters_not_one": {
+    "A": "sim frames 175-176, 480 shards, nearest proxy part tyre_FR or nose, and 102 of the 480 are INSIDE a proxy part by up to 37 mm. A 0.15 mm collision margin against 8.5 mm of car travel per substep is a plausible capture-then-eject.",
+    "B": "sim frames 243-252, 348 shards up to 106.5 m/s, nearest car part at a MEDIAN 1.02 m. No car contact, no neighbour contact, no ground contact. Nothing measured explains cluster B."
+   },
+   "ruled_out": "the ground (zero shards below the sill top), a shard jam (nearest-neighbour p5 9.0 mm, zero pairs under the 0.15 mm margin), and mass.",
+   "correlation_of_penetration_with_peak_speed": {
+    "clusterA": 0.251,
+    "clusterB": 0.133,
+    "reading": "far too weak to call penetration the cause, and 378 of cluster A's 480 are not penetrating at all."
+   }
+  },
+  "STILL_NOT_EXPLAINED": "cluster B. 348 shards reaching 106 m/s with no contact of any kind that can be measured from baked transforms. A released bond impulse is the only candidate and it is untested - the bond-clustering test scores 0.999 for blow-up shards but 0.875 for a random contiguous patch, so it is barely above what adjacency gives for free.",
+  "AND_A_FIGURE_THAT_REFRAMES_THE_FIELD": "the MEDIAN shard in the whole field peaks at 38.9 m/s = 2.4x the 16.4 m/s impactor, 59.0% exceed 2x, and 71.1% exceed the free-particle bound (1+e)v = 18.7 m/s. The previous agent's 1.43x is the LAUNCH speed at the 99th percentile by mass, which is a different and also correct statistic. Both are true and they answer different questions: the field is launched at a defensible speed and then something makes most of it much faster afterwards.",
+  "not_seen": "every 'visible' claim here is a projection through the camera track, not a look at an image. It has not been rendered."
  }
 }
