@@ -121,6 +121,32 @@ subject read: the wound goes 20 px to 65 px between 18.75 mm and 74 mm, and
 the circuit in frame falls from 1143 m to 290 m. That is the actual choice,
 and it is still not this file's to make.
 
+AND THE DEEPER ANSWER IS CLOSED, NOT A MATTER OF TASTE. At f2978 the wound and
+the car are **966 m apart**. To hold both inside one frame with 10 % margin the
+camera must stand off:
+
+    18.75 mm (hFOV 87.7 deg)  ->   587 m,  car 12.2 px of 1920
+    24 mm                     ->   739 m,  car 11.5 px
+    35 mm                     ->  1060 m,  car 10.9 px
+    50 mm                     ->  1503 m,  car 10.5 px
+    74 mm                     ->  2214 m,  car 10.4 px
+
+**The car's size on screen barely moves, because requiring both subjects in
+frame forces the camera back at exactly the rate the longer lens gains.** For a
+fixed subject separation the smaller subject's screen size collapses to
+`frame_px * car_length / separation` -- 1920 * 5.698 / 966 = 11.3 px -- and the
+focal length falls out of the expression entirely.
+
+So no closing wide containing BOTH the car and the wound can show the car at
+more than about 12 px, from any position, at any focal length. The brief's
+three-element final frame is not expensive, it is **geometrically unavailable**
+while the car is 966 m from the showroom when the film ends.
+
+The levers that remain are therefore temporal, not optical: end the film
+earlier in the car's departure, slow the car after the line, or accept a
+two-element closing frame and let the "car streaking on" beat live where it
+already does, at f2756-2832.
+
 THE GENERAL FORM, which is why this is written up rather than quietly fixed:
 **an extent is only meaningful for a subject that is in frame, and this file
 computed one for six seconds of a subject that was not.** The rig's aim gate
