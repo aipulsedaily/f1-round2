@@ -25,6 +25,17 @@ def role(name):
     if name.startswith("DR_"):
         return "dressing"
     if name.startswith("ARCH_"):
+        # PAINT IS NOT GROUND.  `ARCH_Markings` and `ARCH_RoadMarkings` are the
+        # pit-lane and road lines: single quads 8-10 mm over whatever they are
+        # painted on, and `ARCH_Markings` is ONE FLAT PLANE -- all 7 166 verts at
+        # z = 0.007 -- so it does not follow the surface under it at all.  They
+        # were classified "arch", which is in GROUND_ROLES, so a stripe of paint
+        # answered "is there ground here?" with yes.  That is how 7.10 m2 of
+        # painted line over an unbuilt substrate read as covered ground, and it
+        # is the same shape as `n_GW_Right_Glass`: a metric that returns the same
+        # answer whether the thing under it is there or not.
+        if name.startswith("ARCH_Markings") or name.startswith("ARCH_RoadMarkings"):
+            return "arch_paint"
         return "arch"
     if name.startswith("SURF_"):
         if name == "SURF_Track":
@@ -50,7 +61,30 @@ def role(name):
 GROUND_ROLES = {"track", "kerb", "access", "surface_other", "arch",
                 "verge_platform", "runoff_asphalt", "gravel_bed",
                 "gravel_stones", "subbase", "TER_Ground"}
+# Deliberately NOT in GROUND_ROLES: see `role()`.  Kept as its own set rather
+# than dropped on the floor, because "is there paint here" is a real question and
+# a probe that wants to ask it should not have to re-derive the prefixes.
+PAINT_ROLES = {"arch_paint"}
 STRUCT_ROLES = {"barrier_struct"}
+
+
+def selftest_roles():
+    """A role table nobody exercises drifts.  This is cheap enough to run on
+    import from any probe that cares, and it fails loudly rather than returning a
+    plausible classification for a name that has since been renamed."""
+    cases = [("ARCH_Paving_ApronPlatform", "arch", True),
+             ("ARCH_Markings", "arch_paint", False),
+             ("ARCH_RoadMarkings", "arch_paint", False),
+             ("SURF_Track", "track", True),
+             ("TER_Ground_042", "TER_Ground", True),
+             ("BR_Runoff_A", "runoff_asphalt", True),
+             ("VEG_Grass_1", "vegetation", False)]
+    bad = [(n, role(n), r, role(n) in GROUND_ROLES, g)
+           for (n, r, g) in cases
+           if role(n) != r or (role(n) in GROUND_ROLES) != g]
+    if bad:
+        raise AssertionError("lib_probe.role() drifted: %s" % (bad,))
+    return len(cases)
 
 
 def owner(name):
