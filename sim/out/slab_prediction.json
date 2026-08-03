@@ -177,5 +177,28 @@
   "it_reconciles_with_the_previous_agent_exactly": "their 96.8 % vacated for bay 4 at m1 and 58.2 % at sw_b100 are reproduced to the decimal by a different instrument, and the shipped bake's bay 5 at 3.5 % matches breach_metrics' own per-bay raster figure. Two instruments that were built independently now agree, which is the best evidence available that either is right.",
   "and_it_sharpens_the_result": "at the recommended configuration bay 4 vacates 96.8 % of its area floor to head and bay 5 vacates 13.2 %. The opening really is ONE BAY plus the mullion the car struck. That is the honest shape of it, and it is why the declared 9.6 m was never going to come out of this impact.",
   "slabcheck_now_reports_both": "and labels the count figure BY COUNT, because I nearly quoted it as an aperture."
+ },
+ "VERDICT__scored_against_this_file_as_committed_before_the_data": {
+  "bake": "sim/tmp/breach_full_m1.{npz,json}, 1,657 frames, bond 100 / mullion 40/120, finished 22:28",
+  "P1_no_spring_back": {
+   "result": "PASS on its own stated falsifier",
+   "the_falsifier_as_written": "'falsified if the f900 median is below the f866 median at all'",
+   "measured": "bay 4 net median 2,288 mm at f866 -> 2,615 mm at f900. Not below. Peak 4,989 mm, last frame 4,987 mm, 96.8 % of the bay's AREA more than 250 mm from home and staying there. Bay 5: 2,810 mm peak, 2,808 mm last, 95.4 % by area.",
+   "the_null_it_is_against": "the SHIPPED bake on the same instrument: bay 4 peaks at 818 mm and ends at 60 mm with ZERO PER CENT of its area gone; f866 530 mm -> f900 48 mm. Bay 5 1,210 -> 209 mm, 3.5 %.",
+   "AN_OVER_SPECIFICATION_THAT_DID_NOT_HOLD": "P1 also said 'at f900 it is at least 5x its f866 value'. It is 1.14x. That clause was written against the DEPTH measure and before I knew the field would already have travelled 2.3 m by f866 - it cannot grow fivefold in the 34 frames that remain. The clause was wrong to write, not the result. I am scoring P1 on the falsifier I stated, which is the one that carries the claim, and recording that the quantifier failed."
+  },
+  "P2_the_stack_does_not_form": {
+   "result": "its REASONING was withdrawn in addendum 1 before any new data, so it is not scored as a hit",
+   "what_the_data_says_anyway": "bay 4's median normal rotation is 133.5 deg at f866 and 78.6 deg at f900 - it rotates out and STAYS rotated. The shipped bake goes 80.7 deg -> 9.9 deg, rotating out and back. The alignment RETURN is the cleanest single discriminator between the two configurations and the new one does not return.",
+   "the_stated_falsifier": "'median normal rotation at f866 under ~5 deg'. It is 133.5 deg, so not falsified - but as recorded before the data, this falsifier could not have failed for the right reason."
+  },
+  "P3_the_picture": {
+   "result": "PENDING - f0855-f0890 submitted to the farm as sequence breach_m1_slabs. Nothing is settled until it has been seen."
+  },
+  "P4_the_one_frame_hole_survives": {
+   "result": "FALSIFIED, BY MY OWN HAND, exactly as recorded in addendum 3",
+   "measured": "verify_breach --swap-scene on render/film13_breach.blend returns PASS with 0 problems. Every fractured bay - 2, 3, 4, 5, 6, 7 - hides its pane at 860 and shows every one of its shards at 860. shards_not_on_the_pane_frame = 0 in all six.",
+   "honest_scoring": "I predicted the hole would survive and then fixed its cause. Not a hit."
+  }
  }
 }

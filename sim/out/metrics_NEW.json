@@ -1,0 +1,149 @@
+{
+ "run": "breach_full_m1.npz",
+ "bond_per_m": 100.0,
+ "no_car": false,
+ "frames": 1657,
+ "window_s": 6.9,
+ "CONTROLS": {
+  "POS_injected_40ms": 40.0,
+  "NEG_bitidentical_n": 36,
+  "NEG_bitidentical_max_speed_ms": 0.0,
+  "NEG_bitidentical_max_travel_m": 0.0,
+  "PASS": true
+ },
+ "aperture": {
+  "cell_m": 0.05,
+  "glazed_area_m2": 77.40000000000002,
+  "vacated_area_m2": 26.692500000000006,
+  "vacated_pct": 34.486434108527135,
+  "hole_area_m2": 12.482500000000002,
+  "hole_w_m": 2.1499999999999995,
+  "hole_h_m": 6.0,
+  "hole_u": [
+   -2.1849999999999996,
+   -0.03499999999999996
+  ],
+  "hole_v": [
+   0.0875,
+   6.0875
+  ],
+  "hole_fill_pct": 96.76356589147288,
+  "hole_bridged_area_m2": 24.800000000000004,
+  "hole_bridged_w_m": 4.3500000000000005,
+  "hole_bridged_h_m": 6.0,
+  "hole_bridged_u": [
+   -2.1849999999999996,
+   2.165000000000001
+  ],
+  "hole_bridged_v": [
+   0.0875,
+   6.0875
+  ],
+  "hole_bridged_fill_pct": 95.30651340996167,
+  "old_bbox_measure": {
+   "width_m": 12.675367684282985,
+   "height_m": 5.976747930091341,
+   "n": 2962
+  },
+  "per_bay": {
+   "2": {
+    "role": "retained",
+    "vacated_pct": 1.5,
+    "hole_w_m": 0.35,
+    "hole_h_m": 0.6
+   },
+   "3": {
+    "role": "destroyed",
+    "vacated_pct": 0.8,
+    "hole_w_m": 0.4,
+    "hole_h_m": 0.5
+   },
+   "4": {
+    "role": "destroyed",
+    "vacated_pct": 96.8,
+    "hole_w_m": 2.15,
+    "hole_h_m": 6.0
+   },
+   "5": {
+    "role": "destroyed",
+    "vacated_pct": 95.5,
+    "hole_w_m": 2.15,
+    "hole_h_m": 6.0
+   },
+   "6": {
+    "role": "destroyed",
+    "vacated_pct": 9.0,
+    "hole_w_m": 1.2,
+    "hole_h_m": 1.55
+   },
+   "7": {
+    "role": "retained",
+    "vacated_pct": 3.4,
+    "hole_w_m": 0.25,
+    "hole_h_m": 1.3
+   }
+  },
+  "CEILING": {
+   "glass_width_if_bays_3_to_6_all_leave_m": 8.77,
+   "glass_height_m": 6.025,
+   "declared_w_m": 9.6,
+   "declared_h_m": 5.6,
+   "note": "9.6 m is |y| <= 4.8, the clear span between the two BENT mullions at y = +-4.4.  The GLASS in bays 3-6 can only reach 8.77 m: reaching 9.6 m of glass needs 385 mm off the inner edge of bays 2 and 7, which the plan marks `retained`."
+  }
+ },
+ "fragments": {
+  "n_gone": 2962,
+  "of": 3796,
+  "gone_mass_kg": 772.4,
+  "total_mass_kg": 2240.9,
+  "launch_ms": {
+   "p50": 1.87,
+   "p90": 5.68,
+   "p99": 20.44,
+   "max": 93.3
+  },
+  "launch_over_impactor": 1.25,
+  "peak_ms": {
+   "p50_mass": 0.71,
+   "p99_mass": 39.21,
+   "max": 110.4
+  },
+  "mass_pct_over_impactor_speed": 4.72,
+  "mass_pct_over_2x_impactor": 1.826,
+  "field_KE_max_J": 27175,
+  "car_KE_J": 107315,
+  "floor": {
+   "landed_below_z0p5": 2894,
+   "max_down_dz_m": -155.258,
+   "east_of_x15p5": 2671
+  }
+ },
+ "frame_bodies": {
+  "mullion_max_disp_m": {
+   "0": 0.0,
+   "1": 0.0,
+   "2": 0.0,
+   "3": 0.0,
+   "4": 0.0001,
+   "5": 4.4311,
+   "6": 0.0001,
+   "7": 0.0,
+   "8": 0.0,
+   "9": 0.0,
+   "10": 0.0
+  },
+  "segments_gone": [
+   5
+  ],
+  "n_segments_gone": 2,
+  "bent_3_m": 0.0,
+  "bent_7_m": 0.0,
+  "transom_max_disp_m": 0.0005
+ },
+ "at_rest": {
+  "bodies_over_1mm_per_film_frame": 2275,
+  "of": 3948,
+  "max_speed_last_frame_ms": 108.24,
+  "median_speed_last_frame_ms": 0.0306
+ }
+}
