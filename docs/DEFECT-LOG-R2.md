@@ -3454,3 +3454,74 @@ float32 normalisation error), and the `FCurve.update()` misattribution recorded 
 
 **Three instruments wrong, all three caught by their own author before publishing.** That is
 the standard.
+
+## R2-072 — the guard rotted the instant its target was repaired
+
+`socket_index_audit.py --selftest-blend` carried a section headed **"REAL SHIPPED ARTEFACT"**,
+pointed at `gantry_truss_test.blend` and `pont_girder_test.blend`, with the reasoning written
+into the file: *"if the arm is real, it fails them without being told to."*
+
+That reasoning was sound on the day it was written. **It stopped being true the moment those
+two blends were rebuilt** — the same repair this log records under R2-070. The section then
+printed `0 stray relief link(s)` under a heading that claims to be proving the arm works, while
+**asserting nothing at all**.
+
+> **A control that names a specific broken artefact expires when that artefact is fixed, and it
+> expires silently — into a cheerful pass.** The stronger the fix, the deader the control.
+
+**Fixed by generating the control instead of naming one.** Every run now builds
+`pont_girder._simple_mat` twice into two saved blends, **differing only in whether the single
+`Normal` link is made by integer index 5 or by name**, and hands both to the ordinary `--blend`
+path by filename. The positive must fail; the negative must pass. It cannot expire, because its
+broken input is manufactured from live source each time rather than found on disk.
+
+Building it caught a second trap immediately: **the first version scanned an empty file**,
+because Blender purges a material with no user on save.
+
+**Corpus state after the four rebuilds:** all 32 item test blends **PASS**, with only
+`armco_w_beam`'s legitimate edge-wear idiom appearing at NOTE level on two of them. All 21
+tracked `*_interface.json` files are **byte-identical** — only the material graph moved.
+
+## R2-073 — 147 setter call sites could silently drop a value, and the static count was wrong
+
+`marshal_post_column._set` and the `_set`/`_link` helpers in `spectator_seated.py` and
+`build_architecture.py` **silently discarded the value when the socket name did not resolve**
+(`if nm is not None`, `except: pass`). Because they address by name, a socket *insertion* cannot
+break them — but a *rename* would make them do nothing, forever, with no artefact signature.
+Unlike a dead relief chain, a dropped **scalar** leaves nothing for the artefact arm to find.
+
+**Counted before deciding, because "make it loud" is only safe if the optionality is fake:**
+
+```
+static   147 call sites   141 pass ONE name with no fallback
+                            6 pass an alias list, every one ('Specular IOR Level', 'Specular')
+runtime  342 calls observed across all 22 material entry points those modules own
+                            0 dropped;  0 of the 6 alias lists fell through
+```
+
+The optionality was theoretical, so raising breaks nothing today. Missing sockets now raise
+`SocketGone`. The alias mechanism is untouched — it raises only when **no** candidate resolves,
+which is precisely "the value was dropped".
+
+**The static arm alone would have got this wrong, and that is the finding worth keeping.**
+Blender resolves a socket string against the socket's **identifier** as well as its display
+name, so `'Fac'` finds `'Factor'`. Judged against a measured socket table, ten perfectly correct
+`_link(..., 'Fac')` calls in `spectator_seated.py` are condemned. **Only the runtime arm shows
+them working.** A census that reads source and never runs it will manufacture defects at the
+same rate it finds them.
+
+Three inline copies of the same idiom in `world/build_dressing.py` (lines 1553/1757/2024 —
+`for nm in aliases: if nm in b.inputs: …; break`, no `else`) were folded into one `_set_named`
+helper rather than left because nobody had named them. **Leaving a known identical hole because
+it was out of scope is how R2-070 happened.**
+
+`tools/socket_setter_census.py` runs both arms plus its own control every time: it plants a
+socket name that is genuinely gone on a real Principled BSDF and requires all five helpers to
+refuse it, then writes to a name that *is* there and requires all five to accept.
+
+**And the premise I gave this work was wrong.** I stated that `gantry_truss` and `pont_girder`'s
+relief PASS verdicts had been read from frames lit by a flat context ground. They had not:
+`item_gate.stage_witness` deletes everything but the subject, and the witness blends carry **no
+`CTX_` material of any kind** — 11 objects and 12 materials, all `GATE_REF_*` or the item's own.
+Re-judged from the rebuilt blends anyway, both verdicts stand unchanged, with margins of 70–120×
+against a threshold of 2.00 and differences in the fourth decimal.
