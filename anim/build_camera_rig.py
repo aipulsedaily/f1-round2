@@ -702,7 +702,29 @@ def main():
         d = Vector(s) - Vector(p)
         return d.normalized() if d.length > 1e-9 else Vector((0, 0, -1))
 
-    b6_frames, f = set(declared_f), b6_f0
+    # R2-086, and this is the REFINEMENT, not the fix — the fix is deleting the
+    # declared-position override below, and it was isolated by building without
+    # this block. Bracketing each declared time with the frames either side of
+    # it, rather than only its rounded frame, pins the curve on both sides of a
+    # point that falls at .4 of a frame. Measured against `beat6_path`'s own
+    # analytic curve over f2690-2974, which is the only reference that knows
+    # where beat 6 is supposed to be:
+    #
+    #     override in place          max 1.1251 m   max speed error 9.27 m/s
+    #     override removed           max 0.0213 m   max speed error 0.148 m/s
+    #     override removed + this    max 0.0047 m   max speed error 0.076 m/s
+    #
+    # So the override is 98 % of it and this is the last 4.5x, for 6 extra keys
+    # in 264 frames. It is kept because it is nearly free and because the same
+    # reasoning — a curve is authored by its handle solver wherever its keys are
+    # far apart — is what the seam bridge and the hand-off ramp are both for.
+    # The film-wide local-accel census is IDENTICAL with and without it, so it
+    # is not what closed f2680.
+    b6_frames = set(declared_f)
+    for t in b6_ts:
+        b6_frames.add(max(b6_f0, min(b6_f1, int(math.floor(t * FPS)))))
+        b6_frames.add(max(b6_f0, min(b6_f1, int(math.ceil(t * FPS)))))
+    f = b6_f0
     while f < b6_f1:
         b0 = b6_bearing(f)
         step = 2
@@ -823,11 +845,52 @@ def main():
         if in_blend:
             p = list(blend(f))
             b6_blended += 1
-        elif f in declared_f:                    # reproduce the declared key
-            i = b6_ts.index(declared_f[f])
-            p = [float(v) for v in sorted(sheet["beat6"]["keys"],
-                                          key=lambda k: k["t"])[i]["world"]]
         else:
+            # R2-086. THE OTHER SIX KEYS. R2-063 established that beat 6's
+            # declared keys land at .4 of a frame and that forcing a declared
+            # POSITION onto `round(t*FPS)` is 1.4 m of position error at
+            # 83 m/s. It then suppressed that only INSIDE the 36-frame hand-off
+            # window, and left the branch that does it standing for the other
+            # six declared keys — which is every key from t = 112.1 to the end
+            # of the film.
+            #
+            # This is what it cost, on the path built with the branch still in:
+            #
+            #   f2689  76.29 m/s          f2713  70.78 m/s     each declared key
+            #   f2690  72.72   -86 m/s2   f2714  67.56   -77   is a sawtooth: the
+            #   f2691  66.44  -151 m/s2   f2715  61.84  -137   camera lurches onto
+            #   f2692  61.23  -125 m/s2   f2716  57.06  -115   the misplaced point
+            #   f2693  58.04   -77 m/s2   f2717  54.08   -72   and hauls itself back
+            #   f2694  56.87   -28 m/s2
+            #
+            # A +-10 m/s swing about a curve whose own worst acceleration is
+            # 6.7 m/s^2, repeated at every declared key, once a second through
+            # the closing wide. `beat6_path()`'s analytic curve over the same
+            # frames decays 72.3 -> 63.9 m/s at a steady -6 to -7 m/s^2 with no
+            # discontinuity anywhere, so the sawtooth is entirely this branch.
+            #
+            # WHY NO GATE SAW IT, and this is the part worth keeping. The
+            # campath gate's C2 kink detector is a robust-z against the MEDIAN
+            # |a| of a +-12 frame window — and the sawtooth's period is 24
+            # frames, so the window is full of the defect and the median rises
+            # to meet it. f2691 scores 3.15x against a bound of 8. The only
+            # frame that scores is f2680, at 13.76x, and it scores because it
+            # sits at the EDGE of the affected region where the window still
+            # contains quiet frames from inside the blend. **A local-median
+            # detector is blinded by a periodic defect whose period is shorter
+            # than its window; it can only see the first tooth.** C1 saw
+            # nothing at all because beat 6's subject is 355 m away, so a metre
+            # of camera error is 0.16 deg.
+            #
+            # THE FIX IS TO DELETE THE BRANCH. `b6_at(f/FPS)` IS the curve
+            # through the declared keys — `beat6_path` builds a Hermite with
+            # `at(ts[i]) == ps[i]` — so sampling it at whole frames reproduces
+            # every declared key AT ITS DECLARED TIME, 0.4 of a frame after the
+            # nearest frame, which is where the key actually is. The old branch
+            # reproduced it in SPACE at the WRONG TIME, and that is the whole
+            # of R2-063 restated. `sheet["beat6"]["keys"]` is untouched, so
+            # every other consumer of the declared keys reads what it read
+            # before.
             b6_added += 1
         s = subject.at(f, "6_ending")
         keys.append({"t": f / FPS, "beat": "6_ending", "world": p,
