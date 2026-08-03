@@ -82,7 +82,7 @@ def _rot(q):
     return R
 
 
-def profile(frames, L, Q, sel, swap_frame, at=(866, 880, 900, 920)):
+def profile(frames, L, Q, sel, swap_frame, at=(866, 880, 900, 920), area=None):
     """DEPTH and ALIGNMENT for one bay, per frame, referenced to the swap.
 
     THE REFERENCE IS HOME, NOT THE SWAP FRAME, and getting that wrong cost me
@@ -158,6 +158,20 @@ def profile(frames, L, Q, sel, swap_frame, at=(866, 880, 900, 920)):
     out["gone_over_250mm_last"] = int((d3[-1] > 0.25).sum())
     out["gone_over_250mm_pct_last"] = round(
         100.0 * float((d3[-1] > 0.25).mean()), 1)
+    out["gone_pct_is"] = "BY COUNT"
+    # BY COUNT AND BY AREA ARE DIFFERENT ANSWERS AND THE APERTURE IS AN AREA.
+    # Bay 5's shard sizes are heavily skewed -- median 0.00043 m2 against a p90
+    # of 0.018 -- and it is the SMALL cells that leave.  87.1 % of bay 5's
+    # shards are more than 250 mm from home and the bay still looks mostly
+    # glazed in elevation, because the 12.9 % that stayed are the big ones.
+    # I read the elevation, disbelieved my own instrument, and it was the
+    # picture that was misleading.  Quote the area figure for an aperture;
+    # sim/aperture.py measures it properly, on a raster, as a CONNECTED region.
+    if area is not None:
+        w = np.asarray(area, float)
+        if w.sum() > 0:
+            out["gone_pct_by_area_last"] = round(
+                100.0 * float(w[d3[-1] > 0.25].sum() / w.sum()), 1)
     # RETURNS if the median NET displacement falls back appreciably from its
     # peak.  The test is a RATIO, because "48 mm after a 799 mm peak" and
     # "48 mm after a 60 mm peak" are not the same event, and it is gated on the
@@ -211,7 +225,10 @@ def run(film_path, bays=(3, 4, 5, 7), shards=None):
             continue
         rr = rel[ii]
         sw = int(rr[rr > 0].min()) if (rr > 0).any() else int(frames[0])
-        out["bays"][str(bay)] = profile(frames, L, Q, np.array(ii), sw)
+        ar = [s["area"] for s in plan["panes"].get(bay, [])
+              if "GS_b%02d_%05d" % (bay, s["id"]) in idx]
+        out["bays"][str(bay)] = profile(frames, L, Q, np.array(ii), sw,
+                                        area=ar)
         out["bays"][str(bay)]["role"] = plan["roles"].get(bay)
     return out
 

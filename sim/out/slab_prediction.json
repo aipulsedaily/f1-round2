@@ -138,5 +138,44 @@
   "the_first_half_is_right": "it is a release-spread artefact and no threshold touches it. sim/verify_breach.py --swap reads the table and reports it: 7 shards in bay 5 and 2 in bay 7 at 861 against a pane that hides at 860. And --swap-scene reads the APPLIED SCENE and reports the same 7 and 2, so it is real in the artefact that renders, not only in the table.",
   "the_second_half_will_be_wrong_because_I_changed_it": "I fixed the applier. The swap frame is now computed ONCE per bay and both the pane and every one of its shards key off it, so the hole cannot form regardless of what the release column says. Predicting that a defect will persist and then fixing it is not a failed prediction, but it is not a confirmed one either, and it would be dishonest to score it as a hit.",
   "what_will_actually_be_checked": "--swap-scene on the newly applied scene must come back PASS with zero problems. The table arm will still report the spread, deliberately: the spread is the raw material of the defect and the applier is the only thing standing between it and a hole in the picture. An applier can be changed back."
+ },
+ "ADDENDUM_4_BY_COUNT_IS_NOT_BY_AREA": {
+  "how_I_found_it": "I looked at sim/out/gone_m1.png, the elevation of the recommended configuration, and bay 5 read as MOSTLY STILL GLAZED while my instrument said 87.1 % of it had gone. I disbelieved the instrument. The instrument was right and the number was the wrong number.",
+  "the_reason": "bay 5's shard sizes are heavily skewed - median 0.00043 m2 against a p90 of 0.018 - and it is the SMALL cells that leave. 87.1 % of bay 5's SHARDS are more than 250 mm from home and only 13.2 % of its AREA is, because the 12.9 % that stayed are the big ones. An aperture is an area.",
+  "the_table_that_matters": {
+   "SHIPPED_4000": {
+    "bay4": {
+     "by_count": 0.0,
+     "by_area": 0.0
+    },
+    "bay5": {
+     "by_count": 30.8,
+     "by_area": 3.5
+    }
+   },
+   "b100_mullion_900_1400": {
+    "bay4": {
+     "by_count": 90.1,
+     "by_area": 58.2
+    },
+    "bay5": {
+     "by_count": 84.9,
+     "by_area": 44.1
+    }
+   },
+   "RECOMMENDED_b100_mullion_40_120": {
+    "bay4": {
+     "by_count": 97.8,
+     "by_area": 96.8
+    },
+    "bay5": {
+     "by_count": 87.1,
+     "by_area": 13.2
+    }
+   }
+  },
+  "it_reconciles_with_the_previous_agent_exactly": "their 96.8 % vacated for bay 4 at m1 and 58.2 % at sw_b100 are reproduced to the decimal by a different instrument, and the shipped bake's bay 5 at 3.5 % matches breach_metrics' own per-bay raster figure. Two instruments that were built independently now agree, which is the best evidence available that either is right.",
+  "and_it_sharpens_the_result": "at the recommended configuration bay 4 vacates 96.8 % of its area floor to head and bay 5 vacates 13.2 %. The opening really is ONE BAY plus the mullion the car struck. That is the honest shape of it, and it is why the declared 9.6 m was never going to come out of this impact.",
+  "slabcheck_now_reports_both": "and labels the count figure BY COUNT, because I nearly quoted it as an aperture."
  }
 }
