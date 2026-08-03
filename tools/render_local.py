@@ -75,6 +75,45 @@ def main():
         sc.view_settings.view_transform = "Standard"
         sc.view_settings.look = "None"
 
+    # THE GRADE IS REPORTED, ALWAYS, AND LOUDLY WHEN IT IS WRONG.
+    #
+    # This tool renders whatever grade the blend carries and never touched
+    # `view_settings.exposure`. That is CORRECT for a measurement render -- half
+    # this project's instruments deliberately measure at exposure 0 -- so it is
+    # not fixed by forcing a number. It is fixed by making the number visible,
+    # because the defect it enabled was invisible: `build_verify_scene.py` set
+    # no exposure at all, the assembly blends carry +0.000, and every frame an
+    # agent looked at through that rig came out 3.628 stops over the film's
+    # measured grade. Correct work looked blown out and verdicts were read off
+    # frames with a quarter of their pixels saturated. Nothing in any log said
+    # what grade had been used.
+    try:
+        _w = os.path.join(os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__))), "world")
+        if _w not in sys.path:
+            sys.path.insert(0, _w)
+        import film_exposure as _FX
+        _film = _FX.FILM_EXPOSURE
+    except Exception:                                            # noqa: BLE001
+        _film = None
+    _exp = float(sc.view_settings.exposure)
+    print(">> GRADE OF THIS RENDER: view_transform %r, look %r, exposure %+.3f"
+          % (sc.view_settings.view_transform, sc.view_settings.look, _exp))
+    if _film is None:
+        print("   !! could not import world/film_exposure.py, so this render's "
+              "grade cannot be compared to the film's. Say so in whatever you "
+              "conclude from the picture.")
+    elif abs(_exp - _film) > 0.001:
+        print("   !! THIS IS NOT THE FILM'S GRADE. The film renders at %+.3f "
+              "(world/film_exposure.FILM_EXPOSURE, MEASURED on the 5090). This "
+              "frame is %+.3f stops from it." % (_film, _exp - _film))
+        print("   !! That is fine for a MEASUREMENT (item_gate, winding_probe "
+              "and idpass_emissive all measure at exposure 0 on purpose). It is "
+              "NOT fine for a picture anyone is going to form a judgement from: "
+              "at +0.000 on this world a frame that clips 0.000 % of its pixels "
+              "at the film's grade clips 23.6 % of them (measured, "
+              "render/exposure_beats/cal_960.png vs render/shutter_ab/*_f960.png).")
+
     if a.isolate:
         # Strict: hides the room too. This is a DIAGNOSTIC switch — a mask has to
         # be measured against transparent film, and the showroom shell filled

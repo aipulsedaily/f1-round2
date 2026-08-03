@@ -20,7 +20,10 @@
 *.flac
 *.mp4
 *.bphys
-render/
+# `render/*`, not `render/`: git will not descend into an excluded DIRECTORY,
+# so the battery source below could never be re-included while this said
+# `render/`. Everything at the top of render/ is still ignored.
+render/*
 work/
 sim/tmp/
 __pycache__/
@@ -38,6 +41,40 @@ docs/depth_probe.json
 docs/instance_variety.json
 docs/presentation_normals.json
 docs/inventory_iter.json
+
+# THE GATE BATTERY IS SOURCE, AND `render/` WAS SWALLOWING IT.
+#
+# This file's own header says the point of version control here is to track THE
+# SOURCE AND THE REASONING, because an agent's edit destroyed 1,655 lines that
+# were not recoverable. But `render/` and `work/` are blanket-ignored, and real,
+# hand-written, heavily-reasoned source lives in both:
+# render/world/assembly/r2/ holds assemble.py, probeA..probeK, lib_battery.sh,
+# the three battery.sh files and make_controls.py -- the entire #53 gate battery
+# and every control scene generator in the project.
+#
+# The consequence is not hypothetical. `git log` on any of them is empty, so
+# "establish a baseline from committed state before you change anything"
+# (R2-079) is structurally IMPOSSIBLE for the battery, and the destruction this
+# file exists to prevent is exactly as possible there today as it was before git
+# was introduced. The .blend/.png/.exr rules above still exclude the artefacts;
+# these two lines let the SOURCE through.
+# Git cannot re-include a file whose parent DIRECTORY is excluded, so every
+# level has to be opened one at a time. Everything not named here stays ignored,
+# and the *.blend / *.png / *.exr rules above still win over these.
+!render/world/
+render/world/*
+!render/world/assembly/
+render/world/assembly/*
+!render/world/assembly/r2/
+render/world/assembly/r2/*
+!render/world/assembly/r2/*.py
+!render/world/assembly/r2/*.sh
+!render/world/assembly/r2/v120/
+!render/world/assembly/r2/v121/
+!render/world/assembly/r2/v122/
+render/world/assembly/r2/v12?/*
+!render/world/assembly/r2/v12?/*.py
+!render/world/assembly/r2/v12?/*.sh
 
 # Telemetry is generated from the spec, but it IS the single source of truth for
 # motion AND audio and it has been wrong in ways that took a day to find. Track it.
