@@ -245,6 +245,7 @@ def check_swap(release, names, plan):
     idx = {str(n): i for i, n in enumerate(names)}
     roles = plan.get("roles", {})
     bays, worst, total_uncovered, total_frames = {}, 0, 0, 0
+    spread = {}
     for bay, shards in sorted(plan.get("panes", {}).items()):
         if roles.get(bay) == "intact":
             continue                       # never hides, so nothing to uncover
@@ -258,6 +259,11 @@ def check_swap(release, names, plan):
         if not len(rel_pos):
             continue                       # pane never hides either
         r_bay = int(rel_pos.min())
+        if int(rel_pos.max()) != r_bay:
+            spread[str(bay)] = dict(
+                min=r_bay, max=int(rel_pos.max()),
+                n_later=int((rel_pos > r_bay).sum()),
+                frames=sorted(set(rel_pos.tolist())))
         # A shard that NEVER releases is uncovered from r_bay to the end of the
         # take.  That is not a twelve-frame hole, it is a permanent one, and it
         # has to be counted as worse rather than skipped.
@@ -277,10 +283,103 @@ def check_swap(release, names, plan):
         criterion="every shard of a fractured bay must appear on the SAME "
                   "frame its pane hides.  Any later is a hole with nothing "
                   "behind it.",
+        measured="the TABLE, under the rule apply_breach USED TO USE: pane "
+                 "hides at min(release), each shard appears at its own "
+                 "release.  This is the defect as it shipped.  The applier "
+                 "now keys both sides off one frame per bay, so a scene built "
+                 "by the current applier has no hole even when this arm "
+                 "reports one -- use --blend to check the SCENE, which is the "
+                 "thing that renders.",
+        release_spread_within_a_bay=spread,
+        why_the_spread_still_matters="it is the raw material of the defect.  "
+                                     "The applier is what stops it becoming a "
+                                     "hole, and an applier can be changed "
+                                     "back.",
         bays=bays, worst_gap_frames=worst,
         shards_uncovered=total_uncovered,
         uncovered_shard_frames=total_frames,
         PASS=bool(worst == 0))
+
+
+def check_swap_scene(blend_path, plan):
+    """THE SAME QUESTION ASKED OF THE SCENE THAT RENDERS.
+
+    The table arm above measures the raw release spread, which is what the
+    defect was MADE of.  This arm measures what the applier DID with it: for
+    every fractured bay, the frame its GP_b* pane hides must equal the frame
+    every one of its GS_b* shards appears.  That is the invariant, and reading
+    it off the .blend is the only way to catch an applier that has been
+    changed back.
+
+    Run inside Blender:
+        blender -b <applied>.blend -P sim/verify_breach.py -- --swap-scene
+    """
+    import bpy                                                # noqa: E402
+
+    def switch(ob):
+        """The frame this object's hide_render steps, and which way."""
+        ad = ob.animation_data
+        if not (ad and ad.action):
+            return None
+        for lay in ad.action.layers:
+            for st in lay.strips:
+                cb = st.channelbag(ad.action_slot)
+                if not cb:
+                    continue
+                for fc in cb.fcurves:
+                    if fc.data_path != "hide_render":
+                        continue
+                    ks = sorted((int(k.co[0]), float(k.co[1]))
+                                for k in fc.keyframe_points)
+                    for i in range(1, len(ks)):
+                        if ks[i][1] != ks[i - 1][1]:
+                            return dict(frame=ks[i][0],
+                                        to_hidden=bool(ks[i][1] > 0.5))
+        return None
+
+    roles = plan.get("roles", {})
+    out, bad = {}, []
+    for bay in sorted(plan.get("panes", {})):
+        pane = bpy.data.objects.get("GP_b%02d" % bay)
+        if pane is None:
+            bad.append(("GP_b%02d" % bay, "missing"))
+            continue
+        ph = switch(pane)
+        shards = [bpy.data.objects.get("GS_b%02d_%05d" % (bay, s["id"]))
+                  for s in plan["panes"][bay]]
+        shards = [o for o in shards if o is not None]
+        shows = {}
+        for o in shards:
+            sw = switch(o)
+            f = sw["frame"] if sw else None
+            shows[f] = shows.get(f, 0) + 1
+        rec = dict(role=roles.get(bay), n_shards=len(shards),
+                   pane_hides_at=(ph or {}).get("frame"),
+                   pane_goes_hidden=(ph or {}).get("to_hidden"),
+                   shard_show_frames=({str(k): v for k, v in
+                                       sorted(shows.items(),
+                                              key=lambda x: (x[0] is None,
+                                                             x[0]))}))
+        if roles.get(bay) == "intact":
+            rec["expected"] = "pane never hides, no shards"
+            if ph is not None or shards:
+                bad.append(("bay %d" % bay, "an intact bay must not swap"))
+        elif ph is None:
+            if shards:
+                bad.append(("bay %d" % bay,
+                            "shards exist but the pane never hides"))
+        else:
+            f = ph["frame"]
+            wrong = sum(v for k, v in shows.items() if k != f)
+            rec["shards_not_on_the_pane_frame"] = int(wrong)
+            if wrong:
+                bad.append(("bay %d" % bay,
+                            "%d shard(s) do not appear on %d" % (wrong, f)))
+        out[str(bay)] = rec
+    return dict(
+        criterion="in the SCENE: each fractured bay's pane hides on exactly "
+                  "the frame all of its shards appear",
+        blend=blend_path, bays=out, problems=bad, PASS=not bad)
 
 
 def check_sink(L, verts_r, floor_z=0.0):
@@ -566,8 +665,16 @@ def selftest():
 
 
 def main():
+    if "--" in sys.argv:
+        sys.argv = [sys.argv[0]] + sys.argv[sys.argv.index("--") + 1:]
     ap = argparse.ArgumentParser()
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--swap-scene", action="store_true",
+                    help="the SCENE arm of the swap check.  Run inside "
+                         "Blender on an applied .blend: each fractured bay's "
+                         "pane must hide on exactly the frame all of its "
+                         "shards appear.  This is the invariant; the table "
+                         "arm below measures the raw material of the defect.")
     ap.add_argument("--swap", action="store_true",
                     help="ONLY the swap check (R2-098): does every shard of a "
                          "fractured bay appear on the same frame its intact "
@@ -586,6 +693,14 @@ def main():
     a = ap.parse_args()
     if a.selftest:
         sys.exit(selftest())
+    if a.swap_scene:
+        import bpy                                            # noqa: E402
+        rep = check_swap_scene(bpy.data.filepath,
+                               FR.load(a.shards))
+        print(json.dumps(rep, indent=1, default=float))
+        print("STAGE RESULT: swap-scene %s (%d problem(s))"
+              % ("PASS" if rep["PASS"] else "FAIL", len(rep["problems"])))
+        sys.exit(0 if rep["PASS"] else 1)
     if a.swap:
         import resample as RS
         import fracture as _FR
