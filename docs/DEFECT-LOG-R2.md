@@ -3608,3 +3608,136 @@ motion. Separately, `work/cont_carlaunch.json` was **already stale before any of
 `TILE_MIN_FRAMES = 48` was added after it was written and carlaunch has 33 frames, so 11 D1_pop
 and 14 D2_flicker findings are **NOT MEASURED rather than absent**, and nothing on the file's
 face said so.
+
+## R2-085 — f1461: an ABSOLUTE station cannot say how far away the car is
+
+The film's last remaining campath FAIL — 51 % of frame width, 27.4°/frame, in beat 5.
+
+`cp(s, u, h)` is an **absolute station**: its `u` is an offset from the **centreline**, and says
+nothing whatever about where the car is. Between t = 59.00 and t = 61.60 **no anchor governed
+the miss distance at all.** The camera crossed the racing line +20 → −20 over s 773–848 while the
+car — 13 m/s faster, because the camera was spending its speed budget on 40 m of lateral travel
+— caught up and arrived at the crossing point at the same moment.
+
+**Closest approach 3.263 m, against an authored note reading "20 m away".** The car subtended
+82° of a 53.6° frame. The author's own Catmull-Rom produces 3.263 m *before any key exists*, so
+this was **authored, not sampled** — the geometry was in the spline from the start.
+
+**Fixed by one sign.** `cp(773, +20.0, 3.0)` → `cp(773, -20.0, 3.0)` — the inside of the kink,
+the side the next four anchors already use. 72 variants were swept to get there.
+
+| | before | after |
+|---|---|---|
+| worst sweep | 56.55 % | **7.01 %** |
+| closest approach | 3.17 m | **20.00 m — the note is now true** |
+| campath | **FAIL** | **PASS, 0 FAIL** |
+| beat 5 horizon | **79.77° over 50 frames** | **0.90°, 0 frames** |
+
+**Both frames were rendered and looked at.** Before: 93 % car pixels, an unreadable smear with no
+horizon. After: a level side-on tracking shot, car sharp at 20 m, wall and kerbs streaking — the
+"fastest pan of the lap" the note always claimed. Clearance re-verified at minimum 3.631 m, 0 of
+148 frames inside the 1.20 m sphere, controlled against `BVHTree` 400/400 and against unpruned
+brute force over 13.7 M triangles.
+
+## R2-086 — a local-median detector can only ever see the FIRST TOOTH of a periodic defect
+
+f2680 was assumed to be a boundary artefact of R2-063's blend. It is not.
+
+**R2-063 suppressed the frame-rounding only *inside* the blend window and left the branch
+standing for beat 6's other six declared keys.** Each is a sawtooth — f2689 76.3 → f2694
+56.9 m/s at **−151 m/s²** — about an analytic curve whose own worst acceleration is 6.7 m/s².
+
+**Why only one frame of six ever scored, and this is the finding:**
+
+> **C2 is a robust-z against a ±12-frame median, and the sawtooth's period is 24 frames. The
+> window fills with the defect and the median rises to meet it.** f2691 scores 3.15× against a
+> bound of 8. **A local-median detector can only ever see the first tooth of a periodic defect.**
+
+That is a general property of every local-median detector in this codebase, not a fact about
+f2680. A defect that repeats at roughly the detector's window length becomes its own baseline.
+
+Fixed by deleting the branch — isolated effect 1.1251 m → 0.0213 m, the last 4.5× being
+bracketing. Film-wide: frames over the 6× bound **4 → 2**, p99.9 6.70 → 4.20×, beat 6 worst
+|accel| **151 → 6.7 m/s²**.
+
+**The same shape explains f463, which is NOT real.** Jerk over f457–463 is constant at
+−56.9 m/s³ with 0.6 % spread — a constant third difference is a cubic ease. The detector's ±8
+window straddles a stop, mixing 8 approach frames (median |a| 7.65) with 7 near-stationary ones
+(1.85), giving a mixed median of 2.08 and a ratio of 8.82×. **Against the pre-stop side alone it
+is 2.40×.** It is the same event as the already-confirmed f462 false positive, not a second one.
+**The accel-ratio detector has no hold guard, unlike `seam_gate`'s BULGE** — that is the
+remaining fix, and it belongs to `seam_gate`.
+
+## R2-087 — the speed-based key criterion: measured, then declined
+
+Tried globally. Keys 433 → 451; campath **identical**, seam 7/7, subject_sweep 7/7.
+
+**One gain:** BULGE 1.570 → 1.520×, on a figure already 15 % inside its bound.
+**One loss:** accel p99.9 4.20 → 4.25×.
+**Cost: 324 frames move, 321 of them inside beat 5** — the beat that is **67 % of the entire
+master's render cost** — worst 0.234 m, invalidating every rendered frame of it.
+
+Declined. It is the remedy for a specific failure — speed changing while bearing does not — and
+**beats 3–5 do not do that.** Recorded here rather than left as a standing recommendation,
+because the measurement is the useful artefact: the next person to propose it can read why.
+
+## R2-088 — nothing on this film measured whether the horizon was level
+
+The aim gate is **blind to roll by construction**; C1 measures rotation *rate*, and 60° of roll
+spread over 42 frames is 1.9 % of frame width per frame — comfortably inside every bound.
+
+So `tools/horizon_gate.py` was written, and it immediately found the shipped path at **79.77° of
+roll across 50 frames in beat 5** (closed by R2-085) and **59.88° across 32 frames in beat 6**,
+the latter a regression from R2-063 which doubled it from film9's −27°.
+
+**A quantity nobody measures is not a quantity nobody has a problem with.** Two of the film's
+worst frames were rolled most of the way onto their side and every existing gate passed them.
+
+## R2-089 — both principled fixes for beat 6's roll were costed and both failed
+
+Blending the roll reference halves beat 6 and **doubles beat 1** — 20.83° → 38.59°. Raising
+`look_quat`'s 3°/frame limit to 15° removes the horizon problem entirely and takes beat 5's smear
+to **47.8 % of frame width**, which is the exact defect R2-085 was spent killing.
+
+**The limit is buying rotation legibility with horizon level, and one number cannot do both.**
+Recorded as a costed rejection rather than an untried idea, so the next person does not spend the
+day rediscovering it. `look_quat` was left unchanged.
+
+## R2-090 — the closing wide cannot show the circuit and the car at once
+
+At f2978 the camera is 140 m up, 595 m out, on the film's widest lens, aimed to 0.08°, holding
+for exactly 3 s (**0.00 m over 72 frames**). The circuit reads.
+
+**The wound is 20 px of 1920. The car is 12 px — and the agent rendering it could not find it.**
+
+Putting the car at 2 % of frame width requires either a **73.8 mm lens** — a telephoto, not a
+wide — or **188 m**, a third of the circuit. The brief asks for both and the geometry does not
+allow both.
+
+**Decision: the car wins.** This film is 124 seconds of following one car; ending on a frame
+where the audience cannot find it ends on a different subject. Two independent readers failing to
+locate it is evidence, not taste. The chosen resolution is being selected **by rendering variants
+and looking**, with a lens push on an unmoved camera path as the leading candidate — because its
+cost is confined to one track and leaves every seam, the aim gate and the 3 s hold exactly as
+measured.
+
+## R2-091 — beat 6's roll is WAIVED, not tuned away
+
+f2680 sits at −33.8° and **reads as a banked aerial** — pit wall diagonal, car sharp and centred,
+pit lane legible — and f2694 levels into a clean aerial. Beat 6's first declared move *is* a
+peel-off, and the roll is smooth throughout. The recommendation reversed on the strength of the
+pictures, having been "fix it" on the strength of the number.
+
+**It is recorded as an explicit waiver and `horizon_gate.py` still fires.** The reasoning is the
+part that generalises:
+
+> **A gate quietly re-tuned so it stops firing on something someone accepted is worse than a gate
+> with a waiver beside it — and that is precisely how the 79.77° roll survived into the shipped
+> film.**
+
+A waiver is a decision with a name on it. A moved threshold is a decision nobody can find later.
+
+**Outstanding against this waiver:** f2666, the −59.88° peak, **has still not been looked at.**
+f2680 and f2694 bracket it and both read, but the peak itself is the frame the waiver is about.
+**Waiving something nobody has looked at is not a waiver, it is an assumption** — so the waiver is
+provisional until that frame exists.
