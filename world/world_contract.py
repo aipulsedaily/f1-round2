@@ -89,6 +89,7 @@ COORDINATE AND SIGN CONVENTIONS — READ THIS BEFORE ANYTHING ELSE
 
 from __future__ import annotations
 
+import itertools
 import json
 import math
 import os
@@ -3651,7 +3652,20 @@ def selftest(verbose=True):
     zm, om = world_ground_z(xm2, ym2)
     cm = road_corridor_mask(xm2, ym2)
     void = np.isnan(zm) & cm
-    chk("no ground is cut that nobody builds, at the glass mouth",
+    # WHAT THIS CHECKS, AND WHAT IT CANNOT.  `world_ground_z` is the MODEL.  It
+    # returns a finished height and an owner's name from arithmetic; no module has
+    # to have laid a polygon for it to answer.  So `isnan(world_ground_z)` finds
+    # ground that is DECLARED BY NOBODY -- a real and different defect -- and by
+    # construction it CANNOT find ground that is declared, owned, and never built.
+    # 390 m2 of the pit-exit apron was in the second category and both of these
+    # checks passed cleanly over it the whole time.
+    #
+    # This module may not import bpy (Rule 2), so the mesh-side question lives in
+    # `tools/ground_coverage_probe.py`, which casts a ray straight down at each
+    # declared sample and requires a face near the declared height.  Do not read
+    # either check below as evidence that anything was built.
+    chk("no ground is cut that nobody DECLARES, at the glass mouth "
+        "(model-side: says nothing about whether a face exists)",
         void.sum() == 0, "%d of %d samples (%.1f m2)  was 1276 (~64 m2)"
         % (void.sum(), void.size, void.sum() * 0.10 * 0.25))
     Tv = np.arange(0.0, ACCESS_TOTAL + 1e-6, 0.5)
@@ -3662,7 +3676,8 @@ def selftest(verbose=True):
     yv = Yv + np.cos(Hv) * VV.ravel()
     zv, ov = world_ground_z(xv, yv)
     voidr = np.isnan(zv) & road_corridor_mask(xv, yv)
-    chk("... and none along the whole 244 m ribbon corridor",
+    chk("... and none along the whole 244 m ribbon corridor "
+        "(model-side, same caveat)",
         voidr.sum() == 0, "%d of %d samples (%.1f m2)"
         % (voidr.sum(), voidr.size, voidr.sum() * 0.5 * 0.25))
 
@@ -3709,18 +3724,93 @@ def selftest(verbose=True):
         abs(d2d - DIRECT_TO_DIFFUSE) < 2e-3, "%.4f" % d2d)
 
     out.write("\n[9] the apron tie  (declared flat z=0 vs the crowned road)\n")
-    sa = np.arange(3200.0, 3421.0, 5.0)
+    # THE WINDOW IS FOUND, NOT TYPED.  It was `np.arange(3200.0, 3421.0, 5.0)`
+    # against a real apron that runs s 3173..3470: the check saw 221 m of 297 m
+    # (74 %) and was blind to 27 m at the west end and 49 m at the east end.  The
+    # east-end blind spot is exactly the ground v1.1.1 added when it moved the pit
+    # wall 17.7 m, plus the taper past it -- so the one stretch of apron that had
+    # just changed was the one stretch this check did not look at, and it passed
+    # with `(apron_zone > 0.9).mean() == 1.0000`, maximum margin, throughout.
+    #
+    # This is the third instance of one shape in this module's neighbourhood: a
+    # window sized to a literal, or to a contract quantity that is not the one
+    # under test, silently reporting the slice it can see as the whole.  The other
+    # two were `build_apron_platform`'s station window and its `UMAX`.  A probe
+    # whose reported range maximum is its own window boundary is clipping, and
+    # that number should always be read as suspicious.
+    _scan = np.arange(3050.0, 3600.0, 0.5)
+    _hit = np.nonzero(apron_zone(_scan, +1) > 0.5)[0]
+    _s0 = float(_scan[_hit[0]]) if len(_hit) else 3200.0
+    _s1 = float(_scan[_hit[-1]]) if len(_hit) else 3420.0
+    sa = np.arange(_s0, _s1 + 5.0, 5.0)
+    chk("the apron-tie check's own window covers the whole declared apron",
+        sa.min() <= _s0 + 1e-9 and sa.max() >= _s1 - 5.0,
+        "apron_zone > 0.5 runs s %.1f..%.1f; this window is s %.1f..%.1f"
+        % (_s0, _s1, sa.min(), sa.max()))
     chk("pit-exit apron zone found on the left of the pit straight",
         (apron_zone(sa, +1) > 0.9).mean() > 0.8,
-        "s %.0f..%.0f, circuit x %.0f..%.0f"
-        % (sa.min(), sa.max(), sa.min() - LAP, sa.max() - LAP))
+        "s %.0f..%.0f, circuit x %.0f..%.0f  (%.0f m of apron, found not typed)"
+        % (sa.min(), sa.max(), sa.min() - LAP, sa.max() - LAP, _s1 - _s0))
     chk("no apron tie anywhere on the right", apron_zone(SGRID, -1).max() < 1e-9)
-    core = sa[apron_zone(sa, +1) > 0.999]
+
+    # THE FOUR DECLARED RECTANGLES ARE NOT DISJOINT, AND SOMETHING DEPENDS ON IT.
+    # `apron.x1` and `pit_lane.x0` are both `_PIT_NOSE_X`, derived, and they moved
+    # 17.7 m west with the pit wall in v1.1.1.  `garages.x0 = -245` and
+    # `paddock.x0 = -480` are raw spec literals and did not move, so both reach
+    # into the apron rectangle.  `build_architecture.apron_clearance` treats any
+    # sample inside pit_lane / garages / paddock as HANDED OVER and cuts the apron
+    # slab there, which is only safe while those bay fields actually pave it.
+    # Measured on the shipped module build they do -- but nothing checked that,
+    # and the identical assumption at the `platform_edge` line is exactly what
+    # left 390 m2 declared, owned and unlaid (R2-132).
+    #
+    # This check does not make them disjoint: doing so would move real geometry
+    # and a world rebuild is the owner's call.  It PINS the overlap so the day one
+    # of these rectangles moves again, someone is told, instead of finding out
+    # from a hole.
+    _ovr = {}
+    for _a, _b in itertools.combinations(sorted(APRON_REGIONS_CIRCUIT), 2):
+        _ax0, _ax1, _ay0, _ay1 = APRON_REGIONS_CIRCUIT[_a]
+        _bx0, _bx1, _by0, _by1 = APRON_REGIONS_CIRCUIT[_b]
+        _w = min(_ax1, _bx1) - max(_ax0, _bx0)
+        _h = min(_ay1, _by1) - max(_ay0, _by0)
+        if _w > 0.0 and _h > 0.0:
+            _ovr["%s x %s" % (_a, _b)] = _w * _h
+    _KNOWN = {"apron x garages": 301.06, "apron x paddock": 1137.19}
+    _same = (set(_ovr) == set(_KNOWN) and
+             all(abs(_ovr[k] - _KNOWN[k]) < 0.05 for k in _KNOWN))
+    chk("the declared platform rectangles overlap by exactly the known amount",
+        _same, "%s  (total %.2f m2; these are the pairs `apron_clearance` hands "
+        "over on, and a change here silently re-cuts the apron slab)"
+        % (", ".join("%s %.2f m2" % (k, v) for k, v in sorted(_ovr.items())),
+           sum(_ovr.values())))
+    # "BEYOND THE TIE" MEANS apron_zone == 1, NOT > 0.999.  With the window above
+    # widened to the real apron, `> 0.999` admits s 3420..3470, where apron_zone
+    # is 0.99987 -- still INSIDE the tie's blend -- and the exactness assertion
+    # failed at 5.325e-05 m.  That is not a defect in the apron; it is the check
+    # having been given a predicate that did not mean what its name said, and
+    # getting away with it for as long as its station window stopped at 3420 where
+    # apron_zone is exactly 1 anyway.  Verified against HEAD: the old check reads
+    # 0.00e+00 over s 3200..3420 and 5.325e-05 m over the true extent.
+    #
+    # The tolerance is NOT relaxed.  The claim is split into the two claims it was
+    # always making: exact where the tie has finished, and bounded where it has
+    # not -- and the second one prints its worst number every run.
+    core = sa[apron_zone(sa, +1) >= 1.0]
     far = ground_z(core, np.full_like(core, 30.0))
-    chk("apron is exactly APRON_Z beyond the tie",
+    chk("apron is exactly APRON_Z beyond the tie (apron_zone == 1)",
         np.abs(far - APRON_Z).max() < 1e-12,
         "s %.0f..%.0f, max |z| = %.2e m" % (core.min(), core.max(),
                                             np.abs(far).max()))
+    # NO SECOND CHECK ON THE BLEND BAND.  I added one ("under 1 mm of APRON_Z")
+    # and it failed at 209 mm, because the blend band is precisely where the
+    # ground is still ramping from the crowned road to the flat apron -- 209 mm is
+    # the tie doing its job.  That band is already bounded, correctly and by
+    # gradient rather than by offset, by the two checks immediately below: max
+    # cross-grade 3.04 % and max 7.3 mm of longitudinal step per 0.5 m, the second
+    # of which already sweeps s 3150..3480 and so covers the whole widened window
+    # with room either side.  A third check with a bound I picked would have been
+    # noise at best and a number to tune at worst.
     lat = np.linspace(verge_edge(3300.0), 30.0, 400)
     prof = ground_z(np.full_like(lat, 3300.0), lat)
     grad = np.abs(np.diff(prof) / np.diff(lat)).max()
