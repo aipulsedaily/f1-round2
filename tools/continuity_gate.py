@@ -48,6 +48,17 @@ rather than passing when it cannot see what it claims to check:
 and it stamps every input with tools/provenance.py so a clean report can be
 checked against the sequence it claims to describe.
 
+WHERE THE CONTROLS STAND (R2-078)
+---------------------------------
+    substrate            gate 1.0.0                gate 1.1.0
+    synthetic            14/14                     14/14
+    real seam frames     13/13, 1 NOT MEASURABLE   14/14
+
+The one that was not measurable was D7_blur_motion: on real frames it reported
+"32 usable frames is below the 50 needed for a 15-neighbour speed-matched
+baseline", because most frames had no usable motion figure to be matched on. It
+now measures, and catches a blur kernel of 3 on the same substrate.
+
 EXIT CODES via tools/gate_exit.py: 0 pass, 1 fail, 2 crash, 3 vacuous.
 Never trust $? from a Blender run; this tool is plain CPython and does not
 involve Blender at all.
