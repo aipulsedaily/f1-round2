@@ -671,11 +671,38 @@ def _nd(nt, typ, loc=(0, 0), **kw):
     return n
 
 
+# R2-072.  THIS USED TO BE `except Exception: pass`.
+#
+# Addressing by NAME is why R2-057/R2-070 -- a socket INSERTION sliding every
+# index along -- cannot happen here.  A socket RENAME or REMOVAL was the case
+# the bare `pass` did not cover: the write goes nowhere, forever, and unlike a
+# miswired relief chain it leaves NO artefact signature. `socket_blend_scan`
+# can see a bump that landed on `Thin Wall`; nothing can see a Roughness that
+# was never written, because the socket keeps its default and a default is a
+# legal value.
+#
+# Measured before changing -- `tools/socket_setter_census.py` builds this
+# module's material family and watches every call: 76 calls, 0 dropped.  Not
+# one call site here depends on a miss being tolerated, so a missing socket is
+# a raise; a value the socket refuses is NOT the R2-057 family and stays
+# non-fatal, but it stops being invisible.
+class SocketGone(KeyError):
+    """The named socket is not on this node, so a value was about to vanish."""
+
+
 def _set(node, key, val):
+    if key not in node.inputs:
+        raise SocketGone(
+            "%s has no input socket %r -- its sockets are %s. Blender resolves "
+            "a socket string against the socket's identifier as well as its "
+            "display name, so this is a socket that is genuinely gone, not a "
+            "rename this lookup could have absorbed."
+            % (node.bl_idname, key, [s.name for s in node.inputs]))
     try:
         node.inputs[key].default_value = val
-    except Exception:
-        pass
+    except Exception as exc:                                     # noqa: BLE001
+        print("!! socket write REFUSED: %s.%r = %r -- %s: %s"
+              % (node.bl_idname, key, val, type(exc).__name__, exc))
 
 
 def _newmat(name):

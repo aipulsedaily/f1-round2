@@ -2692,10 +2692,55 @@ def _in(b, *names):
     return None
 
 
+class SocketGone(KeyError):
+    """No candidate socket name resolved, so a value was about to vanish."""
+
+
 def _set(g, b, val, *names):
+    """Write `val` to the first of `names` this node actually has.
+
+    R2-072 -- THIS USED TO DROP THE VALUE SILENTLY.
+
+    `if nm is not None: ...` and nothing else.  Because it addresses BY NAME a
+    socket INSERTION cannot break it -- that is the whole point of the shape,
+    and it is why R2-057/R2-070 could not happen through this helper.  A
+    socket RENAME or REMOVAL is the case it did not cover: the write would go
+    nowhere, forever, and unlike a miswired relief chain it leaves no artefact
+    signature at all.  `tools/socket_blend_scan.py` can see a bump that landed
+    on `Thin Wall`; nothing can see a Roughness that was never written,
+    because the socket just holds its default and a default is a legal value.
+
+    MEASURED BEFORE CHANGING, because "raise" is not automatically right and
+    70+ call sites that legitimately probe for an optional socket would be
+    broken by it.  `tools/socket_setter_census.py`:
+
+        147 static call sites across the four modules that use this shape
+        141 of them pass ONE name, with no alternative to fall back to
+          6 pass an alias list, all of them ('Specular IOR Level', 'Specular')
+        328 calls OBSERVED at runtime building every material in those modules
+          0 dropped
+          0 alias lists that fell through to a later candidate
+
+    So the optionality is theoretical: every alias list resolves on its FIRST
+    name today, and not one call site depends on a miss being tolerated.  That
+    makes raising safe now and useful later, and it keeps the alias mechanism
+    intact -- this raises only when NO candidate resolved, which is exactly
+    "the value was dropped".
+
+    The alias lists are still doing real work, by the way: on 5.2 Principled
+    has 'Specular IOR Level' and has NO 'Specular', so those six sites are one
+    Blender version away from being the only thing standing between this
+    module and a silently unset specular.
+    """
     nm = _in(b, *names)
-    if nm is not None:
-        g._feed(b, nm, val)
+    if nm is None:
+        raise SocketGone(
+            "%s has no socket named %s -- its sockets are %s. This write was "
+            "silently dropped before R2-072; a value that goes nowhere leaves "
+            "no signature in the built blend, so it is a raise now."
+            % (b.bl_idname, " / ".join(repr(n) for n in names),
+               [s.name for s in b.inputs]))
+    g._feed(b, nm, val)
 
 
 def _new_mat(name):

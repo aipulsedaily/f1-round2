@@ -1920,18 +1920,57 @@ def _nd(nt, typ, loc=(0, 0), **kw):
     return n
 
 
+# R2-072.  BOTH OF THESE USED TO BE `except Exception: pass`.
+#
+# Addressing by NAME is why R2-057/R2-070 -- a socket INSERTION sliding every
+# index along -- cannot happen here.  A socket RENAME or REMOVAL was the case
+# the bare `pass` did not cover: the write goes nowhere, forever, and unlike a
+# miswired relief chain it leaves NO artefact signature. `socket_blend_scan`
+# can see a bump that landed on `Thin Wall`; nothing can see a Roughness that
+# was never written, because the socket keeps its default and a default is a
+# legal value.
+#
+# Measured before changing -- `tools/socket_setter_census.py` builds all seven
+# of this module's materials and watches every call: 183 calls, 0 dropped.  Not
+# one call site here depends on a miss being tolerated, so a missing socket is
+# a raise.
+#
+# The two failure modes are separated on purpose.  A NAME THAT IS NOT THERE is
+# the R2-057 family and raises.  Anything else -- a value of the wrong shape, a
+# socket that will not take an assignment -- is NOT that defect, and turning it
+# into a build failure in a module three other agents build on would be a
+# change of a different kind, so it stays non-fatal and becomes LOUD.
+class SocketGone(KeyError):
+    """The named socket is not on this node, so a value was about to vanish."""
+
+
+def _socket(node, key):
+    if key not in node.inputs:
+        raise SocketGone(
+            "%s has no input socket %r -- its sockets are %s. Blender resolves "
+            "a socket string against the socket's identifier as well as its "
+            "display name, so this is a socket that is genuinely gone, not a "
+            "rename this lookup could have absorbed."
+            % (node.bl_idname, key, [s.name for s in node.inputs]))
+    return node.inputs[key]
+
+
 def _set(node, key, val):
+    s = _socket(node, key)
     try:
-        node.inputs[key].default_value = val
-    except Exception:
-        pass
+        s.default_value = val
+    except Exception as exc:                                     # noqa: BLE001
+        print("!! socket write REFUSED: %s.%r = %r -- %s: %s"
+              % (node.bl_idname, key, val, type(exc).__name__, exc))
 
 
 def _link(nt, a, b, key):
+    s = _socket(b, key)
     try:
-        nt.links.new(a, b.inputs[key])
-    except Exception:
-        pass
+        nt.links.new(a, s)
+    except Exception as exc:                                     # noqa: BLE001
+        print("!! socket link REFUSED: -> %s.%r -- %s: %s"
+              % (b.bl_idname, key, type(exc).__name__, exc))
 
 
 def _base(name):

@@ -1423,6 +1423,41 @@ def _new_mat(name):
     return m, g, bsdf, out
 
 
+def _set_named(b, val, *names):
+    """Write `val` to the first of `names` this node has, or RAISE.  R2-072.
+
+    This module carried the same silent-drop idiom three times --
+
+        for nm_ in ("Specular IOR Level", "Specular"):
+            if nm_ in b.inputs:
+                b.inputs[nm_].default_value = 0.24
+                break
+
+    -- with no `else`.  Addressing by NAME is why R2-057's socket INSERTION
+    could not reach these; a socket RENAME or REMOVAL was the case the missing
+    `else` did not cover, and that one leaves NO artefact signature at all.
+    `tools/socket_blend_scan.py` can see a bump that landed on `Thin Wall`,
+    because the wrong link is in the blend.  A specular level that was never
+    written is invisible: the socket keeps its default, and a default is a
+    legal value.
+
+    The alias list still does its job -- 5.2's Principled has `Specular IOR
+    Level` and has no `Specular` -- and it is only when NONE of the candidates
+    resolves that a value has been dropped.  See
+    `tools/socket_setter_census.py` for the same fix and its controls on the
+    three `_set` helpers this idiom was copied from.
+    """
+    for nm_ in names:
+        if nm_ in b.inputs:
+            b.inputs[nm_].default_value = val
+            return nm_
+    raise KeyError(
+        "%s has no socket named %s -- its sockets are %s. This write was "
+        "silently dropped before R2-072."
+        % (b.bl_idname, " / ".join(repr(n) for n in names),
+           [s.name for s in b.inputs]))
+
+
 def _common(g):
     """the three inputs every material in this module reads"""
     base = g.attr("base")
@@ -1550,10 +1585,7 @@ def mat_print():
     g._feed(b, 2, rough)
     # A matte laminate is not a 4 % dielectric mirror.  Left at the default,
     # the broad specular lobe of a 12.5-degree sun turned every BLACK board tan.
-    for nm_ in ("Specular IOR Level", "Specular"):
-        if nm_ in b.inputs:
-            b.inputs[nm_].default_value = 0.24
-            break
+    _set_named(b, 0.24, "Specular IOR Level", "Specular")
     # printed vinyl on composite: orange peel ~8 mm, squeegee lines ~30 mm.
     # (The first version ran these at 480 cycles/m: pure sub-pixel noise, which
     # is why the boards rendered as flat plastic.)
@@ -1754,10 +1786,7 @@ def mat_fabric():
     rough = g.math('SUBTRACT', rough, g.math('MULTIPLY', crease, 0.24))
     rough = g.math('ADD', rough, g.math('MULTIPLY', up, 0.12), clamp=True)
     g._feed(b, 2, rough)
-    for nm_ in ("Specular IOR Level", "Specular"):
-        if nm_ in b.inputs:
-            b.inputs[nm_].default_value = 0.38
-            break
+    _set_named(b, 0.38, "Specular IOR Level", "Specular")
 
     # ---- 6. relief: the wrinkles, the creases, the weave --------------------
     # FOUR WAVELENGTHS SPANNING 107x CANNOT SHARE ONE `Distance`.  The old line
@@ -2021,10 +2050,7 @@ def mat_glass():
     g._feed(b, 0, base)
     g._feed(b, 2, 0.04)
     g._feed(b, 3, 1.45)
-    for k in ("Transmission Weight", "Transmission"):
-        if k in b.inputs:
-            b.inputs[k].default_value = 1.0
-            break
+    _set_named(b, 1.0, "Transmission Weight", "Transmission")
     return m
 
 
