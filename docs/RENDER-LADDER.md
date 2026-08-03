@@ -81,18 +81,43 @@ none push it down:
 - The 512-sample basis is not a settled delivery spec. 640 samples was measured at
   roughly +25 %.
 
-### THE DISK BLOCKER — the master does not currently fit
+### THE DISK BLOCKER — no longer blocking, but it is close, and it is now the FILMS
 
-At the measured **34.3 MB/frame**, 2,978 frames is **102.1 GB**. This box has
-**78 GB free**. A full 4K master stops at about **frame 2,274** — roughly ten days
-and $100 of GPU in — after which every remaining frame fails on write.
+At the measured **34.3 MB/frame**, 2,978 frames is **102.1 GB**.
 
-The *instance* disk was never the problem and is fine: `collect` deletes each frame
-the moment its fetch verifies. Nothing was measuring the local side; `rq anim` now
-warns at submit. **This must be solved before the master is started, not during.**
-Note that `render/world/assembly/` holds seven ~4.2 GB assemblies (~29 GB), all of
-them stale against contract 1.2.0 — but they are also the only existing worlds if a
-rebuild fails, so that is a decision for the user, not a cleanup.
+**Re-measured 2026-08-03: 143 GB free.** The master fits, with ~41 GB of margin. The
+earlier figure of 78 GB — and the prediction that a 4K master would die at about frame
+2,274, ten days and $100 of GPU in — **no longer holds.** Nothing was deleted to achieve
+this; the box simply has more room than the note assumed.
+
+**What now dominates local disk is not the assemblies, it is the film scenes.**
+
+```
+render/world/assembly/     49 GB    the worlds, incl. assembly8 (the ship)
+render/film*.blend         48 GB    15 scenes at ~4.5 GB each
+```
+
+**Each film scene is ~4.53 GB and a new one is built whenever the camera or the world
+moves** — which today happened four times (film9 → film10 → film11 → film12, with
+film13 building). At 4.5 GB apiece that is an 18 GB day. **This is the growth curve to
+watch, not the assemblies**, which change far less often.
+
+**Do NOT bulk-delete either directory.** Four of those films are load-bearing:
+
+| keep | why |
+|---|---|
+| the newest | the ship |
+| `film10.blend` | the deliberate **assembly6 control** — `socket_index_audit --blend` FAILs it with 27 findings, which is what makes the newest film's PASS non-vacuous |
+| `film9.blend` | the un-relit historical reference, 3,737 W against 46,203 |
+| every assembly | the only existing worlds if a rebuild fails |
+
+Superseded *intermediate* films (film11, film12 once film13 verifies) are the safe
+reclaim, at ~4.5 GB each. **Ask before deleting** — the user has offered another 128 GB
+on request, and asking costs less than losing a control.
+
+The *instance* disk was never the problem: `collect` deletes each frame the moment its
+fetch verifies, and the scene cache is now derived from measured room (23.0 GB on a
+32.2 GB box) rather than a constant sized for a 16 GB disk that never arrived.
 
 ## The ladder
 
