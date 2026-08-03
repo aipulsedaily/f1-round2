@@ -540,6 +540,149 @@ def build(args):
 
 # --------------------------------------------------------------------------- #
 
+def east_wall_census(plan, at_frame=1):
+    """IS THERE ANY GLASS IN THE EAST WALL AT ALL?  R2-100.
+
+    This check exists because the answer was NO, in the shipping film, for
+    beats 1 to 3 — roughly a third of a film that has no cuts to hide it in.
+
+    HOW THAT HAPPENED, since no single step was wrong.  `tools/build_film_scene`
+    executes this module's own requirement R3 and deletes round 1's ten
+    `GW_Right_Glass_*` planes.  It is right to: they are zero-thickness, they
+    sit 33.5 mm proud of where the glass really is, and two east walls that
+    close together z-fight through beat 1.  R3 is written on the understanding
+    that THIS module supplies the replacement — and it does, all ten bays,
+    including the four the car never touches.  But this module is a SEPARATE
+    invocation on an already-built blend, and the joiner has no way to know
+    whether it was ever run.  So every time the world is rebuilt, the film comes
+    out of the joiner with the panes deleted and nothing put back, and stays
+    that way until somebody remembers to re-apply.  It shipped that way twice.
+
+    The count that was being watched, `n_GW_Right_Glass`, is a name-prefix query
+    for round 1's names.  It reads 0 for a correctly applied scene as well as
+    for an empty wall, because the replacements are called `GP_b*`.  A metric
+    that cannot tell the fixed state from the broken one was never going to
+    raise this.
+
+    So: count the glazing that is actually THERE and visible at `at_frame`,
+    by bay, and refuse on an empty wall.
+    """
+    want = sorted(plan["panes"])
+    got, hidden, missing = [], [], []
+    for bay in want:
+        ob = bpy.data.objects.get("GP_b%02d" % bay)
+        if ob is None:
+            missing.append(bay)
+            continue
+        got.append(bay)
+        # hide_render may be animated; ask the curve, not the current value.
+        h = ob.hide_render
+        ad = ob.animation_data
+        if ad and ad.action:
+            for lay in ad.action.layers:
+                for st in lay.strips:
+                    cb = st.channelbag(ad.action_slot)
+                    if not cb:
+                        continue
+                    for fc in cb.fcurves:
+                        if fc.data_path == "hide_render":
+                            h = fc.evaluate(at_frame) > 0.5
+        if h:
+            hidden.append(bay)
+    shards = len([o for o in bpy.data.objects if o.name.startswith("GS_b")])
+    r1 = [o.name for o in bpy.data.objects
+          if o.name.startswith("GW_Right_Glass")]
+    return dict(
+        criterion="the east wall must contain glass at frame %d: every bay in "
+                  "the plan has a GP_b* pane and it is not hidden there"
+                  % at_frame,
+        bays_wanted=want, panes_built=got, panes_missing=missing,
+        panes_hidden_at_frame=hidden, shards=shards,
+        round1_planes_still_present=r1,
+        note="n_GW_Right_Glass counts ROUND 1's names and reads 0 for a "
+             "correct scene as well as an empty one.  Count GP_b*.",
+        PASS=bool(not missing and not hidden and not r1))
+
+
+def census_selftest():
+    """The east-wall census against four synthetic scenes.  Cheap: it builds
+    ten 4-vert boxes in an empty file, so it does not need a 5 GB blend.
+
+        blender -b --factory-startup -P sim/apply_breach.py -- --selftest
+    """
+    fails = []
+
+    def check(name, cond, detail=""):
+        print("  %-62s %s %s" % (name, "PASS" if cond else "FAIL", detail))
+        if not cond:
+            fails.append(name)
+
+    plan = dict(panes={b: [] for b in range(10)})
+
+    def rebuild():
+        for o in list(bpy.data.objects):
+            bpy.data.objects.remove(o, do_unlink=True)
+        for b in range(10):
+            me = bpy.data.meshes.new("GP_b%02d" % b)
+            me.from_pydata([(0, 0, 0), (0, 1, 0), (0, 1, 1), (0, 0, 1)], [],
+                           [[0, 1, 2, 3]])
+            me.update()
+            bpy.context.scene.collection.objects.link(
+                bpy.data.objects.new("GP_b%02d" % b, me))
+
+    rebuild()
+    c0 = east_wall_census(plan)
+    check("-ve control: ten panes, none hidden, is a wall",
+          c0["PASS"] and len(c0["panes_built"]) == 10, str(c0["panes_missing"]))
+
+    rebuild()
+    bpy.data.objects.remove(bpy.data.objects["GP_b04"], do_unlink=True)
+    c1 = east_wall_census(plan)
+    check("+ve control: one missing pane is caught",
+          (not c1["PASS"]) and c1["panes_missing"] == [4],
+          str(c1["panes_missing"]))
+
+    rebuild()
+    for o in list(bpy.data.objects):
+        bpy.data.objects.remove(o, do_unlink=True)
+    c2 = east_wall_census(plan)
+    check("+ve control: THE DEFECT ITSELF -- no east glazing at all is caught",
+          (not c2["PASS"]) and len(c2["panes_missing"]) == 10,
+          "%d missing" % len(c2["panes_missing"]))
+
+    rebuild()
+    ob = bpy.data.objects["GP_b02"]
+    act, slot, _f = make_action("CENSUS_TEST", [])
+    fc = act.layers[0].strips[0].channelbag(slot).fcurves.new("hide_render",
+                                                              index=0)
+    key_constant(fc, [1, 40], [1.0, 0.0])
+    ob.animation_data_create()
+    ob.animation_data.action = act
+    ob.animation_data.action_slot = slot
+    c3 = east_wall_census(plan, at_frame=1)
+    c4 = east_wall_census(plan, at_frame=41)
+    check("+ve control: a pane that EXISTS but is hidden at frame 1 is caught",
+          (not c3["PASS"]) and c3["panes_hidden_at_frame"] == [2],
+          str(c3["panes_hidden_at_frame"]))
+    check("-ve control: the same pane visible at frame 41 is not charged",
+          c4["PASS"], str(c4["panes_hidden_at_frame"]))
+
+    rebuild()
+    me = bpy.data.meshes.new("GW_Right_Glass_00")
+    me.from_pydata([(0, 0, 0), (0, 1, 0), (0, 1, 1)], [], [[0, 1, 2]])
+    me.update()
+    bpy.context.scene.collection.objects.link(
+        bpy.data.objects.new("GW_Right_Glass_00", me))
+    c5 = east_wall_census(plan)
+    check("+ve control: a surviving round-1 plane is caught (it z-fights)",
+          (not c5["PASS"]) and c5["round1_planes_still_present"],
+          str(c5["round1_planes_still_present"]))
+
+    print("\nSTAGE RESULT: census selftest %s (%d failed)"
+          % ("FAIL" if fails else "PASS", len(fails)))
+    return 1 if fails else 0
+
+
 def prove_curves(coll, n=40):
     """Evaluate the curves.  Reading the interpolation flag back is not proof:
     that is the exact check that passed while 71,472 of 71,472 keys were BEZIER.
@@ -609,6 +752,9 @@ def parse_args():
     p.add_argument("--hero-m", type=float, default=6.0)
     p.add_argument("--detail-hero", type=int, default=2)
     p.add_argument("--detail-bulk", type=int, default=1)
+    p.add_argument("--selftest", action="store_true",
+                   help="the east-wall census against four synthetic scenes "
+                        "(R2-100).  Needs no target blend.")
     p.add_argument("--preflight-only", action="store_true",
                    help="report what this scene would need and write nothing")
     p.add_argument("--force", action="store_true",
@@ -619,6 +765,8 @@ def parse_args():
 
 def main():
     a = parse_args()
+    if a.selftest:
+        sys.exit(census_selftest())
     rq = requirements_json()
     pre = preflight(bpy.context.scene)
     log("requirements published to %s" % rq)
@@ -644,8 +792,18 @@ def main():
             proof["max_linear_eval_err"] > 1e-4:
         raise SystemExit("REFUSING: the applied curves are not LINEAR by "
                          "evaluation: %s" % proof)
+    east = east_wall_census(FR.load(a.shards))
+    log("east wall census: %s" % json.dumps(east, default=float))
+    if not east["PASS"] and not a.force:
+        raise SystemExit(
+            "REFUSING: after applying, the east wall does not contain glass "
+            "at frame 1: missing %s, hidden %s, round-1 planes still present "
+            "%s.  Beats 1-3 are the showroom and would render an open wall."
+            % (east["panes_missing"], east["panes_hidden_at_frame"],
+               east["round1_planes_still_present"]))
     bpy.ops.wm.save_as_mainfile(filepath=a.out)
-    rep = dict(stats=stats, proof=proof, preflight=pre, out=a.out,
+    rep = dict(stats=stats, proof=proof, preflight=pre, east_wall=east,
+               out=a.out,
                bytes=os.path.getsize(a.out), origin_rule=SM.ORIGIN_RULE)
     with open(a.report, "w") as fh:
         json.dump(rep, fh, indent=1, default=float)
