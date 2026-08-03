@@ -228,3 +228,28 @@ is missing, the arm FAILS and says the gate has no positive control, rather than
 being skipped. In `docs/` and not `work/`, for the reason `seam_gate` already
 gives about its own `--pre` control: work/ is gitignored, and a control a tidy-up
 can delete is not a control.
+
+---
+
+## Open, and deliberately not given a number without being asked
+
+**The peel-off's BANK is gone, and it was not a design.** R2-091 waived f2680's
+−36.97° because it "reads as a banked aerial — the shot a helicopter makes
+peeling away from a subject". That bank was the tail of the 176° runaway bleeding
+off at the limiter's rate, so removing the runaway removes it: the fixed f2680
+measures −17.5° of dominant edge against the level reference of −28.5°, i.e.
+level. Rendered, it is a clean legible aerial down the pit straight, and it is
+flatter than the frame R2-091 liked. **The bank cannot be kept without keeping
+the runaway that produced it** — every swept value either leaves the inversion
+(rate ≤ 8) or removes the bank with it (rate ≥ 10). If a banked peel-off is
+wanted it has to be AUTHORED as a declared roll on beat 6, which is R2-089's own
+closing recommendation and is a change to the beat sheet, not to `look_quat`.
+
+**Nothing in this film gates how fast the lens moves.** `campath_gate` computes
+`dlens = np.abs(np.diff(L))` and then never uses it — a dead variable, no
+detector, no bound. R2-113 introduces the film's largest single lens move, so it
+was measured against the film instead: converting focal length to the motion it
+puts on a frame-edge pixel, the push peaks at **0.659 % of frame width per frame
+at f2935**, against **2.787 % at f2254** which beat 5 already ships. The push is
+4.2× gentler than a lens move already in the film. That is a measurement, not a
+gate, and the gap is real.
