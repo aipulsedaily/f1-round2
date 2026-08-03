@@ -1,6 +1,6 @@
 """IS THE HORIZON LEVEL. The one thing about this camera nobody measures.
 
-    .venv/bin/python tools/horizon_gate.py --path render/film11_path.json
+    .venv/bin/python tools/horizon_gate.py --path world/camera_rig_path.json
     .venv/bin/python tools/horizon_gate.py --selftest --path <a built path>
     .venv/bin/python tools/horizon_gate.py --path <p> --dump --lo 2630 --hi 2700
 
@@ -251,12 +251,70 @@ CONTROLS — `--selftest`, seven cases
 import argparse
 import json
 import math
+import re
 import os
 import sys
 
 R2 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 FPS = 24.0
+# THE DEFAULT PATH GOES STALE, AND IT DID.  R2-114.
+#
+# This gate shipped defaulting to `render/film11_path.json`. film12 was built
+# twenty minutes later with R2-085's fix in it, the default was never moved, and
+# the consequence was not a stale number in a report: the N1 arm of this file's
+# own SELFTEST -- "beats 2 to 5 must PASS" -- ran against film11, found the
+# 155.65 deg roll at f1464 that film12 had already fixed, and reported
+# HORIZON_GATE_SELFTEST_BROKEN. **A negative control failing because its INPUT is
+# a generation old is indistinguishable, on the printed line, from the gate being
+# broken**, and this file had just been used to publish a finding.
+#
+# The default is now the CAMERA RIG'S OWN OUTPUT rather than a numbered film
+# scene. `anim/build_camera_rig.py` writes it, `tools/build_film_scene.py`
+# consumes it, and it is the authority on where the camera points; a numbered
+# copy in render/ is a snapshot of it and there is a new one every time anybody
+# assembles a scene. Deliberately NOT "the newest film*_path.json": picking up
+# whatever a passing agent happened to drop in render/ is how a gate ends up
+# judging something nobody chose.
+DEFAULT_PATH = os.path.join(R2, "world/camera_rig_path.json")
+
+
+def _stale_default_warning(chosen):
+    """The rig's path is the default; say so if a film scene disagrees with it.
+
+    A film*_path.json that differs from the rig means the assembled scene holds a
+    DIFFERENT camera from the one this gate just judged -- which is the R2-114
+    failure seen from the other end, and the frames come from the scene.
+    """
+    if os.path.abspath(chosen) != os.path.abspath(DEFAULT_PATH):
+        return None
+    d = os.path.join(R2, "render")
+    if not os.path.isdir(d):
+        return None
+    try:
+        mine = open(DEFAULT_PATH, "rb").read()
+    except OSError:
+        return None
+    best, gen = None, -1
+    for fn in os.listdir(d):
+        m = re.fullmatch(r"film(\d+)([a-z]*)_path\.json", fn)
+        if m and int(m.group(1)) > gen:
+            best, gen = fn, int(m.group(1))
+    if best is None:
+        return None
+    try:
+        theirs = open(os.path.join(d, best), "rb").read()
+    except OSError:
+        return None
+    if theirs == mine:
+        return None
+    return ("render/%s -- the newest assembled film scene -- holds a DIFFERENT "
+            "camera from world/camera_rig_path.json, which is what was just "
+            "judged. Rendered frames come from the scene. Re-assemble it, or "
+            "pass --path render/%s to judge what will actually be rendered."
+            % (best, best))
+
+
 TILT_FAIL_DEG = 10.0
 TILT_WARN_DEG = 4.0
 HORIZON_PITCH_DEG = 45.0
@@ -547,7 +605,7 @@ def census(P):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--path", default=os.path.join(R2, "render/film11_path.json"))
+    ap.add_argument("--path", default=DEFAULT_PATH)
     ap.add_argument("--lo", type=int)
     ap.add_argument("--hi", type=int)
     ap.add_argument("--dump", action="store_true")
@@ -573,6 +631,9 @@ def main():
     hi = a.hi if a.hi is not None else max(P)
     rows = measure(P, lo, hi)
     print(f"  source: {a.path}")
+    _w = _stale_default_warning(a.path)
+    if _w:
+        print("  STALE DEFAULT: " + _w)
     print(f"  bounds: {TILT_WARN_DEG:.0f} deg WARN / {TILT_FAIL_DEG:.0f} deg "
           f"FAIL, judged only where the view is within "
           f"{HORIZON_PITCH_DEG:.0f} deg of horizontal")
