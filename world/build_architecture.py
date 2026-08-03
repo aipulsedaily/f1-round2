@@ -1763,7 +1763,53 @@ def apron_clearance(su_s, su_u):
     d_rib = np.maximum.reduce([d_rib_in, v - (hi + RIBBON_SAW_M),
                                RIBBON_T_MIN - t,
                                t - (WC.ACCESS_TOTAL + RIBBON_SAW_M)])
-    d_out = WC.platform_edge(su_s, +1) - su_u
+    # THE OUTBOARD CUT HANDS OVER TO A BAY FIELD — WHERE THERE IS ONE, AND ONLY
+    # THERE.  `clear_c` (which cuts `build_paving`'s bay fields) is positive
+    # exactly where `|u| > platform_edge`, so `platform_edge` is the line at
+    # which this slab stops and a bay field starts.  The two predicates tile the
+    # plane at that line with no overlap and no gap — PROVIDED a bay field
+    # actually covers the other side of it.
+    #
+    # `build_paving` tiles bays over the `pit_lane`, `garages` and `paddock`
+    # rectangles.  IT DOES NOT TILE THE `apron` RECTANGLE.  So outboard of
+    # `platform_edge` and inside `apron`, this cut handed the ground to nobody:
+    # `world_ground_z` returns a finished height and names OWNER_APRON — i.e.
+    # this module — and no module laid a face.
+    #
+    # MEASURED on assembly8 (contract 1.2.1), s 3360-3500 x u 10-42 at
+    # 0.50 x 0.10 m, counting only samples where `world_ground_z` is NOT NaN:
+    # 7 803 samples = 390.15 m2 of DECLARED ground with nothing built on it,
+    # 389.30 m2 of it owned by `build_architecture:paving`.  383.05 m2 has
+    # nothing at all under the ray — not even terrain, which R2-040 cut out of
+    # the declared platform — so it is open to the sky.
+    #
+    # It went unseen because `probe_pitexit.seam_map` samples u 10.00..16.00 and
+    # the gap runs from u 10.50 to u 40.40: only 24.40 m2 of it is inside that
+    # window, and the map's own reported `u_range` maximum is 15.999..., its
+    # window edge.  A window that stops INSIDE the thing it measures reports the
+    # first slice of it as the whole.
+    #
+    # `_PIT_NOSE_X` is where the `pit_lane` and `apron` rectangles abut, and it
+    # is derived from `PIT_WALL_X0`, which v1.1.1 moved 17.7 m west.  The bay
+    # field's west end moved with it; this slab's outboard cut did not follow.
+    # SCOPED TO THE `apron` RECTANGLE, AND THE FIRST VERSION OF THIS FIX WAS NOT.
+    # Releasing the cut wherever `platform_field` is negative released it inside
+    # EVERY declared rectangle, so the grid ran to u = 62.55 against a
+    # `platform_edge` maximum of 40.56 and the slab grew 5 881.5 -> 6 421.2 m2,
+    # spilling east of the pit wall where it is not the apron's ground at all.
+    # The module's own gates caught it (test build `work/r2132/arch_fixed.blend`):
+    # 9 BLACK recesses at 30.0 mm x 310.5 mm on the new outer edge at s 3490,
+    # 3502 and 3514 -> 0.0157 of the surface beside them against a 0.10 bound,
+    # and 2 coplanar samples 22 mm under another module on the Beat-4 route.
+    # The extension belongs ONLY where the apron rectangle is the declared owner
+    # and no bay field covers the far side of `platform_edge`.
+    cx_c, cy_c = WC.world_to_circuit(wx, wy)
+    handover = np.zeros(np.shape(cx_c), bool)
+    for _nm in ("pit_lane", "garages", "paddock"):
+        handover |= in_rect(cx_c, cy_c, PLAT_RECTS[_nm], inset=0.0)
+    own_apron = in_rect(cx_c, cy_c, PLAT_RECTS["apron"], inset=0.0)
+    d_out = np.where(own_apron & ~handover, np.inf,
+                     WC.platform_edge(su_s, +1) - su_u)
     d_in = su_u - (WC.verge_edge(su_s) + APRON_JOINT_LAP_M)
     # C.platform_owner hands this surface over at apron_zone == 0.5 exactly
     d_ap = (WC.apron_zone(su_s, +1) - 0.5) * 40.0
@@ -1810,8 +1856,29 @@ def build_apron_platform(colls, rng, summary):
     P = WC.platform_edge(S, +1)
 
     clr = apron_clearance
-    UMAX = float(P.max()) + 3.0
+    # THE OUTBOARD GRID BOUND IS DERIVED FROM THE DECLARED PLATFORM, NOT FROM
+    # `platform_edge`.  This was `float(P.max()) + 3.0`, which is the same
+    # mistake as the hard-coded `3186.0, 3436.0` station window above, one axis
+    # over: a grid sized to a contract quantity that is NOT the one the cut uses.
+    # `apron_clearance` now runs outboard to the declared rectangle wherever no
+    # bay field takes over, and a grid that stops at `max(platform_edge) + 3`
+    # would silently truncate the slab at u ~ 23.9 while the declared apron runs
+    # to u ~ 40.4 — leaving the module reporting success over ground it was never
+    # given.  Ask the contract where its platform IS.
+    # ... and the bound is the `apron` RECTANGLE, not `platform_field`, for the
+    # reason written against `d_out` in `apron_clearance`: `platform_field` is
+    # negative inside every declared rectangle, so sizing the grid by it sized it
+    # to the paddock and ran to u = 62.55.
+    _up = np.arange(float(E.min()) - APRON_GRID_INSET, 60.0, 0.5)
+    _gs2, _gu2 = np.meshgrid(S, _up, indexing="ij")
+    _w2 = WC.su_to_world(_gs2.ravel(), _gu2.ravel())
+    _cx2, _cy2 = WC.world_to_circuit(_w2[:, 0], _w2[:, 1])
+    _in2 = in_rect(_cx2, _cy2, PLAT_RECTS["apron"], inset=0.0)
+    UMAX = max(float(P.max()), (float(_gu2.ravel()[_in2].max())
+                                if _in2.any() else 0.0)) + 3.0
     UMIN = float(E.min()) - APRON_GRID_INSET   # a bay and a half in: see (a) above
+    print("[apron] grid u %.2f .. %.2f  (platform_edge max %.2f; the declared "
+          "platform reaches %.2f)" % (UMIN, UMAX, float(P.max()), UMAX - 3.0))
     nu = int(math.ceil((UMAX - UMIN) / 3.0))
     j2 = APRON_BAY_JOINT
     bays = []
