@@ -155,6 +155,38 @@ with.** campath's C1 is `2·acos|q₀·q₁| / hFOV` — the total rotation angl
 two frames — so it cannot tell an axial roll from a pan. 22 % of frame width is
 what the **corners** do; the centre, where the car is, does not move.
 
+**WHAT R2-112 COSTS, RENDERED AND MEASURED.** The frames the fix spends its
+budget in are the near-nadir ones, f2631-f2655, and the argument that roll is
+free there is *weaker than it looks*: there is no horizon in them, but the CAR is
+in them at hero scale. f2639 was rendered from both cameras out of the same
+scene lineage:
+
+    f2639   mean |gradient|   p99 |gradient|
+    shipped        1.532            15.44     a crisp near-nadir hero frame --
+                                              cockpit, halo, airbox, engine
+                                              cover all readable
+    fixed          1.442            11.28     the same shot with the bodywork
+                                              smeared;  -5.9 % mean, -27 % p99
+
+That is the trade, stated plainly: **about 25 near-nadir frames lose peripheral
+detail so that 13 frames with the world in them stop being on their side.** In a
+one-take film the second is not optional and the first is a softening, not a
+break — but it is a real cost and it was paid, not avoided.
+
+**AND THERE IS A GENTLER SETTING THAT NOBODY HAS LOOKED AT.** Cone 0.15 at rate
+**8** does not level the peel-off; it lands it on a decaying BANK:
+
+    f2658  32 deg   f2666  19 deg   f2673  2 deg   f2675 onward  level
+
+which is the shot R2-091 described and liked, at a shallower angle than the
+-36.97 deg of f2680 that was rendered and accepted — and it costs less smear,
+18.92 % against 22.07 %. It is not shipped because it leaves **13 frames over
+this gate's 10 deg bound**, and taking it would mean writing a waiver for them.
+**Not one of those 13 frames has been rendered.** R2-091 is exactly what happens
+when a waiver is written before the frames exist, so the setting is recorded with
+its numbers and NOT adopted. If the banked peel-off is wanted, render ref8's
+f2658 and f2666 first and let the pictures decide.
+
 ---
 
 ## R2-113 — the closing hold was a freeze, and no single lens can show the circuit and the wound
