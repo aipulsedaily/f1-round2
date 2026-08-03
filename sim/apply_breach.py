@@ -213,6 +213,56 @@ def _aabb_hits(lo, hi, box_lo, box_hi):
                 and np.all(lo <= np.asarray(box_hi)))
 
 
+def _tris_hit_box(V, loops, box_lo, box_hi):
+    """Do any of this mesh's TRIANGLES intersect the axis-aligned box?
+
+    Exact, by the separating-axis theorem (Akenine-Moller): 3 box axes, the
+    triangle's own normal, and the 9 edge-cross-products.  Vectorised over all
+    triangles at once.
+
+    WHY NOT VERTICES, AND WHY NOT EDGES.  The pocket is a 24 mm slab in x.
+    Round 1's east mullion is a solid box spanning x 14.920..15.080 -- through
+    the slab -- with all eight vertices outside it (a vertex test sees
+    nothing) AND all twelve edges outside it, because the x-running edges sit
+    at z = 0.0 and z = 6.2, beyond the pocket's z range, and the z-running
+    edges sit at x = 14.920 and 15.080, beyond its x range.  What passes
+    through the pocket is the mullion's SIDE FACES.  A solid is not its
+    vertices and it is not its edges either.
+    """
+    if not len(loops):
+        return 0
+    tri = []
+    for f in loops:
+        for k in range(1, len(f) - 1):
+            tri.append((f[0], f[k], f[k + 1]))
+    if not tri:
+        return 0
+    T = V[np.asarray(tri, np.int32)]                       # (n,3,3)
+    c = 0.5 * (np.asarray(box_lo) + np.asarray(box_hi))
+    h = 0.5 * (np.asarray(box_hi) - np.asarray(box_lo))
+    T = T - c                                              # box at origin
+    ok = np.ones(len(T), bool)
+    # 3 box axes
+    for ax in range(3):
+        ok &= ~((T[:, :, ax].min(1) > h[ax]) | (T[:, :, ax].max(1) < -h[ax]))
+    E = np.stack([T[:, 1] - T[:, 0], T[:, 2] - T[:, 1], T[:, 0] - T[:, 2]], 1)
+    # the triangle's own plane
+    N = np.cross(E[:, 0], E[:, 1])
+    d = (N * T[:, 0]).sum(-1)
+    r = (np.abs(N) * h).sum(-1)
+    ok &= np.abs(d) <= r
+    # 9 edge cross products
+    for i in range(3):
+        for j in range(3):
+            a = np.zeros((len(T), 3))
+            a[:, (j + 1) % 3] = -E[:, i, (j + 2) % 3]
+            a[:, (j + 2) % 3] = E[:, i, (j + 1) % 3]
+            pr = (T * a[:, None, :]).sum(-1)
+            rr = (np.abs(a) * h).sum(-1)
+            ok &= ~((pr.min(1) > rr) | (pr.max(1) < -rr))
+    return int(ok.sum())
+
+
 def preflight(scene, strict=True):
     """Check what can be checked in the target scene.  Refuse, do not adapt."""
     import bpy as _b
@@ -272,9 +322,36 @@ def preflight(scene, strict=True):
         m = ((V[:, 0] > POCKET_LO[0]) & (V[:, 0] < POCKET_HI[0])
              & (V[:, 2] > POCKET_LO[2]) & (V[:, 2] < POCKET_HI[2])
              & (np.abs(V[:, 1]) < 11.0))
-        if m.any():
-            intr.append((o.name, int(m.sum())))
+        n_in = int(m.sum())
+        # A VERTEX TEST IS VACUOUS AGAINST THE THING IT WAS WRITTEN FOR.
+        # The pocket is 24 mm deep in x.  Round 1's east mullions are solid
+        # boxes spanning x 14.920..15.080 -- straight THROUGH the pocket --
+        # and their eight vertices are all OUTSIDE it, four at 14.920 and four
+        # at 15.080.  So `V inside pocket` is empty and R5 reported "clear" on
+        # 29,387 meshes with eleven aluminium bars lying through the glass.
+        # A solid is not its vertices.
+        #
+        # The fix is to test the EDGES as segments against the pocket box.  A
+        # convex member that straddles a 24 mm slab must have an edge crossing
+        # it, which is exactly the case the vertex test cannot see.  Slab
+        # method, vectorised over all edges at once.
+        n_tri = 0
+        if n_in == 0:
+            loops = [list(pl.vertices) for pl in o.data.polygons]
+            n_tri = _tris_hit_box(V, loops,
+                                  (POCKET_LO[0], -11.0, POCKET_LO[2]),
+                                  (POCKET_HI[0], 11.0, POCKET_HI[2]))
+        if n_in or n_tri:
+            intr.append((o.name, n_in, n_tri))
     out["pocket_aabb_candidates"] = cand
+    out["pocket_intruders"] = [list(x) for x in intr]
+    out["R5_measures"] = ("vertices inside the pocket, AND triangles "
+                          "intersecting it by the separating-axis theorem. "
+                          "The triangle arm exists because round 1's east "
+                          "mullions pass through the pocket with every vertex "
+                          "AND every edge outside it -- it is their side FACES "
+                          "that cross -- and the vertex-only test reported "
+                          "`clear` on 29,387 meshes.")
     chk("R5", not intr, "found %d: %s" % (len(intr), intr[:4]) if intr
         else "clear")
     return out
@@ -683,6 +760,50 @@ def census_selftest():
     check("+ve control: a surviving round-1 plane is caught (it z-fights)",
           (not c5["PASS"]) and c5["round1_planes_still_present"],
           str(c5["round1_planes_still_present"]))
+
+    # ---- R5, THE POCKET, AND THE VERTEX TEST THAT COULD NOT SEE A BOX ---- #
+    for o in list(bpy.data.objects):
+        bpy.data.objects.remove(o, do_unlink=True)
+
+    def box(name, x0, x1, y0, y1, z0, z1):
+        me = bpy.data.meshes.new(name)
+        V = [(x, y, z) for x in (x0, x1) for y in (y0, y1) for z in (z0, z1)]
+        F = [[0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1],
+             [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3]]
+        me.from_pydata(V, [], F)
+        me.validate(verbose=False)
+        me.update()
+        ob = bpy.data.objects.new(name, me)
+        bpy.context.scene.collection.objects.link(ob)
+        return ob
+
+    # ROUND 1'S ACTUAL EAST MULLION: solid, x 14.920..15.080, straight through
+    # the 24 mm pocket, and not one vertex inside it.
+    ob = box("GW_Right_Mull_05", 14.920, 15.080, -0.0375, 0.0375, 0.0, 6.2)
+    V = _world_verts(ob)
+    inside = ((V[:, 0] > 14.9455) & (V[:, 0] < 14.9695)).sum()
+    pre = preflight(bpy.context.scene, strict=False)
+    r5 = [c for c in pre["checks"] if c["id"] == "glazing_pocket_clear"][0]
+    check("+ve control: a SOLID BOX through the pocket with ZERO vertices "
+          "inside it is caught", (not r5["passed"]) and inside == 0,
+          "%d verts inside, R5 %s" % (inside,
+                                      "PASS" if r5["passed"] else "FAIL"))
+
+    for o in list(bpy.data.objects):
+        bpy.data.objects.remove(o, do_unlink=True)
+    box("Bar_east_of_the_pocket", 14.980, 15.080, -1.0, 1.0, 0.0, 6.2)
+    pre = preflight(bpy.context.scene, strict=False)
+    r5 = [c for c in pre["checks"] if c["id"] == "glazing_pocket_clear"][0]
+    check("-ve control: a bar entirely EAST of the pocket is not charged",
+          r5["passed"], str(pre.get("pocket_intruders")))
+
+    for o in list(bpy.data.objects):
+        bpy.data.objects.remove(o, do_unlink=True)
+    box("Bar_below_the_pocket", 14.90, 15.08, -1.0, 1.0, -1.0, 0.080)
+    pre = preflight(bpy.context.scene, strict=False)
+    r5 = [c for c in pre["checks"] if c["id"] == "glazing_pocket_clear"][0]
+    check("-ve control: a bar below the pocket's z range is not charged",
+          r5["passed"], str(pre.get("pocket_intruders")))
 
     print("\nSTAGE RESULT: census selftest %s (%d failed)"
           % ("FAIL" if fails else "PASS", len(fails)))
