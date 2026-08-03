@@ -86,17 +86,47 @@ widest in the film -- and aimed at 0.08 deg, the best aim of any beat.
     the breached opening, 9.6 m wide   1.05 % of frame width   20 px of 1920
     the car, 5.698 m long              0.63 %                  12 px of 1920
 
-The circuit reads, and it reads well. The wound is a bright notch about 20 px
-across -- present, centred, and genuinely visible at a 6x zoom, but 20 px. The
-car cannot be found in the frame at all; an agent looking for it picked out a
-pale paddock structure instead.
+**AND THE 12 px IS A NUMBER ABOUT SOMETHING THAT IS NOT IN THE PICTURE. THIS
+PARAGRAPH IS A CORRECTION OF THE ONE ABOVE IT, AND THE ERROR IS THIS FILE'S
+OWN.** `angular_extent_deg` answers "how big would it be"; it never asks
+"is it in frame". Projecting the car exactly -- into camera space with the
+stored quaternion, divided through to normalised device coordinates rather
+than compared as an angle against a half-FOV, which is only right on the
+horizontal centre line -- gives at f2978:
 
-The two are not independently fixable, and the arithmetic says why. To put the
-car at 2 % of frame width you either need a **73.8 mm lens** at this range,
-which is a telephoto and not a closing wide, or you need to close to **188 m**,
-which is a third of the circuit rather than all of it. A 595 m whole-circuit
-wide cannot contain a legible car. The brief asks for both, so somebody has to
-choose, and it is not this file's choice to make.
+    the wound   ndc x = +0.000, y = +0.000     dead centre
+    the car     ndc x = **+2.745**, y = -0.332  2.7 frame-HALF-WIDTHS off the
+                                                right edge, 1000.1 m away
+
+The car is not small in the closing frame. **It is not in it**, and has not
+been since **f2832** -- 146 frames, 6.08 s of a 14.04 s beat. An agent sent to
+find it in f2978 reported a pale paddock structure instead, which is the
+correct answer to the question "what is at frame centre" and was read at the
+time as the car being too small.
+
+So the trade this file first described does not exist, and the correction runs
+the opposite way to the intuition: **a longer lens makes it worse.** 18.75 mm
+puts the car at ndc +2.745; 40 mm at +5.856; 74 mm at +10.834. Closing the
+camera in does not help either -- the car and the wound are 69.3 deg apart
+seen from the closing vantage, and no focal length narrows that.
+
+    the car in beat 6, measured             the wound at 595.4 m, by lens
+      last frame >= 40 px wide   f2756        18.75 mm   20 px   frame spans
+      last frame >= 20 px wide   f2806        40 mm      37 px   1143 / 536 /
+      last frame IN FRAME AT ALL f2832        74 mm      65 px   290 m of circuit
+
+The film's "car streaking on" beat is real and it lives at f2756-2832, not at
+the end. What the closing frame can be made to do is let its OWN declared
+subject read: the wound goes 20 px to 65 px between 18.75 mm and 74 mm, and
+the circuit in frame falls from 1143 m to 290 m. That is the actual choice,
+and it is still not this file's to make.
+
+THE GENERAL FORM, which is why this is written up rather than quietly fixed:
+**an extent is only meaningful for a subject that is in frame, and this file
+computed one for six seconds of a subject that was not.** The rig's aim gate
+does report where the subject lands in frame; this file did not consult it and
+did not do its own projection. That is the same shape as the EXTENT demotion
+above -- a number that is arithmetically right and about the wrong thing.
 
 Two things that are NOT wrong and were checked before writing this down:
   * the 3 s hold is exact. Camera travel over f2906-2978 is **0.00 m in 72
@@ -116,7 +146,7 @@ It also does not judge beat 1, whose subject is a FIELD of exploded parts and
 not a point — `Subject.nearest_field` exists for exactly that reason and this
 file refuses beat 1 rather than reporting a number about the wrong subject.
 
-CONTROLS — `--selftest`, seven cases whose verdicts are known in advance
+CONTROLS — `--selftest`, eight cases whose verdicts are known in advance
 -----------------------------------------------------------------------
   P1  a SYNTHETIC case with a closed form: a subject held at exactly 10.000 m
       moving at exactly 100.000 m/s across the line of sight, on a 36 mm
@@ -144,6 +174,10 @@ CONTROLS — `--selftest`, seven cases whose verdicts are known in advance
       P2 and N5 are the same 51 frames of the same shot before and after one
       anchor moved, which is the only pair that shows this gate measures the
       pass and not merely beat 5.
+  N6  beat 6 measured against the CAR rather than its declared subject:
+      the instrument must report the car leaving frame at f2833 and out for
+      the rest of the film. The declared subject is in frame throughout, so
+      only this framing exposes the mistake R2-090 records.
   N4  agreement: over N1's window the omega this file DERIVES from geometry
       and the omega `continuity_gate` MEASURES from the quaternion track
       must agree to better than 15 % of frame width. They are computed from
@@ -260,6 +294,34 @@ def car_box(car, wt):
     return out
 
 
+def ndc_of(cam_p, q, lens_mm, target, sensor_w=SENSOR_W_MM, aspect=1920.0 / 1080.0):
+    """Normalised device coordinates of a world point. |x|,|y| <= 1 is in frame.
+
+    R2-090: this file spent six seconds of beat 6 reporting the angular size of
+    a car that was 2.7 frame-half-widths outside the right edge. An extent is
+    only meaningful for a subject that is IN FRAME, so the two are computed
+    together now and `extent_pct` is never reported without `in_frame` beside
+    it.
+
+    Done by projection, not by comparing an angle to a half-FOV: that shortcut
+    is only correct on the horizontal centre line and is wrong everywhere else.
+    Returns None when the point is behind the lens.
+    """
+    n = math.sqrt(sum(c * c for c in q)) or 1.0
+    w, x, y, z = [c / n for c in q]
+    right = (1 - 2 * (y * y + z * z), 2 * (x * y + w * z), 2 * (x * z - w * y))
+    up = (2 * (x * y - w * z), 1 - 2 * (x * x + z * z), 2 * (y * z + w * x))
+    fwd = (-2 * (x * z + w * y), -2 * (y * z - w * x), -(1 - 2 * (x * x + y * y)))
+    d = [target[i] - cam_p[i] for i in range(3)]
+    zc = sum(d[i] * fwd[i] for i in range(3))
+    if zc <= 1e-9:
+        return None
+    xc = sum(d[i] * right[i] for i in range(3))
+    yc = sum(d[i] * up[i] for i in range(3))
+    return (2.0 * xc * lens_mm / (zc * sensor_w),
+            2.0 * yc * lens_mm * aspect / (zc * sensor_w))
+
+
 def hfov_deg(lens_mm):
     return math.degrees(2.0 * math.atan(SENSOR_W_MM / (2.0 * max(lens_mm, 1e-6))))
 
@@ -284,7 +346,7 @@ def angular_extent_deg(eye, pts):
 
 # ---------------------------------------------------------------- the model --
 def sweep_series(cam_of_frame, lens_of_frame, sheet, car, W, lo, hi,
-                 subject_of_frame=None, extent_pts=None):
+                 subject_of_frame=None, extent_pts=None, quat_of_frame=None):
     """Per frame: range, v_perp, required omega, subject extent.
 
     `cam_of_frame(f) -> (x, y, z)` is the only thing that differs between a
@@ -308,6 +370,18 @@ def sweep_series(cam_of_frame, lens_of_frame, sheet, car, W, lo, hi,
         ext = angular_extent_deg(cam, pts) if pts else float("nan")
         row = {"f": f, "beat": beat, "range_m": r, "lens_mm": L, "hfov_deg": hf,
                "extent_deg": ext, "extent_pct": 100.0 * ext / hf}
+        # R2-090. None means "no rotation available here" -- the anchor-spline
+        # source has positions and no orientation -- and is NOT the same as
+        # False. A gate that cannot tell those apart is how the last one went
+        # wrong.
+        q = quat_of_frame(f) if quat_of_frame else None
+        if q is None:
+            row["in_frame"] = None
+        else:
+            n = ndc_of(cam, q, L, sub)
+            row["ndc"] = None if n is None else [round(n[0], 4), round(n[1], 4)]
+            row["in_frame"] = bool(n is not None and abs(n[0]) <= 1.0
+                                   and abs(n[1]) <= 1.0)
         if prev is not None:
             rel = [((sub[i] - cam[i]) - prev[i]) * FPS for i in range(3)]
             u = [x / r for x in d]
@@ -320,6 +394,21 @@ def sweep_series(cam_of_frame, lens_of_frame, sheet, car, W, lo, hi,
         rows.append(row)
         prev = d
     return rows
+
+
+def _runs(fs):
+    """Consecutive frame numbers grouped into (first, last) runs."""
+    out, cur = [], []
+    for f in fs:
+        if cur and f == cur[-1] + 1:
+            cur.append(f)
+        else:
+            if cur:
+                out.append((cur[0], cur[-1]))
+            cur = [f]
+    if cur:
+        out.append((cur[0], cur[-1]))
+    return out
 
 
 def judge(rows):
@@ -337,6 +426,9 @@ def summarise(rows, label):
     ws = max(sw, key=lambda r: r["sweep_pct"])
     we = max(rows, key=lambda r: r["extent_pct"])
     n_over = sum(1 for r in rows if r["extent_pct"] >= EXTENT_NOTE_PCT)
+    known = [r for r in rows if r.get("in_frame") is not None]
+    n_out = sum(1 for r in known if not r["in_frame"])
+    out_runs = _runs([r["f"] for r in known if not r["in_frame"]])
     wr = min(rows, key=lambda r: r["range_m"])
     fails, warns = judge(rows)
     ff = sorted({r["f"] for r in fails})
@@ -348,6 +440,9 @@ def summarise(rows, label):
             "worst_sweep_vperp_ms": ws["v_perp_ms"],
             "worst_extent_pct": we["extent_pct"], "worst_extent_frame": we["f"],
             "extent_over_frame_width_frames": n_over,
+            "subject_out_of_frame_frames": n_out,
+            "subject_out_of_frame_runs": out_runs,
+            "in_frame_measurable": len(known),
             "min_range_m": wr["range_m"], "min_range_frame": wr["f"],
             "fail_frames": ff, "n_fail": len(ff),
             "n_warn": len({r["f"] for r in warns}),
@@ -364,6 +459,10 @@ def report(s):
     print(f"    worst EXTENT {s['worst_extent_pct']:6.2f} % of frame width "
           f"at f{s['worst_extent_frame']}  ({s['extent_over_frame_width_frames']} "
           f"frames over 100 % — DIAGNOSTIC, does not gate)")
+    if s.get("in_frame_measurable"):
+        print(f"    subject OUT OF FRAME on {s['subject_out_of_frame_frames']} of "
+              f"{s['in_frame_measurable']} frames {s['subject_out_of_frame_runs'] or ''}"
+              f"  — an extent is meaningless on these (R2-090)")
     print(f"    min range    {s['min_range_m']:6.3f} m at f{s['min_range_frame']}")
     print(f"    {s['n_fail']} FAIL frames, {s['n_warn']} WARN frames -> "
           f"{s['verdict']}")
@@ -378,6 +477,11 @@ def from_path(path_json):
     return (lambda f: tuple(P[f]["p"]) if f in P else None,
             lambda f: float(P[f].get("lens", 35.0)) if f in P else 35.0,
             sorted(P))
+
+
+def quats_from_path(path_json):
+    P = {e["f"]: e for e in json.load(open(path_json))["path"]}
+    return lambda f: tuple(P[f]["q"]) if f in P else None
 
 
 def from_anchors(sheet, car, W):
@@ -470,6 +574,32 @@ def selftest(path_json):
         if not ok:
             bad.append(tag)
 
+    # N6: THE ARM THAT WOULD HAVE CAUGHT R2-090.
+    #
+    # Beat 6's DECLARED subject after t+6.0 is the breached facade, and it is
+    # centred to 0.08 deg, so the in-frame test reports 0 out-of-frame frames
+    # for the beat -- correctly. The error R2-090 records was made one level
+    # up: a person quoted the CAR's extent for the closing frame, when the car
+    # stopped being the subject at t+4.0. So the arm has to ask the question
+    # that was actually asked wrongly -- measure beat 6 against the car -- and
+    # assert that the instrument says the car has left the frame.
+    quat = quats_from_path(path_json)
+    car_rows = sweep_series(
+        cam, lens, sheet, car, W, 2700, 2978, quat_of_frame=quat,
+        subject_of_frame=lambda f: tuple(car.pos(W[f])))
+    known = [r for r in car_rows if r["in_frame"] is not None]
+    out = [r for r in known if not r["in_frame"]]
+    first_out = min((r["f"] for r in out), default=0)
+    ok = len(known) == len(car_rows) and first_out == 2833
+    print(f"  {'PASS' if ok else 'FAIL'}  N6 beat 6 measured against the CAR "
+          f"instead of its declared subject: the car leaves the frame at "
+          f"f{first_out} and is out for {len(out)} of {len(known)} frames. "
+          f"Its extent is still computable and still meaningless there -- that "
+          f"is R2-090, and this arm is the reason the two are now reported "
+          f"together.")
+    if not ok:
+        bad.append("N6")
+
     # N4: agreement with the quaternion track over N1's window.
     P = {e["f"]: e for e in json.load(open(path_json))["path"]}
     rows = sweep_series(cam, lens, sheet, car, W, 1100, 1180)
@@ -517,9 +647,11 @@ def main():
     sheet, spec, car, W, total = context(a.sheet)
     if a.anchors:
         cam, lens, fs = from_anchors(sheet, car, W)
-        src = "the author's anchor spline (tools/author_beats2_5.build_anchors)"
+        quat = None
+        src = "the author's anchor spline (positions only, so no in-frame test)"
     else:
         cam, lens, fs = from_path(a.path)
+        quat = quats_from_path(a.path)
         src = a.path
     lo = a.lo if a.lo is not None else fs[0]
     hi = a.hi if a.hi is not None else fs[-1]
@@ -530,7 +662,7 @@ def main():
         lo = max(lo, int(round(next(b["start_s"] for b in sheet["beats"]
                                     if b["name"] == "2_launch") * FPS)) + 1)
 
-    rows = sweep_series(cam, lens, sheet, car, W, lo, hi)
+    rows = sweep_series(cam, lens, sheet, car, W, lo, hi, quat_of_frame=quat)
     print(f"  source: {src}")
     print(f"  bounds: SWEEP {SWEEP_WARN_PCT:.0f} % WARN / {SWEEP_FAIL_PCT:.0f} % "
           f"FAIL of frame width per frame, quoted from {_BOUND_SRC}; "
