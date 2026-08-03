@@ -329,5 +329,36 @@
   "AND_A_SECOND_THING_THAT_IS_WORSE": "the aluminium in the scene is ROUND ONE's. GW_Right_Mull_00..10, _Sill, _Head, _Transom_0/1/2, _BaseReveal - 26 objects the joiner keeps and nothing in round 2 touches. Three things are wrong with it and all three are visible: it is a solid box x 14.920..15.080, so it stands 80 mm EAST of the breach plane that mullion_intact.section() says nothing may cross; its transoms are at z 1.35/2.85/4.35 against the sim's 1.60/3.10/4.60, 250 mm out; and IT NEVER MOVES, because R6 is unfulfilled and the 152 MUL*/TRN* transforms in the table have nothing to bind to.",
   "SEEN": "render/breach_f9/f9_1920_f0880.png. The car is already outside on the forecourt and the east wall is a spiderweb of crack lines in a still-flat sheet, with a dead-straight undeformed aluminium grid across the whole aperture. It reads as a cracked windscreen, not a breach. That single frame is the shipped 4000 configuration and R6 in one picture.",
   "THE_GEOMETRY_IS_NOT_MINE": "world/items/mullion_intact.py builds the real extrusion and declares breach_state(); mullion_bent_stub is manifest item 108 and does not exist as code. Nothing in world/ or tools/ imports mullion_intact for geometry at all - the only importers are sim/fracture.py and sim/breachlib.py, and they read the interface JSON. Closing R6 means building segmented mullion geometry and that belongs to world/items/, not here."
+ },
+ "R5_RE_RUN_ON_REAL_GEOMETRY": {
+  "scene": "world/verify_showroom.blend, 293 MB, the scene R3 names.  Run with the non-vacuous R5.  Report at sim/out/preflight_pocket_R5.json.",
+  "candidates": 27,
+  "CAPTURE_BAND_correct_and_not_a_refusal": [
+   "GW_Right_Mull_00..10 (all eleven)",
+   "GW_Right_Sill",
+   "GW_Right_Head",
+   "GW_Front_Head",
+   "GW_Front_Sill",
+   "GW_Front_Glass_13",
+   "WallLine_Side",
+   "Wall_SideY"
+  ],
+  "reading_of_that": "exactly the members that are SUPPOSED to capture the glass edge, and nothing else.  The discrimination works on real geometry and not only on the synthetic controls.",
+  "IN_THE_CLEAR_OPENING_and_therefore_a_refusal": [
+   {
+    "name": "GW_Right_Transom_0/1/2",
+    "why": "round 1's three horizontal transoms run ACROSS the bays at z 1.35 / 2.85 / 4.35, at the pocket's depth.  They are bars through the middle of the picture, and the new 11.5 mm laminate would pass straight through them.  This is precisely the case R5's own `why` describes: 'a solid mullion or sill laid through it starts every clamped shard inside metal'."
+   },
+   {
+    "name": "WallLine_SideFin_0/1",
+    "why": "side fins crossing the pocket inside a bay"
+   },
+   {
+    "name": "GW_Front_Mull_14 and GW_Front_Transom_0/1/2",
+    "why": "the SOUTH wall at the corner.  Its members are 0.16 m deep in y, centred on y = -11.000, so they reach to -10.92 and overlap bay 0's clear opening, which starts at -10.9615.  A real 41 mm overlap at the building corner, not an artefact of the test."
+   }
+  ],
+  "WHAT_THIS_MEANS_FOR_THE_RE_APPLY": "the apply will REFUSE on the current film scene, and the refusal is TRUE.  It is not about the glass I am restoring; it is about round 1's frame still being the frame.  Closing it properly is R6 - build the real segmented mullions and transoms from world/items/ and delete round 1's - and that geometry is not mine.  So the re-apply is done with --force, deliberately, with sim/out/preflight_pocket_R5.json saved alongside naming every intruder.  That is what --force is for and it is the only use of it here.",
+  "the_alternative_I_rejected": "scoping the pocket so the transoms stop registering.  That would make the check pass by making it blind again, which is the whole defect it was just fixed for."
  }
 }
