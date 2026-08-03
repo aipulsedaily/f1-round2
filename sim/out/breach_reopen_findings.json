@@ -360,5 +360,80 @@
   ],
   "WHAT_THIS_MEANS_FOR_THE_RE_APPLY": "the apply will REFUSE on the current film scene, and the refusal is TRUE.  It is not about the glass I am restoring; it is about round 1's frame still being the frame.  Closing it properly is R6 - build the real segmented mullions and transoms from world/items/ and delete round 1's - and that geometry is not mine.  So the re-apply is done with --force, deliberately, with sim/out/preflight_pocket_R5.json saved alongside naming every intruder.  That is what --force is for and it is the only use of it here.",
   "the_alternative_I_rejected": "scoping the pocket so the transoms stop registering.  That would make the check pass by making it blind again, which is the whole defect it was just fixed for."
+ },
+ "THE_SECOND_SEED__started_not_finished": {
+  "why_the_sweep_was_single_seeded": "not a decision. sim/fracture.py's main() hard-coded the output path, so the only way to make a second plan was to overwrite sim/out/fracture_wall.npz - the plan every baked table, every applied scene and every instrument is keyed to BY SHARD ID. It would have silently re-numbered 3,796 shards under a bake that still referred to the old ones. Fixed: fracture.py now takes --out, and its help says what the default does, because the default is the dangerous one.",
+  "seed_2_plan_built": "sim/tmp/fracture_wall_seed2.npz, seed 20260804 against the shipping 20260803. Free: the plan build is pure numpy and takes seconds.",
+  "WHAT_IT_ALREADY_ANSWERS_WITHOUT_A_BAKE": {
+   "total_shards": {
+    "seed1": 3800,
+    "seed2": 3827
+   },
+   "per_bay_n": {
+    "bay2": [
+     195,
+     192
+    ],
+    "bay3": [
+     202,
+     209
+    ],
+    "bay4": [
+     1531,
+     1529
+    ],
+    "bay5": [
+     1485,
+     1492
+    ],
+    "bay6": [
+     200,
+     216
+    ],
+    "bay7": [
+     183,
+     185
+    ]
+   },
+   "clamped_per_bay": {
+    "bay2": [
+     46,
+     46
+    ],
+    "bay3": [
+     62,
+     51
+    ],
+    "bay4": [
+     227,
+     227
+    ],
+    "bay5": [
+     209,
+     209
+    ],
+    "bay6": [
+     47,
+     54
+    ],
+    "bay7": [
+     50,
+     47
+    ]
+   },
+   "median_shard_area_m2": {
+    "bay4": [
+     0.00042,
+     0.00044
+    ],
+    "bay5": [
+     0.00043,
+     0.00044
+    ]
+   },
+   "reading": "the two plans are the same plan to within a per cent on every count that drives the sim. Bay 4 differs by 2 shards in 1,531 and its clamped count is IDENTICAL at 227, as is bay 5's at 209. So the fracture plan is NOT where the run-to-run variance lives, and a second seed will be a test of the SOLVER given a plan, not of the plan. That is worth knowing before spending the bake."
+  },
+  "STILL_NOT_DONE": "the seed-2 BAKE. It is a 300-frame run at the recommended configuration, about 30 minutes of one core, and the command is: blender -b --factory-startup -P sim/build_breach_sim.py -- --shards sim/tmp/fracture_wall_seed2.npz --frames 300 --bake --out sim/tmp/s2.blend --export sim/tmp/s2.npz --report sim/tmp/s2.json, then sim/breach_metrics.py on the pair. It was not run because the box has one core free and the 1,657-frame bake owns it, and because the farm's exec refuses to deploy over a running render, which it was doing.",
+  "what_the_seed_2_bake_would_settle": "whether the 96.8 % / 97.8 % vacated figure for bay 4 is a property of the impact or of one particular set of crack lines. Given how close the two plans are, I expect it to be the impact - but that is a prediction and it has not been tested."
  }
 }
