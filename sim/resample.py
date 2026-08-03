@@ -246,24 +246,51 @@ RELEASE_EPS_M = 0.002
 
 
 def release_for_film(frames, loc, car=None):
-    """THE release rule, in ONE place, because it was in two and they differed.
+    """THE release rule, in ONE place, because it was in two and they differed
+    -- and then in a third, because BOTH of the first two were wrong.
 
-    `main()` used to call `release_frames(frames, loc)` -- from the FIRST frame
-    of the table, with the 0.2 mm default.  `sim/remote_bake.py` measured it
-    from the state at IMPACT with a 2 mm threshold, and wrote down why:
+    WHAT THE SWAP FRAME HAS TO BE.  `sim/apply_breach.py` hides a bay's intact
+    pane and shows its shards on one frame.  That frame must be the first film
+    frame on which the glass is no longer where the wall was built.  A frame
+    early and the wall shatters before it is hit; a frame late and an intact
+    pane renders over glass that has visibly moved.
 
-        the bonded wall settles a fraction of a millimetre under its own
-        weight before the car arrives, and a 0.2 mm trigger would fire the
-        intact-pane swap on EVERY shard at frame 855 -- the wall would shatter
-        five frames before the car touched it, and nothing in the transform
-        table would look wrong.
+    THE TWO RULES THAT WERE IN THE FILE, AND WHY NEITHER IS IT.
 
-    Both are entry points to the same pipeline and they disagreed about the
-    frame the wall breaks.  Whichever ran, the other was wrong.  This is the
-    rule; both call it now.
+    (1) `release_frames(frames, loc)` -- 0.2 mm from the FIRST frame of the
+        table.  This is what `main()` did and it is what produced the shipped
+        table.  It breaks when the wall creeps before the car arrives: the
+        bonded wall settles a fraction of a millimetre under its own weight,
+        and a 0.2 mm trigger fires the swap on every shard while the car is
+        still metres away.  On a synthetic wall with 0.4 mm of pre-impact
+        creep it fires SEVEN FRAMES EARLY.
+
+    (2) 2 mm from the state AT the impact frame.  This is what
+        `sim/remote_bake.py` did.  It fixes (1) and introduces the opposite
+        error, which is worse because it is silent: ONE FILM FRAME SPANS THE
+        WHOLE IMPACT.  Frame 859 is 36.5 ms before contact and frame 860 is
+        5.1 ms after it, and in between bay 4's glass moves a median 128.9 mm
+        and a maximum 350.2 mm.  Referencing AT frame 860 measures that motion
+        as zero, so the rule waits for a further 2 mm and fires at 861.  The
+        pane then renders intact for one frame over glass a third of a metre
+        out of place.  I unified on this rule first, which would have made the
+        shipped behaviour worse.
+
+    (3) THE RULE.  Reference the last film frame STRICTLY BEFORE contact, and
+        use the 2 mm threshold.  Referencing before contact keeps the impact's
+        first frame visible; referencing at contact rather than at the start of
+        the table makes it immune to whatever the wall did while it was
+        waiting.  On the shipped bake it fires at 860, which is right; on the
+        synthetic creep it fires at the impact, which is also right.
+
+    Returns (release_per_body, reference_frame).
     """
     car = car or BL.Car()
-    i0 = int(np.argmin(np.abs(frames - int(round(car.impact_frame())))))
+    # STRICTLY before: floor, not round.  The impact is at 859.876, and frame
+    # 859 is the last one that is entirely before it.
+    fimp = float(car.impact_frame())
+    pre = frames[frames <= math.floor(fimp)]
+    i0 = (len(pre) - 1) if len(pre) else 0
     rel = release_frames(frames[i0:], loc[i0:], eps=RELEASE_EPS_M)
     return rel, int(frames[i0])
 
@@ -365,16 +392,33 @@ def selftest():
     L[:15, :, 2] = -settle[:, None]
     L[15:, :, 2] = -0.0004
     L[20:, :, 0] = np.linspace(0, 2.0, len(fr) - 20)[:, None]
-    naive = release_frames(fr, L)                          # 0.2 mm from f[0]
-    good, ref = release_for_film(fr, L, car)
-    check("+ve control: the 0.2 mm rule from frame 1 fires BEFORE the impact",
+    naive = release_frames(fr, L)                          # rule (1)
+    at_impact = release_frames(fr[15:], L[15:], eps=RELEASE_EPS_M)  # rule (2)
+    good, ref = release_for_film(fr, L, car)               # rule (3)
+    check("+ve control (1): 0.2 mm from the table start fires BEFORE impact",
           naive.min() < imp, "fires at %d, impact %d" % (naive.min(), imp))
-    check("-ve control: the impact-referenced 2 mm rule does not",
-          good.min() >= imp and ref == imp,
-          "fires at %d, reference %d" % (good.min(), ref))
-    check("and the two rules disagree, which is the point",
+    check("-ve control (3): the rule does not fire before the impact",
+          good.min() >= imp, "fires at %d, impact %d" % (good.min(), imp))
+    check("(3) references the last frame STRICTLY before contact",
+          ref == imp - 1, "reference %d, impact %d" % (ref, imp))
+    check("and (1) and (3) disagree, which is the point",
           int(naive.min()) != int(good.min()),
           "%d vs %d" % (naive.min(), good.min()))
+
+    # THE CONTROL THAT CONDEMNS RULE (2), and the one I did not have when I
+    # unified on it.  One film frame spans the whole impact: the glass moves
+    # 129 mm between the last pre-impact frame and the first post-impact one.
+    # A rule that references AT the impact frame measures that as zero.
+    L2 = np.zeros((len(fr), n, 3))
+    L2[15:, :, 0] = 0.129                       # the step across the impact
+    L2[16:, :, 0] = 0.129 + 0.0005              # then only 0.5 mm more
+    r2 = release_frames(fr[15:], L2[15:], eps=RELEASE_EPS_M)
+    r3, _ = release_for_film(fr, L2, car)
+    check("+ve control (2): referencing AT the impact frame MISSES a 129 mm "
+          "step and never fires", int(r2.max()) < 0,
+          "fires at %s" % (r2.max() if r2.max() > 0 else "never"))
+    check("-ve control (3): the same step fires on the impact frame",
+          int(r3.min()) == imp, "fires at %d" % r3.min())
 
     print("\n%d check(s) FAILED" % len(fails) if fails else "\nall checks passed")
     return 1 if fails else 0

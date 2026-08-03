@@ -296,14 +296,35 @@
    "evidence": "shard_meta totals 2,240.9 kg against the docstring's 4.9 kg per pane"
   },
   {
-   "id": "NUMBER PENDING - my block R2-092..099 was fully consumed by the eight above, and R2-100 was taken by another agent while I worked",
-   "title": "the east wall has no glass in any current film scene, and the metric watching it counts round 1's names",
-   "evidence": "work/lighting/f860_full_a6.png; measured_film10/11 n_GW_Right_Glass = 0 with no BREACH collection; sim/apply_breach.py::east_wall_census and its six controls"
+   "id": "R2-124",
+   "title": "the east wall has no glass in any current film scene, and the metric watching it counts round 1's names so it could never have said otherwise",
+   "the_scene": "n_GW_Right_Glass = 0 on film9, film10, film11 and film11_r2085cam. work/lighting/f860_full_a6.png shows bare aluminium bars with the paddock, pit wall and grandstand visible through them. Beats 1-3 are the showroom, so this is roughly a third of a film with no cuts.",
+   "the_cause": "tools/build_film_scene.py executes sim/apply_breach.py's own requirement R3 and deletes GW_Right_Glass_00..09. It is right to. R3 is written on the understanding that apply_breach supplies the replacement, and it does - GP_b00..GP_b09, all ten bays. But apply_breach is a separate invocation on an already-built blend and the joiner cannot know whether it was ever run, so every world rebuild ships a film with the panes deleted and nothing put back.",
+   "THE_HALF_THAT_MATTERS_MOST": "THE METRIC COULD NEVER HAVE REPORTED IT HEALTHY. n_GW_Right_Glass is a name-prefix count of ROUND ONE's object names. The replacements are called GP_b*. It reads 0 for a correctly applied scene exactly as it reads 0 for an empty wall. Anyone who checked it and saw 0 would conclude 'no glass' whether or not glass was there - and anyone who FIXED the glass would have seen the number not move. A metric that cannot distinguish the fixed state from the broken one does not merely fail to catch the defect; it actively teaches everyone who reads it that the fix did nothing. That is why this survived four film builds.",
+   "fix": "sim/apply_breach.py::east_wall_census counts GP_b* by bay, evaluates their hide_render curves at frame 1, and REFUSES to write the scene if the east wall has no glass in it. Six controls, including the defect itself (all ten panes missing), a pane that exists but is hidden at frame 1, and the same pane visible at frame 41 which must NOT be charged."
   },
   {
-   "id": "NUMBER PENDING",
+   "id": "R2-125",
    "title": "R5's glazing-pocket check tested vertices, so eleven solid mullions lying through the pocket reported `clear` on 29,387 meshes",
-   "evidence": "sim/apply_breach.py::preflight R5 and _tris_hit_box; the eleven controls in census_selftest; the recorded PASS in sim/out/apply_film9.json"
+   "detail": "R5 requires that nothing occupy x 14.9455..14.9695, because 'a solid mullion or sill laid through it starts every clamped shard inside metal'. It tested VERTICES. Round 1's east mullions are solid boxes spanning x 14.920..15.080 - straight through the 24 mm pocket - with all eight vertices outside it. An edge test does not fix it either: the x-running edges sit at z 0.0 and 6.2 and the z-running edges at x 14.920 and 15.080, so not one of the twelve edges enters the pocket. What passes through is the side FACES.",
+   "fix": "triangle-vs-box by the separating-axis theorem after the same AABB pre-filter, run twice: once against the whole pocket and once against the bays' CLEAR OPENINGS. Only the clear-opening arm refuses, because the 22.5 mm captured edge is what a glazing pocket is FOR. Eleven controls. On world/verify_showroom.blend it lists exactly the eleven mullions plus sill and head as capture-band, and refuses on round 1's three transoms at z 1.35/2.85/4.35, which really are bars across the picture.",
+   "recorded_pass": "sim/out/apply_film9.json carries R5 = PASS from the vertex-only test."
+  },
+  {
+   "id": "R2-126",
+   "title": "the release rule existed in two places that disagreed, and BOTH were wrong: one shatters the wall seven frames before the car touches it, the other renders an intact pane over glass 350 mm out of place",
+   "why_it_is_dangerous": "release is the frame apply_breach hides a bay's intact pane and shows its shards. It is the single frame the wall breaks on, in a film with no cuts. Two entry points to the same pipeline computed it differently and neither was checked against the other.",
+   "rule_1": "resample.main() called release_frames(frames, loc) - 0.2 mm from the FIRST frame of the table. THIS IS THE PATH A LOCAL BAKE TAKES, because a local build writes only the raw table and resample is a separate step. On a wall that creeps 0.4 mm under its own weight before the car arrives it fires SEVEN FRAMES EARLY: the wall shatters while the car is still metres away and nothing in the transform table looks wrong.",
+   "rule_2": "remote_bake.py measured 2 mm from the state AT the impact frame. It fixes rule 1 and introduces the opposite error, silently. ONE FILM FRAME SPANS THE WHOLE IMPACT - f859 is 36.5 ms before contact, f860 is 5.1 ms after, and in between bay 4's glass moves a median 128.9 mm and a maximum 350.2 mm. Referencing AT f860 measures that as zero, waits for a further 2 mm, and fires at 861. Measured on the shipped bake: rule 1 gives min 860, rule 2 gives min 861.",
+   "MY_OWN_FIRST_FIX_WAS_WRONG": "I unified on rule 2, on the strength of its written justification, and committed it. That would have made the shipped behaviour WORSE by one frame - an intact pane rendering over glass a third of a metre out of place, on the frame the wall breaks. The coordinator's instruction to write this up with its own controls is what made me measure it against the real bake instead of trusting the comment.",
+   "rule_3_the_actual_rule": "reference the last film frame STRICTLY BEFORE contact (floor of the impact frame, not round), 2 mm threshold. Referencing before contact keeps the impact's first frame visible; referencing at contact rather than at the table start makes it immune to whatever the wall did while it was waiting. Fires at 860 on the shipped bake and at the impact on the synthetic creep.",
+   "controls": "six in resample.selftest, including the one that condemns rule 2: a synthetic 129 mm step across the impact frame followed by only 0.5 mm more, which rule 2 NEVER fires on at all, and which rule 3 fires on at the impact frame.",
+   "WHICH_OF_MY_MEASUREMENTS_CAME_THROUGH_IT": {
+    "the_shipped_table_did": "sim/out/breach_film.json has no `release_reference_frame` key, which remote_bake always writes, so sim/out/breach_film.npz was produced by rule 1 - the dangerous path.",
+    "and_it_was_not_bitten": "MEASURED, not assumed: over film frames 845..859 the maximum displacement of ANY body in the shipped bake is 0.000000 mm. The shipping configuration is start_deactivated, so the wall is asleep until the impact wakes it and there is no creep for a 0.2 mm trigger to catch. Rule 1 and rule 3 both give a minimum release of 860 on this bake.",
+    "so_which_results_are_suspect": "none of the numbers in this report. Everything I measured - the aperture, the slab depth and alignment profiles, the gone fractions by count and by area, the blow-up population - is computed from transforms and shard origins and does not read the release column at all. The two things that DO read it are verify_breach --swap (whose subject IS the release spread) and apply_breach's swap frames, and both were computed from the shipped table under rule 1, which on this bake agrees with rule 3 at 860.",
+    "what_WOULD_have_been_suspect": "any bake run with --wake-all, or any future bake where start_deactivated is off, resampled through the local path. The wake-all nulls the threshold decision was made against creep 5 to 15 mm. They were never resampled - they were scored directly from the raw table - so the decision is unaffected. But that is luck, not design."
+   }
   }
  ],
  "DEFECT_NUMBER_RENUMBERING": {
