@@ -71,6 +71,40 @@ WHAT IS MEASURED, both in the frame's own units
      accepted material is measuring the model, not the rig, and shipping it
      would send someone to fix a camera that is working.
 
+WHAT THE EXTENT DIAGNOSTIC SAYS ABOUT THE CLOSING WIDE, R2-090
+---------------------------------------------------------------
+Reported here rather than gated, because it is a composition question with no
+right answer and not a defect. The brief names three things in beat 6:
+
+    "the circuit, the car streaking on, the breached showroom visible in the
+     distance with its wound - and holds a final composed frame for ~3 s"
+
+Measured on the built path at the last frame, f2978: the camera is at 140 m
+altitude, 595.4 m from the declared fixed point, on an **18.75 mm lens** -- the
+widest in the film -- and aimed at 0.08 deg, the best aim of any beat.
+
+    the breached opening, 9.6 m wide   1.05 % of frame width   20 px of 1920
+    the car, 5.698 m long              0.63 %                  12 px of 1920
+
+The circuit reads, and it reads well. The wound is a bright notch about 20 px
+across -- present, centred, and genuinely visible at a 6x zoom, but 20 px. The
+car cannot be found in the frame at all; an agent looking for it picked out a
+pale paddock structure instead.
+
+The two are not independently fixable, and the arithmetic says why. To put the
+car at 2 % of frame width you either need a **73.8 mm lens** at this range,
+which is a telephoto and not a closing wide, or you need to close to **188 m**,
+which is a third of the circuit rather than all of it. A 595 m whole-circuit
+wide cannot contain a legible car. The brief asks for both, so somebody has to
+choose, and it is not this file's choice to make.
+
+Two things that are NOT wrong and were checked before writing this down:
+  * the 3 s hold is exact. Camera travel over f2906-2978 is **0.00 m in 72
+    frames = 3.000 s**, which is the brief's "~3 s" to the frame.
+  * the car being invisible is not an aiming failure. Beat 6's declared subject
+    after t+6.0 IS the facade, not the car, and the rig is pointed at it to
+    0.08 deg.
+
 WHAT IT DOES NOT MEASURE
 ------------------------
 It never opens a rendered frame. It cannot tell you a shot LOOKS right; only
