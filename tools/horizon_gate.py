@@ -49,6 +49,35 @@ WHAT IS MEASURED
   TILT RATE is reported and does not gate: `continuity_gate` already owns
   rotation rate and two gates owning one quantity is how they drift apart.
 
+BEAT 6'S ROLL HAS NOW BEEN SEEN, AND IT SHOULD PROBABLY NOT BE FIXED. R2-091.
+
+This gate FAILs beat 6 on 32 frames and I wrote it expecting that to be a
+defect. Two frames were then rendered and they do not support the reading:
+
+  f2680, tilt -33.8 deg   the pit wall runs diagonally across the frame, the
+                          car sharp and centred, the pit lane legible. It reads
+                          as a BANKED AERIAL -- the shot a helicopter makes
+                          peeling away from a subject -- not as a camera
+                          falling over.
+  f2694, tilt  -0.07 deg  levelled, a clean legible aerial down the pit straight
+                          with the pit lane, garage doors and timing gantry.
+
+Beat 6's first declared move IS a peel-off. A camera that banks as it peels and
+rolls level into the closing wide is that move, and the roll is smooth
+throughout -- about 5.5 deg/frame with no discontinuity anywhere in it.
+
+So the number is real, the instrument is right, and the verdict is a WAIVER
+rather than a bug: **this is a known accepted exception pending a human
+decision, not a defect to be fixed.** It is deliberately NOT tuned out of the
+gate. A gate quietly re-tuned so it stops firing on something someone accepted
+is worse than a gate with a waiver written next to it, because the next
+regression in the same place would then be invisible too -- which is precisely
+how the 79.77 deg roll at f1487 survived in the shipped film.
+
+STILL UNSEEN: **f2666, the -59.88 deg peak.** f2680 and f2694 bracket it and
+both read, but the peak itself has not been looked at. That is the frame to
+queue before anyone acts on this either way.
+
 TWO FIXES WERE COSTED AND BOTH WERE REJECTED, R2-089. The numbers are here so
 the next agent does not pay for them again.
 
