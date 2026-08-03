@@ -1,6 +1,6 @@
 """THE BEAT-1 -> BEAT-2 SEAM, measured. R2-064.
 
-    .venv/bin/python tools/seam_gate.py --path render/film9_path.json
+    .venv/bin/python tools/seam_gate.py --path world/camera_rig_path.json
     .venv/bin/python tools/seam_gate.py --selftest --path <a built path>
     .venv/bin/python tools/seam_gate.py --census --path <a built path>
 
@@ -589,7 +589,20 @@ def selftest(sheet, live_path, pre_path, pre_sheet_path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--path", default=os.path.join(R2, "render/film9_path.json"))
+    # R2-114, second instance. This defaulted to `render/film9_path.json` --
+    # the BROKEN film, four camera generations stale -- and the N3 arm of
+    # `--selftest` is *"the live --path at the seam window must PASS"*. So on a
+    # clean tree the selftest reported 6/7 and SEAM_GATE_SELFTEST_BROKEN while
+    # judging a camera nobody had chosen; with the current build it is 7/7.
+    # A negative control that fails because its INPUT is stale is
+    # indistinguishable, on the printed line, from the gate being broken.
+    # Same remedy and same reasoning as horizon_gate.DEFAULT_PATH: the rig's own
+    # output, which `build_camera_rig.py` writes and `build_film_scene.py`
+    # consumes. Deliberately NOT "the newest film*_path.json" -- picking up
+    # whatever a passing agent dropped in render/ is how a gate ends up judging
+    # something nobody chose.
+    ap.add_argument("--path", default=os.path.join(
+        R2, "world/camera_rig_path.json"))
     ap.add_argument("--sheet", default=os.path.join(R2, "docs/beat_sheet.json"))
     ap.add_argument("--pre", default=os.path.join(
         R2, "docs/seam_pre_R2064_path.json"),
