@@ -1,13 +1,14 @@
 {
  "frames": 2978,
- "keys": 486,
+ "keys": 537,
  "keys_per_beat": {
   "1_assembly": 22,
-  "2_launch": 24,
+  "2_launch": 32,
   "3_breach": 43,
   "4_transit": 30,
-  "5_lap": 298,
-  "6_ending": 69
+  "5_lap": 316,
+  "6_ending": 82,
+  "1_2_seam": 12
  },
  "beats_without_keys": [],
  "coverage": [
@@ -17,8 +18,8 @@
     1,
     792
    ],
-   "location_keys": 22,
-   "rotation_keys": 22
+   "location_keys": 34,
+   "rotation_keys": 34
   },
   {
    "beat": "2_launch",
@@ -26,8 +27,8 @@
     793,
     864
    ],
-   "location_keys": 24,
-   "rotation_keys": 24
+   "location_keys": 32,
+   "rotation_keys": 32
   },
   {
    "beat": "3_breach",
@@ -53,8 +54,8 @@
     1191,
     2714
    ],
-   "location_keys": 317,
-   "rotation_keys": 317
+   "location_keys": 343,
+   "rotation_keys": 343
   },
   {
    "beat": "6_ending",
@@ -62,68 +63,68 @@
     2715,
     2978
    ],
-   "location_keys": 50,
-   "rotation_keys": 50
+   "location_keys": 55,
+   "rotation_keys": 55
   }
  ],
  "worst_position_jump_m": 4.2469,
  "worst_jump_frame": 1209,
- "worst_rotation_step_deg": 27.438,
- "worst_rotation_frame": 1462,
- "worst_aim_deg": 16.875,
+ "worst_rotation_step_deg": 7.822,
+ "worst_rotation_frame": 2271,
+ "worst_aim_deg": 16.887,
  "worst_aim_beat": "2_launch",
- "worst_aim_frame": 822,
+ "worst_aim_frame": 817,
  "aim_per_beat": {
   "1_assembly": {
-   "ang": 7.243538695256358,
-   "ang_f": 427,
-   "off": 0.6943195558558204,
-   "off_f": 427,
-   "dist_m": 10.14495347546757,
+   "ang": 0.0,
+   "ang_f": 0,
+   "off": 0.0,
+   "off_f": 0,
+   "dist_m": 7.394865419400924,
    "n": 791,
    "bound_deg": 30.0
   },
   "2_launch": {
-   "ang": 16.874921197673856,
-   "ang_f": 822,
-   "off": 0.5872374398260413,
-   "off_f": 822,
-   "dist_m": 7.438167710344709,
+   "ang": 16.886804547469396,
+   "ang_f": 817,
+   "off": 0.5883117200344984,
+   "off_f": 816,
+   "dist_m": 7.447248149204034,
    "n": 72,
    "bound_deg": 20.0
   },
   "3_breach": {
-   "ang": 7.788693924378518,
+   "ang": 7.788744324052499,
    "ang_f": 974,
-   "off": 0.22280495740462264,
+   "off": 0.2228022950286139,
    "off_f": 1055,
    "dist_m": 13.879046975433473,
    "n": 192,
    "bound_deg": 24.0
   },
   "4_transit": {
-   "ang": 10.253972458943243,
+   "ang": 10.253944880963607,
    "ang_f": 1060,
-   "off": 0.3209289553107223,
+   "off": 0.3209290360793663,
    "off_f": 1060,
    "dist_m": 47.48518128383673,
    "n": 135,
    "bound_deg": 14.0
   },
   "5_lap": {
-   "ang": 2.9002280688563555,
-   "ang_f": 1460,
-   "off": 0.17422447411147104,
-   "off_f": 1460,
+   "ang": 1.297897636410681,
+   "ang_f": 1582,
+   "off": 0.05476901342132546,
+   "off_f": 1565,
    "dist_m": 187.18517547335898,
    "n": 1524,
    "bound_deg": 22.0
   },
   "6_ending": {
-   "ang": 0.07737115395028238,
-   "ang_f": 2812,
-   "off": 0.001429549806404362,
-   "off_f": 2812,
+   "ang": 0.05257229399816169,
+   "ang_f": 2780,
+   "off": 0.00110166492343494,
+   "off_f": 2779,
    "dist_m": 595.3656627652474,
    "n": 264,
    "bound_deg": 32.0
@@ -131,10 +132,10 @@
  },
  "aim_frame_margin": 0.92,
  "beat1_nominated_cluster_diagnostic": {
-  "worst": 106.73267041286239,
-  "frame": 528,
-  "cluster": "CORNER_RR",
-  "over_25": 181
+  "worst": 76.94040621846929,
+  "frame": 532,
+  "cluster": "CORNER_FR",
+  "over_25": 127
  },
  "resolution": [
   3840,
