@@ -936,16 +936,13 @@ def main():
     bridge = [k for k in keys if k.get("beat") == "1_2_seam"]
     rest = [k for k in keys if k.get("beat") != "1_2_seam"]
 
-    # `FCurve.update()` is NOT called anywhere in here, and that is a decision.
-    # It recalculates AUTO_CLAMPED handles that `keyframe_insert` has already
-    # left in place, and they are not the same: calling it once over these
-    # curves moves beat 1 by 34.35 mm at frame 740, on the y and z channels of
-    # the key at frame 718, whose own value never changes. Every rig this
-    # project has built — including the one beat 1's frames were reviewed
-    # from — was evaluated with the handles `keyframe_insert` leaves. Adopting
-    # `update()`'s here would silently re-render beat 1 in exchange for a
-    # correctness argument nobody has tested against a picture. Logged as
-    # R2-066 and left for whoever owns beat 1 to decide deliberately.
+    # `FCurve.update()` is not called anywhere in here, and it does not need
+    # to be. THE FIRST DRAFT OF THIS COMMENT SAID IT DID, and blamed `update()`
+    # for the 34.35 mm beat 1 moves by. That was wrong and it was wrong in the
+    # way MASTER-PLAN section 6 warns about: the cause was assumed instead of
+    # attributed. Running `update()` over the pre-R2-064 rig's curves and
+    # re-sampling frames 1-754 moves them by 0.000000 mm — it is a no-op on
+    # both sheets, and the 34.35 mm is beat 2's keys (R2-065).
     insert(rest)
     pinned, before = {}, None
     if bridge:

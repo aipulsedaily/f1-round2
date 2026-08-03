@@ -1251,176 +1251,50 @@ def refresh_sockets(dest):
 # decide it, so the blast radius is measured every time.
 # ===========================================================================
 
-# Sockets a normal-producing node is ALLOWED to drive.  Deliberately short.
-NORMAL_SINKS = {
-    "Normal",            # every BSDF
-    "Coat Normal",       # Principled's coat layer
-    "Height",            # Bump -> Bump chaining (the previous stage's normal)
-    "Tangent",           # anisotropy chains
-    "Displacement",
-}
-RELIEF_NODES = ("ShaderNodeBump", "ShaderNodeNormalMap", "ShaderNodeBevel")
+# THE RULES THEMSELVES LIVE IN `tools/socket_blend_scan.py` -- R2-072.
+#
+# They used to be a SOURCE STRING here, written to a temp file and handed to a
+# fresh Blender.  That gave them exactly one consumer: a human typing
+# `--blend`.  R2-071's rule is that a fix is not landed until the artefact
+# downstream of it has been rebuilt AND RE-READ, and the only thing in this
+# tree that opens an item's built blend as a matter of course is
+# `tools/item_gate.py` -- which is already inside Blender with the blend open,
+# so making it spawn a second Blender to reopen a 2.4 GB file would be absurd.
+#
+# So the rules are one importable module now, and there are two consumers:
+# this arm bootstraps it into the Blender it spawns, and the item gate imports
+# it directly.  ONE rule set; a tightening reaches both or neither.  The sink
+# still decides the severity, and the armco_w_beam edge-wear idiom is still a
+# NOTE -- see that module's docstring, and the idiom control in
+# `--selftest-blend`, which fails this file if that ever stops being true.
+# By path, not by package: this file is run as a script, imported by
+# `item_gate`, and exec'd inside Blender, and only one of those three puts
+# `tools/` on sys.path for us.
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
+import socket_blend_scan as _SBS                                  # noqa: E402
 
-# WHERE A STRAY RELIEF LINK IS A DEFECT, AND WHERE IT IS A TECHNIQUE.
-#
-# The first version of this rule failed `armco_w_beam`'s AWB_WBeam, which does
-#
-#     bev    = t.bevel(0.0035, 10)
-#     facing = t.vmath("DOT_PRODUCT", bev, (NewGeometry, 1))   # 1 = Normal
-#
-# -- a bevelled normal dotted with the true geometry normal, which is the
-# standard way to build an edge-wear mask.  That is a Bevel output on a
-# `Vector` socket and it is entirely correct.  A rule that fails it would have
-# been switched off within a day, and a guard that is switched off catches
-# nothing.
-#
-# So the sink decides the severity.  A relief output on a non-normal input of
-# a SHADING node -- `Thin Wall`, `Metallic`, `Alpha`, `Base Color` -- cannot be
-# anything but a miswire, because those sockets do not take a normal.  A
-# relief output on a Vector/Math/Mix node is somebody computing with it, which
-# is what `facing` is.  The first FAILS; the second is printed and does not.
-# Nothing is dropped: the distinction is reported, not hidden.
-SHADER_SINK_TYPES = {
-    "ShaderNodeOutputMaterial", "ShaderNodeOutputWorld", "ShaderNodeOutputLight",
-    "ShaderNodeEmission", "ShaderNodeBackground", "ShaderNodeHoldout",
-    "ShaderNodeSubsurfaceScattering", "ShaderNodeVolumeScatter",
-    "ShaderNodeVolumeAbsorption", "ShaderNodeVolumePrincipled",
-    "ShaderNodeMixShader", "ShaderNodeAddShader",
-    "ShaderNodeDisplacement", "ShaderNodeVectorDisplacement",
-    "ShaderNodeAmbientOcclusion",
-}
-SHADER_SINK_PREFIX = "ShaderNodeBsdf"
+NORMAL_SINKS = _SBS.NORMAL_SINKS
+RELIEF_NODES = _SBS.RELIEF_NODES
+SHADER_SINK_TYPES = _SBS.SHADER_SINK_TYPES
+SHADER_SINK_PREFIX = _SBS.SHADER_SINK_PREFIX
 
+# The bootstrap. Everything it does is import the rules and run them; there is
+# no rule text here to drift out of step with the module.
 BLEND_SNIPPET = r'''
 import bpy, json, sys
-
-NORMAL_SINKS = %(SINKS)s
-RELIEF_NODES = %(RELIEF)s
-SHADER_SINK_TYPES = %(SHSINK)s
-SHADER_SINK_PREFIX = %(SHPFX)s
-
-
-def _is_shader_sink(nd):
-    return (nd.bl_idname in SHADER_SINK_TYPES
-            or nd.bl_idname.startswith(SHADER_SINK_PREFIX))
-
-
-def _f(sock):
-    try:
-        return float(sock.default_value)
-    except Exception:
-        return None
-
-
-def _shell(nt):
-    """Transmission / subsurface / alpha / coat state of every Principled in
-    this tree.  This is what decides whether a stray relief link is 'flat' or
-    'a per-pixel shell flip', so it is measured, never assumed."""
-    out = []
-    for nd in nt.nodes:
-        if nd.bl_idname != "ShaderNodeBsdfPrincipled":
-            continue
-        d = {"node": nd.name}
-        for nm in ("Transmission Weight", "Subsurface Weight", "Alpha",
-                   "Coat Weight", "Normal", "Thin Wall"):
-            if nm in nd.inputs:
-                s = nd.inputs[nm]
-                d[nm] = {"linked": s.is_linked, "value": _f(s)}
-        out.append(d)
-    return out
-
-
-def scan_tree(kind, owner, nt, findings):
-    for nd in nt.nodes:
-        if nd.bl_idname not in RELIEF_NODES:
-            continue
-        links = list(nd.outputs[0].links)
-        if not links:
-            findings.append({
-                "rule": "RELIEF_ORPHANED", "severity": "FAIL", "kind": kind,
-                "owner": owner,
-                "node": nd.name, "node_type": nd.bl_idname,
-                "detail": "%%s output is not connected to anything" %% nd.bl_idname,
-                "shell": _shell(nt)})
-        for l in links:
-            if l.to_socket.name in NORMAL_SINKS:
-                continue
-            if _is_shader_sink(l.to_node):
-                findings.append({
-                    "rule": "RELIEF_INTO_NON_NORMAL", "severity": "FAIL",
-                    "kind": kind,
-                    "owner": owner, "node": nd.name, "node_type": nd.bl_idname,
-                    "to_node": l.to_node.bl_idname,
-                    "to_socket": l.to_socket.name,
-                    "detail": "%%s -> %%s.%%r. That is a shading node and %%r "
-                              "does not take a normal, so this is a miswire."
-                              %% (nd.bl_idname, l.to_node.bl_idname,
-                                 l.to_socket.name, l.to_socket.name),
-                    "shell": _shell(nt)})
-            else:
-                findings.append({
-                    "rule": "RELIEF_INTO_COMPUTATION", "severity": "NOTE",
-                    "kind": kind,
-                    "owner": owner, "node": nd.name, "node_type": nd.bl_idname,
-                    "to_node": l.to_node.bl_idname,
-                    "to_socket": l.to_socket.name,
-                    "detail": "%%s -> %%s.%%r -- computed with, not shaded "
-                              "with. The edge-wear idiom (Bevel dotted with "
-                              "the geometry normal) looks exactly like this."
-                              %% (nd.bl_idname, l.to_node.bl_idname,
-                                 l.to_socket.name),
-                    "shell": _shell(nt)})
-        if nd.bl_idname == "ShaderNodeBump":
-            if "Height" in nd.inputs and not nd.inputs["Height"].is_linked:
-                findings.append({
-                    "rule": "BUMP_HEIGHT_UNLINKED", "kind": kind,
-                    "owner": owner, "node": nd.name, "node_type": nd.bl_idname,
-                    "detail": "Height is a constant (%%r): no gradient, so no "
-                              "relief whatever Strength says"
-                              %% _f(nd.inputs["Height"]),
-                    "shell": _shell(nt)})
-            if ("Filter Width" in nd.inputs
-                    and nd.inputs["Filter Width"].is_linked):
-                findings.append({
-                    "rule": "BUMP_FILTER_WIDTH_DRIVEN", "kind": kind,
-                    "owner": owner, "node": nd.name, "node_type": nd.bl_idname,
-                    "detail": "Filter Width is driven by %%s -- that is where a "
-                              "height lands when Bump is addressed by index"
-                              %% nd.inputs["Filter Width"].links[0].from_node.bl_idname,
-                    "shell": _shell(nt)})
-
-
-def run():
-    findings = []
-    scanned = 0
-    for m in bpy.data.materials:
-        if m.use_nodes and m.node_tree:
-            scanned += 1
-            scan_tree("material", m.name, m.node_tree, findings)
-    for w in bpy.data.worlds:
-        if w.use_nodes and w.node_tree:
-            scanned += 1
-            scan_tree("world", w.name, w.node_tree, findings)
-    for g in bpy.data.node_groups:
-        scanned += 1
-        scan_tree("node_group", g.name, g, findings)
-    return {"blend": bpy.data.filepath, "scanned_trees": scanned,
-            "blender": bpy.app.version_string, "findings": findings}
-
+sys.path.insert(0, %(TOOLS)r)
+import socket_blend_scan as SBS
 
 %(EXTRA)s
 
-open(sys.argv[-1], "w").write(json.dumps(run(), indent=1))
+open(sys.argv[-1], "w").write(json.dumps(SBS.scan_open_blend(), indent=1))
 '''
 
 
 def _run_blend_scan(blend, extra="", label=None):
     """Open `blend` (or nothing, if blend is None) in Blender and scan it."""
-    src = BLEND_SNIPPET % {"SINKS": repr(sorted(NORMAL_SINKS)),
-                           "RELIEF": repr(list(RELIEF_NODES)),
-                           "SHSINK": repr(sorted(SHADER_SINK_TYPES)),
-                           "SHPFX": repr(SHADER_SINK_PREFIX),
-                           "EXTRA": extra}
+    src = BLEND_SNIPPET % {"TOOLS": HERE, "EXTRA": extra}
     # PER-INVOCATION temp names.  These used to be two fixed paths, and two
     # concurrent scans -- an item sweep and a world sweep, which is the normal
     # way to use this -- silently destroyed each other's report: one process's
@@ -1578,6 +1452,125 @@ _build_controls()
 '''
 
 
+# A REAL MODULE'S REAL GRAPH, IN A REAL FILE ON DISK -- R2-072.
+#
+# This section used to point at `gantry_truss_test.blend` and
+# `pont_girder_test.blend` with the words "these were built BEFORE the R2-070
+# fix and are on disk now; if the arm is real, it fails them without being
+# told to."  That was true when it was written and it STOPPED BEING TRUE the
+# moment those two blends were rebuilt against the fix -- the section then
+# printed "0 stray relief link(s)" under a heading claiming the opposite, and
+# asserted nothing either way.  A control whose subject is scheduled to be
+# repaired is a control with an expiry date on it.
+#
+# So the positive control is GENERATED, from the live source, every run:
+# `pont_girder._simple_mat` -- the actual function R2-070 was found in -- is
+# built twice into two saved .blend files.  The only difference is how the one
+# `Normal` link is addressed: `_feed(b, 5, ...)` exactly as the defect did, or
+# `_feed_named(b, "Normal", ...)` as the fix does.  Both files are then handed
+# to the SAME `--blend` path an operator would use, by filename, with no hint
+# of what is in them.
+#
+#   * it cannot expire, because it is rebuilt from whatever the source says
+#     today;
+#   * it is not this file's own synthetic graph -- it is a shipped material
+#     with its two voronoi stages, its chained bump and its 5-way mix;
+#   * if a future Blender moves `Normal` again, the by-index arm moves with it
+#     and the control still reproduces the real defect.
+CONTROL_MAT_BUILD = r"""
+import bpy, os, sys
+ROOT = %(ROOT)r
+for p in (os.path.join(ROOT, "world"), os.path.join(ROOT, "world", "items")):
+    sys.path.insert(0, p)
+BY_INDEX = %(BY_INDEX)r
+
+import pont_girder as PG
+import marshal_post_column as HS
+
+if BY_INDEX:
+    # Reproduce R2-070 EXACTLY: route the by-name write back through the
+    # by-integer one, at the index `Normal` used to occupy.
+    def _broken(self, node, name, v):
+        self._feed(node, 5, v)
+    HS.NG._feed_named = _broken
+
+for ob in list(bpy.data.objects):
+    bpy.data.objects.remove(ob, do_unlink=True)
+PG._simple_mat("SIA_REAL_%%s" %% ("BROKEN" if BY_INDEX else "FIXED"),
+               [(0.0165, 0.0165, 0.0170), (0.0345, 0.0345, 0.0355),
+                (0.048, 0.047, 0.045), (0.058, 0.056, 0.052)],
+               0.72, (900.0, 900.0))
+bpy.ops.wm.save_as_mainfile(filepath=sys.argv[-1])
+"""
+
+
+def _build_real_control(by_index, dest):
+    """Build `pont_girder._simple_mat` into `dest`, broken or fixed."""
+    src = CONTROL_MAT_BUILD % {"ROOT": ROOT, "BY_INDEX": by_index}
+    script = dest + ".build.py"
+    open(script, "w").write(src)
+    r = subprocess.run([BLENDER_BIN, "-b", "--factory-startup", "-noaudio",
+                        "--python", script, "--", dest],
+                       capture_output=True, text=True)
+    os.unlink(script)
+    if not os.path.exists(dest):
+        sys.stderr.write(r.stdout[-3000:] + r.stderr[-3000:])
+        return False
+    return True
+
+
+def _real_artefact_controls(ok):
+    """Both directions, on a real module's real graph, read back off disk."""
+    print("\n[REAL ARTEFACT CONTROLS] pont_girder._simple_mat, built two ways")
+    print("  The same shipped material, saved to two .blend files. The only")
+    print("  difference is whether its ONE `Normal` link is addressed by the")
+    print("  integer 5 (the R2-070 defect) or by name (the fix). Generated")
+    print("  from live source every run, so neither side can go stale.")
+    tmpdir = os.path.join(ROOT, "tmp")
+    os.makedirs(tmpdir, exist_ok=True)
+    made = []
+    try:
+        for by_index, label in ((True, "BROKEN (by index 5)"),
+                                (False, "FIXED (by name)")):
+            dest = os.path.join(tmpdir, "_sia_real_%d_%s.blend"
+                                % (os.getpid(), "broken" if by_index else "fixed"))
+            if not _build_real_control(by_index, dest):
+                print("  => INCONCLUSIVE: could not build the %s control." % label)
+                return False
+            made.append(dest)
+            d = _run_blend_scan(dest, label=dest)
+            if d is None:
+                print("  => INCONCLUSIVE: no report for the %s control." % label)
+                return False
+            bad = [x for x in d["findings"] if x.get("severity") != "NOTE"]
+            sinks = sorted({x["owner"] + "." + x.get("to_socket", "-")
+                            for x in bad})
+            print("  %-22s %d failing finding(s) %s" % (label, len(bad), sinks))
+            if by_index and not any(x.get("to_socket") == "Thin Wall"
+                                    for x in bad):
+                print("  => REAL POSITIVE FAILS: the arm did not fail a real")
+                print("     shipped graph carrying the real defect, read off")
+                print("     disk. Do not trust a clean run of this arm.")
+                ok = False
+            elif by_index:
+                print("  => REAL POSITIVE PASSES: fails a real module's real")
+                print("     material, from a file, without being told to.")
+            elif bad:
+                print("  => REAL NEGATIVE FAILS: the arm fails the FIXED build")
+                print("     of the same graph, so it false-positives on")
+                print("     shipped work.")
+                ok = False
+            else:
+                print("  => REAL NEGATIVE PASSES: the fixed build of the very")
+                print("     same graph is clean.")
+    finally:
+        for f in made:
+            for suffix in ("", "1"):
+                if os.path.exists(f + suffix):
+                    os.unlink(f + suffix)
+    return ok
+
+
 def selftest_blend(args):
     print("=" * 78)
     print("ARTEFACT ARM SELFTEST -- proving it FAILS the broken input")
@@ -1639,26 +1632,7 @@ def selftest_blend(args):
 
     # A control that only ever sees graphs THIS FILE built is a control on
     # itself.  The real shipped artefacts are the honest positive input.
-    print("\n[REAL SHIPPED ARTEFACT]")
-    real = [os.path.join(ROOT, "world", "items", b) for b in
-            ("gantry_truss_test.blend", "pont_girder_test.blend")]
-    real = [f for f in real if os.path.exists(f)]
-    if not real:
-        print("  (skipped: neither item test blend is on disk)")
-    else:
-        print("  These were built BEFORE the R2-070 fix and are on disk now.")
-        print("  If the arm is real, it fails them without being told to.")
-        for f in real:
-            d = _run_blend_scan(f, label=f)
-            if d is None:
-                print("  %s: INCONCLUSIVE" % rel(f))
-                ok = False
-                continue
-            bad = [x for x in d["findings"]
-                   if x["rule"] == "RELIEF_INTO_NON_NORMAL"]
-            print("  %-46s %d stray relief link(s): %s"
-                  % (rel(f), len(bad),
-                     sorted({x["owner"] + "." + x["to_socket"] for x in bad})))
+    ok = _real_artefact_controls(ok)
 
     print("\n" + "=" * 78)
     print("STAGE RESULT: %s" % ("PASS" if ok else "FAIL"))
