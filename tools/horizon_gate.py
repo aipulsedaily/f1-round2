@@ -49,6 +49,59 @@ WHAT IS MEASURED
   TILT RATE is reported and does not gate: `continuity_gate` already owns
   rotation rate and two gates owning one quantity is how they drift apart.
 
+TWO FIXES WERE COSTED AND BOTH WERE REJECTED, R2-089. The numbers are here so
+the next agent does not pay for them again.
+
+**1. Blend look_quat's roll REFERENCE instead of switching it.** The mechanism
+behind beat 6's roll is that the reference flips from "direction of travel" to
+"world +Z" as the camera pitches up out of the top-down, and the 3-deg-per-
+frame correction limit turns that step into a 42-frame unroll. The obvious fix
+is to blend. Blending the raw reference vectors is what produced 175 deg and
+90 deg in the two attempts `look_quat`'s own docstring records, so this
+candidate blended the two DESIRED UP VECTORS instead, by rotating one onto the
+other about the view axis -- well conditioned everywhere, no cross product
+whose sign can flip. Built and measured, worst tilt per beat, FAIL frames in
+brackets:
+
+    beat        1_assembly   4_transit   5_lap      6_ending
+    shipped     20.83 ( 9)    2.08 (0)   0.90 (0)   59.88 (32)
+    candidate   38.59 (49)    2.08 (0)   2.98 (0)   41.47 (14)
+
+It halves beat 6 and nearly doubles beat 1. A fix that moves the defect to
+another beat is not a fix.
+
+**2. Raise the 3-deg-per-frame correction limit.** This is the cleanest-looking
+knob on the file and it is the wrong one, because it converts a STATIC error --
+a tilted horizon -- into a DYNAMIC one, a smearing roll, and this camera has no
+headroom for the dynamic one. The full sweep, horizon on the left and
+`continuity_gate --campath`'s rotation smear on the right:
+
+  lim   b1 tilt(F)   b4         b5         b6          b1 rot   b5 rot   campath
+  3.0   20.83 ( 9)   2.08 (0)   0.90 (0)   59.88 (32)   16.41 %  16.18 %  PASS
+  6.0    7.95 ( 0)   0.02 (0)   0.21 (0)   63.31 (26)   22.09 %  18.16 %  PASS
+ 10.0    7.95 ( 0)   0.02 (0)   0.26 (0)   42.16 ( 8)   27.81 %  30.87 %  FAIL x2
+ 15.0    7.95 ( 0)   0.02 (0)   0.28 (0)    0.01 ( 0)   27.81 %  47.83 %  FAIL x3
+ 20.0    7.95 ( 0)   0.02 (0)   0.28 (0)    0.01 ( 0)   27.81 %  56.61 %  FAIL x3
+ 30.0    7.95 ( 0)   0.02 (0)   0.28 (0)    0.01 ( 0)   27.81 %  98.92 %  FAIL x3
+
+At 15 deg the horizon problem vanishes ENTIRELY -- beat 6 goes to 0.01 deg --
+and beat 5's rotation smear goes to 47.8 % of frame width, which is the exact
+class of defect R2-085 was spent killing at f1461 (56.6 %). **The 3 deg limit is
+not arbitrary; it is buying rotation legibility with horizon level, and one
+number cannot satisfy both.**
+
+So the fix has to be UPSTREAM: stop the roll error reaching 60 deg rather than
+bleed it off faster. The two directions, neither taken here, are to give beat 6
+a DECLARED roll -- its subject after t+6.0 is a fixed point, and a locked wide
+on a fixed point wants world up, not a transported frame -- or to change the
+authoring so the near-vertical view is never entered, which is what forces the
+exit to cost 60 deg and is the same class of fix as R2-085. The second lives in
+`tools/author_beats2_5.py`, at the t=109.60 anchor, "directly over the car at
+83 m/s".
+
+**None of this should be decided before a frame of it has been seen.** That is
+the whole reason it is written down instead of committed.
+
 SCOPE — BEAT 1 IS REFUSED, AND THE FIRST DRAFT OF THIS FILE DID NOT REFUSE IT
 -----------------------------------------------------------------------------
 Beat 1 is the weave through the exploded parts field, inside a darkened
