@@ -116,6 +116,55 @@ FPS = FT.FPS
 # fixed. Anything the lap does has to live above that number, not below it.
 CAM_CAR_MIN_M = 1.40
 
+# ---------------------------------------------------------------- THE SEAM --
+# R2-064. Beat 1's last key and beat 2's first key are the two ends of a
+# 39-frame hole. Nothing was declared inside it, so the path there was whatever
+# Blender's AUTO_CLAMPED handles inferred from a 39-frame neighbour on the left
+# and a 2-frame neighbour on the right, and what they inferred was 11.34 m/s
+# where the keys ask for 9.38, arriving through 98.5 m/s^2 in one frame.
+#
+# Both keys are now ANCHORS of this file's spline, so the acceleration across
+# the seam is authored here rather than emerging from an interpolator. Neither
+# VALUE is chosen here — they are transcribed:
+#
+#   B1_LAST   docs/beat_sheet.json beat1.camera_keys, t = 31.4, and its own
+#             note fixes it: "beat 2's first key is 2.09 m away 39 frames later
+#             at 39.95 mm, so this key is fixed and beats 1 and 2 join at
+#             1.29 m/s with no step in position, aim or focal length"
+#   B2_FIRST  the key this file itself emitted at frame 793 before R2-064, kept
+#             to the digit so the four seam invariants (chord 2.0893 m, speed
+#             1.2727 m/s, look angle 13.2504 deg, lens delta -0.051 mm) are
+#             preserved BY CONSTRUCTION rather than by luck. `check_seam()`
+#             below refuses to write the sheet if the emitted key ever stops
+#             reproducing it exactly.
+#
+# The aim specs are transcribed the same way. At frame 793 the car is still on
+# the dais (world time -1.03 s, `Car.state` parks it at the origin), so
+# `aim_car(along_m=A, z_off=Z)` resolves to exactly `[A, 0, Z]` and the two
+# look_at values below are the declared ones read straight off.
+SEAM_F = 793
+SEAM_T = SEAM_F / FPS                                   # 33.0416666..., not 33.0
+SEAM_POS = [5.0337, -5.3157, 1.2622]
+SEAM_LENS = 39.949
+SEAM_FSTOP = 3.196
+SEAM_ALONG = -0.0143                                    # look_at x
+SEAM_ZOFF = 0.5985                                      # look_at z
+
+B1_LAST_T = 31.4
+B1_LAST_POS = [6.80, -4.40, 1.90]
+B1_LAST_LENS = 40.0
+B1_LAST_FSTOP = 3.2
+B1_LAST_ALONG = 0.15                                    # beat 1's look_at x
+B1_LAST_ZOFF = 0.75                                     # beat 1's look_at z
+
+# The bridge occupies the frames between the two, exclusive of both: beat 1's
+# key list and beat 2's key list are not touched, so `work/campath/beat1_probe.py`
+# measures the same pair of keys before and after and reports the same four
+# numbers. The bridge is written to its own `seam_1_2` block and
+# `anim/build_camera_rig.py` loads it by name.
+SEAM_BRIDGE_F0 = int(round(B1_LAST_T * FPS)) + 1        # 755
+SEAM_BRIDGE_F1 = SEAM_F - 1                             # 792
+
 
 # ------------------------------------------------------------------ anchors --
 def track_point(car, world_of_frame, film_t, ds, u, h_above):
@@ -285,9 +334,38 @@ BEARING_PER_KEY_DEG = 5.0   # emit a key before the subject's bearing has moved
                             # this far, so bezier interpolation of the rotation
                             # channels never has room to stray
 
+# R2-064. The spacing above is driven by BEARING alone, and bearing is not the
+# only thing a bezier has to reproduce between two keys. Beat 2 decelerates from
+# 6.2 m/s to 0.3 m/s over the eight frames into the ignition station while the
+# subject's bearing barely moves, so the adaptive walk emitted ONE key across
+# the whole braking event and the interpolation ran 2.64x the chord speed of the
+# pair it sat between. A key is therefore also emitted before the SPEED has
+# changed by more than this much.
+#
+# ON FOR BEAT 2 AND THE SEAM ONLY, deliberately. Switching it on globally
+# relayouts all 395 keys of beats 3-5 and moves a camera path that currently
+# passes the aim gate, the placement gate and the continuity gate — a blast
+# radius this defect does not justify. It is recommended as follow-up work and
+# it is off by default so nobody switches it on by accident.
+SPEED_PER_KEY_FRAC = 0.20      # of the faster of the two frames
+SPEED_PER_KEY_FLOOR_MS = 0.30  # so a slow drift does not emit densely
 
-def emit_keys(anchors, f0, f1, world_of_frame, car, beat_name):
-    """Sample the spline onto keys at an adaptive spacing."""
+
+def emit_keys(anchors, f0, f1, world_of_frame, car, beat_name,
+              frames=None, speed_key=False):
+    """Sample the spline onto keys at an adaptive spacing.
+
+    `frames` overrides the adaptive walk with an explicit list, which is how
+    the seam bridge gets a spacing that RAMPS out of frame 754 and back into
+    frame 793 instead of a uniform one. Blender's AUTO_CLAMPED handle at a key
+    is computed from the two neighbouring keys' positions, so a key with a
+    1-frame neighbour on one side and an 8-frame neighbour on the other gets a
+    tangent dominated by the long side and overshoots: measured at frame 755,
+    1.22 -> 1.71 m/s against an authored 1.20. Ramping the spacing is the same
+    remedy R2-063 used at the beat-5/6 hand-off, and for the same reason.
+
+    `speed_key` adds the speed criterion described above.
+    """
     def sample(f):
         t = f / FPS
         wt = world_of_frame[f]
@@ -301,11 +379,24 @@ def emit_keys(anchors, f0, f1, world_of_frame, car, beat_name):
         n = math.sqrt(sum(v * v for v in d)) or 1.0
         return [v / n for v in d]
 
+    def speed(f):
+        a = catmull_rom(anchors, (f - 1) / FPS)
+        b = catmull_rom(anchors, f / FPS)
+        return math.dist(a, b) * FPS
+
     # The emission window is the anchors' own span, clipped to the beat. A key
     # emitted past the last anchor is Catmull-Rom EXTRAPOLATION, which is where
     # the first draft of this function put the camera 680 m/s inside the car.
     f0 = max(f0, int(math.ceil(anchors[0]["t"] * FPS)))
     f1 = min(f1, int(math.floor(anchors[-1]["t"] * FPS)))
+
+    if frames is not None:
+        walk = [f for f in frames if f0 <= f <= f1]
+        if not walk:
+            raise SystemExit(f">> FAIL: {beat_name}: none of the {len(frames)} "
+                             f"explicit frames lie inside {f0}-{f1}")
+    else:
+        walk = None
 
     keys, f = [], f0
     while True:
@@ -321,7 +412,12 @@ def emit_keys(anchors, f0, f1, world_of_frame, car, beat_name):
         })
         if f >= f1:
             break
+        if walk is not None:
+            nxt = [g for g in walk if g > f]
+            f = min(nxt) if nxt else f1
+            continue
         b0 = bearing(f)
+        v0 = speed(f) if speed_key else 0.0
         step = MIN_KEY_GAP
         for cand in range(MIN_KEY_GAP, MAX_KEY_GAP + 1):
             g = min(f + cand, f1)
@@ -329,9 +425,46 @@ def emit_keys(anchors, f0, f1, world_of_frame, car, beat_name):
             dot = max(-1.0, min(1.0, sum(b0[i] * b1[i] for i in range(3))))
             if math.degrees(math.acos(dot)) > BEARING_PER_KEY_DEG:
                 break
+            if speed_key:
+                v1 = speed(g)
+                if abs(v1 - v0) > max(SPEED_PER_KEY_FLOOR_MS,
+                                      SPEED_PER_KEY_FRAC * max(v0, v1)):
+                    break
             step = cand
         f = min(f + step, f1)
     return keys
+
+
+def ramped_frames(f_lo, f_hi):
+    """Frame numbers from `f_lo` to `f_hi` whose gaps ramp 1,2,3,... and back.
+
+    Both ends therefore have a 1-frame neighbour, which is what makes the
+    AUTO_CLAMPED handles at the two keys OUTSIDE this range — beat 1's last and
+    beat 2's first — symmetric enough not to be dragged by the long side.
+    """
+    span = f_hi - f_lo
+    if span <= 2:
+        return list(range(f_lo, f_hi + 1))
+    front, back, k = [], [], 1
+    while True:
+        if sum(front) + sum(back) + k > span:
+            break
+        front.append(k)
+        if sum(front) + sum(back) + k > span:
+            break
+        back.insert(0, k)
+        k += 1
+    gaps = front + back
+    rest = span - sum(gaps)
+    if rest:                                   # the slack goes in the middle,
+        i = gaps.index(max(gaps))              # where the curve is quietest
+        gaps[i] += rest
+    out, f = [f_lo], f_lo
+    for g in gaps:
+        f += g
+        out.append(f)
+    assert out[-1] == f_hi, (out, gaps, span)
+    return out
 
 
 # ------------------------------------------------------------ choreography --
@@ -346,10 +479,29 @@ def build_anchors(car, W):
         return cl_point(cl, track_s, u, h)
 
     b2 = [
-        A(33.00, [5.40, -5.30, 1.30], 40, 3.2, aim_car(z_off=0.60),
-          "leave beat 1's push; descend around the right rear quarter"),
-        A(33.70, [-0.60, -5.55, 0.68], 35, 2.8, aim_car(along_m=-1.4, z_off=0.45),
-          "arrived: low, beside the rear wheel. the second of stillness"),
+        # --- the seam, R2-064. Two transcribed anchors, not choreography. ---
+        A(B1_LAST_T, B1_LAST_POS, B1_LAST_LENS, B1_LAST_FSTOP,
+          aim_car(along_m=B1_LAST_ALONG, z_off=B1_LAST_ZOFF),
+          "BEAT 1'S LAST KEY, transcribed. The spline starts here so the "
+          "camera leaves beat 1 at the speed beat 1 is actually travelling "
+          "(1.107 m/s measured) instead of at whatever a one-sided endpoint "
+          "tangent implies. This anchor emits no key inside beat 1: the "
+          "bridge starts at frame 755."),
+        A(SEAM_T, SEAM_POS, SEAM_LENS, SEAM_FSTOP,
+          aim_car(along_m=SEAM_ALONG, z_off=SEAM_ZOFF),
+          "BEAT 2'S FIRST KEY, pinned. Being an INTERIOR anchor is the whole "
+          "point: Fritsch-Carlson now limits the departure tangent to 3x the "
+          "smaller adjacent secant, which takes the speed leaving frame 793 "
+          "from 8.85 m/s to 3.17 m/s against the 3.33 m/s beat 1 delivers. "
+          "The old first anchor sat at t = 33.00 — half a frame BEFORE this "
+          "key and outside beat 2's own emission window, so it could never "
+          "control the departure it was written to control."),
+        # The old t=33.70 'arrived: low, beside the rear wheel' station is
+        # GONE, deliberately. It sat 1.0 m from the ignition station 9 frames
+        # later, which is what forced 5.67 m of descent into 16 frames and made
+        # the late acceleration violent no matter how it was smoothed. The
+        # descent is now one segment, frame 793 to the ignition station, and it
+        # peaks at 8.92 m/s instead of 9.94 authored / 11.34 built.
         A(34.07, [-1.55, -5.30, 0.58], 35, 2.8, aim_car(along_m=-1.6, z_off=0.40),
           "IGNITION / LAUNCH. camera static, lens 5.5 m off the rear tyre"),
         A(34.55, [-0.55, -5.28, 0.60], 35, 2.8, aim_car(along_m=-1.4, z_off=0.40),
@@ -594,11 +746,67 @@ def main():
         f1 = int(round((b["start_s"] + b["duration_s"]) * FPS))
         if f1 >= b6_first_f:
             f1 = b6_first_f - 1
-        ks = emit_keys(chain, f0, f1, W, car, name)
+        ks = emit_keys(chain, f0, f1, W, car, name,
+                       speed_key=(name == "2_launch"))
         out_blocks[name] = ks
         all_keys += ks
         print(f">> {name:<10} frames {f0:5d}-{f1:5d}  {len(ks):4d} keys "
               f"from {len(anchors[name]):2d} anchors")
+
+    # ---- THE SEAM BRIDGE, frames 755-792.  R2-064. ----------------------
+    #
+    # Off the SAME chain, so the bridge and beat 2 are one cubic Hermite and
+    # the velocity at frame 793 is continuous by construction rather than by
+    # agreement between two solves. It goes into its own block because putting
+    # it in `beat2` would make `sorted(beat2.camera_keys)[0]` a different key
+    # and every seam number ever quoted would change without the seam moving.
+    seam_frames = ramped_frames(SEAM_BRIDGE_F0, SEAM_BRIDGE_F1)
+    seam_keys = emit_keys(chain, SEAM_BRIDGE_F0, SEAM_BRIDGE_F1, W, car,
+                          "1_2_seam", frames=seam_frames, speed_key=True)
+    all_keys += seam_keys
+    print(f">> {'1_2_seam':<10} frames {SEAM_BRIDGE_F0:5d}-{SEAM_BRIDGE_F1:5d}"
+          f"  {len(seam_keys):4d} keys — the 39-frame hole beat 1 and beat 2 "
+          f"left between them")
+    print(f">> seam bridge spacing (ramped out of f754 and into f793): "
+          + " ".join(str(g) for g in
+                     [seam_frames[i + 1] - seam_frames[i]
+                      for i in range(len(seam_frames) - 1)]))
+
+    # ---- and REFUSE to write if the pinned key stopped reproducing ------
+    #
+    # The four seam invariants are properties of two keys. Beat 1's is not
+    # written by this file, so the only way this file can break them is by
+    # emitting a different key at frame 793 — which is exactly what happens if
+    # somebody edits an anchor near the seam without noticing. Checked against
+    # the transcribed constants, in the artefact this run produced.
+    k793 = [k for k in out_blocks["2_launch"] if int(round(k["t"] * FPS)) == SEAM_F]
+    seam_fail = []
+    if len(k793) != 1:
+        seam_fail.append(f"expected exactly one beat-2 key on frame {SEAM_F}, "
+                         f"emitted {len(k793)}")
+    else:
+        k = k793[0]
+        want = {"world": [round(v, 4) for v in SEAM_POS],
+                "look_at": [round(SEAM_ALONG, 4), 0.0, round(SEAM_ZOFF, 4)],
+                "lens_mm": round(SEAM_LENS, 3), "fstop": round(SEAM_FSTOP, 3)}
+        for fld, wv in want.items():
+            gv = k[fld]
+            same = (all(abs(a - b) < 5e-5 for a, b in zip(gv, wv))
+                    if isinstance(wv, list) else abs(gv - wv) < 5e-4)
+            if not same:
+                seam_fail.append(f"beat 2's key at frame {SEAM_F} has "
+                                 f"{fld} = {gv}, not the pinned {wv}")
+    if seam_fail:
+        for m in seam_fail:
+            print("   FAIL " + m)
+        print(">> the four seam invariants (chord 2.0893 m, speed 1.2727 m/s, "
+              "look angle 13.2504 deg, lens delta -0.051 mm) are beat 1's "
+              "hand-off contract and this run would have moved them.")
+        print(">> STAGE RESULT: SEAM_PIN_BROKEN")
+        sys.exit(1)
+    print(f">> seam pin: beat 2's frame-{SEAM_F} key reproduces the declared "
+          f"world/look_at/lens/fstop exactly; the four invariants are held by "
+          f"construction")
 
     # ---- measure what was just authored --------------------------------
     #
@@ -684,6 +892,22 @@ def main():
         print(">> dry run: beat_sheet.json not written")
         return
 
+    sheet["seam_1_2"] = {
+        "authored_by": "tools/author_beats2_5.py",
+        "defect": "R2-064",
+        "why": "beat 1's last key (t=31.4, frame 754) and beat 2's first "
+               "(t=33.041667, frame 793) had 39 frames of nothing between "
+               "them. Blender's AUTO_CLAMPED handle at 793 was computed from "
+               "a 39-frame neighbour and a 2-frame one and overshot to "
+               "11.3447 m/s through 98.49 m/s^2. These keys are that hole, "
+               "filled off the same spline beat 2 is emitted from. They are "
+               "NOT in beat2.camera_keys on purpose: the four seam invariants "
+               "are properties of those two keys and any tool that finds them "
+               "by list position must keep finding the same pair.",
+        "frames": [SEAM_BRIDGE_F0, SEAM_BRIDGE_F1],
+        "loaded_by": "anim/build_camera_rig.py load_keys()",
+        "camera_keys": seam_keys,
+    }
     for name, ks in out_blocks.items():
         key = "beat" + name.split("_")[0]
         sheet[key] = {"authored_by": "tools/author_beats2_5.py",

@@ -3256,3 +3256,89 @@ every frame of the blend starved `look_quat`'s 3°-per-frame roll correction and
 **43° tilted horizon** — precisely the defect that function exists to prevent. The blend is
 now sampled on a ramp (1, 2, 3, … 8 frames) so the correction always has headroom.
 **A dense fix can defeat a corrector by leaving it no room to correct in.**
+
+## R2-070 — R2-057's fix moved the helper's own call sites and missed its two importers
+
+`world/items/gantry_truss.py:3387` and `world/items/pont_girder.py:3051` both did
+`g._feed(b, 5, g.bump(...))` on a Principled BSDF. **On 5.2, index 5 is `Thin Wall`.**
+
+Both reach the DSL through `marshal_post_column.NG`. **That class was repaired for R2-057
+and its own call sites were moved to `_feed_named` — its two importers were not.**
+
+> **The generalisable shape: fix a shared helper, miss its importers.** The helper's author
+> can see every call site *inside* the helper's file. The call sites that matter are the ones
+> in files that merely `import` it, and nothing in the fix's own diff points at them.
+
+Verified in the artefacts rather than inferred — `gantry_truss_test.blend` `CTX_Track`, and
+`pont_girder_test.blend` `CTX_Track` / `CTX_Deck` / `CTX_Abut`: `Normal` unlinked, the
+`ShaderNodeBump` output landing on `Thin Wall`.
+
+**Blast radius measured, not assumed.** All four are opaque (Transmission 0, Subsurface 0,
+Alpha 1.0, Coat 0, every one unlinked), so it degenerates to flat rather than flipping the
+shell model. That was then *proved* with a five-arm CPU render of the real `_simple_mat`
+graph rather than left as an argument from the property values:
+
+| arm | result |
+|---|---|
+| **NULL** — 7× bump strength on the *broken* wiring | **0 / 147,456 px move** |
+| **POS** — 7× bump strength on the *fixed* wiring | 147,456 / 147,456 move |
+| **FIX** — broken vs fixed | 147,448 / 147,456 move |
+| **INERT** — fixed, plus the same bump *also* on Thin Wall | **0 / 147,456 px move** |
+
+The NULL arm is the defect. The POS arm proves the instrument can see a bump change at all —
+without it, NULL is indistinguishable from a blind test. **The INERT arm is what licenses the
+word "flat" over "shell flip"**: driving Thin Wall on top of correct wiring moves nothing, so
+the stray link is inert here and not merely invisible.
+
+Both sites are in `test_scene()`, not `build()`, so **nothing in assembly6/7 moves**. What was
+wrong is the ground lighting these two items in the frames they were *accepted* in — and both
+are on the relief PASSING list, so those verdicts were read from frames lit by a flat context.
+
+**The audit tool already existed and had never been run over anything.** Its detection was
+fine; its scope was **49 of 142 files**, with `tools/`, `anim/` and `sim/` entirely unswept.
+Now every source directory, with no flag able to turn one off, plus a second **artefact** arm
+(`--blend`) — because AST cannot see the 997 computed indices, post-assembly mutation, or a
+module nobody pointed it at.
+
+**Every other index site in the tree was verdicted against a live 5.2 socket table and is
+correct**: `build_barriers` ×45, the `Principled[14/15/16/20/21]` specular/coat family, 13
+sites that moved (`TexNoise[8]`, `Clamp[1/2]`, `CollectionInfo[1/2]`), and the uninferred-type
+hits. Five `pin(bs, 6, …)` sites are correct *today* but were converted to `pin_named` anyway
+because `pit_wall_unit_itemkit` **is the reference item every campaign agent copies from** —
+it was the house style for `Normal`. Six sites in the `humankit`/`itemkit` selftests must stay
+by index because they **are** the R2-038 positive controls; waived with the reason printed.
+
+**The guard's own controls include one that matters more than the pass/fail pair.** Alongside
+a positive (bump → `inputs[5]`, fires on 'Thin Wall') and a negative (the same graph, one link
+moved to the name), there is an **idiom control**: `armco_w_beam`'s real Bevel-dotted-with-
+geometry-normal edge-wear mask. **The first version of the guard failed that idiom — which is
+exactly how a guard gets switched off.** The sink now decides severity and the idiom is a NOTE.
+
+## R2-071 — both film scenes were built from the broken world AFTER the fixed one existed
+
+`assembly7` was built at **04:45**. `film9.blend` was built at **11:39** and `film10.blend` at
+**17:15**. Both fail the socket audit with **exactly the nine `DR_*` materials** that
+distinguish assembly6 from assembly7 — `Height` constant 1.0, the height texture in
+`Filter Width`, the bump output on `Thin Wall`.
+
+**`tools/build_film_scene.py` builds from `assembly6`.**
+
+> **Promoting a world as a decision is not the same as the builder consuming it.** The decision
+> was made, evidenced and correct — regenerated from source, 0 of 28,781 objects differing,
+> the fix durable via `_feed_named`. None of that reaches a frame while the film builder still
+> names the old assembly.
+
+Found by a **third party reading the finished artefact**, by graph inspection rather than the
+vertex/pixel A/B that established the assembly6-vs-7 difference in the first place. Two
+independent instruments landing on the same nine material names is what makes this settled.
+
+**Total: 20 broken material instances across 5 built artefacts** — 7 repaired by two source
+lines, 4 needing only a rebuild, 9 needing the films rebuilt from assembly7.
+
+`marshal_post_column_test.blend` is the same story one level down: its source was fixed by
+R2-057 and **the blend was built nine hours before the fix** and never rebuilt.
+
+**The rule this earns:** a source fix has a build artefact downstream of it, and the fix is not
+landed until that artefact has been rebuilt *and re-read*. Keep a list of what a fix
+invalidates, or a guard that reads artefacts will keep finding fixes that were made months ago
+and never arrived.

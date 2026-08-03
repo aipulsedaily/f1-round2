@@ -1096,32 +1096,76 @@ def motion_report(loc, quat, names, info):
         nan=int(np.isnan(loc).sum() + np.isnan(quat).sum()))
 
 
-# The closest the ONE camera ever gets to each bay, and the pixel scale there,
-# measured off `docs/beat_sheet.json`'s own keys by `camera_ranges()`.  This is
-# what turns "is 11 mm of sag acceptable?" from a judgement into a number.
-def camera_ranges(plan):
-    with open(BL.SHEET) as fh:
-        sheet = json.load(fh)
-    pts, lens = [], []
-    for k in sorted(sheet):
-        b = sheet[k]
-        if not k.startswith("beat") or not isinstance(b, dict):
-            continue
-        for key in b.get("camera_keys", []):
-            pts.append(key["world"])
-            lens.append(key.get("lens_mm", 35.0))
-    if not pts:
+RELEASE_FRAME = 860        # nothing can be SEEN to sag before the swap
+
+
+def camera_ranges(plan, release=RELEASE_FRAME):
+    """The closest the ONE camera gets to each bay WHILE THAT BAY IS IN SHOT.
+
+    THE BUG THIS REPLACES
+    ---------------------
+    The old version took the nearest beat-sheet camera KEY to the bay's CENTRE
+    over the whole take, and did not ask whether the bay was inside the frame,
+    nor whether the frame was after the shards were released.  It priced bay 2
+    at 3.52 m.  Bay 2's nearest range on a frame where bay 2 is actually inside
+    the 3840x2160 raster, after release, is 22.87 m — 6.5x further, so every
+    pixel figure taken through it was 6.5x too big.  That is where the 7.1 px
+    sag came from.
+
+    Three things are fixed and each one moved the number:
+      * the camera comes from `sim/out/oner_camera_track.json`, the applied
+        scene's own animated transform at every one of the 2,978 frames, not
+        from 417 authored keys;
+      * the bay is sampled on a 5x5 grid and every sample is tested against the
+        raster, so a bay behind the camera or off the edge does not count;
+      * frames before `release` do not count, because until then the INTACT
+        pane renders and its silhouette is fixed by construction.
+
+    The returned `mm_per_px` is still the BEST (smallest) over the in-shot
+    frames, so `max_sag_mm * mm_per_px` remains a conservative upper bound: it
+    assumes the worst sag and the closest view coincide, and they need not.
+    `sim/sagpx.py` measures the per-frame product for real when the caller has
+    the sag on the film's own frame grid.
+    """
+    try:
+        import sagpx as SP
+        track = SP.load_track()
+    except Exception as exc:                                    # noqa: BLE001
+        log("camera_ranges: no camera track (%s); ranges unavailable" % exc)
         return {}
-    P = np.array(pts, float)
-    L = np.array(lens, float)
+    R = SP._rot(track["quat"])
+    C, LN, FR_ = track["loc"], track["lens"], track["frame"]
     out = {}
     for bay, (u0, u1, v0, v1) in plan.get("rects", {}).items():
-        c = np.array([GLASS_X_OUT, 0.5 * (u0 + u1), 0.5 * (v0 + v1)])
-        d = np.linalg.norm(P - c, axis=1)
-        i = int(np.argmin(d))
-        ppm = (3840.0 * L[i] / 36.0) / max(d[i], 1e-6)
-        out[bay] = dict(closest_m=float(d[i]), lens_mm=float(L[i]),
-                        px_per_m=float(ppm), mm_per_px=float(1000.0 / ppm))
+        P = np.array([[GLASS_X_OUT, u, v]
+                      for u in np.linspace(u0, u1, 5)
+                      for v in np.linspace(v0, v1, 5)])
+        best, nfr = None, 0
+        for i in range(len(C)):
+            if FR_[i] < release:
+                continue
+            L = (P - C[i]) @ R[i]
+            dep = -L[:, 2]
+            fpx = SP.RES_X * LN[i] / SP.SENSOR
+            with np.errstate(divide="ignore", invalid="ignore"):
+                px = SP.RES_X * 0.5 + fpx * L[:, 0] / dep
+                py = SP.RES_Y * 0.5 - fpx * L[:, 1] / dep
+            ok = ((dep > 1e-6) & (px >= 0) & (px < SP.RES_X)
+                  & (py >= 0) & (py < SP.RES_Y))
+            if not ok.any():
+                continue
+            nfr += 1
+            d = float(dep[ok].min())
+            mmpx = 1000.0 * SP.SENSOR / (SP.RES_X * LN[i]) * d
+            if best is None or mmpx < best[0]:
+                best = (mmpx, d, float(LN[i]), int(FR_[i]))
+        if best is None:
+            out[bay] = dict(frames_in_shot=0, never_in_shot=True)
+            continue
+        out[bay] = dict(closest_m=best[1], lens_mm=best[2],
+                        px_per_m=float(1000.0 / best[0]),
+                        mm_per_px=best[0], frames_in_shot=nfr,
+                        at_frame=best[3])
     return out
 
 
@@ -1168,16 +1212,34 @@ def null_verdict(loc, meta, plan):
     Two parts, and the second is the one that was a judgement until now:
 
       1. NOTHING LEAVES.  No shard may move more than 0.25 m with no car in the
-         scene.  This is binary and it now passes.
+         scene.  This is binary.
       2. NOTHING THAT STAYS MAY BE SEEN TO MOVE.  The panes that are still
          there in beat 6 — the retained and intact bays — may not sag more than
-         ONE PIXEL at the range the camera actually films them at.  Bay 2 is
-         approached to 3.53 m on a 21.7 mm lens, where one 4K pixel is 1.52 mm;
-         bay 7 to 7.24 m, where it is 3.23 mm.  A millimetre is not a tolerance
-         on its own — it is only a tolerance next to a distance and a lens.
+         ONE PIXEL at the range the camera actually films them at.  A millimetre
+         is not a tolerance on its own; it is only a tolerance next to a
+         distance and a lens.
 
     The destroyed bays are excluded on purpose: they leave the wall, and their
     motion is the shot rather than a defect.
+
+    A THIRD CRITERION, ADDED BECAUSE ITS ABSENCE IS WHAT BROKE THE WALL
+    ------------------------------------------------------------------
+    A null that passes because nothing CAN move is not a null.  Raising
+    `THRESH_BOND_PER_M` to 4000 made criterion 1 pass by making the glass
+    unbreakable, and the same parameter then produced a 0.65 x 1.92 m aperture
+    against a declared 9.6 x 5.6 m.  So this function also reports
+    `mobility`: with `--wake-all` and no car, how many bodies moved AT ALL.
+    A null in which literally nothing moved by even a micron is reporting that
+    the solver never integrated the wall, not that the wall is well built.
+    The verdict carries it; the caller must read it.
+
+    THE PIXEL FIGURE IS AN UPPER BOUND, AND SAYS SO
+    -----------------------------------------------
+    `max_sag_px` is this bay's WORST sag times its BEST in-shot pixel scale.
+    Those two need not occur on the same frame, so the product is a bound and
+    not a measurement.  The old code did the same thing with a range that was
+    also wrong — see `camera_ranges` — and reported 7.1 px where the honest
+    bound is 1.4.  For the per-frame product use `sim/sagpx.py`.
     """
     rng = camera_ranges(plan)
     roles = plan.get("roles", {})

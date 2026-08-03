@@ -239,6 +239,39 @@ def load_keys(sheet):
             k = dict(k)
             k.setdefault("beat", name)
             keys.append(k)
+
+    # ---- THE BEAT-1 -> BEAT-2 SEAM BRIDGE.  R2-064. ----------------------
+    #
+    # Beat 1's last key is at frame 754 and beat 2's first at 793, and for 39
+    # frames NOTHING was declared. That is not a slow passage the author chose;
+    # it is a hole, and Blender filled it: the AUTO_CLAMPED handle at frame 793
+    # was computed from a 39-frame neighbour on one side and a 2-frame one on
+    # the other, and produced 11.3447 m/s where the keys ask for 9.3838, with
+    # +98.49 m/s^2 landing on frame 794 — 21x the median |a| of its own
+    # neighbourhood. No anchor inside `tools/author_beats2_5.py` could fix that
+    # while the gap existed, because beat 2's emission window starts at 793:
+    # the fix has to put KEYS in the hole, and this is where they are loaded.
+    #
+    # They live in their own block rather than in `beat2.camera_keys` because
+    # the seam's four invariants — chord 2.0893 m, speed 1.2727 m/s, look angle
+    # 13.2504 deg, lens delta -0.051 mm — are properties of the key at t=31.4
+    # and the key at t=33.041667, and `work/campath/beat1_probe.py` finds that
+    # second key as `sorted(beat2.camera_keys)[0]`. Inserting a key before it
+    # would have silently re-pointed that probe at a different pair and printed
+    # four different numbers for a seam that had not moved.
+    #
+    # Absent block = the pre-R2-064 sheet, and it is reported rather than
+    # skipped in silence, because "a beat block quietly missing" is the exact
+    # shape of the defect that left four beats with no camera at all.
+    bridge = (sheet.get("seam_1_2") or {}).get("camera_keys") or []
+    per_beat["1_2_seam"] = len(bridge)
+    if not bridge:
+        missing.append("1_2_seam (beat1->beat2 bridge, frames 755-792)")
+    for k in bridge:
+        k = dict(k)
+        k.setdefault("beat", "1_2_seam")
+        keys.append(k)
+
     keys.sort(key=lambda k: k["t"])
     return keys, per_beat, missing, b6_start
 
@@ -807,13 +840,15 @@ def main():
           f"from the beat-5 hand-off blend instead, and rotation supplied for "
           f"all of them")
 
+    # Orientation is solved in ONE ordered pass over every key, before anything
+    # is inserted, because `look_quat` carries state from the previous key and
+    # inserting in two passes must not be allowed to change what it produces.
     prev_q = prev_v = None
     prev_f = None
     for i, k in enumerate(keys):
         f = max(1, min(total_frames, int(round(k["t"] * FPS))))
+        k["_f"] = f
         here = Vector(k["world"])
-        cam.location = here
-        cam.keyframe_insert("location", frame=f)
 
         # Direction of travel from the neighbouring keys: the roll reference for
         # any near-vertical view. See look_quat().
@@ -822,20 +857,136 @@ def main():
         travel = nk - pk
 
         look = k.get("look_at")
+        k["_q"] = None
         if look:
             gap = (f - prev_f) if prev_f is not None else 1
             q, prev_v = look_quat(Vector(look) - here, travel, prev_q, prev_v, gap)
             prev_q, prev_f = q, f
-            cam.rotation_quaternion = q
-            cam.keyframe_insert("rotation_quaternion", frame=f)
+            k["_q"] = q
 
-        cam_data.lens = float(k.get("lens_mm", 35.0))
-        cam_data.keyframe_insert("lens", frame=f)
-        cam_data.dof.aperture_fstop = float(k.get("fstop", 2.8))
-        cam_data.dof.keyframe_insert("aperture_fstop", frame=f)
-        if k.get("focus_distance_m"):
-            cam_data.dof.focus_distance = float(k["focus_distance_m"])
-            cam_data.dof.keyframe_insert("focus_distance", frame=f)
+    def insert(sub):
+        for k in sub:
+            f = k["_f"]
+            cam.location = Vector(k["world"])
+            cam.keyframe_insert("location", frame=f)
+            if k["_q"] is not None:
+                cam.rotation_quaternion = k["_q"]
+                cam.keyframe_insert("rotation_quaternion", frame=f)
+            cam_data.lens = float(k.get("lens_mm", 35.0))
+            cam_data.keyframe_insert("lens", frame=f)
+            cam_data.dof.aperture_fstop = float(k.get("fstop", 2.8))
+            cam_data.dof.keyframe_insert("aperture_fstop", frame=f)
+            if k.get("focus_distance_m"):
+                cam_data.dof.focus_distance = float(k["focus_distance_m"])
+                cam_data.dof.keyframe_insert("focus_distance", frame=f)
+
+    def sample(lo, hi):
+        out = []
+        for f in range(lo, hi + 1):
+            scene.frame_set(f)
+            dg = bpy.context.evaluated_depsgraph_get()
+            ce = cam.evaluated_get(dg)
+            m = ce.matrix_world
+            out.append((tuple(m.translation), tuple(m.to_quaternion()),
+                        ce.data.lens))
+        return out
+
+    def all_curves():
+        return fcurves_of(cam) + fcurves_of(cam_data) + fcurves_of(cam_data.dof)
+
+    # ---- THE HANDLE PIN AT FRAME 754.  R2-064, second half. --------------
+    #
+    # Blender computes a key's AUTO_CLAMPED handle from the two neighbouring
+    # KEYS. Beat 1's last key had no key after it for 39 frames; the bridge
+    # gives it one 1 frame later, and that alone re-slopes its INCOMING handle
+    # and therefore the f718 -> f754 segment. MEASURED, before this pin
+    # existed: beat 1 moved by up to 157.14 mm at frame 741, over frames
+    # 601-754 — inside the material the review calls the best in the film, and
+    # the one thing this work was told not to disturb.
+    #
+    # So the incoming handle at 754 is captured from a curve built WITHOUT the
+    # bridge and written back as FREE afterwards. The OUTGOING handle is left
+    # alone deliberately: with the next key one frame away, the segment it
+    # governs is evaluated only at its two endpoints, both of which are keys,
+    # so it cannot reach the picture.
+    #
+    # This is not asserted from the API's behaviour — the rig re-samples frames
+    # 1-754 on both sides of the insertion and prints the difference, and
+    # REFUSES to save if it is not zero.
+    PIN_F = 754
+    bridge = [k for k in keys if k.get("beat") == "1_2_seam"]
+    rest = [k for k in keys if k.get("beat") != "1_2_seam"]
+
+    # `FCurve.update()` is NOT called anywhere in here, and that is a decision.
+    # It recalculates AUTO_CLAMPED handles that `keyframe_insert` has already
+    # left in place, and they are not the same: calling it once over these
+    # curves moves beat 1 by 34.35 mm at frame 740, on the y and z channels of
+    # the key at frame 718, whose own value never changes. Every rig this
+    # project has built — including the one beat 1's frames were reviewed
+    # from — was evaluated with the handles `keyframe_insert` leaves. Adopting
+    # `update()`'s here would silently re-render beat 1 in exchange for a
+    # correctness argument nobody has tested against a picture. Logged as
+    # R2-066 and left for whoever owns beat 1 to decide deliberately.
+    insert(rest)
+    pinned, before = {}, None
+    if bridge:
+        # EVERY key at or before 754, both handles — not just frame 754's.
+        # Pinning only 754 left 20.7 um of position and 1.9e-3 of quaternion at
+        # frame 730, because inserting the bridge also moved the handles on the
+        # key at frame 718, whose own value never changes either. The segment
+        # 718 -> 754 is drawn from 718's RIGHT handle and 754's LEFT handle, so
+        # both ends of every beat-1 segment have to be held for the claim
+        # "beat 1 is untouched" to be structural rather than approximate.
+        for fc in all_curves():
+            for kp in fc.keyframe_points:
+                f = int(round(kp.co[0]))
+                if f <= PIN_F:
+                    pinned[(fc.data_path, fc.array_index, f)] = (
+                        (float(kp.handle_left[0]), float(kp.handle_left[1])),
+                        (float(kp.handle_right[0]), float(kp.handle_right[1])),
+                        kp.handle_left_type, kp.handle_right_type)
+        before = sample(1, PIN_F)
+        insert(bridge)
+        for fc in all_curves():
+            for kp in fc.keyframe_points:
+                f = int(round(kp.co[0]))
+                h = pinned.get((fc.data_path, fc.array_index, f))
+                if h is None:
+                    continue
+                hl, hr, tl, tr = h
+                kp.handle_left_type = "FREE"
+                kp.handle_left = hl
+                if f < PIN_F:
+                    # 754's RIGHT handle governs only the 754 -> 755 segment,
+                    # which is one frame long and therefore evaluated only at
+                    # its two endpoints, both of which are keys. It is left to
+                    # Blender deliberately: it is the seam, not beat 1.
+                    kp.handle_right_type = "FREE"
+                    kp.handle_right = hr
+        after = sample(1, PIN_F)
+        dp, dp_f = max(((Vector(a[0]) - Vector(b[0])).length, i + 1)
+                       for i, (a, b) in enumerate(zip(before, after)))
+        # COMPONENTWISE, not 2*acos(|q0.q1|). That angle is ill-conditioned at
+        # identity: `matrix.to_quaternion()` returns float32 components whose
+        # norm is 1 +- 1e-7, so a quaternion dotted with ITSELF gives 0.9999999
+        # and the angle reads 0.069 deg. This check reported that as beat 1
+        # moving, on frames whose quaternion components are bit-identical.
+        dq, dq_f = max((max(abs(x - y) for x, y in zip(a[1], b[1])), i + 1)
+                       for i, (a, b) in enumerate(zip(before, after)))
+        dl = max(abs(a[2] - b[2]) for a, b in zip(before, after))
+        print(f">> seam bridge: {len(bridge)} keys over frames "
+              f"{bridge[0]['_f']}-{bridge[-1]['_f']}; the incoming handle at "
+              f"frame {PIN_F} is pinned on {len(pinned)} channels")
+        print(f">> beat 1 frames 1-{PIN_F} across the insertion: "
+              f"{dp * 1e6:.4f} nm (worst f{dp_f}), quaternion "
+              f"{dq:.3e} per component (worst f{dq_f}), lens {dl:.3e} mm "
+              f"— float32 storage of an F-curve handle is ~1.2e-7 relative")
+        if dp > 1e-6 or dq > 1e-6 or dl > 1e-6:
+            print("   FAIL adding the seam bridge moved beat 1. The pin did "
+                  "not hold and beat 1's f648-792 is the material this project "
+                  "is least willing to re-render.")
+            print(">> STAGE RESULT: SEAM_BRIDGE_MOVED_BEAT1")
+            sys.exit(1)
 
     # ---- time map + shutter ---------------------------------------------
     #
