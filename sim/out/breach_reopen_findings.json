@@ -294,6 +294,16 @@
    "id": "R2-099",
    "title": "build_breach_sim.py's docstring justifies the kinematic car proxy with a glass mass 75x too small",
    "evidence": "shard_meta totals 2,240.9 kg against the docstring's 4.9 kg per pane"
+  },
+  {
+   "id": "NUMBER PENDING - my block R2-092..099 was fully consumed by the eight above, and R2-100 was taken by another agent while I worked",
+   "title": "the east wall has no glass in any current film scene, and the metric watching it counts round 1's names",
+   "evidence": "work/lighting/f860_full_a6.png; measured_film10/11 n_GW_Right_Glass = 0 with no BREACH collection; sim/apply_breach.py::east_wall_census and its six controls"
+  },
+  {
+   "id": "NUMBER PENDING",
+   "title": "R5's glazing-pocket check tested vertices, so eleven solid mullions lying through the pocket reported `clear` on 29,387 meshes",
+   "evidence": "sim/apply_breach.py::preflight R5 and _tris_hit_box; the eleven controls in census_selftest; the recorded PASS in sim/out/apply_film9.json"
   }
  ],
  "DEFECT_NUMBER_RENUMBERING": {
@@ -309,5 +319,15 @@
    "R2-073": "R2-099"
   },
   "note": "docs/DEFECT-LOG-R2.md is not mine to edit; these are proposals for the log's owner."
+ },
+ "THE_EAST_WALL__handed_to_me_by_the_film_rebuild_agent": {
+  "the_report": "n_GW_Right_Glass = 0. R3 deletes round 1's ten panes and nothing supplies replacements, so beats 1-3 render an open wall.",
+  "CONFIRMED_AND_SEEN": "work/lighting/f860_full_a6.png, a render of the current joiner output. The east wall is a row of bare pale aluminium bars at 2.2 m centres with the paddock, pit wall and grandstand visible straight through the gaps. No glass, and therefore none of the glass reflections beat 1 spends 33 seconds on. I looked at it.",
+  "THE_CAUSE_IS_NOT_A_BUG_IN_ANY_ONE_STEP": "tools/build_film_scene.py executes sim/apply_breach.py's OWN requirement R3 and deletes GW_Right_Glass_00..09. It is right to: they are zero-thickness planes on x = 15.000, 33.5 mm proud of where the glass really is, and two east walls that close together z-fight through beat 1. R3 is written on the understanding that apply_breach supplies the replacement - and it does, GP_b00..GP_b09, ALL TEN BAYS including the four the car never touches. But apply_breach is a SEPARATE invocation on an already-built blend and the joiner cannot know whether it was ever run. film9 was applied once, at 15:01. film10, film11 and film11_r2085cam never were.",
+  "WHY_THE_METRIC_COULD_NOT_HAVE_CAUGHT_IT": "n_GW_Right_Glass is a name-prefix count of ROUND ONE's names. The replacements are called GP_b*. It reads 0 for a correctly applied scene exactly as it does for an empty wall. A number that cannot tell the fixed state from the broken one.",
+  "WHAT_I_DID": "sim/apply_breach.py now takes an east-wall census AFTER building and REFUSES to write the file if the wall has no glass in it at frame 1. Six controls including the defect itself. The panes are restored by the re-apply, which is the same operation as landing the new bake - they are not two jobs.",
+  "AND_A_SECOND_THING_THAT_IS_WORSE": "the aluminium in the scene is ROUND ONE's. GW_Right_Mull_00..10, _Sill, _Head, _Transom_0/1/2, _BaseReveal - 26 objects the joiner keeps and nothing in round 2 touches. Three things are wrong with it and all three are visible: it is a solid box x 14.920..15.080, so it stands 80 mm EAST of the breach plane that mullion_intact.section() says nothing may cross; its transoms are at z 1.35/2.85/4.35 against the sim's 1.60/3.10/4.60, 250 mm out; and IT NEVER MOVES, because R6 is unfulfilled and the 152 MUL*/TRN* transforms in the table have nothing to bind to.",
+  "SEEN": "render/breach_f9/f9_1920_f0880.png. The car is already outside on the forecourt and the east wall is a spiderweb of crack lines in a still-flat sheet, with a dead-straight undeformed aluminium grid across the whole aperture. It reads as a cracked windscreen, not a breach. That single frame is the shipped 4000 configuration and R6 in one picture.",
+  "THE_GEOMETRY_IS_NOT_MINE": "world/items/mullion_intact.py builds the real extrusion and declares breach_state(); mullion_bent_stub is manifest item 108 and does not exist as code. Nothing in world/ or tools/ imports mullion_intact for geometry at all - the only importers are sim/fracture.py and sim/breachlib.py, and they read the interface JSON. Closing R6 means building segmented mullion geometry and that belongs to world/items/, not here."
  }
 }
