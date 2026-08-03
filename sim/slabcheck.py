@@ -32,7 +32,7 @@ ALIGNMENT  the median angle between each shard's face normal now and at the
            Depth without alignment is a bulging sheet, which is exactly the
            thing that looks wrong.
 
-CONTROLS — `selftest()` runs nine and every one must fire:
+CONTROLS — `selftest()` runs ten and every one must fire:
   RIGID       a field that does not move reads 0.000 m and 0.00 deg
   TRANSLATE   a field moved bodily 500 mm reads 0.500 m and 0.00 deg -- depth
               must not leak into alignment
@@ -344,6 +344,27 @@ def selftest():
     check("RETURN: the same flight that ends 20 mm from home is RETURNS",
           r["verdict"] == "RETURNS" and r["gone_over_250mm_pct_last"] == 0.0,
           "%s, %.0f%% gone" % (r["verdict"], r["gone_over_250mm_pct_last"]))
+
+    # QUAT_NULL.  `align` is arccos of a dot product of unit vectors, and
+    # arccos AMPLIFIES rounding near dot = 1 by a square root -- the same trap
+    # that made a shipped path-diff tool report 1,415 frames "moved" when it
+    # compared a camera path with ITSELF.  There it was six-decimal JSON, where
+    # 1e-6 reads as 0.162 deg.  Here the quaternions are float32 in the .npz,
+    # which is ~1e-7, so the floor is ~6e-6 deg -- but that is a calculation
+    # and this is the measurement.  Random unit quaternions, stored as float32
+    # and read back, must still read zero.
+    rng = np.random.default_rng(3)
+    qq = rng.normal(size=(n, 4))
+    qq /= np.linalg.norm(qq, axis=1, keepdims=True)
+    L = np.zeros((nf, n, 3))
+    L[:, :, 0] = 14.96
+    Q = np.repeat(qq.astype(np.float32).astype(np.float64)[None], nf, axis=0)
+    r = profile(frames, L, Q, sel, 860)
+    check("QUAT_NULL: float32 quaternions compared with themselves read 0 deg",
+          r["at"]["866"]["align_median_deg"] == 0.0
+          and r["at"]["866"]["align_p90_deg"] < 1e-3,
+          "median %.8f, p90 %.8f deg" % (r["at"]["866"]["align_median_deg"],
+                                         r["at"]["866"]["align_p90_deg"]))
 
     # ONE_FLYER: 199 still, 1 at 50 m.  A max would call this a departure.
     L, Q = field(z, z)
