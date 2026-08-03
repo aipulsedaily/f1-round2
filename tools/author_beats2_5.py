@@ -629,8 +629,68 @@ def build_anchors(car, W):
           "ahead — the only way to be somewhere before a 295 km/h car is"),
         A(59.00, cp(680, 6.0, 5.0), 40, 5.6, aim_car(z_off=0.80),
           "40 m ahead, crossing to the left of the line, descending"),
-        A(60.23, cp(773, 20.0, 3.0), 32, 5.6, aim_car(z_off=0.70),
-          "T3 Long Kink at 295 km/h, 20 m away: the fastest pan of the lap"),
+        # R2-085. THE '20 m AWAY' IN THIS NOTE WAS NEVER A DISTANCE TO THE CAR.
+        # `cp(s, u, h)` is an ABSOLUTE station, so its `u` is an offset from the
+        # CENTRELINE — and from t = 59.00 to t = 61.60 nothing in the anchor list
+        # controls where the car is. The camera was authored to cross the racing
+        # line from u = +20 to u = -20 over s 773 -> 848 while the car, which is
+        # 13 m/s faster because the camera is spending its speed budget on 40 m
+        # of lateral travel, caught it up and arrived at the crossing point at
+        # the same moment. MEASURED at frame 1461:
+        #
+        #     closest approach       3.263 m   against a note that says 20 m
+        #     relative speed        37.0 m/s, 40.3 m/s of it across the sightline
+        #     required rotation     29.46 deg/frame = 51 % of the frame width
+        #     the car subtends      82 deg of a 53.6 deg frame
+        #
+        # It is not a spline artefact and not a key artefact. The AUTHOR'S OWN
+        # Catmull-Rom, sampled directly with no key emission and no Blender in
+        # the loop, gives 3.263 m and 29.45 deg/frame — the built path gives
+        # 3.263 and 29.457. The camera was asked for this.
+        #
+        # WHY EVERY GATE PASSED IT. The rig's aim gate scored beat 5 at 2.52 deg
+        # because the camera IS pointed at the car; the camera-to-car BOX check
+        # below scored 2.15 m against a 1.40 m floor because it is a collision
+        # floor, not a photography one. R2-062's finding, from the other end of
+        # the film: aim error and photographability are independent.
+        #
+        # THE FIX IS ONE SIGN. The anchor moves to the INSIDE of the kink — T3 is
+        # a right-hander (spec: turn -28 deg, apex s 755), so u = -20 is inside,
+        # and it is the side the next four anchors already run down into T4's
+        # outside. The camera therefore stops crossing the racing line here at
+        # all. `tools/subject_sweep.py` on the author's spline, frames 1400-1530:
+        #
+        #     u       h     worst sweep   closest    peak speed   peak accel
+        #    +20     3.0      56.55 %      3.17 m     94.1 m/s      6.68 g   <- shipped
+        #    +20    20.0      16.80 %     11.57 m     95.4 m/s      7.15 g
+        #      0     3.0      11.81 %     10.51 m     84.7 m/s      4.29 g
+        #    -16     3.0       6.28 %     17.97 m     83.1 m/s      3.36 g
+        #    -20     3.0       7.01 %     20.00 m     83.2 m/s      3.43 g   <- this
+        #    -24     3.0       7.79 %     21.39 m     83.3 m/s      3.51 g
+        #
+        # The station and the height were swept too and are worse on every axis:
+        # moving the anchor downstream to s = 790 or 805 makes the camera sprint,
+        # 111-122 m/s and 10-12 g. Height alone cannot fix it — at u = +20 it
+        # takes h = 20 m to reach a WARN, and that is an aerial, not this shot.
+        #
+        # ALSO MEASURED AND NOT TAKEN: moving t=59.00 to u = -6 as well removes
+        # the remaining s 680 -> 773 crossing and is better again (5.60 %,
+        # 19.34 m, 2.49 g). It is not taken because it deletes a declared
+        # choreographic move — "crossing to the left of the line" — to buy
+        # margin on a number that already clears its WARN threshold by 1.7x,
+        # and because one anchor is the smallest edit that closes the defect.
+        #
+        # CLEARANCE, from world_contract at s = 773: half_width 7.0 m, the right
+        # barrier at u = -34.37, ground at u = -20 is z = -1.284 against a
+        # centreline z of -0.643, so this anchor sits 3.64 m above the run-off
+        # with 14 m of lateral room. The neighbouring anchors at s = 848 and 903
+        # already fly u = -20 and -21 and are gated there.
+        A(60.23, cp(773, -20.0, 3.0), 32, 5.6, aim_car(z_off=0.70),
+          "T3 Long Kink at 295 km/h from the INSIDE of the kink. The closest "
+          "the car comes is 20.00 m, which is what this note used to claim and "
+          "did not measure — see R2-085. 7.0 % of the frame width per frame at "
+          "the pass: the fastest sustained pan of the lap outside the "
+          "helicopter arc, and readable"),
         A(61.60, cp(848, -20.0, 5.0), 40, 5.6, aim_car(z_off=0.70),
           "the camera has overtaken and is braking with the car. Stopping a "
           "camera from 68 m/s to a standstill takes 200 m, so it is laid out as "

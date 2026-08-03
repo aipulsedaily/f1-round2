@@ -82,7 +82,7 @@ It also does not judge beat 1, whose subject is a FIELD of exploded parts and
 not a point — `Subject.nearest_field` exists for exactly that reason and this
 file refuses beat 1 rather than reporting a number about the wrong subject.
 
-CONTROLS — `--selftest`, six cases whose verdicts are known in advance
+CONTROLS — `--selftest`, seven cases whose verdicts are known in advance
 -----------------------------------------------------------------------
   P1  a SYNTHETIC case with a closed form: a subject held at exactly 10.000 m
       moving at exactly 100.000 m/s across the line of sight, on a 36 mm
@@ -91,7 +91,11 @@ CONTROLS — `--selftest`, six cases whose verdicts are known in advance
       the continuous-time V/R; the gate must reproduce it to 1e-6.
       A gate whose arithmetic is not checked against a case with a closed
       form is an opinion.
-  P2  the live `--path` over frames 1440-1490, beat 5's T3 pass  must FAIL
+  P2  frames 1440-1490 of the FROZEN PRE-R2085 PATH, kept at
+      `docs/subject_sweep_pre_R2085_path.json`                    must FAIL
+      Not the live path: the live path is the fixed one now, and a positive
+      control that is allowed to be fixed is not a control. It is kept beside
+      the file for the same reason tools/seam_gate.py keeps its own.
   N1  the live `--path` over frames 1100-1180. Real beat-5 material at
       73 m/s — the same window `tools/seam_gate.py` uses as its N2 control,
       deliberately, so the two gates share a negative control      must PASS
@@ -102,6 +106,10 @@ CONTROLS — `--selftest`, six cases whose verdicts are known in advance
       131 % of frame width across 65 of these frames and every one of them is
       material with a note on it. Any future detector added here has to walk
       past a shot that fills the lens and stay quiet.
+  N5  the LIVE path over P2's OWN window                          must PASS
+      P2 and N5 are the same 51 frames of the same shot before and after one
+      anchor moved, which is the only pair that shows this gate measures the
+      pass and not merely beat 5.
   N4  agreement: over N1's window the omega this file DERIVES from geometry
       and the omega `continuity_gate` MEASURES from the quaternion track
       must agree to better than 15 % of frame width. They are computed from
@@ -151,6 +159,13 @@ def _campath_bounds():
 SWEEP_FAIL_PCT, SWEEP_WARN_PCT, _BOUND_SRC = _campath_bounds()
 
 EXTENT_NOTE_PCT = 100.0       # the frame edge — REPORTED, never judged
+
+# THE FROZEN POSITIVE CONTROL. The pre-R2085 path, the one whose T3 pass is
+# 3.26 m and 56.6 % of frame width. It is kept in docs/ rather than pointed at
+# render/, for the reason tools/seam_gate.py keeps its own: a control that
+# lives in a regenerable directory stops being a control the moment somebody
+# regenerates it, and the first sign is a gate that quietly passes everything.
+PRE_R2085 = os.path.join(R2, "docs/subject_sweep_pre_R2085_path.json")
 
 # Beats this file will judge. Beat 1's subject is a field, not a point.
 JUDGED = ("2_launch", "3_breach", "4_transit", "5_lap", "6_ending")
@@ -397,13 +412,19 @@ def selftest(path_json):
     if not ok:
         bad.append("P1")
 
-    cases = [("P2", 1440, 1490, "FAIL", "beat 5's T3 pass"),
-             ("N1", 1100, 1180, "PASS", "beat 5 at 73 m/s, seam_gate's N2 window"),
-             ("N2", 2200, 2300, "PASS", "beat 5's helicopter arc"),
+    pre_cam, pre_lens, _ = from_path(PRE_R2085)
+    cases = [("P2", 1440, 1490, "FAIL", "the PRE-R2085 T3 pass, frozen control",
+              pre_cam, pre_lens),
+             ("N1", 1100, 1180, "PASS", "beat 5 at 73 m/s, seam_gate's N2 window",
+              cam, lens),
+             ("N2", 2200, 2300, "PASS", "beat 5's helicopter arc", cam, lens),
              ("N3", 795, 860, "PASS",
-              "beat 2's ignition and wheelspin, extent 131 % on purpose")]
-    for tag, lo, hi, want, note in cases:
-        rows = sweep_series(cam, lens, sheet, car, W, lo, hi)
+              "beat 2's ignition and wheelspin, extent 131 % on purpose",
+              cam, lens),
+             ("N5", 1440, 1490, "PASS", "the LIVE path at P2's own window",
+              cam, lens)]
+    for tag, lo, hi, want, note, c, l in cases:
+        rows = sweep_series(c, l, sheet, car, W, lo, hi)
         s = summarise(rows, f"{tag} {note}")
         ok = s["verdict"] == want
         print(f"  {'PASS' if ok else 'FAIL'}  {tag} f{lo}-{hi} ({note}): "
