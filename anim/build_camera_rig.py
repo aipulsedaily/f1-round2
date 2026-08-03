@@ -174,6 +174,33 @@ except Exception as _e:                                           # pragma: no c
 # ONE SOURCE: world/film_exposure.py owns both ends of the ramp.
 INTERIOR_STOPS = FX.INTERIOR_STOPS if FX else 0.85
 
+# ---- the roll correction limit.  R2-112.  See look_quat(). -----------------
+#
+# ONE SOURCE for "is there a horizon in this frame": tools/horizon_gate.py owns
+# that definition and judges the built path by it. A second copy here would be a
+# fact with two copies, which is R2-100, and it would go stale exactly when the
+# gate's scope was next argued about.
+sys.path.insert(0, os.path.join(R2, "tools"))
+import horizon_gate as HG                                          # noqa: E402
+
+ROLL_RATE_DEG = 3.0            # everywhere, except:
+NADIR_ROLL_RATE_DEG = 10.0     # inside the peel-off's nadir pass.  R2-112.
+# 10 is BRACKETED, not tuned: 8 leaves 13 frames still failing the horizon gate,
+# 10 is the first value that clears it entirely, and 12 is the first that fails
+# campath's C1 rotation bound. The bracket is in the docstring.
+# How far ahead of beat 6's declared peel-off key the nadir pass may begin. The
+# runaway starts as the view crosses HORIZON_PITCH_DEG on the way up, which on
+# the shipped path is f2629, eleven frames before the peel key at f2642. One
+# second of lead covers that with margin and is checked, not assumed: the window
+# is printed with the measured first and last near-vertical frame inside it.
+PEEL_LEAD_FRAMES = 24
+# Minimum |world +Z x view| for world up to stay the roll reference INSIDE the
+# peel-off window. 0.45 is 26.7 deg and rejects world up above pitch 63.3 deg;
+# the peel-off reaches pitch 80.5 deg, so 0.45 hands the reference to the
+# direction of travel for the whole nadir pass. 0.15 is 8.6 deg and holds world
+# up to pitch 81.4 deg, which covers it. R2-112.
+PEEL_REF_MIN = 0.15
+
 
 def parse_args():
     argv = sys.argv
@@ -195,6 +222,17 @@ def parse_args():
                         "is correct because the world-time ramp is already in "
                         "the animation. world: the old 0.5*world_time_scale "
                         "double correction, kept for A/B ONLY (R2-037).")
+    p.add_argument("--peel-ref-min", type=float, default=PEEL_REF_MIN,
+                   help="see PEEL_REF_MIN. Exposed for the sweep.")
+    p.add_argument("--roll-rate", type=float, default=ROLL_RATE_DEG,
+                   help="roll correction limit, deg per frame of key gap, in "
+                        "frames that HAVE a horizon. R2-085 is the reason this "
+                        "is 3: raising it converts a tilted horizon into a "
+                        "smearing roll. Exposed for the sweep, not for use.")
+    p.add_argument("--nadir-roll-rate", type=float, default=NADIR_ROLL_RATE_DEG,
+                   help="the same limit in frames pitched further than "
+                        "HORIZON_PITCH_DEG, where there is no horizon for the "
+                        "roll to be level against. R2-112.")
     p.add_argument("--res", type=int, nargs=2, default=[3840, 2160],
                    help="the delivery format, which is what the aim gate's "
                         "frame-containment test is judged against")
@@ -286,7 +324,7 @@ def basis_quat(v, ref):
     return Matrix((xc, zc.cross(xc), zc)).transposed().to_quaternion()
 
 
-def look_quat(view, travel, prev_q, prev_v, gap_frames):
+def look_quat(view, travel, prev_q, prev_v, gap_frames, in_peel=False):
     """Camera orientation for a look direction, with a STABLE roll.
 
     `Vector.to_track_quat("-Z", "Y")` resolves roll by pulling the camera's +Y
@@ -316,6 +354,110 @@ def look_quat(view, travel, prev_q, prev_v, gap_frames):
     42 frames apart, so its correction is effectively unlimited and it keeps the
     level horizon it had; beat 5's are 2 to 8 frames apart, so its roll is
     pulled level gently instead of snapping.
+
+    THE CORRECTION LIMIT IS SCOPED TO WHETHER THE FRAME HAS A HORIZON. R2-112.
+
+    One number here used to buy two things and could not pay for both, and the
+    reason is now measured. Beat 6's peel-off carries the view direction through
+    the NADIR: the camera leaves beat 5 two metres above the car looking straight
+    down and pulls up and back, so the AZIMUTH of the view sweeps about 180 deg
+    while the view is near-vertical. Parallel transport turns that azimuth sweep
+    into roll -- it is holonomy, not a bug, and it is what a real helicopter does
+    when it passes over a subject and keeps going.
+
+    Measured on the shipped path, the transport adds up to 15 deg of roll PER
+    FRAME through f2631-f2652. A 3 deg/frame correction cannot keep up with it,
+    so the roll ran away to 176.65 deg at f2651 -- 3.3 deg from perfectly
+    upside-down -- and then took 38 frames at the saturated 3 deg/frame to come
+    back. f2657-f2694 is that ramp, and its per-frame rate is 3.00 to 3.30 deg
+    for thirty-eight consecutive frames, which is the limiter and nothing else.
+
+    THE LAST THIRTEEN FRAMES OF THAT RAMP ARE THE DEFECT. The world comes back
+    into shot at f2657 (pitch 44.1 deg) while the roll is still past vertical, so
+    f2658-f2670 are frames on their SIDE: at f2666 the track runs top-to-bottom,
+    the pit garages are a vertical stripe against the left edge, and there is no
+    sky and no horizon in the frame at all. f2680, at -36.97 deg, reads as a bank
+    precisely because it HAS sky in one corner.
+
+    R2-089'S TWO CANDIDATES WERE RE-COSTED AGAINST THE CORRECTED TILT METRIC,
+    because the metric they were judged on could not see an inverted camera. Both
+    rejections STAND, and the global one reproduces to the digit:
+
+      raising the limit GLOBALLY to 15 deg   beat 6 clean, and beat 5's rotation
+                                             smear 16.18 -> 47.83 % of frame
+                                             width at f1800. R2-089 reported
+                                             47.83. That is R2-085's own defect.
+      blending the roll REFERENCE            halves beat 6, doubles beat 1. A fix
+                                             that moves the defect is not a fix.
+
+    AND THE OBVIOUS THIRD CANDIDATE WAS BUILT, MEASURED AND THROWN AWAY. It read
+    well: raise the limit wherever the horizon is OUT of shot, on the argument
+    that a frame with no horizon has nothing for the roll to be level against, and
+    that f2646 and f2651 were RENDERED and are near-nadir shots in which the car
+    fills the frame with no world reference. Swept at 6/10/15/18/24/30/45:
+
+      nadir-scoped 15   beat 6 clean, beat 5 smear 47.83 % at f1800, beat 1 16.41
+                        -> 27.81 % at f75.  THE SAME COST, TO THE DIGIT, AS THE
+                        GLOBAL FIX IT WAS SUPPOSED TO IMPROVE ON.
+
+    **The pitch test is not a scope, and the reason generalises.** The correction
+    limit only ever BINDS where the view is near-vertical -- that is the only
+    place transport outruns 3 deg/frame -- so scoping it to near-vertical views
+    selects every frame it was already acting on and excludes none of them. f1800
+    sits at pitch 64.0 deg carrying 88.0 deg of roll and f75 at pitch 80.6 deg
+    carrying 112.9 deg; both are inside "no horizon in shot", and in both the roll
+    is plainly visible because THE SUBJECT is in the frame even though the horizon
+    is not. "No horizon" was verified to mean "no visible roll" on two frames of
+    beat 6 and assumed to mean it everywhere else. It does not.
+
+    SO THE SCOPE IS THE PEEL-OFF, BY FRAME, and it is stated rather than dressed
+    up as a principle. The defect is one move: beat 6's peel-off carries the view
+    through the nadir, and no other move in the film does. The window runs from
+    PEEL_LEAD_FRAMES before beat 6's declared peel key to the start of beat 6, it
+    is derived from the sheet and printed with the measured near-vertical span
+    inside it, and outside it every frame of this film keeps the 3 deg/frame limit
+    R2-085 was spent protecting.
+
+    AND INSIDE THAT WINDOW THE FIX IS NOT MAINLY THE RATE. Raising the rate alone
+    treats the symptom: it lets the roll run away to 163 deg and then pays it back
+    faster, and paying back 163 deg is expensive however it is done -- rate 15
+    inside the window peaks at 34 % of frame width per frame over f2639-f2653 and
+    FAILS campath's C1 bound of 25 %.
+
+    THE ERROR IS ACCUMULATED AT ALL BECAUSE THE REFERENCE CHANGES SUBJECT. World
+    up is rejected as a roll reference once it comes within 26.7 deg of the view
+    axis (`|ref x zc| < 0.45`), which is pitch 63.3 deg, and the peel-off reaches
+    pitch 80.5 deg. So through the whole nadir pass the roll was being corrected
+    toward the direction of TRAVEL -- a perfectly good reference for a top-down
+    follow, and one that has nothing to do with level -- while the error against
+    world up grew unwatched to 163 deg by f2638. PEEL_REF_MIN holds world up as
+    the reference to pitch 81.4 deg inside the window, so the error never
+    accumulates and there is nothing to pay back.
+
+    Measured, all four with the same control (rate 3, cone 0.45) reproducing the
+    shipped path BIT-IDENTICALLY:
+
+      cone   rate    worst tilt      FAIL    inverted   beat 5   campath
+             deg     f2600-2714    frames     frames     smear
+      0.45     3      -122.93 deg      32         28     16.18    PASS  (shipped)
+      0.15     8        31.61          13          0     18.92    PASS
+      0.15    10         1.71           0          0     22.07    PASS  <- chosen
+      0.15    12         1.71           0          0     25.47    FAIL
+      0.45    15         1.71           0          0     47.83    FAIL
+
+    Ten is bracketed on both sides: eight does not finish the job and twelve is
+    the first value campath refuses. Beats 1, 2, 3, 4 and 6 are unchanged to the
+    digit; beat 5's figure moves only because the peel-off falls inside beat 5's
+    frame range, and the whole of that movement is at f2631-f2655, where the view
+    is near-vertical and the camera has no horizon in it.
+
+    THE C1 FIGURE OVERSTATES A ROLL, and that is worth saying because it is the
+    number this decision was bracketed on. C1 is `2*acos|q0.q1| / hFOV`: it uses
+    the TOTAL rotation angle between two frames and cannot tell an axial roll from
+    a pan. A pure roll moves the centre of the frame by nothing and the corners by
+    the full amount, so 22 % of frame width per frame is what the CORNERS do and
+    the centre -- where the car is -- does not move at all. The bound is still
+    respected rather than argued with.
     """
     v = view.normalized()
     zc = -v
@@ -340,20 +482,35 @@ def look_quat(view, travel, prev_q, prev_v, gap_frames):
     else:
         q = prev_q.copy()
 
+    # R2-112. Inside the peel-off, world +Z is kept as the roll reference to a
+    # tighter cone than 0.45 (26.7 deg). 0.45 rejects it above pitch 63.3 deg, so
+    # on the way through the nadir the reference switched to the direction of
+    # TRAVEL, the roll was corrected toward a travel-up that has nothing to do
+    # with level, and the error against world up accumulated unwatched to 163 deg
+    # by f2638. Every later frame of the defect is that error being paid back.
+    zmin = PEEL_REF_MIN if in_peel else 0.45
     ref = None
-    for cand in (Vector((0.0, 0.0, 1.0)),
-                 Vector((travel.x, travel.y, 0.0)) if travel else None):
+    for cand, lo in ((Vector((0.0, 0.0, 1.0)), zmin),
+                     (Vector((travel.x, travel.y, 0.0)) if travel else None,
+                      0.45)):
         if cand is None or cand.length < 1e-6:
             continue
         cand = cand.normalized()
-        if cand.cross(zc).length >= 0.45:
+        if cand.cross(zc).length >= lo:
             ref = cand
             break
     if ref is not None:
         up_des = (ref - zc * ref.dot(zc)).normalized()
         up_now = q @ Vector((0.0, 1.0, 0.0))
         err = math.atan2(up_now.cross(up_des).dot(v), up_now.dot(up_des))
-        lim = math.radians(3.0 * max(gap_frames, 1))
+        # R2-112. Raised ONLY inside the peel-off's nadir pass. Both halves of
+        # that test are load-bearing and the pitch half alone is NOT a scope —
+        # see the docstring.
+        pitch = abs(math.degrees(math.asin(max(-1.0, min(1.0, -v.z)))))
+        rate = (NADIR_ROLL_RATE_DEG
+                if (in_peel and pitch >= HG.HORIZON_PITCH_DEG)
+                else ROLL_RATE_DEG)
+        lim = math.radians(rate * max(gap_frames, 1))
         q = Quaternion(v, max(-lim, min(lim, err))) @ q
 
     if q.dot(prev_q) < 0.0:
@@ -592,7 +749,15 @@ class Subject:
 
 
 def main():
+    global ROLL_RATE_DEG, NADIR_ROLL_RATE_DEG, PEEL_REF_MIN
     a = parse_args()
+    ROLL_RATE_DEG, NADIR_ROLL_RATE_DEG = a.roll_rate, a.nadir_roll_rate
+    PEEL_REF_MIN = a.peel_ref_min
+    print(">> roll correction limit: %.1f deg/frame with a horizon in shot, "
+          "%.1f deg/frame without (pitch bound %.0f deg, from horizon_gate); "
+          "peel-off world-up cone %.2f"
+          % (ROLL_RATE_DEG, NADIR_ROLL_RATE_DEG, HG.HORIZON_PITCH_DEG,
+             PEEL_REF_MIN))
     set_key_defaults()
     sheet = json.load(open(a.sheet))
     spec = json.load(open(a.spec))
@@ -903,11 +1068,26 @@ def main():
           f"from the beat-5 hand-off blend instead, and rotation supplied for "
           f"all of them")
 
+    # R2-112. THE PEEL-OFF'S NADIR PASS, derived from the sheet and not typed in.
+    # Beat 6's declared peel key is at t = -3.0 relative to a beat that starts at
+    # b6_start seconds; the runaway begins as the view crosses HORIZON_PITCH_DEG
+    # a few frames earlier, so the window opens PEEL_LEAD_FRAMES before it and
+    # closes at the start of beat 6. Inside it, and only inside it, look_quat may
+    # correct the roll faster than 3 deg/frame. The measured near-vertical span
+    # is printed below so a window that stops containing the thing it is for
+    # cannot do so silently.
+    b6_start_s = next(b["start_s"] for b in sheet["beats"]
+                      if b["name"] == "6_ending")
+    peel_t = b6_start_s + min(k["t"] for k in sheet["beat6"]["keys"])
+    peel_lo = int(round(peel_t * FPS)) - PEEL_LEAD_FRAMES
+    peel_hi = int(round(b6_start_s * FPS))
+
     # Orientation is solved in ONE ordered pass over every key, before anything
     # is inserted, because `look_quat` carries state from the previous key and
     # inserting in two passes must not be allowed to change what it produces.
     prev_q = prev_v = None
     prev_f = None
+    peel_vert = []
     for i, k in enumerate(keys):
         f = max(1, min(total_frames, int(round(k["t"] * FPS))))
         k["_f"] = f
@@ -923,9 +1103,32 @@ def main():
         k["_q"] = None
         if look:
             gap = (f - prev_f) if prev_f is not None else 1
-            q, prev_v = look_quat(Vector(look) - here, travel, prev_q, prev_v, gap)
+            in_peel = peel_lo <= f <= peel_hi
+            vw = (Vector(look) - here).normalized()
+            if abs(math.degrees(math.asin(max(-1.0, min(1.0, -vw.z))))) \
+                    >= HG.HORIZON_PITCH_DEG:
+                peel_vert.append((f, in_peel))
+            q, prev_v = look_quat(Vector(look) - here, travel, prev_q, prev_v,
+                                  gap, in_peel=in_peel)
             prev_q, prev_f = q, f
             k["_q"] = q
+
+    # R2-112. The window, and what it actually caught. A window that no longer
+    # brackets the near-vertical pass, or that has swallowed near-vertical keys
+    # belonging to another beat, says so here rather than in a rendered frame.
+    inside = [f for f, ip in peel_vert if ip]
+    outside = [f for f, ip in peel_vert if not ip]
+    print(">> R2-112 peel-off nadir window: keys f%d-%d (beat 6 starts %.1f s, "
+          "declared peel key f%d, lead %d frames)"
+          % (peel_lo, peel_hi, b6_start_s, peel_lo + PEEL_LEAD_FRAMES,
+             PEEL_LEAD_FRAMES))
+    print("     near-vertical keys INSIDE it: %d%s;  elsewhere in the film: %d"
+          % (len(inside),
+             (" (f%d-%d)" % (min(inside), max(inside))) if inside else "",
+             len(outside)))
+    if not inside:
+        print("     WARNING: the window contains no near-vertical key at all — "
+              "it is doing nothing, which is not the same as being unnecessary.")
 
     def insert(sub):
         for k in sub:
