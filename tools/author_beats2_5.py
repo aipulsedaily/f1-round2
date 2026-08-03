@@ -402,11 +402,40 @@ BEARING_PER_KEY_DEG = 5.0   # emit a key before the subject's bearing has moved
 # pair it sat between. A key is therefore also emitted before the SPEED has
 # changed by more than this much.
 #
-# ON FOR BEAT 2 AND THE SEAM ONLY, deliberately. Switching it on globally
-# relayouts all 395 keys of beats 3-5 and moves a camera path that currently
-# passes the aim gate, the placement gate and the continuity gate — a blast
-# radius this defect does not justify. It is recommended as follow-up work and
-# it is off by default so nobody switches it on by accident.
+# ON FOR BEAT 2 AND THE SEAM ONLY, deliberately. It was recommended as follow-up
+# work on the argument that switching it on globally would relayout beats 3-5
+# and move a path that already passes three gates.
+#
+# THE FOLLOW-UP WAS DONE. R2-087. It was switched on globally, the sheet was
+# re-authored, the rig rebuilt and every gate re-run, and the answer is NO —
+# not because of the blast radius, but because there is nothing on the other
+# side of it:
+#
+#   keys                    433 -> 451 (+18). Beat 2 and beat 4 do not move at
+#                           all; beat 3 gains 2, beat 5 gains 16.
+#   continuity_gate campath IDENTICAL. PASS, 0 FAIL, the same five advisories,
+#                           and the same per-beat speed and rotation maxima to
+#                           better than 0.1 %.
+#   seam_gate --selftest    7/7 both ways.  subject_sweep --selftest 7/7 both ways.
+#   worst BULGE, gated      1.570x -> 1.520x at f2313-2321. The one gain, on a
+#                           figure already 15 % inside its own 1.80 bound.
+#   local accel p99.9       4.20x -> 4.25x, and f2258 goes 4.19x -> 4.24x. It
+#                           is marginally WORSE on the other census.
+#   built path              324 frames move by more than a millimetre, 321 of
+#                           them inside beat 5, worst 0.234 m at f1576, and the
+#                           lens moves up to 1.12 mm at f2239.
+#
+# So it buys a 3.2 % improvement in a passing number and invalidates any
+# rendered frame of the 1,524-frame beat that is 67 % of the master's render
+# cost. The criterion is not wrong — it is the remedy for a SPECIFIC failure,
+# a speed that changes while the bearing does not, and beat 2's braking event
+# ran 2.64x the chord of the pair it sat between. Beats 3-5 do not do that.
+# The right form of "enable it globally" is to leave it off and let
+# `seam_gate --census` name the interval that needs it; today that census's
+# worst gated interval anywhere is 1.570x.
+#
+# It stays off by default so nobody switches it on by accident, and now there
+# is a measurement here rather than a caution.
 SPEED_PER_KEY_FRAC = 0.20      # of the faster of the two frames
 SPEED_PER_KEY_FLOOR_MS = 0.30  # so a slow drift does not emit densely
 
