@@ -913,6 +913,25 @@ def main():
     # This is not asserted from the API's behaviour — the rig re-samples frames
     # 1-754 on both sides of the insertion and prints the difference, and
     # REFUSES to save if it is not zero.
+    #
+    # WHAT THIS PIN DOES NOT COVER, and it is worth knowing. R2-065.
+    # It holds beat 1 against the BRIDGE. It does not hold beat 1 against beat
+    # 2, and beat 2 reaches back into it: re-profiling beat 2's leading keys
+    # moves beat 1's frame 740 by 34.35 mm (y and z, x untouched) on a segment
+    # whose two keys — 718 and 754 — never change value, because Blender's
+    # AUTO_CLAMPED solve at 754 is not a function of its two neighbours alone.
+    # ATTRIBUTED, not assumed: building this same code against the pre-R2-064
+    # sheet reproduces the old path to 0.0 mm, and building it against the new
+    # sheet with the bridge block EMPTIED still shows the 34.35 mm — so it is
+    # beat 2's keys, not the bridge, and not the two-pass insertion.
+    # `FCurve.update()` is a no-op on both, so it is not a stale-handle effect
+    # either.
+    #
+    # There is no "beat 1 alone" value to pin to: the 718 -> 754 segment
+    # depends on what follows 754, and something always does. The practical
+    # consequence, stated so it is not discovered by a diff: BEAT 1'S FRAMES
+    # ~686-753 MUST BE RE-RENDERED WHENEVER BEAT 2'S LEADING KEYS MOVE. 34 mm
+    # at 8 m is 0.246 deg, about 19 px of subject shift at 4K.
     PIN_F = 754
     bridge = [k for k in keys if k.get("beat") == "1_2_seam"]
     rest = [k for k in keys if k.get("beat") != "1_2_seam"]
