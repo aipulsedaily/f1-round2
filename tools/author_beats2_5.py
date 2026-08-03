@@ -311,15 +311,50 @@ def _tangents(anchors):
     return ts, ps, tan
 
 
+# THE CACHE IS KEYED ON id(), AND id() IS REUSED. R2-084.
+#
+# `_TAN_CACHE[id(anchors)]` is correct for exactly one anchor chain per
+# process, which is all `main()` ever builds — and it is WRONG, silently and
+# non-deterministically, for any caller that builds more than one. CPython
+# frees a chain when the caller rebinds it and hands the SAME address to the
+# next one, so the second chain hits the first chain's entry and every
+# subsequent `catmull_rom` returns a camera that belongs to another sheet.
+#
+# MEASURED, on a 24-variant anchor sweep of the T3 pass: **24 distinct chains,
+# ONE id, one cache entry, and all 24 reported the identical 56.55 % smear** —
+# including chains whose T3 anchor sat 17 m higher. The failure depends on
+# allocator behaviour, so the same script gives different answers on different
+# runs depending on what else is holding a reference; an earlier run of the
+# same sweep produced four distinct ids and an answer that alternated with the
+# loop index. A wrong number that changes between runs is worse than a wrong
+# number, because it cannot be reproduced and argued with.
+#
+# THE FIX IS TO HOLD THE CHAIN. An entry keeps a reference to the anchors it
+# was computed from, so that object cannot be freed and its address cannot be
+# reused while the entry lives; the hit is then verified with `is`, which is
+# O(1) and cannot be fooled. Fingerprinting the contents instead would be O(n)
+# on every one of the ~40,000 calls a single build makes and would defeat the
+# cache it is protecting.
+#
+# At the cap the cache is CLEARED WHOLESALE rather than evicted one entry at a
+# time. That is deliberate and it is the only safe eviction: the aliasing
+# hazard needs a SURVIVING stale entry to collide with, so dropping every
+# reference at once leaves nothing to alias against, while dropping one entry
+# frees exactly one address for the next chain to land on.
 _TAN_CACHE = {}
+_TAN_CACHE_CAP = 4096
 
 
 def catmull_rom(anchors, t):
     """Cubic Hermite through the anchor positions in film time."""
     key = id(anchors)
-    if key not in _TAN_CACHE:
-        _TAN_CACHE[key] = _tangents(anchors)
-    ts, ps, tan = _TAN_CACHE[key]
+    hit = _TAN_CACHE.get(key)
+    if hit is None or hit[0] is not anchors:
+        if len(_TAN_CACHE) >= _TAN_CACHE_CAP:
+            _TAN_CACHE.clear()
+        hit = (anchors,) + tuple(_tangents(anchors))
+        _TAN_CACHE[id(anchors)] = hit
+    _owner, ts, ps, tan = hit
     i = bisect.bisect_right(ts, t) - 1
     i = min(max(i, 0), len(ts) - 2)
     h = ts[i + 1] - ts[i]
