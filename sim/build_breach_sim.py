@@ -35,7 +35,8 @@ NOT SIMULATED, AND SAID PLAINLY
     is one continuous rigid motion with no yaw, no pitch response and no
     lock-up, and this sim does not change it.
 
-    THE JUSTIFICATION THAT USED TO BE HERE WAS WRONG BY 75x, AND IS WITHDRAWN.
+    THE JUSTIFICATION THAT USED TO BE HERE WAS WRONG BY 75x (R2-099) AND IS
+    WITHDRAWN.
     It read "an F1 car is 798 kg against 4.9 kg of glass per pane, and the
     honest response to 26 kJ of pane is a few mm/s".  A pane is 2.17 x 6.025 m
     of 11.5 mm laminate = 375 kg, and the six fractured bays total 2,240.9 kg
@@ -125,7 +126,8 @@ THRESH_GLASS_EDGE = 2.5
 THRESH_PVB = 0.9        # the interlayer tears at a much lower impulse than the
                         # glass edge but at a much larger displacement, which is
                         # why it is a spring and not a fixed joint
-# THE MULLION THRESHOLDS, AND WHY THEY ARE THE SECOND PARAMETER THE WALL OPENS
+# THE MULLION THRESHOLDS (R2-092), AND WHY THEY ARE THE SECOND PARAMETER THE
+# WALL OPENS
 # ON.  `t_bond_per_m` decides whether the glass leaves.  THESE decide whether
 # the opening is wider than the car.  Across a 40x sweep of the bond threshold
 # (4000, 1000, 400, 200, 100) mullions 3, 4, 6 and 7 never moved more than
@@ -174,7 +176,7 @@ THRESH_TRANSOM = 260.0           # M6 self-tappers into the front screw port
 # sequential-impulse iterations to satisfy, not easier — see `null_verdict`'s
 # `mobility` field, which exists so that this can never again be invisible.
 #
-# THE RESIDUAL IS STILL OPEN.  At 100 the wake-all null loses 3 shards of
+# THE RESIDUAL IS STILL OPEN (R2-097).  At 100 the wake-all null loses 3 of
 # 3,796 and the panes that stay sag 11.5 px against a 1 px criterion.  It also
 # missed that criterion at 4000 (10.75 px) and it has never met it at any
 # threshold.  That is a SOLVER_ITER / SUBSTEPS defect in a 14,075-constraint
@@ -1148,8 +1150,8 @@ RELEASE_FRAME = 860        # nothing can be SEEN to sag before the swap
 def camera_ranges(plan, release=RELEASE_FRAME):
     """The closest the ONE camera gets to each bay WHILE THAT BAY IS IN SHOT.
 
-    THE BUG THIS REPLACES
-    ---------------------
+    THE BUG THIS REPLACES (R2-093)
+    -----------------------------
     The old version took the nearest beat-sheet camera KEY to the bay's CENTRE
     over the whole take, and did not ask whether the bay was inside the frame,
     nor whether the frame was after the shards were released.  It priced bay 2
@@ -1270,6 +1272,7 @@ def null_verdict(loc, meta, plan):
 
     A THIRD CRITERION, ADDED BECAUSE ITS ABSENCE IS WHAT BROKE THE WALL
     ------------------------------------------------------------------
+    R2-092.  This field is permanent.  Read it on every null.
     A null that passes because nothing CAN move is not a null.  Raising
     `THRESH_BOND_PER_M` to 4000 made criterion 1 pass by making the glass
     unbreakable, and the same parameter then produced a 0.65 x 1.92 m aperture
@@ -1380,9 +1383,21 @@ def aperture_report(loc, meta, info, settle_frac=0.75):
     """THE APERTURE THE SIM PRODUCED, measured on the wall plane.
 
     A shard counts as GONE if it ended more than `GONE_M` from where it started.
-    The hole is the bounding box of the gone shards in (y, z).  This is the
-    number that has to agree with `mullion_intact.breach_state()`'s 9.6 m and
-    the camera anchor's "9.6 x 5.6 m hole", and it is measured, not set.
+    The hole is the bounding box of the gone shards in (y, z).
+
+    DO NOT SHIP THIS NUMBER.  R2-094: a bbox of ORIGINS reports a 13.01 x
+    5.79 m aperture from TWO shards at opposite corners of the glazing, which
+    is the control `aperture.aperture_controls.TRAP_two_corners` fires on.
+    The honest measure is the largest CONNECTED vacated region on a raster of
+    the wall plane, with the mullion strips passable only where that mullion
+    segment has actually left: `sim/aperture.py::hole`, scored by
+    `sim/breach_metrics.py`.  This function is kept only so the two measures
+    can be printed side by side.
+
+    R2-095: the declared 9.6 m is the clear span between the two BENT mullions
+    at y = +-4.4.  It is not a glass aperture and never was.  The glass in
+    bays 3-6 tops out at 8.77 m, and reaching even that needs bays 2 and 7,
+    which the plan marks `retained`.
     """
     GONE_M = 0.25
     st = np.array([m["origin"] for m in meta])

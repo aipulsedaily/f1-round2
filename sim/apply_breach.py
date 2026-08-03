@@ -35,9 +35,19 @@ the same object as the pane, even with zero gap: light entering shard A and
 leaving into shard B crosses glass -> air -> glass at a shared face, and at
 1.6 m on a 35 mm lens (2,333 px/m) that shows.  So the intact pane carries beat
 1's 33 seconds and the shards take over on the frame the glass actually moves.
-The swap is invisible for a reason that can be checked rather than asserted:
-`sim/verify_breach.py --swap` renders the frame before, the frame of, and the
-frame after, and diffs them.
+
+That frame is ONE frame per bay and both sides key off it — see `bay_swap`.
+It used to be two different frames: the pane hid at min(release) over the bay
+and each shard appeared at its own release, so nine shards in bays 5 and 7
+arrived a frame after the pane covering them had gone.  R2-098.
+
+`sim/verify_breach.py --swap` is the guard, and unlike the four previous
+revisions of this sentence, it exists.  It reads the TABLE apply_breach keys
+from, so it fires before a 4 GB scene is written rather than after a frame is
+rendered, and it carries four controls including a fractured-bay shard that
+never releases at all.  It is a table check, not a render-and-diff: what a
+diff of frames r-1, r, r+1 would show is dominated by the field's own motion,
+which is the shot.
 
 DETAIL IS GRADED BY THE CAMERA PATH, NOT BY GUESS
 -------------------------------------------------
@@ -407,6 +417,31 @@ def build(args):
     log("hero shards: %d of %d within %.1f m of the camera path"
         % (int(hero.sum()), len(keyset), args.hero_m))
 
+    # -- THE ONE FRAME EACH BAY SWAPS ON.  R2-098. ---------------------------- #
+    # This used to be computed twice, differently.  The intact PANE hid at
+    # min(release) over its bay; each SHARD appeared at ITS OWN release.  Those
+    # are not the same frame, and between them nothing renders at all: in the
+    # shipped table, 9 shards in bays 5 and 7 arrive one frame after the pane
+    # covering them has gone.  A hole, in a film with no cuts.
+    #
+    # One frame and nine shards is small, and it was small BY LUCK -- the gap is
+    # bounded by the spread of release frames inside a bay and nothing enforced
+    # that spread.  A bay whose corner lets go twelve frames after its centre
+    # would have shown twelve frames of the plaza through the wall.
+    #
+    # So the swap frame is now computed ONCE, per bay, and BOTH sides key off
+    # it.  A shard that has not moved yet at `r_bay` simply renders at its home
+    # transform, which is where the pane's glass was: identical silhouette,
+    # nothing to see.  `sim/verify_breach.py --swap` is the guard, and it has
+    # four controls.
+    bay_swap = {}
+    for i, (bay, s, nm, j) in enumerate(keyset):
+        r = int(rel[j])
+        if r > span[0]:
+            bay_swap[bay] = min(bay_swap.get(bay, r), r)
+    log("swap frames per bay (R2-098: ONE frame per bay, both sides): %s"
+        % json.dumps({str(k): v for k, v in sorted(bay_swap.items())}))
+
     # -- the shards ---------------------------------------------------------- #
     stats = dict(objects=0, tris=0, keys=0, hero=int(hero.sum()))
     for i, (bay, s, nm, j) in enumerate(keyset):
@@ -437,8 +472,9 @@ def build(args):
         for c in range(4):
             key_linear(fcs[3 + c], fk, kq[:, c])
         stats["keys"] += 7 * len(fk)
-        # visibility: hidden until this pane's glass moves
-        r = int(rel[j])
+        # visibility: hidden until THIS BAY's pane hides, not until this shard
+        # personally moves.  R2-098 -- see `bay_swap` above.
+        r = int(bay_swap.get(bay, -1))
         if r > span[0]:
             fv = act.layers[0].strips[0].channelbag(slot).fcurves
             for dp in ("hide_render", "hide_viewport"):
@@ -473,11 +509,8 @@ def build(args):
         stats["objects"] += 1
         if roles[bay] == "intact":
             continue
-        rs = [int(rel[idx_of["GS_b%02d_%05d" % (bay, s["id"])]])
-              for s in plan["panes"][bay]
-              if "GS_b%02d_%05d" % (bay, s["id"]) in idx_of]
-        rs = [r for r in rs if r > 0]
-        r = min(rs) if rs else -1
+        # R2-098: the SAME frame the shards use.  Computed once, above.
+        r = int(bay_swap.get(bay, -1))
         if r <= 0:
             continue
         act, slot, _f = make_action("BRP_b%02d" % bay, [])

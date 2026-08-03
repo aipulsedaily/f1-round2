@@ -2,7 +2,6 @@
  "written_by": "sim/ owner, re-opening the wall and reconciling the null",
  "date": "2026-08-03",
  "one_line": "The wall does not open because of TWO parameters, not one. t_bond_per_m decides whether glass leaves at all; the MULLION thresholds decide whether the opening is wider than the car. Lowering the mullion thresholds from 900/1400 to 40/120 costs the null literally nothing - the null bake is bit-identical - and turns a 2.15 x 4.55 m ragged blob into a full-height bay. The declared 9.6 m is not reachable by this impact at any setting, and that is the honest finding.",
-
  "RECOMMENDED_CONFIGURATION": {
   "t_bond_per_m": 100.0,
   "t_mullion_joint": 40.0,
@@ -10,52 +9,153 @@
   "t_glass_edge": 2.5,
   "t_pvb": 0.9,
   "t_transom": 260.0,
-  "unchanged_from_shipped": ["glass_edge", "pvb", "transom", "substeps", "solver_iter", "margin"],
-  "changed_from_shipped": {"bond_per_m": "4000 -> 100", "mullion_joint": "900 -> 40", "mullion_base": "1400 -> 120"},
+  "unchanged_from_shipped": [
+   "glass_edge",
+   "pvb",
+   "transom",
+   "substeps",
+   "solver_iter",
+   "margin"
+  ],
+  "changed_from_shipped": {
+   "bond_per_m": "4000 -> 100",
+   "mullion_joint": "900 -> 40",
+   "mullion_base": "1400 -> 120"
+  },
   "artefact": "sim/tmp/m1.{npz,json,blend,log}, 300 frames = impact +0.646 s",
   "result": "bay 4 vacated 96.8% BY AREA floor to head; mullion 5 travels 1.215 m and 2 of its segments detach; connected opening 2.15 x 6.00 m of glass, 3.80 x 6.00 m bridged across the departed mullion; 2,793 shards / 409 kg leave, 1,867 land on the floor.",
   "picture": "sim/out/gone_m1.png against sim/out/gone_sw_b100.png - LOOK AT THESE, they are the whole argument"
  },
-
  "WHY_THE_MULLION_THRESHOLDS_ARE_THE_MISSING_LEVER": {
   "observation": "across a 40x sweep of t_bond_per_m (4000, 1000, 400, 200, 100) mullions 3, 4, 6 and 7 never move more than 45 mm. Only MULLION 5 - the one the car hits head-on at y = 0 - responds at all.",
   "reason": "the car proxy is 2.005 m wide and centred on y = 0, so it touches bays 4 and 5 and mullion 5 and nothing else. The only load path outward is glass -> edge clamp -> mullion 4 or 6, and the edge clamp breaks at an impulse of 2.5, which is instant. The glass lets go of its frame before the frame is loaded.",
   "dimensional_check": "Blender passes breaking_threshold to Bullet's setBreakingImpulseThreshold, compared against the applied impulse in ONE substep. At 240 Hz x 8 substeps a threshold T is a sustained force of T x 1920 N. So mullion_joint 900 = 1.73 MN and mullion_base 1400 = 2.69 MN. A 75 x 160 mm 6063-T6 extrusion fails in bending at roughly 30 kN and its base studs in shear at roughly 200 kN, i.e. T = 16 and T = 104. The shipped numbers are 55x and 13x too strong.",
   "what_40_120_does": "mullion 5 goes from 0.147 m of bend to 1.215 m and two segments leave; bay 4 goes from 58.2% to 96.8% vacated by area; the connected opening goes from 2.15 x 4.55 m to 2.15 x 6.00 m (3.80 x 6.00 bridged)."
  },
-
  "THE_NULL_SURVIVES_IT_BY_NOT_BEING_ON_THAT_AXIS": {
   "method": "blender -b -P sim/build_breach_sim.py -- --frames 480 --bake --no-car --wake-all, i.e. every body AWAKE at frame 1 for 2.0 s of world time under gravity with nothing to hit it. Twice as long as the 240-frame null the shipped threshold was chosen against.",
   "table": [
-   {"run": "null_b4000", "bond": 4000, "mul": "900/1400", "shards_gone_gt_0.25m": 0, "max_disp_m": 0.073, "median_disp_mm": 15.21, "shards_over_50mm": 264, "bay2_px": 2.34, "bay7_px": 10.75, "creep_vs_ring": "RING"},
-   {"run": "null_b100", "bond": 100, "mul": "900/1400", "shards_gone_gt_0.25m": 3, "max_disp_m": 2.257, "median_disp_mm": 8.48, "shards_over_50mm": 5, "bay2_px": 4.06, "bay7_px": 11.52, "creep_vs_ring": "CREEP"},
-   {"run": "n1", "bond": 100, "mul": "40/120", "shards_gone_gt_0.25m": 3, "max_disp_m": 2.257, "median_disp_mm": 8.48, "shards_over_50mm": 5, "bay2_px": 4.06, "bay7_px": 11.52, "creep_vs_ring": "CREEP", "note": "BIT-IDENTICAL to null_b100 on every statistic. The mullion thresholds are never approached under dead load; frame bodies move 0.175 mm."},
-   {"run": "n2", "bond": 100, "mul": "15/50", "shards_gone_gt_0.25m": 3, "max_disp_m": 6.234, "median_disp_mm": 9.72, "shards_over_50mm": 8, "bay2_px": 16.65, "bay7_px": 200.0, "creep_vs_ring": "CREEP", "note": "THE NULL BREAKS. 15/50 is below the dead-load margin and the wall begins to shed itself."}
+   {
+    "run": "null_b4000",
+    "bond": 4000,
+    "mul": "900/1400",
+    "shards_gone_gt_0.25m": 0,
+    "max_disp_m": 0.073,
+    "median_disp_mm": 15.21,
+    "shards_over_50mm": 264,
+    "bay2_px": 2.34,
+    "bay7_px": 10.75,
+    "creep_vs_ring": "RING"
+   },
+   {
+    "run": "null_b100",
+    "bond": 100,
+    "mul": "900/1400",
+    "shards_gone_gt_0.25m": 3,
+    "max_disp_m": 2.257,
+    "median_disp_mm": 8.48,
+    "shards_over_50mm": 5,
+    "bay2_px": 4.06,
+    "bay7_px": 11.52,
+    "creep_vs_ring": "CREEP"
+   },
+   {
+    "run": "n1",
+    "bond": 100,
+    "mul": "40/120",
+    "shards_gone_gt_0.25m": 3,
+    "max_disp_m": 2.257,
+    "median_disp_mm": 8.48,
+    "shards_over_50mm": 5,
+    "bay2_px": 4.06,
+    "bay7_px": 11.52,
+    "creep_vs_ring": "CREEP",
+    "note": "BIT-IDENTICAL to null_b100 on every statistic. The mullion thresholds are never approached under dead load; frame bodies move 0.175 mm."
+   },
+   {
+    "run": "n2",
+    "bond": 100,
+    "mul": "15/50",
+    "shards_gone_gt_0.25m": 3,
+    "max_disp_m": 6.234,
+    "median_disp_mm": 9.72,
+    "shards_over_50mm": 8,
+    "bay2_px": 16.65,
+    "bay7_px": 200.0,
+    "creep_vs_ring": "CREEP",
+    "note": "THE NULL BREAKS. 15/50 is below the dead-load margin and the wall begins to shed itself."
+   }
   ],
   "the_bracket": "40/120 opens the wall and leaves the null untouched; 15/50 destroys the null. There is a clean 3x window and 40/120 sits in it with 900/1400 above it doing nothing for the null.",
   "THE_TRADE_THAT_WAS_MADE_DID_NOT_BUY_WHAT_IT_COST": "over the same 480 frames the SHIPPED threshold of 4000 has a median displacement of 15.21 mm against 100's 8.48, and 264 shards over 50 mm against 100's 5. It is worse on the wall as a whole. All 4000 buys is the binary 'nothing over 0.25 m', and it buys that by making the glass unbreakable - which is exactly the failure mode 'a null that passes because nothing can move'. A stiffer constraint network is HARDER for 24 sequential-impulse iterations to satisfy, not easier.",
   "the_three_shards_that_do_leave_at_100": [
-   {"name": "GS_b06_00010", "bay": 6, "net_m": 2.257, "clamped": false, "area_m2": 0.0235, "starts_at": [14.961, 3.449, 0.483], "crosses_50mm_at": "t+0.038 s", "reading": "an unclamped 0.68 kg cell 0.4 m above the sill, held only by its bonds. It moves faster than free fall in the first 9 frames, so this is an initialisation kick, not gravity."},
-   {"name": "GS_b05_01262", "bay": 5, "net_m": 1.283, "clamped": true, "area_m2": 0.0948, "crosses_50mm_at": "t+1.221 s"},
-   {"name": "GS_b05_01261", "bay": 5, "net_m": 1.174, "clamped": true, "area_m2": 0.1032, "crosses_50mm_at": "t+1.221 s", "reading": "two large CLAMPED cells on the mullion 6 line whose 2.5 clamp holds for 1.2 s and then creeps out. Their static load is 28 N = 0.0148 N.s per substep, 170x under the threshold, so this is accumulated solver drift in a 14,075-constraint island, not a threshold being exceeded."}
+   {
+    "name": "GS_b06_00010",
+    "bay": 6,
+    "net_m": 2.257,
+    "clamped": false,
+    "area_m2": 0.0235,
+    "starts_at": [
+     14.961,
+     3.449,
+     0.483
+    ],
+    "crosses_50mm_at": "t+0.038 s",
+    "reading": "an unclamped 0.68 kg cell 0.4 m above the sill, held only by its bonds. It moves faster than free fall in the first 9 frames, so this is an initialisation kick, not gravity."
+   },
+   {
+    "name": "GS_b05_01262",
+    "bay": 5,
+    "net_m": 1.283,
+    "clamped": true,
+    "area_m2": 0.0948,
+    "crosses_50mm_at": "t+1.221 s"
+   },
+   {
+    "name": "GS_b05_01261",
+    "bay": 5,
+    "net_m": 1.174,
+    "clamped": true,
+    "area_m2": 0.1032,
+    "crosses_50mm_at": "t+1.221 s",
+    "reading": "two large CLAMPED cells on the mullion 6 line whose 2.5 clamp holds for 1.2 s and then creeps out. Their static load is 28 N = 0.0148 N.s per substep, 170x under the threshold, so this is accumulated solver drift in a 14,075-constraint island, not a threshold being exceeded."
+   }
   ],
   "honest_status": "the null does NOT fully pass at the recommended configuration. 3 shards of 3,796 leave and the panes that stay sag 11.5 px. But it does not fully pass at the SHIPPED configuration either (10.75 px on bay 7), and it never did - the old instrument charged bay 2 at the wrong range and therefore reported bay 2 as the worst bay when bay 7 is. Nothing regressed; a broken instrument was hiding the state of things."
  },
-
  "APERTURE_AND_FRAGMENT_ENERGY_WERE_NEVER_COUPLED": {
   "claim_tested": "'at threshold 100 the fragments leave at 2.4x the impactor speed, and aperture size and fragment energy share one parameter'",
   "finding": "they do not share one parameter. Across the 40x bond sweep the fragment energy statistics are FLAT:",
-  "mass_weighted_peak_speed_ms": {"4000": 5.91, "1000": 6.29, "400": 6.23, "100": 6.30},
-  "mass_weighted_p90_ms": {"4000": 14.68, "1000": 18.52, "400": 17.21, "100": 17.58},
-  "field_KE_max_J": {"4000": 57216, "1000": 57330, "400": 104894, "100": 36875, "note": "100 is the LOWEST of the four and 400 the highest - not monotone, i.e. noise, not a trend"},
-  "peak_speed_any_shard_ms": {"4000": 137.1, "100": 137.6, "note": "the same peak exists in the SHIPPED bake where nothing leaves the wall"},
+  "mass_weighted_peak_speed_ms": {
+   "4000": 5.91,
+   "1000": 6.29,
+   "400": 6.23,
+   "100": 6.3
+  },
+  "mass_weighted_p90_ms": {
+   "4000": 14.68,
+   "1000": 18.52,
+   "400": 17.21,
+   "100": 17.58
+  },
+  "field_KE_max_J": {
+   "4000": 57216,
+   "1000": 57330,
+   "400": 104894,
+   "100": 36875,
+   "note": "100 is the LOWEST of the four and 400 the highest - not monotone, i.e. noise, not a trend"
+  },
+  "peak_speed_any_shard_ms": {
+   "4000": 137.1,
+   "100": 137.6,
+   "note": "the same peak exists in the SHIPPED bake where nothing leaves the wall"
+  },
   "where_the_extreme_speeds_come_from": "not the car. The 200 fastest shards peak a MEDIAN of 0.125 s after impact at a median 1.27 m BEHIND the car's rear plane; the single fastest, GS_b04_00502, hits 137.6 m/s at frame 261 = impact +0.4875 s, at x = 17.26 while the car nose is at x = 23.25 - six metres past it - and it is travelling BACKWARDS, toward the wall. 66 shards peak on that same frame. Nothing physical throws a shard backwards at 137 m/s six metres behind the impactor.",
   "the_car_proxy_is_not_the_source": "its surface never moves faster than it does. Probes at the nose tip, rear wing tip, rear wing corner and airbox all report 9.64..19.90 m/s, identical to the origin, because the animated pitch has settled by frame 255. Controls: the origin probe returns the car's own speed exactly, and with rotation zeroed every probe agrees to 4.3e-13 m/s.",
   "what_it_actually_is": "a contact/constraint blow-up in the debris field well downstream of the wall, present at EVERY threshold including the shipped one. It affects 0.02% of the field by mass (64 shards of ~10 g over 100 m/s out of 2,240 kg).",
   "the_honest_energy_number": "LAUNCH speed - each shard's speed at the frame it first passes 0.25 m from home, mass-weighted - is p50 5.85, p90 14.5, p99 23.4 m/s at bond 100, i.e. 1.43x the 16.4 m/s impactor at the 99th percentile by mass. That is a defensible number for glass driven by an infinitely massive kinematic body, where the free-particle bound is (1+e)v. The '2.4x' figure was a max over 3,948 bodies of a statistic dominated by the downstream blow-up.",
   "so": "the aperture can be opened without touching fragment energy, because the parameter that opens it never controlled the energy. What SHOULD be fixed is the downstream blow-up, and that is a contact/solver issue, not a threshold."
  },
-
  "THE_DECLARED_9.6_m_IS_NOT_REACHABLE_BY_THIS_IMPACT": {
   "what_9.6_means": "mullion_intact.breach_state(): 'The aperture is 9.6 m wide on the launch axis (|Y| <= 4.8), so the three inside it go, and the two ON its edge fold.' Mullions at |y| < 3.0 (y = -2.2, 0, +2.2) destroyed; at 3.0 <= |y| < 5.0 (y = +-4.4) bent.",
   "the_glass_ceiling": "bays 3,4,5,6 span y = -4.385 .. +4.385 = 8.77 m of GLASS. Reaching 9.6 m of glass needs 385 mm off the inner edge of bays 2 and 7, which the same plan marks `retained`. So 9.6 m is the clear span between the two BENT mullions, a different object from the glass aperture, and the two were being compared to each other.",
@@ -63,7 +163,6 @@
   "experiment_that_settles_it": "m4 = bond 100, mullion 40/120, glass edge clamp raised 2.5 -> 25 (10x) to make the pane keep hold of its frame long enough to load mullions 4 and 6. It made the aperture WORSE, not wider: vacated 18.4% -> 7.5%, connected hole 2.15 x 6.00 -> 1.65 x 2.05 m, and mullions 4 and 6 still moved 4 mm and 7 mm. A stronger clamp holds more glass in the wall; it does not transmit more load to the neighbouring mullions.",
   "conclusion": "a 2.0 m car at 16.4 m/s makes an opening about one bay wide plus the mullion it strikes: 3.80 x 6.00 m. The 9.6 x 5.6 m is an art-direction target, not a consequence of this impact. Closing the gap needs a decision, not a parameter: widen the impact event, script mullions 4 and 6 to fail (breach_state() already DECLARES them destroyed, so declaring is already what is happening), or re-declare the aperture at what the impact makes."
  },
-
  "INSTRUMENTS_BUILT_OR_FIXED": {
   "sim/aperture.py": {
    "what": "the aperture measured as a CONNECTED region on a 25 mm raster of the wall plane, with the mullion strips passable only where that mullion segment has actually left.",
@@ -79,23 +178,50 @@
   "sim/build_breach_sim.py::camera_ranges": {
    "was": "the nearest beat-sheet camera KEY to the bay's CENTRE over the whole take, with no test of whether the bay was in the frame or whether the frame was after release.",
    "now": "the applied scene's own transform at all 2,978 frames, the bay sampled on a 5x5 grid, every sample tested against the 3840x2160 raster, frames before release excluded.",
-   "the_size_of_the_error": {"bay_2_old_m": 3.52, "bay_2_honest_m": 22.87, "factor": 6.5, "bay_7_old_m": 7.24, "bay_7_honest_m": 7.58},
+   "the_size_of_the_error": {
+    "bay_2_old_m": 3.52,
+    "bay_2_honest_m": 22.87,
+    "factor": 6.5,
+    "bay_7_old_m": 7.24,
+    "bay_7_honest_m": 7.58
+   },
    "consequence": "every pixel figure taken through bay 2 was 6.5x too big, which is where 7.1 px came from."
   },
   "sim/breach_metrics.py": "one scorer run identically on every bake, carrying its own positive and negative controls in every report.",
   "a_control_of_my_own_that_failed_first": "selecting 'bodies that never moved' by net displacement < 1e-6 m is wrong: GS_b04_01485 in the b100 bake leaves at 18 m/s and lands back within 2.5e-7 m of home, so the negative control read 6.69 m/s. The correct selector is bit-identical transforms across the whole bake, which gives 36 bodies at exactly 0.0."
  },
-
  "THE_SAG_RE_MEASURED": {
   "instruction_followed": "re-measured AFTER the wall was fixed, with the corrected instrument, as instructed.",
-  "corrected_camera_ranges_after_release": {"bay_2": {"closest_in_shot_m": 22.87, "lens_mm": 28.18, "mm_per_px": 7.607, "frames_in_shot": 372}, "bay_7": {"closest_in_shot_m": 7.58, "lens_mm": 27.91, "mm_per_px": 2.548, "frames_in_shot": 328}},
-  "at_the_recommended_configuration_n1": {"bay_2_mm": 30.91, "bay_2_px": 4.06, "bay_7_mm": 29.36, "bay_7_px": 11.52},
-  "at_the_shipped_configuration": {"bay_2_mm": 17.84, "bay_2_px": 2.34, "bay_7_mm": 27.39, "bay_7_px": 10.75},
+  "corrected_camera_ranges_after_release": {
+   "bay_2": {
+    "closest_in_shot_m": 22.87,
+    "lens_mm": 28.18,
+    "mm_per_px": 7.607,
+    "frames_in_shot": 372
+   },
+   "bay_7": {
+    "closest_in_shot_m": 7.58,
+    "lens_mm": 27.91,
+    "mm_per_px": 2.548,
+    "frames_in_shot": 328
+   }
+  },
+  "at_the_recommended_configuration_n1": {
+   "bay_2_mm": 30.91,
+   "bay_2_px": 4.06,
+   "bay_7_mm": 29.36,
+   "bay_7_px": 11.52
+  },
+  "at_the_shipped_configuration": {
+   "bay_2_mm": 17.84,
+   "bay_2_px": 2.34,
+   "bay_7_mm": 27.39,
+   "bay_7_px": 10.75
+  },
   "THE_WORST_BAY_IS_BAY_7_NOT_BAY_2": "bay 7 is filmed from 7.58 m where one 4K pixel is 2.548 mm; bay 2 from 22.87 m where it is 7.607 mm. Bay 2 was only ever the worst bay because the old code charged it at 3.52 m. Every previous decision about the sag was taken on the wrong bay.",
   "so_what_it_costs": "the criterion is 1 px on the panes that stay. It is missed by 11.5x at the recommended configuration and by 10.8x at the shipped one. This is NOT a regression - it has never been met - and it is a SOLVER-ITERATION defect, not a threshold defect: creep_vs_ring reports CREEP with a drift of 5.24 mm over 2.0 s, and the file's own note at line 131 already said 3,948 bodies in one constraint island is more than 24 sequential-impulse iterations can hold rigid.",
   "caveat": "these are --wake-all figures, deliberately harsher than the shipping configuration, in which the wall is start_deactivated and measures 0.000 m until the impact wakes it."
  },
-
  "THE_f0866_SLAB_ARTEFACT": {
   "asked": "the coordinator rendered f0858/f0862/f0866/f0880 and found a soup of overlapping hard-edged translucent slabs at f0866, hypothesis: the intact pane and the shards both render for ~12 frames.",
   "HYPOTHESIS_FALSIFIED": "no frame renders both. apply_breach.py keys the pane's hide_render CONSTANT at [1, r-1, r] -> [0,0,1] and every shard's at [1, r-1, r] -> [1,1,0] with r = min(release) over that bay. Read off breach_film.npz: every fractured bay's pane hides at 860 and its shards appear at 860. The ONLY exception is 9 shards in bays 5 and 7 that appear at 861 - a 9-shard, ONE-frame HOLE, not a double. That cannot make a 12-frame whole-wall artefact.",
@@ -104,7 +230,6 @@
   "the_prediction_to_test": "at the recommended configuration the glass in bay 4 LEAVES instead of returning, so the stack should not form and should not un-form. Re-render f0855-f0890 after the re-bake and re-apply, exactly as instructed. If slabs survive that, it is a second defect.",
   "one_thing_that_is_real_regardless": "the 9-shard one-frame hole at 860/861."
  },
-
  "BEAT_6_AND_THE_WOUND_ON_SCREEN": {
   "was_reported": "beat 6's wound is 15 px, dead centre of frame from f2834, at 402-595 m on an 18.8 mm lens.",
   "re_measured_through_the_corrected_projector": {
@@ -115,7 +240,6 @@
   },
   "corrections": "f2834 is in beat 6 but is NOT where the camera centres the breach - that is f2901, at 595 m. And the wound's best showing outside beat 3 is in BEAT 5, at 123 px tall, not beat 6. The readability problem is a beat-6 problem only."
  },
-
  "STILL_WRONG_AND_NOT_FIXED_BY_ME": [
   "THE SHIPPED SCENE STILL CARRIES THE 4000 BAKE. render/film9_breach.blend is unchanged. Nothing I found has been applied to it. The recommended configuration is proven on a 300-frame (+0.646 s) window only.",
   "THE FULL BAKE HAS NOT BEEN RUN at the recommended configuration. The remaining path is: full 1,657-frame bake at bond 100 / mullion 40/120 (~4.5 h on this box), resample, verify, re-apply into film9, re-render f0855-f0890. I did not have the wall-clock for it.",
@@ -130,15 +254,60 @@
   "THE 9-SHARD ONE-FRAME HOLE at frame 860/861, from release frames that are not all equal.",
   "MY OWN SWEEP IS SINGLE-SEEDED. Every point is one bake at one fracture plan. Nothing here is repeated with a different fracture seed, so the per-bay numbers carry unknown run-to-run variance."
  ],
-
- "proposed_defect_log_entries_R2_066_onward": [
-  {"id": "R2-066", "title": "the mullion breaking thresholds are 55x and 13x too strong and are the reason the breach is car-width", "evidence": "sim/tmp/m1 vs sim/tmp/sw_b100; sim/out/gone_m1.png"},
-  {"id": "R2-067", "title": "camera_ranges() priced bay 2 at 3.52 m against an honest in-shot 22.87 m, inflating every sag figure through it by 6.5x, and named the wrong worst bay", "evidence": "sim/build_breach_sim.py::camera_ranges, sim/sagpx.py controls"},
-  {"id": "R2-068", "title": "aperture_report() reports a 13.01 x 5.79 m aperture from two shards at opposite corners", "evidence": "sim/aperture.py::aperture_controls TRAP_two_corners"},
-  {"id": "R2-069", "title": "the declared 9.6 m aperture is not reachable by a 2.005 m impactor at any threshold setting", "evidence": "sim/tmp/m4 - raising the edge clamp 10x made it worse"},
-  {"id": "R2-070", "title": "66 shards reverse to 137 m/s on one frame, 6 m downstream of the car, at every bond threshold including the shipped one", "evidence": "sim/tmp/an_where.json, sim/tmp/an_wing.py"},
-  {"id": "R2-071", "title": "the wake-all null has never met its own 1 px sag criterion at any threshold; the shipped configuration misses it by 10.8x", "evidence": "sim/tmp/null_b4000, null_b100, n1, n2"},
-  {"id": "R2-072", "title": "9 shards appear one frame after their pane hides, leaving a one-frame hole at 860", "evidence": "sim/out/breach_film.npz release column"},
-  {"id": "R2-073", "title": "build_breach_sim.py's docstring justifies the kinematic car proxy with a glass mass 75x too small", "evidence": "shard_meta totals 2,240.9 kg against the docstring's 4.9 kg per pane"}
- ]
+ "proposed_defect_log_entries_R2_092_to_R2_099": [
+  {
+   "id": "R2-092",
+   "title": "the mullion breaking thresholds are 55x and 13x too strong and are the reason the breach is car-width",
+   "evidence": "sim/tmp/m1 vs sim/tmp/sw_b100; sim/out/gone_m1.png"
+  },
+  {
+   "id": "R2-093",
+   "title": "camera_ranges() priced bay 2 at 3.52 m against an honest in-shot 22.87 m, inflating every sag figure through it by 6.5x, and named the wrong worst bay",
+   "evidence": "sim/build_breach_sim.py::camera_ranges, sim/sagpx.py controls"
+  },
+  {
+   "id": "R2-094",
+   "title": "aperture_report() reports a 13.01 x 5.79 m aperture from two shards at opposite corners",
+   "evidence": "sim/aperture.py::aperture_controls TRAP_two_corners"
+  },
+  {
+   "id": "R2-095",
+   "title": "the declared 9.6 m aperture is not reachable by a 2.005 m impactor at any threshold setting",
+   "evidence": "sim/tmp/m4 - raising the edge clamp 10x made it worse"
+  },
+  {
+   "id": "R2-096",
+   "title": "66 shards reverse to 137 m/s on one frame, 6 m downstream of the car, at every bond threshold including the shipped one",
+   "evidence": "sim/tmp/an_where.json, sim/tmp/an_wing.py"
+  },
+  {
+   "id": "R2-097",
+   "title": "the wake-all null has never met its own 1 px sag criterion at any threshold; the shipped configuration misses it by 10.8x",
+   "evidence": "sim/tmp/null_b4000, null_b100, n1, n2"
+  },
+  {
+   "id": "R2-098",
+   "title": "9 shards appear one frame after their pane hides, leaving a one-frame hole at 860",
+   "evidence": "sim/out/breach_film.npz release column"
+  },
+  {
+   "id": "R2-099",
+   "title": "build_breach_sim.py's docstring justifies the kinematic car proxy with a glass mass 75x too small",
+   "evidence": "shard_meta totals 2,240.9 kg against the docstring's 4.9 kg per pane"
+  }
+ ],
+ "DEFECT_NUMBER_RENUMBERING": {
+  "why": "the eight findings below were first proposed as R2-066..073. Every one of those numbers was already taken while this work was in flight: R2-066/067/068 are beat 2's and the continuity gate's, R2-070/071/072/073 are the socket sweep's and the importers'. The block issued to the breach is R2-092..R2-099 and that is what these are now.",
+  "map": {
+   "R2-066": "R2-092",
+   "R2-067": "R2-093",
+   "R2-068": "R2-094",
+   "R2-069": "R2-095",
+   "R2-070": "R2-096",
+   "R2-071": "R2-097",
+   "R2-072": "R2-098",
+   "R2-073": "R2-099"
+  },
+  "note": "docs/DEFECT-LOG-R2.md is not mine to edit; these are proposals for the log's owner."
+ }
 }

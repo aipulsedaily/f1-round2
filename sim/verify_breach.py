@@ -57,6 +57,8 @@ OVERLAP_M = 0.003        # = CONVEX_TOL_M: the hull is allowed to be this proud
 SEAM_WINDOW = 14
 SEAM_CORE = 3
 SEAM_RATIO = 3.0
+LAST_FRAME = 2978        # the take's last frame.  Only used to price a shard
+                         # that NEVER releases: its hole runs to the end.
 
 
 # --------------------------------------------------------------------------- #
@@ -214,6 +216,73 @@ def check_visibility(release, frames):
                 last=int(r[r > 0].max()) if (r > 0).any() else -1)
 
 
+def check_swap(release, names, plan):
+    """THE SWAP, CHECKED RATHER THAN ASSERTED.  R2-098.
+
+    `sim/apply_breach.py` hides each fractured bay's intact pane at ONE frame
+
+        r_bay = min(release) over that bay's shards
+
+    and shows each SHARD at ITS OWN release frame.  Those are not the same
+    number.  A shard whose glass sits still for another twelve frames after its
+    neighbour lets go is keyed to appear twelve frames after the pane that was
+    covering it has gone — and for those twelve frames NOTHING renders in its
+    place.  A hole, in a film with no cuts.
+
+    In the shipped table that is 9 shards for exactly 1 frame at 860/861, which
+    is small.  It is small BY LUCK: it is bounded by the spread of release
+    frames within a bay, and nothing anywhere enforces that spread.  This is
+    the check the `apply_breach` docstring has advertised for four revisions
+    under the name `verify_breach.py --swap` and which did not exist.
+
+    It measures the TABLE, which is what apply_breach keys from, so it fires
+    before a 4 GB scene is written rather than after a frame is rendered.
+
+    Returns per-bay: the pane's hide frame, the worst shard gap in frames, and
+    how many shards are uncovered.  PASS requires every gap to be zero.
+    """
+    r = np.asarray(release, int)
+    idx = {str(n): i for i, n in enumerate(names)}
+    roles = plan.get("roles", {})
+    bays, worst, total_uncovered, total_frames = {}, 0, 0, 0
+    for bay, shards in sorted(plan.get("panes", {}).items()):
+        if roles.get(bay) == "intact":
+            continue                       # never hides, so nothing to uncover
+        ii = [idx["GS_b%02d_%05d" % (bay, s["id"])]
+              for s in shards
+              if "GS_b%02d_%05d" % (bay, s["id"]) in idx]
+        if not ii:
+            continue
+        rr = r[ii]
+        rel_pos = rr[rr > 0]
+        if not len(rel_pos):
+            continue                       # pane never hides either
+        r_bay = int(rel_pos.min())
+        # A shard that NEVER releases is uncovered from r_bay to the end of the
+        # take.  That is not a twelve-frame hole, it is a permanent one, and it
+        # has to be counted as worse rather than skipped.
+        gap = np.where(rr > 0, rr - r_bay, LAST_FRAME - r_bay)
+        gap = np.maximum(gap, 0)
+        n_unc = int((gap > 0).sum())
+        bays[str(bay)] = dict(
+            role=roles.get(bay), n_shards=len(ii), pane_hides_at=r_bay,
+            shards_uncovered=n_unc,
+            worst_gap_frames=int(gap.max()),
+            uncovered_shard_frames=int(gap.sum()),
+            never_release=int((rr < 0).sum()))
+        worst = max(worst, int(gap.max()))
+        total_uncovered += n_unc
+        total_frames += int(gap.sum())
+    return dict(
+        criterion="every shard of a fractured bay must appear on the SAME "
+                  "frame its pane hides.  Any later is a hole with nothing "
+                  "behind it.",
+        bays=bays, worst_gap_frames=worst,
+        shards_uncovered=total_uncovered,
+        uncovered_shard_frames=total_frames,
+        PASS=bool(worst == 0))
+
+
 def check_sink(L, verts_r, floor_z=0.0):
     """Lowest vertex of every body at the last frame, against the floor."""
     lo = L[-1][:, 2] - verts_r
@@ -346,6 +415,8 @@ def run(args):
                measured_on="the decimated reconstruction")
     rep["pop"] = check_pop(frames, L, Q)
     rep["visibility"] = check_visibility(rel, frames)
+    import fracture as _FR
+    rep["swap"] = check_swap(rel, names, _FR.load(args.shards))
     meshes = load_meshes(args.shards, names, detail=0)
     r = np.array([np.abs(m[0][:, 2]).max() for m in meshes])
     rep["sink"] = check_sink(L, r)
@@ -461,6 +532,35 @@ def selftest():
     check("+ve control: a 2 mm drift after rest is caught",
           p2["max_drift_m"] > 1e-3, "%.4f m" % p2["max_drift_m"])
 
+    # -- SWAP (R2-098).  A synthetic two-bay plan, so the controls do not
+    #    depend on whatever the current fracture happens to look like.
+    fake_plan = dict(
+        roles={3: "destroyed", 8: "intact"},
+        panes={3: [dict(id=k) for k in range(5)],
+               8: [dict(id=k) for k in range(3)]})
+    fake_names = ["GS_b03_%05d" % k for k in range(5)] + \
+                 ["GS_b08_%05d" % k for k in range(3)]
+    clean_rel = [860, 860, 860, 860, 860, -1, -1, -1]
+    s0 = check_swap(clean_rel, fake_names, fake_plan)
+    check("-ve control: every shard released with its pane is clean",
+          s0["PASS"] and s0["worst_gap_frames"] == 0,
+          "worst %d" % s0["worst_gap_frames"])
+    check("-ve control: an INTACT bay's never-released shards are not "
+          "charged as a hole", "8" not in s0["bays"], str(list(s0["bays"])))
+    s1 = check_swap([860, 860, 872, 860, 860, -1, -1, -1],
+                    fake_names, fake_plan)
+    check("+ve control: one shard 12 frames late is caught",
+          (not s1["PASS"]) and s1["worst_gap_frames"] == 12
+          and s1["shards_uncovered"] == 1,
+          "worst %d, %d uncovered" % (s1["worst_gap_frames"],
+                                      s1["shards_uncovered"]))
+    s2 = check_swap([860, 860, -1, 860, 860, -1, -1, -1],
+                    fake_names, fake_plan)
+    check("+ve control: a shard of a FRACTURED bay that never releases is a "
+          "hole to the end of the take, not a skip",
+          (not s2["PASS"]) and s2["worst_gap_frames"] == LAST_FRAME - 860,
+          "worst %d frames" % s2["worst_gap_frames"])
+
     print("\n%d check(s) FAILED" % len(fails) if fails else "\nall checks passed")
     return 1 if fails else 0
 
@@ -468,6 +568,13 @@ def selftest():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--swap", action="store_true",
+                    help="ONLY the swap check (R2-098): does every shard of a "
+                         "fractured bay appear on the same frame its intact "
+                         "pane hides?  Any later and there is a hole with "
+                         "nothing behind it.  `sim/apply_breach.py` has cited "
+                         "this flag for four revisions; until now it did not "
+                         "exist.")
     ap.add_argument("--film", default=os.path.join(R2, "sim/out/breach_film.npz"))
     ap.add_argument("--shards",
                     default=os.path.join(R2, "sim/out/fracture_wall.npz"))
@@ -479,6 +586,18 @@ def main():
     a = ap.parse_args()
     if a.selftest:
         sys.exit(selftest())
+    if a.swap:
+        import resample as RS
+        import fracture as _FR
+        film = RS.read_film(a.film)
+        rep = check_swap(film["release"], film["names"],
+                         _FR.load(a.shards))
+        print(json.dumps(rep, indent=1, default=float))
+        print("STAGE RESULT: swap %s (worst gap %d frames, %d shards "
+              "uncovered)" % ("PASS" if rep["PASS"] else "FAIL",
+                              rep["worst_gap_frames"],
+                              rep["shards_uncovered"]))
+        sys.exit(0 if rep["PASS"] else 1)
     rep = run(a)
     with open(a.out, "w") as fh:
         json.dump(rep, fh, indent=1, default=float)
