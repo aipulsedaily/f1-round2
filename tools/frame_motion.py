@@ -2,33 +2,42 @@
 
     .venv/bin/python tools/frame_motion.py --dir <seq dir> --prefix <name> \
         [--lo 748 --hi 832] [--ab <other dir> --ab-prefix <name>]
+        [--whole]     the old whole-frame estimate, which REFUSES here
+        [--regions]   the three hand-drawn boxes, superseded
 
 Every other instrument in this fix measures the camera path in metres. This one
 opens the frames. It exists because "the camera path is smooth" and "the
 picture moves smoothly" are different claims, and only the second is what a
-viewer sees — the same distinction that made a 34 mm camera shift worth
-arguing about and a 0.069 deg quaternion metric worth throwing away.
+viewer sees.
 
-WHAT IS MEASURED
+WHAT IS MEASURED, and what changed under R2-078
+===============================================
+The default is now tools/image_motion.py's BLOCK MOTION FIELD: the frame is
+covered with overlapping blocks, each is phase-correlated on its own, and what
+is reported is the distribution of what those blocks did --
 
-  shift_px   the whole-frame translation between consecutive frames, by
-             phase correlation on the luminance (FFT cross-power spectrum,
-             parabolic sub-pixel peak fit). This is a real displacement in
-             pixels, not a difference score: a frame that gets brighter does
-             not move, and mean |diff| cannot tell those apart.
+    speed_med    median |block motion|, in FULL-RESOLUTION pixels
+    spread_dx    p90 - p10 of the block dx. Near zero means the frame has ONE
+                 motion in it. Large means it has several, which is what a
+                 tracking shot always looks like.
+    dominant     the largest coherent cluster of blocks
+    secondary    the next one, if there is one at all
+    shear        |secondary - dominant|
+    coverage     fraction of blocks that produced a usable estimate
 
-  resid      the mean |diff| left after shifting the previous frame by the
-             measured amount, over the mean |diff| before shifting. Below 1.0
-             means the shift explains the change; near 1.0 means the frames
-             differ for some reason a translation cannot account for, and the
-             shift number should not be trusted on that frame. Reported so a
-             bad estimate is visible rather than silently averaged in.
+`--whole` still runs the old single whole-frame phase correlation. On the full
+beat-2 seam, f748-832, it REFUSES: median residual 0.995, and 57 of 84 frames
+are ones a translation does not explain. On a short window inside the launch it
+does NOT refuse -- the residual there is 0.84 -- and the number it prints is
+still the peak of a correlation between regions moving different ways. Kept
+because R2-068 has to stay reproducible: on frames 804->805 it comes out as
+-13.50 px at one downsample factor and +15.99 px at the next one down.
 
-The seam defect predicts a specific, checkable thing: the pre-fix path runs
-11.34 m/s at frame 795 where the fixed one runs 4.69, so at the same camera
-distance the pre-fix picture must move roughly 2.4x further between 794 and
-795. That is a prediction about pixels, made from geometry, and this is what
-tests it.
+`--regions` still runs the three hand-drawn boxes -- background strip, subject
+box, floor strip. Those boxes were drawn for ONE frame of ONE beat. The car
+does not stay in the middle of the frame for 2,978 frames, so they are a
+measurement of wherever the box happens to be pointing, not of the subject.
+Superseded by the block field; kept for the A/B against it.
 """
 
 import argparse
@@ -39,6 +48,9 @@ import sys
 
 import numpy as np
 from PIL import Image
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import image_motion                                          # noqa: E402
 
 
 # Above this, the measured shift did not reduce the frame-to-frame difference
@@ -151,6 +163,51 @@ def series(d, prefix, lo, hi):
     return out
 
 
+def field_mode(a):
+    """The block motion field: what the picture does when it does several
+    things at once. Refuses per frame pair, and says how many it refused."""
+    R = image_motion.sequence_field(a.dir, a.prefix, a.lo, a.hi)
+    if not R:
+        raise SystemExit(f">> FAIL: no consecutive frame pairs in {a.dir}")
+    B = (image_motion.sequence_field(a.ab, a.ab_prefix, a.lo, a.hi)
+         if a.ab else {})
+    print(f"=== BLOCK MOTION FIELD, frames {a.lo}-{a.hi}, "
+          f"{os.path.basename(a.dir.rstrip('/'))}"
+          + (f" vs {os.path.basename(a.ab.rstrip('/'))}" if B else ""))
+    print("      f  speed_med  spread_dx    dominant dx,dy  frac   "
+          "secondary dx,dy  frac    shear   cov"
+          + ("  |  A/B speed_med" if B else ""))
+    nref = 0
+    for f in sorted(R):
+        r = R[f]
+        if r["refused"]:
+            nref += 1
+            print(f"  {f:5d}   REFUSED: {r['why']}")
+            continue
+        sec = r["secondary"]
+        line = (f"  {f:5d} {r['speed_med']:10.2f} {r['spread_dx']:10.2f}   "
+                f"{r['dominant'][0]:+7.2f},{r['dominant'][1]:+6.2f} "
+                f"{r['dominant_frac']:5.2f}   "
+                + (f"{sec[0]:+8.2f},{sec[1]:+6.2f} {r['secondary_frac']:5.2f}"
+                   if sec else f"{'-':>22}")
+                + f" {r['shear']:8.2f} {r['coverage']:5.2f}")
+        if f in B and not B[f]["refused"]:
+            line += f"  |  {B[f]['speed_med']:13.2f}"
+        print(line)
+    sp = [r["speed_med"] for r in R.values() if not r["refused"]]
+    sh = [r["shear"] for r in R.values() if not r["refused"]]
+    print(f"  median image speed {np.median(sp):.2f} px/frame, "
+          f"peak {max(sp):.2f}; worst shear {max(sh):.2f} px")
+    print(f"  {nref} of {len(R)} frame pairs REFUSED (too few blocks usable)")
+    if nref > 0.5 * len(R):
+        print("   REFUSED: more than half the sequence could not be measured. "
+              "This is a result, not a pass.")
+        print(">> STAGE RESULT: FRAME_MOTION_MOSTLY_REFUSED")
+        sys.exit(2)
+    print(">> STAGE RESULT: FRAME_MOTION_OK")
+    return
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", required=True)
@@ -160,10 +217,15 @@ def main():
     ap.add_argument("--lo", type=int, default=748)
     ap.add_argument("--hi", type=int, default=832)
     ap.add_argument("--regions", action="store_true",
-                    help="measure the background, the subject and the floor "
-                         "separately, which is the only thing that works on a "
-                         "tracking shot")
+                    help="the three hand-drawn boxes (superseded by the block "
+                         "field, kept for the A/B against it)")
+    ap.add_argument("--whole", action="store_true",
+                    help="the old single whole-frame estimate, which refuses "
+                         "on this footage -- kept so R2-068 stays reproducible")
     a = ap.parse_args()
+
+    if not a.regions and not a.whole:
+        return field_mode(a)
 
     if a.regions:
         R = region_series(a.dir, a.prefix, a.lo, a.hi)

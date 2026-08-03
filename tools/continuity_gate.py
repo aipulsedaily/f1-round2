@@ -70,12 +70,17 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gate_exit                                              # noqa: E402
+import image_motion                                           # noqa: E402
 try:
     import provenance
 except Exception:                                             # pragma: no cover
     provenance = None
 
-GATE_VERSION = "continuity_gate/1.0.0"
+# 1.1.0: the whole-frame phase-correlation image-motion estimate was replaced
+# with tools/image_motion.py's block motion field (R2-068). D5 and D7 and the
+# pacing translation figure were all computed from the old number; D1, D2, D3,
+# D4 and D6 never touched it and are unchanged.
+GATE_VERSION = "continuity_gate/1.1.0"
 
 # ---------------------------------------------------------------------------
 # Calibration constants. Every one of these is a measurement or a stated
@@ -273,10 +278,14 @@ def sharpness(a):
 
 
 def phase_shift(a, b):
-    """(dx, dy) that maps a onto b, sub-pixel, by phase correlation.
+    """DEPRECATED, R2-068. The whole-frame translation, which is the motion of
+    nothing on a tracking shot -- and this implementation returned the NEGATIVE
+    of the shift its own docstring claimed, and its callers printed it at the
+    downsampled analysis scale rather than in frame pixels.
 
-    Robust to brightness change (magnitude is normalised away), which matters:
-    a fade must not read as motion.
+    Kept only so the defect stays reproducible: tools/image_motion.py's
+    --selftest checks its replica against this function. Nothing in this gate
+    consumes it any more.
     """
     h, w = a.shape
     wy = np.hanning(h).astype(np.float32)[:, None]
@@ -341,11 +350,24 @@ def measure(frames, progress=True):
     nums = np.array([f for f, _ in frames])
     s = {k: np.full(n, np.nan) for k in
          ("mean", "sd", "r", "g", "b", "res_mean", "res_p999", "res_hot",
-          "firefly", "d_prev", "sharp", "mx", "my", "mmag")}
+          "firefly", "d_prev", "sharp",
+          # --- the image-motion series, from tools/image_motion.py's block
+          # field. There is no single "mx"/"my" any more, because a tracking
+          # shot does not have one: see R2-068.
+          "mmag",        # median |block motion|, FULL-RESOLUTION px/frame
+          "mp90",        # 90th percentile of the same
+          "mspread",     # p90-p10 of block dx: how much the frame disagrees
+                         # with itself. Near 0 = one motion; large = tracking.
+          "mcov",        # fraction of blocks that produced an estimate
+          "maccel",      # median over blocks of |v_i - v_{i-1}|  (D5)
+          "maccel_max",  # max over blocks of the same             (D5, local)
+          "mshear")}     # |secondary cluster - dominant cluster|
+    s["_motion_refused"] = np.zeros(n, dtype=bool)
     shapes = set()
     tiles = np.full((n, TILE_Y * TILE_X), np.nan)
     win = deque()        # (idx, luma)
-    small_prev = None
+    prev_lum = None
+    prev_field = None
 
     for i, (fnum, path) in enumerate(frames):
         lum, (mr, mg, mb) = load_luma(path)
@@ -356,12 +378,24 @@ def measure(frames, progress=True):
         s["sharp"][i] = sharpness(lum)
         tiles[i] = tile_means(lum)
 
-        small = downsample_to(lum)
-        if small_prev is not None:
-            dx, dy = phase_shift(small_prev, small)
-            s["mx"][i], s["my"][i] = dx, dy
-            s["mmag"][i] = math.hypot(dx, dy)
-        small_prev = small
+        field = None
+        if prev_lum is not None and prev_lum.shape == lum.shape:
+            field = image_motion.motion_field(prev_lum, lum)
+            if field["refused"]:
+                s["_motion_refused"][i] = True
+                field = None
+            else:
+                s["mmag"][i] = field["speed_med"]
+                s["mp90"][i] = field["speed_p90"]
+                s["mspread"][i] = field["spread_dx"]
+                s["mcov"][i] = field["coverage"]
+                s["mshear"][i] = field["shear"]
+                acc = image_motion.block_accel(prev_field, field)
+                if acc is not None:
+                    s["maccel"][i] = acc["med"]
+                    s["maccel_max"][i] = acc["max"]
+        prev_lum = lum
+        prev_field = field
 
         win.append((i, lum))
         if len(win) == 3:
@@ -660,26 +694,115 @@ def d4_seam(s, nums, boundaries=None, window=SEAM_WINDOW):
     return out
 
 
-def d5_camera_kink(s, nums):
-    """Acceleration spike in the frame-to-frame image motion."""
-    mx = np.nan_to_num(s["mx"], nan=0.0)
-    my = np.nan_to_num(s["my"], nan=0.0)
-    ax = np.diff(mx, prepend=mx[0] if len(mx) else 0.0)
-    ay = np.diff(my, prepend=my[0] if len(my) else 0.0)
-    amag = np.hypot(ax, ay)
-    z, med, _ = rolling_robust_z(amag, floor=0.05)
-    out = []
-    for i in range(2, len(amag) - 1):
-        if not np.isfinite(s["mx"][i]):
+def _kink_z(x, window=ROLL_WINDOW, floor=0.0, leading=False):
+    """Robust z against a neighbourhood, IGNORING frames that were not measured.
+
+    `leading=True` compares each sample only to the window BEFORE it. A kink is
+    a discontinuity, so what it must stand out from is what came before, not a
+    window that also contains its aftermath. MEASURED on this project: the
+    pre-fix beat-2 seam steps the median block acceleration from 0.54 to 8.57
+    px/frame^2 at f794 and then settles at 3.2 for the rest of the beat. Against
+    a centred +/-12 window that step is invisible; against the 12 frames before
+    it, z=77. The centred window was using the defect's own aftermath as its
+    baseline.
+
+    Frames whose motion field was refused are NaN, and they are dropped from
+    every baseline rather than counted as zero. Counting them as zero is what
+    put a "z=95 against a median of 0.00" finding on frame 841 of carlaunch,
+    three frames into a sequence that had not started moving yet.
+    """
+    x = np.asarray(x, dtype=np.float64)
+    n = x.size
+    z, med = np.zeros(n), np.full(n, np.nan)
+    for i in range(n):
+        if not np.isfinite(x[i]):
             continue
-        if amag[i] >= KINK_MIN_ACCEL and z[i] >= Z_FAIL:
+        w = x[max(0, i - window):i] if leading else np.concatenate(
+            [x[max(0, i - window):i], x[i + 1:min(n, i + window + 1)]])
+        w = w[np.isfinite(w)]
+        if w.size < 3:
+            continue
+        m = float(np.median(w))
+        sg = max(mad(w), floor)
+        med[i] = m
+        z[i] = (x[i] - m) / sg if sg > 0 else 0.0
+    return z, med
+
+
+def d5_camera_kink(s, nums):
+    """A kink in the camera path, seen in the picture rather than in metres.
+
+    WHAT THIS ASKS, and why it cannot be one number (R2-068)
+    -------------------------------------------------------
+    The question is "did the image motion change abruptly in one frame". The
+    old version answered it from a whole-frame translation, which on a tracking
+    shot is the peak of a correlation between two regions moving opposite ways
+    -- the motion of nothing. On this film's own frames the picture is not even
+    two motions but a depth gradient, +8 px on one side of frame to +40 on the
+    other, so there is no single translation to difference.
+
+    What IS a single number, and is the right one, is how much every block's
+    velocity changed at once. A kink in the CAMERA path changes the velocity of
+    every block, whatever depth it sits at; a kink in one object's animation
+    changes only the blocks that object covers. So:
+
+        maccel      median over blocks of |v_i - v_(i-1)|   -> the camera
+        maccel_max  max over blocks of the same             -> one object
+
+    Both are computed from the block field, and both are absent (NaN) on any
+    frame the field refused, which is reported rather than passed over.
+    """
+    out = []
+    a = s["maccel"]
+    finite = np.isfinite(a)
+    if finite.sum() < MIN_FRAMES:
+        s.setdefault("_not_measured", []).append({
+            "detector": "D5_camera_kink",
+            "why": f"only {int(finite.sum())} frames have a usable block motion "
+                   f"field; {MIN_FRAMES} is the minimum for a rolling baseline"})
+        return out
+    az = np.nan_to_num(a, nan=0.0)
+    z, med = _kink_z(a, floor=KINK_MIN_ACCEL / 20.0)
+    zl, medl = _kink_z(a, floor=KINK_MIN_ACCEL / 20.0, leading=True)
+    for i in range(2, len(az) - 1):
+        if not finite[i]:
+            continue
+        if az[i] < KINK_MIN_ACCEL:
+            continue
+        lead = zl[i] > z[i]
+        zz, mm_, src = ((zl[i], medl[i], "the 12 frames BEFORE it") if lead
+                        else (z[i], med[i], "its own neighbourhood"))
+        if zz < Z_FAIL:
+            continue
+        out.append(_finding(
+            "D5_camera_kink", [nums[i]], "WARN",
+            f"frame {nums[i]}: the WHOLE picture changes velocity "
+            f"{az[i]:.2f} px/frame^2 in one frame (median over "
+            f"{int(s['mcov'][i]*100)}% of blocks), z={zz:.1f} against "
+            f"{src}, median {mm_:.2f}. Every block at every depth turning "
+            f"together is the camera, not an object. A smooth ease does not "
+            f"do this; a keyframe with the wrong handle does.",
+            accel=round(float(az[i]), 3), z=round(float(zz), 2),
+            scope="global", baseline="leading" if lead else "centred"))
+    # the local route: one object's animation kinks while the camera does not
+    am = np.nan_to_num(s["maccel_max"], nan=0.0)
+    zlo, _ = _kink_z(s["maccel_max"], floor=KINK_MIN_ACCEL / 20.0)
+    zle, _ = _kink_z(s["maccel_max"], floor=KINK_MIN_ACCEL / 20.0, leading=True)
+    zl = np.maximum(zlo, zle)
+    fired = {f["frames"][0] for f in out}
+    for i in range(2, len(am) - 1):
+        if not np.isfinite(s["maccel_max"][i]) or nums[i] in fired:
+            continue
+        if am[i] >= KINK_MIN_ACCEL and zl[i] >= Z_FAIL and az[i] < KINK_MIN_ACCEL:
             out.append(_finding(
-                "D5_camera_kink", [nums[i]], "WARN",
-                f"frame {nums[i]}: image motion accelerates {amag[i]:.2f} px/frame^2 "
-                f"in one frame, z={z[i]:.1f} against a neighbourhood median of "
-                f"{med[i]:.2f}. A smooth ease does not do this; a keyframe with the "
-                f"wrong handle does.",
-                accel=round(float(amag[i]), 3), z=round(float(z[i]), 2)))
+                "D5_camera_kink", [nums[i]], "WARN" if LOCAL_IS_ADVISORY else "FAIL",
+                f"frame {nums[i]}: ONE region of the picture changes velocity "
+                f"{am[i]:.2f} px/frame^2 (z={zl[i]:.1f}) while the frame as a "
+                f"whole changes {az[i]:.2f} -- a LOCAL kink. An animated object "
+                f"with a bad handle does this; so does a specular highlight "
+                f"crossing a block, which is why it is advisory.",
+                accel=round(float(am[i]), 3), z=round(float(zl[i]), 2),
+                scope="local"))
     return out
 
 
@@ -739,6 +862,14 @@ def d7_blur_motion(s, nums):
     most similar -- not to its temporal neighbours. During a speed ramp that is
     the whole question: at this speed, is this frame as blurred as the rest of
     the sequence says it should be?
+
+    R2-068: the speed variable used to be the whole-frame translation, which on
+    this footage is a number near zero with no relation to how fast the picture
+    is moving -- so "the 15 frames nearest it in speed" were not nearest it in
+    speed at all and the baseline was a global sharpness baseline wearing a
+    speed-matched costume. It is now the MEDIAN BLOCK SPEED from the motion
+    field, which is a real image speed in real frame pixels. Frames whose field
+    was refused have no speed and are excluded rather than defaulted to zero.
     """
     mm = s["mmag"]
     sh = s["sharp"]
@@ -775,21 +906,28 @@ def d7_blur_motion(s, nums):
     return out
 
 
+def _med_or_none(x):
+    x = np.asarray(x, dtype=float)
+    x = x[np.isfinite(x)]
+    return None if x.size == 0 else round(float(np.median(x)), 3)
+
+
 def d8_pacing(s, nums, fps=24.0, beats=BEATS_24FPS):
     """Measurement, not a verdict. Where does the film sit still?
 
-    Pacing is measured on the actual per-pixel change rate, NOT on the global
-    translation estimate. Measured on beat 5: a stretch where phase correlation
-    reported 0.05 px/frame of translation -- apparently frozen -- was in fact
-    changing 3% of full scale per frame, with 93.8% of pixels different one
-    second later. The camera was tracking the car so the composition was locked
-    while the background streamed. Translation is blind to that; it is exactly
-    the shot people call slow, and a pacing statistic that cannot see it is
-    useless.
+    Pacing is measured on the actual per-pixel change rate, NOT on an image
+    translation. Measured on beat 5: a stretch where phase correlation reported
+    0.05 px/frame of translation -- apparently frozen -- was in fact changing 3%
+    of full scale per frame, with 93.8% of pixels different one second later.
+
+    That reasoning was right and the VERDICT here was never downstream of the
+    broken estimator (R2-068); only the reported translation column was, and it
+    has been replaced by the block-field image speed and its spread.
     """
     mm = np.nan_to_num(s["d_prev"], nan=0.0)
     gmed = float(np.median(mm[mm > 0])) if (mm > 0).any() else 0.0
-    trans = np.nan_to_num(s["mmag"], nan=0.0)
+    trans = s["mmag"]
+    spread = s["mspread"]
     rows, out = [], []
     for name, a, b in beats:
         sel = (nums >= a) & (nums <= b)
@@ -805,7 +943,17 @@ def d8_pacing(s, nums, fps=24.0, beats=BEATS_24FPS):
                      "span": [int(a), int(b)], "seconds": round((b - a + 1) / fps, 2),
                      "change_median": round(float(np.median(v)), 5),
                      "change_p90": round(float(np.percentile(v, 90)), 5),
-                     "translation_median_px": round(float(np.median(trans[sel])), 3),
+                     # R2-068: this used to be `translation_median_px`, a
+                     # whole-frame translation at the downsampled analysis
+                     # scale. It is now the median block speed in FRAME pixels,
+                     # beside the spread that says whether the frame holds one
+                     # motion or several. The key was renamed rather than
+                     # reused: same name, different quantity is how a stale
+                     # figure survives a fix.
+                     "image_speed_median_px": _med_or_none(trans[sel]),
+                     "image_speed_spread_px": _med_or_none(spread[sel]),
+                     "frames_motion_not_measured":
+                         int(np.count_nonzero(~np.isfinite(trans[sel]))),
                      "motion_median": round(float(np.median(v)), 5),
                      "motion_p90": round(float(np.percentile(v, 90)), 5),
                      "longest_static_run_frames": int(best),
@@ -1023,7 +1171,7 @@ def run_gate(seq_dir, frames_filter=None, fps=24.0, boundaries=None,
     report["frame_span"] = [int(nums[0]), int(nums[-1])]
     report["frame_count"] = len(nums)
 
-    mm = np.nan_to_num(s["mmag"], nan=0.0)
+    mm = s["mmag"]
     d = np.nan_to_num(s["d_prev"], nan=0.0)
     if float(np.median(d)) <= PEAK_NOISE / 8:
         report["guards"].append(
@@ -1041,8 +1189,22 @@ def run_gate(seq_dir, frames_filter=None, fps=24.0, boundaries=None,
         "measured_residual_median": float(np.median(res_f)),
         "measured_residual_mad": mad(res_f),
         "median_interframe_diff": float(np.median(d)),
-        "median_image_motion_px": float(np.median(mm[mm > 0])) if (mm > 0).any() else 0.0,
+        # R2-068: in FRAME pixels from the block motion field, not the peak of
+        # a whole-frame correlation at the downsampled analysis scale. On
+        # seam_after the old key printed 0.29 for a sequence whose median image
+        # speed is 4.33 px/frame at 960 -- 3x from the missing rescale and 5x
+        # from averaging a depth gradient down to one peak.
+        "median_image_speed_px": _med_or_none(mm),
+        "median_image_spread_px": _med_or_none(s["mspread"]),
+        "motion_frames_not_measured": int(np.count_nonzero(s["_motion_refused"])),
+        "motion_coverage_median": _med_or_none(s["mcov"]),
     }
+    if int(np.count_nonzero(s["_motion_refused"])):
+        report.setdefault("not_measured", []).append(
+            f"the block motion field refused "
+            f"{int(np.count_nonzero(s['_motion_refused']))} of {len(nums)} frame "
+            f"pairs: too few blocks produced a usable estimate. D5 and D7 skip "
+            f"those frames rather than treating them as motionless.")
 
     if boundaries is None and seq_name:
         boundaries = auto_boundaries(seq_name)
@@ -1092,7 +1254,7 @@ def run_gate(seq_dir, frames_filter=None, fps=24.0, boundaries=None,
         **{k: [None if not np.isfinite(v) else round(float(v), 6)
                for v in s[k]] for k in
            ("mean", "sd", "res_mean", "res_hot", "firefly", "d_prev",
-            "sharp", "mmag")}}
+            "sharp", "mmag", "mspread", "mcov", "maccel", "maccel_max")}}
 
     hard = [f for f in uniq if f["severity"] == "FAIL"]
     verdict = "FAIL" if hard else "PASS"
@@ -1135,7 +1297,10 @@ def print_report(report, verbose=True):
         print(f"    floor: assumed peak pixel noise {fl.get('assumed_peak_pixel_noise'):.4f}, "
               f"measured residual median {fl.get('measured_residual_median',0):.6f} "
               f"(mad {fl.get('measured_residual_mad',0):.6f}), "
-              f"median motion {fl.get('median_image_motion_px',0):.2f} px/frame")
+              f"median image speed {fl.get('median_image_speed_px') or 0:.2f} px/frame "
+              f"(spread {fl.get('median_image_spread_px') or 0:.2f}, "
+              f"block coverage {fl.get('motion_coverage_median') or 0:.2f}, "
+              f"{fl.get('motion_frames_not_measured',0)} pairs not measured)")
         if report.get("job_boundaries_tested"):
             print(f"    job boundaries tested for seams: "
                   f"{report['job_boundaries_tested']}")
@@ -1147,7 +1312,8 @@ def print_report(report, verbose=True):
         for r in report["pacing"]:
             print(f"      {r['beat']:<12} {r['frames_present']:>5} fr  "
                   f"change/frame med {r['change_median']:>8.5f} p90 {r['change_p90']:>8.5f}  "
-                  f"translation {r['translation_median_px']:>6.2f}px  "
+                  f"image speed {(r['image_speed_median_px'] or 0):>6.2f}px "
+                  f"spread {(r['image_speed_spread_px'] or 0):>6.2f}px  "
                   f"longest still {r['longest_static_run_s']:>5.2f}s")
     print(f"    -> {v}")
 
