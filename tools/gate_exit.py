@@ -82,7 +82,7 @@ wrongly will still classify wrongly, at a non-zero exit status.
 
 It is deliberately ONE file, imported, not copied. A private copy of shared
 behaviour is what defeated the socket guard (R2-057): three docstrings cited
-`itemkit.socket_audit()`, which does not exist. If you find yourself pasting
+`itemkit.socket_audit()`, which does not exist.  PHANTOM-OK  If you find yourself pasting
 `try: main() except: sys.exit(1)` into a gate, import this instead.
 
 CONTROLS

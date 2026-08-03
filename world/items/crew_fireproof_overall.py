@@ -481,8 +481,10 @@ class NG:
         1.88e-05 against a noise floor of 1.93e-05 -- a perfect null, because
         no relief reached the shader on either side of it.
 
-        itemkit's standing `socket_audit()` cannot see this.  It asserts the
-        indices ITEMKIT assumes; `_feed` is a private copy living here.
+        itemkit has no `socket_audit()` -- that name is a phantom this
+        docstring used to cite, and the real check is `itemkit --selftest`
+        check [0].  It could not see this either way: it asserts the indices
+        ITEMKIT assumes, and `_feed` is a private copy living here.
         Indices 0, 1 and 2 (Base Color, Metallic, Roughness) did not move and
         are left alone -- a rename is not a move, and neither is a socket
         inserted after you.

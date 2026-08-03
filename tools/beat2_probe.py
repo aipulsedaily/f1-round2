@@ -77,8 +77,16 @@ def main():
              "built blend, never off this file")
     ap.add_argument("--path", default=os.path.join(R2, "render/film9_path.json"))
     ap.add_argument("--exposure", help="json of {frame: exposure} sampled from "
-                                       "the built scene; see --dump-exposure "
-                                       "in the companion blender script")
+                                       "the built scene. Produce it with: "
+                                       "blender -b <built.blend> "
+                                       "--factory-startup -P "
+                                       "tools/dump_exposure.py -- --out FILE "
+                                       "[--frames N]. (This help used to cite "
+                                       "'--dump-exposure in the companion "
+                                       "script'; no such flag exists, and "
+                                       "line 286 treats a missing --exposure "
+                                       "as a FAIL, so the phantom blocked the "
+                                       "only documented way to pass.)")
     ap.add_argument("--lo", type=int, default=BEAT2[0])
     ap.add_argument("--hi", type=int, default=BEAT2[1])
     ap.add_argument("--json-out")

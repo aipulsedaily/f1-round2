@@ -4699,7 +4699,8 @@ def build_extras(acc, skel, hans, hn, helm, an=DRIVER, uid=0):
     """Arm restraints, the drink tube, the radio earpiece and its lead.
 
     ``crew_headset`` is this item's declared dependency and does not exist yet
-    (there is no world/items/crew_headset.py).  A driver does not wear a crew
+    (there is no world/items/crew_headset.py).  PHANTOM-OK -- that absence is
+    the point of this paragraph, not a citation of a guard.  A driver does not wear a crew
     headset anyway — he wears a moulded in-ear piece on a twisted pair that
     routes to the helmet's radio connector — so that is what is built, and the
     contract for it is published in ``anchors()['ear_l'|'ear_r']`` so the

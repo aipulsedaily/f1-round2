@@ -293,9 +293,28 @@ def _runs(fs):
 
 
 def summarise(rows, label, beat1_last=None):
+    """VERDICT IS ONE OF PASS / FAIL / VACUOUS, AND VACUOUS IS NOT A PASS.
+
+    Both empty cases used to return "PASS" and the gate printed HORIZON_LEVEL
+    and exited 0 (fixed 2026-08-03):
+
+      * `rows` empty -- `--lo/--hi` outside the path's frame range. The gate
+        reported a level horizon for a window it had not looked at.
+      * `judged` empty -- every frame pitched further than HORIZON_PITCH_DEG
+        from horizontal, so no frame was eligible. A camera rolled 80 deg while
+        pointed at the floor passed, because nothing was measured.
+
+    A horizon gate that measured no frames has not shown the horizon is level.
+    It is a REFUSAL (exit 3), and the message says what would make it
+    measurable, per the project's "unproven is a FAIL" rule.
+    """
     judged, fails, warns = judge(rows, beat1_last)
     if not rows:
-        return {"label": label, "frames": 0, "verdict": "PASS"}
+        return {"label": label, "frames": 0, "frames_with_horizon": 0,
+                "verdict": "VACUOUS",
+                "why": "no frames in range. Nothing was measured, so nothing "
+                       "is proven about the horizon. Check --lo/--hi against "
+                       "the frame range in the path file."}
     worst = max(judged, key=lambda r: abs(r["tilt_deg"])) if judged else None
     worst_any = max(rows, key=lambda r: abs(r["tilt_deg"]))
     return {"label": label, "span": [rows[0]["f"], rows[-1]["f"]],
@@ -309,7 +328,14 @@ def summarise(rows, label, beat1_last=None):
             "fail_frames": _runs([r["f"] for r in fails]),
             "warn_frames": _runs([r["f"] for r in warns]),
             "n_fail": len(fails), "n_warn": len(warns),
-            "verdict": "FAIL" if fails else "PASS"}
+            "verdict": ("FAIL" if fails else
+                        ("PASS" if judged else "VACUOUS")),
+            "why": (None if judged else
+                    "%d frame(s) in range and NOT ONE of them was judged: "
+                    "every one is pitched more than %.0f deg from horizontal, "
+                    "so the horizon is not in shot anywhere here. A gate that "
+                    "judged nothing has proven nothing."
+                    % (len(rows), HORIZON_PITCH_DEG))}
 
 
 def report(s):
@@ -474,9 +500,14 @@ def main():
     if a.json_out:
         json.dump({"gate": GATE_VERSION, "path": os.path.abspath(a.path),
                    "summary": s, "rows": rows}, open(a.json_out, "w"), indent=1)
-    print(">> STAGE RESULT: " + ("HORIZON_LEVEL" if s["verdict"] == "PASS"
-                                 else "HORIZON_ROLLED"))
-    sys.exit(1 if s["verdict"] != "PASS" else 0)
+    if s.get("why"):
+        print("  REFUSING: " + s["why"])
+    print(">> STAGE RESULT: " + {"PASS": "HORIZON_LEVEL",
+                                 "FAIL": "HORIZON_ROLLED",
+                                 "VACUOUS": "HORIZON_VACUOUS"}[s["verdict"]])
+    # 0 PASS / 1 FAIL / 3 VACUOUS, matching tools/gate_exit.py so a battery's
+    # `expect vacuous` can tell "it refused" from "it passed".
+    sys.exit({"PASS": 0, "FAIL": 1, "VACUOUS": 3}[s["verdict"]])
 
 
 if __name__ == "__main__":

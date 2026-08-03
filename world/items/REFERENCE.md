@@ -160,8 +160,13 @@ fold-field *geometry* at m = 2.32, and became the dominant defect.
 ## Then prove it, and do not stop at "it ran"
 
 ```bash
-# 1. build and save the test scene
-blender -b --factory-startup -P world/items/<id>.py -- --test --save world/items/<id>_test.blend
+# 1. build and save the test scene -- ASK FOR THE COMMAND, DO NOT TYPE IT.
+#    The modules do not share a CLI: 18 take `--save`, 21 take `--out`, 2 take
+#    neither, and the build verb is `--test`, `--test-scene`, `--test-blend` or
+#    absent depending on the module. This tool derives it from the module’s own
+#    parser, then REQUIRES the blend on disk to have changed.
+python3 tools/item_build_cmd.py --build --item <id> --out world/items/<id>_test.blend
+#    (`--item <id>` alone just prints the command; `--census` prints all 41.)
 
 # 2. gate it. --collection, not --prefix.
 blender -b world/items/<id>_test.blend --factory-startup -P tools/item_gate.py -- \

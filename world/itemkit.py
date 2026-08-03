@@ -1367,7 +1367,14 @@ class NT(object):
                 raise RuntimeError(
                     f"{nd.bl_idname} input [{idx}] is {got!r}, not {expect!r}. "
                     "Blender has moved this socket. Wire it by NAME and re-check "
-                    "every other index in this file — see itemkit.socket_audit()."
+                    "every other index in this file — run "
+                    "`python3 world/itemkit.py --selftest`, whose check [0] "
+                    "measures every index this file pins against the live "
+                    "socket. (This message used to say 'see "
+                    "itemkit.socket_audit()'. NO SUCH FUNCTION EXISTS, and it "
+                    "never did: the audit is inline in selftest(). An error "
+                    "message that names a nonexistent tool at the moment "
+                    "somebody needs it is worse than no message.)"
                 )
         if isinstance(src, tuple) and src and hasattr(src[0], "outputs"):
             self.t.links.new(src[0].outputs[src[1]], nd.inputs[idx])

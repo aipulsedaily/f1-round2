@@ -52,6 +52,11 @@ def parse_args():
     p.add_argument("--dist", type=float, default=1.2)
     p.add_argument("--lens", type=float, default=50.0)
     p.add_argument("--fstop", type=float, default=2.8)
+    p.add_argument("--control-plant-missing-image", action="store_true",
+                   help="POSITIVE CONTROL ONLY. Plant an image datablock "
+                        "pointing at a path that does not exist, so the "
+                        "missing-image check can be SEEN to fail. Never use "
+                        "this for an audit blend you intend to render.")
     return p.parse_args(argv)
 
 
@@ -228,11 +233,36 @@ def main():
                "lens": a.lens, "fstop": a.fstop, "cameras": cams},
               open(os.path.splitext(out)[0] + "_cams.json", "w"), indent=1)
 
+    # THE FIND WAS PRINTED AND THE OK WAS PRINTED ANYWAY   (fixed 2026-08-03)
+    #
+    # `missing` was computed here, printed with `!!`, and never consulted before
+    # `BEAT1_AUDIT_BLEND_OK` two lines down -- which `gate_exit.guard` then
+    # dutifully mapped to exit 0. So the exact failure this function's own
+    # comment twenty lines up says cost Round 1 a render batch ("finds nothing,
+    # and renders with NO environment light -- a result that looks plausible and
+    # is wrong") was DETECTED, ANNOUNCED, and SCORED AS A PASS.
+    if a.control_plant_missing_image:
+        img = bpy.data.images.new("BEAT1_AUDIT_CONTROL", 4, 4)
+        img.source = "FILE"
+        img.filepath = "//_control_this_file_does_not_exist.exr"
+        print("   !! POSITIVE CONTROL: an image datablock pointing at a path "
+              "that does not exist has been planted. The check below MUST "
+              "fail. An assertion nobody has seen fail has not been shown to "
+              "work.")
     missing = [i.filepath for i in bpy.data.images if i.source == "FILE"
                and not os.path.exists(bpy.path.abspath(i.filepath))]
-    if missing:
-        print(f"!! MISSING image files: {missing}")
     print(f">> saved {out}  ({os.path.getsize(out)/1048576:.1f} MB), {len(cams)} macro cameras")
+    print(f">> external image files referenced: "
+          f"{len([i for i in bpy.data.images if i.source == 'FILE'])}, "
+          f"of which UNRESOLVABLE: {len(missing)}")
+    if missing:
+        for f in missing:
+            print(f"   FAIL missing image file: {f}")
+        print(">> This blend would render with that texture -- and, if it is "
+              "the environment, with NO environment light -- and the result "
+              "would look plausible and be wrong. Refusing to call it OK.")
+        print(">> STAGE RESULT: BEAT1_AUDIT_BLEND_FAIL_MISSING_IMAGES")
+        return
     print(">> STAGE RESULT: BEAT1_AUDIT_BLEND_OK")
 
 

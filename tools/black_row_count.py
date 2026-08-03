@@ -33,7 +33,8 @@ SAME image:
                           black frame, a blown frame and a graded frame are told
                           apart without opening it
 
-and `--control` synthesises two images with known answers — a frame with a band
+and the control (on by default; `--no-control` turns it off) synthesises
+two images with known answers — a frame with a band
 of exact zeros, and the same frame with that band at 0.03 — and requires the
 counter to return the band height for the first and 0 for the second. A checker
 that cannot fail is not a check.

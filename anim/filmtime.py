@@ -11,7 +11,7 @@ floor while the camera keeps flying in real time, so the two clocks diverge by a
 fixed amount and never re-converge. Anything that asks "where is the car in
 frame N" has to walk the same ramp, or it is aiming at a car that is not there.
 
-Before this file, `build_camera_rig.build_time_map()` was the only implementation
+Before this file, `build_camera_rig.build_time_map()` was the only implementation  PHANTOM-OK (historical: that function lives here now)
 and it did not integrate to the declared world duration:
 
     declared   docs/beat_sheet.json speed_ramps[0]: screen_s 8.0 -> world_s 1.6

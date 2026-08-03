@@ -318,8 +318,9 @@ METHOD = {
              "0.0769 and left beat 3's static geometry 6.5x too crisp, because "
              "the world-time slowdown is ALREADY baked into the per-film-frame "
              "animation and scaling the shutter applied it a second time. The rig "
-             "now takes --shutter-mode {flat,world} and defaults to flat; this "
-             "measurement is run with screen_presence.py --uniform-shutter to "
+             "keys a flat 180-degree shutter for the whole take since R2-037 "
+             "(there is NO --shutter-mode flag; that citation was a phantom). "
+             "This measurement is run with screen_presence.py --uniform-shutter to "
              "match. SHARP means smear <= 6 px of the 4K frame, which is "
              "tools/item_gate.py's own hero resolve threshold.",
     "size_convention": "The dimension used is the manifest's own "
