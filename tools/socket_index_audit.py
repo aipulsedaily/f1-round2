@@ -1421,10 +1421,19 @@ def _run_blend_scan(blend, extra="", label=None):
                            "SHSINK": repr(sorted(SHADER_SINK_TYPES)),
                            "SHPFX": repr(SHADER_SINK_PREFIX),
                            "EXTRA": extra}
+    # PER-INVOCATION temp names.  These used to be two fixed paths, and two
+    # concurrent scans -- an item sweep and a world sweep, which is the normal
+    # way to use this -- silently destroyed each other's report: one process's
+    # `finally` unlinked the JSON the other's Blender had just written, and the
+    # victim reported "produced no report" on a blend that had scanned fine.
+    # A gate that fails when you run two of it is a gate people stop running.
     tmpdir = os.path.join(ROOT, "tmp")
     os.makedirs(tmpdir, exist_ok=True)
-    script = os.path.join(tmpdir, "_sia_blendscan.py")
-    dest = os.path.join(tmpdir, "_sia_blendscan.json")
+    _run_blend_scan.seq = getattr(_run_blend_scan, "seq", 0) + 1
+    stem = os.path.join(tmpdir, "_sia_blendscan_%d_%d"
+                        % (os.getpid(), _run_blend_scan.seq))
+    script = stem + ".py"
+    dest = stem + ".json"
     open(script, "w").write(src)
     cmd = [BLENDER_BIN, "-b", "--factory-startup", "-noaudio"]
     if blend:
