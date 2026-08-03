@@ -96,18 +96,41 @@ rebuild fails, so that is a decision for the user, not a cleanup.
 
 ## The ladder
 
-Rungs 0–3 are scaled from the measured 4K figures by pixel count and sample count.
-**That scaling is optimistic**: BVH build and scene load are fixed costs that do not
-shrink with resolution, so low-res passes cost relatively more than linear predicts.
-Measure rung 1 for real on its first run and correct this table.
+**RUNG 1 IS NOW MEASURED, and the scaled estimates below it were wrong by ~10×.**
+This table previously said *"measure rung 1 for real on its first run and correct
+this table"* — 2026-08-03 is that measurement, taken on 50 real beat-5/6 frames.
 
-| rung | resolution | samples | full-length pass | purpose |
+> **720p / 64 samples = 63.4 s/frame → 52.4 h → $17.5 for a full-length pass.**
+> The scaled estimate said **$1.8**. Off by **9.7×**.
+
+**Why the scaling was wrong, and the number worth remembering:**
+
+```
+nominal 720p/64 -> 4K/512   =  9x pixels  x  8x samples  =  72x
+ACTUAL measured ratio       =  510.5 / 63.4              =   8.1x
+```
+
+**Fixed cost dominates, not pixels.** Scene load, BVH build and per-frame overhead
+do not shrink with resolution — so a low-res pass costs *far* more than its pixel
+count suggests, and a 4K pass costs *far less* than 72× a 720p one. Any estimate
+derived by scaling resolution and samples on this project will be wrong in both
+directions. **Measure the rung.**
+
+| rung | resolution | samples | full-length pass | basis |
 |---|---|---|---|---|
-| 0 | 640x360 | 32 | ~$0.3 | camera path sanity — does the move work at all |
-| 1 | 720p | 64 | ~$1.8 | timing, pacing, continuity, gross defects |
-| 2 | 1080p | 128 | ~$8 | flicker, popping, sim behaviour, ramp smoothness |
-| 3 | 1080p | 256 | ~$16 | near-final look; grade and exposure decisions |
-| 4 | **4K** | **512** | **$131, 13.4 days** | THE MASTER — rendered once, when nothing is open |
+| 0 | 640x360 | 32 | ~$12 (est.) | scaled from rung 1 — **unmeasured, expect it to be high** |
+| 1 | 720p | 64 | **$17.5, 52.4 h** | **MEASURED**, 50 frames, beats 5–6 |
+| 2 | 1080p | 128 | ~$35 (est.) | interpolated between two measurements |
+| 3 | 1080p | 256 | ~$50 (est.) | interpolated |
+| 4 | **4K** | **512** | **$108, 13.4 days** | **MEASURED** basis, weighted per beat |
+
+**The gap between rungs is much smaller than anyone assumed.** A full 720p pass is
+**16 %** of the master's cost, not 1.4 %. That changes the discipline in one
+direction only: rehearsal passes are *not* nearly free, so run them **deliberately
+and few**, on ranges chosen to answer a specific question — not as a habit.
+
+Cost at **$0.3339/hr** (the current instance; earlier figures used $0.4083). The
+master's dollar figure moved on the *rate*, not on the work — 322 h either way.
 
 The gap between rung 3 and rung 4 is the whole argument for the ladder: the master
 costs more than every rehearsal combined, takes nearly two weeks of wall clock, and
