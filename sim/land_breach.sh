@@ -93,6 +93,13 @@ if [ -z "$FILM" ]; then
   exit 0
 fi
 
+say "5b. the camera track, from the CURRENT scene"
+echo "sim/out/oner_camera_track.json was made by hand from film9 at 15:13 and"
+echo "the camera has moved twice since.  Every pixel figure goes through it."
+$BL -b "$FILM" -P sim/dump_camera_track.py -- \
+    --out sim/out/oner_camera_track.json 2>&1 | tail -30 | grep -E "STAGE RESULT|blend|camera|sensor" \
+  || die "camera track"
+
 say "6.  apply onto $FILM"
 echo "NOTE: R5 will refuse.  The refusal is TRUE and it is about ROUND ONE's"
 echo "frame -- three transoms across the bays at z 1.35/2.85/4.35 -- not about"
@@ -113,6 +120,10 @@ ok = bool(e.get('PASS')) and r['stats']['objects'] > 3800
 print('STAGE RESULT: apply', 'PASS' if ok else 'FAIL')
 sys.exit(0 if ok else 1)
 " || die "apply"
+say "7.  the swap, asked of the SCENE that renders  (R2-098)"
+$BL -b "$OUT" -P sim/verify_breach.py -- --swap-scene 2>&1 \
+    | grep -E "STAGE RESULT|problems" | tail -4
+
 echo
 echo "STAGE RESULT: landed.  Scene written to $OUT"
 echo "Next: render f0855-f0890 on the farm and LOOK at them."
