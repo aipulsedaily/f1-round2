@@ -313,7 +313,10 @@ def phase_shift(a, b):
 
 
 def downsample_to(a, target_w=256):
-    """Integer box-downsample, for motion estimation only."""
+    """DEPRECATED with phase_shift, R2-068/R2-078. Integer box-downsample by
+    FLOOR division, so 960 became 320 and every motion figure this gate printed
+    was at that scale rather than in frame pixels. Kept only for the replica in
+    tools/image_motion.py to be checked against."""
     h, w = a.shape
     if w <= target_w:
         return a
@@ -1270,6 +1273,14 @@ def run_gate(seq_dir, frames_filter=None, fps=24.0, boundaries=None,
                 ins.append(("frame_%06d" % frames[-1][0], frames[-1][1]))
             report["provenance"] = provenance.stamp(
                 __file__, inputs=ins, tool_version=GATE_VERSION,
+                # R2-078: half of what this gate measures now comes out of
+                # image_motion.py, which never appears on a command line. A
+                # report that hashes only continuity_gate.py would claim a
+                # provenance it does not have -- the exact failure that
+                # `also_hash` exists for.
+                also_hash=[("image_motion",
+                            os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                         "image_motion.py"))],
                 extra={"frames_measured": len(frames),
                        "sequence_dir": os.path.abspath(seq_dir),
                        "note": "first three and last frame hashed; the full "
