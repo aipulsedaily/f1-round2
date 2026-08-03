@@ -1,10 +1,12 @@
 # WHICH ASSEMBLY IS THE SHIPPING WORLD
 
-**`assembly8.blend` — built 2026-08-03 19:38, `world_contract` 1.2.1. PROMOTED
-2026-08-03 by the rebuild agent; `assembly7.blend` is its immediate predecessor and
+**`assembly9.blend` — built 2026-08-03 23:09, `world_contract` 1.2.1. PROMOTED
+2026-08-03 under R2-148; `assembly8.blend` is its immediate predecessor and
 differs from it in ONE object and nothing else.**
 
-`render/film12.blend`, the film scene the master renders from, is built on it.
+`render/film14.blend`, the film scene the master renders from, is built on it.
+`film13` is the same film on `assembly8` and is kept as the control the
+pit-exit A/B is measured against.
 
 ## THIS IS THE DECLARATION, AND IT IS THE ONLY ONE
 
@@ -24,7 +26,161 @@ scenes went out on a superseded world (R2-071); `input_stamp:44` named
 argument in a dict does not look like a decision (R2-100). **Do not add a
 second copy. Change the line above.**
 
-## why assembly8 is the ship, and exactly what moved
+## why assembly9 is the ship, and exactly what moved
+
+R2-071's rule again, and this time it is the entry that earned it being paid
+off: **`world/build_architecture.py` was fixed at `54dd6b8` (22:06) and no
+vertex had moved in `assembly8` (built 19:38).** R2-132's own last line says so:
+*"A WORLD REBUILD IS OWED."* `film12` and `film13` are both built on the
+defective world. This is that rebuild, read back.
+
+**What was expected to move was written down before the diff was run**
+(`v124/PREDICTION.md`, recorded 22:48 while `build_architecture` was still
+building), so what follows is a prediction met and not a story told afterwards.
+
+### 0. The source delta is TWO commits and only one can move a vertex
+
+| commit | file | can it move a vertex? |
+|---|---|---|
+| `54dd6b8` 22:06 | `world/build_architecture.py` | **yes — this is the point** |
+| `412d2e2` 22:42 | `world/world_contract.py` | **no** — every changed line is inside `selftest()` or is a comment (R2-141/142/143). `__version__` is `1.2.1` on both sides and `assemble.py` never calls `selftest()`. |
+
+`build_surface`, `build_barriers`, `build_terrain` and `build_dressing` are
+**byte-identical to the files assembly8 was built from.** They still ran, in
+full, and had to come back bit-for-bit — see §5.
+
+### 1. ONE object moved, and for the first time here its VERTEX COUNT changed
+
+Same instrument as every previous promotion, unchanged: `v120/vertex_fingerprint.py`
++ `v120/fp_diff.py`, per object, verts + coordinate sums + sum of squares + bbox
++ a 0.1 µm order-independent hash.
+
+    assembly8 -> assembly9            (work/r2148/fp_assembly9.json)
+      objects            28781 -> 28781
+      total verts   1282465803 -> 1282477674     (+11 871)
+      objects MOVED      1 of 28781 (0.00 %)
+      objects BIT-IDENTICAL          28780
+      objects with a different vertex COUNT   1
+      name-set symmetric difference           0
+
+    the one object     ARCH_Paving_ApronPlatform
+      verts             128 722  ->  140 593        +11 871  (+9.222 %)
+      bbox x min/max    -83.069351 / 166.066010     BIT-IDENTICAL
+      bbox y min        -146.358231                 BIT-IDENTICAL
+      bbox y MAX          47.865566 -> 47.818733    -46.8 mm
+      bbox z min/max    -0.638910 / 0.001000        BIT-IDENTICAL
+      sum z            -9750.658869 -> -8888.254109
+
+**a5→a6, a6→a7 and a7→a8 all held `1 282 465 803` vertices exactly.** This is the
+first diff in this project where the count moves at all, and it moves because
+the fix does not *shift* a slab, it *lays* one: 539.7 m² of apron that was
+declared, owned and never built.
+
+**The slab grew INSIDE its own envelope, and that was not predicted.** Five of
+the six bbox extremes are bit-identical and the sixth moved 46.8 mm *inward*.
+The prediction said the bbox would extend outboard; it does not. The apron sweep
+curves, so its bounding box was already set by the stations where
+`platform_edge` is widest, and the released ground fills in behind that line
+rather than beyond it. The 46.8 mm is the sawn outer edge landing on a different
+bay boundary: `nu = ceil((UMAX − UMIN) / 3)` goes 13 → 14 bays as UMAX moves
+43.56 → 47.55. **Direction of the finding unchanged, stated shape of it wrong,
+and it is recorded as wrong.**
+
+    [apron] grid u 6.05 .. 47.55  (platform_edge max 40.56; the declared
+                                   platform reaches 44.55)
+
+Note also that `54dd6b8`'s own commit message says a `max(platform_edge)+3` grid
+"would silently truncate the slab at u ~ 23.9 while the declared apron runs to
+u ~ 40.4". **In the full assembly those two numbers are 43.56 and 44.55.** The
+module test build it was measured on is not the assembly; the fix is the same
+and the quoted figures are not.
+
+### 2. NO material moved — measured over all 132, not 9
+
+`work/r2100/material_graph_census.py`, every material, node, input default, link
+and node property:
+
+    assembly8 -> assembly9      materials 132 -> 132
+                                graphs that MOVED     0 of 132
+                                graphs BIT-IDENTICAL  132
+
+**Positive control, same instrument, same run:** assembly6 → assembly7 returns
+**9 of 132, all `DR_*`**, and names the moves. The 0 above is a measurement, not
+a blind spot. This was predicted: the fix changes which quads a mesh builder
+emits and adds no node, link, default or material.
+
+### 3. The module report differs in six fields, and five of them are the fix
+
+    assembly8_build.json -> assembly9_build.json      180 fields compared
+      wall-clock only                 11   (the box was idle; see §5)
+      output path / size               2
+      SUBSTANTIVE                      6
+        apron_platform_m2      5881.5 -> 6421.2      the R2-132 test-build figure,
+        apron_bedding_m2       6029.2 -> 6538.4      reproduced EXACTLY in the
+        apron_seal_m2          5938.0 -> 6473.9      full assembly
+        base_tris           2507471 -> 2510968
+        culled_faces            243 -> 225
+        recess_black_count        5 -> 1
+
+Read §"why assembly5 was wrong" before quoting a report at anybody. **The counts
+were bit-identical while `TER_Ground` rose 326 m.** Judge on fingerprints.
+
+### 4. The socket audit passes, and it fails a blend that should fail
+
+    tools/socket_index_audit.py --blend assembly9.blend   PASS   164 trees
+    tools/socket_index_audit.py --blend assembly6.blend   FAIL   27 findings
+    tools/socket_index_audit.py --blend assembly8.blend   PASS   164 trees
+
+### 5. It was REGENERATED FROM SOURCE, and `build_architecture`'s own gate improved
+
+    surface       41.8 s      barriers    55.6 s     architecture   97.6 s
+    terrain      777.2 s      dressing   228.3 s
+    total       1204.4 s in Blender, 1404 s wall clock, peak RSS ~7.7 GB
+
+(Faster than assembly8's 2 128.1 s because the box was idle; nothing in the
+build changed. `blend_mb` 4018.9 → 4019.4 is the 11 871 vertices.)
+
+The module's own contract gate goes **2 failures → 1**, and both were
+pre-existing at HEAD — established in R2-132 by building HEAD as a control
+*after* they had been wrongly reported as the fix's own regression:
+
+| `build_architecture` contract gate | assembly8 | assembly9 |
+|---|---|---|
+| closed recesses scanned | 165 | **96** |
+| BLACK recesses | 5 | **1** |
+| coplanar with another module on the Beat-4 route | **FAIL** — 2 samples, both `ARCH_Paving_ApronPlatform` at −22.9 / −18.0 mm | **PASS** — 0 samples |
+| paving inside the declared rectangles | PASS 0 of 35 474 outside | **PASS 0 of 40 184 outside** |
+| total | 2 FAILURES | **1 FAILURE** |
+
+The last row is the one that says the fix did not spill: 4 710 more flat-plane
+up-faces, and **none of them outside a declared rectangle.** The first version
+of this fix, which released the cut everywhere `platform_field` is negative, put
+the slab east of the pit wall; this one does not.
+
+**A 20-minute full regeneration of five modules landing on 1 282 477 674
+vertices of which all but one object's are BIT-IDENTICAL is what makes the diff
+meaningful rather than vacuous.** `build_surface` and `build_barriers` have not
+been touched since the baseline commit and came back byte-for-byte. If they had
+not, every fingerprint comparison this project has ever made would be void.
+
+## what to run
+
+    v124/verify_assembly9.sh   the assembly8 -> assembly9 readback with all four
+                               controls, incl. an fp_diff --selftest and a
+                               NEGATIVE arm that declares 0 moved and must FAIL.
+                               work/r2148/verify_assembly9.log as it came out.
+    v124/PREDICTION.md         what was expected, written before the diff ran.
+    v124/fp_object_detail.py   names the differing object field by field, which
+                               fp_diff deliberately does not.
+
+## assembly8, the immediate predecessor — kept for the record
+
+`assembly8.blend` is not dangerous, only stale: it predates `54dd6b8`, so its
+pit-exit apron is 390 m² short. It is the control this promotion was measured
+against and the world `film13` is built on, and it stays. Everything below was
+written when it was the ship.
+
+## why assembly8 superseded assembly7, and exactly what moved
 
 The rebuild was not a promotion between two candidates. `assembly7` was
 **stale against three of its own five generators** — its own build tool said so:

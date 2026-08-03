@@ -69,12 +69,18 @@ render/world/assembly/*
 render/world/assembly/r2/*
 !render/world/assembly/r2/*.py
 !render/world/assembly/r2/*.sh
-!render/world/assembly/r2/v120/
-!render/world/assembly/r2/v121/
-!render/world/assembly/r2/v122/
-render/world/assembly/r2/v12?/*
-!render/world/assembly/r2/v12?/*.py
-!render/world/assembly/r2/v12?/*.sh
+# The three directories below were named ONE AT A TIME, so v123 -- which holds
+# verify_assembly8.sh, the script SHIPPING.md tells the reader to run, plus
+# material_graph_census.py, material_graph_diff.py, path_diff.py and
+# build_json_diff.py -- was still fully ignored and has no history at all.  That
+# is the exact failure this file's header was written about, one directory over.
+# The glob covers every vNNN batch from here on; the `*` line below still
+# excludes everything in them that is not .py or .sh.
+!render/world/assembly/r2/v12?/
+!render/world/assembly/r2/v1??/
+render/world/assembly/r2/v1??/*
+!render/world/assembly/r2/v1??/*.py
+!render/world/assembly/r2/v1??/*.sh
 
 # Telemetry is generated from the spec, but it IS the single source of truth for
 # motion AND audio and it has been wrong in ways that took a day to find. Track it.
