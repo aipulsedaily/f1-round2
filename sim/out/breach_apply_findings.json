@@ -1,0 +1,340 @@
+{
+ "written_by": "sim/ owner, applying the breach into the film scene",
+ "date": "2026-08-03",
+ "applied_scene": {
+  "path": "/home/zany/f1-round2/render/film9_breach.blend",
+  "bytes": 5217977841,
+  "source": "render/film9.blend (4,765,023,615 bytes)",
+  "objects_added": 3806,
+  "collections": {
+   "BREACH_Shards": 3796,
+   "BREACH_Panes": 10,
+   "BREACH_Frame": 0
+  },
+  "tris_added": 278938,
+  "keys_added": 5678105,
+  "hero_shards": 3578,
+  "wall_clock_s": 116,
+  "preflight": "R1 R2 R3 R5 all PASS on film9 (29,387 meshes scanned, 79 pocket AABB candidates, clear)",
+  "curve_proof": {
+   "flags": {
+    "LINEAR": 17927,
+    "CONSTANT": 240,
+    "other": 0
+   },
+   "max_linear_eval_err_m": 4.76837158203125e-07,
+   "bezier_control_err_m": 0.0004749298095703125,
+   "control_fires": true
+  }
+ },
+ "no_live_rigid_body_world": {
+  "scene.rigidbody_world": null,
+  "objects_with_rigid_body": 0,
+  "objects_with_rigid_body_constraint": 0,
+  "note": "film9 already carried none; the applier adds none; verified AFTER the save on the applied file. The scene cannot simulate, so it cannot disagree with its own bake."
+ },
+ "continuity": {
+  "swap": "panes GP_b02..GP_b07 hide_render false through frame 859 and true from 860; every shard hide_render true through 859 and false from 860. Bays 0,1,8,9 render throughout. No frame has both, no frame has neither.",
+  "swap_silhouette_mm": "wall-plane (y,z) bbox of the shard field at 860 vs the intact pane at 859: bays 2,6,7 agree to 1.2-4.6 mm; bay 3 to 6.8 mm; bays 4,5 to 14 mm (already 1 frame into a 16.4 m/s impact). x differs by 312-359 mm on bays 4,5 because they are already moving.",
+  "persistence": "543 shards sampled, evaluated world matrices at frames 1166, 1400, 2000, 2715, 2978 against frame 1165: max_loc_delta 0.0 m and max_rot_matrix_delta 0.0 EXACTLY at every one. CONSTANT extrapolation proven in the scene, not asserted.",
+  "car_untouched": "CAR_ROOT world translation compared against world/car_anim_measured.json at 79 frames including 864, 865, 1056, 1057: max abs delta 0.000000 m."
+ },
+ "seams": {
+  "method": "every shard projected through the ONER camera's own animated transform sampled off the applied scene, 3840x2160, shards inside the frame plus a 10% margin. Statistic mirrors tools/car_anim_gate.py D: a ratio to the seam's own neighbourhood AND an absolute floor.",
+  "2_launch|3_breach (864|865)": {
+   "field_px_per_film_frame": {
+    "seam_max": 142.13,
+    "nbhd_median": 11.02,
+    "ratio": 12.9
+   },
+   "field_px_per_world_second": {
+    "seam_max": 3181.24,
+    "nbhd_median": 1185.73,
+    "ratio": 2.68,
+    "verdict": "OK"
+   },
+   "CONTROL_constant_world_velocity_marker_px_per_film_frame": {
+    "seam_max": 13.44,
+    "nbhd_median": 0.85,
+    "ratio": 15.72
+   },
+   "CONTROL_px_per_world_second": {
+    "seam_max": 830.43,
+    "nbhd_median": 40.1,
+    "ratio": 20.71,
+    "verdict": "SEAM"
+   },
+   "conclusion": "a body doing NOTHING unusual - constant world velocity - has its screen speed jump 13.55 -> 26.98 px/frame across this boundary, ratio 15.72. The shard field's ratio is 12.90, i.e. SMALLER than the control's, and on the world-time statistic the field passes (2.68) where the control fails (20.71). The seam at 864|865 belongs to the camera rig and beat 3's time map, both inherited. The breach does not add to it and has not been made worse.",
+   "known_inherited_defect": "R2-026 / R2-047, dv -1.722 m/s on the car. Untouched: the car is bit-identical between film9 and film9_breach."
+  },
+  "3_breach|4_transit (1056|1057)": {
+   "breach_on_screen": false,
+   "detail": "bays 3-6 leave the 3840x2160 frame at film frame 1053 and do not re-enter until 1321. Across 1056|1057 no part of the breach projects inside the frame, so its contribution to that seam is exactly zero.",
+   "field_world_time_statistic_on_the_table": "speed median ratio 3.69 / p95 1.49 / max 1.33 - all under the 1.0 m/s floor; omega max ratio 3.83 on a 8.44 rad/s step. Nothing that clears both gates."
+  }
+ },
+ "sag_decision": {
+  "question": "the 7.1 px sag on bay 2",
+  "why_the_old_number_is_wrong": "null_verdict() charges each bay's MAXIMUM sag (reached around frame 1165) at the camera's CLOSEST approach (frame 888 for bay 2, 3.53 m). Those two never coincide: at 888 the sag is still small, and by the time it is 16 mm the camera is 20-600 m away. The pixel figure is a product of two numbers taken from different frames.",
+  "re_measured": "per shard, per frame, projected through the ONER camera's own animated transform, over every frame from release (860) to 2978, counting only shards actually inside the frame",
+  "bay_2_worst_px": 1.12,
+  "bay_2_worst_frame": 1009,
+  "bay_7_worst_px": 4.45,
+  "bay_7_worst_frame": 869,
+  "bay_7_after_the_impact_transient": {
+   "frames_ge_880": 3.2,
+   "frame": 1043
+  },
+  "old_figures_for_comparison": {
+   "bay_2": 10.73,
+   "bay_7": 7.31,
+   "null_control_bay_2": 7.1
+  },
+  "creep_vs_ring_honesty": "the module reports RING, but only just: drift over the window 18.24 mm against ring peak-to-peak 11.78 mm, and the classifier calls CREEP only above 2.0x. The margin is 1.55x, not comfortable.",
+  "decision": "ACCEPT, buy nothing. (1) The bay the decision was taken on is not the worst bay: measured jointly, bay 2 is 1.12 px and bay 7 is 3.20 px. (2) 1.12 px meets the criterion's own 1 px to within 12 %. (3) Solver iterations were priced and refused: (8,60) ran 2,205 s on 60 frames without finishing against ~240 s at 24, i.e. >=9x on a bake that already takes 4.5 h locally for 1,657 frames - >=40 h to move 3.2 px to maybe 1 px. (4) Decisive: the sag is a 20 mm artefact on a wall whose primary result is wrong by two orders of magnitude (see aperture_calibration). Any threshold change that opens the wall changes the sag too, so buying it now buys it twice."
+ },
+ "aperture_calibration": {
+  "declared": {
+   "width_m": 9.6,
+   "height_m": 5.6,
+   "source": "mullion_intact.breach_state() and the beat sheet's camera anchor"
+  },
+  "measured_on_the_reconstruction_at_frame_1165": {
+   "shards_displaced_gt_0.25_m": 458,
+   "of": 3796,
+   "origin_bbox_width_m": 0.652,
+   "origin_bbox_height_m": 1.915,
+   "shards_displaced_gt_0.10_m": 1679,
+   "bbox_at_0.10_m": {
+    "width_m": 2.94,
+    "height_m": 5.98
+   },
+   "max_net_displacement_m": 0.407,
+   "shards_that_moved_more_than_0.5_m": 0,
+   "shards_that_fell_to_the_floor": 0,
+   "max_downward_dz_m": -0.091,
+   "vacated_area_pct": {
+    "bay_2": 0.0,
+    "bay_3": 0.0,
+    "bay_4": 24.5,
+    "bay_5": 75.1,
+    "bay_6": 0.0,
+    "bay_7": 0.0,
+    "threshold": "shard displaced > 0.10 m"
+   }
+  },
+  "verdict": "THE WALL DOES NOT OPEN. Against a declared 9.6 x 5.6 m aperture the sim produces 0.65 x 1.92 m of glass that actually left, and nothing at all that fell. There is no hole in the finished wound."
+ },
+ "root_cause_of_the_missing_aperture": {
+  "trajectory": "raw bake, sim/tmp/breach_bake.npz, 1657 world-time frames: at +0.15 s after impact 2,127 shards are east of x=15.2; at +0.40 s, 2,839 are, and the field bulges to x=16.62 (1.65 m outboard). At +0.90 s only 438 are still east of 15.2 and the x range is back to 14.80..15.29. It stays there for the remaining 5.4 s. The wall stretches like a trampoline and springs back.",
+  "measured_cause": "the shard-to-shard bond network never breaks. Of 12,756 bonded pairs, at frame 1165 92.8 % are still within 5 % of their original separation, the median separation change is 0.36 mm, and exactly ONE pair has stretched past 2x.",
+  "calibration": {
+   "t_bond_per_m": 4000,
+   "bond_edge_length_m": {
+    "median": 0.021,
+    "p95": 0.165
+   },
+   "resulting_breaking_threshold": {
+    "median": 84.0,
+    "p95": 660.0,
+    "max": 1908.0
+   },
+   "for_comparison": {
+    "shard_to_frame_clamp": 2.5,
+    "pvb_spring": 0.9,
+    "blender_default": 10.0
+   },
+   "one_line": "the median shard-to-shard bond is 34x stronger than the clamp that holds the whole pane into its frame and 8.4x Blender's own default. The pane detaches from the building before the glass breaks internally, which is why it behaves as one elastic sheet."
+  },
+  "not_a_resample_artefact": "identical on the raw 1657-frame bake and on the decimated 321-frame film table.",
+  "priced_experiment": "the full bake ran locally in ~4.5 h for 1,657 frames (9.8 s/frame). A threshold sweep over a SHORT window - impact +0.5 s = 120 sim frames - costs about 20 min per point, so four points is ~80 min. That is the cheap decisive test and it has not been run."
+ },
+ "not_done": [
+  "R6 is unfulfilled: BREACH_Frame is empty. The table carries 152 MUL*/TRN* transforms (92 mullion segments, 60 transoms) and film9 contains NO object named MUL* or TRN* to bind them to. The mullions that the car bends by up to 0.407 m therefore do not move, and do not exist, in the applied scene. Their geometry belongs to world/items/ and is not mine.",
+  "R4 IS satisfied (this line kept for the record): 12 downward ray probes inside the showroom all hit `Floor` at z = 0.00000, and the forecourt `SURF_AccessRoad` is z = 0.00000 at x 15.5..25. The ten panes measure x 14.95500..14.96650, y -10.985..10.985, z 0.0875..6.1125 - exactly the contract.",
+  "the end of the bake is not at rest: at the last keyed frame (1165) 2,375 of 3,948 bodies are still moving more than 1 mm per film frame and 1,006 are still turning more than 0.5 deg, max 13 deg. CONSTANT extrapolation then freezes them dead on that frame. It is off camera (the breach leaves frame at 1053 and does not return until 1321) so nothing is seen to stop, but the wound is frozen mid-tremor rather than settled.",
+  "no re-bake with corrected bond thresholds has been run; the sweep above is priced, not executed.",
+  "BREACH_Glass is a bare two-node Principled (base 0.90/0.94/0.92, roughness 0.02, IOR 1.52, transmission 1.0). It matches the showroom's existing GlassPanel and PropCaseGlass in construction, which are also two-node - so it is consistent, but neither has any depth, against round 2's stated bar.",
+  "the beat-1 reflection change was not looked at: R3's own note says the glass surface moves 33.5 mm inboard and that somebody should look at beat 1's 33 s of reflections on purpose. Frame 226 is the only beat-1 frame in which the east wall is in shot (11.1-12.5 m); it was submitted to the farm and has not come back.",
+  "beat 6's wound is 15 px. From frame 2834 the ONER camera looks straight at the breach centre - it projects at exactly (1920, 1080) - but from 402-595 m on an 18.8 mm lens, where the entire 4.37 m disturbed patch subtends 15-22 px in a 4K frame.",
+  "apply_breach.py's docstring claims `sim/verify_breach.py --swap` renders the frame before, the frame of and the frame after and diffs them. That flag does not exist in verify_breach.py - the feature was never written. The equivalent was done here geometrically (859 vs 860 silhouette bboxes) and frames 858/859/860/862 were submitted to the farm for the pixel diff.",
+  "the sweep is on a 300-frame (+0.646 s) window only. Where the field SETTLES at any of these thresholds is unknown - it needs the full 1,657-frame bake at the chosen value, then resample, verify, and re-apply into film9. film9_breach.blend as it stands carries the 4000 bake, i.e. the wall that does not open.",
+  "a ray-cast hole probe over bays 3-6 in the applied scene was started and ABANDONED, not completed: scene.ray_cast rebuilds an acceleration structure over 1.28e9 vertices on every frame_set, and it produced not one line in 15 minutes. It was killed. The question it would have answered - is there daylight through the wall - is answered instead by the elevation drawings in sim/out/wall_f*.png and by the threshold sweep."
+ ],
+ "film9_had_no_east_glazing": {
+  "measured": "render/film9.blend contains zero objects named GW_Right_Glass* and zero GP_b*/GS_b*; the R5 pocket check comes back clear on 29,387 meshes.",
+  "consequence": "build_film_scene.py performed R3's DELETION of round 1's ten panes but nothing supplied the replacement, so film9 renders beat 1 and beat 2 with the showroom's whole east wall standing open. film9_breach.blend is the first scene in which that wall has glass in it at all - the ten GP_b* panes are supplied by this applier, not by the joiner.",
+  "r3_visible_change_priced": {
+   "note": "R3 says the glass surface the camera sees moves 33.5 mm inboard and that somebody should look at beat 1's reflections on purpose. Here is the number.",
+   "beat1_frames_with_the_east_wall_in_shot": [
+    224,
+    225,
+    226,
+    227,
+    228
+   ],
+   "range_m": 14.5,
+   "lens_mm": 51.3,
+   "one_px_mm": 2.65,
+   "glass_surface_shift_px": 12.6,
+   "reflected_image_shift_px": 25.3,
+   "caveat": "measured against round 1's x = 15.000 plane, which is not in film9 - so in practice this is not a change to an existing look, it is the difference between an open wall and a glazed one."
+  }
+ },
+ "kerf_on_screen": {
+  "kerf": "shardmesh.KERF_M = 0.4 mm inset per shard, so 0.8 mm of empty space between every neighbouring pair, appearing in ONE frame at 860 across all six fractured bays.",
+  "worst_px_anywhere_it_is_in_shot_after_860": 0.49,
+  "per_bay_px": {
+   "2": 0.11,
+   "3": 0.12,
+   "4": 0.11,
+   "5": 0.49,
+   "6": 0.4,
+   "7": 0.3
+  },
+  "verdict": "under half a pixel everywhere. shardmesh's own claim of 'under 2 px' is comfortably met."
+ },
+ "root_cause_PROVEN_by_experiment": {
+  "run": "blender -b --factory-startup -P sim/build_breach_sim.py -- --bake --detail 0 --frames 300 --t-bond-per-m 100 (everything else unchanged). 300 world-time frames = impact +0.646 s. 640 s of wall clock. Artefacts: sim/tmp/sw_b100.npz, sim/tmp/sw_b100.json, sim/tmp/sw_b100.log.",
+  "one_parameter_changed": "t_bond_per_m 4000 -> 100",
+  "same_window_comparison": {
+   "aperture_width_m": {
+    "shipped_4000": 0.652,
+    "experiment_100": 7.826,
+    "declared": 9.6
+   },
+   "aperture_height_m": {
+    "shipped_4000": 1.915,
+    "experiment_100": 5.976,
+    "declared": 5.6
+   },
+   "shards_gone": {
+    "shipped_4000": 458,
+    "experiment_100": 2656,
+    "of": 3796
+   },
+   "max_net_displacement_m": {
+    "shipped_4000": 0.371,
+    "experiment_100": 24.522
+   },
+   "median_net_displacement_m": {
+    "shipped_4000": 0.065,
+    "experiment_100": 3.967
+   },
+   "shards_more_than_0.5_m_from_home": {
+    "shipped_4000": 0,
+    "experiment_100": 2654
+   },
+   "shards_east_of_x_15.5": {
+    "shipped_4000": 0,
+    "experiment_100": 2592
+   },
+   "final_x_range_m": {
+    "shipped_4000": "14.79..15.28",
+    "experiment_100": "7.78..39.44"
+   },
+   "bond_pairs_stretched_past_2x": {
+    "shipped_4000": 1,
+    "experiment_100": 726
+   },
+   "peak_speed_ms": {
+    "shipped_4000": 166.4,
+    "experiment_100": 137.6
+   },
+   "mullion_max_displacement_m": {
+    "shipped_4000": 0.407,
+    "experiment_100": 0.147
+   },
+   "cleanliness": "below_floor 0, outside_x 0, nan 0 in BOTH"
+  },
+  "verdict": "the missing aperture is ONE NUMBER. At t_bond_per_m = 4000 the wall is a trampoline; at 100, with nothing else touched, the same impact opens 7.83 x 5.98 m against a declared 9.6 x 5.6 m and puts 2,592 of 3,796 shards out onto the forecourt. This is proof, not inference.",
+  "caveats": [
+   "100 is very likely TOO LOW: median net displacement is 3.97 m in 0.646 s and the peak fragment speed is 137.6 m/s, i.e. fragments leaving at ~2.4x the 16.4 m/s impactor. The correct value brackets between 100 and 4000 and wants a short sweep - the 300-frame window costs about 11 minutes a point on this box, so five points is an hour.",
+   "the 300-frame window ends with the field still in flight (median 3.97 m and moving). Where it SETTLES is not answered by this run and needs the full 1,657-frame window at the chosen threshold.",
+   "the retained bays get WORSE, exactly as predicted: bay 2's raw sag goes 16.4 mm -> 45.6 mm and creep_vs_ring flips RING -> CREEP (drift 33.6 mm over the window against a 9.7 mm ring). That is the strongest argument for not having spent anything on the 7.1 px sag: the number moves when this parameter moves."
+  ],
+  "sweep": {
+   "method": "identical 300-frame bakes (impact +0.646 s), ONE parameter changed, everything else default. ~12 min a point on this box. Artefacts sim/tmp/sw_b{100,400,1000}.{npz,json,log} and sim/tmp/breach_bake.npz for 4000.",
+   "table": [
+    {
+     "t_bond_per_m": 4000,
+     "median_breaking_threshold": 84.0,
+     "shards_gone_gt_0.25m": 458,
+     "aperture_w_m": 0.652,
+     "aperture_h_m": 1.915,
+     "max_net_disp_m": 0.371,
+     "median_net_disp_m": 0.065,
+     "peak_speed_ms": 166.4,
+     "note": "SHIPPED. no hole; the wall recoils."
+    },
+    {
+     "t_bond_per_m": 1000,
+     "median_breaking_threshold": 21.0,
+     "shards_gone_gt_0.25m": 1073,
+     "aperture_w_m": 1.032,
+     "aperture_h_m": 2.954,
+     "max_net_disp_m": 0.46,
+     "median_net_disp_m": 0.146,
+     "peak_speed_ms": 154.7,
+     "note": "still essentially no hole."
+    },
+    {
+     "t_bond_per_m": 400,
+     "median_breaking_threshold": 8.4,
+     "shards_gone_gt_0.25m": 2512,
+     "aperture_w_m": 3.869,
+     "aperture_h_m": 1.835,
+     "max_net_disp_m": 3.919,
+     "median_net_disp_m": 0.33,
+     "peak_speed_ms": 109.6,
+     "note": "a CAR-SIZED hole punched through the nucleus; the tall panels stay."
+    },
+    {
+     "t_bond_per_m": 100,
+     "median_breaking_threshold": 2.1,
+     "shards_gone_gt_0.25m": 2656,
+     "aperture_w_m": 7.826,
+     "aperture_h_m": 5.976,
+     "max_net_disp_m": 24.522,
+     "median_net_disp_m": 3.967,
+     "peak_speed_ms": 137.6,
+     "note": "the wall comes out; 2,592 shards land on the forecourt, final x 7.78..39.44."
+    },
+    {
+     "t_bond_per_m": "DECLARED TARGET",
+     "aperture_w_m": 9.6,
+     "aperture_h_m": 5.6
+    }
+   ],
+   "reading": "monotone and clean over 40x. The declared 9.6 x 5.6 m sits at or just below t_bond_per_m = 100; 400 gives a car-sized punch-through; 1000 and 4000 give nothing. The whole missing aperture is this one number.",
+   "caveat_on_the_metric": "aperture_report() takes the bbox of the ORIGINS of shards that moved. The fracture is radially graded - most of the 3,796 shards are in the nucleus at the bottom centre - so at t=400 the 2,512 'gone' shards come from a 3.87 x 1.84 m nucleus while the tall panels above it stay put. The bbox is a fair aperture measure only once the large cells start leaving too.",
+   "unresolved_tension": "aperture size and fragment energy are driven by the SAME parameter. At 100 the aperture is right but fragments travel 3.97 m median in 0.646 s at up to 137.6 m/s - about 2.4x the 16.4 m/s impactor. That smells like the car proxy: it is PASSIVE and KINEMATIC, so it has infinite effective mass and never decelerates, and the momentum it can pour into the glass is unbounded. Getting a 9.6 m aperture AND believable fragment speeds may need the car's mass modelled, not just a lower bond threshold. That is a second experiment, not a conclusion."
+  }
+ },
+ "proposed_defect_log_entries": {
+  "note": "I am not permitted to edit docs/DEFECT-LOG-R2.md. These are drafted for whoever does. Next free id was stated as R2-062.",
+  "R2-062": {
+   "title": "The breach sim produces no aperture: the bond network never breaks and the wall recoils",
+   "severity": "the shot",
+   "measured": "Against a declared 9.6 x 5.6 m hole, sim/out/breach_film.npz ends with 458 of 3,796 shards displaced more than 0.25 m over a 0.65 x 1.92 m patch, max net displacement 0.407 m, and not one shard on the floor. The raw bake shows the field bulging 1.65 m outboard at +0.40 s and fully returning by +0.90 s, then holding for 5.4 s. 92.8 % of the 12,756 shard-to-shard bonds still sit within 5 % of their rest separation at the end and exactly ONE has stretched past 2x.",
+   "cause": "sim/build_breach_sim.py --t-bond-per-m defaults to 4000 N per metre of shared edge. Median shared edge is 21 mm, so the median breaking_threshold is 84 - 34x the 2.5 that clamps the whole pane into its frame, and 8.4x Blender's own default of 10. The pane detaches from the building before the glass parts internally, so it behaves as one elastic membrane.",
+   "proof": "one 300-frame re-bake with t_bond_per_m = 100 and nothing else changed opens 7.83 x 5.98 m and puts 2,592 of 3,796 shards east of x = 15.5, final x range 7.78..39.44 m. sim/tmp/sw_b100.{npz,json,log}; pictures at sim/out/wall_EXP_b100_end.png and sim/out/plan_EXP_b100_end.png against sim/out/wall_f1165.png.",
+   "not_fixed": "100 is very likely too low (median fragment travel 3.97 m in 0.646 s, peak 137.6 m/s). The value brackets between 100 and 4000 and needs a sweep (~11 min a point on this box for the 300-frame window) followed by a full 1,657-frame bake at the chosen value, then resample, verify and re-apply."
+  },
+  "R2-063": {
+   "title": "film9 ships with no east glazing at all",
+   "measured": "render/film9.blend contains zero GW_Right_Glass* and zero GP_b*. tools/build_film_scene.py performed R3's deletion of round 1's ten panes but nothing supplied the replacement, so beat 1 and beat 2 render the showroom's east wall standing open.",
+   "state": "closed by render/film9_breach.blend, which supplies GP_b00..GP_b09 at x 14.95500..14.96650 as sim/apply_breach.py's contract requires. Anyone rendering from film9 itself is rendering an open wall."
+  },
+  "R2-064": {
+   "title": "null_verdict()'s pixel pricing multiplies two numbers from different frames",
+   "measured": "build_breach_sim.null_verdict() charges each bay's MAXIMUM sag (reached about frame 1165) at the camera's CLOSEST APPROACH to that bay (frame 888 for bay 2). The two never coincide, and camera_ranges() does not check whether the bay is in frame at that key at all - it reports bay 4's closest range as 1.33 m when bay 4's nearest IN-SHOT range after the release is 24.3 m. Re-measured per shard per frame through the ONER camera's own animated transform, bay 2's worst is 1.12 px (not 10.73) and the worst retained bay is bay 7 at 3.20 px.",
+   "consequence": "the '7.1 px sag on bay 2' that has been carried as an open item is an artefact of the instrument, not of the sim."
+  },
+  "R2-065": {
+   "title": "apply_breach.py's docstring advertises a verifier flag that does not exist",
+   "measured": "the module docstring states that `sim/verify_breach.py --swap` renders the frame before, the frame of and the frame after the swap and diffs them. verify_breach.py contains no --swap argument and no swap function.",
+   "state": "the geometric equivalent was measured instead (859 vs 860 silhouette bounding boxes, agreeing to 1.2-14 mm in the wall plane). Either write the flag or delete the claim."
+  }
+ }
+}

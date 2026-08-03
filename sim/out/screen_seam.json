@@ -1,0 +1,26 @@
+{
+ "seams_px": {
+  "2_launch|3_breach": {
+   "seam_max_px": 142.12933548034673,
+   "nbhd_median_px": 11.01670821416673,
+   "ratio": 12.901252598991245
+  },
+  "3_breach|4_transit": {
+   "seam_max_px": NaN,
+   "nbhd_median_px": 26.776485815612407,
+   "ratio": NaN
+  }
+ },
+ "sag_px": {
+  "2": {
+   "worst_px": 1.1216567925102343,
+   "frame": 1009,
+   "frames_visible": 443
+  },
+  "7": {
+   "worst_px": 4.4482598221009635,
+   "frame": 869,
+   "frames_visible": 407
+  }
+ }
+}

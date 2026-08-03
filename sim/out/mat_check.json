@@ -1,0 +1,97 @@
+{
+ "BREACH_Glass": {
+  "name": "BREACH_Glass",
+  "users": 3806,
+  "use_nodes": true,
+  "nodes": [
+   "BSDF_PRINCIPLED",
+   "OUTPUT_MATERIAL"
+  ],
+  "n_nodes": 2,
+  "principled": {
+   "Base Color": [
+    0.8999999761581421,
+    0.9399999976158142,
+    0.9200000166893005,
+    1.0
+   ],
+   "Roughness": 0.019999999552965164,
+   "IOR": 1.5199999809265137,
+   "Metallic": 0.0,
+   "Transmission Weight": 1.0
+  },
+  "linked_inputs": []
+ },
+ "GW_Front_Glass_00": [
+  {
+   "name": "GlassPanel",
+   "users": 14,
+   "use_nodes": true,
+   "nodes": [
+    "BSDF_PRINCIPLED",
+    "OUTPUT_MATERIAL"
+   ],
+   "n_nodes": 2,
+   "principled": {
+    "Base Color": [
+     0.8600000143051147,
+     0.9200000166893005,
+     0.8999999761581421,
+     1.0
+    ],
+    "Roughness": 0.012000000104308128,
+    "IOR": 1.5199999809265137,
+    "Metallic": 0.0,
+    "Transmission Weight": 1.0
+   },
+   "linked_inputs": []
+  }
+ ],
+ "Vitrine_Glass_4": [
+  {
+   "name": "PropCaseGlass",
+   "users": 5,
+   "use_nodes": true,
+   "nodes": [
+    "BSDF_PRINCIPLED",
+    "OUTPUT_MATERIAL"
+   ],
+   "n_nodes": 2,
+   "principled": {
+    "Base Color": [
+     0.9200000166893005,
+     0.9399999976158142,
+     0.9599999785423279,
+     1.0
+    ],
+    "Roughness": 0.04500000178813934,
+    "IOR": 1.5199999809265137,
+    "Metallic": 0.0,
+    "Transmission Weight": 1.0
+   },
+   "linked_inputs": []
+  }
+ ],
+ "glassy_materials": [
+  "A_Glass",
+  "A_GlassTint",
+  "BREACH_Glass",
+  "DR_Glass",
+  "DisplayGlass",
+  "GlassPanel",
+  "PropCaseGlass"
+ ],
+ "n_materials": 195,
+ "shard_tris": {
+  "n": 3796,
+  "total": 278938,
+  "min": 26,
+  "median": 76.0,
+  "max": 156
+ },
+ "shard_verts": {
+  "min": 15,
+  "median": 40.0,
+  "max": 80
+ }
+}

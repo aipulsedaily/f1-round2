@@ -659,10 +659,95 @@ def main():
             step = cand
         f = min(f + step, b6_f1)
         b6_frames.add(f)
+
+    # ---- THE BEAT 5 -> BEAT 6 HAND-OFF.  R2-063, and it is a ROUNDING. -----
+    #
+    # BEAT 6 DOES NOT START ON A FRAME.  Its beat begins at 113.1 s and every one
+    # of its eight declared keys is at a whole number of seconds from there, so
+    # every one lands at .4 of a frame: 113.1 x 24 = 2714.4.  The block below
+    # used to force each declared POSITION onto `round(t * FPS)` and call that
+    # "reproduced exactly".  It is not exact; it is 0.4 of a frame of travel
+    # early, and at the peel-off the camera is doing 83.1 m/s, so it is
+    #
+    #     1.385 m of position error placed on frame 2642.
+    #
+    # MEASURED CONSEQUENCE, on render/film9_path.json via the campath gate:
+    #
+    #     f2642   88.3 m/s   the camera lurches forward onto the misplaced key
+    #     f2643   68.5 m/s   -473 m/s^2 in one frame, and the aim swings 14.5
+    #     f2644   63.7 m/s   deg/frame, then 19.1 -- 32 % OF THE FRAME WIDTH IN
+    #                        ONE FRAME, a FAIL, the second-worst smear in the film
+    #     f2645   78.0 m/s   and the curve climbing back to where it should be
+    #     f2646   85.3 m/s
+    #
+    # The rotation is not a separate defect.  The camera is a few metres off a
+    # car it is following, so 1.4 m of position error IS a large aim change; the
+    # smear and the speed swing are one event seen twice.
+    #
+    # AND THE TWO TRAJECTORIES DISAGREE ANYWAY.  Beat 5's last key (f2641) and
+    # beat 6's declared peel are 3.6775 m apart across 1.40 frames, which is
+    # 63.0 m/s, while beat 5 arrives at 88.2 and beat 6 declares 83.1.  About
+    # 1.5 m of the two authored paths simply do not meet.  Neither is this
+    # file's to move -- beat 5 comes from tools/author_beats2_5.py and beat 6
+    # from docs/circuit_spec.json -- so the disagreement is RECONCILED here,
+    # which is what beat6_path() already exists to do.
+    #
+    # The reconciliation is the same cubic Hermite the rest of this function
+    # uses: from beat 5's last key with beat 5's own arrival velocity, to beat
+    # 6's curve one second later with beat 6's own velocity there.  Spread over
+    # 24 frames the 1.5 m is a 1.7 % speed adjustment instead of a 25 % step.
+    # Inside that window the declared-position override is NOT applied, because
+    # applying it is the defect.
+    HANDOFF_FRAMES = 24
+
+    def _b6_vel(t, dt=1.0 / (FPS * 64)):
+        a, _ = b6_at(t - dt)
+        b, _ = b6_at(t + dt)
+        return (Vector(b) - Vector(a)) / (2.0 * dt)          # m/s
+
+    prev_keys = sorted((k for k in keys if k["t"] * FPS < b6_f0 - 1e-6),
+                       key=lambda k: k["t"])
+    blend = None
+    if len(prev_keys) >= 2:
+        k_in, k_before = prev_keys[-1], prev_keys[-2]
+        f_in = int(round(k_in["t"] * FPS))
+        f_end = min(b6_f0 + HANDOFF_FRAMES, b6_f1)
+        if f_end > f_in + 1:
+            p_in = Vector(k_in["world"])
+            v_in = ((p_in - Vector(k_before["world"]))
+                    / max(k_in["t"] - k_before["t"], 1e-9))      # m/s
+            p_end = Vector(b6_at(f_end / FPS)[0])
+            v_end = _b6_vel(f_end / FPS)
+            span = (f_end - f_in) / FPS                          # s
+
+            def blend(f):
+                u = (f - f_in) / (f_end - f_in)
+                u2, u3 = u * u, u * u * u
+                return (p_in * (2 * u3 - 3 * u2 + 1)
+                        + v_in * span * (u3 - 2 * u2 + u)
+                        + p_end * (-2 * u3 + 3 * u2)
+                        + v_end * span * (u3 - u2))
+            # sample the blend densely enough that Blender's handles cannot
+            # reintroduce a step: beat 5 arrives on 1-frame keys.
+            for g in range(b6_f0, f_end + 1):
+                b6_frames.add(g)
+            print(f">> beat 5 -> beat 6 hand-off: blended over frames "
+                  f"{f_in}-{f_end}. Beat 5 arrives at {v_in.length:.1f} m/s; "
+                  f"beat 6's curve is at {v_end.length:.1f} m/s there; the "
+                  f"declared keys sit at "
+                  f"{b6_ts[0] * FPS - int(b6_ts[0] * FPS):.2f} of a frame and "
+                  f"their positions are NOT forced onto a rounded frame inside "
+                  f"this window.")
+
     b6_added = 0
+    b6_blended = 0
     for f in sorted(b6_frames):
         p, L = b6_at(f / FPS)
-        if f in declared_f:                      # reproduce the declared key exactly
+        in_blend = blend is not None and f <= f_end
+        if in_blend:
+            p = list(blend(f))
+            b6_blended += 1
+        elif f in declared_f:                    # reproduce the declared key
             i = b6_ts.index(declared_f[f])
             p = [float(v) for v in sorted(sheet["beat6"]["keys"],
                                           key=lambda k: k["t"])[i]["world"]]
@@ -674,9 +759,10 @@ def main():
                      "focus_distance_m": max((Vector(s) - Vector(p)).length, 0.1)})
     per_beat["6_ending"] = sum(1 for k in keys if k["beat"] == "6_ending")
     keys.sort(key=lambda k: k["t"])
-    print(f">> beat 6: {len(declared_f)} declared keys reproduced exactly, "
-          f"{b6_added} intermediate samples of its own declared cubic added, "
-          f"and rotation supplied for all of them for the first time")
+    print(f">> beat 6: {len(declared_f)} declared keys, {b6_added} intermediate "
+          f"samples of its own declared cubic added, {b6_blended} frames taken "
+          f"from the beat-5 hand-off blend instead, and rotation supplied for "
+          f"all of them")
 
     prev_q = prev_v = None
     prev_f = None

@@ -1,0 +1,267 @@
+{
+ "car_root": "CAR_ROOT",
+ "measured_blend": "/home/zany/f1-round2/world/car_anim.blend",
+ "frames_compared": 79,
+ "max_abs_delta_m": 0.0,
+ "samples": [
+  {
+   "frame": 845,
+   "got": [
+    3.9353458881378174,
+    0.0,
+    0.20845100283622742
+   ],
+   "want": [
+    3.935346,
+    0.0,
+    0.208451
+   ],
+   "delta_m": 0.0
+  },
+  {
+   "frame": 864,
+   "got": [
+    14.969378471374512,
+    0.0,
+    0.0
+   ],
+   "want": [
+    14.969378,
+    0.0,
+    0.0
+   ],
+   "delta_m": 0.0
+  },
+  {
+   "frame": 865,
+   "got": [
+    15.589578628540039,
+    0.0,
+    0.0
+   ],
+   "want": [
+    15.589579,
+    0.0,
+    0.0
+   ],
+   "delta_m": 0.0
+  },
+  {
+   "frame": 1056,
+   "got": [
+    52.555694580078125,
+    0.0,
+    0.0
+   ],
+   "want": [
+    52.555695,
+    0.0,
+    0.0
+   ],
+   "delta_m": 0.0
+  },
+  {
+   "frame": 1057,
+   "got": [
+    53.90082931518555,
+    0.0,
+    0.0
+   ],
+   "want": [
+    53.900829,
+    0.0,
+    0.0
+   ],
+   "delta_m": 0.0
+  },
+  {
+   "frame": 2978,
+   "got": [
+    238.4434814453125,
+    939.7367553710938,
+    -3.218113899230957
+   ],
+   "want": [
+    238.443481,
+    939.736755,
+    -3.218113
+   ],
+   "delta_m": 0.0
+  }
+ ],
+ "camera": {
+  "name": "ONER",
+  "clip_start": 0.05000000074505806,
+  "clip_end": 200000.0,
+  "sensor_width": 36.0,
+  "sensor_fit": "AUTO"
+ },
+ "render": {
+  "engine": "BLENDER_EEVEE",
+  "res": [
+   3840,
+   2160
+  ],
+  "fps": 24,
+  "motion_blur": true,
+  "shutter": 0.5,
+  "exposure": -3.628000020980835,
+  "view": "AgX",
+  "world": "SKY_World"
+ },
+ "collections": {
+  "W_Surface": 58,
+  "R2_Barriers": 131,
+  "ARCH": 31,
+  "WORLD_TERRAIN": 28004,
+  "R2_Dressing": 246,
+  "CAR": 625,
+  "SHOWROOM": 66,
+  "PROPS": 189,
+  "LIGHTS": 61,
+  "WORLD_SKY": 3,
+  "W_Item_DaisDeliveryRamp": 6,
+  "BREACH": 3806
+ },
+ "interior_sample": [
+  "Ceiling",
+  "Cove_Coffer_0",
+  "Cove_Coffer_1",
+  "Cove_Ring",
+  "Cove_RingOuter",
+  "Cove_Strip_0",
+  "Cove_Strip_1",
+  "Vitrine_A_brake_assembly_FL_Bell",
+  "Vitrine_A_brake_assembly_FL_Caliper",
+  "Vitrine_A_brake_assembly_FL_Disc",
+  "Vitrine_A_brake_assembly_FL_DiscVanes",
+  "Vitrine_A_brake_assembly_FL_PadFriction",
+  "Vitrine_A_brake_assembly_FL_PadPlate",
+  "Vitrine_A_brake_assembly_FL_Pistons",
+  "Vitrine_B_suspension_rear_RL_Boots",
+  "Vitrine_B_suspension_rear_RL_Clamps",
+  "Vitrine_B_suspension_rear_RL_Driveshaft",
+  "Vitrine_B_suspension_rear_RL_JamNuts",
+  "Vitrine_C_suspension_front_FL_Adjusters",
+  "Vitrine_C_suspension_front_FL_Arms"
+ ],
+ "interior_count": 35,
+ "lights": [
+  [
+   "Spot_0",
+   "SPOT",
+   471.9300537109375
+  ],
+  [
+   "Spot_1",
+   "SPOT",
+   65.85070037841797
+  ],
+  [
+   "Spot_2",
+   "SPOT",
+   395.1042175292969
+  ],
+  [
+   "Spot_3",
+   "SPOT",
+   65.85070037841797
+  ],
+  [
+   "Spot_4",
+   "SPOT",
+   60.36314392089844
+  ],
+  [
+   "Spot_5",
+   "SPOT",
+   49.38802719116211
+  ],
+  [
+   "Key",
+   "AREA",
+   1097.51171875
+  ],
+  [
+   "Fill",
+   "AREA",
+   743.0487670898438
+  ],
+  [
+   "Rim",
+   "AREA",
+   300.56591796875
+  ],
+  [
+   "Kick",
+   "AREA",
+   142.67652893066406
+  ],
+  [
+   "WallWash_BackDn",
+   "AREA",
+   37.15243911743164
+  ],
+  [
+   "WallWash_BackUp",
+   "AREA",
+   42.10609817504883
+  ],
+  [
+   "WallWash_SideDn",
+   "AREA",
+   37.15243911743164
+  ],
+  [
+   "WallWash_SideUp",
+   "AREA",
+   42.10609817504883
+  ],
+  [
+   "Bollard_Lamp_0",
+   "AREA",
+   20.563814163208008
+  ],
+  [
+   "Bollard_Lamp_1",
+   "AREA",
+   20.563814163208008
+  ],
+  [
+   "Bollard_Lamp_2",
+   "AREA",
+   20.563814163208008
+  ],
+  [
+   "Bollard_Lamp_3",
+   "AREA",
+   20.563814163208008
+  ],
+  [
+   "Bollard_Lamp_4",
+   "AREA",
+   20.563814163208008
+  ],
+  [
+   "Bollard_Lamp_5",
+   "AREA",
+   20.563814163208008
+  ]
+ ],
+ "n_lights": 24,
+ "emissive_materials": 12,
+ "emissive_sample": [
+  "A_Emit",
+  "A_EmitStrong",
+  "BollardEmit",
+  "CoveEmit",
+  "CoveEmitAmbient",
+  "CoveEmitSoft",
+  "DisplayEmit",
+  "DR_Emit",
+  "PropPoleEmit",
+  "SeamEmit",
+  "SpotEmit",
+  "WallLineEmit"
+ ]
+}

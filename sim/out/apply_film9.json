@@ -1,0 +1,53 @@
+{
+ "stats": {
+  "objects": 3806,
+  "tris": 278938,
+  "keys": 5678105,
+  "hero": 3578
+ },
+ "proof": {
+  "objects_checked": 40,
+  "flags": {
+   "LINEAR": 17927,
+   "CONSTANT": 240,
+   "other": 0
+  },
+  "max_linear_eval_err": 4.76837158203125e-07,
+  "bezier_control_err": 0.0004749298095703125,
+  "control_fires": true
+ },
+ "preflight": {
+  "checks": [
+   {
+    "id": "frame_range",
+    "passed": true,
+    "detail": "frame_end = 2978, need >= 2978",
+    "why": "every curve written here is keyed in film frames and extrapolates CONSTANT to the last one"
+   },
+   {
+    "id": "units_metres",
+    "passed": true,
+    "detail": "scale_length = 1.0",
+    "why": "every transform in the bake is world metres"
+   },
+   {
+    "id": "no_round1_east_glass",
+    "passed": true,
+    "detail": "clear",
+    "why": "this applier supplies that glazing at 14.95500..14.96650 with real thickness; two east walls 33.5 mm apart z-fight in beat 1 and leave a ghost pane in the aperture afterwards"
+   },
+   {
+    "id": "glazing_pocket_clear",
+    "passed": true,
+    "detail": "clear",
+    "why": "that is the pocket the glass lives in; a solid mullion or sill laid through it starts every clamped shard inside metal, which is exactly what the null control caught"
+   }
+  ],
+  "ok": true,
+  "meshes_scanned": 29387,
+  "pocket_aabb_candidates": 79
+ },
+ "out": "/home/zany/f1-round2/render/film9_breach.blend",
+ "bytes": 5217977841,
+ "origin_rule": "shard origin = (0.5*(x_in+x_out), centroid_u, centroid_v) in WORLD metres; mesh verts are stored relative to it"
+}

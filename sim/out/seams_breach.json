@@ -1,0 +1,140 @@
+{
+ "boundaries": {
+  "2_launch|3_breach": [
+   {
+    "label": "shard speed median (world)",
+    "boundary": "864|865",
+    "step": 0.032351979537137865,
+    "seam_max": 2.7499817408575007,
+    "nbhd_median": 0.9132115458560106,
+    "ratio": 3.0113304560552505,
+    "floor": 1.0,
+    "verdict": "SEAM",
+    "unit": "m/s"
+   },
+   {
+    "label": "shard speed p95 (world)",
+    "boundary": "864|865",
+    "step": 2.208037019997718,
+    "seam_max": 10.888919587960718,
+    "nbhd_median": 1.0059323531716835,
+    "ratio": 10.824703623089748,
+    "floor": 1.0,
+    "verdict": "SEAM",
+    "unit": "m/s"
+   },
+   {
+    "label": "shard speed max (world)",
+    "boundary": "864|865",
+    "step": -5.092503362601878,
+    "seam_max": 12.505100243177026,
+    "nbhd_median": 2.458986579375999,
+    "ratio": 5.085469090421129,
+    "floor": 1.0,
+    "verdict": "SEAM",
+    "unit": "m/s"
+   },
+   {
+    "label": "shard omega median (world)",
+    "boundary": "864|865",
+    "step": 1.161895839618916,
+    "seam_max": 11.450047441201923,
+    "nbhd_median": 0.22700184317504224,
+    "ratio": 50.44032806541018,
+    "floor": 0.4188790204786391,
+    "verdict": "SEAM",
+    "unit": "rad/s"
+   },
+   {
+    "label": "shard omega p95 (world)",
+    "boundary": "864|865",
+    "step": -28.739894792195376,
+    "seam_max": 28.739894792195376,
+    "nbhd_median": 8.338596052794372,
+    "ratio": 3.446610749607455,
+    "floor": 0.4188790204786391,
+    "verdict": "SEAM",
+    "unit": "rad/s"
+   },
+   {
+    "label": "shard omega max (world)",
+    "boundary": "864|865",
+    "step": 5.168295977104201,
+    "seam_max": 44.486627798567326,
+    "nbhd_median": 39.731940936471204,
+    "ratio": 1.1196691314350475,
+    "floor": 0.4188790204786391,
+    "verdict": "OK",
+    "unit": "rad/s"
+   }
+  ],
+  "3_breach|4_transit": [
+   {
+    "label": "shard speed median (world)",
+    "boundary": "1056|1057",
+    "step": 0.0007102015001431289,
+    "seam_max": 0.04378098486511181,
+    "nbhd_median": 0.011868787285144136,
+    "ratio": 3.6887496433533165,
+    "floor": 1.0,
+    "verdict": "OK",
+    "unit": "m/s"
+   },
+   {
+    "label": "shard speed p95 (world)",
+    "boundary": "1056|1057",
+    "step": -0.06314073075693932,
+    "seam_max": 0.22609683973706712,
+    "nbhd_median": 0.1512935997040541,
+    "ratio": 1.4944243522484486,
+    "floor": 1.0,
+    "verdict": "OK",
+    "unit": "m/s"
+   },
+   {
+    "label": "shard speed max (world)",
+    "boundary": "1056|1057",
+    "step": -0.5780124132244733,
+    "seam_max": 0.5780124132244733,
+    "nbhd_median": 0.435520908154174,
+    "ratio": 1.3271748896607678,
+    "floor": 1.0,
+    "verdict": "OK",
+    "unit": "m/s"
+   },
+   {
+    "label": "shard omega median (world)",
+    "boundary": "1056|1057",
+    "step": -0.23687957485603856,
+    "seam_max": 0.3537549754459054,
+    "nbhd_median": 0.09640969716140024,
+    "ratio": 3.6692883170629753,
+    "floor": 0.4188790204786391,
+    "verdict": "OK",
+    "unit": "rad/s"
+   },
+   {
+    "label": "shard omega p95 (world)",
+    "boundary": "1056|1057",
+    "step": -0.2445760225433431,
+    "seam_max": 0.8936446955090362,
+    "nbhd_median": 0.5874310597298917,
+    "ratio": 1.5212758683886165,
+    "floor": 0.4188790204786391,
+    "verdict": "OK",
+    "unit": "rad/s"
+   },
+   {
+    "label": "shard omega max (world)",
+    "boundary": "1056|1057",
+    "step": -8.43874211739377,
+    "seam_max": 8.43874211739377,
+    "nbhd_median": 2.2006989131113963,
+    "ratio": 3.8345736743527956,
+    "floor": 0.4188790204786391,
+    "verdict": "SEAM",
+    "unit": "rad/s"
+   }
+  ]
+ }
+}

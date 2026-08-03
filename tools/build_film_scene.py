@@ -45,6 +45,30 @@ sys.path.insert(0, os.path.join(R2, "anim"))
 sys.path.insert(0, os.path.join(R2, "world"))
 
 
+def refuse_unless_levelled(scene):
+    """The last thing before ANY save. Never inside a branch.
+
+    THIS GUARD ALREADY FAILED ONCE, BY BEING CONDITIONAL. It was written to make
+    an un-levelled set a build-time refusal, and it was placed inside
+    `if not a.no_rig:` -- so a build that skipped the rig skipped the guard.
+    `film9.blend` shipped with the round-1 practicals untouched at 3,737 W
+    against the levelled 46,203 W, and nobody found out until ten rendered
+    frames were measured: beats 1-2 came back at mean 0.05-0.11 with up to
+    3.35 % of the frame at literal 0/0/0, against a target of mean 0.32-0.48
+    and 0.0000 %.
+
+    A guard inside a conditional is not a guard -- it is a guard *and* a bet
+    that the conditional is true. There are three `save_as_mainfile` calls in
+    this file and this must precede every one of them, so the only way to ship
+    an un-levelled film scene is to delete this function.
+
+    It imports its own dependency rather than closing over a name bound in some
+    branch, for the same reason.
+    """
+    import showroom_lighting as SL
+    SL.assert_levelled(scene)
+
+
 def parse_args():
     argv = sys.argv
     argv = argv[argv.index("--") + 1:] if "--" in argv else []
@@ -347,13 +371,6 @@ def main():
         mod.main()
         sys.argv = argv_save
 
-        # The rig runs through `fix_audit_blend.save_clean`, which rebuilds
-        # datablocks. Re-assert the practicals AFTER it rather than trusting the
-        # apply above to have survived -- an un-levelled set is a 2,978-frame
-        # render of a showroom 3.628 stops under, and the only symptom is that
-        # beat 1 looks a bit dark. Refuse at build time instead.
-        SL.assert_levelled(scene)
-
         world_after = scene.world.name if scene.world else None
         imgs_after = sorted(i.name for i in bpy.data.images if i.source == "FILE")
         dropped = [i for i in imgs_before if i not in imgs_after]
@@ -388,6 +405,7 @@ def main():
             got2 = FX.apply(scene)
             print(">> GRADE re-asserted after build_sky: exposure %+.3f %s %s"
                   % (got2["exposure"], got2["view_transform"], got2["look"]))
+            refuse_unless_levelled(scene)   # never inside a branch -- see the docstring
             bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(a.out),
                                         compress=False)
         elif world_after != world_before:
@@ -401,6 +419,7 @@ def main():
             scene.world = w
             print(">> RESTORED the world: the rig build swapped %r for %r; the "
                   "assembly's own sky is back" % (world_before, world_after))
+            refuse_unless_levelled(scene)   # never inside a branch -- see the docstring
             bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(a.out),
                                         compress=False)
         if dropped:
@@ -414,6 +433,7 @@ def main():
                  len(imgs_before), len(imgs_after)))
     else:
         os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
+        refuse_unless_levelled(scene)   # never inside a branch -- see the docstring
         bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(a.out),
                                     compress=False)
 
