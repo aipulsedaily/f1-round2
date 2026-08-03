@@ -3525,3 +3525,86 @@ relief PASS verdicts had been read from frames lit by a flat context ground. The
 `CTX_` material of any kind** — 11 objects and 12 materials, all `GATE_REF_*` or the item's own.
 Re-judged from the rebuilt blends anyway, both verdicts stand unchanged, with margins of 70–120×
 against a threshold of 2.00 and differences in the fourth decimal.
+
+## R2-078 — the blind estimator, and why a foreground/background split was the wrong fix
+
+`continuity_gate`'s whole-frame phase correlation reported **0.29 px/frame** on a tracking shot
+whose background moves −24 px and whose car moves +36 px (R2-068). The obvious repair — split
+the frame into foreground and background — **was proposed by me and is wrong.**
+
+Dumping the field block by block on seam f804→805 shows image motion running **continuously**
+from −28 px at top-left, through 0, to +40 px at the right, because the camera dollies past a
+room whose contents sit at 4–22 m. **It is a depth gradient, not two halves.** The largest
+cluster holds 19 % of blocks and the second another 19 %.
+
+> **A bimodal summary would have replaced one confident wrong number with another.**
+
+`tools/image_motion.py` therefore reports a **distribution** — `speed_med`, `spread_dx`
+(p90−p10), `dominant`/`secondary` *with the block fraction each holds*, `shear`, `coverage` —
+and each consumer takes the statistic that answers its own question. D5 reads
+`median over blocks of |vᵢ − vᵢ₋₁|`, because a camera kink moves every block at whatever depth
+it sits, while an object kink moves only its own. D7 speed-matches on `speed_med`.
+`translation_median_px` became `image_speed_median_px` — **renamed, not reused**, so no stored
+report can be silently reinterpreted.
+
+**The positive control is what condemns the old estimator, and it is worse than "it returns
+zero".** With background −24 px over 86 % of frame and subject +36 px over 14 %, the old code
+returns **+36.09** — the *subject*, not the average — and sweeping the subject's area from 10 %
+to 12 % **flips its answer from −24.07 to +35.89. Sixty pixels from a two-point composition
+change.** The new estimator returns −23.91 and +35.87 and is stable from 5 % to 90 %.
+
+**Blast radius, measured: 4 stored reports plus 1 A/B run that was never saved.** 24 individual
+D5/D7 findings, 4 control rows, 4 floor figures, 7 pacing figures — all unmeasured, all
+re-measured, with the stored reports marked `gate_version_stale` in place and pointed at their
+replacements. **The D1/D2/D3/D4/D6 split was verified by result rather than by reading**: across
+all four sequences those findings are *identical strings* before and after. One correction to
+R2-068's framing — **D8's verdict was never downstream**; only its reported column was.
+
+**No PASS/FAIL verdict flipped in either direction.** R2-066's A/B conclusion survives a real
+measurement, and its D5 corroboration strengthens: seam_before f794/795 went from z = 12.2/9.3
+to **z = 77/94**. Withdrawn: **7 of 11 D7 advisories on seam_after**, every one matched against
+a "speed" of 0.04–0.40 px — *against a fiction*.
+
+**A method note worth more than the defect.** The first blast-radius sweep returned three files
+and was wrong: the shell's `grep` here is a wrapper that **respects `.gitignore`**, which
+silently hides `work/` and `render/` — where the stored reports live. The real sweep used
+`/usr/bin/grep` over all 4,825 files. **A search tool that quietly excludes exactly the
+directory your artefacts live in will make any audit look clean.**
+
+## R2-079 — the seam fix moved the kink rather than removing it, 57× smaller
+
+New, and only visible once the estimator could see: **D5 fires at seam_after f755** (1.67
+px/frame², z = 30) and is **absent from seam_before**.
+
+`campath_gate` — an instrument sharing no code with the image measurement — independently flags
+`C2_path_kink` at **f755** on the post-fix path (0.0030 m/frame, z = 8.8) and not on the pre-fix
+path. Two unrelated instruments landing on the same frame is what makes this a finding rather
+than a noise excursion.
+
+**R2-064 removed a 0.171 m/frame kink at f793 and introduced a 0.0030 m/frame one at f755.**
+Fifty-seven times smaller, real, advisory — and it could not have been seen before, because the
+instrument that would have seen it was blind. Recorded rather than chased: it sits well inside
+the authored-acceleration band that D5's leading arm fires on by design.
+
+**Three instruments were caught wrong in the course of this, two of them the author's own.**
+`continuity_gate.phase_shift` returned the negative of what its docstring claimed — every
+consumer took a magnitude, so **no downstream effect**, stated plainly rather than inflated. The
+author's own `block_residual` failed twice: v1 rounded shifts to whole pixels and so refused
+every slow pan, including the seam's own 45-frame approach; v2 shifted sub-pixel but divided by
+the *unshifted* difference, and since bilinear smoothing lowers the difference against anything,
+**pure noise scored 0.6 and the refusal control returned a confident (+10.3, +30.1) px.**
+
+And the third was a commit message. The author claimed the controls improved "from
+12/13-with-one-skipped" — **an intermediate state of their own working tree, not the baseline**,
+which flattered the change. Corrected in a follow-up; the real gain is one row. **A baseline
+taken from your own uncommitted work is not a baseline.**
+
+**Stated as not-confirmed, which is the right call:** on heavily motion-blurred 720p
+(`work/seq_b5_1900`, beat 5) roughly **25 % of blocks can lose a large motion to a competing
+zero peak** — brute-force minimum-|diff| search on 8 blocks agrees on 6 and disagrees on 2,
+where reported −0.19 and −0.33 px are truly +51 and +9. Not fixed; measured, published in the
+module docstring, and the `spread_dx` figure is what tells a reader the frame has no single
+motion. Separately, `work/cont_carlaunch.json` was **already stale before any of this work** —
+`TILE_MIN_FRAMES = 48` was added after it was written and carlaunch has 33 frames, so 11 D1_pop
+and 14 D2_flicker findings are **NOT MEASURED rather than absent**, and nothing on the file's
+face said so.
