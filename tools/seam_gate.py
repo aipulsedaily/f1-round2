@@ -46,13 +46,26 @@ WHAT IS MEASURED, and every number is in real units
      over the pair it actually sits between. Both are printed; only the
      per-pair one gates.
 
-     WHERE 1.60 COMES FROM — a census, not a preference. `--census` walks every
-     key interval of the whole 2,978-frame film and prints the distribution.
-     On the pre-fix build the worst interval OUTSIDE this window is 1.395x
-     (f622-655, beat 1) and the seam itself is 2.613x (f754-793). 1.60 sits
-     above everything the film already does and below the defect. `--selftest`
-     RE-RUNS that census and refuses to certify the bound if it has stopped
-     separating the two, so the number cannot quietly go stale.
+     ONLY PAIRS `MAX_BULGE_GAP` FRAMES APART OR LESS ARE GATED. Across half a
+     second the curve should be close to the straight line between its two
+     keys; across 47 frames a camera legitimately accelerates and decelerates,
+     and this one does — beat 1's f339-386 runs 2.061x its own chord and is
+     accepted material. Long pairs are printed by `--census` and not judged.
+
+     WHERE 1.80 COMES FROM — a census, not a preference. `--census` walks every
+     key interval of the whole 2,978-frame film and prints the distribution. On
+     the pre-fix build the worst GATED interval outside this window is 1.570x
+     (f2313-2321, beat 5) and the worst inside it is 2.655x (f793-795). 1.80
+     sits 15 % above everything the film already does and 32 % below the
+     defect. `--selftest` RE-RUNS that census and refuses to certify the bound
+     if it has stopped separating the two, so the number cannot quietly go
+     stale.
+
+     A pair whose chord is under `HOLD_CHORD_MS` is a HOLD and a ratio against
+     it is a division by the measurement's own floor. Those are judged against
+     an absolute peak instead of being skipped, because silently skipping them
+     would leave a hole exactly where a camera is meant to be still — the one
+     place a wandering bezier is most visible.
 
   4. LOCAL ACCELERATION RATIO, not a global limit. |a| at a frame against the
      MEDIAN |a| of its +-8 frame neighbourhood, which is the idiom
@@ -85,11 +98,19 @@ and exits non-zero unless every one of them behaves:
 
   P1  the shipped pre-fix path at the seam, kept at
       `work/campath/seam_pre_R2064.json`                          must FAIL
-  P2  beat 1 frames 600-700 — which passes clean — with a single
-      +25 % one-frame overshoot injected inside one key interval  must FAIL
-  N1  beat 1 frames 600-700, untouched. REAL material, the part of
-      the film the review calls the best, and nothing to do with
-      any fix applied here                                        must PASS
+      It fails on all three of BULGE, SPIKE and HOLD, so none of the
+      three is dead code carried by the other two.
+  P2  beat 3 frames 900-1000 — which passes clean — with a +25 %
+      overshoot injected inside one key interval                  must FAIL
+  N1  beat 3 frames 900-1000, untouched. REAL material at the same
+      3-10 m/s the seam runs at, and nothing to do with any fix
+      applied here                                                must PASS
+
+      Beat 1 is NOT a control window and cannot be: its keys are 33
+      frames apart there, so no pair is inside MAX_BULGE_GAP and the
+      gate refuses it rather than reporting a ratio it did not
+      measure. That refusal is the correct behaviour and it is why
+      the control moved to a beat whose keys this can judge.
   N2  beat 5 frames 1100-1180, untouched. 73 m/s. Proves the tests
       are measuring overshoot and spikes and not merely speed      must PASS
   N3  the live `--path` at the seam window                        must PASS
@@ -133,9 +154,15 @@ TOL_ARTEFACT_M = 1e-3
 # wheelspin, so the whole descend-settle-hold move is inside one measurement.
 W_LO, W_HI = 738, 832
 
-TOL_BULGE = 1.60
+TOL_BULGE = 1.80
+MAX_BULGE_GAP = 12     # frames; see below
 TOL_ACCEL_RATIO = 6.0
 TOL_ROT_PCT = 12.0
+# A key pair whose two keys are less than this far apart is a HOLD, and a bulge
+# RATIO against it is a division by the measurement's own floor. Held to an
+# absolute peak instead. 0.15 m/s is 6 mm per frame; 0.30 m/s is 12 mm.
+HOLD_CHORD_MS = 0.15
+HOLD_PEAK_MS = 0.30
 NBHD = 8
 
 
@@ -179,14 +206,24 @@ def all_sheet_keys(sheet):
     return sorted(out, key=lambda k: float(k["t"]))
 
 
-def key_pairs(ks, lo, hi):
-    """Consecutive key pairs wholly inside [lo, hi], as (fa, fb, chord_speed)."""
+def key_pairs(ks, lo, hi, max_gap=None):
+    """Consecutive key pairs wholly inside [lo, hi], as (fa, fb, chord_speed).
+
+    `max_gap` drops pairs further apart than that. BULGE is only meaningful
+    over a SHORT interval: across 47 frames a camera legitimately accelerates
+    and decelerates, and the film does — beat 1's f339-386 runs 2.061x its own
+    chord and is accepted material. Across half a second it should be close to
+    the straight line between its two keys. Long pairs are still reported by
+    `--census`; they are not gated, and this is the reason.
+    """
     out = []
     for i in range(len(ks) - 1):
         fa = int(round(float(ks[i]["t"]) * FPS))
         fb = int(round(float(ks[i + 1]["t"]) * FPS))
         dts = float(ks[i + 1]["t"]) - float(ks[i]["t"])
         if fb <= fa or dts <= 0 or fa < lo or fb > hi:
+            continue
+        if max_gap is not None and fb - fa > max_gap:
             continue
         out.append((fa, fb, math.dist(ks[i]["world"], ks[i + 1]["world"]) / dts))
     return out
@@ -255,20 +292,36 @@ def measure(path, sheet, lo=W_LO, hi=W_HI, seam_checks=True):
     spd, acc, rot = series(path, lo, hi)
     o["v_max_ms"], o["v_max_f"] = max((v, f) for f, v in spd.items())
 
-    pairs = key_pairs(all_sheet_keys(sheet), lo, hi)
+    pairs = key_pairs(all_sheet_keys(sheet), lo, hi, MAX_BULGE_GAP)
     if not pairs:
-        o["refuse"] = (f"no consecutive camera-key pair lies wholly inside "
-                       f"frames {lo}-{hi}, so there is nothing to compare the "
-                       f"interpolation against. Widen the window or point it "
-                       f"at a beat whose keys are stored in film time.")
+        o["refuse"] = (f"no consecutive camera-key pair closer than "
+                       f"{MAX_BULGE_GAP} frames lies wholly inside frames "
+                       f"{lo}-{hi}, so there is nothing to compare the "
+                       f"interpolation against. Widen the window, or emit keys "
+                       f"at a spacing this can judge.")
         return o
     o["refuse"] = None
     bulges = []
     for fa, fb, cv in pairs:
-        if cv < 1e-6:
-            continue                       # a hold; a bulge ratio is undefined
         mv = max(spd[f] for f in range(fa + 1, fb + 1) if f in spd)
+        if cv < HOLD_CHORD_MS:
+            # A HOLD. `mv / cv` is not a ratio here, it is a division by the
+            # measurement's own floor, and silently skipping these pairs would
+            # leave a hole exactly where a camera is supposed to be still — the
+            # one place a bezier wandering is most visible. Judged absolutely
+            # instead, and if a hold ever needs to be judged it will be by this
+            # branch and not by an omission.
+            if mv > HOLD_PEAK_MS:
+                o.setdefault("hold_fail", []).append(
+                    (fa, fb, round(cv, 4), round(mv, 4)))
+            continue
         bulges.append((mv / cv, fa, fb, cv, mv))
+    if not bulges:
+        o["refuse"] = (f"every key pair inside frames {lo}-{hi} is a hold "
+                       f"(chord under {HOLD_CHORD_MS} m/s). BULGE cannot be "
+                       f"computed and this gate will not report a ratio it did "
+                       f"not measure.")
+        return o
     bulges.sort(reverse=True)
     o["bulge"], o["bulge_f0"], o["bulge_f1"], o["bulge_chord_ms"], \
         o["bulge_peak_ms"] = bulges[0]
@@ -299,6 +352,11 @@ def verdict(o):
         if e > TOL_ARTEFACT_M:
             fails.append(f"the built path at frame {f} is {e:.4f} m from the "
                          f"key the sheet declares there")
+    for fa, fb, cv, mv in o.get("hold_fail", []):
+        fails.append(
+            f"HOLD: the keys at f{fa} and f{fb} are {cv:.4f} m/s apart — a "
+            f"hold — but the curve between them reaches {mv:.4f} m/s "
+            f"(bound {HOLD_PEAK_MS} m/s)")
     if o["bulge"] > TOL_BULGE:
         fails.append(
             f"BULGE: between the keys at f{o['bulge_f0']} and f{o['bulge_f1']} "
@@ -363,11 +421,18 @@ def census(path, sheet):
     hi = max(int(round(float(k["t"]) * FPS)) for k in ks)
     spd, acc, _rot = series(path, max(lo, 2), hi)
     rows = []
-    for fa, fb, cv in key_pairs(ks, lo, hi):
-        if cv < 1e-6:
+    for fa, fb, cv in key_pairs(ks, lo, hi, MAX_BULGE_GAP):
+        if cv < HOLD_CHORD_MS:
             continue
         mv = max(spd[f] for f in range(fa + 1, fb + 1) if f in spd)
         rows.append((mv / cv, fa, fb))
+    long_rows = []
+    for fa, fb, cv in key_pairs(ks, lo, hi):
+        if cv < HOLD_CHORD_MS or fb - fa <= MAX_BULGE_GAP:
+            continue
+        mv = max(spd[f] for f in range(fa + 1, fb + 1) if f in spd)
+        long_rows.append((mv / cv, fa, fb))
+    long_rows.sort(reverse=True)
     rows.sort(reverse=True)
     inside = [r for r in rows if r[1] >= W_LO and r[2] <= W_HI]
     outside = [r for r in rows if not (r[1] >= W_LO and r[2] <= W_HI)]
@@ -382,14 +447,14 @@ def census(path, sheet):
         if med > 1e-6:
             ar.append((abs(acc[f]) / med, f, acc[f]))
     ar.sort(reverse=True)
-    return {"bulge_rows": rows, "bulge_inside": inside,
+    return {"bulge_rows": rows, "bulge_long": long_rows, "bulge_inside": inside,
             "bulge_outside": outside, "accel_rows": ar,
             "n_pairs": len(rows), "frames": [lo, hi]}
 
 
 def print_census(c):
     print(f"=== CENSUS over frames {c['frames'][0]}-{c['frames'][1]}, "
-          f"{c['n_pairs']} key intervals")
+          f"{c['n_pairs']} key intervals of {MAX_BULGE_GAP} frames or less")
     print("  worst BULGE, top 8 anywhere:")
     for r, fa, fb in c["bulge_rows"][:8]:
         tag = "  <- inside the seam window" if (fa >= W_LO and fb <= W_HI) else ""
@@ -399,6 +464,10 @@ def print_census(c):
     print(f"  worst OUTSIDE the seam window {ob[0]:.3f} x (f{ob[1]}-{ob[2]})")
     print(f"  worst INSIDE  the seam window {ib[0]:.3f} x (f{ib[1]}-{ib[2]})")
     print(f"  the shipped bound is {TOL_BULGE:.2f} x")
+    print(f"  intervals LONGER than {MAX_BULGE_GAP} frames are reported, not "
+          f"gated — worst 5:")
+    for r, fa, fb in c["bulge_long"][:5]:
+        print(f"     {r:7.3f} x   f{fa}-{fb}  ({fb - fa} frames)")
     print("  worst LOCAL accel ratio, top 8 anywhere:")
     for r, f, a in c["accel_rows"][:8]:
         tag = "  <- inside the seam window" if W_LO <= f <= W_HI else ""
@@ -443,9 +512,12 @@ def selftest(sheet, live_path, pre_path):
 
     cases = [
         ("P1 shipped pre-fix path, seam window", pre, W_LO, W_HI, True, "FAIL"),
-        ("P2 beat 1 f600-700 with a +25 % one-frame overshoot injected",
-         inject_overshoot(live, 600, 700, sheet, 0.25), 600, 700, False, "FAIL"),
-        ("N1 beat 1 f600-700, untouched", live, 600, 700, False, "PASS"),
+        ("P2 beat 3 f900-1000 with a +25 % overshoot injected inside one "
+         "key interval",
+         inject_overshoot(live, 900, 1000, sheet, 0.25), 900, 1000, False,
+         "FAIL"),
+        ("N1 beat 3 f900-1000, untouched (3-10 m/s, keys ~4 frames apart)",
+         live, 900, 1000, False, "PASS"),
         ("N2 beat 5 f1100-1180, untouched (73 m/s)", live, 1100, 1180, False,
          "PASS"),
         ("N3 the current build, seam window", live, W_LO, W_HI, True, "PASS"),

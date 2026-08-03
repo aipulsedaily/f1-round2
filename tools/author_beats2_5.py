@@ -150,7 +150,23 @@ SEAM_FSTOP = 3.196
 SEAM_ALONG = -0.0143                                    # look_at x
 SEAM_ZOFF = 0.5985                                      # look_at z
 
-B1_LAST_T = 31.4
+# BEAT 1'S LAST KEY DOES NOT LAND ON A FRAME EITHER. It is declared at t = 31.4
+# and 31.4 x 24 = 753.6, and `build_camera_rig.py` puts its declared position on
+# frame 754 — the same rounding R2-063 found at the beat-5/6 hand-off, four
+# tenths of a frame again. The spline is therefore anchored at 754/24 and NOT at
+# 31.4: the camera is at [6.8, -4.4, 1.9] on frame 754 in the built rig, so a
+# spline that thinks it is there 0.4 of a frame earlier hands the first bridge
+# frame 0.0209 m of position error. MEASURED with the anchor at 31.4: frame 755
+# built at 1.7064 m/s against an authored 1.20, a one-frame blip with -13.7
+# m/s^2 behind it, 17.9x its own neighbourhood.
+#
+# THE FOUR SEAM INVARIANTS ARE UNAFFECTED. They are properties of the two KEYS,
+# and `beat1.camera_keys` still declares t = 31.4; this is the anchor time the
+# authoring spline uses, and it is chosen to match the artefact rather than the
+# declaration. `tools/seam_gate.py` measures both, which is how the difference
+# stays visible.
+B1_LAST_F = 754
+B1_LAST_T = B1_LAST_F / FPS
 B1_LAST_POS = [6.80, -4.40, 1.90]
 B1_LAST_LENS = 40.0
 B1_LAST_FSTOP = 3.2

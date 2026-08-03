@@ -1209,6 +1209,14 @@ def main(check=None):
             print(">> RE-RUN tools/author_beats2_5.py if beat 1's timing or the "
                   "beat durations changed, because beats 2-5 are splined "
                   "against them.")
+            if "seam_1_2" in out:
+                print(">> IN PARTICULAR the `seam_1_2` block just carried "
+                      "forward is the beat-1 -> beat-2 bridge (R2-064). Its "
+                      "first anchor IS beat 1's last key, transcribed, so if "
+                      "beat 1's last key moved, that block is now spliced to a "
+                      "key that no longer exists and the seam is worse than it "
+                      "was before the bridge. It is carried, not re-derived, "
+                      "because this file does not author it.")
         json.dump(out, open(dest, "w"), indent=1)
 
     print(f">> film {total:.1f} s = {out['total_frames']} frames @ 24 fps")

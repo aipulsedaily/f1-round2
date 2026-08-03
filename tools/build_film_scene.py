@@ -53,6 +53,69 @@ sys.path.insert(0, os.path.join(R2, "anim"))
 sys.path.insert(0, os.path.join(R2, "world"))
 
 
+SHIPPING_MD = os.path.join(
+    R2, "render/world/assembly/r2/SHIPPING.md")
+
+
+def declared_shipping_world(path=SHIPPING_MD):
+    """The name of the ship, READ FROM THE ONE PLACE THAT DECLARES IT.
+
+    THIS FILE USED TO HAVE NO OPINION ABOUT ITS OWN WORLD AT ALL. The world is
+    whatever blend Blender was launched on -- `bpy.data.filepath` -- so the
+    build silently accepted any assembly handed to it and said nothing. That is
+    not a hardcoded-path defect, it is the more dangerous one: there was no
+    value to go stale because there was no value.
+
+    MEASURED, 2026-08-03: `assembly7.blend` was built at 04:45 with the nine
+    `DR_*` dressing materials repaired. `film9.blend` was built at 11:39 and
+    `film10.blend` at 17:15 -- both AFTER the fixed world existed, both on
+    `assembly6`, and neither said a word about it. A third agent found it by
+    inspecting the finished blends, which is the only reason anyone knows.
+
+    So the declaration lives in `SHIPPING.md`, which is the file that actually
+    decides, and this reads it rather than keeping a second copy that could
+    disagree. If it cannot parse a declaration it RAISES -- an unreadable
+    declaration must not degrade into "anything goes", which is the state this
+    replaces.
+    """
+    import re
+    with open(path) as fh:
+        text = fh.read()
+    # the first `assemblyN.blend` inside a bold run, after the title
+    head = text.split("# WHICH ASSEMBLY IS THE SHIPPING WORLD", 1)[-1]
+    m = re.search(r"\*\*`(assembly\d+\.blend)`", head)
+    if not m:
+        raise SystemExit(
+            "REFUSING: cannot read the declared shipping world out of %s. The "
+            "film scene will not be built against an undeclared world." % path)
+    return m.group(1)
+
+
+def refuse_unless_world_is_declared(src, override):
+    """RAISE unless this build is on the declared ship, or says why not.
+
+    An override is legitimate -- `film10.blend` was deliberately built on
+    `assembly6` as the one-variable control that isolated the relight from the
+    world -- but it has to be STATED. A control and a stale build look identical
+    on disk; the only difference is that somebody meant one of them.
+    """
+    got = os.path.basename(src)
+    ship = declared_shipping_world()
+    if got == ship:
+        print(">> WORLD: %s, the ship declared in SHIPPING.md" % got)
+        return ship
+    if not override:
+        raise SystemExit(
+            "REFUSING: this is %s and SHIPPING.md declares %s. Two film scenes "
+            "have already shipped on a superseded world without anyone "
+            "noticing, because nothing checked. If this is deliberate -- a "
+            "control, an A/B -- pass --world-override with the reason."
+            % (got, ship))
+    print(">> WORLD: %s, NOT the declared ship (%s). Override reason: %s"
+          % (got, ship, override))
+    return ship
+
+
 def refuse_unless_levelled(scene):
     """The last thing before ANY save. Never inside a branch.
 
@@ -87,6 +150,10 @@ def parse_args():
                    default=os.path.join(R2, "telemetry/telemetry.csv"))
     p.add_argument("--spec", default=os.path.join(R2, "docs/circuit_spec.json"))
     p.add_argument("--out", required=True)
+    p.add_argument("--world-override", metavar="REASON", default=None,
+                   help="build on a world SHIPPING.md does not declare, and "
+                        "say why. Two film scenes shipped on a superseded "
+                        "world because nothing asked this question.")
     p.add_argument("--no-rig", action="store_true",
                    help="append the car only; leave the world's own camera")
     p.add_argument("--keep-r1-glass", action="store_true",
@@ -106,6 +173,11 @@ def main():
         raise SystemExit(
             "REFUSING: assembly5.blend is superseded and must not be rendered "
             "from — see render/world/assembly/r2/SHIPPING.md. Use assembly7.")
+    # ...and assembly5 stays a hard refusal that NO override reaches, because
+    # its BR_Transit_NorthWall is 3.333 m into the corridor the camera flies at
+    # 200 km/h. The check below is the softer one: the right world, or a stated
+    # reason for a different one.
+    refuse_unless_world_is_declared(src, a.world_override)
 
     scene = bpy.context.scene
     sheet = json.load(open(a.sheet))
