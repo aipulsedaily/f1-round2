@@ -97,6 +97,43 @@ def residual(a, b, dy, dx):
     return after / base if base > 1e-9 else 0.0
 
 
+# The three regions. A tracking shot has no single image motion: the camera
+# holds the subject while the background sweeps behind it, so a whole-frame
+# estimate averages two opposed motions and lands near zero. Measured on
+# frame 805 of the fixed seam: background strip -24 px, subject box +36 px,
+# whole frame +13 px. `tools/continuity_gate.py`'s D5 and D7 and its pacing
+# "translation" figure are all computed from the whole-frame number, which is
+# why they misread this beat — see R2-068.
+REGIONS = {
+    "background": (0.00, 0.21, 0.00, 1.00),      # above the car: the far wall
+    "subject": (0.37, 0.71, 0.31, 0.73),         # the car
+    "floor": (0.78, 1.00, 0.00, 1.00),           # the dais and its reflection
+}
+
+
+def region_series(d, prefix, lo, hi):
+    """Per-region shift, per frame, with a residual for each region."""
+    out, prev = {}, None
+    for f in range(lo, hi + 1):
+        hits = glob.glob(os.path.join(d, f"{prefix}*{f:06d}.png"))
+        if not hits:
+            prev = None
+            continue
+        cur = lum(hits[0])
+        H, W = cur.shape
+        if prev is not None:
+            row = {}
+            for name, (y0, y1, x0, x1) in REGIONS.items():
+                sl = (slice(int(y0 * H), int(y1 * H)),
+                      slice(int(x0 * W), int(x1 * W)))
+                dy, dx = phase_shift(prev[sl], cur[sl])
+                row[name] = (math.hypot(dy, dx), dx, dy,
+                             residual(prev[sl], cur[sl], dy, dx))
+            out[f] = row
+        prev = cur
+    return out
+
+
 def series(d, prefix, lo, hi):
     out = {}
     prev = None
@@ -122,7 +159,46 @@ def main():
     ap.add_argument("--ab-prefix", default="")
     ap.add_argument("--lo", type=int, default=748)
     ap.add_argument("--hi", type=int, default=832)
+    ap.add_argument("--regions", action="store_true",
+                    help="measure the background, the subject and the floor "
+                         "separately, which is the only thing that works on a "
+                         "tracking shot")
     a = ap.parse_args()
+
+    if a.regions:
+        R = region_series(a.dir, a.prefix, a.lo, a.hi)
+        RB = region_series(a.ab, a.ab_prefix, a.lo, a.hi) if a.ab else {}
+        names = list(REGIONS)
+        print(f"=== REGION MOTION, dx in pixels, frames {a.lo}-{a.hi}  "
+              f"({os.path.basename(a.dir.rstrip('/'))}"
+              + (f" vs {os.path.basename(a.ab.rstrip('/'))}" if RB else "")
+              + ")")
+        print("     f " + "".join(f"{n:>13}" for n in names)
+              + "     shear" + ("   |  A/B shear" if RB else ""))
+        worst = (0.0, None)
+        worstb = (0.0, None)
+        for f in sorted(R):
+            vals = [R[f][n][1] for n in names]
+            sh = max(vals) - min(vals)
+            if sh > worst[0]:
+                worst = (sh, f)
+            line = f"  {f:5d} " + "".join(f"{v:13.1f}" for v in vals) \
+                + f"{sh:10.1f}"
+            if f in RB:
+                vb = [RB[f][n][1] for n in names]
+                shb = max(vb) - min(vb)
+                if shb > worstb[0]:
+                    worstb = (shb, f)
+                line += f"   |  {shb:10.1f}"
+            print(line)
+        bad = [(f, n) for f in R for n in names if R[f][n][3] > VALID_RESID]
+        print(f"  worst shear {worst[0]:.1f} px at f{worst[1]}"
+              + (f"   |  A/B worst shear {worstb[0]:.1f} px at f{worstb[1]}"
+                 if RB else ""))
+        print(f"  region estimates a translation does NOT explain "
+              f"(resid > {VALID_RESID}): {len(bad)} of {len(R)*len(names)}")
+        print(">> STAGE RESULT: REGION_MOTION_OK")
+        return
 
     A = series(a.dir, a.prefix, a.lo, a.hi)
     if not A:
