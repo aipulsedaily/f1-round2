@@ -4088,3 +4088,97 @@ One bake per sweep point, one fracture plan, unknown run-to-run variance. Publis
 the result rather than discovered later: a second seed's plan is identical to within 1 %, so any
 variance that appears is **the solver's**, not the fracture's. Also open and undiagnosed: cluster
 B of the blow-up — **348 shards to 106 m/s with no measurable contact.**
+
+## R2-100 — `input_stamp.py` declared assembly6 and would have gone on declaring it
+
+Line 44 carried its own copy of "which world ships". **Fixed by removing the fact, not by
+updating it** — a second copy of a fact is the mechanism behind R2-071, R2-061 and this entry
+alike. New stdlib-only `tools/shipping_world.py` parses the **one** declaration in `SHIPPING.md`;
+`input_stamp` and `build_film_scene` both read it, the latter having had its own second parser
+which now delegates. It must be `bpy`-free because one caller runs inside Blender and one does
+not.
+
+`--selftest` carries four controls, **including one the old inline parser would have failed**:
+`text.split(TITLE, 1)[-1]` returns the *whole file* when the heading is absent. Verified live —
+old literal → `assembly6.blend`, new code → `assembly8.blend`.
+
+**And `SHIPPING.md` itself was untracked.** The blanket `render/` gitignore excluded it, so the
+project's single world declaration **had no version control at all**. Force-added. This is the
+same shape as the 52 untracked battery source files found the same day: *the file everyone
+treats as the source of truth is the one nobody checked was in git.*
+
+## R2-101 — the relief reports did NOT hold still, and the control had to be manufactured
+
+The premise handed down was that the two stale `_relief/*.json` files would not move, because
+their inputs had not changed. **Measured instead of accepted, and the premise was wrong:**
+
+```
+pont_girder    m_max 0.00272 -> 8.273     m_sum 0.00513 -> 20.141
+               Height-unlinked stages 5 -> 0
+gantry_truss   m_max 0.00586 -> 8.073
+```
+
+**Both sides had changed** — the witness blends were rebuilt on 08-03 and `relief_audit.py` /
+`itemkit.py` were edited the same day — and **no pre-08-03 tool exists in git**, so the obvious
+A/B was impossible. Rather than guess which side moved, the control was **manufactured**: put the
+R2-038 wiring back onto the *repaired* witness, run *today's* tool, and see whether it reproduces
+the shipped JSON's signature. It does, exactly — "no procedural texture found upstream of
+Height". Confirmed from the other direction by reading both witness generations' bump wiring: 8
+bumps, 8 Heights linked, 0 on `Thin Wall`.
+
+> **The artefact moved, not the instrument.**
+
+**Scope is 30 files, not 2.** Every witness blend under `render/gate_witness/` was rebuilt on
+08-03 between 12:19 and 18:46, and **every one of the 30 `_relief/*.json` predates its own
+witness.** Superseded reports kept as `*_SUPERSEDED_pre_R2038witness.json`.
+
+## R2-102 — assembly8: exactly one object of 28,781 moved, and it was predicted in writing first
+
+| | assembly7 | assembly8 |
+|---|---|---|
+| objects | 28,781 | 28,781 |
+| total verts | 1,282,465,803 | 1,282,465,803 |
+| **objects moved** | — | **1** |
+| bit-identical | — | 28,780 |
+
+`TER_Ground`: vertex count unchanged, bbox x / y / z-min **bit-identical**, **bbox z max
+38.004730 → 364.460632 (+326.4559 m)**, sum of z equivalent to +4.3111 m mean over 599,872
+vertices. Cause: `world/build_terrain.py` gained `far_horizon()` and the `HORIZON_*` block at
+09:07 — **five hours after assembly7 was built at 04:45.** It raises the far field to a 300 m
+crest beyond Dc 3600 m: z only, no x, no y, no count. Nothing inside 3600 m moved, so no barrier,
+surface, architecture, dressing or vegetation object moved and the circuit is untouched.
+
+**The prediction was written down at 19:16, while terrain was still building, and all four parts
+of it were met.** Predicting the shape of a diff before running it is the difference between a
+verification and a rationalisation.
+
+**Materials: 0 of 132 moved** — established with a *new* per-material graph fingerprint (every
+node, input default, link, node property), because the existing census only counts bump nodes and
+would have been blind to, say, a roughness change from `build_architecture`. Its control: the
+same script on assembly6→assembly7 returns **9 of 132, all `DR_*`**, and names the moves —
+reproducing `SHIPPING.md`'s table **from a script that had never been run.**
+
+**And the module build report showed 0 substantive differences** — only timings and the output
+path. That proves nothing, and that is the point:
+
+> **The build report was bit-identical while `TER_Ground` rose 326 metres.**
+
+## R2-103 — a quaternion rounding floor that reads as 0.162° of rotation
+
+`film11 → film12`: beats 1, 2, 3 and 4 are **positionally bit-identical (dp = 0.000000 m)**; beat
+5's worst is 40.458 m at f1442 (R2-085's T3 fix landing, and the stale focus track gone); beat
+6's worst is 1.050 m (R2-086).
+
+But the *unchanged* beats read 0.16–0.20° of rotation difference. **That is the instrument's own
+floor, not a movement.** The path JSON rounds quaternions to 6 dp, and `2·acos(|dot|)` amplifies
+that by a square root — **1e-6 of rounding reads as 0.162°.**
+
+An earlier agent chased exactly this artefact on frames whose quaternion components were
+**bit-identical**, and reported it as 0.069° of real rotation change. It is now documented in the
+tool so nobody re-derives it as a defect a third time.
+
+**film12 readback: zero of 37 fields differ from film11**, and the levelling identity was
+recomputed from film12's own `_sl_base` properties rather than quoted — base 3,737.113 × 2^3.628
+= 46,203.306 against 46,203.313 measured, residual **0.007 W**, worst per-lamp ratio
+12.363369363 vs 12.363368794 so no lamp hid inside the total. Both world guards fired correctly
+and **no `--world-override` was used**.
