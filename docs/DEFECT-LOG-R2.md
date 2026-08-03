@@ -4562,3 +4562,76 @@ written to protect.** Caught and restored; backup at
 
 **A flag that redirects some of a tool's outputs and not others is worse than one that redirects
 none** — it reads as isolation while writing outside the sandbox.
+
+## R2-132 — the pit-exit hole is 390.15 m², not 32.25, because the probe's window was the defect's edge
+
+The seam was recorded at **32.25 m²** since contract 1.1.0. It is **390.15 m²** — twelve times
+larger — and the reason it stayed small is the finding:
+
+> **`probe_pitexit` samples u 10–16. The defect runs u 10.50–40.40.** Its own reported `u_range`
+> maximum is **`15.999…`** — *its window edge.*
+
+**365.75 m² had never been looked at by anything.** The 32.25 figure was additionally a
+grid-resolution delta measured on `assembly3` at contract 1.1.0, so it was a small number about a
+small window on an old world, carried forward as though it described the defect.
+
+**A probe whose reported range maximum equals its own window boundary is clipping, and that
+number should always be read as suspicious.** Nothing in the report said "truncated"; the only
+evidence was that the maximum landed one part in ten thousand under the limit.
+
+**Three defects that had never been written up, now measured:**
+
+- **paint over void — 7.10 m²**, strokes laid where there is no substrate beneath them.
+- **paint floating up to 367.9 mm above its substrate.** `ARCH_Markings` is **one flat plane** —
+  all 7,166 vertices at z = 0.007 — so it cannot follow ground that rises or falls under it.
+- **the glass mouth's 100 mm sink — REFUTED.** Exactly **4950 = 110 × 45** samples, precisely
+  round-1 `Floor`'s footprint, and `build_film_scene` **hard-refuses** unless that Floor's top is
+  z = 0.000. This is the one of the four already closed by work since 1.1.1.
+
+**Fix proven on a test build**: 380.65 → **2.70 m²** unbuilt, 6.20 → **0.00 m²** paint-only, apron
+5881.5 → 6421.2 m². **Both gate failures are pre-existing** — established by building HEAD as a
+control *after* the agent had wrongly reported them as its own regression. The fix takes them
+2 → 1.
+
+**A world rebuild is owed.** No vertex has moved in `assembly8`, so `film12` and `film13` are both
+built on the defective world.
+
+## R2-133 — the line of sight to a region is not the camera's view-axis pitch
+
+The geometry says 390 m² of void. **The render shows continuous asphalt** — mean RGB
+(49.2, 48.1, 48.6), sd ~5, edge-energy 1.76, against known-good track at (51.3, 49.6, 48.8),
+sd ~6, 2.18. **Statistically the same material.**
+
+Two camera analyses disagreed by 21° on the same shot — one said −20.9° look-down, the other
+−42°. **−20.9° is right**, read from `film12_path.json` where the view-axis pitch holds −20.85°
+to −21.05° across the span; the −42° was wrong and was withdrawn by the agent that had relayed
+it. So the crops examined the right ground.
+
+**But the distinction that resolves the conflict is one neither analysis had made:**
+
+| frame | line-of-sight to ROI | distance | off-axis |
+|---|---|---|---|
+| f1098 | −14.4° | 52.5 m | 25.4° |
+| **f1104** — the frame all the pixel work was done on | **−18.7°** | 44.7 m | 17.8° |
+| f1112 | −28.3° | 33.1 m | 9.7° |
+| f1114 | −32.0° | 30.1 m | 11.4° |
+| f1119 — **never rendered** | **−45.9°** | 22.9 m | 27.2° |
+
+**The region sits below the view axis, so its line of sight is steeper than the camera's pitch —
+and f1104 is the *shallowest* view of it in the entire span.** The hole map casts straight down.
+*"No hole visible at 18.7°"* and *"383 m² of void measured at 90°"* are **not in conflict; they
+are answers to different questions.**
+
+**It was not turned into a waiver, and that is the right call** — *"a coherent explanation, not a
+measurement."* Inferring "therefore invisible" from frames that bracket the question is precisely
+the R2-091 failure, one entry of which was written earlier the same day.
+
+**What remains genuinely open is the commercially important half:** whether the void ever presents
+to a **beat** camera at all. The film shows this ground only from the ONER, at 14–46° line of
+sight, partly occluded by the pit wall — and the steepest frame available has never been rendered.
+**A 390 m² hole nobody can see from the only camera that exists is a different priority from one
+that reads on screen, and nobody yet knows which this is.**
+
+What *is* visible, at 8× on f1104: the pit-lane strokes **terminate with blunt, abrupt cut-off
+ends in open ground** — they do not fade, do not run off-screen, do not continue onto anything.
+That is defects 1 and 2 in pixels.
