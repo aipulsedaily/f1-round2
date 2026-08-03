@@ -3974,3 +3974,117 @@ count-then-pass-anyway shape at `tools/macro_audit.py:198`,
 `tools/presentation_normals.py:175`, `tools/build_telemetry.py:553`,
 `tools/dump_exposure.py:33`, `world/build_sky.py:1872`,
 `world/showroom_lighting.py:586`.
+
+## R2-092 — the wall opens on TWO parameters, and only one was ever tuned
+
+`t_bond_per_m` decides whether glass **leaves**. The **mullion thresholds** decide whether the
+opening is **wider than the car**. Across a 40× bond sweep (4000/1000/400/200/100), mullions
+3, 4, 6 and 7 never move more than **45 mm** — only mullion 5, the one the car hits head-on,
+responds at all. Every previous attempt tuned the parameter that could not widen the hole.
+
+`THRESH_MULLION_JOINT = 900` / `BASE = 1400`, in Bullet's units — impulse per substep, so at
+240 Hz × 8 substeps a threshold T is T × 1920 N sustained — are **1.73 MN and 2.69 MN**. A
+75 × 160 mm 6063-T6 extrusion fails in bending near **30 kN** and its base studs in shear near
+200 kN, i.e. T ≈ 16 and 104. **The shipped numbers were 55× and 13× too strong.**
+
+Shipped: `bond 100, mullion joint 40, base 120` — derived from the extrusion, not fitted to an
+outcome.
+
+| | shipped | now |
+|---|---|---|
+| connected hole | 0.65 × 1.65 m, 0.6 % vacated | **2.15 × 6.00 m** (3.80 × 6.00 bridged) |
+| bay 4 vacated | 0.0 % | **96.7 %** |
+| mullion 5 travel | 0.407 m | **1.215 m**, 2 segments detach |
+
+## R2-093 — the null passed because the wall had been made unbreakable, and the trade was negative
+
+Four 480-frame `--wake-all --no-car` bakes. **The null at mullion 40/120 is bit-identical to the
+null at 900/1400** — same 3 shards gone, same 2.257 m max, same 8.48 mm median. The mullion
+thresholds are never approached under dead load. 15/50 breaks it (bay 7 sags 510 mm), so the
+bracket is clean and 900/1400 sat far above it buying nothing.
+
+**And the trade did not buy what it cost.** Over the same 480 frames the shipped 4000 has a
+*worse* median displacement — **15.21 vs 8.48 mm** — and **264 shards over 50 mm against 100's
+5**. A stiffer network is harder for 24 sequential-impulse iterations to satisfy, not easier.
+All it ever bought was the binary "nothing over 0.25 m", **by making the glass unbreakable**.
+
+A `mobility` field was added to `null_verdict` so that **a null which passes because nothing can
+move is visible in the verdict** rather than indistinguishable from a null that passes because
+nothing *should* move.
+
+## R2-094 — the declared 9.6 m aperture was a measurement of a different object
+
+9.6 m is `|Y| ≤ 4.8`: **the span between the two bent mullions.** The glass is a different
+object and can reach at most **8.77 m**, and only by taking bays 2 and 7 that the same plan
+marks `retained`. The car is 2.005 m wide, so nothing loads mullions 4 and 6 at all.
+
+Testing the obvious lever — edge clamp 2.5 → 25, so the pane keeps hold of its frame — made the
+aperture **worse**: 18.4 % → 7.5 % vacated. **Every attempt to reach 9.6 m was chasing a number
+that describes the frame, not the hole.** Decision: correct the spec, ship the achievable
+aperture. A wider breach is an *authored* choice about releasing bays 2 and 7, made looking at a
+frame — not a threshold.
+
+## R2-095 — `camera_ranges()` was 6.5× wrong, so every pixel figure through it was too
+
+It priced bay 2 at **3.52 m**. The honest closest in-shot range after release is **22.87 m**.
+Every sag figure ever quoted through it — including the standing "7.1 px" description of this
+defect — was **6.5× too big**. Fixed at source and verified inside Blender.
+
+**And the target was wrong as well as the scale: the worst retained bay is 7, not 2** — 11.52 px
+at the recommended config, **10.75 px at the shipped one**. The wake-all null **has never met its
+1 px criterion at any threshold**; a broken instrument was hiding that. Nothing regressed; a
+long-standing failure simply became visible.
+
+## R2-096 — fragment energy was never coupled to aperture, and the headline speed was a downstream blow-up
+
+Mass-weighted peak speed across the whole bond sweep: **5.91 / 6.29 / 6.23 / 6.30 m/s.** Field
+kinetic energy is non-monotone — 100 is the *lowest*. Opening the wall does not make the debris
+faster.
+
+The 137 m/s peak **exists in the shipped bake too**. The fastest shard reaches 137.6 m/s at
+impact +0.49 s, at x = 17.26 while the car nose is at 23.25 — **six metres past it, travelling
+backwards**, with 66 shards peaking on the same frame. It is not the car proxy: probes at nose,
+rear wing and airbox never exceed 19.90 m/s (controls: origin probe exact, rotation zeroed
+agrees to 4e-13).
+
+The honest number is **launch speed — 1.43× the impactor at the 99th percentile by mass**. The
+circulating "2.4×" was a max over 3,948 bodies dominated by the blow-up. **Larger than first
+recorded: 828 shards exceed 60 m/s, 661 of them on screen** — but the shipped threshold is the
+*worst* case at 7.6× the bond-100 population, so the config change **reduces** it.
+
+## R2-097 — the shatter-and-un-shatter: the wall visibly un-breaks on camera
+
+The slab field at f0866 was hypothesised to be an intact-mesh/fractured-mesh swap with both
+present for ~12 frames. **Falsified**: `apply_breach.py` hides the pane at `r = min(release)`
+over its bay and shows every shard of that bay at the **same** `r`, read off `breach_film.npz`.
+**No frame renders both.** The only anomaly is 9 shards appearing one frame late.
+
+It is the shard field. Projecting the bay rectangles onto the render shows the slabs lie
+**exactly inside destroyed bays 3/4/5 and stop at their boundaries**. Bay 4's shards are 559 mm
+from home, spread through 1.4 m of depth, displaced 259 px median on screen; bay 7 shows 5.7 mm
+and 1.3 px.
+
+**At bond 4000 the pane bulges as a sheet and springs back.** Bay 4's depth offset is **483 mm at
+f866 and 17 mm by f900**; its median normal rotation goes **80.7° at f866 and back to 9.9° at
+f900**. *The field un-rotates.* **In a film with zero cuts, the wall visibly un-breaks.** This is
+not a rendering artefact — it is the defect the config change fixes, seen from the camera.
+
+## R2-098 — measuring departure by depth, and by count instead of area
+
+Two figures were wrong before any control caught them, and both are the same mistake in
+different clothes: **depth is not a departure measure for a field that has already left**, and
+**"gone by count" is not "gone by area"** — bay 5 is 87 % gone by count and **13.2 %** by area.
+
+Three of the successor's own controls also failed first, including one that called a shard
+"never moved" **when it had left at 18 m/s and landed back within 2.5e-7 m of home.** Net
+displacement cannot distinguish "stationary" from "returned".
+
+`sim/aperture.py` carries the trap that motivated it: the **old** aperture measure reports a
+**13.01 × 5.79 m opening from two shards.**
+
+## R2-099 — the sweep is single-seeded, and says so
+
+One bake per sweep point, one fracture plan, unknown run-to-run variance. Published as a limit of
+the result rather than discovered later: a second seed's plan is identical to within 1 %, so any
+variance that appears is **the solver's**, not the fracture's. Also open and undiagnosed: cluster
+B of the blow-up — **348 shards to 106 m/s with no measurable contact.**
