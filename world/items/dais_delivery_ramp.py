@@ -282,7 +282,52 @@ TOE_TIP_EMBED = 0.0035          # the tip laps 3.5 mm INTO the floor slab
 CHAMFER_W = 0.0060              # nominal 45 deg arris chamfer
 CHAMFER_WEAR = (0.0040, 0.0110)  # the manifest's "edge chamfer wear" axis
 
-GRIP_PITCH = 0.0280             # milled transverse non-slip grooves
+# --- the tread field ---------------------------------------------------------
+# THE FIRST MACRO WAS REJECTED AND THIS IS WHY. Grooves at one pitch across the
+# whole 3.0 x 2.8 m plate render as CORDUROY: a periodic stripe with no beginning,
+# no end and no reason, which is a texture wearing an object's clothes. A real
+# machined ramp has a tread FIELD with plain margins the tool cannot reach, plain
+# bands at the head and toe where the plate is clamped, and it is made of stock
+# panels with joints between them. Those three things are what stop the pattern
+# from being wallpaper, and all three are geometry.
+TREAD_MARGIN_Y = 0.115          # plain machined margin along each long edge
+TREAD_HEAD_M = 0.090            # plain band behind the head scribe
+TREAD_TOE_M = 0.075             # plain band at the toe
+TREAD_FEATHER = 0.009           # how fast the field closes; a real cutter's runout
+
+PANEL_JOINTS = (4.360, 5.020, 5.680)   # transverse plate joints, stock widths
+JOINT_W = 0.0032
+JOINT_D = 0.0021
+JOINT_CH = 0.0009
+
+# THE TREAD IS A LATTICE, NOT A SET OF STRIPES, AND THE GATE IS WHAT DECIDED IT.
+# The first build cut TRANSVERSE grooves only — along y, which is right for grip
+# on a 13.1 % fall. `item_gate` check 7 rejected it:
+#
+#   relief_reads_as_lip_and_shade: lip-and-shadow dip -0.1234 ... The features on
+#   this surface are single-value marks: they have no sunward lip and no lee
+#   shadow, which is how a printed decal behaves and not how a physical object does.
+#
+# The cause is geometric and it is not a matter of depth. `world_contract.SUN_DIR`
+# is (0.5178, -0.8278, 0.2159): the sun's horizontal direction is 84.8 % along y
+# and only 53.1 % along x. A groove that runs along y is 32 deg off PARALLEL to
+# the light, so the light runs down it instead of across it — the effective sun
+# elevation across such a groove is atan(0.2159/0.531) = 22.1 deg, not 12.47, and
+# the shadow it throws is 2.46x its depth instead of 4.52x. Cutting it deeper
+# would only have made a deeper groove that still did not shade.
+#
+# The second family runs along x, where the perpendicular component is 0.848 and
+# the effective elevation is atan(0.2159/0.848) = 14.3 deg — essentially the full
+# 4.5x amplifier. A rectangular milled lattice is also simply what a fabricator
+# does on a plate this size: the transverse cuts stop the tyre sliding down the
+# fall and the longitudinal cuts key it laterally and let water off.
+#
+# It is a lattice and not a diagonal cross-hatch for one reason: a diagonal
+# family aligns with neither grid axis, so a 2.0 mm chamfer wall would need ~1 mm
+# sampling in BOTH directions over 8.5 m2 — about 8.5 M vertices for the deck
+# alone. Two axis-aligned families cost fine stations on one axis each.
+GRIP_PITCH = 0.0280             # milled TRANSVERSE non-slip grooves (along y)
+GRIP2_PITCH = 0.0340            # milled LONGITUDINAL grooves (along x)
 GRIP_WIDTH = 0.0070
 GRIP_DEPTH = 0.0016
 # The wall angle is chosen by the RELIEF LAW, not by a machinist's preference:
@@ -292,8 +337,12 @@ GRIP_DEPTH = 0.0016
 # inside the band and still unmistakably an edge. Checked in selftest [6].
 GRIP_CHAMFER = 0.0020
 
-WAVE_LAM = 0.180                # rolled-plate waviness, one-sided (downward)
-WAVE_PP = 0.0018
+# Rolled-plate waviness, one-sided (downward). THE AMPLITUDE IS DERIVED FROM THE
+# RADIANCE, not chosen in millimetres — this is a GEOMETRY stage and section 4a's
+# "CHECK BOTH LAYERS" is about exactly this: the fold-field geometry that was
+# 2.32 pp while the shader beside it had been corrected to 0.28.
+WAVE_LAM = 0.260
+WAVE_PP = K.relief_amplitude_for(0.22, WAVE_LAM) * 1e-3
 
 FASCIA_SETBACK = 0.0220         # the shadow reveal under the deck edge
 FASCIA_T = 0.0030
@@ -308,7 +357,38 @@ TYRE_HALF_F, TYRE_HALF_R = 0.150, 0.200
 # 2.  THE MACHINED SURFACE — every stage subtractive, and audited as such
 # ===========================================================================
 
-def grip_depth(x):
+def _slot(x, centres, width, depth, chamfer, phase=None):
+    """A milled slot lattice or a list of slots: depth BELOW the land, >= 0."""
+    x = np.asarray(x, dtype=np.float64)
+    half, flat = 0.5 * width, 0.5 * width - chamfer
+    if isinstance(centres, float):                  # a periodic lattice
+        p = DAIS_LIP_X if phase is None else phase
+        a = np.abs(np.mod(x - p, centres) - 0.5 * centres)
+    else:                                           # named stations
+        a = np.full(np.shape(x), 1e9)
+        for c in centres:
+            a = np.minimum(a, np.abs(x - c))
+    return np.where(a <= flat, depth,
+                    np.where(a >= half, 0.0, depth * (half - a) / chamfer))
+
+
+def tread_field(x, y):
+    """1 inside the machined tread field, 0 on the plain margins. Smooth.
+
+    The field is inset from every boundary of the plate: `TREAD_MARGIN_Y` from
+    the two long edges, `TREAD_HEAD_M` behind the scribed nose and
+    `TREAD_TOE_M` before the toe. It closes over `TREAD_FEATHER`, which is a
+    cutter's runout, not a fade.
+    """
+    r = np.hypot(x, y)
+    d = np.minimum(
+        np.minimum(HALF_W - TREAD_MARGIN_Y - np.abs(y),
+                   r - NOSE_R - TREAD_HEAD_M),
+        RAMP_FOOT_X - TREAD_TOE_M - x)
+    return K.smoothstep(0.0, TREAD_FEATHER, d)
+
+
+def grip_depth(x, y=0.0):
     """Milled transverse grip grooves. Returns metres BELOW the land, >= 0.
 
     Transverse and not diagonal for two reasons and both are real: a 13.1 %
@@ -316,16 +396,31 @@ def grip_depth(x):
     groove that runs along y can be resolved by extra grid lines in x alone,
     which buys a 1.0 mm arris for a 4.0 mm grid instead of tessellating 8.5 m2
     at 1 mm to catch a diagonal.
+
+    GATED BY THE TREAD FIELD AND POLISHED IN THE WHEEL TRACKS. One launch at
+    full throttle does not wear a groove away, but a delivery ramp that has been
+    used has its tread rounded where the tyres cross and crisp where they do
+    not, and that difference is the single strongest cue that the object has a
+    history rather than a texture.
     """
     x = np.asarray(x, dtype=np.float64)
-    u = np.mod(x - DAIS_LIP_X, GRIP_PITCH) - 0.5 * GRIP_PITCH
-    a = np.abs(u)
-    half = 0.5 * GRIP_WIDTH
-    flat = half - GRIP_CHAMFER
-    d = np.where(a <= flat, GRIP_DEPTH,
-                 np.where(a >= half, 0.0,
-                          GRIP_DEPTH * (half - a) / GRIP_CHAMFER))
-    return d
+    y = np.asarray(y, dtype=np.float64) * np.ones_like(x)
+    ay = np.abs(y)
+    polish = (K.smoothstep(TRACK_R - TYRE_HALF_R - 0.07, TRACK_R - TYRE_HALF_R, ay)
+              * K.smoothstep(TRACK_F + TYRE_HALF_F + 0.07,
+                             TRACK_F + TYRE_HALF_F, ay))
+    # MAX, NOT SUM. Two milling passes over the same stock cut the deeper of the
+    # two; adding them would make every crossing 3.2 mm deep, which is a hole,
+    # not a lattice.
+    d = np.maximum(
+        _slot(x, GRIP_PITCH, GRIP_WIDTH, GRIP_DEPTH, GRIP_CHAMFER),
+        _slot(y, GRIP2_PITCH, GRIP_WIDTH, GRIP_DEPTH, GRIP_CHAMFER, phase=0.0))
+    return d * tread_field(x, y) * (1.0 - 0.42 * polish)
+
+
+def joint_depth(x):
+    """The butt joints between the plate's stock panels. Full width, always."""
+    return _slot(x, PANEL_JOINTS, JOINT_W, JOINT_D, JOINT_CH)
 
 
 def plate_waviness(x, y):
@@ -336,15 +431,27 @@ def plate_waviness(x, y):
     hangs BELOW it — the plate is machined out of stock whose high points are the
     declared plane, which is also how a real one is skimmed.
     """
-    w = (0.5 - 0.5 * np.cos(2.0 * np.pi * x / WAVE_LAM)) * \
-        (0.62 + 0.38 * np.cos(2.0 * np.pi * y / (WAVE_LAM * 2.7) + 0.9))
-    w = w + 0.35 * K.fbm2(x / 0.42, y / 0.42, seed=SEED + 11, oct=3)
-    # NORMALISED SO THE CRESTS TOUCH ZERO. Without the -0.35 the field's floor
-    # is the fbm's own minimum and the whole plate sits ~0.05 mm below the
-    # declared envelope -- harmless at 0.15 px, but it would mean the wheel
-    # never actually rests on anything, and this module's one claim is that it
-    # does.
-    return WAVE_PP * np.clip(w - 0.35, 0.0, 1.0) / 1.0
+    # NOT A PRODUCT OF COSINES. The first version multiplied a 180 mm cosine in
+    # x by a 486 mm cosine in y, and a 1 mm/px plan view of the machined relief
+    # showed it immediately for what it is: a regular EGG-CRATE quilt across
+    # 8.5 m2 of plate. Rolling waviness has no period; it is the mill's own
+    # slow wander, and two octaves of value noise are what that looks like.
+    # The plan view is `/tmp/tread_plan.png`'s method and it costs no render --
+    # look at a field before you build 4 M triangles out of it.
+    w = (0.72 * K.fbm2(x / WAVE_LAM, y / (WAVE_LAM * 1.35),
+                       seed=SEED + 11, oct=3)
+         + 0.28 * K.fbm2(x / (WAVE_LAM * 3.1), y / (WAVE_LAM * 2.6),
+                         seed=SEED + 17, oct=2))
+    # NORMALISED SO THE CRESTS TOUCH ZERO: the declared plane is the envelope,
+    # so the field's MAXIMUM must be 0 and everything else must hang below it.
+    # `K.fbm2` does not span [-1, 1] and assuming it did left the whole plate
+    # 0.17 mm low, which means the wheel never rests on anything — this module's
+    # one claim. The two constants are MEASURED over this plate's own domain at
+    # 2 mm (1.6 M samples): the field runs 0.14892 .. 0.82884. `selftest [3]`
+    # re-measures the result rather than trusting them.
+    W_LO, W_HI = 0.14892, 0.82884
+    w = np.clip((w - W_LO) / (W_HI - W_LO), 0.0, 1.0)
+    return WAVE_PP * (1.0 - w)
 
 
 def edge_relief(x, y):
@@ -394,7 +501,7 @@ def relief(x, y):
     every emitted vertex, with a negative control that perturbs one sample by
     -0.1 mm (i.e. 0.1 mm of LIFT) and requires the check to notice.
     """
-    return (grip_depth(x) + plate_waviness(x, y)
+    return (grip_depth(x, y) + joint_depth(x) + plate_waviness(x, y)
             + edge_relief(x, y) + scuff_relief(x, y))
 
 
@@ -416,48 +523,62 @@ def under_z(x, y=0.0):
 # 3.  THE GRIDS — non-uniform, because the features decide the sampling
 # ===========================================================================
 
+def _densify(a0, a1, marks, coarse):
+    """Stations: every mark, plus `coarse` fill between them. Sorted, unique."""
+    marks = sorted(m for m in marks if a0 < m < a1)
+    out, prev = [a0], a0
+    for m in marks:
+        if m - prev > coarse * 1.4:
+            n = int(math.ceil((m - prev) / coarse))
+            out += list(np.linspace(prev, m, n + 1)[1:-1])
+        out.append(m)
+        prev = m
+    if a1 - prev > coarse * 1.4:
+        n = int(math.ceil((a1 - prev) / coarse))
+        out += list(np.linspace(prev, a1, n + 1)[1:-1])
+    out.append(a1)
+    return np.array(sorted(set(np.round(out, 7))))
+
+
+def _slot_marks(a0, a1, pitch, phase, width, chamfer):
+    """The stations a periodic slot family needs: both arrises and both walls."""
+    half, ch = 0.5 * width, chamfer
+    k0 = int(math.floor((a0 - phase) / pitch)) - 1
+    k1 = int(math.ceil((a1 - phase) / pitch)) + 1
+    marks = []
+    for k in range(k0, k1 + 1):
+        c = phase + (k + 0.5) * pitch
+        marks += [c - half, c - half + ch, c - 0.5 * (half - ch),
+                  c, c + 0.5 * (half - ch), c + half - ch, c + half]
+    return marks
+
+
 def grip_axis(x0, x1, coarse=0.0040):
     """x stations: `coarse` on the lands, ~1.0 mm through every groove wall.
 
-    Uniform sampling fine enough for a 1.2 mm chamfer would put 8.5 m2 of plate
+    Uniform sampling fine enough for a 2.0 mm chamfer would put 8.5 m2 of plate
     at 1 mm and cost 8.5 M vertices for a surface that is genuinely flat between
     the grooves. This puts the vertices where the arrises are.
     """
-    xs = [x0]
-    # walk the groove lattice, emitting land stations and groove stations
-    k0 = int(math.floor((x0 - DAIS_LIP_X) / GRIP_PITCH)) - 1
-    k1 = int(math.ceil((x1 - DAIS_LIP_X) / GRIP_PITCH)) + 1
-    half, ch = 0.5 * GRIP_WIDTH, GRIP_CHAMFER
-    marks = []
-    for k in range(k0, k1 + 1):
-        c = DAIS_LIP_X + (k + 0.5) * GRIP_PITCH
-        marks += [c - half, c - half + ch, c - 0.5 * (half - ch),
-                  c, c + 0.5 * (half - ch), c + half - ch, c + half]
-    marks = [m for m in marks if x0 < m < x1]
-    marks.sort()
-    prev = x0
-    for m in marks:
-        gap = m - prev
-        if gap > coarse * 1.4:
-            n = int(math.ceil(gap / coarse))
-            xs += list(np.linspace(prev, m, n + 1)[1:-1])
-        xs.append(m)
-        prev = m
-    gap = x1 - prev
-    if gap > coarse * 1.4:
-        n = int(math.ceil(gap / coarse))
-        xs += list(np.linspace(prev, x1, n + 1)[1:-1])
-    xs.append(x1)
-    return np.array(sorted(set(np.round(xs, 7))))
+    marks = _slot_marks(x0, x1, GRIP_PITCH, DAIS_LIP_X, GRIP_WIDTH, GRIP_CHAMFER)
+    # the panel joints get their own stations: 3.2 mm is under one coarse cell
+    jh, jc = 0.5 * JOINT_W, JOINT_CH
+    for c in PANEL_JOINTS:
+        marks += [c - jh, c - jh + jc, c, c + jh - jc, c + jh]
+    return _densify(x0, x1, marks, coarse)
 
 
-def edge_axis(y0, y1, coarse=0.0040, fine=0.0008, band=0.0130):
-    """y stations: `fine` inside `band` of either edge, `coarse` between."""
-    ys = [np.linspace(y0, y0 + band, int(band / fine) + 1),
-          np.linspace(y0 + band, y1 - band,
-                      max(2, int((y1 - y0 - 2 * band) / coarse) + 1)),
-          np.linspace(y1 - band, y1, int(band / fine) + 1)]
-    return np.array(sorted(set(np.round(np.concatenate(ys), 7))))
+def edge_axis(y0, y1, coarse=0.0055, fine=0.0008, band=0.0130):
+    """y stations: the LONGITUDINAL groove walls, plus `fine` at the two arrises.
+
+    The second groove family is what makes check 7 read (see the GRIP2_PITCH
+    note), and a family whose walls fall between grid lines is a family that
+    does not exist in the mesh however carefully the field is written.
+    """
+    marks = _slot_marks(y0, y1, GRIP2_PITCH, 0.0, GRIP_WIDTH, GRIP_CHAMFER)
+    marks += list(np.linspace(y0, y0 + band, int(band / fine) + 1))
+    marks += list(np.linspace(y1 - band, y1, int(band / fine) + 1))
+    return _densify(y0, y1, marks, coarse)
 
 
 def deck_grid():
@@ -577,9 +698,17 @@ def box(c, half, chamfer=0.0025):
     for i in range(m):
         j = (i + 1) % m
         Q.append((i, j, m + j, m + i))
-    for i in range(1, m - 1):                      # caps
-        Q.append((0, i, i + 1, 0))
-        Q.append((m, m + i + 1, m + i, m))
+    # THE CAPS ARE THREE QUADS, NOT A FAN OF DEGENERATE ONES. The first draft
+    # wrote `(0, i, i+1, 0)`, a quad with a repeated index and therefore zero
+    # area on one edge; `tools/winding_audit.py` found 4 pieces of DDR_Frame
+    # facing inward because of it. An octagon splits into three quads exactly.
+    # `sec` runs counter-clockwise in (y, z), i.e. counter-clockwise seen from
+    # +x, so a face in that order has its normal along +x. The cap at -hx must
+    # therefore be REVERSED and the cap at +hx must not: writing it the other
+    # way round put 16 inconsistent edge pairs in every one of the 153 boxes.
+    for a, b_, c_, d_ in ((0, 1, 2, 3), (0, 3, 4, 5), (0, 5, 6, 7)):
+        Q.append((d_, c_, b_, a))
+        Q.append((m + a, m + b_, m + c_, m + d_))
     return np.array(V, float), np.array(Q, int)
 
 
@@ -677,11 +806,15 @@ def build_fascia(side):
         Q.append((a, a + m, b + m, b))
         a, b = i * m + m - 1, i * m + m - 1 + n
         Q.append((a, b, b + m, a + m))
-    # end caps
-    for i in (0, len(xs) - 1):
+    # END CAPS, AND THE TWO ENDS WIND OPPOSITE WAYS. Giving both the same order
+    # leaves one of them facing into the panel: `winding_audit` reported 10
+    # inconsistent edge pairs per fascia, which is exactly the two caps' four
+    # shared edges plus the section's returns.
+    for i, rev in ((0, False), (len(xs) - 1, True)):
         for j in range(m - 1):
             a = i * m + j
-            Q.append((a, a + n, a + n + 1, a + 1))
+            q = (a, a + n, a + n + 1, a + 1)
+            Q.append(q[::-1] if rev else q)
     V = np.array(V, float)
     Q = np.array(Q, int)
     if side < 0:
@@ -746,12 +879,25 @@ PLATE_BUMPS = (
 
 
 def mat_plate():
-    """Anodised aluminium tooling plate, in the dais's own family.
+    """MILL-FINISH ALUMINIUM TOOLING PLATE. Not the turntable's black anodise.
 
-    MEASURED off the shipped showroom: `TurntableTop` is base 0.048/0.049/0.053,
-    metallic 0.86, roughness ramped. This is the same alloy and the same
-    anodising bath — a delivery ramp made for one turntable matches it — with
-    the finish coarser, because a running surface is not a display top.
+    THE FIRST VERSION OF THIS MATERIAL WAS REJECTED BY THE GATE AND BY EYE, AND
+    THE REASON IS WORTH KEEPING. It copied `TurntableTop`, measured off the
+    shipped showroom at base 0.048/0.049/0.053 with metallic 0.86 — a display
+    top, made to be dark and to mirror an interior rig of 61 lights. Under the
+    contract's 12.47 deg exterior sun that surface has nothing to reflect but
+    sky: `item_gate` measured **86 % of the subject crushed to black** and the
+    macro came back a flat blue-grey sheet in which none of the milled relief
+    could be seen at all. Every millimetre of geometry in this file was invisible
+    because of one albedo.
+
+    The physical answer is also the right one. A DELIVERY RAMP IS NOT A DISPLAY
+    TOP. It is a working piece that gets driven over, and black anodise on a
+    running surface polishes to grey in a week — nobody specifies it. Natural
+    mill-finish / clear-anodised tooling plate is what such a thing is made of,
+    it reads as aluminium instead of as a dark shape, and it gives the tyre scuff
+    and the groove dirt somewhere dark to be. The ramp reading as a service item
+    against the turntable's furniture-black is a distinction, not a clash.
     """
     t = K.NT(PFX + "Plate")
     P = t.object_coords()
@@ -761,28 +907,40 @@ def mat_plate():
     fall = t.attr("fall")
 
     # ---- colour ------------------------------------------------------------
+    # Clear-anodised 6082: near-neutral, a touch cool, with the mill's own
+    # roll-direction banding still faintly in it.
     blotch = t.noise(P, wavelength_m=0.075, detail=6.0, rough=0.5)
-    base = t.ramp(blotch, [(0.30, (0.0455, 0.0468, 0.0512)),
-                           (0.62, (0.0570, 0.0582, 0.0625)),
-                           (0.95, (0.0685, 0.0692, 0.0730))])
-    # the anodising is thinner on the milled groove walls: warmer, greyer
-    milled = t.cmix(groove, base, (0.0930, 0.0905, 0.0862))
+    base = t.ramp(blotch, [(0.28, (0.5180, 0.5245, 0.5340)),
+                           (0.62, (0.5720, 0.5780, 0.5860)),
+                           (0.95, (0.6180, 0.6230, 0.6290))])
+    # a milled groove wall is freshly cut metal: brighter and less oxidised
+    milled = t.cmix(groove, base, (0.6620, 0.6660, 0.6700))
+    # ... and then it fills with dust and rubber dust, which is the opposite
+    dirt = t.vor(P, wavelength_m=0.013, feature="F1")
+    dirtm = t.math("MULTIPLY", groove, t.maprange(dirt, 0.30, 0.80, 0.25, 1.0))
+    milled = t.cmix(dirtm, milled, (0.1450, 0.1330, 0.1180))
     # rubber laid down by one launch, inside the tracks only
     rub = t.noise(t.vmath("SCALE", P, scale=3.4), wavelength_m=0.020, detail=7.0)
     rubm = t.math("MULTIPLY", track, t.maprange(rub, 0.34, 0.78, 0.0, 1.0))
     rubm = t.math("MULTIPLY", rubm, t.maprange(fall, 0.05, 0.55, 0.35, 1.0))
-    col = t.cmix(rubm, milled, (0.0208, 0.0196, 0.0192))
-    # bright metal where the arris has been worn back through the anodising
+    col = t.cmix(rubm, milled, (0.0640, 0.0600, 0.0585))
+    # burnished bright where the arris has been rubbed back
     wearn = t.noise(P, wavelength_m=0.028, detail=5.0)
     wearm = t.math("MULTIPLY", edge, t.maprange(wearn, 0.42, 0.74, 0.0, 1.0))
-    col = t.cmix(wearm, col, (0.2650, 0.2670, 0.2720))
+    col = t.cmix(wearm, col, (0.7250, 0.7290, 0.7340))
 
     # ---- roughness ---------------------------------------------------------
     rgh = t.noise(P, wavelength_m=0.016, detail=8.0, rough=0.62)
-    rgh = t.maprange(rgh, 0.30, 0.72, 0.245, 0.395)
-    rgh = t.fmix(groove, rgh, t.math("ADD", rgh, 0.150))
-    rgh = t.fmix(rubm, rgh, t.math("ADD", rgh, 0.235))
-    rgh = t.fmix(wearm, rgh, t.math("SUBTRACT", rgh, 0.105))
+    # MILL FINISH IS NOT A MIRROR. At 0.300-0.455 with metallic 1.0 the first
+    # 4K macro came back with p99 = 1.000 and 2 % of the frame clipped: the
+    # plate was specularly reflecting the sun disc straight down the lens. A
+    # rolled-and-milled aluminium plate is satin, and satin is also what lets
+    # the milled arrises read as lip-and-shade instead of as one blown highlight.
+    rgh = t.maprange(rgh, 0.30, 0.72, 0.360, 0.520)
+    rgh = t.fmix(groove, rgh, t.math("ADD", rgh, 0.135))
+    rgh = t.fmix(dirtm, rgh, t.math("ADD", rgh, 0.190))
+    rgh = t.fmix(rubm, rgh, t.math("ADD", rgh, 0.245))
+    rgh = t.fmix(wearm, rgh, t.math("SUBTRACT", rgh, 0.145))
 
     # ---- relief: FOUR STAGES, STATED AS RADIANCE ---------------------------
     nrm = None
@@ -801,7 +959,7 @@ def mat_plate():
         nrm = t.bump(h, 1.0, normal=nrm, modulation_pp=m, wavelength_m=lam,
                      height_pp=hpp)
 
-    t.principled_out(base_color=col, metallic=0.86, roughness=rgh,
+    t.principled_out(base_color=col, metallic=1.0, roughness=rgh,
                      anisotropic=0.55, normal=nrm)
     return t.m
 
@@ -811,8 +969,12 @@ def mat_fascia():
     t = K.NT(PFX + "Fascia")
     P = t.object_coords()
     n1 = t.noise(P, wavelength_m=0.140, detail=5.0)
-    col = t.ramp(n1, [(0.32, (0.0620, 0.0632, 0.0668)),
-                      (0.70, (0.0790, 0.0800, 0.0842))])
+    # The cheeks ARE anodised dark, which is the point: the fascia is trim and
+    # belongs to the showroom's furniture, the deck is a working surface and
+    # belongs to the workshop. Putting the two on one object is what stops the
+    # ramp reading as a single extruded lump.
+    col = t.ramp(n1, [(0.32, (0.0930, 0.0948, 0.1002)),
+                      (0.70, (0.1185, 0.1200, 0.1263))])
     # the dust line every vertical panel in a showroom has along its foot
     z = t.sep(P, 2)
     dust = t.maprange(z, -0.02, 0.10, 1.0, 0.0)
@@ -918,14 +1080,31 @@ def build(scene=None, test_scene=False, samples=256, stats=None):
         stand = K.coll(COLL + "/Standins", root)
         K.contract_sun(PFX, scene=scene, coll_=root)
         _standin_floor(stand, m_steel)
-        # the macro: the manifest's own distance and lens, asserted by macro_rig
-        aim = (5.00, 0.0, float(top_z(5.00)))
-        d = FILMED_AT_M / math.sqrt(3.0)
-        loc = (aim[0] - d * 0.55, aim[1] - d * 1.35, aim[2] + d * 0.80)
-        v = np.array(loc) - np.array(aim)
-        loc = tuple(np.array(aim) + v / np.linalg.norm(v) * FILMED_AT_M)
+        # THE MACRO LOOKS AT THE EDGE, NOT DOWN THE PLATE. The first framing
+        # aimed at the centreline from a shallow angle and returned 3840 x 2160
+        # pixels of grazing tread and nothing else — no chamfer, no reveal, no
+        # fascia, no wedge, no silhouette. At 1.4 m on a 35 mm lens the whole
+        # 0.340 m rise is 907 px, so the shot that carries the object is the
+        # three-quarter view along its edge, where the arris chamfer, the 22 mm
+        # fascia reveal, the tread field's plain margin and the fall of the
+        # wedge are all in one frame.
+        aim = (4.80, HALF_W - 0.060, float(top_z(4.80)) - 0.010)
+        v = np.array([-0.30, 0.86, 0.41], dtype=float)
+        v /= np.linalg.norm(v)
+        loc = tuple(np.array(aim) + v * FILMED_AT_M)
         K.macro_rig(PFX + "CAM_MACRO_4K", loc, aim, LENS_MM, cams, scene=scene,
                     samples=samples, want_distance_m=FILMED_AT_M)
+        # A second view, the head joint, where the turntable clearance, the
+        # scribed nose, the 0.340 landing and the break at x = 3.700 all meet.
+        # Not the deliverable. The first attempt stood 0.95 m off on a 50 mm
+        # lens and returned nothing but tread: at that distance the frame is
+        # 0.68 m wide and the joint is 0.24 m of it. 1.60 m on 35 mm frames
+        # 1.65 m, which holds the nose, the landing and the first metre of fall.
+        aim2 = (DAIS_LIP_X - 0.16, 0.40, DECK_TOP_Z - 0.02)
+        v2 = np.array([0.74, 0.46, 0.49], dtype=float)
+        v2 /= np.linalg.norm(v2)
+        K.add_camera(PFX + "CAM_HEAD", tuple(np.array(aim2) + v2 * 1.60), aim2,
+                     35.0, cams)
         K.assert_no_external_assets()
     _ = deck
     return root
@@ -1058,7 +1237,8 @@ def selftest(verbose=True):
     rel = relief(Xg, Yg)
     lift = float((top_z(Xg, Yg) - surface_z(Xg, Yg)).min())
     bad = float((top_z(Xg, Yg) - (surface_z(Xg, Yg) + 1e-4)).min())
-    chk("min(relief) >= 0 over 2.40 M samples", lift >= -1e-12 and bad < 0,
+    chk("min(relief) >= 0 over 2.40 M samples, and it REACHES 0",
+        0.0 <= lift < 5e-5 and bad < 0,
         "the built surface's HIGHEST point sits %.4f mm below the declared "
         "plane (0.0000 would be touching, negative would be a lift); the "
         "negative control, the same field raised 0.1 mm, reads %+.4f mm and "
@@ -1175,6 +1355,31 @@ def selftest(verbose=True):
     chk("the full-area geometry stage stays under m = 1",
         wm < 1.0, "plate waviness %.1f mm at %.0f mm -> m %.3f"
         % (1000 * WAVE_PP, 1000 * WAVE_LAM, wm))
+
+    # A GROOVE PARALLEL TO THE LIGHT IS NOT A GROOVE. item_gate check 7 rejected
+    # the transverse-only tread for exactly this and no amount of depth would
+    # have fixed it. What matters is the component of the sun's HORIZONTAL
+    # direction across the groove: that is what sets the effective elevation the
+    # groove is lit at, and hence whether it has a sunward lip and a lee shadow
+    # or is a single-value mark.
+    sd = np.asarray(C.SUN_DIR, dtype=np.float64)
+    hz = sd[:2] / np.linalg.norm(sd[:2])
+    rows = []
+    for nm, axis in (("transverse (along y)", np.array([1.0, 0.0])),
+                     ("longitudinal (along x)", np.array([0.0, 1.0]))):
+        perp = abs(float(hz @ axis))                # across-the-groove fraction
+        e_eff = math.degrees(math.atan2(sd[2], perp * np.linalg.norm(sd[:2])))
+        rows.append((nm, perp, e_eff, 1.0 / math.tan(math.radians(e_eff))))
+        if verbose:
+            print("      %-24s across-groove %.3f  effective sun %5.2f deg  "
+                  "shadow %.2f x depth" % (nm, perp, e_eff, rows[-1][3]))
+    best = max(r[3] for r in rows)
+    chk("at least one groove family is lit ACROSS, not along",
+        best > 3.0,
+        "the sun's horizontal is (%.3f, %.3f); the better family throws %.2f x "
+        "its depth in shadow against the %.2f x a flat surface gets, so the "
+        "lattice cannot be parallel to the light for any sun bearing"
+        % (hz[0], hz[1], best, C.SUN_SHADOW_RATIO))
 
     print("\n[7] THE MESH ITSELF")
     X, Y, ys = deck_grid()

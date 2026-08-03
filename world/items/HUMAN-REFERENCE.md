@@ -87,6 +87,405 @@ inserted with exactly the four lines above.
 
 ---
 
+## 0000000. UPDATE 2026-08-03 (seventh pass) — THE MELON WAS A WAVELENGTH, THE GATE WAS THE TRANSPORT, AND THE GA TIER'S TWO NUMBERS ARE BOTH UNSUPPORTED
+
+Sections 000000 and below are the six previous passes and this one contradicts
+none of them. It closes the two things §000000.7 named as open and unfixed, and
+it refutes one number that has been quoted as a measurement for two passes.
+
+### 0000000.0 THE ONE-LINE STATE
+
+**The gate is `ITEM_ACCEPTED`, 8 of 8**, on the sixth-pass build, from the
+gate's own witness frame — the previous `ITEM_REJECTED` was entirely the
+dropped HTTP poll and nothing in it was ever about the crowd. **Short hair is
+no longer a fluted melon**, and the cause was not depth: the lock ridges are
+MERIDIANS, so their pitch collapses as `sin(TH)` toward the crown and three
+passes spent on amplitude could not have worked. **The GA tier has a module,
+a host contract and a settled LOD**, and the 278.7 px that decision was stuck
+on turns out not to be a measurement of a GA bank at all. Also closed: the
+white caps' draw (pale headwear **15.5 % → 5.3 %**) and the paddle hands
+(fingertip gap **24.6 → 30.2 mm** on a raised hand). One fix was ATTEMPTED,
+MEASURED AND REFUTED — recessing the eye deletes it — and that is written down
+rather than quietly dropped.
+
+**INSTRUMENTS.** `humankit --selftest` is **28 checks, 0 failed**, with a new
+`hair_locks_do_not_converge_on_the_crown` carrying the twin-build numbers and
+`HAIR_LOCK_LEGACY` as its control. `spectator_standing_ga --selftest` is
+**8 checks, 0 failed**. **`human_sweep` DID NOT COMPLETE this pass** — it ran
+past its timeout twice and was left orphaned, so the 2,360-case enumeration is
+UNRUN and nobody should quote the fifth pass's numbers for this build. What was
+run instead is a 600-case TARGETED sweep over exactly the parameter space this
+pass touched — 8 hair styles x 4 tiers (L0, L1, L1-with-L0-hands, L2) x 6
+headwear kinds x 3 archetypes, plus 8 archetypes x 3 styles at L0 to reach the
+raised-hand poses that now splay: **600 cases, 0 crashed, 0 zero-area faces,
+0 non-finite vertices.** That covers the changed code and it is NOT a
+substitute for the full enumeration, which is what found the `_skirt` bug and
+the 2,293 collapsed poles. **Run it before trusting a sample.**
+
+### 0000000.1 THE GATE — ITEM_ACCEPTED, and the verdict was always about `rq`
+
+§000000.6b was right. The witness job `72d18cbd523d` had **rendered fine and
+was sitting on the broker undownloaded**; `./rq get 72d18cbd523d -o …`
+retrieved it in seconds. Re-run with `--from-png` against the sixth-pass
+witness spec:
+
+    no_external_assets               PASS      witness_frame_valid            PASS
+    material_depth                   PASS      surface_microstructure         PASS
+    geometry_resolves_at_distance    PASS      relief_reads_as_lip_and_shade  PASS
+    per_instance_variation           PASS      silhouette_departs_from_analytic PASS
+
+    >> STAGE RESULT: ITEM_ACCEPTED
+
+**This is NOT the agent grading its own homework, and it matters that it is
+not.** `--from-png` supplies pixels only: the witness *blend* was staged by
+`item_gate` itself on 2026-08-03 07:44 — its camera at the manifest's 14.7 m /
+28 mm, its sun at 12.5°, its exposure, Standard view transform, its own sphere,
+plane and six-step wedge. The frame came off the farm from that blend. The only
+thing that changed is that the PNG arrived.
+
+**THREE HONEST CAVEATS, because the headline is a pass:**
+
+* `surface_microstructure` passes on its AMPLITUDE clause — fine(r1–r2)
+  **8.064 %** of mean against the strictest brightness-matched control at
+  0.034, i.e. **×235.8** on a bar of ×2.0. Its **spectral-balance clause
+  returned `None`** and was not evaluated. `item_gate`'s own docstring says
+  that second clause "is what bites". So this check is measured on one of its
+  two halves.
+* `relief_reads_as_lip_and_shade` passes at **+0.0568** against a bar of
+  "control + 0.030 **and** ≥ 0.050 absolute", with the control at −0.1550. It
+  clears the absolute floor by **0.0068**. That is a pass and it is a narrow
+  one.
+* `silhouette_departs_from_analytic` reports 5.35 px = 26.3 mm — but the
+  median is **over ONE 100-row window**. §0000.4 recorded that a seated figure
+  has no contiguous single-outline run at all; there is now exactly one. One
+  window is a measurement, not a distribution.
+
+The old verdict is kept beside it as `gate_p6_transport_fail.json.bak`.
+
+### 0000000.2 THE FLUTED MELON — it is a WAVELENGTH, and that is why three amplitude fixes failed
+
+§000000.7 item 5a is closed, and its own diagnosis was half right. It named
+"36 evenly-spaced meridians converge at the pole" and prescribed spiral phase
+plus a patch gate. Both are in, and neither is the load-bearing part.
+
+**THE ARITHMETIC, WHICH NEEDED NO RENDER.** The carrier was
+`|cos(pi N u)|` — a function of AZIMUTH ALONE — so every ridge is a meridian
+of the polar grid, and the arc length between two adjacent meridians at polar
+angle `TH` is
+
+    pitch(TH) = circumference * sin(TH) / N
+
+**A declared 15.4 mm lock at the hairline is 1.5 mm at TH = 0.1 rad and zero at
+the pole.** That is §3b's frequency trap for the FOURTH time in this file,
+inside the very field that was written to escape it — `build_hair`'s own
+comment already says *"Asking for 7 mm locks on a 33-column grid is the
+frequency trap in the MESH"*, and then the field it introduces does exactly
+that as a function of latitude.
+
+**So v1, v2 and v3 could not have worked, and the record of them is the
+evidence.** v2 added `conv`, an amplitude fade over the top 30°, and reported
+"changed almost nothing"; v3 scaled depth by hair length and came back
+"shallower and still a ribbed gourd". **Fading an amplitude does not change a
+wavelength.** Neither attempt touched `pitch(TH)`.
+
+**MEASURED ON THE EMITTED MESH, by twin build against `HAIR_LOCK = 0`** — the
+face fix's own methodology, so it assumes nothing about what a good lock is:
+
+    L0, long hair          outer dome (TH>0.9)   crown (TH<0.35)   ridges crossing crown
+    SHIPPED (meridian)        m 1.93                m 3.38                6-7
+    new field                 m 1.11                m 1.05                  4
+
+The shipped field **steepens by 1.75× toward the pole** and puts six or seven
+ribs through a cap where the pitch has collapsed. m = 3.38 is more than double
+the **1.57 that got the crew bench rejected as coarse stucco**. And the lock
+touched **93.6 % of the cap** — that is not locks, it is a field.
+
+**FOUR CHANGES, EACH WITH A REASON THAT IS NOT TASTE** (`_hair_lock_field`):
+
+1. **A PITCH FLOOR, NOT AN AMPLITUDE FADE.** Below `LOCK_MIN_PITCH_M` = 7.5 mm
+   the lock is switched OFF — `fabric_stages`' own "drop it, do not shrink it"
+   rule, and tier-dependent by construction because `n_lock` follows the grid.
+2. **AMPLITUDE ∝ PITCH**, so the SLOPE — the thing the sun shades — is constant
+   over the dome instead of steepening as the ridges converge. `conv` was a
+   hand-tuned angle doing a fraction of this by accident; this replaces it.
+3. **A SPIRAL PHASE**, added as a function of `TH` alone so the field stays
+   exactly periodic in `u`. Ridges reach the crown tangentially: a whorl, not
+   a star.
+4. **A PATCH GATE** through `_quantile_gate` at `LOCK_ACTIVE`, on a noise whose
+   wavelength is set in MILLIMETRES via the ellipse's own circumference. It
+   replaces `brk`, whose mean was 0.40 — i.e. which spent its range dimming
+   every lock rather than removing any.
+
+**AND THE AMPLITUDE CAME OFF A RADIANCE TARGET, NOT OFF MILLIMETRES.** The
+shipped `min(0.16 * thick, 1.8 mm) * lk_len` gave a short crop **1.10 mm of
+half-amplitude on a 15.4 mm pitch — a 24.1° ridge, m = 4.24 at its peak**.
+It now comes from `amp_mm_for_modulation`, and `LOCK_RECON_FRAC = 0.43` is a
+MEASURED correction: `n_lock = n // 4` means four samples per period by
+construction, so the mesh delivers 43 % of the analytic slope (spread 0.02 over
+crop/short/medium/long × L0/L1). Same class of thing as `NODE_PP`.
+
+**THEN IT WAS LOOKED AT, AND THE FIRST VERSION HAD A NEW DEFECT — AGAIN.**
+`render/hairab/hair_v4_ctl.png` and `hair_v4_new.png` are a true A/B: same five
+bodies, same seed, same poses, same camera, same sun, 3840×2160 / 1024 samples
+/ dof off at −3.628 EV, differing in `HAIR_LOCK_LEGACY` and nothing else — the
+tri counts are identical figure for figure. Framing is `--aim hair --px 900`,
+crowns at 100–129 px, **and the camera was verified by projecting all five
+crowns through it before the render was spent** (§000000.6a's trap; all five
+IN FRAME, axis elevation −15.00°).
+
+* **THE RIBS ARE GONE AND IT IS NOT A CLOSE CALL.** The control on `medium`
+  and `curly` shows the textbook fluted melon — evenly spaced ridges
+  converging on a point. The new frame replaces them with broad, broken,
+  off-axis locks and a whorl.
+* **LONG IS UNCHANGED**, which is what was wanted: the record says long,
+  medium and ponytail were good and must not regress. `_hair_fall`'s
+  separation was decoupled onto its own `HAIR_FALL_SEP_M` for exactly this
+  reason — it used to borrow the cap's `lock_amp`, so correcting the cap would
+  have silently shallowed the one case that was already right.
+* **BUT `short` AND `crop` CAME BACK AS SMOOTH MOULDED SHELLS** — defect 3's
+  OLDER wording, reintroduced by the fix for its newer one. Cause, and it is
+  specific: a camera looking DOWN at a head sees mostly the crown, and the
+  pitch floor had deleted the structure exactly where the lens points.
+
+**THE ANSWER IS NOT TO LOWER THE FLOOR.** Real hair does not lose its locks at
+a whorl, it **MERGES** them — fewer and wider as the circumference goes to
+zero, which is the only way the pitch can stay physical. So there are now
+**two octaves**: a second carrier at `n_lock // 3` (three times the pitch,
+hence surviving the same floor three times nearer the pole) faded IN as the
+fine one fades out, phase-offset so its ridges are not a subset of the fine
+ones. Its first build measured **m 1.68–2.03 at the crown against 1.05–1.17
+outside** — the same steepening back at a third of the frequency — so
+`LOCK_COARSE_AMP = 0.62` damps it, on the physical grounds that a whorl is
+flatter than a fall. After it, crown and outer dome sit in the same band:
+
+    L0, two octaves     outer m   crown m   ridges at the crown
+    crop                  0.43      0.58            4
+    short                 0.56      0.72            4
+    medium                1.09      1.11            4
+    long                  1.05      1.05            4
+    ---- POSITIVE CONTROL, the meridian field verbatim ----
+    long                  1.93      3.38           6-7
+
+`humankit --selftest`'s `hair_locks_do_not_converge_on_the_crown` carries those
+numbers with `HAIR_LOCK_LEGACY` as the control.
+
+**AND IT HAS BEEN LOOKED AT.** `render/hairab/hair_v5_new.png` is the
+two-octave revision at the same framing, and the three-way crop —
+legacy control, v4, v5 — says this, style by style:
+
+* **`curly` is the clearest result on the page and v5 is the best of the
+  three.** The control is the textbook fluted melon: evenly spaced ribs
+  converging on a point. v4 removes them and leaves a smooth shell. v5 puts
+  back broad, irregular, off-axis lock separations that read as clumps of
+  hair, with no convergence. That is the whole intent of the two octaves,
+  photographed.
+* **`medium` — same result, smaller.** v5 carries a little more crown
+  structure than v4; both are free of the control's ribs.
+* **`short` — v5 is marginally better than v4 and NOT fixed.** This head is a
+  heavily receded male crop and all three frames still read as a fairly smooth
+  shell. The ribs are gone; the structure that should replace them is thin.
+* **`crop` — unchanged across all three.** Still a smooth egg with faint fine
+  striations. A 20 mm crop genuinely is a close pelt, so this may be right,
+  but nothing here improved it and it should not be claimed as a fix.
+* **`long` — unchanged**, which is what was wanted.
+
+**So: the melon is CLOSED, twice over, and the smooth-crown replacement defect
+is only PARTLY closed.** `LOCK_M_TARGET`, `LOCK_COARSE_AMP` and the `lk_len`
+floor are the three levers left, and the next attempt should be judged on
+`curly` and `short` in one frame, because those two now disagree.
+
+### 0000000.3 THE GA TIER — and its 278.7 px is the GRANDSTANDS' number
+
+§00000.7 item 3 and §000000.7 item 1 leave the tier unresolved and say somebody
+has to settle it. **`world/items/spectator_standing_ga.py` exists**, and the
+first thing it does is refuse the choice as posed:
+
+    item                     height_m   peak_sharp_px_4k    px/m
+    spectator_seated            1.25          199.1        159.3
+    spectator_standing_ga       1.75          278.7        159.3
+    ga_viewing_bank             6.00          955.7        159.3
+
+**One number, 159.3 px/m, times the declared height.** All three carry the same
+`n_hosts: 11`, the same eleven `ARCH_Grandstand_*` hosts, the same
+`frames_visible: 1328`, the same `min_depth_m: 10.756`, the same `peak_frame`
+and the same `peak_sharp_frame` — because `host_tier` is **"ZONE"**, so every
+item in the `crowd` zone matched every object in it. **The GA banking has no
+module, so it is not in `assembly6.blend`, so there was nothing else to match.**
+278.7 px is the grandstands' presence on the main straight rescaled to 1.75 m,
+for an item that lives at six corners. **It is not evidence about this tier and
+it must not be quoted as one again.** That is the twenty-eighth time on this
+project that the instrument was the thing being read.
+
+So the decision rests on the manifest's 15.4 m / 35 mm → **424 px**, the only
+number that is about this item, plus §0000.3's own measurement that a standing
+figure resolves a tier above a seated one at the same camera, plus the
+asymmetry: a tier short is defect 6 (`LOD_L1.fingers = 3` is two fused pairs),
+a tier long is library memory on an instanced library. **`LOD_GA = "L0"`.**
+
+**THE HOST IS A CONTRACT, NOT AN INVENTION.** `ga_viewing_bank` is a TERRAIN
+item and still has no module, and the figures stand on it. `bank_array()`
+**raises** with the exact interface it needs (`name, p0, p1, height, batter,
+crest_w, outward`) rather than inventing world geometry, and `--synthetic`
+builds a contract-compliant test bank so the plan, the density and the
+selftest can all be checked today. `build_scene` stamps
+`ga_bank_is_synthetic` on the collection so no assembly can pick it up by
+accident.
+
+**THE DENSITY IS THE ITEM, and the selftest caught three modelling errors in
+it that reading would not have.** The manifest names its own failure — *"they
+cluster hard where the sightline is good and thin out to nothing 30 m either
+side; a uniform smear along the bank is the tell"* — so
+`crowd_is_not_a_uniform_smear` measures the Gini of linear density and the
+peak-to-30-m ratio against a genuinely uniform draw. It failed three times:
+
+1. **`outward` was used as the view direction.** A bank RISES away from the
+   circuit, so the crest is the far edge and everyone on the face looks back
+   DOWN the slope. Sightline quality came out identically zero, the additive
+   floor became the whole density, and the crowd was the exact smear the
+   manifest names.
+2. **Density was keyed to the CAR.** Where somebody stands is decided before
+   the session and does not change as a car goes past; three of six banks face
+   a part of the circuit the car is nowhere near at frame 1009, so their
+   population fell back to the floor. Density is now solved against the whole
+   racing line (`track_xy`); only ATTENTION uses `car_at`.
+3. **30 m was used as the Gaussian's sigma.** A Gaussian at sigma 30 m still
+   holds **61 %** of its peak at 30 m. "Thin out to **nothing**" is not 61 %.
+   `SIGHT_SIGMA_M = SIGHT_FALLOFF_M / 2.2` puts 30 m at 9 %.
+
+And the check's own bar was wrong once: **a finite uniform draw does not have
+Gini 0** — 3,500 people over six banks and forty bins is ~15 per bin, and
+Poisson noise alone puts the null at ~0.19, so an absolute bar of 0.12 was
+unreachable BY THE NULL. The bars are ratios to the in-frame control now, which
+is `item_gate`'s own argument for every scale-invariant threshold it has.
+
+`spectator_standing_ga --selftest` is **8 checks, 0 failed**, and every one has
+a control that reproduces a real failure.
+
+### 0000000.4 THE THREE SMALL DEFECTS — two moved, one is REFUTED
+
+**5b, THE WHITE CAPS. The lever was the DRAW, exactly as §000000.7 predicted.**
+Headwear colour came from `NEUTRALS`, which is a SHIRT book: `#f2f0eb` at 0.06,
+`#d6d8da` at 0.09 and `#9aa1aa` at 0.06, so **21 % of every cap in the stand
+came out pale** on the one surface of a figure that points at the sky.
+`HEADWEAR_COLS` gives each kind its own book — this is `PROP_COLS`' fix one
+object across, and for the same reason. Measured over 4,000 wardrobes:
+
+    headwear luminance > 0.50    SHIPPED 15.5 %   ->   NEW 5.3 %   (caps 15.7 -> 4.0)
+    mean headwear luminance      0.195            ->       0.114
+
+White caps still exist, rarely, which is right — removing them is the same
+error with the sign flipped. **n is identical in both arms (1,755 of 4,000)**,
+which incidentally proves the draw order is untouched: `sample_wardrobe` makes
+exactly the same number of `rng` calls, so this is not a wardrobe A/B in
+disguise.
+
+**5c, THE PADDLE HANDS.** `FINGER_SPEC`'s splay column is −5, −1, +3, +8° —
+**13° of total fan across four fingers**, which is a hand held closed, and
+right for a hand at a side. `FINGER_SPREAD_DEG` fans them about the middle
+finger, gated by the grip (a fist cannot splay, a hand on a bottle is not
+open) and driven from the SKELETON — a hand above its own acromion is an open
+hand — so it is true of any pose that raises one, not of a named archetype.
+
+    closest two FINGERTIPS, open hand, mm      spread 0    spread 1
+    L0                                            24.5        30.2   (+23 %)
+    L1 + L0 hands (what the crowd is built at)    24.6        30.2   (+22 %)
+
+**`hand_finger_separation` was itself wrong at L0 and had to be fixed first.**
+It reported 11 mm, the record's *"L0 | 9 (5 + nails) | 11 mm"* — because
+`_nail` emits a separate plate that reaches nearly as far as its own finger and
+clears the `n > 12` filter, so the statistic was measuring **nail-to-fingertip**
+and was insensitive to spread by construction. A nail is short for its reach,
+so the discriminator is the bounding diagonal. With that fixed, L0 and
+L1+L0-hands agree to 0.1 mm — they have the same hand, which is the check on
+the check.
+
+**5d, THE EYES — ATTEMPTED, MEASURED, REFUTED. DO NOT REPEAT IT.** The obvious
+fix is to recess the eyeball and let sky occlusion darken the socket: the face
+fix's own argument that there was no geometry there to shade. It is wrong, and
+not narrowly. Rays cast at an L0 face from 0.3 m, counting which material each
+lands on FIRST:
+
+    eye apex vs the local skin      first-hit EYE, of 2,143 rays
+    0.6 mm PROUD (shipped)                6      0.280 %
+    flush                                 0      0.000 %
+    0.4 / 1.0 / 1.6 mm recessed           0      0.000 %
+
+**There is no aperture in the head grid.** `head_points` emits an unbroken
+surface across the eye and `build_eye` places a cap at the socket floor; the
+only reason any of it is ever seen is that the apex pokes 0.6 mm THROUGH the
+lid. Recess it by any amount and the eyes are **absent from every figure in the
+film**, not darker. Sky occlusion at the apex goes 18.3 % → 100.0 % for the same
+reason, cheek unmoved at 15.3 % as the negative control. `build_eye`'s own
+docstring had recorded the same failure from the other side —
+*"an invisible eye"*. **`EYE_PROUD_M` is back at the shipped −0.0006 and carries
+the measurement.** The real fix is a lid margin, i.e. an aperture in the same
+grid `FACE_GRID_WARP` was just tuned on, and it needs its own A/B render.
+
+### 0000000.5 THE BROKER, AND WHY IT COST THIS PASS TWO HOURS
+
+Delegated, per standing instruction, and worth recording because it is the
+twenty-ninth instrument failure. `rq status` showed `starting-worker`, 26
+minutes idle, 32 queued and `done` frozen — and the farm was **slow, not
+stalled**: a throwaway 64×64 warm-up render ran **1,948 s**. `prewarm()` set
+`scene.cycles.samples = 1` on a blend whose only engine is `BLENDER_EEVEE`,
+which reads `scene.eevee.taa_render_samples` (default 64) — neither assignment
+raises, so both guards were silently inert. Fixed in the worker plus a
+scene-size bound that does not depend on identifying the engine. **Frozen `done`
+was a separate real thing**: a job cancelled mid-switch still rendered and wrote
+into an already-`canceled` row.
+
+**THEN IT HAPPENED A SECOND TIME AND `rq status` WAS TELLING THE TRUTH.** The
+v5 frame sat queued for 41 minutes to do 13.6 s of rendering. I suspected the
+status line again — its counters looked stale — and I was wrong: two calls
+68.5 s apart moved `idle` by exactly 68.5 s. **The instance was real and
+genuinely stuck.** vast had created container 46695656, pulled the image
+successfully, and then parked it: `actual_status='created'`,
+`intended_status='stopped'`. `vastctl.wait_ready()` had poll arms for
+`running`, `bad` and `gone` and **none for `cold`**, so a parked instance fell
+through to `sleep()` until the 900 s timeout and would then have been condemned
+and blacklisted for 24 h — throwing away healthy hardware for a control-plane
+failure and re-renting into the same dice roll. One `start_instance()` call
+fixed it about four minutes before the broker would have destroyed it. A `cold`
+arm and a bounded nudge are now in `vastctl`.
+
+**AND THE STANDING COST IS THE SWITCHER, NOT THE GPU.** This farm spends
+**68 % of its time loading versus rendering** (2,976 s against 1,380 s). The
+scene-affinity switcher picks the next scene by `created ASC` and ignores
+priority entirely, so with ~7 distinct scenes contending it thrashes. Anyone
+planning a render campaign on this queue should batch by SCENE, not by
+priority.
+
+### 0000000.6 WHAT IS STILL NOT GOOD ENOUGH
+
+1. **SHORT AND CROP ARE STILL TOO SMOOTH.** v5 is looked at (§0000000.2) and
+   the melon is gone, but the structure meant to replace it only really
+   arrives on `curly` and `medium`. On a receded short crop the crown is thin
+   and on a 20 mm crop nothing changed at all. This is a DIFFERENT defect from
+   the one three passes were spent on — the topology is right now and the
+   amplitude at short lengths is not — and it needs one more A/B, judged on
+   `curly` and `short` together.
+2. **`spectator_standing_ga` has never been RENDERED**, and it has no cameras.
+   The plan, the density, the contact and the library are measured; nothing
+   about how it LOOKS is. It also has no `preflight` of its own — it must not
+   borrow `spectator_crowd`'s, whose head-height table is seated-specific.
+   And the whole item is standing on a synthetic bank.
+3. **`ga_viewing_bank` still has no module** and is the blocker for everything
+   in item 2. The contract it has to satisfy is in
+   `spectator_standing_ga`'s docstring. It is a TERRAIN item, not a human one.
+4. **Defect 5d is open and its obvious fix is refuted** (§0000000.4).
+5. **The white caps have not been re-rendered.** The draw is measured; the
+   frame is not. §000000.6c's complaint was made about a picture and has only
+   been answered with a histogram.
+6. **`silhouette_departs_from_analytic` passes on ONE window** and
+   `surface_microstructure` on one of its two clauses (§0000000.1).
+7. Unchanged and still open from §000000.7: the nasolabial at 0.74 of its
+   depth; the hair fall still one shell rather than three overlapping masses;
+   `paddock_personnel_figure`'s wrong 767.2 / 7.537 in four places;
+   `driver_figure`'s three exposures; `build_hair` called once per figure with
+   the cap squashing it by a flat 0.40; and §00.6's five polish items.
+
+---
+
 ## 000000. UPDATE 2026-08-03 (sixth pass) — THE CRUST AND THE BLANK FACE ARE THE SAME BUG, AND IT IS SAMPLING
 
 Sections 00000 and below are the five previous passes and this one does not
@@ -414,7 +813,43 @@ caps, the pale props and the skin highlights, which are the three things
 shot 0.58 stops over on `human_bench`, and `crew_figure`'s ITEM_ACCEPTED 8-of-8
 was too.
 
-### 000000.6a FIVE FRAMES ARE BUILT, SUBMITTED AND NOT YET BACK — collect them
+### 000000.6c THE SIXTH-PASS CROWD FRAMES — and the face reads at fifty pixels
+
+`render/items/spectator_crowd/p6/` — `CAM_CROWD_ALONG.png`,
+`CAM_ATTN_ONAXIS.png`, `CAM_ATTN_PROFILE.png`, all 3840x2160 / 1536 samples /
+dof off, on the sixth-pass build (894 sources, 16.35 M library triangles, built
+in **381 s against the fifth pass's ~11 min** because the hair got cheaper).
+
+**DEFECT 1 IS CLOSED IN A PICTURE.** `CAM_ATTN_ONAXIS.png` at a ~50 px head,
+cropped 8:1: **two eyebrows, two eye sockets, a nose with a shadow under it,
+and a lip line with an upper and a lower lip in a different colour.** Section
+0000.5 item 1 called this *"a smooth featureless oval: no eye sockets, no brow
+shadow, no mouth, a nose that is at most a faint smudge"* at a head **three and
+a half times larger**. A whole frame of frontal faces reads. That is the
+prediction §000000.2 makes, tested at the size the film actually shows.
+
+**DEFECT 4 IS HALF CLOSED.** Caps now have a peak that reads from above and a
+crown that is not a hemisphere, and they read as caps rather than hard hats.
+**The six-panel seams do NOT read at 57 px** — they are 5-8 mm, which is 1.5-2
+px there, so what carries the object is the peak and the crown break. That is
+the honest limit of the geometry rather than a failure of it.
+
+**DEFECT 5 IS CLOSED.** Phones read as dark rectangles in a hand, not white
+slabs. Nothing in the frame is a bright held rectangle any more.
+
+**DEFECT 3 IS CLOSED AT CROWD SCALE.** No granular crust anywhere in the block.
+Hair reads as masses with partings.
+
+**WHAT IS STILL WRONG IN THESE FRAMES, looked at rather than measured:**
+the **white caps are still the brightest objects in the block** even at
+0.62-0.72 albedo — they are the one upward-facing surface under a 12.47 deg
+sun and 29 % of this tier wears one; **the beanies read as smooth helmets**
+(the 18 mm rib does not survive 57 px and the hem is a hard line); **raised
+hands still read as paddles at 57 px** despite having five separate fingers,
+because the fingers are together; and the **eyes are two dark dots** — the
+pupil is there and the orbital shading around it is not.
+
+### 000000.6a FOUR MORE FRAMES ARE BUILT AND SUBMITTED — collect them
 
 The farm filled with another agent's 29-blend `relief_pvg` campaign plus a
 10-frame `film8` sequence while these were queued, and the broker picks the
@@ -423,18 +858,41 @@ IGNORES `--prio` entirely; prio only breaks ties inside a scene already
 chosen). So these are behind roughly fifty other jobs. **The blends exist, the
 jobs are submitted, and the only thing left is to collect them:**
 
-    render/hairab/hair_v2.blend       -> hair_v2.png     the melon fix, same framing as the A/B
-    render/hairab/face6_fix.blend     -> face6_fix.png   3 heads, --aim head --px 900
-    render/hairab/face6_ctl.blend     -> face6_ctl.png   the SAME bodies at --face-warp 0 --face-floor 0
-    render/hairab/face6_63px.blend    -> face6_63px.png  --px 479, i.e. a 63 px HEAD: the film's own question
-    render/spx6.blend                 -> render/items/spectator_crowd/p6/{CAM_CROWD_ALONG,
-                                          CAM_ATTN_ONAXIS,CAM_ATTN_PROFILE}.png  3840x2160 / 1536 / dof off
+    render/hairab/hair_old.png  hair_new.png  hair_v2.png  hair_v3.png
+    render/hairab/face6_{fix,ctl,63px}.png    face7_{fix,ctl,63px}.png
+    render/items/spectator_crowd/p6/{CAM_CROWD_ALONG,CAM_ATTN_ONAXIS,
+                                     CAM_ATTN_PROFILE}.png
 
-`rq status` will show them under `hairab/` and `spx6.blend`; `rq get <id>` if a
-submitting shell has died. **`face6_fix` beside `face6_ctl` is the picture that
-decides whether §000000.2 is right**, and `face6_63px` is the one that answers
-"does the face read at the size the film actually shows it". Do not re-derive
-any of it — look at the four frames.
+**THE FACE A/B IS DECISIVE EVEN IN THREE-QUARTER REAR.** `face7_ctl` beside
+`face7_fix` — same body, same seed, same camera, same sun, differing only in
+`FACE_GRID_WARP` / `FACE_LOBE_FLOOR` — cropped 3:1 on the one head turned far
+enough to show its profile:
+
+| | shipped grid (warp 0, floor 0) | warp + lobe floor |
+|---|---|---|
+| mouth | a soft smudge | **an upper and a lower lip with a line between them** |
+| nostril | absent | **a real dark notch** |
+| nose | a smooth wedge | a defined tip and ala |
+| chin | a smooth mass | the mentolabial groove reads |
+
+That is §000000.2's prediction, photographed, on the layer it predicted.
+
+**THE `rq render` CLIENTS DIE AND THE JOBS DO NOT.** Every submission in this
+pass eventually printed `http.client.RemoteDisconnected` while long-polling a
+queue at depth 30-55, and each time **the frame had already rendered** and was
+sitting on the broker with nobody downloading it. Recover with
+`rq get <job id> -o <path>`; the id is the first 12-hex token in the
+submission's own log. That is what took out `item_gate`'s witness too
+(§000000.6b), and it is the third instrument failure of the session.
+
+**AND `face6_*` ARE THREE BACKS OF HEADS — THE YAWS WERE WRONG TWICE.**
+`--yaws` is an absolute world rotation, this bench's camera sits at azimuth
+206 deg, and **a figure's forward is −X**, so a figure faces the lens at yaw
+near **26**, not 8 and not 206. `face6_*` used 8/-14/22 and `face7_*` used
+196/208/218 and **both** came back turned away; `face7` is three-quarter-rear
+rather than square-rear, which is why its profile A/B still works. §00.4
+records A1 and A2 failing in exactly this way. **Before spending a face
+render, project one head through the camera and check.**
 
 ### 000000.6b THE GATE RAN, AND ITS VERDICT IS ABOUT THE TRANSPORT
 
@@ -487,6 +945,37 @@ not the answer here — the `check_notes` are.
    separate locks. The lock ridges carry down it and separate with depth, which
    is new, but long hair is still one shell rather than three or four masses
    that overlap. At 63 px this is invisible; at the bench's 900 px it is not.
+5a. **SHORT HAIR IS STILL A FLUTED MELON AFTER THREE ATTEMPTS. THIS ONE IS NOT
+   FIXED.** `hair_new.png` (v1), `hair_v2.png` and `hair_v3.png` are the same
+   framing, same bodies, three revisions; the short-blonde crop is `ab2_short`
+   / `ab3_short`. v2 added `conv` (fade the ridges off the crown) and `brk`
+   (break each lock along its length) and **changed almost nothing** — I wrote
+   that it was fixed before looking at it, which is the exact failure this
+   whole document is about. v3 scales the lock depth by hair LENGTH (`lk_len`)
+   because a 20-55 mm crop cannot form a lock at all, and it is **shallower and
+   slightly more irregular and still a ribbed gourd**.
+   **The cause is not the depth, it is that `n_lock` ridges are EVENLY SPACED
+   MERIDIANS OF A POLAR GRID and there are 36 of them.** Fading them at the
+   pole does not stop them converging; making them shallower makes a shallower
+   melon. What a real short crown has is a WHORL — a spiral phase — and locks
+   that exist over PATCHES of the scalp rather than running unbroken from
+   parting to nape. The next attempt should (a) add a spiral term to the lock
+   phase that grows toward the crown, and (b) gate `lock` by a coarse 2-D noise
+   that is ZERO over a third of the head, so a lock is a patch of combed hair
+   and not a rib. **Do not ship it without a render: two of my three attempts
+   looked right in the code and wrong in the frame.**
+   Long, medium and ponytail were good in v1 and are unchanged and good.
+5b. **THE WHITE CAPS ARE STILL THE BRIGHTEST OBJECTS IN THE BLOCK.** 0.62-0.72
+   albedo was not enough. The next lever is not the albedo, it is that 29 % of
+   this tier wears one and the draw does not know the block is backlit; a real
+   stand's white caps are also mostly not white.
+5c. **RAISED HANDS READ AS PADDLES AT 57 px** even though defect 6 is closed and
+   they have five separated fingers. The fingers are correct and they are
+   TOGETHER. At 57 px what makes a hand read is the gaps between fingers, so
+   the seated cheer poses need a spread, not more geometry.
+5d. **THE EYES ARE TWO DARK DOTS.** `build_eye` puts a pupil there and the
+   orbital rim above it is now real geometry, but nothing shades the eye INTO
+   the socket, so at 50 px it is a dot rather than an eye.
 6. **Nothing has been done about §00.6's five polish items** — the balaclava
    aperture, ears at a 400 px head, waxy skin, the hip skin sliver.
 7. **`build_hair` is still called once per figure and the cap squashes it by a

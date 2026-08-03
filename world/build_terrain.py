@@ -106,6 +106,28 @@ FAR_GROW  = 1.30
 # before the cells get coarse rather than left to sparkle.  (The existing +-34 m a3
 # term already runs a 2.1 km wavelength through 1.4-2.3 km cells between 5.2 and
 # 11 km, which is marginal; it is left alone here, and noted.)
+# WHAT THIS IS AND IS NOT RESPONSIBLE FOR — MEASURED, 2026-08-03, AND IT REFUTES
+# THE BRIEF THIS TERM WAS WRITTEN FOR. The 56 black rows were NOT the plate's
+# edge. `ONER`'s camera datablock ships with clip_end = 1000.0 m — Blender's
+# factory default, never set by `anim/build_camera_rig.py:575` — against
+# `build_sky`'s own documented hand-off of >= 50 km. Everything past 1 km was
+# simply not drawn. Three renders of the SAME ground under the SAME sky settle
+# it (`work/ramp/b6/`, counted by `tools/black_row_count.py`):
+#
+#     terrain WITH this term,    clip   1 000 m   ->  71 black rows
+#     terrain WITH this term,    clip 200 000 m   ->   0 black rows
+#     terrain WITHOUT this term, clip 200 000 m   ->   0 black rows
+#
+# So THIS TERM IS NOT WHAT FIXES THE DEFECT and it must not be credited with it.
+# The 80 km aerosol slab in-scatters enough over 10 km (18 % transmittance) that
+# a ray missing the plate comes back as haze rather than as void.
+#
+# It is kept for what it DOES do, which the A/B shows plainly: without it the far
+# field dissolves into a featureless haze band with no horizon LINE in it; with
+# it the sky sits on a defined edge. It costs nothing — 599 872 verts and 600 209
+# polys either way, bit-identical, because it changes z on vertices that already
+# exist — and it is one constant to switch off: SET `HORIZON_Z_M = 0.0` AND THE
+# TERM VANISHES ENTIRELY, which is exactly how the control above was rendered.
 HORIZON_RISE_M   = 3600.0     # Dc where the far field begins to climb
 HORIZON_CREST_M  = 9500.0     # Dc where it has fully climbed
 HORIZON_Z_M      = 300.0      # mean crest height above the datum

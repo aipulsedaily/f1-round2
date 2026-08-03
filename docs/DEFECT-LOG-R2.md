@@ -3000,3 +3000,147 @@ diagnostic of the x-vs-s_m disagreement past the launch also halves:
 **p99 0.02122 -> 0.00946**. Its `global_ratio` gets WORSE (1.000321 -> 1.000856)
 and that is honest: the leg-2 chord deficit was partly cancelling leg 0's nose-datum
 excess (R2-047), and removing one exposes the other.
+
+---
+
+## R2-058 — the Wave wavelength factor was 3.18× wrong, and the right value was in a comment three lines away
+
+`itemkit._tex_wavelength_m()` returned `1.0 / Scale` for `ShaderNodeTexWave`. The true
+value is **`2π/20 = 0.3141593 / Scale`** — Wave is **3.183× finer** than itemkit assumed.
+
+Measured by two probes that import neither itemkit nor any factor: an 8192 px orthographic
+emission render read by sub-bin least-squares sinusoid fit, and a 2048² radially-averaged
+2-D power spectrum. Over a 46× sweep (Scale 5…230) every point returns 0.31416 — **mean
+0.3141596, sd 3.2e-09**. Both probes carry a calibration case built from Math nodes that
+shares no assumption with the thing measured, recovered to 0.00–0.12 %.
+
+**itemkit's own header already quoted 0.31416.** It used the closed-form Wave as the
+*control* for its noise measurement. The correct number sat three lines from the wrong code.
+
+**And the selftest could not see it, because it round-tripped against the same constant.**
+That is how this survived the frequency API (R2-... the `wavelength_m` work), the relief
+law, and a fourteen-module rebuild. Replaced with `emitted_wavelength_m()`, which renders
+a texture through an ortho camera and **counts bands** — an independent measurement, not an
+algebraic identity. Its positive control reverts the constant to 1.0 and the check fails,
+exit 1, while the calibration row still passes: the constant broke, not the instrument.
+
+**Also found: Blender's DIAGONAL sums components and multiplies by 10, not 20** — a second
+factor (`2π/(10√3)` band-normal), affecting seven built modules. Its selftest discriminates
+on a *relation* (the ratio must be √3; a BANDS reading gives exactly 2.0000) rather than on
+another repeated constant.
+
+**Blast radius:** 55 Wave-driven stages moved, ×1.002 to ×3.183 (median ×3.038), and **35 of
+55 changed band**. Seven fell out of every band; one entered from none; nine now sit at
+8.3–9.04, **pinned at the terminator** — `m` cannot exceed `2/tan(12.47°) = 9.043` at this
+sun. **None of the nine declared wavelengths was compensating for the error; seven were
+propagating it.** Corrected as itemkit plus call sites in one pass, pixel-neutral by
+construction (`relief_amplitude_for(m_new, λ_new)` equals the old pair to 1e-16) — and that
+arithmetic was checked against a third thing neither number came from: opening the shipped
+blends and confirming the derived `Distance` **is the float already on the socket, 7 of 7**,
+with a negative control where the naive fix lands on 0 of 7.
+
+`build_dressing`, `armco_w_beam`, `crew_fireproof_overall` and `pit_wall_unit` had each
+independently hardcoded `(2π/20)` as a private workaround — a 3rd, 4th and 5th copy. All
+converged onto `K.WAVE_WAVELENGTH_FACTOR`.
+
+**Noise 1.60 and Voronoi 2.17 were confirmed and left alone.** Three estimators bracket
+Noise at 1.53–2.12 and Voronoi at 2.30–2.53, and the factor moves with `detail`. The
+Voronoi *peak* estimator is **disqualified by its own control** — it drifts 5.1 → 47.2 with
+Scale, so it is not measuring a factor. A fourth significant figure would be a guess.
+
+## R2-059 — `contract_sun()` set the refuted exposure, and the one caller that checked was accidentally immune
+
+`itemkit.contract_sun()` set `C.REFERENCE_EXPOSURE_EXTERIOR = −3.048` — the **derived and
+refuted** value, 0.586 stops over. The measured value is `film_exposure.FILM_EXPOSURE =
+−3.628`, correct to 0.006 stops against an 18 % card with two view transforms agreeing to
+0.0141 stops.
+
+**This is the shared helper.** It exists precisely so nobody quotes the light independently,
+so every item agent that called it and trusted it judged **0.58 stops over** — consistent
+with the separate finding that *every item test frame ever judged* is 0.580 stops over,
+including the crew macro that passed 8/8 and the frames the human-figure brief was written
+from.
+
+It stayed invisible for a pointed reason: the one caller that verified its own exposure —
+the breach sim's `witness.py` — **overwrites it after the call**, so the only agent
+positioned to notice was accidentally immune.
+
+Now imports `FILM_EXPOSURE` (never spells the number), **asserts** the readback, and refuses
+if the measured and refuted constants ever become equal. Its selftest reads the **live
+scene**, not the constant.
+
+**Found while landing that positive control:** `blender -b -P world/itemkit.py -- --selftest`
+**exited 0 on an uncaught exception** — the assertion fired, the selftest never reached its
+verdict, and the shell saw success. Now wrapped in `gate_exit.guard`; verified pass → 0,
+reverted-exposure → 2, reverted-wave-factor → 1.
+
+Four live setters of −3.048 remain outside itemkit: `build_sky.py:1442, 1768` (plus its own
+re-declaration at :149), `build_barriers.py:4567`, `build_surface.py:3682`, and
+`world_contract.py:3463`.
+
+## R2-060 — a flat quad outscores real 2 mm ribs, so the relief check cannot tell paint from geometry
+
+Exposed while rebuilding the relief positive control after R2-058 (its decoy had been
+emitting **9.42 mm stripes against 30 mm ribs**, 3.18× too fine — its own comment recorded
+the symptom and misdiagnosed the cause).
+
+**A four-vertex quad with z ≡ 0 — no modifiers, no displacement, no normal map, verified in
+the blend — scores dip 0.6308 against real 2 mm trapezoidal ribs at 0.6082.**
+
+The shipped decoy passed only by luck: its stripes run along object X while `plate()` lays
+the ribs on the sun's ground direction, **32° apart**, and that misalignment splits the
+band-passed response near-equally between the along- and across-light terms, which cancel.
+Structure tensor confirms it — rotated decoy −39.15°, ribs −39.68°, shipped decoy −0.03°.
+Device confound closed: the shipped decoy re-rendered on CPU gives the same 0.0231, so
+0.0231 → 0.6308 is **orientation alone**.
+
+**Mechanism:** after the DoG band-pass, a sharp albedo *step* and a lip-and-shadow leave the
+same bipolar pair at the same ~2r spacing.
+
+**The FAILs stand; the PASSES were at risk.** The error is over-detection, and passing
+requires `subject_dip ≥ control_dip + 0.03`, so inflation can only manufacture false
+**passes**. The in-frame controls are untextured plain-grey primitives with no painted
+anisotropy to inflate, closing the false-FAIL route.
+
+**All eight relief passes were then re-examined** with a five-arm staged experiment sharing
+**one pixel mask computed from the shipped frame**, so no arm could move the goalposts
+(silhouette IoU 0.9994; CPU vs GPU ±0.0003). **Six are REAL. Not one was manufactured by
+paint.** `crew_figure` — the ITEM_ACCEPTED 8/8 pit crew — is the best-supported: with all
+paint forced flat it keeps 2.3× its own bar, the mesh alone scores *higher* than the shipped
+figure, and a render-free census finds one ≥20° crease every 5.1 px at a 2 px band radius.
+Two were inconclusive. **Five of the six real passes are also inflated by paint** — verdicts
+safe, numbers not clean. **`pit_wall_unit`'s relief is entirely shader bump, not mesh** (one
+crease every 68 px), predicted in advance by the render-free census.
+
+### The repair, and a correction to the proposed mechanism
+
+The first proposal was to gate on the two-light **correlation**. **It does not survive its
+own controls** — real 3 mm bolt heads read +0.1003 and a plain grey plate −0.8608, because
+real relief carries a light-*invariant* component (a rib's flat top is bright from either
+side). A statistic that puts a smooth cylinder (+0.9193) and a painted one (+0.8629) in the
+same bin cannot decide. **`rho` is measured and reported, not gated.**
+
+The lever is **amplitude, not correlation**. Check 6 is now a three-clause conjunction:
+`dip` ∧ `fine_over_control ≥ 2.00` ∧ **`light_over_control ≥ 2.00`** — render both staged
+sun sides, band-pass **log** luminance (paint on curvature leaks 40.9× more in linear),
+split the fine band into the half that moved with the sun and the half that did not, and
+compare the moved half to the same luminance-matched in-frame control.
+
+**Truth table, 15 panels: dip alone 9/15, combined 14/15. Paint 7/7 rejected, smooth 3/3
+rejected.** The decisive row is a painted sphere — dip 0.6252 defeats the old check,
+`fine_over_control` **25.45× defeats check 5 twelvefold**, and only the light clause rejects
+it. The single miss, `e_bolts_3mm`, **also fails `fine_over_control` at 1.34×**, so the new
+clause is never the deciding vote: no relief panel is lost that check 5 was not already
+losing.
+
+**Two limits, printed on every run rather than tuned around.** At a true 180° sun reversal a
+painted cylinder reaches **2.05 against the 2.00 bar** — a geometry the gate cannot stage,
+since both its candidates are side-lights ±70° off the camera axis; raising the bar to 3.00
+would reject real 8 mm ribs at 2.83. And `heras_fence_panel`'s in-frame control remains
+degenerate, so it passes on the absolute floor alone.
+
+**Consequence:** a missing flip frame now makes check 6 **NOT MEASURED** rather than a
+silent pass, so **every existing `gate.json` is stale** until re-run. And
+**`catch_fence_post` cannot be measured at all** — its witness frame is **66 % crushed to
+black** and the analyser rejects it as unfit, confirmed identical at committed HEAD, so one
+of the eight passes currently has no supporting measurement in either direction.

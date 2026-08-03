@@ -236,6 +236,17 @@ def main():
                         "volume, parting); 0 leaves a smooth shell")
     p.add_argument("--hair-strands", type=float, default=None,
                    help="gain on the strand COUNT; 0 emits no strand tubes")
+    # THE LOCK LADDER -- defect 3's surviving half, "short hair is a fluted
+    # melon after three attempts". The lock ridges are their own layer and the
+    # only honest A/B is the MERIDIAN field beside the new one, same bodies,
+    # same seed, same camera. See humankit._hair_lock_field.
+    p.add_argument("--hair-lock", type=float, default=None,
+                   help="gain on the lock RIDGES alone; 0 leaves the volume "
+                        "noise and the parting and removes every gutter")
+    p.add_argument("--hair-lock-legacy", action="store_true",
+                   help="rebuild the MERIDIAN lock field -- the one that "
+                        "renders a short crop as a ribbed gourd -- as the "
+                        "positive control. See humankit.HAIR_LOCK_LEGACY")
     # THE FACE LADDER'S SECOND HALF -- defect 1's actual mechanism. See
     # humankit.FACE_GRID_WARP: the sharp face lobes were narrower than the head
     # grid and never reached the mesh. 0 on both rebuilds the shipped face.
@@ -267,6 +278,8 @@ def main():
         HK.FACE_TINT = float(a.face_tint)
     if a.hair_legacy:
         HK.HAIR_LEGACY = True
+    if a.hair_lock_legacy:
+        HK.HAIR_LOCK_LEGACY = True
     for _flag, _name in (("face_warp", "FACE_GRID_WARP"),
                          ("face_floor", "FACE_LOBE_FLOOR")):
         _v = getattr(a, _flag)
@@ -276,13 +289,15 @@ def main():
            % (HK.FACE_GRID_WARP, HK.FACE_LOBE_FLOOR))
     for _flag, _name in (("hair_relief", "HAIR_RELIEF"),
                          ("hair_lump", "HAIR_LUMP"),
-                         ("hair_strands", "HAIR_STRAND_GAIN")):
+                         ("hair_strands", "HAIR_STRAND_GAIN"),
+                         ("hair_lock", "HAIR_LOCK")):
         _v = getattr(a, _flag)
         if _v is not None:
             setattr(HK, _name, float(_v))
-    HK.log("hair ladder:  legacy=%s relief=%.2f lump=%.2f strands=%.2f"
+    HK.log("hair ladder:  legacy=%s relief=%.2f lump=%.2f strands=%.2f "
+           "lock=%.2f lock_legacy=%s"
            % (HK.HAIR_LEGACY, HK.HAIR_RELIEF, HK.HAIR_LUMP,
-              HK.HAIR_STRAND_GAIN))
+              HK.HAIR_STRAND_GAIN, HK.HAIR_LOCK, HK.HAIR_LOCK_LEGACY))
     HK.log("cloth ladder: relax=%s roll=%.3f m fold_gain=%.2f shader_relief=%.2f"
            % (HK.GARMENT_RELAX, HK.CLOTH_ROLL_M, HK.FOLD_GAIN,
               HK.SHADER_RELIEF))

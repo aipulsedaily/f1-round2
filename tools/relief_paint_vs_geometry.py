@@ -227,6 +227,24 @@ def flatten_paint(mat, drop_normal, log):
             s = n.inputs.get(name)
             if s is None:
                 continue
+            # ONLY LINKED SOCKETS. Pinning an UNLINKED constant does not remove
+            # paint -- there is no paint in a constant -- it changes the
+            # material's baseline response to light, which is a property of the
+            # surface answering the geometry.
+            #
+            # THIS WAS A BUG AND heras_fence_panel FOUND IT. Pinning
+            # Roughness -> 0.5 and Metallic -> 0 on galvanised wire replaced a
+            # metal with a dielectric: the across-light correlation went 0.076 ->
+            # 0.268 and the arm collapsed to -0.0347 on an item whose pure-mesh
+            # arm reproduces the shipped along/across pair (0.181/0.061 against
+            # 0.182/0.076) almost exactly. The arm was measuring my edit, not the
+            # module.
+            #
+            # The old behaviour could only UNDER-state the geometry arm, so every
+            # PASS IS REAL decided under it stands a fortiori; the verdicts that
+            # had to be re-run are the ones it drove to INCONCLUSIVE.
+            if not s.links:
+                continue
             for lk in list(s.links):
                 nt.links.remove(lk)
                 touched += 1
@@ -536,6 +554,15 @@ def measure_item(G, item, vdir):
         rec["drift"] = round(dip0 - shipped, 5)
     else:
         rec["REPRODUCTION"] = "ok"
+    # THE GATE'S OWN BAR FOR THIS ITEM, so each arm can be asked the question the
+    # gate actually asks rather than a proxy for it: `subject >= control + MARGIN
+    # AND >= FLOOR`, with a degenerate control falling back to the floor alone.
+    ctl = gj["witness"]["image"].get("relief_control")
+    rec["gate_bar"] = (max(ctl + 0.030, 0.05) if isinstance(ctl, (int, float))
+                       else 0.05)
+    rec["gate_bar_from"] = ("in-frame control %.4f + 0.030" % ctl
+                            if isinstance(ctl, (int, float))
+                            else "absolute floor alone (control was degenerate)")
     rec["orig"] = {"dip": dip0, "along": det0.get("dip_along"),
                    "across": det0.get("dip_across"),
                    "lag": det0.get("best_lag_px")}
@@ -912,13 +939,24 @@ def main():
               f"{st.get('sep_from_light_deg', float('nan')):>8.1f}"
               f"  {r['verdict']}  [{r.get('REPRODUCTION')}]")
         print(f"      {r['verdict_because']}")
+        bar = r.get("gate_bar")
+        if bar is not None:
+            bits = []
+            for arm_name in ("geo", "geonb", "truegeo", "paint"):
+                v = (r.get(arm_name) or {}).get("dip")
+                if v is not None:
+                    bits.append(f"{arm_name} "
+                                f"{'CLEARS' if v >= bar else 'fails '}")
+            print(f"      against THIS ITEM'S OWN gate bar {bar:.4f} "
+                  f"({r.get('gate_bar_from')}): " + ", ".join(bits))
         cc = r.get("consolidation_control") or {}
         if "VALID" in cc:
             print(f"      merge control: orig arm {cc['merged_orig_dip']} vs "
                   f"shipped frame {cc['shipped_frame_dip']} "
                   f"(delta {cc['delta']}) -> "
                   f"{'VALID' if cc['VALID'] else '*** MERGE CHANGED THE PICTURE'}")
-    os.makedirs(os.path.dirname(a.out), exist_ok=True)
+    d = os.path.dirname(os.path.abspath(a.out))
+    os.makedirs(d, exist_ok=True)
     json.dump(out, open(a.out, "w"), indent=1)
     print(f"\n>> wrote {a.out}")
     return 0

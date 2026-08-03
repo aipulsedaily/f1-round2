@@ -1,0 +1,16 @@
+{
+ "bodies": 3948,
+ "film_frames": 321,
+ "keys_full": 1267308,
+ "keys_kept": 814668,
+ "ratio": 0.6428334706322378,
+ "max_pos_err_m": 0.001499975355894449,
+ "max_ang_err_deg": 0.3499979567230627,
+ "pos_tol_m": 0.0015,
+ "ang_tol_deg": 0.35,
+ "measured_on": 400,
+ "out": "sim/out/breach_film.npz",
+ "bytes": 20092847,
+ "release_frame_min": 860,
+ "never_released": 38
+}

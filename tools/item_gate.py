@@ -123,14 +123,36 @@ THE SEVEN CHECKS
                                      amplitude is 3-5x too small to survive to
                                      pixels" written as a number. See the caveat
                                      above for why the first clause is weak.
-  6. relief_reads_as_lip_and_shade   RENDER. Under a 12.5 deg raking sun a
+  6. relief_reads_as_lip_and_shade   TWO RENDERS. Under a 12.5 deg raking sun a
                                      raised feature makes a bright sunward lip
                                      AND a dark lee shadow -- a dipole along the
-                                     light. A printed one makes a single-value
-                                     mark. Measured as the depth of the
+                                     light. Measured as the depth of the
                                      along-light anticorrelation MINUS the
                                      across-light one, so a merely directional
                                      surface cannot fake it.
+                                     THAT DIP IS NO LONGER THE WHOLE CHECK, and
+                                     R2-060 is why: a flat quad -- four
+                                     vertices, z identically zero, no modifier,
+                                     no normal map -- painted with stripes
+                                     ALIGNED to the light scores 0.63 against
+                                     real 2 mm ribs' 1.01. After the band-pass a
+                                     sharp albedo STEP and a lip-and-shadow are
+                                     the same bipolar pair at the same spacing,
+                                     and this statistic reads only the spacing.
+                                     So the frame is now staged and rendered on
+                                     BOTH candidate sun sides -- the side the
+                                     picker chose and the one it rejected -- and
+                                     the fine band is split into the half that
+                                     MOVED with the light and the half that did
+                                     not. Relief is in the first, paint is in
+                                     the second, and the half that moved has to
+                                     clear the same x2.00 over the same
+                                     in-frame smooth control that check 5 uses.
+                                     Measured: 0.02x on all four painted decoys
+                                     including a HIGH-CONTRAST one and a
+                                     roughness-only one, 1.00x on a plain plate
+                                     and a plain cylinder, 2.16-2.61x on real
+                                     ribs. See LIGHT_OVER_CONTROL.
   7. silhouette_departs_from_analytic  RENDER, flexible items only. Cloth is
                                      not a machined cone.
 
@@ -402,6 +424,142 @@ RELIEF_DIP_FLOOR = 0.05
 # report when it happens, because it is a weakening of the check and has to be
 # visible.
 RELIEF_CONTROL_SANE = 0.30
+# ---------------------------------------------------------------------------
+# R2-060. THE TWO-LIGHT SEPARATOR -- the clause that makes check 6 mean what it
+# says. `relief_anisotropy` alone cannot tell a painted step from a lip and a
+# shadow: a flat quad (4 verts, z identically 0, no modifier, no normal map)
+# with 30 mm stripes ALIGNED to the light scores dip 0.6311 against 0.6082 for
+# real 2 mm ribs. Both leave a bipolar pair at the same ~2r spacing after the
+# band-pass, and the statistic reads only the spacing.
+#
+# The physical fact that separates them: a lip-and-shadow belongs to the LIGHT
+# and an albedo step belongs to the SURFACE. Stage the sun on its OTHER
+# candidate side -- the runner-up `sun_side_chosen` already rejects -- and the
+# relief pattern inverts while the paint does not move.
+#
+# TWO THRESHOLDS, and each catches a case the other cannot:
+#
+#   LIGHT_OVER_CONTROL   the ANTISYMMETRIC half of the band -- the part that
+#                        moved when the sun moved -- must be at least twice the
+#                        smooth control's, exactly as `fine_over_control`
+#                        demands of the total band. Without it the FLAT GREY
+#                        PLATE passes: on a structureless surface the only thing
+#                        in the band is its own directional shading, which
+#                        inverts too, so rho reads -0.98 on nothing whatsoever.
+#                        This clause is also what closes the amplitude hole --
+#                        rho is a correlation and therefore blind to how much
+#                        energy it is correlating, so a handful of sharp painted
+#                        edges gives a near-perfect coefficient on almost no
+#                        band. An AMPLITUDE referenced to the in-frame control
+#                        cannot be satisfied by sparseness, and a HIGHER-contrast
+#                        painted pattern adds its energy entirely to the
+#                        symmetric half, so it does not help.
+#                        Same 2.00 as FINE_OVER_CONTROL and for the same reason:
+#                        twice the noise floor in sd is four times in variance.
+#
+#                        MEASURED on the extended control ladder, chosen sun
+#                        against its runner-up, every ratio against a smooth
+#                        control OF THE SAME SHAPE:
+#
+#                          real relief   b_rib_0p5mm     x2.37   RELIEF
+#                                        c_rib_2mm       x2.61   RELIEF
+#                                        d_rib_8mm       x2.16   RELIEF
+#                                        l_cyl_rib_2mm   x7.94   RELIEF
+#                          smooth        a_flat_0mm      x1.00   reject
+#                                        j_cyl_flat      x1.00   reject
+#                                        m_sph_flat      x1.00   reject
+#                          paint         f_printed       x0.02   reject
+#                                        g_aligned       x0.02   reject
+#                                        h_hi_contrast   x0.03   reject
+#                                        i_roughness     x0.02   reject
+#                                        k_cyl_printed   x1.40   reject
+#                                        n_sph_printed   x1.04   reject
+#
+#                        The two rows to read are the last two. THE CURVED
+#                        PAINTED SPHERE has a dip of 0.6252 -- it defeats the
+#                        statistic this check used to be -- and a fine-band
+#                        contrast 25.45x the control, so it defeats check 5 by a
+#                        factor of twelve as well. This is the only clause that
+#                        rejects it. And it is curvature that makes it hard: on
+#                        a curved surface the same paint renders as albedo times
+#                        cos(i), and cos(i) is NOT the same under the two suns,
+#                        so in linear luminance the paint's amplitude changes
+#                        with the light and lands in the half reserved for
+#                        relief. Hence the log; see LOG_FLOOR_FRAC.
+#
+#                        THE MARGIN AGAINST CURVED PAINT IS THE THIN PART OF
+#                        THIS AND IT IS NOT HIDDEN. The log removes the SMOOTH
+#                        part of log cos(i); near a shadow terminator cos(i) is
+#                        small and changing fast, and what is left there is
+#                        genuinely light-driven fine structure made by paint.
+#                        The painted cylinder measures x1.40 at the gate's own
+#                        runner-up geometry and x2.05 at a true 180 deg
+#                        reversal -- i.e. it CROSSES this bar when the two suns
+#                        are nearly opposed. That is measured, not feared; see
+#                        `truth_table_A_vs_C.json`. It is the one case on the
+#                        ladder where paint still passes, it is a smooth convex
+#                        body (the worst shape for this test, because the two
+#                        suns leave only a grazing band lit in common), and
+#                        closing it needs either a shape-aware control or a
+#                        third render. The bar is NOT raised to chase it: 3.00
+#                        would reject real 8 mm ribs at x2.83 in the same
+#                        column, which is a worse trade.
+#
+#                        A NULL, PROVEN RATHER THAN ASSUMED. Uncorrelated
+#                        Monte-Carlo residual lands entirely in the light half,
+#                        so "the band that moved" could in principle be nothing
+#                        but noise. Rendering sun A TWICE at different seeds --
+#                        the light does not move at all -- collapses it:
+#                        real relief 11.6-16.2x smaller, the smooth controls
+#                        4.6-23.4x smaller, and the flat painted decoys not at
+#                        all (x0.7-1.8), i.e. their entire light-half was noise
+#                        to begin with and their noise-subtracted signal is
+#                        0.0000. The band this clause reads is the sun's.
+LIGHT_OVER_CONTROL = 2.00
+#   rho                  MEASURED AND REPORTED, DELIBERATELY NOT GATED, and
+#                        this is a correction to the proposal rather than a
+#                        detail. corr(chosen, flip) over the fine band is the
+#                        obvious separator -- a lip and its shadow swap ends, a
+#                        painted step does not -- and on the first ladder it
+#                        looked total: ribs -0.4248 and -0.1833, both painted
+#                        decoys +1.0000. It does not survive its own controls.
+#
+#                        Measured on the extended ladder, A vs B:
+#
+#                          b_rib_0p5mm   relief   rho -0.4897
+#                          c_rib_2mm     relief   rho -0.0833
+#                          d_rib_8mm     relief   rho -0.1014
+#                          e_bolts_3mm   relief   rho +0.1003   <- POSITIVE
+#                          a_flat_0mm    smooth   rho -0.8608   <- "relief"
+#                          j_cyl_flat    smooth   rho +0.9193   <- "paint"
+#                          paints        paint    rho +0.86 .. +0.9992
+#
+#                        `rho <= 0` would REJECT 3 mm chamfered bolt heads --
+#                        the exact feature marshal_post_deck was failed for --
+#                        and would pass a plain grey plate. The reason is
+#                        physical and not fixable by moving the number: real
+#                        relief carries a LIGHT-INVARIANT component too. A rib's
+#                        flat top is bright under both suns, so a fixed
+#                        geometric pattern sits in the band behaving exactly
+#                        like paint, and rho is the ratio of that to the part
+#                        that moves. Sparse relief is mostly flat top.
+#                        Kept in the report because it reads well beside the
+#                        amplitude -- +0.99 says "this surface's fine band is
+#                        the same picture under both suns" -- but a number that
+#                        puts a smooth cylinder and a painted one in the same
+#                        bin cannot be the thing that decides.
+# The band-pass is taken in LOG luminance for the two-light pair, and that is
+# load-bearing rather than cosmetic. On a CURVED painted surface the same paint
+# renders as albedo*cos(i), and cos(i) differs between the two sun sides -- so in
+# linear luminance the painted pattern's AMPLITUDE changes with the light even
+# though the pattern itself does not move, and the antisymmetric half picks up
+# a scaled copy of the paint. In log luminance that contamination is an ADDITIVE
+# slowly-varying term, log cos(i), which a fine band-pass removes outright. What
+# is left is log(albedo), identical under both suns. Measured on a painted
+# cylinder and a painted sphere; see `tools/relief_control_measure.py --measure2`.
+# The floor keeps log() away from zero and is a fraction of the frame's own
+# subject mean, so it is scale-invariant like everything else here.
+LOG_FLOOR_FRAC = 0.02
 # Real cloth at the stated LAMBDA_HANG of 112 mm should perturb a silhouette by
 # 5-10 mm; crew_fireproof_overall measured 1.6 mm. 5.0 is the BOTTOM of the
 # stated physical range, so it is the most permissive reading of the evidence
@@ -530,8 +688,16 @@ def parse_args():
     argv = sys.argv
     argv = argv[argv.index("--") + 1:] if "--" in argv else []
     p = argparse.ArgumentParser()
-    p.add_argument("--item", required=True)
-    p.add_argument("--out", required=True)
+    # R2-060: `--stage-flip` retrofits the other-sun-side blend onto a witness
+    # that was staged before the two-light clause existed. It needs no item and
+    # no report, so it does not demand them.
+    need = "--stage-flip" not in argv
+    p.add_argument("--stage-flip", default=None,
+                   help="mirror the sun of an EXISTING witness .blend onto its "
+                        "other candidate side, write `<stem>_flip.blend` beside "
+                        "it, and stop. For witnesses staged before R2-060.")
+    p.add_argument("--item", required=need)
+    p.add_argument("--out", required=need)
     p.add_argument("--manifest", default=os.path.join(R2, "docs/item_manifest.json"))
     p.add_argument("--prefix", default=None,
                    help="object-name prefix identifying this item")
@@ -558,6 +724,13 @@ def parse_args():
                         "witness spec sidecar written by a previous staging "
                         "run; without it the control regions are unknown and "
                         "the gate refuses rather than guessing.")
+    p.add_argument("--from-png-flip", default=None,
+                   help="R2-060. The same frame rendered on the OTHER candidate "
+                        "sun side, for the paint-vs-geometry clause of the "
+                        "relief check. Defaults to `<from-png stem>_flip.png` "
+                        "beside it. Without it the relief check reports NOT "
+                        "MEASURED, because the dip on its own cannot tell a "
+                        "painted step from a lip and a shadow.")
     p.add_argument("--stage-only", action="store_true",
                    help="write the witness blend + spec and stop. The "
                         "render-based checks are then unevaluated, so the "
@@ -1061,6 +1234,96 @@ def _look_at(obj, target):
     obj.rotation_euler = d.to_track_quat("-Z", "Y").to_euler()
 
 
+def flip_path(p):
+    """`.../witness.blend` -> `.../witness_flip.blend`, and the same for .png.
+
+    One function, so the writer and every reader agree by construction.
+    """
+    root, ext = os.path.splitext(os.path.abspath(p))
+    return root + "_flip" + ext
+
+
+def sun_screen_rowcol(cam, light_dir):
+    """Where the light travels, in image array coordinates (row, col).
+
+    Lifted out of `stage_witness` so the flip frame's direction is computed by
+    the SAME three lines as the chosen frame's. Two copies of this arithmetic
+    that disagree by a sign is exactly the class of fault that has cost this
+    project three instruments.
+    """
+    vc = cam.matrix_world.to_3x3().transposed() @ light_dir
+    sx, sy = float(vc.x), float(vc.y)
+    n = math.hypot(sx, sy)
+    if n <= 1e-6:
+        return [1.0, 0.0]
+    return [-sy / n, sx / n]
+
+
+def mirror_sun_about_camera(sun, cam):
+    """Swing the sun to the OTHER candidate side. R2-060.
+
+    `sun_side_chosen` is already a choice between two: the sun sits at
+    cam_az +/- SUN_AZ_OFF_CAM_DEG and the side that better lights the subject's
+    dominant visible normal wins. The two-light separator needs the RUNNER-UP,
+    and the runner-up is the winner MIRRORED ABOUT THE CAMERA AZIMUTH -- not its
+    opposite. Mirroring is what this does, so the flip frame is a frame the gate
+    would have been entitled to stage anyway, at the same elevation, at the same
+    energy, with the same cos(incidence) budget on a surface facing the camera.
+
+    A true 180 deg reversal would separate paint from geometry MORE cleanly --
+    the lip and the shadow would swap exactly. It is not available: the reversed
+    sun is the one the side-picker rejected as putting the subject in its own
+    shadow, and four wave-1 items were rejected by the rig rather than by
+    anything about the asset for precisely that reason. So the repair is
+    measured on the mirror, which is what the gate can actually afford, and the
+    180 deg case is rendered on the control ladder only, to bound what the
+    mirror costs.
+
+    Returns (detail, light_dir). Refuses rather than returning an identity.
+    """
+    emit = (sun.matrix_world.to_3x3() @ Vector((0.0, 0.0, -1.0))).normalized()
+    sun_from = -emit
+    el = math.asin(max(-1.0, min(1.0, float(sun_from.z))))
+    sun_az = math.atan2(float(sun_from.y), float(sun_from.x))
+    fwd = cam.matrix_world.to_3x3() @ Vector((0.0, 0.0, -1.0))
+    cam_az = math.atan2(float(fwd.y), float(fwd.x))
+    off = math.atan2(math.sin(sun_az - cam_az), math.cos(sun_az - cam_az))
+    if abs(math.degrees(off)) < 5.0:
+        raise RuntimeError(
+            f"REFUSING to stage a flip frame: the sun is only "
+            f"{math.degrees(off):+.2f} deg off the camera azimuth, so its "
+            "mirror is the same light. There are not two sides here.")
+    new_az = cam_az - off
+    new_from = Vector((math.cos(el) * math.cos(new_az),
+                       math.cos(el) * math.sin(new_az), math.sin(el)))
+    sun.rotation_euler = new_from.to_track_quat("Z", "Y").to_euler()
+    bpy.context.view_layer.update()
+    got = (sun.matrix_world.to_3x3() @ Vector((0.0, 0.0, -1.0))).normalized()
+    # The three things that make this a mirror and not a mistake, asserted
+    # rather than assumed: it still points DOWN, it is at the SAME elevation,
+    # and it is the same angle off the camera on the other side.
+    if got.z >= 0.0:
+        raise RuntimeError(f"flip sun emits upward ({got.z:+.4f})")
+    if abs(math.degrees(math.asin(max(-1.0, min(1.0, float(-got.z)))))
+           - math.degrees(el)) > 0.05:
+        raise RuntimeError("flip sun changed elevation")
+    sep = math.degrees(math.acos(max(-1.0, min(1.0, float(
+        Vector((emit.x, emit.y, 0.0)).normalized().dot(
+            Vector((got.x, got.y, 0.0)).normalized()))))))
+    if sep < 60.0:
+        raise RuntimeError(
+            f"flip sun is only {sep:.1f} deg round from the chosen one; a lip "
+            "and its shadow do not swap ends over that little")
+    return ({"chosen_sun_az_deg": round(math.degrees(sun_az), 4),
+             "flip_sun_az_deg": round(math.degrees(new_az), 4),
+             "camera_az_deg": round(math.degrees(cam_az), 4),
+             "off_camera_deg": round(math.degrees(off), 4),
+             "ground_separation_deg": round(sep, 3),
+             "elevation_deg": round(math.degrees(el), 4),
+             "emit": [round(float(v), 6) for v in got]},
+            -new_from)
+
+
 def stage_witness(subject, rec, dist, lens, blend_path, spec_path):
     """Rebuild this blend as a controlled measurement frame and save a copy.
 
@@ -1389,6 +1652,25 @@ def stage_witness(subject, rec, dist, lens, blend_path, spec_path):
     os.makedirs(os.path.dirname(os.path.abspath(blend_path)), exist_ok=True)
     bpy.ops.wm.save_as_mainfile(filepath=blend_path, copy=True, compress=True)
 
+    # --- R2-060. THE SAME FRAME ON THE OTHER CANDIDATE SUN SIDE ------------
+    # Written every time, unconditionally, because a check that is only
+    # sometimes measurable is a check that is sometimes a pass by default. Same
+    # scene, same camera, same subject, same controls, same energy: the ONLY
+    # difference in this file is which of the two sides the side-picker chose.
+    flip_blend = flip_path(blend_path)
+    flip_detail, flip_light_dir = mirror_sun_about_camera(sun, cam)
+    bpy.ops.wm.save_as_mainfile(filepath=flip_blend, copy=True, compress=True)
+    flip_rowcol = sun_screen_rowcol(cam, flip_light_dir)
+    sun.rotation_euler = sun_from.to_track_quat("Z", "Y").to_euler()
+    bpy.context.view_layer.update()
+    back = (sun.matrix_world.to_3x3() @ Vector((0.0, 0.0, -1.0))).normalized()
+    if (back - light_dir).length > 1e-5:
+        raise RuntimeError(
+            "the chosen sun did not come back to where it was after the flip "
+            f"blend was written ({tuple(round(float(v), 6) for v in back)} vs "
+            f"{tuple(round(float(v), 6) for v in light_dir)}); the witness "
+            "frame and the flip frame would not be the same staging")
+
     # --- what the analyser needs to find the control ------------------------
     vc = R.transposed() @ light_dir       # light travel in camera space
     sx, sy = float(vc.x), float(vc.y)
@@ -1423,6 +1705,11 @@ def stage_witness(subject, rec, dist, lens, blend_path, spec_path):
         "ref_radius_px": REF_RADIUS_PX,
         "ref_card_normal_from": card_why,
         "sun_side_chosen": sun_why,
+        # R2-060. The runner-up side, staged and recorded so the relief check
+        # can ask whether the pattern belongs to the light or to the surface.
+        "sun_screen_direction_rowcol_flip": flip_rowcol,
+        "witness_blend_flip": os.path.abspath(flip_blend),
+        "flip_sun": flip_detail,
         "subject_visible_normal": [float(vis_n.x), float(vis_n.y), float(vis_n.z)],
         "sun_cos_incidence_on_visible_normal": round(float(best_cos), 5),
         "wedge_boxes_px": [w[2] for w in wedge],
@@ -1444,6 +1731,35 @@ def stage_witness(subject, rec, dist, lens, blend_path, spec_path):
 # ===========================================================================
 # PART 4 -- GETTING THE PIXELS
 # ===========================================================================
+
+def render_witness_pair(blend_path, png_path, samples, args):
+    """Both sun sides, submitted back to back. R2-060.
+
+    Two jobs against two ~5 MB scenes. That is deliberately NOT consolidated
+    into one scene with light linking: the five-arm study was worth merging
+    because its scenes were 1.4 GB and the broker was spending 940 s loading
+    them, and neither is true here -- the measured witness blends run 3-11 MB,
+    so a merge would buy back nothing and would put a light-linking rig between
+    the two frames whose ONLY permitted difference is the sun's azimuth.
+    """
+    info = render_witness(blend_path, png_path, samples, args)
+    fb, fp = flip_path(blend_path), flip_path(png_path)
+    if not os.path.exists(fb):
+        info["flip"] = {"rendered": False,
+                        "why": f"no flip blend at {fb} -- this witness was "
+                               "staged before R2-060; re-stage it"}
+        return info
+    try:
+        info["flip"] = render_witness(fb, fp, samples, args)
+        info["flip"]["png"] = fp
+    except Exception as exc:                                   # noqa: BLE001
+        # A FAILED FLIP RENDER MUST NOT COST THE OTHER SIX CHECKS. It costs the
+        # relief check, which then reports NOT MEASURED -- and NOT MEASURED is
+        # not a pass (R2-019), so nothing is smuggled through here.
+        info["flip"] = {"rendered": False,
+                        "why": f"{type(exc).__name__}: {exc}"}
+    return info
+
 
 def render_witness(blend_path, png_path, samples, args):
     """Submit the witness frame to the 5090 broker and wait for the PNG.
@@ -1661,7 +1977,7 @@ def _agg_max(bands, which):
     return max(vals) if vals else None
 
 
-def relief_anisotropy(L, mask, sun_rc, r=2):
+def relief_anisotropy(L, mask, sun_rc, r=2, band=None):
     """Does the surface carry LIGHT-AND-SHADE PAIRS, or single-value marks?
 
     Under a 12.5 deg sun a raised feature makes a bright sunward lip and a dark
@@ -1688,11 +2004,16 @@ def relief_anisotropy(L, mask, sun_rc, r=2):
 
     Returns (dip, detail). Compared against the same statistic measured on the
     smooth controls in the same frame.
+
+    `band` supplies an ALREADY BAND-PASSED image in place of `_dog(L, r)`, which
+    is how R2-060 re-derives a shipped dip on the LIGHT-DRIVEN half of the band
+    alone. Nothing else about the statistic changes, so the re-derived number is
+    on the same scale as the shipped one and the two can be subtracted.
     """
     m = _erode(mask, int(math.ceil(3 * r)))
     if int(m.sum()) < MIN_BAND_PX:
         return None, {"reason": "too few pixels after erosion"}
-    B = _dog(L, r)
+    B = _dog(L, r) if band is None else band
     u = np.array(sun_rc, dtype=np.float64)
     nu = math.hypot(u[0], u[1])
     if nu < 1e-6:
@@ -1744,6 +2065,105 @@ def relief_anisotropy(L, mask, sun_rc, r=2):
     detail["dip_along"] = round(dip_a, 5)
     detail["dip_across"] = round(dip_c, 5)
     return round(dip_a - dip_c, 5), detail
+
+
+def two_light_bands(LA, LB, mask, floor, bands=FINE_BANDS, cache=None):
+    """Split the fine band of a two-sun pair into what MOVED and what STAYED.
+
+    THE R2-060 SEPARATOR. Write the two band-passed log-luminance images as
+
+        a = dP + dS_A            b = dP + dS_B
+
+    where `dP` is whatever the SURFACE carries (albedo, and in log luminance
+    that is all it carries) and `dS` is what the LIGHT carries. A lip and its
+    shadow swap ends when the sun changes side, so dS_B ~ -dS_A; a painted step
+    does not move at all, so dP is common. The two halves are then just
+
+        D = (a - b) / 2  ->  dS_A        THE LIGHT-DRIVEN BAND
+        S = (a + b) / 2  ->  dP          THE SURFACE-DRIVEN BAND
+
+    and `rho = corr(a, b)` says which of the two dominates: -1 for pure relief,
+    +1 for pure paint.
+
+    WHY LOG. On a curved surface the same paint renders as albedo*cos(i) and
+    cos(i) is not the same under the two suns, so in LINEAR luminance
+    D = dP*(cA - cB)/2 -- a scaled copy of the paint, arriving in the half that
+    is supposed to contain only light. In log luminance the irradiance is an
+    additive term log cos(i) that varies over the whole object rather than over
+    a 1-2 px band, and the band-pass removes it. Measured, not argued: a painted
+    cylinder and a painted sphere both return their paint to the S half.
+
+    WHY IT IS NOT SUFFICIENT ALONE, stated here because the number is seductive.
+    A FLAT GREY PLATE with nothing on it returns rho = -0.98. That is the
+    physics and not a bug: with no structure the only thing in the band is the
+    plate's own directional shading, which inverts with the sun like anything
+    else. rho is a correlation, so it is blind to the fact that it is
+    correlating almost nothing. The amplitude clause is what closes that, and
+    the amplitude is referenced to the smooth control in the same frame exactly
+    as `fine_over_control` is.
+
+    Returns (stats, detail). `light` and `still` are in percent, being 100x the
+    sd of a log, i.e. percent contrast -- no `% of mean` divisor, so the divisor
+    hazard `contrast_bands` documents does not arise here at all.
+    """
+    if LA.shape != LB.shape:
+        return None, {"reason": f"frame shapes differ: {LA.shape} vs {LB.shape}"}
+    # THE BAND-PASSES DO NOT DEPEND ON THE MASK, only on the frame pair and the
+    # log floor, and this function is called once for the subject and once for
+    # EVERY smooth control in the frame -- eight or nine times on a witness with
+    # a sphere, a card and six wedge steps. Recomputing five Gaussian blurs of
+    # an 8.3-megapixel array each time made a single item take tens of minutes;
+    # over the ~407-item wave-2 campaign that is hours of CPU spent computing
+    # the same arrays. `cache` is a plain dict owned by the caller for the life
+    # of one frame pair. It changes no number: the arrays are identical, which
+    # is exactly why they can be shared.
+    if cache is None:
+        cache = {}
+    key = round(float(floor), 12)
+    if cache.get("floor") != key:
+        cache.clear()
+        cache["floor"] = key
+        cache["lA"] = np.log(np.maximum(LA, floor))
+        cache["lB"] = np.log(np.maximum(LB, floor))
+    lA, lB = cache["lA"], cache["lB"]
+    sxx = syy = sxy = 0.0
+    per = {}
+    light, still, dband = [], [], {}
+    for r in bands:
+        m = _erode(mask, int(math.ceil(3 * r)))
+        n = int(m.sum())
+        if n < MIN_BAND_PX:
+            per[str(r)] = {"px": n, "skipped": f"{n} px after erosion"}
+            continue
+        if ("a", r) not in cache:
+            cache[("a", r)], cache[("b", r)] = _dog(lA, r), _dog(lB, r)
+        a, b = cache[("a", r)], cache[("b", r)]
+        D, S = 0.5 * (a - b), 0.5 * (a + b)
+        dband[r] = D
+        x, y = a[m], b[m]
+        x = x - x.mean()
+        y = y - y.mean()
+        sxx += float((x * x).sum())
+        syy += float((y * y).sum())
+        sxy += float((x * y).sum())
+        lv, sv = 100.0 * float(D[m].std()), 100.0 * float(S[m].std())
+        light.append(lv)
+        still.append(sv)
+        per[str(r)] = {"px": n, "light_pct": round(lv, 5),
+                       "still_pct": round(sv, 5),
+                       "rho": (round(float((x * y).mean()
+                                           / max(x.std() * y.std(), 1e-30)), 5)
+                               if x.std() > 1e-12 and y.std() > 1e-12 else None)}
+    if not light:
+        return None, {"reason": "no band had enough pixels after erosion",
+                      "per_band": per}
+    rho = (sxy / math.sqrt(sxx * syy)) if sxx > 1e-30 and syy > 1e-30 else None
+    return ({"rho": (round(rho, 5) if rho is not None else None),
+             "light_pct": round(sum(light) / len(light), 5),
+             "still_pct": round(sum(still) / len(still), 5),
+             "px": int(_erode(mask, int(math.ceil(3 * max(bands)))).sum()),
+             "log_floor": round(float(floor), 8)},
+            {"per_band": per, "D": dband})
 
 
 def silhouette_departure(alpha, px_per_m, min_rows=100, want_max=True):
@@ -1851,7 +2271,123 @@ def disc_mask(H, W, cx, cy, rad):
     return (xx - cx) ** 2 + (yy - cy) ** 2 <= rad * rad
 
 
-def analyse(png, spec):
+def _two_light_block(flip_png, spec, rgba, L, solid, sub_m, sub_ok, unclippedA,
+                     controls, part, mu_sub, sun_rc):
+    """Measure the chosen frame against its flip. R2-060. Returns (block, why).
+
+    THE MASK IS "LIT IN BOTH FRAMES", and it is NOT the intersection of the two
+    frames' `lit_core`s. That was the first version and it was wrong, measured:
+    `lit_core` keeps the brightest 40 % of a blurred copy OF ITS OWN FRAME, and
+    the two frames are lit from opposite sides, so their brightest 40 %s are
+    nearly disjoint BY CONSTRUCTION. On `pont_girder` that left 24,765 pixels in
+    common out of 1,708,028 and 1,160,212 -- 1.4 % -- and the clause reported
+    NOT MEASURED on an item that has plenty of surface lit in both. The cut
+    exists to keep a band-pass out of a subject's own shadows; requiring the
+    pixel to be un-crushed and un-clipped in BOTH frames already does that, and
+    does it better, because a pixel in shadow under either sun is excluded by
+    the frame that shadows it.
+
+    It is still conservative in the right direction. A shadow edge that MOVES
+    when the sun moves is relief -- the best evidence there is -- and this mask
+    still throws those pixels away wherever one side crushes them. That can only
+    cost the subject relief it really has; it can never manufacture any. An item
+    that passes on this mask passes a fortiori.
+
+    The geometry is asserted identical between the two frames before anything is
+    measured. If the alpha mattes disagree the flip blend is not the same
+    staging, and every number below would be the subject compared with a
+    different subject.
+    """
+    if not os.path.exists(flip_png):
+        return None, f"the flip frame {flip_png} has not been rendered"
+    B = load_linear_rgba(flip_png)
+    if B.shape != rgba.shape:
+        return None, (f"the flip frame is {B.shape[1]}x{B.shape[0]}, the chosen "
+                      f"frame {rgba.shape[1]}x{rgba.shape[0]}")
+    LB = (0.2126 * B[:, :, 0] + 0.7152 * B[:, :, 1]
+          + 0.0722 * B[:, :, 2]).astype(np.float64)
+    solidB = B[:, :, 3].astype(np.float64) >= 0.995
+    agree = float((solid == solidB).mean())
+    if agree < 0.999:
+        return None, (f"the two frames' alpha mattes agree on only {agree:.4%} "
+                      "of pixels. Only the sun's azimuth may differ between "
+                      "them; a different silhouette means a different scene, "
+                      "and nothing measured across the pair would be about the "
+                      "same object.")
+    unclippedB = (LB > 0.0015) & (LB < 0.90)
+    sub_okB = sub_m & unclippedB
+    both = (sub_m & unclippedA & unclippedB)
+    floor = LOG_FLOOR_FRAC * max(mu_sub, 1e-6)
+    cache = {}
+    st, det = two_light_bands(L, LB, both, floor, cache=cache)
+    if st is None:
+        return None, ("the two frames are lit in common on too little to "
+                      f"measure: {det.get('reason')}. {int(both.sum())} px lit "
+                      f"and unclipped in BOTH, of {int((sub_m & unclippedA).sum())} "
+                      f"and {int(sub_okB.sum())}.")
+    out = dict(st)
+    out["px_lit_in_both"] = int(both.sum())
+    out["px_chosen_lit"] = int((sub_m & unclippedA).sum())
+    out["px_flip_lit"] = int(sub_okB.sum())
+    out["px_chosen_lit_core"] = int(sub_ok.sum())
+    out["alpha_agreement"] = round(agree, 6)
+    out["flip_png"] = os.path.abspath(flip_png)
+    out["sun_screen_direction_rowcol_flip"] = spec.get(
+        "sun_screen_direction_rowcol_flip")
+    # The dip RE-DERIVED on the light-driven half alone -- the shipped statistic,
+    # unchanged, run on the part of the band that moved when the sun moved. Not
+    # gated; it is what makes an inflated shipped number legible.
+    d2 = (det.get("D") or {}).get(2)
+    if d2 is not None:
+        out["dip_light_driven"], out["dip_light_driven_detail"] = \
+            relief_anisotropy(L, both, sun_rc, r=2, band=d2)
+    # ... and every smooth control in the frame measured the same way, so the
+    # amplitude has a floor from THIS frame rather than from a constant.
+    cl = {}
+    for name, msk, _full in controls:
+        mk = msk & unclippedB
+        if int(mk.sum()) < MIN_BAND_PX:
+            continue
+        cst, _ = two_light_bands(L, LB, mk, floor, cache=cache)
+        if cst is not None:
+            cl[name] = {"light_pct": cst["light_pct"], "rho": cst["rho"],
+                        "still_pct": cst["still_pct"]}
+    out["controls"] = cl
+    names = [k for k, _ in part if k in cl]
+    if names:
+        strict = max(names, key=lambda k: cl[k]["light_pct"])
+        out["light_control"] = cl[strict]["light_pct"]
+        out["light_control_from"] = strict
+        out["light_over_control"] = round(
+            out["light_pct"] / max(cl[strict]["light_pct"], 1e-9), 4)
+    else:
+        out["light_control"] = out["light_over_control"] = None
+        return out, ("no smooth control in this frame is both large enough and "
+                     "at the subject's brightness, so the light-driven band has "
+                     "no floor to be compared with. The comparison this clause "
+                     "is made of does not exist in this frame.")
+    return out, None
+
+
+def lit_core(L, lit_all):
+    """The brightest 40 % of the lit subject, as one contiguous region.
+
+    Factored out of `analyse` for R2-060 and for one reason only: the flip frame
+    has to be reduced to its lit core by the SAME rule as the chosen frame, and
+    the way this project has repeatedly gone wrong is two copies of a rule that
+    drift apart. One function, called twice.
+    """
+    if not lit_all.any():
+        return lit_all, None
+    sm = _blur(L, 8.0)
+    cut = float(np.quantile(sm[lit_all], 0.60))
+    ok = lit_all & (sm >= cut)
+    if int(ok.sum()) < MIN_BAND_PX * 3:
+        return lit_all, None                    # too small to subdivide
+    return ok, cut
+
+
+def analyse(png, spec, flip_png=None):
     """Every render-side number, plus the frame's own fitness to be measured."""
     rgba = load_linear_rgba(png)
     H, W, _ = rgba.shape
@@ -1958,17 +2494,7 @@ def analyse(png, spec):
     # shading, not of surface. The cut is taken on a BLURRED copy so the retained
     # region is spatially contiguous -- a percentile cut on raw luminance
     # shatters the mask into slivers that erosion then deletes.
-    lit_all = sub_m & unclipped
-    if lit_all.any():
-        sm = _blur(L, 8.0)
-        cut = float(np.quantile(sm[lit_all], 0.60))
-        sub_ok = lit_all & (sm >= cut)
-        if int(sub_ok.sum()) < MIN_BAND_PX * 3:
-            sub_ok = lit_all                    # too small to subdivide
-            cut = None
-    else:
-        sub_ok = lit_all
-        cut = None
+    sub_ok, cut = lit_core(L, sub_m & unclipped)
     m["lit_cut_linear"] = round(cut, 6) if cut is not None else None
     m["frame"]["subject_px_lit"] = int(sub_ok.sum())
     mu_sub = float(L[sub_ok].mean()) if sub_ok.any() else 0.0
@@ -2141,6 +2667,19 @@ def analyse(png, spec):
                               "directional autocorrelation, so the subject's "
                               "number has nothing to be compared with")
 
+    # --- R2-060. THE SAME SURFACE UNDER THE OTHER CANDIDATE SUN ------------
+    m["two_light"] = None
+    if flip_png is None:
+        m["why"]["two_light"] = (
+            "no flip frame was supplied. The dip ALONE cannot tell a painted "
+            "step from a lip and a shadow -- measured, on a flat quad with four "
+            "vertices and z identically zero, which outscores real 2 mm ribs "
+            "0.6311 to 0.6082. Stage and render `witness_flip.png`.")
+    else:
+        m["two_light"], m["why"]["two_light"] = _two_light_block(
+            flip_png, spec, rgba, L, solid, sub_m, sub_ok, unclipped, controls,
+            part, mu_sub, sun_rc)
+
     # --- silhouette, and the instrument floor measured on the control -------
     # The control sphere's outline is an exact analytic curve, so the RMS the
     # sub-pixel edge estimator reports on IT is this frame's own noise floor --
@@ -2190,8 +2729,53 @@ def analyse(png, spec):
 # MAIN
 # ===========================================================================
 
+def stage_flip_existing(src):
+    """Retrofit the other-sun-side blend onto an already-staged witness.
+
+    Opens the witness, mirrors GATE_SUN about GATE_CAM's azimuth, and saves.
+    NOTHING ELSE IS TOUCHED -- same camera, same subject, same controls, same
+    energy, same sampler. The flip frame differs from the chosen frame in one
+    scalar, and it is asserted to differ in exactly that (see
+    `mirror_sun_about_camera`) before the file is written.
+
+    Also re-derives the flip sun's screen direction into the witness spec beside
+    it, if one is there, so a later `--from-png` run has it.
+    """
+    src = os.path.abspath(src)
+    bpy.ops.wm.open_mainfile(filepath=src)
+    scn = bpy.context.scene
+    sun = bpy.data.objects.get("GATE_SUN")
+    cam = bpy.data.objects.get("GATE_CAM")
+    if sun is None or cam is None:
+        raise SystemExit(f"REFUSING: {src} has no GATE_SUN/GATE_CAM; it was not "
+                         "staged by this gate and cannot be flipped by it")
+    scn.camera = cam
+    bpy.context.view_layer.update()
+    detail, light_dir = mirror_sun_about_camera(sun, cam)
+    dst = flip_path(src)
+    bpy.ops.wm.save_as_mainfile(filepath=dst, copy=True, compress=True)
+    rowcol = sun_screen_rowcol(cam, light_dir)
+    print(f">> {os.path.basename(src)}: sun {detail['chosen_sun_az_deg']:+.2f} "
+          f"-> {detail['flip_sun_az_deg']:+.2f} deg "
+          f"({detail['ground_separation_deg']:.1f} deg round, elevation "
+          f"{detail['elevation_deg']:+.2f} unchanged, camera at "
+          f"{detail['camera_az_deg']:+.2f})")
+    print(f">> wrote {dst}")
+    for cand in (os.path.join(os.path.dirname(src), "witness_spec.json"),):
+        if os.path.exists(cand):
+            sp = json.load(open(cand))
+            sp["sun_screen_direction_rowcol_flip"] = rowcol
+            sp["witness_blend_flip"] = dst
+            sp["flip_sun"] = detail
+            json.dump(sp, open(cand, "w"), indent=1)
+            print(f">> updated {cand}")
+    return 0
+
+
 def main():
     a = parse_args()
+    if a.stage_flip:
+        return stage_flip_existing(a.stage_flip)
     manifest = json.load(open(a.manifest))
     rec = item_record(manifest, a.item)
     deps = bpy.context.evaluated_depsgraph_get()
@@ -2309,8 +2893,16 @@ def main():
                     raise RuntimeError(
                         "--stage-only: witness blend written, nothing rendered, "
                         "so checks 5-7 were not measured.")
-                render_info = render_witness(wblend, wpng, a.samples, a)
-            img, notes = analyse(wpng, wspec)
+                render_info = render_witness_pair(wblend, wpng, a.samples, a)
+            # R2-060. The flip frame defaults to sitting beside the chosen one
+            # under one naming rule (`flip_path`) that the writer and the reader
+            # share, so there is no path for the two to disagree.
+            wflip = os.path.abspath(a.from_png_flip) if a.from_png_flip \
+                else flip_path(wpng)
+            if not os.path.exists(wflip):
+                wflip = None
+            render_info["flip_png_used"] = wflip
+            img, notes = analyse(wpng, wspec, flip_png=wflip)
             unmeasurable.extend(notes)
         except Exception as exc:                       # noqa: BLE001
             render_err = f"{type(exc).__name__}: {exc}"
@@ -2390,6 +2982,65 @@ def main():
                    "have no sunward lip and no lee shadow, which is how a "
                    "printed decal behaves and not how a physical object does."))
 
+        # 6b. ... AND THE PATTERN MUST BELONG TO THE LIGHT. R2-060.
+        #
+        # The dip above cannot tell a painted step from a lip and a shadow --
+        # measured, on a four-vertex quad with z identically zero, which
+        # outscores real 2 mm ribs. So the dip is now the FIRST of three
+        # clauses, never the whole check, and this is the other two.
+        #
+        # THREE CLAUSES, each with a control that fails it:
+        #   dip                  0.12 on a flat plate; DEFEATED outright by
+        #                        aligned paint, which scores 0.63 against real
+        #                        2 mm ribs' 1.01 -- so it can no longer decide
+        #                        alone, and it is kept because a surface with no
+        #                        dipole at the lip spacing has no relief either
+        #   fine_over_control    the same bar check 5 applies, restated here so
+        #                        this check means something read on its own
+        #   light_over_control   THE SEPARATOR. 1.00 on the flat plate and on
+        #                        the flat cylinder (they ARE the floor), 0.02
+        #                        on all four painted decoys including the
+        #                        HIGH-CONTRAST one and the roughness-only one,
+        #                        1.40 on the painted CYLINDER, against 2.16 to
+        #                        2.61 on real ribs.
+        tl = img.get("two_light")
+        if relief_ok is None:
+            pass                     # the dip itself was not measurable; said
+        elif tl is None or tl.get("light_over_control") is None:
+            relief_ok = None
+            relief_why = ("NOT MEASURED -- the dip alone cannot separate paint "
+                          "from geometry, and the two-light clause that can was "
+                          "not measurable: "
+                          + str(why.get("two_light", "unknown"))
+                          + f" (dip was {img.get('relief_subject')})")
+            unmeasurable.append("relief_reads_as_lip_and_shade: " + relief_why)
+        else:
+            amp_ok = tl["light_over_control"] >= LIGHT_OVER_CONTROL
+            foc = img.get("fine_over_control")
+            fine_ok = foc is not None and foc >= FINE_OVER_CONTROL
+            was = relief_ok
+            relief_ok = bool(relief_ok and amp_ok and fine_ok)
+            relief_why += (
+                f" | TWO-LIGHT: the band that MOVED when the sun crossed to its "
+                f"other candidate side is {tl['light_pct']:.4f} % contrast, "
+                f"x{tl['light_over_control']:.2f} the strictest smooth control's "
+                f"({tl.get('light_control_from')}, need "
+                f"x{LIGHT_OVER_CONTROL:.2f}) -- {'PASS' if amp_ok else 'FAIL'}. "
+                f"The band that did NOT move is {tl['still_pct']:.4f} %, and "
+                f"corr(chosen, flip) = {tl['rho']:+.4f} (REPORTED, NOT GATED -- "
+                f"see LIGHT_OVER_CONTROL). Fine-band contrast "
+                f"x{foc if foc is not None else float('nan'):.2f} the control "
+                f"(need x{FINE_OVER_CONTROL:.2f}) -- "
+                f"{'PASS' if fine_ok else 'FAIL'}."
+                + ("" if relief_ok else
+                   (" The dip was clear but the surface's fine band barely "
+                    "moved when the light did: on this evidence the pattern "
+                    "belongs to the paint, not to the shape."
+                    if was and not amp_ok else "")))
+            if tl.get("dip_light_driven") is not None:
+                relief_why += (f" [dip re-derived on the light-driven half "
+                               f"alone: {tl['dip_light_driven']:+.4f}]")
+
         # 7. SILHOUETTE -- flexible items only, and only where 5 mm is a pixel.
         wpm = (wspec or {}).get("px_per_m", px_per_m)
         mm5_px = SIL_RMS_MM * wpm / 1000.0
@@ -2463,6 +3114,8 @@ def main():
             "relief_margin_over_control": RELIEF_MARGIN,
             "relief_dip_absolute_floor": RELIEF_DIP_FLOOR,
             "relief_control_sane_band": RELIEF_CONTROL_SANE,
+            "relief_light_over_control_required": LIGHT_OVER_CONTROL,
+            "relief_two_light_rho": "REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL",
             "silhouette_rms_mm_required": SIL_RMS_MM,
             "silhouette_rms_over_control_required": SIL_OVER_CONTROL,
             "silhouette_min_px_for_5mm": SIL_MIN_PX_FOR_5MM,

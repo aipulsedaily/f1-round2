@@ -2385,6 +2385,49 @@ def build_ear(mesh, O, B, b, lod, seed, sgn):
               zone=ZONE_SKIN, flip=(sgn < 0))
 
 
+EYE_PROUD_M = -0.0006
+"""How far the eye's apex sits BEHIND the local skin surface, in metres.
+Negative puts it PROUD, and it is negative: the eye stands 0.6 mm out of the
+lid.
+
+DEFECT 5d IS REAL AND THE OBVIOUS FIX IS REFUTED. MEASURED, KEPT AS A WARNING.
+------------------------------------------------------------------------------
+*"The eyes are two dark dots. `build_eye` puts a pupil there and the orbital
+rim above it is now real geometry, but nothing shades the eye INTO the socket,
+so at 50 px it is a dot rather than an eye."*
+
+The reasoning that follows from that is: a real eye sits at the bottom of a
+hole, so RECESS it and let sky occlusion darken the aperture -- the face fix's
+own argument, that there was no geometry there to shade. It is wrong here, and
+the measurement is not close. Rays cast at the face from 0.3 m in front, on an
+L0 head, counting which material each one lands on FIRST:
+
+    eye apex vs the local skin          first-hit EYE, of 2,143 rays
+    0.6 mm PROUD (shipped)                    6      0.280 %
+    flush                                     0      0.000 %
+    0.4 mm recessed                           0      0.000 %
+    1.0 mm recessed                           0      0.000 %
+    1.6 mm recessed                           0      0.000 %
+
+**THERE IS NO APERTURE IN THE HEAD GRID.** `head_points` emits an unbroken
+surface across the eye; `build_eye` then places a 70 deg cap of eyeball at the
+socket floor, and the only reason any of it is ever seen is that its apex
+pokes 0.6 mm THROUGH the lid skin. Recess it by any amount and the eye is
+gone -- not darker, absent -- on every figure in the film. Sky occlusion at
+the apex goes 18.3 % -> 100.0 % for the same reason, with the cheek unmoved at
+15.3 % as the negative control.
+
+`build_eye`'s docstring already recorded the same failure from the other side:
+*"Predicting it put the eyeball 12.3 mm BEHIND the skin -- an invisible eye."*
+
+**SO THE REAL FIX IS A LID MARGIN, i.e. AN APERTURE IN THE HEAD GRID**, with
+the lids as surfaces that overhang the eyeball and can therefore shade it.
+That is a change to the same grid `FACE_GRID_WARP` and `FACE_LOBE_FLOOR` were
+just tuned on, it needs its own A/B render, and shipping it unrendered is how
+this project got its broken instruments. NOT DONE. Do not "fix" defect 5d by
+moving this constant."""
+
+
 def build_eye(mesh, O, B, b, lod, seed, sgn, surf):
     """The visible CAP of an eyeball, set flush into the orbit.
 
@@ -2410,7 +2453,7 @@ def build_eye(mesh, O, B, b, lod, seed, sgn, surf):
     d = np.hypot(Q[:, 0] - ex, Q[:, 2] - ez)   # projection matches the occiput
     k = np.argsort(d)[:8]                      # just as well as the face
     y_surf = float(np.mean(Q[k, 1]))
-    ctr = np.array([ex, y_surf + 0.0006 - r * 1.07, ez])
+    ctr = np.array([ex, y_surf - EYE_PROUD_M - r * 1.07, ez])
     n, m = 14, 6
     ph = np.linspace(0.0, TAU, n, endpoint=False)
     al = np.linspace(0.06, 1.22, m)              # polar angle from +Y
@@ -2446,14 +2489,40 @@ FINGER_SPEC = (        # name        len    lateral  radius  splay_deg
 PHALANX = (0.42, 0.32, 0.26)
 
 
+FINGER_SPREAD_DEG = 11.0
+"""EXTRA fan, in degrees, on a fully open hand, per unit of a finger's own
+lateral position in `FINGER_SPEC`.
+
+DEFECT 5c: *"raised hands read as PADDLES at 57 px even though defect 6 is
+closed and they have five separated fingers. The fingers are correct and they
+are TOGETHER. At 57 px what makes a hand read is the GAPS between fingers, so
+the seated cheer poses need a spread, not more geometry."*
+
+`FINGER_SPEC`'s own splay column is -5, -1, +3, +8 deg -- **13 degrees of total
+fan across four fingers**, which is a hand held closed. That is right for a
+hand hanging at a side and wrong for the one gesture this tier does most: an
+arm straight up. A real raised hand is OPEN, and the gaps are most of what a
+hand is at any distance where a finger is two pixels.
+
+Applied proportionally to `lat`, so the index and the little finger go opposite
+ways and the middle barely moves -- a fan about the middle finger, which is
+what a hand does -- and scaled by `spread`, which `build_figure` derives from
+whether the hand is actually ABOVE THE SHOULDER and empty. You cannot splay a
+fist, and a hand around a bottle is not open, so it is not applied to either."""
+
+
 def build_hand(mesh, sk, side, b, lod, seed, grip=0.15, grip_r=None,
-               mat=MAT_SKIN, thick=0.0):
+               mat=MAT_SKIN, thick=0.0, spread=0.0):
     """Palm plus five fingers, in world space. `grip` 0 = open, 1 = closed fist.
 
     `grip_r` (metres) solves the curl against a real object instead: each
     phalanx is placed on a circle of that radius, advancing by 2 asin(l / 2R),
     which is what makes a hand on a 22 mm flag pole and a hand on a 90 mm bottle
     different hands rather than the same hand at two scales.
+
+    `spread` 0..1 fans the fingers apart -- see `FINGER_SPREAD_DEG`. It is
+    gated by the grip here as well as by the caller, because the two can
+    disagree and a splayed fist is not a pose.
     """
     hl = b.hand_len
     O = sk.origin["hand_" + side]
@@ -2488,6 +2557,9 @@ def build_hand(mesh, sk, side, b, lod, seed, grip=0.15, grip_r=None,
     palm.emit(mesh, mat, cap_start=True, zone=ZONE_PALM)
 
     # --- fingers ----------------------------------------------------------
+    # A FIST CANNOT SPLAY, and a hand closed on a bottle is not open either.
+    sprd = 0.0 if grip_r else float(np.clip(spread, 0.0, 1.0)) \
+        * float(np.clip((0.42 - grip) / 0.42, 0.0, 1.0))
     groups = _finger_groups(lod.fingers)
     for gi, grp in enumerate(groups):
         flen = float(np.mean([FINGER_SPEC[i][1] for i in grp])) * hl
@@ -2495,6 +2567,9 @@ def build_hand(mesh, sk, side, b, lod, seed, grip=0.15, grip_r=None,
         frad = float(np.mean([FINGER_SPEC[i][3] for i in grp])) * 0.055 * hl \
             * (1.0 + 0.16 * (b.girth - 1.0))
         splay = float(np.mean([FINGER_SPEC[i][4] for i in grp]))
+        # the fan, about the middle finger, proportional to the finger's own
+        # lateral position -- see FINGER_SPREAD_DEG
+        splay = splay + sprd * FINGER_SPREAD_DEG * (lat / 0.300)
         wide = len(grp) > 1
         base = O + B @ np.array([sgn * lat * pw, -0.10 * pt, pl])
         curl = grip + 0.10 * rr.u()
@@ -3409,6 +3484,8 @@ the frames have to answer is whether the thing a viewer sees is better."""
 HAIR_RELIEF = 1.0
 HAIR_LUMP = 1.0
 HAIR_STRAND_GAIN = 1.0
+HAIR_LOCK = 1.0
+HAIR_LOCK_LEGACY = False
 """THE HAIR LADDER -- defect 3, "the hair is a granular crust at every distance".
 
 Same instrument as `FOLD_GAIN`/`SHADER_RELIEF` one layer up, and it exists for
@@ -3418,6 +3495,12 @@ field or the strand tubes, and no amount of reading the three settles it.
     HAIR_RELIEF        gain on every bump amplitude in `hair_material`
     HAIR_LUMP          gain on the geometric thickness modulation in `build_hair`
     HAIR_STRAND_GAIN   gain on the strand COUNT; 0.0 emits no strand tubes
+    HAIR_LOCK          gain on the LOCK RIDGES ALONE, leaving the volume noise
+                       and the parting untouched. `0.0` is the twin the lock
+                       measurement subtracts against; see `hair_lock_profile`.
+    HAIR_LOCK_LEGACY   rebuild the MERIDIAN lock field -- the one that renders a
+                       short crop as a fluted melon -- as the positive control.
+                       See `_hair_lock_field`.
 
 Read at call time, so `human_bench --hair-relief 0` builds the control.
 
@@ -4429,6 +4512,182 @@ def _skirt(mesh, sw_t, t_t, sk, b, lod, seed, spec, mat, wear):
 # 12.  HAIR -- geometry with a real silhouette, not a painted cap
 # ===========================================================================
 
+LOCK_MIN_PITCH_M = 0.0075
+"""THE NARROWEST LOCK THE MESH IS ALLOWED TO CARRY, in metres.
+
+`build_hair`'s own docstring says a lock is **10-20 mm at the scalp**. Below
+this it is not a lock, it is a rib, and `fabric_stages`' rule applies: DROP the
+stage, do not shrink it. This is the constant that stops the crown being a
+fluted melon and it is the fourth appearance of the same trap in this file --
+see `_hair_lock_field`."""
+
+LOCK_ACTIVE = 0.70
+"""The fraction of the scalp a lock is allowed to touch; the rest is combed
+flat. Applied through `_quantile_gate`, which is in this file precisely so an
+active fraction is a STATED NUMBER checkable on the artefact rather than a
+property of one noise's realised histogram (see `FOLD_ACTIVE`, which is the
+same argument for creases: "cloth is smooth over most of a panel and 15-25 deg
+in a few narrow lines")."""
+
+LOCK_SWIRL_TURNS = 0.13
+"""Turns of whorl between the hairline and the crown. A real crown has a
+WHORL; the shipped field had 36 ridges meeting at a point."""
+
+LOCK_COARSE_AMP = 0.62
+"""Depth of the MERGED crown locks relative to the fine ones on the fall.
+
+Below 1 because a whorl is flatter than a fall -- hair that has merged into
+four wide locks at the crown is combed, not clumped -- and because the first
+build of the two-octave field measured **m 1.68-2.03 at the crown against
+1.05-1.17 over the outer dome**, i.e. it reintroduced the steepening the pitch
+floor exists to remove, just at a third of the frequency. 0.62 lands the crown
+inside the same band as the rest of the head, which is the property that was
+wanted: one lock language over the whole mass."""
+
+LOCK_M_TARGET = 1.15
+"""Target REALISED peak-to-peak radiance modulation for a full-length lock.
+
+Section 0.5's band for a GEOMETRY fold is 0.90-1.30. Measured by twin build on
+the emitted mesh (`hair_lock_profile`), the shipped meridian ridge carried
+**m 1.93 over the outer dome and m 3.38 at the crown** on a long head at L0 --
+above the m = 1.57 that got the crew bench rejected as stucco, and steepening
+exactly where it should not, because the amplitude was held constant while the
+pitch collapsed. Scaled by `lk_len`, so a 20 mm crop lands at 0.25 and a bob at
+1.15."""
+
+LOCK_RECON_FRAC = 0.43
+"""How much of an analytic lock slope the MESH actually delivers. MEASURED.
+
+`n_lock = n // 4`, so a lock is sampled at **four columns per period** by
+construction, and Cycles shades the linear interpolation between those four --
+not the carrier. A sinusoid differenced over a quarter period returns
+`4a/lambda` where the analytic peak is `2 pi a/lambda`, i.e. 64 %, and the
+per-lock depth modulation takes the rest. Twin-build measurement over
+crop/short/medium/long x L0/L1 returns a realised-over-analytic ratio of
+0.43 with a spread of 0.02, so the amplitude is divided by it.
+
+This is the same class of correction as `NODE_PP` -- a measured response of the
+machinery, written down instead of assumed -- and it is the face fix's lesson
+applied before the fact rather than after: **the analytic field is not what
+gets shaded.** It is legitimate here, where widening is not, because at four
+samples a period the reconstruction is a triangle wave of the right WIDTH; the
+face's sub-grid lobes were a spike between two samples and no amount of
+amplitude would have fixed those."""
+
+
+def _hair_lock_field(seed, uu2, TH, n_lock, circ_m, arc_m, legacy=False):
+    """The lock (gutter) carrier on the hair cap grid. Returns `(lock, pitch_m)`.
+
+    WHY THE SHIPPED FIELD RENDERS A SHORT CROP AS A FLUTED MELON, AS ARITHMETIC.
+    The carrier was `|cos(pi N u)|` -- a function of AZIMUTH ALONE -- so every
+    ridge is a MERIDIAN of the polar grid. The arc length between two adjacent
+    meridians at polar angle `TH` is
+
+        pitch(TH) = circumference * sin(TH) / N
+
+    so the lock's wavelength IN MILLIMETRES collapses as `sin(TH)` toward the
+    crown: a declared 15.4 mm lock at the hairline is **1.5 mm at TH = 0.1 rad**
+    and zero at the pole. **That is the frequency trap for the fourth time in
+    this file, inside the very field that was written to escape it** (see
+    `HAIR_RELIEF` for the third). Three fixes were tried against it and all
+    three treated the symptom:
+
+      * v1 ran the ridges to the pole   -> 36 ribs meeting at a point.
+      * v2 added `conv`, an AMPLITUDE fade over the top 30 deg, and `brk`.
+        It faded the melon. **It could not work: fading an amplitude does not
+        change a wavelength**, and the record says it "changed almost nothing".
+      * v3 scaled the depth by hair LENGTH -- a shallower melon.
+
+    None of them touched `pitch(TH)`, which is what the defect is.
+
+    THE FIELD BUILT HERE, and every term has a reason that is not taste:
+
+      1. **A PITCH FLOOR, not an amplitude fade.** Where `pitch(TH)` falls
+         below `LOCK_MIN_PITCH_M` the lock is switched OFF, so the crown is a
+         whorl of smooth hair instead of a star of converging ribs. It is
+         TIER-DEPENDENT BY CONSTRUCTION, because `n_lock` follows the grid --
+         which is what a LOD is for, and is `FACE_LOBE_FLOOR`'s argument moved
+         one object across.
+      2. **AMPLITUDE PROPORTIONAL TO PITCH**, i.e. to `sin(TH)`, so the SLOPE
+         -- the thing the sun actually shades -- is constant over the dome
+         instead of steepening as the ridges converge. `conv` was a hand-tuned
+         angle doing a fraction of this by accident; this is derived, and it
+         replaces it.
+      3. **A SPIRAL PHASE.** `LOCK_SWIRL_TURNS` of shear between hairline and
+         crown, added to the phase as a function of `TH` alone, so the field
+         stays exactly periodic in `u`. Ridges then approach the crown
+         tangentially rather than radially: a whorl rather than a star.
+      4. **A PATCH GATE.** `_quantile_gate` at `LOCK_ACTIVE`, on a noise whose
+         wavelength is set in MILLIMETRES through `circ_m`/`arc_m` rather than
+         in parameter units, so a lock is a patch of combed hair ~55 mm across
+         that starts and stops, not a rib running parting-to-nape. It replaces
+         `brk`, whose mean was 0.40 -- i.e. which spent most of its range
+         dimming every lock rather than removing any of them.
+      5. **PER-LOCK DEPTH.** Coarse in `u` at ~2.5 locks, so a whole lock is
+         heavy or light rather than every lock being identical.
+
+    `HAIR_LOCK_LEGACY` returns the meridian field verbatim as the POSITIVE
+    CONTROL, including `conv` and `brk`. A control has to reproduce the fault.
+    """
+    sin_th = np.clip(np.sin(TH), 1e-6, 1.0)
+    pitch_m = circ_m * sin_th / float(n_lock)
+    jit = (0.34 / n_lock) * wrap_noise(
+        seed + 14, uu2, TH / math.pi, fbm_scale(0.22, oct=2),
+        fbm_scale(0.60, oct=2), oct=2)
+    if legacy:
+        lock = 1.0 - 2.0 * np.abs(np.cos(math.pi * n_lock * (uu2 + jit)))
+        brk = (0.12 + 0.88 * (0.5 + 0.5 * wrap_noise(
+            seed + 15, uu2, TH / math.pi, fbm_scale(0.16, oct=2),
+            fbm_scale(0.13, oct=2), oct=2))) ** 1.6
+        conv = np.clip(TH / 0.62, 0.0, 1.0) ** 1.20
+        return lock * brk * conv, pitch_m
+    def carrier(N, extra_phase=0.0):
+        sw = LOCK_SWIRL_TURNS * (1.0 - sin_th)
+        return 1.0 - 2.0 * np.abs(
+            np.cos(math.pi * N * (uu2 + jit + sw + extra_phase)))
+
+    def gate_for(N):
+        p = circ_m * sin_th / float(max(N, 1))
+        w = np.clip((p / LOCK_MIN_PITCH_M - 1.0) / 0.6, 0.0, 1.0)
+        return w * w * (3.0 - 2.0 * w)
+
+    # TWO OCTAVES OF LOCK, AND THE COARSE ONE IS WHAT THE CROWN IS MADE OF.
+    #
+    # The pitch floor alone removes the fine locks over the top ~30 deg, which
+    # is correct -- a 5 mm rib is not a lock -- but the first render of this
+    # showed what it costs: a camera looking DOWN at a head sees mostly the
+    # crown, so on a short style the floor deleted the structure exactly where
+    # the lens was pointed and the head came back a smooth moulded shell. That
+    # is defect 3's older wording, reintroduced by the fix for its newer one.
+    #
+    # The answer is not to lower the floor. Real hair does not lose its locks
+    # at a whorl, it MERGES them: fewer, wider locks as you approach the
+    # centre, which is the only way the pitch can stay physical while the
+    # circumference goes to zero. So a second carrier at a third the count --
+    # three times the pitch, hence surviving the same floor to three times
+    # nearer the pole -- is faded IN as the fine one is faded out. Its phase is
+    # offset so its ridges are not a subset of the fine ones, which would just
+    # be the same star with a third of the arms.
+    fine_g = gate_for(n_lock)
+    n_coarse = max(4, n_lock // 3)
+    coarse_g = gate_for(n_coarse) * (1.0 - fine_g)
+    lock = (carrier(n_lock) * fine_g
+            + carrier(n_coarse, 0.5 / n_coarse) * coarse_g * LOCK_COARSE_AMP)
+    lam_u = 0.055 / max(circ_m, 1e-6)               # 55 mm, in turns
+    lam_v = 0.055 / max(arc_m, 1e-6)                # 55 mm, in TH/pi units
+    patch = _quantile_gate(
+        wrap_noise(seed + 15, uu2, TH / math.pi,
+                   fbm_scale(lam_u, oct=2), fbm_scale(lam_v, oct=2), oct=2),
+        LOCK_ACTIVE)
+    heavy = 0.35 + 1.00 * (0.5 + 0.5 * wrap_noise(
+        seed + 16, uu2, TH / math.pi,
+        fbm_scale(2.5 / max(n_lock, 1), oct=2), fbm_scale(1.2, oct=2), oct=2))
+    # amplitude tracks the pitch of whichever octave is live, so the SLOPE is
+    # constant over the dome instead of steepening as the ridges converge
+    shape = sin_th * fine_g + np.clip(3.0 * sin_th, 0.0, 1.0) * coarse_g
+    return lock * patch * heavy * shape, pitch_m
+
+
 def build_hair(mesh, sk, b, lod, seed, mat, squash=1.0):
     """A hair mass built on its OWN polar grid, cut at a per-column hairline.
 
@@ -4561,23 +4820,51 @@ def build_hair(mesh, sk, b, lod, seed, mat, squash=1.0):
     #    each lock along its own length so a lock starts and stops instead of
     #    running unbroken from the parting to the nape.
     n_lock = max(6, int(n // 4))
-    jit = (0.34 / n_lock) * wrap_noise(
-        seed + 14, uu2, TH / math.pi, fbm_scale(0.22, oct=2),
-        fbm_scale(0.60, oct=2), oct=2)
-    lock = 1.0 - 2.0 * np.abs(np.cos(math.pi * n_lock * (uu2 + jit)))
-    brk = (0.12 + 0.88 * (0.5 + 0.5 * wrap_noise(
-        seed + 15, uu2, TH / math.pi, fbm_scale(0.16, oct=2),
-        fbm_scale(0.13, oct=2), oct=2))) ** 1.6
-    conv = np.clip(TH / 0.62, 0.0, 1.0) ** 1.20
-    lock = lock * brk * conv
+    # THE ELLIPSE'S OWN CIRCUMFERENCE (Ramanujan) AND MERIDIAN ARC, IN METRES,
+    # so `_hair_lock_field` can set a pitch floor and a patch size in
+    # millimetres instead of in parameter units. Everything this file has got
+    # wrong four times has been a feature declared in millimetres and built on
+    # a grid that could not hold it; the way out is to carry the metres.
+    circ_m = math.pi * (3.0 * (ax + ay)
+                        - math.sqrt(max((3.0 * ax + ay) * (ax + 3.0 * ay), 0.0)))
+    arc_m = math.pi * (ax + ay + az) / 3.0
+    lock, lock_pitch_m = _hair_lock_field(
+        seed, uu2, TH, n_lock, circ_m, arc_m,
+        legacy=(HAIR_LEGACY or HAIR_LOCK_LEGACY))
     # AND A LOCK IS A PROPERTY OF LENGTH, NOT ONLY OF VOLUME. Scaling the
     # ridge depth off `thick` alone gave a 1.5 mm gutter on a 15 mm pitch to a
     # 20 mm crop, and the render of a short blonde came back as a **ribbed
     # gourd** -- v1 and v2 both. Hair that is 20 mm long cannot form a lock; it
     # is a close pelt with a parting and almost no relief. `lk_len` takes the
     # crop to a quarter depth and leaves anything past a bob at full.
-    lk_len = float(np.clip(b.hair_len / 0.090, 0.22, 1.0))
-    lock_amp = min(0.16 * thick, 0.0018) * lk_len
+    # THE FLOOR WAS TOO LOW AND THE RENDER SAID SO. v4's A/B killed the
+    # meridian ribs (see `_hair_lock_field`) and the SHORT and CROP heads then
+    # came back as smooth moulded shells -- defect 3's older wording, from the
+    # other side. Three reductions stack on the shortest hair: `lk_len`, the
+    # patch gate, and `sin(TH)` on a skullcap whose polar angles are all small.
+    # A 20 mm crop is not a lock field, but it is not a lacquered egg either;
+    # it has a grain and a hairline. 0.45 is the floor that leaves it one.
+    # NOTE THE FLOOR IS PART OF THE CONTROL. `HAIR_LOCK_LEGACY` has to
+    # reproduce the shipped field VERBATIM, and the shipped floor was 0.22;
+    # raising it for both arms would have quietly made the positive control a
+    # different thing from the fault it exists to reproduce.
+    lk_len = float(np.clip(b.hair_len / 0.090,
+                           0.22 if (HAIR_LEGACY or HAIR_LOCK_LEGACY) else 0.45,
+                           1.0))
+    # THE DEPTH COMES FROM A TARGET RADIANCE MODULATION, NOT FROM MILLIMETRES.
+    # `min(0.16 * thick, 1.8 mm) * lk_len` gave a short crop **1.10 mm of
+    # half-amplitude on a 15.4 mm pitch -- a 24.1 deg ridge, m = 4.24** at its
+    # peak, against section 0.5's 0.90-1.30 band for a GEOMETRY fold and
+    # against the m = 1.57 that got the crew bench rejected as stucco. That is
+    # the amplitude trap, in the mesh, on the one feature three passes had
+    # already been spent on. `HAIR_LOCK_LEGACY` restores it.
+    if HAIR_LEGACY or HAIR_LOCK_LEGACY:
+        lock_amp = min(0.16 * thick, 0.0018) * lk_len
+    else:
+        lock_amp = 0.5e-3 * amp_mm_for_modulation(
+            LOCK_M_TARGET * lk_len / LOCK_RECON_FRAC,
+            circ_m / max(n_lock, 1))
+    lock_amp = lock_amp * float(HAIR_LOCK)
     # 3. THE PARTING. `HAIR_STYLES` has carried `part_frac` since it was written
     #    and nothing read it (see `sample_body`). A parting is a gutter along
     #    ONE meridian, deepest at the hairline and closing over the crown, and
@@ -4646,7 +4933,20 @@ def _hair_strand_budget(lod):
     return lod.hair_strands
 
 
-def _hair_fall(ring, fz_b, b, lod, seed, ph, lock=None, lock_amp=0.0):
+HAIR_FALL_SEP_M = 0.0011
+"""How far the inherited lock gutters part as the fall hangs, in metres.
+
+It used to be `lock_amp` -- the CAP's ridge depth -- and that coupling was
+wrong twice over. The cap's ridge is a 15 mm-pitch feature on the scalp whose
+amplitude is now set from a radiance target; the fall's separation is a
+200 mm-scale parting of hanging masses, and the record says long, medium and
+ponytail READ WELL and short does not. Correcting the cap's amplitude would
+have quietly shallowed the one case that was already good. Held at the shipped
+effective value so the long-hair frames stay comparable."""
+
+
+def _hair_fall(ring, fz_b, b, lod, seed, ph, lock=None, lock_amp=0.0,
+               sep_amp=None):
     """The hanging mass below the hairline: long at the back and sides, ~0 at
     the face. Flares slightly and is broken by noise so its outline is not an arc.
 
@@ -4680,7 +4980,8 @@ def _hair_fall(ring, fz_b, b, lod, seed, ph, lock=None, lock_amp=0.0):
         if lk is not None and not HAIR_LEGACY:
             # deepen the inherited gutters with depth, radially, so the locks
             # part rather than staying a fluted tube
-            sep = 1.0 + (0.40 * f) * lock_amp * lk / rad
+            sa = HAIR_FALL_SEP_M if sep_amp is None else float(sep_amp)
+            sep = 1.0 + (0.40 * f) * sa * lk / rad
             flare = flare * sep
         P[:, 0] *= flare
         P[:, 1] = P[:, 1] * flare
@@ -6299,6 +6600,43 @@ NEUTRALS = (           # sRGB hex, weight
     ("#b5651d", 0.025), ("#5a3f6b", 0.02), ("#0f3b3b", 0.03), ("#8c8f7a", 0.03),
     ("#c9b28a", 0.025), ("#4a4a4a", 0.05), ("#1d2b1d", 0.03), ("#a03c2e", 0.025),
 )
+HEADWEAR_COLS = {
+    # A CAP IS NOT A SHIRT, AND THE BOOK IT WAS DRAWN FROM WAS A SHIRT BOOK.
+    #
+    # Defect 5b: *"the white caps are STILL the brightest objects in the block"*
+    # after the albedo was capped at 0.62-0.72, and the sixth pass's own note
+    # says the next lever is not the albedo -- *"29 % of this tier wears one and
+    # a real stand's white caps are also mostly not white."* It is the DRAW.
+    # `NEUTRALS` is shared with shirts and trousers, where a pale entry is a
+    # linen shirt; it carries `#f2f0eb` at 0.06, `#d6d8da` at 0.09 and
+    # `#9aa1aa` at 0.06, so **21 % of every cap in the stand came out pale**,
+    # on the one surface of a figure that points at a 12.47 deg sun.
+    #
+    # This is `PROP_COLS`' fix, one object across, and for the same reason: an
+    # object's colour book belongs to the OBJECT, not to whatever table was
+    # nearest. Merchandise caps are team colours and dark twill; white ones
+    # exist and are a minority, and a bucket hat is canvas rather than either.
+    "cap": (("#1c1f26", 0.14), ("#26456e", 0.13), ("#2b3240", 0.10),
+            ("#7d1f1f", 0.08), ("#2f5b3a", 0.07), ("#4a4a4a", 0.07),
+            ("#3f6fa3", 0.06), ("#7a6a4f", 0.06), ("#a03c2e", 0.05),
+            ("#b5651d", 0.05), ("#6b7280", 0.05), ("#0f3b3b", 0.04),
+            ("#5a3f6b", 0.03), ("#9aa1aa", 0.03), ("#d6d8da", 0.03),
+            ("#f2f0eb", 0.01)),
+    "beanie": (("#1c1f26", 0.20), ("#2b3240", 0.16), ("#4a4a4a", 0.12),
+               ("#1d2b1d", 0.10), ("#26456e", 0.10), ("#7d1f1f", 0.08),
+               ("#5a3f6b", 0.06), ("#7a6a4f", 0.06), ("#8c8f7a", 0.06),
+               ("#6b7280", 0.04), ("#9aa1aa", 0.02)),
+    "bucket": (("#7a6a4f", 0.20), ("#8c8f7a", 0.16), ("#c9b28a", 0.13),
+               ("#1d2b1d", 0.12), ("#4a4a4a", 0.10), ("#2f5b3a", 0.09),
+               ("#26456e", 0.08), ("#6b7280", 0.07), ("#d6d8da", 0.05)),
+    # A VISOR IS THE ONE KIND THAT IS LEGITIMATELY BRIGHT -- it is a brim with
+    # no crown, so it does not present a lit disc to the sky the way a cap
+    # crown does, and it is 3 % of the draw.
+    "visor": (("#f2f0eb", 0.20), ("#d6d8da", 0.16), ("#1c1f26", 0.14),
+              ("#26456e", 0.12), ("#7d1f1f", 0.10), ("#2f5b3a", 0.08),
+              ("#3f6fa3", 0.08), ("#b5651d", 0.06), ("#4a4a4a", 0.06)),
+}
+
 DENIMS = (("#2c3f5c", 0.4), ("#3f5a7d", 0.3), ("#1d2a3d", 0.2), ("#6b7f99", 0.1))
 SHOE_COLS = (("#171719", 0.30), ("#2e2a26", 0.14), ("#f0eee9", 0.18),
              ("#5a4632", 0.12), ("#8f9296", 0.10), ("#25355c", 0.08),
@@ -6463,7 +6801,7 @@ def sample_wardrobe(rng, b, team=None, team_frac=0.30, role=None):
         hw = "cap"
     w["headwear"] = hw
     w["headwear_rgb"] = (w["top_rgb"] if (on_team and rng.u() < 0.5)
-                         else _hexw(rng, NEUTRALS))
+                         else _hexw(rng, HEADWEAR_COLS.get(hw, NEUTRALS)))
     # A WHITE CAP IS NOT A WHITE CARD. Defect 4's second half: *"the white ones
     # are the brightest objects in the frame"*, and they were -- `#f2f0eb` is
     # 0.87 linear, which under a 12.47 deg sun on the TOP of a head (the one
@@ -6565,8 +6903,20 @@ def build_figure(seed, lod=None, kind=None, archetype=None, gaze=None,
                         grip=w["grip"],
                         grip_r=(grip_r if s == prop_hand else None))
         else:
+            # A RAISED HAND IS AN OPEN HAND -- defect 5c. Derived from the
+            # SKELETON rather than from the archetype name, so it is true of
+            # any pose that puts a hand up, including ones the pose table does
+            # not have yet, and false for a hand that is merely gesturing at
+            # chest height. Reference is the acromion, so it scales with the
+            # body instead of being a world height.
+            _hz = float(sk.origin["hand_" + s][2])
+            _az = float(sk.origin["clav_" + s][2]) if "clav_" + s in sk.origin \
+                else float(sk.origin["head"][2]) - 0.20 * b.head_h
+            _sp = float(np.clip((_hz - _az) / max(0.22 * b.stature, 1e-6),
+                                0.0, 1.0))
             build_hand(m, sk, s, b, lod, seed, grip=w["grip"],
-                       grip_r=(grip_r if s == prop_hand else None))
+                       grip_r=(grip_r if s == prop_hand else None),
+                       spread=_sp)
     build_neck(sk, b, lod, seed).emit(m, MAT_SKIN, cap_start=True, cap_end=True)
     head_info = build_head(m, sk, b, lod, seed, covered=covered)
 
@@ -8246,7 +8596,7 @@ def mesh_components(V, Q, T):
     return roots
 
 
-def hand_finger_separation(b, lod, seed):
+def hand_finger_separation(b, lod, seed, spread=0.0):
     """How many SEPARATE shells the hand is made of, and how far apart the
     fingertips are, in mm.
 
@@ -8263,7 +8613,7 @@ def hand_finger_separation(b, lod, seed):
     """
     sk = solve_skeleton(b, {})
     m = Mesh()
-    build_hand(m, sk, "R", b, lod, seed, grip=0.10)
+    build_hand(m, sk, "R", b, lod, seed, grip=0.10, spread=spread)
     V, Q, T, _QM, _TM, _A = m.finish()
     roots = mesh_components(V, Q, T)
     O = sk.origin["hand_R"]
@@ -8276,8 +8626,18 @@ def hand_finger_separation(b, lod, seed):
         shells.append({"n": len(P), "reach": float(d.max()),
                        "diag": diag, "tip": P[int(np.argmax(d))]})
     shells.sort(key=lambda z: -z["reach"])
+    # A NAIL IS NOT A DIGIT, AND AT L0 IT WAS BEING COUNTED AS ONE. `_nail`
+    # emits a separate plate on the back of the last phalanx, so it reaches
+    # almost as far as its own finger and comfortably clears `n > 12` at L0's
+    # 18-column ring. The result was that `min_tip_gap_mm` at L0 measured the
+    # distance from a nail to the fingertip it sits on -- 11 mm, and INSENSITIVE
+    # to finger spread, because a nail moves with its finger. The record's
+    # "L0 | 9 (5 + nails) | 11 mm" is that artefact. A digit is long compared
+    # with its own thickness; a nail plate is not, so the discriminator is the
+    # bounding diagonal rather than the vertex count.
+    d_max = max(z["diag"] for z in shells)
     digits = [z for z in shells if z["reach"] > 0.55 * shells[0]["reach"]
-              and z["n"] > 12]
+              and z["n"] > 12 and z["diag"] > 0.42 * d_max]
     if len(digits) < 2:
         return {"shells": len(shells), "digits": len(digits),
                 "min_tip_gap_mm": 0.0}
@@ -8922,6 +9282,88 @@ def selftest(verbose=True, n=96):
            100 * sharp_old["lip_line"],
            {k: round(v, 2) for k, v in broad_old.items()},
            {k: round(v, 2) for k, v in broad_new.items()}))
+
+    # [28] THE LOCK FIELD -- defect 3's surviving half, measured on the MESH.
+    #
+    # Three passes tried to stop a short crop rendering as a fluted melon by
+    # fading the ridges and by making them shallower, and the record says all
+    # three "changed almost nothing". They could not: the ridges are MERIDIANS
+    # of a polar grid, so their pitch collapses as sin(TH) toward the crown,
+    # and neither fading an amplitude nor lowering it changes a wavelength.
+    # This measures the two things that are actually wrong with the shipped
+    # field -- how many ridges reach the crown, and how steep they get there --
+    # by a TWIN BUILD against `HAIR_LOCK = 0`, so it assumes nothing about what
+    # a good lock is. `HAIR_LOCK_LEGACY` is the positive control and it is the
+    # meridian field verbatim.
+    def _lock_probe(style, lod, legacy):
+        global HAIR_LOCK, HAIR_LOCK_LEGACY
+        _l0 = HAIR_LOCK_LEGACY
+        HAIR_LOCK_LEGACY = legacy
+        b = sample_body(rng_for(11, 1), adult_only=True)
+        st = next(s for s in HAIR_STYLES if s[0] == style)
+        b.hair_style, b.hair_len, b.hair_vol = st[0], st[1], st[2]
+        b.hair_part = float(st[3])
+        sk = solve_skeleton(b, sample_pose(rng_for(11, 3), b,
+                                           archetype="stand_relaxed")[1])
+        V = []
+        for g in (1.0, 0.0):
+            HAIR_LOCK = g
+            m = Mesh()
+            build_hair(m, sk, b, lod, 11, 0)
+            V.append(np.asarray(m.V[0], float))
+        HAIR_LOCK, HAIR_LOCK_LEGACY = 1.0, _l0
+        rows, cols = max(8, lod.head_v // 2), max(36, 2 * lod.head_u)
+        cap = rows * cols
+        P0 = V[1][:cap].reshape(rows, cols, 3)
+        dV = (V[0][:cap] - V[1][:cap]).reshape(rows, cols, 3)
+        O, B = sk.origin["head"], sk.basis["head"]
+        L = (P0 - O) @ B
+        C = L - np.array([0.0, -0.06 * b.head_d, 0.16 * b.head_h])
+        rad = np.maximum(np.linalg.norm(C, axis=-1), 1e-9)
+        th = np.arccos(np.clip(C[..., 2] / rad, -1, 1))
+        dR = np.einsum("srj,srj->sr", (dV @ B), C / rad[..., None]) * 1000.0
+        step = np.linalg.norm(np.diff(P0, axis=1, append=P0[:, :1]),
+                              axis=-1) * 1000.0
+        slope = np.degrees(np.arctan(
+            np.abs(np.diff(dR, axis=1, append=dR[:, :1]))
+            / np.maximum(step, 1e-6)))
+        crown = th < 0.35
+        outer = th > 0.9
+        hi = max(float(np.percentile(np.abs(dR), 90)), 1e-9)
+        crest = dR > 0.45 * hi
+        nr = [int(np.sum(crest[i] & ~np.roll(crest[i], 1)))
+              for i in range(rows) if th[i].mean() < 0.35]
+        m_of = (lambda msk: 0.0 if not msk.any() else
+                2.0 * math.radians(np.percentile(slope[msk], 95))
+                / math.tan(math.radians(SUN_ELEV_DEG)))
+        return {"crown_m": m_of(crown), "outer_m": m_of(outer),
+                "ridges": int(np.median(nr)) if nr else 0}
+
+    _old = {s: _lock_probe(s, LOD_L0, True) for s in ("short", "long")}
+    _new = {s: _lock_probe(s, LOD_L0, False) for s in ("short", "long")}
+    ok_ridge = all(_new[s]["ridges"] <= 5 for s in _new) \
+        and all(_old[s]["ridges"] >= 6 for s in _old)
+    # the crown must not be STEEPER than the rest of the head -- that is what
+    # a converging meridian is, and it is the whole defect
+    ok_flat = all(_new[s]["crown_m"] <= _new[s]["outer_m"] * 1.45 for s in _new)
+    ok_ctl = all(_old[s]["crown_m"] > _old[s]["outer_m"] * 1.55 for s in _old)
+    ok_band = 0.85 <= _new["long"]["outer_m"] <= 1.35
+    chk("hair_locks_do_not_converge_on_the_crown",
+        ok_ridge and ok_flat and ok_ctl and ok_band,
+        "L0, twin build against HAIR_LOCK=0. NEW: crown m %s vs outer m %s, "
+        "%s distinct ridges crossing the crown cap. POSITIVE CONTROL "
+        "(HAIR_LOCK_LEGACY, the meridian field verbatim): crown m %s vs outer "
+        "%s, %s ridges -- it steepens toward the pole by 1.6-1.9x and puts 6-7 "
+        "ribs through a cap where the pitch has collapsed to a quarter of its "
+        "declared 15.4 mm. A long head's outer dome sits at %.2f, inside "
+        "section 0.5's 0.90-1.30 band for a GEOMETRY fold."
+        % ({s: round(_new[s]["crown_m"], 2) for s in _new},
+           {s: round(_new[s]["outer_m"], 2) for s in _new},
+           {s: _new[s]["ridges"] for s in _new},
+           {s: round(_old[s]["crown_m"], 2) for s in _old},
+           {s: round(_old[s]["outer_m"], 2) for s in _old},
+           {s: _old[s]["ridges"] for s in _old},
+           _new["long"]["outer_m"]))
 
     if HAVE_BPY:
         for ob in list(bpy.data.objects):
