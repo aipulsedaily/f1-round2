@@ -230,6 +230,44 @@ def main():
                      f"happens — leaves the frame at "
                      f"f{out['rear_patch_worst_f']}")
 
+    # ---- E. MOTION BLUR, in delivery pixels ------------------------------
+    #
+    # REPORTED, not gated. The seam pins the camera 6.6 m from the ignition
+    # station with 25 frames to cover it, so the descent is inherently fast and
+    # a 180 deg shutter turns speed into streak. This is the number that says
+    # what that costs at 4K, and it is the one a person has to make a judgement
+    # about — a gate cannot decide how much blur a shot wants.
+    #
+    #   sweep = v * (shutter / FPS) / d          radians the subject sweeps
+    #   px    = sweep_deg / hfov_deg * 3840      at the delivery width
+    print(f"\n=== E. MOTION BLUR at 3840 px, 180 deg shutter (REPORTED, not "
+          f"gated)")
+    blur = []
+    for f in range(lo, hi + 1):
+        if f not in P or (f - 1) not in P or f not in fr:
+            continue
+        v = math.dist(P[f - 1]["p"], P[f]["p"]) * FPS
+        d = math.dist(P[f]["p"], fr[f]["loc"][:3])
+        if d < 1e-3:
+            continue
+        sweep = math.degrees(v * (0.5 / FPS) / d)
+        hfov = math.degrees(2 * math.atan(SENSOR_W / (2 * P[f]["lens"])))
+        blur.append((f, sweep / hfov * 3840.0, v, d))
+    if blur:
+        w = max(blur, key=lambda r: r[1])
+        over = [r for r in blur if r[1] > 60.0]
+        out["blur_worst_px"], out["blur_worst_f"] = w[1], w[0]
+        out["blur_frames_over_60px"] = len(over)
+        print("     f    streak_px   cam_v   cam-to-car")
+        for r in blur:
+            if r[0] % 4 == 1 or r[0] == w[0]:
+                print(f"  {r[0]:5d} {r[1]:11.1f} {r[2]:8.3f} {r[3]:11.3f}")
+        print(f"  worst {w[1]:.1f} px at f{w[0]} ({w[2]:.2f} m/s at "
+              f"{w[3]:.2f} m); {len(over)} frames over 60 px")
+        print(f"  for scale: beat 1's own peak is 3.897 m/s at ~10 m on a 58 mm "
+              f"lens = 51 px, so this beat's descent streaks "
+              f"{w[1]/51.0:.1f}x beat 1's worst")
+
     # ---- B. the exposure ---------------------------------------------------
     if a.exposure:
         ex = {int(k): v for k, v in json.load(open(a.exposure)).items()}

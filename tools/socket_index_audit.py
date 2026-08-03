@@ -1496,11 +1496,18 @@ if BY_INDEX:
 
 for ob in list(bpy.data.objects):
     bpy.data.objects.remove(ob, do_unlink=True)
-PG._simple_mat("SIA_REAL_%%s" %% ("BROKEN" if BY_INDEX else "FIXED"),
-               [(0.0165, 0.0165, 0.0170), (0.0345, 0.0345, 0.0355),
-                (0.048, 0.047, 0.045), (0.058, 0.056, 0.052)],
-               0.72, (900.0, 900.0))
+mat = PG._simple_mat("SIA_REAL_%%s" %% ("BROKEN" if BY_INDEX else "FIXED"),
+                     [(0.0165, 0.0165, 0.0170), (0.0345, 0.0345, 0.0355),
+                      (0.048, 0.047, 0.045), (0.058, 0.056, 0.052)],
+                     0.72, (900.0, 900.0))
+# A material with no user is PURGED ON SAVE, which is how the first version of
+# this control shipped a positive that found nothing: the file it scanned was
+# empty. Give it a fake user, then say how many materials actually went in.
+for m in bpy.data.materials:
+    m.use_fake_user = True
 bpy.ops.wm.save_as_mainfile(filepath=sys.argv[-1])
+print(">> control blend: %%d material(s) saved: %%s"
+      %% (len(bpy.data.materials), [m.name for m in bpy.data.materials]))
 """
 
 

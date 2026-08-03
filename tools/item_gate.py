@@ -201,6 +201,7 @@ if os.path.dirname(os.path.abspath(__file__)) not in sys.path:
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import provenance as _prov                                       # noqa: E402
 import gate_exit                                                 # noqa: E402
+import socket_blend_scan as _sockets                             # noqa: E402
 
 RQ = "/home/zany/vast-render/rq"
 # The broker resolves symlinks and `..` and then requires the scene to sit
