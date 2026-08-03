@@ -87,8 +87,9 @@ instrument for the assembly6 → assembly7 question and the wrong one for this
 one: `build_architecture` and `build_dressing` both changed here, and a census
 pointed at bump chains is silent about a roughness that moved.
 
-So `work/r2100/material_graph_census.py` (censuses in `v123/`) fingerprints **every material, every
-node, every input default, every link, every node property**:
+So `work/r2100/material_graph_census.py` fingerprints **every material, every
+node, every input default, every link and every node property** (the three
+censuses it produced are in `v123/`):
 
     assembly7 -> assembly8      materials 132 -> 132
                                 graphs that MOVED     0 of 132
