@@ -36,7 +36,7 @@ The rebuild was not a promotion between two candidates. `assembly7` was
 R2-071's rule is that a source fix is not landed until the artefact downstream
 of it has been rebuilt *and re-read*, so it was rebuilt, from source, all five
 modules, and re-read. **What was expected to move was written down before the
-diff was run** (`work/r2100/PREDICTION.md`), so what follows is a prediction met
+diff was run** (`v123/PREDICTION.md`), so what follows is a prediction met
 rather than a story told afterwards.
 
 ### 1. ONE object moved, and it is the one the source predicts
@@ -45,7 +45,7 @@ Same instrument as the assembly6 → assembly7 comparison, unchanged:
 `v120/vertex_fingerprint.py` + `v120/fp_diff.py`, per object, verts + coordinate
 sums + sum of squares + bbox + a 0.1 µm order-independent hash.
 
-    assembly7 -> assembly8            (work/r2100/fp_assembly8.json)
+    assembly7 -> assembly8            (v123/fp_assembly8.json)
       objects            28781 -> 28781    total verts 1282465803 -> 1282465803
       objects MOVED      1 of 28781 (0.00 %)
       objects BIT-IDENTICAL          28780
@@ -87,7 +87,7 @@ instrument for the assembly6 → assembly7 question and the wrong one for this
 one: `build_architecture` and `build_dressing` both changed here, and a census
 pointed at bump chains is silent about a roughness that moved.
 
-So `work/r2100/material_graph_census.py` fingerprints **every material, every
+So `work/r2100/material_graph_census.py` (censuses in `v123/`) fingerprints **every material, every
 node, every input default, every link, every node property**:
 
     assembly7 -> assembly8      materials 132 -> 132
@@ -274,6 +274,13 @@ assembly5 concluded, wrongly, that no geometry had moved.
 
 ## what to run
 
+    v123/verify_assembly8.sh the assembly7 -> assembly8 readback, with all three
+                             positive controls, and v123/verify_assembly8.log as
+                             it came out.  v123/PREDICTION.md is what was
+                             expected, written before the diff was run.
+    v123/fp_assembly8.json   the per-object vertex fingerprint, and
+                             v123/matcensus_assembly{6,7,8}.json the material
+                             graph censuses the material diff is taken over.
     v121/battery.sh          the gate battery on assembly6, with controls, and the
                              vertex-fingerprint diff that is the point of it
     v121/attribute.sh        today's probes against assembly5, so a probe difference can
