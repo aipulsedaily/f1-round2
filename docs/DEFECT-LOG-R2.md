@@ -4882,3 +4882,1583 @@ the wrong side** — wrong, plausible, and invisible to any check looking for ab
 scored for screen presence while being **absent from the ship**. Wave 2's entire 113-module scope
 was drawn from measured screen presence, so **how many others are in this position is now worth
 knowing.**
+
+## R2-148 — assembly9: one object of 28,781 moved, and for the first time it was a vertex COUNT
+
+`world/build_architecture.py` was fixed at `54dd6b8` (22:06). `assembly8` was built
+at **19:38**. R2-132's own closing line says it: *"A WORLD REBUILD IS OWED. Nothing
+here has moved a vertex in assembly8."* `film12` and `film13` were both built on the
+defective world. This is that rebuild, read back from the file.
+
+| | assembly8 | assembly9 |
+|---|---|---|
+| objects | 28,781 | 28,781 |
+| total verts | 1,282,465,803 | **1,282,477,674** (+11,871) |
+| objects moved | — | **1** |
+| bit-identical | — | 28,780 |
+| different vertex COUNT | — | **1** |
+| materials moved | — | **0 of 132** |
+
+`ARCH_Paving_ApronPlatform`: **128,722 → 140,593 verts (+9.222 %)**. Five of its six
+bbox extremes are **bit-identical**; the sixth, `bbox y max`, moved **46.8 mm**.
+`apron_platform_m2` **5881.5 → 6421.2**, reproducing R2-132's test-build figure
+exactly in the full assembly.
+
+**a5→a6, a6→a7 and a7→a8 all held 1,282,465,803 vertices to the digit.** This is the
+first assembly diff in this project where the count moves at all, because the fix
+does not *shift* a slab — it *lays* one.
+
+**The prediction was written at 22:48 while `build_architecture` was still building**
+(`v124/PREDICTION.md`), and one part of it is wrong. It predicted the bbox would
+extend outboard. **It does not**: the slab grew entirely inside its own envelope and
+the one extreme that moved went *inward*. The apron sweep curves, so its bounding box
+was already set by the stations where `platform_edge` is widest, and the released
+ground fills in behind that line. **Direction of the finding right, stated shape of it
+wrong, and it is recorded as wrong rather than quietly dropped.**
+
+The half that was *not* obvious and had to be checked rather than assumed:
+`build_terrain` and `build_dressing` run **after** `build_architecture`, so "they were
+not edited" is not sufficient on its own. Every `ray_cast` in `build_terrain` is inside
+`test_scene()`, `selftest()` or `bake_cameras()` and **none is reachable from
+`build()`**; `build_dressing` has none; `embed_ground_contacts` and `cull_unowned` both
+query `world_ground_z` (the model) and never the apron mesh; and every builder in
+`build()` takes its own freshly seeded `random.Random(20NN)`, so a bigger grid
+consuming more draws cannot perturb what follows it. All four held.
+
+**`build_architecture`'s own contract gate goes 2 failures → 1.** BLACK recesses
+5 → 1; *"no ARCH mesh coplanar with another module on the Beat-4 route"* **FAIL (2
+samples, both `ARCH_Paving_ApronPlatform`) → PASS (0)**. And *"paving stays inside the
+contract's declared rectangles"* goes 35,474 → **40,184** up-faces with **0 outside**,
+which is the row that says the fix did not spill the way its first version did.
+
+`fp_diff.py` was run with four controls in one batch: its own 7-arm `--selftest`, the
+a5→a6 pair where `BR_Transit_NorthWall` is known to have moved 3.1885 m (reports 1,
+3.1885 m), and a **negative arm that declares `--expect-moved 0` on this pair and must
+exit 1** — it does. R2-111 repaired this file because it computed `moved`, printed it
+and never consulted it; the expectation is now declared on the command line.
+
+---
+
+## R2-149 — film14 on assembly9: 37 of 37 readback fields identical, and the camera is byte-identical
+
+The full chain was re-run in order — `author_beats2_5.py` → `build_camera_rig.py` →
+`build_film_scene.py` — with **no `--world-override`**; `SHIPPING.md` was updated to
+declare assembly9 first, so `refuse_unless_world_is_declared()` is satisfied honestly.
+Both world guards printed clean: *"WORLD: assembly9.blend, the ship declared in
+SHIPPING.md"* and *"WORLD STALENESS: none"*.
+
+**Two nulls, and they are what make the pixel comparison below a world comparison:**
+
+* `docs/beat_sheet.json` sha `2ee973b8` **before and after** the author pass — it is
+  idempotent, as r2100 and r2127 both measured.
+* `world/camera_rig_path.json` sha `f1c65c46` before and after the rig build, and
+  `render/film14_path.json` is **the same sha as `render/film13_path.json`**. The
+  camera is byte-identical across the two films. **The only thing that differs between
+  film13 and film14 is the world.**
+
+| readback, from the saved blend | film9 (broken) | film13 | **film14** |
+|---|---|---|---|
+| interior lamp load | 3,737.113 W | 46,203.313 W | **46,203.313 W** |
+| `_sl_base` lamp stamps | 0 | 23 | **23** |
+| `scene_mark` | null | 3.628 | **3.628** |
+| `assert_levelled` | REFUSED | PASS | **PASS** |
+
+`readback_diff.py`: **37 fields compared, 37 identical, 0 differ.**
+
+The levelling identity **recomputed from film14's own `_sl_base` properties**, not
+quoted: base 3,737.113 × 2^3.628 = 46,203.306 against **46,203.313** measured,
+residual **0.007 W**, worst per-lamp ratio (`WallWash_BackUp`) 12.363369363 against
+12.363368794 — nine decimals, so no lamp hid inside the total. Deck top 0.3400, floor
+top 0.0000, frames 1–2978 @ 24, scale 1.0, 28 Vitrines / 0 parented to `CAR_ROOT`,
+camera `ONER` clip 0.05 / 200000, exposure −3.628 AgX.
+
+**Gates, each with both controls:**
+
+| gate | artefact | control |
+|---|---|---|
+| `horizon_gate --selftest` | 7/7 | includes P4, the 170°-rolled synthetic |
+| `horizon_gate` f2600–2714 | **1.71° worst, 0 FAIL, 0 WARN, 0 inverted** | pre-R2112 path **FAIL**, −122.93°, 28 inverted, 32 FAIL frames |
+| `horizon_gate --census` | bounds lie strictly between 2.48° and 122.93° | — |
+| `seam_gate --selftest` | **7/7** on the repaired default `world/camera_rig_path.json` | three must-fail arms |
+| `seam_gate` artefact | chord **2.0893**, speed **1.2727**, look **13.2504**, lens **−0.051**, SEAM_OK | — |
+| `socket_index_audit --blend` | film14 **PASS**, 226 trees | film10 **FAIL, 27 findings**; film13 PASS |
+| `campath_gate` | **PASS, 0 FAIL, 5 advisory** | see R2-151 |
+
+**R2-103's floor was paid attention to rather than re-derived.** `path_diff.py` run on
+`film14_path.json` **against itself** reports **1,429 of 2,978 frames "MOVED"** and
+0.2032° of rotation. The strict componentwise comparison on the same self-null reports
+**0**. Only then was film13 → film14 compared: **0 / 2978 position, 0 / 2978 rotation,
+0 / 2978 lens.**
+
+---
+
+## R2-151 — `campath_gate`'s positive control passes, because the gate has no roll term at all
+
+Running the control is the only reason this is known. `docs/horizon_pre_R2112_path.json`
+— the path with **28 fully inverted frames and −122.93° of roll**, which `horizon_gate`
+fails with 32 FAIL frames — goes through `campath_gate` and returns:
+
+    >> STAGE RESULT: PASS — 0 FAIL, 5 advisory
+
+**the same verdict, and the same five advisories, as film14.** `campath_gate` measures
+speed, rotation RATE as a fraction of frame width, and path kink. **It has no roll or
+up-vector term**, so a camera that is upside-down for 28 frames is invisible to it.
+
+That is consistent with R2-088 — `horizon_gate` exists *because* nothing measured roll
+— but the consequence is specific and was being missed: **a `campath_gate` PASS
+reported next to that path as its "positive control" asserts nothing.** Two paths that
+DO discriminate, and either should be used instead:
+
+    docs/seam_pre_R2064_path.json   FAIL — 1 FAIL, 6 advisory  (C1_rotation_smear
+                                    51 % of frame width/frame at f1461)
+    render/film9_path.json          FAIL — 2 FAIL, 12 advisory
+
+---
+
+## R2-152 — `54dd6b8`'s own commit message quotes grid numbers that do not reproduce in the assembly
+
+Small, and exactly the shape this log keeps recording. The fix's comment and commit
+message both say a `max(platform_edge) + 3` grid *"would silently truncate the slab at
+u ~ 23.9 while the declared apron runs to u ~ 40.4"*. In the full assembly the module
+prints:
+
+    [apron] grid u 6.05 .. 47.55  (platform_edge max 40.56; the declared
+                                   platform reaches 44.55)
+
+so the two numbers are **43.56 and 44.55**, not 23.9 and 40.4. The fix is right and
+its area figures reproduce to the decimal (5881.5 → 6421.2 m²); the *grid* figures
+were measured on `work/r2132/arch_base.blend`, a module-standalone test build, and
+carried into the source comment as though they described the assembly. **A number
+measured on a test rig and written into a comment about the shipping build is the
+same defect as a probe window that stops inside the thing it measures** — which is
+R2-132 itself.
+
+## R2-187 — the apply readback, and the one field that does not mean what it says
+
+Read back from the saved `.blend` with `work/r2187/readback_breach.py`, not
+quoted from `sim/out/apply_film14.json`. The prediction (`work/r2187/PREDICTION.md`,
+written before the apply finished) was that all four fields hold, because the
+bake table, the fracture plan and the camera polyline are none of them functions
+of the world, and assembly9 − assembly8 is one paving object at the pit exit.
+
+| readback | film13_breach | **film14_breach** | |
+|---|---|---|---|
+| objects | 3,806 | **3,806** | 3,796 shards + 10 panes |
+| tris | 278,864 | **278,864** | shard triangles |
+| keys | 5,798,701 | **5,798,701** | 2,475,381 loc + 3,300,508 quat + 11,406 + 11,406 hide |
+| hero | 3,573 | **3,573** | two independent routes, below |
+| curve proof | LINEAR 6783 / CONSTANT 240 / other 0 | **identical** | max linear eval err 4.768e−07 |
+
+`ARCH_Paving_ApronPlatform` reads **140,593 verts** in the applied scene, which
+is assembly9's number (R2-148) and not assembly8's 128,722 — the apply is on the
+film it was meant to be on. Scene total 33,221 objects.
+
+**`stats["tris"]` in the apply report is SHARD triangles only.** A readback that
+counts every mesh in the BREACH collections gets **278,984**, and the 120 it adds
+are the ten panes' six quads each. That is a 120-triangle discrepancy that looks
+exactly like a real one until you go and read which loop the counter sits in. The
+figure is correct; the field name is not, and anyone re-deriving it will lose the
+same twenty minutes.
+
+**`hero` was recounted two ways and they agree** (`work/r2187/hero_readback.py`).
+It is the one stat in the report that is a function of THE CAMERA — a shard is
+hero if it passes within 6 m of the camera polyline — so it is the field that
+would move if the byte-identical-camera claim were false anywhere the path JSON
+does not capture.
+
+* **by the mesh**, rebuilding every cell at detail 1 and detail 2 from the same
+  plan and the same seed and asking which of the two the file actually contains:
+  **3,573 hero, 223 bulk, 0 unmatched.**
+* **by the camera**, recomputing `dist_to_path(...) <= 6.0` from
+  `breach_film.npz` and `docs/beat_sheet.json`: **3,573.**
+* **disagreements between the two: 0.**
+
+Classifying hero by "big meshes are the hero ones" was tried first and is a
+guess: the vertex counts run 15..80 with no clean gap, and a largest-gap split
+returned **2**.
+
+---
+
+## R2-188 — `matrix_world` is not evaluated for a HIDDEN object, and the breach's reference frame is the one frame where everything is hidden
+
+The worst thing found tonight, and it was found by a control rather than by
+noticing.
+
+The claim that closed R2-097 — bay 4 goes 2,288 mm at f866 → 2,615 mm at f900
+**without returning** — was measured on `sim/out/breach_film.npz`. That file is
+byte-identical between the two applies, so re-running `slabcheck` on it asserts
+**nothing about this apply**. So it was asked of the SCENE instead: evaluate the
+applied f-curves on the objects that will render.
+
+Done through `object.matrix_world`, that produces this table:
+
+    bay 4   f866  3933.5 mm    f900  2621.7 mm    f1165     0.0 mm
+    bay 5   f866  2434.0 mm    f900  2307.3 mm    f1165     0.0 mm
+
+Every bay reads **exactly 0.0 mm from home at the last frame**, and f900 was
+within 0.25 % of the true value, which is the part that makes it dangerous: one
+column of the table is right by coincidence and the whole thing is plausible.
+
+**The reference frame is f845, and at f845 every shard is `hide_viewport` — that
+is the entire point of the swap, the glass has not broken yet.** A hidden object
+is not evaluated by the depsgraph, so its `matrix_world` is never flushed and
+still holds the pose the `.blend` was SAVED with, which for an applied breach
+scene is the field's **resting pose at the table's last frame**. So "how far has
+it travelled from home" silently becomes "how far is it from where it ends", and
+the last frame reads zero because there it is comparing the resting pose with
+itself.
+
+    GS_b04_00000 at f845   location            (14.9607, -0.0243, 0.0973)   <- correct
+                           matrix_world        (16.1952,  3.5810, 0.1268)   <- its f1165 value
+                           evaluated_get(dg)   (16.1952,  3.5810, 0.1268)   <- also wrong
+
+`object.location` reads the f-curve correctly at the same instant.
+`evaluated_get(depsgraph).matrix_world` does not help. Worst disagreement over
+the field, `GS_b05_00018`: **120.7 m**.
+
+**A warm-up `frame_set` does not fix it** — that was the first guess, and the
+control fired again at f845 after the warm-up, which is what identified the real
+cause. Hiding is not a first-frame effect.
+
+The fix is to read the location f-curves, and the thing that makes reading them
+legitimate is a control rather than an assumption: at a frame where the shards
+are VISIBLE the two must agree, and requirement R7 (the BREACH collection is not
+parented and not offset) is what makes `location` the world position. Measured:
+**1,178 objects at f900, worst |location − matrix_world| = 0 m.** R7 verified,
+not assumed. The negative arm — the same comparison at f845, where it is vacuous
+— is kept and reported, so the size of the lie is in the record.
+
+With the f-curves, the scene reproduces the table **to 0.1 mm**:
+
+| bay | f866 | f900 | f1165 | table |
+|---|---|---|---|---|
+| 4 | **2,288.5** | **2,615.1** | **4,987.0** | 2,288.5 / 2,615.1 / 4,987.0 |
+| 5 | 578.7 | 566.6 | 2,808.2 | last 2,808 |
+| 2 / 3 / 6 / 7 | 2.4 / 3.5 / 12.7 / 9.9 | | 27.0 / 14.8 / 25.0 / 26.0 | |
+
+The prediction allowed ±2 mm for the decimation. It is exact.
+
+---
+
+## R2-189 — R5 refuses on TRANSOMS, and `build_breach_sim.py` builds transoms on purpose
+
+`--force` was used on this apply, as it was on film13's. The instruction was to
+make the judgement again rather than inherit the flag, and the judgement stands —
+but for a reason that makes the refusal permanent rather than incidental.
+
+**The finding is bit-identical to film13's**, which is the first thing that had
+to be true: same nine names, same `(n_in, n_tri, n_clear)` triples, same 18
+capture-band members, same 79 AABB candidates, same 29,381 meshes scanned. The
+apron is 400 m from the pocket and does not touch it.
+
+    GW_Front_Mull_14      0  4  4        GW_Right_Transom_0    0  8  4
+    GW_Front_Transom_0    0  6  6        GW_Right_Transom_1    0  8  4
+    GW_Front_Transom_1    0  6  6        GW_Right_Transom_2    0  8  4
+    GW_Front_Transom_2    0  6  6        WallLine_SideFin_0    0  8  4
+                                         WallLine_SideFin_1    0  8  4
+
+**All nine have ZERO vertices in the pocket.** Every hit is a side face crossing
+it, which is the case the triangle arm was correctly written for.
+
+Three reasons `--force` is right, and the third is the one that matters:
+
+1. **R5's stated harm is a BAKE-time harm** — *"starts every clamped shard inside
+   metal, which is exactly what the null control caught."* The bake is finished
+   and was built in its own scene from purpose-made `SIM_*` colliders
+   (`build_breach_sim.py` lays `SIM_FloorIn`, `SIM_FloorOut`, its own sill, head,
+   mullions and transoms). **`film14`'s meshes were never colliders in it.**
+   Writing keyframes cannot retroactively put a shard inside metal the solver
+   never saw.
+2. Six of the nine are round 1's own east-wall frame (three transom rails, two
+   side fins) and three are the SOUTH wall's members meeting the east wall at
+   the y = −11 corner. None is glazing; R3 (no round-1 east glass) passes clear.
+3. **`build_breach_sim.py` builds transoms that fill the pocket BY DESIGN**, and
+   says so in its own comment: *"a transom that spans 14.840 .. 14.976 fills the
+   glazing pocket and puts every shard it crosses inside it."* They are inset
+   37.5 mm from the mullion centres — i.e. **across the clear opening**, which is
+   what a transom is. R5's clear-opening arm therefore charges the correct
+   geometry class, and **no correctly glazed curtain wall can ever pass it.**
+
+The applier's own selftest proves this without meaning to. Its positive control
+*"a bar across the middle of bay 4 is caught"* returns
+`[['Bar_across_bay4', 0, 4, 4]]` — **the same triple as `GW_Front_Mull_14`.** The
+gate cannot distinguish a bar laid deliberately across a bay from a curtain
+wall's own rails. It already has the exemption for the case one step less
+obvious (*"a mullion ON a bay boundary captures the edge, does not refuse, and IS
+reported"*); the transom case is the same shape and has no exemption.
+
+**So `--force` is not a one-off waiver, it is the permanent state of this gate
+against a glazed wall, and it should be turned into a rule** — a transom-shaped
+member spanning a clear opening at a `transom_landings` height belongs in the
+capture-band report, not the refusal — or the refusal will be forced past
+forever and will one day be forced past over something real.
+
+**And there is a picture consequence, which is R6 open.** `apply_breach` writes
+`MUL*`/`TRN*` transforms and nothing binds a mesh to them, so what renders is
+round 1's **static** frame. In `work/r2187/f14_000890.png` the transom rail runs
+straight across the aperture, unbroken, while the sim's own model of that rail is
+an ACTIVE body that sheds segments. The wall's glass leaves and its rails do not.
+
+---
+
+## R2-190 — the east wall, MEASURED: 1,255 of 4,096 camera rays meet glass, against 0 in the unapplied film
+
+`n_GW_Right_Glass` counts ROUND ONE's object names and reads **0 for a correct
+scene exactly as it does for an empty one**. That is why the wall shipped bare
+through film10, 11, 12 and 13. The fallback is to render f0858 and look — and it
+was rendered and looked at, and it is glazed — but at that range, through motion
+blur, clear glass and no glass are genuinely hard to separate by eye, which is
+how the defect survived four films.
+
+So the question was put to the scene. `work/r2187/glass_raycast.py` casts a
+64 × 64 grid from the film's own camera at f858 against a BVH of the `GP_b*`
+panes:
+
+| | `film14_breach` | `film14` (the ship, unapplied) |
+|---|---|---|
+| `GP_b*` panes in scene | 10 | **0** |
+| visible at the frame | 10 | 0 |
+| rays meeting glass | **1,255 of 4,096 (30.64 %)** | **0 of 4,096** |
+| distinct panes hit | 6 — bays 4,5,6,7,8,9 | 0 |
+| range | 6.93 .. 16.66 m | — |
+| glass x | 14.95500 .. 14.96650 (the pocket) | — |
+| material | `BREACH_Glass` | — |
+| raster region | x 0.398..0.992, y 0.008..0.602 | — |
+
+Same camera, same frame, same 4,096 rays. **The control comes back zero, and
+that zero is the defect itself** — it is what film10–13 would all return.
+
+`scene.ray_cast` was tried first and abandoned after 25 minutes without a
+result: the whole-scene BVH over 33,221 objects and 4.99 GB does not build in
+any time worth spending. Ten panes are 120 triangles.
+
+---
+
+## R2-191 — the pit-exit apron reads at f0866 and f0890, not only at f1104
+
+R2-150 established the apron repair on f1104, *"the ONER's best view of the
+region"*. It is not the only frame it reads in.
+
+f0866 and f0890 were re-rendered from `film14_breach` and compared with the
+archived `film13_breach` frames. **The control is a repeat render of
+`film13_breach` on the instance in use tonight**, because a floor measured on
+another night on another GPU is not this render's floor:
+
+| | changed at all | > 2/255 | > 8/255 | max |
+|---|---|---|---|---|
+| **floor** f0866, film13_breach vs itself | 4.66 % | 0.0000 % | 0.0000 % | **1** |
+| **floor** f0890, film13_breach vs itself | 4.62 % | 0.0000 % | 0.0000 % | **1** |
+| f0858, film13_breach → film14_breach | 5.57 % | 0.0000 % | 0.0000 % | 3 |
+| **f0866**, film13_breach → film14_breach | 7.83 % | 0.0094 % | **0.0037 %** | **19** |
+| **f0890**, film13_breach → film14_breach | 8.50 % | 0.0122 % | **0.0048 %** | **66** |
+
+77 pixels at f0866 and 100 at f0890, against a floor of exactly zero.
+
+**They are the apron.** Projecting `ARCH_Paving_ApronPlatform`'s own vertices
+through the scene's own camera puts it in a thin raster band, and the differing
+pixels are inside it at both frames — while the band itself MOVES between them,
+which is what makes the containment mean something:
+
+    f0866   apron band  x 1191 .. 1920   y 377.8 .. 418.4   (41 px tall)
+            pixels >8   x 1575 .. 1607   y 400   .. 402
+    f0890   apron band  x  855 .. 1920   y 358.5 .. 428.2   (70 px tall)
+            pixels >8   x 1463 .. 1498   y 398   .. 401
+
+**And they move in R2-150's direction, to R2-150's values.** Taken over just the
+pixels that changed:
+
+    f0890   film13 (86.3, 78.6, 67.2)  ->  film14 (118.0, 108.3, 93.7)   +31.7 / +29.8 / +26.5
+    f0866   film13 (112.7, 101.3, 84.4) -> film14 (125.2, 113.5, 95.9)   +12.5 / +12.2 / +11.5
+    R2-150 at f1104, the void region:  (99.1, 88.2, 74.9) -> (116.6, 103.3, 86.6)
+
+They **lighten**, because a lit concrete apron is now there — the same sign, the
+same magnitude class and very nearly the same destination RGB as the region
+R2-150 measured at a completely different frame. That agreement was not
+arranged and is the best independent check that this is the apron and not
+something else that happens to be in the band.
+
+Worth recording as a caution: reading the crops by eye, I first called the
+direction backwards — the film13 strip looked like the brighter one. The
+measurement is what settled it, on 100 pixels, and the eye was wrong about a
+32/255 difference.
+
+**This falsifies the quantitative half of my own P4**, which predicted the two
+frames would differ only at the floor. It falsifies it in the direction the
+prediction named as interesting: the apron is in frustum in beat 3, so beat 3 is
+not apron-neutral. It is 0.005 % of the frame and it does not change the
+breach reading at all — but "the repair only shows at f1104" is now false, and
+R2-150's framing should carry this.
+
+---
+
+## R2-192 — the 627 under the floor is the instrument, confirmed from the applied scene; and "627, 1.9 % of the field" is two different measurements in one sentence
+
+Another agent is fixing this in `sim/verify_breach.py` as I write (their number
+is R2-196, file touched 01:48). **Nothing here touches their file.** This is an
+independent route to the same quantity — off the applied scene, through the
+applied f-curves and each shard's own applied quaternion — and it lands on their
+figure:
+
+| at f1165, 3,796 shards | below floor | worst | %|
+|---|---|---|---|
+| axis-aligned bound, `origin_z − max\|local v_z\|` | **626** | 154.599 m | 16.49 |
+| **rotated, `min (R·v)_z + origin_z`** | **70** | 154.6 m | **1.84** |
+
+556 bodies are dropped by the rotation, **0 are found only by it**, and of the
+556 the highest true lowest-vertex is **z = +0.1056 m** and the lowest is
+**z = +0.0001 m** — every one of them above the floor, not near it. A shard's
+local z is the PANE's vertical, so a shard lying flat on the forecourt has that
+axis horizontal and the old bound charges it half its height in the wall.
+
+**And the standing sentence "627 bodies end below the floor … 1.9 % of the
+field" is two instruments spliced together.** 627 / 3,948 is 15.9 %. The 1.9 % is
+70 / 3,796 = 1.84 % — the corrected count's percentage carried next to the
+uncorrected count. Both halves have been repeated as one fact.
+
+**This apply neither improves nor worsens it**, and cannot: the sink figure is a
+property of `breach_film.npz`, which is the same file. Recomputed on the table
+restricted to the same population the scene contains (`work/r2187/inherited.py`):
+GS shards only, 3,796 bodies, same numbers. The 152 `MUL*`/`TRN*` frame bodies
+in the table contribute **0** below-floor bodies and are not instanced in the
+scene at all, so 627-against-3,948 and 575-against-3,796 were never comparable.
+
+**70 shards really are under the floor and the worst really is 154.6 m.** That
+part is not an instrument. `GS_b04_00446` at −154.6 m, then two at −114.9 and
+three at −105.9.
+
+**And the 70 now have an owner and a cause.** `e2d7d85` (R2-197, another agent,
+committed while this was being written) diagnoses them: the static ground stops
+at x 46 / |y| 14 and the field travels 653 m, so **55 of the 70 are outside the
+slab footprint at the frame they first cross z = 0**, crossing at a median
+−0.34 m/s — walking off a ledge, not punching through one. 15 genuinely tunnel.
+`SIM_Outfield` closes it and **takes effect on the next bake only**, so the 70
+are still in `film14_breach` and will be until the wall is baked again. That is
+the correct call — none of them is on camera — and it should be recorded on the
+scene rather than assumed fixed.
+
+---
+
+## R2-193 — cluster B is not in the motion that renders — and my explanation of WHY was wrong; R2-199 has the real one
+
+**Superseded within the hour, and corroborating it.** While I was measuring
+this, another agent closed cluster B properly at `e2d7d85` (R2-199): clusters A
+and B were measured on `sim/tmp/breach_bake.npz`, **the superseded bond-4000
+bake**, and on the bake that is actually in the film they are **0 and 0**. They
+proved the identity rather than inferring it — the shipped table's last frame is
+bit-identical to `breach_full_m1.npz` and 626.781 m from `breach_bake.npz`.
+
+**The two measurements agree where they overlap, and one of them is exact.** My
+chord-speed measure on the film-frame reconstruction finds the fastest body at
+**110.4 m/s**; their raw-bake measure on the same config finds the peak at
+**110.41 m/s**. Same body, two different instruments, four significant figures.
+Their count over 60 m/s is 7 and mine is 1; that residual factor of seven *is*
+the film-frame sampling, and it is the only part of my explanation that
+survives.
+
+**What I got wrong, and it is worth recording as wrong rather than dropped:** I
+wrote that cluster B "lives at sub-film-frame timescales and the delivered
+animation samples over it". That is not why it is absent. It is absent because
+**it was never in this bake at all** — it belongs to a configuration that was
+replaced. Sampling explains 7 → 1. It does not explain 348 → 0, and I had no
+evidence that it did. The observation was right and the mechanism I attached to
+it was a guess dressed as a finding.
+
+What stands from this entry on its own: the rendered motion is much slower than
+either bake figure suggests, and that is worth knowing for motion blur and for
+anyone quoting a speed at a frame.
+
+
+### the measurement, as taken
+
+R2-096 left cluster B open — *"348 shards to 106 m/s with no measurable
+contact"* — and recorded *"828 shards exceed 60 m/s, 661 of them on screen."*
+
+**Those are raw-bake figures.** On the decimated film-frame reconstruction —
+the table the scene was built from, and therefore the only motion the render
+has — the picture is completely different:
+
+    shard speed, max chord between consecutive film frames x 24 fps
+        median (not sunk)           11.4 m/s
+        99th percentile             22.0 m/s
+        bodies over 60 m/s          1        (110.4 m/s, and it is sunk)
+        bodies over 106 m/s         1
+
+A chord between film frames is a lower bound on instantaneous speed, and a body
+that accelerates and reverses inside 1/24 s has most of its speed averaged away
+— so this bounds what is ON SCREEN and nothing more. **Nothing in the delivered
+animation is travelling at 106 m/s.**
+
+The overlap with the sink was tested at the same time, with a random-subset
+control at each threshold. The 70 sunk shards **are** the fast tail —
+median max speed **38.9 m/s against 11.4** for the rest, above the 99th
+percentile of everything else — but they are not a 106 m/s population, because
+on the shipped config there is no such population (R2-199). So the hypothesis
+that the two open items were one item is **not supported**: the sunk bodies are
+fast relative to their neighbours and ordinary in absolute terms, and R2-197's
+diagnosis — 55 of the 70 walked off the edge of a ground plane that stops at
+x 46 / |y| 14 — is the actual cause and has nothing to do with speed at all.
+`work/r2187/clusterb.py`.
+
+---
+
+## R2-194 — the wound is frozen, not settled, and on the reconstruction it is 1,599 bodies not 2,275
+
+The bake is not at rest at its last key. This bears directly on beat 3 → beat 4:
+the wounded showroom has to persist for the rest of the take, and the table ends
+at f1165 with the film running to f2978. Everything after f1165 is **CONSTANT
+extrapolation** — the field does not settle, it is frozen mid-flight.
+
+Measured on the applied f-curves, between the last two keyed frames:
+
+    over 1 mm per frame     1,599 of 3,796 shards   (42.1 %)
+    worst                   3.0489 m per frame      (73 m/s)
+
+The standing figure is **2,275** (recorded elsewhere as 2,375). I could not
+reproduce either. Recomputing on the decimated reconstruction restricted to the
+same population gives **1,599** for GS shards and **1,599** for all 3,948 bodies
+— the frame bodies contribute none. The scene reads **1,600**, the one-body
+difference being that 3,573 shards carry the detail-2 mesh and my table-side
+radius used detail 1. I am recording that I could not reproduce 2,275 rather
+than assuming it was wrong; it is most likely the raw bake, on the same
+raw-versus-reconstruction split as R2-193.
+
+**Either way the item stands and gets worse when stated properly**: 42 % of the
+glass is still moving when the table runs out, one body at 73 m/s, and what
+holds the picture together for the remaining 1,813 frames is an extrapolation
+mode rather than a physical rest state. `verify_breach`'s own PERSIST arm cannot
+see this — it reports `"table ends before 1200"` and returns no verdict at all.
+
+
+## The gates, each with the control that discriminates
+
+| gate | film14_breach | control |
+|---|---|---|
+| `socket_index_audit --blend` | **PASS** — no relief chain reaches a shading node on anything but a normal | `film10`, the assembly6 control, **FAIL, 27 findings**, in the same run |
+| `verify_breach --swap-scene` | **PASS, 0 problems.** Bays 2,3,4,5,6,7 each hide their pane at **860** and show every shard at **860**; `shards_not_on_the_pane_frame = 0` in all six; bays 0,1,8,9 intact, pane never hides | the same script's `--swap` arm on the TABLE: **FAIL, worst gap 2,118 frames, 301 shards uncovered.** Table fails, scene passes — that pairing is what shows the applier is the fix |
+| `apply_breach --selftest` | **PASS, 0 failed of 11 arms** | six of the eleven are must-fail arms, including "no east glazing at all", "a hidden pane", "a surviving round-1 plane" and "a solid box through the pocket with ZERO vertices inside it" |
+| curve proof (in-applier) | LINEAR 6,783 / CONSTANT 240 / **other 0**, max linear eval err 4.768e−07, `control_fires: true` | the Bezier control arm, which must and does register 4.797e−04 |
+| east wall | **1,255 of 4,096 rays meet `GP_b*`** | `film14` unapplied: **0 of 4,096** (R2-190) |
+| f0866 / f0890 A/B | signal 0.0037 % / 0.0048 % over 8/255 | live repeat-render floor **0.0000 %**, max 1/255 (R2-191) |
+
+## The nulls
+
+Three things had to NOT move, and did not:
+
+* **the camera track.** `sim/dump_camera_track.py` re-run on `film14_breach` and
+  compared with the copy dumped from `film13_breach`: 2,978 rows x 9 columns,
+  **max|diff| exactly 0.0**, and the two files have the same sha256
+  (`4cafe712c405b43b…`). Every pixel figure on this defect goes through that
+  track, including R2-095's corrected ranges, and it did not have to be
+  re-derived — but it did have to be checked, because the track was dumped from
+  a scene that no longer ships.
+* **`sim/out/apply_requirements.json`**, republished by the preflight run:
+  no diff.
+* **the curve proof**, byte-for-byte identical to film13's including the
+  Bezier control's 4.797e−04.
+
+And the one thing that did move, `render/film14_breach.blend` is
+**462,507 bytes larger** than `film13_breach.blend` — which is the apron, and
+is the only difference either file should have.
+
+## R2-226 — the census read the docs for placement data; the artefacts have it
+
+The census's handover says *"there is no placement step between `world/items/`
+and `assemble.py`"* and, separately, that no item module carries placement data.
+**The first is true.  The second is true of the documents and false of the
+blends**, and the difference decided the whole design of the stage.
+
+Measured out of the built test blends, `work/r2226/inventory_item.py`:
+
+| item | objects | distinct meshes | centroid extent, WORLD metres |
+|---|---:|---:|---|
+| `armco_post` | 3,236 | 3,236 | x [−716.9, 552.7]  y [−256.8, 926.9] |
+| `catch_fence_post` | 676 | 676 | x [−716.9, 625.8]  y [−257.2, 983.9] |
+| `crew_figure` | 120 | 120 | x [−58.8, −30.1]  y [−64.3, −37.3] |
+| `heras_fence_panel` | 771 | 771 | x [−109.9, 377.8]  y [−105.5, 320.0] |
+| `timing_stand` | 10 | 10 | x [161.9, 317.2]  y [47.3, 177.7] |
+| `tyre_wall_tyre` | 338 | 338 | x [246.6, 267.3]  y [895.6, 928.1] |
+
+Those are circuit coordinates.  The modules import `world_contract` and resolve
+every unit through `C.su_to_world(s, u)` / `C.world_ground_z(x, y)` **at build
+time**; projected back onto the centreline by the new stage's own check,
+`crew_figure` lands at **s 3232.6 – 3262.0, u +53.8 – +85.9 m**, the paddock
+behind the pit building.
+
+**So the missing stage is a transfer, not a placement solver.**  Every item's
+position was computed by its author, through the contract every class builder
+reads, and dropped on the floor at the door.  A design that had believed the
+docs would have written a solver and re-derived 41 authors' work.
+
+`assemble.py`'s `--mods` default now ends in `items`.  **A world rebuild is
+owed** before anything changes in the ship.
+
+## R2-227 — 40 of 41 modules cannot be placed today, and the reasons are four
+
+`world/items/PLACEMENT.json`, 41 rows, each blocker naming its measurement.
+One row is in state `PLACE`.  The blockers, with multiplicity:
+
+```
+SUPERSEDE_WELDED   24    the world already builds this feature, welded inside a
+                         class mesh; placing it double-builds
+GATE_NOT_ACCEPTED  22    canonical gate.json is not ITEM_ACCEPTED
+PARTIAL_BUILD      15    the blend holds fewer units than the item declares
+NOT_AN_ITEM         6    probes; their absence is correct
+LOCAL_FRAME         5    builds local and publishes place=(R, t); the registry
+                         has no transform arm yet
+NO_BUILT_BLEND      3
+DUPLICATE_MODULE    2    pit_wall_unit_itemkit, showroom_facade_panel_v2
+NO_WORLD_FRAME      2    the test blend lays the population on a grid
+NO_GATE_REPORT      1    spectator_standing_ga
+```
+
+**`crew_figure` is the only clean one, and why it is clean is the census's own
+headline.** It supersedes nothing, because §2.5 measured that 0 of `assembly9`'s
+30,183 datablock names and 0 of `film14`'s 32,069 match
+`figure|person|crowd|spectat|skin|hair|human|crew|driver`, and there is no skin,
+flesh or hair material among the 130 / 191.  **The one item that can be placed
+without first taking something out is a human being, because there are none.**
+
+Two rows worth naming for whoever picks this up:
+
+* **`tyre_blanket` is the nearest next candidate** — the only row whose ONLY
+  blocker is the gate verdict.  56 of 56 declared units, world frame, nothing in
+  `assembly9` it would double-build.  Re-gate it ACCEPTED and it is placeable as
+  it stands.
+* **`spectator_crowd`'s `GATE_NOT_ACCEPTED` is reading the wrong file.**
+  `spectator_crowd.py` sets `ITEM = "spectator_seated"`, so the row's verdict
+  came from `render/items/spectator_seated/gate.json` (REJECTED) and not from
+  `render/items/spectator_crowd/gate.json` (ACCEPTED), which exists for a
+  directory that is not a manifest id — census §1.3's off-by-one.  The row is
+  HOLD either way on `NO_WORLD_FRAME`, which is decisive and independent of the
+  gate, and the row now says so rather than being taken as true.
+
+## R2-228 — `tools/placement_gate.py` has R2-180's fall-through, in the gate the campaign relies on
+
+Run on a scene holding **two** item collections it prints
+
+    collection 'W_Item_CrewFigure' (item-campaign convention); 2 item
+    collections present, took the largest -- pass --subject to be explicit
+
+and measures crew_figure's 120 meshes as the subject while filing the ten
+`TS_Stand*` objects under `context_findings`.  That is exactly R2-180 —
+*"`cands = pick or cands` fell through to 'any item collection, take the
+biggest'"* — in a different file, and **a placement stage makes multi-item
+scenes the normal case**, so it will now fire routinely rather than never.
+
+Worked round by running the gate once per item with `--subject`.  Both clean,
+and the second run produces numbers the fall-through never reached:
+
+```
+crew_figure   PLACEMENT_CLEAN  0 violations; no subject mesh came within
+                               bounding-box reach of ANY of the three volumes
+timing_stand  PLACEMENT_CLEAN  0 violations
+              road_corridor  3.487 m clear  TS_Stand05_GRISAILLE
+              car_path       5.370 m clear  TS_Stand00_BOREAL
+              camera_path   10.509 m clear  TS_Stand03_ESTIVAL
+```
+
+**And R2-110's controls were run with them, because a gate run only against the
+thing you hope is clean is not a measurement:**
+
+```
+ctl_place_pos           PLACEMENT_FAIL     (must fail)
+ctl_place_neg           PLACEMENT_CLEAN    (must pass)
+ctl_place_nearmiss_neg  PLACEMENT_CLEAN    (must pass — over-rejection)
+```
+
+The gate is not mine to change; it is named here.
+
+## R2-229 — the supersede debt is physical, and a counter could not have shown it
+
+`build_items` derives its `REBUILD_OWED` lines from `assembly9_build.json`'s own
+counters — `pit_wall_stands = 5`, `armco_posts = 3561`, `fence_posts = 676`.
+**A counter says what was built, not where it is**, and "the old version has to
+come out" is a claim about space.
+
+`work/r2226/supersede_overlap.py` links `ARCH_PitWall` **alone** out of the
+4.21 GB ship — one object through `bpy.data.libraries.load`, not a scene open —
+and counts wall vertices inside each placed unit's world bounding box:
+
+```
+10 of 10 TS_Stand* units contain host geometry
+4,300 of ARCH_PitWall's 24,664 vertices
+worst TS_Stand09_KESTREL 2,184, best TS_Stand06_HALCYON 18
+```
+
+**A bounding box is generous.**  A stand's box runs from the ground to its
+canopy and the wall passes beneath it, so this is an upper bound on
+interpenetration rather than proof of it.  What it does establish is that the
+hero stands and the welded ones occupy the same volume of the pit straight,
+which is what makes them one feature built twice — and it is why
+`timing_stand`'s state is HOLD despite being `ITEM_ACCEPTED`, complete at 10 of
+10, in world frame and keep-out clean.
+
+`catch_fence_post` is the starkest case and needs no measurement: the item
+builds **676** posts and `build_barriers` reports `fence_posts = 676`.
+
+## R2-230 — `build_items.purge()` leaked mesh datablocks, and the idempotence test is what caught it
+
+`build()` twice in one session, on an identical 120-object scene:
+
+```
+run 1   123 objects   122 meshes   3,137,756 verts
+run 2   123 objects   243 meshes   6,275,504 verts      <- before the fix
+run 2   123 objects   121 meshes   3,105,356 verts      <- after
+```
+
+`purge()` removed the objects and left their meshes, and **Blender reused the
+object names**, so the scene looked right — first and last object names
+identical across both runs.  A second leak was in the rig-drop path: a standin
+ground plane's mesh outlives its object the same way.
+
+Blender drops zero-user datablocks on save, so this could never have reached a
+shipped blend.  It matters anyway, because **the mesh counts are how the
+no-repeats rule is enforced in this file** — `distinct meshes == objects`,
+`users == 1`, `top_share` — and an in-session mesh count that doubles is a count
+nobody can use.
+
+Removal is scoped to what this stage placed.  It never sweeps `bpy.data` for
+orphans: an orphan somebody else made is not this stage's to delete, and
+*"`purge(prefix)` has no default prefix"* is a rule this project already paid
+for.
+
+## R2-231 — the placement check that did not exist, shown failing before it was trusted passing
+
+`tools/item_placement_gate.py`.  R2-182 paid a full render cycle for the
+question *is the item in the blend you are about to render?*, and the answer for
+all 41 items was no.
+
+**`--selftest`, seven families built live in-process.**  The four must-fail cases
+are the point:
+
+| case | verdict | arm |
+|---|---|---|
+| 40 objects / 40 meshes / stamped | `PLACED` | — |
+| no collection at all | `ABSENT` | — |
+| 39 of a declared 40 | `PLACED_BUT_WRONG` | `COUNT` |
+| **40 objects wearing ONE mesh** | `PLACED_BUT_WRONG` | `NO_REPEATS` ×3 |
+| 40 objects, 8 meshes (top 12.5 %) | `PLACED_BUT_WRONG` | `NO_REPEATS` ×3 |
+| 40 objects, no provenance stamp | `PLACED_BUT_WRONG` | `PROVENANCE` |
+| 4 objects, 1 mesh | `PLACED_BUT_WRONG` | `NO_REPEATS` (share not gated below 10 units; the datablock arm still fires) |
+
+**And the strongest control cost nothing, because it was already on disk.**  The
+same gate, same registry, run against the two artefacts the census measured:
+
+```
+render/film14.blend        --expect absent   crew_figure ABSENT, 1 of 1
+                           >> PLACEMENT_ITEMS_ABSENT_AS_EXPECTED_OK
+render/r2226_items.blend                     crew_figure  PLACED 120 objects,
+                                                          120 meshes, 0 unstamped
+                                             timing_stand PLACED  10 objects,
+                                                           10 meshes, 0 unstamped
+                           >> PLACEMENT_ITEMS_OK
+```
+
+A gate that cannot tell the shipping world from a placed one is not measuring
+placement.  `tools/item_ab_measure.py` **refuses to interpret an A/B at all**
+unless it is handed this gate's verdict for the AFTER blend.
+
+## R2-232 — the pixels, and R2-182's own frame is no longer identical
+
+Both A/Bs are `film14` against `render/r2226_items.blend`, 4K, 256 samples,
+`--denoiser NONE`, camera `ONER`, same farm.  NULL is `film14` rendered a
+**second** time.  `tools/item_ab_measure.py` refuses to interpret either until
+handed `tools/item_placement_gate.py`'s verdict for the AFTER blend.
+
+**f654 — `crew_figure`, 88 of 120 figures in frustum, 75 visible, 13 occluded:**
+
+| region | px | AB >8/255 | AB mean \|Δ\| | NULL >8/255 | NULL mean \|Δ\| |
+|---|---:|---:|---:|---:|---:|
+| whole frame | 8,294,400 | 1.02 % | 0.38 | 0.00 % | 0.00 |
+| **visible units** | 153,413 | **51.05 %** | **18.83** | 0.00 % | 0.00 |
+| **occluded units — CONTROL** | 2,941 | **7.07 %** | 2.52 | 0.00 % | 0.00 |
+| **rest of frame — CONTROL** | 8,138,046 | **0.08 %** | 0.03 | 0.00 % | 0.01 |
+
+**f1126 — `timing_stand`, R2-182's own frame, 9 of 10 stands in frustum:**
+
+| region | px | AB >8/255 | AB mean \|Δ\| | NULL >8/255 |
+|---|---:|---:|---:|---:|
+| whole frame | 8,294,400 | 7.69 % | 2.60 | 0.00 % |
+| **visible units** | 1,046,575 | **49.47 %** | **14.47** | 0.00 % |
+| rest of frame | 7,247,825 | 1.66 % | 0.89 | 0.00 % |
+
+R2-182: *"Rendering f1126 from the film before and after the fix would have
+produced two identical images — and been read as 'the fix is invisible, close
+it'."*  **It does not, once the item is in the world.**  49.47 % of the pixels
+in the nine stands' boxes move, against a repeat-render floor that rounds to
+0.00 % at the same threshold.  There is no occluded stand at this frame, so the
+internal control is unavailable and the tool says so rather than inventing one.
+
+**Three controls, saying three different things.**  The NULL says the floor is
+clean at the 8-level threshold (with the denoiser off, sampling noise reaches 26
+levels on isolated pixels; nothing survives the threshold).  REST OF FRAME says
+the change is confined to where the figures project — 0.08 % against 51.05 %,
+**659×**, and 574× on mean |Δ|.  THE OCCLUDED HALF is R2-150's control, and at
+7.07 % against 51.05 % it is **7.2×**, weaker than R2-150's 50×.  The reason is
+measurable rather than mysterious: occlusion is classified by ONE ray to each
+figure's centroid and the region is that figure's screen BOUNDING BOX, so a
+figure whose chest is behind a wall and whose head clears it is scored occluded
+and contributes a box full of visible head.  7.07 % is the size of that leak,
+not of a light leak.  A per-pixel depth split would separate them.
+
+**And the instrument failed first, loudly.**  The initial f654 run reported
+visible **0.00 %** / occluded 0.00 % / rest-of-frame 1.04 % — the frame had
+plainly changed and the boxes were empty, because the projection puts v = 0 at
+the frame's bottom while numpy rows run top-down, so every box was vertically
+mirrored.  It printed *"either the item is not where the projection says, or the
+frame does not see it"* and returned `ITEM_AB_FAIL` rather than a tidy null.
+Both logs are kept: `work/r2226/ab_654.log` mirrored, `ab_654_flip.log`
+corrected.
+
+**Looked at, not only measured.**  `work/r2226/peep_*.png`.  At f654 the BEFORE
+is empty tarmac behind the paddock fence and the AFTER is a row of team-coloured
+crew, motion-blurred by a fast camera.  At f1126 the BEFORE pit wall is bare and
+the AFTER carries a run of decks, fascias and canopies — and the clutter along
+that wall **is** the R2-229 debt made visible: ten hero stands standing among
+five welded ones.
+
+## R2-233 — two A/B tools in `tools/` cannot run on this box at all
+
+`tools/r2179_ab_measure.py` and `tools/glass_winding_ab_measure.py` both do
+`from PIL import Image` at module scope.  **Neither `/usr/bin/python3` nor
+Blender 5.2's bundled interpreter has PIL** — checked again today, both raise —
+which is exactly why `world/items/human_png.py` exists and says so in its own
+header.  `tools/item_ab_measure.py` reads through that instead.
+
+This is R2-150's shape a third time: *"the rewritten script died on
+`No module named 'PIL'` while Blender exited 0.  The printed `STAGE RESULT` line
+caught it; `$?` would not have."*  Noted, not fixed — those two files are
+somebody else's.
+
+## R2-234 — I clobbered another agent's commit message with `git commit --amend`
+
+**My mistake, recorded because it is the git-hygiene rule's twin and the rule as
+written does not cover it.**
+
+The standing rule on this project is *path-scope every `git add`* — a broad add
+has swept up other agents' in-flight work five times.  I obeyed it on every
+`add`.  Then I ran `git commit --amend` to correct one number in **my own**
+commit message.  Between my commit (`491cef7`) and the amend, another agent's
+commit landed and became `HEAD`, so the amend rewrote **theirs**:
+
+```
+e4d1d90  R2-274: the repeat floor is not zero on a glass wall ...   <- clobbered
+4d9e49a  R2-226: 120 human figures arrive in a film that had none   <- my message,
+                                                                       their files
+```
+
+**Only the message moved.**  `sim/wallstats.py` and
+`sim/out/wallstats_f2978_floor.json` are R2-274's own and are untouched, and
+`491cef7` still carries my commit with the correct files.
+
+**Repaired with `git notes`, not a rebase.**  `git notes add` on `4d9e49a`
+records what happened and restores R2-274's message verbatim; the original
+commit object survives at `e4d1d90` and `git show e4d1d90` still works.  A
+rebase would have been the "proper" fix and would have rewritten eight commits
+belonging to three live agents to repair one message — a far worse trade.
+
+**`--amend` is `add`'s blind spot.**  `git add` takes a path; `--amend` takes
+whatever `HEAD` happens to be at the moment it runs, and in a tree with
+concurrent agents that is not necessarily yours.  The rule should read *never
+`--amend` in this repository* — write a correcting commit instead.
+
+
+## What is owed
+
+1. **A world rebuild** to put `crew_figure` in the ship.  `assemble.py`'s
+   default `--mods` now ends in `items`; nothing moves until an assembly runs.
+2. **`build_architecture` and `build_barriers`** own every `REBUILD_OWED` line.
+   Until a class module stops welding a feature, the hero module for that
+   feature cannot be placed.  This is the honest, physical form of the census's
+   *32 + 42 = 74 reworks*.
+3. **A `frame: "local"` arm in the registry** for the five modules that build
+   local and publish `place=(R, t)` / a `*_to_world()`: `pont_girder`,
+   `pont_deck_slab`, `gantry_truss`, `driver_figure`, `crew_fireproof_overall`.
+   Named and stopped.
+4. **Per-face provenance in the class builders** — see the note below.  It is
+   what would close the census's 168 `UNDET`, and the mechanism is already in
+   those files.
+
+### The provenance note, because the census asked whether it is worth it
+
+**Object-level stamping is done and it is cheap**: every object this stage
+places, and its mesh, carries `r2_item`, `r2_manifest_item`,
+`r2_item_collection`, `r2_src_blend`, `r2_src_sha8`, `r2_gate`, `r2_stage`,
+`r2_placed_utc`, and the gate fails an unstamped object inside a placed
+collection so the stamp cannot rot into decoration.
+
+**It does not close the 168, and it cannot.**  Those items are welded inside
+`ARCH_PitWall`, `ARCH_Gantry`, `ARCH_PaddockBuildings` — *one mesh*, so no
+object-level property can distinguish a coping from an advert from a timing
+stand inside it.  The census asks for "a provenance attribute written at build
+time"; for welded geometry that has to be a **face-domain attribute**, not a
+custom property.
+
+**It is worth building, and the reason is that the mechanism already exists in
+those files.**  `build_architecture`'s `MB` accumulator already carries per-face
+parallel arrays — `self.fm` material index, `self.fs` smooth flag, `self.fc`
+colour — and `MB.build()` already writes them with `me.polygons.foreach_set(...)`
+and `me.color_attributes.new(...)`.  `build_barriers` and `build_dressing` use
+the identical `foreach_set` idiom.  A face-domain `INT` attribute keyed to an
+item-id table is **`fc`'s twin**: one array beside the three that exist, one
+`me.attributes.new(name="r2_item", type='INT', domain='FACE')` beside the colour
+layer, and a current-item context set per *section* of the builder rather than
+at each of the ~230 append sites.
+
+That would make all 435 items decidable from the artefact for ever, and it
+should be done at the next class-module change, because it needs a rebuild
+anyway and one is already owed.
+
+## R2-241 — the cockpit was empty for all 2,978 frames, and nobody had measured
+what it was worth
+
+`docs/ITEM-PRESENCE-CENSUS.md` scores `driver_figure` **MID / 220.7 px** and
+lists it `ABSENT`. Both halves were understated.
+
+Measured with `render/film14_path.json` (the film's own camera) against
+`world/car_anim_car.json` (the car's own per-frame transform), with occlusion by
+a BVH of all **9,629,183 car triangles built once in CAR_ROOT-LOCAL space** — so
+the camera is transformed into the car each frame rather than the car into the
+world, which makes an exact 2,978-frame occlusion sweep cheap:
+
+| probe | peak px | peak SHARP px | frames visible | frames sharp | ≥200 px | closest |
+|---|---:|---:|---:|---:|---:|---:|
+| helmet (0.26 m) | 1312.4 | **366.0** | 2164 | 1838 | 151 | **1.226 m** |
+| cockpit opening (0.40 m) | 1934.3 | 323.8 | 2278 | 1922 | 391 | 1.279 m |
+| shoulders / arms | 667.3 | 347.4 | 1905 | 1575 | 224 | 2.093 m |
+
+Per beat, helmet, sharp: beat 1 **209.7**, beat 2 **190.2**, beat 3 119.0,
+beat 4 46.2, beat 5 **366.0**, beat 6 7.7. The peak is frame **2632** — 2.42 m
+away, 78 % of the helmet unoccluded, car dead straight at 81.5 m/s.
+
+**Both controls held.** POSITIVE: the same instrument on the rear wing reports
+1738 visible frames. NEGATIVE: a probe **buried inside the monocoque** reports
+**0 visible frames of 2978** while its raw projected size peaks at 25,611 px —
+so the occlusion term is live and the metric does not read the same
+present-or-absent.
+
+**366 px sharp is 17 % of frame height, held above 200 px for 151 frames, on
+screen and unoccluded for 2164 of 2978 frames (73 % of the film).** That is HERO
+presence. `driver_figure.py`'s 1,608,502-triangle build is the right tier and is
+kept unchanged; its tessellation is set by explicit section counts, not by the
+`NEAR_M = 3.0 / LENS_MM = 21.0` header assumption, so nothing was owed there.
+
+## R2-242 — the fit, and the part of it that cannot be fixed
+
+Round 1's cockpit tub offers **0.249 m** of hip-to-headrest rise where a 1.78 m
+man needs **0.552 m**, and `/home/zany/opus5-car-render` is READ-ONLY.
+`driver_figure.PACKAGE['round1_note']` had already recorded this and recommended
+moving the CAR. The car cannot move, so the DRIVER is re-solved onto it:
+
+* `WHEEL_C` overridden from `(0.300, 0, 0.393)` to the measured
+  `(0.300, 0, 0.3147)` — **78.3 mm** — and `WHEEL_TILT_DEG` from 25.00 to the
+  measured **22.01**. The gloves then land **0.1 mm and 0.0 mm** from the car's
+  own `SW_GripL/R` bars.
+* helmet crown **0.147 m above the cockpit rim**, **5.5 mm under the halo apex**;
+* ankles inside `CI_pedals` in both x and z;
+* hip **0.229 m below the seat pan** — i.e. the pelvis and legs are inside the
+  monocoque. Invisible, and `tools/driver_containment.py` measures that rather
+  than asserting it.
+
+**The fit frame matters.** Frame 1 is mid-explode: the cockpit interior sits
+2.443 m above home until about frame 500. `measure_car` refuses any frame where
+`CI_seat` is more than 20 mm off home.
+
+## R2-243 — `driver_figure.build(place=)` took the figure apart, limb by limb
+
+`Acc.emit` recentres every mesh on its bounding box and stores the offset in
+`ob.location`. `build()` then applied the placement with
+
+    o.matrix_world = Mw @ o.matrix_world
+
+`matrix_world` is a DERIVED value the depsgraph writes; on an object created
+moments earlier it can still read IDENTITY. For the objects emitted late in
+`build()` the right-hand side was `Mw @ IDENTITY` and the assignment **discarded
+the recentre offset**.
+
+MEASURED: `DRV_Helmet` — emitted second — landed on its predicted crown height.
+`DRV_Glove_L` — emitted sixth — landed **209 mm from its own grip anchor**, with
+`matrix_basis.translation` equal to the placement translation alone and a raw
+mesh centroid of `(0.151, 0.0015, 0.1454)` against an anchor at
+`(0.2986, 0.1081, 0.3182)`. The module printed `>> driver_figure: 10 objects,
+1608502 triangles` and reported success.
+
+Fixed to go through `matrix_basis`, which is composed from stored loc/rot/scale
+and is never stale, so the result is order-independent. A four-way unit test
+(`WHEEL_C`, tilt and grip-offset overrides, crossed) confirmed the module's own
+solve was correct all along: the bug was purely in how the answer was written
+back.
+
+## R2-244 — the install empty rode 408 m behind the car
+
+`e.matrix_parent_inverse = root.matrix_world.inverted()` was sampled while the
+scene sat on the fit frame, where `CAR_ROOT` is 400 m down the circuit. That
+inverse was baked in permanently. `verify_install` caught it at **408.890 m**.
+The empty now copies `CI_seat`'s own parent inverse and the `DRV_*` objects hang
+off it with an identity inverse.
+
+## R2-245 — keying the driver's appearance rewrote the CAR's seat animation
+
+The empty was given `CI_seat`'s **own** action datablock so it would ride the
+assembly. `key_appearance` then inserted `hide_render` keys through it and
+forced every keyframe in the action to `CONSTANT` — into the car's action, on
+the car's seat, in a blend the car is supposed to pass through untouched. The
+explode-offset control went **2.518 m → 104.398 m**.
+
+Two fixes: the empty gets a **copy** of the action, and it is excluded from the
+appearance keying. And a **car witness** now brackets the entire run — seven car
+objects (`CI_seat`, `CI_seatpad`, `CI_headrest`, `SW_Shell`, `CI_liner`,
+`MB_chassis_cockpit`, `halo_assembly_HoopTube`) sampled for translation, rotation
+and `hide_render` at ten frames, 70 samples, compared before and after and
+refusing to save if any changed. **0 of 70 changed.**
+
+## R2-246 to R2-249 — the driver does not fit, and where that reaches the film
+
+`tools/driver_containment.py` renders the driver's coverage as an **alpha
+mask**: every car mesh is set `is_holdout`, so it punches a transparent hole
+while still occluding, and with `film_transparent` the alpha channel is 1
+exactly where an unoccluded driver surface is frontmost. One sample, 0.01 px
+filter, opaque `material_override` — binary, no denoiser, nothing to threshold.
+
+(The first cut used the `IndexOB` pass through the compositor and died on
+`Scene.node_tree`, which **Blender 5.2 removed**. Blender still exited 0.)
+
+**R2-246.** Frame 2632: 132,426 driver pixels, **0 in the driver-absent
+control**, and **82 outside the cockpit aperture** in a 10 × 14 px blob 198 px
+from the hull. Frame 700: 222 px. Raycasting those exact pixels named
+**`DRV_Boot_L` at 3.075 m with `MB_chassis_fwd` 5 mm behind it**. Setting the
+boots back 31 mm and 70 mm by hand left 113 px: `MB_chassis_fwd`'s skin cuts
+diagonally into the footwell and no axis-aligned plane follows it.
+
+**R2-247.** The real cause is that the lower body is outside the survival cell
+altogether — the hip is 0.229 m below the seat pan and the thighs hang below
+`MB_cell_floor`, among the backing panels. Where a panel covers them they are
+hidden; where one does not, they reach the film (`DRV_Suit` against
+`Turntable_Deck` at frame 828). The driver is now **trimmed against the car's
+own datums**: every face whose centroid is below `MB_cell_floor`'s underside
+(z 0.3860) or ahead of `CI_footwell`'s bulkhead (x 1.0695) is deleted —
+**188,167 of 810,592 faces, 23.21 %**. Nothing visible is near it: the aperture
+bottoms out at z 0.5849 and the seat pan at 0.4085, 0.20 m above the cut. The
+cut edge is left open on purpose; it is inside the cell floor, it is never
+seen, and capping it would add faces whose winding nobody would ever check.
+
+**R2-248.** The boots are excluded from the render. After the trim they lie
+wholly below z 0.45 and no camera in this film can see them; every pixel they
+ever reached was a protrusion. They stay in the blend, trimmed, so an interior
+shot can switch them back on.
+
+**R2-249 — and then the gate hid the fix from itself.** `driver_containment`
+forced every `DRV_*` object `hide_render = False` for its "driver present"
+pass, which switched the boots straight back on — the objects `place_driver`
+had just excluded. It reported the identical 12 px / 211 px leak before and
+after the fix, so the fix looked like a no-op and I nearly went hunting for a
+third cause. **A gate that overrides the thing it measures is measuring
+itself.** It now restores the AUTHORED visibility — keyed objects render,
+unkeyed ones keep their stored flag — and prints which. With that one line the
+same build read 0 outside on every frame.
+
+Also fixed: `present` was a per-frame gate, so frame 1200 — where the camera is
+not pointed at the car and 0 driver pixels is the *correct* answer — failed the
+run. Presence is now reported per frame and gated once over the run.
+
+### The final containment result
+
+| frame | beat | driver px | driver px, absent | outside aperture |
+|---|---|---:|---:|---:|
+| 2632 | 5 lap | 132,155 | 0 | **0** |
+| 2625 | 5 lap | 23,441 | 0 | **0** |
+| 828 | 2 launch | 17,004 | 0 | **0** |
+| 700 | 1 showroom | 15,978 | 0 | **0** |
+| 1200 | 4 transit | 0 | 0 | **0** |
+| 2100 | 5 lap | 116 | 0 | **0** |
+
+**POSITIVE control:** `--control-displace 0.45` shoves the driver through the
+side of the tub and **294,539 of 294,637 px escape**. The gate can fail, so its
+pass means something.
+
+## R2-250 — the film append, preflighted rather than assumed
+
+`build_film_scene.py` carries four hard refusals on the CAR collection and is
+out of bounds to edit. `tools/driver_film_preflight.py` replays them in an
+empty scene in about a minute:
+
+    636 direct objects, CAR_ROOT animated, 8 CARRIG_* hubs, 0 orphan parents
+    11 DRV_* across the append, 14 procedural materials on their slots
+    DRV_Install on 'DRV_Install_CI_seatAction' -- its own COPY, not the car's
+    appearance keys survive: 8 hidden at frames 1/300/579, 0 at 580 and 2632
+    NO EXTERNAL ASSETS: 0 images with a filepath, 0 image-texture nodes
+
+Two of its own checks were wrong first time and are worth recording: the
+material check matched `bpy.data` by name prefix and reported the CAR's
+`CarbonFibre` as the driver's; and the no-external-assets check flagged
+`Render Result` and `Viewer Node`, Blender's own internal images, as external
+assets.
+
+
+## When the driver appears, and why it is not a pop
+
+The opening shot is the problem: at frames 1–3 a driver riding the seat's
+explode path would float **2.44 m above the car, 452 px tall, dead in frame**;
+pinned at the home position he would sit in mid-air at 209 px. Neither is
+acceptable and neither was noticed until the explode offset was projected.
+
+Measured off-screen runs for a 12-point hull of the whole figure, after the
+interior lands: **448–530** and **540–623**. He is keyed hidden until frame
+**580** — 40 frames inside the second run — and the gate re-projects the hull
+over frames 572–588 and refuses if any is on screen. **0 of 17 were.**
+
+## Pose
+
+`straight`, not the manifest's `hairpin_apex`. At the peak frame the car is dead
+straight at 81.5 m/s, and **the car's own `SW_Shell` euler is constant across
+every frame sampled — this steering wheel never turns.** A driver holding 62° of
+lock on a straight is the first thing an eye catches.
+
+## The placement path — not R2-182's
+
+The driver goes into the CAR, and the car is **appended** into the film from
+`world/car_anim.blend` by `tools/build_film_scene.py --car`. So
+`tools/place_driver.py` writes `world/car_anim_driver.blend` = `car_anim.blend`
++ `DRV_*`, and the film is built with `--car` pointed at it.
+`tools/build_film_scene.py` is untouched (hard constraint 7), and so is the car.
+A world-side placement stage would have left the driver at a fixed world point
+while the car drove away from him.
+
+## R2-266 — R6 was a requirement addressed to nobody, and 152 bodies were counted and thrown away
+
+`apply_breach.REQUIREMENTS` has carried **R6 `frame_transform_binding`** since the
+module was written: *"whoever meshes mullion_intact / mullion_bent_stub /
+curtain_wall_transom binds to the MUL\*/TRN\* names in `sim/out/breach_film.npz`."*
+Nobody was whoever. The corresponding code in `build()` was:
+
+```python
+n_frame = 0
+for j, nm in enumerate(names):
+    if not (nm.startswith("MUL") or nm.startswith("TRN")):
+        continue
+    n_frame += 1
+log("frame bodies in the table: %d ..." % n_frame)
+```
+
+It counts 152 bodies, **prints the count, and writes nothing.** So every film
+built since the breach first shipped renders round 1's static, undeformed
+aluminium grid straight across a 2.15 × 6.00 m hole — including the closing
+wide, which is the only place in the film where the wound is legibly on screen
+at all, and the biggest look in the picture.
+
+`render/breach_f9/f9_1920_f0880.png` is the evidence and always was: the car is
+already outside, the wall is a spiderweb, and **the frame it went through has
+not moved by one vertex.**
+
+**A printed count looks exactly like a used count.** The log line was truthful,
+was read by everyone who ran the applier, and said `152` every time — the same
+number a correct build would print.
+
+**Fixed** by `sim/eastframe.py` + `apply_breach.build_frame()`. Round 1's
+`GW_Right_Mull_04/05/06` and `GW_Right_Transom_0/1/2` are deleted at apply time
+and rebuilt as the 39 pieces the bake partitions them into, keyed off the baked
+transforms. Read back from the saved 4.99 GB blend: at frames 1 and 844 every
+replaced member's world AABB equals round 1's to **0.0000 mm**, and the eight
+mullions the fix does not touch move **0.0 m** at every frame tested.
+
+---
+
+## R2-267 — the bake breaks 1.55 m of one mullion and nothing else, and the headline says otherwise
+
+The standing description is *"mullion 5 travelling 4.43 m and shedding two
+segments."* Both halves are true and together they read as a frame that came
+apart. Measured over every frame body in `sim/out/breach_film.npz`:
+
+| body | max travel |
+|---|---|
+| `MUL05_S01` | **4.742 m** |
+| `MUL05_S00` | **3.932 m** |
+| `MUL05_S02` … `S07` (z 1.55 → 6.22) | 0.145, 0.112, 0.083, 0.057, 0.034, 0.017 m |
+| every segment of mullion **4** (released) | ≤ **0.024 m** |
+| every segment of mullion **6** (released) | ≤ **0.026 m** |
+| **every one of the twelve released transom bodies** | ≤ **0.089 m** |
+
+Mullion 5 has **eight** segments. Two leave. **Six stay, and so do all three
+transoms, at every level, in every bay.** "Shedding two segments" is a
+statement about 2 of 8 and it was being read as a statement about the member.
+
+At the closing frame the wound is 57.7 × 77.8 px for the bridged aperture and
+the scale is **12.96 px/m**, so 89 mm of transom travel is **1.2 px**. Applying
+the bake faithfully changes about **20 px of roughly 4,500**. This was
+predicted in `sim/out/eastframe_prediction.json` before the after-render was
+queued, and the render agrees.
+
+**So the sim and the film do disagree about the transoms, and the disagreement
+is the opposite way round from the one in the brief:** `build_breach_sim.py`
+does model them as active bodies that can shed, and the solver's answer is that
+they do not.
+
+---
+
+## R2-268 — the head restraint is 97× the load it carries, across a joint the interface records as an expansion gap
+
+Why six segments of mullion 5 stay up with nothing under them:
+
+```python
+add_constraint("CON_MUL%02d_HEAD" % uid, segs[-1], head, C_con,
+               thresh=args.t_mullion_joint * 0.5, loc=(xf1, y, z1))
+```
+
+`t_mullion_joint` is 40, so the threshold is **20**. In Bullet's units at
+240 Hz × 8 substeps that is **20 × 1920 = 38.4 kN** sustained (R2-092's own
+conversion). What it is holding:
+
+| | |
+|---|---|
+| mullion 5 above z 1.55 — 4.650 m × 4.7 kg/m | 21.9 kg → **215 N** |
+| half of the six transom stubs in bays 4 and 5 — 6 × 6.16 kg | 18.5 kg → **181 N** |
+| **total** | **396 N** |
+| **ratio** | **97×** — and **179×** against the mullion alone |
+
+And the joint it is applied to is one the wall interface itself says carries
+nothing: `world/items/…_interface.json` records `head_expansion_gap_m` for
+**every** station, **0.0172 m at mullion 5**. A stick curtain wall is
+**bottom-anchored**; the head is a movement joint whose whole purpose is to let
+the mullion grow and shrink without loading it. The sim bolts 38.4 kN across
+it.
+
+**This is the one parameter that decides whether the aperture reads**, and it is
+not a threshold anybody tuned — it is `mullion_joint × 0.5`, inherited from the
+segment-to-segment joint, applied to a joint of a completely different kind.
+
+**Recipe for the re-bake** (`sim/build_breach_sim.py`, one call site): make the
+head a `GENERIC` constraint with the vertical axis free — `add_constraint`
+already takes `kind=` and a `post=` hook onto the `rigid_body_constraint` — or,
+if a FIXED joint is kept, set its threshold from the dead load rather than from
+the joint threshold. Predicted outcome: mullion 5's remaining 4.67 m falls, and
+the six transom stubs bolted into it in bays 4 and 5 go with it.
+
+---
+
+## R2-275 — two M6 self-tappers are modelled as stronger than the mullion's anchor studs into the slab
+
+The second reason nothing in the frame comes apart, and it needs no external
+engineering data at all — the inconsistency is visible inside four consecutive
+lines of `sim/build_breach_sim.py`:
+
+```python
+THRESH_MULLION_JOINT = 40.0      # segment-to-segment, 6063-T6, 0.075 x 0.160
+                                 # = 76.8 kN sustained.  Was 900 = 1.73 MN.
+THRESH_MULLION_BASE  = 120.0     # the anchor studs into the slab
+                                 # = 230 kN sustained.  Was 1400 = 2.69 MN.
+THRESH_TRANSOM       = 260.0     # M6 self-tappers into the front screw port
+```
+
+**260 is 499 kN.** The comment names the fastener: `wall_iface`'s screw port
+`SP1` *"takes M6 self-tapper, 6.0 mm nominal, cuts its own thread; 40 mm
+minimum engagement."* Two of those per transom end carry on the order of
+**15 kN** before the screws shear or the 6063-T6 port strips — call it **T ≈ 8**,
+so the shipped value is roughly **33× too strong**.
+
+> **You do not need that estimate to see it.** The same block prices the
+> mullion's cast-in anchor studs at 120 and two self-tapping screws into an
+> aluminium extrusion at 260. **The screws are more than twice the anchors.**
+
+R2-092 found exactly this failure for `THRESH_MULLION_JOINT` and
+`THRESH_MULLION_BASE` — *"not a tuned value, a value that had never been
+converted into units"* — corrected those two by 55× and 13×, and **left the
+other two alone.** `THRESH_TRANSOM` and the head constraint (R2-268) are the
+survivors of that sweep, and between them they are why the frame across the
+aperture is welded to itself:
+
+| joint | modelled | can carry | ratio |
+|---|---|---|---|
+| transom end → mullion | **499 kN** | ~15 kN (2 × M6) | **33×** |
+| mullion head → head beam | **38.4 kN** | ~0 (it is a **17.2 mm expansion gap**) | ∞ |
+
+Neither was ever swept, and `land_breach.sh`'s threshold assertion pins
+`transom == 260.0` as part of "the configuration that was decided", so a bake
+that changed it would be refused by the pipeline's own gate.
+
+---
+
+## R2-269 — the film's transoms are 250 mm from the ones that were simulated, and the 250 mm is the whole answer
+
+| | z of the three transoms |
+|---|---|
+| round 1 `GW_Right_Transom_0/1/2` — **what renders** | **1.350 / 2.850 / 4.350** |
+| `wall_iface transom_landings` — **what was simulated** | **1.600 / 3.100 / 4.600** |
+
+Now put that beside R2-267's segment boundaries. Mullion 5 is cut into eighths
+of 0.7757 m, and the segments that leave are `S00` (z 0.000 – 0.775) and `S01`
+(**0.775 – 1.551**).
+
+> **Round 1's transom 0 sits at z 1.3125 – 1.3875 — entirely inside `S01`, the
+> segment the bake threw 4.74 m. The sim put its transom at 1.600, inside `S02`,
+> which stayed. The transom that survives in the bake is bolted to a piece of
+> mullion that is still there; the transom that renders is bolted to a piece of
+> mullion that is four metres away on the apron.**
+
+**And it is the constraint, not just the overlap.** `build_breach_sim._seg_at`
+bolts each transom end to the mullion segment whose centre is nearest, and the
+eight centres are at z 0.406, 1.182, 1.957, 2.731, 3.507, 4.282, 5.057, 5.832:
+
+| transom | z | bolted to | that segment |
+|---|---|---|---|
+| **sim** transom 0 | 1.600 | **S02** | stays (0.145 m) |
+| **round 1** transom 0 | **1.350** | **S01** | **left, 4.742 m** |
+| sim / round 1 transom 1 | 3.100 / 2.850 | S03 | stays, both |
+| sim / round 1 transom 2 | 4.600 / 4.350 | S05 | stays, both |
+
+**The lowest transom — the one at 1.35 m, directly over where the car went
+through — is the only one the 250 mm changes, and it changes it from supported
+to unsupported.** Transoms 1 and 2 land on the same segments either way and are
+genuinely held; they only come down if mullion 5 does, which is R2-268.
+
+That is not a rounding difference, it is the difference between a supported
+member and an unsupported one, and it has never been simulated either way. The
+two geometries must be made to agree before the frame's behaviour means
+anything — either the sim is rebuilt at round 1's landings, or the frame is
+supplied at the interface's (see R2-270, which is the same choice).
+
+---
+
+## R2-270 — round 1's east frame stands 80 mm east of the plane the section calls outermost
+
+| | x |
+|---|---|
+| round 1 `GW_Right_Mull_*`, `GW_Right_Transom_*`, `Sill`, `Head` | **14.920 … 15.080** |
+| `wall_iface` / `mullion_intact.section()` | **14.840 … 15.000** |
+
+`fracture_wall.json`'s own section note: *"x = 15.000 is the OUTERMOST surface
+of the wall (the cover cap face). **Nothing in this assembly is east of it.**"*
+Round 1's cap face is at **15.080**, and the applier has been supplying glass at
+14.955/14.9665 into a frame 80 mm out of position ever since R3 moved it.
+
+**Not fixed, deliberately, and this is the one judgement call in the job.**
+Supplying the frame at the interface position would move **every** mullion 80 mm
+and **every** transom 250 mm across the whole east elevation — the elevation
+beat 1 looks at for 33 s from 1.6 m, where 250 mm is **583 px**. That is a large
+change to a shipped beat, it is not what R6 was asked to fix, and it would
+destroy the negative control that makes the rest of this work checkable.
+
+So `sim/eastframe.py` cuts the replacement from **round 1's own box, at round
+1's coordinates**, and merely partitions it. Consequences, all measured:
+
+* six of the ten bays keep round 1's vertices exactly and must be
+  **pixel-identical** between the two builds — R2-150's free negative control,
+  obtained here from the fix's own blast radius rather than from an occluder;
+* the flying pieces follow the bake's rigid motion about the **sim** body's
+  centre, so a round 1 piece lands within the 80 mm the two sections differ by:
+  for a 0.775 m bar thrown 4.7 m onto an apron, the last significant figure.
+
+**Somebody has to choose**, and the choice is between beat 1's composition and
+the section's own declared rule. It should be made looking at a beat-1 frame.
+
+---
+
+## R2-271 — R5's refusal was true, was specific, was overridden on every apply, and named the three objects
+
+`sim/out/apply_film9.json`, `apply_film13.json`, `apply_film14.json` all carry:
+
+```
+glazing_pocket_clear  FAIL
+pocket_intruders_in_the_clear_opening: [... GW_Right_Transom_0, _1, _2 ...]
+```
+
+and `sim/land_breach.sh` said, in as many words:
+
+> *"NOTE: R5 will refuse. The refusal is TRUE and it is about ROUND ONE's frame
+> — three transoms across the bays at z 1.35/2.85/4.35 — not about the glass
+> being restored. **That is R6 and the geometry is not ours.**"*
+
+**The check had already found the defect, written down the exact object names,
+and been correctly explained — and then routed to a requirement that nobody
+owned.** Every apply since has passed `--force` over it. R2-125 built the
+triangle-vs-box test *specifically* because a vertex test could not see these
+three bars, and the thing it was built to see was then classified as somebody
+else's problem.
+
+`apply_breach` now runs R5 **again on the scene it is about to write** and
+reports the intruders classified by whether they cross the wound. Over the
+wound: **3 → 0**. What is left is the south wall's frame, two light fins, and
+this module's own transom remainder over the six bays that keep their glass —
+all deliberate, none of them across the hole. `land_breach.sh`'s note is
+rewritten.
+
+---
+
+## R2-272 — my own first classifier would have reported "0 intruders" while three of my objects lay in the pocket
+
+Self-caught before it shipped, and recorded because it is R2-124's shape in a
+fresh coat of paint. The first version of the post-build R5 report filtered on
+the name:
+
+```python
+east_intr = [x for x in intruders if str(x[0]).startswith("GW_Right")]
+```
+
+`BF_TRN0_STATIC` is the same aluminium in the same pocket and does not start
+with `GW_Right`, so the line would have printed **"0 east-wall intruders"** with
+three of this module's own objects standing in the glazing pocket.
+
+**And the obvious repair is also wrong.** Classifying by world AABB fails in
+*both* directions here: `BF_TRN*_STATIC` is one mesh holding **two** boxes
+(y −10.919…−4.3625 and 4.3625…11.0), so its bounding box spans the gap between
+them and would report it standing in a hole it is nowhere near; round 1's single
+21.9 m transom really does cross the wound and its eight vertices are eleven
+metres away at the ends. The classifier now asks the same question R5 asks —
+triangles against the box by the separating-axis theorem — restricted to bays 4
+and 5's clear openings.
+
+---
+
+## R2-273 — the demonstrator: what 2h25m of re-bake buys, and the answer is that it buys the shot
+
+**`render/film14_breach_r6_DEMO.blend` IS NOT A DELIVERY** and cannot become one:
+it *deletes* `BF_MUL05_S02..S07` and the six transom stubs in bays 4 and 5, so
+those members are absent on all 2,978 frames including beat 1's 33 seconds, and
+a member that was never there does not break on camera. It carries a
+`DEMO_DO_NOT_SHIP` marker object and its own docstring says so.
+
+Its only job was to answer, with a picture instead of an argument, whether
+2h25m of re-bake is worth scheduling. `sim/out/eastframe_prediction_demo.json`
+was committed **before** its frames were queued and predicted that it *would*
+read, that `grid_contrast` over the bridged wound would collapse while every
+neighbour held, and that the **mean would barely move**.
+
+f2978, 4K, 256 samples, measured against the R6 build:
+
+| region | changed >8/255 | `grid_contrast` R6 → DEMO |
+|---|---|---|
+| **WOUND_bridged** | **11.17 %** | **0.03675 → 0.00777** (4.7× down) |
+| NB_left_bay3 | 0.0442 % | 0.03697 → 0.03704 |
+| NB_right_bay6 | 0.3095 % | 0.06954 → 0.06773 |
+| CTL_UNTOUCHED_bays789 | 0.0288 % | 0.05310 → 0.05327 |
+| CTL_UNTOUCHED_bays012 | **0.0000 %** | 0.04329 → 0.04350 |
+| sky | 0.0000 % | — |
+
+And the mean moved 0.5107 → 0.5142, **0.7 %** — so a reader who judged this on
+mean radiance would report that nothing happened, on a frame where the wall
+plainly opened. That is R2-274 stated as a number rather than an argument.
+
+`render/r6_demo/COMPARE_f2978_before_R6_DEMO.png` is the three-way at 1:1 × 7.
+Panels 1 and 2 are the same picture. **Panel 3 is a hole**: two bays of an
+otherwise perfectly regular lattice with no lattice in them.
+
+**So the frame is the thing, the re-bake is worth its 2h25m, and R2-268 and
+R2-275 are what it has to change.** The demonstrator is an *upper bound* — a
+real bake would have those members fall, and some would come to rest in the
+lower aperture or on the sill rather than vanish.
+
+---
+
+## R2-277 — the one-take law, checked in pixels rather than argued from the mechanism
+
+The continuity claim is that the supplied frame is invisible until it breaks,
+because every piece exists on all 2,978 frames and its F-curve extrapolates
+CONSTANT backwards to the home pose, which is where round 1's solid stood. That
+is an argument about a mechanism. **Beat 1, f0400, rendered from both builds:**
+
+| | |
+|---|---|
+| pixels bit-identical | **78.52 %** |
+| changed > 1/255 | 0.1729 % (3,586 px) |
+| **changed > 8/255** | **0.0000 % (0 px)** |
+| **max &#124;Δ&#124;** | **3/255** |
+| mean &#124;Δ&#124; | 0.2165/255 |
+
+Against a measured repeat floor of **max 41/255** on the same camera at f2978,
+3/255 is not a change, it is the renderer. **The east wall of beat 1 is the
+wall it has always been**, and it stays that way until f860, where the AABB
+readback also puts every replaced member on round 1's coordinates to
+**0.0000 mm** at f844.
+
+---
+
+## R2-276 — the fix's real payoff is in beat 3, not in the frame it was asked to fix
+
+The job was the closing wide. The closing wide is where R6 does the LEAST, and
+that is a consequence of scale, not of the fix:
+
+| | wound on screen | what the fix removes | reads? |
+|---|---|---|---|
+| **f2978**, ONER 74.0 mm, 595.4 m | 57.7 × 77.8 px | 216 px, mostly 20 px of a 1 px line | **no** |
+| **f0866**, ONER 23.9 mm, ~3 m | the wall fills the frame | **2.54 %** of the whole 1920 × 1080 frame changed at 8/255, **0.532 %** at 32/255 | **yes, plainly** |
+
+`render/r6_beat13/COMPARE_f0866_before_top_after_bottom.png`, same build pair,
+same camera, same samples. Before: mullion 5 runs straight and unbroken from
+head to sill with the car already through it. After: **its foot is torn out, the
+remaining column is displaced and tilted, and a shed segment is tumbling in
+frame beside the car.** At f0880 the two shed segments project to **426 × 428 px
+and 461 × 292 px** at 4K — two aluminium bars, the size of the car's rear wing,
+turning over in the aperture as the car leaves it.
+
+That is 152 rigid bodies' worth of baked motion that the film has never once
+rendered, and beat 3 is where it was always going to show. **The wound reads at
+595 m as a texture and at 3 m as a wound**, and the fix is scaled the same way.
+
+**The uncomfortable half:** none of that helps the last image of the film, and
+the last image was the brief. It should not be allowed to.
+
+---
+
+## R2-278 — `grid_contrast` stops working below one pixel per member, and the picture caught it
+
+Found by running my own metric on a frame I had not planned to measure, and it
+fails there. The demonstrator against R6 at **f2940** (55.3 mm, wound
+43.1 × 58.1 px):
+
+| | f2978 (74.0 mm) | **f2940 (55.3 mm)** |
+|---|---|---|
+| changed >8/255, WOUND_bridged | 11.17 % | **12.44 %** |
+| CTL_UNTOUCHED ×2 | 0.0288 / 0.0000 % | **0.0000 / 0.0000 %** |
+| **`grid_contrast`, WOUND_bridged** | **0.03675 → 0.00777** | **0.02572 → 0.02672** |
+
+**More pixels changed at f2940 than at f2978, the controls are cleaner, and
+`COMPARE_f2940_R6_vs_DEMO.png` plainly shows two bays of lattice replaced by
+two bays of nothing — and the metric does not move.**
+
+The cause is scale and it is arithmetic. At f2978 the wall is 12.96 px/m, so a
+75 mm transom is **1.00 px**. At f2940 it is 9.69 px/m and the same transom is
+**0.58 px** — sub-pixel, spread by antialiasing across the very rows the local
+baseline is taken from (±3–5 px = 0.31–0.52 m of wall at this range). The
+"line" and the "baseline" are sampling the same thing, so their difference is
+noise whether or not the member is there.
+
+**So `grid_contrast` is valid only where the members it measures are at least
+about one pixel**, and that is the closing frame and nothing shallower. It is
+reported here rather than quietly used on the one frame where it worked. The
+pixel-change fraction against a measured repeat floor has no such limit and
+agreed with the picture at both frames; **where the two disagree, the picture
+and the change fraction win.**
+
+---
+
+## R2-274 — "the wound is not darker" was right, and the mean is the wrong statistic for it
+
+The standing measurement of the closing frame is that the wound is **not** darker
+than adjacent glass — **+0.066** against the left neighbour, **−0.124** against
+the right — *"because the wall is transmissive on both sides, so 'hole' versus
+'glass' is not a radiance difference at all."* Reproduced independently here on
+the delivered f2978 at 4K: wound 0.4142 mean luminance, left neighbour 0.4018,
+right neighbour 0.5643.
+
+That diagnosis is correct and it is also the reason the mean can never settle
+the question. **What tells a viewer there is a wall is not the glass, it is the
+lattice** — at 595 m the only thing rendering the east elevation is a grid of
+1 px aluminium lines, and a bay whose glass has gone still has all of them.
+
+So `sim/wallstats.py` measures `grid_contrast`: the amplitude of the transom
+lines against a **local** baseline three to five pixels above and below, over
+each region's own y span, at the three heights the camera track puts the
+transoms at. Two details that are not decoration:
+
+* **local** baseline, because the closing shot has a strong vertical brightness
+  gradient across the wall (the lit floor and the plinth are behind its lower
+  half) and a baseline half a metre away measures that instead;
+* **absolute** value, because round 1's transoms read ~0.2 *darker* than the
+  interior seen through the wound and *lighter* than the crazed glass in some
+  retained bays. A signed contrast cancels across the wall and reports a lattice
+  that is plainly there as nearly zero — R2-181's mistake, where a welded slab's
+  mean normal cancelled and the detector reported nothing.
+
+Measured on the delivered f2978: the wound's lattice is **as loud as everybody
+else's** (0.037 against 0.037 / 0.068 for its two neighbours and 0.053 / 0.044
+for the two untouched groups of three bays). **That equality is the defect,
+stated as a number.**
