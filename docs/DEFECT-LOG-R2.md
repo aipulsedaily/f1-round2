@@ -19053,3 +19053,252 @@ constant attribute and R2-629's unmeetable guard. `_measured_z_extent()` now
 reads it off the emitted meshes.
 
 ---
+
+## R2-517 — the ceiling lands as a 6.99 MB library append, and a sweep of my own fields for values that report intent instead of existence
+
+### the append
+
+`world/showroom_ceiling.blend` is appended in `tools/build_film_scene.py`
+alongside `SHOWROOM` / `PROPS` / `LIGHTS`, immediately after the Vitrine check.
+**Landed in source only — not rebuilt.** `film16_breach` is the ship candidate
+with two ladder passes running against it; the next film build carries this.
+
+**Why an append and not a post-build tool.** R2-504 established the ceiling
+cannot come from the assembly — the showroom enters the film *here*, downstream,
+as an append at identity. The obvious consequence was a tool that opens the
+finished 7.9 GB film, edits it and saves it, and that shape is wrong twice: it
+pages for an hour on an 11 GB box, and it cannot be moved to the farm either.
+`rq exec` will not take a scene out of the worker's cache, so the film travels as
+an `--include`, and `execremote.push_bundle` hardcodes `zstd -19 -T4` with no
+level selection — the pathology the *scene* path was already fixed for after
+`-19` was measured feeding a 4–5 MB/s wire at 1.3 MB/s. **A library collection is
+6.99 MB against 7.9 GB, about 1,140× smaller, and joins a mechanism this function
+already runs three times.** Ship the definition, not the artefact.
+
+**Read back rather than trusted**, opening the library on its own:
+
+```
+collection R2_SHOWROOM_CEILING present: True
+objects 21   meshes 21   polys 73,996
+z 5.5705 .. 6.1980        (soffit 6.200)
+lights 0     FILE images 0
+```
+
+The append site adds two refusals of its own — anything reaching above z 6.2005,
+or any `LIGHT` datablock, stops the build — because the interior load is
+46,203.313 W over exactly 23 lamps and `refuse_unless_levelled` runs after this.
+
+### THE SWEEP: values printed from a constant rather than read from the artefact
+
+The ceiling library's own `build()` reported a `z_extent` **quoted from its
+constants**, wrong by 190 mm, because the lowest thing up there is a track-head
+barrel and not a beam. It agreed with the source and disagreed with the artefact
+in every report it ever printed. Three instances of the same shape in my own
+work:
+
+**1. `prove_items_in_frame.py` — the denominator.** `total_px` was
+`resolution_x * resolution_y`, i.e. the size *requested*. The count in the
+numerator comes from the image that was actually written. Those differ under
+`resolution_percentage`, a render border, or any later change to how the frame is
+produced — and every item's coverage fraction would have been quoted against a
+denominator no pixel came from. Now `total_px_measured`, taken from the written
+image; the request is kept separately as `res_requested`.
+
+**2. `v125/verify_assembly10.sh` — the item counts.** It carried
+`want = {'CFP_': 676, 'CRF_': 120, 'TS_': 10, 'SPECX_': 900}` as literals. Those
+are `PLACEMENT.json`'s own `expect_objects`, so it was a second copy of the
+registry that would go on asserting the old numbers the moment a row changed —
+reporting what was intended when the script was written. It now **reads them from
+`PLACEMENT.json`** and prints what it read.
+
+**3. A number I put in a report to the coordinator, which was wrong.** I stated
+the driver was **4 objects** — `DRV_Helmet`, `DRV_Suit`, `DRV_Glove_L`,
+`DRV_Glove_R` — derived from a `strings` scan of `car_anim_driver.blend` that
+only surfaced the names my grep pattern happened to match. Counted off the built
+film:
+
+```
+   DRV_         11  PRESENT
+   driver objects: ['DRV_Balaclava', 'DRV_Boot_L', 'DRV_Boot_R',
+                    'DRV_Extras', 'DRV_Glove_L', 'DRV_Glove_R', ...]
+```
+
+**Eleven, not four**, and the composition is different too — a balaclava, boots
+and an extras group I never named. Nothing downstream depended on the figure, but
+it was presented as the driver's composition and it was a property of my search
+pattern. The corrective is the one this whole block keeps arriving at: **a census
+of the saved artefact, never a scan for names you already expect.**
+
+> The general shape, stated once: **a field is safe when it is impossible for it
+> to disagree with the thing it describes.** `establish_station_geometry()`
+> (R2-501) computes the station from the constant so the prose cannot drift.
+> `breach_gate.py` counts datablocks, not string occurrences. `film_stage_audit`
+> takes a set difference instead of consulting a list of stages. Each of those is
+> the same move: delete the second copy, and derive.
+
+## R2-441 — the attribution test has lost its conditions, and that is the honest result
+
+R2-436 fixed a work estimator that priced a sequence job as one still — 67x low —
+so `cheaper_to_finish` vetoed the starvation switch and the ladder's scene held
+the GPU. The fix was verified by controls and by the 377/377 offline suite. The
+outstanding item was a **live** demonstration: the ladder's scene loaded, holding
+many hours of sequence work, another scene waiting — does it yield?
+
+**That configuration occurred, and it does not discriminate.**
+
+```
+19:00 switching FROM film16_breach.blend TO r2521/r2521_after6.blend
+      after 1 job(s) — another scene has waited 2978s, over the 300s this switch has to beat
+
+  queue at that instant, captured rather than reconstructed:
+    r1ladder     r2full        21 jobs, 1211 frames queued   = 14.7 h of work
+    r2521-paint  r2521after6    1 job,     4 frames running
+```
+
+The scene yielded. But the arithmetic that decides *why* is:
+
+```
+  round_trip           <=   300 s     (the message printed a 300 s threshold, and
+                                       threshold = max(300, reload_cost x 2.0),
+                                       so reload_cost <= 150 s)
+  OLD pricing drain     =   927 s     (21 jobs x 44.15 s/still)
+  NEW pricing drain     = 48464 s     (1211 frames x 40.02 s/frame, 13.5 h)
+
+  a veto fires when drain <= round_trip
+    OLD:   927 <= 300  ->  NO VETO
+    NEW: 48464 <= 300  ->  NO VETO
+```
+
+**Both pricings give the same answer, so the yield is not evidence for the fix.**
+
+**Why the conditions dissolved, and it is worth knowing.** The veto can only fire
+when the loaded scene is *cheap to drain relative to reloading it*. On broker 2
+`film16_breach` is cached locally and its switch is **11.7 s measured** (`scene
+switch complete in 11.7s (no redeploy)`), which collapses `round_trip` to under
+300 s — below even the OLD drain estimate. The 67x scenario needed an
+**expensive** reload, which is what broker 1 had: a 4.99 GB scene at ~1,550 s,
+giving `round_trip` 3,100 s against an OLD drain of 1,159 s.
+
+**So the defect was real and the fix is real, but the environment that exposed it
+has been engineered away** — by the bulk/verification broker split and by broker 2
+having 85.9 GB of cache where broker 1 had 32.2 GB and thrashed. A scene that
+never gets evicted is never expensive to reload.
+
+**Stated as a rule, because the temptation was to keep waiting for a cleaner
+firing:** a test whose conditions no longer exist is not a failed test and is not
+a pending one. It is closed, with the reason recorded. Continuing to wait would
+have meant eventually reporting some *other* switch as the attribution — and
+every switch on this broker will now show a yield, because `cheaper_to_finish`
+essentially never vetoes when reloads are cheap.
+
+**Where the fix still matters, unchanged:** any broker whose cache cannot hold
+the working set. Broker 1 was measured re-pushing scenes it already had on 8 of
+19 switches. There, reloads cost minutes, `round_trip` is thousands of seconds,
+and a 21-job sequence priced at 927 s would still be vetoed indefinitely. The
+fix is dormant here, not unnecessary.
+
+## R2-662 — the asphalt question, answered from 72 delivered lap frames instead of one
+
+The gate's finding rested on f2000. Two ladder sequences covering beats 4-6
+already existed and had been overlooked — **`out/seq/r2b56_720` (50 frames,
+f1100-2978) and `out/seq/b456wit_f11` (25 frames, f1250-2978)** — so the
+generalisation question was answerable from delivered pixels at zero cost the
+whole time.
+
+**Provenance, because it decides whether the answer is worth anything.**
+Rendered 08-03 at 1280x720 from the pre-`film16` world, so no placed items and
+no driver. That does not matter for this question: **`world/build_surface.py`
+was last modified 08-02 11:41, before these frames were rendered**, so the
+asphalt material in them IS the shipped one. `film16`'s +1,707 items do not
+touch the asphalt shader. The two passes writing now (`r2full`, `r2beat1`) are
+on `film16_breach` and are still in beats 1-2; they will supersede this set for
+anything item-dependent, and nothing here is.
+
+`tools/r2651_line_probe.py`'s trend-relative band depth, run over **72 lap
+frames / 213 cross-sections**:
+
+| | trend-relative band depth |
+|---|---:|
+| p5 | 0.082 |
+| p25 | 0.847 |
+| **p50** | **0.973** |
+| p75 | 1.054 |
+| p95 | 2.268 |
+
+| | |
+|---|---:|
+| sections with a band you could actually see (>= 1.20) | **25 of 213 = 11.7 %** |
+| sections >= 1.10 | 44 of 213 = 20.7 % |
+
+**The median is 0.973 — no legible band — and the finding generalises.** The
+scatter either side of 1.0 is other content crossing the section (kerbs,
+shadows, repair patches, the car), not a band; a real band would push the
+distribution one way only.
+
+### And it is a distance effect, sharply
+
+| distance to the surface | n | median depth | fraction >= 1.20 |
+|---|---:|---:|---:|
+| **0-25 m** | 13 | **1.110** | **46.2 %** |
+| 25-60 m | 15 | 0.892 | 0.0 % |
+| 60-120 m | 98 | 0.964 | 15.3 % |
+| 120-300 m | 22 | 0.948 | 9.1 % |
+| 300-1200 m | 65 | 0.988 | 3.1 % |
+
+**Inside about 20 m the band reads** — f2666 and f2680 score 2.55 and 2.59 at 13
+and 19 m. Beyond that it does not. That is exactly what R2-654's grade ceiling
+predicts: the band's *edges* are what make it legible, and they need pixels
+across them; the flat interior contrast is capped at ~1.7:1 display by AgX
+whatever the albedo. So the gate saw a true thing at f2000, for a reason that is
+neither "no texture" nor "the rubber layer is broken".
+
+**This does not weaken R2-651, it sharpens it.** The one condition in which the
+rubbered band IS legible — the camera inside 20 m of the surface, which is the
+onboard and chase material — is precisely the condition in which the audience
+can also see where the car's tyres are. Those are the frames in which a band
+painted 4.96 m from the driven line is most obviously wrong.
+
+---
+
+## R2-663 — R2-547's blank billboard is not a billboard, and the grandstand has 18,350 seats
+
+Both halves of that defect note are refused, by raycasting f900's own verified
+pose (position and lens matched to `camera_rig_path.json` at 0.0000 m /
+0.0000 deg) through `render/film14_breach_r6.blend` — confirmed via the broker
+DB as the scene that actually rendered `seq/r1full`.
+
+**The white rectangle is a breach glass shard, `GS_b04_00524`, material
+`BREACH_Glass`** — an 11 mm slab 0.30 m from the lens, built by
+`sim/apply_breach.py`. Behind it is empty sky: of 3,842 rays through the crop
+against the whole 4,711-object scene, 47 (1.2 %) hit anything, and those hit a
+grandstand roof at 260 m *outside* the white bar.
+
+* **Not a placeholder and not a dead texture stack.** `BREACH_Glass` has exactly
+  two nodes. **Emission Strength = 0.0** — so "self-lit" was an inference from
+  brightness, not a fact. There are no texture nodes at all, so nothing can be
+  disconnected, and `apply_breach.py` sets every socket **by name**, so the
+  Blender-5.2 Normal-socket-index trap is not involved.
+* **Not dressing** (`build_dressing` standalone: 0 hits in the box; the nearest
+  ad board `DR_Ad_043` projects below the bar and does carry artwork), **not
+  architecture**, **not a light** (all 25 are behind the camera with
+  `visible_camera = False`), **not the sky** (sky-only render of the same pose:
+  169-180 grey, zero pixels above 215).
+* Best-supported remaining hypothesis, **stated as unproven**: a motion-blurred
+  blown specular highlight on the shard. The bar's ends are 2 px hard, its
+  interior is dead flat at 233-234, and its mean falls 231 -> 216 between f900
+  and f901 while its outline barely moves. Confirming it needs a Cycles A/B with
+  `BREACH` hidden. **Caveat kept rather than buried:** `VEG_*` (24,654 trees)
+  could not be loaded under memory pressure and was not raycast.
+
+**The grandstands have seats, and the count is 18,350** (15,039 seatable, 3,311
+folded), from two independent methods that agree: the replayed
+`grandstand_seats.json` ledger and the geometry — `A_Seat` is **422,616 quads /
+845,232 triangles** plus 557,352 `A_Alu` triangles of standards. Cross-check:
+VIRAGE OUEST at 2 boxes/seat gives 25,716 / 6 / 2 = **2,143**, exactly the
+ledger figure. In f900 itself `A_Seat` is the largest material by ray count on
+the visible stand — 946 of 1,711 rays.
+
+And the thing R2-547 called *"a dark grid with yellow dashes and no seat
+geometry"* **is the seats**: `ARCH_Grandstand_02_OUEST` / `A_Seat` at 237 m,
+base `#3c4348` with a `#c9a227` gold chequer laid by `_seat_colour()`
+(`build_architecture.py:4692-4723`). The yellow dashes are gold seats.
