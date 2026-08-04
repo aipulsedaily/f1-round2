@@ -137,6 +137,25 @@ def transom_threshold(W, verbose=True):
     if counts != {2}:
         raise SystemExit("REFUSING: transom_landings does not declare exactly "
                          "two screws at every station: %r" % sorted(counts))
+    # THE BIGGEST SINGLE UNCERTAINTY IN THIS DERIVATION, AND IT IS A FACTOR OF
+    # TWO.  `transom_landings` declares one PAIR of screw heights per (line,
+    # mullion).  At an interior mullion TWO transoms land on that station, one
+    # from each bay, and the declaration does not say whether the pair is per
+    # transom END or shared between the two.
+    #
+    # Taken as PER END, and the interface argues for it rather than silence:
+    # its own note says "a shear block may be up to 28 mm wide and must clear
+    # the isolator feet at |y| = 10.0-12.2 mm and 32.2-34.4 mm".  That is a
+    # block occupying roughly |y| 12.2 .. 32.2 -- twenty millimetres out to
+    # ONE side of the mullion centreline, mirrored -- which is a block per
+    # side, not one shared block straddling the centre.  Two 28 mm blocks fit
+    # in the 75 mm sightline; a shared one would be centred and the feet would
+    # not need clearing on both sides.
+    #
+    # The other reading halves the capacity to 8.45 kN and T to 4.4, and THAT
+    # IS EXACTLY THE LOW END OF THE BRACKET this block bakes.  The bracket is
+    # therefore not "half and double for the sake of it": its low point is the
+    # alternative reading of the declaration.
     n_screw = 2
     gaps = set()
     for ln in lines:
@@ -206,6 +225,30 @@ def transom_threshold(W, verbose=True):
     out["capacity_N"] = gov[1]
     out["T"] = T_of(gov[1])
 
+    out["judgement"].append(
+        "TWO SCREWS PER TRANSOM END, not two shared between the two transoms "
+        "landing on the same station.  This is the largest single uncertainty "
+        "here and it is a factor of two; the interface's shear-block note "
+        "argues for per-end, and the other reading is T = %.1f, which is the "
+        "LOW POINT OF THE BRACKET this block bakes."
+        % T_of(0.5 * n_screw * V1))
+    out["judgement"].append(
+        "ULTIMATE capacity, not design capacity: no partial factor is "
+        "applied.  A sim should break a joint at the load that really breaks "
+        "it, not at the load a code would let an engineer rely on.  With EN "
+        "1993-1-8's gamma_M2 = 1.25 the same arithmetic gives %.0f N, "
+        "T = %.2f." % (V_screws / 1.25, T_of(V_screws / 1.25)))
+    out["judgement"].append(
+        "the thread-strip mode computes to %.0f kN, which is HIGHER than the "
+        "two screws could deliver in tension if you pulled them apart "
+        "(%.0f kN).  That is not a contradiction, it is the declared '40 mm "
+        "minimum engagement' doing exactly what a minimum engagement is "
+        "specified for: making the joint fastener-governed rather than "
+        "substrate-governed.  It is quoted as a computed mode and not as a "
+        "capacity anybody could reach."
+        % (V_strip / 1e3,
+           n_screw * PUBLISHED["A2_70_Rm_MPa"]
+           * PUBLISHED["M6_stress_area_mm2"] / 1e3))
     out["judgement"].append(
         "the shear plane is taken through the THREAD, not a plain shank: a "
         "thread-cutting screw is threaded to the head, so alpha_v = 0.6 and "
