@@ -1236,3 +1236,54 @@ field coming to rest: 2,646 bodies moving at the last key become 27. Neither
 bought the other, and the aperture is insensitive to the proxy across all seven
 cells I ran.
 
+
+### R2-400, continued — beat 3 does not regress, and the deck ride in the picture
+
+**Beat 3, the thing this job was told not to trade away.** f0866 and f0880,
+1920 × 1080, 256 samples, all builds at identical settings, differenced against
+the R6 build's own frames (`render/r6_beat13/after_f08*.png`):
+
+| | R6 → R2281 re-bake | **R6 → R2387 AIR** | (the previous block's pre-R6 → R6) |
+|---|---|---|---|
+| f0866, changed > 1/255 | 57.441 % | 53.982 % | 17.929 % |
+| **f0866, changed > 8/255** | **27.890 %** | **25.104 %** | **2.548 %** |
+| f0866, changed > 32/255 | 9.155 % | 8.055 % | 0.535 % |
+| f0880, changed > 8/255 | 32.525 % | 30.327 % | — |
+
+R2-291 published **27.950 %** for the re-bake at f0866 and I measure 27.890 %,
+which is the fourth inherited number reproduced in this block. **R2387 holds
+25.104 % — 90 % of the re-bake's payoff and still ten times the R6 improvement
+it replaced.** The 2.8-point drop is the debris no longer being flung as far in
+the first fifty frames. Beat 3 does not regress.
+
+**And the deck ride, in the picture rather than in a table.**
+`render/r2387/COMPARE_ride_f0950_REBAKE_vs_R2387.png`, f0950 from both builds
+at identical settings — the middle of the ride R2-384 measured and R2-396 says
+survives:
+
+* **Left, the R2-281 re-bake:** a mullion lies across the car and the glass is
+  fanned out **flat, forward and low**, spread over the apron ahead of and
+  beside the car. That is the bulldozer, seen from behind: debris being pushed.
+* **Right, R2387:** a mullion still lies across the car — **the ride is real,
+  it is on camera, and this fix does not remove it** — but the glass is now a
+  **tumbling cloud behind and above the car**, trailing rather than being
+  dragged.
+
+The ride is in *both* builds and is neither introduced nor removed here. What
+changed is the thing around it: glass that trails a car punching out of a wall,
+instead of glass being swept along in front of it.
+
+### Making it the default, and where I stopped short
+
+`--air-drag derived` is now the DEFAULT (R2-282's precedent: the decided
+configuration should be what the pipeline produces, not what it has to be
+reminded to produce). `off` is kept, because it is the before-half of the
+experiment.
+
+**I did NOT add a stage-0 gate refusing bakes without air**, which is the other
+half of what R2-282 did for the head restraint. A gate there would refuse
+`land_breach` on the shipped R6 raw bake, and another agent may legitimately
+need to re-land it. The configuration is recorded in every report's `air_drag`
+block instead — ρ, Cd, v_ref, the body count, and the min/median/max damping —
+so any table's provenance can be read off the artefact.
+

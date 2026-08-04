@@ -1889,12 +1889,19 @@ def parse_args():
                         "(R2-268).  Kept as an option because it is the "
                         "before-half of the experiment.")
     p.add_argument("--t-bond-per-m", type=float, default=THRESH_BOND_PER_M)
-    p.add_argument("--air-drag", choices=("off", "derived"), default="off",
+    p.add_argument("--air-drag", choices=("off", "derived"), default="derived",
                    help="aerodynamic drag on every ACTIVE body, linearised "
                         "about the car's speed at the glass plane and sized "
                         "from each body's own collision-mesh surface area "
-                        "(Cauchy, S/4).  `off` is what shipped: no air at all "
-                        "(R2-388).")
+                        "(Cauchy, S/4).  `derived` IS NOW THE DEFAULT (R2-400): "
+                        "the decision has been made and measured -- 2,646 "
+                        "bodies still moving at the table's last key become "
+                        "27, against the shipped table's own 70, and the "
+                        "aperture comes out better rather than worse.  `off` "
+                        "is what shipped -- NO AIR AT ALL, in a scene that "
+                        "throws 730 kg of glass down a forecourt at 16 m/s -- "
+                        "and is kept only because it is the before-half of "
+                        "the experiment (R2-388, R2-392, R2-395).")
     p.add_argument("--car-friction", type=float, default=CAR_FRICTION,
                    help="the car proxy's surface friction.  Bullet MULTIPLIES "
                         "the two bodies' values, so this scales every "
