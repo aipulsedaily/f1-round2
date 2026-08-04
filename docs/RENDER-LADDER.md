@@ -132,6 +132,17 @@ fetch verifies, and the scene cache is now derived from measured room (23.0 GB o
     duration     124.0833 s
     cuts         zero
     grade        AgX / look None / exposure -3.628   (world/film_exposure.py)
+    dynamic range SDR  <- CONFIRMED by the user 2026-08-04, not an assumption
+
+**SDR is confirmed, and that is what makes AgX the right transform.** AgX maps the
+scene's real radiance -- sun plus sky at ~39 W/m2 -- onto a standard-range display,
+rolling highlights off toward white the way film does instead of hard-clipping them
+the way `Standard` would. `look: None` means no extra contrast curve on top.
+
+**If HDR is ever wanted instead, it is not a render setting.** It is a different view
+transform, a different grade, and a re-derivation of `FILM_EXPOSURE` -- which was
+MEASURED against an 18 % card on the 5090, with two independent transforms agreeing to
+0.014 stops. That decision belongs before the master, never after.
 
 **Do not render above 4K for any reason.** There is no 6K or 8K rung above rung 4, and
 nothing downstream expects one. An 8K attempt (7680x4320 @ 8192 samples) was made earlier
