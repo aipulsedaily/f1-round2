@@ -1,0 +1,1358 @@
+{
+ "schema": "f1-round2/item_placement/1.0",
+ "generated": "2026-08-04",
+ "defect_block": "R2-226",
+ "purpose": "THE PLACEMENT LEDGER. One row per module under world/items/. world/build_items.py places every row whose state is PLACE and REFUSES any item that has no row -- there is no auto-detection and no fallback, because R2-180 is what a fallback looks like.",
+ "how_a_row_is_established": {
+  "collection/prefix": "read from the module's own top-level constants by AST (work/r2226/gen_registry.py); agrees with the census \u00a78 table on all 41 rows, two independent readings",
+  "expect_objects": "the inventory probe where one was run, else the canonical gate.json's measured.objects",
+  "source_sha256": "sha256 of the whole blend, never a prefix of it",
+  "supersedes": "assembly9_build.json's own counters and assembly9's object-name list, read back from the 4.21 GB artefact"
+ },
+ "counts": {
+  "rows": 41,
+  "state_PLACE": 1,
+  "state_HOLD": 40
+ },
+ "items": [
+  {
+   "key": "access_road_slab",
+   "item": "access_road_slab",
+   "module": "world/items/access_road_slab.py",
+   "collection": "W_Item_AccessRoadSlab",
+   "prefix": "ARS_",
+   "frame": "world",
+   "source_blend": "world/items/access_road_slab_test.blend",
+   "source_sha256": "a7c3108d9f1e1d39c72d235e232a0d34a26074ad429585146ac7f52fc0d97f51",
+   "expect_objects": 459,
+   "expect_objects_source": "render/items/access_road_slab/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_Item_AccessRoadSlab/Cameras",
+    "W_Item_AccessRoadSlab/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "SURF_AccessRoad",
+     "counter": "access_quads",
+     "n": 35904,
+     "reason": "the access road is built."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into SURF_AccessRoad. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "armco_post",
+   "item": "armco_post",
+   "module": "world/items/armco_post.py",
+   "collection": "W_Item_ArmcoPost",
+   "prefix": "AP_",
+   "frame": "world",
+   "source_blend": "world/items/armco_post_test.blend",
+   "source_sha256": "c385173bf2807307eff498d5d3ce6cb46b3444bc88bb7b8627c55d48164d0879",
+   "expect_objects": 3236,
+   "expect_objects_source": "inventory probe work/r2226/inv_armco_post.json",
+   "rig_subcollections": [
+    "W_Item_ArmcoPost/Cameras",
+    "W_Item_ArmcoPost/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_ACCEPTED",
+   "supersedes": [
+    {
+     "welded_in": "BR_Armco_*",
+     "counter": "armco_posts",
+     "n": 3561,
+     "reason": "build_barriers welds 3,561 posts into 27 BR_Armco_* meshes with 1,781 panels and 4,675 bolts. The posts cannot be lifted out without a build_barriers change."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 3236 units; the item declares 3641. A gating sample is not the shipping population."
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into BR_Armco_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "armco_w_beam",
+   "item": "armco_w_beam",
+   "module": "world/items/armco_w_beam.py",
+   "collection": "W_Item_ArmcoWBeam",
+   "prefix": "AWB_",
+   "frame": "world",
+   "source_blend": "world/items/armco_w_beam_test.blend",
+   "source_sha256": "54df78e4a8161a062649f0ddec4ab156c8f9bc95260c3719ea8be389884a0f6d",
+   "expect_objects": 1048,
+   "expect_objects_source": "render/items/armco_w_beam/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_Item_ArmcoWBeam/Cameras",
+    "W_Item_ArmcoWBeam/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "BR_Armco_*",
+     "counter": "armco_panels",
+     "n": 1781,
+     "reason": "as armco_post."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 1048 units; the item declares 1821. A gating sample is not the shipping population."
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into BR_Armco_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "asphalt_wearing_course",
+   "item": "asphalt_wearing_course",
+   "module": "world/items/asphalt_wearing_course.py",
+   "collection": "W_Item_AsphaltWearingCourse",
+   "prefix": "AWC_",
+   "frame": "world",
+   "source_blend": "world/items/asphalt_wearing_course_test.blend",
+   "source_sha256": "d5c5b107981ac2cfd61265c136dab306014e0842a35be2565b3c8cc9a3f0b9a9",
+   "expect_objects": 5,
+   "expect_objects_source": "render/items/asphalt_wearing_course/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_Item_AsphaltWearingCourse/Cameras",
+    "W_Item_AsphaltWearingCourse/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "SURF_Track",
+     "counter": "road_quads",
+     "n": 516664,
+     "reason": "the racing surface is built."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into SURF_Track. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "catch_fence_post",
+   "item": "catch_fence_post",
+   "module": "world/items/catch_fence_post.py",
+   "collection": "W_Item_CatchFencePost",
+   "prefix": "CFP_",
+   "frame": "world",
+   "source_blend": "world/items/catch_fence_post_test.blend",
+   "source_sha256": "1c0a45262f04e1026e34e546c443c216a19e4e460718738e79b57703259314f1",
+   "expect_objects": 676,
+   "expect_objects_source": "inventory probe work/r2226/inv_catch_fence_post.json",
+   "rig_subcollections": [
+    "W_Item_CatchFencePost/Cameras",
+    "W_Item_CatchFencePost/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_ACCEPTED",
+   "supersedes": [
+    {
+     "welded_in": "BR_FenceStruct_*",
+     "counter": "fence_posts",
+     "n": 676,
+     "reason": "build_barriers reports fence_posts = 676 and the item builds 676. The counts agree exactly, so this is unambiguously the same population twice -- welded into 27 BR_FenceStruct_* meshes."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 676 units; the item declares 690. A gating sample is not the shipping population."
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into BR_FenceStruct_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "crew_figure",
+   "item": "crew_figure",
+   "module": "world/items/crew_figure.py",
+   "collection": "W_Item_CrewFigure",
+   "prefix": "CRF_",
+   "frame": "world",
+   "source_blend": "world/items/crew_figure_test.blend",
+   "source_sha256": "b979e0b0a40292003db753c4d688561957d7e5307ebf810f2441d943a3a454f7",
+   "expect_objects": 120,
+   "expect_objects_source": "inventory probe work/r2226/inv_crew_figure.json",
+   "rig_subcollections": [
+    "W_Item_CrewFigure/Cameras",
+    "W_Item_CrewFigure/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_ACCEPTED",
+   "supersedes": [],
+   "state": "PLACE",
+   "blockers": [],
+   "place_because": "ITEM_ACCEPTED; 120 objects built against 120 declared, so the blend is the whole population and not a gating sample; every unit is its own mesh datablock (120/120, top_share 0.833 %); the module resolves each figure through world_contract at build time so the blend is already in world coordinates; and it supersedes NOTHING -- census \u00a72.5: 0 of assembly9's 30,183 datablock names and 0 of film14's 32,069 match figure|person|crowd|spectat|skin|hair|human|crew|driver, and there is no skin, flesh or hair material among the 130 / 191. This is the first human geometry in the film."
+  },
+  {
+   "key": "crew_fireproof_overall",
+   "item": "crew_fireproof_overall",
+   "module": "world/items/crew_fireproof_overall.py",
+   "collection": "CFO_Crew",
+   "prefix": "CFO_",
+   "frame": "world",
+   "source_blend": "world/items/crew_fireproof_overall_test.blend",
+   "source_sha256": "d2193da2d16f6480ee47bd62fbb28b39b2de8af2061f2048e998523e4f0c62b9",
+   "expect_objects": 60,
+   "expect_objects_source": "render/items/crew_fireproof_overall/gate.json measured.objects",
+   "rig_subcollections": [
+    "CFO_Crew/Cameras",
+    "CFO_Crew/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "LOCAL_FRAME",
+     "detail": "builds in a local frame and publishes place=(R, t); the stage needs the transform applied and this registry does not yet carry it"
+    },
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 60 units; the item declares 110. A gating sample is not the shipping population."
+    }
+   ]
+  },
+  {
+   "key": "dais_delivery_ramp",
+   "item": "dais_delivery_ramp",
+   "module": "world/items/dais_delivery_ramp.py",
+   "collection": "W_Item_DaisDeliveryRamp",
+   "prefix": "DDR_",
+   "frame": "world",
+   "source_blend": "world/items/dais_delivery_ramp_test.blend",
+   "source_sha256": "b7625a30dc83e7aa5b254f5102c9bbf13782f229656d5de8eca465cca922226a",
+   "expect_objects": 6,
+   "expect_objects_source": "render/items/dais_delivery_ramp/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_Item_DaisDeliveryRamp/Cameras",
+    "W_Item_DaisDeliveryRamp/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "(round-1 showroom, film14 only)",
+     "counter": null,
+     "n": null,
+     "reason": "as mullion_intact."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into (round-1 showroom, film14 only). Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "driver_figure",
+   "item": "driver_figure",
+   "module": "world/items/driver_figure.py",
+   "collection": "DRV_Driver",
+   "prefix": "DRV_",
+   "frame": "world",
+   "source_blend": "world/items/driver_figure_test.blend",
+   "source_sha256": "e9fb728d551035b3c52bcea4ab114bbcd198095376526b2c7484e560029e89d5",
+   "expect_objects": 10,
+   "expect_objects_source": "render/items/driver_figure/gate.json measured.objects",
+   "rig_subcollections": [
+    "DRV_Driver/Cameras",
+    "DRV_Driver/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "LOCAL_FRAME",
+     "detail": "builds in a local frame and publishes place=(R, t); the stage needs the transform applied and this registry does not yet carry it"
+    }
+   ]
+  },
+  {
+   "key": "forecourt_paving_bay",
+   "item": "forecourt_paving_bay",
+   "module": "world/items/forecourt_paving_bay.py",
+   "collection": "W_Item_ForecourtPavingBay",
+   "prefix": "FCP_",
+   "frame": "world",
+   "source_blend": "world/items/forecourt_paving_bay_test.blend",
+   "source_sha256": "8c26a8fb5fd3f5f43919210d977db2d9438eed90dc83b518e7f32b0e65084dce",
+   "expect_objects": 450,
+   "expect_objects_source": "render/items/forecourt_paving_bay/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_Item_ForecourtPavingBay/Cameras",
+    "W_Item_ForecourtPavingBay/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_ACCEPTED",
+   "supersedes": [
+    {
+     "welded_in": "ARCH_Paving_Forecourt",
+     "counter": "paving_bays",
+     "n": 5491,
+     "reason": "build_architecture pavings the forecourt already."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 450 units; the item declares 1400. A gating sample is not the shipping population."
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into ARCH_Paving_Forecourt. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "gantry_truss",
+   "item": "gantry_truss",
+   "module": "world/items/gantry_truss.py",
+   "collection": "GTR_Truss",
+   "prefix": "GTR_",
+   "frame": "world",
+   "source_blend": "world/items/gantry_truss_test.blend",
+   "source_sha256": "45b15632c1d6b405571b4aef027177032aa6db819a63d07c92e013c14d491eb8",
+   "expect_objects": 3,
+   "expect_objects_source": "render/items/gantry_truss/gate.json measured.objects",
+   "rig_subcollections": [
+    "GTR_Truss/Cameras",
+    "GTR_Truss/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_ACCEPTED",
+   "supersedes": [
+    {
+     "welded_in": "ARCH_Gantry",
+     "counter": "gantry_soffit_z",
+     "n": null,
+     "reason": "ARCH_Gantry is the start gantry. The item is the same structure."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "LOCAL_FRAME",
+     "detail": "builds in a local frame and publishes place=(R, t); the stage needs the transform applied and this registry does not yet carry it"
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into ARCH_Gantry. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "grandstand_riser_unit",
+   "item": "grandstand_riser_unit",
+   "module": "world/items/grandstand_riser_unit.py",
+   "collection": "W_Item_GrandstandRiserUnit",
+   "prefix": "GRU_",
+   "frame": "world",
+   "source_blend": "world/items/grandstand_riser_unit_test.blend",
+   "source_sha256": "778d1b57bbf0f7dd4df440d183bc1ba5416143af4b825772aac55187f5ebae70",
+   "expect_objects": 3394,
+   "expect_objects_source": "render/items/grandstand_riser_unit/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_Item_GrandstandRiserUnit/Cameras",
+    "W_Item_GrandstandRiserUnit/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "ARCH_Grandstand_*",
+     "counter": "terrace_bays",
+     "n": 918,
+     "reason": "the grandstands are built."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 3394 units; the item declares 3400. A gating sample is not the shipping population."
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into ARCH_Grandstand_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "gravel_bed_surface",
+   "item": "gravel_bed_surface",
+   "module": "world/items/gravel_bed_surface.py",
+   "collection": "W_Item_GravelBedSurface",
+   "prefix": "GBS_",
+   "frame": "world",
+   "source_blend": "world/items/gravel_bed_surface_test.blend",
+   "source_sha256": "d1b20581b6a51fc8c7b8f76101e4c3c33eb99ed5bba5be3b351bd20153a9d1ce",
+   "expect_objects": 43,
+   "expect_objects_source": "render/items/gravel_bed_surface/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_Item_GravelBedSurface/Cameras",
+    "W_Item_GravelBedSurface/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "BR_Trap_*",
+     "counter": "stones",
+     "n": 240000,
+     "reason": "20 BR_Trap_* beds with 240,000 stones are built."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into BR_Trap_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "heras_fence_panel",
+   "item": "heras_fence_panel",
+   "module": "world/items/heras_fence_panel.py",
+   "collection": "W_Item_HerasFencePanel",
+   "prefix": "HFP_",
+   "frame": "world",
+   "source_blend": "world/items/heras_fence_panel_test.blend",
+   "source_sha256": "8f1597e794d65a5c50c266699b8bff2c08b8690ec1da4886892d8527daf22cad",
+   "expect_objects": 771,
+   "expect_objects_source": "inventory probe work/r2226/inv_heras_fence_panel.json",
+   "rig_subcollections": [
+    "W_Item_HerasFencePanel/Cameras",
+    "W_Item_HerasFencePanel/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_ACCEPTED",
+   "supersedes": [
+    {
+     "welded_in": "BR_Transit_Fence",
+     "counter": "gates",
+     "n": 28,
+     "reason": "the transit-corridor fencing is BR_Transit_Fence + BR_Transit_FenceMesh; the item's 771 panels span a wider footprint than either, so the overlap is not established and the swap is not a clean one."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 771 units; the item declares 900. A gating sample is not the shipping population."
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into BR_Transit_Fence. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "hospitality_deck",
+   "item": "hospitality_deck",
+   "module": "world/items/hospitality_deck.py",
+   "collection": "ITEM_HOSPITALITY_DECK",
+   "prefix": "HD_",
+   "frame": "world",
+   "source_blend": "world/items/hospitality_deck_test.blend",
+   "source_sha256": "5db8c30ab8f7a49d027ee38c85c5e3323fba3e00f59865938201fe9757a9f4a5",
+   "expect_objects": 5,
+   "expect_objects_source": "render/items/hospitality_deck/gate.json measured.objects",
+   "rig_subcollections": [
+    "ITEM_HOSPITALITY_DECK/Cameras",
+    "ITEM_HOSPITALITY_DECK/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "ARCH_Ground_Decks",
+     "counter": "ground_decks",
+     "n": 5,
+     "reason": "ground_decks = 5 and the item builds 5. The counts agree exactly."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into ARCH_Ground_Decks. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "human_bench",
+   "item": "human_bench",
+   "module": "world/items/human_bench.py",
+   "collection": "W_HumanBench",
+   "prefix": "HB_",
+   "frame": "world",
+   "source_blend": null,
+   "source_sha256": null,
+   "expect_objects": null,
+   "expect_objects_source": "render/items/human_bench/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_HumanBench/Cameras",
+    "W_HumanBench/Standins"
+   ],
+   "gate_result_at_registry_time": null,
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "NOT_AN_ITEM",
+     "detail": "tooling/probe module; declares no manifest id and its absence from the world is correct (census \u00a72.4)"
+    }
+   ]
+  },
+  {
+   "key": "human_clay",
+   "item": "human_clay",
+   "module": "world/items/human_clay.py",
+   "collection": null,
+   "prefix": null,
+   "frame": "world",
+   "source_blend": null,
+   "source_sha256": null,
+   "expect_objects": null,
+   "expect_objects_source": "render/items/human_clay/gate.json measured.objects",
+   "rig_subcollections": null,
+   "gate_result_at_registry_time": null,
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "NOT_AN_ITEM",
+     "detail": "tooling/probe module; declares no manifest id and its absence from the world is correct (census \u00a72.4)"
+    }
+   ]
+  },
+  {
+   "key": "human_fabric_probe",
+   "item": "human_fabric_probe",
+   "module": "world/items/human_fabric_probe.py",
+   "collection": null,
+   "prefix": null,
+   "frame": "world",
+   "source_blend": null,
+   "source_sha256": null,
+   "expect_objects": null,
+   "expect_objects_source": "render/items/human_fabric_probe/gate.json measured.objects",
+   "rig_subcollections": null,
+   "gate_result_at_registry_time": null,
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "NOT_AN_ITEM",
+     "detail": "tooling/probe module; declares no manifest id and its absence from the world is correct (census \u00a72.4)"
+    }
+   ]
+  },
+  {
+   "key": "human_peep",
+   "item": "human_peep",
+   "module": "world/items/human_peep.py",
+   "collection": null,
+   "prefix": null,
+   "frame": "world",
+   "source_blend": null,
+   "source_sha256": null,
+   "expect_objects": null,
+   "expect_objects_source": "render/items/human_peep/gate.json measured.objects",
+   "rig_subcollections": null,
+   "gate_result_at_registry_time": null,
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "NOT_AN_ITEM",
+     "detail": "tooling/probe module; declares no manifest id and its absence from the world is correct (census \u00a72.4)"
+    }
+   ]
+  },
+  {
+   "key": "human_png",
+   "item": "human_png",
+   "module": "world/items/human_png.py",
+   "collection": null,
+   "prefix": null,
+   "frame": "world",
+   "source_blend": null,
+   "source_sha256": null,
+   "expect_objects": null,
+   "expect_objects_source": "render/items/human_png/gate.json measured.objects",
+   "rig_subcollections": null,
+   "gate_result_at_registry_time": null,
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "NOT_AN_ITEM",
+     "detail": "tooling/probe module; declares no manifest id and its absence from the world is correct (census \u00a72.4)"
+    }
+   ]
+  },
+  {
+   "key": "human_sweep",
+   "item": "human_sweep",
+   "module": "world/items/human_sweep.py",
+   "collection": null,
+   "prefix": null,
+   "frame": "world",
+   "source_blend": null,
+   "source_sha256": null,
+   "expect_objects": null,
+   "expect_objects_source": "render/items/human_sweep/gate.json measured.objects",
+   "rig_subcollections": null,
+   "gate_result_at_registry_time": null,
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "NOT_AN_ITEM",
+     "detail": "tooling/probe module; declares no manifest id and its absence from the world is correct (census \u00a72.4)"
+    }
+   ]
+  },
+  {
+   "key": "kerb_precast_unit",
+   "item": "kerb_precast_unit",
+   "module": "world/items/kerb_precast_unit.py",
+   "collection": "W_Item_KerbPrecastUnit",
+   "prefix": "KPU_",
+   "frame": "world",
+   "source_blend": "world/items/kerb_precast_unit_test.blend",
+   "source_sha256": "60f9c31369a803908d937112bd113e2d0fde4781fbf59d106afd18599b1e66b8",
+   "expect_objects": 2296,
+   "expect_objects_source": "render/items/kerb_precast_unit/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_Item_KerbPrecastUnit/Cameras",
+    "W_Item_KerbPrecastUnit/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "SURF_Kerb_*",
+     "counter": "kerb_runs",
+     "n": 35,
+     "reason": "35 kerb runs, 1.6 M triangles, already built."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 2296 units; the item declares 3400. A gating sample is not the shipping population."
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into SURF_Kerb_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "marshal_post_column",
+   "item": "marshal_post_column",
+   "module": "world/items/marshal_post_column.py",
+   "collection": "MPC_Columns",
+   "prefix": "MPC_",
+   "frame": "world",
+   "source_blend": "world/items/marshal_post_column_test.blend",
+   "source_sha256": "022e2f2f60ef9d7e0ef529d383a1298c36c77f9b1f35492adba358392bab1929",
+   "expect_objects": 120,
+   "expect_objects_source": "render/items/marshal_post_column/gate.json measured.objects",
+   "rig_subcollections": [
+    "MPC_Columns/Cameras",
+    "MPC_Columns/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "DR_Post_*",
+     "counter": "objects",
+     "n": 24,
+     "reason": "24 DR_Post_* objects are the marshal posts."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into DR_Post_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "marshal_post_deck",
+   "item": "marshal_post_deck",
+   "module": "world/items/marshal_post_deck.py",
+   "collection": "ITEM_MARSHAL_POST_DECK",
+   "prefix": "MPD_",
+   "frame": "world",
+   "source_blend": "world/items/marshal_post_deck_test.blend",
+   "source_sha256": "94c25a080c3301a02ec0a17ece3407292439c0e93e7dbb1f11afac538700e834",
+   "expect_objects": 25,
+   "expect_objects_source": "render/items/marshal_post_deck/gate.json measured.objects",
+   "rig_subcollections": [
+    "ITEM_MARSHAL_POST_DECK/Cameras",
+    "ITEM_MARSHAL_POST_DECK/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "DR_Post_*",
+     "counter": "objects",
+     "n": 24,
+     "reason": "as marshal_post_column."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into DR_Post_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "mullion_intact",
+   "item": "mullion_intact",
+   "module": "world/items/mullion_intact.py",
+   "collection": "W_Item_MullionIntact",
+   "prefix": "MUL_",
+   "frame": "world",
+   "source_blend": "world/items/mullion_intact_test.blend",
+   "source_sha256": "a2c50dbaec81b1008e0708e38c3a444234a7ba6df2614d40ffe5314358fe158d",
+   "expect_objects": 1,
+   "expect_objects_source": "render/items/mullion_intact/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_Item_MullionIntact/Cameras",
+    "W_Item_MullionIntact/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "(round-1 showroom, film14 only)",
+     "counter": null,
+     "n": null,
+     "reason": "the showroom is NOT in assembly9; it is round-1 geometry composited into film14. Census \u00a71.4."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 1 units; the item declares 11. A gating sample is not the shipping population."
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into (round-1 showroom, film14 only). Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "paddock_paving_bay",
+   "item": "paddock_paving_bay",
+   "module": "world/items/paddock_paving_bay.py",
+   "collection": "W_Item_PaddockPavingBay",
+   "prefix": "PPB_",
+   "frame": "world",
+   "source_blend": "world/items/paddock_paving_bay_test.blend",
+   "source_sha256": "1371abbc49d452e3f5e36278e79744a558f07b64e5c39c9b66772095f36bcb69",
+   "expect_objects": 78,
+   "expect_objects_source": "render/items/paddock_paving_bay/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_Item_PaddockPavingBay/Cameras",
+    "W_Item_PaddockPavingBay/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "ARCH_Paving_Paddock",
+     "counter": "paving_bays",
+     "n": 5491,
+     "reason": "as forecourt_paving_bay."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 78 units; the item declares 5560. A gating sample is not the shipping population."
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into ARCH_Paving_Paddock. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "paddock_personnel_figure",
+   "item": "paddock_personnel_figure",
+   "module": "world/items/paddock_personnel_figure.py",
+   "collection": "W_Item_PaddockPersonnelFigure",
+   "prefix": "PPF_",
+   "frame": "world",
+   "source_blend": "world/items/paddock_personnel_figure_test.blend",
+   "source_sha256": "993bba20380ab61d6da8783238aa45f56f23c8c986db2d87bfe984b28ba6ec23",
+   "expect_objects": 260,
+   "expect_objects_source": "render/items/paddock_personnel_figure/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_Item_PaddockPersonnelFigure/Cameras",
+    "W_Item_PaddockPersonnelFigure/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    }
+   ]
+  },
+  {
+   "key": "pit_wall_unit",
+   "item": "pit_wall_unit",
+   "module": "world/items/pit_wall_unit.py",
+   "collection": "W_Item_PitWallUnit",
+   "prefix": "PWU_",
+   "frame": "world",
+   "source_blend": "world/items/pit_wall_unit_test.blend",
+   "source_sha256": "f5be3350b262ab4db615e6e4aa71e835983d22d863955fa604d7dc6d9240f85b",
+   "expect_objects": 119,
+   "expect_objects_source": "inventory probe work/r2226/inv_pit_wall_unit.json",
+   "rig_subcollections": [
+    "W_Item_PitWallUnit/Cameras",
+    "W_Item_PitWallUnit/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_ACCEPTED",
+   "supersedes": [
+    {
+     "welded_in": "ARCH_PitWall",
+     "counter": "pit_wall_stands",
+     "n": 5,
+     "reason": "ARCH_PitWall IS the pit wall. Placing 119 hero units beside it double-builds the whole wall."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 119 units; the item declares 125. A gating sample is not the shipping population."
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into ARCH_PitWall. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "pit_wall_unit_itemkit",
+   "item": "pit_wall_unit",
+   "module": "world/items/pit_wall_unit_itemkit.py",
+   "collection": "W_Item_PitWallUnit",
+   "prefix": "PWU_",
+   "frame": "world",
+   "source_blend": null,
+   "source_sha256": null,
+   "expect_objects": 119,
+   "expect_objects_source": "render/items/pit_wall_unit/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_Item_PitWallUnit/Cameras",
+    "W_Item_PitWallUnit/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_ACCEPTED",
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "DUPLICATE_MODULE",
+     "detail": "second implementation of 'pit_wall_unit'; placing both would place the item twice"
+    },
+    {
+     "kind": "NO_BUILT_BLEND",
+     "detail": "no world/items/pit_wall_unit_itemkit_test.blend on disk"
+    },
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 119 units; the item declares 125. A gating sample is not the shipping population."
+    }
+   ]
+  },
+  {
+   "key": "pont_deck_slab",
+   "item": "pont_deck_slab",
+   "module": "world/items/pont_deck_slab.py",
+   "collection": "PDS_Deck",
+   "prefix": "PDS_",
+   "frame": "world",
+   "source_blend": "world/items/pont_deck_slab_test.blend",
+   "source_sha256": "f22e23a6ee98c7b5ab1c57238b5952c47e107aad3c7287d4075a8aefdd5f0165",
+   "expect_objects": 13,
+   "expect_objects_source": "render/items/pont_deck_slab/gate.json measured.objects",
+   "rig_subcollections": [
+    "PDS_Deck/Cameras",
+    "PDS_Deck/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "ARCH_PontPlongee",
+     "counter": "bridges",
+     "n": 2,
+     "reason": "as pont_girder -- the same bridge."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "LOCAL_FRAME",
+     "detail": "builds in a local frame and publishes place=(R, t); the stage needs the transform applied and this registry does not yet carry it"
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into ARCH_PontPlongee. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "pont_girder",
+   "item": "pont_girder",
+   "module": "world/items/pont_girder.py",
+   "collection": "PGD_Girders",
+   "prefix": "PGD_",
+   "frame": "world",
+   "source_blend": "world/items/pont_girder_test.blend",
+   "source_sha256": "e6f8c442c8d2b3f7f7ecc1aca0633f7d3e8ad22da6ca957821540e71d3a4a9a4",
+   "expect_objects": 7,
+   "expect_objects_source": "render/items/pont_girder/gate.json measured.objects",
+   "rig_subcollections": [
+    "PGD_Girders/Cameras",
+    "PGD_Girders/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_ACCEPTED",
+   "supersedes": [
+    {
+     "welded_in": "ARCH_PontPlongee",
+     "counter": "bridges",
+     "n": 2,
+     "reason": "ARCH_PontPlongee is the plunge bridge; PGD_Girders are its girders."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "LOCAL_FRAME",
+     "detail": "builds in a local frame and publishes place=(R, t); the stage needs the transform applied and this registry does not yet carry it"
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into ARCH_PontPlongee. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "showroom_facade_panel",
+   "item": "showroom_facade_panel",
+   "module": "world/items/showroom_facade_panel.py",
+   "collection": "SFP_ShowroomFacadePanel",
+   "prefix": "SFP_Panel_",
+   "frame": "world",
+   "source_blend": "world/items/showroom_facade_panel_test.blend",
+   "source_sha256": "1432cabeedd77e5c61a8dac4884be5cc476e02287d161934cf742ac60f6a511f",
+   "expect_objects": 186,
+   "expect_objects_source": "render/items/showroom_facade_panel/gate.json measured.objects",
+   "rig_subcollections": [
+    "SFP_ShowroomFacadePanel/Cameras",
+    "SFP_ShowroomFacadePanel/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "(round-1 showroom, film14 only)",
+     "counter": null,
+     "n": null,
+     "reason": "as mullion_intact."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into (round-1 showroom, film14 only). Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "showroom_facade_panel_v2",
+   "item": "showroom_facade_panel",
+   "module": "world/items/showroom_facade_panel_v2.py",
+   "collection": "ITEM_SHOWROOM_FACADE_PANEL",
+   "prefix": "SFP_",
+   "frame": "world",
+   "source_blend": null,
+   "source_sha256": null,
+   "expect_objects": 186,
+   "expect_objects_source": "render/items/showroom_facade_panel/gate.json measured.objects",
+   "rig_subcollections": [
+    "ITEM_SHOWROOM_FACADE_PANEL/Cameras",
+    "ITEM_SHOWROOM_FACADE_PANEL/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "DUPLICATE_MODULE",
+     "detail": "second implementation of 'showroom_facade_panel'; placing both would place the item twice"
+    },
+    {
+     "kind": "NO_BUILT_BLEND",
+     "detail": "no world/items/showroom_facade_panel_v2_test.blend on disk"
+    },
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    }
+   ]
+  },
+  {
+   "key": "spectator_crowd",
+   "item": "spectator_seated",
+   "module": "world/items/spectator_crowd.py",
+   "collection": "ITEM_spectator_crowd",
+   "prefix": "SPECX_",
+   "frame": "world",
+   "source_blend": "world/items/spectator_crowd_test.blend",
+   "source_sha256": "611b6e7703278495a48d931ffc878962d9663b6ac3d991d66fb1bf83ba4aaab0",
+   "expect_objects": 895,
+   "expect_objects_source": "inventory probe work/r2226/inv_spectator_crowd.json",
+   "rig_subcollections": [
+    "ITEM_spectator_crowd/Cameras",
+    "ITEM_spectator_crowd/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "NO_WORLD_FRAME",
+     "detail": "the test blend lays the population out on a grid for the macro camera; the module never resolves world positions, so there is nothing to place"
+    },
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 801 units; the item declares 7800. A gating sample is not the shipping population."
+    }
+   ]
+  },
+  {
+   "key": "spectator_seated",
+   "item": "spectator_seated",
+   "module": "world/items/spectator_seated.py",
+   "collection": "ITEM_spectator_seated",
+   "prefix": "SPECSEAT_",
+   "frame": "world",
+   "source_blend": "world/items/spectator_seated_test.blend",
+   "source_sha256": "f09718d21633d65014b594b19a2dcea2b496687fe27af0e3af8c3849c35a6eee",
+   "expect_objects": 801,
+   "expect_objects_source": "render/items/spectator_seated/gate.json measured.objects",
+   "rig_subcollections": [
+    "ITEM_spectator_seated/Cameras",
+    "ITEM_spectator_seated/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 801 units; the item declares 7800. A gating sample is not the shipping population."
+    }
+   ]
+  },
+  {
+   "key": "spectator_standing_ga",
+   "item": "spectator_standing_ga",
+   "module": "world/items/spectator_standing_ga.py",
+   "collection": "ITEM_spectator_standing_ga",
+   "prefix": "GAX_",
+   "frame": "world",
+   "source_blend": null,
+   "source_sha256": null,
+   "expect_objects": null,
+   "expect_objects_source": "render/items/spectator_standing_ga/gate.json measured.objects",
+   "rig_subcollections": [
+    "ITEM_spectator_standing_ga/Cameras",
+    "ITEM_spectator_standing_ga/Standins"
+   ],
+   "gate_result_at_registry_time": null,
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "NO_BUILT_BLEND",
+     "detail": "no world/items/spectator_standing_ga_test.blend on disk"
+    },
+    {
+     "kind": "NO_GATE_REPORT",
+     "detail": "no render/items/spectator_standing_ga/gate.json"
+    },
+    {
+     "kind": "NO_WORLD_FRAME",
+     "detail": "the test blend lays the population out on a grid for the macro camera; the module never resolves world positions, so there is nothing to place"
+    }
+   ]
+  },
+  {
+   "key": "team_truck_trailer",
+   "item": "team_truck_trailer",
+   "module": "world/items/team_truck_trailer.py",
+   "collection": "W_Item_TeamTruckTrailer",
+   "prefix": "TTT_",
+   "frame": "world",
+   "source_blend": "world/items/team_truck_trailer_test.blend",
+   "source_sha256": "90d39ea076524ca2390ffe1e2ad4ab914ca029c29951dd662a0a96194a87be32",
+   "expect_objects": 10,
+   "expect_objects_source": "render/items/team_truck_trailer/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_Item_TeamTruckTrailer/Cameras",
+    "W_Item_TeamTruckTrailer/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [
+    {
+     "welded_in": "ARCH_Ground_Compound",
+     "counter": "transporters",
+     "n": 20,
+     "reason": "transporters = 20 welded into ARCH_Ground_Compound."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    },
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into ARCH_Ground_Compound. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "terrain_ground",
+   "item": "terrain_ground",
+   "module": "world/items/terrain_ground.py",
+   "collection": "ITEM_TERRAIN_GROUND",
+   "prefix": "TG_",
+   "frame": "world",
+   "source_blend": "world/items/terrain_ground_test.blend",
+   "source_sha256": "3143c06db45ba2758bcfe07917bca376f4ce9e6c1b50b4a8359693a6d57b533a",
+   "expect_objects": 10,
+   "expect_objects_source": "render/items/terrain_ground/gate.json measured.objects",
+   "rig_subcollections": [
+    "ITEM_TERRAIN_GROUND/Cameras",
+    "ITEM_TERRAIN_GROUND/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_ACCEPTED",
+   "supersedes": [
+    {
+     "welded_in": "TER_Ground",
+     "counter": "objects",
+     "n": 1,
+     "reason": "TER_Ground is the terrain. The item is a hero patch of the same."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into TER_Ground. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "timing_stand",
+   "item": "timing_stand",
+   "module": "world/items/timing_stand.py",
+   "collection": "W_Item_TimingStand",
+   "prefix": "TS_",
+   "frame": "world",
+   "source_blend": "world/items/timing_stand_test.blend",
+   "source_sha256": "31875e2a9d9f646e48a722dd1831d2fe373f4093070b9c5af669e9b8ca21c635",
+   "expect_objects": 10,
+   "expect_objects_source": "inventory probe work/r2226/inv_timing_stand.json",
+   "rig_subcollections": [
+    "W_Item_TimingStand/Cameras",
+    "W_Item_TimingStand/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_ACCEPTED",
+   "supersedes": [
+    {
+     "welded_in": "ARCH_PitWall",
+     "counter": "pit_wall_stands",
+     "n": 5,
+     "reason": "build_architecture welds 5 stands into ARCH_PitWall's single mesh; the item builds 10. Census \u00a72.2: 'timing_stand's feature IS in the world as pit_wall_stands = 5 welded inside ARCH_PitWall'."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "SUPERSEDE_WELDED",
+     "detail": "the world already builds this feature, welded into ARCH_PitWall. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+    }
+   ]
+  },
+  {
+   "key": "tyre_blanket",
+   "item": "tyre_blanket",
+   "module": "world/items/tyre_blanket.py",
+   "collection": "W_Item_TyreBlanket",
+   "prefix": "TBK_",
+   "frame": "world",
+   "source_blend": "world/items/tyre_blanket_test.blend",
+   "source_sha256": "8cbe25bd0860f254f10d20bb1b027e119e4117da29279a73b553bc77f10c07b9",
+   "expect_objects": 56,
+   "expect_objects_source": "render/items/tyre_blanket/gate.json measured.objects",
+   "rig_subcollections": [
+    "W_Item_TyreBlanket/Cameras",
+    "W_Item_TyreBlanket/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_REJECTED",
+   "supersedes": [],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "GATE_NOT_ACCEPTED",
+     "detail": "canonical gate.json result is 'ITEM_REJECTED'"
+    }
+   ]
+  },
+  {
+   "key": "tyre_wall_tyre",
+   "item": "tyre_wall_tyre",
+   "module": "world/items/tyre_wall_tyre.py",
+   "collection": "W_Item_TyreWallTyre",
+   "prefix": "TWT_",
+   "frame": "world",
+   "source_blend": "world/items/tyre_wall_tyre_test.blend",
+   "source_sha256": "16f5ac5bbe086c1741a9c3315e91368eb5a882daba717f9e73a7b13d0c39a002",
+   "expect_objects": 338,
+   "expect_objects_source": "inventory probe work/r2226/inv_tyre_wall_tyre.json",
+   "rig_subcollections": [
+    "W_Item_TyreWallTyre/Cameras",
+    "W_Item_TyreWallTyre/Standins"
+   ],
+   "gate_result_at_registry_time": "ITEM_ACCEPTED",
+   "supersedes": [
+    {
+     "object": "BR_TyreWall_T4",
+     "reason": "BR_TyreWall_T4 is a WHOLE OBJECT in assembly9 and is exactly the wall this item rebuilds (s 912-1058). This one supersede is removable at placement time -- but only once the item ships its full population; see blockers."
+    }
+   ],
+   "state": "HOLD",
+   "blockers": [
+    {
+     "kind": "PARTIAL_BUILD",
+     "detail": "the blend holds 338 units; the item declares 2255. A gating sample is not the shipping population."
+    }
+   ]
+  }
+ ]
+}

@@ -25,7 +25,13 @@ def opt(name, default=None):
 
 
 OUT = opt("out", "/home/zany/f1-round2/render/world/assembly/assembly.blend")
-MODS = opt("mods", "surface,barriers,architecture,terrain,dressing").split(",")
+# `items` runs LAST and deliberately so: an item may SUPERSEDE class-level
+# geometry, and it can only take out what has already been built.  Before it
+# existed, 0 of 41 item modules reached the ship -- see world/build_items.py and
+# docs/ITEM-PRESENCE-CENSUS.md.  It places only the rows
+# `world/items/PLACEMENT.json` marks PLACE, and refuses anything with no row.
+MODS = opt("mods",
+           "surface,barriers,architecture,terrain,dressing,items").split(",")
 
 # clean file
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -69,6 +75,9 @@ for m in MODS:
             s = B.build(verify=("--noverify" not in argv))
         elif m == "dressing":
             import build_dressing as B
+            s = B.build()
+        elif m == "items":
+            import build_items as B
             s = B.build()
         elif m == "sky":
             import build_sky as B
