@@ -766,8 +766,16 @@ grandstand roof at 260 m *outside* the white bar.
   blown specular highlight on the shard. The bar's ends are 2 px hard, its
   interior is dead flat at 233-234, and its mean falls 231 -> 216 between f900
   and f901 while its outline barely moves. Confirming it needs a Cycles A/B with
-  `BREACH` hidden. **Caveat kept rather than buried:** `VEG_*` (24,654 trees)
-  could not be loaded under memory pressure and was not raycast.
+  `BREACH` hidden, **and that A/B was never run** — so the hypothesis stays
+  unproven rather than quietly hardening into the answer. A sub-frame shutter
+  sweep (does a shard cross the bar during the shutter?) was started and did not
+  produce output.
+* **The one caveat, kept rather than buried, and now closed as abandoned:**
+  `VEG_*` — 24,654 trees, 3,299 hedges, 26 instance libraries — was **never
+  raycast**. Three load attempts were killed by memory pressure. A canopy
+  reading as a hard-edged, uniform, cool-white 233 rectangle at 4 deg elevation
+  is implausible, but that is an argument, not a measurement, and it is the one
+  geometry set in the scene this conclusion does not rest on evidence for.
 
 **The grandstands have seats, and the count is 18,350** (15,039 seatable, 3,311
 folded), from two independent methods that agree: the replayed
