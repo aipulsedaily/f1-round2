@@ -878,3 +878,50 @@ before impact and closes 6.30 s after it, so a shard the car hits has about
 that could have been done before any bake.** With air it needs 3.43 s and has
 5.9. It stops.
 
+
+---
+
+## R2-396 — the deck ride SURVIVES the fix, and a correction to how I described it in R2-384
+
+`MUL05_S02` in B0, in the car's own frame, against A0:
+
+| sim frame | film | A0 car-local (x, z) | A0 speed | **B0 car-local (x, z)** | **B0 speed** |
+|---|---|---|---|---|---|
+| 200 | f865.6 | +1.34, 2.00 | 9.91 | +1.01, 2.03 | 7.49 |
+| 250 | f891.7 | −0.02, 1.16 | 12.85 | −0.59, 1.10 | 10.78 |
+| 300 | f924.2 | −0.85, 1.14 | 16.36 | −1.84, 0.97 | 18.66 |
+| 350 | f956.8 | −1.88, 1.14 | 16.48 | −2.07, 1.51 | 23.57 |
+| 400 | f989.3 | −3.18, 1.13 | 18.36 | −2.41, 1.61 | 23.18 |
+
+**It is still on the car.** Air drag does not shed it, and the reason is a near
+tie: the drag on that segment is λ·v = 0.334 × 23 = **7.7 m/s²** against the
+**8.81 m/s²** the car's deck puts into it (R2-385). The two forces are the same
+size and the contact wins by a whisker. What changes is that it now *bounces*
+along the deck (car-local z 0.88 → 1.61) rather than lying on it, and that it
+will slide a much shorter distance once it does come off — 21 m instead of 71
+(R2-395).
+
+**So the deck ride ships. It is the one mechanism in R2-384 that this fix does
+not remove**, and the only lever that removes it is the proxy's friction, which
+R2-389 refuses because it puts five mullion segments back in the middle of the
+wound box.
+
+### And I over-stated it, in my own entry, by choosing the wrong clock
+
+R2-384 says the segment lies on the airbox "for **161 film frames** of beat 3".
+That is true and it is the misleading unit. Beat 3 ramps world time to 15.4 %,
+so those 161 film frames are **1.15 seconds of world time**. A 2.6 kg piece of
+curtain wall landing on a car and sliding off the back over about a second is
+not an absurdity; it is what debris does. What made it read as absurd was
+quoting screen frames for a physical event in a beat whose whole purpose is
+that screen frames and seconds are not the same thing — which is the exact
+error `breachlib`'s module docstring warns about for gravity, applied by me to
+a different quantity.
+
+The picture claim in R2-384 stands as written — the camera *is* locked 6 to
+13 m off the car for all of it, and a mullion on the airbox will be visible —
+but "161 frames" should be read as "1.15 s, slowed 6.5×". `render/r2387`'s
+f0950 and f1000 pair, one frame from each build at identical settings, is
+what decides whether it reads as debris or as a defect, and I am rendering both
+builds rather than describing one.
+
