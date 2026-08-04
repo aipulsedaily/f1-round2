@@ -14568,3 +14568,369 @@ that is a metres-wide feature, not a fine one. The DOF is decidable and it is wr
   only assessable beat and it is **the worst-looking one**: R2-543, R2-544, R2-545
   and R2-548 all live there, and three of the four are material or content defects
   that no amount of additional camera work fixes.
+
+## R2-431 — the transparent-bodywork finding, confirmed independently from this pass's own frames
+
+Reported to me from another block; corroborated here rather than taken on report,
+because it decides whether beats 2-6 are worth rendering before `film16`.
+
+**`r1full_000697.png`, the beat-1 close-out, crop (470,230)-(830,530) at 3x** — a
+clean head-on three-quarter of the completed car, the best-composed frame in the
+beat. All five sub-claims are visible in this single frame:
+
+* **bodywork transparent** — the nose and monocoque read as blue-teal glass with
+  an internal lattice plainly visible THROUGH the surface;
+* **cockpit empty** — the tub interior is open to view, no driver;
+* **no carbon weave** — surfaces are smooth glass and chrome;
+* **no decals** — one faint moulded marking on the nose, no livery;
+* **tyres** smooth, no sidewall lettering or texture (slicks legitimately have no
+  tread, but the sidewalls are blank too).
+
+It is not an artefact of one shot: the same glass reading appears at f1, f25 and
+f43 in the opening, and the "translucent blue wedge" that made f25 unreadable in
+R2-425 **is this defect**, seen from 84 degrees above at close range.
+
+**Why beats 2-6 were still rendered, and it is a judgement rather than a fact.**
+Every defect class this pass hunts — beat seams, breach continuity, the shard
+un-break, the 89.79 m proxy travel, geometry pops, temporal flicker, camera kinks,
+shot-scale pacing — is **invariant to paint, weave, decals and driver**. Against
+that, 2,186 frames of the film had been seen as **four instants** and the one-shot
+law had never been checked in pixels at a single seam.
+
+**Two caveats that must travel with any beat 2-6 verdict from this pass:**
+
+1. **Readability verdicts are pessimistic and provisional.** A glass car against a
+   busy world reads worse than a painted one will. Any "the subject does not read"
+   finding in beats 2-6 must be re-judged after the material fix. Structural
+   pacing — shot scale, beat length, seam continuity — is unaffected.
+2. **Beat 3 is asymmetric evidence.** Glass shards against a glass car is a poor
+   read, so a verdict of *"breach continuity is clean"* would be **weak** evidence
+   from this pass, while *"breach continuity is broken"* would be **strong**. The
+   known un-break (483 mm -> 17 mm, pane bulging as a sheet and springing back)
+   should be visible regardless; if it is NOT visible here, that is not evidence
+   it is absent.
+
+---
+
+## R2-432 — A MONITOR MUST REPORT CHANGES, NOT STATE. Stated as a law, because it has now arrived through two different doors
+
+> **A watcher that reports STATE rather than CHANGES raises the same alarm
+> forever, is throttled off as noise, and ends up DEAF WHILE STILL LOOKING
+> ARMED.**
+
+That is the same terminal condition as a watcher whose filter matches the
+all-clear (R2-427's first addendum, where `grep "blank"` matched *"...and not
+blank"*). **The two bugs are opposites** — one fires when nothing is wrong, the
+other keeps firing when something is wrong and already understood — and they
+converge on an identical outcome. Two independent routes to one failure state is
+much stronger evidence that the shape is real than either instance alone, which
+is why this is written as a law rather than as a second incident.
+
+**The corollary that makes it actionable: CLEARED is a first-class event.**
+R2-428 *predicts* that f900/f901 will stop being flagged once the dense block
+f865-f984 surrounds them with real beat-3 neighbours — and that **if they do not
+clear, it becomes a finding about the authored exposure ramp** at
+`exposure_ramp_frames = [901, 916]`. A watcher that only reports onsets can never
+deliver a predicted all-clear, so it cannot close the very hypothesis that
+justified logging the flag.
+
+**Tested by seeding a state file rather than by waiting for reality** — the same
+method as R2-427's selftest, and for the same reason: a transition you wait for
+is a transition you cannot force.
+
+```
+1. empty state, flags present     -> "ODD NEW 2 frame(s): 2000,2001"
+2. unchanged on the next poll     -> SILENT                <- the bug
+3. state seeded with a stale 901  -> "ODD CLEARED on 1 frame(s): 901"
+4. state seeded without 2001      -> "ODD NEW 1 frame(s): 2001"
+```
+
+---
+
+## R2-433 — FIXING ONE INSTANCE OF A DEFECT IS NOT FIXING THE DEFECT
+
+Having written the delta logic above and verified it four ways, the same script
+still contained the identical bug **four lines below the fix**:
+
+```sql
+-- frame flags: fixed, diffed against a state file
+-- job failures, immediately underneath, NOT fixed:
+SELECT ... FROM jobs WHERE seq='r1full' AND state='failed'
+```
+
+That query returns every failed job on **every** poll. One failure would have
+repeated indefinitely, exactly as the frame flags did, and throttled the watcher
+into the same deafness the delta logic was written to prevent.
+
+Fixed with a 310 s window on `finished`, and verified against a **real** failed
+job in another sequence rather than a hypothetical one:
+
+```
+blankseq, all-time window   -> 39d266775dd8 failed finished=1785279097
+blankseq, 310 s window      -> (empty)
+```
+
+**The general form:** when a defect is found, the next question is not "is it
+fixed" but **"where else does this shape appear"** — starting with the same file,
+the same function, the adjacent lines. This project's own history has the pattern
+(`FILM_EXPOSURE` hardcoded in three places; `SHIPPING.md`'s ship name copied into
+`input_stamp.py`); this is the same failure at a ten-line scale.
+
+---
+
+## R2-434 — THE LADDER CANNOT BE STARVED, AND THE REAL RISK IS THE REVERSE
+
+A concern was raised that the sequence pass would lose every race against a
+continuous stream of short, high-priority verification renders from four other
+agents, and finish days late without there ever being an hour of visible stall.
+**Tested, and it does not happen.**
+
+### The existing guarantee, driven under continuous arrival
+
+`broker/db.py`'s `oldest_waiting_scene` orders scenes by **effective age**:
+
+```
+effective_age = (now - created) + clamp((100 - prio) * 20 s, +/- 1800 s)
+```
+
+`test_priority_cannot_starve_a_scene` already asserts a bound — but it is
+**static**, two jobs in a fixed queue, and says nothing about arrival. So the
+scenario was rebuilt against the real query in a temporary database: twelve
+ladder jobs at prio 90-130, against **three fresh prio -1000 jobs regenerated at
+every step, forever**.
+
+```
+  t (s)  t (min)   winner   ladder eff  rival eff
+      0      0.0    rival          200       1830
+    800     13.3    rival         1000       1830
+   1600     26.7    rival         1800       1830
+   1700     28.3   LADDER         1900       1830
+   4000     66.7   LADDER         4200       1830
+```
+
+**The rival line is PINNED at 1830 s and cannot rise.** A newly arrived job has
+real age ~0, so its effective age is its clamp and nothing more — arriving *more*
+of them, or at *lower* priority, changes nothing. Only the ladder accumulates real
+age, and real age is unclamped. Crossover is `CLAMP + rival_age - my_boost` =
+1800 + 30 - 200 = **1630 s**, observed in (1600, 1700].
+
+**Bound: the ladder waits at most ~27 minutes, whatever arrives.** This is
+`SCENE_PRIO_BOOST_MAX_SEC` doing exactly what its comment claims. **No new
+mechanism is needed and none was added** — adding priority aging on top of
+priority aging would have been the "starvation cap that bounded nothing" a second
+time.
+
+### What IS at risk, and it was mine
+
+**Preemption happens only BETWEEN jobs.** Nothing interrupts a running chunk. So
+the worst-case wait for a critical-path verification render stuck behind the
+ladder is:
+
+```
+threshold (they must first accumulate this much wait) + my chunk duration
+```
+
+with the threshold set by `starve_threshold()` = `max(300, reload_cost x 2.0)` —
+**2850 s for this 4.99 GB scene** (1126 s at the load speed this instance is
+currently showing).
+
+```
+chunk    duration    worst wait (T=2850s)   (T=1126s)
+ 120f       2.08 h          2.87 h            2.39 h     <- as queued
+  60f       1.04 h          1.83 h            1.35 h     <- re-cut to this
+  20f       0.35 h          1.14 h            0.66 h
+```
+
+**Re-cut from 120-frame to <=62-frame chunks: 22 jobs, the same 1,247 frames and
+the identical coverage, longest chunk 1.07 h.** Their worst-case wait behind me
+drops from 2.87 h to 1.83 h.
+
+**Why not go smaller.** The floor is the threshold itself, and the threshold
+exists to stop switch thrashing — below ~60 frames the wait is dominated by the
+2850 s term, so further cuts buy little while costing duty cycle: I yield at the
+first boundary *after* the threshold is crossed, so shorter chunks mean less
+rendering per turn against a fixed ~27 min re-win and a ~1425 s reload. 60 frames
+is where the two curves cross.
+
+**A side benefit worth naming:** 22 chunk boundaries instead of 12 doubles the
+number of places a batch seam could appear — which is a *feature* for this pass,
+because batch seams are on its hunting list and every boundary frame is now known
+in advance. `spec_hash` is identical across all 22, so a settings drift would be a
+409 rather than an invisible seam.
+
+## R2-504 — the showroom roof is NOT a source fix, and no world rebuild can deliver it
+
+The batched rebuild was briefed as *"six queued source fixes — each a landed
+source change waiting for a rebuild to reach a frame."* For five of the six that
+is true. **For the roof it is false, and it is false for a structural reason
+that no amount of rebuilding changes.**
+
+`tools/r2366_roof_build.py` says so itself, in its own header:
+
+> *"The roof is NOT round-2 geometry. `Ceiling` is a literal cuboid emitted by
+> `/home/zany/opus5-car-render/build/s02_showroom.py:490` `build_shell()` — 8
+> vertices, 6 quads, top face ONE QUAD OF 686 m². It reaches the film through
+> `tools/build_film_scene.py`'s append of `world/car_anim.blend`'s SHOWROOM
+> collection, at identity. `/home/zany/opus5-car-render` IS READ-ONLY (project
+> law 1), so the source cannot be corrected."*
+
+So the showroom shell enters the film **downstream of the assembly**, from the
+shipped part-1 tree, and `assembly10` cannot contain it — `assembly*.blend` has
+no showroom in it at all. The roof is a **post-append operation on a film
+blend**, in the shape `tools/add_dais_ramp.py` established: open the film that
+already exists, assert the datum it lands against, build into it, save elsewhere.
+
+Three consequences worth stating plainly:
+
+* **`assembly10` carries five of the six fixes, not six.** Any claim that "the
+  rebuild landed all of them" is wrong at the world level by construction.
+* **`tools/r2366_roof_build.py` is untracked** (`?? tools/r2366_roof_build.py`).
+  It is not a *landed* change in any sense — it has never been committed.
+* Its own visibility measurement says the roof top is visible on **151 frames,
+  all in beat 6, all at 594–610 m**, never near-field. So it is real work with a
+  real justification, but it is the last thing in the chain and not the first.
+
+---
+
+## R2-505 — the deck-slab normal fix reaches a frame only through `timing_stand`; the two modules it was actually written for are both `HOLD`
+
+"Deck slabs — were upside down" is two commits:
+
+```
+d08eaa3  R2-182  slab_grid's walking surface faced down       world/items/marshal_post_deck.py
+93921d8  R2-179  both end caps of every extrusion faced INWARD world/items/marshal_post_deck.py
+                                                              world/items/timing_stand.py
+```
+
+`world/items/PLACEMENT.json` has **4 rows in state `PLACE` out of 42**:
+`catch_fence_post`, `crew_figure`, `timing_stand`, `spectator_crowd_world`.
+
+**`marshal_post_deck` is `HOLD`** (`GATE_NOT_ACCEPTED`, `SUPERSEDE_WELDED`), and
+so is `pont_deck_slab` (`GATE_NOT_ACCEPTED`, `LOCAL_FRAME`, `SUPERSEDE_WELDED`).
+Neither is placed, so **neither R2-182 nor R2-179's `marshal_post_deck` half
+reaches a frame in `film16`.** What does reach a frame is R2-179's *other* half,
+the inward-facing end caps in `timing_stand.py`, because `timing_stand` is one of
+the four `PLACE` rows.
+
+This is not a regression and nothing was done wrong — it is the sequencing rule
+again, one level down. A fix to an item module reaches a frame only when that
+item's row is `PLACE` **and** its built blend is newer than the module. Both
+gates have to be checked, and only the second one is checked automatically.
+
+**The blend-vs-module check, run over all four `PLACE` rows:**
+
+```
+world/items/catch_fence_post.py        2026-08-02_16:51   blend 2026-08-02_19:25   OK
+world/items/crew_figure.py             2026-08-03_06:40   blend 2026-08-03_20:51   OK
+world/items/timing_stand.py            2026-08-04_00:24   blend 2026-08-04_00:27   OK
+world/items/spectator_crowd_world.py   2026-08-04_04:50   blend 2026-08-04_04:33   STALE by 17 min
+```
+
+**`spectator_crowd_world.blend` predates its own generator by 17 minutes.** The
+crowd that goes into `assembly10` is the artefact built at 04:33 from a source
+that was still being edited at 04:50. Whatever the 04:50 edit did, it is not in
+this film. Flagged, not fixed: rebuilding a 2.0 GB crowd blend is its own pass
+and the module's own note already says the next crowd pass costs a 451 s
+rebuild.
+
+---
+
+## R2-506 — "70.5 % occupancy" is an average of six ratios, not a ratio; the crowd is 60.65 % of seats
+
+The crowd was handed to this rebuild as **"70.5 % occupancy, 1.86× clustered."**
+Neither number survives being looked up in the module that produces the crowd.
+
+`world/items/spectator_crowd_world.py` states its own realised build:
+
+```
+TRIBUNE OUEST       1,843 / 3,071   60.0 % physical   76.7 % of open
+TRIBUNE T15         2,510 / 4,077   61.6 %            78.2 %
+VIRAGE OUEST        1,414 / 2,143   66.0 %            66.0 %
+TRIBUNE PRINCIPALE  3,345 / 5,542   60.4 %            77.6 %
+TRIBUNE EST         1,559 / 2,522   61.8 %            78.8 %
+TRIBUNE TEMPORAIRE    458 /   995   46.0 %            46.0 %
+11,129 people over 18,350 chairs, 3,311 of them folded up
+```
+
+Three different numbers can be called "the occupancy" and they are far apart:
+
+```
+11,129 / 18,350                      = 60.65 %   of physical seats
+11,129 / (18,350 - 3,311)            = 74.00 %   of seats that open
+mean(76.7, 78.2, 66.0, 77.6, 78.8, 46.0) = 70.55 %   <-- THIS IS THE 70.5 %
+```
+
+**70.5 % is the unweighted mean of six per-block ratios.** It weights TRIBUNE
+TEMPORAIRE's 995 chairs exactly as heavily as TRIBUNE PRINCIPALE's 5,542, so it
+is not an occupancy of anything — it is an average of averages. The ratio of
+totals over the same seats is **74.00 %**, and the number a viewer's eye actually
+integrates, folded seats included because a folded seat is visibly empty, is
+**60.65 %**.
+
+> *A mean of ratios is not the ratio of the means, and this is the second
+> "settled" figure in this rebuild that turned out to be a property of how it
+> was reduced rather than of the film.* (The first is R2-501.)
+
+**"1.86× clustered" has no source at all.** There is no clustering metric in
+`spectator_crowd_world.py`, `spectator_seated.py` or `grandstand_seats.py` —
+grep for `clust`, `clump`, `gregari` returns one prose line and no number. The
+only `1.86` anywhere near the crowd is
+
+```
+world/items/spectator_seated.py:728
+    stature = min(1.86, max(1.49, rng.gauss(1.633, 0.062)))
+```
+
+which is the **upper clamp on a seated adult's height in metres**, in the first
+of two overlapping stature normals. It is not a multiplier and it is not about
+clustering.
+
+And the one place the word "clustering" does appear is a comment over code that
+does not do it:
+
+```
+# occupancy, with real clustering: people arrive in twos and threes and
+# leave gaps, they do not fill a stand like a checkerboard.
+for (sx, sy, sz, r, c) in seats:
+    f = occupancy
+    if r < 2:
+        f *= 0.88
+    if rng.random() < f:            # <-- independent Bernoulli per seat
+        taken.append(...)
+```
+
+That is an i.i.d. coin flip per seat, which is precisely the checkerboard the
+comment says it is not. It is in `_test_rig`'s composer, not the world composer,
+so it does not describe the shipped crowd — but it is where a reader looking for
+"real clustering" lands, and it is another comment that is not performed.
+
+---
+
+## R2-507 — the `ranked` safeguard DOES exist now; the briefing on it is out of date, with one word still true
+
+I was told: *"The documented safeguard ('walks down the ranking until a station
+fits inside the room') was never implemented — nothing has ever read `ranked`.
+If you touch that function, implement it or delete the comment."*
+
+**That was true of the shipped code and is no longer true of the working tree.**
+R2-451 implemented it, and moved it to where it belongs — into
+`tools/presentation_normals.py`, where the ranking and the score live, rather
+than in `build_beatsheet.camera_station()`, which had the comment but not the
+data. It now walks three measured conditions:
+
+```
+the lens is under the light rig      cam_z <= spot_rig_z - clearance
+the lens clears the rope barrier     cam_z >= min_cam_z
+it is a photograph, not a plan       elev <= max_depression_deg
+```
+
+then takes the shallowest survivor within `--score-tol` of the best, and NAMES
+the relaxation if no direction satisfies both envelope conditions rather than
+silently widening. So `camera_station()` was correctly left alone: the fix
+belonged upstream of it.
+
+**The one word still literally true**: the `ranked` *field* is still never read.
+`presentation_normals.py` performs the walk against its in-memory `scored` list
+and then *writes* `ranked` as output. Nothing consumes it. It is a write-only
+diagnostic — harmless, but if anyone documents it as the mechanism again, it
+still is not.
