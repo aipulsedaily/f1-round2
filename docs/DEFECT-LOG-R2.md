@@ -11343,3 +11343,882 @@ Point it at `EC_hoop`.
     render/r2401/silhouette_ab_f2635.png render/r2401/hollow_ab.png
 
     world/car_anim_driver_R2401_EXPERIMENT_raise54.blend   NOT FOR SHIPPING
+
+## R2-388 — the ablation: withdrawing the boundary condition is REFUTED, and it was my own committed fix
+
+Three 400-frame cells, identical in everything but the car proxy, at the
+derived frame thresholds. 400 sim frames is film f845 → f1005, which contains
+the impact, the underfloor clamp, and 100 of the 161 film frames of the deck
+ride. `sim/tmp/run_r2386_ablations.sh`, all three `EXIT=0`.
+
+| | **A0** shipped proxy | **A1** withdraw at tail-clear | **A2** friction 0.55 → 0.20 |
+|---|---|---|---|
+| `MUL05_S02` travel / peak | 14.46 m / 18.39 m/s | 11.69 m / 15.31 m/s | 15.60 m / **26.20 m/s** |
+| `GS_b05_00434` travel / peak | 15.84 m / 24.80 m/s | 12.68 m / 19.02 m/s | **0.02 m / 10.77 m/s** |
+| **TOTAL transport, all bodies** | **32,064 m** | 23,825 m (−26 %) | **7,869 m (−75 %)** |
+| — nose plow | 22,944 m | 18,020 m | **5,846 m** |
+| — deck ride | 8,507 m | 5,523 m | **1,826 m** |
+| — underfloor clamp | 368 m | 163 m | **71 m** |
+| **PRICE: bodies inside the car, worst frame** | 111 (at impact) | **1,526** | 113 (at impact) |
+| PRICE: samples over 100 bodies inside | **0 of 100** | **41 of 100** | **0 of 100** |
+| CONTROL untouched mullions, max travel | 0.000133 m | 0.000907 m | 0.000086 m |
+| **connected aperture** (`breach_metrics`) | **2.15 × 6.00 m** | **2.15 × 6.00 m** | **2.15 × 6.00 m** |
+| bay 4 / bay 5 vacated | 96.7 / 95.4 % | 96.7 / 95.4 % | 98.4 / 95.3 % |
+| metrics CONTROLS | PASS | PASS | PASS |
+
+### P6 is wrong, and it is wrong twice over
+
+I committed, before any of this existed, that "the effective fix is to withdraw
+the boundary condition when it stops representing anything" and that it would
+bring `MUL05_S02` below 10 m. **It does neither.**
+
+* It removes **26 %** of the transport, against friction's **75 %**. The
+  withdrawal happens at film f876.8 and by then the plow has already formed:
+  most of the transport is bought in the 130 sim frames before it.
+* And it has a price I did not price. **The car overtakes the cloud it just
+  made.** With the collider on, the car pushes the debris ahead of it forever
+  and can never catch it; with the collider off, the debris coasts at 15–18 m/s
+  while the authored animation takes the car to 24, 30, 40 m/s, and the car
+  drives straight through it:
+
+| sim frame | film | bodies inside the car (A1) | their glass area |
+|---|---|---|---|
+| 227 (withdrawal) | f876.8 | 15 | 0.004 m² |
+| 280 | f911.2 | 89 | 0.98 m² |
+| 300 | f924.2 | 897 | 1.75 m² |
+| **323** | **f939.2** | **1,526** | **2.40 m²** |
+| 350 | f956.8 | 1,426 | 0.78 m² |
+| 380 | f976.3 | **0** | 0.00 m² |
+
+**Forty-six film frames of the car driving through two and a half square metres
+of its own glass, dead centre, six metres from the lens, in slow motion.** The
+baseline with the collider on is 15 bodies, and that is shard *origins* inside a
+convex proxy part while they rest against it, not visible overlap.
+
+**I am not proposing withdrawal and I am not proposing a later withdrawal
+either** — the overtake is structural. The car is authored to accelerate away
+from a cloud it gave its own speed to, so there is no frame at which the
+collider can leave without the car then passing through what it left behind.
+
+### What the ablation DOES establish
+
+* **The aperture is insensitive to every one of these.** Same connected
+  2.15 × 6.00 m in all three cells, same bays, `CONTROLS PASS` in all three,
+  untouched mullions at 10⁻⁴ m. Whatever the fix turns out to be, it is not
+  going to be paid for out of the ending. That is P8's premise, measured
+  early and on the cheap cells rather than asserted at the end.
+* **Friction is the lever the mechanism said it would be.** The 205 m
+  underfloor clamp — the single worst traveller in the file — goes to **23 mm**
+  when the proxy is not grippier than aluminium. It was a friction clamp all
+  along, exactly as R2-385's arithmetic said.
+* **And friction alone is not the whole fix.** A2's median displacement at
+  f1005 is 15.44 m against A0's 15.78 m, and its field median speed at the last
+  frame is *higher* (20.19 against 18.15 m/s). Cutting the grip stops the car
+  *carrying* the debris and does nothing about the debris having been *launched*
+  at the car's own speed. Which is R2-389.
+
+
+---
+
+## R2-389 — cutting the proxy's grip puts five mullion segments back in the middle of the aperture, and R2-293's four cells could not have seen it
+
+A2 is refused, and the reason is the one thing this job was told not to trade.
+
+`MUL05_S03 … S07` — the 4.65 m of mullion above the car's roofline — in the two
+cells at sim frame 400:
+
+| segment | z at impact | A0 (friction 0.55) end | A2 (friction 0.20) end | A0 travel | A2 travel |
+|---|---|---|---|---|---|
+| `MUL05_S03` | 2.73 | (23.00, −0.91, 0.13) | **(15.00, 0.02, 2.64)** | 8.56 m | **0.14 m** |
+| `MUL05_S04` | 3.51 | (22.24, −0.74, 0.12) | **(15.01, 0.02, 3.41)** | 8.12 m | **0.15 m** |
+| `MUL05_S05` | 4.28 | (18.70, 0.08, 1.07) | **(15.01, 0.01, 4.19)** | 4.98 m | **0.15 m** |
+| `MUL05_S06` | 5.06 | (18.03, 0.27, 0.74) | **(15.02, 0.01, 4.96)** | 5.35 m | **0.16 m** |
+| `MUL05_S07` | 5.83 | (17.36, 0.47, 0.40) | **(15.02, 0.00, 5.74)** | 5.98 m | **0.16 m** |
+
+In A2 the column **does not come down**. It drops 0.09 m in 1.06 s and stops —
+2 % of a free fall — and it is still standing in the wall plane at the end of
+the cell. Projected through the ONER track onto the closing frame it lands
+**dead centre of `wallstats`'s own wound rectangle**:
+
+| segment | u, v at f2978 | u, v at f2940 | inside the wound box |
+|---|---|---|---|
+| `MUL05_S03` | 1920.3, 1085.9 | 1920.2, 1084.4 | **yes** |
+| `MUL05_S04` | 1920.3, 1076.0 | 1920.2, 1077.0 | **yes** |
+| `MUL05_S05` | 1920.1, 1066.0 | 1920.1, 1069.5 | **yes** |
+| `MUL05_S06` | 1920.1, 1056.0 | 1920.1, 1062.1 | **yes** |
+| `MUL05_S07` | 1920.0, 1046.0 | 1920.0, 1054.6 | **yes** |
+
+Five aluminium members standing in a vertical line down the middle of the hole
+the whole block exists to open. **That is the ending, and cutting the proxy's
+friction takes it away.** This is the P11 mechanism, committed in R2-387 before
+any of these cells existed, and it fires at f2978 as well as f2940.
+
+### Why the column falls, and what actually pulls it out
+
+The car's roof is at 0.992 m and `MUL05_S04` starts at 3.51 m, so the car never
+touches it. What takes it out is the **chain**: the car tears out the bottom
+2.3 m, that piece is gripped and dragged, and the segment-to-segment joints
+above it are pulled through their threshold one after another. Cut the grip and
+the bottom piece slides off the nose instead of being held against it, the
+impulse the chain sees is shorter and smaller, the joint above breaks early,
+and the column above is left hanging with nothing to pull it.
+
+**That is real, and it is the right behaviour.** A mullion is one extrusion;
+taking the bottom of it out at 16 m/s brings the rest with it. So the car's grip
+is not a nuisance parameter here — it is load-bearing for the frame result.
+
+### And this qualifies an inherited conclusion, without overturning it
+
+R2-293 separated the transom threshold from the head model with four
+off-diagonal cells and concluded, correctly, that **the derived transom
+threshold does all of it and the head model does nothing measurable**. Its
+`8.8/FIXED` cell reproduces the whole collapse with the head still bolted on.
+
+**All four of those cells hold the car proxy at friction 0.55.** They vary the
+frame against itself, so they can rank the two frame parameters against each
+other — which is what they were built to do — and they cannot see that a third
+parameter, outside the frame entirely, is also necessary. A2 is the fifth cell,
+and it says the transom threshold is **necessary but not sufficient**: at 8.8
+with a slippery car, six of six transom ends still let go and the column still
+stays up.
+
+I am not proposing to change anything in R2-293's conclusion. I am recording
+that "the derived transom threshold does all of it" is true *within the
+experiment that measured it*, and that the car's grip is the other half.
+
+---
+
+## R2-390 — P12: what the air-drag cell will show, committed while it bakes
+
+`--air-drag derived` (R2-388) with the car proxy left exactly as it shipped.
+Written and committed while B0/B1/B2 are still baking.
+
+* **P12a** The frame collapse survives untouched. `MUL05_S03…S07` travel within
+  20 % of A0's 8.56 / 8.12 / 4.98 / 5.35 / 5.98 m, and none of them is left
+  standing in the wall plane.
+* **P12b** The deck ride is reduced but not removed: `MUL05_S02`'s peak speed
+  falls from 18.39 m/s to under 16 m/s. The drag on that segment is
+  0.284 per second, i.e. 5.7 m/s² at 20 m/s, against the 8.81 m/s² the car puts
+  into it — the same order, and short of cancelling it.
+* **P12c** The underfloor clamp is NOT fixed by air. `GS_b05_00434` is held
+  rigidly between the floor and the slab; drag on a clamped body changes
+  nothing. Its travel stays above 10 m. **Only the friction that clamps it
+  moves it, and friction is now refused.**
+* **P12d** Total transport falls by less than 40 % (against friction's 75 %),
+  because transport is contact-driven and air only opposes it.
+* **P12e** The thing that matters — the field's speed when the keys run out —
+  falls substantially: median under 12 m/s at the last frame of the cell,
+  against A0's 18.15.
+* **P12f** No interpenetration price at all: fewer than 150 bodies inside the
+  car at the worst frame, and that frame is the impact itself.
+* **P12g** The connected aperture is unchanged at 2.15 × 6.00 m with
+  `CONTROLS PASS`.
+
+If P12c holds, the underfloor clamp and the deck ride survive into the shipped
+bake as **stated residual defects**, and the reason will be that the only lever
+that moves them is the same lever that closes the aperture.
+
+
+---
+
+## R2-391 — the seam table, BEFORE column, measured with the script that will measure the AFTER column
+
+`sim/seams.py`, run on the two tables that already exist. It measures the car's
+seams and the table's seams with one piece of code so the two columns cannot
+drift, and it was validated against numbers it did not produce: it reproduces
+`rest_gate.py`'s **1,599** bodies over 1 mm/film-frame on the shipped table and
+R2-290's **2,647** over 1 m/s and **u 884…3465** on the re-bake, to the body.
+
+### The car — the one-take law
+
+| | R6 SHIPPED | R2281 RE-BAKE |
+|---|---|---|
+| `car_anim_measured.json`, 2,978 frames, sha256[:16] | `7fe6b8a97b362ac0` | `7fe6b8a97b362ac0` |
+| **f865, beat 2 \| beat 3** loc | 14.969 → 15.590 → 16.091 | identical |
+| speed across the join | 16.769 → 15.677 → 15.617 m/s | identical |
+| worst \|a\| within ±5 frames (beat median) | 25.39 (9.34) m/s² | identical |
+| **f1057, beat 3 \| beat 4** loc | 52.556 → 53.901 → 55.265 | identical |
+| speed across the join | 32.061 → 32.508 → 32.955 m/s | identical |
+| worst \|a\| within ±5 frames (beat median) | 10.76 (11.60) m/s² | identical |
+
+They are identical because **the car's transform is an input to this sim and an
+output of nothing in it.** `breachlib.Car` reads
+`world/car_anim_measured.json`; the sim keys the proxy from it and writes
+nothing back. That is the whole reason I refused the dynamic proxy in R2-385 on
+numbers rather than on cost — the cost was going to be this table.
+
+### The table — the release seam and the last key
+
+| | R6 SHIPPED (live) | **R2281 RE-BAKE (not shippable)** |
+|---|---|---|
+| span | f845 – f1165 | f845 – f1165 |
+| **release pop** (first key vs the static wall) | **0.000000 m** | **0.000000 m** |
+| bodies over 1 mm / film frame at the last key | 1,599 | **2,734** |
+| **bodies over 1 m/s at the last key** | **70** | **2,646** |
+| median speed at the last key | 0.016 m/s | **4.736 m/s** |
+| max speed at the last key | 73.17 m/s | 24.89 m/s |
+| end x: median / p95 / max | 16.26 / 17.07 / 641.8 | **102.81 / 103.57 / 261.9** |
+| bodies in the closing raster (f2978) | 3,891 | 3,947 |
+| **frozen-and-moving in the closing raster** | **13** | **2,645** |
+| their pixel extent | 477 × 896 px | **2,581 × 1,018 px** |
+| their u range | 1,774 – 2,268 | **884 – 3,465** |
+
+**The release seam is clean in both** — nothing pops on the frame it is
+released — so the whole of the seam defect is at the far end: 2,645 bodies
+freeze mid-slide across two-thirds of the closing frame's width. That is the
+number the fix has to move, and it is the number the AFTER column will be read
+on.
+
+## R2-416 — rung 1's cost is BEAT-INDEPENDENT, and the master's is not
+
+The ladder budgets the 4K master per beat because per-frame cost varies **8.5x**
+along the film's own length: showroom 60.2 s/frame, world 510.5 s/frame. That
+weighting is what makes beat 5 "67 % of the master on its own".
+
+**At rung 1 that ratio is 1.00, not 8.5.** Measured on this pass's own spec and
+its own .blend, one frame each from the showroom, the breach and the lap:
+
+```
+f1     beat 1  showroom, exploded field      67.3 s
+f2     beat 1  showroom                      62.5 s
+f900   beat 3  breach, sim + world visible   65.5 s
+f901   beat 3  breach                        68.0 s
+f2000  beat 5  the flying lap, full world    65.7 s
+```
+
+`f2000` is the frame that matters: **the world scene at 720p/64 costs the same as
+the showroom** — 65.7 s against 64.9 s — where at 4K/512 it costs 8.5x more.
+
+**Restated on a larger sample as the pass ran** (22 frames, and this supersedes
+the 10-frame figure an earlier draft of this entry quoted):
+
+```
+whole pass so far   n=22   mean 62.33 s   min 58.6   max 68.4
+  1_assembly        n=18   61.3 s
+  3_breach          n= 2   66.8 s
+  5_lap             n= 2   67.0 s
+```
+
+The spread across the whole film is **58.6-68.4 s, a factor of 1.17**, against a
+factor of **8.5** at 4K. Beat 5 runs 9 % above beat 1, not 850 %. The earlier
+50-frame rate run `r2b56_720` (beats 5-6, `film6.blend`) measured **63.4 s/frame**
+and this pass measures **62.33**, agreeing to 1.7 % across two different .blends.
+
+**Why, and it is the ladder's own point turned up to its limit.** Fixed cost —
+scene load, BVH build, per-frame sync — does not shrink with resolution or
+samples. At 4K/512 the *traced* work dominates and the world's 13.2 B triangles
+show up in the price. At 720p/64 the traced work is so cheap that essentially
+nothing but fixed cost remains, so every frame costs the same whatever is in it.
+
+**What this changes:**
+
+- **Rung 1 cannot be budgeted per beat, and does not need to be.** Cost is
+  frames x ~62 s, full stop. Beat 5 is 51.2 % of rung 1 — exactly its frame share
+  (1,524 / 2,978) — not 67 %.
+- **A full-length rung-1 pass is 2,978 x 62.33 s = 51.6 h = $21.7** at $0.4203/hr
+  of GPU time, before scene reloads. The ladder's $17.5 / 52.4 h is right on wall
+  clock and low on dollars only because the instance rate moved ($0.3339 ->
+  $0.4203/hr). **The rate estimate of 63.4 s/frame was good to 1.7 %** — it is the
+  per-BEAT weighting, not the rate, that does not apply at this rung.
+- **The corollary is a warning about rung 2 and 3, which are still estimates.**
+  They are interpolated between a beat-independent measurement and a
+  beat-dependent one. The crossover — the resolution at which traced work starts
+  to matter again — is unmeasured, so 1080p/128 could sit anywhere between "still
+  flat" and "already weighted". Measure the rung.
+
+**Sample size, stated plainly:** n=1 for beat 5 on this blend. The claim that
+rung 1 is flat rests on that one frame plus 50 frames of beats 5-6 at the same
+resolution and samples on `film6.blend`. It will be re-stated against the full
+pass when it lands, and that is the number to trust.
+
+---
+
+## R2-417 — `beat_sheet.md` and `beat_sheet.json` disagree about the film's last image
+
+`docs/beat_sheet.md`, Beat 6:
+
+> Peel-off at t=-3.0s, hold 8.0-11.0s at `[594.19, 16.05, 140.0]` on a **18.75mm** lens.
+
+`docs/beat_sheet.json` `beat6`, and the authored path in `render/film14_path.json`,
+both say otherwise:
+
+```
+hold_lens_mm            74.0
+keys  t= 6.0  lens 18.75 mm      <- the .md quotes THIS key
+      t= 8.0  lens 40.00 mm      <- the hold begins here
+      t=11.0  lens 74.00 mm      <- the hold ends here
+```
+
+The `.md` has taken the lens from the **t=6.0** key — two seconds before the hold
+starts — and attached it to the hold. The position it quotes is the hold's;
+the lens is not.
+
+**This is a documentation defect, not a film defect, and the distinction matters
+because I nearly logged it as the latter.** Measured off the path, the closing
+71 frames are static in position and go **40.048 -> 73.997 mm, +84.8 %**, FOV
+48.40 -> 27.34 deg. That looked exactly like a defect: a "3-second hold" that is
+actually a continuous zoom. It is not — it is authored, deliberate, and
+documented as `closing_lens_push` / R2-113:
+
+> "The circuit reads at 40 mm and the wound does not; the wound reads at 74 mm
+>  and the circuit is gone. The hold was a freeze, so the push is the only
+>  motion in the last 3 s."
+
+The path implements that spec **exactly** (40.0 -> 74.0 over t 8.0-11.0).
+
+**The cost of the `.md` being wrong is real even so:** anyone judging the closing
+frame against the prose expects a 18.75 mm wide and will be looking at a 74 mm
+lens — a 3.9x difference in focal length on the film's final image. `beat_sheet.md`
+is generated, so the fix belongs in `tools/build_beatsheet.py`, not in the file.
+
+**Still open, and only a watch can answer it:** whether an 85 % push over 3.0 s
+reads as the intended reveal or as a creep. Edge-of-frame content drifts
+**6.25 px/frame median, 8.43 px/frame max at 720p** (18.75 / 25.30 px at 4K),
+543 px in total at 720p and 1,628 px at 4K. That is not a subtle move. Judged on
+the frames below when they land.
+
+---
+
+## R2-418 — the temporal instrument, and the two known-bad artefacts it first missed
+
+`tools/seq_temporal.py`. Written for this pass because `rq seq stats` gives
+per-frame statistics but nothing that reads BETWEEN frames.
+
+**It was wrong twice, and both failures are the ones this project keeps naming.**
+
+**Failure 1 — a metric that reads the same present or absent.** The firefly test
+began as "a pixel that jumps and comes straight back", which sounds specific.
+Measured on a synthetic clean pan at 3 px/frame it fired on **267 bright pixels of
+every single frame** — identical with the defect present and absent — because a
+narrow bright feature panning across a pixel in one frame does exactly that. Fixed
+by requiring the pixel to be a **spatial** outlier as well: a firefly is alone, a
+passing edge is coherent with its 3x3 neighbourhood. The clean control then read 0.
+
+**Failure 2 — measuring the wrong series.** The periodicity check ran on the
+frame-to-frame difference series only. A 2-frame brightness flicker puts a
+*constant* offset into that series — every adjacent pair differs by the same
+amount — so d1 is flat and carries no period-2 line at all. A 1.5 % flicker was
+**completely invisible**. Fixed by transforming the `mean` and `sd` series too,
+where the same flicker reads **189,029x the spectral median at period 2.01**.
+
+**Calibration, against controls including artefacts already known to be bad:**
+
+| control | what it is | result |
+|---|---|---|
+| clean | aperiodic pan over a smoothed random field | **0 flagged**; spectral floor 75x |
+| firefly | 40 stray bright px on f150-152 only | flags **exactly f150, f151, f152** |
+| held | f101 a byte-identical copy of f100 | flags **f101, d1 = 0.0000, "IDENTICAL"** |
+| flick2 | 1.5 % brightness flicker every other frame | 0 outliers, **189,029x at period 2.01** |
+| period24 | 3 % brighter on every 24th frame | 37 frames flagged + spectral line |
+
+**`flick2` is the row that justifies the second instrument.** The outlier test sees
+nothing; only the spectral test sees it. That is the R2-086 class — a defect that
+becomes its own baseline — and it is why the flagging thresholds here are derived
+from a **global or beat-global** robust scale and never from a rolling window.
+
+**Stated limits.** The spectral floor on the clean control is **75x**, so nothing
+below ~100x is evidence. Periodic energy is evidence and not a verdict: real
+content can be periodic (fence posts at constant speed), though a period of 2-3
+frames at 24 fps almost never can be. `--stride 2` subsamples pixels by 4x, which
+is fine for means and percentiles but weakens the single-pixel impulse count;
+anything it finds is re-run at `--stride 1`.
+
+---
+
+## R2-419 — beat 1's camera does NOT pulse at the presentation stations. Refuted by its own control
+
+The hypothesis was attractive and it is wrong, which is why it is written down.
+
+Beat 1 presents fifteen clusters at 1.76 s intervals — every 42.2 frames. Its
+camera-speed series carries strong periodic energy at **39.2 and 41.3 frames,
+655x the spectral median**, which is within a frame or two of the station
+spacing. The obvious reading is that the camera decelerates into each
+presentation and dashes out — a fifteen-times-repeated pulse, and the single
+largest structural fact about the beat's pacing.
+
+**The control kills it.** Mean camera speed in a +/-5-frame window around the
+fifteen stations, against 20,000 draws of fifteen randomly placed windows of the
+same size:
+
+```
+at the 15 stations     1.574 m/s   (n=159)
+everywhere else        1.824 m/s   (n=633)
+null, random windows   1.776 m/s   sd 0.185
+observed sits at the 13.89th percentile of the null   (-1.09 sd)
+```
+
+**-1.09 sd is not a finding.** The stations are not systematically slower. The
+periodic energy at ~40 frames is real but it is **not phase-locked to the
+presentations**, so whatever produces it, it is not the presentation rhythm.
+
+What survives, and it is a plain fact rather than a story:
+
+```
+beat 1 camera speed   min 0.046   p10 0.716   median 1.783   p90 2.850   max 3.897 m/s
+  frames under 0.5 m/s   50  (6.3 %)
+  frames over  3.0 m/s   52  (6.6 %)
+```
+
+**An 85x speed range inside one beat**, which is worth knowing before judging its
+pacing, and which is consistent with R2-321's separation of the smeared tour
+(88 % over 20 px) from the near-static close-out (4 %) without needing a rhythm to
+explain it.
+
+---
+
+## R2-420 — where the film's worst camera moments are, predicted from the path before the pixels
+
+From `render/film14_path.json`, all 2,978 frames, independent of any render.
+These are the frames to look at first when the pass lands, and two of them are
+corroborated by `render/film14_continuity.json`, which was written by a different
+tool for a different purpose.
+
+| frame(s) | what the path says | corroboration |
+|---|---|---|
+| **f2634** | the film's **fastest pan**: 0.2207 frame-widths/frame, 141 px of 180-deg smear at 720p, **424 px at 4K** | `worst_rotation_step_deg = 12.957` at **f2634** |
+| **f1209** | the largest single-frame camera translation | `worst_position_jump_m = 4.2469` at **f1209** — 102 m/s |
+| **f901-f916** | the interior->daylight **exposure ramp**, ~1 stop over 16 frames | `exposure_ramp_frames = [901, 916]` |
+| f2906-f2908 | camera arrives at the hold and stops dead | authored; see below |
+| f865-f871, f1042-f1056 | the speed ramp's 6-frame ease-in and 15-frame ease-out | `time_map`, solved floor 0.1537 |
+| f792/793, f864/865, f1056/1057, f1190/1191, f2714/2715 | beat boundaries | — |
+
+**f2906-f2908 is NOT a defect and the detector was right to flag it.** Per-frame
+camera step over the arrival: 1.085 ... 0.0521, 0.0220, 0.0022, 0.0000 m — a
+monotone ease-out to a 2 mm final step, then exactly zero for 71 frames. A jerk
+detector fires on any authored stop; this one is clean. Recorded here so the flag
+is not re-investigated when it appears in the pixel results.
+
+**Two predictions I made and then closed against the source, before spending a
+frame on either:**
+
+- *Beat 3 will strobe*, because the camera flies in real time while the shutter
+  scales with world time — 14 px of per-frame displacement with ~1 px of blur.
+  **Closed: it will not.** `shutter_mode = flat`, `shutter_frames = [0.5, 0.5]`,
+  180 deg for the whole take, confirmed in `film14_continuity.json`. The
+  double-correction was found and removed already; `build_camera_rig.py`:90-129
+  is the record.
+- *Beat 3 will show stepped time*, because at a world-time floor of 0.1537 one
+  world frame spans 6.5 film frames, and an uninterpolated sim would hold the
+  shards for 6 frames and jump. **Closed: it does not.** Measured on f900 -> f901,
+  both inside the floor: **57.69 % of pixels changed**, mean |delta| 0.0572,
+  with the change spread across the sky band (0.0667), the apron (0.0543) and the
+  car (0.0514) alike. Everything moves; nothing is held.
+
+---
+
+## R2-421 — beat 5 is temporally clean over the only contiguous run that existed before this pass
+
+Twenty-four contiguous frames of the flying lap, f1900-f1923, left on disk by the
+rate measurement `r2b56_720` (`film6.blend`, an older film build, same 720p/64
+spec). Until this pass they were the longest look anyone had had at beat 5.
+
+```
+d1 median 0.0305   MAD 0.0012   max 0.0325 @ f1901
+outliers at |z| > 6 :  0
+periodic energy     :  none above 50x the spectral median in any series
+```
+
+**A MAD of 0.0012 against a median of 0.0305 is 4 % variation frame to frame** —
+the motion energy is almost constant, which is what a smooth camera over a smooth
+world should give and is the opposite of what jitter looks like.
+
+Two limits, stated because this is a positive result and positive results are
+where this project has been burned: it is **24 frames of 1,524**, and it is
+`film6.blend`, not the shipping `film14_breach_r6.blend`. It is a reason to
+expect beat 5 to be clean, not evidence that it is. The full pass decides.
+
+
+*(continues — findings are appended as the pass delivers)*
+
+## R2-422 — the film spends 8.04 s of the lap with the car at 7 % of frame width, and the reason is camera physics
+
+**Shot scale over all 2,978 frames**, computed from `render/film14_path.json`,
+`telemetry/telemetry.csv` and `anim/filmtime.py`'s time map — the car's apparent
+length as a fraction of frame width, given the authored lens at each frame. No
+render involved, so this is available before the pass finishes and is checkable
+against it.
+
+| beat | frames | median camera-to-car | median size | p10 | p90 |
+|---|---:|---:|---:|---:|---:|
+| 1_assembly | 792 | 5.0 m | **143.7 %** | 78.4 % | 335.6 % |
+| 2_launch | 72 | 5.4 m | 101.0 % | 88.5 % | 105.3 % |
+| 3_breach | 192 | 6.5 m | 52.7 % | 39.8 % | 66.2 % |
+| 4_transit | 134 | 44.1 m | 12.6 % | 11.9 % | 37.6 % |
+| 5_lap | 1,524 | 42.9 m | 14.9 % | 7.7 % | 37.4 % |
+| 6_ending | 264 | 294.7 m | 1.9 % | 1.0 % | 3.5 % |
+
+**Beat 1's 143.7 % median is R2-317 arrived at from a different direction.** That
+entry measured fifteen presentations overflowing their frame by 1.06x to 2.59x
+from the cluster bounding boxes; this measures the whole beat from the path and
+the car's own length and gets a median of 1.44x with a p90 of 3.36x. Two
+independent computations, same conclusion: **for most of the opening 33 seconds
+the subject is larger than the frame.**
+
+**The finding this instrument adds that nothing else has: the longest stretches
+where the subject is a speck.** Beats 2-6, runs with the car under 10 % of frame
+width:
+
+```
+f2693-2978   286 frames  11.92 s   spans the end of beat 5 into beat 6
+f2035-2227   193 frames   8.04 s   mid-lap
+f2307-2344    38 frames   1.58 s
+```
+
+The first is beat 6 and is the whole point of the closing wide — authored, and
+the car is *meant* to be 1.9 % of the frame. **The second is not.**
+
+**f2035-f2227 in detail** — 8.04 s, 6.5 % of the film's entire runtime, with the
+car between 6.8 % and 9.9 % of frame width and never above it:
+
+```
+f2020  dist  91.0 m  11.68 %
+f2060  dist 142.0 m   7.86 %
+f2100  dist 169.5 m   6.96 %
+f2160  dist 187.2 m   6.77 %      <- furthest
+f2200  dist 175.8 m   7.65 %
+f2240  dist 102.4 m  11.54 %
+```
+
+against a beat-5 median of 14.9 %. **The car is at half its usual size for eight
+seconds in the middle of the flying lap.**
+
+**It is authored, and the beat sheet says why — but the reason is about the
+camera, not the audience.** The anchors through this stretch read:
+
+> t=85.31 "T9 seen from **105 m ahead**: the camera is already running for T10"
+> t=88.00 "crossing the track line ahead of the car, descending"
+> t=90.01 "T10 Panorama 1 at 255 km/h, seen from **195 m down the road**: the
+>          camera is already on the doppler line and braking for it"
+> t=91.40 "T11 behind us; **170 m of deceleration is what a hover costs**"
+> t=92.40 "settling onto the station: 45, 33, 22, 8, 1.5 m/s, five anchors,
+>          because arriving at a hover in one is a 6 g stop"
+
+So the eight seconds are the **transit cost of arriving at the doppler station**
+in time to be stationary for it. The physics is not in dispute: you cannot stop a
+camera from 68 m/s in less than ~200 m, and the doppler beat is the lap's
+centrepiece.
+
+**The author already saw it and fought it with the lens.** Focal length climbs
+65 -> 70 -> 75 -> 80 -> 85 mm straight through the stretch, which is what holds
+the subject at a roughly flat 7 % instead of letting it collapse. At a constant
+65 mm, f2160 would read **5.5 %** rather than 6.77 %. The compensation is real and
+it is not enough to make the subject large.
+
+**What is NOT decided here, and cannot be by arithmetic:** whether 8 seconds of a
+distant car reads as the car pulling away down a long circuit — which is a real
+and good thing for a lap to show — or as eight seconds of waiting. That is a
+pacing judgement and it needs the watch. It is flagged as the single longest
+unintended small-subject stretch in the film so that the watch knows to look.
+
+**Limit of the instrument:** this is the apparent size of the car's length held
+perpendicular to the view axis. A car seen end-on is shorter than this says, and
+occlusion is not modelled. It is a first measure of subject scale, not a
+substitute for looking, and every figure above is confirmable in the delivered
+frames.
+
+---
+
+## R2-423 — THE ONE-SHOT LAW HOLDS AT ALL FIVE BEAT BOUNDARIES, and the film's three worst moments are fast, not broken
+
+The film's defining constraint is zero cuts. Until now that was asserted from key
+coverage — `film14_continuity.json` shows every beat carries location and rotation
+keys — which proves the camera is *animated* everywhere, not that it is
+*continuous* anywhere.
+
+**The test.** At each boundary, compare the single-frame step in position,
+aim and lens against the median step over the 40 frames around it. A cut is a step
+that is large against its own neighbourhood; a fast move is not.
+
+| boundary | \|dp\| m | local median | x | rotation | local median | x | lens step |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| f792/f793 | 0.1333 | 0.1244 | **1.07** | 0.748 deg | 0.690 | **1.08** | 0.0000 mm |
+| f864/f865 | 0.2327 | 0.2478 | **0.94** | 2.459 deg | 1.176 | 2.09 | 0.0250 mm |
+| f1056/f1057 | 0.5436 | 0.5327 | **1.02** | 5.555 deg | 2.224 | 2.50 | 0.0000 mm |
+| f1190/f1191 | 3.5160 | 3.4549 | **1.02** | 0.165 deg | 0.174 | 0.95 | 0.0000 mm |
+| f2714/f2715 | 2.5454 | 2.5540 | **1.00** | 0.062 deg | 0.060 | 1.04 | 0.0047 mm |
+
+**Position is 0.94x to 1.07x the local median at every boundary** — the camera
+crosses each beat line at exactly the speed it was already travelling. **Lens is
+0.0000 to 0.0250 mm**, which is nothing. The two rotation ratios over 2x are
+2.459 deg and 5.555 deg in absolute terms, against a film maximum of 12.957 deg;
+they are the aim turning into the next beat, not a jump.
+
+**No seam at any boundary.** This is the path, not the pixels; the dense blocks
+queued for this pass cover all five boundaries so the pixels can confirm it.
+
+**And the sharper result — the film has no camera-path kinks at all.** Ranking
+every frame by step size, the three worst events each turn out to be a *run* of
+near-identical steps rather than an isolated one:
+
+```
+POSITION  f1205..f1213   4.2158, 4.2309, 4.2418, 4.2469, 4.2458, 4.2385, 4.2250, 4.2053 m
+          -> 101.9 m/s sustained. `worst_position_jump_m = 4.2469 @ f1209` is the
+             peak of a smooth run, not a discontinuity. Ratio to its neighbour: 1.000
+
+ROTATION  f2632..f2640  11.502, 12.957, 12.417, 11.999, 11.918, 11.812, 11.512, 11.274 deg
+          -> a sustained fast pan. `worst_rotation_step_deg = 12.957 @ f2634` likewise
+
+LENS      f2250..f2256   2.666, 3.031, 3.178, 3.106, 2.815, 2.301 mm  (64.60 -> 47.50)
+          -> a sustained fast zoom, 26 % of focal length over 6 frames
+```
+
+In all three the worst frame is within 5 % of its own neighbours. **The film's
+"worst" camera moments are places where it moves fast, not places where it
+breaks.** That is the opposite of what a kink looks like and it is a genuine pass.
+
+---
+
+## R2-424 — f2631-f2656: 1.08 s of the flying lap carries over 200 px of 4K motion smear, peaking at 424 px
+
+The same f2634 pan, converted into the unit that decides whether a picture reads.
+A 180-degree shutter smears a static point by **half** its per-frame image
+displacement, so pan in frame-widths x resolution / 2 is the smear in pixels.
+
+```
+f2626  0.0516 w/f    99 px at 4K    33 px at 720p
+f2630  0.0970 w/f   186 px          62 px
+f2632  0.1435 w/f   275 px          92 px
+f2634  0.2207 w/f   424 px         141 px      <- the film's worst
+f2638  0.2012 w/f   386 px         129 px
+f2644  0.1750 w/f   336 px         112 px
+f2648  0.1849 w/f   355 px         118 px
+```
+
+The lens is a constant 32.0 mm throughout, so this is pure camera rotation.
+
+**Contiguous runs over 200 px of 4K smear, whole film:**
+
+```
+f2631-f2656   26 frames   1.08 s   peak 424 px   [5_lap]
+f477-f498     22 frames   0.92 s   peak 315 px   [1_assembly]
+f79-f89       11 frames   0.46 s   peak 207 px   [1_assembly]
+f2266-f2276   11 frames   0.46 s   peak 310 px   [5_lap]
+f1285-f1288    4 frames   0.17 s   peak 206 px   [5_lap]
+f1059-f1061    3 frames   0.12 s   peak 206 px   [4_transit]
+```
+
+**424 px is 11 % of the frame width at 4K.** For 26 consecutive frames the picture
+is smeared by more than a twentieth of its own width. `f477-f498` is the same
+event in beat 1 and is the pixel-space form of R2-321's f460/f500 findings,
+arrived at independently from the path.
+
+**Against the film's own declared limit.** `weave_spec.pan_limit_widths_per_frame`
+is 0.12. Frames over it:
+
+```
+1_assembly   18 of 791  (2.3 %)   max 0.1640
+5_lap        34 of 1524 (2.2 %)   max 0.2207     <- 1.84x the limit
+2,3,4,6                0          max 0.1072
+```
+
+**Two honest qualifications.** First, my figure is the **total** inter-frame
+rotation (yaw, pitch and roll together) divided by the horizontal field of view;
+R2-321 quotes the sheet reporting the tour peaking at 0.0939, which is a smaller
+number and is very likely horizontal pan alone. These are different quantities and
+mine is the larger by construction — it is the right one for smear, which does not
+care which axis moved. Second, `weave_spec` is beat 1's spec; whether its limit was
+ever intended to bind beat 5 is not established here. **Beat 1's own 18 violations
+are unambiguously in scope.**
+
+**What is NOT decidable at 720p:** whether 424 px of smear at 4K destroys the shot
+or reads as speed. At 720p the same event is 141 px, and the two do not look alike.
+This one needs a rung-3 or 4 look at f2631-f2656 specifically.
+
+---
+
+## R2-425 — the film opens 84 degrees nose-down, and one second in there is no subject in the frame
+
+**Pixels, from this pass**, frames 1, 7, 13, 19, 25, 31, 37, 43, 49 — the first
+1.8 seconds, which nobody had seen in motion.
+
+```
+f1-f7    the monocoque cluster: overflowing the frame but READABLE
+f13      already unrecognisable in outline; floor signage still legible
+f19      a dark smear
+f25-f43  NO IDENTIFIABLE SUBJECT. A large translucent blue wedge fills the frame
+         vertically, two small out-of-focus part clusters sit at the edges, the
+         floor signage is cut to "AN ...EELBASE"
+```
+
+f25 is at **t = 1.04 s**.
+
+**The cause is the view angle, and it is measurable.** The camera's elevation:
+
+```
+beat 1 median  -42.39 deg      min -84.34 deg      max -5.28 deg
+first 60 frames, median  -80.86 deg
+frames steeper than 80 deg DOWN   120  (5.00 s, 15.2 % of beat 1)
+frames steeper than 70 deg DOWN   187  (7.79 s, 23.6 % of beat 1)
+```
+
+**The film's first frame looks 84.15 degrees down** — 5.85 degrees off vertical —
+from 5.66 m above a car at floor level. Nearly a quarter of beat 1 is shot
+steeper than 70 degrees down. Every other beat is essentially level (beat 2
+median -3.3 deg, beat 5 -7.5 deg, beat 6 -14.1 deg); **192 of the film's 195
+near-nadir frames are in beat 1.**
+
+**This is not the same defect as R2-321's motion blur, and the distinction
+matters for the fix.** R2-321 measured 42.3 px of median camera smear and
+concluded the middle third does not read. f25 is not primarily smeared — it is
+*framed* so close and so steeply that a single part fills the frame as an abstract
+shape. A shutter change would not fix f25; only distance or angle would.
+
+**And the structure it reveals is a rhythm.** The presentations sit at f1 and f43
+(1.76 s apart, fifteen of them). f25 is the **travel between two stations**, not a
+station. So beat 1 alternates readable presentation with unreadable transit
+roughly every 0.9 s for 24.6 s. R2-419 shows the camera does not slow at the
+stations, so nothing marks the difference except what is in shot.
+
+**Limits.** Nine frames of 792, at stride 6, at 720p. The dense block f400-f519 is
+queued and covers the worst-smeared part of the tour; f745-f864 covers the
+close-out that a review called the best material in the film. Both are needed
+before this becomes a verdict on the whole beat rather than on its opening second.
+
+---
+
+## R2-426 — a camera ROLL measurement is undefined when the camera looks down, and beat 1's camera looks down
+
+Recorded because it produced a confident, completely false result and the shape is
+general.
+
+Measuring roll as "the angle of world-up projected into the image plane" is
+standard and correct — **except that the projection's length is cos(elevation)**,
+so it collapses to zero as the camera approaches vertical. My first run reported:
+
+```
+beat 1  max |roll| 179.40 deg at f9      max step 358.650 deg/frame at f10
+beat 5  max step 64.117 deg/frame at f2637
+```
+
+**Both are artefacts.** 358.65 deg/frame is an angle wrapping through +/-180, and
+the beat-5 figure is refuted outright by an independent instrument: the continuity
+gate's `worst_rotation_step_deg` is **12.957** for the whole film, and a total
+rotation of 12.957 deg cannot contain 64 deg of roll.
+
+The condition number is `cos(elevation)`, and it should be reported beside every
+roll figure:
+
+```
+beat 1   min condition 0.0986  (elevation -84.3 deg)   134 frames below 0.2
+beat 5   min condition 0.1673  (elevation -80.4 deg)     2 frames below 0.2
+beats 2,3,4,6  min condition 0.7631 or better           0 frames below 0.2
+```
+
+**134 of beat 1's 792 frames cannot carry a roll measurement at all.** The
+elevation figures in R2-425 are used instead: elevation is a direct dot product
+against world-up and has no degeneracy anywhere.
+
+**The general form, which this project has met before under other names:** an
+angle recovered from a projection is only as good as the projection's length.
+Report the length. A derived angle with no stated condition is the trigonometric
+version of a count presented as a measurement.
+
+
+## STATUS OF THE PASS — read this before quoting anything above
+
+**19 frames of 2,978 have been delivered as pixels at the time of writing.** The
+render is running and resumes; `rq anim --name r1full` re-submits only what is
+missing.
+
+**Which findings rest on pixels and which on the authored path:**
+
+| entry | evidence |
+|---|---|
+| R2-416 rung-1 cost is flat | **pixels** — 5 frames' render times + 50 frames of `r2b56_720` |
+| R2-417 `.md` vs `.json` closing lens | source files only; no render needed |
+| R2-418 the instrument | **pixels** — 5 synthetic controls, 240 frames each |
+| R2-419 no station pulse | authored path + a 20,000-draw null |
+| R2-420 hot-spot predictions | authored path, two corroborated by `film14_continuity.json` |
+| R2-421 beat 5 clean over 24 frames | **pixels**, but from `film6.blend` |
+| R2-422 shot scale / the 8 s speck | path + telemetry + time map |
+| R2-423 no seam at any boundary | **authored path only — the pixels have not confirmed it** |
+| R2-424 the f2634 smear | authored path; the 720p pixels are not yet rendered |
+| R2-425 the opening does not read | **pixels** — f1..f67 at stride 6 |
+| R2-426 roll is undefined here | method |
+
+**R2-423 is the one to be most careful with.** "No seam at any beat boundary" is
+currently a statement about the camera curve, not about the picture. A seam could
+still arrive from something the path does not describe — a light that switches, a
+sim that starts, an LOD that swaps. The four dense blocks covering
+f792/793, f864/865, f1056/1057, f1190/1191 and f2714/2715 are queued precisely to
+close that.
+
+### What is queued, and why these ranges
+
+A full uniform 2,978-frame pass costs **$22.7 of the $25.57 left under the
+broker's $45 cap**, with four other agents live on the same budget. It was
+retargeted rather than run flat, for two reasons: the budget is shared, and six
+source fixes (apron, gantry sign, deck slabs, placed items, crowd, roof) are
+queued for the next world rebuild, so a uniform pass buys surface quality that is
+about to be replaced. **Temporal defects will not change**, so the frames were
+spent where they live.
+
+```
+stride-6 across the whole film   497 frames   the complete 124 s at 4 fps, for PACING
+f400-f519    beat 1's worst-smeared tour frames (R2-321's f434, f460, f500)
+f745-f864    beat 1 close-out + the f792/793 seam + all of beat 2 + f864/865
+f865-f984    the breach: ramp ease-in f865-871, exposure ramp f901-916
+f1041-f1160  ramp ease-out f1042-1056 + the f1056/1057 seam + transit
+f1161-f1280  the f1190/1191 seam + f1209, the largest position step
+f1900-f2019  mid-lap; OVERLAPS r2b56_720's f1900-1923 as a cross-build control
+f2575-f2694  f2634, the film's fastest pan and largest rotation step
+f2695-f2814  the f2714/2715 seam
+f2859-f2978  the closing hold, the 85 % push, the last frame
+```
+
+1,577 frames, ~29 h, ~$12 — leaving ~$13.5 of the cap for the other four agents.
+Every beat boundary, every predicted hot spot, and one deliberate cross-build
+control are covered.
+
+### The stride-6 pass is for pacing and CANNOT substitute for the dense blocks
+
+Six frames apart is 0.25 s. It will show shot scale, beat rhythm and whether a
+beat outstays its welcome. It **cannot** show flicker, a one-frame pop, judder, a
+firefly, or a batch seam — all of which need adjacent frames. `seq_temporal.py`
+now refuses to mix the two: `--spacing` must be declared, pairs that are not
+exactly that far apart are dropped, and the dropped count is printed, because the
+two spacings share one directory and differencing across them would report a
+6-frame gap as motion energy.
+
+---
+
+## R2-427 — the temporal instrument's calibration is now reproducible, and the selftest is shown FAILING
+
+R2-418 described a calibration whose controls I then deleted, which would have
+left the claim unreproducible. `tools/seq_temporal.py --selftest` rebuilds all
+five controls from a fixed seed and asserts them:
+
+```
+  PASS  clean     must flag nothing, flagged 0
+  PASS  firefly   must flag exactly f150,151,152; flagged 3
+  PASS  held      must report the duplicate frame
+  PASS  flick2    outliers must miss it (got 0) and a period-2 line must appear
+  PASS  period24  must flag something, flagged 37
+SELFTEST PASS
+```
+
+**A passing selftest proves nothing until it has been seen failing.** Re-injecting
+the exact original bug — dropping the spatial-isolation term from the firefly
+test, and nothing else:
+
+```
+  FAIL  clean     must flag nothing, flagged 238
+  FAIL  firefly   must flag exactly f150,151,152; flagged 238
+  PASS  held      must report the duplicate frame
+  FAIL  flick2    outliers must miss it (got 238) and a period-2 line must appear
+  PASS  period24  must flag something, flagged 238
+SELFTEST FAIL: clean, firefly, flick2                       exit 1
+```
+
+Three of five controls fail and the exit code is non-zero. **The suite discriminates.**
+
+**The `flick2` assertion is the load-bearing one** and it is two-sided on purpose:
+the outlier test must MISS it and the spectral test must CATCH it. If outliers
+ever start firing on `flick2`, the two instruments have stopped being independent
+and the spectral test has lost its reason to exist.
+
+**One weak assertion, stated rather than hidden.** `period24` only asserts
+`flagged > 0`, so it passed even with the firefly bug injected — 238 frames
+flagged for the wrong reason still satisfies "something was flagged". It is the
+least discriminating row in the table and should not be cited as evidence that
+the periodic-defect path works; `flick2` is the row that carries that.
