@@ -192,6 +192,22 @@ of 0.7757 m, and the segments that leave are `S00` (z 0.000 – 0.775) and `S01`
 > mullion that is still there; the transom that renders is bolted to a piece of
 > mullion that is four metres away on the apron.**
 
+**And it is the constraint, not just the overlap.** `build_breach_sim._seg_at`
+bolts each transom end to the mullion segment whose centre is nearest, and the
+eight centres are at z 0.406, 1.182, 1.957, 2.731, 3.507, 4.282, 5.057, 5.832:
+
+| transom | z | bolted to | that segment |
+|---|---|---|---|
+| **sim** transom 0 | 1.600 | **S02** | stays (0.145 m) |
+| **round 1** transom 0 | **1.350** | **S01** | **left, 4.742 m** |
+| sim / round 1 transom 1 | 3.100 / 2.850 | S03 | stays, both |
+| sim / round 1 transom 2 | 4.600 / 4.350 | S05 | stays, both |
+
+**The lowest transom — the one at 1.35 m, directly over where the car went
+through — is the only one the 250 mm changes, and it changes it from supported
+to unsupported.** Transoms 1 and 2 land on the same segments either way and are
+genuinely held; they only come down if mullion 5 does, which is R2-268.
+
 That is not a rounding difference, it is the difference between a supported
 member and an unsupported one, and it has never been simulated either way. The
 two geometries must be made to agree before the frame's behaviour means
