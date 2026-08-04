@@ -16997,3 +16997,91 @@ view, which is a taste call that a merge is choosing, not inheriting.
 **Out of scope and left alone:** the near-field architecture at f2180
 (grandstand) and f2200 (two bridge pylons). It is a separate defect, it belongs
 to another agent, and the retune's shorter lens improves it less than B's did.
+
+## R2-438 — THERE IS NO EXPOSURE RAMP. `INTERIOR_STOPS = 0.0`, and two of my own entries said otherwise
+
+R2-420 and R2-428 both describe `exposure_ramp_frames = [901, 916]` as
+**"~1 stop over 16 frames"**. That is wrong and both are corrected here.
+
+`anim/build_camera_rig.py`:175 reads
+
+```python
+INTERIOR_STOPS = FX.INTERIOR_STOPS if FX else 0.85
+```
+
+and I took the **fallback**, 0.85, for the value. The real one, in
+`world/film_exposure.py`:238, is:
+
+```python
+INTERIOR_STOPS = 0.0
+```
+
+so `interior = daylight - 0.0 = daylight`, and the two keyframes at f901 and
+f916 hold **identical values**. The ramp is a no-op. `film_exposure.py` states
+the measured consequence directly:
+
+> "at 0.0 the interior sits at mean 0.32-0.48 with **0.0000 % pure black on
+>  every frame and the exposure never moves across all 2,978 cut-free frames**"
+
+**And it is 0.0 for the one-shot law, which makes it the opposite of an
+oversight.** From the same docstring:
+
+> "This is ONE UNBROKEN TAKE WITH ZERO CUTS. An exposure ramp across the breach
+>  is a camera visibly adjusting, with no cut to hide it behind — precisely what
+>  the brief forbids."
+
+0.85 also pointed the wrong way: it darkened the interior, which was the end
+already crushing to pure black over 1.30 % of the frame. The real fix was
+levelling the showroom practicals by `-FILM_EXPOSURE`.
+
+**Reading a constant's fallback for its value is a small mistake with a large
+blast radius**, because the fallback is chosen to be *plausible*. Grep the
+constant, not the expression that consumes it.
+
+---
+
+## R2-439 — PRE-REGISTERED: the f901 test, written before f865-f984 exists
+
+R2-428 left a standing test: if f901 still flags once its neighbourhood is
+contiguous, that is a real finding. Four flag transitions in this pass have now
+been explained by delivery order, and **an explanation that has worked four times
+is exactly the one that gets applied a fifth time without checking.** So the
+decision rules are committed here, before the frames exist, in the same form as
+R2-383's nine predictions.
+
+**What is known now:** f865-f984 is queued and unrendered; only f900 and f901
+exist between f890 and f930. Exposure is authored CONSTANT across the whole film
+(R2-438). The camera crosses the glass plane at f904; `f0 = cross_f - 3 = 901`.
+
+**P1 — the exposure is flat.** Across f890-f930 the view-transform exposure does
+not move, so any brightness change is CONTENT: the camera emerging through
+glass into daylight. **I predict no whole-frame multiplicative step.**
+
+**P2 — the control that makes P1 falsifiable.** If the delivered frames DO show a
+coherent whole-frame brightening of order one stop across f901-f916, then
+`INTERIOR_STOPS = 0.0` did not reach this blend, and **that is itself the
+defect** — an iris move on screen at the breach, in a cut-free take. This is the
+outcome that would make the pass worthwhile even if everything else is clean, and
+it is the reason the range is worth rendering densely.
+
+**P3 — what a persistent flag would and would not mean.** If f901 still reads as
+an outlier against a full contiguous beat-3 neighbourhood, it is a real finding —
+but it **cannot** be "the exposure ramp stepped", because there is no ramp. It
+would be a content, geometry or lighting discontinuity at the breach, and the
+diagnosis would start over.
+
+**P4 — the smoothness test, stated as a number in advance.** On the contiguous
+f890-f930 series, the second difference of `lum_mean` must carry no sample beyond
+**6 MADs** of its own median. A step masquerading as a ramp is a spike there. I
+predict no such sample.
+
+**P5 — the discriminator between exposure and content, if P1 fails.** An exposure
+change is uniform and multiplicative: every pixel scales by the same factor, so
+the ratio between a dark region and a bright region is unchanged. A content
+change is not. Comparing the ratio `p10/p90` frame to frame separates them
+without needing to know what is in shot.
+
+**THE PROCEDURE, and it is the point of writing this down:** when f865-f984
+lands, run these five checks and report the result **before** consulting the
+fill-order explanation. The prior explanation is not evidence about a frame it
+has never been tested against.
