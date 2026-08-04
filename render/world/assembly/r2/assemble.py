@@ -121,3 +121,21 @@ report["blend_mb"] = round(os.path.getsize(OUT) / 1048576.0, 1)
 with open(OUT.replace(".blend", "_build.json"), "w") as f:
     json.dump(report, f, indent=1, default=str)
 print("\n[ASM] " + json.dumps(report, indent=1, default=str))
+
+# THE VERDICT LINE.  The loop above catches every module exception and carries
+# on, deliberately -- one broken module should still leave a probeable blend.
+# But Blender 5.2 exits 0 on an uncaught script exception anyway, so `$?` was
+# never the signal, and until now NOTHING printed a machine-readable verdict:
+# a run in which `items` raised and built nothing looked exactly like a good one
+# unless a human read 4,000 lines of log.  Judge this build on this line only.
+_failed = sorted(k for k, v in report["mods"].items() if not v["ok"])
+_empty = sorted(k for k, v in report["mods"].items()
+                if v["ok"] and not v["summary"])
+if _failed:
+    print(">> ASM MODULES FAILED: %s" % ", ".join(_failed))
+    for k in _failed:
+        print(">>   %s: %s" % (k, report["mods"][k]["err"]))
+if _empty:
+    print(">> ASM MODULES RETURNED AN EMPTY SUMMARY: %s" % ", ".join(_empty))
+print(">> STAGE RESULT: %s"
+      % ("ASSEMBLE_FAIL" if _failed else "ASSEMBLE_OK"))

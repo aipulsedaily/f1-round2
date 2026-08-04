@@ -119,6 +119,52 @@ def refuse_unless_world_is_declared(src, override):
     return ship
 
 
+def report_world_staleness(src):
+    """Say whether the assembly is older than the modules that generate it.
+
+    The check above asks "is this the RIGHT assembly". It cannot ask "is this
+    assembly still what its own source would produce", and those are different
+    questions with the same failure mode -- a value nobody re-derived.
+
+    MEASURED while writing this: `assembly7.blend` was built 2026-08-03 04:45
+    and `world/build_dressing.py` was modified at 18:36 the same day (R2-072,
+    by-name socket setters dropping writes silently). So the declared ship was
+    already stale against its own generator within the day.
+
+    This WARNS and does not refuse. A refusal here would block every film build
+    for as long as any world module is being worked on, which on this project is
+    always, and a guard that must be routinely overridden teaches people to
+    override guards. The staleness is printed so it lands in the build log and
+    in whatever reads it -- and, unlike the levelling, a stale world is visible
+    to `tools/socket_index_audit.py --blend` on the finished film.
+    """
+    try:
+        w_mtime = os.path.getmtime(src)
+    except OSError:
+        return []
+    wdir = os.path.join(R2, "world")
+    newer = []
+    for fn in sorted(os.listdir(wdir)):
+        if not (fn.startswith("build_") and fn.endswith(".py")):
+            continue
+        p = os.path.join(wdir, fn)
+        m = os.path.getmtime(p)
+        if m > w_mtime:
+            newer.append((fn, m - w_mtime))
+    if newer:
+        print(">> WORLD STALENESS: %s predates %d of its own generator "
+              "module(s). A rebuilt assembly would not be this file."
+              % (os.path.basename(src), len(newer)))
+        for fn, dt in newer:
+            print("   world/%-28s newer by %.1f h" % (fn, dt / 3600.0))
+        print("   NOT a refusal — see report_world_staleness.__doc__. Check the "
+              "built film with tools/socket_index_audit.py --blend.")
+    else:
+        print(">> WORLD STALENESS: none — %s is newer than every world/build_*.py"
+              % os.path.basename(src))
+    return newer
+
+
 def refuse_unless_levelled(scene):
     """The last thing before ANY save. Never inside a branch.
 
@@ -170,6 +216,7 @@ def parse_args():
 
 
 def main():
+    t_start = time.time()          # R2-502: the freshness datum for the token
     a = parse_args()
     src = bpy.data.filepath
     if os.path.basename(src) == "assembly5.blend":
@@ -181,6 +228,7 @@ def main():
     # 200 km/h. The check below is the softer one: the right world, or a stated
     # reason for a different one.
     refuse_unless_world_is_declared(src, a.world_override)
+    report_world_staleness(src)
 
     scene = bpy.context.scene
     sheet = json.load(open(a.sheet))
@@ -505,6 +553,22 @@ def main():
             refuse_unless_levelled(scene)   # never inside a branch -- see the docstring
             bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(a.out),
                                         compress=False)
+        else:
+            # R2-502.  THE PATH WITH NO SAVE ON IT.  `if world_before is None`
+            # and `elif world_after != world_before` do not cover the case where
+            # the incoming scene HAD a world and the rig left it alone -- and on
+            # that path this function fell straight through to
+            # `>> STAGE RESULT: FILM_SCENE_BUILT` having written no file at all.
+            # Every assembly*.blend carries no sky, so `world_before` is None and
+            # the first branch has always fired; the path has never been taken
+            # and that is exactly why nobody found it.  The project's own rule is
+            # to judge a stage ONLY on its STAGE RESULT line, which made an
+            # unconditional success token over a conditional save a live trap.
+            refuse_unless_levelled(scene)   # never inside a branch -- see the docstring
+            bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(a.out),
+                                        compress=False)
+            print(">> world %r survived the rig build unchanged; saved on the "
+                  "third path" % world_before)
         if dropped:
             raise SystemExit(
                 "REFUSING: save_clean dropped %d image datablock(s) this world "
@@ -523,6 +587,23 @@ def main():
     added = len(set(o.name for o in bpy.data.objects) - before_objs)
     print(">> film scene: %s -> %s  (+%d objects, %d total)"
           % (os.path.basename(src), a.out, added, len(bpy.data.objects)))
+    # R2-502.  THE TOKEN MUST NOT OUTRUN THE FILE.  This line is the only thing
+    # anything downstream reads, so it may not be printed on the strength of
+    # having reached the end of the function -- it has to be printed on the
+    # strength of a blend existing on disk that this run put there.  `t_start`
+    # is taken at the top of main(); a file left over from a previous build
+    # would otherwise satisfy an existence check.
+    outp = os.path.abspath(a.out)
+    if not os.path.exists(outp):
+        print(">> STAGE RESULT: FILM_SCENE_NOT_SAVED -- reached the end of the "
+              "build with no file at %s" % outp)
+        return 1
+    if os.path.getmtime(outp) < t_start:
+        print(">> STAGE RESULT: FILM_SCENE_STALE -- %s predates this run "
+              "(mtime %.0f < start %.0f); it is a previous build's output"
+              % (outp, os.path.getmtime(outp), t_start))
+        return 1
+    print(">> saved %s  %.1f MB" % (outp, os.path.getsize(outp) / 1048576.0))
     print(">> STAGE RESULT: FILM_SCENE_BUILT")
 
 

@@ -1,12 +1,36 @@
 # WHICH ASSEMBLY IS THE SHIPPING WORLD
 
-**`assembly9.blend` — built 2026-08-03 23:09, `world_contract` 1.2.1. PROMOTED
-2026-08-03 under R2-148; `assembly8.blend` is its immediate predecessor and
-differs from it in ONE object and nothing else.**
+**`assembly10.blend` — built 2026-08-04 15:46, `world_contract` 1.2.1. PROMOTED
+2026-08-04 under R2-508 as THE BATCHED REBUILD; `assembly9.blend` is its
+immediate predecessor.**
 
-`render/film14.blend`, the film scene the master renders from, is built on it.
-`film13` is the same film on `assembly8` and is kept as the control the
-pit-exit A/B is measured against.
+`render/film16.blend`, the film scene built on it, is the first film in this
+project that has a driver in the car and the first with anything from
+`world/items/` in it at all.
+
+Unlike every promotion before it, this one does NOT move one object. It is the
+batched rebuild — six landed source changes plus four registry rows going
+`HOLD -> PLACE` — so the expectation is "many", and the arms that matter are
+that the items arrived and that the superseded class features left:
+
+| | assembly9 | assembly10 |
+|---|---|---|
+| objects | 28,781 | **30,488** (+1,707) |
+| meshes | 1,493 | **3,200** (+1,707 — every item object a DISTINCT mesh) |
+| materials | 137 | **180** |
+| `barriers.fence_posts` | 676 | **0** — superseded by `catch_fence_post` |
+| `architecture.pit_wall_stands` | 5 | **1** + 4 superseded by `timing_stand` |
+
+The fifth pit-wall stand is KEPT and that is correct, not a miss: R2-334's
+per-site switch keeps every station no item reaches, and that stand is at
+world x 367 with no hero unit within 64.6 m.
+
+**`film9` and `film10` remain deliberate controls and MUST NOT be deleted.**
+`film10`'s standing 27-finding socket-audit FAIL is what makes every other
+world's PASS non-vacuous.
+
+**`render/film14_breach_r6b.blend` IS NOT SHIPPABLE** (MUL05_S02 travels
+89.79 m) and is, at the time of writing, still queued on the farm.
 
 ## THIS IS THE DECLARATION, AND IT IS THE ONLY ONE
 

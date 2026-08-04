@@ -874,22 +874,37 @@ def _allocate(costs, span_s):
 #
 # THE STATION, solved rather than placed.  The field is 11.12 x 4.42 x 3.84 m
 # centred at (-0.841, 0, 2.194).  Containing 11.12 m at 0.85 fill needs
-# `d >= 13.08 * lens / 36`; the lens is 24 mm, which is inside the film's own
+# `d >= 13.08 * lens / 36`; the lens is 18 mm, which is inside the film's own
 # range (beat 3 runs 21-32 mm, beat 6 reaches 18.8) and not a new look.  At
-# d = 8.70 m and 12 deg of depression — the film's house angle, R2-454 — the lens
-# sits at z 4.00, under the spot rigs at 5.590, and at y = -8.51, outside the
-# rope ring at radius 6.96 and 2.7 m inside the wall at |y| 11.25.  The far wall
-# is then ~9 m behind the subject, which is the background throw the brief's rim
-# lighting and DOF both need and which the nadir stations did not have.
+# d = 9.00 m and 10.00 deg of depression — the film's house angle, R2-454 — the
+# lens sits at z 3.757, 1.83 m under the spot rigs at 5.590, and at y = -8.863,
+# radius 8.90 m, outside the rope ring at 6.96 and 2.4 m inside the wall at
+# |y| 11.25.  The far wall is then ~9 m behind the subject, which is the
+# background throw the brief's rim lighting and DOF both need and which the
+# nadir stations did not have.
+#
+# R2-501.  THE FIVE NUMBERS IN THE PARAGRAPH ABOVE WERE WRONG UNTIL THE
+# PROMOTION READ THEM.  It said 24 mm, d = 8.70 m, 12 deg, z 4.00, y -8.51 —
+# an EARLIER solve — while `BEAT1_ESTABLISH` below said 18 mm, 9.000 m,
+# 9.9985 deg, z 3.7566, y -8.8633.  The constant was right and shipped; the
+# prose beside it described a station that does not exist.  Nothing read the
+# prose, so nothing caught it, and every summary of this work quoted the prose.
+# Derive these from `BEAT1_ESTABLISH` if you change it — see the assertion under
+# it, which now makes the disagreement a build failure rather than a comment.
 def _establish_on():
-    """R2-464 is OFF by default, for the same reason R2-451's clamp is.
+    """R2-464 IS ON BY DEFAULT AS OF R2-501. The candidate is promoted.
 
-    It inserts a camera key that did not exist and shifts every beat-1
-    presentation time, so a default-on version would change the film for any
-    agent who runs this file for an unrelated reason. `B1_ESTABLISH_LEAD_S=2.0`
-    turns it on; `0` is the shipped behaviour, exactly.
+    It was held off by default while a ladder pass was in flight against the
+    camera it replaces (R2-463): the flag existed so a candidate could be
+    measured end to end without changing the film under five other agents. That
+    pass has completed and the hold is lifted, so the DEFAULT is now the fixed
+    opening and `B1_ESTABLISH=0` reproduces the shipped nadir behaviour exactly.
+
+    The flag is deliberately kept rather than deleted. `B1_ESTABLISH=0` is the
+    only way to rebuild the pre-promotion sheet, and this project keeps the
+    arm it must fail so the arm it must pass is not a vacuous pass.
     """
-    return os.environ.get("B1_ESTABLISH", "").strip() not in ("", "0", "off")
+    return os.environ.get("B1_ESTABLISH", "1").strip() not in ("0", "off", "")
 
 
 BEAT1_ESTABLISH_LEAD_S = 2.0
@@ -899,6 +914,33 @@ BEAT1_ESTABLISH = dict(
     note="ESTABLISHING. The whole exploded field in the darkened showroom, "
          "with the empty turntable under it — the brief's own first image. "
          "R2-429/R2-464.")
+
+
+def establish_station_geometry(est=BEAT1_ESTABLISH):
+    """-> (standoff_m, depression_deg, lens_z, radius_m). MEASURED, not quoted.
+
+    R2-501 exists because the paragraph above `_establish_on` quoted five
+    numbers for this station and every one of them was from a superseded solve.
+    A comment cannot be wrong if the number is computed, so the three claims the
+    promotion turns on — 18 mm, 9.0 m, 10.00 deg — are asserted here against the
+    constant itself and this module refuses to load if they drift apart.
+    """
+    w, la = est["world"], est["look_at"]
+    d = [w[i] - la[i] for i in range(3)]
+    horiz = math.hypot(d[0], d[1])
+    return (math.sqrt(horiz * horiz + d[2] * d[2]),
+            math.degrees(math.atan2(d[2], horiz)), w[2], math.hypot(w[0], w[1]))
+
+
+_ES_D, _ES_DEP, _ES_Z, _ES_R = establish_station_geometry()
+assert abs(_ES_D - 9.0) < 5e-4, _ES_D
+assert abs(_ES_DEP - 10.0) < 5e-3, _ES_DEP          # 9.99850, "exactly 10.00"
+assert abs(BEAT1_ESTABLISH["lens_mm"] - 18.0) < 1e-9
+assert abs(BEAT1_ESTABLISH["focus_distance_m"] - _ES_D) < 5e-4, (
+    "focus_distance_m must be the solved standoff, not a rounded copy of it")
+assert _ES_Z <= 5.29, "R2-454: the lens must stay under the spot rig plane"
+assert _ES_Z >= 1.20, "R2-454: the lens must clear the rope barrier"
+assert _ES_R > 6.96, "the station is inside the rope ring"
 
 
 def build_beat1(geo, plan, dur, normals=None, deadlines=None):
