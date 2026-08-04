@@ -556,13 +556,8 @@ every unlinked socket value against an untouched copy), and it must run BEFORE
 `tools/imperfections.py`, which chains onto the coat roughness and the coat
 normal this module leaves.
 
-**`tools/imperfections.py` has still never been applied to the car either.**
-R2-015 closed on the audit blend and its own note says so: "it has NOT yet been
-injected into `world/beat1_anim.blend` or into the unified world". Measured here
-— `LiveryPaint` in `render/film14_breach_r6.blend` contains **zero
-`ShaderNodeGroup` nodes**, so `R2_Imperfection` is not in the shipped car. The
-clearcoat orange-peel micro-relief that R2-015 spent six tuning passes on is not
-in a single rendered frame of the ladder.
+**`tools/imperfections.py` had also never been applied to the car.** That is now
+done — see R2-531 below.
 
 **Still open on the hero subject, and NOT in this block's scope:**
 
@@ -576,3 +571,291 @@ in a single rendered frame of the ladder.
   twill diagonal; it does not carry the individual filaments, which would show at
   ranges closer than the 0.62 m macro station.
 
+
+---
+
+## R2-531 — `tools/imperfections.py` is on the car. Six tuning passes had never reached a pixel
+
+R2-015 closed in July on the *audit* blend, and its own handover note said so:
+"it has **not** yet been injected into `world/beat1_anim.blend` or into the
+unified world; whoever owns those should re-run it". Nobody did. Measured on the
+shipped scene: `LiveryPaint` in `render/film14_breach_r6.blend` carries **zero
+`ShaderNodeGroup` nodes**, so `R2_Imperfection` — one shared geometry-driven node
+group, six calibration passes on the 5090, thirteen material recipes — was in no
+rendered frame of the ladder at all.
+
+Both layers now land on both car sources, in the order the stack requires:
+
+```
+world/car_paint.py            THEN     tools/imperfections.py
+```
+
+### Verified by CENSUS ON THE SAVED FILE, not by the call returning
+
+The whole reason this was invisible for a month is that the build step printed
+success. `work/r2521/census.py` reads the artefact back off disk through
+`libraries.load` and counts nodes; `work/r2521/trace.py` walks the graph
+backwards from every Principled socket. Both car sources:
+
+```
+world/car_anim.blend  and  world/car_anim_driver.blend
+  material         nodes    R2CP   R2IMP  groups  cp_ver  imp
+  LiveryPaint        239      94      25       1     4    yes   R2_Imperfection
+  CarbonFibre         68       0      25       1     -    yes   R2_Imperfection
+  ...13 materials, every one carrying the group and an r2imp record
+```
+
+### The check that actually mattered
+
+`imperfections.py` CHAINS onto whatever it finds — its `bump()` re-links the
+socket's existing source into the new Bump's `Normal` input. That is the right
+design, and **"it printed `-> Coat Normal`" does not prove it happened.** A chain
+that dropped its input would print the identical line and would silently undo the
+one thing R2-524 is about — round 1's orange peel being moved onto the coat.
+So the graph is walked:
+
+```
+Coat Normal        R2IMP_003 <- R2IMP_002 <- R2IMP_001 <- R2IMP_000 ... reaches Bump.001   YES
+Normal             R2CP_092 flake facets <- R2CP_073 flake cells <- ...  reaches R2CP_     YES
+Base Color         R2IMP_023 <- R2IMP_022 <- R2IMP_000 <- R2CP_084 ...   reaches R2CP_     YES
+Roughness          R2IMP_021 <- R2IMP_020 <- R2IMP_019 <- R2CP_090 ...   reaches R2CP_     YES
+Metallic           R2CP_085 metallic -> paint                            reaches R2CP_     YES
+Emission Strength  R2CP_094 emission ladder                              reaches R2CP_     YES
+```
+
+Both layers compose; neither eats the other.
+
+### A note on the calibration, because one input to it moved
+
+R2-015 tuned `coat_micro_rel = 0.20` as a PROPORTIONAL modulation of Coat
+Roughness, deliberately, because an absolute +-0.006 was +-27 % on
+`LiveryPaint`'s 0.022 and rendered as crazed lacquer. R2-524 raised that base to
+0.055, so the same proportion is now +-0.011 absolute — a wider swing on a coat
+that is already three times less mirror-like. Proportional is exactly the
+property that makes that safe, and it is why R2-015's choice was right. Nothing
+was re-tuned; the layer follows the coat it sits on.
+
+---
+
+## R2-532 — two silent failure modes closed in `world/car_paint.py`, both of the same shape
+
+Both are "the node reads a different thing than the value looks like it means",
+which is the shape of the two mistakes in R2-526 and R2-527 as well.
+
+**1. `ShaderNodeMix` has three sockets all called `Result`, and the check could
+not see the difference.** The snapshot recorded links by socket NAME, and the
+round-trip verification compared them by socket NAME:
+
+```
+identifier      name     type
+Result_Float    Result   NodeSocketFloat        <- outputs["Result"] returns THIS one
+Result_Vector   Result   NodeSocketVector
+Result_Color    Result   NodeSocketColor
+```
+
+Round 1's `LiveryPaint` feeds Base Color, Metallic, Roughness and Emission Color
+from four `ShaderNodeMix` nodes. A restore that reconnected a colour chain
+through the float output would have read back as `Result` and been called
+identical. The restore is now by **identifier**, with a name fallback so a blend
+carrying an older snapshot can still be upgraded in place, and
+`work/r2521/strict_cmp.py` compares identifiers, socket enabled-state, every
+unlinked default and the material's custom properties.
+
+**Re-verified strictly, and it does pass** — the name lookup happened to resolve
+correctly. That is the point: it passed by luck and the test could not tell.
+
+**2. Stripping in the wrong order left a broken material that still renders.**
+`imperfections.py` records, in its own snapshot, the `R2CP_*` nodes it chained
+onto. Stripping `car_paint` first deletes those nodes and restores the
+Principled to round 1's chain, orphaning the imperfection nodes and leaving
+`r2imp` pointing at names that no longer exist — so its own `--strip` would then
+restore nothing, silently. `car_paint.py` now **refuses**:
+
+```
+REFUSING to strip LiveryPaint: it still carries tools/imperfections.py's layer
+('r2imp' record present). Strip that first: ... then re-run this.
+>> STAGE RESULT: R2521_CARPAINT_REFUSED
+```
+
+A refusal, not a warning, because the state it prevents is invisible: the
+material still renders, just without the layer everyone believes is in it. And
+`SystemExit` is caught **explicitly** in the entry point — it is a
+`BaseException`, so the first version of this guard printed its reason and
+emitted no `STAGE RESULT` at all, which is the same silence it exists to stop.
+Blender 5.2 exits 0 for a script that raised, so a caller reading `$?` would have
+seen a refusal as a clean run.
+
+### The unwind is gated, both layers, byte-exact
+
+```
+pristine -> car_paint apply -> imperfections apply
+         -> imperfections --strip -> car_paint --strip
+STRICT IDENTICAL: True     120 nodes, 164 links, 466 unlinked values, no props
+```
+
+Compared by socket identifier, not by name.
+
+---
+
+## R2-533 — timing, and what the ladder passes running now contain
+
+`render/film16_breach.blend` was built before any of this landed, so **the two
+13-hour ladder passes running now render an unpainted car with no imperfection
+layer.** That is fine and was agreed: those passes exist to find geometry pops,
+beat seams, continuity and one-shot violations, none of which are paint-dependent.
+
+**Nothing in this block rebuilt a film scene, and nothing touched
+`film16.blend` or `film16_breach.blend`.** The two car SOURCES carry both layers
+and the next rebuild picks them up.
+
+Backups, and one honest caveat about them:
+
+```
+work/r2521/car_anim_PRE_R2521.blend.bak            genuinely pristine
+work/r2521/car_anim_driver_POST_CARPAINT.blend.bak NOT pristine — taken after
+                                                   car_paint had been applied
+```
+
+The driver blend has no pristine copy on disk. It does not need one: the strip
+path is gated byte-exact in both directions, so
+`imperfections --strip` then `car_paint --strip` restores it exactly.
+
+---
+
+## R2-534 — I shipped the exact bug I had just written the warning about, and it took a render to find it
+
+R2-532 hardened `car_paint.py`'s snapshot to record links by socket IDENTIFIER,
+because `ShaderNodeMix` has three outputs all named `Result` and a name lookup
+returns `Result_Float`. The migration path for blends already carrying an
+older, name-based snapshot was written in the same edit:
+
+```python
+for pred in (lambda o: o.identifier == e["from_socket"],
+             lambda o: o.name == e.get("from_socket_name"),
+             lambda o: o.name == e["from_socket"]):      # <- this one
+```
+
+**That third line is the bug the first two lines exist to prevent.** It matches
+by name, unfiltered, and returns `Result_Float`. Re-applying the module to the
+two car sources therefore restored `Base Color` and `Emission Color` from the
+FLOAT output of an RGBA mix. A float broadcast to RGB is grey, so:
+
+```
+world/car_anim.blend        R2CP_078_basecoat lift.A  <- Mix.004 . Result_Float   WRONG
+render/r2521/r2521_after6   R2CP_078_basecoat lift.A  <- Mix.004 . Result_Color   right
+```
+
+**The panel rendered flat white,** measured albedo **0.347** — which is
+`DUST_RGB` (0.340, 0.325, 0.298) to two decimal places, and that coincidence sent
+the first hour of diagnosis at `imperfections.py`'s dust tint. It was not the
+dust:
+
+```
+driver masks, measured off a --debug Dust,Wear,Micro render, exposure undone:
+  Dust    p50 0.000   p90 0.120   max 1.543      max tint factor = 1.54 x 0.0448
+  Wear    p50 0.000   p90 0.004   max 0.992
+  Micro   p50 0.489   p90 1.017   max 1.576
+
+bisect at the sidepod macro, 400 px / 32 samples, one station:
+  car_paint only            mean RGB [164.7 169.5 175.7]   <- ALREADY WHITE
+  + imperfections @ x0.0    mean RGB [164.7 169.5 175.7]   max diff 3 LSB
+  + imperfections @ x1.0    mean RGB [164.9 169.7 175.8]   mean |d| 0.61
+```
+
+**The imperfection layer changed the picture by 0.61 mean LSB. `car_paint` alone
+was already producing the white.** Two lessons, and the second is the one worth
+keeping:
+
+1. *An ablation ladder finds the cause; a coincidence finds a suspect.* 0.347
+   against `DUST_RGB`'s 0.34 looked like proof and was not. The `--strength 0.0`
+   arm settled it in ninety seconds and should have been the first thing run.
+2. *`imperfections.py` shipped invisible for a month because its build step
+   printed success. This shipped for an hour because MINE did.* The census and
+   the trace both passed on the broken file — they check that the chain is
+   connected, and it was connected, to the wrong socket.
+
+### What is now checked, so it cannot happen silently again
+
+**`verify_wiring()` runs at the end of every apply and REFUSES.** Every link the
+module makes to a node it did not create must land on an **enabled** output — a
+disabled socket belongs to a different `data_type` of the same node — and the
+sockets handed to the Principled must carry the right kind of value:
+
+```
+WIRING CHECK FAILED on Shader Nodetree:
+  R2CP_078_basecoat lift.A reads Mix.004.Result_Float, which is DISABLED (VALUE)
+  Principled.Emission Color reads a DISABLED socket Mix.005.Result_Float
+  Principled.Emission Color is fed a VALUE from Mix.005.Result_Float, expected RGBA
+>> STAGE RESULT: R2521_CARPAINT_REFUSED
+```
+
+Run against the broken artefact, it names all three faults.
+
+**And `strip()` SELF-HEALS a blend that already carries the bad snapshot.**
+Restoring a link onto a disabled socket is never correct, so it is re-pointed at
+the enabled socket of the same name — which is the one that was there before:
+
+```
+[carpaint] HEALED 2 link(s) restored onto a disabled socket by a v4 snapshot:
+           Base Color: Mix.004.Result_Float -> Result_Color;
+           Emission Color: Mix.005.Result_Float -> Result_Color
+```
+
+### Both car sources were unwound to pristine and rebuilt
+
+Not patched in place — unwound, checked against an independent pristine copy,
+then re-applied:
+
+```
+world/car_anim.blend         imperfections --strip -> car_paint --strip
+world/car_anim_driver.blend  imperfections --strip -> car_paint --strip
+  both:  STRICT IDENTICAL to work/r2521/car_anim_PRE_R2521.blend.bak
+         120 nodes, 164 links, 466 unlinked values, no custom props
+  then:  car_paint v5 (+94 nodes)  ->  imperfections (13 materials)
+  wiring now:  R2CP_078 basecoat lift  <- Mix.004 . Result_COLOR
+               R2CP_085 metallic       <- Mix.002 . Result_FLOAT
+               R2CP_090 roughness      <- Mix.003 . Result_FLOAT
+```
+
+`car_anim_driver.blend` had no pristine backup of its own, which is why the
+strict comparison is made against `car_anim`'s — the `LiveryPaint` tree is the
+same datablock in both, and it comes back identical to it.
+
+Confirmed on pixels, sidepod macro, 960 px / 96 samples: the paint is navy again,
+the twill telegraphs, the flake grains, and against the same frame rendered
+before the imperfection layer existed the whole layer is worth **3.50 mean LSB**
+— felt, not seen, which is R2-015's own calibration rule.
+
+*Generalises to:* **a compatibility shim is a place to be more careful than the
+code it is shimming, not less.** The fallback was written to be forgiving and
+forgiveness is exactly what let it match the wrong socket.
+
+### The final stack, measured
+
+Same probe, same rig, same two stations, `LiveryPaint` the only thing that
+changed between the columns:
+
+```
+station         arm                diffuse   glossy   emission   albedo
+head-on         shipped             2.78 %   96.44 %    0.78 %   0.0121
+                + car_paint         7.85 %   91.50 %    0.65 %   0.0369
+                + imperfections     7.87 %   91.49 %    0.65 %   0.0372
+three-quarter   shipped             7.32 %   88.94 %    3.74 %   0.0121
+                + car_paint        19.86 %   77.05 %    3.09 %   0.0389
+                + imperfections    19.96 %   76.94 %    3.10 %   0.0391
+
+per-pixel diffuse %      p10     p25   median    p75    p90
+  head-on       shipped  1.36    8.73    31.02  60.69  80.23
+                final    3.32   22.35    54.56  81.36  92.88
+  three-quarter shipped  7.14   16.68    40.50  65.27  82.83
+                final   20.11   37.63    67.68  86.49  94.81
+
+transmission at every station, every arm:   0.0000 %
+```
+
+**The imperfection layer moves the energy budget by about one tenth of a
+percentage point.** That is not a disappointment, it is the specification: R2-015's
+own calibration rule is "if a viewer can point at 'the dirt effect', it is too
+strong", and its verdict was that before and after are indistinguishable at full
+frame and every surface has variation at 1:1. Measured at the sidepod macro,
+960 px / 96 samples, the whole layer is worth **3.50 mean LSB**.

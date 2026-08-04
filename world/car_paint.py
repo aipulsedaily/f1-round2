@@ -86,8 +86,26 @@ WHAT THIS BUILDS, ALL PROCEDURAL, NOTHING DOWNLOADED
                 (where a smooth coat hides it) onto the COAT normal (where it is
                 the thing you actually see)
 
-EVERY SOCKET IS FED BY NAME.  Blender 5.2 moved `Principled BSDF.Normal` from
-index 5 to 6 and this project shipped 14 dead bump stacks to that bug.
+ORDER, AND IT IS ENFORCED
+-------------------------
+    apply    world/car_paint.py           THEN  tools/imperfections.py
+    strip    tools/imperfections.py --strip THEN  world/car_paint.py --strip
+
+`imperfections.py` chains ONTO this module's nodes and records them in its own
+snapshot, so stripping this one first orphans its layer and makes its `--strip` a
+no-op — silently.  `assert_no_imperfections()` refuses rather than warns.
+
+EVERY SOCKET IS FED BY NAME, AND EVERY LINK IS CHECKED BY IDENTIFIER.
+Blender 5.2 moved `Principled BSDF.Normal` from index 5 to 6 and this project
+shipped 14 dead bump stacks to that bug.  `ShaderNodeMix` carries three outputs
+all NAMED "Result" — Result_Float / Result_Vector / Result_Color — and only the
+one matching the node's `data_type` is ENABLED; a name lookup returns the float.
+Round 1's LiveryPaint feeds Base Color, Metallic, Roughness and Emission Color
+from four of them.  This module shipped that exact fault into both car sources
+once (R2-534): the panel rendered flat white and no structural check caught it,
+because the chain WAS connected — to the wrong socket.  `verify_wiring()` now
+refuses any link that lands on a disabled output or delivers the wrong socket
+type, and `strip()` self-heals a blend that carries the bad snapshot.
 """
 
 import argparse
@@ -97,7 +115,7 @@ import sys
 
 import bpy
 
-VERSION = 3
+VERSION = 5
 PREFIX = "R2CP_"
 SNAP_KEY = "R2CP_SNAPSHOT"
 VER_KEY = "R2CP_VERSION"
@@ -365,7 +383,15 @@ def snapshot(mat):
         if s.is_linked:
             l = s.links[0]
             e["from_node"] = l.from_node.name
-            e["from_socket"] = l.from_socket.name
+            # BY IDENTIFIER, NOT BY NAME.  `ShaderNodeMix` carries three output
+            # sockets and ALL THREE are called "Result" (identifiers
+            # Result_Float / Result_Vector / Result_Color), so `outputs["Result"]`
+            # is a coin toss that a name-based comparison cannot catch either —
+            # it would read "Result" back off whichever one got reconnected and
+            # call the restore exact.  Round 1's LiveryPaint feeds Base Color,
+            # Metallic, Roughness and Emission Color from four of these.
+            e["from_socket"] = l.from_socket.identifier
+            e["from_socket_name"] = l.from_socket.name
         else:
             v = s.default_value
             e["value"] = list(v) if hasattr(v, "__len__") else float(v)
@@ -373,14 +399,48 @@ def snapshot(mat):
     return snap
 
 
+IMP_KEY = "r2imp"          # tools/imperfections.py's own record
+
+
+def assert_no_imperfections(mat, what):
+    """REFUSE to touch a material that still carries the imperfection layer.
+
+    `tools/imperfections.py` chains ONTO whatever it finds and records, in its
+    own `r2imp` snapshot, the `R2CP_*` nodes it chained onto.  Stripping this
+    module first would delete those nodes and restore the Principled's sockets
+    to round 1's chain — leaving the imperfection nodes orphaned in the tree and
+    its snapshot pointing at names that no longer exist, so its own `--strip`
+    would then silently restore nothing.
+
+    The stack has ONE legal order in each direction:
+
+        apply    world/car_paint.py   THEN  tools/imperfections.py
+        strip    tools/imperfections.py --strip   THEN  world/car_paint.py --strip
+
+    This is a refusal rather than a warning because the broken state it prevents
+    is invisible: the material still renders, just without the layer anyone
+    thinks is in it.  That is the exact failure R2-015 spent a week in.
+    """
+    if IMP_KEY in mat.keys():
+        raise SystemExit(
+            "REFUSING to %s %s: it still carries tools/imperfections.py's "
+            "layer (%r record present). Strip that first:\n"
+            "    blender -b <blend> --factory-startup -P tools/imperfections.py"
+            " -- --strip --out <blend>\n"
+            "then re-run this. Order is car_paint -> imperfections on the way "
+            "in, and the reverse on the way out." % (what, mat.name, IMP_KEY))
+
+
 def strip(mat, quiet=False):
     """Remove every node this module made and put the original links back."""
+    assert_no_imperfections(mat, "strip")
     nt = mat.node_tree
     raw = mat.get(SNAP_KEY)
     made = [n for n in nt.nodes if n.name.startswith(PREFIX)]
     for n in made:
         nt.nodes.remove(n)
     restored = 0
+    healed = []
     if raw:
         snap = json.loads(raw)
         _nt, b = bsdf_of(mat)
@@ -392,11 +452,56 @@ def strip(mat, quiet=False):
                 nt.links.remove(l)
             if e["linked"]:
                 src = nt.nodes.get(e["from_node"])
-                if src is None or e["from_socket"] not in src.outputs:
+                out = None
+                if src is not None:
+                    # v4+ records the IDENTIFIER; v3 and earlier recorded the
+                    # NAME in the same field, so a blend carrying an older
+                    # snapshot still has to resolve.
+                    #
+                    # EVERY LOOKUP IS RESTRICTED TO **ENABLED** OUTPUTS, and
+                    # that is the whole point.  `ShaderNodeMix` carries
+                    # Result_Float / Result_Vector / Result_Color and all three
+                    # are named "Result"; only the one matching the node's
+                    # `data_type` is enabled.  A name match without that filter
+                    # returns Result_FLOAT off an RGBA mix — which is precisely
+                    # what the first version of this migration did to
+                    # `Base Color`, and the panel rendered as flat white because
+                    # a float broadcast to RGB is grey.  The bug shipped into
+                    # both car sources and was caught by a render, not by any
+                    # check here, so the check is now below in `verify_wiring`.
+                    def pick(pred):
+                        return (next((o for o in src.outputs
+                                      if o.enabled and pred(o)), None)
+                                or next((o for o in src.outputs if pred(o)), None))
+                    for pr in (lambda o: o.identifier == e["from_socket"],
+                               lambda o: o.name == e.get("from_socket_name"),
+                               lambda o: o.name == e["from_socket"]):
+                        out = pick(pr)
+                        if out is not None:
+                            break
+                if out is None:
                     raise SystemExit(
                         "cannot restore %s.%s: node %r socket %r is gone"
                         % (mat.name, name, e["from_node"], e["from_socket"]))
-                nt.links.new(src.outputs[e["from_socket"]], s)
+                nt.links.new(out, s)
+                # SELF-HEAL a snapshot written by the broken v4 migration.
+                # That version recorded, and would faithfully restore,
+                # `Mix.004.Result_Float` for Base Color — the disabled float
+                # output of an RGBA mix.  Restoring a link onto a DISABLED
+                # socket is never right: a disabled output belongs to a
+                # different `data_type` of the same node and delivers a
+                # different quantity.  Re-point it at the enabled socket of the
+                # same name, which is the one that was there originally.
+                if not out.enabled:
+                    fix = next((o for o in src.outputs
+                                if o.enabled and o.name == out.name), None)
+                    if fix is not None:
+                        for l in list(s.links):
+                            nt.links.remove(l)
+                        nt.links.new(fix, s)
+                        healed.append("%s: %s.%s -> %s"
+                                      % (name, e["from_node"], out.identifier,
+                                         fix.identifier))
             else:
                 v = e["value"]
                 s.default_value = v if isinstance(v, list) else v
@@ -404,6 +509,9 @@ def strip(mat, quiet=False):
         del mat[SNAP_KEY]
     if VER_KEY in mat:
         del mat[VER_KEY]
+    if healed:
+        log("HEALED %d link(s) restored onto a disabled socket by a v4 "
+            "snapshot: %s" % (len(healed), "; ".join(healed)))
     if not quiet:
         log("stripped %s: removed %d nodes, restored %d sockets"
             % (mat.name, len(made), restored))
@@ -603,7 +711,55 @@ def _pearl(t, loc):
                   loc=(loc[0] + 200, loc[1]), label="pearl weight")
 
 
+def verify_wiring(nt, b):
+    """REFUSE to hand back a tree that is reading the wrong socket.
+
+    Every link this module makes to a node it did NOT create must land on an
+    ENABLED output — a disabled one is a socket belonging to some other
+    `data_type` of the same node, and Blender will happily connect it and
+    quietly deliver the wrong quantity.  A float read off an RGBA `ShaderNodeMix`
+    broadcasts to grey, which is how a navy car rendered flat white.
+
+    Checked here rather than trusted, because this exact fault shipped into both
+    car sources and was found by looking at a picture.
+    """
+    bad = []
+    for n in nt.nodes:
+        if not n.name.startswith(PREFIX):
+            continue
+        for i in n.inputs:
+            if not i.is_linked:
+                continue
+            o = i.links[0].from_socket
+            if not o.enabled:
+                bad.append("%s.%s reads %s.%s, which is DISABLED (%s)"
+                           % (n.name, i.name, i.links[0].from_node.name,
+                              o.identifier, o.type))
+    # and the sockets we hand to the BSDF must carry the right kind of value
+    want = {"Base Color": "RGBA", "Emission Color": "RGBA",
+            "Metallic": "VALUE", "Roughness": "VALUE",
+            "Emission Strength": "VALUE", "Normal": "VECTOR",
+            "Coat Normal": "VECTOR"}
+    for name, kind in want.items():
+        s = b.inputs.get(name)
+        if s is None or not s.is_linked:
+            continue
+        o = s.links[0].from_socket
+        if not o.enabled:
+            bad.append("Principled.%s reads a DISABLED socket %s.%s"
+                       % (name, s.links[0].from_node.name, o.identifier))
+        if o.type != kind:
+            bad.append("Principled.%s is fed a %s from %s.%s, expected %s"
+                       % (name, o.type, s.links[0].from_node.name,
+                          o.identifier, kind))
+    if bad:
+        raise SystemExit("WIRING CHECK FAILED on %s:\n  %s"
+                         % (nt.name, "\n  ".join(bad)))
+    return True
+
+
 def apply(mat, report=None):
+    assert_no_imperfections(mat, "apply to")
     nt, b = bsdf_of(mat)
     strip(mat, quiet=True)                 # idempotent: never stack on itself
     nt, b = bsdf_of(mat)
@@ -745,6 +901,8 @@ def apply(mat, report=None):
     else:
         b.inputs["Emission Strength"].default_value *= EMIS_KEEP_LO
 
+    verify_wiring(nt, b)
+
     mat[VER_KEY] = VERSION
     info = {"material": mat.name, "version": VERSION, "nodes_added": t.n,
             "orange_peel_moved_from_Normal_to_Coat_Normal": moved,
@@ -820,8 +978,18 @@ def main():
 # consumer gets "car_paint".  Without this guard, importing the module to call
 # `apply()` also runs the CLI and applies the stack a second time.
 if __name__ == "__main__":
+    # Blender 5.2 exits 0 for a script that raised — it prints the traceback and
+    # returns success, MEASURED on this box — so a caller reading $? cannot tell
+    # a refusal from a clean run.  Every exit path prints a verdict, and
+    # SystemExit is caught EXPLICITLY because it is a BaseException: the first
+    # version of this guard raised SystemExit, printed its reason, and emitted no
+    # STAGE RESULT at all, which is the same silence it exists to prevent.
     try:
         main()
+    except SystemExit as e:
+        print(e)
+        print(">> STAGE RESULT: %s_REFUSED" % RESULT)
+        sys.stdout.flush()
     except Exception:
         import traceback
         traceback.print_exc()

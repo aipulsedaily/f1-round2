@@ -19702,3 +19702,314 @@ work/r2521/car_anim_driver_POST_CARPAINT.blend.bak NOT pristine — taken after
 The driver blend has no pristine copy on disk. It does not need one: the strip
 path is gated byte-exact in both directions, so
 `imperfections --strip` then `car_paint --strip` restores it exactly.
+
+## R2-534 — I shipped the exact bug I had just written the warning about, and it took a render to find it
+
+R2-532 hardened `car_paint.py`'s snapshot to record links by socket IDENTIFIER,
+because `ShaderNodeMix` has three outputs all named `Result` and a name lookup
+returns `Result_Float`. The migration path for blends already carrying an
+older, name-based snapshot was written in the same edit:
+
+```python
+for pred in (lambda o: o.identifier == e["from_socket"],
+             lambda o: o.name == e.get("from_socket_name"),
+             lambda o: o.name == e["from_socket"]):      # <- this one
+```
+
+**That third line is the bug the first two lines exist to prevent.** It matches
+by name, unfiltered, and returns `Result_Float`. Re-applying the module to the
+two car sources therefore restored `Base Color` and `Emission Color` from the
+FLOAT output of an RGBA mix. A float broadcast to RGB is grey, so:
+
+```
+world/car_anim.blend        R2CP_078_basecoat lift.A  <- Mix.004 . Result_Float   WRONG
+render/r2521/r2521_after6   R2CP_078_basecoat lift.A  <- Mix.004 . Result_Color   right
+```
+
+**The panel rendered flat white,** measured albedo **0.347** — which is
+`DUST_RGB` (0.340, 0.325, 0.298) to two decimal places, and that coincidence sent
+the first hour of diagnosis at `imperfections.py`'s dust tint. It was not the
+dust:
+
+```
+driver masks, measured off a --debug Dust,Wear,Micro render, exposure undone:
+  Dust    p50 0.000   p90 0.120   max 1.543      max tint factor = 1.54 x 0.0448
+  Wear    p50 0.000   p90 0.004   max 0.992
+  Micro   p50 0.489   p90 1.017   max 1.576
+
+bisect at the sidepod macro, 400 px / 32 samples, one station:
+  car_paint only            mean RGB [164.7 169.5 175.7]   <- ALREADY WHITE
+  + imperfections @ x0.0    mean RGB [164.7 169.5 175.7]   max diff 3 LSB
+  + imperfections @ x1.0    mean RGB [164.9 169.7 175.8]   mean |d| 0.61
+```
+
+**The imperfection layer changed the picture by 0.61 mean LSB. `car_paint` alone
+was already producing the white.** Two lessons, and the second is the one worth
+keeping:
+
+1. *An ablation ladder finds the cause; a coincidence finds a suspect.* 0.347
+   against `DUST_RGB`'s 0.34 looked like proof and was not. The `--strength 0.0`
+   arm settled it in ninety seconds and should have been the first thing run.
+2. *`imperfections.py` shipped invisible for a month because its build step
+   printed success. This shipped for an hour because MINE did.* The census and
+   the trace both passed on the broken file — they check that the chain is
+   connected, and it was connected, to the wrong socket.
+
+### What is now checked, so it cannot happen silently again
+
+**`verify_wiring()` runs at the end of every apply and REFUSES.** Every link the
+module makes to a node it did not create must land on an **enabled** output — a
+disabled socket belongs to a different `data_type` of the same node — and the
+sockets handed to the Principled must carry the right kind of value:
+
+```
+WIRING CHECK FAILED on Shader Nodetree:
+  R2CP_078_basecoat lift.A reads Mix.004.Result_Float, which is DISABLED (VALUE)
+  Principled.Emission Color reads a DISABLED socket Mix.005.Result_Float
+  Principled.Emission Color is fed a VALUE from Mix.005.Result_Float, expected RGBA
+>> STAGE RESULT: R2521_CARPAINT_REFUSED
+```
+
+Run against the broken artefact, it names all three faults.
+
+**And `strip()` SELF-HEALS a blend that already carries the bad snapshot.**
+Restoring a link onto a disabled socket is never correct, so it is re-pointed at
+the enabled socket of the same name — which is the one that was there before:
+
+```
+[carpaint] HEALED 2 link(s) restored onto a disabled socket by a v4 snapshot:
+           Base Color: Mix.004.Result_Float -> Result_Color;
+           Emission Color: Mix.005.Result_Float -> Result_Color
+```
+
+### Both car sources were unwound to pristine and rebuilt
+
+Not patched in place — unwound, checked against an independent pristine copy,
+then re-applied:
+
+```
+world/car_anim.blend         imperfections --strip -> car_paint --strip
+world/car_anim_driver.blend  imperfections --strip -> car_paint --strip
+  both:  STRICT IDENTICAL to work/r2521/car_anim_PRE_R2521.blend.bak
+         120 nodes, 164 links, 466 unlinked values, no custom props
+  then:  car_paint v5 (+94 nodes)  ->  imperfections (13 materials)
+  wiring now:  R2CP_078 basecoat lift  <- Mix.004 . Result_COLOR
+               R2CP_085 metallic       <- Mix.002 . Result_FLOAT
+               R2CP_090 roughness      <- Mix.003 . Result_FLOAT
+```
+
+`car_anim_driver.blend` had no pristine backup of its own, which is why the
+strict comparison is made against `car_anim`'s — the `LiveryPaint` tree is the
+same datablock in both, and it comes back identical to it.
+
+Confirmed on pixels, sidepod macro, 960 px / 96 samples: the paint is navy again,
+the twill telegraphs, the flake grains, and against the same frame rendered
+before the imperfection layer existed the whole layer is worth **3.50 mean LSB**
+— felt, not seen, which is R2-015's own calibration rule.
+
+*Generalises to:* **a compatibility shim is a place to be more careful than the
+code it is shimming, not less.** The fallback was written to be forgiving and
+forgiveness is exactly what let it match the wrong socket.
+
+### The final stack, measured
+
+Same probe, same rig, same two stations, `LiveryPaint` the only thing that
+changed between the columns:
+
+```
+station         arm                diffuse   glossy   emission   albedo
+head-on         shipped             2.78 %   96.44 %    0.78 %   0.0121
+                + car_paint         7.85 %   91.50 %    0.65 %   0.0369
+                + imperfections     7.87 %   91.49 %    0.65 %   0.0372
+three-quarter   shipped             7.32 %   88.94 %    3.74 %   0.0121
+                + car_paint        19.86 %   77.05 %    3.09 %   0.0389
+                + imperfections    19.96 %   76.94 %    3.10 %   0.0391
+
+per-pixel diffuse %      p10     p25   median    p75    p90
+  head-on       shipped  1.36    8.73    31.02  60.69  80.23
+                final    3.32   22.35    54.56  81.36  92.88
+  three-quarter shipped  7.14   16.68    40.50  65.27  82.83
+                final   20.11   37.63    67.68  86.49  94.81
+
+transmission at every station, every arm:   0.0000 %
+```
+
+**The imperfection layer moves the energy budget by about one tenth of a
+percentage point.** That is not a disappointment, it is the specification: R2-015's
+own calibration rule is "if a viewer can point at 'the dirt effect', it is too
+strong", and its verdict was that before and after are indistinguishable at full
+frame and every surface has variation at 1:1. Measured at the sidepod macro,
+960 px / 96 samples, the whole layer is worth **3.50 mean LSB**.
+
+## R2-701 — WHAT THE 58.6 % DESCRIBES, and it is not the car anyone will see
+
+Stated once, because the number has already nearly been misread and it is quoted
+in three documents.
+
+**`wing_r` — 0.478 m chord, 1.070 m span, 0.280 m thick, t/c = 58.6 % — is a
+part of `sim/breachlib.py`'s CAR COLLISION PROXY.  It is eighteen convex boxes
+and wedges that exist only inside the rigid-body solver.  It is not the rendered
+car, it is not in any film scene, and no shot contains it.**  The rendered rear
+wing is a properly swept thin aerofoil and is visible as one in
+`render/r2387/COMPARE_ride_f0972_R6_vs_REBAKE_vs_R2387.png`, left and centre
+panels.  Nothing in this block touches render geometry, and `--rear-wing
+aerofoil` cannot: `car_proxy_parts()` is imported by the sim and by nothing that
+builds a scene.
+
+What the proxy's tray costs is a picture defect, not a modelling one.
+
+## R2-702 — PRE-REGISTERED: seven predictions, written before either cell landed
+
+Both cells were submitted at 19:52 and this section was written while they baked.
+The bake is one variable against the R2387 production table: same bundle hash
+(`7db0e9db3f025c50`), same thresholds, same air model, same friction, same
+substeps — `--rear-wing aerofoil` against `--rear-wing solid`.
+
+| | prediction |
+|---|---|
+| **P30** | The tray releases.  `MUL05_S02`'s longest run within ±0.5 m of car-local x = −2.200 while above the deck falls from **127 film frames** to **under 40**. |
+| **P31** | The pose gate (`sim/ridepose.py`, R2-703) PASSES the aerofoil cell: no structural member is aboard and under 3 px/frame of car-relative motion for 12 consecutive film frames. |
+| **P32** | The solid control reproduces the R2387 production table's `MUL05_S02` track to within decimation tolerance, so the difference between the two new cells is attributable to the wing and nothing else.  **If this fails, every A/B on this beat — mine, R2-387's, R2-281's — is unattributable, and that is the finding rather than the wing.** |
+| **P33** | The count of structural members aboard does NOT go to zero.  The nose capture (R2-384: 1,771 bodies carried at the nose) is a different mechanism at the other end of the car and the mainplane's thickness has nothing to do with it. |
+| **P34** | The "across" statistic — the member's own long axis dotted into the car's y — falls for the worst aboard member, from ~0.70 towards under 0.40.  What makes a bar lie transversely is being stopped square-on by a full-width leading face. |
+| **P35** | The wall is unchanged: connected aperture stays 2.15 × 6.00 m with bay 5 at 100 %.  The wing is 4.9 m behind the nose and reaches the glass plane long after it has failed. |
+| **P36** | **The one I expect to be wrong.**  Thinning the mainplane leaves the two endplates (z 0.320–0.980) and the engine cover below it in place, so the tray may become a SLOT: a member could wedge between the mainplane's underside at z = 0.9226 and the cover, and ride on in a pose that is lower but just as static.  If the still-run survives at 12+ frames in a different place, the correction has moved the trap rather than opened it, and the answer is negative. |
+
+## R2-703 — THE ACCEPTANCE TEST, BUILT AND CALIBRATED BEFORE THE BAKE LANDED
+
+R2-700 fixed the criterion in words and refused to fix it as a count:
+
+> debris travelling alongside, tumbling or trailing is fine and desirable;
+> something lying flat across the bodywork **with no relative motion** is what
+> reads as broken.
+
+`sim/ridepose.py` implements exactly that and nothing else.  Per structural body
+(the 152 non-glass bodies), per film frame:
+
+* **aboard** — car-local position over the car's plan and above the deck
+  (z > 0.55).  Deliberately not `carproxy_census`'s envelope, whose ceiling at
+  car-local z = 1.112 m is why it reported `MUL05_S02 transported 0.0 m` for a
+  body that was riding at z 0.95–1.69.
+* **still** — measured **in pixels**, because the eye is judging a picture.  The
+  body's actual screen position against where it would be had it been WELDED to
+  the car since the previous frame:
+  `rel_px(f) = |proj_f(p(f)) − proj_f(c(f) + R(f)·q(f−1))|`.
+  A member locked to the bodywork scores ~0 px however fast the car travels; one
+  tumbling alongside scores tens.  Absolute screen motion is reported beside it,
+  because the read is the CONTRAST between the two — "at rest in a shot where
+  everything else is smeared".
+* **across** — the member's long axis, taken from its intact rest pose in the
+  wall, expressed in the car's frame.  |axis·y_car| ≈ 1 is a bar lying
+  transversely across the car; ≈ 0 is one pointing where the car is going.
+
+**It was calibrated against the three bakes whose verdicts R2-700 had already
+fixed by eye, before it was ever pointed at a new one**, over f0940–f1060:
+
+| | aboard | lowest own-motion ratio | members carried | across | verdict | R2-700's verdict by eye |
+|---|---|---|---|---|---|---|
+| **R6 SHIPPED** | **0** | n/a | n/a | n/a | **VACUOUS** | wrong, car emerges pristine |
+| **R2281 RE-BAKE** | 8 | **0.337** | **0 of 8** | 0.04–0.13 | **PASS** | reads as an accident — accept |
+| **R2387 AIR** | 10 | **0.076** | **8 of 10** | 0.41–0.81 | **FAIL** | reads as broken — reject |
+
+**Three things about that table matter more than the verdicts.**
+
+1. **It reproduces the eye on a measurement the eye was not consulted about.**
+   The member count is 8 against 10 — still nearly useless, exactly as R2-700
+   said.  Every member aboard in R2281 moves 34–43 % of its screen motion under
+   its own steam; eight of ten in R2387 move under 24 % and two under 9 %.
+   **The "across" statistic agrees independently** — 0.04–0.13 against 0.41–0.81
+   — and two independent discriminators agreeing is the only reason to believe
+   either.
+2. **R6 does not pass.  It is VACUOUS, and the gate says so in those words.**
+   Nothing can come to rest on a car that nothing comes off.  A gate that
+   reported "PASS" here would ship the 29.5×-too-strong thresholds, which is
+   exactly the trap R2-700 warned about — "a reviewer picking the safest-looking
+   of the three would be picking the broken one".  `n_aboard` is printed beside
+   every verdict for that reason.
+3. **The obvious reading of the criterion — "near-static for N frames" — does
+   not survive contact with the data, and finding that out is worth more than
+   the gate.**  Implemented as a run length it INVERTS when the window moves:
+
+| members with a still run ≥ 12 frames at 3 px | f0900–f1060 | f0940–f1060 | f0967–f0977 |
+|---|---|---|---|
+| R2281 RE-BAKE — the one the eye ACCEPTS | **6** | 0 | 0 |
+| R2387 AIR — the one the eye REJECTS | 2 | **2** | 0 |
+
+On the widest window the accepted bake fails harder than the rejected one; on
+the narrowest neither fails at all.  **A run length is a bounded measure and it
+reports confidently about its bound** — the same shape of error as
+`carproxy_census`'s z-ceiling, and the third instance of it in this block.  The
+ratio does not move:
+
+| lowest own-motion ratio of any member aboard | f0900–f1060 | f0940–f1060 | f0967–f0977 |
+|---|---|---|---|
+| R2281 RE-BAKE | 0.304 | 0.337 | 0.378 |
+| R2387 AIR | 0.125 | 0.076 | 0.110 |
+
+Three windows, a factor of three in every one, an empty gap from 0.19 to 0.30
+for a threshold to sit in, and the same ordering the eye gave.  0.25 is the
+middle of that gap and is not tuned finer than that.  **The run length is still
+reported on every run, clearly marked as not gated on.**
+
+## R2-704 — the bake, and what it cost
+
+Both cells run on the rented 5090 instance (`46819442`, $0.5778/hr, already up
+and shared with four other agents' jobs) via `rq exec --closure`, which derived
+a 9-module bundle from `sim/remote_bake.py` plus five data files — 5.5 MB, no
+scene push.  Two cells at ~1 slot each:
+
+| cell | job | argv | 
+|---|---|---|
+| **A** aerofoil | `1edd5b763b30` | `--rear-wing aerofoil` |
+| **S** solid control | `9c977a75f91d` | `--rear-wing solid` |
+
+**Stated cost: ~2.5 instance-hours for the pair running concurrently ≈ $1.45**,
+on an instance that was already rented.  A second-seed pair, if the first result
+warrants it, is the same again.
+
+**Why it went to the farm rather than this box, and the guard that sent it.**
+`Car.identity_ok()` REFUSED the local bake:
+
+```
+REFUSING: /home/zany/f1-round2/world/car_anim.blend is 301667220 bytes,
+was 300235801 when sampled.
+```
+
+Another agent re-saved the car blend at 19:30, growing it by 1,431,419 bytes.
+The remote path is not an evasion of that guard — `sim/remote_bake.py` exists
+precisely because the 300 MB blend never travels, and the check is then made
+against the content-addressed stamp that ships with the measurement — but the
+guard's actual question still had to be answered.
+
+## R2-705 — the guard fired on a MATERIALS edit, and the car's animation is BIT-IDENTICAL
+
+The question the guard asks is "is the sim still driven by the car the film
+renders?"  It was answered by measurement rather than by inference.
+`tools/sample_car_blend.py`, the same instrument that produced
+`world/car_anim_measured.json`, was re-run against the blend as it stands now,
+over the beat-3 range only (`--frames 845-1165`, 321 frames), writing to a
+scratch path — **nothing shared was overwritten**.  Against the measurement the
+sim actually uses:
+
+| | difference |
+|---|---|
+| `CAR_ROOT` location, all 321 frames | **0.000e+00 m** |
+| `CAR_ROOT` XYZ euler, all 321 frames | **0.000e+00 rad** |
+| four contact patches, all 321 frames | **0.000e+00 m** |
+| wheel-spin F-curves (FL/FR/RL/RR) | **0.000e+00 rad** |
+
+**Bit-identical, on every channel the sim reads, across the whole of beat 3.**
+The 1.4 MB the blend gained is the R2-521 surface-detail pass — `world/car_anim_imp.json`,
+written a minute after the save, is a table of `dust_rough`, `wear_polish`,
+`paint_peel` and `glass_smudge` constants — and it cannot move a rigid body.
+
+So the guard was right to fire (the file it was told to watch did change) and
+wrong about what it implied.  **`Car.identity_ok()` watches the blend's SIZE,
+which is a proxy for the animation and not the animation.**  A materials edit
+trips it; an animation edit that happened to leave the file the same size would
+not.  That is worth an entry of its own and is not fixed here: this block did
+not touch `sim/breachlib.py`.
+
+What it means for this A/B: the cells are driven by the same car R2387, R2281
+and the shipped table were driven by, and that car is still the film's car.
+**Nothing is stale and no result below is qualified by it.**
