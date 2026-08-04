@@ -279,14 +279,32 @@ camera stops moving: 1.5 px of median smear against 54.7 px over the tour, a
 factor of 36.** 88 % of the tour is over 20 px and 4 % of the protected region is.
 No aesthetic judgement is needed to separate them.
 
-**And the frames agree with the arithmetic without being asked to.** f648 is the
-first frame of the protected region and the first frame of beat 1 in which the
-picture is a picture: the monocoque, the halo, the floor, the front wing, the
-suspension and all four wheels are all present, whole, and readable in one
-composed frame. Every frame rendered from the presentation tour — f120, f400,
+**And the frames agree with the arithmetic without being asked to.** f648 and f700
+are the protected region and they are the first frames of beat 1 in which the
+picture is a picture: at f648 the monocoque, halo, floor, front wing, suspension
+and all four wheels are present, whole and readable in one composed frame; at
+f700 the car is finished and head-on, with the showroom's own signage legible
+behind it. Every frame rendered from the presentation tour — f120, f400, f434,
 f460, f500, f591 — is a fragment of one cluster, larger than the frame, and
-smeared. The two populations are not close, and nothing about the geometry or the
-materials changed between them; the camera slowed down.
+smeared.
+
+**The two populations separate on an absolute measure too, not only on
+composition.** RMS image gradient per pixel — how much detail actually survives to
+the delivered frame — across the ten frames rendered:
+
+```
+the presentation tour                      protected
+  f400  0.00270      f300  0.01101           f648  0.01610
+  f120  0.00305      f434  0.01109           f700  0.02399
+  f591  0.00583      f200  0.01285
+  f500  0.00615
+  f460  0.00625
+  median 0.00625                             median 0.02005
+```
+
+**The protected region carries 3.2x the surviving detail per pixel of the median
+tour frame, and 8.9x that of f400.** Nothing about the geometry or the materials
+changed between them. The camera slowed down.
 
 Put beside the defocus at the same point in the same frame
 (`tools/beat1_blur_budget.py`) — the two blurs, per frame, at the centre of
