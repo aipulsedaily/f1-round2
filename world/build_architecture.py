@@ -5448,8 +5448,32 @@ def build_bridges(colls, rng, summary):
                    ty1 - sgn * 0.4, deck - 0.4), "A_Glass", (1, 1, 1, 1))
         mb.box((tx0 - 0.4, min(ty0, ty1) - 0.4, deck + 1.4), (tx1 + 0.4,
                max(ty0, ty1) + 0.4, deck + 1.5), "A_RoofSeam", (1, 1, 1, 1))
-    mb.text("PASSERELLE  2", T(X - D / 2 - 0.1, 2.0, soffit + dep - 0.9)
-            @ Rz(-90) @ Rx(90), 0.85, "A_Sign", srgb('#e8ebee'), extrude=0.02)
+    # R2-256.  THE TRUSS FACE IS NOT OURS TO LETTER, AND THIS IS WHY.
+    #
+    # A white 0.85 m run reading "PASSERELLE  2" used to be laid here, at
+    # (X - D/2 - 0.1, 2.0, soffit + dep - 0.9) = (-452.100, 2.000, 9.650).
+    # `build_dressing`'s family-5 fascia banner hangs on the SAME face at
+    # (-452.055, 2.000, 8.920), 44.0 x 1.60 m -- 45 mm in front of it,
+    # concentric, and wholly containing it.  Both were emitted; neither was
+    # hidden; the delivered 4K frame 2972abcb3fa1.png shows gold CADENCE and
+    # white PASSERELLE printed through each other and garbling into
+    # "PASSERELICE".  Measured by `tools/text_overlap_gate.py`: 0.067 deg apart,
+    # 8 mm of slab gap, 100 % of the smaller panel covered.
+    #
+    # THE BANNER WON, on ownership and not on taste.  `build_dressing.md`'s
+    # inventory claims "bridge fascia banners | the two overpasses' own geometry,
+    # read out of build_architecture.py | 4", and its "explicitly NOT mine" line
+    # concedes to this module only "the S/F gantry and its lettering".  The
+    # fascia is dressing's advertising surface; `docs/item_manifest.md` item 162
+    # is `la_passerelle_banner`, "La Passerelle fascia banner".  Nothing in
+    # circuit_spec or the manifest ever asked for a structural label there, and
+    # the "2" numbered a series that does not exist -- there is one Passerelle
+    # and one Pont de la Plongee, named, not numbered.  The banner is also
+    # authored on BOTH faces of BOTH bridges while this label was on one face of
+    # one bridge, so deleting the banner would have cost four units of brand
+    # variety to keep one string that no document asks for.
+    #
+    # Do not put lettering back on this face.  Ask build_dressing for a banner.
     o1 = mb.build(colls['ARCH_Bridges'], bevel=0.010)
 
     # ---- Le Pont de la Plongee, s = 2410, soffit 6.80 above the road -------
