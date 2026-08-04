@@ -44,8 +44,10 @@ R2 = "/home/zany/f1-round2"
 CARRIED = "does not FIT its own presentation frame"   # R2-317, not this block's
 
 
-def gates_of(normals_path, tag, cap=None):
+def gates_of(normals_path, tag, cap=None, establish=None):
     env = dict(os.environ)
+    if establish is not None:
+        env["B1_ESTABLISH"] = establish
     env["B1_NORMALS"] = normals_path
     env["B1_SHEET_OUT"] = os.path.join(R2, f"work/b1nadir/gate_{tag}.json")
     env["TMPDIR"] = os.path.join(R2, "tmp")
@@ -74,6 +76,9 @@ def elev_of(n):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True)
+    ap.add_argument("--pin", default=None,
+                    help="CLUSTER=x,y,z[;CLUSTER=x,y,z] -- fix a direction "
+                         "before the greedy runs. See the R2-464 seed note.")
     ap.add_argument("--band", default=os.path.join(
         R2, "work/b1nadir/view_surface.json"))
     a = ap.parse_args()
@@ -113,8 +118,15 @@ def main():
     # baseline is not the shipped sheet at all -- it is a clamped variant of it
     # that does not schedule, and every candidate would be compared against a
     # baseline that never shipped.
+    # THE BASELINE IS THE SHIPPED FILM, WHICH HAS NO ESTABLISHING KEY.
+    # Computing it with B1_ESTABLISH on was wrong and it silently widened the
+    # acceptance test: the shipped MB direction puts its station 8.29 m from the
+    # establishing station, which fails the weave-speed gate, so the baseline
+    # came back with 1 hard failure and every candidate was then allowed one
+    # too -- including the same one. A baseline must be the artefact being
+    # improved on, not the artefact plus the defect under repair.
     base_hard, _ = gates_of(os.path.join(R2, "docs/presentation_normals.json"),
-                            "base", cap="90")
+                            "base", cap="90", establish="0")
     print("SHIPPED SHEET, hard gate failures (framing-fit carried, R2-317):")
     for f in base_hard:
         print("   " + f[:110])
@@ -126,6 +138,24 @@ def main():
     for k in names:
         cur[k]["r2451_reaimed"] = False
     chosen = {k: False for k in names}
+
+    # R2-464 SEED. The establishing station and MB's direction were solved as a
+    # PAIR (build_beatsheet.BEAT1_ESTABLISH), so they have to be applied as one.
+    # Greedy cannot discover the pair: with the establishing key present and MB
+    # still shipped, the establish->MB move is 8.29 m in 2.0 s and fails the
+    # weave-speed gate, so EVERY candidate carries that failure and nothing is
+    # ever accepted -- the search reports 0/15 and looks like a refutation when
+    # it is a seeding problem. Seeding MB clears the failure and the greedy then
+    # works normally on the other fourteen.
+    if a.pin:
+        for spec in a.pin.split(";"):
+            k, vec = spec.split("=")
+            cur[k.strip()]["normal"] = [float(x) for x in vec.split(",")]
+            cur[k.strip()]["r2451_reaimed"] = True
+            chosen[k.strip()] = True
+            print(f"SEEDED {k.strip()} = {cur[k.strip()]['normal']}  "
+                  f"(solved jointly with the establishing station)")
+        print()
 
     order_by_need = sorted(names, key=lambda k: -elev_of(ship[k]))
     print("GREEDY over the legal band, worst picture first, gated on the WHOLE")

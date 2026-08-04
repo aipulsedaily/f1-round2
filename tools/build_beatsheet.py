@@ -385,10 +385,12 @@ def key_geom(geo, normals, k, idx, n):
     # itself onto data that did not.
     legalise = nv.get("r2451_reaimed", False)
     pos, standoff = camera_station(g["centre"], g["radius"], idx, n,
-                                   nv.get("normal"), legalise=legalise)
+                                   nv.get("normal"), legalise=legalise,
+                                   standoff_override=nv.get("r2429_standoff_m"))
     d = [g["centre"][i] - pos[i] for i in range(3)]
     m = math.sqrt(sum(x * x for x in d)) or 1.0
-    return pos, standoff, lens_for(g), [x / m for x in d]
+    lens = float(nv.get("r2429_lens_mm") or lens_for(g))
+    return pos, standoff, lens, [x / m for x in d]
 
 
 def _bearing(u, v):
@@ -561,7 +563,8 @@ def _solve_corner_order(geo, normals, corners, n, idx0, entry):
     return bseq
 
 
-def camera_station(centre, radius, idx, n, look_dir=None, legalise=True):
+def camera_station(centre, radius, idx, n, look_dir=None, legalise=True,
+                   standoff_override=None):
     """Where the lens sits to make this cluster large AND legible in frame.
 
     Standoff scales with the cluster's own size so a 0.19 m steering wheel is
@@ -607,6 +610,14 @@ def camera_station(centre, radius, idx, n, look_dir=None, legalise=True):
     that had no constraint on it.
     """
     standoff = max(radius * 1.55 + 0.42, 0.75)
+    # R2-464.  The standoff law fixes the SUBTENDED ANGLE at ~80 deg regardless
+    # of lens (task #116), which is why the subject always fills the frame and is
+    # therefore never seen whole -- R2-429.  An override lets one station be an
+    # ESTABLISHING station without repealing the law for the other fourteen, and
+    # it is data in the normals file rather than a branch here, so the exception
+    # is visible in the artefact that records it.
+    if standoff_override:
+        standoff = float(standoff_override)
     if look_dir:
         d = list(look_dir)
         # small deterministic tilt so 15 stations do not all sit at the same
@@ -799,6 +810,97 @@ def _allocate(costs, span_s):
     return [c * k for c in costs], tot / span_s
 
 
+# --------------------------------------------------------------------------- #
+#  THE ESTABLISHING FRAME — R2-429 / R2-464.                                    #
+# --------------------------------------------------------------------------- #
+#
+# WHAT R2-429 ACTUALLY FOUND, once the metric was corrected.  Its headline —
+# "the car is never smaller than 76.1 % of frame width" — is the subtense of the
+# car's 5.72 m LENGTH, which is its apparent width only when the camera is
+# broadside.  Projecting the eight bbox corners through the real camera instead
+# (`tools/beat1_true_extent.py`) says something different:
+#
+#     close-out f648-792, frames containing the WHOLE car     136 / 145  (94 %)
+#     first frame that contains the whole car                 f657, t = 27.4 s
+#     f700 car fraction of frame width      proxy 0.832   TRUE 0.497
+#
+# and `work/b1look/b1focus_000700_full.png` settles it: the complete car,
+# uncropped, head-on on the turntable, with the showroom's sign, placard, rope
+# barrier and back wall behind it.  **Beat 1 has an establishing shot. It arrives
+# 27.4 seconds into a 33-second beat.**
+#
+# AND IT CANNOT SIMPLY BE MOVED EARLIER, because its subject does not exist
+# earlier: it is a shot of the ASSEMBLED car, and the four corners do not land
+# until f696-704.  The payoff of an assembly cannot precede the assembly.
+#
+# So the opening gets its own establishing frame with its own subject — the
+# EXPLODED FIELD in the darkened room, which is what the brief actually asks the
+# first image to show: "the camera drifts through the darkened showroom as parts
+# hang exploded in space around the empty turntable".
+#
+# WHY IT IS AN AUTHORED KEY AND NOT A WIDER STANDOFF.  Pushing MB's station back
+# along its own presentation normal was tried first and fails geometrically, not
+# marginally: MB's direction was chosen to show MB's best face, and walking
+# backwards down it carries the lens INTO the field and out the far end.  At a
+# 7.5 m standoff the camera stands at x = -6.50, inside the field's own
+# -6.40..4.72 x-span, with field corners at negative depth behind the lens.
+# A direction chosen to see one cluster is not a direction that sees the room.
+#
+# WHAT THE BEAT CAN AFFORD.  MEASURED, with the offset modelled — a lead-in both
+# delays every presentation AND compresses the tour, and modelling only the
+# compression says 4.0 s where the truth is 2.0:
+#
+#     max affordable lead-in, shipped normals   2.0 s   (binding: BB, 0.45 s slack)
+#     max affordable lead-in, R2-451 normals    2.0 s   (binding: SW, 2.52 s slack)
+#
+# 2.0 s at 24 fps is 48 frames, and beat 6 already holds a composed frame for 3 s.
+#
+# THE STATION IS SOLVED JOINTLY WITH MB'S DIRECTION, and it has to be.  The
+# first attempt put the establishing key on the ray through MB's own station and
+# pushed back: MB's re-aimed direction points along the field's LONG axis, so
+# that view looks down an 11 m corridor, needs 10-11 m to contain it, and lands
+# 6.5-7.5 m from MB's station -- 8.29 m in 2.0 s, which fails the weave-speed
+# gate at 5.64-6.30 m/s against 4.00.  A direction chosen to show one cluster is
+# not a direction that shows the room, and the establishing station cannot be
+# derived from it.
+#
+# Solved instead over MB's whole legal band x (azimuth, elevation, distance,
+# lens), subject to: the field fits, the lens is in the room and under the rigs,
+# and the chord to MB's station is flyable in the lead-in.  The winner puts the
+# camera BROADSIDE to the field's long axis, which is the obvious answer that the
+# push-back parameterisation could not reach.  MB's direction moves with it and
+# gets BETTER, not worse: 77.3 % of its unconstrained score against the 48.2 %
+# the R2-451 search had to settle for.
+#
+# THE STATION, solved rather than placed.  The field is 11.12 x 4.42 x 3.84 m
+# centred at (-0.841, 0, 2.194).  Containing 11.12 m at 0.85 fill needs
+# `d >= 13.08 * lens / 36`; the lens is 24 mm, which is inside the film's own
+# range (beat 3 runs 21-32 mm, beat 6 reaches 18.8) and not a new look.  At
+# d = 8.70 m and 12 deg of depression — the film's house angle, R2-454 — the lens
+# sits at z 4.00, under the spot rigs at 5.590, and at y = -8.51, outside the
+# rope ring at radius 6.96 and 2.7 m inside the wall at |y| 11.25.  The far wall
+# is then ~9 m behind the subject, which is the background throw the brief's rim
+# lighting and DOF both need and which the nadir stations did not have.
+def _establish_on():
+    """R2-464 is OFF by default, for the same reason R2-451's clamp is.
+
+    It inserts a camera key that did not exist and shifts every beat-1
+    presentation time, so a default-on version would change the film for any
+    agent who runs this file for an unrelated reason. `B1_ESTABLISH_LEAD_S=2.0`
+    turns it on; `0` is the shipped behaviour, exactly.
+    """
+    return os.environ.get("B1_ESTABLISH", "").strip() not in ("", "0", "off")
+
+
+BEAT1_ESTABLISH_LEAD_S = 2.0
+BEAT1_ESTABLISH = dict(
+    t=0.0, world=[-0.8409, -8.8633, 3.7566], look_at=[-0.841, 0.0, 2.194],
+    lens_mm=18.0, fstop=4.0, focus_distance_m=9.0, focus_target="FIELD",
+    note="ESTABLISHING. The whole exploded field in the darkened showroom, "
+         "with the empty turntable under it — the brief's own first image. "
+         "R2-429/R2-464.")
+
+
 def build_beat1(geo, plan, dur, normals=None, deadlines=None):
     n = len(plan["seat_order"])
     # Reserve the last 20% for the final settle and the push toward the car, so
@@ -819,8 +921,12 @@ def build_beat1(geo, plan, dur, normals=None, deadlines=None):
     bridge1 = _fixed_key_geom(BEAT1_BRIDGES[0])
     bridge2 = _fixed_key_geom(BEAT1_BRIDGES[1])
 
+    # R2-464: the establishing frame eats the front of the spine's span, so the
+    # tour is BOTH delayed and compressed. Both effects are in the solve.
+    lead = float(os.environ.get("B1_ESTABLISH_LEAD_S",
+                                BEAT1_ESTABLISH_LEAD_S if _establish_on() else 0.0))
     order = present_order(geo, plan["seat_order"], normals, deadlines,
-                          spine_span_s=b1_t,
+                          spine_span_s=b1_t - lead,
                           corner_span_s=corner_last_t - b2_t,
                           spine_exit=bridge1, corner_entry=bridge2)
     n_spine = len([k for k in plan["seat_order"] if not k.startswith("CORNER_")])
@@ -830,7 +936,7 @@ def build_beat1(geo, plan, dur, normals=None, deadlines=None):
     sp_costs = [_hop_cost(geo, normals, spine[i], i, spine[i + 1], i + 1, n)
                 for i in range(len(spine) - 1)]
     sp_costs.append(_exit_cost(geo, normals, spine[-1], len(spine) - 1, n, *bridge1))
-    sp_dt, sp_ratio = _allocate(sp_costs, b1_t)
+    sp_dt, sp_ratio = _allocate(sp_costs, b1_t - lead)
 
     co_costs = [_exit_cost(geo, normals, corners[0], n_spine, n, *bridge2)]
     co_costs += [_hop_cost(geo, normals, corners[i], n_spine + i,
@@ -855,7 +961,7 @@ def build_beat1(geo, plan, dur, normals=None, deadlines=None):
         return round(round(t * 24.0) / 24.0, 6)
 
     times = {}
-    t = 0.0
+    t = lead
     for i, k in enumerate(spine):
         times[k] = on_frame(t)
         t += sp_dt[i]
@@ -875,6 +981,12 @@ def build_beat1(geo, plan, dur, normals=None, deadlines=None):
         f"{corner_last_t * 24}")
 
     keys, sched = [], []
+    if lead > 0.0:
+        est = dict(BEAT1_ESTABLISH)
+        est["beat"] = "1_assembly"
+        est["world_time_scale"] = 1.0
+        est["presentation_dir_measured"] = False
+        keys.append(est)
     for i, k in enumerate(order):
         g = geo[k]
         nd = (normals or {}).get(k, {}).get("normal")

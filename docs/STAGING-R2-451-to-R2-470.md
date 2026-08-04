@@ -721,7 +721,287 @@ detail, material or noise should be read off them.
 
 ---
 
-## R2-463 — what I could NOT confirm
+---
+
+## R2-463 — R2-460 is PARTLY WITHDRAWN, and the correction is the interesting half
+
+R2-460 concluded, from the R2-451 work alone, that the angle defect and the width
+defect are independent and that "one change does not fix both". **The first half
+stands and the second half is too strong.**
+
+What stands: the two laws remain the DIRECTION and the RADIUS of one polar
+placement, and neither can produce the other. Re-aiming alone moved beat 1's max
+camera distance by 0.00 m — measured, and still true.
+
+What is withdrawn: **"fixing one does not help the other" is false in the
+direction I did not test.** Adding the establishing frame frees 2.0 s at the
+front of the tour, and that slack is exactly what NOSE and FW needed — both were
+unfixable under R2-451 alone and both re-aim cleanly once the width fix is in
+(R2-467). The help runs **width -> angle**, not angle -> width, which is why
+testing only the direction I had already built could not find it.
+
+> **I tested one direction of a symmetric-sounding claim and reported it as
+> though I had tested both.** The asymmetry is real and has a cause — a wider
+> opening buys SCHEDULE, and schedule is what the angle fix was starved of — but
+> I did not go looking for it until the coordinator asked whether R2-429's work
+> reaches FW and NOSE.
+
+---
+
+## R2-464 — R2-429's HEADLINE IS AN ARTEFACT, and beat 1 already has an establishing shot: it arrives at t = 27.4 s
+
+R2-429 reports the car "never smaller than 76.1 % of frame width" and "zero
+frames under 60 %". Both come from
+
+```
+car_frac_width = CAR_LEN * lens / (SENSOR_W * distance)
+```
+
+with `CAR_LEN` the car's **5.72 m X span**. That is the subtense of the car's
+LENGTH, and it is the car's apparent width only when the camera is broadside.
+`tools/beat1_shotscale.py` reproduced it, so the error was carried twice.
+
+`tools/beat1_true_extent.py` projects the car's eight bbox corners through the
+actual camera — position, quaternion, animated lens — instead:
+
+```
+                                        proxy      TRUE     proxy overstates
+f700  car fraction of frame width        0.832     0.497          1.67x
+f724  widest framing in beat 1           0.809     0.603          1.34x
+close-out f648-792, worst                1.153     1.063          1.74x max
+
+frames of f648-792 containing the WHOLE CAR      136 / 145   (94 %)
+first frame that contains the whole car          f657,  t = 27.4 s
+```
+
+**The pixels settle it.** `work/b1look/b1focus_000700_full.png`, rendered from
+`render/film14.blend` by another agent, is the complete car — uncropped, head-on
+on the turntable, with the MERIDIAN sign, the 24/P1 placard, the rope barrier and
+the ribbed back wall behind it. The proxy calls that frame 83 % of frame width.
+It is 50 %.
+
+> **Beat 1 has an establishing shot. The defect is not that it is missing, it is
+> that it is LAST.** And it cannot simply be moved earlier, because its subject
+> does not exist earlier: it is a shot of the ASSEMBLED car and the four corners
+> do not land until f696-704. **The payoff of an assembly cannot precede the
+> assembly.**
+
+This is R2-314's shape again — a scalar standing in for a projection. A length
+divided by a distance cannot know which way the subject is facing.
+
+---
+
+## R2-465 — the opening gets its own establishing frame, and what beat 1 can afford is 2.0 s
+
+The first image's subject is not the car, which does not exist yet. It is the
+**exploded field in the darkened room** — the brief's own words, *"the camera
+drifts through the darkened showroom as parts hang exploded in space around the
+empty turntable"*. Measured off `docs/explode_plan.json`:
+
+```
+exploded field   x -6.402 .. 4.720   y -2.211 .. 2.211   z 0.273 .. 4.115
+                 11.12 m long, 4.42 m wide, 3.84 m tall, centre (-0.841, 0, 2.194)
+```
+
+**What the beat can afford, and the first measurement of it was wrong.** A
+lead-in both DELAYS every presentation and COMPRESSES the tour. Modelling only
+the compression — which is all `present_order`'s own `span_s` does — says 4.0 s.
+Modelling the offset too, `lead + (cum/total)*(b1_t - lead) <= deadline`:
+
+```
+max affordable lead-in, shipped normals   2.0 s   (binding: BB, 0.45 s slack)
+max affordable lead-in, R2-451 normals    2.0 s   (binding: SW, 2.52 s slack)
+```
+
+**2.0 s, not 4.0.** Note the re-aim of R2-451 *improved* the binding slack from
+0.45 s to 2.52 s — the two fixes help each other rather than competing.
+
+---
+
+## R2-466 — the establishing station could not be derived from MB's, and had to be solved jointly with it
+
+The obvious construction — push MB's station back along its own presentation
+normal until the field fits — **fails geometrically, not marginally.**
+
+MB's re-aimed direction points along the field's LONG axis, so pushing back looks
+down an 11 m corridor. At a 7.5 m standoff the lens stands at **x = -6.50, inside
+the field's own -6.402..4.720 x-span**, with field corners at negative depth
+behind it. Containing the field from that bearing needs 10-11 m, which puts the
+station 6.5-7.5 m from MB's, and the move fails the weave-speed gate:
+
+```
+FAIL  the camera peaks at 5.64-6.30 m/s between frames 0 and 48
+      (FIELD -> MB, 8.293 m in 2.00 s); the limit is 4.00 m/s
+```
+
+> **A direction chosen to show one cluster is not a direction that shows the
+> room.** The establishing station is not a scaled presentation station and
+> cannot be derived from one.
+
+Solved instead over MB's whole legal band x (azimuth, elevation, distance, lens),
+subject to: the field fits, the lens is in the room and under the rigs, and the
+chord to MB's station is flyable in 2.0 s. The winner is **broadside** to the
+field's long axis — the obvious answer that the push-back parameterisation could
+not reach:
+
+```
+BEAT1_ESTABLISH   world [-0.8409, -8.8633, 3.7566]   look_at [-0.841, 0, 2.194]
+                  18 mm   f/4.0   focus 9.00 m   depression exactly 10.00 deg
+     field fills  0.857 of frame width x 0.489 of height   -- whole field, with margin
+     lens z 3.757, 1.83 m under the spot rigs at 5.590
+     radius 8.90 m, outside the rope ring at 6.96, 2.4 m inside the wall
+     the far wall is ~9 m behind the subject -- the background throw R2-452 showed
+     the nadir stations did not have
+```
+
+18 mm is inside the film's own range (beat 3 runs 21-32, beat 6 reaches 18.8) and
+10.00 deg is the film's house angle (R2-454). **Neither is a new look.**
+
+**And the greedy search could not find this on its own** — a seeding failure that
+looked exactly like a refutation. With the establishing key present and MB still
+shipped, the establish->MB move fails the speed gate, so EVERY candidate carries
+that failure, nothing is ever accepted, and the search reports **0/15 re-aimed**.
+MB's direction and the establishing station are one solution and have to be
+applied as one; `--pin` seeds the pair and the greedy then works normally.
+
+---
+
+## R2-467 — with the establishing lead-in, NOSE and FW become fixable. 14/15, and beat 1's near-nadir population is ZERO
+
+R2-456 could not move NOSE, FW or CORNER_FL. With 2.0 s of lead-in the schedule
+has room and **two of the three fall**:
+
+```
+cluster        shipped   R2-451 alone   R2-451 + R2-429
+FD               84.15       21.06           22.99
+MB               84.15       22.35           23.64
+NOSE             84.15       84.15  (stuck)  21.06   <-- freed
+SP               84.15       23.64            5.08
+FW               74.48       74.48  (stuck)  22.99   <-- freed
+BB               68.79       24.30           23.64
+CI               62.95       23.64           23.64
+EC               52.83       21.06           -7.48
+CORNER_RL        49.04       16.02           16.02
+CORNER_RR        45.52       12.33           12.33
+RW               41.41       22.35           22.99
+CORNER_FL        33.15       33.15           33.15   (unchanged, deliberately)
+CORNER_FR        31.04       22.35           22.35
+SW               27.62       22.35           24.30
+halo_assembly    23.64       23.64           23.64
+```
+
+**14 of 15, zero hard gate failures.** CORNER_FL stays put, which is a benefit:
+its station at f591 is the one that reaches into the protected close-out.
+
+```
+                          shipped    R2-451     R2-451+R2-429
+beat 1 first frame        -84.15     -22.35        -10.00
+beat 1 f25                -82.09     -24.55        -16.28
+beat 1 first-60 median    -80.86     -24.31        -18.51
+beat 1 median             -42.39     -22.47        -20.18
+beat 1 min                -84.34     -83.97        -35.66
+frames >70 down          187 (23.6%)  64 (8.1%)      0  (0.0 %)
+frames >80 down          120 (15.2%)  18 (2.3%)      0  (0.0 %)
+film-wide near-nadir         192         69           5  (all beat 5, untouched)
+```
+
+**Beat 1's entire near-nadir population is gone.** The answer to "does R2-429's
+work reach FW and NOSE" is **yes, and it is a two-for-one** — they are not a
+separate open item.
+
+**On R2-429's own metric**, with the establishing frame in:
+
+```
+beat 1 max camera distance      8.04 m  ->  9.39 m
+car at its smallest              0.791  ->  0.305  of frame width
+frames under 100 % frame width     141  ->    173
+frames under  60 %                   0  ->     27
+```
+
+---
+
+## R2-468 — the combined fix, gated, and what it costs
+
+```
+                              shipped     R2-451+R2-429
+continuity_gate --campath     PASS 0 FAIL   PASS 0 FAIL  (5 -> 6 advisory)
+beat 1 worst rotation         16.41 %w/fr    8.73 %w/fr  @f489
+beat 1 max speed                 3.9 m/s        4.2 m/s
+min clearance to the car       0.505 m        0.352 m    (floor 0.30)
+worst PAN                       0.0939         0.0939
+clusters seating unseen              0              0
+hard beat-1 gate failures            0              0
+```
+
+R2-062's explicitly-open f487 16.4 % rotation WARN is closed and stays closed —
+now **8.73 %**, better than R2-451 alone managed (11.01 %). No third bridge key
+was authored; the singularity existed only because both corner directions pointed
+down.
+
+**Seam and containment, `tools/seam_gate.py` and `tools/campath_diff.py`:**
+
+| | shipped | R2-451 + R2-429 |
+|---|---|---|
+| `chord_m` | 2.0893 | **2.0893** |
+| `speed_ms` | 1.2727 | **1.2727** |
+| `look_angle_deg` | 13.2504 | **13.2504** |
+| `lens_delta_mm` | -0.051 | **-0.051** |
+| built path vs declared keys | f754/f793 0.0000 mm | identical |
+| peak speed / bulge / accel / rotation | — | **all identical** |
+| verdict | SEAM_OK | **SEAM_OK** |
+
+```
+beats 2-6      f793-2978   worst dp 0.0000 m   dq 0.000 deg   dlens 0 mm
+PROTECTED      f648-792    worst dp 0.0099 m @f648  =  8.2 px   dq 0.066 deg
+f591-647                   worst dp 0.0825 m @f603  = 333 px
+close-out true extent      136/145 whole-car frames, f657 first, f724 widest
+                           -- IDENTICAL to shipped
+```
+
+**The establishing frame costs the protected region nothing beyond what R2-451
+already cost it**: f648 moves 8.2 px in both, against R2-326's rejected 104 px,
+and f655/f720/f754/f792 move by exactly zero.
+
+---
+
+## R2-469 — THE PIXELS for the combined fix
+
+```
+f1    BEFORE   a plan view down onto the tub, background = lit floor signage.
+      R2-451   a low three-quarter; the tub reads, but the frame is still tight.
+      COMBINED THE SHOT THE BRIEF DESCRIBES. The darkened showroom, the ceiling
+               coves, the turntable dais with the car exploded above and around
+               it, wheels floating outboard, the glass wall at frame right, the
+               MERIDIAN wall sign, the 24/P1 placard, the rope barrier, the
+               vitrines. You know where you are and what you are looking at.
+
+f25   BEFORE   R2-425's wedge -- no subject.
+      R2-451   STILL no subject: a close, defocused rear wing.
+      COMBINED READS. The camera has pushed in toward the turntable: the tub and
+               floor on the dais with its signage, four wheels around it, the
+               sidepod and other clusters hanging above, the ribbed wall behind.
+
+f200  BEFORE   the nadir frame -- turntable rim, two wheels, a teal smear.
+      R2-451   still -75.23 deg, still a plan view of a front wing.
+      COMBINED the front wing at -22.99 deg: element stack, endplate and mounting
+               pylons all readable. Still close and still soft (R2-317/R2-321).
+```
+
+> **f25 is the frame this whole block was opened on, and it took BOTH fixes.**
+> The angle fix alone moved it from -82.09 to -24.55 and left it unreadable,
+> because it was then RW's station and RW fills 1.96 x 1.51 of the frame. Only
+> once the beat had an establishing frame — which changed the tour, the order and
+> the time budget — did f25 become a picture of something.
+
+**Limits.** 640x360 CPU renders at 24 samples, from `render/r2464_b1ab.blend`
+(`world/beat1_anim.blend` + both cameras, lifted practicals, `FILM_EXPOSURE`),
+which shows `R2_ProceduralSky` through the glass rather than the film's own sky.
+Compositions, not detail. R2-317's overflow is untouched and every presentation
+still fails the fit gate.
+
+---
+
+## R2-470 — what I could NOT confirm
 
 * **The 3 % score tolerance and the 25-degree cap have not been swept against
   rendered frames.** Both are defended by measurement — the plateau is real, the
@@ -730,8 +1010,9 @@ detail, material or noise should be read off them.
 * **f603's 333 px has not been looked at.** It is outside the protected band and
   the key either side of it is pinned, but 333 px at 4K is a shift a review would
   see and the argument that it does not matter is geometric, not photographic.
-* **NOSE and FW are still shot from 84.15 and 74.48 degrees**, and 64 frames of
-  beat 1 (8.1 %) remain steeper than 70. The opening is fixed; the beat is not.
+* ~~**NOSE and FW are still shot from 84.15 and 74.48 degrees**~~ **CLOSED by
+  R2-467.** With the establishing lead-in both re-aim (21.06 and 22.99) and beat
+  1 has **zero** frames steeper than 70 degrees.
 * **The A/B renders come from `render/r2451_b1ab.blend`, not from the film.** It
   is `world/beat1_anim.blend` — same showroom, same 616 exploded parts, same 23
   practicals, same part animation, lifted by `showroom_lighting` and graded at
@@ -743,9 +1024,16 @@ detail, material or noise should be read off them.
   R2-062's machinery does by construction and is the opposite of pinning an order
   that was optimal for stations that no longer exist — but the order changed and
   nobody has watched it.
-* **`fill` is untouched by design.** All fifteen still fail R2-317's framing gate,
-  and f25 shows what that costs: an opening frame can be fixed for angle and stay
-  unreadable for distance.
+* **`fill` is untouched by design.** All fifteen presentations still fail
+  R2-317's framing gate. The establishing frame is a sixteenth key, not a
+  re-standing of the fifteen, so R2-330's hybrid re-solve is still owed.
+* **The establishing frame has not been seen in MOTION.** It is a 2.0 s hold
+  into a 4.88 m push, and whether that push reads as a drift or as a lunge is a
+  question only a rendered clip answers. Nobody has watched one.
+* **The 2.0 s lead-in is the maximum, not an optimum.** It was taken because it
+  is the most the deadlines allow; 1.5 s might compose better and was not tried.
+* **Three new path kinks** appear at f369, f370 and f434 (0.011-0.024 m/frame).
+  They are advisories, smaller than the f462 kink they replace, and unexamined.
 * **Nothing is promoted.** `docs/presentation_normals.json` and
   `docs/beat_sheet.json` are both gitignored build artefacts and were left at
   their shipped values. The candidates are committed as
