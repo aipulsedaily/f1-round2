@@ -1303,3 +1303,50 @@ That is the whole defect and the whole fix in one pair of frames: the car
 stops towing its own debris, because there is finally something in the scene
 that acts on the debris and not on the car.
 
+
+### R2-400, closing note — the render set is independently clean, and the farm's starvation has a SECOND cause that the obvious fix would not have touched
+
+**The eight frames, checked by a second pair of eyes that did not know what
+they were supposed to show.** All eight are 100 % (or 99.99 %) non-black with
+57,271–144,523 distinct colours; the farm's black signature is mean 0.0003 with
+**two** distinct colours. `new_full_f2978.png` reads lum mean **0.3917**, sd
+**0.1143** — the same numbers a healthy 4K/s256 frame on this instance gave
+before any of this work. The broker's own per-job effective settings line
+confirms `camera=ONER samples=256 adaptive_threshold=0.01 dof=True
+engine=CYCLES` on every frame. **`--allow-blank` was never passed and never
+needed.** Nothing in R2-400 rests on a frame I have not seen the pixel
+statistics of.
+
+**And the scheduling trap is not the one I described.** I told the render agent
+the blocker was `SCENE_PRIO_BOOST_MAX_SEC` clamping a new scene's effective age
+at 1,800 s against incumbents already at ~7,800. That is real and it is only
+half of it. `Broker.cheaper_to_finish()` (`broker/app.py:386`) separately vetoes
+the starvation switch whenever `queued × mean_render_sec ≤
+SCENE_SWITCH_PAYBACK × reload_cost`, and **`mean_render_sec` counts stills
+only**. r1ladder's twelve queued jobs are *sequence* jobs of 99–120 frames —
+1,449 frames, about 30 h of GPU — and they were priced at the still rate of
+53 s each, i.e. 634 s of work against a ~3,100 s reload. The switch was
+permanently vetoed **at any priority**. Raising the boost cap on its own would
+have changed nothing, and I would have concluded the wrong thing from it.
+
+That is worth passing to whoever owns the broker: **a queue of sequence jobs is
+priced as if it were a queue of stills, so a scene holding long sequences can
+never be switched away from.** The evidence that it was a veto and not a
+priority problem is that the jobs went in at `--prio -1000` and still did not
+move until the payback term was relaxed.
+
+The renders were got by **environment overrides on the broker process only** —
+`VASTRENDER_SCENE_PRIO_BOOST_MAX_SEC` 1800 → 30000 and
+`VASTRENDER_SCENE_SWITCH_PAYBACK` 2.0 → 0.2 — with no file edited anywhere,
+both restored at 16:03:41 and the restoration verified in `/proc/<pid>/environ`.
+Both restarts were timed to land seconds after another agent's frame completed;
+the new broker explicitly refused to redeploy over r1ladder's in-flight frame
+787 and waited for it. **No job was cancelled, re-prioritised or lost**, and the
+eviction that made room for the 5,006 MB push took eight idle scenes, none of
+which had queued work. r1ladder was deferred by 28 minutes and resumes on its
+own key. Total GPU cost of this block's eight frames: **$0.17**.
+
+One side effect, recorded because it was not the goal: `r2451` had been starved
+for 6,250 s and **its scene had never been uploaded at all**. It got its first
+service during the window this opened.
+
