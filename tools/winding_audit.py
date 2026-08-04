@@ -36,6 +36,7 @@ not measured after the fact is a hope.
 """
 import argparse
 import json
+import math
 import os
 import sys
 import time
@@ -57,29 +58,87 @@ def _is_context(name):
     return any(t in n for t in CONTEXT_TOKENS)
 
 
-def collect(collection=None, item=None):
-    """Mesh objects of the item, excluding standins the gate also excludes."""
+#: The item collection naming convention, MEASURED rather than assumed. It is
+#: not one convention: `timing_stand` builds `W_Item_TimingStand`,
+#: `marshal_post_deck` builds `ITEM_MARSHAL_POST_DECK`, and `pont_deck_slab`
+#: builds `PDS_Deck` / `PGD_Girders` with no item prefix at all.
+ITEM_PREFIXES = ("W_Item_", "ITEM_")
+
+
+def _mesh_objs(obs):
+    return [o for o in obs if o.type == "MESH" and o.data
+            and len(o.data.polygons) and not _is_context(o.name)]
+
+
+def collect(collection=None, item=None, why=None):
+    """Mesh objects of the item, excluding standins the gate also excludes.
+
+    `why` is an optional dict this fills in with HOW the subject was chosen.
+
+    THE SUBSTITUTION THIS USED TO MAKE, AND WHAT IT COST. The old rule was
+    `cands = [c for c in collections if c.name.startswith("W_Item_")]`, then
+    `pick = [those whose name ends with the item key]`, then `cands = pick or
+    cands` -- so when the name filter matched NOTHING it fell back to "any
+    W_Item_ collection at all" and took the biggest.
+
+    On `hospitality_deck` that is not hypothetical. Its own objects live in
+    `ITEM_HOSPITALITY_DECK`, which has no `W_Item_` prefix, while its CONTEXT
+    paving ships 41 `W_Item_PaddockPavingBay*` collections. So the sweep picked
+    `W_Item_PaddockPavingBay` -- another item's floor -- whose 54 members are
+    instancer empties holding no polygons, and reported
+    `SHEET_FACING_UNMEASURED, 0 objects` for a module with five decks in it.
+
+    A wrong subject that happens to be empty and a right subject that happens
+    to be clean produce the same line of output. So: an `--item` that matches
+    no collection is never a licence to measure a DIFFERENT item. The fallback
+    is the whole scene, which at least contains the subject, and the choice is
+    recorded and printed either way.
+    """
+    why = {} if why is None else why
     if collection:
         c = bpy.data.collections.get(collection)
         if c is None:
             raise SystemExit("no collection %r; have %s"
                              % (collection, [x.name for x in bpy.data.collections]))
-        obs = list(c.all_objects)
-    else:
-        cands = [c for c in bpy.data.collections
-                 if c.name.startswith("W_Item_")]
-        if item:
-            key = item.replace("_", "").lower()
-            pick = [c for c in cands if c.name.replace("_", "").lower()
-                    .endswith(key)]
-            cands = pick or cands
-        if not cands:
-            obs = list(bpy.context.scene.objects)
-        else:
-            c = max(cands, key=lambda c: len(c.all_objects))
-            obs = list(c.all_objects)
-    return [o for o in obs if o.type == "MESH" and o.data
-            and len(o.data.polygons) and not _is_context(o.name)]
+        why.update(source="explicit --collection", collection=c.name)
+        return _mesh_objs(c.all_objects)
+
+    key = item.replace("_", "").lower() if item else None
+    named = []
+    if key:
+        for c in bpy.data.collections:
+            n = c.name.replace("_", "").lower()
+            for p in ITEM_PREFIXES:
+                pn = p.replace("_", "").lower()
+                if n.startswith(pn) and key in n[len(pn):]:
+                    named.append(c)
+                    break
+    # only a collection that actually HOLDS the subject can be the subject
+    named = [c for c in named if _mesh_objs(c.all_objects)]
+    if named:
+        c = max(named, key=lambda c: len(_mesh_objs(c.all_objects)))
+        why.update(source="collection matched --item", collection=c.name,
+                   candidates=[x.name for x in named])
+        return _mesh_objs(c.all_objects)
+
+    prefixed = [c for c in bpy.data.collections
+                if c.name.startswith(ITEM_PREFIXES) and _mesh_objs(c.all_objects)]
+    if key and prefixed:
+        # THE OLD CODE TOOK THE BIGGEST OF THESE. It is the wrong item.
+        why.update(source="whole scene (no collection matches --item)",
+                   collection=None, item_key=key,
+                   rejected_other_items=[c.name for c in prefixed][:20],
+                   note="an item-prefixed collection exists but none names "
+                        "this item; measuring the scene rather than another "
+                        "item's geometry")
+        return _mesh_objs(bpy.context.scene.objects)
+    if len(prefixed) == 1:
+        c = prefixed[0]
+        why.update(source="the only item collection in the file",
+                   collection=c.name)
+        return _mesh_objs(c.all_objects)
+    why.update(source="whole scene (no item collection)", collection=None)
+    return _mesh_objs(bpy.context.scene.objects)
 
 
 def audit(objs, rays=0, fix=False):
@@ -216,6 +275,196 @@ def ray_attribute(objs, n_rays, seed=7):
     return out
 
 
+def _welded_components(wid, T):
+    """Connected components of the surface AFTER welding by position.
+
+    `mesh_winding_report`'s `tri_piece` cannot be used for this. It labels the
+    raw index space, and `extrude` deliberately gives each end cap its own
+    copy of the ring vertices, so every solid in `timing_stand` arrives split
+    into three "pieces": an open side tube and two loose fans. Ask whether the
+    piece holding a facet is closed and the answer is always no.
+
+    Label propagation with pointer jumping, because a Python union-find over
+    three million triangles costs half a minute and this costs a second.
+    """
+    E = np.concatenate([T[:, (0, 1)], T[:, (1, 2)], T[:, (2, 0)]])
+    a, b = wid[E[:, 0]], wid[E[:, 1]]
+    lab = np.arange(int(wid.max()) + 1, dtype=np.int64)
+    for _ in range(64):
+        prev = lab
+        m = np.minimum(lab[a], lab[b])
+        lab = lab.copy()
+        np.minimum.at(lab, a, m)
+        np.minimum.at(lab, b, m)
+        lab = lab[lab]                                  # pointer jumping
+        if np.array_equal(lab, prev):
+            break
+    return lab[wid[T[:, 0]]]
+
+
+def _piece_is_outward_solid(Pw, T, pc, p):
+    """Is connected piece `p` a CLOSED surface wound outward?
+
+    THE ONE QUESTION THAT SPLITS A GROOVE FROM AN UPSIDE-DOWN SLAB, and it
+    took three wrong answers to find. A cavity milled into a member has an
+    up-facing floor under a down-facing lip -- the exact signature of an
+    inverted slab -- and neither footprint, nor separation, nor a parity ray
+    tells them apart. What does: the piece the facets belong to. If that piece
+    is a closed solid whose own volume comes out POSITIVE, the member is right
+    way round and the pair is a feature of it, not a defect in it.
+
+    `enclosure_q` cannot stand in for this and I tried it first. It is
+    `|vol| / area**1.5`, so it measures CHUNKINESS, not closure: a 4.5 m
+    purlin scores 0.0025 against a `q_min` of 0.005 and is classed a sheet
+    despite being a perfectly closed extrusion. Closure is the property that
+    makes a volume sign mean something, and it is exact and cheap -- every
+    welded edge used exactly twice.
+
+    And it leaves the case this file exists for untouched, which is the test
+    of the rule: `extrude` gives each cap its own vertices, so a deck slab's
+    top face is its own OPEN piece, closure fails, and the question stays open
+    for the parity arm. `pont_deck_slab`'s welded slab is closed but its
+    volume is negative when it is inverted, so that fails too. One rule, three
+    geometries, right answer on each.
+    """
+    s = np.flatnonzero(pc == p)
+    if not len(s):
+        return False
+    F = T[s]
+    V = Pw
+    sub = np.unique(F)
+    _, wid = np.unique(np.round(V[sub], 6), axis=0, return_inverse=True)
+    ren = np.zeros(int(sub.max()) + 1, np.int64)
+    ren[sub] = np.asarray(wid).ravel()
+    W = ren[F]
+    E = np.concatenate([W[:, (0, 1)], W[:, (1, 2)], W[:, (2, 0)]])
+    E = E[E[:, 0] != E[:, 1]]
+    if not len(E):
+        return False
+    nw = int(W.max()) + 1
+    key = np.sort(E, axis=1)
+    ukey = key[:, 0] * nw + key[:, 1]
+    _, cnt = np.unique(ukey, return_counts=True)
+    if not np.all(cnt == 2):
+        return False                       # open or non-manifold: no volume
+    # and wound consistently: every directed edge exactly once
+    _, dcnt = np.unique(E[:, 0] * nw + E[:, 1], return_counts=True)
+    if not np.all(dcnt == 1):
+        return False
+    P = V[F]
+    c = P.reshape(-1, 3).mean(0)
+    vol = float(np.einsum("ij,ij->i", P[:, 0] - c,
+                          np.cross(P[:, 1] - c, P[:, 2] - c)).sum()) / 6.0
+    return vol > 0.0
+
+
+def _material_between(Pw, T, lo, hi, n_probe=5):
+    """Is there SOLID between these two facets, or is it a groove?
+
+    THE FALSE POSITIVE THIS EXISTS TO KILL. "Upper facet faces down, lower
+    facet faces up" is the signature of a slab built upside down. It is ALSO
+    the signature of a perfectly correct SLOT: the floor of a groove faces up
+    and the underside of the lip above it faces down, and the two have the same
+    footprint and the same area. Measured on `timing_stand`: the T-slot
+    extrusion its purlins are swept from produced 15 such pairs, on five
+    stands, and calling them inverted would have been a fabricated defect on
+    geometry that is right.
+
+    The two cases differ in exactly one way and it has nothing to do with
+    winding -- which matters, because winding is the thing under test. Between
+    the faces of a slab there is MATERIAL; between the faces of a slot there is
+    AIR. So: fire a vertical ray from between them and count crossings above
+    it. Odd is inside. Parity does not care which way any face is wound, so
+    this arm cannot be fooled by the defect it is helping to find.
+
+    Sampled at several points and taken by majority, because a single probe on
+    a facet edge or through a bolt hole is a coin toss.
+
+    RETURNS `True` / `False` / `None`. Parity is only meaningful on a surface
+    that bounds a region, and the caller establishes that separately with
+    `_nonmanifold_verts` before trusting an answer -- see `sheet_facing`. This
+    returns `None` when its own probes disagree or cannot find the column.
+    """
+    zq = 0.5 * (lo["z"] + hi["z"])
+    tri = Pw[T]
+    x = tri[:, :, 0]
+    y = tri[:, :, 1]
+    xmin, xmax = x.min(1), x.max(1)
+    ymin, ymax = y.min(1), y.max(1)
+    # the ray only ever hits a triangle with area in plan
+    ar2 = ((x[:, 1] - x[:, 0]) * (y[:, 2] - y[:, 0])
+           - (x[:, 2] - x[:, 0]) * (y[:, 1] - y[:, 0]))
+    live = np.abs(ar2) > 1e-12
+    inside = outside = leaky = 0
+    ups = hi["tris"]
+    step = max(1, len(ups) // n_probe)
+    probes = ups[::step][:n_probe]
+    for t in probes:
+        p = Pw[T[t]].mean(0)                      # centroid of a real facet tri
+        px, py = float(p[0]), float(p[1])
+        m = live & (xmin <= px) & (px <= xmax) & (ymin <= py) & (py <= ymax)
+        idx = np.flatnonzero(m)
+        if not len(idx):
+            continue
+        tt = tri[idx]
+        x0, y0 = tt[:, 0, 0], tt[:, 0, 1]
+        x1, y1 = tt[:, 1, 0], tt[:, 1, 1]
+        x2, y2 = tt[:, 2, 0], tt[:, 2, 1]
+        d = (y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2)
+        ok = np.abs(d) > 1e-15
+        a = np.where(ok, ((y1 - y2) * (px - x2) + (x2 - x1) * (py - y2))
+                     / np.where(ok, d, 1.0), -1.0)
+        b = np.where(ok, ((y2 - y0) * (px - x2) + (x0 - x2) * (py - y2))
+                     / np.where(ok, d, 1.0), -1.0)
+        c = 1.0 - a - b
+        hit = ok & (a >= 0) & (b >= 0) & (c >= 0)
+        if not hit.any():
+            continue
+        zh = (a * tt[:, 0, 2] + b * tt[:, 1, 2] + c * tt[:, 2, 2])[hit]
+        if len(zh) % 2:
+            leaky += 1                 # not watertight along this ray
+            continue
+        if int((zh > zq + 1e-7).sum()) % 2:
+            inside += 1
+        else:
+            outside += 1
+    if leaky > inside + outside:
+        return None
+    if inside == outside:
+        return None
+    return inside > outside
+
+
+def _facets(tris):
+    """Label connected runs of triangles. `tris` is (k, 3) WELDED indices.
+
+    Union-find with path halving. Pure numpy indices, no scipy -- Blender's
+    interpreter does not ship it.
+    """
+    k = len(tris)
+    if not k:
+        return np.zeros(0, np.int64)
+    idx = np.unique(tris)
+    ren = {int(v): i for i, v in enumerate(idx)}
+    parent = np.arange(len(idx), dtype=np.int64)
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    for t in tris:
+        a = find(ren[int(t[0])])
+        for c in (t[1], t[2]):
+            b = find(ren[int(c)])
+            if a != b:
+                parent[b] = a
+    root = np.array([find(ren[int(t[0])]) for t in tris], np.int64)
+    _, lab = np.unique(root, return_inverse=True)
+    return np.asarray(lab).ravel()
+
+
 def sheet_facing(objs, cos_flat=0.99, min_area=0.05):
     """THE CLASS SIGNED VOLUME CANNOT SEE, AND THIS FILE'S REPAIR ABSTAINS ON.
 
@@ -233,13 +482,35 @@ def sheet_facing(objs, cos_flat=0.99, min_area=0.05):
     28 of 500 hits, UP from 26.  The number that was being watched went to zero
     while the defect it was watching for got worse.
 
-    So: find every planar piece, pair the ones that share a footprint and are
-    separated in z, and report a pair as INVERTED when the UPPER sheet faces
-    down and the LOWER faces up.  A slab built the right way round is silent
-    here; a slab built upside down is a named pair with an area attached, and
-    neither verdict depends on a piece being closed.
+    So: find every horizontal FACET, pair the ones that share a footprint and
+    are separated in z, and report a pair as INVERTED when the UPPER facet
+    faces down and the LOWER faces up.  A slab built the right way round is
+    silent here; a slab built upside down is a named pair with an area
+    attached, and neither verdict depends on a piece being closed.
+
+    FACET, NOT PIECE -- AND THAT CHANGE IS R2-181.
+    -----------------------------------------------
+    The first version grouped by CONNECTED COMPONENT and took each component's
+    area-weighted mean normal.  That only ever works where the walking surface
+    happens to BE its own component, which in `timing_stand` it is, because
+    `extrude` gives every cap its own copy of the ring vertices.  A module that
+    builds its slab as one welded manifold puts the top, the soffit and four
+    sides in ONE component whose mean normal cancels to about zero, so the
+    component is rejected as "not horizontal" and the module reports **0 flat
+    pieces** -- which is what `pont_deck_slab` reported, on a bridge deck.
+
+    Zero because there is nothing wrong and zero because the instrument cannot
+    see this shape of geometry are the same line of output, and that is the
+    exact failure this file was written to stop making.  So the grouping is now
+    over connected runs of NEAR-HORIZONTAL TRIANGLES OF THE SAME SIGN, which
+    finds a separate-cap slab and a welded slab alike, and every rejection is
+    counted and reported instead of vanishing.
     """
-    rows = []
+    rows, mesh = [], {}
+    rej = {"objects_with_geometry": 0, "triangles": 0,
+           "tilted_area_m2": 0.0, "facets_found": 0,
+           "facets_under_min_area": 0, "area_under_min_area_m2": 0.0,
+           "largest_rejected_facet_m2": 0.0}
     for ob in objs:
         me = ob.data
         r = K.mesh_winding_report(me, with_tri_piece=True)
@@ -247,7 +518,6 @@ def sheet_facing(objs, cos_flat=0.99, min_area=0.05):
             continue
         P = r["verts"]
         T = r["tri_index"].astype(np.int64)
-        pc = r["tri_piece"]
         M = np.array(ob.matrix_world)
         det = float(np.linalg.det(M[:3, :3]))
         Pw = P @ M[:3, :3].T + M[:3, 3]
@@ -257,25 +527,38 @@ def sheet_facing(objs, cos_flat=0.99, min_area=0.05):
         L = np.linalg.norm(n, axis=1)
         area = 0.5 * L
         u = n / np.maximum(L, 1e-30)[:, None]
-        npc = int(pc.max()) + 1 if len(pc) else 0
-        for p in range(npc):
-            s = pc == p
-            if not s.any():
+        rej["objects_with_geometry"] += 1
+        rej["triangles"] += int(len(T))
+        rej["tilted_area_m2"] += float(area[np.abs(u[:, 2]) < cos_flat].sum())
+        # weld by position: a facet must not be split by the duplicate ring
+        # vertices `extrude` emits for its caps
+        _, wid = np.unique(np.round(Pw, 6), axis=0, return_inverse=True)
+        wid = np.asarray(wid).ravel()
+        for sign in (1.0, -1.0):
+            sel = np.flatnonzero(u[:, 2] * sign > cos_flat)
+            if not len(sel):
                 continue
-            A = float(area[s].sum())
-            if A < min_area:
-                continue
-            mu = (u[s] * area[s][:, None]).sum(0) / A
-            if abs(mu[2]) < cos_flat:
-                continue                       # not a horizontal sheet
-            z = Pw[T[s].ravel()][:, 2]
-            xy = Pw[T[s].ravel()][:, :2]
-            rows.append({"object": ob.name, "piece": int(p), "area_m2": A,
-                         "mean_nz": float(mu[2]),
-                         "z": float(0.5 * (z.min() + z.max())),
-                         "xy": [float(v) for v in
-                                (xy.min(0)[0], xy.min(0)[1],
-                                 xy.max(0)[0], xy.max(0)[1])]})
+            lab = _facets(wid[T[sel]])
+            for f in np.unique(lab):
+                s = sel[lab == f]
+                A = float(area[s].sum())
+                rej["facets_found"] += 1
+                if A < min_area:
+                    rej["facets_under_min_area"] += 1
+                    rej["area_under_min_area_m2"] += A
+                    rej["largest_rejected_facet_m2"] = max(
+                        rej["largest_rejected_facet_m2"], A)
+                    continue
+                mu = float((u[s, 2] * area[s]).sum() / A)
+                pts = Pw[T[s].ravel()]
+                rows.append({"object": ob.name, "piece": int(f), "area_m2": A,
+                             "mean_nz": mu, "tris": s,
+                             "z": float(0.5 * (pts[:, 2].min()
+                                               + pts[:, 2].max())),
+                             "xy": [float(v) for v in
+                                    (pts[:, 0].min(), pts[:, 1].min(),
+                                     pts[:, 0].max(), pts[:, 1].max())]})
+        mesh[ob.name] = [Pw, T, wid, None]
     # pair by footprint
     pairs, used = [], set()
     for i, a in enumerate(rows):
@@ -292,23 +575,82 @@ def sheet_facing(objs, cos_flat=0.99, min_area=0.05):
             if not (1e-5 < abs(a["z"] - b["z"]) < 0.30):
                 continue
             lo, hi = (a, b) if a["z"] < b["z"] else (b, a)
+            suspect = bool(hi["mean_nz"] < 0 and lo["mean_nz"] > 0)
+            solid = True
+            enclosed = False
+            if suspect:
+                ent = mesh[a["object"]]
+                # IF THE FACETS BELONG TO A CLOSED SOLID THAT VOLUME ALREADY
+                # SETTLED AS OUTWARD, THE PAIR CANNOT BE AN INVERTED SLAB.
+                #
+                # This is the case `sheet_facing` was never meant to judge and
+                # must not: a groove, rebate or T-slot cavity inside a member
+                # that is demonstrably right way round. `timing_stand`'s
+                # purlins are swept from `tslot_section(b, b * 0.62, ...)`,
+                # 18.6 mm tall with opposing slots cut deeper than half of
+                # that, so the two cavities MEET and the profile runs back
+                # along itself at a = +/-0.0081. A vertical ray through the
+                # overlap crosses two faces and PARITY DUTIFULLY ANSWERS
+                # "inside", on a region both slots have declared void -- 15
+                # pairs on five stands, on members that build in isolation as
+                # consistent, positive-volume, top-face-up solids.
+                #
+                # The deck slabs this file exists for are NOT cleared by this,
+                # and that is the point: `extrude` gives each cap its own
+                # vertices, so a cap is a volumeless SHEET piece, `enclosure_q`
+                # falls under `Q_MIN`, and the question stays open for parity
+                # to answer. One rule, and it splits the two cases exactly.
+                Pw, T = ent[0], ent[1]
+                if ent[3] is None:      # lazy: only objects with a suspect
+                    ent[3] = _welded_components(ent[2], T)
+                wc = ent[3]
+                enclosed = _piece_is_outward_solid(
+                    Pw, T, wc, int(wc[hi["tris"][0]]))
+                if not enclosed:
+                    solid = _material_between(Pw, T, lo, hi)
             pairs.append({"object": a["object"],
                           "lower_piece": lo["piece"], "upper_piece": hi["piece"],
                           "z_lower": lo["z"], "z_upper": hi["z"],
                           "area_m2": round(a["area_m2"], 5),
                           "lower_nz": round(lo["mean_nz"], 4),
                           "upper_nz": round(hi["mean_nz"], 4),
-                          "inverted": bool(hi["mean_nz"] < 0 and lo["mean_nz"] > 0)})
+                          "material_between": solid,
+                          "suspect": suspect,
+                          "inside_outward_solid": enclosed,
+                          "inverted": bool(suspect and not enclosed
+                                           and solid is True)})
             used.add(i); used.add(j)
             break
     tot = sum(r["area_m2"] for r in rows)
     down = sum(r["area_m2"] for r in rows if r["mean_nz"] < 0)
     inv = [p for p in pairs if p["inverted"]]
-    return {"flat_pieces": len(rows), "flat_area_m2": round(tot, 4),
-            "down_facing_area_m2": round(down, 4),
-            "slab_pairs": len(pairs), "inverted_pairs": len(inv),
-            "inverted_area_m2": round(sum(p["area_m2"] for p in inv) * 2.0, 4),
-            "inverted": sorted(inv, key=lambda p: -p["area_m2"])[:40]}
+    # NAMED, NOT DISCARDED. These looked like the defect and were cleared by
+    # the parity arm; printing the count is how a reader can tell "nothing
+    # looked wrong" from "15 things looked wrong and were checked".
+    slots = [p for p in pairs if p.get("suspect") and not p["inverted"]
+             and (p["inside_outward_solid"] or p["material_between"] is False)]
+    undec = [p for p in pairs if p.get("suspect") and not p["inverted"]
+             and not p["inside_outward_solid"]
+             and p["material_between"] is None]
+    out = {"groove_pairs_cleared": len(slots),
+           "undecidable_pairs": len(undec),
+           "undecidable_area_m2": round(sum(p["area_m2"] for p in undec)
+                                        * 2.0, 4),
+           "undecidable": sorted(undec, key=lambda p: -p["area_m2"])[:20],
+           "flat_pieces": len(rows), "flat_area_m2": round(tot, 4),
+           "down_facing_area_m2": round(down, 4),
+           "slab_pairs": len(pairs), "inverted_pairs": len(inv),
+           "inverted_area_m2": round(sum(p["area_m2"] for p in inv) * 2.0, 4),
+           "inverted": sorted(inv, key=lambda p: -p["area_m2"])[:40]}
+    # WHAT THE THRESHOLDS THREW AWAY. Without this a `flat_pieces: 0` is a
+    # dead end -- nobody can tell whether the subject has no horizontal
+    # surface, or has one that `cos_flat` called tilted, or has one that
+    # `min_area` called small. Now the line says which.
+    for k, v in rej.items():
+        out[k] = round(v, 4) if isinstance(v, float) else v
+    out["cos_flat"] = cos_flat
+    out["min_area_m2"] = min_area
+    return out
 
 
 def sheet_facing_selftest():
@@ -344,6 +686,131 @@ def sheet_facing_selftest():
         ok = ok and got == want
         bpy.data.objects.remove(ob, do_unlink=True)
         bpy.data.meshes.remove(me)
+
+    # A WELDED slab -- top, soffit and four sides in ONE component, which is
+    # how `pont_deck_slab` builds a bridge deck. The component-mean-normal
+    # version of `sheet_facing` scored this 0 flat pieces and printed
+    # UNMEASURED, indistinguishably from a module with no deck at all. Both
+    # directions, so the control cannot expire into a pass (R2-072).
+    for tag, invert in (("correct", False), ("inverted", True)):
+        me = bpy.data.meshes.new("CTL_welded")
+        bm = bmesh.new()
+        vs0 = [bm.verts.new((x, y, 0.0)) for x, y in
+               ((0, 0), (2, 0), (2, 2), (0, 2))]
+        vs1 = [bm.verts.new((x, y, 0.028)) for x, y in
+               ((0, 0), (2, 0), (2, 2), (0, 2))]
+        top, bot = (vs1[::-1], vs0) if invert else (vs1, vs0[::-1])
+        bm.faces.new(top)
+        bm.faces.new(bot)
+        for i in range(4):
+            j = (i + 1) % 4
+            side = [vs0[i], vs0[j], vs1[j], vs1[i]]
+            bm.faces.new(side if not invert else side[::-1])
+        bm.to_mesh(me); bm.free()
+        ob = bpy.data.objects.new("CTL_welded", me)
+        bpy.context.scene.collection.objects.link(ob)
+        r = sheet_facing([ob])
+        want = 1 if invert else 0
+        got = r["inverted_pairs"]
+        good = got == want and r["flat_pieces"] == 2
+        print("   CONTROL %-9s WELDED slab -> %d flat facet(s), %d inverted "
+              "pair(s), expected 2 and %d  %s"
+              % (tag, r["flat_pieces"], got, want, "ok" if good else "FAIL"))
+        ok = ok and good
+        bpy.data.objects.remove(ob, do_unlink=True)
+        bpy.data.meshes.remove(me)
+
+    # THE GROOVE. A slot's floor faces up and the lip above it faces down --
+    # the same signature as an upside-down slab, and the reason the parity arm
+    # exists. A correct grooved bar must be SILENT, and the slab sitting in the
+    # same file must still be NAMED, or the arm has simply been turned off.
+    # The profile is a 2.0 m bar, 0.30 x 0.10, with a REBATE cut in from one
+    # side: an up-facing strip at z 0.030 and a down-facing strip of exactly
+    # the same width 6.4 mm above it, with AIR between. That is the shape
+    # `timing_stand`'s T-slot purlins actually produce, reproduced here rather
+    # than described. Its outer top/bottom pair is a genuine slab, so the same
+    # object carries both cases.
+    PROF = [(-0.15, 0.0), (0.15, 0.0), (0.15, 0.030), (0.05, 0.030),
+            (0.05, 0.0364), (0.15, 0.0364), (0.15, 0.10), (-0.15, 0.10)]
+    for tag, flip, want_inv, want_cleared in (
+            ("grooved bar", False, 0, 1),
+            ("grooved bar FLIPPED", True, 1, 0)):
+        me = bpy.data.meshes.new("CTL_slot")
+        bm = bmesh.new()
+        rings = [[bm.verts.new((x, y, z)) for y, z in PROF]
+                 for x in (-1.0, 1.0)]
+        mm = len(PROF)
+        for i in range(mm):
+            j = (i + 1) % mm
+            f = [rings[0][i], rings[0][j], rings[1][j], rings[1][i]]
+            bm.faces.new(f[::-1] if flip else f)
+        bm.faces.new(rings[0] if flip else rings[0][::-1])
+        bm.faces.new(rings[1][::-1] if flip else rings[1])
+        bm.to_mesh(me); bm.free()
+        ob = bpy.data.objects.new("CTL_slot", me)
+        bpy.context.scene.collection.objects.link(ob)
+        r = sheet_facing([ob], min_area=0.02)
+        got, cleared = r["inverted_pairs"], r["groove_pairs_cleared"]
+        good = got >= want_inv and cleared >= want_cleared \
+            and (got == 0 or want_inv)
+        print("   CONTROL %-20s -> %d inverted pair(s) (want %d), %d groove "
+              "pair(s) cleared by parity (want %d)  %s"
+              % (tag, got, want_inv, cleared, want_cleared,
+                 "ok" if good else "FAIL"))
+        ok = ok and good
+        bpy.data.objects.remove(ob, do_unlink=True)
+        bpy.data.meshes.remove(me)
+
+    # THE THRESHOLDS, STATED RATHER THAN ASSUMED. `cos_flat` and `min_area`
+    # are the two ways a real deck can be excluded without a word being
+    # printed, so both are exercised on either side of their own bound. This
+    # is what `pont_deck_slab`'s "0 flat pieces" needed and did not have.
+    for tag, tilt_deg, side, want_seen in (("just inside cos_flat", 6.0,
+                                            "inside", True),
+                                           ("just outside cos_flat", 10.0,
+                                            "outside", False)):
+        me = bpy.data.meshes.new("CTL_tilt")
+        bm = bmesh.new()
+        t = math.tan(math.radians(tilt_deg))
+        for z in (0.0, 0.028):
+            vs = [bm.verts.new((x, y, z + x * t)) for x, y in
+                  ((0, 0), (2, 0), (2, 2), (0, 2))]
+            bm.faces.new(vs if z > 0 else vs[::-1])
+        bm.to_mesh(me); bm.free()
+        ob = bpy.data.objects.new("CTL_tilt", me)
+        bpy.context.scene.collection.objects.link(ob)
+        r = sheet_facing([ob])
+        seen = r["flat_pieces"] > 0
+        print("   CONTROL %-22s (%.1f deg, %s the %.2f bound) -> %d facet(s) "
+              "seen, expected %s  %s"
+              % (tag, tilt_deg, side, math.degrees(math.acos(0.99)),
+                 r["flat_pieces"], "some" if want_seen else "none",
+                 "ok" if seen == want_seen else "FAIL"))
+        ok = ok and seen == want_seen
+        bpy.data.objects.remove(ob, do_unlink=True)
+        bpy.data.meshes.remove(me)
+
+    for tag, side_m, want_seen in (("just over min_area", 0.30, True),
+                                   ("just under min_area", 0.20, False)):
+        me = bpy.data.meshes.new("CTL_small")
+        bm = bmesh.new()
+        for z in (0.0, 0.028):
+            vs = [bm.verts.new((x, y, z)) for x, y in
+                  ((0, 0), (side_m, 0), (side_m, side_m), (0, side_m))]
+            bm.faces.new(vs if z > 0 else vs[::-1])
+        bm.to_mesh(me); bm.free()
+        ob = bpy.data.objects.new("CTL_small", me)
+        bpy.context.scene.collection.objects.link(ob)
+        r = sheet_facing([ob])
+        seen = r["flat_pieces"] > 0
+        print("   CONTROL %-22s (%.3f m2 vs the 0.05 m2 bound) -> %d facet(s) "
+              "seen, expected %s  %s"
+              % (tag, side_m * side_m, r["flat_pieces"],
+                 "some" if want_seen else "none",
+                 "ok" if seen == want_seen else "FAIL"))
+        ok = ok and seen == want_seen
+        bpy.data.objects.remove(ob, do_unlink=True)
+        bpy.data.meshes.remove(me)
     return ok
 
 
@@ -367,16 +834,25 @@ def main():
                          "`sheet_facing` -- signed volume is blind to this "
                          "class and `--fix` abstains on it by design.")
     ap.add_argument("--fix", action="store_true")
+    ap.add_argument("--cos-flat", type=float, default=0.99,
+                    help="how far from horizontal a facet may lean and still "
+                         "count. 0.99 = 8.1 deg. Both sides of this bound are "
+                         "exercised by the controls every run.")
+    ap.add_argument("--min-area", type=float, default=0.05,
+                    help="smallest facet worth pairing, m2. What it drops is "
+                         "COUNTED and printed, so a zero can be explained.")
     ap.add_argument("--save", default=None)
     ap.add_argument("--out", default=None)
     a = ap.parse_args(argv)
 
     t0 = time.time()
     if a.sheet_facing:
-        objs = collect(a.collection, a.item)
-        sf = sheet_facing(objs)
+        why = {}
+        objs = collect(a.collection, a.item, why)
+        sf = sheet_facing(objs, cos_flat=a.cos_flat, min_area=a.min_area)
         sf["controls_pass"] = sheet_facing_selftest()
         sf["objects_audited"] = len(objs)
+        sf["subject"] = why
         ctl = sf["controls_pass"]
         txt = json.dumps({"item": a.item, "blend": bpy.data.filepath,
                           "sheet_facing": sf,
@@ -385,20 +861,54 @@ def main():
         if a.out:
             os.makedirs(os.path.dirname(a.out), exist_ok=True)
             open(a.out, "w", encoding="utf-8").write(txt)
+        # FOUR OUTCOMES, NOT THREE, BECAUSE "COULD NOT LOOK" HAS TWO CAUSES
+        # AND THEY NEED OPPOSITE FIXES. `NO_SUBJECT` means the sweep never
+        # read the module -- fix the sweep. `UNMEASURED` means it read it and
+        # found nothing horizontal -- fix the thresholds, or the module has no
+        # deck. R2-117: a field with fewer cells than there are outcomes
+        # writes two different findings to disk as the same word.
         if not ctl:
-            verdict = "CONTROL_FAIL"
+            verdict, why_txt = "CONTROL_FAIL", "the synthetic controls failed"
+        elif not sf["objects_audited"]:
+            verdict = "NO_SUBJECT"
+            why_txt = ("0 mesh objects collected; subject chosen by %s"
+                       % why.get("source"))
         elif not sf["flat_pieces"]:
-            # NOT a pass. Nothing horizontal was found at all, which on a real
-            # module means the audit measured the wrong thing or nothing.
             verdict = "UNMEASURED"
+            why_txt = ("%d objects / %d triangles read, %d facets found, "
+                       "%d dropped under min_area=%.3f m2 (largest dropped "
+                       "%.4f m2), %.3f m2 rejected as tilted beyond "
+                       "cos_flat=%.3f"
+                       % (sf["objects_with_geometry"], sf["triangles"],
+                          sf["facets_found"], sf["facets_under_min_area"],
+                          sf["min_area_m2"], sf["largest_rejected_facet_m2"],
+                          sf["tilted_area_m2"], sf["cos_flat"]))
         elif sf["inverted_pairs"]:
-            verdict = "DIRTY"
+            verdict, why_txt = "DIRTY", "upper facet faces the ground"
+        elif sf["undecidable_pairs"]:
+            # NOT a pass. The pairs look like the defect and the geometry is
+            # not watertight enough for the parity arm to rule either way.
+            verdict = "UNDECIDED"
+            why_txt = ("%d pair(s), %.3f m2, look inverted but sit on "
+                       "self-intersecting geometry where no inside/outside "
+                       "answer exists; %d groove pair(s) cleared"
+                       % (sf["undecidable_pairs"], sf["undecidable_area_m2"],
+                          sf["groove_pairs_cleared"]))
         else:
             verdict = "OK"
-        print(">> STAGE RESULT: SHEET_FACING_%s (%d objects, %d flat pieces, "
-              "%d inverted slab pairs, %.3f m2)"
+            why_txt = ("%d slab pairs, all upper faces up; %d groove pair(s) "
+                       "cleared by parity"
+                       % (sf["slab_pairs"], sf["groove_pairs_cleared"]))
+        print(">> SUBJECT: %s%s" % (why.get("source"),
+                                    "" if not why.get("collection")
+                                    else " -> %s" % why["collection"]))
+        if why.get("rejected_other_items"):
+            print(">> NOTE: item-prefixed collections exist but none names "
+                  "%r: %s" % (a.item, why["rejected_other_items"]))
+        print(">> STAGE RESULT: SHEET_FACING_%s (%d objects, %d flat facets, "
+              "%d inverted slab pairs, %.3f m2) -- %s"
               % (verdict, sf["objects_audited"], sf["flat_pieces"],
-                 sf["inverted_pairs"], sf["inverted_area_m2"]))
+                 sf["inverted_pairs"], sf["inverted_area_m2"], why_txt))
         return
     objs = collect(a.collection, a.item)
     planted = None
