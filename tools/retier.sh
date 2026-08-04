@@ -45,9 +45,20 @@
 # assembly6's, so no summary-level check can tell them apart.
 set -e
 cd "$(dirname "$0")/.." || exit 1
-BLEND=${1:-render/world/assembly/r2/assembly6.blend}
-OUT=work/retier
+# WHICH BLEND, by default, IS WHATEVER SHIPPING.md SAYS -- not a hardcoded name.
+# The default used to read `assembly6.blend`, and it stayed right for exactly as
+# long as assembly6 was the ship. R2-071 and R2-100 are both the same mistake:
+# a second copy of the answer, in a default argument, where it does not look
+# like a decision. There is one authority and tools/shipping_world.py reads it.
+BLEND=${1:-$(python3 tools/shipping_world.py --path 2>/dev/null || echo render/world/assembly/r2/assembly6.blend)}
+OUT=${OUT:-work/retier}
+# /usr/bin/blender has no CUDA kernels; nothing here renders, but the two
+# binaries are different builds and a measurement should name the one it used.
+BLENDER=${BLENDER:-/opt/blender-5.2.0-linux-x64/blender}
 mkdir -p $OUT
+echo "BLEND   $BLEND"
+echo "OUT     $OUT"
+echo "BLENDER $BLENDER"
 
 case "$BLEND" in
   *assembly5.blend) echo "REFUSING: assembly5 is SUPERSEDED, see SHIPPING.md"; exit 2;;
@@ -57,7 +68,7 @@ esac
 python3 tools/input_stamp.py --out $OUT/inputs.json --file world "$BLEND"
 
 # 1. world positions: a 1 m voxel surface sample, uncapped
-blender -b --factory-startup -P tools/dump_world_points.py -- \
+"$BLENDER" -b --factory-startup -P tools/dump_world_points.py -- \
   --blend "$BLEND" --out $OUT/world_points.npz --cell 1.0 --cap 2000000
 
 # 2. screen presence against the real camera
