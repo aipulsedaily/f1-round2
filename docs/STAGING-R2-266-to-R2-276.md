@@ -18,7 +18,12 @@ Artefacts
 | `sim/wallstats.py` | new — region statistics off the projected wall, with the controls |
 | `sim/out/eastframe_prediction.json` | written **before** the after-render was queued |
 | `sim/out/frame_verify_r6.json` | read back from the saved 4.99 GB blend |
-| `render/r6_before/`, `render/r6_after/`, `render/r6_demo/` | the pictures |
+| `sim/wallproj.py` | new — the projector, validated against an independent agent's 28.5 × 77.6 px |
+| `sim/verify_eastframe.py` | new — the readback behind `frame_verify_r6.json` |
+| `sim/make_frame_demo.py` | new — builds the R2-273 demonstrator |
+| `render/r6_before/`, `render/r6_after/` | the closing run at f2901 / f2940 / f2978, 4K, plus zoom crops and `repeat_f2978.png` (the noise floor) |
+| `render/r6_beat13/` | f0400 (beat 1, continuity), f0866 and f0880 (beat 3), before and after, with `COMPARE_*` stacks |
+| `render/r6_demo/` | the demonstrator's closing frames |
 
 ---
 
@@ -306,9 +311,43 @@ and 5's clear openings.
 
 ---
 
-## R2-273 — the demonstrator: what 2h25m of re-bake buys, priced with a picture instead of an argument
+## R2-273 — the demonstrator: what 2h25m of re-bake buys, and the answer is that it buys the shot
 
-*(fill from `render/r6_demo/` — see the report)*
+**`render/film14_breach_r6_DEMO.blend` IS NOT A DELIVERY** and cannot become one:
+it *deletes* `BF_MUL05_S02..S07` and the six transom stubs in bays 4 and 5, so
+those members are absent on all 2,978 frames including beat 1's 33 seconds, and
+a member that was never there does not break on camera. It carries a
+`DEMO_DO_NOT_SHIP` marker object and its own docstring says so.
+
+Its only job was to answer, with a picture instead of an argument, whether
+2h25m of re-bake is worth scheduling. `sim/out/eastframe_prediction_demo.json`
+was committed **before** its frames were queued and predicted that it *would*
+read, that `grid_contrast` over the bridged wound would collapse while every
+neighbour held, and that the **mean would barely move**.
+
+f2978, 4K, 256 samples, measured against the R6 build:
+
+| region | changed >8/255 | `grid_contrast` R6 → DEMO |
+|---|---|---|
+| **WOUND_bridged** | **11.17 %** | **0.03675 → 0.00777** (4.7× down) |
+| NB_left_bay3 | 0.0442 % | 0.03697 → 0.03704 |
+| NB_right_bay6 | 0.3095 % | 0.06954 → 0.06773 |
+| CTL_UNTOUCHED_bays789 | 0.0288 % | 0.05310 → 0.05327 |
+| CTL_UNTOUCHED_bays012 | **0.0000 %** | 0.04329 → 0.04350 |
+| sky | 0.0000 % | — |
+
+And the mean moved 0.5107 → 0.5142, **0.7 %** — so a reader who judged this on
+mean radiance would report that nothing happened, on a frame where the wall
+plainly opened. That is R2-274 stated as a number rather than an argument.
+
+`render/r6_demo/COMPARE_f2978_before_R6_DEMO.png` is the three-way at 1:1 × 7.
+Panels 1 and 2 are the same picture. **Panel 3 is a hole**: two bays of an
+otherwise perfectly regular lattice with no lattice in them.
+
+**So the frame is the thing, the re-bake is worth its 2h25m, and R2-268 and
+R2-275 are what it has to change.** The demonstrator is an *upper bound* — a
+real bake would have those members fall, and some would come to rest in the
+lower aperture or on the sill rather than vanish.
 
 ---
 
