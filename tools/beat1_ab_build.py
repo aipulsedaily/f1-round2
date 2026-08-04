@@ -108,9 +108,46 @@ def main():
                          "A/B would compare a frame against itself")
 
     # ---- the film's own light level and grade, imported, never hardcoded ----
+    #
+    # R2-027 REPRODUCED, IN THIS FILE, AND CAUGHT BY THE FRAME IT PREDICTS.
+    # `anim/build_camera_rig.py` keys the interior->daylight exposure ramp
+    # RELATIVE to whatever exposure the scene already has:
+    #
+    #     daylight = float(scene.view_settings.exposure)
+    #     interior = daylight - INTERIOR_STOPS
+    #
+    # `world/beat1_anim.blend` sits at 0.000, so the rigs built on it carry a
+    # ramp keyed against 0.000 rather than against FILM_EXPOSURE. Those keys are
+    # ANIMATION, so they are re-evaluated on load and overwrite any static value
+    # set afterwards -- `FX.apply()` ran, asserted, printed -3.628, and the saved
+    # file still read 0.000 at every frame. With the practicals lifted by
+    # x12.3634 and the grade back at 0.000 the room is 3.628 stops over, and the
+    # 320x180 smoke render duly came back nearly white. build_camera_rig.py's own
+    # comment predicts exactly this: "the first full-world frame rendered through
+    # this rig came back washed out, which is how it was found."
+    #
+    # `tools/build_film_scene.py` avoids it by applying the grade BEFORE the rig
+    # runs. This file cannot -- the rigs are already built -- so it removes the
+    # mis-keyed ramp and sets the grade statically, which is correct HERE and
+    # only here: every frame of beat 1 precedes the ramp, which is keyed at the
+    # glass crossing in beat 3. The frames rendered from this scene are asserted
+    # to be inside beat 1 below, so the removal cannot silently flatten a ramp
+    # somebody later renders across.
     SL.apply(scene)
+    if scene.animation_data and scene.animation_data.action:
+        print(f">> removing the mis-keyed exposure ramp "
+              f"({scene.animation_data.action.name}) -- see R2-027 above")
+        scene.animation_data_clear()
     FX.apply(scene)
     SL.assert_levelled(scene)
+    for f in (1, 25, 86, 200, 792):
+        scene.frame_set(f)
+        if abs(scene.view_settings.exposure - FX.FILM_EXPOSURE) > 1e-5:
+            raise SystemExit(f"exposure is {scene.view_settings.exposure} at f{f}, "
+                             f"not FILM_EXPOSURE -- something is still animating it")
+    print(f">> exposure holds {FX.FILM_EXPOSURE:+.3f} at f1..f792, checked after "
+          f"frame_set and not merely assigned")
+    scene.frame_set(1)
     print(f">> grade: exposure {scene.view_settings.exposure:+.3f}  "
           f"({scene.view_settings.view_transform} / {scene.view_settings.look})")
     # 1e-9 is TIGHTER THAN THE PROPERTY. `view_settings.exposure` is a float32

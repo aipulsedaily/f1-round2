@@ -655,7 +655,73 @@ too close.
 
 ---
 
-## R2-462 — what I could NOT confirm
+## R2-462 — THE PIXELS, and they do not say what the geometry said
+
+Four frames, both arms, from `render/r2451_b1ab.blend` — one scene, two cameras,
+identical everything else.
+
+**The scene is validated before anything is read off it.** f200 BEFORE from this
+build is the same picture as `work/b1look/b1focus_000200_full.png`, which was
+rendered from `render/film14.blend` by another agent: same turntable rim, same two
+wheels at the same edges, same teal smear through the centre. And f25 BEFORE
+reproduces R2-425's written description clause by clause — *"a large translucent
+blue wedge fills the frame vertically, two small out-of-focus part clusters sit at
+the edges, the floor signage is cut to `AN ...EELBASE`"* — including the legible
+`AN` and `EELBASE`. **Two independently built scenes, the same frames.**
+
+```
+f1    BEFORE  a plan view straight down onto the tub. The background is the
+              showroom floor and the floor signage, cut off. Symmetrical
+              outline, no depth, no room, nothing to say what the object is.
+      AFTER   a low three-quarter across the exploded field. The monocoque
+              reads AS a monocoque -- cockpit opening, flank, nose form. The
+              turntable runs away in perspective with its signage legible, a
+              wheel hangs at the right, the glass wall and the showroom volume
+              are behind it.                                    DECISIVELY FIXED
+
+f86   BEFORE  an abstract glassy diagonal band across a dark field.
+      AFTER   the showroom: mullioned glass wall, barrier rail, a wheel and
+              tyre clearly readable, a cooler hanging mid-frame, a bollard, the
+              turntable edge. Depth, background, identifiable objects.   FIXED
+
+f200  BEFORE  the nadir frame -- turntable rim, two wheels at the edges, a
+              teal smear through the middle.
+      AFTER   still -75.23 deg. FW is one of the two clusters no legal
+              direction could move (R2-456), and the frame is still a plan
+              view of a front wing against a mottled floor.  HONEST REMAINDER
+
+f25   BEFORE  R2-425's wedge, exactly.
+      AFTER   STILL UNREADABLE. A close, defocused rear wing.        NOT FIXED
+```
+
+**f25 is the finding here and it is the one that matters.** The elevation went
+-82.09 -> -24.55, the camera came down out of the ceiling, and **the picture is
+still not a picture of anything.** In the re-solved order f25 is RW's station, and
+RW fills **1.96 x 1.51 of the frame** at a 1.53 m standoff. That is R2-317's
+overflow and R2-429's "never wider than 76 %", untouched by this block.
+
+> **This is R2-460 confirmed in the only currency that counts, and it cost one
+> frame to learn: fixing the angle gives a well-composed frame of something the
+> audience still cannot identify.** The metric said 23.6 % -> 8.1 % of beat 1 is
+> no longer near-nadir, and that is true and is not enough. Where a metric and the
+> picture disagree the picture wins (R2-278) — here they do not disagree, they
+> answer different questions, and only one of those questions was mine.
+
+**What this block delivers, stated exactly:** the film's first frame is now a
+photograph of a monocoque in a showroom instead of a plan diagram of a tub against
+a lit floor, and the establishing information the brief asks for — the darkened
+room, the turntable, the field — is in shot from f1. **What it does not deliver:
+an opening that stays readable. R2-429's fix is still owed and is now the binding
+defect on this beat.**
+
+**Limit.** These are 480x270 and 640x360 CPU renders at 16-24 samples. 4K/256
+pairs of the same eight frames are queued on the farm behind a 52-hour ladder
+pass; the compositions above will not change with resolution, but no claim about
+detail, material or noise should be read off them.
+
+---
+
+## R2-463 — what I could NOT confirm
 
 * **The 3 % score tolerance and the 25-degree cap have not been swept against
   rendered frames.** Both are defended by measurement — the plateau is real, the

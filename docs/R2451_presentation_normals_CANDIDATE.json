@@ -1,0 +1,2660 @@
+{
+ "BB": {
+  "normal": [
+   -0.70262,
+   0.58054,
+   0.41146
+  ],
+  "ranked": [
+   {
+    "normal": [
+     -0.0939,
+     0.34931,
+     0.93229
+    ],
+    "score": 3.56629,
+    "projected_area_m2": 1.51757,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.07002,
+     -0.54032,
+     0.83854
+    ],
+    "score": 3.55147,
+    "projected_area_m2": 1.51126,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.1786,
+     -0.34388,
+     0.92188
+    ],
+    "score": 3.53641,
+    "projected_area_m2": 1.50485,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.14204,
+     0.45283,
+     0.88021
+    ],
+    "score": 3.53401,
+    "projected_area_m2": 1.50383,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.12984,
+     0.11894,
+     0.98438
+    ],
+    "score": 3.53121,
+    "projected_area_m2": 1.50264,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.01982,
+     -0.22586,
+     0.97396
+    ],
+    "score": 3.52651,
+    "projected_area_m2": 1.50064,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.02791,
+     0.6035,
+     0.79688
+    ],
+    "score": 3.51646,
+    "projected_area_m2": 1.49637,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.19274,
+     -0.41187,
+     0.89062
+    ],
+    "score": 3.50255,
+    "projected_area_m2": 1.49045,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.29795,
+     -0.0527,
+     0.95312
+    ],
+    "score": 3.47811,
+    "projected_area_m2": 1.48005,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.10193,
+     0.0,
+     0.99479
+    ],
+    "score": 3.47568,
+    "projected_area_m2": 1.47901,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.16279,
+     0.21233,
+     0.96354
+    ],
+    "score": 3.46825,
+    "projected_area_m2": 1.47585,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.30393,
+     0.43231,
+     0.84896
+    ],
+    "score": 3.44535,
+    "projected_area_m2": 1.46611,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.14387,
+     -0.6395,
+     0.75521
+    ],
+    "score": 3.4336,
+    "projected_area_m2": 1.46111,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.40092,
+     0.16549,
+     0.90104
+    ],
+    "score": 3.3647,
+    "projected_area_m2": 1.43179,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.28149,
+     -0.17906,
+     0.94271
+    ],
+    "score": 3.35879,
+    "projected_area_m2": 1.42927,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.24066,
+     -0.6691,
+     0.70312
+    ],
+    "score": 3.34917,
+    "projected_area_m2": 1.42518,
+    "distinct_materials": 3
+   }
+  ],
+  "score": 2.37947,
+  "projected_area_m2": 1.01254,
+  "distinct_materials": 3,
+  "margin_over_runner_up": 0.00416,
+  "n_parts": 10,
+  "r2451_reaimed": true,
+  "r2451_shipped_elev_deg": 68.7947,
+  "r2451_elev_deg": 24.2966
+ },
+ "CI": {
+  "normal": [
+   0.12658,
+   -0.90727,
+   0.40104
+  ],
+  "ranked": [
+   {
+    "normal": [
+     0.19274,
+     -0.41187,
+     0.89062
+    ],
+    "score": 3.11865,
+    "projected_area_m2": 1.32708,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.28149,
+     -0.17906,
+     0.94271
+    ],
+    "score": 3.10503,
+    "projected_area_m2": 1.32129,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.14204,
+     0.45283,
+     0.88021
+    ],
+    "score": 3.10294,
+    "projected_area_m2": 1.3204,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.33177,
+     0.57898,
+     0.74479
+    ],
+    "score": 3.10088,
+    "projected_area_m2": 1.31953,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.41832,
+     -0.41628,
+     0.80729
+    ],
+    "score": 3.09972,
+    "projected_area_m2": 1.31903,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.42862,
+     0.36124,
+     0.82812
+    ],
+    "score": 3.09224,
+    "projected_area_m2": 1.31585,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.38643,
+     0.14112,
+     0.91146
+    ],
+    "score": 3.0891,
+    "projected_area_m2": 1.31451,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.16279,
+     0.21233,
+     0.96354
+    ],
+    "score": 3.08026,
+    "projected_area_m2": 1.31075,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.14387,
+     -0.6395,
+     0.75521
+    ],
+    "score": 3.07707,
+    "projected_area_m2": 1.30939,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.40058,
+     -0.62299,
+     0.67188
+    ],
+    "score": 3.05542,
+    "projected_area_m2": 1.30018,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.10193,
+     0.0,
+     0.99479
+    ],
+    "score": 3.03866,
+    "projected_area_m2": 1.29305,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.49942,
+     -0.1098,
+     0.85938
+    ],
+    "score": 3.03233,
+    "projected_area_m2": 1.29035,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.02791,
+     0.6035,
+     0.79688
+    ],
+    "score": 3.01969,
+    "projected_area_m2": 1.28498,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.07002,
+     -0.54032,
+     0.83854
+    ],
+    "score": 3.01917,
+    "projected_area_m2": 1.28475,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.01982,
+     -0.22586,
+     0.97396
+    ],
+    "score": 3.01091,
+    "projected_area_m2": 1.28124,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.0939,
+     0.34931,
+     0.93229
+    ],
+    "score": 3.00172,
+    "projected_area_m2": 1.27733,
+    "distinct_materials": 3
+   }
+  ],
+  "score": 2.75331,
+  "projected_area_m2": 1.17162,
+  "distinct_materials": 3,
+  "margin_over_runner_up": 0.00437,
+  "n_parts": 15,
+  "r2451_reaimed": true,
+  "r2451_shipped_elev_deg": 62.9518,
+  "r2451_elev_deg": 23.6433
+ },
+ "CORNER_FL": {
+  "normal": [
+   -0.74486,
+   0.38225,
+   0.54688
+  ],
+  "ranked": [
+   {
+    "normal": [
+     -0.74486,
+     0.38225,
+     0.54688
+    ],
+    "score": 6.99392,
+    "projected_area_m2": 1.52042,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.77427,
+     -0.36694,
+     0.51562
+    ],
+    "score": 6.89014,
+    "projected_area_m2": 1.49786,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.29336,
+     -0.7913,
+     0.53646
+    ],
+    "score": 6.87972,
+    "projected_area_m2": 1.65776,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     0.14387,
+     -0.6395,
+     0.75521
+    ],
+    "score": 6.86339,
+    "projected_area_m2": 1.65383,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     0.00383,
+     -0.78476,
+     0.61979
+    ],
+    "score": 6.85967,
+    "projected_area_m2": 1.65293,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     -0.14604,
+     0.80277,
+     0.57812
+    ],
+    "score": 6.8471,
+    "projected_area_m2": 1.6499,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     0.12703,
+     0.73915,
+     0.66146
+    ],
+    "score": 6.83832,
+    "projected_area_m2": 1.64779,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     0.40058,
+     -0.62299,
+     0.67188
+    ],
+    "score": 6.83697,
+    "projected_area_m2": 1.64746,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     -0.27048,
+     0.6463,
+     0.71354
+    ],
+    "score": 6.83602,
+    "projected_area_m2": 1.64723,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     -0.43939,
+     0.74974,
+     0.49479
+    ],
+    "score": 6.81905,
+    "projected_area_m2": 1.64315,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     0.57781,
+     -0.67883,
+     0.45312
+    ],
+    "score": 6.8143,
+    "projected_area_m2": 1.642,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     -0.02791,
+     0.6035,
+     0.79688
+    ],
+    "score": 6.78695,
+    "projected_area_m2": 1.63541,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     -0.24066,
+     -0.6691,
+     0.70312
+    ],
+    "score": 6.77876,
+    "projected_area_m2": 1.63344,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     0.44522,
+     -0.83716,
+     0.31771
+    ],
+    "score": 6.77833,
+    "projected_area_m2": 1.63333,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     0.32066,
+     0.78769,
+     0.52604
+    ],
+    "score": 6.75449,
+    "projected_area_m2": 1.62759,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     -0.59221,
+     0.75702,
+     0.27604
+    ],
+    "score": 6.74878,
+    "projected_area_m2": 1.62621,
+    "distinct_materials": 7
+   }
+  ],
+  "score": 6.99392,
+  "projected_area_m2": 1.52042,
+  "distinct_materials": 8,
+  "margin_over_runner_up": 0.01484,
+  "n_parts": 41,
+  "r2451_reaimed": false,
+  "r2451_shipped_elev_deg": 33.1531,
+  "r2451_elev_deg": 33.1531,
+  "r2451_note": "NOT re-aimed: no direction inside the 25 deg / in-the-room band clears beat 1's clearance, speed and pan gates at the shipped standoff and the shipped 33.0 s span. See R2-455."
+ },
+ "CORNER_FR": {
+  "normal": [
+   -0.90135,
+   -0.2074,
+   0.38021
+  ],
+  "ranked": [
+   {
+    "normal": [
+     -0.77427,
+     -0.36694,
+     0.51562
+    ],
+    "score": 6.94386,
+    "projected_area_m2": 1.50954,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.74486,
+     0.38225,
+     0.54688
+    ],
+    "score": 6.93596,
+    "projected_area_m2": 1.50782,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.12703,
+     0.73915,
+     0.66146
+    ],
+    "score": 6.90039,
+    "projected_area_m2": 1.66274,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     0.32066,
+     0.78769,
+     0.52604
+    ],
+    "score": 6.8783,
+    "projected_area_m2": 1.65742,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     -0.24066,
+     -0.6691,
+     0.70312
+    ],
+    "score": 6.85391,
+    "projected_area_m2": 1.65154,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     0.00383,
+     -0.78476,
+     0.61979
+    ],
+    "score": 6.84615,
+    "projected_area_m2": 1.64967,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     0.52206,
+     0.7582,
+     0.39062
+    ],
+    "score": 6.83445,
+    "projected_area_m2": 1.64685,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     -0.43846,
+     -0.69675,
+     0.56771
+    ],
+    "score": 6.8216,
+    "projected_area_m2": 1.64376,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     0.33177,
+     0.57898,
+     0.74479
+    ],
+    "score": 6.80495,
+    "projected_area_m2": 1.63975,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     -0.14604,
+     0.80277,
+     0.57812
+    ],
+    "score": 6.79701,
+    "projected_area_m2": 1.63783,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     -0.02791,
+     0.6035,
+     0.79688
+    ],
+    "score": 6.79658,
+    "projected_area_m2": 1.63773,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     0.14387,
+     -0.6395,
+     0.75521
+    ],
+    "score": 6.7922,
+    "projected_area_m2": 1.63668,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     -0.18368,
+     -0.85536,
+     0.48438
+    ],
+    "score": 6.76805,
+    "projected_area_m2": 1.63086,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     0.53273,
+     0.58725,
+     0.60938
+    ],
+    "score": 6.76784,
+    "projected_area_m2": 1.63081,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     -0.92365,
+     -0.34757,
+     0.16146
+    ],
+    "score": 6.76673,
+    "projected_area_m2": 1.47103,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.29336,
+     -0.7913,
+     0.53646
+    ],
+    "score": 6.76272,
+    "projected_area_m2": 1.62957,
+    "distinct_materials": 7
+   }
+  ],
+  "score": 6.45772,
+  "projected_area_m2": 1.40385,
+  "distinct_materials": 8,
+  "margin_over_runner_up": 0.00114,
+  "n_parts": 41,
+  "r2451_reaimed": true,
+  "r2451_shipped_elev_deg": 31.0389,
+  "r2451_elev_deg": 22.3466
+ },
+ "CORNER_RL": {
+  "normal": [
+   -0.59221,
+   0.75702,
+   0.27604
+  ],
+  "ranked": [
+   {
+    "normal": [
+     0.14387,
+     -0.6395,
+     0.75521
+    ],
+    "score": 8.47,
+    "projected_area_m2": 1.8413,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.40058,
+     -0.62299,
+     0.67188
+    ],
+    "score": 8.46668,
+    "projected_area_m2": 1.84058,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.24066,
+     -0.6691,
+     0.70312
+    ],
+    "score": 8.46608,
+    "projected_area_m2": 1.84045,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.57781,
+     -0.67883,
+     0.45312
+    ],
+    "score": 8.45406,
+    "projected_area_m2": 1.83784,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.43846,
+     -0.69675,
+     0.56771
+    ],
+    "score": 8.42057,
+    "projected_area_m2": 1.83056,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.27048,
+     0.6463,
+     0.71354
+    ],
+    "score": 8.41368,
+    "projected_area_m2": 1.82906,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.29336,
+     -0.7913,
+     0.53646
+    ],
+    "score": 8.40116,
+    "projected_area_m2": 1.82634,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.7232,
+     -0.64965,
+     0.23438
+    ],
+    "score": 8.39066,
+    "projected_area_m2": 1.82406,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.07002,
+     -0.54032,
+     0.83854
+    ],
+    "score": 8.37649,
+    "projected_area_m2": 1.82098,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.7145,
+     0.69728,
+     0.05729
+    ],
+    "score": 8.36497,
+    "projected_area_m2": 1.81847,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.68127,
+     -0.72217,
+     -0.11979
+    ],
+    "score": 8.3628,
+    "projected_area_m2": 1.818,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.12703,
+     0.73915,
+     0.66146
+    ],
+    "score": 8.36049,
+    "projected_area_m2": 1.8175,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.43939,
+     0.74974,
+     0.49479
+    ],
+    "score": 8.35949,
+    "projected_area_m2": 1.81728,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.00383,
+     -0.78476,
+     0.61979
+    ],
+    "score": 8.35719,
+    "projected_area_m2": 1.81678,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.33177,
+     0.57898,
+     0.74479
+    ],
+    "score": 8.35368,
+    "projected_area_m2": 1.81602,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.02791,
+     0.6035,
+     0.79688
+    ],
+    "score": 8.3519,
+    "projected_area_m2": 1.81563,
+    "distinct_materials": 8
+   }
+  ],
+  "score": 8.34195,
+  "projected_area_m2": 1.81347,
+  "distinct_materials": 8,
+  "margin_over_runner_up": 0.00039,
+  "n_parts": 44,
+  "r2451_reaimed": true,
+  "r2451_shipped_elev_deg": 49.0437,
+  "r2451_elev_deg": 16.0241
+ },
+ "CORNER_RR": {
+  "normal": [
+   -0.58681,
+   -0.78106,
+   0.21354
+  ],
+  "ranked": [
+   {
+    "normal": [
+     -0.27048,
+     0.6463,
+     0.71354
+    ],
+    "score": 8.46291,
+    "projected_area_m2": 1.83976,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.12703,
+     0.73915,
+     0.66146
+    ],
+    "score": 8.4462,
+    "projected_area_m2": 1.83613,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.33177,
+     0.57898,
+     0.74479
+    ],
+    "score": 8.44517,
+    "projected_area_m2": 1.83591,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.52206,
+     0.7582,
+     0.39062
+    ],
+    "score": 8.42865,
+    "projected_area_m2": 1.83232,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.02791,
+     0.6035,
+     0.79688
+    ],
+    "score": 8.42306,
+    "projected_area_m2": 1.8311,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.53273,
+     0.58725,
+     0.60938
+    ],
+    "score": 8.42012,
+    "projected_area_m2": 1.83046,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.24066,
+     -0.6691,
+     0.70312
+    ],
+    "score": 8.41476,
+    "projected_area_m2": 1.8293,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.32066,
+     0.78769,
+     0.52604
+    ],
+    "score": 8.40714,
+    "projected_area_m2": 1.82764,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.70655,
+     0.66005,
+     0.25521
+    ],
+    "score": 8.40188,
+    "projected_area_m2": 1.82649,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.43846,
+     -0.69675,
+     0.56771
+    ],
+    "score": 8.39674,
+    "projected_area_m2": 1.82538,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.14387,
+     -0.6395,
+     0.75521
+    ],
+    "score": 8.38638,
+    "projected_area_m2": 1.82313,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.43939,
+     0.74974,
+     0.49479
+    ],
+    "score": 8.37691,
+    "projected_area_m2": 1.82107,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.52725,
+     0.56995,
+     0.63021
+    ],
+    "score": 8.36617,
+    "projected_area_m2": 1.81873,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     0.40058,
+     -0.62299,
+     0.67188
+    ],
+    "score": 8.3634,
+    "projected_area_m2": 1.81813,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.63294,
+     -0.64227,
+     0.43229
+    ],
+    "score": 8.35727,
+    "projected_area_m2": 1.8168,
+    "distinct_materials": 8
+   },
+   {
+    "normal": [
+     -0.75601,
+     -0.64988,
+     0.07812
+    ],
+    "score": 8.34733,
+    "projected_area_m2": 1.81464,
+    "distinct_materials": 8
+   }
+  ],
+  "score": 8.32079,
+  "projected_area_m2": 1.80887,
+  "distinct_materials": 8,
+  "margin_over_runner_up": 0.00197,
+  "n_parts": 44,
+  "r2451_reaimed": true,
+  "r2451_shipped_elev_deg": 45.5236,
+  "r2451_elev_deg": 12.3299
+ },
+ "EC": {
+  "normal": [
+   -0.28796,
+   0.88765,
+   0.35938
+  ],
+  "ranked": [
+   {
+    "normal": [
+     -0.02791,
+     0.6035,
+     0.79688
+    ],
+    "score": 5.39537,
+    "projected_area_m2": 1.66011,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.27048,
+     0.6463,
+     0.71354
+    ],
+    "score": 5.30167,
+    "projected_area_m2": 1.63128,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.24066,
+     -0.6691,
+     0.70312
+    ],
+    "score": 5.24688,
+    "projected_area_m2": 1.61443,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.29795,
+     -0.0527,
+     0.95312
+    ],
+    "score": 5.21773,
+    "projected_area_m2": 1.86348,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.12984,
+     0.11894,
+     0.98438
+    ],
+    "score": 5.21285,
+    "projected_area_m2": 1.86173,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.40092,
+     0.16549,
+     0.90104
+    ],
+    "score": 5.15166,
+    "projected_area_m2": 1.83988,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.1786,
+     -0.34388,
+     0.92188
+    ],
+    "score": 5.11475,
+    "projected_area_m2": 1.8267,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.42691,
+     -0.2474,
+     0.86979
+    ],
+    "score": 5.08889,
+    "projected_area_m2": 1.81746,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.0939,
+     0.34931,
+     0.93229
+    ],
+    "score": 5.08333,
+    "projected_area_m2": 1.81547,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     0.01982,
+     -0.22586,
+     0.97396
+    ],
+    "score": 5.0813,
+    "projected_area_m2": 1.81475,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     0.14387,
+     -0.6395,
+     0.75521
+    ],
+    "score": 5.07141,
+    "projected_area_m2": 1.56043,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.10193,
+     0.0,
+     0.99479
+    ],
+    "score": 4.9939,
+    "projected_area_m2": 1.78353,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.30393,
+     0.43231,
+     0.84896
+    ],
+    "score": 4.98534,
+    "projected_area_m2": 1.78048,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.43846,
+     -0.69675,
+     0.56771
+    ],
+    "score": 4.93943,
+    "projected_area_m2": 1.51982,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.01451,
+     0.99138,
+     -0.13021
+    ],
+    "score": 4.92545,
+    "projected_area_m2": 1.51552,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.57514,
+     0.02378,
+     0.81771
+    ],
+    "score": 4.9232,
+    "projected_area_m2": 1.75828,
+    "distinct_materials": 4
+   }
+  ],
+  "score": 4.72656,
+  "projected_area_m2": 1.45433,
+  "distinct_materials": 5,
+  "margin_over_runner_up": 0.01737,
+  "n_parts": 13,
+  "r2451_reaimed": true,
+  "r2451_shipped_elev_deg": 52.8329,
+  "r2451_elev_deg": 21.0622
+ },
+ "FD": {
+  "normal": [
+   -0.28796,
+   0.88765,
+   0.35938
+  ],
+  "ranked": [
+   {
+    "normal": [
+     0.10193,
+     0.0,
+     0.99479
+    ],
+    "score": 17.78653,
+    "projected_area_m2": 7.56874,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.01982,
+     -0.22586,
+     0.97396
+    ],
+    "score": 17.63527,
+    "projected_area_m2": 7.50437,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.12984,
+     0.11894,
+     0.98438
+    ],
+    "score": 17.52247,
+    "projected_area_m2": 7.45637,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.16279,
+     0.21233,
+     0.96354
+    ],
+    "score": 17.50884,
+    "projected_area_m2": 7.45057,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.0939,
+     0.34931,
+     0.93229
+    ],
+    "score": 17.15054,
+    "projected_area_m2": 7.2981,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.28149,
+     -0.17906,
+     0.94271
+    ],
+    "score": 17.14696,
+    "projected_area_m2": 7.29658,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.1786,
+     -0.34388,
+     0.92188
+    ],
+    "score": 16.91304,
+    "projected_area_m2": 7.19704,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.29795,
+     -0.0527,
+     0.95312
+    ],
+    "score": 16.80413,
+    "projected_area_m2": 7.15069,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.19274,
+     -0.41187,
+     0.89062
+    ],
+    "score": 16.7465,
+    "projected_area_m2": 7.12617,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.14204,
+     0.45283,
+     0.88021
+    ],
+    "score": 16.64063,
+    "projected_area_m2": 7.08112,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.38643,
+     0.14112,
+     0.91146
+    ],
+    "score": 16.60109,
+    "projected_area_m2": 7.0643,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.07002,
+     -0.54032,
+     0.83854
+    ],
+    "score": 16.02807,
+    "projected_area_m2": 6.82046,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.40092,
+     0.16549,
+     0.90104
+    ],
+    "score": 16.00876,
+    "projected_area_m2": 6.81224,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.30393,
+     0.43231,
+     0.84896
+    ],
+    "score": 15.80795,
+    "projected_area_m2": 6.72679,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.49942,
+     -0.1098,
+     0.85938
+    ],
+    "score": 15.72231,
+    "projected_area_m2": 6.69034,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.42862,
+     0.36124,
+     0.82812
+    ],
+    "score": 15.6715,
+    "projected_area_m2": 6.66872,
+    "distinct_materials": 3
+   }
+  ],
+  "score": 9.80316,
+  "projected_area_m2": 4.17156,
+  "distinct_materials": 3,
+  "margin_over_runner_up": 0.0085,
+  "n_parts": 10,
+  "r2451_reaimed": true,
+  "r2451_shipped_elev_deg": 84.1497,
+  "r2451_elev_deg": 21.0622
+ },
+ "FW": {
+  "normal": [
+   0.16279,
+   0.21233,
+   0.96354
+  ],
+  "ranked": [
+   {
+    "normal": [
+     0.16279,
+     0.21233,
+     0.96354
+    ],
+    "score": 2.63698,
+    "projected_area_m2": 1.81861,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     0.28149,
+     -0.17906,
+     0.94271
+    ],
+    "score": 2.62738,
+    "projected_area_m2": 1.81199,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     0.19274,
+     -0.41187,
+     0.89062
+    ],
+    "score": 2.60171,
+    "projected_area_m2": 1.79428,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     0.01982,
+     -0.22586,
+     0.97396
+    ],
+    "score": 2.59622,
+    "projected_area_m2": 1.7905,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     0.38643,
+     0.14112,
+     0.91146
+    ],
+    "score": 2.58284,
+    "projected_area_m2": 1.78127,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     0.14204,
+     0.45283,
+     0.88021
+    ],
+    "score": 2.57655,
+    "projected_area_m2": 1.77693,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     0.10193,
+     0.0,
+     0.99479
+    ],
+    "score": 2.57165,
+    "projected_area_m2": 1.77355,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     0.42862,
+     0.36124,
+     0.82812
+    ],
+    "score": 2.54078,
+    "projected_area_m2": 1.75226,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     0.41832,
+     -0.41628,
+     0.80729
+    ],
+    "score": 2.52003,
+    "projected_area_m2": 1.73795,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     -0.0939,
+     0.34931,
+     0.93229
+    ],
+    "score": 2.51446,
+    "projected_area_m2": 1.73411,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     0.49942,
+     -0.1098,
+     0.85938
+    ],
+    "score": 2.49958,
+    "projected_area_m2": 1.72385,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     -0.12984,
+     0.11894,
+     0.98438
+    ],
+    "score": 2.47891,
+    "projected_area_m2": 1.70959,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     -0.1786,
+     -0.34388,
+     0.92188
+    ],
+    "score": 2.44178,
+    "projected_area_m2": 1.68399,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     0.33177,
+     0.57898,
+     0.74479
+    ],
+    "score": 2.42655,
+    "projected_area_m2": 1.67348,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     -0.07002,
+     -0.54032,
+     0.83854
+    ],
+    "score": 2.42192,
+    "projected_area_m2": 1.67029,
+    "distinct_materials": 1
+   },
+   {
+    "normal": [
+     0.14387,
+     -0.6395,
+     0.75521
+    ],
+    "score": 2.39324,
+    "projected_area_m2": 1.65051,
+    "distinct_materials": 1
+   }
+  ],
+  "score": 2.63698,
+  "projected_area_m2": 1.81861,
+  "distinct_materials": 1,
+  "margin_over_runner_up": 0.00364,
+  "n_parts": 120,
+  "r2451_reaimed": false,
+  "r2451_shipped_elev_deg": 74.4812,
+  "r2451_elev_deg": 74.4812,
+  "r2451_note": "NOT re-aimed: no direction inside the 25 deg / in-the-room band clears beat 1's clearance, speed and pan gates at the shipped standoff and the shipped 33.0 s span. See R2-455."
+ },
+ "MB": {
+  "normal": [
+   -0.90135,
+   -0.2074,
+   0.38021
+  ],
+  "ranked": [
+   {
+    "normal": [
+     0.10193,
+     0.0,
+     0.99479
+    ],
+    "score": 12.0209,
+    "projected_area_m2": 5.11528,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.12984,
+     0.11894,
+     0.98438
+    ],
+    "score": 12.00329,
+    "projected_area_m2": 5.10778,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.01982,
+     -0.22586,
+     0.97396
+    ],
+    "score": 11.92319,
+    "projected_area_m2": 5.0737,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.16279,
+     0.21233,
+     0.96354
+    ],
+    "score": 11.74725,
+    "projected_area_m2": 4.99883,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.0939,
+     0.34931,
+     0.93229
+    ],
+    "score": 11.70477,
+    "projected_area_m2": 4.98075,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.29795,
+     -0.0527,
+     0.95312
+    ],
+    "score": 11.68521,
+    "projected_area_m2": 4.97243,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.1786,
+     -0.34388,
+     0.92188
+    ],
+    "score": 11.60907,
+    "projected_area_m2": 4.94003,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.28149,
+     -0.17906,
+     0.94271
+    ],
+    "score": 11.44159,
+    "projected_area_m2": 4.86876,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.14204,
+     0.45283,
+     0.88021
+    ],
+    "score": 11.35719,
+    "projected_area_m2": 4.83285,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.19274,
+     -0.41187,
+     0.89062
+    ],
+    "score": 11.33171,
+    "projected_area_m2": 4.822,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.07002,
+     -0.54032,
+     0.83854
+    ],
+    "score": 11.26938,
+    "projected_area_m2": 4.79548,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.40092,
+     0.16549,
+     0.90104
+    ],
+    "score": 11.20065,
+    "projected_area_m2": 4.76623,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.30393,
+     0.43231,
+     0.84896
+    ],
+    "score": 11.09787,
+    "projected_area_m2": 4.7225,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.02791,
+     0.6035,
+     0.79688
+    ],
+    "score": 11.06244,
+    "projected_area_m2": 4.70742,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.38643,
+     0.14112,
+     0.91146
+    ],
+    "score": 11.02647,
+    "projected_area_m2": 4.69211,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.42691,
+     -0.2474,
+     0.86979
+    ],
+    "score": 10.95874,
+    "projected_area_m2": 4.66329,
+    "distinct_materials": 3
+   }
+  ],
+  "score": 5.79908,
+  "projected_area_m2": 2.46769,
+  "distinct_materials": 3,
+  "margin_over_runner_up": 0.00147,
+  "n_parts": 17,
+  "r2451_reaimed": true,
+  "r2451_shipped_elev_deg": 84.1497,
+  "r2451_elev_deg": 22.3466
+ },
+ "NOSE": {
+  "normal": [
+   0.10193,
+   0.0,
+   0.99479
+  ],
+  "ranked": [
+   {
+    "normal": [
+     0.10193,
+     0.0,
+     0.99479
+    ],
+    "score": 1.49206,
+    "projected_area_m2": 0.53288,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     0.16279,
+     0.21233,
+     0.96354
+    ],
+    "score": 1.47918,
+    "projected_area_m2": 0.52828,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.12984,
+     0.11894,
+     0.98438
+    ],
+    "score": 1.4791,
+    "projected_area_m2": 0.52825,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     0.01982,
+     -0.22586,
+     0.97396
+    ],
+    "score": 1.47059,
+    "projected_area_m2": 0.52521,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     0.28149,
+     -0.17906,
+     0.94271
+    ],
+    "score": 1.47048,
+    "projected_area_m2": 0.52517,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.29795,
+     -0.0527,
+     0.95312
+    ],
+    "score": 1.4551,
+    "projected_area_m2": 0.51968,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.0939,
+     0.34931,
+     0.93229
+    ],
+    "score": 1.45337,
+    "projected_area_m2": 0.51906,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     0.19274,
+     -0.41187,
+     0.89062
+    ],
+    "score": 1.45265,
+    "projected_area_m2": 0.5188,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     0.14204,
+     0.45283,
+     0.88021
+    ],
+    "score": 1.44918,
+    "projected_area_m2": 0.51757,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.1786,
+     -0.34388,
+     0.92188
+    ],
+    "score": 1.4488,
+    "projected_area_m2": 0.51743,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     0.38643,
+     0.14112,
+     0.91146
+    ],
+    "score": 1.4444,
+    "projected_area_m2": 0.51586,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.07002,
+     -0.54032,
+     0.83854
+    ],
+    "score": 1.42707,
+    "projected_area_m2": 0.50967,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.02791,
+     0.6035,
+     0.79688
+    ],
+    "score": 1.41083,
+    "projected_area_m2": 0.50387,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.30393,
+     0.43231,
+     0.84896
+    ],
+    "score": 1.41,
+    "projected_area_m2": 0.50357,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     -0.40092,
+     0.16549,
+     0.90104
+    ],
+    "score": 1.4073,
+    "projected_area_m2": 0.50261,
+    "distinct_materials": 4
+   },
+   {
+    "normal": [
+     0.14387,
+     -0.6395,
+     0.75521
+    ],
+    "score": 1.40516,
+    "projected_area_m2": 0.50184,
+    "distinct_materials": 4
+   }
+  ],
+  "score": 1.49206,
+  "projected_area_m2": 0.53288,
+  "distinct_materials": 4,
+  "margin_over_runner_up": 0.00863,
+  "n_parts": 33,
+  "r2451_reaimed": false,
+  "r2451_shipped_elev_deg": 84.1497,
+  "r2451_elev_deg": 84.1497,
+  "r2451_note": "NOT re-aimed: no direction inside the 25 deg / in-the-room band clears beat 1's clearance, speed and pan gates at the shipped standoff and the shipped 33.0 s span. See R2-455."
+ },
+ "RW": {
+  "normal": [
+   -0.90135,
+   -0.2074,
+   0.38021
+  ],
+  "ranked": [
+   {
+    "normal": [
+     0.12703,
+     0.73915,
+     0.66146
+    ],
+    "score": 2.50017,
+    "projected_area_m2": 1.0639,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.33177,
+     0.57898,
+     0.74479
+    ],
+    "score": 2.4989,
+    "projected_area_m2": 1.06336,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.14387,
+     -0.6395,
+     0.75521
+    ],
+    "score": 2.49815,
+    "projected_area_m2": 1.06304,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.40058,
+     -0.62299,
+     0.67188
+    ],
+    "score": 2.49757,
+    "projected_area_m2": 1.06279,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.29336,
+     -0.7913,
+     0.53646
+    ],
+    "score": 2.48595,
+    "projected_area_m2": 1.05785,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.32066,
+     0.78769,
+     0.52604
+    ],
+    "score": 2.48068,
+    "projected_area_m2": 1.05561,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.00383,
+     -0.78476,
+     0.61979
+    ],
+    "score": 2.43352,
+    "projected_area_m2": 1.03554,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.53273,
+     0.58725,
+     0.60938
+    ],
+    "score": 2.42611,
+    "projected_area_m2": 1.03239,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.02791,
+     0.6035,
+     0.79688
+    ],
+    "score": 2.40246,
+    "projected_area_m2": 1.02232,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.57781,
+     -0.67883,
+     0.45312
+    ],
+    "score": 2.35547,
+    "projected_area_m2": 1.00233,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.12658,
+     -0.90727,
+     0.40104
+    ],
+    "score": 2.35437,
+    "projected_area_m2": 1.00186,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.52206,
+     0.7582,
+     0.39062
+    ],
+    "score": 2.34881,
+    "projected_area_m2": 0.9995,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.03268,
+     0.89607,
+     0.44271
+    ],
+    "score": 2.34713,
+    "projected_area_m2": 0.99878,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.07002,
+     -0.54032,
+     0.83854
+    ],
+    "score": 2.34153,
+    "projected_area_m2": 0.9964,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     -0.14604,
+     0.80277,
+     0.57812
+    ],
+    "score": 2.31351,
+    "projected_area_m2": 0.98447,
+    "distinct_materials": 3
+   },
+   {
+    "normal": [
+     0.44522,
+     -0.83716,
+     0.31771
+    ],
+    "score": 2.31078,
+    "projected_area_m2": 0.98331,
+    "distinct_materials": 3
+   }
+  ],
+  "score": 0.98142,
+  "projected_area_m2": 0.35051,
+  "distinct_materials": 4,
+  "margin_over_runner_up": 0.00051,
+  "n_parts": 97,
+  "r2451_reaimed": true,
+  "r2451_shipped_elev_deg": 41.4111,
+  "r2451_elev_deg": 22.3466
+ },
+ "SP": {
+  "normal": [
+   0.12658,
+   -0.90727,
+   0.40104
+  ],
+  "ranked": [
+   {
+    "normal": [
+     0.10193,
+     0.0,
+     0.99479
+    ],
+    "score": 8.80114,
+    "projected_area_m2": 2.70804,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.12984,
+     0.11894,
+     0.98438
+    ],
+    "score": 8.77902,
+    "projected_area_m2": 2.70124,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.01982,
+     -0.22586,
+     0.97396
+    ],
+    "score": 8.70838,
+    "projected_area_m2": 2.6795,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.16279,
+     0.21233,
+     0.96354
+    ],
+    "score": 8.594,
+    "projected_area_m2": 2.64431,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.0939,
+     0.34931,
+     0.93229
+    ],
+    "score": 8.49714,
+    "projected_area_m2": 2.61451,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.1786,
+     -0.34388,
+     0.92188
+    ],
+    "score": 8.43541,
+    "projected_area_m2": 2.59551,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.28149,
+     -0.17906,
+     0.94271
+    ],
+    "score": 8.39912,
+    "projected_area_m2": 2.58435,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.19274,
+     -0.41187,
+     0.89062
+    ],
+    "score": 8.1706,
+    "projected_area_m2": 2.51403,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.14204,
+     0.45283,
+     0.88021
+    ],
+    "score": 8.13851,
+    "projected_area_m2": 2.50416,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.38643,
+     0.14112,
+     0.91146
+    ],
+    "score": 8.13063,
+    "projected_area_m2": 2.50173,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.42691,
+     -0.2474,
+     0.86979
+    ],
+    "score": 8.0206,
+    "projected_area_m2": 2.46788,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.30393,
+     0.43231,
+     0.84896
+    ],
+    "score": 7.98374,
+    "projected_area_m2": 2.45653,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.07002,
+     -0.54032,
+     0.83854
+    ],
+    "score": 7.9724,
+    "projected_area_m2": 2.45305,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.02791,
+     0.6035,
+     0.79688
+    ],
+    "score": 7.74279,
+    "projected_area_m2": 2.3824,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.49942,
+     -0.1098,
+     0.85938
+    ],
+    "score": 7.70312,
+    "projected_area_m2": 2.37019,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.42862,
+     0.36124,
+     0.82812
+    ],
+    "score": 7.6063,
+    "projected_area_m2": 2.3404,
+    "distinct_materials": 5
+   }
+  ],
+  "score": 6.07596,
+  "projected_area_m2": 1.86953,
+  "distinct_materials": 5,
+  "margin_over_runner_up": 0.00251,
+  "n_parts": 13,
+  "r2451_reaimed": true,
+  "r2451_shipped_elev_deg": 84.1497,
+  "r2451_elev_deg": 23.6433
+ },
+ "SW": {
+  "normal": [
+   -0.90135,
+   -0.2074,
+   0.38021
+  ],
+  "ranked": [
+   {
+    "normal": [
+     -0.87927,
+     0.10958,
+     0.46354
+    ],
+    "score": 0.70094,
+    "projected_area_m2": 0.18944,
+    "distinct_materials": 6
+   },
+   {
+    "normal": [
+     -0.96953,
+     -0.00946,
+     0.24479
+    ],
+    "score": 0.70076,
+    "projected_area_m2": 0.1894,
+    "distinct_materials": 6
+   },
+   {
+    "normal": [
+     -0.90135,
+     -0.2074,
+     0.38021
+    ],
+    "score": 0.69598,
+    "projected_area_m2": 0.1881,
+    "distinct_materials": 6
+   },
+   {
+    "normal": [
+     -0.79736,
+     -0.0739,
+     0.59896
+    ],
+    "score": 0.69271,
+    "projected_area_m2": 0.18722,
+    "distinct_materials": 6
+   },
+   {
+    "normal": [
+     -0.97285,
+     0.20395,
+     0.10938
+    ],
+    "score": 0.68434,
+    "projected_area_m2": 0.18496,
+    "distinct_materials": 6
+   },
+   {
+    "normal": [
+     -0.89043,
+     0.31537,
+     0.32812
+    ],
+    "score": 0.6839,
+    "projected_area_m2": 0.18484,
+    "distinct_materials": 6
+   },
+   {
+    "normal": [
+     -0.98939,
+     -0.14296,
+     0.02604
+    ],
+    "score": 0.6764,
+    "projected_area_m2": 0.18281,
+    "distinct_materials": 6
+   },
+   {
+    "normal": [
+     0.96719,
+     -0.24488,
+     -0.06771
+    ],
+    "score": 0.6734,
+    "projected_area_m2": 0.182,
+    "distinct_materials": 6
+   },
+   {
+    "normal": [
+     -0.52805,
+     0.3674,
+     0.76562
+    ],
+    "score": 0.6728,
+    "projected_area_m2": 0.16212,
+    "distinct_materials": 7
+   },
+   {
+    "normal": [
+     -0.92365,
+     -0.34757,
+     0.16146
+    ],
+    "score": 0.67178,
+    "projected_area_m2": 0.18156,
+    "distinct_materials": 6
+   },
+   {
+    "normal": [
+     -0.70693,
+     0.18635,
+     0.68229
+    ],
+    "score": 0.66941,
+    "projected_area_m2": 0.18092,
+    "distinct_materials": 6
+   },
+   {
+    "normal": [
+     -0.77427,
+     -0.36694,
+     0.51562
+    ],
+    "score": 0.66902,
+    "projected_area_m2": 0.18082,
+    "distinct_materials": 6
+   },
+   {
+    "normal": [
+     -0.74486,
+     0.38225,
+     0.54688
+    ],
+    "score": 0.66175,
+    "projected_area_m2": 0.17885,
+    "distinct_materials": 6
+   },
+   {
+    "normal": [
+     0.99721,
+     -0.0315,
+     0.06771
+    ],
+    "score": 0.65999,
+    "projected_area_m2": 0.17838,
+    "distinct_materials": 6
+   },
+   {
+    "normal": [
+     0.94957,
+     0.31318,
+     -0.01562
+    ],
+    "score": 0.65595,
+    "projected_area_m2": 0.17728,
+    "distinct_materials": 6
+   },
+   {
+    "normal": [
+     -0.64663,
+     -0.20629,
+     0.73438
+    ],
+    "score": 0.65125,
+    "projected_area_m2": 0.17601,
+    "distinct_materials": 6
+   }
+  ],
+  "score": 0.69598,
+  "projected_area_m2": 0.1881,
+  "distinct_materials": 6,
+  "margin_over_runner_up": 0.00026,
+  "n_parts": 65,
+  "r2451_reaimed": true,
+  "r2451_shipped_elev_deg": 27.6159,
+  "r2451_elev_deg": 22.3466
+ },
+ "halo_assembly": {
+  "normal": [
+   0.12658,
+   -0.90727,
+   0.40104
+  ],
+  "ranked": [
+   {
+    "normal": [
+     0.12658,
+     -0.90727,
+     0.40104
+    ],
+    "score": 1.66961,
+    "projected_area_m2": 0.51373,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.18368,
+     -0.85536,
+     0.48438
+    ],
+    "score": 1.65872,
+    "projected_area_m2": 0.51037,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.23807,
+     0.92136,
+     0.30729
+    ],
+    "score": 1.64821,
+    "projected_area_m2": 0.50714,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.26451,
+     -0.947,
+     0.18229
+    ],
+    "score": 1.64276,
+    "projected_area_m2": 0.50546,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.28749,
+     -0.94889,
+     0.13021
+    ],
+    "score": 1.64055,
+    "projected_area_m2": 0.50478,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.28796,
+     0.88765,
+     0.35938
+    ],
+    "score": 1.6399,
+    "projected_area_m2": 0.50458,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.32889,
+     0.9432,
+     -0.04688
+    ],
+    "score": 1.62064,
+    "projected_area_m2": 0.49866,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.24066,
+     -0.6691,
+     0.70312
+    ],
+    "score": 1.61575,
+    "projected_area_m2": 0.49715,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.14387,
+     -0.6395,
+     0.75521
+    ],
+    "score": 1.61285,
+    "projected_area_m2": 0.49626,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.29336,
+     -0.7913,
+     0.53646
+    ],
+    "score": 1.60698,
+    "projected_area_m2": 0.49446,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.27048,
+     0.6463,
+     0.71354
+    ],
+    "score": 1.60386,
+    "projected_area_m2": 0.49349,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.3889,
+     -0.85263,
+     0.34896
+    ],
+    "score": 1.59791,
+    "projected_area_m2": 0.49167,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.32066,
+     0.78769,
+     0.52604
+    ],
+    "score": 1.59717,
+    "projected_area_m2": 0.49144,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.39478,
+     -0.91805,
+     -0.03646
+    ],
+    "score": 1.58938,
+    "projected_area_m2": 0.48904,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     -0.42836,
+     0.8926,
+     0.14062
+    ],
+    "score": 1.5774,
+    "projected_area_m2": 0.48535,
+    "distinct_materials": 5
+   },
+   {
+    "normal": [
+     0.14204,
+     0.45283,
+     0.88021
+    ],
+    "score": 1.57076,
+    "projected_area_m2": 0.48331,
+    "distinct_materials": 5
+   }
+  ],
+  "score": 1.66961,
+  "projected_area_m2": 0.51373,
+  "distinct_materials": 5,
+  "margin_over_runner_up": 0.00652,
+  "n_parts": 53,
+  "r2451_reaimed": true,
+  "r2451_shipped_elev_deg": 23.6433,
+  "r2451_elev_deg": 23.6433
+ }
+}
