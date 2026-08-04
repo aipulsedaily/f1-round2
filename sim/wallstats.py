@@ -7,7 +7,7 @@
 
 Regions are projected from `sim/out/oner_camera_track_film14_breach.json`, not
 picked by eye, so the same rectangle is measured in both images and in every
-frame.  `sim/tmp/proj.py` is the projector and it was validated against an
+frame.  `sim/wallproj.py` is the projector and it was validated against an
 independent agent's report of the wound as 28.5 x 77.6 px at f2978.
 
 THE CONTROLS, AND WHY EACH IS NOT DECORATION
@@ -45,8 +45,8 @@ import numpy as np
 from PIL import Image
 
 R2 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(R2, "sim", "tmp"))
-import proj as PJ                                                 # noqa: E402
+sys.path.insert(0, os.path.join(R2, "sim"))
+import wallproj as PJ                                             # noqa: E402
 
 # x = 15.0 rectangles on the east wall, in metres
 REGIONS = [
