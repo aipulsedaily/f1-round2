@@ -334,6 +334,33 @@ def main():
           f"clusters still steeper than {a.max_depression_deg:.0f} deg: "
           f"{steep if steep else 'NONE'}")
     print(f">> wrote {a.out}")
+    if a.max_depression_deg < 90.0:
+        print()
+        print(">> READ THIS BEFORE POINTING build_beatsheet.py AT THIS FILE.")
+        print(">> Re-aiming ALL FIFTEEN clusters is UNSCHEDULABLE. Measured, "
+              "R2-455: pulling")
+        print(">> the stations out of the nadir swings each one out to a "
+              "horizontal radius of")
+        print(">> standoff*cos(elev) and turns fifteen nearly-parallel view "
+              "directions into")
+        print(">> fifteen real pans, which grows beat 1's tour by 1.34x and "
+              "makes it miss the")
+        print(">> part-flight deadlines. `present_order()` will raise "
+              "SystemExit. Lengthening")
+        print(">> beat 1 does NOT help -- feasibility is cum_cost/total_cost <= "
+              "deadline/span,")
+        print(">> and the tour cost cancels.")
+        print(">>")
+        print(">> The schedulable subset is chosen by "
+              "`tools/beat1_reaim_gated.py`, which searches")
+        print(">> each cluster's whole legal band against the WHOLE beat-1 gate "
+              "set -- clearance,")
+        print(">> speed and pan, not just the deadline solve -- and writes the "
+              "per-cluster verdict")
+        print(">> as `r2451_reaimed`. Twelve of fifteen survive; NOSE, FW and "
+              "CORNER_FL do not.")
+        print(">> USE THAT FILE, not this one, as build_beatsheet.py's "
+              "B1_NORMALS.")
     if steep:
         print(">> STAGE RESULT: PRESENTATION_NORMALS_VIOLATION")
         return 1
