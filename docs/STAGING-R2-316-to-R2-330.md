@@ -325,10 +325,13 @@ brief actually asks instead: does every cluster get **some** frame where it is o
 screen, whole, and sharp?
 
 Its answer needs reading with care and is logged here so it is not misquoted:
-15 of 15 clusters do have such a frame, **but for eleven of them that frame is in
-the close-out (f625-792), where the car is assembled and the part is 20-30 % of
-frame height as one detail of a whole car.** That is not a presentation. At the
-station built to present it, every one of the fifteen is too big for the frame.
+15 of 15 clusters do have such a frame, **but for twelve of them that frame is in
+the close-out (f625-792), where the car is assembled and the part is 12-31 % of
+frame height as one detail of a whole car.** That is not a presentation. The three
+exceptions are RW at f233, BB at f13 and CORNER_FR at f33, and none of those is
+the cluster's own station either. **Not one of the fifteen clusters has its clean
+readable moment at the station that was built to present it**, because at that
+station every one of them is too big for the frame.
 
 ---
 
