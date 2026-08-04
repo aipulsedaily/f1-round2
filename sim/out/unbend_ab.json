@@ -1,0 +1,258 @@
+{
+ "pin_frame": 861,
+ "pinned": [
+  {
+   "name": "BF_MUL05_S02",
+   "peak_m": 0.1449,
+   "end_m": 0.0007,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.1449
+  },
+  {
+   "name": "BF_MUL05_S03",
+   "peak_m": 0.1119,
+   "end_m": 0.0005,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.1119
+  },
+  {
+   "name": "BF_TRN0_b05",
+   "peak_m": 0.0892,
+   "end_m": 0.0004,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0892
+  },
+  {
+   "name": "BF_TRN0_b04",
+   "peak_m": 0.0859,
+   "end_m": 0.0004,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0859
+  },
+  {
+   "name": "BF_MUL05_S04",
+   "peak_m": 0.0826,
+   "end_m": 0.0003,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0826
+  },
+  {
+   "name": "BF_TRN1_b05",
+   "peak_m": 0.0618,
+   "end_m": 0.0002,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0618
+  },
+  {
+   "name": "BF_MUL05_S05",
+   "peak_m": 0.057,
+   "end_m": 0.0002,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.057
+  },
+  {
+   "name": "BF_TRN1_b04",
+   "peak_m": 0.0546,
+   "end_m": 0.0002,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0546
+  },
+  {
+   "name": "BF_MUL05_S06",
+   "peak_m": 0.034,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.034
+  },
+  {
+   "name": "BF_TRN2_b05",
+   "peak_m": 0.034,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.034
+  },
+  {
+   "name": "BF_TRN2_b04",
+   "peak_m": 0.0295,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0282
+  },
+  {
+   "name": "BF_MUL06_S04",
+   "peak_m": 0.026,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.026
+  },
+  {
+   "name": "BF_MUL06_S03",
+   "peak_m": 0.0255,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0255
+  },
+  {
+   "name": "BF_MUL06_S05",
+   "peak_m": 0.0232,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0232
+  },
+  {
+   "name": "BF_MUL06_S02",
+   "peak_m": 0.0212,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0212
+  },
+  {
+   "name": "BF_MUL06_S06",
+   "peak_m": 0.0182,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0182
+  },
+  {
+   "name": "BF_TRN1_b06",
+   "peak_m": 0.0136,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0136
+  },
+  {
+   "name": "BF_MUL04_S03",
+   "peak_m": 0.0225,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0135
+  },
+  {
+   "name": "BF_MUL04_S04",
+   "peak_m": 0.0237,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0127
+  },
+  {
+   "name": "BF_MUL04_S02",
+   "peak_m": 0.0184,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0124
+  },
+  {
+   "name": "BF_MUL06_S01",
+   "peak_m": 0.0124,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0119
+  },
+  {
+   "name": "BF_MUL05_S07",
+   "peak_m": 0.0166,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0116
+  },
+  {
+   "name": "BF_MUL06_S07",
+   "peak_m": 0.0143,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0116
+  },
+  {
+   "name": "BF_TRN2_b06",
+   "peak_m": 0.0105,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0105
+  },
+  {
+   "name": "BF_MUL04_S05",
+   "peak_m": 0.0228,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0102
+  },
+  {
+   "name": "BF_MUL04_S01",
+   "peak_m": 0.0101,
+   "end_m": 0.0,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0069
+  },
+  {
+   "name": "BF_TRN1_b03",
+   "peak_m": 0.012,
+   "end_m": 0.0,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0062
+  },
+  {
+   "name": "BF_MUL04_S06",
+   "peak_m": 0.0196,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0058
+  },
+  {
+   "name": "BF_TRN2_b03",
+   "peak_m": 0.0113,
+   "end_m": 0.0,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0057
+  },
+  {
+   "name": "BF_MUL04_S07",
+   "peak_m": 0.0155,
+   "end_m": 0.0001,
+   "pinned_at": 861,
+   "offset_from_home_m": 0.0016
+  }
+ ],
+ "left_alone": [
+  [
+   "BF_MUL04_S00",
+   "peak 0.0028 end 0.0000 -- leaves or never deflected"
+  ],
+  [
+   "BF_MUL05_S00",
+   "peak 3.9318 end 3.9318 -- leaves or never deflected"
+  ],
+  [
+   "BF_MUL05_S01",
+   "peak 4.7421 end 4.4311 -- leaves or never deflected"
+  ],
+  [
+   "BF_MUL06_S00",
+   "peak 0.0031 end 0.0000 -- leaves or never deflected"
+  ],
+  [
+   "BF_TRN0_b03",
+   "peak 0.0075 end 0.0000 -- leaves or never deflected"
+  ],
+  [
+   "BF_TRN0_b06",
+   "peak 0.0086 end 0.0000 -- leaves or never deflected"
+  ],
+  [
+   "BF_TRN0_STATIC",
+   "unanimated"
+  ],
+  [
+   "BF_TRN1_STATIC",
+   "unanimated"
+  ],
+  [
+   "BF_TRN2_STATIC",
+   "unanimated"
+  ]
+ ],
+ "n_pinned": 30,
+ "n_left": 9,
+ "source": "/home/zany/f1-round2/render/film14_breach_r6.blend",
+ "written": "render/r2607_unbend_BENT_DO_NOT_SHIP.blend",
+ "note": "B half of the un-bend A/B.  A is film14_breach_r6.blend, unmodified.  Render the SAME frame from both."
+}

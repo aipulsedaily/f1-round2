@@ -266,6 +266,197 @@ frames.
 
 ---
 
+## R2-605 — a wrong result that matches the expected value is nearly undetectable, and the defence is a second path rather than a second reader
+
+I reported the wound as **2.15 × 6.00 m, 12.482 m²**. It is **4.35 × 6.00 m,
+24.800 m²**. The cause, in my own module:
+
+```python
+mi, sj = int(nm[3:5]), int(nm[nm.index("_S") + 2:][:2])
+except (ValueError, IndexError):
+    continue
+```
+
+The applied pieces are named `BF_MUL05_S02`, not `MUL05_S02`. `nm[3:5]` is
+`"MU"`, `int()` raises, the bare `except` swallows it, and **`gone_mullions` was
+empty on every frame** — so the mullion strips were treated as opaque and the
+connected hole collapsed to a single bay. This is the `assemble.py` hazard the
+brief warns about — a swallowed exception yielding a plausible result —
+committed inside the module written to catch that class of defect.
+
+**And it survived my own reading of it because it produced the number everybody
+expected.** 2.15 × 6.00 m is what `part2.md`, this log and the task list all
+say. The check a careful reader runs — *does this look right?* — returned yes.
+That is the general result, and it is worth stating next to R2-433: **agreement
+with a document is not verification, because a broken instrument that reproduces
+the documented value is indistinguishable from a working one by inspection.**
+
+The defence is an **independent path to the same number**. The table trace
+(`np.interp` over `breach_film.npz`, no Blender) and the blend readback
+(F-curves out of the 4.99 GB scene) now agree at 4.35 × 6.00 m and 24.800 m²,
+computed from different data by different code. That agreement is evidence; the
+earlier agreement with `part2.md` was not.
+
+---
+
+## R2-606 — the film's aperture has two correct values and the pipeline has always quoted the narrower one
+
+Not a stale declaration, and **not an over-opening sim**. `sim/aperture.py`
+returns both from one call, and its own docstring says quoting one without the
+mullion state is a known error. On the shipped bake:
+
+| measure | reading |
+|---|---|
+| `hole` — mullion strips **opaque** | **2.150 × 6.000 m, 12.895 m²** |
+| `hole_bridged` — strips passable **only where that segment left** | **4.350 × 6.050 m, 25.380 m²** |
+
+`sim/land_breach.sh:127` prints `a['hole_w_m']` — the strips-opaque one —
+labelled `connected %.2f x %.2f m`. That is where 2.15 × 6.00 entered the
+documents.
+
+**The sim is at half its authored ceiling, not over it.** `aperture.CEILING`
+records that the plan permits bays 3–6, which is **8.77 m** of glass. Delivered:
+
+| bay | role | vacated |
+|---|---|---|
+| 2 | retained | 5.0 % |
+| 3 | destroyed | **0.5 %** |
+| 4 | destroyed | **96.8 %** |
+| 5 | destroyed | **100.0 %** |
+| 6 | destroyed | **2.2 %** |
+| 7 | retained | 2.9 % |
+
+`segments_gone: [5]` — one mullion, and only two of its eight segments.
+
+**And the opening is not a doorway twice the car's width.** Mullion 5's segments
+are 0.753 m each; only `S00` (z 0.086–0.840) and `S01` (0.840–1.593) leave. The
+two bays are joined **through a 1.51 m-tall gap at the bottom**: 4.35 m wide at
+car height, **2.15 m wide above z = 1.593**, where `S02`–`S07` still stand. The
+aperture's shape and R2-601's un-bend are the same six objects — what keeps the
+opening narrow at the top is exactly what springs back.
+
+**Both numbers should be quoted with the mullion state.** No document was
+edited; this is recorded for whoever owns them.
+
+---
+
+## R2-607 — every arm was asked whether it can pass on an empty set, and the free negative control could
+
+R2-433's law applied to this block's own work: fixing the instance is not fixing
+the defect. Stage E was found passing on `BREACH_Frame: 0` — "0 of 0 deflected
+pieces came home". Asking the same question of the other arms found two more,
+and **the worst of them is the one the whole deliverable rests on**:
+
+* **`D`, the free negative control**, passes when a plan has no `intact` bays:
+  `grid_i is None`, the control array stays zero, and D reports PASS **having
+  measured nothing**. A negative control that can pass on an empty set is not a
+  control; it is a decoration that reads like one.
+* **`A`** passes on a scene whose BREACH collections exist but are empty — "no
+  keys after `span_end`" is trivially true of nothing.
+* **`POS`** carries no information when the wound never opens.
+* `C` fails rather than passes on an empty set; `NEG-1` has no vacuous mode —
+  it *is* the anti-vacuity arm.
+
+A vacuity flag is **not** a pass/fail clause. Each arm still answers only its
+own question — which is why `MAG` had to be split out of `D` and `POS` — and the
+flag says separately whether that verdict carries information. **An arm that
+passes while vacuous is listed and the run refused.**
+
+This fired unprompted on `film9_breach`, flagging `E` VACUOUS and `POS` as an
+empty-set pass.
+
+---
+
+## R2-608 — stage C sampled, which is the defect it exists to catch, and `film9_breach` is the proof
+
+The first cut of `tail_persist` compared the tail against `span_end` and probed
+five frames between. It **passed `film9_breach`**. Swept on every frame:
+
+```
+film9_breach   peak 7.863 m2 at f878   ->   0.000 m2 at f913   ->   0.432 m2 held
+```
+
+**The wound opens to 7.86 m², closes completely — 0.000 m² — and re-opens at a
+twentieth of its size.** Neither the true peak (f878) nor the true minimum
+(f913) was among any of the twelve probe frames: the old check had the wrong
+numerator *and* the wrong denominator. This is the same shape as a local-median
+detector seeing only the first tooth of a periodic defect — **a probe placed by
+convenience rather than by the defect's own geometry.**
+
+C now gates on *once open, never smaller*: peak over the take, then the minimum
+from the peak frame to the last frame, and the frame it lands on.
+
+**Affording it without restoring the defect.** `_largest_component` is a Python
+flood fill and 2 × 2,978 of them do not finish. The fix is not to sample again:
+`aperture.hole` is a pure function of `(gone_ids, gone_mullions)` — it never
+sees the frame number — so memoising on exactly those arguments is **exact, not
+approximate**, and the 1,813 tail frames collapse to one evaluation because the
+set is *provably* constant there. Every frame is still evaluated. The report
+carries `C_distinct_gone_sets_evaluated` (290 on `film9_breach`) so the cost of
+the claim is visible.
+
+**And `film9_breach` is the control that must fail.** It was applied from
+`sim/tmp/breach_bake.npz` — bond 4000, 11:24 on 08-03, before `breach_full_m1`
+at 22:28. R2-601 measured that table at glass median end/peak **0.159** with
+1,261 of 3,796 shards home again; the blend built from it shows the wound
+closing on camera. **The falsification and the confirmation are one
+measurement:** the spring-back is real, is exactly where the table said, and is
+preserved in a delivered scene while absent from the ship candidate. A gate
+whose control must fail is worth more than one with two that pass — the whole
+audit chain already rests on `film10` failing with 27 findings.
+
+### The two verdicts, arm by arm
+
+| arm | `film14_breach_r6` | `film9_breach` |
+|---|---|---|
+| **A** tail-static | PASS — 1,813 frames | PASS |
+| **NEG-1** must-fire control | PASS — 10 of 626 | PASS — 10 of 626 |
+| **C** once open, never smaller | **PASS — 100.0 %** (peak 24.800 m² f940) | **FAIL — 0.0 %** (7.863 m² f878 → **0.000 m² f913**) |
+| **D** free negative control | PASS — 0.000000 m² | PASS — 0.000000 m² |
+| **POS** motion not mesh | PASS | PASS but **VACUOUS** |
+| **MAG** | PASS — 24.800 m² | **FAIL** — 0.433 m² |
+| **E** aluminium | **FAIL** — 30 of 32, largest 0.1449 m | **VACUOUS** — `BREACH_Frame: 0` |
+
+**Six arms pass on the ship candidate, none vacuously, and one fails.** The
+glass wound is clean across the entire take; the aluminium is the whole of the
+remaining defect.
+
+---
+
+## R2-609 — the un-bend cannot be measured by a temporal pair, and the numbers say so before any pixel is spent
+
+`MUL05_S02` peaks at **145 mm at f861**, is under 10 % of that by **f866** and
+home by **f870** — the un-bend is **nine film frames**, with a 28 mm secondary
+bounce at f880. The obvious experiment is to diff f861 against f870. Projected
+through the camera track's own pose and its 28.3 mm lens:
+
+| | |
+|---|---|
+| camera-induced shift of a **static** point, f861 → f870 | **1,478.9 px** |
+| the member's own 145 mm deflection at f861 | **41.1 px** |
+
+**A temporal diff is 97 % camera.** The only design that isolates the member is
+the same frame from two scenes with one variable between them, which is what
+`sim/unbend_ab.py` builds: the 30 recovering pieces pinned to their f861 pose
+for the whole take, with `BF_MUL05_S00` and `BF_MUL05_S01` — the two that
+genuinely leave — **deliberately left alone**, so only one variable moves.
+
+At **f870**, where A shows the wall repaired and B shows it still bent, the
+pinned pieces that are actually in frame shift:
+
+| piece | on-screen shift at f870 |
+|---|---|
+| `MUL05_S02` | **71.5 px** |
+| `TRN_z0_b05` | 46.8 px |
+| `TRN_z0_b04` | 38.8 px |
+
+Larger than the 41.1 px at f861 because the camera is closer by then. The
+subject is **opaque aluminium**, so this measurement does not inherit the
+glass-against-glass readability degeneracy that weakens breach A/Bs taken off
+the ladder pass.
+
+---
+
 ### Files
 
 * `sim/tail_persist.py` — new

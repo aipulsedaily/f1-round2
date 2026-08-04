@@ -248,28 +248,83 @@ def main(argv):
     frame_bodies = [(o.name, o, curves_of(o)) for o in obs["BREACH_Frame"]]
     fb_home = {n: pose_at(f, o, 1)[0] for n, o, f in frame_bodies}
 
-    def measure(f):
-        gone_ids, vis, hid = set(), 0, 0
-        for nm, (o, fcs) in shard_fc.items():
-            loc, h = pose_at(fcs, o, f)
-            if h:
-                hid += 1
-                continue
-            vis += 1
-            if np.linalg.norm(loc - home[nm]) > GONE_M:
-                gone_ids.add((int(nm[4:6]), int(nm[7:])))
+    # ---- EVERY FRAME, not a probe.  R2-605. ------------------------------- #
+    # The first cut of this module compared the tail against span_end and
+    # sampled five frames in between.  Run across the delivered scenes it
+    # passed `film9_breach`, whose wound is 3.900 m2 at f900, **0.062 m2 at
+    # f1000** and 0.432 m2 at f1165 -- it heals by 98 % and re-opens, inside
+    # the bake span, and every probe happened to miss it.  That is the same
+    # failure the module exists to catch, committed by the module.  So the
+    # curves are now evaluated on EVERY frame of the take.
+    #
+    # `fcurve.evaluate` 3,796 times a frame is 32 M calls and does not
+    # terminate.  The curves are LINEAR keys with CONSTANT extrapolation, so
+    # they are exactly `np.interp` -- which clamps outside the key range, which
+    # IS constant extrapolation -- and `hide_render` is CONSTANT-interpolated,
+    # which is a hold-last lookup.  Both are one vectorised pass per body.
+    FR_ALL = np.arange(1, total + 1)
+
+    def curve_over_take(fcs, ob, dp, ix, default, step=False):
+        fc = fcs.get((dp, ix))
+        if fc is None:
+            return np.full(len(FR_ALL), float(default))
+        n = len(fc.keyframe_points)
+        if not n:
+            return np.full(len(FR_ALL), float(default))
+        buf = np.empty(2 * n, np.float64)
+        fc.keyframe_points.foreach_get("co", buf)
+        kf, kv = buf[0::2], buf[1::2]
+        if step:
+            j = np.clip(np.searchsorted(kf, FR_ALL, side="right") - 1, 0, n - 1)
+            return kv[j]
+        return np.interp(FR_ALL, kf, kv)
+
+    def travel_and_vis(fcs, ob, home_xyz):
+        L = np.stack([curve_over_take(fcs, ob, "location", i, ob.location[i])
+                      for i in range(3)], axis=1)
+        d = np.linalg.norm(L - np.asarray(home_xyz, float)[None], axis=1)
+        h = curve_over_take(fcs, ob, "hide_render", 0,
+                            float(ob.hide_render), step=True) >= 0.5
+        return d, h
+
+    log("evaluating %d shard + %d frame curves over all %d frames"
+        % (len(shard_fc), len(frame_bodies), total))
+    sh_names, sh_gone, sh_vis = [], [], []
+    for nm, (o, fcs) in shard_fc.items():
+        d, h = travel_and_vis(fcs, o, home[nm])
+        sh_names.append((int(nm[4:6]), int(nm[7:])))
+        sh_gone.append((d > GONE_M) & ~h)
+        sh_vis.append(~h)
+    SH_GONE = np.asarray(sh_gone)                       # (nshard, nframe) bool
+    SH_VIS = np.asarray(sh_vis)
+
+    mul_key, mul_gone = [], []
+    for nm, o, fcs in frame_bodies:
+        if "MUL" not in nm:
+            continue
+        m = __import__("re").search(r"MUL(\d\d)_S(\d\d)", nm)
+        if not m:
+            continue
+        d, _h = travel_and_vis(fcs, o, fb_home[nm])
+        mul_key.append((int(m.group(1)), int(m.group(2))))
+        mul_gone.append(d > GONE_M)
+    MUL_GONE = (np.asarray(mul_gone) if mul_gone
+                else np.zeros((0, len(FR_ALL)), bool))
+
+    def sets_at(f):
+        k = f - 1
+        gone_ids = {sh_names[i] for i in np.nonzero(SH_GONE[:, k])[0]}
         gone_mul = set()
-        for nm, o, fcs in frame_bodies:
-            if not nm.startswith("MUL"):
-                continue
-            try:
-                mi, sj = int(nm[3:5]), int(nm[nm.index("_S") + 2:][:2])
-            except (ValueError, IndexError):
-                continue
-            loc, _h = pose_at(fcs, o, f)
-            if np.linalg.norm(loc - fb_home[nm]) > GONE_M:
-                for ss in (range(8) if mi in (0, 1, 2, 8, 9, 10) else [sj]):
-                    gone_mul.add((mi, ss))
+        for i in np.nonzero(MUL_GONE[:, k])[0] if len(MUL_GONE) else ():
+            mi, sj = mul_key[i]
+            for ss in (range(8) if mi in (0, 1, 2, 8, 9, 10) else [sj]):
+                gone_mul.add((mi, ss))
+        return gone_ids, gone_mul
+
+    def measure(f):
+        gone_ids, gone_mul = sets_at(f)
+        vis = int(SH_VIS[:, f - 1].sum())
+        hid = SH_VIS.shape[0] - vis
         hb = AP.hole(plan, gone_ids, args.cell, breached, grid_b,
                      gone_mullions=gone_mul)
         row = dict(frame=f, shards_visible=vis, shards_hidden=hid,
@@ -290,6 +345,43 @@ def main(argv):
         row["panes_visible"] = sorted(k for k, v in panes.items() if not v)
         return row
 
+    # ---- the sweep: every frame of the take ------------------------------- #
+    # `_largest_component` is a Python flood fill, so the empty frames are
+    # short-circuited -- with nothing gone there is no hole and no component to
+    # find.  That is a fact about the mask, not an assumption about the scene.
+    # `aperture.hole` is a pure function of (gone_ids, gone_mullions) -- it
+    # never sees the frame number -- so identical inputs give identical output
+    # by construction, and memoising on them is exact, not an approximation.
+    # It is what makes every-frame affordable: `_largest_component` is a Python
+    # flood fill, 2 x 2,978 of them do not finish, and after the last key the
+    # set is constant so 1,813 tail frames collapse to one evaluation.  EVERY
+    # frame is still evaluated; none is skipped or interpolated.
+    W = np.zeros(total, float)
+    CTL = np.zeros(total, float)
+    VIS = np.zeros(total, int)
+    GON = np.zeros(total, int)
+    cache, n_eval = {}, 0
+    for f in range(1, total + 1):
+        gone_ids, gone_mul = sets_at(f)
+        VIS[f - 1] = int(SH_VIS[:, f - 1].sum())
+        GON[f - 1] = len(gone_ids)
+        if not gone_ids:
+            continue
+        key = (frozenset(gone_ids), frozenset(gone_mul))
+        hit = cache.get(key)
+        if hit is None:
+            n_eval += 1
+            hb = AP.hole(plan, gone_ids, args.cell, breached, grid_b,
+                         gone_mullions=gone_mul)
+            ci = (AP.hole(plan, gone_ids, args.cell, intact,
+                          grid_i)["vacated_area_m2"]
+                  if grid_i is not None else 0.0)
+            hit = cache[key] = (hb["hole_bridged_area_m2"], ci)
+        W[f - 1], CTL[f - 1] = hit
+    rep["C_distinct_gone_sets_evaluated"] = n_eval
+    log("swept %d frames, %d distinct gone-sets evaluated; "
+        "wound peak %.4f m2, end %.4f m2" % (total, n_eval, W.max(), W[-1]))
+
     probe = [1, 400, 859, 860, 900, 1000, span_end,
              span_end + 1, 1500, 2000, 2500, total]
     probe = sorted({int(f) for f in probe if 1 <= f <= total})
@@ -297,23 +389,50 @@ def main(argv):
     rep["rows"] = rows
     by_f = {r["frame"]: r for r in rows}
 
-    ref = by_f[span_end]["WOUND_hole_bridged_m2"]
-    tail_rows = [r for r in rows if r["frame"] > span_end]
-    C_ok = bool(tail_rows) and all(
-        abs(r["WOUND_hole_bridged_m2"] - ref) < 1e-6 for r in tail_rows)
+    # ---- C.  ONCE OPEN, NEVER SMALLER -- on every frame, not a probe ------ #
+    # The claim is not "the tail equals span_end".  It is "from the frame the
+    # wound is open, it never closes again", and it has to hold at f1000 as
+    # much as at f2978.  So: peak over the take, then the MINIMUM from the peak
+    # frame to the last frame, and the frame it happens on.
+    pkf = int(W.argmax()) + 1
+    peak = float(W.max())
+    after = W[pkf - 1:]
+    minf = int(after.argmin()) + pkf
+    mn = float(after.min())
+    frac = mn / peak if peak > 1e-9 else 0.0
+    C_ok = bool(peak > 1e-9 and frac >= 0.98)
     rep["C_PASS"] = C_ok
-    rep["C_wound_m2_at_span_end"] = ref
-    rep["C_wound_m2_tail"] = [r["WOUND_hole_bridged_m2"] for r in tail_rows]
+    rep["C_peak_m2"] = round(peak, 4)
+    rep["C_peak_frame"] = pkf
+    rep["C_min_after_peak_m2"] = round(mn, 4)
+    rep["C_min_after_peak_frame"] = minf
+    rep["C_min_over_peak"] = round(frac, 4)
+    rep["C_frames_swept"] = int(total)
+    rep["C_wound_m2_by_frame_every_10"] = [round(float(x), 4) for x in W[::10]]
 
-    ctrl = [r.get("CONTROL_intact_bays_vacated_m2", 0.0) for r in rows]
-    D_ok = all(abs(c) < 1e-9 for c in ctrl) and ref > 1.0
-    rep["D_PASS"] = bool(D_ok)
-    rep["D_control_vacated_m2_max"] = max(ctrl) if ctrl else None
+    # ---- D.  the free negative control ------------------------------------ #
+    # D IS ABOUT THE CONTROL AND NOTHING ELSE.  The first cut folded
+    # `wound > 1 m2` into both D and POS, so `film9_breach` -- whose control
+    # reads a clean 0.0000 and whose f1 reads a clean 0.0000 -- failed two arms
+    # for having a small wound.  A control that fails for a reason that is not
+    # about the control cannot be read.  Magnitude is now its own arm, MAG.
+    D_ok = bool(CTL.max() < 1e-9)
+    rep["D_PASS"] = D_ok
+    rep["D_control_vacated_m2_max"] = round(float(CTL.max()), 6)
+    rep["D_control_worst_frame"] = int(CTL.argmax()) + 1
 
-    pre = by_f[1]["WOUND_hole_bridged_m2"]
-    POS_ok = abs(pre) < 1e-9 and ref > 1.0
-    rep["POS_PASS"] = bool(POS_ok)
-    rep["POS_wound_m2_at_f1"] = pre
+    # ---- POS.  the instrument reads the motion, not the mesh -------------- #
+    pre = float(W[:859].max()) if total > 859 else float(W[0])
+    POS_ok = bool(abs(pre) < 1e-9)
+    rep["POS_PASS"] = POS_ok
+    rep["POS_wound_m2_before_f859"] = round(pre, 6)
+
+    # ---- MAG.  is there a wound to talk about at all? --------------------- #
+    # Split out of D and POS so that a scene with a small wound fails the arm
+    # that is about wound size and passes the arms that are about controls.
+    MAG_ok = bool(W[-1] > 1.0)
+    rep["MAG_PASS"] = MAG_ok
+    rep["MAG_wound_m2_at_last_frame"] = round(float(W[-1]), 4)
 
     # ---- E. the ALUMINIUM.  Peak travel cannot see this. ------------------ #
     # Every existing report -- build_frame's `max_travel_m`, breach_metrics'
@@ -357,11 +476,48 @@ def main(argv):
     E["pct_recovered"] = round(100.0 * E["RECOVERED"]
                                / max(1, E["deflected"]), 1)
     rep["E_frame_persistence"] = E
-    E_ok = E["max_recovered_peak_m"] <= BM.RECOVERY_GATE_M
+    # E CANNOT PASS BY EMPTINESS.  `film13_breach` and `film14_breach` carry
+    # BREACH_Frame: 0 -- round 1's undeformed grid is still standing in them
+    # (R2-266) -- so "0 of 0 deflected pieces came home" is not a result about
+    # those scenes, it is the absence of one.  A gate that reports PASS on an
+    # empty set is how a printed count became a used count in R2-266.
+    E["vacuous"] = bool(E["pieces"] == 0 or E["deflected"] == 0)
+    E_ok = (not E["vacuous"]
+            and E["max_recovered_peak_m"] <= BM.RECOVERY_GATE_M)
     rep["E_PASS"] = bool(E_ok)
+    rep["E_VACUOUS"] = E["vacuous"]
 
-    ok = A_ok and NEG1_ok and C_ok and D_ok and POS_ok and E_ok
+    # ---- CAN ANY ARM PASS ON AN EMPTY SET?  R2-433's law, applied here. --- #
+    # E was found passing on `BREACH_Frame: 0` -- "0 of 0 pieces came home" is
+    # the absence of a result reported as one.  Fixing only E would be fixing
+    # the instance and not the defect, so every arm is asked the same question.
+    # A vacuity flag is NOT a pass/fail clause: the arm's verdict still answers
+    # only its own question (that is why MAG exists at all), and the flag says
+    # separately whether that verdict carries information.  An arm that PASSES
+    # while vacuous cannot be counted, and the run is refused.
+    VAC = dict(
+        # nothing keyed -> "no keys after span_end" is trivially true
+        A=bool(A["animated"] == 0),
+        # the must-fire control; it has no vacuous mode, it IS the check
+        NEG1=False,
+        # no shard ever leaves -> there is no "once open" to stay open
+        C=bool(W.max() <= 1e-9),
+        # no intact bays in the plan -> the free negative control has no
+        # glass it could have wrongly reported gone
+        D=bool(grid_i is None or not intact),
+        # nothing ever opens -> "reads 0 before the swap" is not a statement
+        # about the instrument, only about an empty scene
+        POS=bool(not MAG_ok),
+        MAG=False,
+        E=bool(E["vacuous"]))
+    rep["VACUOUS"] = VAC
+    arms = dict(A=A_ok, NEG1=NEG1_ok, C=C_ok, D=D_ok, POS=POS_ok,
+                MAG=MAG_ok, E=E_ok)
+    vac_pass = sorted(k for k, v in arms.items() if v and VAC[k])
+    rep["VACUOUS_PASSES"] = vac_pass
+    ok = all(arms.values()) and not vac_pass
     rep["PASS"] = bool(ok)
+    rep["arms"] = arms
 
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     json.dump(rep, open(args.out, "w"), indent=1)
@@ -380,21 +536,29 @@ def main(argv):
           % (tail_n, span_end + 1, total, "PASS" if A_ok else "FAIL"))
     print("  NEG-1 non-breach objects DO key past f%-5d : %s (%d found)"
           % (span_end, "PASS" if NEG1_ok else "FAIL -- VACUOUS", len(lat)))
-    print("  C   wound held at %.3f m2 on every probe   : %s"
-          % (ref, "PASS" if C_ok else "FAIL"))
-    print("  D   intact-bay control reads %.4f m2       : %s"
-          % (max(ctrl) if ctrl else -1, "PASS" if D_ok else "FAIL"))
-    print("  POS wound is %.4f m2 at f1                : %s"
+    print("  C   swept all %d frames: peak %.3f m2 at f%d, min after it"
+          " %.3f m2 at f%d = %.1f%% : %s"
+          % (total, peak, pkf, mn, minf, 100.0 * frac,
+             "PASS" if C_ok else "FAIL"))
+    print("  D   intact-bay control, worst of %d frames %.6f m2 : %s"
+          % (total, CTL.max(), "PASS" if D_ok else "FAIL"))
+    print("  POS wound is %.6f m2 on every frame before f859 : %s"
           % (pre, "PASS" if POS_ok else "FAIL"))
+    print("  MAG wound at f%d is %.3f m2                : %s"
+          % (total, W[-1], "PASS" if MAG_ok else "FAIL"))
     print("")
     print("  E   ALUMINIUM: %d of %d deflected pieces sprang back to home"
           " (%.1f%%), largest %.4f m vs gate %.3f m : %s"
           % (E["RECOVERED"], E["deflected"], E["pct_recovered"],
              E["max_recovered_peak_m"], BM.RECOVERY_GATE_M,
-             "PASS" if E_ok else "FAIL"))
+             "VACUOUS -- no frame bodies in this scene" if E["vacuous"]
+             else ("PASS" if E_ok else "FAIL")))
     print("      %-22s %9s %9s %8s" % ("piece", "peak m", "end m", "end/peak"))
     for w in E["worst"]:
         print("      %-22s %9.4f %9.4f %8.4f" % tuple(w))
+    if vac_pass:
+        print("  !! arms that PASSED ON AN EMPTY SET and are therefore not "
+              "counted: %s" % ", ".join(vac_pass))
     print("")
     print(">> STAGE RESULT: %s" % ("TAIL_PERSIST_PASS" if ok
                                    else "TAIL_PERSIST_FAIL"))
