@@ -20234,3 +20234,44 @@ bulging as a sheet and springing back). Nothing in f899-904 shows a pane deformi
 and returning — what is there is shards transiting. That event, if it is visible at
 all, is earlier, near impact around f865-880, and this window does not cover it.
 **Absence here is not evidence of absence there.**
+
+## R2-710 — RUNG 1 CANNOT ADJUDICATE THE SLAB UN-BREAK, and saying so is the result
+
+The breach frames f860-930 now exist and were examined at 1:1. The agent
+refused to return a verdict on the un-break and gave the arithmetic rather
+than an impression:
+
+The un-break is a **483 mm -> 17 mm** excursion - a bulge that returns.
+Detecting it requires measuring a **displacement of a pane feature across
+frames**. On a ~15 m wall at 1280 px, 483 mm is roughly **40 px at best**, and
+that is before the pane is fractured, motion-blurred, and seen through itself
+at a grazing angle. By f870-872 the facets have already separated, so **there
+is no coherent sheet left whose displacement could be tracked.**
+
+**So the un-break must be judged on the sim trajectories (`sim/out/*.npz`,
+where the 483 mm came from) or at a higher rung - not on these frames.** It
+stays flagged as *unresolvable at this rung* rather than as checked.
+
+> Reporting "I looked and saw nothing unusual" would have been worse than
+> useless here, because **absence of a signature I cannot resolve is not
+> evidence.**
+
+**What the frames DO establish, and it is a clean positive for beat 3:**
+
+```
+f866        pane intact and smooth
+f868        a crack web appears, ~3 frames after the car reaches it
+f870-872    glass separates into distinct facets, each tilting to its own
+            angle - visible as differently-shaded quadrilaterals
+            the mullions remain standing through the impact window
+f899-903    the facets transit the camera
+f904        frame clear
+```
+
+No held frames, no pops, no geometry appearing or vanishing anywhere in
+f860-930.
+
+**The general point is about ladders, not about glass:** a rung has a
+resolution floor, and a defect whose signature is below it cannot be cleared
+there at any level of care. Knowing which rung can decide a given defect is
+part of planning the ladder, not something to discover by looking.
