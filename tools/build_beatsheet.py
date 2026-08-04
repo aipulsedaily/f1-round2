@@ -365,8 +365,27 @@ def lens_for(g):
 def key_geom(geo, normals, k, idx, n):
     """(station, standoff, lens, unit view direction) for a presentation."""
     g = geo[k]
+    nv = (normals or {}).get(k, {})
+    # R2-451.  The clamp engages ONLY for a cluster whose normals entry says it
+    # was chosen under the R2-451 law, and the default is OFF.  Two reasons, and
+    # the second one is a hazard this file created for five other live agents:
+    #
+    #  * `r2451_reaimed: false` records a cluster that WAS examined against the
+    #    depression cap and could not be moved -- every legal direction it has
+    #    breaks beat 1's schedule or its clearance gate. Clamping it anyway does
+    #    not produce a legal station, it produces an unschedulable beat.
+    #  * A PRE-R2-451 normals file has no markers at all, and clamping all
+    #    fifteen of its near-nadir directions to 25 deg makes `present_order()`
+    #    raise SystemExit. Defaulting the clamp ON would therefore have broken
+    #    `build_beatsheet.py` for anyone running it against the shipped
+    #    `docs/presentation_normals.json` -- in a shared working tree, from the
+    #    moment the edit was saved and before anything was committed.
+    #
+    # So the backstop protects data that opted into the law and never retrofits
+    # itself onto data that did not.
+    legalise = nv.get("r2451_reaimed", False)
     pos, standoff = camera_station(g["centre"], g["radius"], idx, n,
-                                   (normals or {}).get(k, {}).get("normal"))
+                                   nv.get("normal"), legalise=legalise)
     d = [g["centre"][i] - pos[i] for i in range(3)]
     m = math.sqrt(sum(x * x for x in d)) or 1.0
     return pos, standoff, lens_for(g), [x / m for x in d]
@@ -542,7 +561,7 @@ def _solve_corner_order(geo, normals, corners, n, idx0, entry):
     return bseq
 
 
-def camera_station(centre, radius, idx, n, look_dir=None):
+def camera_station(centre, radius, idx, n, look_dir=None, legalise=True):
     """Where the lens sits to make this cluster large AND legible in frame.
 
     Standoff scales with the cluster's own size so a 0.19 m steering wheel is
@@ -563,6 +582,29 @@ def camera_station(centre, radius, idx, n, look_dir=None):
     The spiral survives only as a fallback for a cluster with no measurement, and
     a small spiral-derived roll is still mixed in so consecutive stations are not
     all at the same elevation — the path must still weave, not orbit on one plane.
+
+    R2-451 — THE STATION MUST BE A CAMERA POSITION, AND THAT IS ENFORCED HERE.
+    ------------------------------------------------------------------------
+    This function turns a direction into a lens position, so it is the last place
+    that can guarantee the result is somewhere a camera could be.  It never did,
+    and the film opens 84.15 deg nose-down from z = 5.6607 — above every light in
+    the showroom — because whatever `presentation_normals.py` handed it went
+    straight through unchecked.
+
+    `presentation_normals.py` now selects inside the same band, so in the normal
+    case this clamp is a no-op and the selftest asserts that.  It is here for the
+    two ways an illegal station can still arrive:
+
+      * THE WEAVE TILT ITSELF.  `tilt` adds up to 0.0427 to d[2].  A direction
+        selected at exactly the 25 deg cap comes out of the tilt at 26.4 deg, so
+        the placer can violate a bound the selector respected.
+      * A STALE OR HAND-EDITED NORMALS FILE.  The pre-R2-451 file is still on
+        disk and reachable by one `--out` flag.
+
+    A clamp preserves AZIMUTH and moves only elevation, because azimuth is the
+    measured quantity — it is which face of the part the audience sees, which is
+    the whole point of `presentation_normals` — and elevation is the quantity
+    that had no constraint on it.
     """
     standoff = max(radius * 1.55 + 0.42, 0.75)
     if look_dir:
@@ -577,7 +619,55 @@ def camera_station(centre, radius, idx, n, look_dir=None):
         d = [math.cos(az) * math.cos(el), math.sin(az) * math.cos(el), math.sin(el)]
     mag = max(math.sqrt(sum(v * v for v in d)), 1e-9)
     d = [v / mag for v in d]
+    if legalise:
+        d = _legalise_station_dir(d, centre, standoff)
     return [round(centre[i] + d[i] * standoff, 4) for i in range(3)], round(standoff, 4)
+
+
+# R2-451.  All four MEASURED, none asserted -- see tools/beat1_nadir_cause.py
+# and tools/beat1_reaim.py.
+STATION_MAX_DEPRESSION_DEG = float(
+    os.environ.get("B1_MAX_DEPRESSION", "25.0"))   # deepest hand-authored key
+# B1_MAX_DEPRESSION=90 disables the clamp entirely and is how the pre-R2-451
+# sheet is reproduced bit-for-bit from this file. That reproduction is the null
+# every measurement in R2-451 is taken against, and it is run first.
+STATION_MIN_ELEV_DEG = -8.0         # presentation_normals' own floor
+STATION_SPOT_RIG_Z = 5.590          # 6 x SPOT, world/beat1_anim.blend
+STATION_LENS_CLEARANCE = 0.30
+STATION_MIN_CAM_Z = 1.20            # the close-out's rope-barrier rule
+
+
+def _set_elev(d, elev_deg):
+    """Same azimuth, new elevation. Azimuth is the measured quantity."""
+    h = math.hypot(d[0], d[1])
+    if h < 1e-9:
+        return [math.cos(math.radians(elev_deg)), 0.0,
+                math.sin(math.radians(elev_deg))]
+    e = math.radians(elev_deg)
+    s = math.cos(e) / h
+    return [d[0] * s, d[1] * s, math.sin(e)]
+
+
+def _legalise_station_dir(d, centre, standoff):
+    """Clamp a station direction into the band a camera can actually occupy."""
+    if STATION_MAX_DEPRESSION_DEG >= 90.0:
+        return d                       # the null: pre-R2-451 behaviour, exactly
+    zmax = STATION_SPOT_RIG_Z - STATION_LENS_CLEARANCE
+    e = math.degrees(math.asin(max(-1.0, min(1.0, d[2]))))
+    e = min(STATION_MAX_DEPRESSION_DEG, max(STATION_MIN_ELEV_DEG, e))
+    # then the room: cam_z = centre_z + standoff * sin(e)
+    for _ in range(4):
+        z = centre[2] + standoff * math.sin(math.radians(e))
+        if z > zmax:
+            s = (zmax - centre[2]) / standoff
+            e = math.degrees(math.asin(max(-1.0, min(1.0, s))))
+        elif z < STATION_MIN_CAM_Z:
+            s = (STATION_MIN_CAM_Z - centre[2]) / standoff
+            e = math.degrees(math.asin(max(-1.0, min(1.0, s))))
+        else:
+            break
+        e = min(STATION_MAX_DEPRESSION_DEG, max(STATION_MIN_ELEV_DEG, e))
+    return _set_elev(d, e)
 
 
 # --------------------------------------------------------------------------- #
@@ -977,7 +1067,12 @@ def main(check=None):
     geo = cluster_geometry(plan)
     total = sum(d for _, d, _ in BEATS)
 
-    npath = os.path.join(DOCS, "presentation_normals.json")
+    # R2-451: overridable so a candidate normals file can be built and MEASURED
+    # end to end before docs/ is touched -- six agents are live against docs/.
+    npath = os.environ.get("B1_NORMALS",
+                           os.path.join(DOCS, "presentation_normals.json"))
+    if npath != os.path.join(DOCS, "presentation_normals.json"):
+        print(f">> B1_NORMALS override in force: {npath}")
     normals = json.load(open(npath)) if os.path.exists(npath) else {}
     print(f">> presentation normals: {len(normals)} clusters measured"
           if normals else ">> WARNING: no presentation normals; spiral fallback")
@@ -1358,7 +1453,13 @@ def main(check=None):
         # level down, and it is the annotation that is easy to lose and hard to
         # notice. The merge is now recursive and it NEVER overwrites a value
         # this file authored: it only restores keys that would otherwise vanish.
-        dest = os.path.join(DOCS, "beat_sheet.json")
+        # R2-451: overridable for the same reason B1_NORMALS is -- a candidate
+        # sheet must be measurable end to end before docs/ is touched. The
+        # carry-forward below still reads the SHIPPED sheet, so a candidate
+        # inherits beats 2-5 exactly and the seam cannot drift by construction.
+        dest = os.environ.get("B1_SHEET_OUT", os.path.join(DOCS, "beat_sheet.json"))
+        if dest != os.path.join(DOCS, "beat_sheet.json"):
+            print(f">> B1_SHEET_OUT override in force: {dest}")
         carried = []
 
         # A LIST IS ONLY WALKED WHEN ITS ELEMENTS CAN BE IDENTIFIED, and that
@@ -1395,9 +1496,18 @@ def main(check=None):
                         if ident in ib:
                             carry(a, ib[ident], f"{path}[{ident}]")
 
-        if os.path.exists(dest):
+        # R2-451: the carry-forward SOURCE is always the shipped sheet, never
+        # `dest`. Reading `dest` was correct while dest was always the shipped
+        # sheet; the moment B1_SHEET_OUT points somewhere new, `dest` does not
+        # exist, `prev` is {}, and beats 2-5 and every aim declaration are
+        # silently dropped -- the exact defect this whole block exists to
+        # prevent, reintroduced by the flag that was added to make the block
+        # safe to test. Named here because it is a one-character mistake with a
+        # four-beat blast radius.
+        carry_src = os.path.join(DOCS, "beat_sheet.json")
+        if os.path.exists(carry_src):
             try:
-                prev = json.load(open(dest))
+                prev = json.load(open(carry_src))
             except Exception:
                 prev = {}
             carry(out, prev)
