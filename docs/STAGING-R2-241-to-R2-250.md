@@ -108,7 +108,7 @@ objects (`CI_seat`, `CI_seatpad`, `CI_headrest`, `SW_Shell`, `CI_liner`,
 and `hide_render` at ten frames, 70 samples, compared before and after and
 refusing to save if any changed. **0 of 70 changed.**
 
-## R2-246 — the left boot came through the chassis skin
+## R2-246 to R2-249 — the driver does not fit, and where that reaches the film
 
 `tools/driver_containment.py` renders the driver's coverage as an **alpha
 mask**: every car mesh is set `is_holdout`, so it punches a transparent hole
@@ -117,17 +117,78 @@ exactly where an unoccluded driver surface is frontmost. One sample, 0.01 px
 filter, opaque `material_override` — binary, no denoiser, nothing to threshold.
 
 (The first cut used the `IndexOB` pass through the compositor and died on
-`Scene.node_tree`, which **Blender 5.2 removed**; Blender still exited 0.)
+`Scene.node_tree`, which **Blender 5.2 removed**. Blender still exited 0.)
 
-Frame 2632: **132,426 driver pixels, 0 in the driver-absent control**, and
-**82 outside the cockpit aperture** in a 10 × 14 px blob 198 px from the hull.
-Frame 700: 222 px in a 38 × 13 px blob. Raycasting those exact pixels named
-**`DRV_Boot_L` at 3.075 m with `MB_chassis_fwd` 5 mm behind it**.
+**R2-246.** Frame 2632: 132,426 driver pixels, **0 in the driver-absent
+control**, and **82 outside the cockpit aperture** in a 10 × 14 px blob 198 px
+from the hull. Frame 700: 222 px. Raycasting those exact pixels named
+**`DRV_Boot_L` at 3.075 m with `MB_chassis_fwd` 5 mm behind it**. Setting the
+boots back 31 mm and 70 mm by hand left 113 px: `MB_chassis_fwd`'s skin cuts
+diagonally into the footwell and no axis-aligned plane follows it.
 
-Same root cause as R2-242, one axis over: the tub is **24 mm too short** as well
-as 0.23 m too shallow. The boots are set back by the measured overlap against
-`CI_footwell`'s bulkhead — **31.3 mm left, 70.2 mm right** — which leaves the
-ankle inside the trouser and inside a footwell nothing can see into.
+**R2-247.** The real cause is that the lower body is outside the survival cell
+altogether — the hip is 0.229 m below the seat pan and the thighs hang below
+`MB_cell_floor`, among the backing panels. Where a panel covers them they are
+hidden; where one does not, they reach the film (`DRV_Suit` against
+`Turntable_Deck` at frame 828). The driver is now **trimmed against the car's
+own datums**: every face whose centroid is below `MB_cell_floor`'s underside
+(z 0.3860) or ahead of `CI_footwell`'s bulkhead (x 1.0695) is deleted —
+**188,167 of 810,592 faces, 23.21 %**. Nothing visible is near it: the aperture
+bottoms out at z 0.5849 and the seat pan at 0.4085, 0.20 m above the cut. The
+cut edge is left open on purpose; it is inside the cell floor, it is never
+seen, and capping it would add faces whose winding nobody would ever check.
+
+**R2-248.** The boots are excluded from the render. After the trim they lie
+wholly below z 0.45 and no camera in this film can see them; every pixel they
+ever reached was a protrusion. They stay in the blend, trimmed, so an interior
+shot can switch them back on.
+
+**R2-249 — and then the gate hid the fix from itself.** `driver_containment`
+forced every `DRV_*` object `hide_render = False` for its "driver present"
+pass, which switched the boots straight back on — the objects `place_driver`
+had just excluded. It reported the identical 12 px / 211 px leak before and
+after the fix, so the fix looked like a no-op and I nearly went hunting for a
+third cause. **A gate that overrides the thing it measures is measuring
+itself.** It now restores the AUTHORED visibility — keyed objects render,
+unkeyed ones keep their stored flag — and prints which. With that one line the
+same build read 0 outside on every frame.
+
+Also fixed: `present` was a per-frame gate, so frame 1200 — where the camera is
+not pointed at the car and 0 driver pixels is the *correct* answer — failed the
+run. Presence is now reported per frame and gated once over the run.
+
+### The final containment result
+
+| frame | beat | driver px | driver px, absent | outside aperture |
+|---|---|---:|---:|---:|
+| 2632 | 5 lap | 132,155 | 0 | **0** |
+| 2625 | 5 lap | 23,441 | 0 | **0** |
+| 828 | 2 launch | 17,004 | 0 | **0** |
+| 700 | 1 showroom | 15,978 | 0 | **0** |
+| 1200 | 4 transit | 0 | 0 | **0** |
+| 2100 | 5 lap | 116 | 0 | **0** |
+
+**POSITIVE control:** `--control-displace 0.45` shoves the driver through the
+side of the tub and **294,539 of 294,637 px escape**. The gate can fail, so its
+pass means something.
+
+## R2-250 — the film append, preflighted rather than assumed
+
+`build_film_scene.py` carries four hard refusals on the CAR collection and is
+out of bounds to edit. `tools/driver_film_preflight.py` replays them in an
+empty scene in about a minute:
+
+    636 direct objects, CAR_ROOT animated, 8 CARRIG_* hubs, 0 orphan parents
+    11 DRV_* across the append, 14 procedural materials on their slots
+    DRV_Install on 'DRV_Install_CI_seatAction' -- its own COPY, not the car's
+    appearance keys survive: 8 hidden at frames 1/300/579, 0 at 580 and 2632
+    NO EXTERNAL ASSETS: 0 images with a filepath, 0 image-texture nodes
+
+Two of its own checks were wrong first time and are worth recording: the
+material check matched `bpy.data` by name prefix and reported the CAR's
+`CarbonFibre` as the driver's; and the no-external-assets check flagged
+`Render Result` and `Viewer Node`, Blender's own internal images, as external
+assets.
 
 ---
 
