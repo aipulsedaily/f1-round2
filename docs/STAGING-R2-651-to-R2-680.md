@@ -781,3 +781,102 @@ And the thing R2-547 called *"a dark grid with yellow dashes and no seat
 geometry"* **is the seats**: `ARCH_Grandstand_02_OUEST` / `A_Seat` at 237 m,
 base `#3c4348` with a `#c9a227` gold chequer laid by `_seat_colour()`
 (`build_architecture.py:4692-4723`). The yellow dashes are gold seats.
+
+---
+
+## R2-664 — the occlusion generalises to 65 frames in two clusters, and the first version of this measurement was a broken instrument
+
+The ray-cast against the assembled world is still unavailable (see R2-665), so
+this is a **projection proxy**: which built points lie inside the cone between
+the lens and the car, and nearer than the car. `tools/r2651_occ_proxy.py`,
+against `docs/screen_presence_points.npz` — the 1 m occupancy dump of the built
+world, 3,053,506 points over 560 named objects. No world load, no farm.
+
+### The first version reported the road as the occluder, on 72 % of the lap
+
+v1 came back with **`SURF_Track` — the road the car is driving on — blocking the
+car on 1,102 of 1,524 beat-5 frames.** Of course it did: the road lies along the
+line of sight to a car sitting on the road, so every road point inside the
+corridor scored. That is this project's single most repeated detector failure,
+the same shape as the turntable-and-back-wall detector that returned 0.90 for a
+car occupying 0.47. **It is recorded rather than quietly fixed** because the
+number was superficially plausible and would have been a spectacular false
+finding.
+
+v2 drops the ground classes by name — `SURF_*`, `TER_*`, `ARCH_Paving/Apron/
+Forecourt`, 64 objects, 693,821 points — because none of them can hide a car
+standing on them. Everything that can (barriers, architecture, dressing,
+bridges) is kept.
+
+### The result: 65 of 1,524 frames, 4.3 % of beat 5, in two clusters
+
+| frames | dur | owner |
+|---|---:|---|
+| **f2182-2196** | **0.62 s** | `ARCH_PontPlongee` + **`DR_BridgeBanners`** |
+| f2253-2257, 2269, 2271-2274, 2281 | 0.46 s | `BR_Verge_R` |
+| f2283-2290, 2295-2306, 2309-2327 | 1.62 s | `BR_Trap_outer_R_2579`, `BR_Subbase_R` |
+
+**Fence channel: zero frames.** No catch fence or mesh screen is ever the sole
+thing in the corridor, so nothing here depends on the see-through/opaque
+judgement — which is worth having established, because that ambiguity was the
+trap most likely to manufacture a defect.
+
+### Two independent methods agree on the bridge, and a delivered frame confirms it
+
+| | blocked window |
+|---|---|
+| `r2651_pont_sightline.py` — analytic box, 5 controls | **f2181-2192** |
+| `r2651_occ_proxy.py` — point cloud, ground-excluded | **f2182-2196** |
+| the delivered frame `r2b56_720_002180.png` | **f2180 is clear by ~10-20 px at 720p** |
+
+Both methods put f2180 outside the window and f2200 outside it, and the
+delivered pixel shows the car as a dark chip just clear of the concrete edge —
+so **f2180 is the boundary frame, predicted and then seen.**
+
+The proxy also catches something my box reconstruction could not:
+**`DR_BridgeBanners`**, `build_dressing`'s fascia banners hanging on this
+bridge's faces, extending the window by ~4 frames. That is the same face R2-256
+records a collision on. **Any placement move must carry the banners with it**;
+they are not part of `build_architecture`'s bridge and will not follow
+`PONT_S` on their own.
+
+### What this does and does not settle
+
+* **Settled**: f2190 is not one bad frame, and it is not thirty scattered round
+  the lap either. It is a 0.62 s bridge pass plus a separate ~2 s cluster of
+  trackside barrier furniture 60-130 frames later.
+* **Proxy-only, needs the ray-cast**: the `BR_Verge_R` / `BR_Trap_outer_R_2579`
+  / `BR_Subbase_R` cluster. Those are low objects at the track edge and their
+  point counts are thin (1-17 points), so they are consistent with the car being
+  *partly clipped* rather than hidden. Contiguity across 8 runs argues they are
+  real rather than noise, but severity is not established and I am not claiming
+  it.
+* **Unchanged**: the recommended fix. `PONT_S = 2410 -> 2460` was tested against
+  the whole of beat 5, not just the known window, and gives zero blocked frames
+  at every 10 m step from 2460 to 2610 — so it does not simply move the bridge
+  pass onto the barrier cluster.
+
+---
+
+## R2-665 — the farm blocked this measurement twice, for two different reasons, and the second one was mine
+
+Recorded because both are reusable lessons rather than incidents.
+
+1. **`WorkerBusy` burned retry attempts instead of requeueing.** The guard
+   itself is right — deploying over a worker mid-frame would SIGKILL minutes of
+   GPU time — but a refusal spent an attempt, and three attempts expired inside
+   a single 39-second frame while both cards held 14-hour sequence passes. Four
+   jobs died at `3/3` having never run. **Fixed by the farm agent**: it now
+   requeues without spending an attempt, after a 90 s backoff, verified by an
+   exec job completing between two frames of a running pass.
+2. **`StaleBundle`, and that one was self-inflicted.** The bundle was 96 files /
+   38.3 MB drawn from `world/*.py`, `world/items/*` and `telemetry/*.csv` —
+   directories that eight agents are actively editing. The digest is taken at
+   submit and re-checked at dispatch, and the 90 s backoff *widens* that window.
+   **`--include` must name the files a script actually reads, not the
+   directories they live in.**
+
+The lesson worth keeping: **a farm job's bundle is a shared-state dependency,
+and the busier the tree the narrower it has to be.** Meanwhile the entire
+occlusion question turned out to be answerable without the farm at all — once
+from source constants (R2-660) and once from an existing point dump (R2-664).
