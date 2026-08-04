@@ -1,0 +1,31 @@
+COMMIT MESSAGE CLOBBERED BY R2-226, AND RESTORED HERE.
+
+The message currently on this commit belongs to R2-226's crew_figure A/B
+(see 67f5855, which carries the same message and the correct files).
+R2-226 ran 'git commit --amend' to fix one number in its own commit
+message; between the commit and the amend, THIS commit landed and became
+HEAD, so the amend rewrote this one instead. Only the message moved --
+the two files here (sim/wallstats.py, sim/out/wallstats_f2978_floor.json)
+are R2-274's own and are untouched.
+
+Not fixed by a rebase on purpose: eight commits from other agents already
+sit on top and three agents are live in this tree. Rewriting their hashes
+to repair a message would be a far worse trade.
+
+The original commit object was e4d1d90 before the 2026-08-18 identity rewrite.
+It was UNREACHABLE (no ref pointed at it; it survived only in the reflog), so
+the rewrite did not carry it over and `git show` can no longer find it. Its
+message is restored verbatim below.
+
+----- ORIGINAL MESSAGE OF THIS COMMIT -----
+R2-274: the repeat floor is not zero on a glass wall, so the control limit is measured
+
+Two renders of the SAME build at f2978 differ on 2-14 % of the pixels of the
+east wall's regions at a 1/255 threshold -- the wall is transmissive and
+specular, adaptive sampling and the denoiser do not repeat, and R2-150's
+0.00 % repeat floor was measured on asphalt. At 8/255 the floor is 0.000 % in
+every control region and 0.131 % in the wound.
+
+So the negative-control verdict is taken at 8/255 against 3x the MEASURED
+floor, never against zero. Charging a control with a change the renderer makes
+against itself is how a correct fix gets rejected.
