@@ -279,6 +279,15 @@ camera stops moving: 1.5 px of median smear against 54.7 px over the tour, a
 factor of 36.** 88 % of the tour is over 20 px and 4 % of the protected region is.
 No aesthetic judgement is needed to separate them.
 
+**And the frames agree with the arithmetic without being asked to.** f648 is the
+first frame of the protected region and the first frame of beat 1 in which the
+picture is a picture: the monocoque, the halo, the floor, the front wing, the
+suspension and all four wheels are all present, whole, and readable in one
+composed frame. Every frame rendered from the presentation tour — f120, f400,
+f460, f500, f591 — is a fragment of one cluster, larger than the frame, and
+smeared. The two populations are not close, and nothing about the geometry or the
+materials changed between them; the camera slowed down.
+
 Put beside the defocus at the same point in the same frame
 (`tools/beat1_blur_budget.py`) — the two blurs, per frame, at the centre of
 whichever cluster is nearest the optical axis:
@@ -538,6 +547,15 @@ Limit, stated with the finding: a sharp picture of parallel edges is anisotropic
 before anything blurs it, and the selftest carries that case explicitly (sharp
 horizontal stripes read 1.0000). The verdict above rests on the AGREEMENT of two
 independent estimates of a direction, never on the magnitude alone.
+
+**f648 shows that limit doing its job.** Predicted surviving axis 53.3 deg,
+measured 66.1 deg — 12.8 deg apart, the second-worst disagreement of the seven.
+It is also the one frame of the seven that is legible, and a legible frame of a
+Formula 1 car is dominated by the car's own long axis, so the gradients have
+somewhere else to point. **The agreement is tight exactly where the smear is large
+enough to be the only thing organising the picture, and it loosens where it is
+not** — which is the behaviour the instrument should have, and the reason its
+magnitude is never quoted as a verdict on its own.
 
 
 ---
