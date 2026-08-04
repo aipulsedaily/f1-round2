@@ -365,57 +365,6 @@ looking after is how a surface acquires four more layers nobody can see.
 
 ---
 
-## R2-659 — the coverage number was cross-checked by a second method, and the SECOND method was the broken one
-
-The headline "the racing surface is 44.5 % of the delivered frame" comes from an
-area-crediting projection: each `(s, u)` sample carries its own cell area and is
-credited `area · cos(incidence) · (f_px / d)²`. That is exactly the shape of
-metric that has failed on this project before — a coverage number believed
-without a control.
-
-So it was cross-checked against a completely independent per-pixel method: cast
-one ray per pixel, intersect the ground, ask `world_contract` whether the point
-is inside `verge_edge`. No area crediting anywhere.
-
-| frame | per-pixel road | area-credit road | ratio |
-|---|---:|---:|---:|
-| f2000 | 0.461 | 0.503 | 0.92 |
-| f2225 | 0.170 | 0.178 | 0.96 |
-| f1226 | 0.462 | 0.412 | 1.12 |
-| **f1547** | **0.065** | **0.464** | **0.14** |
-
-**One frame in four disagreed by 7×, and it was the frame chosen as the hero
-close-up.** That is not a result to write around, and the contamination is not
-small: the camera at f1547 sits **2.85 m** above the road, and **41.3 % of beat
-5 has the camera under 5 m**. If the area-credit method over-read by 7× on those
-frames the beat-5 median would fall from 0.445 to 0.238 and most of this block's
-framing would be wrong.
-
-**Resolved by building a case with an answer known in advance.** A camera at
-2.85 m on a 39.93 mm lens over an *infinite flat plane*, viewing a 20 m strip:
-the strip's image can be integrated exactly in image space, because a ground
-point `(u, y, 0)` lands at `py = f_px·h/y + H/2`.
-
-| | coverage |
-|---|---:|
-| area-credit method | 0.3227 |
-| **exact image-space integral** | **0.3733** |
-| ratio | **0.864 — it UNDER-reads** |
-
-The area-credit formula is sound and conservative; the residual is the 2 m
-station sampling truncating the far field. **The per-pixel cross-check is the
-instrument that fails**: its 3-step fixed-point solve for the ray/ground
-intersection does not converge for near-horizontal rays from a low camera, which
-is precisely the f1547 geometry and precisely why it agreed on the three
-high-camera frames and not on the low one.
-
-The numbers in R2-653/R2-654 stand, and are if anything slightly low. **f1547 is
-still flagged**: it is the one queued frame whose geometry the analysis handles
-worst, and the render — not either projection — is what will settle what it
-actually looks like.
-
----
-
 ## Instruments added, and the controls they must fail
 
 Roughly a third of this project's findings have been broken instruments. Every
@@ -503,3 +452,56 @@ beat-4/5 boundary**, which is 38 seconds of a 124-second film.
 Nothing in this block used that table; `tools/r2651_track_scale.py` carries the
 rig's boundaries and says in a comment why. Flagged because anything else that
 copied it inherited the error.
+
+---
+
+## R2-659 — the coverage number was cross-checked by a second method, and the SECOND method was the broken one
+
+The headline "the racing surface is 44.5 % of the delivered frame" comes from an
+area-crediting projection: each `(s, u)` sample carries its own cell area and is
+credited `area · cos(incidence) · (f_px / d)²`. That is exactly the shape of
+metric that has failed on this project before — a coverage number believed
+without a control.
+
+So it was cross-checked against a completely independent per-pixel method: cast
+one ray per pixel, intersect the ground, ask `world_contract` whether the point
+is inside `verge_edge`. No area crediting anywhere.
+
+| frame | per-pixel road | area-credit road | ratio |
+|---|---:|---:|---:|
+| f2000 | 0.461 | 0.503 | 0.92 |
+| f2225 | 0.170 | 0.178 | 0.96 |
+| f1226 | 0.462 | 0.412 | 1.12 |
+| **f1547** | **0.065** | **0.464** | **0.14** |
+
+**One frame in four disagreed by 7×, and it was the frame chosen as the hero
+close-up.** That is not a result to write around, and the contamination is not
+small: the camera at f1547 sits **2.85 m** above the road, and **41.3 % of beat
+5 has the camera under 5 m**. If the area-credit method over-read by 7× on those
+frames the beat-5 median would fall from 0.445 to 0.238 and most of this block's
+framing would be wrong.
+
+**Resolved by building a case with an answer known in advance.** A camera at
+2.85 m on a 39.93 mm lens over an *infinite flat plane*, viewing a 20 m strip:
+the strip's image can be integrated exactly in image space, because a ground
+point `(u, y, 0)` lands at `py = f_px·h/y + H/2`.
+
+| | coverage |
+|---|---:|
+| area-credit method | 0.3227 |
+| **exact image-space integral** | **0.3733** |
+| ratio | **0.864 — it UNDER-reads** |
+
+The area-credit formula is sound and conservative; the residual is the 2 m
+station sampling truncating the far field. **The per-pixel cross-check is the
+instrument that fails**: its 3-step fixed-point solve for the ray/ground
+intersection does not converge for near-horizontal rays from a low camera, which
+is precisely the f1547 geometry and precisely why it agreed on the three
+high-camera frames and not on the low one.
+
+The numbers in R2-653/R2-654 stand, and are if anything slightly low. **f1547 is
+still flagged**: it is the one queued frame whose geometry the analysis handles
+worst, and the render — not either projection — is what will settle what it
+actually looks like.
+
+---
