@@ -286,6 +286,38 @@ This is R2-150's shape a third time: *"the rewritten script died on
 caught it; `$?` would not have."*  Noted, not fixed — those two files are
 somebody else's.
 
+## R2-234 — I clobbered another agent's commit message with `git commit --amend`
+
+**My mistake, recorded because it is the git-hygiene rule's twin and the rule as
+written does not cover it.**
+
+The standing rule on this project is *path-scope every `git add`* — a broad add
+has swept up other agents' in-flight work five times.  I obeyed it on every
+`add`.  Then I ran `git commit --amend` to correct one number in **my own**
+commit message.  Between my commit (`491cef7`) and the amend, another agent's
+commit landed and became `HEAD`, so the amend rewrote **theirs**:
+
+```
+e4d1d90  R2-274: the repeat floor is not zero on a glass wall ...   <- clobbered
+4d9e49a  R2-226: 120 human figures arrive in a film that had none   <- my message,
+                                                                       their files
+```
+
+**Only the message moved.**  `sim/wallstats.py` and
+`sim/out/wallstats_f2978_floor.json` are R2-274's own and are untouched, and
+`491cef7` still carries my commit with the correct files.
+
+**Repaired with `git notes`, not a rebase.**  `git notes add` on `4d9e49a`
+records what happened and restores R2-274's message verbatim; the original
+commit object survives at `e4d1d90` and `git show e4d1d90` still works.  A
+rebase would have been the "proper" fix and would have rewritten eight commits
+belonging to three live agents to repair one message — a far worse trade.
+
+**`--amend` is `add`'s blind spot.**  `git add` takes a path; `--amend` takes
+whatever `HEAD` happens to be at the moment it runs, and in a tree with
+concurrent agents that is not necessarily yours.  The rule should read *never
+`--amend` in this repository* — write a correcting commit instead.
+
 ---
 
 ## What is owed
