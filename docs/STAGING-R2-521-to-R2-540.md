@@ -859,3 +859,11 @@ own calibration rule is "if a viewer can point at 'the dirt effect', it is too
 strong", and its verdict was that before and after are indistinguishable at full
 frame and every surface has variation at 1:1. Measured at the sidepod macro,
 960 px / 96 samples, the whole layer is worth **3.50 mean LSB**.
+
+*Render provenance:* the numbers above are pass probes and a local 960 px macro.
+A 1920x1080 / 160-sample four-station pass on `render/r2521/r2521_final.blend` is
+QUEUED as sequence `r2521final` and had not been served when this was written —
+the bulk broker is committed to the two ladder passes and those have priority.
+The published before/after crops in `work/r2521/crops/` are the `car_paint`-only
+arm; the imperfection layer sits 3.50 LSB on top of them, which is below what
+those crops resolve. Nothing here waits on that render to be true.

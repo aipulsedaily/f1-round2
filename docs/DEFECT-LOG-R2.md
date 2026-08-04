@@ -20013,3 +20013,30 @@ not touch `sim/breachlib.py`.
 What it means for this A/B: the cells are driven by the same car R2387, R2281
 and the shipped table were driven by, and that car is still the film's car.
 **Nothing is stale and no result below is qualified by it.**
+
+## R2-706 — the camera track this block measures pixels through is CURRENT, and the check took two minutes
+
+Every pixel figure in R2-4xx and in everything below goes through
+`sim/out/oner_camera_track.json`, which was dumped from **film14** at 15:19.
+The film has since moved to **film16** (7.5 GB, `render/film16_breach.blend` is
+what the farm is serving).  A superseded camera track would silently invalidate
+the 11 px / 1,879 px comparison, the own-motion ratio, and every frame in this
+block.
+
+It does not, and the reason is specific.  `render/film14_path.json` against
+`render/film16_path.json`, all 2,978 frames, position / quaternion / lens:
+
+| | max Δposition | max Δquaternion | max Δlens |
+|---|---|---|---|
+| beats 1–2, f1–f864 | **9.206 m** | 1.977 | **23.00 mm** |
+| **beat 3's ramp, f865–f1056** | **0.0000** | **0.0000** | **0.0000** |
+| **the judged window, f940–f1060** | **0.0000** | **0.0000** | **0.0000** |
+| **the peak, f0967–f0977** | **0.0000** | **0.0000** | **0.0000** |
+| beat 4, f1057–f2978 | **0.0000** | **0.0000** | **0.0000** |
+
+The camera between film14 and film16 is **bit-identical from f865 to the end of
+the film**.  All of the movement is in beats 1–2, which is another agent's
+re-framing work.  The track is therefore exactly right for this block, and this
+is a measurement rather than an assumption — which matters, because "the camera
+has moved twice since" is written into `sim/land_breach.sh` as a standing
+hazard.
