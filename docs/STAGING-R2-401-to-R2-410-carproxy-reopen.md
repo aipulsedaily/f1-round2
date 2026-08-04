@@ -222,3 +222,156 @@ The measurement that *did* see it — "on the deck" as car-local z > 0.55 within
 the car's plan — is the one in the phase decomposition above, and it reports
 **335 frames aboard**, not zero.
 
+
+---
+
+# HANDOFF — the car proxy, closed here
+
+Stood down mid-search: the host was thrashing at 29 GB of 43 GB swap with six
+Blender processes, and three of them were mine. **I killed all three 700-frame
+cells** (`sim/tmp/r2402c/C0,C1,C2`, µ 0.20 / 0.35 / 0.55 with air) and released
+about 2 GB of swap. They were confirmatory, not decisive — see P26 below, which
+is left **UNRESOLVED** rather than quietly dropped.
+
+## 1. Where it stands
+
+| | shipped R6 | R2281 re-bake | **R2387 (live candidate)** |
+|---|---|---|---|
+| `MUL05_S02` travel | 0.14 m | **89.79 m** | **55.35 m** |
+| bodies over 1 m/s at the last key | 70 | 2,646 | **27** |
+| `GS_b05_00434` (2.5 g, underfloor) | — | 205.01 m | **1.12 m** |
+| connected aperture | 2.15 × 6.00 | 2.15 × 6.00 | **2.15 × 6.00**, bay 5 100 % |
+| car's seams | — | identical | **bit-identical** |
+
+**What got it from 89.79 to 55.35 m: one change, `--air-drag derived`.** The
+sim had no air in it. Every active body now carries a `linear_damping` computed
+from its own collision mesh (Cauchy S/4), Cd 1.17, ρ 1.225, linearised about
+the car's own 16.584 m/s at the glass plane. Nothing chosen, no contact model
+touched, no cost to the car's trajectory.
+
+**What remains, decomposed exactly:**
+
+| phase | distance | how it ends |
+|---|---|---|
+| **aboard the car** | **22.93 m** over 1.396 s of world time (film f859.6–f1038.7) | leaves at **23.08 m/s** |
+| ballistic / bouncing | ~11 m | lands |
+| free slide | **21.63 m** at 4.47 m/s² (µ_eff 0.456), **median 0.99 rad/s** — it skates, it does not tumble | stops |
+
+**The ride is the whole defect.** It carries 22.93 m directly and hands the
+piece over at 23.08 m/s instead of the ~10–12 m/s it had before boarding, which
+buys most of the remaining 32 m.
+
+## 2. The screen-space verdict — settle this and do not re-litigate the metres
+
+Every far traveller, projected through the ONER track over all 2,134 frames of
+the take:
+
+| body | biggest on screen | frame | range | **at rest, f2978** |
+|---|---|---|---|---|
+| `TRN_z0_b05` | **1,879 px long** | f971 | 2.9 m | **30.6 px** |
+| `TRN_z0_b04` | 1,507 px | f970 | 3.6 m | 30.4 px |
+| `MUL05_S00` | 864 px | f977 | 2.4 m | 11.3 px |
+| `MUL05_S01` | 704 px | f976 | 2.9 m | 11.3 px |
+| `MUL05_S02` | 614 px | f972 | 3.3 m | **11.3 px** |
+
+**The 55 m subtends 11 pixels. The ride subtends 1,879.** Three orders of
+magnitude. A slide of 8–31 px at 542 m range is at or below the scale R2-278
+established `grid_contrast` cannot even measure. **The transport distance is
+the invisible half of this defect and always was.** Anyone reopening this on
+the metre count should read this table first.
+
+The whole on-screen life of these members is **f0967–f0978**, where five
+structural members ride a car past a lens 2.4–3.6 m away, in slow motion,
+filling up to half the frame width.
+
+## 3. The rear-wing tray — the mechanism, and what a fix has to change
+
+`MUL05_S02` in the car's own frame: from **film f917 to f1044 — 127 film
+frames — it sits within half a metre of car-local x = −2.200**, its velocity
+relative to the car oscillating between **−6 and +3.7 m/s** while its world
+speed climbs from 14.8 to 27.1 m/s. It is not sliding. It is being caught,
+released and caught again by a wall.
+
+That wall is `wing_r`:
+`box(TAIL_DX, −2.200, −0.535, 0.535, 0.700, 0.980)` — **0.478 m of chord,
+1.070 m of span, 0.280 m thick: a thickness-to-chord ratio of 58.6 %.** No
+aerofoil is 59 % thick; a rear wing mainplane runs 10–15 %. **The
+inconsistency is internal and needs no outside data** — `rep_l` / `rep_r`
+beside it are modelled correctly as 35 mm fins 660 mm tall. The proxy has two
+right endplates enclosing a block where the car has open air. Together they are
+a **tray**: a full-width leading face, two side walls, a floor.
+
+**Why friction was never the lever.** Of the 9.3 m/s² the segment gains,
+friction can supply at most µ_combined × g = 0.2475 × 9.81 = **2.43 m/s²**. The
+rest is normal contact against a face, and a normal force does not care what µ
+is. That is why cutting µ to 0.20 (R2-389) bought nothing here and cost five
+mullion segments left standing in the wound box.
+
+**What a fix would change, already implemented and NOT yet baked:**
+`--rear-wing aerofoil` (committed, `sim/breachlib.py`) thins the mainplane to
+12 % of its own chord at the top of the band it already occupies. Span, chord,
+overall height and both endplates are unchanged; **no part is added and no
+dimension comes from outside the file.** It opens **0.478 × 0.660 m of air
+between the endplates** — the route a member sliding off the engine cover takes
+in the real car. `verify_proxy("aerofoil")` passes every existing check
+including `top == CAR_TOP_Z`. **It has never been run.** One 700-frame cell
+against `--rear-wing solid` would settle it.
+
+## 4. The predictions, scored
+
+Committed before the search, in this file, at `62fdfee`.
+
+| | prediction | outcome |
+|---|---|---|
+| **P20** | no tunnelling — never inside a proxy part | **RIGHT** — 0 of 400 frames, on a test that over-counts |
+| **P21** | not released inside the swept volume: car-local x > +2.0, z above `CAR_TOP_Z` | **RIGHT** — +2.912 m and z 1.949 against a roof at 0.992 |
+| **P22** | it falls onto a car that drives under it; smooth, no discontinuity | **RIGHT** — largest single-frame Δz **0.0237 m**, zero frames over 0.25 m, largest step 0.0767 m = 9.6 mm per substep against a 75 mm section. **No collision-shape gap, no CCD failure, no fracture releasing pieces inside the car.** All three candidate mechanisms I was handed are excluded |
+| **P23a** | slide deceleration within 25 % of µg = 2.74 m/s² | **WRONG** — 4.47–5.34 m/s², 63–95 % higher. The air I added does about half the work, and I failed to credit my own change. Wrong in the direction that flatters the fix, which is the direction to distrust |
+| **P23b** | angular speed under 2 rad/s — it skates rather than tumbles | **RIGHT** — median 0.75–1.10 rad/s, about a sixth of a revolution per second |
+| **P24** | the 55 m is not what is on screen; the ride is; the deciding frames are f0890–f1050 not f2940/f2978 | **RIGHT, and it is the finding** — 11 px against 1,879 px, peak at f0967–f0978 |
+| **P25** | the one I expected to be wrong: that a member rests where beat 4 sees it, making the metres matter after all | **RIGHT to have written it, and it did not fire** — the members rest at x 68.9–70.2, 542 m from the closing camera, 8–31 px |
+| **P26** | the ride survives at every friction; B1's "0 frames held" was an artefact of the 400-frame window | **UNRESOLVED** — the three cells that would have settled it were killed to free the host. The mechanism above predicts it strongly but it is not measured |
+
+**Two right for the wrong reason is worth naming.** P20–P22 were right, and
+being right meant there was **nothing to fix** where I was told to look. The
+value of that block of work is entirely negative: it closed off three
+mechanisms so the fourth could be found.
+
+## 5. Unmeasured, and what would reopen this
+
+* **Is the ride in frame during beat 3? YES, and it is measured, not assumed.**
+  The projection above puts five members at 614–1,879 px at 2.4–3.6 m across
+  f0967–f0978. I have also rendered and looked at **f0950 and f1000 from both
+  builds** (`render/r2387/COMPARE_ride_f0950_*.png`,
+  `COMPARE_ride_f1000_*.png`): a mullion lies across the car in both, and at
+  f1000 the re-bake is **towing a pane attached to its tail** while R2387 has
+  separated from it. **This does not reopen the question — it is the question.**
+  The peak frames f0967/f0972/f0977 were in flight on the farm when I stood
+  down; if they landed they are in `render/r2387/`.
+* **P26 is unresolved** — friction bracket over 700 frames, killed.
+* **`--rear-wing aerofoil` has never been baked.** It is the only candidate
+  fix left standing and it is untested.
+* **My transport census under-counts, in every figure I published.**
+  `carproxy_census.py`'s envelope tops out at car-local z = **1.112 m** and the
+  ride happens at z 0.95–**1.69**. The corrected totals were still computing
+  when I stopped. **The −79 % transport ratio (40,587 → 8,445 m) is the same
+  error in both tables and is probably close to right, but "probably" is not a
+  measurement.**
+
+### The instrument lesson, stated properly
+
+The census did **not** report a wrong value. It reported a **correct value
+about the wrong volume** — and nothing in its output distinguishes "the debris
+was not being carried" from "I did not look where it was being carried."
+`MUL05_S02` showed `transported 0.0 m, 0 frames held` in cell B1, and I came
+within an inch of treating that as evidence that friction 0.20 kills the ride.
+It meant only that the segment was not inside a box that stops 118 mm above the
+car's roof.
+
+**A bounded search reports confidently about its bound.** Every other finding
+in this pass has the same shape: `grid_contrast` measuring rows that cannot
+contain a member (R2-400), the R2-296 controls whose rectangle the blast radius
+had outgrown, `cheaper_to_finish` pricing sequence jobs at the stills rate. In
+each case the number was right and the volume it described was not the one
+anybody was asking about.
+
