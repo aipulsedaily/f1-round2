@@ -395,3 +395,79 @@ fails is *more* frame bodies coming to rest inside x < 19.6 m with |y| < 2.9 m
 f2978 does not, that is the reason, and I will report the resting x of every
 released member rather than argue about the pixels.
 
+
+---
+
+## R2-388 — the ablation: withdrawing the boundary condition is REFUTED, and it was my own committed fix
+
+Three 400-frame cells, identical in everything but the car proxy, at the
+derived frame thresholds. 400 sim frames is film f845 → f1005, which contains
+the impact, the underfloor clamp, and 100 of the 161 film frames of the deck
+ride. `sim/tmp/run_r2386_ablations.sh`, all three `EXIT=0`.
+
+| | **A0** shipped proxy | **A1** withdraw at tail-clear | **A2** friction 0.55 → 0.20 |
+|---|---|---|---|
+| `MUL05_S02` travel / peak | 14.46 m / 18.39 m/s | 11.69 m / 15.31 m/s | 15.60 m / **26.20 m/s** |
+| `GS_b05_00434` travel / peak | 15.84 m / 24.80 m/s | 12.68 m / 19.02 m/s | **0.02 m / 10.77 m/s** |
+| **TOTAL transport, all bodies** | **32,064 m** | 23,825 m (−26 %) | **7,869 m (−75 %)** |
+| — nose plow | 22,944 m | 18,020 m | **5,846 m** |
+| — deck ride | 8,507 m | 5,523 m | **1,826 m** |
+| — underfloor clamp | 368 m | 163 m | **71 m** |
+| **PRICE: bodies inside the car, worst frame** | 111 (at impact) | **1,526** | 113 (at impact) |
+| PRICE: samples over 100 bodies inside | **0 of 100** | **41 of 100** | **0 of 100** |
+| CONTROL untouched mullions, max travel | 0.000133 m | 0.000907 m | 0.000086 m |
+| **connected aperture** (`breach_metrics`) | **2.15 × 6.00 m** | **2.15 × 6.00 m** | **2.15 × 6.00 m** |
+| bay 4 / bay 5 vacated | 96.7 / 95.4 % | 96.7 / 95.4 % | 98.4 / 95.3 % |
+| metrics CONTROLS | PASS | PASS | PASS |
+
+### P6 is wrong, and it is wrong twice over
+
+I committed, before any of this existed, that "the effective fix is to withdraw
+the boundary condition when it stops representing anything" and that it would
+bring `MUL05_S02` below 10 m. **It does neither.**
+
+* It removes **26 %** of the transport, against friction's **75 %**. The
+  withdrawal happens at film f876.8 and by then the plow has already formed:
+  most of the transport is bought in the 130 sim frames before it.
+* And it has a price I did not price. **The car overtakes the cloud it just
+  made.** With the collider on, the car pushes the debris ahead of it forever
+  and can never catch it; with the collider off, the debris coasts at 15–18 m/s
+  while the authored animation takes the car to 24, 30, 40 m/s, and the car
+  drives straight through it:
+
+| sim frame | film | bodies inside the car (A1) | their glass area |
+|---|---|---|---|
+| 227 (withdrawal) | f876.8 | 15 | 0.004 m² |
+| 280 | f911.2 | 89 | 0.98 m² |
+| 300 | f924.2 | 897 | 1.75 m² |
+| **323** | **f939.2** | **1,526** | **2.40 m²** |
+| 350 | f956.8 | 1,426 | 0.78 m² |
+| 380 | f976.3 | **0** | 0.00 m² |
+
+**Forty-six film frames of the car driving through two and a half square metres
+of its own glass, dead centre, six metres from the lens, in slow motion.** The
+baseline with the collider on is 15 bodies, and that is shard *origins* inside a
+convex proxy part while they rest against it, not visible overlap.
+
+**I am not proposing withdrawal and I am not proposing a later withdrawal
+either** — the overtake is structural. The car is authored to accelerate away
+from a cloud it gave its own speed to, so there is no frame at which the
+collider can leave without the car then passing through what it left behind.
+
+### What the ablation DOES establish
+
+* **The aperture is insensitive to every one of these.** Same connected
+  2.15 × 6.00 m in all three cells, same bays, `CONTROLS PASS` in all three,
+  untouched mullions at 10⁻⁴ m. Whatever the fix turns out to be, it is not
+  going to be paid for out of the ending. That is P8's premise, measured
+  early and on the cheap cells rather than asserted at the end.
+* **Friction is the lever the mechanism said it would be.** The 205 m
+  underfloor clamp — the single worst traveller in the file — goes to **23 mm**
+  when the proxy is not grippier than aluminium. It was a friction clamp all
+  along, exactly as R2-385's arithmetic said.
+* **And friction alone is not the whole fix.** A2's median displacement at
+  f1005 is 15.44 m against A0's 15.78 m, and its field median speed at the last
+  frame is *higher* (20.19 against 18.15 m/s). Cutting the grip stops the car
+  *carrying* the debris and does nothing about the debris having been *launched*
+  at the car's own speed. Which is R2-389.
+
