@@ -1,7 +1,7 @@
-# Staged for the defect log's owner — R2-266 to R2-275
+# Staged for the defect log's owner — R2-266 to R2-276
 
 Kept out of `docs/DEFECT-LOG-R2.md` deliberately: that file has one owner. My
-block is **R2-266 to R2-280** and I have used ten of it. Paste or renumber as
+block is **R2-266 to R2-280** and I have used eleven of it. Paste or renumber as
 you see fit.
 
 All of it is one job: **making the aperture read in the closing frame.** This
@@ -309,6 +309,33 @@ and 5's clear openings.
 ## R2-273 — the demonstrator: what 2h25m of re-bake buys, priced with a picture instead of an argument
 
 *(fill from `render/r6_demo/` — see the report)*
+
+---
+
+## R2-276 — the fix's real payoff is in beat 3, not in the frame it was asked to fix
+
+The job was the closing wide. The closing wide is where R6 does the LEAST, and
+that is a consequence of scale, not of the fix:
+
+| | wound on screen | what the fix removes | reads? |
+|---|---|---|---|
+| **f2978**, ONER 74.0 mm, 595.4 m | 57.7 × 77.8 px | 216 px, mostly 20 px of a 1 px line | **no** |
+| **f0866**, ONER 23.9 mm, ~3 m | the wall fills the frame | **2.54 %** of the whole 1920 × 1080 frame changed at 8/255, **0.532 %** at 32/255 | **yes, plainly** |
+
+`render/r6_beat13/COMPARE_f0866_before_top_after_bottom.png`, same build pair,
+same camera, same samples. Before: mullion 5 runs straight and unbroken from
+head to sill with the car already through it. After: **its foot is torn out, the
+remaining column is displaced and tilted, and a shed segment is tumbling in
+frame beside the car.** At f0880 the two shed segments project to **426 × 428 px
+and 461 × 292 px** at 4K — two aluminium bars, the size of the car's rear wing,
+turning over in the aperture as the car leaves it.
+
+That is 152 rigid bodies' worth of baked motion that the film has never once
+rendered, and beat 3 is where it was always going to show. **The wound reads at
+595 m as a texture and at 3 m as a wound**, and the fix is scaled the same way.
+
+**The uncomfortable half:** none of that helps the last image of the film, and
+the last image was the brief. It should not be allowed to.
 
 ---
 
