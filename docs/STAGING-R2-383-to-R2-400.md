@@ -732,3 +732,92 @@ as such.
   If the count lands between 400 and 1,200 I will say the fix is partial and
   name what is left rather than move the threshold.
 
+
+---
+
+## R2-394 — the four fixes that were on the table, and what each one trades
+
+My brief names a dynamic proxy first and offers a hybrid second. Both were
+considered on numbers, and both are declined. This is the argument, in one
+place, so the choice can be checked rather than taken.
+
+### 1. A dynamic proxy at the car's real mass and inertia — DECLINED, on the numbers
+
+**What it would cost:** the car's transform stops being an input and becomes a
+solver output. `world/car_anim_measured.json` is read by `breachlib.Car`, keyed
+onto the proxy, *and shared with the camera rig* — the ONER camera is locked on
+the car at 6 to 13 m through the whole of beat 3 (R2-384). A car that
+decelerates in the sim and not in `anim/carrig.py` is two cars. A car that
+decelerates in both moves beat 3's ramp, `GLASS_WORLD_T`, both seams and the
+124.0833 s master. That is the price, and it is enormous.
+
+**What it would buy: 0.203 %.** The whole 89.79 m event transfers 26.54 N·s to
+`MUL05_S02` — a fifth of one percent of the car's 13,086 kg·m/s. The dragged
+underfloor shard is **2.5 g** against 798 kg. Carrying a body that rests on a
+surface costs µ·m_body·g and contains the carrier's mass nowhere at all
+(R2-385). **An 798 kg car would have done the same thing to within a third of a
+percent**, so this fix pays the largest price on the film for nothing.
+
+### 2. A hybrid — kinematic path, finite effective mass at the contact — DECLINED, and it is the more interesting refusal
+
+The idea is right in principle: split the proxy into a kinematic core and a
+sprung "skin" whose panels have a share of the car's mass, so contacts see a
+finite impedance while the path stays authored.
+
+**It fails on the arithmetic of what "finite" would have to mean.** To halve
+the momentum transfer at a contact, the effective mass there must be of the
+order of the *struck body's* — 2.623 kg for `MUL05_S02`, **2.5 g** for
+`GS_b05_00434`. That is not "the car's real mass and inertia" distributed over
+eighteen panels; a panel light enough to notice a 2.5 g shard would be blown
+off by the shard. And nothing about a hybrid touches the two mechanisms that
+actually produce the travel: a body lying on the deck is carried by friction,
+and a body wedged under the floor is carried by a normal load that a 798 kg car
+supplies with a factor of a million and a half to spare.
+
+**There is also a Blender-shaped reason.** Bullet gives a kinematic body
+inverse mass zero and `bpy` exposes neither contact impulses nor a way to set a
+body's velocity per frame, so the hybrid would have to be built out of springs
+whose stiffness and damping are chosen, not derived — three new invented
+numbers in a file whose whole discipline is that its numbers come from
+somewhere. For no measured gain.
+
+### 3. Withdrawing the boundary condition — TESTED, then REFUTED (R2-388)
+
+Mine, committed as P6 before any data. Measured: it buys **26 %** of the
+transport and costs **46 film frames of the car driving through 2.4 m² of its
+own glass**, centre frame, six metres from the lens, in slow motion. The car is
+authored to accelerate away from a cloud it gave its own speed to, so there is
+no frame at which the collider can leave without the car then overtaking what
+it left behind. Not proposed, at any withdrawal frame.
+
+### 4. Cutting the proxy's surface friction — TESTED, then REFUSED on the ending (R2-389)
+
+Buys 75 % of the transport with no interpenetration price. **Costs five mullion
+segments standing in a vertical line down the middle of the wound box at both
+f2978 and f2940.** The car's grip is load-bearing for the frame collapse: it is
+what holds the bottom segment against the nose long enough to pull the chain
+above it through five joints. And the column's fate is not monotone in friction
+across the five cells, which is a knife-edge. Refused.
+
+### 5. THE MISSING FORCE — CHOSEN (R2-392)
+
+Not a change to the car at all. The sim has **no air in it**, and it throws
+730 kg of glass down a forecourt at 16 m/s. `--air-drag derived` gives every
+active body a `linear_damping` computed from its own collision mesh; four
+declared quantities and one measured speed, nothing chosen.
+
+**What it trades:** one stated approximation — real drag is quadratic and
+Blender offers only an exponential rate, so it is linearised about the car's
+16.584 m/s at the glass plane, exact there, over-stated below it and
+under-stated above. That is the whole cost.
+
+**What it buys:** 73 % of the transport, the 205 m underfloor clamp down to
+139 mm, the field's extent at f1005 from 59.7 to 38.8 m, **and an aperture that
+comes out better than it went in** — bay 5 vacated 95.4 → 99.9 %, 71 more
+shards gone, 8 of 8 mullion-5 segments still departing, connected hole
+unchanged at 2.15 × 6.00 m.
+
+**And it costs the car's trajectory exactly nothing**, because it never touches
+it. That is the column of the seam table that matters, and it is the reason
+this was the fix worth looking for.
+
