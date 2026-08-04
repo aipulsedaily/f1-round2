@@ -361,3 +361,45 @@ network shedding residual as velocity.
 **So the bracket's low end is not obviously wrong physically — it is wrong
 compositionally**, and that is a judgement about a picture, which is where the
 brief says such calls belong.
+
+## R2-289 — the frame comes apart across the WHOLE bracket, and it took a 29.5× error to stop it
+
+`p_t17`: **T = 17.6, twice the derived value**, head slider, same 400 frames.
+The point of a high bracket is to find where the result stops holding. **It
+does not stop.**
+
+| 400 frames, same seed, same everything else | shipped **260** | **4.4** (other reading) | **17.6** (2× derived) |
+|---|---|---|---|
+| frame joints broken (of 95) | **2** | 23 | **19** |
+| mullion 5's transom ends broken (of 6) | **0** | 6 | **6** |
+| max transom-body travel | **0.097 m** | 12.222 m | **15.639 m** |
+| mullion 5 column max travel | 0.157 m | 13.603 m | **6.642 m** |
+| lattice z0 / z1 / z2 max travel | 0.10 / 0.07 / 0.04 m | 12.2 / 6.8 / 5.6 m | **15.6 / 5.5 / 5.4 m** |
+| damage outside bays 4–5 | — | **transoms off bays 2 and 6** | **none** |
+
+**All six of mullion 5's transom ends break at 4.4 and at 17.6 alike.** The
+derived 8.8 sits between two points that both take the frame apart, so the
+answer does not depend on resolving the factor-of-two in the declaration, and
+it does not depend on the derivation being right to better than a factor of two
+in either direction.
+
+**What was actually holding the frame together was the 29.5×.** The band this
+job could defend on the arithmetic is T = 4.4 … 17.6 — a factor of four, from
+the shared-screw reading at one end to double the derived value at the other —
+and the whole of it breaks the frame. 260 is 15× above the top of that band.
+
+**17.6 is also the better-behaved end**, which is not what a bracket usually
+does: its damage is confined to bays 4 and 5, where 4.4 sheds transoms off two
+bays that keep their glass. So the two ends of the bracket fail in *opposite*
+directions — 4.4 by spreading, 17.6 not at all — and the derived value sits
+between them.
+
+**One thing this cannot yet attribute.** Both bracket points carry the head
+slider as well as the corrected transom threshold, so "the ends broke" and "the
+column fell" are not yet separable. The hypothesis the numbers suggest is that
+they are two different mechanisms doing two different jobs — the transom
+threshold decides whether the six ends let go (0 of 6 at 260, 6 of 6 at both
+4.4 and 17.6), and the head model decides whether the column then has anywhere
+to hang. `p_hfix` (8.8, head **fixed**) and `p_hsld` (260, head **slider**) are
+baked to settle it; they are the two off-diagonal cells of the 2×2 and they are
+queued behind the production bake.
