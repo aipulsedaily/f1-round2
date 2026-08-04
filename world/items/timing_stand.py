@@ -774,6 +774,29 @@ def extrude(acc, PTS, mat=0, caps=True, bc=None, cap_over=None, **kw):
     different attributes from the sides -- a sawn extrusion end is a different
     surface history from its anodised face, and a shader cannot tell them apart
     if they share vertices.
+
+    R2-179 -- BOTH CAPS WERE WOUND INWARD, AND HAD BEEN SINCE THE FILE WAS
+    WRITTEN.  The side quads come out of `_grid_quads` with normal `t x e`
+    (ring tangent cross extrude direction), which is OUTWARD for a ring wound
+    CCW about `e`.  For that same ring the START cap's outward normal is `-e`
+    and the END cap's is `+e`, so the START cap is the one that must be
+    REVERSED -- and this had it the other way round.  Result: every solid in
+    the file was a correct tube with both its lids facing into itself.
+
+    `Acc.solid` could not catch it.  Its signed volume is a sum over faces and
+    every face of a box contributes V/6, so four outward sides and two inward
+    caps integrate to +V/3 -- POSITIVE, so no flip, on a solid that is 33 % of
+    its own area wrong.  The thinner the slab the worse the picture and the
+    healthier the number: on the deck slab the caps are 98.07 % of the area.
+    That is the whole defect.  The deck walking surface of `TS_Stand00_BOREAL`
+    (2.903 x 2.834 m at z 0.6793) had mean normal (0, 0, -1) with the sheet
+    2.8 cm below it facing +1 -- the slab built upside down, 426 px across the
+    lens at frame 1126.
+
+    Getting the caps right also makes the volume test MEANINGFUL rather than
+    merely positive: a consistently wound solid integrates to its true volume,
+    so a caller handing in a reversed section now gets the whole solid flipped
+    (correctly) instead of a mixed one left alone.
     """
     PTS = np.asarray(PTS, float)
     n, m = PTS.shape[0], PTS.shape[1]
@@ -786,8 +809,8 @@ def extrude(acc, PTS, mat=0, caps=True, bc=None, cap_over=None, **kw):
         blocks += [PTS[0], c0[None, :], PTS[-1], c1[None, :]]
         b0 = n * m
         b1 = b0 + m + 1
-        T = np.concatenate([_fan(b0 + m, np.arange(b0, b0 + m)),
-                            _fan(b1 + m, np.arange(b1, b1 + m), reverse=True)])
+        T = np.concatenate([_fan(b0 + m, np.arange(b0, b0 + m), reverse=True),
+                            _fan(b1 + m, np.arange(b1, b1 + m))])
     V = np.concatenate(blocks)
 
     def _pad(a, capval=None):
@@ -808,6 +831,191 @@ def extrude(acc, PTS, mat=0, caps=True, bc=None, cap_over=None, **kw):
         for kk in list(kw):
             kw[kk] = _pad(kw[kk], cap_over.get(kk))
     return acc.solid(V, quads=Q, tris=T, mat=mat, bc=bc, **kw)
+
+
+# ---------------------------------------------------------------- R2-179 ----
+#  THE GUARD FOR THE CLASS ABOVE, LIVING BESIDE WHAT IT GUARDS.
+#
+#  Two instruments already existed and both were blind to it:
+#
+#    `Acc.solid` decides by SIGNED VOLUME, and four correct sides plus two
+#    inverted lids integrate to +V/3 -- positive, so no flip, on a solid that
+#    is a third of its own area wrong.  On a 28 mm deck slab the lids are
+#    98.07 % of the area and the number is still cheerfully positive.
+#
+#    `tools/winding_audit.py` decides inward/outward from the sign of a
+#    PIECE's volume, and `extrude` deliberately gives each cap its own copy of
+#    the ring vertices -- so every lid is a separate, zero-thickness,
+#    VOLUMELESS piece, classed `undecidable`, and `--fix` correctly abstains.
+#
+#  So this check is neither.  It is topology plus a facing law, and it needs
+#  no piece to enclose anything:
+#
+#    CONSISTENT  every undirected edge is used exactly twice, once in each
+#                direction.  True of any correctly wound closed surface, false
+#                the moment one face is reversed, whatever that face's area.
+#    OUTWARD     the divergence-theorem volume about the mesh's OWN centroid
+#                (not the world origin, which is what let `box`'s reversed
+#                bottom quad hide at z = 0) is positive.
+#    LIDS        of the faces that are horizontal, the HIGHEST must face up
+#                and the LOWEST must face down.  That is the sentence the
+#                defect actually violated and the one that can be checked
+#                against a rendered picture.
+def winding_stats(V, Q, T):
+    """-> dict. Pure arithmetic on arrays; no bpy, no scene, no accumulator."""
+    V = np.asarray(V, float)
+    Q = np.asarray(Q, np.int64).reshape(-1, 4)
+    T = np.asarray(T, np.int64).reshape(-1, 3)
+    tris = []
+    if len(Q):
+        tris.append(Q[:, (0, 1, 2)])
+        tris.append(Q[:, (0, 2, 3)])
+    if len(T):
+        tris.append(T)
+    F = np.concatenate(tris) if tris else np.zeros((0, 3), np.int64)
+    if not len(F):
+        return {"faces": 0, "consistent": False, "volume": 0.0,
+                "measured": False}
+    # -- topology, ON WELDED INDICES --------------------------------------
+    # `extrude` gives every cap its OWN copy of the ring vertices on purpose
+    # (a sawn end is not an anodised face and a shader must be able to tell
+    # them apart), so a correct solid out of this file is geometrically closed
+    # and topologically split.  Counting raw indices calls all nine primitives
+    # inconsistent -- measured, that is exactly what the first version of this
+    # check did.  Weld by POSITION and the question becomes the one that was
+    # meant: does the SURFACE close, whatever the vertex table says.
+    _, wid = np.unique(np.round(V, 7), axis=0, return_inverse=True)
+    wid = np.asarray(wid).ravel()
+    W = wid[F]
+    E = np.concatenate([W[:, (0, 1)], W[:, (1, 2)], W[:, (2, 0)]])
+    E = E[E[:, 0] != E[:, 1]]                        # collapsed by the weld
+    nw = int(wid.max()) + 1 if len(wid) else 1
+    key = E[:, 0] * nw + E[:, 1]
+    rev = E[:, 1] * nw + E[:, 0]
+    uk, cnt = np.unique(key, return_counts=True)
+    dup = int((cnt > 1).sum())                       # same edge, same direction
+    unpaired = int((~np.isin(rev, uk)).sum())        # no opposite-facing twin
+    # -- geometry ---------------------------------------------------------
+    P = V[F]
+    nrm = np.cross(P[:, 1] - P[:, 0], P[:, 2] - P[:, 0])
+    area = 0.5 * np.linalg.norm(nrm, axis=1)
+    live = area > 1e-14
+    c = V.mean(0)
+    vol = float(np.einsum("ij,ij->i", P[:, 0] - c,
+                          np.cross(P[:, 1] - c, P[:, 2] - c)).sum()) / 6.0
+    u = nrm / np.maximum(np.linalg.norm(nrm, axis=1), 1e-30)[:, None]
+    zc = P[:, :, 2].mean(1)
+    flat = live & (np.abs(u[:, 2]) > 0.99)
+    lids_ok, top_nz, bot_nz = None, float("nan"), float("nan")
+    if flat.any():
+        zf = zc[flat]
+        hi = zf >= zf.max() - 1e-6
+        lo = zf <= zf.min() + 1e-6
+        top_nz = float(u[flat][hi][:, 2].mean())
+        bot_nz = float(u[flat][lo][:, 2].mean())
+        lids_ok = bool(top_nz > 0.0 and bot_nz < 0.0)
+    return {"faces": int(live.sum()), "area": float(area[live].sum()),
+            "duplicate_directed_edges": dup, "unpaired_edges": unpaired,
+            "consistent": bool(dup == 0 and unpaired == 0),
+            "volume": vol, "outward": bool(vol > 0.0),
+            "flat_faces": int(flat.sum()), "top_nz": top_nz,
+            "bottom_nz": bot_nz, "lids_ok": lids_ok, "measured": True}
+
+
+def _acc_arrays(acc):
+    """V, Q, T out of an accumulator without caring which one it is."""
+    V = np.concatenate(acc._V) if acc._V else np.zeros((0, 3))
+    Q = np.concatenate(acc._Q) if acc._Q else np.zeros((0, 4), np.int64)
+    T = np.concatenate(acc._T) if acc._T else np.zeros((0, 3), np.int64)
+    return V, Q, T
+
+
+def _slab_lids_inverted(acc, ctr, ex, ey, ez):
+    """THE NEGATIVE CONTROL, MANUFACTURED FROM LIVE SOURCE EVERY RUN.
+
+    The historical wiring, byte for byte: the same ring, the same side quads,
+    and the cap fans the way `extrude` had them until R2-179 -- start cap not
+    reversed, end cap reversed.  It goes through `acc.add`, NOT `acc.solid`,
+    because `solid` is one of the two instruments this control exists to prove
+    blind and re-orienting the control would be the whole bug again.
+
+    R2-072: a control that NAMES a broken artefact dies the day that artefact
+    is repaired, and it dies into a cheerful pass.  This one is built from the
+    same `_grid_quads` and `_fan` the fixed code uses, so it can only stop
+    failing if those change underneath it -- in which case it SHOULD.
+    """
+    ctr, ex, ey, ez = (np.asarray(v, float) for v in (ctr, ex, ey, ez))
+    sect = rect(2.0, 2.0, 0.0)
+    m = sect.shape[0]
+    PTS = np.empty((2, m, 3))
+    for i, t in enumerate((-1.0, 1.0)):
+        PTS[i] = (ctr + t * ez)[None, :] + sect[:, 0:1] * ex[None, :] \
+            + sect[:, 1:2] * ey[None, :]
+    n = PTS.shape[0]
+    Q = _grid_quads(n, m, close_m=True)
+    c0, c1 = PTS[0].mean(axis=0), PTS[-1].mean(axis=0)
+    V = np.concatenate([PTS.reshape(-1, 3), PTS[0], c0[None, :],
+                        PTS[-1], c1[None, :]])
+    b0 = n * m
+    b1 = b0 + m + 1
+    T = np.concatenate([_fan(b0 + m, np.arange(b0, b0 + m)),
+                        _fan(b1 + m, np.arange(b1, b1 + m), reverse=True)])
+    return acc.add(V, quads=Q, tris=T, mat=0)
+
+
+def winding_selftest(chk):
+    """Every primitive this file owns, plus both controls, on live source."""
+    prims = (
+        ("obox, deck-slab shaped", lambda a: obox(
+            a, (0, 0, 0.6653), (1.45, 0, 0), (0, 1.4, 0), (0, 0, 0.014),
+            chamfer=0.0016)),
+        ("obox, unchamfered", lambda a: obox(
+            a, (0, 0, 0.5), (0.3, 0, 0), (0, 0.2, 0), (0, 0, 0.1))),
+        ("box", lambda a: box(a, (-1, -1, 0.61), (1, 1, 0.66))),
+        ("plate", lambda a: plate(a, (0, 0, 0.8), (0.5, 0, 0),
+                                  (0, 0.3, 0), 0.004)),
+        ("tube", lambda a: tube(a, (0, 0, 0), (0, 0, 1), 0.05)),
+        ("disc", lambda a: disc(a, (0, 0, 0.5), EZ, 0.02, 0.003)),
+        ("hexprism", lambda a: hexprism(a, (0, 0, 0.5), EZ, 0.013, 0.008)),
+        ("member, rect section", lambda a: member(
+            a, (0, 0, 0.4), (1.5, 0, 0.4), rect(0.05, 0.05))),
+        ("panel_poly", lambda a: panel_poly(
+            a, np.array([(-0.5, 0.2), (0.5, 0.2), (0.5, 1.0), (-0.5, 1.0)]),
+            0.0, 0.006)),
+    )
+    for nm, fn in prims:
+        a = Acc("wchk")
+        fn(a)
+        s = winding_stats(*_acc_arrays(a))
+        ok = s["consistent"] and s["outward"] and (s["lids_ok"] is not False)
+        chk("winding: %s" % nm, ok,
+            "%d faces, %d bad edges, vol %+.6g, top_nz %+.3f, bottom_nz %+.3f"
+            % (s["faces"], s["duplicate_directed_edges"] + s["unpaired_edges"],
+               s["volume"], s["top_nz"], s["bottom_nz"]))
+
+    # ---- the two controls, both built here, both from live source ---------
+    a = Acc("wctl_ok")
+    obox(a, (0, 0, 0.6653), (1.45, 0, 0), (0, 1.4, 0), (0, 0, 0.014))
+    good = winding_stats(*_acc_arrays(a))
+    chk("CONTROL a correctly built slab is SILENT",
+        good["consistent"] and good["outward"] and good["lids_ok"] is True,
+        "top_nz %+.3f, bottom_nz %+.3f, vol %+.6g"
+        % (good["top_nz"], good["bottom_nz"], good["volume"]))
+
+    a = Acc("wctl_bad")
+    _slab_lids_inverted(a, (0, 0, 0.6653), (1.45, 0, 0), (0, 1.4, 0),
+                        (0, 0, 0.014))
+    bad = winding_stats(*_acc_arrays(a))
+    # It must fail, AND it must fail as the DEFECT, not merely somehow: the
+    # deck's top face pointing at the ground with the sheet below it pointing
+    # up. Asserting only "not ok" would pass on a control that broke some
+    # other way.
+    chk("CONTROL the pre-R2-179 slab is NAMED, and named correctly",
+        (not bad["consistent"]) and bad["lids_ok"] is False
+        and bad["top_nz"] < -0.99 and bad["bottom_nz"] > 0.99,
+        "top_nz %+.3f (want -1), bottom_nz %+.3f (want +1), %d bad edges"
+        % (bad["top_nz"], bad["bottom_nz"],
+           bad["duplicate_directed_edges"] + bad["unpaired_edges"]))
 
 
 def frames_along(path, up_hint=(0.0, 0.0, 1.0)):
@@ -1011,7 +1219,17 @@ def box(acc, lo, hi, mat=0, **kw):
     x1, y1, z1 = hi
     V = np.array([(x0, y0, z0), (x1, y0, z0), (x1, y1, z0), (x0, y1, z0),
                   (x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1)])
-    Q = np.array([(0, 1, 2, 3), (4, 5, 6, 7), (0, 1, 5, 4),
+    # R2-179, second site.  `(0, 1, 2, 3)` walks +x then +y round the BOTTOM
+    # face, i.e. CCW seen from above, i.e. normal +z -- INTO the box.  The
+    # other five were always right.  Reversed to `(3, 2, 1, 0)`.
+    #
+    # `Acc.solid` was blind to this one for a different reason from the caps:
+    # its volume integral is taken about the WORLD ORIGIN, and the offending
+    # face contributes `area * z0 / 3`, which is exactly zero for a box sitting
+    # on z = 0 -- the case it was written and eyeballed against.  Away from
+    # z = 0 the same face poisons the sign of the whole solid, so a low box
+    # could be flipped INSIDE OUT ENTIRELY depending only on where it stood.
+    Q = np.array([(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4),
                   (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)])
     if "bc" not in kw:
         kw["bc"] = np.stack([V[:, 0] - (x0 + x1) * 0.5, V[:, 1] - (y0 + y1) * 0.5,
@@ -4956,8 +5174,10 @@ def test_scene(samples=256, limit=None, quick=False):
 
 def selftest(verbose=True):
     fails = []
+    ran = [0]
 
     def chk(name, cond, detail=""):
+        ran[0] += 1
         print("  %s %-56s %s" % ("ok  " if cond else "FAIL", name, detail))
         if not cond:
             fails.append(name)
@@ -5067,9 +5287,17 @@ def selftest(verbose=True):
         chk("stand %d |P| stays small" % r["uid"], rad < 4.0,
             "bounding radius <= %.2f m" % rad)
 
+    print("\n[7] winding: which side of every primitive the lens gets (R2-179)")
+    winding_selftest(chk)
+
+    # `len(fails) + 0` used to stand where `ran[0]` does, so a clean run
+    # printed "SELFTEST PASS  0 checks, 0 failed" -- a pass that reads
+    # identically whether 39 checks ran or none did.  That is the shape this
+    # project keeps being fooled by, in the summary line of the very tool
+    # meant to catch it.
     print("\n%s  %d checks, %d failed"
           % ("SELFTEST PASS" if not fails else "SELFTEST FAIL",
-             len(fails) + 0, len(fails)))
+             ran[0], len(fails)))
     return not fails
 
 

@@ -807,6 +807,17 @@ def extrude(acc, PTS, mat=0, caps=True, bc=None, cap_over=None, **kw):
     sawn board is END GRAIN, a different material history from its face — it
     drinks water, it greys first and it checks — and a shader cannot tell the
     two apart if they share vertices.
+
+    R2-179 — BOTH CAPS WERE WOUND INWARD.  The side quads from `_grid_quads`
+    have normal `t x e` (ring tangent cross extrude direction), outward for a
+    ring wound CCW about `e`.  For that ring the START cap's outward normal is
+    `-e` and the END cap's is `+e`, so it is the START cap that must be
+    REVERSED — this had it the other way round, so every solid in the file was
+    a correct tube with both lids facing into itself.  `Acc.solid` could not
+    see it: four outward sides and two inward caps integrate to +V/3, positive,
+    so no flip. On a 21 mm deck board the caps are 98 % of the area, which is
+    how 1.267 m² of this item ended up presenting its underside to the lens.
+    Identical defect and identical fix in `timing_stand.py`.
     """
     PTS = np.asarray(PTS, float)
     n, m = PTS.shape[0], PTS.shape[1]
@@ -819,8 +830,8 @@ def extrude(acc, PTS, mat=0, caps=True, bc=None, cap_over=None, **kw):
         blocks += [PTS[0], c0[None, :], PTS[-1], c1[None, :]]
         b0 = n * m
         b1 = b0 + m + 1
-        T = np.concatenate([_fan(b0 + m, np.arange(b0, b0 + m)),
-                            _fan(b1 + m, np.arange(b1, b1 + m), reverse=True)])
+        T = np.concatenate([_fan(b0 + m, np.arange(b0, b0 + m), reverse=True),
+                            _fan(b1 + m, np.arange(b1, b1 + m))])
     V = np.concatenate(blocks)
 
     def _pad(a, capval=None):
@@ -841,6 +852,174 @@ def extrude(acc, PTS, mat=0, caps=True, bc=None, cap_over=None, **kw):
         for kk in list(kw):
             kw[kk] = _pad(kw[kk], cap_over.get(kk))
     return acc.solid(V, quads=Q, tris=T, mat=mat, bc=bc, **kw)
+
+
+# ---------------------------------------------------------------- R2-179 ----
+#  THE GUARD FOR THE CLASS ABOVE, LIVING BESIDE WHAT IT GUARDS.
+#
+#  Two instruments existed and both were blind:
+#
+#    `Acc.solid` decides by SIGNED VOLUME, and four correct sides plus two
+#    inverted lids integrate to +V/3 -- positive, so no flip, on a solid a
+#    third of whose area is wrong.  On a 21 mm deck board the lids are 98 % of
+#    the area and the number stays cheerfully positive.
+#
+#    `tools/winding_audit.py` decides from the sign of a PIECE's volume, and
+#    `extrude` gives each cap its own copy of the ring vertices -- so a lid is
+#    a separate, zero-thickness, VOLUMELESS piece, classed `undecidable`, and
+#    `--fix` correctly abstains.
+#
+#  So this check is neither.  Topology plus a facing law, needing no piece to
+#  enclose anything:
+#
+#    CONSISTENT  every undirected edge used exactly twice, once each way.
+#    OUTWARD     divergence-theorem volume about the mesh's OWN centroid --
+#                not the world origin, which is what let `box`'s reversed
+#                bottom quad hide whenever it sat on z = 0.
+#    LIDS        of the horizontal faces the HIGHEST faces up and the LOWEST
+#                faces down: the sentence the defect violated, and the one a
+#                reader can check against a rendered picture.
+def winding_stats(V, Q, T):
+    """-> dict. Pure arithmetic on arrays; no bpy, no scene, no accumulator."""
+    V = np.asarray(V, float)
+    Q = np.asarray(Q, np.int64).reshape(-1, 4)
+    T = np.asarray(T, np.int64).reshape(-1, 3)
+    tris = []
+    if len(Q):
+        tris.append(Q[:, (0, 1, 2)])
+        tris.append(Q[:, (0, 2, 3)])
+    if len(T):
+        tris.append(T)
+    F = np.concatenate(tris) if tris else np.zeros((0, 3), np.int64)
+    if not len(F):
+        return {"faces": 0, "consistent": False, "volume": 0.0,
+                "measured": False}
+    # Topology ON WELDED INDICES.  `extrude` gives every cap its own copy of
+    # the ring vertices on purpose, so a correct solid out of this file is
+    # geometrically closed and topologically split; counting raw indices calls
+    # every primitive inconsistent, which is measurably what the first version
+    # of this check did.  Weld by POSITION and the question becomes the one
+    # that was meant: does the SURFACE close, whatever the vertex table says.
+    _, wid = np.unique(np.round(V, 7), axis=0, return_inverse=True)
+    wid = np.asarray(wid).ravel()
+    W = wid[F]
+    E = np.concatenate([W[:, (0, 1)], W[:, (1, 2)], W[:, (2, 0)]])
+    E = E[E[:, 0] != E[:, 1]]                        # collapsed by the weld
+    nw = int(wid.max()) + 1 if len(wid) else 1
+    key = E[:, 0] * nw + E[:, 1]
+    rev = E[:, 1] * nw + E[:, 0]
+    uk, cnt = np.unique(key, return_counts=True)
+    dup = int((cnt > 1).sum())
+    unpaired = int((~np.isin(rev, uk)).sum())
+    P = V[F]
+    nrm = np.cross(P[:, 1] - P[:, 0], P[:, 2] - P[:, 0])
+    area = 0.5 * np.linalg.norm(nrm, axis=1)
+    live = area > 1e-14
+    c = V.mean(0)
+    vol = float(np.einsum("ij,ij->i", P[:, 0] - c,
+                          np.cross(P[:, 1] - c, P[:, 2] - c)).sum()) / 6.0
+    u = nrm / np.maximum(np.linalg.norm(nrm, axis=1), 1e-30)[:, None]
+    zc = P[:, :, 2].mean(1)
+    flat = live & (np.abs(u[:, 2]) > 0.99)
+    lids_ok, top_nz, bot_nz = None, float("nan"), float("nan")
+    if flat.any():
+        zf = zc[flat]
+        hi = zf >= zf.max() - 1e-6
+        lo = zf <= zf.min() + 1e-6
+        top_nz = float(u[flat][hi][:, 2].mean())
+        bot_nz = float(u[flat][lo][:, 2].mean())
+        lids_ok = bool(top_nz > 0.0 and bot_nz < 0.0)
+    return {"faces": int(live.sum()), "area": float(area[live].sum()),
+            "duplicate_directed_edges": dup, "unpaired_edges": unpaired,
+            "consistent": bool(dup == 0 and unpaired == 0),
+            "volume": vol, "outward": bool(vol > 0.0),
+            "flat_faces": int(flat.sum()), "top_nz": top_nz,
+            "bottom_nz": bot_nz, "lids_ok": lids_ok, "measured": True}
+
+
+def _acc_arrays(acc):
+    """V, Q, T out of an accumulator without caring which one it is."""
+    V = np.concatenate(acc._V) if acc._V else np.zeros((0, 3))
+    Q = np.concatenate(acc._Q) if acc._Q else np.zeros((0, 4), np.int64)
+    T = np.concatenate(acc._T) if acc._T else np.zeros((0, 3), np.int64)
+    return V, Q, T
+
+
+def _slab_lids_inverted(acc, ctr, ex, ey, ez):
+    """THE NEGATIVE CONTROL, MANUFACTURED FROM LIVE SOURCE EVERY RUN.
+
+    The historical wiring, byte for byte: same ring, same side quads, and the
+    cap fans the way `extrude` had them until R2-179 -- start cap not
+    reversed, end cap reversed.  It goes through `acc.add`, NOT `acc.solid`,
+    because `solid` is one of the two instruments this control exists to prove
+    blind, and letting it re-orient the control would be the bug again.
+
+    R2-072: a control that NAMES a broken artefact dies the day that artefact
+    is repaired, and it dies into a cheerful pass.  This one is manufactured
+    from the same `_grid_quads` and `_fan` the fixed code uses, so it can only
+    stop failing if those change underneath it -- in which case it SHOULD.
+    """
+    ctr, ex, ey, ez = (np.asarray(v, float) for v in (ctr, ex, ey, ez))
+    sect = rect(2.0, 2.0, 0.0)
+    m = sect.shape[0]
+    PTS = np.empty((2, m, 3))
+    for i, t in enumerate((-1.0, 1.0)):
+        PTS[i] = (ctr + t * ez)[None, :] + sect[:, 0:1] * ex[None, :] \
+            + sect[:, 1:2] * ey[None, :]
+    n = PTS.shape[0]
+    Q = _grid_quads(n, m, close_m=True)
+    c0, c1 = PTS[0].mean(axis=0), PTS[-1].mean(axis=0)
+    V = np.concatenate([PTS.reshape(-1, 3), PTS[0], c0[None, :],
+                        PTS[-1], c1[None, :]])
+    b0 = n * m
+    b1 = b0 + m + 1
+    T = np.concatenate([_fan(b0 + m, np.arange(b0, b0 + m)),
+                        _fan(b1 + m, np.arange(b1, b1 + m), reverse=True)])
+    return acc.add(V, quads=Q, tris=T, mat=0)
+
+
+def winding_selftest(chk):
+    """Every primitive this file owns, plus both controls, on live source."""
+    prims = (
+        ("obox, deck-board shaped", lambda a: obox(
+            a, (0, 0, 1.2), (0.7, 0, 0), (0, 0.075, 0), (0, 0, 0.0105),
+            chamfer=0.0012)),
+        ("obox, unchamfered", lambda a: obox(
+            a, (0, 0, 0.5), (0.3, 0, 0), (0, 0.2, 0), (0, 0, 0.1))),
+        ("box", lambda a: box(a, (-1, -1, 0.61), (1, 1, 0.66))),
+        ("tube", lambda a: tube(a, (0, 0, 0), (0, 0, 1), 0.05)),
+    )
+    for nm, fn in prims:
+        a = Acc("wchk")
+        fn(a)
+        s = winding_stats(*_acc_arrays(a))
+        ok = s["consistent"] and s["outward"] and (s["lids_ok"] is not False)
+        chk("winding: %s" % nm, ok,
+            "%d faces, %d bad edges, vol %+.6g, top_nz %+.3f, bottom_nz %+.3f"
+            % (s["faces"], s["duplicate_directed_edges"] + s["unpaired_edges"],
+               s["volume"], s["top_nz"], s["bottom_nz"]))
+
+    a = Acc("wctl_ok")
+    obox(a, (0, 0, 1.2), (0.7, 0, 0), (0, 0.075, 0), (0, 0, 0.0105))
+    good = winding_stats(*_acc_arrays(a))
+    chk("CONTROL a correctly built board is SILENT",
+        good["consistent"] and good["outward"] and good["lids_ok"] is True,
+        "top_nz %+.3f, bottom_nz %+.3f, vol %+.6g"
+        % (good["top_nz"], good["bottom_nz"], good["volume"]))
+
+    a = Acc("wctl_bad")
+    _slab_lids_inverted(a, (0, 0, 1.2), (0.7, 0, 0), (0, 0.075, 0),
+                        (0, 0, 0.0105))
+    bad = winding_stats(*_acc_arrays(a))
+    # It must fail, AND it must fail as the DEFECT: the board's top face
+    # pointing at the ground with the sheet below it pointing up.  Asserting
+    # only "not ok" would pass on a control that broke some other way.
+    chk("CONTROL the pre-R2-179 board is NAMED, and named correctly",
+        (not bad["consistent"]) and bad["lids_ok"] is False
+        and bad["top_nz"] < -0.99 and bad["bottom_nz"] > 0.99,
+        "top_nz %+.3f (want -1), bottom_nz %+.3f (want +1), %d bad edges"
+        % (bad["top_nz"], bad["bottom_nz"],
+           bad["duplicate_directed_edges"] + bad["unpaired_edges"]))
 
 
 def stations(L, base, refine=(), rad=0.017, fine=0.0038, ends=0.055):
@@ -973,7 +1152,12 @@ def box(acc, lo, hi, mat=0, **kw):
     x1, y1, z1 = hi
     V = np.array([(x0, y0, z0), (x1, y0, z0), (x1, y1, z0), (x0, y1, z0),
                   (x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1)])
-    Q = np.array([(0, 1, 2, 3), (4, 5, 6, 7), (0, 1, 5, 4),
+    # R2-179, second site.  `(0, 1, 2, 3)` walks +x then +y round the BOTTOM
+    # face — CCW from above, normal +z, INTO the box.  The other five were
+    # right.  `Acc.solid` integrates about the WORLD ORIGIN, so this face
+    # contributes `area * z0 / 3` and vanishes for a box on z = 0 — the case
+    # it was eyeballed against.  Elsewhere it can invert the whole solid.
+    Q = np.array([(3, 2, 1, 0), (4, 5, 6, 7), (0, 1, 5, 4),
                   (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)])
     bc = np.stack([V[:, 0] - (x0 + x1) * 0.5, V[:, 1] - (y0 + y1) * 0.5,
                    V[:, 2] - (z0 + z1) * 0.5], 1)
@@ -4067,6 +4251,10 @@ def selftest(verbose=True):
     chk("filmed-distance scale", abs(PX_PER_M - 622.222) < 0.01,
         "%.1f px/m, 1 px = %.3f mm, hero limit %.2f mm"
         % (PX_PER_M, PX_M * 1000, HERO_EDGE_M * 1000))
+
+    # --- winding: which side of every primitive the lens gets (R2-179) ------
+    winding_selftest(chk)
+
     if verbose:
         print("  ---- per-deck ----")
         for d in ds:
