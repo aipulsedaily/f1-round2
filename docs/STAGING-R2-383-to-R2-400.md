@@ -623,3 +623,72 @@ freeze mid-slide across two-thirds of the closing frame's width. That is the
 number the fix has to move, and it is the number the AFTER column will be read
 on.
 
+
+---
+
+## R2-392 — THE FIX: air, and nothing else. One derived number per body, no contact model touched, and the aperture comes out better than it went in
+
+Three more 400-frame cells against the same A0 baseline. `--air-drag derived`
+computes each ACTIVE body's `linear_damping` from **its own collision mesh** —
+Cauchy's S/4 for the mean projected area, Cd 1.17 for a flat plate, ρ 1.225,
+linearised about the car's own 16.584 m/s at the glass plane. Nothing is
+chosen; the whole thing is four declared quantities and one measured speed.
+
+| | **A0** shipped | **B0** air only | **B1** air + µ 0.20 | **B2** air + µ 0.35 |
+|---|---|---|---|---|
+| **TOTAL transport** | 32,064 m | **8,805 m (−73 %)** | 10,261 m | 7,879 m |
+| `GS_b05_00434` travel (the 205 m clamp) | 15.84 m | **0.139 m** | 0.092 m | 0.003 m |
+| field extent at f1005, max x | 59.72 | **38.75** | 33.63 | 35.01 |
+| bodies inside the car, worst frame | 111 (impact) | **113 (impact)** | 110 | 114 |
+| mean inside once the car is through | 19.6 | **7.3** | 6.4 | 6.1 |
+| CONTROL untouched mullions | 0.000133 m | **0.000138 m** | 0.000228 m | 0.000124 m |
+| **connected aperture** | 2.15 × 6.00 m | **2.15 × 6.00 m** | 2.15 × 6.00 m | — |
+| bay 4 / bay 5 vacated | 96.7 / 95.4 % | **96.8 / 99.9 %** | 96.7 / 95.9 % | — |
+| **mullion 5 segments gone** | **8 of 8** | **8 of 8** | 8 of 8 | — |
+| `MUL05_S03…S07` travel | 8.6 / 8.1 / 5.0 / 5.4 / 6.0 | 5.7 / 5.5 / 5.5 / 5.7 / 2.6 | 8.1 / 7.7 / 7.5 / 7.3 / 7.4 | **1.8 × 5, still up** |
+| shards gone / mass | 2,903 / 729.4 kg | **2,974 / 741.5 kg** | 2,881 / 724.1 kg | 2,862 / 741.1 kg |
+
+**B0 is the production configuration: `--air-drag derived`, the car proxy left
+exactly as it shipped.**
+
+* It buys **73 % of the transport** — as much as cutting the proxy's grip did —
+  **without touching the contact model**, so the frame result that R2-289,
+  R2-293, R2-294 and R2-297 measured is preserved by construction rather than
+  by hope. All eight of mullion 5's segments still go.
+* The aperture comes out **better**: bay 5 vacated 95.4 → **99.9 %**, 71 more
+  shards gone, 12 kg more glass, and the connected hole unchanged at
+  2.15 × 6.00 m with `CONTROLS PASS`.
+* The untouched-mullion controls hold at 1.4 × 10⁻⁴ m.
+* There is **no interpenetration price** — the worst frame is the impact
+  itself, 113 against A0's 111, and the mean once the car is through actually
+  *falls*, from 19.6 to 7.3.
+
+### P12, scored honestly: three right, two wrong, one of them the good kind
+
+| | prediction | outcome |
+|---|---|---|
+| **P12a** frame collapse survives, column not left standing | **RIGHT** — `MUL05_S04` ends at z 0.27, x 19.29; 8 of 8 segments gone |
+| **P12b** `MUL05_S02` peak speed falls below 16 m/s | **WRONG** — it *rises*, 18.39 → 25.41 m/s. Drag makes the segment shed the car sooner and it leaves faster rather than being dragged longer. Its transported distance still falls, 12.10 → 3.55 m on `MUL05_S00` |
+| **P12c** the underfloor clamp is NOT fixed by air | **WRONG, and this is the result of the block** — 15.84 m → **0.139 m**. I reasoned that a rigidly clamped body cannot feel drag. It never gets clamped: with air on it, the shard is slowed *before* it reaches the floor's 8 mm gap and is passed over instead of scooped |
+| **P12d** transport falls by less than 40 % | **WRONG** — it falls 73 % |
+| **P12e** field median speed under 12 m/s at f1005 | **WRONG** — 17.90 against A0's 18.15. At f1005 the field is still being plowed; what changed is its *extent* (max x 59.7 → 38.8), not its instantaneous speed |
+| **P12f** no interpenetration price | **RIGHT** |
+| **P12g** connected aperture unchanged, CONTROLS PASS | **RIGHT** |
+
+**P12c is the one worth reading twice.** I predicted, with an argument I
+believed, that the file's single worst artefact — 2.5 g of glass carried 205 m
+at 43.6 m/s — could only be reached through the one lever that closes the
+aperture, and that it would therefore have to ship as a stated defect. It is
+gone, for free, from a change made for a different reason.
+
+### And a warning about the parameter I am NOT touching
+
+`MUL05_S03…S07` come down in A0 (µ 0.55), stay up in A2 (µ 0.20, no air), come
+down in B0 (µ 0.55 + air), come down in B1 (µ 0.20 + air) and are **still up at
+f1005 in B2 (µ 0.35 + air)**. That is not monotone in friction and it is not a
+tidy result. The column's descent is a chain of five breaking joints and it is
+evidently near a threshold. **That is the strongest reason to leave the proxy's
+friction alone**: the shipped value is the one the verified frame result was
+measured at, and the honest thing to do with a knife-edge is not to walk along
+it.
+
