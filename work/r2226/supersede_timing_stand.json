@@ -1,0 +1,131 @@
+{
+ "host": "ARCH_PitWall",
+ "host_verts": 24664,
+ "source": "render/world/assembly/r2/assembly9.blend",
+ "collection": "W_Item_TimingStand",
+ "units": 10,
+ "units_overlapping_host": 10,
+ "total_host_verts_inside_units": 4300,
+ "rows": [
+  {
+   "unit": "TS_Stand00_BOREAL",
+   "host_verts_inside_box": 324,
+   "box": [
+    158.21,
+    43.8,
+    -0.03,
+    165.67,
+    50.89,
+    3.22
+   ]
+  },
+  {
+   "unit": "TS_Stand01_CORVUS",
+   "host_verts_inside_box": 398,
+   "box": [
+    173.47,
+    56.82,
+    -0.03,
+    181.46,
+    64.44,
+    3.29
+   ]
+  },
+  {
+   "unit": "TS_Stand02_DELMAR",
+   "host_verts_inside_box": 66,
+   "box": [
+    190.18,
+    70.81,
+    -0.03,
+    198.22,
+    78.47,
+    3.14
+   ]
+  },
+  {
+   "unit": "TS_Stand03_ESTIVAL",
+   "host_verts_inside_box": 112,
+   "box": [
+    211.96,
+    88.86,
+    -0.03,
+    219.39,
+    95.9,
+    3.27
+   ]
+  },
+  {
+   "unit": "TS_Stand04_FULGOR",
+   "host_verts_inside_box": 396,
+   "box": [
+    226.81,
+    101.71,
+    -0.03,
+    235.04,
+    109.58,
+    3.73
+   ]
+  },
+  {
+   "unit": "TS_Stand05_GRISAILLE",
+   "host_verts_inside_box": 282,
+   "box": [
+    243.92,
+    115.88,
+    -0.03,
+    251.85,
+    123.43,
+    3.12
+   ]
+  },
+  {
+   "unit": "TS_Stand06_HALCYON",
+   "host_verts_inside_box": 18,
+   "box": [
+    260.85,
+    129.94,
+    -0.03,
+    267.59,
+    136.41,
+    3.6
+   ]
+  },
+  {
+   "unit": "TS_Stand07_IRIDIA",
+   "host_verts_inside_box": 396,
+   "box": [
+    276.45,
+    143.16,
+    -0.03,
+    284.34,
+    150.67,
+    3.25
+   ]
+  },
+  {
+   "unit": "TS_Stand08_JUNIPER",
+   "host_verts_inside_box": 124,
+   "box": [
+    295.7,
+    159.5,
+    -0.03,
+    304.7,
+    168.02,
+    3.24
+   ]
+  },
+  {
+   "unit": "TS_Stand09_KESTREL",
+   "host_verts_inside_box": 2184,
+   "box": [
+    313.66,
+    174.23,
+    -0.03,
+    320.82,
+    181.07,
+    3.61
+   ]
+  }
+ ]
+}

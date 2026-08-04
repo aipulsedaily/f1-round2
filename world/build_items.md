@@ -176,6 +176,26 @@ are welded inside `ARCH_PitWall`, `ARCH_Gantry`, `ARCH_PaddockBuildings` and
 friends, built by the class modules, and only those modules can stamp them.  See
 §9.
 
+## 7a. Two things the work found in its own instruments
+
+**`purge()` was leaving orphan meshes, and the idempotence test is what caught
+it.**  `build()` twice in one session gave **122 meshes then 243** on an
+identical 120-object scene: the objects were removed and their datablocks were
+not, and Blender even reused the object names, so the scene looked right.
+Blender drops zero-user datablocks on save, so it would never have reached a
+shipped blend — it would have made every in-session mesh count in this file
+wrong, and the mesh counts are how the no-repeats rule is enforced.  Fixed in
+`purge()` and in the rig-drop path, scoped to what this stage placed and never
+a sweep of `bpy.data`.  `work/r2226/idempotence.py` now reports
+`ITEMS_IDEMPOTENT_OK` at 123 objects / 121 meshes on both runs.
+
+**`tools/placement_gate.py` has R2-180's fall-through.**  Run on a scene holding
+TWO item collections it prints *"2 item collections present, took the largest
+— pass `--subject` to be explicit"*, measures one item and files the other
+under `context_findings`.  A placement stage makes multi-item scenes the normal
+case, so **run it once per item with `--subject`**, which is what the commands
+below do.  The gate is not this stage's to change; it is named here.
+
 ## 8. Running it
 
 ```bash
@@ -204,6 +224,14 @@ script exception and did so on this project again today.
   `--mods` now ends in `items`; nothing moves until an assembly runs, and those
   are scheduled, not taken.
 * **`build_architecture` / `build_barriers`** own every `REBUILD_OWED` line.
+  The debt is physical, not bookkeeping: `work/r2226/supersede_overlap.py`
+  links `ARCH_PitWall` alone out of the 4.21 GB ship and finds **all 10 of the
+  10 placed `TS_Stand*` units with wall geometry inside their world bounding
+  box — 4,300 of the wall's 24,664 vertices**.  A bounding box is generous (a
+  stand's box runs from the ground to its canopy and the wall passes beneath
+  it), so that is an upper bound on interpenetration rather than proof of it;
+  what it does establish is that the two populations occupy the same volume of
+  the pit straight, which is what makes them one feature built twice.
   Until a class module stops welding a feature, the hero module for that
   feature cannot be placed.  This is the honest form of the census's
   *"32 + 42 = 74 reworks"*.

@@ -399,19 +399,36 @@ def place_one(row, scene=None):
     top = top[0]
 
     # --- drop the test rig ------------------------------------------------- #
+    # The rig's MESHES go with its objects. A standin ground plane whose object
+    # is deleted and whose mesh is left behind is a zero-user datablock that
+    # survives until the next save, and it made this stage non-idempotent
+    # inside a session: build() twice gave 122 meshes then 123 on an identical
+    # 120-object scene. Same rule as purge() -- scoped to what THIS append
+    # brought in, never a sweep of bpy.data.
+    orphaned = set()
+
+    def _drop(ob):
+        if ob.type == "MESH" and ob.data is not None:
+            orphaned.add(ob.data.name)
+        bpy.data.objects.remove(ob, do_unlink=True)
+
     dropped_rig = []
     for ch in list(top.children):
         if _is_rig(ch.name, row):
             dropped_rig.append((ch.name, len(ch.objects)))
             for ob in list(ch.all_objects):
-                bpy.data.objects.remove(ob, do_unlink=True)
+                _drop(ob)
             bpy.data.collections.remove(ch)
     # Cameras and lamps ride along in the top collection on some modules.
     stripped = []
     for ob in list(top.all_objects):
         if ob.type in ("CAMERA", "LIGHT", "EMPTY", "SPEAKER"):
             stripped.append((ob.name, ob.type))
-            bpy.data.objects.remove(ob, do_unlink=True)
+            _drop(ob)
+    for nm in orphaned:
+        me = bpy.data.meshes.get(nm)
+        if me is not None and me.users == 0:
+            bpy.data.meshes.remove(me)
 
     objs = [o for o in top.all_objects if o.type == "MESH"]
 
@@ -600,18 +617,41 @@ def _check_on_circuit(item, row, objs):
 # --------------------------------------------------------------------------- #
 
 def purge():
-    """Idempotence, `build_dressing`'s rule: everything this stage owns goes."""
+    """Idempotence, `build_dressing`'s rule: everything this stage owns goes.
+
+    It has to take the MESH datablocks with it, not just the objects. Removing
+    120 objects and leaving their 120 meshes behind gives a scene that looks
+    right -- the object names are even reused, because Blender freed them --
+    and a `bpy.data.meshes` that has doubled. Measured before this line
+    existed: build() twice in one session gave 122 meshes then 243, on an
+    identical 120-object scene. Blender drops zero-user datablocks on save, so
+    it would never have reached a shipped blend; it would have made every
+    in-session mesh count in this file wrong, and the mesh counts are how the
+    no-repeats rule is enforced.
+
+    Removal is scoped to what this stage placed -- meshes whose users fell to
+    zero when OUR objects went. It never sweeps `bpy.data` for orphans: an
+    orphan somebody else made is not this stage's to delete, and `purge(prefix)
+    has no default prefix` is a rule this project already paid for.
+    """
     import bpy
     root = bpy.data.collections.get(ROOT_COLL)
     if root is None:
         return 0
     n = 0
+    mine = set()
     for ob in list(root.all_objects):
+        if ob.type == "MESH" and ob.data is not None:
+            mine.add(ob.data.name)
         bpy.data.objects.remove(ob, do_unlink=True)
         n += 1
     for c in list(root.children):
         bpy.data.collections.remove(c)
     bpy.data.collections.remove(root)
+    for nm in mine:
+        me = bpy.data.meshes.get(nm)
+        if me is not None and me.users == 0:
+            bpy.data.meshes.remove(me)
     return n
 
 
