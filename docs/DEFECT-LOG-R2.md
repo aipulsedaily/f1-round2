@@ -20134,3 +20134,49 @@ step is 0.00418 m = **3.0 % of peak** so it starts from rest, jerk |z| peaks at
 duplicate or held frames in the delivered lead-in. **The opening does not
 lunge.** The honest scope: the path is verified smooth; the pixels corroborate
 only the first 0.5 s.
+
+## R2-709 — ITEMS_REACHED_A_FRAME. Task #121 is closed in pixels, and the prediction was inverted
+
+`work/r2500/items_cheap.json`, job `f188324dd5fd`, f2978, 3840x2160, 4 samples,
+`persistent_data` on, run on a rented box after two memory reaps made it
+possible.
+
+```
+family                          objects   visible px   % of frame
+SPECX_  spectator_crowd_world       900       68,025      0.820 %
+TS_     timing_stand                 10       11,821      0.143 %
+CFP_    catch_fence_post            676       10,263      0.124 %
+CRF_    crew_figure                 120        6,232      0.075 %
+DRV_    driver                       11            0      0     %
+ZZZ_NOTHING_  negative control        0            0      0     %
+```
+
+**All four placed families are non-zero.** `negative_control_clean: true`,
+`any_item_on_screen: true`.
+
+**The warning was inverted.** It was predicted that `CFP_/CRF_/TS_/SPECX_` might
+read zero with only `DRV_` non-zero, and that the trucks and containers seen in
+the delivered f2978 were `build_dressing` class geometry rather than items.
+The opposite is true on every count: the four placed families all read, and
+`DRV_` is the one at zero. **The main thread's reading of the frame stands** -
+what was visible was placed `world/items/` geometry. `SPECX_` alone covers
+0.82 % of the delivered 4K frame.
+
+The instrument is sound rather than assumed: the negative control moved **0**
+pixels, and `total_px_measured` is 8,294,400 = exactly 3840x2160, so the
+difference is taken against a real full-resolution frame. `a_all` is 8,294,389
+of 8,294,400 - the sky is **11 pixels** of the frame, which is what a closing
+wide should look like.
+
+**`DRV_` at zero is a separate question and was not chased.** Either the driver
+is occluded by the car body at the closing wide, or it is not where it is
+thought to be. Note the closing wide puts the car at ~1,000 m, where the whole
+car subtends roughly 16 px at 4K and a helmet is comfortably sub-pixel - so
+zero may be geometry rather than defect. **It should be measured at a frame
+where the driver is known to read**, e.g. f800, where an amber helmet is
+visible at 6x. Do not close it from this frame alone.
+
+Incidental confirmation from the other side: per-render cost was **flat at
+80.3-83.6 s across all seven renders** at 4K. The renders are cheap and
+uniform; the cost is all in the load. That independently corroborates
+R2-708's finding that resolution is not the dial for this class of job.
