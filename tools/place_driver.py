@@ -114,7 +114,8 @@ def measure_car(frame=FIT_FRAME):
     m["grip_offset"] = float(np.linalg.norm(d - np.dot(d, n) * n))
 
     for nm in ("CI_seal", "CI_seatpad", "CI_headrest", "CI_sidehead",
-               "CI_pedals", "CI_liner", "halo_assembly_HoopTube"):
+               "CI_pedals", "CI_liner", "CI_footwell", "MB_chassis_fwd",
+               "MB_cell_floor", "halo_assembly_HoopTube"):
         Q = P(nm)
         m[nm] = (Q.min(axis=0), Q.max(axis=0))
 
@@ -302,6 +303,56 @@ def key_appearance(objs, appear, hidden_from=1):
                     for fc in cb.fcurves:
                         for k in fc.keyframe_points:
                             k.interpolation = 'CONSTANT'
+
+
+
+def trim_below(objs, z_local, root, x_max=None):
+    """Delete every DRIVER face whose centroid sits below `z_local`.
+
+    R2-247.  The driver's hip is 0.229 m below round 1's seat pan because the
+    tub is too shallow for him, so his pelvis, thighs, shins and boots are
+    BELOW `MB_cell_floor` -- outside the survival cell entirely, in among the
+    backing panels and the underpan.  Where a panel happens to cover them they
+    are hidden; where one does not, they reach the film.  MEASURED by
+    `tools/driver_containment.py`: `DRV_Boot_L` through `MB_chassis_fwd` at
+    frames 700 and 2632, and `DRV_Suit` under the car against `Turntable_Deck`
+    at frame 828.
+
+    Setting each offender back by hand is whack-a-mole -- the first pass moved
+    the boots 31 and 70 mm and frame 700 still leaked 113 px.  The cut is made
+    against the CAR's own datums instead: `MB_cell_floor`'s underside for the
+    sub-floor mass, and `CI_footwell`'s front bulkhead for the toes, which
+    overrun it by 21 and 60 mm.  Nothing
+    of the driver below the floor of the survival cell can be inside the car,
+    and nothing the camera ever sees is below it either -- the cockpit
+    aperture bottoms out at z 0.5849 and the seat pan at 0.4085, both well
+    above.  The cut edge is left open on purpose: it is inside the cell floor,
+    it is never seen, and capping it would add faces whose winding nobody would
+    ever check.
+    """
+    import bmesh
+    out = {}
+    for o in objs:
+        if o.type != 'MESH':
+            continue
+        M = root.matrix_world.inverted() @ o.matrix_world
+        bm = bmesh.new()
+        bm.from_mesh(o.data)
+        def outside(f):
+            c = M @ f.calc_center_median()
+            return c.z < z_local or (x_max is not None and c.x > x_max)
+        kill = [f for f in bm.faces if outside(f)]
+        n0, k = len(bm.faces), len(kill)
+        if k:
+            bmesh.ops.delete(bm, geom=kill, context='FACES')
+            bm.to_mesh(o.data)
+            o.data.update()
+        bm.free()
+        out[o.name] = (n0, k, len(o.data.polygons))
+        if len(o.data.polygons) == 0:
+            o.hide_render = True
+            o.hide_viewport = True
+    return out
 
 
 CAR_WITNESS = ("CI_seat", "CI_seatpad", "CI_headrest", "SW_Shell", "CI_liner",
@@ -530,6 +581,46 @@ def main():
               "the fit put it; the placement and the geometry disagree"
               % (1000 * (got_crown - rep["helmet_crown_z"])))
         return 1
+    # --- trim the driver to the car's own survival cell --------------------
+    floor_z = float(m["MB_cell_floor"][0][2])
+    bulkhead_x = float(m["CI_footwell"][1][0]) - 0.010
+    tr = trim_below(d.objs, floor_z, root, x_max=bulkhead_x)
+    tot0 = sum(v[0] for v in tr.values()); cut = sum(v[1] for v in tr.values())
+    log("TRIM to the car's own datums -- z >= MB_cell_floor underside %.4f AND "
+        "x <= CI_footwell bulkhead %.4f: %d of %d faces removed (%.2f %%)"
+        % (floor_z, bulkhead_x, cut, tot0, 100.0 * cut / max(tot0, 1)))
+    for n in sorted(tr):
+        if tr[n][1]:
+            log("   %-16s %7d -> %7d faces (%d cut)%s"
+                % (n, tr[n][0], tr[n][2], tr[n][1],
+                   "  EMPTY, hidden from render" if tr[n][2] == 0 else ""))
+    rep["trim_floor_z"] = floor_z
+    rep["trim_bulkhead_x"] = bulkhead_x
+    rep["trim_faces"] = {k: list(v) for k, v in tr.items()}
+
+    # --- the boots do not render -------------------------------------------
+    # R2-248.  After the trim the boots lie wholly below z 0.45 and the cockpit
+    # aperture bottoms out at z 0.5849, so there is no camera in this film that
+    # can legitimately see them.  Every pixel they DID reach was a protrusion
+    # through MB_chassis_fwd's skin: 82 px at frame 2632 and 222 px at frame
+    # 700, named by raycasting those exact pixels.  Two plane cuts against the
+    # car's own datums reduced that to 12 and 211 and could not close it,
+    # because MB_chassis_fwd's skin cuts diagonally INTO the footwell and no
+    # axis-aligned plane follows it.
+    #
+    # They stay in the blend, and stay trimmed, so an interior shot can switch
+    # them back on; they are simply excluded from the render and from the
+    # appearance keying that would otherwise switch them on at frame 580.
+    boots = [o for o in d.objs if o.name.startswith("DRV_Boot")]
+    for o in boots:
+        o.hide_render = True
+        o.hide_viewport = True
+    rep["boots_hidden"] = [o.name for o in boots]
+    log("BOOTS: %s kept in the blend, excluded from render"
+        % [o.name for o in boots])
+    bpy.context.view_layer.update()
+    dg = bpy.context.evaluated_depsgraph_get()
+
     # gloves must actually reach the car's own wheel grips.  EXACT, via a
     # KD-tree over every grip vertex -- the first cut subsampled 4000 of each
     # and could not tell a 5 mm contact from a 100 mm miss.
@@ -601,13 +692,15 @@ def main():
         print("STAGE RESULT: FAIL -- appear frame %d is before the cockpit "
               "interior lands (%d)" % (a.appear, EXPLODE_LANDED))
         return 1
-    key_appearance(d.objs, a.appear)   # NOT the empty: see share_action
+    key_appearance([o for o in d.objs if not o.name.startswith("DRV_Boot")],
+                   a.appear)   # NOT the empty (share_action), NOT the boots
     sc = bpy.context.scene
     seen = {}
     for f in (1, 300, a.appear - 1, a.appear, 1200, 2632):
         sc.frame_set(f)
         bpy.context.view_layer.update()
-        seen[f] = [bool(o.hide_render) for o in d.objs]
+        seen[f] = [bool(o.hide_render) for o in d.objs
+                   if not o.name.startswith("DRV_Boot")]
     for f in sorted(seen):
         log("  visibility f%-5d hidden=%s" % (f, all(seen[f])))
     if not (all(seen[1]) and all(seen[a.appear - 1])

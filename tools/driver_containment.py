@@ -114,7 +114,39 @@ def inside_hull(px, py, hull, margin):
     return ok
 
 
-def render_index(cam, frame, out_png):
+def _flat_override():
+    """One opaque diffuse material for everything, so ALPHA is pure coverage.
+
+    Without it the visor is a transmissive surface and its alpha is a shading
+    result rather than a yes/no.  The gate needs coverage, not appearance.
+    """
+    m = bpy.data.materials.get("DRVGATE_Flat")
+    if m is None:
+        m = bpy.data.materials.new("DRVGATE_Flat")
+        m.use_nodes = True
+        nt = m.node_tree
+        nt.nodes.clear()
+        out = nt.nodes.new("ShaderNodeOutputMaterial")
+        d = nt.nodes.new("ShaderNodeBsdfDiffuse")
+        nt.links.new(d.outputs[0], out.inputs["Surface"])
+    return m
+
+
+def render_mask(cam, frame, out_png):
+    """-> boolean array, True where a DRIVER surface is FRONTMOST.
+
+    NO COMPOSITOR.  Blender 5.2 removed `Scene.node_tree` (it is now a
+    compositing node GROUP, and a group whose input is not a Render Layers node
+    renders black -- the trap already on record for this project), so the first
+    cut of this gate died on `sc.node_tree` and Blender still exited 0.
+
+    The mask is built out of ALPHA instead: every CAR mesh is set to
+    `is_holdout`, so it punches a transparent hole while still OCCLUDING.  With
+    `film_transparent` the alpha channel is then 1 exactly where an unoccluded
+    driver surface is in front, and 0 for sky, car, and anything the car hides.
+    At 1 sample with a 0.01 px filter that is binary, with no denoiser and no
+    noise to threshold.
+    """
     sc = bpy.context.scene
     sc.frame_set(frame)
     sc.camera = cam
@@ -122,44 +154,32 @@ def render_index(cam, frame, out_png):
     sc.cycles.samples = 1
     sc.cycles.use_denoising = False
     sc.cycles.use_adaptive_sampling = False
+    sc.cycles.max_bounces = 0
     sc.render.resolution_x = RES_X
     sc.render.resolution_y = RES_Y
     sc.render.resolution_percentage = 100
     sc.render.filter_size = 0.01
     sc.render.film_transparent = True
     sc.render.use_motion_blur = False
-    vl = sc.view_layers[0]
-    vl.use_pass_object_index = True
-    sc.use_nodes = True
-    nt = sc.node_tree
-    nt.nodes.clear()
-    rl = nt.nodes.new("CompositorNodeRLayers")
-    # scale the index into 0..1 so an 8-bit PNG can carry it exactly
-    mul = nt.nodes.new("CompositorNodeMath")
-    mul.operation = 'DIVIDE'
-    mul.inputs[1].default_value = 255.0
-    comp = nt.nodes.new("CompositorNodeComposite")
-    nt.links.new(rl.outputs["IndexOB"], mul.inputs[0])
-    nt.links.new(mul.outputs[0], comp.inputs["Image"])
-    sc.render.image_settings.file_format = 'PNG'
-    sc.render.image_settings.color_depth = '8'
-    sc.render.image_settings.color_mode = 'BW'
+    sc.view_layers[0].material_override = _flat_override()
     sc.view_settings.view_transform = 'Standard'
     sc.view_settings.look = 'None'
     sc.view_settings.exposure = 0.0
+    sc.render.image_settings.file_format = 'PNG'
+    sc.render.image_settings.color_depth = '8'
+    sc.render.image_settings.color_mode = 'RGBA'
     sc.render.filepath = out_png
     bpy.ops.render.render(write_still=True)
-    im = bpy.data.images.load(out_png + ".png" if not out_png.endswith(".png") else out_png)
-    a = np.array(im.pixels[:], dtype=np.float32).reshape(RES_Y, RES_X, -1)
+    im = bpy.data.images.load(out_png)
+    a = np.array(im.pixels[:], dtype=np.float32).reshape(RES_Y, RES_X, 4)
     bpy.data.images.remove(im)
-    idx = np.rint(a[..., 0] * 255.0).astype(np.int32)
-    return idx[::-1]          # blender rows are bottom-up
+    return (a[..., 3] > 0.5)[::-1]          # blender rows are bottom-up
 
 
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     ap = argparse.ArgumentParser()
-    ap.add_argument("--frames", type=int, nargs="+", default=[2632, 828, 3, 2625])
+    ap.add_argument("--frames", type=int, nargs="+", default=[2632, 2625, 828, 700])
     ap.add_argument("--path", default=os.path.join(R2, "render/film14_path.json"))
     ap.add_argument("--outdir", default=os.path.join(R2, "render/driver"))
     ap.add_argument("--margin", type=float, default=8.0)
@@ -176,10 +196,37 @@ def main():
     if not drv:
         raise SystemExit("no DRV_* meshes in this blend")
     log("%d DRV_* meshes" % len(drv))
-    for o in bpy.data.objects:
-        o.pass_index = 0
+    # The DRV_* objects carry KEYED hide_render (they are hidden until the
+    # cockpit is built -- tools/place_driver.py --appear).  This gate drives
+    # hide_render by hand, so the keys would silently overwrite it on every
+    # frame_set and the "driver absent" pass would come back WITH the driver
+    # at frames >= appear.  Drop the visibility animation in this in-memory
+    # copy only; nothing here ever saves.
+    #
+    # BUT RESTORE WHAT WAS AUTHORED, NOT `False`.  The first cut forced every
+    # DRV_* object visible for the "driver present" pass, which switched the
+    # BOOTS back on -- the very objects place_driver had just excluded from the
+    # render.  The gate then reported the identical 12 px / 211 px leak before
+    # and after the fix and looked like a fix that did nothing.  A gate that
+    # overrides the thing it is measuring is measuring itself.
+    shown = {}
     for o in drv:
-        o.pass_index = DRV_INDEX
+        keyed = bool(o.animation_data and o.animation_data.action)
+        shown[o.name] = (False if keyed else bool(o.hide_render))
+        o.animation_data_clear()
+    log("authored visibility: %d of %d DRV_* meshes render; hidden: %s"
+        % (sum(1 for v in shown.values() if not v), len(drv),
+           sorted(k for k, v in shown.items() if v)))
+    drvset = set(o.name for o in drv)
+    ncar = 0
+    for o in bpy.data.objects:
+        if o.type == 'MESH' and o.name not in drvset:
+            o.is_holdout = True
+            ncar += 1
+        elif o.name in drvset:
+            o.is_holdout = False
+    log("%d car meshes set to holdout; the alpha channel is now the driver mask"
+        % ncar)
     if a.control_displace:
         log("POSITIVE CONTROL: displacing the driver %+.3f m in +y" % a.control_displace)
         for o in drv:
@@ -217,13 +264,12 @@ def main():
 
         for o in drv:
             o.hide_render = True
-        idx0 = render_index(cam, f, os.path.join(a.outdir, "idx_f%04d_nodrv.png" % f))
+        m0 = render_mask(cam, f, os.path.join(a.outdir, "mask_f%04d_nodrv.png" % f))
         for o in drv:
-            o.hide_render = False
-        idx1 = render_index(cam, f, os.path.join(a.outdir, "idx_f%04d_drv.png" % f))
+            o.hide_render = shown[o.name]
+        m = render_mask(cam, f, os.path.join(a.outdir, "mask_f%04d_drv.png" % f))
 
-        n0 = int((idx0 == DRV_INDEX).sum())
-        m = (idx1 == DRV_INDEX)
+        n0 = int(m0.sum())
         n1 = int(m.sum())
         hull = aperture_hull(root, cam, m_lo, m_hi)
         ys, xs = np.nonzero(m)
@@ -235,6 +281,12 @@ def main():
             nout = int((~inside).sum())
         bbox = [int(xs.min()), int(xs.max()), int(ys.min()), int(ys.max())] if n1 else None
         # the NEGATIVE control and the presence check, in one line
+        # The NEGATIVE control is per frame: with the driver hidden the mask
+        # must be empty.  PRESENCE is NOT a per-frame gate -- at frame 1200 the
+        # camera is not on the car at all and 0 driver pixels is the correct
+        # answer -- but at least one frame in the run must show a large driver,
+        # or the whole instrument could be reading nothing.  That is checked
+        # once, over the run, below.
         neg_ok = (n0 == 0)
         present = (n1 > 2000)
         contained = (nout == 0)
@@ -245,10 +297,14 @@ def main():
                          contained=contained))
         log("f%-5d driver px %8d (absent-run %d)  outside aperture %6d  bbox %s  %s"
             % (f, n1, n0, nout, bbox,
-               "OK" if (neg_ok and present and contained) else "FAIL"))
-        ok_all &= (neg_ok and present and contained)
+               "OK" if (neg_ok and contained) else "FAIL"))
+        ok_all &= (neg_ok and contained)
 
-    rep = dict(frames=rows, margin_px=a.margin,
+    live = max(r["driver_px"] for r in rows)
+    log("instrument live-check: the largest driver mask over %d frames is "
+        "%d px (need > 2000, or this gate measured nothing)" % (len(rows), live))
+    ok_all &= (live > 2000)
+    rep = dict(frames=rows, margin_px=a.margin, largest_driver_px=live,
                aperture_volume=[m_lo.tolist(), m_hi.tolist()],
                control_displace=a.control_displace)
     json.dump(rep, open(a.report, "w"), indent=1)

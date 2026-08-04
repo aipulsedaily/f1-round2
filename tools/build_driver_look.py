@@ -80,7 +80,7 @@ def contract_world():
     import itemkit as K
     import humankit as HK
     sc = bpy.context.scene
-    K.contract_sun(sc)
+    K.contract_sun("DRVLOOK_", scene=sc)
     HK.film_exposure(sc)
     return sc.world, [o for o in bpy.data.objects if o.type == 'LIGHT']
 
