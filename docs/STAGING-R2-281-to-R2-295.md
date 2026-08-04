@@ -631,3 +631,49 @@ failed under it (R2-292).
 **I am recording P5 as wrong now, before that render lands, because the matched
 pair and the picture already settle the question it asked.** What the
 diagnostic can still change is the *attribution*, not the answer.
+
+## R2-292 — the render farm's GPU failed progressively for three hours and two agents lost frames to it, and the first person to blame it was blaming their own scene
+
+Recorded because of how it was nearly misdiagnosed — by me — and because the
+broker's own gate is what stopped a bad frame becoming a result.
+
+Instance `46712525` degraded through three stages:
+
+1. **`Out of memory in CUDA queue enqueue (integrator_shade_volume)`** — three
+   occurrences in the broker's entire history, all inside one 21-minute
+   window, across **two different agents and two unrelated scenes**.
+2. **Byte-identical black frames.** Five or more jobs returning exactly
+   `mean 0.00032, sd 0.00108, 2 distinct luminance levels` — uniform 1/255
+   noise with no structure. It hit **agent r2281 and agent r2372 (roof), on
+   different scenes**. One of them was my original spec re-run *unchanged*: it
+   rendered all four tiles over 3m18s without erroring, then emitted black.
+3. **Total OptiX failure** — `OPTIX_ERROR_UNKNOWN in optixDeviceContextCreate`.
+   The box could no longer start a Cycles GPU render at all.
+
+**The failures cluster in TIME, not by scene, agent, sample count or
+persistent-data setting.**
+
+**And I had a ready explanation that was wrong.** My re-baked scene's debris
+field had just grown from 20 m to 250 m, so when it OOM'd in
+`integrator_shade_volume` I concluded the enlarged bounds had blown up the
+volume integrator. It is refuted four ways: `world/build_sky.py` builds the
+atmosphere as two fixed boxes at `SLAB_HALF = 40000.0` — ±40 km, independent of
+anything the sim does; `sim/` creates no volume object at all; the identical
+error hit another agent's unrelated scene in the same window; and my scene
+rendered fine at 256 samples minutes later. Object and triangle counts barely
+move: 3,845 → 3,856 and 278,864 → 278,910.
+
+**A defect I had just found made a coincidental failure look like its
+consequence.** That is the most dangerous shape a wrong diagnosis can have, and
+the only reason it did not stand is that the question was handed to somebody
+with no stake in the answer.
+
+**What worked:** the broker's `allow_blank=False` gate. A structurally perfect,
+correctly sized, sha256-matching black PNG was delivered five times and refused
+five times. Without it those frames would have been measured, and a black frame
+differences against anything as a very large change.
+
+**Not fixed here and not this block's to fix:** the instance was replaced, not
+repaired, and nothing detects "this GPU has started returning noise" other than
+the blank gate catching the extreme case. A frame that came back *subtly* wrong
+would not have been caught.
