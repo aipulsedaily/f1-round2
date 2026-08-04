@@ -3857,6 +3857,59 @@ def _shot_defs():
     ]
 
 
+# ---------------------------------------------------------------------------
+#  FILM POSES.  R2-651.
+#
+# Every shot above is a station this module chose for itself.  Not one of them is
+# a frame the audience will ever see, and that gap is how the surface reached a
+# render ladder without anybody having looked at it from the film's own camera:
+# a material tuned at 26 m on an 85 mm lens says nothing about a 40 mm lens 22 m
+# up moving at 280 km/h, which is what beat 5 actually is.
+#
+# THE FRAMES ARE CHOSEN ON MEASUREMENT, NOT ON TASTE.  `tools/r2651_track_scale.py`
+# walks all 2,978 poses and reports, per frame, the surface's share of the
+# delivered frame, its distance, its millimetres per delivered pixel, its depth-of-
+# field circle of confusion and its camera-motion streak.  These are picked out of
+# that table:
+#
+#   f1547   11.8 mm/px   46 % of frame   CoC 0.8 px   streak  7.0 px
+#           the sharpest close look at the surface anywhere in beats 4-6: this is
+#           the frame that decides whether the aggregate exists on screen
+#   f2225   21.0 mm/px   18 % of frame   CoC 0.3 px   streak 10.3 px
+#           mid range, still sharp
+#   f2000   11.5 mm/px   50 % of frame   CoC 0.0 px   streak 69.7 px
+#           THE GATE'S OWN FRAME, reproduced at 4K so its 720p claim can be
+#           re-taken at the delivered resolution rather than at a ninth of it
+#   f1226   51.5 mm/px   41 % of frame   CoC 0.5 px   streak  5.4 px
+#           the wide, where only the metre-and-up layers can survive
+#
+# The rig's keyed fstop and focus_distance are applied, so the depth of field in
+# these frames is the film's and not an invention.
+FILM_POSE_FRAMES = (1547, 2225, 2000, 1226)
+
+
+def _film_pose_defs(frames=FILM_POSE_FRAMES):
+    """[(name, pos, quat, lens_mm, fstop, focus_m)] straight off the shipped rig."""
+    pth = os.path.join(_ROOT, "world", "camera_rig_path.json")
+    with open(pth) as fh:
+        path = {r["f"]: r for r in json.load(fh)["path"]}
+    dofp = os.path.join(_ROOT, "render", "r2651", "dof.json")
+    dof = {}
+    if os.path.exists(dofp):
+        with open(dofp) as fh:
+            dof = {r["f"]: r for r in json.load(fh)["frames"]}
+    out = []
+    for f in frames:
+        if f not in path:
+            raise RuntimeError("camera_rig_path.json has no frame %d" % f)
+        r = path[f]
+        d = dof.get(f, {})
+        out.append(("filmpose_f%d" % f, tuple(r["p"]), tuple(r["q"]),
+                    float(r["lens"]), float(d.get("fstop", 2.8)),
+                    float(d.get("focus", 0.0))))
+    return out
+
+
 # the frames grouped into 5090 blends.  The worker PREWARMS EVERY CAMERA in a blend at
 # load (~4 s each) and 19 of them blew a readiness probe and destroyed an instance, so
 # these are deliberately small.  Grouping is by what the frame is FOR, not by locality.
@@ -3871,8 +3924,40 @@ BLEND_GROUPS = {
     "defects": ["apron_joint_rake", "glass_cap_plan", "merge_seam", "apron_flat"],
     "joint": ["apron_joint_macro"],
     "jointoff": ["apron_joint_macro"],       # ... with SURF_ApronJoint deleted
+    # R2-651: the film's own poses.  Built by `_film_pose_defs`, not by `_shot_defs`,
+    # because these carry a QUATERNION and a keyed aperture rather than a look-at.
+    "filmpose": [],
 }
 MEASURE_GROUPS = {"probe"}          # rendered photometric (Standard), not AgX
+
+
+def _make_film_pose_cameras(scene):
+    """Cameras carrying the film's OWN pose, lens, aperture and focus. R2-651.
+
+    The rotation is set from the rig's quaternion rather than by aiming at a
+    target: `_look_at` reconstructs a roll of zero, and beat 5 rolls. Copying the
+    quaternion is the only way these frames line up with the delivered ones well
+    enough to be compared against them.
+    """
+    made = []
+    for nm, pos, quat, lens, fstop, focus in _film_pose_defs():
+        cd = bpy.data.cameras.new("CAM_" + nm)
+        _set_lens(cd, lens)
+        cd.clip_start = 0.05
+        cd.clip_end = 200000.0            # R2-061: the factory 1 km clips the ground
+        if focus > 0.0:
+            cd.dof.use_dof = True
+            cd.dof.aperture_fstop = fstop
+            cd.dof.focus_distance = focus
+        ob = bpy.data.objects.new("CAM_" + nm, cd)
+        scene.collection.objects.link(ob)
+        ob.location = pos
+        ob.rotation_mode = "QUATERNION"
+        ob.rotation_quaternion = quat
+        made.append(ob.name)
+        print("  %s  lens %.2f  f/%.2f  focus %.1f m  at (%.1f, %.1f, %.1f)"
+              % (nm, lens, fstop, focus, pos[0], pos[1], pos[2]))
+    return made
 
 
 def make_test_blend(group, path, res=(3840, 2160), samples=512):
@@ -3890,6 +3975,13 @@ def make_test_blend(group, path, res=(3840, 2160), samples=512):
     _mk_sun(scene)
     _test_props(scene, None)                 # ONE ground, the whole lap, C.ground_z
     names = BLEND_GROUPS[group]
+    if group == "filmpose":
+        made = _make_film_pose_cameras(scene)
+        scene.camera = bpy.data.objects[made[0]]
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        bpy.ops.wm.save_as_mainfile(filepath=path)
+        print("  wrote %s  cameras=%s" % (path, made))
+        return made
     defs = {d[0]: d for d in _shot_defs()}
     made = []
     for nm in names:
