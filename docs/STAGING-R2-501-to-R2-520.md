@@ -558,3 +558,103 @@ is a statement about its construction, derived from source, not about its
 appearance. At the 720p of the delivered ladder frames a 40 mm extrusion is ~2 px
 and an extruded letterform's bevel is indistinguishable from a doubled glyph, so
 only a frame at delivery resolution can retire the question.
+
+---
+
+## R2-510 — what the batch verified, and what was still running when it was handed over
+
+### assembly10 — BUILT, `>> STAGE RESULT: ASSEMBLE_OK`, 1,372 s
+
+```
+                       assembly9   assembly10
+objects                   28,781      30,488   (+1,707)
+meshes                     1,493       3,200   (+1,707 -- one DISTINCT mesh per
+                                                item object; nothing repeated)
+materials                    137         180
+barriers.fence_posts         676           0   superseded by catch_fence_post
+architecture.pit_wall_stands   5           1   + 4 superseded by timing_stand
+```
+
+`>> STAGE RESULT: ITEMS_PLACED_OK` — 4 items, 1,706 objects, 1,706 distinct
+meshes, 42,467,316 tris, 0 refused. **Task #121's stage ran and placed for the
+first time.** The per-site supersede behaves exactly as R2-334 specified: four
+pit-wall stands removed, the fifth KEPT because no item comes within 31 m of it.
+
+### film16 — BUILT, `>> STAGE RESULT: FILM_SCENE_BUILT`, 7,159.4 MB
+
+Built on assembly10 with `--car world/car_anim_driver.blend`, so the cockpit is
+occupied. `>> WORLD STALENESS: none — assembly10.blend is newer than every
+world/build_*.py`.
+
+### THE BAR, read back from the saved blend with the module's own `measure()`
+
+`work/lighting/measure_film_scene.py` calls `SL.measure(scene)` at line 36 and
+`SL.assert_levelled(scene)` at line 122 — the module's own instruments, not a
+hand-rolled probe.
+
+```
+                                    bar (film14)    film16       verdict
+interior_lamp_watts                 46,203.313      46,203.313   MET
+n_lamp_stamps__sl_base                      23              23   MET
+scene_mark_showroom_lighting_stops       3.628           3.628   MET
+assert_levelled                           PASS            PASS   MET
+view_transform / look / exposure   AgX/None/-3.628  AgX/None/-3.628  MET
+fps / frame_start / frame_end          24/1/2978       24/1/2978  MET
+scene_camera                                ONER            ONER  MET
+```
+
+**And the same JSON reproduces the trap the bar was defined against.** Beside
+`interior_lamp_watts = 46203.313` sits `lamp_watts_all_objects = 46319.067`,
+with `n_interior_lamps = 23` and `n_lamps_all = 24`. The 116 W difference is the
+one non-interior lamp, exactly as recorded. The two numbers being in one file,
+labelled, is what stops the wrong one being quoted again.
+
+### the camera, verified against the BUILT PATH rather than the sheet
+
+Both instruments carry their own controls in the same run — `beat1_elevation`'s
+self-null is 0 while it reports 2,546 genuinely moved frames, and `campath_diff`
+prints the R2-103 raw-quaternion trap (0.203 deg of nothing) beside the
+re-normalised 0.000003.
+
+```
+                         claimed          measured        verdict
+frames >70 down          187 -> 0         187 -> 0        REPRODUCES
+frames >80 down          120 -> 0         120 -> 0        REPRODUCES
+beat 1 first frame       -84.15 -> -10.00 -84.15 -> -10.00 REPRODUCES
+worst rotation %w/fr     16.41 -> 8.73    16.41 @f487 ->
+                                          8.73 @f489      REPRODUCES
+PROTECTED f648-792       0.0099 m @f648   0.0099 m @f648  REPRODUCES
+beats 2-6                0.0000 m         0.0000 m        REPRODUCES
+continuity_gate          PASS 0 FAIL      PASS 0 FAIL,
+                         5 -> 6 advisory  6 advisory      REPRODUCES
+```
+
+The f478-495 rotation WARN present in the shipped path is **gone**, and beat 1's
+lens range moves 35.0-58.0 mm -> **18.0**-58.0 mm, the establishing lens.
+
+Promotion reproduces `docs/R2464_beat_sheet_CANDIDATE.json` **byte-identically**
+(sha256 `7074ab3c466be818...`), and `tools/author_beats2_5.py` is an exact no-op
+on the promoted sheet, so beats 2-5 provably did not move.
+
+### STILL RUNNING at handover — NOT verified
+
+The box is shared and was carrying three other agents' Blender jobs at the time
+(peaks of 6.7 GB, 3.7 GB and 3.0 GB against 11.9 GB of RAM, 19 GB of swap in
+use). A single 7.5 GB blend load was taking 10-25 minutes. These are launched
+and will land on disk; **none of them had returned a verdict when this was
+written and none should be quoted as passing:**
+
+* `work/r2500/extra_film16.json` — the levelling identity recomputed from
+  film16's own `_sl_base` stamps (the base x lift residual)
+* the film14 arm of the readback diff, field by field
+* the ONER check — camera count 1, clip 0.05/200000, 3840x2160, 24 fps, 2,978
+* the in-blend presence check for `DRV_`, `CFP_`, `CRF_`, `TS_`, `SPECX_`
+* `socket_index_audit --blend` on film16, with film10's standing 27-finding FAIL
+  as the positive control
+* `v125/prove_items_in_frame.py` — **the one that matters for task #121.** It
+  renders frames 2000 / 2635 / 2900 through the ONER camera with an IndexOB
+  pass and counts pixels per item family, with a nonexistent family as an
+  in-run negative control that must score 0. Until it returns,
+  **"the items are in the scene" is established and "the items reach a frame"
+  is NOT.** Those are the two claims task #121 is about and only the second one
+  is the task.
