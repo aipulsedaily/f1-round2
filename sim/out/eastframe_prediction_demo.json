@@ -1,0 +1,25 @@
+{
+ "written_before_the_demo_render_was_submitted": "2026-08-04",
+ "supersedes_nothing": "sim/out/eastframe_prediction.json is the prediction for the R6 APPLY and stands as written. This is a second, separate prediction, for the DEMONSTRATOR (render/film14_breach_r6_DEMO.blend), committed before its frames were queued for the same reason.",
+ "what_the_demonstrator_removes": [
+  "BF_MUL05_S02..S07 -- mullion 5 above z 1.550",
+  "BF_TRN0_b04, BF_TRN0_b05, BF_TRN1_b04, BF_TRN1_b05, BF_TRN2_b04, BF_TRN2_b05 -- the six transom stubs in bays 4 and 5"
+ ],
+ "why_those_and_not_others": "each of the six stubs has one end bolted into mullion 5, and mullion 5 above 1.550 m is standing only on CON_MUL05_HEAD at 38.4 kN against a 396 N dead load, across a joint the wall interface records as a 17.2 mm expansion gap. Bays 3 and 6's transoms span mullions 3-4 and 6-7 and touch mullion 5 at neither end, so they stay.",
+ "pixel_budget_f2978": {
+  "bridged_wound_px": [57.7, 77.8],
+  "wound_area_px": 4490,
+  "mullion_5_above_1.550_m": "1.0 x 60 px = 60",
+  "six_transom_stubs": "3 levels x ~57 px wide x ~1.5 px with antialiasing = ~256",
+  "total_removed": "~316 px, 7.0 percent of the wound",
+  "against_R6_alone": "~20 px, 0.4 percent"
+ },
+ "THE_PREDICTION": {
+  "the_demonstrator_WILL_read": "a 57.7 x 77.8 px patch of lattice becomes a 57.7 x 77.8 px patch with no lattice in it, while every neighbouring bay keeps all three transom lines. The eye reads a curtain wall as a lattice, so a lattice with a piece missing reads as a hole at a scale where nothing else can.",
+  "grid_contrast_should_collapse": "sim/wallstats.py grid_contrast over WOUND_bridged should fall from 0.037 toward the noise floor while NB_left_bay3 (0.037), NB_right_bay6 (0.068) and both CTL_UNTOUCHED groups (0.053, 0.044) hold.",
+  "the_mean_should_barely_move": "removing 7 percent of the pixels of a region cannot shift its mean much, and that is the point of R2-274: if the mean is what decides, the answer will be 'no change' for a picture that plainly changed.",
+  "if_it_does_NOT_read": "then the frame is not the thing, the 2h25m re-bake should not be scheduled on this argument, and the reason must be found before anything else is proposed."
+ },
+ "the_demonstrator_is_not_a_delivery": "a member that is DELETED was never there -- it does not fall on camera, it is absent in beat 1 as well, and the film has no cuts to hide that in. The blend carries a DEMO_DO_NOT_SHIP marker object. Its only job is to price the re-bake with a picture instead of an argument.",
+ "and_it_is_an_upper_bound": "a re-bake would have the six stubs and the mullion FALL, and some of them would come to rest in the lower part of the aperture or on the sill rather than vanish. The demonstrator shows the best case."
+}

@@ -1,0 +1,415 @@
+{
+ "stats": {
+  "objects": 3845,
+  "tris": 278864,
+  "keys": 5806793,
+  "hero": 3573,
+  "frame": {
+   "objects": 39,
+   "keys": 8092,
+   "deleted": [
+    "GW_Right_Mull_04",
+    "GW_Right_Mull_05",
+    "GW_Right_Mull_06",
+    "GW_Right_Transom_0",
+    "GW_Right_Transom_1",
+    "GW_Right_Transom_2"
+   ],
+   "coverage": {
+    "members": [
+     {
+      "member": "GW_Right_Mull_04",
+      "axis": "z",
+      "want_m": 6.2,
+      "got_m": 6.2,
+      "double_counted_m": 0.0,
+      "passed": true
+     },
+     {
+      "member": "GW_Right_Mull_05",
+      "axis": "z",
+      "want_m": 6.2,
+      "got_m": 6.2,
+      "double_counted_m": 0.0,
+      "passed": true
+     },
+     {
+      "member": "GW_Right_Mull_06",
+      "axis": "z",
+      "want_m": 6.2,
+      "got_m": 6.2,
+      "double_counted_m": 0.0,
+      "passed": true
+     },
+     {
+      "member": "GW_Right_Transom_0",
+      "axis": "y",
+      "want_m": 21.919,
+      "got_m": 21.919,
+      "double_counted_m": 0.0,
+      "passed": true
+     },
+     {
+      "member": "GW_Right_Transom_1",
+      "axis": "y",
+      "want_m": 21.919,
+      "got_m": 21.919,
+      "double_counted_m": 0.0,
+      "passed": true
+     },
+     {
+      "member": "GW_Right_Transom_2",
+      "axis": "y",
+      "want_m": 21.919,
+      "got_m": 21.919,
+      "double_counted_m": 0.0,
+      "passed": true
+     }
+    ],
+    "PASS": true
+   },
+   "mullions_replaced": [
+    4,
+    5,
+    6
+   ],
+   "n_transom_pieces": 12,
+   "max_travel_m": {
+    "BF_MUL05_S01": 4.7421,
+    "BF_MUL05_S00": 3.9318,
+    "BF_MUL05_S02": 0.1449,
+    "BF_MUL05_S03": 0.1119,
+    "BF_TRN0_b05": 0.0892,
+    "BF_TRN0_b04": 0.0859,
+    "BF_MUL05_S04": 0.0826,
+    "BF_TRN1_b05": 0.0618
+   },
+   "cap_divergence_m": [
+    [
+     "MUL05_S01",
+     0.177
+    ],
+    [
+     "MUL05_S00",
+     0.1753
+    ],
+    [
+     "TRN_z0_b04",
+     0.0072
+    ],
+    [
+     "TRN_z0_b05",
+     0.0059
+    ],
+    [
+     "MUL05_S02",
+     0.0051
+    ]
+   ],
+   "measured_from": "world/car_anim.blend SHOWROOM collection, 2026-08-04",
+   "rule": "a member is replaced iff the bake gives one of its bodies a release frame >= 0"
+  }
+ },
+ "proof": {
+  "objects_checked": 40,
+  "flags": {
+   "LINEAR": 6783,
+   "CONSTANT": 240,
+   "other": 0
+  },
+  "max_linear_eval_err": 4.76837158203125e-07,
+  "bezier_control_err": 0.00047969818115234375,
+  "control_fires": true
+ },
+ "frame_proof": {
+  "objects_checked": 36,
+  "flags": {
+   "LINEAR": 8092,
+   "CONSTANT": 0,
+   "other": 0
+  },
+  "max_linear_eval_err": 9.5367431640625e-07,
+  "bezier_control_err": 2.5272369384765625e-05,
+  "control_fires": true
+ },
+ "preflight": {
+  "checks": [
+   {
+    "id": "frame_range",
+    "passed": true,
+    "detail": "frame_end = 2978, need >= 2978",
+    "why": "every curve written here is keyed in film frames and extrapolates CONSTANT to the last one"
+   },
+   {
+    "id": "units_metres",
+    "passed": true,
+    "detail": "scale_length = 1.0",
+    "why": "every transform in the bake is world metres"
+   },
+   {
+    "id": "no_round1_east_glass",
+    "passed": true,
+    "detail": "clear",
+    "why": "this applier supplies that glazing at 14.95500..14.96650 with real thickness; two east walls 33.5 mm apart z-fight in beat 1 and leave a ghost pane in the aperture afterwards"
+   },
+   {
+    "id": "glazing_pocket_clear",
+    "passed": false,
+    "detail": "found 9: [('GW_Front_Mull_14', 0, 4, 4), ('GW_Front_Transom_0', 0, 6, 6), ('GW_Front_Transom_1', 0, 6, 6), ('GW_Front_Transom_2', 0, 6, 6)]",
+    "why": "that is the pocket the glass lives in; a solid mullion or sill laid through it starts every clamped shard inside metal, which is exactly what the null control caught"
+   }
+  ],
+  "ok": false,
+  "meshes_scanned": 29381,
+  "pocket_aabb_candidates": 79,
+  "pocket_intruders_in_the_clear_opening": [
+   [
+    "GW_Front_Mull_14",
+    0,
+    4,
+    4
+   ],
+   [
+    "GW_Front_Transom_0",
+    0,
+    6,
+    6
+   ],
+   [
+    "GW_Front_Transom_1",
+    0,
+    6,
+    6
+   ],
+   [
+    "GW_Front_Transom_2",
+    0,
+    6,
+    6
+   ],
+   [
+    "GW_Right_Transom_0",
+    0,
+    8,
+    4
+   ],
+   [
+    "GW_Right_Transom_1",
+    0,
+    8,
+    4
+   ],
+   [
+    "GW_Right_Transom_2",
+    0,
+    8,
+    4
+   ],
+   [
+    "WallLine_SideFin_0",
+    0,
+    8,
+    4
+   ],
+   [
+    "WallLine_SideFin_1",
+    0,
+    8,
+    4
+   ]
+  ],
+  "pocket_capture_band_only": [
+   [
+    "GW_Front_Glass_13",
+    2
+   ],
+   [
+    "GW_Front_Head",
+    4
+   ],
+   [
+    "GW_Front_Sill",
+    3
+   ],
+   [
+    "GW_Right_Head",
+    5
+   ],
+   [
+    "GW_Right_Mull_00",
+    2
+   ],
+   [
+    "GW_Right_Mull_01",
+    4
+   ],
+   [
+    "GW_Right_Mull_02",
+    4
+   ],
+   [
+    "GW_Right_Mull_03",
+    4
+   ],
+   [
+    "GW_Right_Mull_04",
+    4
+   ],
+   [
+    "GW_Right_Mull_05",
+    4
+   ],
+   [
+    "GW_Right_Mull_06",
+    4
+   ],
+   [
+    "GW_Right_Mull_07",
+    4
+   ],
+   [
+    "GW_Right_Mull_08",
+    4
+   ],
+   [
+    "GW_Right_Mull_09",
+    4
+   ],
+   [
+    "GW_Right_Mull_10",
+    2
+   ],
+   [
+    "GW_Right_Sill",
+    5
+   ],
+   [
+    "WallLine_Side",
+    8
+   ],
+   [
+    "Wall_SideY",
+    1
+   ]
+  ],
+  "pocket_capture_band_only_n": 18,
+  "R5_measures": "vertices inside the pocket, AND triangles intersecting it by the separating-axis theorem. The triangle arm exists because round 1's east mullions pass through the pocket with every vertex AND every edge outside it -- it is their side FACES that cross -- and the vertex-only test reported `clear` on 29,387 meshes."
+ },
+ "east_wall": {
+  "criterion": "the east wall must contain glass at frame 1: every bay in the plan has a GP_b* pane and it is not hidden there",
+  "bays_wanted": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "panes_built": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "panes_missing": [],
+  "panes_hidden_at_frame": [],
+  "shards": 3796,
+  "round1_planes_still_present": [],
+  "note": "n_GW_Right_Glass counts ROUND 1's names and reads 0 for a correct scene as well as an empty one.  Count GP_b*.",
+  "PASS": true
+ },
+ "east_frame": {
+  "criterion": "every piece eastframe.plan() names is an object in the scene, every round-1 solid it replaces is gone, and every mullion it does NOT replace is still there",
+  "pieces_wanted": 39,
+  "pieces_built": 39,
+  "pieces_missing": [],
+  "round1_solids_not_deleted": [],
+  "untouched_mullions_missing": [],
+  "transom_length": {
+   "transom_0_total_y_m": 30.419,
+   "transom_1_total_y_m": 30.419,
+   "transom_2_total_y_m": 30.419
+  },
+  "note": "counting GW_Right_Transom_* would read 0 for a correct scene and 0 for a stripped one.  R2-124.",
+  "PASS": true,
+  "R5_intruders_over_the_wound_after": [],
+  "R5_intruders_elsewhere_after": [
+   [
+    "GW_Front_Mull_14",
+    0,
+    4,
+    4,
+    0
+   ],
+   [
+    "GW_Front_Transom_0",
+    0,
+    6,
+    6,
+    0
+   ],
+   [
+    "GW_Front_Transom_1",
+    0,
+    6,
+    6,
+    0
+   ],
+   [
+    "GW_Front_Transom_2",
+    0,
+    6,
+    6,
+    0
+   ],
+   [
+    "WallLine_SideFin_0",
+    0,
+    8,
+    4,
+    0
+   ],
+   [
+    "WallLine_SideFin_1",
+    0,
+    8,
+    4,
+    0
+   ],
+   [
+    "BF_TRN0_STATIC",
+    0,
+    16,
+    6,
+    0
+   ],
+   [
+    "BF_TRN1_STATIC",
+    0,
+    16,
+    6,
+    0
+   ],
+   [
+    "BF_TRN2_STATIC",
+    0,
+    16,
+    6,
+    0
+   ]
+  ]
+ },
+ "out": "/home/zany/f1-round2/render/film14_breach_r6.blend",
+ "bytes": 4993186256,
+ "origin_rule": "shard origin = (0.5*(x_in+x_out), centroid_u, centroid_v) in WORLD metres; mesh verts are stored relative to it"
+}
