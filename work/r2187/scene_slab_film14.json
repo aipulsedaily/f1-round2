@@ -1,0 +1,200 @@
+{
+ "ref_frame": 845,
+ "measured_on": "the applied location f-curves, evaluated",
+ "R7_control": {
+  "frame": 900,
+  "n_compared": 1178,
+  "worst_m": 0.0,
+  "worst_at": null,
+  "passed": true
+ },
+ "hidden_object_matrix_trap": {
+  "frame": 845,
+  "worst_m": 10.167,
+  "worst_at": "GS_b04_00078",
+  "hidden_at_ref": true,
+  "note": "matrix_world is NOT evaluated for a hidden object; this is how big the lie is at the reference frame"
+ },
+ "bays": {
+  "2": {
+   "n": 195,
+   "860": {
+    "net_median_mm": 1.4,
+    "gone_over_250mm": 0
+   },
+   "866": {
+    "net_median_mm": 2.4,
+    "gone_over_250mm": 0
+   },
+   "880": {
+    "net_median_mm": 2.6,
+    "gone_over_250mm": 0
+   },
+   "900": {
+    "net_median_mm": 2.8,
+    "gone_over_250mm": 0
+   },
+   "920": {
+    "net_median_mm": 2.9,
+    "gone_over_250mm": 0
+   },
+   "last": {
+    "frame": 1165,
+    "net_median_mm": 27.0,
+    "gone_over_250mm": 2
+   }
+  },
+  "3": {
+   "n": 202,
+   "860": {
+    "net_median_mm": 2.6,
+    "gone_over_250mm": 0
+   },
+   "866": {
+    "net_median_mm": 3.5,
+    "gone_over_250mm": 0
+   },
+   "880": {
+    "net_median_mm": 6.6,
+    "gone_over_250mm": 0
+   },
+   "900": {
+    "net_median_mm": 7.0,
+    "gone_over_250mm": 0
+   },
+   "920": {
+    "net_median_mm": 6.7,
+    "gone_over_250mm": 0
+   },
+   "last": {
+    "frame": 1165,
+    "net_median_mm": 14.8,
+    "gone_over_250mm": 2
+   }
+  },
+  "4": {
+   "n": 1531,
+   "860": {
+    "net_median_mm": 120.4,
+    "gone_over_250mm": 215
+   },
+   "866": {
+    "net_median_mm": 2288.5,
+    "gone_over_250mm": 1348
+   },
+   "880": {
+    "net_median_mm": 2215.8,
+    "gone_over_250mm": 1352
+   },
+   "900": {
+    "net_median_mm": 2615.1,
+    "gone_over_250mm": 1495
+   },
+   "920": {
+    "net_median_mm": 2951.3,
+    "gone_over_250mm": 1508
+   },
+   "last": {
+    "frame": 1165,
+    "net_median_mm": 4987.0,
+    "gone_over_250mm": 1510
+   }
+  },
+  "5": {
+   "n": 1485,
+   "860": {
+    "net_median_mm": 103.9,
+    "gone_over_250mm": 176
+   },
+   "866": {
+    "net_median_mm": 578.7,
+    "gone_over_250mm": 1225
+   },
+   "880": {
+    "net_median_mm": 984.2,
+    "gone_over_250mm": 1272
+   },
+   "900": {
+    "net_median_mm": 566.6,
+    "gone_over_250mm": 1271
+   },
+   "920": {
+    "net_median_mm": 1083.2,
+    "gone_over_250mm": 1301
+   },
+   "last": {
+    "frame": 1165,
+    "net_median_mm": 2808.2,
+    "gone_over_250mm": 1426
+   }
+  },
+  "6": {
+   "n": 200,
+   "860": {
+    "net_median_mm": 7.3,
+    "gone_over_250mm": 0
+   },
+   "866": {
+    "net_median_mm": 12.7,
+    "gone_over_250mm": 1
+   },
+   "880": {
+    "net_median_mm": 13.0,
+    "gone_over_250mm": 1
+   },
+   "900": {
+    "net_median_mm": 11.6,
+    "gone_over_250mm": 1
+   },
+   "920": {
+    "net_median_mm": 15.6,
+    "gone_over_250mm": 4
+   },
+   "last": {
+    "frame": 1165,
+    "net_median_mm": 25.0,
+    "gone_over_250mm": 18
+   }
+  },
+  "7": {
+   "n": 183,
+   "860": {
+    "net_median_mm": 1.9,
+    "gone_over_250mm": 0
+   },
+   "866": {
+    "net_median_mm": 9.9,
+    "gone_over_250mm": 0
+   },
+   "880": {
+    "net_median_mm": 8.9,
+    "gone_over_250mm": 0
+   },
+   "900": {
+    "net_median_mm": 10.5,
+    "gone_over_250mm": 0
+   },
+   "920": {
+    "net_median_mm": 12.0,
+    "gone_over_250mm": 0
+   },
+   "last": {
+    "frame": 1165,
+    "net_median_mm": 26.0,
+    "gone_over_250mm": 4
+   }
+  }
+ },
+ "sink_at_last_key": {
+  "below_floor": 575,
+  "worst_m": 154.599,
+  "of": 3796,
+  "tol_m": 0.004,
+  "note": "GS_* shards only.  verify_breach counts the table's 3,948 bodies, which include the 152 MUL*/TRN* frame bodies this scene does not instance, so the two totals are not the same set."
+ },
+ "motion_at_last_key": {
+  "over_1mm_per_frame": 1600,
+  "worst_m_per_frame": 3.0489,
+  "of": 3796
+ }
+}

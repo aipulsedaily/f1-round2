@@ -1,0 +1,31 @@
+{
+ "frame": 890,
+ "camera": "ONER",
+ "res": [
+  1920,
+  1080
+ ],
+ "cam_loc": [
+  13.6294,
+  -2.4395,
+  1.9142
+ ],
+ "lens_mm": 21.2512,
+ "objects": {
+  "ARCH_Paving_ApronPlatform": {
+   "in_frustum": 10224,
+   "sampled": 20085,
+   "in_front": 12511,
+   "x": [
+    855.2,
+    1919.8
+   ],
+   "y": [
+    358.5,
+    428.2
+   ]
+  },
+  "SR_Floor": "absent",
+  "ARCH_Showroom_Floor": "absent"
+ }
+}

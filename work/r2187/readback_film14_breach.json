@@ -1,0 +1,123 @@
+{
+ "blend": "/home/zany/f1-round2/render/film14_breach.blend",
+ "bytes": 4992299735,
+ "collections_present": [
+  "BREACH",
+  "BREACH_Frame",
+  "BREACH_Panes",
+  "BREACH_Shards"
+ ],
+ "stats": {
+  "objects": 3806,
+  "tris": 278984,
+  "keys": 5798701,
+  "hero": 2
+ },
+ "keys_by_channel": {
+  "location": 2475381,
+  "rotation_quaternion": 3300508,
+  "hide_render": 11406,
+  "hide_viewport": 11406
+ },
+ "n_shards": 3796,
+ "n_panes": 10,
+ "n_actions": 3802,
+ "hero_split": {
+  "cut_verts": 77.5,
+  "gap": 5,
+  "bulk_max": 75,
+  "hero_min": 80
+ },
+ "vert_range": [
+  15,
+  80
+ ],
+ "pane_hide_frame": {
+  "0": null,
+  "1": null,
+  "2": 860,
+  "3": 860,
+  "4": 860,
+  "5": 860,
+  "6": 860,
+  "7": 860,
+  "8": null,
+  "9": null
+ },
+ "panes_at_frame_1": {
+  "GP_b00": {
+   "hide_render": false,
+   "hide_viewport": false,
+   "x": 14.96075
+  },
+  "GP_b01": {
+   "hide_render": false,
+   "hide_viewport": false,
+   "x": 14.96075
+  },
+  "GP_b02": {
+   "hide_render": false,
+   "hide_viewport": false,
+   "x": 14.96075
+  },
+  "GP_b03": {
+   "hide_render": false,
+   "hide_viewport": false,
+   "x": 14.96075
+  },
+  "GP_b04": {
+   "hide_render": false,
+   "hide_viewport": false,
+   "x": 14.96075
+  },
+  "GP_b05": {
+   "hide_render": false,
+   "hide_viewport": false,
+   "x": 14.96075
+  },
+  "GP_b06": {
+   "hide_render": false,
+   "hide_viewport": false,
+   "x": 14.96075
+  },
+  "GP_b07": {
+   "hide_render": false,
+   "hide_viewport": false,
+   "x": 14.96075
+  },
+  "GP_b08": {
+   "hide_render": false,
+   "hide_viewport": false,
+   "x": 14.96075
+  },
+  "GP_b09": {
+   "hide_render": false,
+   "hide_viewport": false,
+   "x": 14.96075
+  }
+ },
+ "east_wall_glazed_at_f1": true,
+ "scene": {
+  "name": "Scene",
+  "frame_start": 1,
+  "frame_end": 2978,
+  "fps": 24,
+  "scale_length": 1.0,
+  "camera": "ONER",
+  "objects_total": 33221,
+  "meshes_total": 33187,
+  "engine": "BLENDER_EEVEE"
+ },
+ "round1_east_glass_present": [],
+ "round1_east_frame_present": [
+  "GW_Right_Transom_0",
+  "GW_Right_Transom_1",
+  "GW_Right_Transom_2",
+  "WallLine_SideFin_0",
+  "WallLine_SideFin_1"
+ ],
+ "apron": {
+  "verts": 140593,
+  "polys": 35471
+ }
+}

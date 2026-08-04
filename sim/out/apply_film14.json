@@ -1,0 +1,218 @@
+{
+ "stats": {
+  "objects": 3806,
+  "tris": 278864,
+  "keys": 5798701,
+  "hero": 3573
+ },
+ "proof": {
+  "objects_checked": 40,
+  "flags": {
+   "LINEAR": 6783,
+   "CONSTANT": 240,
+   "other": 0
+  },
+  "max_linear_eval_err": 4.76837158203125e-07,
+  "bezier_control_err": 0.00047969818115234375,
+  "control_fires": true
+ },
+ "preflight": {
+  "checks": [
+   {
+    "id": "frame_range",
+    "passed": true,
+    "detail": "frame_end = 2978, need >= 2978",
+    "why": "every curve written here is keyed in film frames and extrapolates CONSTANT to the last one"
+   },
+   {
+    "id": "units_metres",
+    "passed": true,
+    "detail": "scale_length = 1.0",
+    "why": "every transform in the bake is world metres"
+   },
+   {
+    "id": "no_round1_east_glass",
+    "passed": true,
+    "detail": "clear",
+    "why": "this applier supplies that glazing at 14.95500..14.96650 with real thickness; two east walls 33.5 mm apart z-fight in beat 1 and leave a ghost pane in the aperture afterwards"
+   },
+   {
+    "id": "glazing_pocket_clear",
+    "passed": false,
+    "detail": "found 9: [('GW_Front_Mull_14', 0, 4, 4), ('GW_Front_Transom_0', 0, 6, 6), ('GW_Front_Transom_1', 0, 6, 6), ('GW_Front_Transom_2', 0, 6, 6)]",
+    "why": "that is the pocket the glass lives in; a solid mullion or sill laid through it starts every clamped shard inside metal, which is exactly what the null control caught"
+   }
+  ],
+  "ok": false,
+  "meshes_scanned": 29381,
+  "pocket_aabb_candidates": 79,
+  "pocket_intruders_in_the_clear_opening": [
+   [
+    "GW_Front_Mull_14",
+    0,
+    4,
+    4
+   ],
+   [
+    "GW_Front_Transom_0",
+    0,
+    6,
+    6
+   ],
+   [
+    "GW_Front_Transom_1",
+    0,
+    6,
+    6
+   ],
+   [
+    "GW_Front_Transom_2",
+    0,
+    6,
+    6
+   ],
+   [
+    "GW_Right_Transom_0",
+    0,
+    8,
+    4
+   ],
+   [
+    "GW_Right_Transom_1",
+    0,
+    8,
+    4
+   ],
+   [
+    "GW_Right_Transom_2",
+    0,
+    8,
+    4
+   ],
+   [
+    "WallLine_SideFin_0",
+    0,
+    8,
+    4
+   ],
+   [
+    "WallLine_SideFin_1",
+    0,
+    8,
+    4
+   ]
+  ],
+  "pocket_capture_band_only": [
+   [
+    "GW_Front_Glass_13",
+    2
+   ],
+   [
+    "GW_Front_Head",
+    4
+   ],
+   [
+    "GW_Front_Sill",
+    3
+   ],
+   [
+    "GW_Right_Head",
+    5
+   ],
+   [
+    "GW_Right_Mull_00",
+    2
+   ],
+   [
+    "GW_Right_Mull_01",
+    4
+   ],
+   [
+    "GW_Right_Mull_02",
+    4
+   ],
+   [
+    "GW_Right_Mull_03",
+    4
+   ],
+   [
+    "GW_Right_Mull_04",
+    4
+   ],
+   [
+    "GW_Right_Mull_05",
+    4
+   ],
+   [
+    "GW_Right_Mull_06",
+    4
+   ],
+   [
+    "GW_Right_Mull_07",
+    4
+   ],
+   [
+    "GW_Right_Mull_08",
+    4
+   ],
+   [
+    "GW_Right_Mull_09",
+    4
+   ],
+   [
+    "GW_Right_Mull_10",
+    2
+   ],
+   [
+    "GW_Right_Sill",
+    5
+   ],
+   [
+    "WallLine_Side",
+    8
+   ],
+   [
+    "Wall_SideY",
+    1
+   ]
+  ],
+  "pocket_capture_band_only_n": 18,
+  "R5_measures": "vertices inside the pocket, AND triangles intersecting it by the separating-axis theorem. The triangle arm exists because round 1's east mullions pass through the pocket with every vertex AND every edge outside it -- it is their side FACES that cross -- and the vertex-only test reported `clear` on 29,387 meshes."
+ },
+ "east_wall": {
+  "criterion": "the east wall must contain glass at frame 1: every bay in the plan has a GP_b* pane and it is not hidden there",
+  "bays_wanted": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "panes_built": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "panes_missing": [],
+  "panes_hidden_at_frame": [],
+  "shards": 3796,
+  "round1_planes_still_present": [],
+  "note": "n_GW_Right_Glass counts ROUND 1's names and reads 0 for a correct scene as well as an empty one.  Count GP_b*.",
+  "PASS": true
+ },
+ "out": "render/film14_breach.blend",
+ "bytes": 4992299735,
+ "origin_rule": "shard origin = (0.5*(x_in+x_out), centroid_u, centroid_v) in WORLD metres; mesh verts are stored relative to it"
+}

@@ -1,0 +1,45 @@
+{
+ "frame": 1165,
+ "n": 3796,
+ "rotated": {
+  "below_floor": 70,
+  "pct": 1.84,
+  "worst_m": 154.6
+ },
+ "axis_aligned": {
+  "below_floor": 626,
+  "pct": 16.49,
+  "worst_m": 154.599
+ },
+ "dropped_by_the_rotation": 556,
+ "found_only_by_the_rotation": 0,
+ "highest_dropped_m": 0.1056,
+ "lowest_dropped_m": 0.0001,
+ "worst_offenders": [
+  [
+   "GS_b04_00446",
+   -154.6
+  ],
+  [
+   "GS_b04_00082",
+   -114.932
+  ],
+  [
+   "GS_b04_00078",
+   -114.932
+  ],
+  [
+   "GS_b05_00750",
+   -105.934
+  ],
+  [
+   "GS_b05_00749",
+   -105.918
+  ],
+  [
+   "GS_b05_00751",
+   -105.903
+  ]
+ ],
+ "note": "measured on the applied f-curves of the scene that renders"
+}

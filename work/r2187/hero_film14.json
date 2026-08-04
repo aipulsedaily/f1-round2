@@ -1,0 +1,12 @@
+{
+ "hero_by_mesh": 3573,
+ "bulk_by_mesh": 223,
+ "unmatched": 0,
+ "unmatched_examples": [],
+ "hero_by_camera_distance": 3573,
+ "disagreements": 0,
+ "disagreement_examples": [],
+ "hero_m": 6.0,
+ "path_points": 514,
+ "note": "hero_by_mesh reads the file; hero_by_camera_distance recomputes the applier's test from breach_film.npz and the beat sheet. They are two routes to the same number and must agree."
+}

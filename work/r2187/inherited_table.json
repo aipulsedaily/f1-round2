@@ -1,0 +1,26 @@
+{
+ "rows": {
+  "all bodies": {
+   "n": 3948,
+   "below_floor": 573,
+   "below_floor_pct": 14.5,
+   "worst_m": 154.599,
+   "moving_over_1mm": 1599,
+   "moving_pct": 40.5,
+   "worst_step_m": 3.0489
+  },
+  "GS_* shards only": {
+   "n": 3796,
+   "below_floor": 573,
+   "below_floor_pct": 15.1,
+   "worst_m": 154.599,
+   "moving_over_1mm": 1599,
+   "moving_pct": 42.1,
+   "worst_step_m": 3.0489
+  }
+ },
+ "last_frames": [
+  1164,
+  1165
+ ]
+}

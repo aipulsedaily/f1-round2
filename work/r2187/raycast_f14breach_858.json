@@ -1,0 +1,39 @@
+{
+ "blend": "/home/zany/f1-round2/render/film14_breach.blend",
+ "frame": 858,
+ "camera": "ONER",
+ "panes_in_scene": 10,
+ "panes_visible_at_frame": 10,
+ "glass_x_range": [
+  14.955,
+  14.9665
+ ],
+ "materials": [
+  "BREACH_Glass"
+ ],
+ "rays": 4096,
+ "glass_hits": 1255,
+ "glass_pct": 30.64,
+ "panes_hit": [
+  "GP_b04",
+  "GP_b05",
+  "GP_b06",
+  "GP_b07",
+  "GP_b08",
+  "GP_b09"
+ ],
+ "raster_bbox": {
+  "x": [
+   0.398,
+   0.992
+  ],
+  "y": [
+   0.008,
+   0.602
+  ]
+ },
+ "hit_range_m": [
+  6.93,
+  16.66
+ ]
+}

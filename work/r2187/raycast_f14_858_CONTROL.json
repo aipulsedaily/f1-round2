@@ -1,0 +1,15 @@
+{
+ "blend": "/home/zany/f1-round2/render/film14.blend",
+ "frame": 858,
+ "camera": "ONER",
+ "panes_in_scene": 0,
+ "panes_visible_at_frame": 0,
+ "glass_x_range": null,
+ "materials": [],
+ "rays": 4096,
+ "glass_hits": 0,
+ "glass_pct": 0.0,
+ "panes_hit": [],
+ "raster_bbox": null,
+ "hit_range_m": null
+}

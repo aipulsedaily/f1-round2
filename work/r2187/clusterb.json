@@ -1,0 +1,39 @@
+{
+ "bodies": 3948,
+ "shards": 3796,
+ "sunk_rotated": 70,
+ "worst_below_m": 154.6,
+ "vmax_of_sunk": {
+  "median": 38.9,
+  "min": 16.2,
+  "max": 110.4
+ },
+ "vmax_of_the_rest": {
+  "median": 11.4,
+  "p99": 22.0
+ },
+ "overlap": {
+  "v >= 60 m/s": {
+   "n_fast": 1,
+   "of_which_sunk": 1,
+   "pct_of_sunk_explained": 1.4,
+   "chance_mean": 0.1,
+   "chance_p95": 0
+  },
+  "v >= 100 m/s": {
+   "n_fast": 1,
+   "of_which_sunk": 1,
+   "pct_of_sunk_explained": 1.4,
+   "chance_mean": 0.0,
+   "chance_p95": 0
+  },
+  "v >= 106 m/s": {
+   "n_fast": 1,
+   "of_which_sunk": 1,
+   "pct_of_sunk_explained": 1.4,
+   "chance_mean": 0.0,
+   "chance_p95": 0
+  }
+ },
+ "speed_note": "max |dx| per film frame x 24, on the decimated reconstruction -- the same table the scene was built from, so this is the speed the RENDER has, not the 240 Hz bake's"
+}
