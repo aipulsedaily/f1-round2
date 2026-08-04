@@ -521,24 +521,30 @@ disjoint inputs and must agree.**
 
 | frame | predicted surviving axis, from the path | measured, from the pixels | delta | predicted smear | anisotropy |
 |---|---|---|---|---|---|
-| f120 | 17.8 deg | 11.4 deg | 6.4 | 107 px | 0.585 |
+| f460 | 52.4 deg | 51.5 deg | **0.9** | 117 px | 0.832 |
+| f591 | 59.3 deg | 58.5 deg | **0.8** | 50 px | 0.685 |
+| f434 | 136.6 deg | 137.7 deg | **1.1** | 27 px | 0.838 |
 | f200 | 162.4 deg | 160.2 deg | **2.2** | 40 px | 0.845 |
 | f300 | 88.6 deg | 92.9 deg | **4.3** | 85 px | 0.896 |
-| f460 | 52.4 deg | 51.5 deg | **0.9** | 117 px | 0.832 |
+| f120 | 17.8 deg | 11.4 deg | **6.4** | 107 px | 0.585 |
+| f500 | 114.9 deg | 130.3 deg | 15.4 | 116 px | 0.728 |
+| f648 | 53.3 deg | 66.1 deg | 12.8 | 26 px | 0.744 |
 | f400 | 169.1 deg | 90.2 deg | **79** | **11 px** | **0.401** |
-| f591 | 59.3 deg | 58.5 deg | **0.8** | 50 px | 0.685 |
 
-Five of the six agree to within 6.4 degrees, and three of them to within 2.2, on
-a quantity nothing in the image pipeline was told about. **The middle third is smeared by the camera, and the
-direction proves it.**
+Six of the nine agree to within 6.4 degrees and four of them to within 2.2, on a
+quantity nothing in the image pipeline was told about. **The middle third is
+smeared by the camera, and the direction proves it.** The two loose ones are the
+two frames where something else is organising the picture — f648 is the one
+legible frame (see below) and f500 has two clusters at different depths smearing
+by different amounts.
 
-**And the fifth is the point, not the exception.** f400 is the one frame of the
-five where the predicted smear is small — 11 px against 40-117 — and it is also
-the only one whose anisotropy collapses, to 0.40 against 0.83-0.90. With no
+**And the last row is the point, not the exception.** f400 is the one frame
+where the predicted smear is small — 11 px against 26-117 — and it is also
+the only one whose anisotropy collapses, to 0.40 against 0.59-0.90. With no
 smear to align to, the surviving axis reverts to the scene's own structure (the
 turntable rim that fills its lower half). **So the instrument separates the two
-causes rather than merely confirming one:** f120, f200, f300 and f460 are
-motion-blurred frames; f400 — the frame the earlier agent flagged as "a bright
+causes rather than merely confirming one:** f120, f200, f300, f434, f460, f500
+and f591 are motion-blurred frames; f400 — the frame the earlier agent flagged as "a bright
 smear, no subject in focus" — is a genuine depth-of-field frame, and its subject
 is 0.328 m behind the focus plane with 29.5 px of defocus and its centre outside
 the vertical frame.
@@ -549,7 +555,7 @@ horizontal stripes read 1.0000). The verdict above rests on the AGREEMENT of two
 independent estimates of a direction, never on the magnitude alone.
 
 **f648 shows that limit doing its job.** Predicted surviving axis 53.3 deg,
-measured 66.1 deg — 12.8 deg apart, the second-worst disagreement of the seven.
+measured 66.1 deg — 12.8 deg apart, one of only three disagreements over 6.4 deg in nine frames.
 It is also the one frame of the seven that is legible, and a legible frame of a
 Formula 1 car is dominated by the car's own long axis, so the gradients have
 somewhere else to point. **The agreement is tight exactly where the smear is large
