@@ -934,3 +934,112 @@ interior_lamp_watts  46,203.313 = 46,203.313
 `film16` is perfect. The ship is `film14_breach_r6`. **A readback diff against
 the wrong baseline is a clean bill of health for the wrong file.** The baseline,
 not the instrument, was the defect.
+
+---
+
+## R2-514 — the user's frame is **La Passerelle's fascia, not the gantry**, it is two DIFFERENT words, and it was already fixed nine hours before this rebuild started
+
+The frame is `2972abcb3fa1.png`. The broker's own job record says what it is:
+
+```
+job 2972abcb3fa1   frame 2575   scene render/film14_breach.blend
+                   ONER, 3840x2160, 400 samples, DOF on, CYCLES
+                   finished 2026-08-04 02:02
+```
+
+**That hash is quoted verbatim in `world/build_architecture.py`.** R2-256's own
+comment names this exact file:
+
+> *"the delivered 4K frame 2972abcb3fa1.png shows gold CADENCE and white
+> PASSERELLE printed through each other and garbling into 'PASSERELICE'."*
+
+So the frame the user pointed at is the frame R2-256 was written from. It is **La
+Passerelle**, a pedestrian overpass — the crop shows its truss above and its
+supports below — and not the start/finish gantry.
+
+### it is two words, measured, not one word doubled
+
+The proposed reading was a gold front face with a grey extruded side wall behind
+it: one word, self-doubled, ~16 px. Measured over the crop region of the 4K
+original, splitting by saturation:
+
+```
+GOLD  8,340 px   mean RGB (0.484, 0.394, 0.267)   x 1637..1999 (362 px)   centroid (1832, 340)
+GREY  1,889 px   mean RGB (0.293, 0.280, 0.264)   x 1620..2018 (398 px)   centroid (1796, 355)
+GOLD letter spans: 8 distinct runs
+```
+
+**Self-doubling cannot produce this.** The front and back faces of one extrusion
+are the same glyph set: same letter count, same run width, rigidly offset. These
+two populations have **different widths (362 vs 398 px), different centroids
+offset (36, 15), and different letter counts** — 8 gold runs against a longer
+grey word. They are two different strings. The composite reads `PASSERELICE`,
+which is `PASSERELLE` and `CADENCE` printed through each other, exactly as
+R2-256 recorded.
+
+Of the coordinator's three outcomes this is **(2) — two objects after all** — but
+it is not a new defect and it does not resurrect anything. It is the *known* one:
+
+```
+build_architecture   "PASSERELLE  2"  white  at (-452.100, 2.000, 9.650)
+build_dressing       CADENCE banner   gold   at (-452.055, 2.000, 8.920)
+                                             45 mm in front, concentric, containing it
+```
+
+**That is the "two modules writing the same panel 45 mm apart" my brief named in
+the first place, and my brief called it the gantry sign.** It is not the gantry;
+it is the bridge. The misnomer is the whole reason this took four entries.
+
+### what this means for the rebuild — it is already fixed, and film16 has the fix
+
+```
+2026-08-04 02:02   frame 2972abcb3fa1.png rendered from film14_breach.blend
+2026-08-04 03:10   f9eb94b R2-256 lands: the truss-face lettering is DELETED
+2026-08-04 15:46   assembly10 built from that source
+2026-08-04 16:26   film16 built on assembly10
+```
+
+**The delivered frame predates the fix by 68 minutes.** `assembly9` was built
+2026-08-03 23:09 and `film14` 23:42, both before `f9eb94b`, which is why every
+`film14*` scene still carries it. `assembly10` is the first world built after it,
+and `film16`/`film16_breach` are the first films that cannot show it — the
+lettering is not in the source any more, so there is nothing to collide with the
+banner. This was one of the six queued fixes and it is the one the user reported.
+
+### what I got wrong, and it cost four entries
+
+R2-509 and R2-511 measured the **MERIDIAN facade sign and the pit board**, which
+were nominated as the real panels after the gantry framing was withdrawn. Both
+conclusions about those panels stand and both were correct:
+
+* they have exactly one writer each and no collision (four measurements);
+* the wordmark occludes 0.00 % of the strapline (R2-511's refutation of my own
+  R2-509 headline, with a working positive control).
+
+**They were the wrong panels.** Neither was ever the defect. The defect was on a
+third object that the brief named wrongly, that I had explicitly left flagged as
+*"unmeasured, not clean"*, and that had already been fixed before I was briefed.
+
+> **The durable lesson is about the identifier, not the geometry.** Three
+> different objects were called "the sign" in this block — a trackside gantry, a
+> showroom facade wordmark, and a bridge fascia — and every re-aim of the
+> investigation moved to a different one while the name stayed the same. The
+> frame hash was in the source the entire time. **One `grep 2972abcb3fa1` over
+> the tree would have answered it in the first minute**, and it is the first
+> thing to do with a delivered-frame complaint: the artefact has a name, so ask
+> the tree what already knows about it before measuring anything.
+
+**The self-doubling measurement from R2-511 is unaffected and still true** — a
+52 mm extrusion does project 6.77–15.95 px of double outline at 4K on the
+MERIDIAN wordmark. It is simply not what the user saw, and there is now no
+evidence anyone has ever complained about it. **The `--fix 0.5` depth reduction
+is therefore withdrawn as a proposal**: it addresses a real but unreported
+artefact on a panel nobody raised, and cutting geometry on the ship for that is
+not justified.
+
+### the gantry, finally
+
+**Not implicated at all.** R2-509b's source reading stands — one legend per face,
+2.40 m apart, 40 mm extrusion, so it cannot produce either mechanism. It is still
+unmeasured in pixels and still not being called clean, but it is no longer
+suspected of anything.
