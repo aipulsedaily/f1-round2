@@ -1,0 +1,126 @@
+{
+ "what": "R2-179 cap-winding fix, seen through the film own frame-1126 camera",
+ "camera": {
+  "frame": 1126,
+  "from": "render/film14_path.json",
+  "p": [
+   140.71689,
+   38.8779,
+   16.73466
+  ],
+  "lens_mm": 35.0,
+  "sensor_mm": 36.0,
+  "res": [
+   3840,
+   2160
+  ],
+  "samples": 256,
+  "denoiser": "NONE",
+  "adaptive_sampling": false,
+  "seed": 0,
+  "grade": "world/film_exposure.apply, exposure -3.628"
+ },
+ "why_not_film14": "timing_stand has never been placed into the shipping world: TS_ appears 0 times in work/r2148/fp_assembly9.json (28,781 objects) and the strings TS_Stand / W_Item_TimingStand / MPD_Deck appear 0 times in render/film14.blend, against ARCH_PitWall which appears, as the positive control. Rendering f1126 from film14 before and after would give two identical images.",
+ "subject_on_screen": {
+  "TS_Stand00_BOREAL": [
+   1279,
+   1455,
+   2093,
+   2160
+  ],
+  "TS_Stand01_CORVUS": [
+   839,
+   768,
+   1323,
+   1268
+  ],
+  "TS_Stand02_DELMAR": [
+   664,
+   453,
+   987,
+   755
+  ],
+  "TS_Stand03_ESTIVAL": [
+   564,
+   230,
+   771,
+   430
+  ],
+  "TS_Stand04_FULGOR": [
+   478,
+   115,
+   679,
+   296
+  ],
+  "TS_Stand05_GRISAILLE": [
+   453,
+   62,
+   608,
+   191
+  ],
+  "TS_Stand06_HALCYON": [
+   431,
+   0,
+   557,
+   114
+  ],
+  "TS_Stand07_IRIDIA": [
+   401,
+   0,
+   520,
+   60
+  ],
+  "TS_Stand08_JUNIPER": [
+   371,
+   0,
+   484,
+   8
+  ],
+  "TS_Stand09_KESTREL": [
+   370,
+   0,
+   458,
+   -29
+  ]
+ },
+ "whole_frame": {
+  "px": 8294400,
+  "changed": 1378182,
+  "frac_changed": 0.166158,
+  "mean_levels": 0.5855,
+  "max_levels": 87,
+  "null_changed": 260,
+  "null_max_levels": 1,
+  "ratio_over_null": 5300.7
+ },
+ "inside_TS_Stand_bboxes": {
+  "px": 1004718,
+  "changed": 91533,
+  "frac_changed": 0.091103,
+  "mean_levels": 0.096,
+  "max_levels": 11,
+  "null_changed": 21,
+  "null_max_levels": 1,
+  "ratio_over_null": 4358.7
+ },
+ "outside_context_standins": {
+  "px": 7289682,
+  "changed": 1286649,
+  "frac_changed": 0.176503,
+  "mean_levels": 0.6529,
+  "max_levels": 87,
+  "null_changed": 239,
+  "null_max_levels": 1,
+  "ratio_over_null": 5383.5
+ },
+ "TS_Stand00_BOREAL_box": {
+  "px": 573870,
+  "changed": 60077,
+  "frac_changed": 0.104687,
+  "mean_levels": 0.1097,
+  "max_levels": 11,
+  "null_changed": 11,
+  "null_max_levels": 1,
+  "ratio_over_null": 5461.5
+ }
+}
