@@ -871,3 +871,66 @@ Once `film16_breach.blend` exists, diff its object-name census against
 scene is a missed stage, whether or not anybody remembered it existed. That
 subsumes guessing, and it is the only version of this check that cannot go stale
 as appliers are added.
+
+---
+
+## R2-513 — the breach is landed on `film16`, and it reproduces the ship's apply exactly
+
+`render/film16_breach.blend`, 7,600 MB, built by `sim/apply_breach.py` against
+the pinned R6 table. Its apply report is **identical to the ship's in every
+statistic**:
+
+```
+                          film14_breach_r6 (SHIP)   film16_breach (NEW)
+objects                            3,845                  3,845
+tris                             278,864                278,864
+keys                           5,806,793              5,806,793
+hero                               3,573                  3,573
+east frame objects                    39                     39
+east frame keys                    8,092                  8,092
+mullions_replaced                [4, 5, 6]              [4, 5, 6]
+n_transom_pieces                      12                     12
+BF_MUL05_S02 max travel         0.1449 m               0.1449 m
+coverage PASS                       True                   True
+east wall PASS / panes / missing  True / 10 / []     True / 10 / []
+```
+
+**`BF_MUL05_S02` at 0.1449 m is the number that proves the RIGHT bake landed.**
+R2-387's table on the same disk gives that body **55.3509 m** and replaces four
+mullions instead of three; had `land_breach.sh` been run end to end, its stage 1
+would have regenerated `sim/out/breach_film.npz` from whatever raw bake sits in
+`sim/tmp/` and could have swapped it in silently. The applier was invoked
+directly with `--film sim/out/breach_film_R6_SHIPPED.npz` instead, and stages 0–5
+skipped. Stage 5b was checked first and is not read by `apply_breach.py`.
+
+The two documented mid-apply verdicts both came out right:
+
+```
+R5 after the build: 0 intruders in the clear opening OVER THE WOUND
+                    (was 3 -- GW_Right_Transom_0/1/2), 9 elsewhere
+```
+
+The 9 elsewhere are the south wall's `GW_Front_*` frame and the light fins, which
+`sim/land_breach.sh` names as deliberate and not this module's to move — the
+preflight's headline `glazing_pocket_clear FAIL` is that same population and is
+what `--force` exists for. Read `R5_intruders_over_the_wound_after`, not the
+preflight count.
+
+### the readback diff, which is the arm that should have caught this
+
+With `film14` measured on the same instrument, every invariant is identical and
+only three fields move:
+
+```
+bytes            4,530,665,076 -> 7,507,149,067
+n_objects               29,415 -> 31,133      (+1,718: 4 item families + driver)
+n_objects_data          29,726 -> 31,444
+interior_lamp_watts  46,203.313 = 46,203.313
+23 stamps / 3.628 / AgX / None / -3.628 / 24 fps / 1..2978 / ONER   all identical
+```
+
+**And that is exactly why the missing breach survived it.** Every arm compared
+`film16` against `film14` — the *pre-breach* scene — and on that comparison
+`film16` is perfect. The ship is `film14_breach_r6`. **A readback diff against
+the wrong baseline is a clean bill of health for the wrong file.** The baseline,
+not the instrument, was the defect.

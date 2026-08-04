@@ -380,6 +380,42 @@ rather than allowed to OOM somebody else's bake.
 `work/ceiling/land_on_film.sh` re-runs it behind a memory gate and picks up
 whatever the newest `film1[6-9].blend` is when the window opens.
 
+### the frames, and what is still owed
+
+Rendered from the film's OWN camera (`ONER`, the rig `film16.blend` carries),
+in a scene carrying the real `SHOWROOM` / `PROPS` / `LIGHTS` collections at
+identity, through the real grade (AgX, look `None`, exposure −3.628) with
+`showroom_lighting.apply()` on and `assert_levelled` PASS:
+
+```
+work/ceiling/peep/before_f0001.png   f1    round-1 flat ceiling
+work/ceiling/peep/before_f0300.png   f300      "
+work/ceiling/peep/before_f0320.png   f320      "
+work/ceiling/peep/after_f0001.png    f1    ceiling, first cut
+work/ceiling/peep/after_f0300.png    f300      "
+work/ceiling/peep2/afterv2_f0001.png f1    ceiling, final geometry
+```
+
+f1, f300 and f320 are the three beat-1 stations that look up: f1 is the
+establishing frame (21.05 % ceiling), f300 and f320 are inside the second run
+(8.8 % and 15.8 % direct, and both dominated by the ceiling's reflection in the
+curtain wall).
+
+**Still owed, both blocked on shared infrastructure rather than on the work:**
+
+* **The 4K A/B.** Six jobs — f1, f310, f320, before and after, 3840 × 2160 at
+  220 samples — queued on the broker at 17:23 as
+  `r2621_room_before.blend` / `r2621_room_after.blend`. Estimated ~10 min of
+  GPU at $0.4203/hr, about **$0.07**. They have sat unserved for ~25 min while
+  the broker stayed on scenes other agents kept re-feeding, and the GPU worker
+  restarted once mid-wait (`gpu starting-worker`) and then held a
+  `breach-continuity` job at "no progress reported yet" with the served count
+  stuck at 1,910. My scenes are now FIRST in the waiting list. Reported, not
+  worked around — this looks like the known `cheaper_to_finish()` scene-switch
+  condition plus a worker stall.
+* **The landing on `film16.blend`.** See the operational note above; the
+  memory gate is armed and will run it when the box has a window.
+
 ### the invariant this design turns on
 
 Nothing here is new light and nothing is under a light. The two cove annuli are
