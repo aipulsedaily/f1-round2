@@ -531,3 +531,42 @@ not the same pieces.** It flagged `regression=CHECK`, which is what it should
 do, and then the picture had to decide — exactly the order the brief sets out.
 **P7 holds**, but not for the reason I wrote: I predicted the same two segments
 would be at least as large, and they are not.
+
+## R2-293 — the head restraint is not what was holding the frame up, and the control I built by construction is what proves it
+
+Two things changed together, so neither could be credited. The off-diagonal
+cells, all 400 frames, same seed, same everything else:
+
+| transom / head | joints broken (of 95) | mullion 5's transom ends | max transom travel | mullion 5 column |
+|---|---|---|---|---|
+| **260 / FIXED** — shipped | 2 | 0 of 6 | 0.187 m | 0.303 m |
+| **8.8 / FIXED** — transom alone | **19** | **6 of 6** | **15.448 m** | **15.907 m** |
+| **260 / SLIDER** — head alone | 2 | 0 of 6 | **0.189 m** | **0.296 m** |
+| **8.8 / SLIDER** — production | 21 | 6 of 6 | 15.223 m | 14.457 m |
+
+**The derived transom threshold does all of it. The head model does nothing
+measurable.** 260/SLIDER is indistinguishable from the shipped bake to three
+decimals — 0.189 against 0.187 m, 0.296 against 0.303 m — and 8.8/FIXED already
+produces the entire collapse, **with the head still bolted on at 38.4 kN**.
+
+**This refutes the standing analysis and my own prediction with it.** R2-268's
+headline is that the head restraint is 97× the load it carries and that six
+segments of mullion 5 "hang in the air with nothing under them" because of it;
+my P3 reasoned the same way and made the column's fall conditional on releasing
+the head. **The 97× is a correct piece of arithmetic about a static load, and
+the event is not static.** Once the six transom ends let go, the transient that
+broke a 76.8 kN segment joint has no trouble with a 38.4 kN head joint. The
+head was never the lever.
+
+**And the only reason this is knowable is the decision to leave the head's
+breaking threshold alone.** Had I derived a new lateral capacity for it — which
+was tempting, and would have looked like more work done — the head cell would
+have carried two changes and this table could not have been read. The control
+was built by construction rather than measured afterwards, and it is what turns
+"the frame came apart" into "the frame came apart *because of the number I
+derived*".
+
+**The slider stays**, because a 17.2 mm declared expansion gap is a movement
+joint whatever the impulse does, and because R2-268's reasoning about what a
+stick curtain wall is remains right. It just must not be credited with the
+result.
