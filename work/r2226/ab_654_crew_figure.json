@@ -1,0 +1,94 @@
+{
+ "frame": 654,
+ "item": "crew_figure",
+ "before": "work/r2226/f654_before.png",
+ "after": "work/r2226/f654_after.png",
+ "null": "work/r2226/f654_null.png",
+ "gate": "work/r2226/gate_after.json: PLACED, 120 objects",
+ "resolution": [
+  3840,
+  2160
+ ],
+ "units": {
+  "in_frustum": 88,
+  "visible": 75,
+  "occluded": 13
+ },
+ "regions": {
+  "whole_frame": {
+   "ab": {
+    "px": 8294400,
+    "frac_changed_gt0": 0.027357,
+    "frac_changed_gt2": 0.014815,
+    "frac_changed_gt8": 0.010228,
+    "mean_abs_levels": 0.3814,
+    "max_levels": 188
+   },
+   "null": {
+    "px": 8294400,
+    "frac_changed_gt0": 7.3e-05,
+    "frac_changed_gt2": 6e-06,
+    "frac_changed_gt8": 2e-06,
+    "mean_abs_levels": 0.0001,
+    "max_levels": 26
+   }
+  },
+  "visible_units": {
+   "ab": {
+    "px": 153413,
+    "frac_changed_gt0": 0.811229,
+    "frac_changed_gt2": 0.658869,
+    "frac_changed_gt8": 0.510511,
+    "mean_abs_levels": 18.832,
+    "max_levels": 188
+   },
+   "null": {
+    "px": 153413,
+    "frac_changed_gt0": 2.6e-05,
+    "frac_changed_gt2": 0.0,
+    "frac_changed_gt8": 0.0,
+    "mean_abs_levels": 0.0,
+    "max_levels": 1
+   }
+  },
+  "occluded_units_CONTROL": {
+   "ab": {
+    "px": 2941,
+    "frac_changed_gt0": 0.592996,
+    "frac_changed_gt2": 0.295138,
+    "frac_changed_gt8": 0.070724,
+    "mean_abs_levels": 2.5213,
+    "max_levels": 59
+   },
+   "null": {
+    "px": 2941,
+    "frac_changed_gt0": 0.0,
+    "frac_changed_gt2": 0.0,
+    "frac_changed_gt8": 0.0,
+    "mean_abs_levels": 0.0,
+    "max_levels": 0
+   }
+  },
+  "rest_of_frame_CONTROL": {
+   "ab": {
+    "px": 8138046,
+    "frac_changed_gt0": 0.012375,
+    "frac_changed_gt2": 0.002572,
+    "frac_changed_gt8": 0.000775,
+    "mean_abs_levels": 0.0328,
+    "max_levels": 95
+   },
+   "null": {
+    "px": 8138046,
+    "frac_changed_gt0": 7.4e-05,
+    "frac_changed_gt2": 6e-06,
+    "frac_changed_gt8": 2e-06,
+    "mean_abs_levels": 0.0001,
+    "max_levels": 26
+   }
+  }
+ },
+ "visible_over_occluded": 7.2,
+ "ok": true,
+ "notes": []
+}

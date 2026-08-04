@@ -45,15 +45,28 @@ were looking for was in the file.
 import argparse
 import json
 import os
+import sys
 
 import numpy as np
-from PIL import Image
 
-Image.MAX_IMAGE_PIXELS = None
+# NOT PIL. `world/items/human_png.py`'s own header: "Neither PIL nor imageio
+# exists in this box's python3 OR in Blender 5.2's bundled interpreter,
+# checked." Confirmed again here -- `import PIL` raises for both interpreters.
+# `tools/r2179_ab_measure.py` and `tools/glass_winding_ab_measure.py` both
+# `from PIL import Image` at module scope and therefore cannot run on this box
+# at all; that is noted, not fixed here. R2-150 lost a render cycle to exactly
+# this shape: "the rewritten script died on No module named 'PIL' while Blender
+# exited 0. The printed STAGE RESULT line caught it; $? would not have."
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))), "world", "items"))
+import human_png as PNG                                     # noqa: E402
 
 
 def load(p):
-    return np.asarray(Image.open(p).convert("RGB"), dtype=np.int16)
+    a = PNG.read(p)
+    if a.ndim == 2:
+        a = np.repeat(a[:, :, None], 3, axis=2)
+    return a[:, :, :3].astype(np.int16)
 
 
 def mask_from_boxes(shape, boxes, pad=6):

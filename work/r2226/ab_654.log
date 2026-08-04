@@ -1,0 +1,11 @@
+frame 654   item crew_figure   88 units in frustum: 75 visible, 13 occluded
+region                             px      AB >8/255   AB mean|d| |    NULL >8/255 NULL mean|d|
+whole_frame                   8294400          1.02%         0.38 |          0.00%         0.00
+visible_units                  153413          0.00%         0.00 |          0.00%         0.00
+occluded_units_CONTROL           2941          0.00%         0.00 |          0.00%         0.00
+rest_of_frame_CONTROL         8138046          1.04%         0.39 |          0.00%         0.00
+
+R2-150 CONTROL: visible 0.00 % vs occluded 0.00 %  ->  20000.0x
+  NOTE the VISIBLE units barely moved (0.00 %): either the item is not where the projection says, or the frame does not see it
+wrote work/r2226/ab_654_crew_figure.json
+>> STAGE RESULT: ITEM_AB_FAIL

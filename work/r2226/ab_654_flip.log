@@ -1,0 +1,10 @@
+frame 654   item crew_figure   88 units in frustum: 75 visible, 13 occluded
+region                             px      AB >8/255   AB mean|d| |    NULL >8/255 NULL mean|d|
+whole_frame                   8294400          1.02%         0.38 |          0.00%         0.00
+visible_units                  153413         51.05%        18.83 |          0.00%         0.00
+occluded_units_CONTROL           2941          7.07%         2.52 |          0.00%         0.00
+rest_of_frame_CONTROL         8138046          0.08%         0.03 |          0.00%         0.00
+
+R2-150 CONTROL: visible 51.05 % vs occluded 7.07 %  ->  7.2x
+wrote work/r2226/ab_654_crew_figure.json
+>> STAGE RESULT: ITEM_AB_OK
