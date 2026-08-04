@@ -1287,3 +1287,19 @@ need to re-land it. The configuration is recorded in every report's `air_drag`
 block instead — ρ, Cd, v_ref, the body count, and the min/median/max damping —
 so any table's provenance can be read off the artefact.
 
+
+**And f1000 is the frame that shows it plainly.**
+`render/r2387/COMPARE_ride_f1000_REBAKE_vs_R2387.png`, same settings, both
+builds:
+
+* **Left, the re-bake:** the car is towing a large flat pane and an aluminium
+  bar *attached to its tail* — a sail, moving at exactly the car's speed,
+  fifty film frames after it should have been left behind.
+* **Right, R2387:** the same pane and bar are a separated cluster **behind** the
+  car with clear daylight between them, tumbling and falling away while the car
+  pulls ahead.
+
+That is the whole defect and the whole fix in one pair of frames: the car
+stops towing its own debris, because there is finally something in the scene
+that acts on the debris and not on the car.
+
