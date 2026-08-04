@@ -19406,3 +19406,299 @@ three items reading as inverted relief (`grandstand_riser_unit` -1.2396,
 `dais_delivery_ramp` -0.2460, `driver_figure` -0.2289) this is the one that
 reaches the picture. Whoever reworks the figure should have the corrected
 number, not the mixed one.
+
+## R2-664 — the occlusion generalises to 65 frames in two clusters, and the first version of this measurement was a broken instrument
+
+The ray-cast against the assembled world is still unavailable (see R2-665), so
+this is a **projection proxy**: which built points lie inside the cone between
+the lens and the car, and nearer than the car. `tools/r2651_occ_proxy.py`,
+against `docs/screen_presence_points.npz` — the 1 m occupancy dump of the built
+world, 3,053,506 points over 560 named objects. No world load, no farm.
+
+### The first version reported the road as the occluder, on 72 % of the lap
+
+v1 came back with **`SURF_Track` — the road the car is driving on — blocking the
+car on 1,102 of 1,524 beat-5 frames.** Of course it did: the road lies along the
+line of sight to a car sitting on the road, so every road point inside the
+corridor scored. That is this project's single most repeated detector failure,
+the same shape as the turntable-and-back-wall detector that returned 0.90 for a
+car occupying 0.47. **It is recorded rather than quietly fixed** because the
+number was superficially plausible and would have been a spectacular false
+finding.
+
+v2 drops the ground classes by name — `SURF_*`, `TER_*`, `ARCH_Paving/Apron/
+Forecourt`, 64 objects, 693,821 points — because none of them can hide a car
+standing on them. Everything that can (barriers, architecture, dressing,
+bridges) is kept.
+
+### The result: 65 of 1,524 frames, 4.3 % of beat 5, in two clusters
+
+| frames | dur | owner |
+|---|---:|---|
+| **f2182-2196** | **0.62 s** | `ARCH_PontPlongee` + **`DR_BridgeBanners`** |
+| f2253-2257, 2269, 2271-2274, 2281 | 0.46 s | `BR_Verge_R` |
+| f2283-2290, 2295-2306, 2309-2327 | 1.62 s | `BR_Trap_outer_R_2579`, `BR_Subbase_R` |
+
+**Fence channel: zero frames.** No catch fence or mesh screen is ever the sole
+thing in the corridor, so nothing here depends on the see-through/opaque
+judgement — which is worth having established, because that ambiguity was the
+trap most likely to manufacture a defect.
+
+### Two independent methods agree on the bridge, and a delivered frame confirms it
+
+| | blocked window |
+|---|---|
+| `r2651_pont_sightline.py` — analytic box, 5 controls | **f2181-2192** |
+| `r2651_occ_proxy.py` — point cloud, ground-excluded | **f2182-2196** |
+| the delivered frame `r2b56_720_002180.png` | **f2180 is clear by ~10-20 px at 720p** |
+
+Both methods put f2180 outside the window and f2200 outside it, and the
+delivered pixel shows the car as a dark chip just clear of the concrete edge —
+so **f2180 is the boundary frame, predicted and then seen.**
+
+The proxy also catches something my box reconstruction could not:
+**`DR_BridgeBanners`**, `build_dressing`'s fascia banners hanging on this
+bridge's faces, extending the window by ~4 frames. That is the same face R2-256
+records a collision on. **Any placement move must carry the banners with it**;
+they are not part of `build_architecture`'s bridge and will not follow
+`PONT_S` on their own.
+
+### What this does and does not settle
+
+* **Settled**: f2190 is not one bad frame, and it is not thirty scattered round
+  the lap either. It is a 0.62 s bridge pass plus a separate ~2 s cluster of
+  trackside barrier furniture 60-130 frames later.
+* **Proxy-only, needs the ray-cast**: the `BR_Verge_R` / `BR_Trap_outer_R_2579`
+  / `BR_Subbase_R` cluster. Those are low objects at the track edge and their
+  point counts are thin (1-17 points), so they are consistent with the car being
+  *partly clipped* rather than hidden. Contiguity across 8 runs argues they are
+  real rather than noise, but severity is not established and I am not claiming
+  it.
+* **Unchanged**: the recommended fix. `PONT_S = 2410 -> 2460` was tested against
+  the whole of beat 5, not just the known window, and gives zero blocked frames
+  at every 10 m step from 2460 to 2610 — so it does not simply move the bridge
+  pass onto the barrier cluster.
+
+---
+
+## R2-665 — the farm blocked this measurement twice, for two different reasons, and the second one was mine
+
+Recorded because both are reusable lessons rather than incidents.
+
+1. **`WorkerBusy` burned retry attempts instead of requeueing.** The guard
+   itself is right — deploying over a worker mid-frame would SIGKILL minutes of
+   GPU time — but a refusal spent an attempt, and three attempts expired inside
+   a single 39-second frame while both cards held 14-hour sequence passes. Four
+   jobs died at `3/3` having never run. **Fixed by the farm agent**: it now
+   requeues without spending an attempt, after a 90 s backoff, verified by an
+   exec job completing between two frames of a running pass.
+2. **`StaleBundle`, and that one was self-inflicted.** The bundle was 96 files /
+   38.3 MB drawn from `world/*.py`, `world/items/*` and `telemetry/*.csv` —
+   directories that eight agents are actively editing. The digest is taken at
+   submit and re-checked at dispatch, and the 90 s backoff *widens* that window.
+   **`--include` must name the files a script actually reads, not the
+   directories they live in.**
+
+The lesson worth keeping: **a farm job's bundle is a shared-state dependency,
+and the busier the tree the narrower it has to be.** Meanwhile the entire
+occlusion question turned out to be answerable without the farm at all — once
+from source constants (R2-660) and once from an existing point dump (R2-664).
+
+## R2-442 — THE f792/f793 SEAM IS CLEAN, measured in pixels for the first time
+
+The film's defining constraint is zero cuts. R2-423 tested all five beat
+boundaries **on the authored camera path** and found no discontinuity — but that
+is a statement about the curve, not the picture, and it explicitly left open
+"a light that switches, a sim that starts, an LOD that swaps".
+
+Four of the five boundaries sit inside beats 2-6 and are covered by `r2full`.
+**f792/f793 was the exception**: it needs a frame from each side of the beat-1
+boundary, the beat-1 side was deliberately cancelled when the camera was
+superseded, and it could only be closed once `film16_breach` existed. It is now
+closed.
+
+```
+        pair   mean |d|    p99.9    >0.25
+   788-> 789    0.03401   0.6124   3.036%
+   789-> 790    0.03620   0.6161   3.321%
+   790-> 791    0.03842   0.6165   3.631%
+   791-> 792    0.04077   0.6171   4.028%
+   792-> 793    0.04324   0.6275   4.433%   <-- THE SEAM
+   793-> 794    0.04750   0.6337   5.105%
+   794-> 795    0.05149   0.6373   5.712%
+```
+
+**The d1 series is strictly monotone across the boundary**, and the seam value
+lands where interpolation puts it:
+
+```
+  linear interpolation from its two neighbours   0.04414
+  measured at the seam                           0.04324
+  error                                          2.05 %
+```
+
+`p99.9` (0.6171 -> 0.6275 -> 0.6337) and the hot-pixel fraction (4.028 -> 4.433
+-> 5.105 %) are equally smooth. The camera is accelerating into beat 2 and the
+boundary frame is simply the next sample of that acceleration. **1.092x the local
+median, +0.55 MADs — indistinguishable from its neighbours.**
+
+**And the test is stronger than it looks, because the two frames were rendered on
+DIFFERENT MACHINES.** f792 came from broker 1 (instance 46819442) and f793 from
+broker 2 (instance 46815452), hours apart, with `film16_breach` pushed separately
+to each host. Identical `scene_hash 1e8d5440c349fe51` and `spec_hash
+1dd9cdaf86a87876`, verified before the comparison was trusted.
+
+So this simultaneously clears two defect classes the ladder exists to hunt:
+
+* **the beat seam** — no discontinuity at the one boundary nothing had checked;
+* **the batch seam** — "adjacent ranges rendered by two machines" is precisely
+  the configuration here, and it produces no measurable signature at all.
+
+**What it does not clear:** this is 720p and one boundary. The other four are
+covered by `r2full` and will be measured the same way as their ranges complete.
+
+## R2-531 — `tools/imperfections.py` is on the car. Six tuning passes had never reached a pixel
+
+R2-015 closed in July on the *audit* blend, and its own handover note said so:
+"it has **not** yet been injected into `world/beat1_anim.blend` or into the
+unified world; whoever owns those should re-run it". Nobody did. Measured on the
+shipped scene: `LiveryPaint` in `render/film14_breach_r6.blend` carries **zero
+`ShaderNodeGroup` nodes**, so `R2_Imperfection` — one shared geometry-driven node
+group, six calibration passes on the 5090, thirteen material recipes — was in no
+rendered frame of the ladder at all.
+
+Both layers now land on both car sources, in the order the stack requires:
+
+```
+world/car_paint.py            THEN     tools/imperfections.py
+```
+
+### Verified by CENSUS ON THE SAVED FILE, not by the call returning
+
+The whole reason this was invisible for a month is that the build step printed
+success. `work/r2521/census.py` reads the artefact back off disk through
+`libraries.load` and counts nodes; `work/r2521/trace.py` walks the graph
+backwards from every Principled socket. Both car sources:
+
+```
+world/car_anim.blend  and  world/car_anim_driver.blend
+  material         nodes    R2CP   R2IMP  groups  cp_ver  imp
+  LiveryPaint        239      94      25       1     4    yes   R2_Imperfection
+  CarbonFibre         68       0      25       1     -    yes   R2_Imperfection
+  ...13 materials, every one carrying the group and an r2imp record
+```
+
+### The check that actually mattered
+
+`imperfections.py` CHAINS onto whatever it finds — its `bump()` re-links the
+socket's existing source into the new Bump's `Normal` input. That is the right
+design, and **"it printed `-> Coat Normal`" does not prove it happened.** A chain
+that dropped its input would print the identical line and would silently undo the
+one thing R2-524 is about — round 1's orange peel being moved onto the coat.
+So the graph is walked:
+
+```
+Coat Normal        R2IMP_003 <- R2IMP_002 <- R2IMP_001 <- R2IMP_000 ... reaches Bump.001   YES
+Normal             R2CP_092 flake facets <- R2CP_073 flake cells <- ...  reaches R2CP_     YES
+Base Color         R2IMP_023 <- R2IMP_022 <- R2IMP_000 <- R2CP_084 ...   reaches R2CP_     YES
+Roughness          R2IMP_021 <- R2IMP_020 <- R2IMP_019 <- R2CP_090 ...   reaches R2CP_     YES
+Metallic           R2CP_085 metallic -> paint                            reaches R2CP_     YES
+Emission Strength  R2CP_094 emission ladder                              reaches R2CP_     YES
+```
+
+Both layers compose; neither eats the other.
+
+### A note on the calibration, because one input to it moved
+
+R2-015 tuned `coat_micro_rel = 0.20` as a PROPORTIONAL modulation of Coat
+Roughness, deliberately, because an absolute +-0.006 was +-27 % on
+`LiveryPaint`'s 0.022 and rendered as crazed lacquer. R2-524 raised that base to
+0.055, so the same proportion is now +-0.011 absolute — a wider swing on a coat
+that is already three times less mirror-like. Proportional is exactly the
+property that makes that safe, and it is why R2-015's choice was right. Nothing
+was re-tuned; the layer follows the coat it sits on.
+
+---
+
+## R2-532 — two silent failure modes closed in `world/car_paint.py`, both of the same shape
+
+Both are "the node reads a different thing than the value looks like it means",
+which is the shape of the two mistakes in R2-526 and R2-527 as well.
+
+**1. `ShaderNodeMix` has three sockets all called `Result`, and the check could
+not see the difference.** The snapshot recorded links by socket NAME, and the
+round-trip verification compared them by socket NAME:
+
+```
+identifier      name     type
+Result_Float    Result   NodeSocketFloat        <- outputs["Result"] returns THIS one
+Result_Vector   Result   NodeSocketVector
+Result_Color    Result   NodeSocketColor
+```
+
+Round 1's `LiveryPaint` feeds Base Color, Metallic, Roughness and Emission Color
+from four `ShaderNodeMix` nodes. A restore that reconnected a colour chain
+through the float output would have read back as `Result` and been called
+identical. The restore is now by **identifier**, with a name fallback so a blend
+carrying an older snapshot can still be upgraded in place, and
+`work/r2521/strict_cmp.py` compares identifiers, socket enabled-state, every
+unlinked default and the material's custom properties.
+
+**Re-verified strictly, and it does pass** — the name lookup happened to resolve
+correctly. That is the point: it passed by luck and the test could not tell.
+
+**2. Stripping in the wrong order left a broken material that still renders.**
+`imperfections.py` records, in its own snapshot, the `R2CP_*` nodes it chained
+onto. Stripping `car_paint` first deletes those nodes and restores the
+Principled to round 1's chain, orphaning the imperfection nodes and leaving
+`r2imp` pointing at names that no longer exist — so its own `--strip` would then
+restore nothing, silently. `car_paint.py` now **refuses**:
+
+```
+REFUSING to strip LiveryPaint: it still carries tools/imperfections.py's layer
+('r2imp' record present). Strip that first: ... then re-run this.
+>> STAGE RESULT: R2521_CARPAINT_REFUSED
+```
+
+A refusal, not a warning, because the state it prevents is invisible: the
+material still renders, just without the layer everyone believes is in it. And
+`SystemExit` is caught **explicitly** in the entry point — it is a
+`BaseException`, so the first version of this guard printed its reason and
+emitted no `STAGE RESULT` at all, which is the same silence it exists to stop.
+Blender 5.2 exits 0 for a script that raised, so a caller reading `$?` would have
+seen a refusal as a clean run.
+
+### The unwind is gated, both layers, byte-exact
+
+```
+pristine -> car_paint apply -> imperfections apply
+         -> imperfections --strip -> car_paint --strip
+STRICT IDENTICAL: True     120 nodes, 164 links, 466 unlinked values, no props
+```
+
+Compared by socket identifier, not by name.
+
+---
+
+## R2-533 — timing, and what the ladder passes running now contain
+
+`render/film16_breach.blend` was built before any of this landed, so **the two
+13-hour ladder passes running now render an unpainted car with no imperfection
+layer.** That is fine and was agreed: those passes exist to find geometry pops,
+beat seams, continuity and one-shot violations, none of which are paint-dependent.
+
+**Nothing in this block rebuilt a film scene, and nothing touched
+`film16.blend` or `film16_breach.blend`.** The two car SOURCES carry both layers
+and the next rebuild picks them up.
+
+Backups, and one honest caveat about them:
+
+```
+work/r2521/car_anim_PRE_R2521.blend.bak            genuinely pristine
+work/r2521/car_anim_driver_POST_CARPAINT.blend.bak NOT pristine — taken after
+                                                   car_paint had been applied
+```
+
+The driver blend has no pristine copy on disk. It does not need one: the strip
+path is gated byte-exact in both directions, so
+`imperfections --strip` then `car_paint --strip` restores it exactly.
