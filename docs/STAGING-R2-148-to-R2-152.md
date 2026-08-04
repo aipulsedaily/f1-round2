@@ -138,20 +138,31 @@ frame changed" is not a finding until you know what 0 % looks like:
 
 | region | px | film13→film14 >8/255 | repeat-render floor | mean \|Δ\| signal / floor |
 |---|---|---|---|---|
-| **VOID** — declared, owned, never laid | 12,490 | **34.57 %** | **0.00 %** | **17.578 / 0.054** |
+| **VOID, UNOCCLUDED — the claim** | 5,669 | **74.40 %** | **0.00 %** | **36.268 / 0.05** |
+| VOID, occluded by the pit building in BOTH | 6,821 | **1.47 %** | 0.00 % | 2.044 |
+| VOID, all in-frustum (lower bound) | 12,490 | 34.57 % | 0.00 % | 17.578 / 0.054 |
 | CTL_PAVED — track asphalt, built in BOTH | 5,066 | **0.00 %** | 0.00 % | 0.304 / 0.050 |
 | CTL_SKY — top 8 % of frame | 660,480 | **0.00 %** | 0.00 % | 0.295 / 0.054 |
 | whole frame | 8,294,400 | 5.29 % | 0.00 % | 3.005 / 0.048 |
 
-The void region's mean RGB goes **(99.1, 88.2, 74.9) → (116.6, 103.3, 86.6)** — it
-lightens, because a lit concrete apron is now there. In the frame's lower-left sixth
-the change is **99.72 % of pixels over 8/255, mean |Δ| 59.8, against a floor of
-0.035**. That is a factor of **1,710**.
+The unoccluded void's mean RGB goes **(72.0, 64.8, 57.1) → (108.2, 96.0, 81.2)** — it
+lightens by half a stop, because a lit concrete apron is now there. In the frame's
+lower-left sixth the change is **99.72 % of pixels over 8/255, mean |Δ| 59.8, against a
+floor of 0.035** — a factor of **1,710**.
 
-**34.57 % is a LOWER bound.** It is the fraction of *all* in-frustum void pixels, and
-R2-140 measured that the pit building shell hides 854 of 1,200 of them. The occluded
-ones correctly do not move. Of the ~45 % that are unoccluded, essentially all of them
-do.
+**Row 2 is the control that matters most and it is an internal one.** It is *the same
+void region*, in *the same two builds*, differing only in that the pit building shell
+stands between it and the lens. Same geometry, same fix, no line of sight — so it must
+not move, and at **1.47 %** against 74.40 % it does not. A fix that "showed up"
+everywhere including behind a wall would be light leaking in from somewhere else.
+
+**And this is an independent reproduction.** R2-132's purpose-built diagnostic camera,
+casting straight down at the region, measured **78 % of void-region pixels changed
+against a 1.33 % control.** This is a different camera (the film's own ONER), a
+different angle (16.7–34.4° line of sight, not 90°), a different scene and a different
+instrument, and it returns **74.40 % against 1.47 %.** The occlusion resolve also
+returns **70.86 m² unoccluded of 156.12 m² in frustum**, against R2-140's independently
+measured **71.50 of 157.50**.
 
 Two things worth keeping separate. **R2-133 was right about its own question and
 wrong about nothing** — its crops were of a different render at a different resolution
