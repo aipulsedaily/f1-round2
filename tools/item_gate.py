@@ -3285,6 +3285,44 @@ def main():
     gated = [v for k, v in checks.items() if v != "not_applicable"]
     passed = all(v is True for v in gated)
 
+    # R2-637. A TRANSPORT FAILURE IS NOT A VERDICT ABOUT A MODULE.
+    #
+    # `witness_frame_valid` is the ONE check in this file that is not about the
+    # item at all -- it is the gate checking its own instrument (subject and
+    # control populations, clipping, whether the control sphere's highlights are
+    # warm). When it is False the gate has no picture, so `surface_microstructure`,
+    # `relief_reads_as_lip_and_shade` and `silhouette_departs_from_analytic` are
+    # all None and the item has been told nothing about itself.
+    #
+    # It nonetheless produced ITEM_REJECTED, because the ITEM_UNMEASURABLE branch
+    # at the bottom of `main` requires `not any(v is False ...)` and
+    # `witness_frame_valid: False` is itself a False. The one condition that
+    # should have forced "I could not look" was the one blocking it.
+    #
+    # MEASURED, and this is how it was found rather than reasoned: job
+    # 707c2a92ba76 QUEUED FINE at depth 15 and the client's poll died on
+    # `http.client.RemoteDisconnected` -- which is what a broker closing a
+    # keep-alive looks like and what a broker restart produces by construction.
+    # The gate reported `ITEM_REJECTED` on `driver_figure`. Nothing in the
+    # printed verdict distinguished that from a real rejection; it took reading
+    # `checks.witness_frame_valid` in the JSON to tell them apart.
+    #
+    # THIS GATE DECIDES WHETHER ~113 MODULES GET AUTHORED. A false rejection here
+    # costs a rework round on an item that was fine, and teaches whoever does the
+    # rework to build toward a defect that was never there.
+    #
+    # A REAL failure elsewhere still REJECTS. `no_external_assets` is true or
+    # false about the blend whether or not a picture exists, so an item carrying
+    # an image texture is rejected on that evidence and not excused by a dead
+    # socket. Only the render-based checks are forfeited with the witness.
+    WITNESS_CHECK = "witness_frame_valid"
+    substantive_fail = sorted(k for k, v in checks.items()
+                              if v is False and k != WITNESS_CHECK)
+    witness_unusable = checks.get(WITNESS_CHECK) is False
+    verdict_is_vacuous = bool(
+        (witness_unusable or (unmeasurable and not substantive_fail))
+        and not substantive_fail and not passed)
+
     report = {
         "item": a.item, "hero": hero,
         "filmed_at_m": dist, "lens_mm": lens, "onscreen_px_4k": px,
@@ -3375,7 +3413,23 @@ def main():
             "render_error": render_err,
             "image": img,
         },
-        "result": "ITEM_ACCEPTED" if passed else "ITEM_REJECTED",
+        # THE REPORT SAYS WHAT THE RUN SAYS. R2-637 and R2-116/R2-117 together:
+        # the exit path below used to convert a rejection into ITEM_UNMEASURABLE
+        # while the JSON on disk still read ITEM_REJECTED, which is precisely the
+        # "the verdict on disk is not the verdict of the run" defect this project
+        # has already been bitten by once. One string, computed once, used twice.
+        "result": ("ITEM_ACCEPTED" if passed else
+                   "ITEM_UNMEASURABLE" if verdict_is_vacuous else
+                   "ITEM_REJECTED"),
+        "verdict_is_vacuous_because": (
+            None if not verdict_is_vacuous else
+            ("the witness frame is unusable, so every render-based check was "
+             "forfeited and nothing was measured about this module -- a "
+             "transport or staging failure is the ABSENCE of a verdict, not a "
+             "verdict. See witness.render_error."
+             if witness_unusable else
+             "no check FAILED, but %d could not be measured at all"
+             % len(unmeasurable))),
     }
 
     # ---------------- WHAT THIS REPORT MEASURED -------------------------
@@ -3507,12 +3561,12 @@ def main():
     # A gate whose checks did not RUN is not a rejection either: it is a
     # refusal, and callers deciding whether to rebuild an item need to tell
     # "your item is wrong" from "I could not look at your item".
-    if report["result"] == "ITEM_REJECTED" and unmeasurable and \
-            not any(v is False for v in checks.values()):
-        print(">> REFUSING TO REPORT A VERDICT: nothing FAILED, but %d check(s) "
-              "could not be measured at all. That is not a rejection, it is a "
-              "gate that could not look." % len(unmeasurable))
-        return gate_exit.verdict("ITEM_UNMEASURABLE")
+    # ONE STRING, DECIDED WHERE THE REPORT WAS BUILT. This used to re-derive the
+    # vacuity test here, which is how the JSON and the exit status came to
+    # disagree -- see `verdict_is_vacuous` and the note on "result".
+    if report["result"] == "ITEM_UNMEASURABLE":
+        print(">> REFUSING TO REPORT A VERDICT: %s"
+              % report.get("verdict_is_vacuous_because"))
     return gate_exit.verdict(report["result"])
 
 
