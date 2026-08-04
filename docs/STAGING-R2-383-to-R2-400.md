@@ -1102,3 +1102,137 @@ was happening and consistently could not tell how far it would go, which is
 what you would expect from reasoning about a contact-driven event with an
 arithmetic model of a drag-driven one.
 
+
+---
+
+## R2-400 — THE ENDING: it survives, f2940 is stronger than the build that proved it, and at f2978 I cannot claim R2-297's "within 1 %" — here is exactly why
+
+`render/film14_breach_R2387.blend`, ONER, 3840 × 2160, 256 samples, DOF on,
+adaptive 0.01 — the same spec as the R6 and R2-281 runs. Both frames came back
+clean (f2978 lum mean 0.391746 sd 0.114324, 100.000 % non-black; f2940 mean
+0.393186 sd 0.102430, 100.000 %); the farm's black-frame signature is mean
+0.0003 / 2 distinct colours and neither is anywhere near it.
+
+### The headline, stated the way it comes out and not the way I wanted it
+
+| `WOUND_bridged`, f2978 | R6 | demonstrator | FRAMEONLY (R2-297) | **R2387 AIR** |
+|---|---|---|---|---|
+| `grid_contrast`, the published \|·\| mean | 0.03675 | 0.00777 | 0.00785 | **0.01429** |
+
+**On the published statistic my build is 1.8× the demonstrator, and R2-297's
+"reproduces the demonstrator within 1 %" is NOT a claim I can make for it.**
+That is the first thing to say.
+
+### And the metric's own sign says two of its three samples cannot be members
+
+`grid_contrast` takes the absolute value on purpose — R2-181's lesson, that a
+signed contrast cancels across a wall where members are darker than the wound
+and lighter than crazed glass. At f2978, across the three transom rows:
+
+| build | T0 (v1103) | T1 (v1083) | T2 (v1064) | published \|·\| mean | **dark-only mean** |
+|---|---|---|---|---|---|
+| R6, lattice intact | −0.00384 | **−0.08955** | −0.01686 | 0.03675 | 0.03675 |
+| FRAMEONLY | −0.01446 | −0.00626 | +0.00283 | 0.00785 | 0.00691 |
+| **R2387 AIR** | **+0.02147** | −0.01593 | **+0.00546** | **0.01429** | **0.00531** |
+
+**A member cannot make a row brighter than the rows above and below it.** In R6
+all three rows are darker — that is a lattice. In R2387 **two of the three are
+brighter**, and the larger of them, T0 at +0.02147, is the single biggest
+contributor to my 0.01429. The only signed-dark line left is T1, and it is
+**−0.01593 against R6's −0.08955: an 82 % reduction of the one line the metric
+was built to see.** On the dark-only mean — the part of the statistic a member
+can actually produce — R2387 is **0.00531 against FRAMEONLY's 0.00691 and the
+demonstrator's 0.00777.**
+
+I am not proposing a new statistic to flatter my build. The published number is
+0.01429 and it is worse than the demonstrator's. What the sign establishes is
+**what the difference is made of**, and it is made of the wound being brighter,
+not of a lattice being back.
+
+### The row profile agrees, and it needs no metric at all
+
+Mean brightness of each row of `WOUND_bridged`, R2387 minus FRAMEONLY:
+**positive on 33 of the 40 sampled rows**, by +0.03 to +0.07 across v 1059–1111
+— the whole middle of the hole. It is negative only on the bottom three rows
+(v 1113–1119, down to −0.06), which is where three released transom pieces come
+to rest on the apron (R2-399, P11). **The hole is more open and the ground
+below it has debris on it.** That is the correct picture of a wall that has been
+driven through, and it is the opposite of a lattice returning.
+
+`render/r2387/WOUNDBOX_f2978_x14.png`, the wound rectangle at 14×, three
+panels: R6 has two vertical mullions and a horizontal transom across it;
+FRAMEONLY has neither and a dark pile of debris standing in the lower half;
+**R2387 has neither and the pile is gone**, replaced by scattered fragments
+lying on the apron below the opening. Panel 3 is the most open of the three.
+
+### f2940 — the tighter frame, and the one I predicted was at risk — is better on BOTH statistics
+
+| `WOUND_bridged`, f2940 | R6 | FRAMEONLY | **R2387 AIR** |
+|---|---|---|---|
+| published `grid_contrast` \|·\| | 0.02572 | 0.02688 | **0.01898** |
+| dark-only mean | 0.02377 | 0.01543 | **0.00436** |
+| `CTL_UNTOUCHED_bays01` changed > 8/255 | — | 0.000 % | **0.000 %** |
+
+**R2-278's embarrassment is repaired here.** At f2940 the demonstrator's
+`grid_contrast` moved *upward* (0.02572 → 0.02672) on a frame where the lattice
+was visibly gone, and the entry had to say so. R2387 moves it **downward**, to
+0.01898, and its dark-only component to 0.00436 — a 5.5× collapse. The frame
+where the metric failed is the frame where this build reads most clearly.
+
+### The controls
+
+| region, f2978 | reference (FRAMEONLY vs R6) | **R2387 vs R6** | verdict |
+|---|---|---|---|
+| **`CTL_UNTOUCHED_bays01`** — the one R2-296 established is genuinely clean | 0.043 % | **0.043 %** | **holds exactly** |
+| `CTL_UNTOUCHED_bays789` | 0.144 % | 3.308 % | fails |
+| `CTL_UNTOUCHED_bays012` | 1.482 % | 4.085 % | fails |
+| sky | 0.0004 % | 0.0008 % | holds |
+| `CTL_UNTOUCHED_bays01`, f2940 | 0.000 % | **0.000 %** | **holds exactly** |
+
+**The genuine control is bit-clean at both frames.** The two that fail are the
+two R2-296 already declared expired, and they fail for a measured reason:
+the retained bays shed slightly more glass in this bake.
+
+| shards departing (> 0.25 m), by bay | shipped | R2281 re-bake | **R2387 AIR** |
+|---|---|---|---|
+| bay 2 | 1.0 % | 1.5 % | 3.6 % |
+| bay 3 | 1.0 % | 1.5 % | 0.5 % |
+| **bay 4** | 98.6 % | 96.7 % | **99.7 %** |
+| **bay 5** | 96.0 % | 95.4 % | **98.6 %** |
+| bay 6 | 9.0 % | 4.0 % | 2.0 % |
+| bay 7 | 2.2 % | 6.6 % | 2.2 % |
+
+Every retained bay is inside the band the two shipped-or-published bakes
+already span, bay 7 is back to the shipped figure, and the two destroyed bays
+are the best of the three.
+
+### P18, scored, and the part of it that was my own bad question
+
+**P18 predicted f2978 within 1.5 pp of 11.33 % and `grid_contrast` under
+0.012. Both clauses are WRONG** — 51.113 % and 0.01429.
+
+The `grid_contrast` clause is a straightforward miss. **The 11.33 % clause was
+a badly posed question and that is my fault, not the build's.** 11.33 % is
+`FRAMEONLY vs R6`, and FRAMEONLY is the corrected frame on the *shipped glass* —
+it moves 30 frame bodies and nothing else. My build moves those 30 bodies **and
+all 3,006 departed shards**, so a larger changed fraction is what a correct
+result looks like, not a regression. The comparable figure is R2387 against
+FRAMEONLY directly: **46.290 %** in the wound, **0.043 %** in the clean control.
+I should have predicted the pair, and I predicted one number against a
+differently-constituted build.
+
+### THE VERDICT
+
+**The ending survives.** The aperture reads, the connected hole is unchanged at
+2.15 × 6.00 m with bay 5 vacated 100 %, the only signed-dark lattice line at
+f2978 is down 82 %, f2940 is better than the build that proved the ending on
+both statistics, the genuine control is bit-clean at both frames, and the
+picture shows a more open wound over a cleaner apron.
+
+**And the thresholds and the proxy are separable, which is what I was asked to
+establish.** The thresholds bought the frame coming apart and they are
+untouched — `land_breach` stage 0 PASSES at the derived set. The air bought the
+field coming to rest: 2,646 bodies moving at the last key become 27. Neither
+bought the other, and the aperture is insensitive to the proxy across all seven
+cells I ran.
+
