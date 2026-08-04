@@ -1123,3 +1123,87 @@ The asymmetry is deliberate and is what makes it usable on this build: MISSING
 fails, NEW does not, because this rebuild adds five families on purpose and an
 audit that called those regressions would be useless on exactly the build it was
 written for.
+
+---
+
+## R2-517 — the ceiling lands as a 6.99 MB library append, and a sweep of my own fields for values that report intent instead of existence
+
+### the append
+
+`world/showroom_ceiling.blend` is appended in `tools/build_film_scene.py`
+alongside `SHOWROOM` / `PROPS` / `LIGHTS`, immediately after the Vitrine check.
+**Landed in source only — not rebuilt.** `film16_breach` is the ship candidate
+with two ladder passes running against it; the next film build carries this.
+
+**Why an append and not a post-build tool.** R2-504 established the ceiling
+cannot come from the assembly — the showroom enters the film *here*, downstream,
+as an append at identity. The obvious consequence was a tool that opens the
+finished 7.9 GB film, edits it and saves it, and that shape is wrong twice: it
+pages for an hour on an 11 GB box, and it cannot be moved to the farm either.
+`rq exec` will not take a scene out of the worker's cache, so the film travels as
+an `--include`, and `execremote.push_bundle` hardcodes `zstd -19 -T4` with no
+level selection — the pathology the *scene* path was already fixed for after
+`-19` was measured feeding a 4–5 MB/s wire at 1.3 MB/s. **A library collection is
+6.99 MB against 7.9 GB, about 1,140× smaller, and joins a mechanism this function
+already runs three times.** Ship the definition, not the artefact.
+
+**Read back rather than trusted**, opening the library on its own:
+
+```
+collection R2_SHOWROOM_CEILING present: True
+objects 21   meshes 21   polys 73,996
+z 5.5705 .. 6.1980        (soffit 6.200)
+lights 0     FILE images 0
+```
+
+The append site adds two refusals of its own — anything reaching above z 6.2005,
+or any `LIGHT` datablock, stops the build — because the interior load is
+46,203.313 W over exactly 23 lamps and `refuse_unless_levelled` runs after this.
+
+### THE SWEEP: values printed from a constant rather than read from the artefact
+
+The ceiling library's own `build()` reported a `z_extent` **quoted from its
+constants**, wrong by 190 mm, because the lowest thing up there is a track-head
+barrel and not a beam. It agreed with the source and disagreed with the artefact
+in every report it ever printed. Three instances of the same shape in my own
+work:
+
+**1. `prove_items_in_frame.py` — the denominator.** `total_px` was
+`resolution_x * resolution_y`, i.e. the size *requested*. The count in the
+numerator comes from the image that was actually written. Those differ under
+`resolution_percentage`, a render border, or any later change to how the frame is
+produced — and every item's coverage fraction would have been quoted against a
+denominator no pixel came from. Now `total_px_measured`, taken from the written
+image; the request is kept separately as `res_requested`.
+
+**2. `v125/verify_assembly10.sh` — the item counts.** It carried
+`want = {'CFP_': 676, 'CRF_': 120, 'TS_': 10, 'SPECX_': 900}` as literals. Those
+are `PLACEMENT.json`'s own `expect_objects`, so it was a second copy of the
+registry that would go on asserting the old numbers the moment a row changed —
+reporting what was intended when the script was written. It now **reads them from
+`PLACEMENT.json`** and prints what it read.
+
+**3. A number I put in a report to the coordinator, which was wrong.** I stated
+the driver was **4 objects** — `DRV_Helmet`, `DRV_Suit`, `DRV_Glove_L`,
+`DRV_Glove_R` — derived from a `strings` scan of `car_anim_driver.blend` that
+only surfaced the names my grep pattern happened to match. Counted off the built
+film:
+
+```
+   DRV_         11  PRESENT
+   driver objects: ['DRV_Balaclava', 'DRV_Boot_L', 'DRV_Boot_R',
+                    'DRV_Extras', 'DRV_Glove_L', 'DRV_Glove_R', ...]
+```
+
+**Eleven, not four**, and the composition is different too — a balaclava, boots
+and an extras group I never named. Nothing downstream depended on the figure, but
+it was presented as the driver's composition and it was a property of my search
+pattern. The corrective is the one this whole block keeps arriving at: **a census
+of the saved artefact, never a scan for names you already expect.**
+
+> The general shape, stated once: **a field is safe when it is impossible for it
+> to disagree with the thing it describes.** `establish_station_geometry()`
+> (R2-501) computes the station from the constant so the prose cannot drift.
+> `breach_gate.py` counts datablocks, not string occurrences. `film_stage_audit`
+> takes a set difference instead of consulting a list of stages. Each of those is
+> the same move: delete the second copy, and derive.

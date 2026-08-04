@@ -343,6 +343,71 @@ def main():
                 % (len(flying), flying[:6]))
         print(">> %d Vitrine_* appended, 0 parented to CAR_ROOT" % len(vit))
 
+        # ---- THE SHOWROOM CEILING  (R2-508 / R2-517) --------------------- #
+        #
+        # WHY IT IS AN APPEND AND NOT A POST-BUILD TOOL.  R2-504 established the
+        # ceiling cannot come from the assembly: the showroom enters the film
+        # HERE, downstream of it, as an append at identity, and `assembly*.blend`
+        # has no showroom in it at all.  The obvious consequence was a tool that
+        # opens the finished 7.9 GB film, edits it and saves it -- and that shape
+        # is wrong twice over.  It pages for an hour on an 11 GB box, and it
+        # cannot be moved to the farm either: `rq exec` will not take a scene out
+        # of the worker's cache, so the film would travel as an `--include`, and
+        # `execremote.push_bundle` hardcodes `zstd -19 -T4` with no level
+        # selection -- the pathology the *scene* path was already fixed for after
+        # -19 was measured feeding a 4-5 MB/s wire at 1.3 MB/s.
+        #
+        # A library collection is 6.99 MB against the 7.9 GB the round trip
+        # existed to move -- about 1,140x smaller -- and it joins a mechanism
+        # this function already runs three times.  Same reasoning as the round-1
+        # set: ship the definition, not the artefact.
+        #
+        # NOT RE-VERIFIED HERE, because the library refuses to write itself if it
+        # carries a light datablock, a FILE image, an emissive material, a flat
+        # material, or anything above the slab.  Round-tripped rather than
+        # assumed: 21 objects / 73,996 polys, spanning z 5.5705-6.1980 under the
+        # 6.200 soffit, with 46,203.313 W / 23 lamps / mark 3.628 /
+        # assert_levelled PASS unchanged after the append.  `refuse_unless_levelled`
+        # below is what actually holds that, and it runs after this.
+        CEIL_BLEND = os.path.join(R2, "world/showroom_ceiling.blend")
+        CEIL_COLL = "R2_SHOWROOM_CEILING"
+        if not os.path.exists(CEIL_BLEND):
+            raise SystemExit(
+                "REFUSING: %s is missing. The showroom has had no ceiling since "
+                "round 1 -- one cuboid with a 686 m2 top face -- and beat 1 now "
+                "opens 18 mm at 10.00 deg of depression, which puts it IN FRAME "
+                "1 (R2-508). Build it or pass --no-showroom." % CEIL_BLEND)
+        with bpy.data.libraries.load(CEIL_BLEND, link=False) as (src_c, dst_c):
+            if CEIL_COLL not in src_c.collections:
+                raise SystemExit(
+                    "REFUSING: %s has no %s collection; got %s"
+                    % (CEIL_BLEND, CEIL_COLL, list(src_c.collections)[:8]))
+            dst_c.collections = [CEIL_COLL]
+        ceil = dst_c.collections[0]
+        scene.collection.children.link(ceil)
+        # MEASURED off the appended meshes, not quoted from the library's own
+        # report. R2-517: that library's `build()` printed a `z_extent` taken
+        # from its constants and was wrong by 190 mm, because the lowest thing up
+        # there is a track-head barrel and not a beam. A number read back from
+        # the datablocks cannot disagree with the datablocks.
+        cz = [(o.matrix_world @ v.co).z
+              for o in ceil.all_objects if o.type == "MESH"
+              for v in o.data.vertices]
+        npoly = sum(len(o.data.polygons) for o in ceil.all_objects
+                    if o.type == "MESH")
+        print(">> appended %s (%d objects, %d polys), z %.4f..%.4f MEASURED"
+              % (ceil.name, len(ceil.all_objects), npoly, min(cz), max(cz)))
+        if max(cz) > 6.2005:
+            raise SystemExit(
+                "REFUSING: the ceiling library reaches z %.4f, above the "
+                "showroom soffit at 6.200. Its underside is the interior "
+                "ceiling and is visible in beat 5." % max(cz))
+        if any(o.type == "LIGHT" for o in ceil.all_objects):
+            raise SystemExit(
+                "REFUSING: the ceiling library carries a LIGHT datablock. The "
+                "interior load is 46,203.313 W over 23 lamps and is asserted "
+                "by refuse_unless_levelled below; a 24th lamp breaks it.")
+
         # THE BREACH PLANE. world_contract.ACCESS_GLASS_X, asserted in the
         # scene's own coordinates after the append.
         import world_contract as WC

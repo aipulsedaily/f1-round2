@@ -1212,7 +1212,15 @@ def build(coll=None, report=True):
                          if v is not None)),
         "verts": int(sum(len(v.data.vertices) for v in made.values()
                          if v is not None)),
-        "z_extent": [Z_PRI_BOT, Z_DECK + DECK_T],
+        # MEASURED off the emitted meshes, not quoted from the constants.
+        # It used to be `[Z_PRI_BOT, Z_DECK + DECK_T]` -- the primary beam's
+        # bottom -- and that is wrong by 190 mm, because the lowest thing on
+        # this ceiling is a TRACK HEAD BARREL at z 5.5705, not a beam. A
+        # declared extent that disagrees with the geometry is the same defect
+        # as a declared anything else that disagrees with the geometry, and it
+        # was found by the library's append test asserting against the
+        # constant and failing on the mesh.
+        "z_extent": _measured_z_extent(made),
     }
     if report:
         print(">> ceiling: %d objects, %d polys, %d verts"
@@ -1230,6 +1238,24 @@ def build(coll=None, report=True):
 # =========================================================================== #
 #  6.  PIECE BUILDERS
 # =========================================================================== #
+
+
+def _measured_z_extent(made):
+    """The built ceiling's real z span, from the meshes it emitted."""
+    import numpy as np
+    lo, hi = None, None
+    for ob in made.values():
+        if ob is None or ob.type != "MESH" or not len(ob.data.vertices):
+            continue
+        co = np.empty(len(ob.data.vertices) * 3)
+        ob.data.vertices.foreach_get("co", co)
+        M = np.array(ob.matrix_basis)      # fresh objects: basis, not world
+        z = (co.reshape(-1, 3) @ M[:3, :3].T + M[:3, 3])[:, 2]
+        lo = float(z.min()) if lo is None else min(lo, float(z.min()))
+        hi = float(z.max()) if hi is None else max(hi, float(z.max()))
+    return [None if lo is None else round(lo, 4),
+            None if hi is None else round(hi, 4)]
+
 
 def _rib(r0, r1, ct, st, hw, z0, z1):
     """A radial bar from r0 to r1 along (ct, st), half-width hw, z0..z1."""

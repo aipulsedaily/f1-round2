@@ -353,6 +353,113 @@ Two things follow:
 
 ---
 
+## R2-631 — the 7.9 GB round trip should not exist, and the fix is the shape the showroom already uses
+
+Asked to move the film landing onto broker 2 via `rq exec`, because the local
+box was 4 GB from swap exhaustion and the landing was its largest consumer.
+The landing was stopped immediately — it was minutes from being killed by its
+own swap guard having achieved nothing, and stopping it took the box from
+39 GB of swap back to 24 GB.
+
+**The write-back was never the problem.** Broker 2's own measured fetch rate is
+**8.3 MB/s**, so 7,969 MB comes home in about 16 minutes. Fine.
+
+**The INPUT is the problem, and `rq exec` cannot solve it:**
+
+* An exec job's whole input is a BUNDLE from a local root. There is no
+  supported way to hand it a scene that already sits in the render worker's
+  cache — `execservice.ensure_ready` deliberately reuses whatever scene the
+  render worker holds, and says in its own comment that *"an exec job must
+  never restart the render worker."* So the film would have to travel as an
+  `--include`.
+* `execremote.push_bundle` compresses with a **hardcoded `zstd -19 -T4`** and
+  has no level selection. The SCENE path has one, and it exists because `-19`
+  was measured feeding a 4-5 MB/s wire at **1.3 MB/s** on a 4.22 GB push while
+  the receiving ssh sat at 0.0 % CPU. Bundles never needed that fix because a
+  bundle is meant to be ~7.9 MB of code.
+* `docs/agents.md` states the intent in one line: **"Ship code, not blends"**,
+  and *"the `.blend` is born where the render happens."*
+
+So the farm route means compressing 7.9 GB at `-19` on a box already at load
+20+, to send the farm a file it already has, to get back a file we already know
+how to make. **The round trip is worse than waiting** — which was the answer
+the request explicitly invited, and it is the correct one.
+
+### the third option, which removes the round trip permanently
+
+The showroom is already solved this way. `tools/build_film_scene.py` appends
+`SHOWROOM`, `PROPS` and `LIGHTS` from `world/car_anim.blend` at identity —
+while the film blend is open and about to be saved anyway. A ceiling that ships
+as a library collection joins that list and costs the pipeline **nothing**,
+because the open and the save are already paid for by the film build.
+
+`tools/r2621_ceiling_library.py` emits it:
+
+```
+LIBRARY R2_SHOWROOM_CEILING: 21 objects, 73,996 polys, 9 material(s)
+lights 0, FILE images 0, emissive materials 0
+highest surface R2C_CoveLiner at z 6.1980 (slab soffit 6.200)
+saved world/showroom_ceiling.blend  6.99 MB  in 12.1 s
+```
+
+**6.99 MB against 7,969 MB — 1,140x smaller than the artefact the round trip
+was for.** It REFUSES to write a library carrying a light datablock, a FILE
+image, an emissive material, a material below the depth floor, or anything
+above the slab soffit, so the consumer does not have to re-verify it.
+
+Round-tripped rather than assumed — `work/ceiling/append_test.py` appends it
+into the showroom scene in exactly the shape `build_film_scene.py` uses:
+
+```
+appended R2_SHOWROOM_CEILING: 21 objects, 73996 polys
+LIGHTING BEFORE / AFTER   46,203.313 W  23 lamps  mark 3.628   IDENTICAL
+assert_levelled PASS
+appended ceiling spans z 5.5705 .. 6.1980 (slab soffit 6.200)
+>> STAGE RESULT: APPEND_OK
+```
+
+The three lines that land it, next to the existing `SET_COLLECTIONS` append:
+
+```python
+with bpy.data.libraries.load("world/showroom_ceiling.blend", link=False) as (src, dst):
+    dst.collections = ["R2_SHOWROOM_CEILING"]
+scene.collection.children.link(dst.collections[0])
+```
+
+`tools/r2621_ceiling_build.py` is kept for landing on a film that already
+exists, which is still the right tool when somebody wants that and has the
+memory for it.
+
+---
+
+## R2-632 — the build summary's `z_extent` was QUOTED FROM THE CONSTANTS, and it was wrong by 190 mm
+
+Found by the library's own append test, which is the point of having one.
+
+`showroom_ceiling.build()` reported `"z_extent": [Z_PRI_BOT, Z_DECK + DECK_T]`
+— the primary beam's bottom flange and the deck's top, straight from the
+module's constants. The append test asserted the appended mesh's lower bound
+against that number and **failed on the geometry**:
+
+```
+appended ceiling spans z 5.5705 .. 6.1980
+appended ceiling bottom z 5.5705 is not the built 5.760
+```
+
+The mesh is right and the summary was wrong. The lowest thing on this ceiling
+is **a track head barrel**, not a beam: the heads hang off the secondary
+soffit at 5.874, drop a stem, and their barrels tilt down to 5.5705. The
+declared extent was 190 mm shallow and had been in every report since the
+first build.
+
+Nothing would have caught it. It is a number the module states about itself,
+computed from the same constants a reader would check it against, so it agrees
+with the source and disagrees with the artefact — the same shape as R2-626(d)'s
+constant attribute and R2-629's unmeetable guard. `_measured_z_extent()` now
+reads it off the emitted meshes.
+
+---
+
 ## R2-627 — what is actually in frame 1, measured, and why the ceiling was designed around it rather than around the plan
 
 The obvious way to build this ceiling is a waffle grid over the whole plan.

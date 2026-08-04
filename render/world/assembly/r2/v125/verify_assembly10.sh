@@ -52,7 +52,15 @@ echo; echo "=== 3 THE ITEMS ARRIVED?  task #121 -- nothing in world/items/ has"
 echo    "    ever reached a frame.  Counted off the SAVED BLEND, per prefix. ==="
 $B -b -noaudio $A10 --factory-startup --python-expr "
 import bpy, json
-want = {'CFP_': 676, 'CRF_': 120, 'TS_': 10, 'SPECX_': 900}
+# R2-517: READ from the registry, never a second copy of it here. These four
+# numbers are PLACEMENT.json's own \`expect_objects\`, and a hardcoded copy would
+# go on asserting the old ones the moment a row changed -- reporting what was
+# intended when this script was written instead of what the registry now says.
+import json
+_reg = json.load(open('/home/zany/f1-round2/world/items/PLACEMENT.json'))
+want = {r['prefix']: r['expect_objects'] for r in _reg['items']
+        if r.get('state') == 'PLACE'}
+print('   wants READ from PLACEMENT.json: %s' % want)
 got = {}
 for o in bpy.data.objects:
     for p in want:

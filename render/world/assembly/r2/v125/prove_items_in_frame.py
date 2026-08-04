@@ -98,6 +98,7 @@ sc.render.film_transparent = True
 sc.render.image_settings.file_format = "PNG"
 sc.render.image_settings.color_mode = "RGBA"
 
+_LAST_TOTAL = 0
 TMP = "/tmp/claude-0/-home-zany-opus5-car-render/262f2abe-1dfb-4a32-9544-52393037f67a/scratchpad/items.png"
 os.makedirs(os.path.dirname(TMP), exist_ok=True)
 _BY_PREFIX = {}
@@ -115,12 +116,19 @@ def _alpha():
     px = list(im.pixels)
     n = len(px) // 4
     c = sum(1 for i in range(n) if px[i * 4 + 3] > 0.5)
+    # R2-517: `n` is the size of the image THAT WAS WRITTEN, not the resolution
+    # this script asked for. They differ under resolution_percentage, a render
+    # border, or any later change to how the frame is produced -- and a
+    # denominator quoted from the request rather than the result is the same
+    # defect as a z_extent quoted from its own constants.
+    global _LAST_TOTAL
+    _LAST_TOTAL = n
     bpy.data.images.remove(im)
     return c
 
 
 report = {"frames": {}, "objects_tagged": counts_scene,
-          "res": [sc.render.resolution_x, sc.render.resolution_y],
+          "res_requested": [sc.render.resolution_x, sc.render.resolution_y],
           "samples": a.samples}
 ok_any = False
 control_clean = True
@@ -146,8 +154,7 @@ for f in [int(x) for x in a.frames.split(",") if x.strip()]:
         elif c:
             ok_any = True
     report["frames"][f] = {"counts": row, "a_all": a_all,
-                           "total_px": sc.render.resolution_x
-                           * sc.render.resolution_y}
+                           "total_px_measured": _LAST_TOTAL}
     print(">> f%-5d frame covers %d px; item pixels: %s" % (f, a_all, row))
 
 report["negative_control_clean"] = control_clean
