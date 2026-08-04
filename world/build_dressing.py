@@ -5550,8 +5550,25 @@ def build(verbose=True):
     napx = 0
     apx = Batch("Apex", 120.0)
     for c in CORNERS:
-        for j in range(rint(0, 2, c["i"], 971)):
-            s = c["s_apex"] + rnd(-30.0, 30.0, c["i"], j, 972)
+        # R2-257.  TWO BOARDS AT ONE CORNER WERE TWO DRAWS FROM ONE WINDOW.
+        # `s` used to be an independent uniform over the same +-30 m window for
+        # every j, so nothing stopped the second board landing on the first.  On
+        # the shipping seeds it did: DR_Apex_022 carried two ATELIER 9 boards
+        # 0.277 m apart with 70.9 % of the smaller panel superimposed, which
+        # renders as one garbled legend -- the same defect shape as R2-256 on La
+        # Passerelle, found by the same sweep.  A board is at most 5.2 m wide
+        # (`build_apex_board` W = rnd(2.8, 5.2)), so when there are two they now
+        # take opposite halves of the window with a 7 m guard at the shared
+        # edge: centres are >= 14.0 m apart and two panels cannot meet.  The
+        # SINGLE-board draw is deliberately left on the old expression and the
+        # old seed, so nothing moves at the 8 corners that carry one board.
+        napx_c = rint(0, 2, c["i"], 971)
+        for j in range(napx_c):
+            if napx_c < 2:
+                s = c["s_apex"] + rnd(-30.0, 30.0, c["i"], j, 972)
+            else:
+                s = (c["s_apex"] + (j * 2 - 1) *
+                     (7.0 + rnd(0.0, 23.0, c["i"], j, 972)))
             k = hash01(c["i"], j, 973) * 1000.0
             t = build_apex_board(apx.at(s), s % LAP, c["inside"],
                                  brand_pick(c["i"], j, 974), k)
