@@ -345,7 +345,7 @@ R2-451 is that maximising them produced a diagram.
 
 ---
 
-## R2-456b — the fix across the WHOLE beat, and where the remaining 64 steep frames live
+## R2-457 — the fix across the WHOLE beat, and where the remaining 64 steep frames live
 
 The brief for this block warned that flattening one key can move the problem
 rather than fix it. Measured over all 792 frames, `tools/beat1_elevation.py`:
@@ -396,7 +396,7 @@ touching their azimuth.
 
 ---
 
-## R2-457 — the seam is bit-identical, and the protected region moves 8.2 px against the rejected candidate's 104
+## R2-458 — the seam does not move at all, beats 2-6 do not move, and the protected region moves 8.2 px against the rejected candidate's 104
 
 **Nulls first, both of them, before any verdict.**
 
@@ -432,6 +432,26 @@ tools/campath_diff.py self-null, the before path against itself
 | worst LOCAL accel | 3.59x @f796 | identical |
 | worst rotation | 4.91 %width/frame @f806 | identical |
 | verdict | SEAM_OK | **SEAM_OK** |
+
+**Containment in the SHEET, not only in the path.** Every top-level block of
+`beat_sheet.json` compared before against after:
+
+```
+aim  beat1_2_seam  beat2  beat3  beat4  beat5  beat6  beats  doppler  fps
+law  sources  speed_ramps  time_map  total_frames  total_s        ALL IDENTICAL
+
+beat1 sub-keys that differ: camera_keys, flight, present_order, schedule,
+  weave_spec, presentation_framing, path_length_m, mean_camera_speed_ms,
+  max_key_to_key_speed_ms, max_estimated_peak_speed_ms, min_clearance_to_car_m
+
+beat 1's LAST camera key (t = 31.4, the seam)          IDENTICAL
+beat 1's four hand-authored close-out keys             IDENTICAL
+speed_ramps.min_world_time_scale_note                  PRESERVED
+```
+
+That last line is R2-062's second-order trap checked rather than trusted: the
+recursive carry-forward exists because a one-level merge used to delete the
+paragraph recording that the 0.153719 world-time floor is solved. It survived.
 
 `tools/campath_diff.py`, before -> after:
 
@@ -494,7 +514,7 @@ by nothing and bulges 84 mm mid-span. **It has not been looked at in pixels.**
 
 ---
 
-## R2-457b — what the re-aim costs and what it closes, on the gates neither arm was built to satisfy
+## R2-459 — what the re-aim costs and what it closes, on the gates neither arm was built to satisfy
 
 Both arms, `tools/continuity_gate.py --campath`, **PASS with 0 FAIL**:
 
@@ -529,7 +549,7 @@ agent to move a beat-1 station has much less room than I did.
 
 ---
 
-## R2-458 — R2-429 folded in: ONE CHANGE DOES NOT FIX BOTH, and the measurement that settles it
+## R2-460 — R2-429 folded in: ONE CHANGE DOES NOT FIX BOTH, and the measurement that settles it
 
 R2-429 landed mid-block: beat 1 never goes wider than 76.1 % of frame width, the
 lens is never further than 8.32 m from the car in 33 seconds, and the film has no
@@ -579,7 +599,63 @@ its first frame and zero from f655 on.
 
 ---
 
-## R2-459 — what I could NOT confirm
+## R2-461 — what the opening should show, argued from the brief
+
+This is a judgement and it is owed an argument rather than an assertion.
+
+**What the first second is FOR, from `part2.md`.** Beat 1 is *"a PARTS SHOWCASE as
+much as an assembly"*, opening with *"camera drifts through the darkened showroom
+as parts hang exploded in space around the empty turntable"*. Three nouns are
+doing work there and none of them is a part: **the darkened showroom, the
+exploded field, the empty turntable.** The first image is asked to establish a
+place before it presents an object.
+
+**What the first SUBJECT should be, and it is already decided.** The brief's
+assembly law is *"structural core first (identify the central chassis/tub by
+geometry and hierarchy, not by name)"*, and R2-062's Held-Karp tour starts at MB
+and is pinned there — *"from MB, which is the film's first frame and stays
+there"*. **MB is the right first subject and nothing in this block argues
+otherwise.** The monocoque is the thing every other part attaches to; opening on
+it is the brief's own logic.
+
+**From where, and this is the part the shipped film gets wrong.** Three
+requirements in the brief are all statements about the camera's height and the
+background behind the subject, and a plan view defeats all three:
+
+1. *"the camera weaves THROUGH the exploded field like a drone through a hangar,
+   parts sliding past near-camera continuously."* A drone through a hangar flies
+   **among** things at their own height and things pass to the sides. It does not
+   hover over them. Parts cannot slide past a lens that is above everything.
+2. *"Light for legibility... subtle added practicals/rim lighting motivated by the
+   ceiling coves so each presented part gets **edge separation from the dark
+   background**."* At MB's shipped station the background is the showroom floor
+   0.08 m behind the monocoque, and the floor is the brightest large surface in
+   the room. There is no dark background to separate against, at any wattage. The
+   lens is also above all 23 lamps, so no rim is reaching it.
+3. *"**DOF as the presenter.** Shallow depth of field... the in-focus part is the
+   one being presented; near-misses sweep past soft in the foreground."* A
+   background at the subject's own distance cannot be defocused by any aperture.
+
+**So the opening should be**: the monocoque, whole enough to read as a monocoque —
+which means seeing its flank and its top together and the cockpit opening in
+profile, a three-quarter, not the symmetrical outline a plan view gives — from
+inside the exploded field at roughly the field's own working height, looking
+slightly down across it, **with the darkened showroom running away behind it** so
+the tub is rim-lit against dark and the turntable and the hanging field establish
+where we are. The depression that delivers that is the one the film already uses
+everywhere it works: **about 11 degrees, and no more than 25** (R2-454).
+
+**What this block does NOT deliver, and it is half the shot.** The brief also says
+the parts are *"large in frame"*, and R2-429 says the car is never smaller than
+76 % of frame width in 33 seconds. **An establishing frame has to contain the
+thing it establishes.** Re-aiming supplies the angle, the height and the
+background; it supplies no width at all (R2-458). The opening is now a photograph
+of a monocoque instead of a diagram of one, and it is still a photograph taken
+too close.
+
+---
+
+## R2-462 — what I could NOT confirm
 
 * **The 3 % score tolerance and the 25-degree cap have not been swept against
   rendered frames.** Both are defended by measurement — the plateau is real, the
