@@ -17085,3 +17085,363 @@ without needing to know what is in shot.
 lands, run these five checks and report the result **before** consulting the
 fill-order explanation. The prior explanation is not evidence about a frame it
 has never been tested against.
+
+## R2-510 — what the batch verified, and what was still running when it was handed over
+
+### assembly10 — BUILT, `>> STAGE RESULT: ASSEMBLE_OK`, 1,372 s
+
+```
+                       assembly9   assembly10
+objects                   28,781      30,488   (+1,707)
+meshes                     1,493       3,200   (+1,707 -- one DISTINCT mesh per
+                                                item object; nothing repeated)
+materials                    137         180
+barriers.fence_posts         676           0   superseded by catch_fence_post
+architecture.pit_wall_stands   5           1   + 4 superseded by timing_stand
+```
+
+`>> STAGE RESULT: ITEMS_PLACED_OK` — 4 items, 1,706 objects, 1,706 distinct
+meshes, 42,467,316 tris, 0 refused. **Task #121's stage ran and placed for the
+first time.** The per-site supersede behaves exactly as R2-334 specified: four
+pit-wall stands removed, the fifth KEPT because no item comes within 31 m of it.
+
+### film16 — BUILT, `>> STAGE RESULT: FILM_SCENE_BUILT`, 7,159.4 MB
+
+Built on assembly10 with `--car world/car_anim_driver.blend`, so the cockpit is
+occupied. `>> WORLD STALENESS: none — assembly10.blend is newer than every
+world/build_*.py`.
+
+### THE BAR, read back from the saved blend with the module's own `measure()`
+
+`work/lighting/measure_film_scene.py` calls `SL.measure(scene)` at line 36 and
+`SL.assert_levelled(scene)` at line 122 — the module's own instruments, not a
+hand-rolled probe.
+
+```
+                                    bar (film14)    film16       verdict
+interior_lamp_watts                 46,203.313      46,203.313   MET
+n_lamp_stamps__sl_base                      23              23   MET
+scene_mark_showroom_lighting_stops       3.628           3.628   MET
+assert_levelled                           PASS            PASS   MET
+view_transform / look / exposure   AgX/None/-3.628  AgX/None/-3.628  MET
+fps / frame_start / frame_end          24/1/2978       24/1/2978  MET
+scene_camera                                ONER            ONER  MET
+```
+
+**And the same JSON reproduces the trap the bar was defined against.** Beside
+`interior_lamp_watts = 46203.313` sits `lamp_watts_all_objects = 46319.067`,
+with `n_interior_lamps = 23` and `n_lamps_all = 24`. The 116 W difference is the
+one non-interior lamp, exactly as recorded. The two numbers being in one file,
+labelled, is what stops the wrong one being quoted again.
+
+### the camera, verified against the BUILT PATH rather than the sheet
+
+Both instruments carry their own controls in the same run — `beat1_elevation`'s
+self-null is 0 while it reports 2,546 genuinely moved frames, and `campath_diff`
+prints the R2-103 raw-quaternion trap (0.203 deg of nothing) beside the
+re-normalised 0.000003.
+
+```
+                         claimed          measured        verdict
+frames >70 down          187 -> 0         187 -> 0        REPRODUCES
+frames >80 down          120 -> 0         120 -> 0        REPRODUCES
+beat 1 first frame       -84.15 -> -10.00 -84.15 -> -10.00 REPRODUCES
+worst rotation %w/fr     16.41 -> 8.73    16.41 @f487 ->
+                                          8.73 @f489      REPRODUCES
+PROTECTED f648-792       0.0099 m @f648   0.0099 m @f648  REPRODUCES
+beats 2-6                0.0000 m         0.0000 m        REPRODUCES
+continuity_gate          PASS 0 FAIL      PASS 0 FAIL,
+                         5 -> 6 advisory  6 advisory      REPRODUCES
+```
+
+The f478-495 rotation WARN present in the shipped path is **gone**, and beat 1's
+lens range moves 35.0-58.0 mm -> **18.0**-58.0 mm, the establishing lens.
+
+Promotion reproduces `docs/R2464_beat_sheet_CANDIDATE.json` **byte-identically**
+(sha256 `7074ab3c466be818...`), and `tools/author_beats2_5.py` is an exact no-op
+on the promoted sheet, so beats 2-5 provably did not move.
+
+### STILL RUNNING at handover — NOT verified
+
+The box is shared and was carrying three other agents' Blender jobs at the time
+(peaks of 6.7 GB, 3.7 GB and 3.0 GB against 11.9 GB of RAM, 19 GB of swap in
+use). A single 7.5 GB blend load was taking 10-25 minutes. These are launched
+and will land on disk; **none of them had returned a verdict when this was
+written and none should be quoted as passing:**
+
+* `work/r2500/extra_film16.json` — the levelling identity recomputed from
+  film16's own `_sl_base` stamps (the base x lift residual)
+* the film14 arm of the readback diff, field by field
+* the ONER check — camera count 1, clip 0.05/200000, 3840x2160, 24 fps, 2,978
+* the in-blend presence check for `DRV_`, `CFP_`, `CRF_`, `TS_`, `SPECX_`
+* `socket_index_audit --blend` on film16, with film10's standing 27-finding FAIL
+  as the positive control
+* `v125/prove_items_in_frame.py` — **the one that matters for task #121.** It
+  renders frames 2000 / 2635 / 2900 through the ONER camera with an IndexOB
+  pass and counts pixels per item family, with a nonexistent family as an
+  in-run negative control that must score 0. Until it returns,
+  **"the items are in the scene" is established and "the items reach a frame"
+  is NOT.** Those are the two claims task #121 is about and only the second one
+  is the task.
+
+## R2-651 — the rubber is painted 4.96 m from where the car drives, and the module predicted this failure in writing
+
+**This is the finding.** Everything else in this block is smaller.
+
+`build_surface.md` §2.3 closes with a warning the module wrote about itself:
+
+> `racing_line_offset(s)` is exported. **The car and camera builders must use
+> it** — if the car drives a different line from the one the rubber is painted
+> on, the whole surface reads as wallpaper.
+
+Nothing uses it. `grep -rn racing_line_offset --include=*.py` over the whole
+tree returns `build_surface.py` itself, `world/items/asphalt_wearing_course.py`
+(which is build_surface's own item), and nothing else. Not `anim/carpath.py`,
+not `anim/build_car_anim.py`, not `anim/build_camera_rig.py`, not
+`tools/build_telemetry.py`.
+
+### Measured, not inferred
+
+`tools/build_telemetry.py:build_geometry()` integrates the lap from
+`spec["elements"]`' `start_world` and `heading_world_deg` — that is **the
+centreline**. So the single source of truth for all motion drives the car down
+the geometric middle of the road for the whole lap. Projecting every telemetry
+sample through `world_contract.project()` and comparing against the dumped
+`racing_line_offset` (`tools/r2651_line_dump.py`, `render/r2651/line.json`):
+
+| quantity | p50 | p90 | max |
+|---|---:|---:|---:|
+| car's signed lateral offset from the centreline, \|u\| | **0.003 m** | — | — |
+| painted rubber's centre, \|u\| | **4.811 m** | — | 7.143 m |
+| **\|car_u − rubber_u\|** | **4.955 m** | **6.665 m** | **12.468 m** |
+
+On a road whose `half_width` is 7.0–8.0 m, the rubbered band is centred a median
+of **five metres** — two thirds of the way to the edge — from the tyres that are
+supposed to have laid it. The car runs on clean tarmac for the entire lap while
+a dark band sweeps side to side beside it.
+
+### It is not a near-miss and it is not noise: the module contradicts itself in its own source
+
+`build_surface._car_box()` — the scale reference the test harness drops into
+every shot — places the car at `racing_line_offset(station)`. The shipped car is
+at `u ≈ 0`. Two objects in this project both claiming to be "the car", 5 m apart,
+and the surface material is keyed to the one that is not rendered.
+
+### This is a route/telemetry disagreement of the class R2-042 was
+
+R2-042 found the route and the telemetry disagreeing by 9.04 m at the pit wall
+and the decision was recorded rather than averaged. This is the same shape and
+it is larger in effect, because 9.04 m was 60 m of beat 4 and this is 1,524
+frames of beat 5.
+
+**It is deliberately NOT fixed here, and that is a decision, not an omission.**
+There are exactly two repairs and they belong to different owners:
+
+* **(a) move the car onto the racing line.** Correct in principle —
+  `racing_line_offset` is already drivability-solved to 4.33 g against a 4.89 g
+  design maximum, minimum radius 21.0 m at the hairpin, which is the hairpin's
+  inside line. But `telemetry.csv` is the declared single source of truth for
+  *all* motion: its `s` drives wheel rotation, steering, pitch, roll, the camera
+  choreography's timing and every layer of the audio mix. Re-solving it moves
+  picture against sound in a film with no cuts. **Not this agent's to make.**
+* **(b) move the rubber onto `u ≈ 0`.** Cheap, mine, and **wrong**: it paints a
+  straight band down the middle of every corner, which no circuit has, and it
+  destroys the one property §2.3 was built to deliver — a band that tightens
+  through the apexes because `spread` comes from telemetry lateral load.
+
+Recommendation: **(a)**, owned by whoever owns telemetry, with the surface
+following for free because the material already reads `racing_line_offset`. If
+(a) is refused, the honest fallback is to re-solve the racing line *constrained
+to pass through the driven line*, which is a different and much weaker object,
+and it should be logged as a compromise rather than as a fix.
+
+---
+
+## R2-652 — "tilt-shift DOF" is false by a factor of 64; the blur is the shutter
+
+The gate attributed the tabletop read to depth of field. `tools/r2651_dof_dump.py`
+pulls the rig's own keyed `aperture_fstop` and `focus_distance` for all 2,978
+frames (the published `camera_rig_path.json` carries `p`, `q` and `lens` and
+nothing else, so until now no one could check). `tools/r2651_track_scale.py`
+then computes, per frame, the circle of confusion at the racing surface and the
+camera-motion streak over the rig's 180-degree shutter.
+
+Over the 1,645 frames of beats 4 and 5 in which the surface exceeds 2 % of the
+delivered frame:
+
+| | p50 | p90 | p99 |
+|---|---:|---:|---:|
+| DOF circle of confusion on the asphalt | **0.50 px** | 1.32 px | 2.59 px |
+| camera-motion streak, 180-degree shutter | **31.78 px** | 162.33 px | 1038.52 px |
+
+**Motion blur exceeds depth of field on 1,640 of 1,645 frames.** At the gate's
+own frame f2000 the numbers are CoC **0.00 px** against a **69.7 px** streak: the
+camera is focused at 78.1 m on a subject at 79.5 m, i.e. exactly on the tarmac
+the gate called defocused.
+
+The soft-above-and-below, sharp-across-the-middle band that reads as tilt-shift
+is a **panning shot**: the camera's rotation rate cancels the ground's parallax
+at the car's depth and nowhere else. That is what a real long-lens tracking shot
+of a car at 280 km/h does, and it is physically correct.
+
+If the tabletop read is real it belongs to `motion_blur_shutter` (0.5, flat,
+`anim/build_camera_rig.py:1278`) and to the camera department. **It does not
+belong to the asphalt and it must not be textured around.** Reported per the
+brief's explicit request.
+
+---
+
+## R2-653 — the gate measured resolution, not material, and the project's own ladder doc said it would
+
+`docs/RENDER-LADDER.md`, last section, written before any of this:
+
+> Low resolution HIDES material and geometry defects. A 720p pass will happily
+> pass grass that is a fuzzy mat, **an asphalt that is a grey gradient**, a decal
+> that is soft.
+
+The gate judged a 720p frame — one ninth of the delivered pixel count.
+`tools/r2651_track_scale.py` reports millimetres of surface per delivered pixel
+for every pose. Over the same 1,645 beat-4/5 frames, cycles per pixel for each
+of the material's own eleven layers:
+
+| layer | λ | 4K px/cycle, p50 | frames ≥ 2 px at 4K | 720p px/cycle, p50 | frames ≥ 2 px at 720p |
+|---|---:|---:|---:|---:|---:|
+| paver mats | 9.50 m | 355.8 | 100 % | 118.6 | 100 % |
+| segregation | 0.65 m | 24.3 | **99.7 %** | 8.1 | 74.7 % |
+| coarse stone | 30 mm | 1.12 | 30.6 % | 0.37 | 5.2 % |
+| **aggregate** | **18 mm** | **0.67** | **11.0 %** | **0.22** | **2.1 %** |
+| intermediate | 9 mm | 0.34 | 3.7 % | 0.11 | 1.2 % |
+| fines | 4 mm | 0.15 | 1.8 % | 0.05 | 0.0 % |
+| grain | 2.3 mm | 0.09 | 0.5 % | 0.03 | 0.0 % |
+
+**At 720p the aggregate is 0.22 px per cycle. It cannot appear, whatever the
+material contains.** "The asphalt has no texture" was arithmetically guaranteed
+by the frame the gate chose, and would have been returned by an identical gate
+run against a photograph of real tarmac.
+
+**That does not make the surface innocent.** The same table says the material's
+five finest layers — everything below 65 cm — are doing nothing for 69–99.5 % of
+the lap *at 4K*. The detail budget is spent where the film's own camera cannot
+spend it. Whether that leaves a visible gap is a question about pixels, not
+about arithmetic, and it is answered by rendering rather than by this table: see
+R2-655.
+
+---
+
+## R2-654 — the rubbered line IS there, and it is delivering 96 % of what this grade can pass
+
+`build_surface.md` §2.5 measures the band at **2.2–2.9 : 1** against clean
+tarmac. That number was taken from **plan views under a uniform dome, in linear
+albedo**. The film is a 12.47-degree sun at grazing incidence through **AgX, look
+None, exposure −3.628**. Those are different measurements and the second had
+never been taken.
+
+`tools/r2651_line_probe.py` takes it: it projects the cross-section
+`u = −verge_edge … +verge_edge` at stations the camera can actually see, reads
+the **delivered** pixels along it, and marks where `build_surface` says the
+heart, shoulder and feather are. At f2000, s = 1785–1805:
+
+* luminance falls monotonically from **0.268** at u = −4.95 to **0.200** at
+  u ≈ +4.0, and the minimum of the section sits at u = +3.4 against a predicted
+  band centre of +4.8. The band is in the frame and roughly where predicted.
+* against the **local linear trend** its depth is **1.084 / 0.951 / 0.974** —
+  i.e. there is no legible edge. It is a ramp across the road, not a band.
+
+**The trend subtraction is the whole instrument and it was forced by a negative
+control.** The first version compared the mean inside the band with the mean
+outside it and returned **0.72 on a synthetic pure gradient containing no band
+at all** — it would have found rubber on every section it looked at, because a
+crowned road under a low oblique sun *is* a gradient in `u`. `--selftest` now
+carries five controls including two the metric must fail.
+
+### Then the grade was measured instead of assumed
+
+`tools/r2651_agx_curve.py` pushes a 4,096-step log ramp through Blender's own
+colour management at this film's exact grade and reads back what it wrote — no
+formula, no approximation of AgX:
+
+* linear 0.18 → display **0.0989**; linear 1.00 → display **0.3016**
+* the measured section, **0.268 : 0.200 display**, is a **1.62 : 1 scene ratio**
+* a **perfect 2.4 : 1** albedo band delivers **1.68 : 1** on screen here
+* a **2.9 : 1** band delivers **1.86 : 1**; a **3.3 : 1** band delivers **1.99 : 1**
+
+**The shipped surface is delivering 1.62 against a documented-perfect 1.68.**
+The rubber layer is not dead, not disconnected and not washed out by the
+specular lobe — the specular-cancellation trap was already found and mitigated
+in `build_surface.py` (roughness drop cut 0.30 → 0.12, and the comment records
+why).
+
+So the gate's "no rubbered-in racing line" is **half right for the wrong
+reason**. There is no legible *line* — but the ceiling on legibility at this
+exposure is ~1.9 : 1 of display contrast, and no amount of albedo will buy a
+hard-edged stripe out of AgX's toe. Any future request for "a stronger racing
+line" is a request about the grade or the exposure, not about the material, and
+should be routed accordingly.
+
+*Caveat stated rather than buried:* the inverse-AgX step is applied to the Rec.709
+luma of a near-neutral surface. AgX is per-channel with a chroma mix, so this is
+exact for neutrals and approximate off them. Asphalt is as neutral as this film
+gets, which is why the measurement was taken there.
+
+---
+
+## R2-655 — the film's own camera now has test frames, which it did not before
+
+Nineteen shots existed in `build_surface._shot_defs()` and **not one of them was
+a frame the audience will ever see.** All were stations the module chose for
+itself — 26 m on an 85 mm lens, 5 m on a 21 mm. Beat 5 is a 40 mm lens 22 m up
+moving at 280 km/h, and the surface reached a render ladder without ever having
+been photographed from there.
+
+`FILM_POSE_FRAMES` / `_film_pose_defs()` / `_make_film_pose_cameras()` and the
+`filmpose` blend group build cameras from the shipped rig's own pose,
+quaternion, lens, `aperture_fstop` and `focus_distance`. **The frames are chosen
+from the measurement table, not by eye:**
+
+| frame | mm/px at 4K | surface share | CoC | streak | what it decides |
+|---|---:|---:|---:|---:|---|
+| **f1547** | 11.8 | 46 % | 0.83 px | 7.0 px | the sharpest close look at the surface in the whole film |
+| f2225 | 21.0 | 18 % | 0.26 px | 10.3 px | mid range, still sharp |
+| f2000 | 11.5 | 50 % | 0.00 px | 69.7 px | **the gate's own frame, at 4K instead of a ninth of it** |
+| f1226 | 51.5 | 41 % | 0.46 px | 5.4 px | the wide, where only the metre-and-up layers survive |
+
+The rotation is copied from the rig's quaternion rather than reconstructed by
+`_look_at`, because `_look_at` forces a roll of zero and beat 5 rolls.
+
+Rendered at 3840×2160 / 512 samples through the real grade — `render/r2651/`.
+**These are the "before". No change to the material has been made and none
+should be made until they have been looked at at 1:1**, which is the discipline
+the ladder doc asks for and the one the gate skipped.
+
+
+## Instruments added, and the controls they must fail
+
+Roughly a third of this project's findings have been broken instruments. Every
+tool in this block carries a `--selftest` with negative controls:
+
+| tool | what it measures | a control it must FAIL |
+|---|---|---|
+| `tools/r2651_dof_dump.py` | keyed fstop / focus / shutter per frame | — (a dump, not a metric) |
+| `tools/r2651_track_scale.py` | surface share, mm/px, CoC, motion streak | in-focus plane must give CoC exactly 0; a plane mis-focused to 5 m must give the hand-computed 14.49 px, not "large" |
+| `tools/r2651_line_probe.py` | delivered band depth vs predicted position | a pure gradient with no band must give exactly 1.000; a band predicted 5 m off must not return the band's real depth |
+| `tools/r2651_agx_curve.py` | the film's linear↔display transfer | linear 0.18 must land on AgX's published 0.0989 |
+| `tools/r2651_line_dump.py` | `racing_line_offset` and the usage fields as data | heart must equal 0.55 × spread by construction |
+
+**A broken instrument was found and fixed by this discipline** — see R2-654's
+gradient control, which condemned the first version of the band metric before it
+was ever pointed at a frame.
+
+---
+
+## R2-656 — a third beat table is in circulation and one of them is wrong by 910 frames
+
+`tools/r2366_surface_visibility.py` declares `beat4 1057-2100`, `beat5
+2101-2714`, and its docstring says the table comes "from docs/beat_sheet.json's
+own frames". `world/camera_rig_continuity.json` — written by the rig that was
+actually keyed — says `4_transit 1057-1190`, `5_lap 1191-2714`. The rig is
+authoritative and `r2366_surface_visibility.py` is **910 frames out on the
+beat-4/5 boundary**, which is 38 seconds of a 124-second film.
+
+Nothing in this block used that table; `tools/r2651_track_scale.py` carries the
+rig's boundaries and says in a comment why. Flagged because anything else that
+copied it inherited the error.
