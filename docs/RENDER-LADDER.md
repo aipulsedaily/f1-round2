@@ -179,6 +179,42 @@ count suggests, and a 4K pass costs *far less* than 72× a 720p one. Any estimat
 derived by scaling resolution and samples on this project will be wrong in both
 directions. **Measure the rung.**
 
+#### Splitting the frame into fixed and scalable — and the intuition it inverts
+
+The two measurements above are two points on one line, so they can be solved.
+With `63.4 = F + P` at 720p/64 and `510.5 = F + 72P` at 4K/512:
+
+```
+P = (510.5 - 63.4) / 71  =   6.30 s      the part that scales with pixels x samples
+F =  63.4 - 6.30         =  57.1 s      the part that does not
+```
+
+**"Fixed cost dominates" is true at 720p and FALSE at 4K, and that inverts the
+usual reading:**
+
+| rung | fixed `F` | scalable | fixed share |
+|---|---|---|---|
+| 720p / 64 | 57.1 s | 6.3 s | **90 %** |
+| 4K / 512 | 57.1 s | 453.4 s | **11 %** |
+
+A 720p frame is almost entirely overhead. A 4K frame is almost entirely pixels.
+This is *why* the ratio is 8.1× and not 72×, and it is the number to reach for
+before proposing any change that claims to speed up rendering.
+
+**What it settles immediately:** throwing more GPUs at a *single frame* only
+divides the scalable part. Eight GPUs on one frame gives `57.1 + 453.4/8` =
+**4.49×** at 4K and `57.1 + 6.3/8` = **1.10×** at 720p — i.e. nothing at all at
+the rung where the ladder actually spends its 52 hours. Parallelism on this
+project has to come from **rendering different frames at once**, never from
+splitting one. See `vast-render/docs/multi-gpu.md`.
+
+> **CAVEAT, and it is a real one: this is a two-point fit.** `n=50` at 720p
+> (`r2b56_720`, beats 5–6) against `n=2` at 4K (`render3.blend`) — **different
+> .blends**, and with adaptive sampling on, so the effective sample ratio may
+> not be a clean 8×. `F` and `P` are the best available decomposition of two
+> honest measurements, not a third measurement. Treat 57.1 s as an order of
+> magnitude, and re-solve it the moment a third rung is measured.
+
 | rung | resolution | samples | full-length pass | basis |
 |---|---|---|---|---|
 | 0 | 640x360 | 32 | ~$12 (est.) | scaled from rung 1 — **unmeasured, expect it to be high** |
