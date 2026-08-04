@@ -20094,3 +20094,43 @@ film is the same object already measured as standing on the racing line. That is
 not a coincidence to be filed twice: **fixing the L03 intrusion should be
 checked against the closing frame**, and whoever closes that defect should be
 told the closing frame is a witness for it.
+
+## R2-708 — AN INSTRUMENT VALIDATED ON A SAMPLE IS NOT VALIDATED OVER A RANGE. Third instance this session, self-diagnosed
+
+*Stated as a law because the agent that hit it named the pattern itself, across
+three unrelated measurements in one session.*
+
+The lead-in's pixel verdict is **withdrawn**. A fixed rectangle was chosen as a
+"static set" region and validated at f1, where it holds ceiling. By f18 the
+camera has travelled far enough that the same rectangle holds **wheels,
+suspension and the front wing** - band `sd` collapses 0.2705 -> 0.1164 as the
+ring light leaves and car parts enter. The r = 0.9978 correlation was real but
+valid only over **f1-12**; beyond that it falls to **-0.1065**, because the two
+series stop measuring the same thing. The four "pixel jerk outliers" are the
+band drifting onto the car, not evidence about the film.
+
+**The three instances, all the same shape:**
+
+```
+R2-429/430  a shot-scale threshold checked on close frames, extrapolated
+            across 509 frames nobody opened
+R2-515      44-55 MB/s taken from a docstring measured on a scene compressing
+            ~12x, applied as a link constant to one compressing 3.66x
+R2-708      a fixed pixel rectangle validated at f1, run over a 4.88 m push
+```
+
+In its own words: *"I check an instrument on a sample, it works, and I then
+apply it across a range where its assumptions no longer hold."*
+
+**The defence is to state the validity window with the instrument**, and to ask
+what changes across the range before running it - a fixed rectangle is not a
+fixed piece of set when the camera travels 4.88 m, and that question is
+answerable before any frame is measured.
+
+**What survives, on evidence that does not depend on the region:** the authored
+path over f1->f48 travels 4.8751 m with **zero stationary frames**, its first
+step is 0.00418 m = **3.0 % of peak** so it starts from rest, jerk |z| peaks at
+**1.41 MADs with 0 of 45 samples over a 6-MAD bound**, and there are no
+duplicate or held frames in the delivered lead-in. **The opening does not
+lunge.** The honest scope: the path is verified smooth; the pixels corroborate
+only the first 0.5 s.
