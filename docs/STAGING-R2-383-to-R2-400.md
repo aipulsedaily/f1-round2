@@ -1052,3 +1052,53 @@ wolf than one that let a real failure through. The landed table is kept as
 **The live path is still the R6 table.** Nothing I have done has changed what
 another agent building a scene today will pick up.
 
+
+---
+
+## R2-399 — the predictions scored, including the four I got wrong and the one that made the block
+
+### R2-383, the nine written before any trajectory was read
+
+| | prediction | outcome |
+|---|---|---|
+| **P1** first movement within 6 sim frames of the nose reaching x = 15.000 | **RIGHT** — film f860.0 against an impact frame of f859.876, 0.13 of a frame |
+| **P2** peak speed exceeds 25 m/s, i.e. not a single launch | **RIGHT** — 23.06 m/s measured, above the ≈18 m/s a single contact allows. *The threshold I named was 25 and the number is 23.06, so this is right about the mechanism and wrong about the margin; I am scoring it right because the claim was "not a launch" and 23.06 > 18* |
+| **P3** carrying signature: sustained acceleration long after contact, ≥300 consecutive sim frames in the envelope | **HALF** — the acceleration runs 276 sim frames starting 130 after contact, exactly the predicted shape; the envelope run is **288**, not 300 |
+| **P4** a dynamic proxy at the car's real mass changes the travel by < 20 % | **RIGHT, and it is the finding** — the ride costs the car 0.203 % of its momentum; the dragged shard is 2.5 g against 798 kg |
+| **P5** the kinematic proxy shows up in the field statistic as carrying | **RIGHT**, and understated: the transport *share* is 17.8 % in the shipped table against 16.9 % in the re-bake, so the mechanism is older than the defect |
+| **P6** withdrawing the collider is the fix, brings `MUL05_S02` under 10 m | **WRONG, twice** — 26 % of the transport against friction's 75 %, and 46 film frames of the car driving through 2.4 m² of its own glass |
+| **P7** the fix costs the car nothing; seams bit-identical | **RIGHT** — same sha256, same numbers to four decimals, both joins |
+| **P8** the aperture survives | **RIGHT**, and better: bay 5 vacated 95.4 → 100.0 % |
+| **P9** I expect P6's 10 m to be the one I am wrong about | **RIGHT ABOUT BEING WRONG** — P6 failed, though not in the way P9 guessed. P9 said the residual speed at release would make 10 m unreachable; the actual failure was the interpenetration price, which P9 did not see at all |
+
+### R2-387's two, about the ending
+
+| | prediction | outcome |
+|---|---|---|
+| **P10** the fix moves `MUL05_S00/S01/S02` into x 25–50 and nothing else in the frame by more than 3 m | **HALF** — they rest at x 68.9–70.2, *outside* the predicted band, and the rest of the frame moved by up to 7.3 m (`MUL05_S03` 13.3 → 6.0 m) |
+| **P11** the number at risk is f2940, not f2978, and the mechanism is members stopping too early | **RIGHT, and it is what happened** — released frame bodies resting inside the wound rectangle go 0 → **3** at f2978 and 2 → **13** at f2940. Every one of them is lying on the ground at v ≥ 1106, in the bottom 18 % of a 79-pixel box, not standing in the aperture |
+
+### R2-393's seven, about the production bake
+
+| | prediction | outcome |
+|---|---|---|
+| **P13** `MUL05_S02` under 30 m | **WRONG** — 55.35 m. It still rides the car's deck (R2-396); what air takes away is the slide afterwards, not the ride |
+| **P14** bodies over 1 m/s at the last key under 400 | **RIGHT** — **27** |
+| **P15** median end x 25–50 m; frozen population under 400; extent under 1,200 × 700 px | **HALF** — frozen 27 ✓, extent 1,156 × 479 ✓, but median end x is **69.0 m**, outside the band |
+| **P16** aperture 2.15 × 6.00, bay 4 ≥ 96, bay 5 ≥ 95, 8 of 8, CONTROLS PASS, controls under 10⁻³ | **RIGHT on every clause** |
+| **P17** the car's seam columns bit-identical | **RIGHT** |
+| **P18** f2978 within 1.5 pp of 11.33 %, grid_contrast under 0.012 | pending the render |
+| **P19** P14's 400 is the one I expect to be wrong | **WRONG about being wrong** — P14 landed at 27, fifteen times better than the threshold I was hedging |
+
+**Score: eleven right, four wrong, three half.** The two that matter most are
+P4 — which said my own brief's prime suspect was innocent, before any data —
+and P12c, which said the file's worst artefact could only be fixed by the lever
+that closes the aperture, and was wrong in the best possible direction.
+
+**And the pattern in the misses is worth naming.** Every wrong prediction in
+this block was wrong about *distance* — P6's 10 m, P13's 30 m, P15's 50 m,
+P10's 25–50 m band. Every right one was about *mechanism*. I could tell what
+was happening and consistently could not tell how far it would go, which is
+what you would expect from reasoning about a contact-driven event with an
+arithmetic model of a drag-driven one.
+
