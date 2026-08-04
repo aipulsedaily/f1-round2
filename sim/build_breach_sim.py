@@ -122,6 +122,59 @@ CAR_FRICTION = 0.55     # THE CAR PROXY'S SURFACE.  Kept at what shipped so
                         # and just under concrete.  Painted composite is not
                         # grippier than aluminium.  See R2-385.
 DAMP_LIN, DAMP_ANG = 0.02, 0.06
+
+# --------------------------------------------------------------------------- #
+#  AIR (R2-388).  The one force in this problem that is missing entirely.
+# --------------------------------------------------------------------------- #
+#  A rigid-body solver has no air in it, and this scene throws 730 kg of glass
+#  and aluminium down a forecourt at 16 m/s.  At that speed the drag on a
+#  mullion segment is the same order as its own weight, and R2-384 measured the
+#  car dragging one along its deck at 8.81 m/s2 -- a force air alone would have
+#  cancelled.  Leaving it out is not conservative; it is the reason the debris
+#  neither sheds nor stops.
+#
+#  NOTHING HERE IS CHOSEN.
+#    rho          1.225 kg/m3, ISA sea level
+#    Cd           1.17, a flat plate normal to the flow (textbook)
+#    A_proj       Cauchy: the mean projected area of a CONVEX body over all
+#                 orientations is exactly S/4.  S is summed off the body's OWN
+#                 collision mesh, so it is the same geometry Bullet collides
+#                 with and not an estimate of it.
+#    v_ref        the car's speed where its nose meets the glass, 16.398 m/s.
+#                 It is the only speed in this problem that was not chosen by
+#                 anybody: it falls out of `world/car_anim_measured.json`.
+#
+#  WHY A LINEARISATION, SAID PLAINLY.  Real drag is quadratic and Blender's
+#  rigid body offers only `linear_damping`, an exponential rate.  So the drag
+#  is linearised ABOUT v_ref: it is exact at 16.4 m/s, over-states below it and
+#  under-states above it.  That is the honest direction for this defect --
+#  the bodies that travel too far are the ones near v_ref, and the ones the
+#  linearisation over-damps are moving at walking pace.
+#
+#  AND THE SCALING IS RIGHT, WHICH A FORCE FIELD'S WOULD NOT BE.  Blender's
+#  DRAG effector applies the same FORCE to every body regardless of size, i.e.
+#  an acceleration inversely proportional to mass -- exactly backwards for
+#  debris of one thickness, whose area is proportional to its mass.  Per-body
+#  `linear_damping` gives force proportional to m*v, which for constant
+#  thickness is force proportional to area.  That is why this is a per-body
+#  damping and not a field.
+RHO_AIR = 1.225
+CD_PLATE = 1.17
+AIR_DRAG = False            # set from --air-drag
+AIR_VREF = 0.0              # set in build() from the car itself
+
+
+def air_damping(surface_area_m2, mass_kg):
+    """Blender's `linear_damping` for a body of this surface area and mass.
+
+    Blender/Bullet apply v *= (1 - d)^dt per substep, so d is one minus the
+    per-second survival factor: d = 1 - exp(-lambda).
+    """
+    if not AIR_DRAG or mass_kg <= 0.0 or surface_area_m2 <= 0.0:
+        return DAMP_LIN
+    a_proj = 0.25 * surface_area_m2                       # Cauchy
+    lam = 0.5 * RHO_AIR * CD_PLATE * a_proj * AIR_VREF / mass_kg
+    return float(min(0.99, max(DAMP_LIN, 1.0 - math.exp(-lam))))
 SLEEP_LIN, SLEEP_ANG = 0.010, 0.030      # m/s and rad/s
 
 # Constraint breaking thresholds.  Bullet's threshold is an IMPULSE budget, not
@@ -403,6 +456,7 @@ def simple_mat(name, base, rough=0.2, metal=0.0, trans=0.0, ior=1.52):
 # --------------------------------------------------------------------------- #
 
 WAKE_ALL = False
+_DRAG_LOG = []
 _RB_QUEUE = {"ACTIVE": [], "PASSIVE": []}
 _RB_PROPS = {}
 
@@ -443,7 +497,19 @@ def flush_rb():
             rb.restitution = p["rest"]
             rb.use_margin = True
             rb.collision_margin = MARGIN
-            rb.linear_damping = DAMP_LIN
+            # R2-388: the drag is computed from the body's OWN collision mesh,
+            # here, in the one place every body passes through.  `polygons.area`
+            # is the closed surface area of the very geometry Bullet uses, so
+            # Cauchy's S/4 needs no shape assumption and no table lookup.
+            if p["kind"] == "ACTIVE" and AIR_DRAG:
+                try:
+                    S = float(sum(pl.area for pl in o.data.polygons))
+                except AttributeError:
+                    S = 0.0
+                rb.linear_damping = air_damping(S, rb.mass)
+                _DRAG_LOG.append((o.name, S, rb.mass, rb.linear_damping))
+            else:
+                rb.linear_damping = DAMP_LIN
             rb.angular_damping = DAMP_ANG
             rb.use_deactivation = True
             rb.deactivate_linear_velocity = SLEEP_LIN
@@ -562,6 +628,17 @@ def build(args):
         raise SystemExit("REFUSING: %s.  The sim must be driven by the car the "
                          "film renders." % why)
     log("car identity ok: %s" % why)
+
+    # R2-388: the air's reference speed is the car's own speed where its nose
+    # reaches the glass -- read off the measured animation, not chosen here.
+    global AIR_DRAG, AIR_VREF
+    AIR_DRAG = getattr(args, "air_drag", "off") == "derived"
+    _fi = car.impact_frame()
+    _wt = np.array([car.clock.world_t(_fi - 0.5), car.clock.world_t(_fi + 0.5)])
+    _l, _ = car.at_world_t(_wt)
+    AIR_VREF = float(np.linalg.norm(_l[1] - _l[0]) / (_wt[1] - _wt[0]))
+    log("air drag: %s, v_ref %.4f m/s (car at the glass plane, film f%.3f)"
+        % ("DERIVED" if AIR_DRAG else "OFF", AIR_VREF, _fi))
 
     t0, t1, nsim = BL.sim_window(car)
     if args.frames:
@@ -1124,6 +1201,18 @@ def build(args):
         # be attributed afterwards.  `land_breach.sh`'s stage-0 gate reads
         # `thresholds` by name and ignores keys it does not list, so this
         # block is additive and breaks nothing.
+        air_drag=dict(
+            mode=getattr(args, "air_drag", "off"),
+            rho=RHO_AIR, cd=CD_PLATE, v_ref=AIR_VREF,
+            bodies=len(_DRAG_LOG),
+            damping_min=min([r[3] for r in _DRAG_LOG], default=None),
+            damping_median=float(np.median([r[3] for r in _DRAG_LOG]))
+            if _DRAG_LOG else None,
+            damping_max=max([r[3] for r in _DRAG_LOG], default=None),
+            examples={r[0]: dict(S_m2=round(r[1], 5), mass_kg=round(r[2], 5),
+                                 linear_damping=round(r[3], 5))
+                      for r in _DRAG_LOG[:3]
+                      + [x for x in _DRAG_LOG if x[0] == "MUL05_S02"]}),
         car_proxy=dict(
             friction=float(getattr(args, "car_friction", CAR_FRICTION)),
             collide_until_x=float(getattr(args, "car_collide_until", 0.0)),
@@ -1800,6 +1889,12 @@ def parse_args():
                         "(R2-268).  Kept as an option because it is the "
                         "before-half of the experiment.")
     p.add_argument("--t-bond-per-m", type=float, default=THRESH_BOND_PER_M)
+    p.add_argument("--air-drag", choices=("off", "derived"), default="off",
+                   help="aerodynamic drag on every ACTIVE body, linearised "
+                        "about the car's speed at the glass plane and sized "
+                        "from each body's own collision-mesh surface area "
+                        "(Cauchy, S/4).  `off` is what shipped: no air at all "
+                        "(R2-388).")
     p.add_argument("--car-friction", type=float, default=CAR_FRICTION,
                    help="the car proxy's surface friction.  Bullet MULTIPLIES "
                         "the two bodies' values, so this scales every "
