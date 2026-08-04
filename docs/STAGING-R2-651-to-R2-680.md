@@ -8,6 +8,17 @@ model"*. The gate said its own finding was under-claimed and rested on one
 frame. It was right to say so, and the finding does not survive contact with a
 measurement — but something worse does.
 
+**Verdict in one line.** *"No texture"* is **false** — it is an artefact of
+judging a 720p frame, and the 4K renders show aggregate, joints, patches and
+zone changes. *"Tilt-shift DOF"* is **false** — the circle of confusion on the
+asphalt is 0.50 px against a 31.78 px motion streak, so the softness is the
+180-degree shutter and belongs to the camera. *"No rubbered-in racing line"* is
+**half true for the wrong reason** — the band is there, half a million pixels of
+it per frame, delivering 96 % of what AgX at −3.628 can pass. **But it is
+painted a median 4.96 m from the line the car actually drives, and the car is on
+it for 15 % of the lap.** That is the real defect, it generalises across all
+1,524 lap frames, and the module's own documentation predicted it in writing.
+
 Nothing here is written into `docs/DEFECT-LOG-R2.md`; that file has one owner.
 
 ---
@@ -315,9 +326,41 @@ The rotation is copied from the rig's quaternion rather than reconstructed by
 `_look_at`, because `_look_at` forces a roll of zero and beat 5 rolls.
 
 Rendered at 3840×2160 / 512 samples through the real grade — `render/r2651/`.
-**These are the "before". No change to the material has been made and none
-should be made until they have been looked at at 1:1**, which is the discipline
-the ladder doc asks for and the one the gate skipped.
+Cost as quoted before queueing: 26–61 s/frame, **$0.05 for the set**.
+
+### And they answer the texture question, in pixels
+
+**f1547, 21 m, 11.8 mm/px, 1:1** (`render/r2651/before_f1547.png`) — the asphalt
+carries dense, legible aggregate stipple: individual chips resolve, there is real
+tonal variation between paving lanes, the track-edge line has a worn and chipped
+edge rather than a vector one, and diagonal segregation banding runs through it.
+**This is not "a flat grey value" and it is not close to one.**
+
+**f2000, 79 m, 11.5 mm/px, 1:1** (`render/r2651/before_f2000.png`) — the gate's
+own frame, at nine times its pixel count. Aggregate is present but reduced to a
+faint stipple; what carries the surface here is the longitudinal paving-lane
+joints, the pale milled repair patches and the resurfacing-zone tone changes.
+Legible, but visibly flatter than f1547.
+
+**So the gate's first claim is refused: at the delivered resolution the asphalt
+has texture.** But the difference between those two crops is the whole of
+R2-653's argument made visible — the fine octaves earn their keep close in and
+thin out at the distances beat 5 actually lives at. That is an argument for
+strengthening the **0.1–0.5 m and 1–4 m** octaves, which survive at lap
+distances, and specifically *not* for adding more fine aggregate, which would
+land entirely below the resolution of the shot that needs help.
+
+*Caveat on the vehicle:* these come from the surface-only harness, so the pale
+ground around the ribbon is `TEST_Ground`, there is no sky model, no barriers and
+no motion blur. That isolates the material, which is what they are for; it does
+**not** reproduce the delivered frame's lighting in full.
+
+### They also settle R2-659 the right way
+
+f1547 was the frame where the two coverage methods disagreed 7×. The render
+shows asphalt filling most of the frame — **the area-credit figure of 0.464 is
+right and the per-pixel cross-check's 0.065 is wrong**, exactly as the flat-plane
+control predicted. The picture, not either projection, was the arbiter.
 
 ---
 
