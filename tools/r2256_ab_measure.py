@@ -31,18 +31,40 @@ W, H = 3840, 2160
 CX0, CX1, CY0, CY1 = 1500, 2200, 285, 420
 
 
+# the border the jobs were submitted with, normalised, origin bottom-left
+BORDER = (0.3125, 0.65104, 0.76852, 0.90741)
+OFF = [0, 0]          # (x, y) of the returned image's top-left in frame pixels
+
+
 def gray(path):
+    """Return the image, and set OFF so frame pixel coords still address it.
+
+    A border render may come back either as the full 3840x2160 with black
+    outside the border, or cropped to the border itself.  Guessing wrong moves
+    every measurement by 1200 px, so the size is read and the offset derived.
+    """
+    dim = subprocess.run(["/usr/bin/magick", "identify", "-format", "%w %h", path],
+                         capture_output=True, text=True).stdout.split()
+    w, h = int(dim[0]), int(dim[1])
     raw = subprocess.run(["/usr/bin/magick", path, "-colorspace", "RGB",
                           "-depth", "16", "gray:-"], capture_output=True).stdout
-    a = np.frombuffer(raw, dtype=">u2").astype(np.float64) / 65535.0
-    if a.size != W * H:
-        n = int(round((a.size / (W / H)) ** 0.5))
-        raise SystemExit("unexpected size %d for %s" % (a.size, path))
-    return a.reshape(H, W)
+    a = np.frombuffer(raw, dtype=">u2").astype(np.float64).reshape(h, w) / 65535.0
+    if (w, h) == (W, H):
+        OFF[0] = OFF[1] = 0
+    else:
+        bx0 = int(round(BORDER[0] * W))
+        by1 = int(round((1.0 - BORDER[3]) * H))       # top edge, top-origin
+        OFF[0], OFF[1] = bx0, by1
+        exp = (int(round(BORDER[1] * W)) - bx0,
+               int(round((1.0 - BORDER[2]) * H)) - by1)
+        if abs(w - exp[0]) > 2 or abs(h - exp[1]) > 2:
+            raise SystemExit("%s is %dx%d; the border predicts %dx%d"
+                             % (path, w, h, exp[0], exp[1]))
+    return a
 
 
 def band(a):
-    return a[CY0:CY1, CX0:CX1]
+    return a[CY0 - OFF[1]:CY1 - OFF[1], CX0 - OFF[0]:CX1 - OFF[0]]
 
 
 def stats(a, b):
@@ -80,7 +102,7 @@ def main():
     d = np.abs(band(B) - band(A))
     n = np.abs(band(A) - band(N))
     # the run projects to px (1818.7, 357.5); take a 260 x 70 px box on it
-    gx0, gx1 = 1818 - 130 - CX0, 1818 + 130 - CX0
+    gx0, gx1 = 1818 - 130 - CX0, 1818 + 130 - CX0    # band-local, so OFF cancels
     gy0, gy1 = 357 - 35 - CY0, 357 + 35 - CY0
     inside = d[gy0:gy1, gx0:gx1]
     mask = np.ones_like(d, bool)
@@ -96,7 +118,8 @@ def main():
     for tag, path in (("before", pb), ("after", pa), ("null", pn)):
         o = os.path.join(outdir, "crop_%s.png" % tag)
         subprocess.run(["/usr/bin/magick", path, "-crop",
-                        "%dx%d+%d+%d" % (CX1 - CX0, CY1 - CY0, CX0, CY0),
+                        "%dx%d+%d+%d" % (CX1 - CX0, CY1 - CY0,
+                                         CX0 - OFF[0], CY0 - OFF[1]),
                         "+repage", "-filter", "point", "-resize", "300%", o])
         print("  wrote", o)
 
