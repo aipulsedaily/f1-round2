@@ -673,3 +673,111 @@ if anything, argue for a little more zoom rather than less. The curve should
 still be re-fitted once the placement is settled — **flagged for whoever owns
 the focal ramp, as requested** — but it should be re-fitted expecting a small
 move in the direction of more zoom, not a retreat from the 142.5 mm peak.
+
+---
+
+## R2-662 — the asphalt question, answered from 72 delivered lap frames instead of one
+
+The gate's finding rested on f2000. Two ladder sequences covering beats 4-6
+already existed and had been overlooked — **`out/seq/r2b56_720` (50 frames,
+f1100-2978) and `out/seq/b456wit_f11` (25 frames, f1250-2978)** — so the
+generalisation question was answerable from delivered pixels at zero cost the
+whole time.
+
+**Provenance, because it decides whether the answer is worth anything.**
+Rendered 08-03 at 1280x720 from the pre-`film16` world, so no placed items and
+no driver. That does not matter for this question: **`world/build_surface.py`
+was last modified 08-02 11:41, before these frames were rendered**, so the
+asphalt material in them IS the shipped one. `film16`'s +1,707 items do not
+touch the asphalt shader. The two passes writing now (`r2full`, `r2beat1`) are
+on `film16_breach` and are still in beats 1-2; they will supersede this set for
+anything item-dependent, and nothing here is.
+
+`tools/r2651_line_probe.py`'s trend-relative band depth, run over **72 lap
+frames / 213 cross-sections**:
+
+| | trend-relative band depth |
+|---|---:|
+| p5 | 0.082 |
+| p25 | 0.847 |
+| **p50** | **0.973** |
+| p75 | 1.054 |
+| p95 | 2.268 |
+
+| | |
+|---|---:|
+| sections with a band you could actually see (>= 1.20) | **25 of 213 = 11.7 %** |
+| sections >= 1.10 | 44 of 213 = 20.7 % |
+
+**The median is 0.973 — no legible band — and the finding generalises.** The
+scatter either side of 1.0 is other content crossing the section (kerbs,
+shadows, repair patches, the car), not a band; a real band would push the
+distribution one way only.
+
+### And it is a distance effect, sharply
+
+| distance to the surface | n | median depth | fraction >= 1.20 |
+|---|---:|---:|---:|
+| **0-25 m** | 13 | **1.110** | **46.2 %** |
+| 25-60 m | 15 | 0.892 | 0.0 % |
+| 60-120 m | 98 | 0.964 | 15.3 % |
+| 120-300 m | 22 | 0.948 | 9.1 % |
+| 300-1200 m | 65 | 0.988 | 3.1 % |
+
+**Inside about 20 m the band reads** — f2666 and f2680 score 2.55 and 2.59 at 13
+and 19 m. Beyond that it does not. That is exactly what R2-654's grade ceiling
+predicts: the band's *edges* are what make it legible, and they need pixels
+across them; the flat interior contrast is capped at ~1.7:1 display by AgX
+whatever the albedo. So the gate saw a true thing at f2000, for a reason that is
+neither "no texture" nor "the rubber layer is broken".
+
+**This does not weaken R2-651, it sharpens it.** The one condition in which the
+rubbered band IS legible — the camera inside 20 m of the surface, which is the
+onboard and chase material — is precisely the condition in which the audience
+can also see where the car's tyres are. Those are the frames in which a band
+painted 4.96 m from the driven line is most obviously wrong.
+
+---
+
+## R2-663 — R2-547's blank billboard is not a billboard, and the grandstand has 18,350 seats
+
+Both halves of that defect note are refused, by raycasting f900's own verified
+pose (position and lens matched to `camera_rig_path.json` at 0.0000 m /
+0.0000 deg) through `render/film14_breach_r6.blend` — confirmed via the broker
+DB as the scene that actually rendered `seq/r1full`.
+
+**The white rectangle is a breach glass shard, `GS_b04_00524`, material
+`BREACH_Glass`** — an 11 mm slab 0.30 m from the lens, built by
+`sim/apply_breach.py`. Behind it is empty sky: of 3,842 rays through the crop
+against the whole 4,711-object scene, 47 (1.2 %) hit anything, and those hit a
+grandstand roof at 260 m *outside* the white bar.
+
+* **Not a placeholder and not a dead texture stack.** `BREACH_Glass` has exactly
+  two nodes. **Emission Strength = 0.0** — so "self-lit" was an inference from
+  brightness, not a fact. There are no texture nodes at all, so nothing can be
+  disconnected, and `apply_breach.py` sets every socket **by name**, so the
+  Blender-5.2 Normal-socket-index trap is not involved.
+* **Not dressing** (`build_dressing` standalone: 0 hits in the box; the nearest
+  ad board `DR_Ad_043` projects below the bar and does carry artwork), **not
+  architecture**, **not a light** (all 25 are behind the camera with
+  `visible_camera = False`), **not the sky** (sky-only render of the same pose:
+  169-180 grey, zero pixels above 215).
+* Best-supported remaining hypothesis, **stated as unproven**: a motion-blurred
+  blown specular highlight on the shard. The bar's ends are 2 px hard, its
+  interior is dead flat at 233-234, and its mean falls 231 -> 216 between f900
+  and f901 while its outline barely moves. Confirming it needs a Cycles A/B with
+  `BREACH` hidden. **Caveat kept rather than buried:** `VEG_*` (24,654 trees)
+  could not be loaded under memory pressure and was not raycast.
+
+**The grandstands have seats, and the count is 18,350** (15,039 seatable, 3,311
+folded), from two independent methods that agree: the replayed
+`grandstand_seats.json` ledger and the geometry — `A_Seat` is **422,616 quads /
+845,232 triangles** plus 557,352 `A_Alu` triangles of standards. Cross-check:
+VIRAGE OUEST at 2 boxes/seat gives 25,716 / 6 / 2 = **2,143**, exactly the
+ledger figure. In f900 itself `A_Seat` is the largest material by ray count on
+the visible stand — 946 of 1,711 rays.
+
+And the thing R2-547 called *"a dark grid with yellow dashes and no seat
+geometry"* **is the seats**: `ARCH_Grandstand_02_OUEST` / `A_Seat` at 237 m,
+base `#3c4348` with a `#c9a227` gold chequer laid by `_seat_colour()`
+(`build_architecture.py:4692-4723`). The yellow dashes are gold seats.
