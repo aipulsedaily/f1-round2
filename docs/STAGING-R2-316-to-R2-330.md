@@ -317,6 +317,52 @@ cannot move.
 
 ---
 
+## R2-330 — the cheapest fix that satisfies all three, and it is a HYBRID
+
+Three levers, one target. The extent is linear in focal length and inversely
+linear in distance, so the required shrink `over = max(ext_h, ext_w) / fill` can
+be paid in either currency, and the smear divides by **the product** of the two
+ratios while the required f-number is fixed by the fill target alone. Spending as
+much of `over` as possible on the lens, with a 28 mm floor so the look stays a
+lens and not a fisheye, and the remainder on distance:
+
+| | shipped | pure dolly, lens fixed | **hybrid, 28 mm floor** |
+|---|---|---|---|
+| mean standoff | 2.033 m | 4.436 m (2.18x) | **3.072 m (1.51x)** |
+| corner clusters move | — | 2.62-2.96x | **1.30-1.44x** |
+| beat-1 key-to-key path | 54.958 m | 67.228 m | **60.175 m** |
+| beat 1 at the same 4.00 m/s peak | 33.00 s | 40.37 s (+7.4 s) | **36.13 s (+3.1 s)** |
+| corner apertures | f/2.2 (needs f/37) | f/5.2-9.0 | **f/5.3-8.4** |
+| smear divided by | — | ~2.2x (range only) | **1.25-3.04x (lens x range)** |
+
+**The hybrid costs less than half the runtime of the pure dolly, moves the corner
+stations by 0.45-0.68 m instead of 2.4-3.0 m, and cuts the motion blur harder**,
+because a wider lens shrinks the smear and the extra distance shrinks it again.
+It is the recommendation.
+
+**The order, and it is forced, not chosen:**
+
+1. **Framing.** Nothing else can be fixed first. At today's standoff the aperture
+   that holds a corner cluster sharp is f/37, so there is no focus fix available
+   until the cluster fits (R2-320). Re-solve Held-Karp over the new stations and
+   re-allocate the time; beat 1 grows by about 3 s and the brief permits it.
+2. **Aperture.** A one-line consequence. `N = D (fill h)^2 / (2 c E^2)` is
+   computable the instant the fill target is chosen and is invariant to *how* the
+   fill was achieved, so it never needs its own iteration and can never be
+   invalidated by a later change to the standoff or the lens.
+3. **Re-measure the smear, then decide whether the pan limit still needs work.**
+   The framing fix pays into it — 1.25x to 3.04x — but the median is 54.7 px over
+   the tour and dividing by 2.2 leaves 25 px, which is still not sharp at 4K.
+   `weave_spec.pan_limit_widths_per_frame` should be restated in **pixels of
+   smear at the delivery resolution**, because that is the unit the defect is in
+   and 0.12 frame-widths is 230 px at 4K and 58 px at 1080p — *the same camera
+   passes or fails depending on what it is delivered at.*
+
+None of the three is attempted here. `render/film*.blend` is off limits to this
+block, and a station change that cannot be rendered cannot be judged.
+
+---
+
 ## R2-324 — the steering wheel cannot be fixed by standoff, and needs its own call
 
 `SW` is 0.128 x 0.280 x 0.230 m. Its standoff is clamped by `max(..., 0.75)` and
