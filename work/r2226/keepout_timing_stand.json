@@ -1,0 +1,314 @@
+{
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-04T02:45:10",
+  "written_at": 1785811510.793,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/placement_gate.py",
+   "status": "OK",
+   "mtime": 1785729563.37,
+   "mtime_iso": "2026-08-03T03:59:23",
+   "bytes": 59197,
+   "sha256": "4b91aa9721cc0adc72e742e0cf0a76fcd90233cd4e2bf041fb707105642e3355"
+  },
+  "tool_version": "placement_gate; spec unversioned",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/work/r2226/items_only.blend",
+    "status": "OK",
+    "mtime": 1785811210.959,
+    "mtime_iso": "2026-08-04T02:40:10",
+    "bytes": 675559660,
+    "sha256": "5c46850cb17a96254711fdf544da0e5b024266ca5d5c8a3492c51e15fe2429bd",
+    "hash_seconds": 2.12
+   },
+   {
+    "role": "spec",
+    "path": "/home/zany/f1-round2/docs/circuit_spec.json",
+    "status": "OK",
+    "mtime": 1785220238.261,
+    "mtime_iso": "2026-07-28T06:30:38",
+    "bytes": 35278,
+    "sha256": "50251c67dd89173f22736314e119c50e60d46717661fdc5805950dc635a52fdc"
+   },
+   {
+    "role": "telemetry",
+    "path": "/home/zany/f1-round2/telemetry/telemetry.csv",
+    "status": "OK",
+    "mtime": 1785678851.466,
+    "mtime_iso": "2026-08-02T13:54:11",
+    "bytes": 246441,
+    "sha256": "2d2bc724dace125f28559e7c88f80680b6eaaf6b326dac33d8f70b8c44738726"
+   },
+   {
+    "role": "beat_sheet",
+    "path": "/home/zany/f1-round2/docs/beat_sheet.json",
+    "status": "OK",
+    "mtime": 1785799808.887,
+    "mtime_iso": "2026-08-03T23:30:08",
+    "bytes": 155494,
+    "sha256": "2ee973b889a241af493e3ba485d3738a9a94e9bad367aae3b33c491a39f8c148"
+   },
+   {
+    "role": "camera_path",
+    "path": "/home/zany/f1-round2/world/camera_rig_path.json",
+    "status": "OK",
+    "mtime": 1785799849.842,
+    "mtime_iso": "2026-08-03T23:30:49",
+    "bytes": 335752,
+    "sha256": "f1c65c46459d4488d252434f6ce123473f03051498f4c471110619026010a5e0"
+   }
+  ],
+  "describes": [],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785786939.014,
+    "mtime_iso": "2026-08-03T19:55:39",
+    "bytes": 168482,
+    "sha256": "0f12b3c34c89a35e70e80c3620b2e2561049f1d092d3197a875b8015168abdbd"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785796863.209,
+    "mtime_iso": "2026-08-03T22:41:03",
+    "bytes": 230216,
+    "sha256": "d1e6ec608b7651ec7f77c5a2930a5abfaa0e53a99c9a05edcdc8e3a05f831f9d"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "work/r2226/items_only.blend",
+   "--factory-startup",
+   "-noaudio",
+   "-P",
+   "tools/placement_gate.py",
+   "--",
+   "--subject",
+   "W_Item_TimingStand",
+   "--out",
+   "work/r2226/keepout_timing_stand.json"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ },
+ "violations": [],
+ "total": 0,
+ "context_findings": [
+  {
+   "object": "Cube",
+   "volume": "car_path",
+   "intrusion_m": 0.6024,
+   "at_world": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "edge_family": false
+  },
+  {
+   "object": "Cube",
+   "volume": "camera_path",
+   "intrusion_m": 0.3624,
+   "at_world": [
+    1.0,
+    -1.0,
+    1.0
+   ],
+   "edge_family": false
+  }
+ ],
+ "context_total": 2,
+ "within_instrument_tolerance": [],
+ "within_instrument_tolerance_total": 0,
+ "instrument_tolerance_m": 0.01,
+ "subject_selection": {
+  "why": "--subject W_Item_TimingStand",
+  "subject_meshes": 10,
+  "context_meshes": 121,
+  "context_objects": [
+   "CRF_Fig_000",
+   "CRF_Fig_001",
+   "CRF_Fig_002",
+   "CRF_Fig_003",
+   "CRF_Fig_004",
+   "CRF_Fig_005",
+   "CRF_Fig_006",
+   "CRF_Fig_007",
+   "CRF_Fig_008",
+   "CRF_Fig_009",
+   "CRF_Fig_010",
+   "CRF_Fig_011",
+   "CRF_Fig_012",
+   "CRF_Fig_013",
+   "CRF_Fig_014",
+   "CRF_Fig_015",
+   "CRF_Fig_016",
+   "CRF_Fig_017",
+   "CRF_Fig_018",
+   "CRF_Fig_019",
+   "CRF_Fig_020",
+   "CRF_Fig_021",
+   "CRF_Fig_022",
+   "CRF_Fig_023",
+   "CRF_Fig_024",
+   "CRF_Fig_025",
+   "CRF_Fig_026",
+   "CRF_Fig_027",
+   "CRF_Fig_028",
+   "CRF_Fig_029",
+   "CRF_Fig_030",
+   "CRF_Fig_031",
+   "CRF_Fig_032",
+   "CRF_Fig_033",
+   "CRF_Fig_034",
+   "CRF_Fig_035",
+   "CRF_Fig_036",
+   "CRF_Fig_037",
+   "CRF_Fig_038",
+   "CRF_Fig_039",
+   "CRF_Fig_040",
+   "CRF_Fig_041",
+   "CRF_Fig_042",
+   "CRF_Fig_043",
+   "CRF_Fig_044",
+   "CRF_Fig_045",
+   "CRF_Fig_046",
+   "CRF_Fig_047",
+   "CRF_Fig_048",
+   "CRF_Fig_049",
+   "CRF_Fig_050",
+   "CRF_Fig_051",
+   "CRF_Fig_052",
+   "CRF_Fig_053",
+   "CRF_Fig_054",
+   "CRF_Fig_055",
+   "CRF_Fig_056",
+   "CRF_Fig_057",
+   "CRF_Fig_058",
+   "CRF_Fig_059",
+   "CRF_Fig_060",
+   "CRF_Fig_061",
+   "CRF_Fig_062",
+   "CRF_Fig_063",
+   "CRF_Fig_064",
+   "CRF_Fig_065",
+   "CRF_Fig_066",
+   "CRF_Fig_067",
+   "CRF_Fig_068",
+   "CRF_Fig_069",
+   "CRF_Fig_070",
+   "CRF_Fig_071",
+   "CRF_Fig_072",
+   "CRF_Fig_073",
+   "CRF_Fig_074",
+   "CRF_Fig_075",
+   "CRF_Fig_076",
+   "CRF_Fig_077",
+   "CRF_Fig_078",
+   "CRF_Fig_079",
+   "CRF_Fig_080",
+   "CRF_Fig_081",
+   "CRF_Fig_082",
+   "CRF_Fig_083",
+   "CRF_Fig_084",
+   "CRF_Fig_085",
+   "CRF_Fig_086",
+   "CRF_Fig_087",
+   "CRF_Fig_088",
+   "CRF_Fig_089",
+   "CRF_Fig_090",
+   "CRF_Fig_091",
+   "CRF_Fig_092",
+   "CRF_Fig_093",
+   "CRF_Fig_094",
+   "CRF_Fig_095",
+   "CRF_Fig_096",
+   "CRF_Fig_097",
+   "CRF_Fig_098",
+   "CRF_Fig_099",
+   "CRF_Fig_100",
+   "CRF_Fig_101",
+   "CRF_Fig_102",
+   "CRF_Fig_103",
+   "CRF_Fig_104",
+   "CRF_Fig_105",
+   "CRF_Fig_106",
+   "CRF_Fig_107",
+   "CRF_Fig_108",
+   "CRF_Fig_109",
+   "CRF_Fig_110",
+   "CRF_Fig_111",
+   "CRF_Fig_112",
+   "CRF_Fig_113",
+   "CRF_Fig_114",
+   "CRF_Fig_115",
+   "CRF_Fig_116",
+   "CRF_Fig_117",
+   "CRF_Fig_118",
+   "CRF_Fig_119",
+   "Cube"
+  ]
+ },
+ "closest_approach_m": {
+  "road_corridor": {
+   "object": "TS_Stand05_GRISAILLE",
+   "clearance_m": 3.4867,
+   "at_world": [
+    247.391,
+    116.659,
+    2.641
+   ]
+  },
+  "car_path": {
+   "object": "TS_Stand00_BOREAL",
+   "clearance_m": 5.3698,
+   "at_world": [
+    162.117,
+    45.114,
+    1.244
+   ]
+  },
+  "camera_path": {
+   "object": "TS_Stand03_ESTIVAL",
+   "clearance_m": 10.5094,
+   "at_world": [
+    218.466,
+    92.404,
+    3.088
+   ]
+  }
+ },
+ "method": "analytic signed distance to keep-out volume",
+ "road_corridor": {
+  "elevation_min_m": -3.6663,
+  "elevation_max_m": 7.9639,
+  "zband": [
+   -0.5,
+   4.5
+  ],
+  "spec_worst_crossfall_m": 0.8934,
+  "spec_max_banking_deg": 4.0,
+  "reference": "per-station centreline elevation re-derived from circuit_spec.json elevation.station_z_pvi"
+ },
+ "clearances": {
+  "road_margin": 0.5,
+  "road_h": 4.5,
+  "road_zlo": -0.5,
+  "car_margin": 0.6,
+  "cam_r": 1.2
+ }
+}

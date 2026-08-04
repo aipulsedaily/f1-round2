@@ -1,0 +1,133 @@
+{
+ "blend": "/home/zany/f1-round2/render/r2226_items.blend",
+ "registry": "world/items/PLACEMENT.json",
+ "rows_checked": 2,
+ "rows_named_explicitly": [
+  "crew_figure",
+  "timing_stand"
+ ],
+ "expect": null,
+ "items": [
+  {
+   "key": "crew_figure",
+   "item": "crew_figure",
+   "collection": "W_Item_CrewFigure",
+   "prefix": "CRF_",
+   "state": "PLACE",
+   "expect_objects": 120,
+   "objects": 120,
+   "distinct_meshes": 120,
+   "top_source_mesh": "CRF_Fig_000",
+   "top_source_copies": 1,
+   "top_share": 0.008333,
+   "shared_meshes": 0,
+   "triangles": 5958729,
+   "top_share_gated": true,
+   "unstamped": 0,
+   "fails": [],
+   "verdict": "PLACED"
+  },
+  {
+   "key": "timing_stand",
+   "item": "timing_stand",
+   "collection": "W_Item_TimingStand",
+   "prefix": "TS_",
+   "state": "HOLD",
+   "expect_objects": 10,
+   "objects": 10,
+   "distinct_meshes": 10,
+   "top_source_mesh": "TS_Stand00_BOREAL",
+   "top_source_copies": 1,
+   "top_share": 0.1,
+   "shared_meshes": 0,
+   "triangles": 3073024,
+   "top_share_gated": true,
+   "unstamped": 0,
+   "fails": [],
+   "verdict": "PLACED"
+  }
+ ],
+ "n_placed": 2,
+ "n_absent": 0,
+ "n_broken": 0,
+ "result": "PLACEMENT_ITEMS_OK",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-04T02:40:21",
+  "written_at": 1785811221.315,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_placement_gate.py",
+   "status": "OK",
+   "mtime": 1785811124.878,
+   "mtime_iso": "2026-08-04T02:38:44",
+   "bytes": 16473,
+   "sha256": "1995bc172658655ac41873152f87abcd711fb3519b07c05f31f8bbdfb9425fd7"
+  },
+  "tool_version": "item_placement_gate 1.0.0",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/render/r2226_items.blend",
+    "status": "OK",
+    "mtime": 1785811036.054,
+    "mtime_iso": "2026-08-04T02:37:16",
+    "bytes": 5205657600,
+    "sha256": "24b679600d6b6afe2f46caa8eb626170c410d8ec61fd90e756e072a1567ec632",
+    "hash_seconds": 14.68
+   },
+   {
+    "role": "registry",
+    "path": "/home/zany/f1-round2/world/items/PLACEMENT.json",
+    "status": "OK",
+    "mtime": 1785810328.145,
+    "mtime_iso": "2026-08-04T02:25:28",
+    "bytes": 45629,
+    "sha256": "255cc9e7c503535ee09cffb4f3944c3d19b7e66890bfc4f7ce748ec840a2506d"
+   }
+  ],
+  "describes": [],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785786939.014,
+    "mtime_iso": "2026-08-03T19:55:39",
+    "bytes": 168482,
+    "sha256": "0f12b3c34c89a35e70e80c3620b2e2561049f1d092d3197a875b8015168abdbd"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785796863.209,
+    "mtime_iso": "2026-08-03T22:41:03",
+    "bytes": 230216,
+    "sha256": "d1e6ec608b7651ec7f77c5a2930a5abfaa0e53a99c9a05edcdc8e3a05f831f9d"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "render/r2226_items.blend",
+   "--factory-startup",
+   "-noaudio",
+   "-P",
+   "work/r2226/verify_after.py",
+   "--",
+   "--frames",
+   "654,1126",
+   "--out",
+   "work/r2226/after_verify.json"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

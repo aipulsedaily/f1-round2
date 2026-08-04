@@ -1,0 +1,244 @@
+{
+ "module": "world/build_items.py",
+ "stage_version": "1.0.0",
+ "registry": "world/items/PLACEMENT.json",
+ "registry_rows": 41,
+ "collection": "R2_Items",
+ "items_placed": 2,
+ "items_refused": 0,
+ "objects": 130,
+ "distinct_meshes": 130,
+ "triangles": 9031753,
+ "shared_meshes": 0,
+ "instancers": 0,
+ "superseded_objects_removed": 0,
+ "rebuild_owed": 1,
+ "stale_inputs": 1,
+ "placed": [
+  {
+   "key": "crew_figure",
+   "item": "crew_figure",
+   "collection": "W_Item_CrewFigure",
+   "prefix": "CRF_",
+   "source_blend": "world/items/crew_figure_test.blend",
+   "source_sha256": "b979e0b0a40292003db753c4d688561957d7e5307ebf810f2441d943a3a454f7",
+   "gate_result": "ITEM_ACCEPTED",
+   "stale_against": [
+    "world_contract.py"
+   ],
+   "objects": 120,
+   "distinct_meshes": 120,
+   "triangles": 5958729,
+   "top_source_mesh": "CRF_Fig_000",
+   "top_share": 0.008333,
+   "top_share_gated": true,
+   "shared_meshes": 0,
+   "instancers": 0,
+   "materials_added": 12,
+   "materials_name_collided": [],
+   "rig_subcollections_dropped": [
+    [
+     "W_Item_CrewFigure/Cameras",
+     2
+    ],
+    [
+     "W_Item_CrewFigure/Standins",
+     2
+    ]
+   ],
+   "non_mesh_stripped": [],
+   "superseded_removed": [],
+   "rebuild_owed": [],
+   "on_circuit": {
+    "checked": true,
+    "frame_declared": "world",
+    "s_min": 3232.6,
+    "s_max": 3262.0,
+    "u_min": 53.84,
+    "u_max": 85.87,
+    "units_beyond_u_900_m": 0,
+    "max_radius_from_origin_m": 81.1,
+    "collapsed_at_origin": false
+   },
+   "objects_added_total": 120,
+   "meshes_added_total": 121,
+   "secs": 11.1
+  },
+  {
+   "key": "timing_stand",
+   "item": "timing_stand",
+   "collection": "W_Item_TimingStand",
+   "prefix": "TS_",
+   "source_blend": "world/items/timing_stand_test.blend",
+   "source_sha256": "31875e2a9d9f646e48a722dd1831d2fe373f4093070b9c5af669e9b8ca21c635",
+   "gate_result": "ITEM_ACCEPTED",
+   "stale_against": [],
+   "objects": 10,
+   "distinct_meshes": 10,
+   "triangles": 3073024,
+   "top_source_mesh": "TS_Stand00_BOREAL",
+   "top_share": 0.1,
+   "top_share_gated": true,
+   "shared_meshes": 0,
+   "instancers": 0,
+   "materials_added": 13,
+   "materials_name_collided": [],
+   "rig_subcollections_dropped": [
+    [
+     "W_Item_TimingStand/Cameras",
+     7
+    ],
+    [
+     "W_Item_TimingStand/Standins",
+     5
+    ]
+   ],
+   "non_mesh_stripped": [
+    [
+     "TS_Sun",
+     "LIGHT"
+    ]
+   ],
+   "superseded_removed": [],
+   "rebuild_owed": [
+    {
+     "kind": "REBUILD_OWED",
+     "target": "ARCH_PitWall",
+     "present": false,
+     "counter": "pit_wall_stands",
+     "n": 5,
+     "note": "build_architecture welds 5 stands into ARCH_PitWall's single mesh; the item builds 10. Census \u00a72.2: 'timing_stand's feature IS in the world as pit_wall_stands = 5 welded inside ARCH_PitWall'."
+    }
+   ],
+   "on_circuit": {
+    "checked": true,
+    "frame_declared": "world",
+    "s_min": 3468.0,
+    "s_max": 3670.7,
+    "u_min": 13.77,
+    "u_max": 14.13,
+    "units_beyond_u_900_m": 0,
+    "max_radius_from_origin_m": 363.6,
+    "collapsed_at_origin": false
+   },
+   "objects_added_total": 10,
+   "meshes_added_total": 15,
+   "secs": 1.1
+  }
+ ],
+ "refused": [],
+ "notes": [
+  "crew_figure: STALE_CLOSURE: blend predates world_contract.py"
+ ],
+ "owed": [
+  {
+   "kind": "REBUILD_OWED",
+   "target": "ARCH_PitWall",
+   "present": false,
+   "counter": "pit_wall_stands",
+   "n": 5,
+   "note": "build_architecture welds 5 stands into ARCH_PitWall's single mesh; the item builds 10. Census \u00a72.2: 'timing_stand's feature IS in the world as pit_wall_stands = 5 welded inside ARCH_PitWall'.",
+   "item": "timing_stand"
+  }
+ ],
+ "result": "ITEMS_PLACED_OK",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-04T02:40:10",
+  "written_at": 1785811210.501,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/world/build_items.py",
+   "status": "OK",
+   "mtime": 1785810688.944,
+   "mtime_iso": "2026-08-04T02:31:28",
+   "bytes": 36260,
+   "sha256": "1190c717a205f7cbfe54dce9b172bcce39be86d1275749dcbbf85e2877484fd0"
+  },
+  "tool_version": "build_items 1.0.0",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "registry",
+    "path": "/home/zany/f1-round2/world/items/PLACEMENT.json",
+    "status": "OK",
+    "mtime": 1785810328.145,
+    "mtime_iso": "2026-08-04T02:25:28",
+    "bytes": 45629,
+    "sha256": "255cc9e7c503535ee09cffb4f3944c3d19b7e66890bfc4f7ce748ec840a2506d"
+   },
+   {
+    "role": "crew_figure",
+    "path": "/home/zany/f1-round2/world/items/crew_figure_test.blend",
+    "status": "OK",
+    "mtime": 1785790294.185,
+    "mtime_iso": "2026-08-03T20:51:34",
+    "bytes": 105079456,
+    "sha256": "b979e0b0a40292003db753c4d688561957d7e5307ebf810f2441d943a3a454f7"
+   },
+   {
+    "role": "timing_stand",
+    "path": "/home/zany/f1-round2/world/items/timing_stand_test.blend",
+    "status": "OK",
+    "mtime": 1785803259.935,
+    "mtime_iso": "2026-08-04T00:27:39",
+    "bytes": 49523536,
+    "sha256": "31875e2a9d9f646e48a722dd1831d2fe373f4093070b9c5af669e9b8ca21c635"
+   }
+  ],
+  "describes": [
+   {
+    "role": "out_blend",
+    "path": "/home/zany/f1-round2/work/r2226/items_only.blend",
+    "status": "MISSING",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null,
+    "error": "FileNotFoundError: [Errno 2] No such file or directory: '/home/zany/f1-round2/work/r2226/items_only.blend'"
+   }
+  ],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785786939.014,
+    "mtime_iso": "2026-08-03T19:55:39",
+    "bytes": 168482,
+    "sha256": "0f12b3c34c89a35e70e80c3620b2e2561049f1d092d3197a875b8015168abdbd"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785796863.209,
+    "mtime_iso": "2026-08-03T22:41:03",
+    "bytes": 230216,
+    "sha256": "d1e6ec608b7651ec7f77c5a2930a5abfaa0e53a99c9a05edcdc8e3a05f831f9d"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "--factory-startup",
+   "-noaudio",
+   "-P",
+   "world/build_items.py",
+   "--",
+   "--place",
+   "crew_figure,timing_stand",
+   "--out",
+   "work/r2226/items_only.blend",
+   "--report",
+   "work/r2226/items_only_build.json"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

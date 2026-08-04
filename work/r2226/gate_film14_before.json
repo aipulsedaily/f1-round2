@@ -1,0 +1,102 @@
+{
+ "blend": "/home/zany/f1-round2/render/film14.blend",
+ "registry": "world/items/PLACEMENT.json",
+ "rows_PLACE": 1,
+ "expect": "absent",
+ "items": [
+  {
+   "key": "crew_figure",
+   "item": "crew_figure",
+   "collection": "W_Item_CrewFigure",
+   "prefix": "CRF_",
+   "state": "PLACE",
+   "expect_objects": 120,
+   "verdict": "ABSENT",
+   "objects": 0,
+   "why": "no collection named 'W_Item_CrewFigure' in this blend. Object prefixes present: ['ARCH_', 'BB_', 'BR_', 'Barrier_', 'Bollard_', 'CARRIG_', 'CAR_', 'CI_', 'Ceiling_', 'Cove_', 'DR_', 'DeckType_']"
+  }
+ ],
+ "n_placed": 0,
+ "n_absent": 1,
+ "n_broken": 0,
+ "result": "PLACEMENT_ITEMS_ABSENT_AS_EXPECTED",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-04T02:30:24",
+  "written_at": 1785810624.565,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_placement_gate.py",
+   "status": "OK",
+   "mtime": 1785810509.638,
+   "mtime_iso": "2026-08-04T02:28:29",
+   "bytes": 15742,
+   "sha256": "bb72aef72b24e838df88b3a354186ffd3d510f28d842d92935754a8cefe15d99"
+  },
+  "tool_version": "item_placement_gate 1.0.0",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/render/film14.blend",
+    "status": "OK",
+    "mtime": 1785800564.488,
+    "mtime_iso": "2026-08-03T23:42:44",
+    "bytes": 4530665076,
+    "sha256": "aea13c68af0c3a45f1d57f299931faa11f2352a27ad5c96dbab2aa1bfabda76b",
+    "hash_seconds": 21.21
+   },
+   {
+    "role": "registry",
+    "path": "/home/zany/f1-round2/world/items/PLACEMENT.json",
+    "status": "OK",
+    "mtime": 1785810328.145,
+    "mtime_iso": "2026-08-04T02:25:28",
+    "bytes": 45629,
+    "sha256": "255cc9e7c503535ee09cffb4f3944c3d19b7e66890bfc4f7ce748ec840a2506d"
+   }
+  ],
+  "describes": [],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785786939.014,
+    "mtime_iso": "2026-08-03T19:55:39",
+    "bytes": 168482,
+    "sha256": "0f12b3c34c89a35e70e80c3620b2e2561049f1d092d3197a875b8015168abdbd"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785796863.209,
+    "mtime_iso": "2026-08-03T22:41:03",
+    "bytes": 230216,
+    "sha256": "d1e6ec608b7651ec7f77c5a2930a5abfaa0e53a99c9a05edcdc8e3a05f831f9d"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "render/film14.blend",
+   "--factory-startup",
+   "-noaudio",
+   "-P",
+   "tools/item_placement_gate.py",
+   "--",
+   "--expect",
+   "absent",
+   "--out",
+   "work/r2226/gate_film14_before.json"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

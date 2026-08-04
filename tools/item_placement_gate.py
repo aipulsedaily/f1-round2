@@ -170,13 +170,25 @@ def measure_item(row, scene=None):
     return rep
 
 
-def run(registry=None, expect=None, out=None):
+def run(registry=None, expect=None, out=None, rows_wanted=None):
     reg, rows = BI.load_registry(registry or BI.REGISTRY)
     scene = bpy.context.scene
-    want = [r for r in reg["items"] if r.get("state") == "PLACE"]
+    if rows_wanted:
+        # An explicit row list verifies a TEST BUILD, where `--place` overrode
+        # the registry's state. It never widens a shipping run: a row named
+        # here still has to be in the registry, so this is not a way round the
+        # no-auto-detection rule.
+        missing = [k for k in rows_wanted if k not in rows]
+        if missing:
+            raise SystemExit("REFUSING: %s not in the registry" % missing)
+        want = [rows[k] for k in rows_wanted]
+    else:
+        want = [r for r in reg["items"] if r.get("state") == "PLACE"]
     report = {"blend": bpy.data.filepath or "(no file)",
               "registry": os.path.relpath(registry or BI.REGISTRY, ROOT),
-              "rows_PLACE": len(want), "expect": expect, "items": []}
+              "rows_checked": len(want),
+              "rows_named_explicitly": rows_wanted or None,
+              "expect": expect, "items": []}
 
     if not want:
         print("no registry row is in state PLACE; there is nothing to verify.")
@@ -340,8 +352,10 @@ def main():
 
     if "--selftest" in argv:
         return selftest()
+    rw = opt("--rows")
     return run(registry=opt("--registry"), expect=opt("--expect"),
-               out=opt("--out"))
+               out=opt("--out"),
+               rows_wanted=[x for x in rw.split(",") if x] if rw else None)
 
 
 if __name__ == "__main__":

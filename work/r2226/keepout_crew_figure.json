@@ -1,0 +1,195 @@
+{
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-04T02:44:31",
+  "written_at": 1785811471.685,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/placement_gate.py",
+   "status": "OK",
+   "mtime": 1785729563.37,
+   "mtime_iso": "2026-08-03T03:59:23",
+   "bytes": 59197,
+   "sha256": "4b91aa9721cc0adc72e742e0cf0a76fcd90233cd4e2bf041fb707105642e3355"
+  },
+  "tool_version": "placement_gate; spec unversioned",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/work/r2226/items_only.blend",
+    "status": "OK",
+    "mtime": 1785811210.959,
+    "mtime_iso": "2026-08-04T02:40:10",
+    "bytes": 675559660,
+    "sha256": "5c46850cb17a96254711fdf544da0e5b024266ca5d5c8a3492c51e15fe2429bd",
+    "hash_seconds": 1.57
+   },
+   {
+    "role": "spec",
+    "path": "/home/zany/f1-round2/docs/circuit_spec.json",
+    "status": "OK",
+    "mtime": 1785220238.261,
+    "mtime_iso": "2026-07-28T06:30:38",
+    "bytes": 35278,
+    "sha256": "50251c67dd89173f22736314e119c50e60d46717661fdc5805950dc635a52fdc"
+   },
+   {
+    "role": "telemetry",
+    "path": "/home/zany/f1-round2/telemetry/telemetry.csv",
+    "status": "OK",
+    "mtime": 1785678851.466,
+    "mtime_iso": "2026-08-02T13:54:11",
+    "bytes": 246441,
+    "sha256": "2d2bc724dace125f28559e7c88f80680b6eaaf6b326dac33d8f70b8c44738726"
+   },
+   {
+    "role": "beat_sheet",
+    "path": "/home/zany/f1-round2/docs/beat_sheet.json",
+    "status": "OK",
+    "mtime": 1785799808.887,
+    "mtime_iso": "2026-08-03T23:30:08",
+    "bytes": 155494,
+    "sha256": "2ee973b889a241af493e3ba485d3738a9a94e9bad367aae3b33c491a39f8c148"
+   },
+   {
+    "role": "camera_path",
+    "path": "/home/zany/f1-round2/world/camera_rig_path.json",
+    "status": "OK",
+    "mtime": 1785799849.842,
+    "mtime_iso": "2026-08-03T23:30:49",
+    "bytes": 335752,
+    "sha256": "f1c65c46459d4488d252434f6ce123473f03051498f4c471110619026010a5e0"
+   }
+  ],
+  "describes": [],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785786939.014,
+    "mtime_iso": "2026-08-03T19:55:39",
+    "bytes": 168482,
+    "sha256": "0f12b3c34c89a35e70e80c3620b2e2561049f1d092d3197a875b8015168abdbd"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785796863.209,
+    "mtime_iso": "2026-08-03T22:41:03",
+    "bytes": 230216,
+    "sha256": "d1e6ec608b7651ec7f77c5a2930a5abfaa0e53a99c9a05edcdc8e3a05f831f9d"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "work/r2226/items_only.blend",
+   "--factory-startup",
+   "-noaudio",
+   "-P",
+   "tools/placement_gate.py",
+   "--",
+   "--subject",
+   "W_Item_CrewFigure",
+   "--out",
+   "work/r2226/keepout_crew_figure.json"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ },
+ "violations": [],
+ "total": 0,
+ "context_findings": [
+  {
+   "object": "Cube",
+   "volume": "car_path",
+   "intrusion_m": 0.6024,
+   "at_world": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "edge_family": false
+  },
+  {
+   "object": "Cube",
+   "volume": "camera_path",
+   "intrusion_m": 0.3624,
+   "at_world": [
+    1.0,
+    -1.0,
+    1.0
+   ],
+   "edge_family": false
+  }
+ ],
+ "context_total": 2,
+ "within_instrument_tolerance": [],
+ "within_instrument_tolerance_total": 0,
+ "instrument_tolerance_m": 0.01,
+ "subject_selection": {
+  "why": "--subject W_Item_CrewFigure",
+  "subject_meshes": 120,
+  "context_meshes": 11,
+  "context_objects": [
+   "Cube",
+   "TS_Stand00_BOREAL",
+   "TS_Stand01_CORVUS",
+   "TS_Stand02_DELMAR",
+   "TS_Stand03_ESTIVAL",
+   "TS_Stand04_FULGOR",
+   "TS_Stand05_GRISAILLE",
+   "TS_Stand06_HALCYON",
+   "TS_Stand07_IRIDIA",
+   "TS_Stand08_JUNIPER",
+   "TS_Stand09_KESTREL"
+  ]
+ },
+ "closest_approach_m": {
+  "road_corridor": {
+   "object": null,
+   "clearance_m": null,
+   "at_world": null,
+   "note": "no subject mesh came within bounding-box reach of this volume -- measured, nothing close"
+  },
+  "car_path": {
+   "object": null,
+   "clearance_m": null,
+   "at_world": null,
+   "note": "no subject mesh came within bounding-box reach of this volume -- measured, nothing close"
+  },
+  "camera_path": {
+   "object": null,
+   "clearance_m": null,
+   "at_world": null,
+   "note": "no subject mesh came within bounding-box reach of this volume -- measured, nothing close"
+  }
+ },
+ "method": "analytic signed distance to keep-out volume",
+ "road_corridor": {
+  "elevation_min_m": -3.6663,
+  "elevation_max_m": 7.9639,
+  "zband": [
+   -0.5,
+   4.5
+  ],
+  "spec_worst_crossfall_m": 0.8934,
+  "spec_max_banking_deg": 4.0,
+  "reference": "per-station centreline elevation re-derived from circuit_spec.json elevation.station_z_pvi"
+ },
+ "clearances": {
+  "road_margin": 0.5,
+  "road_h": 4.5,
+  "road_zlo": -0.5,
+  "car_margin": 0.6,
+  "cam_r": 1.2
+ }
+}

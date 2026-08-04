@@ -1,0 +1,2726 @@
+{
+ "blend": "/home/zany/f1-round2/render/r2226_items.blend",
+ "frames": {
+  "654": {
+   "cam": [
+    5.2532,
+    2.58339,
+    2.19223
+   ],
+   "lens": 40.1831,
+   "items": {
+    "crew_figure": {
+     "n_units": 120,
+     "n_in_frustum": 88,
+     "n_visible": 75,
+     "n_occluded": 13,
+     "units": [
+      {
+       "n": "CRF_Fig_000",
+       "in_frustum": true,
+       "dist_m": 73.61,
+       "box": [
+        477.7,
+        2060.9,
+        557.5,
+        2172.1
+       ],
+       "px_h": 111.1,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_001",
+       "in_frustum": true,
+       "dist_m": 74.73,
+       "box": [
+        597.0,
+        2063.6,
+        641.2,
+        2185.7
+       ],
+       "px_h": 122.1,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_002",
+       "in_frustum": true,
+       "dist_m": 85.87,
+       "box": [
+        742.7,
+        2083.2,
+        807.0,
+        2192.2
+       ],
+       "px_h": 109.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_003",
+       "in_frustum": true,
+       "dist_m": 69.64,
+       "box": [
+        103.0,
+        2049.4,
+        182.8,
+        2165.6
+       ],
+       "px_h": 116.2,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_004",
+       "in_frustum": false,
+       "dist_m": 69.24,
+       "box": [
+        -535.6,
+        2040.0,
+        -460.7,
+        2170.0
+       ],
+       "px_h": 130.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_005",
+       "in_frustum": false,
+       "dist_m": 70.36,
+       "box": [
+        -621.4,
+        2041.4,
+        -524.9,
+        2160.4
+       ],
+       "px_h": 118.9,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_006",
+       "in_frustum": true,
+       "dist_m": 69.33,
+       "box": [
+        353.8,
+        2051.1,
+        420.1,
+        2166.7
+       ],
+       "px_h": 115.6,
+       "occluded": true,
+       "blocked_by": "ARCH_Ground_Fences",
+       "block_t": 56.93
+      },
+      {
+       "n": "CRF_Fig_007",
+       "in_frustum": true,
+       "dist_m": 86.28,
+       "box": [
+        90.3,
+        2079.0,
+        168.4,
+        2180.4
+       ],
+       "px_h": 101.4,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_008",
+       "in_frustum": true,
+       "dist_m": 86.05,
+       "box": [
+        -34.9,
+        2077.4,
+        34.6,
+        2170.6
+       ],
+       "px_h": 93.1,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_009",
+       "in_frustum": true,
+       "dist_m": 84.36,
+       "box": [
+        34.3,
+        2075.7,
+        107.4,
+        2167.5
+       ],
+       "px_h": 91.8,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_010",
+       "in_frustum": true,
+       "dist_m": 69.75,
+       "box": [
+        690.3,
+        2054.9,
+        751.6,
+        2167.2
+       ],
+       "px_h": 112.2,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_011",
+       "in_frustum": true,
+       "dist_m": 71.66,
+       "box": [
+        627.4,
+        2058.1,
+        716.5,
+        2173.1
+       ],
+       "px_h": 115.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_012",
+       "in_frustum": true,
+       "dist_m": 77.74,
+       "box": [
+        104.1,
+        2065.5,
+        175.2,
+        2170.1
+       ],
+       "px_h": 104.6,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_013",
+       "in_frustum": true,
+       "dist_m": 74.05,
+       "box": [
+        903.2,
+        2064.9,
+        958.6,
+        2170.2
+       ],
+       "px_h": 105.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_014",
+       "in_frustum": true,
+       "dist_m": 67.58,
+       "box": [
+        460.1,
+        2048.4,
+        554.8,
+        2174.3
+       ],
+       "px_h": 125.9,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_015",
+       "in_frustum": true,
+       "dist_m": 66.04,
+       "box": [
+        495.7,
+        2045.0,
+        568.5,
+        2164.3
+       ],
+       "px_h": 119.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_016",
+       "in_frustum": false,
+       "dist_m": 64.89,
+       "box": [
+        -219.1,
+        2033.9,
+        -151.1,
+        2157.4
+       ],
+       "px_h": 123.6,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_017",
+       "in_frustum": false,
+       "dist_m": 63.39,
+       "box": [
+        -339.9,
+        2028.0,
+        -243.5,
+        2165.6
+       ],
+       "px_h": 137.6,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_018",
+       "in_frustum": true,
+       "dist_m": 67.91,
+       "box": [
+        192.6,
+        2046.3,
+        270.4,
+        2168.8
+       ],
+       "px_h": 122.6,
+       "occluded": true,
+       "blocked_by": "ARCH_Ground_Fences",
+       "block_t": 43.28
+      },
+      {
+       "n": "CRF_Fig_019",
+       "in_frustum": true,
+       "dist_m": 67.08,
+       "box": [
+        50.1,
+        2042.7,
+        156.4,
+        2170.2
+       ],
+       "px_h": 127.4,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_020",
+       "in_frustum": true,
+       "dist_m": 66.44,
+       "box": [
+        180.6,
+        2042.6,
+        276.4,
+        2172.6
+       ],
+       "px_h": 130.0,
+       "occluded": true,
+       "blocked_by": "ARCH_Ground_Fences",
+       "block_t": 43.35
+      },
+      {
+       "n": "CRF_Fig_021",
+       "in_frustum": false,
+       "dist_m": 78.33,
+       "box": [
+        -404.5,
+        2060.5,
+        -332.7,
+        2179.8
+       ],
+       "px_h": 119.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_022",
+       "in_frustum": false,
+       "dist_m": 78.29,
+       "box": [
+        -492.4,
+        2059.9,
+        -408.9,
+        2179.7
+       ],
+       "px_h": 119.8,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_023",
+       "in_frustum": true,
+       "dist_m": 78.68,
+       "box": [
+        185.3,
+        2067.9,
+        243.1,
+        2185.2
+       ],
+       "px_h": 117.4,
+       "occluded": true,
+       "blocked_by": "ARCH_Ground_Fences",
+       "block_t": 43.62
+      },
+      {
+       "n": "CRF_Fig_024",
+       "in_frustum": true,
+       "dist_m": 78.24,
+       "box": [
+        288.8,
+        2067.9,
+        362.3,
+        2172.4
+       ],
+       "px_h": 104.5,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_025",
+       "in_frustum": true,
+       "dist_m": 80.16,
+       "box": [
+        300.9,
+        2071.4,
+        374.6,
+        2180.7
+       ],
+       "px_h": 109.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_026",
+       "in_frustum": true,
+       "dist_m": 80.59,
+       "box": [
+        215.4,
+        2071.3,
+        279.8,
+        2164.0
+       ],
+       "px_h": 92.7,
+       "occluded": true,
+       "blocked_by": "ARCH_Ground_Fences",
+       "block_t": 42.91
+      },
+      {
+       "n": "CRF_Fig_027",
+       "in_frustum": true,
+       "dist_m": 81.81,
+       "box": [
+        959.3,
+        2078.2,
+        1016.7,
+        2177.2
+       ],
+       "px_h": 98.9,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_028",
+       "in_frustum": true,
+       "dist_m": 80.22,
+       "box": [
+        884.4,
+        2075.4,
+        942.7,
+        2164.7
+       ],
+       "px_h": 89.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_029",
+       "in_frustum": false,
+       "dist_m": 69.7,
+       "box": [
+        -141.6,
+        2046.6,
+        -58.1,
+        2170.9
+       ],
+       "px_h": 124.4,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_030",
+       "in_frustum": true,
+       "dist_m": 82.71,
+       "box": [
+        632.6,
+        2077.6,
+        701.4,
+        2181.9
+       ],
+       "px_h": 104.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_031",
+       "in_frustum": false,
+       "dist_m": 72.04,
+       "box": [
+        -700.1,
+        2044.7,
+        -613.5,
+        2183.8
+       ],
+       "px_h": 139.1,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_032",
+       "in_frustum": false,
+       "dist_m": 74.2,
+       "box": [
+        -664.1,
+        2049.6,
+        -581.2,
+        2162.9
+       ],
+       "px_h": 113.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_033",
+       "in_frustum": true,
+       "dist_m": 74.89,
+       "box": [
+        85.6,
+        2059.8,
+        162.6,
+        2182.2
+       ],
+       "px_h": 122.4,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_034",
+       "in_frustum": true,
+       "dist_m": 75.9,
+       "box": [
+        143.2,
+        2062.6,
+        208.1,
+        2174.9
+       ],
+       "px_h": 112.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_035",
+       "in_frustum": false,
+       "dist_m": 58.45,
+       "box": [
+        -151.7,
+        2015.8,
+        -17.4,
+        2166.2
+       ],
+       "px_h": 150.4,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_036",
+       "in_frustum": false,
+       "dist_m": 58.65,
+       "box": [
+        -210.9,
+        2015.4,
+        -120.3,
+        2155.0
+       ],
+       "px_h": 139.6,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_037",
+       "in_frustum": false,
+       "dist_m": 72.28,
+       "box": [
+        -321.9,
+        2050.0,
+        -250.8,
+        2164.2
+       ],
+       "px_h": 114.1,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_038",
+       "in_frustum": true,
+       "dist_m": 79.13,
+       "box": [
+        1246.5,
+        2075.2,
+        1295.3,
+        2178.5
+       ],
+       "px_h": 103.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_039",
+       "in_frustum": true,
+       "dist_m": 61.67,
+       "box": [
+        552.5,
+        2034.3,
+        614.0,
+        2169.4
+       ],
+       "px_h": 135.1,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_040",
+       "in_frustum": true,
+       "dist_m": 62.06,
+       "box": [
+        640.4,
+        2036.2,
+        696.6,
+        2163.2
+       ],
+       "px_h": 127.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_041",
+       "in_frustum": true,
+       "dist_m": 63.31,
+       "box": [
+        665.6,
+        2039.0,
+        772.1,
+        2174.3
+       ],
+       "px_h": 135.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_042",
+       "in_frustum": true,
+       "dist_m": 64.06,
+       "box": [
+        674.2,
+        2041.7,
+        739.8,
+        2164.9
+       ],
+       "px_h": 123.2,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_043",
+       "in_frustum": true,
+       "dist_m": 64.69,
+       "box": [
+        592.5,
+        2042.3,
+        657.9,
+        2166.1
+       ],
+       "px_h": 123.8,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_044",
+       "in_frustum": false,
+       "dist_m": 61.87,
+       "box": [
+        -183.3,
+        2026.0,
+        -92.1,
+        2163.8
+       ],
+       "px_h": 137.9,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_045",
+       "in_frustum": false,
+       "dist_m": 60.61,
+       "box": [
+        -232.4,
+        2021.5,
+        -162.1,
+        2155.8
+       ],
+       "px_h": 134.4,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_046",
+       "in_frustum": false,
+       "dist_m": 59.66,
+       "box": [
+        -134.2,
+        2020.3,
+        -40.1,
+        2176.2
+       ],
+       "px_h": 155.8,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_047",
+       "in_frustum": true,
+       "dist_m": 59.57,
+       "box": [
+        -39.0,
+        2021.4,
+        49.3,
+        2169.0
+       ],
+       "px_h": 147.6,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_048",
+       "in_frustum": false,
+       "dist_m": 79.18,
+       "box": [
+        -265.3,
+        2064.4,
+        -201.9,
+        2173.3
+       ],
+       "px_h": 109.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_049",
+       "in_frustum": false,
+       "dist_m": 78.62,
+       "box": [
+        -171.6,
+        2064.3,
+        -108.9,
+        2178.7
+       ],
+       "px_h": 114.5,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_050",
+       "in_frustum": true,
+       "dist_m": 75.18,
+       "box": [
+        1005.6,
+        2067.6,
+        1058.4,
+        2169.9
+       ],
+       "px_h": 102.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_051",
+       "in_frustum": true,
+       "dist_m": 73.57,
+       "box": [
+        1051.8,
+        2064.8,
+        1103.7,
+        2179.8
+       ],
+       "px_h": 115.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_052",
+       "in_frustum": true,
+       "dist_m": 74.13,
+       "box": [
+        1142.1,
+        2065.9,
+        1213.6,
+        2184.1
+       ],
+       "px_h": 118.2,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_053",
+       "in_frustum": true,
+       "dist_m": 75.84,
+       "box": [
+        1139.9,
+        2069.1,
+        1199.9,
+        2170.8
+       ],
+       "px_h": 101.6,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_054",
+       "in_frustum": true,
+       "dist_m": 71.51,
+       "box": [
+        190.6,
+        2054.3,
+        248.1,
+        2177.4
+       ],
+       "px_h": 123.1,
+       "occluded": true,
+       "blocked_by": "ARCH_Ground_Fences",
+       "block_t": 43.53
+      },
+      {
+       "n": "CRF_Fig_055",
+       "in_frustum": true,
+       "dist_m": 69.63,
+       "box": [
+        193.2,
+        2049.9,
+        293.5,
+        2173.4
+       ],
+       "px_h": 123.4,
+       "occluded": true,
+       "blocked_by": "ARCH_Ground_Fences",
+       "block_t": 43.02
+      },
+      {
+       "n": "CRF_Fig_056",
+       "in_frustum": true,
+       "dist_m": 69.32,
+       "box": [
+        299.4,
+        2050.3,
+        387.2,
+        2184.6
+       ],
+       "px_h": 134.2,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_057",
+       "in_frustum": true,
+       "dist_m": 63.68,
+       "box": [
+        292.4,
+        2036.8,
+        386.5,
+        2177.8
+       ],
+       "px_h": 141.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_058",
+       "in_frustum": true,
+       "dist_m": 73.54,
+       "box": [
+        406.7,
+        2060.6,
+        458.3,
+        2160.9
+       ],
+       "px_h": 100.4,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_059",
+       "in_frustum": true,
+       "dist_m": 72.03,
+       "box": [
+        464.7,
+        2057.5,
+        551.3,
+        2172.2
+       ],
+       "px_h": 114.6,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_060",
+       "in_frustum": true,
+       "dist_m": 73.88,
+       "box": [
+        490.5,
+        2061.9,
+        548.1,
+        2165.5
+       ],
+       "px_h": 103.6,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_061",
+       "in_frustum": true,
+       "dist_m": 83.3,
+       "box": [
+        552.0,
+        2078.2,
+        631.0,
+        2177.7
+       ],
+       "px_h": 99.4,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_062",
+       "in_frustum": true,
+       "dist_m": 83.9,
+       "box": [
+        657.6,
+        2079.9,
+        702.6,
+        2175.9
+       ],
+       "px_h": 96.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_063",
+       "in_frustum": true,
+       "dist_m": 85.2,
+       "box": [
+        657.1,
+        2081.4,
+        696.8,
+        2169.6
+       ],
+       "px_h": 88.1,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_064",
+       "in_frustum": true,
+       "dist_m": 85.94,
+       "box": [
+        579.6,
+        2082.4,
+        640.2,
+        2184.7
+       ],
+       "px_h": 102.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_065",
+       "in_frustum": true,
+       "dist_m": 85.2,
+       "box": [
+        509.5,
+        2080.7,
+        576.4,
+        2179.9
+       ],
+       "px_h": 99.2,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_066",
+       "in_frustum": true,
+       "dist_m": 76.86,
+       "box": [
+        827.0,
+        2069.4,
+        890.7,
+        2164.7
+       ],
+       "px_h": 95.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_067",
+       "in_frustum": true,
+       "dist_m": 77.99,
+       "box": [
+        298.3,
+        2067.4,
+        384.0,
+        2178.4
+       ],
+       "px_h": 111.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_068",
+       "in_frustum": true,
+       "dist_m": 77.34,
+       "box": [
+        272.3,
+        2066.2,
+        330.9,
+        2179.0
+       ],
+       "px_h": 112.8,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_069",
+       "in_frustum": true,
+       "dist_m": 76.14,
+       "box": [
+        296.4,
+        2064.2,
+        364.2,
+        2171.4
+       ],
+       "px_h": 107.2,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_070",
+       "in_frustum": true,
+       "dist_m": 75.56,
+       "box": [
+        358.2,
+        2063.7,
+        438.2,
+        2183.7
+       ],
+       "px_h": 120.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_071",
+       "in_frustum": true,
+       "dist_m": 76.65,
+       "box": [
+        440.0,
+        2066.6,
+        491.9,
+        2170.6
+       ],
+       "px_h": 104.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_072",
+       "in_frustum": true,
+       "dist_m": 59.67,
+       "box": [
+        426.4,
+        2027.3,
+        497.3,
+        2167.2
+       ],
+       "px_h": 139.9,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_073",
+       "in_frustum": true,
+       "dist_m": 58.96,
+       "box": [
+        296.9,
+        2023.7,
+        382.9,
+        2176.6
+       ],
+       "px_h": 153.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_074",
+       "in_frustum": true,
+       "dist_m": 72.94,
+       "box": [
+        798.9,
+        2061.9,
+        872.9,
+        2170.0
+       ],
+       "px_h": 108.2,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_075",
+       "in_frustum": true,
+       "dist_m": 79.69,
+       "box": [
+        813.7,
+        2074.0,
+        887.9,
+        2173.8
+       ],
+       "px_h": 99.7,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_076",
+       "in_frustum": true,
+       "dist_m": 81.34,
+       "box": [
+        877.6,
+        2077.0,
+        944.8,
+        2182.0
+       ],
+       "px_h": 105.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_077",
+       "in_frustum": true,
+       "dist_m": 81.46,
+       "box": [
+        745.5,
+        2076.6,
+        825.1,
+        2179.7
+       ],
+       "px_h": 103.1,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_078",
+       "in_frustum": true,
+       "dist_m": 73.63,
+       "box": [
+        164.4,
+        2058.4,
+        220.9,
+        2166.7
+       ],
+       "px_h": 108.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_079",
+       "in_frustum": true,
+       "dist_m": 74.36,
+       "box": [
+        224.9,
+        2060.5,
+        281.3,
+        2163.1
+       ],
+       "px_h": 102.6,
+       "occluded": true,
+       "blocked_by": "ARCH_Ground_Fences",
+       "block_t": 42.81
+      },
+      {
+       "n": "CRF_Fig_080",
+       "in_frustum": true,
+       "dist_m": 75.46,
+       "box": [
+        232.4,
+        2062.4,
+        285.3,
+        2175.6
+       ],
+       "px_h": 113.2,
+       "occluded": true,
+       "blocked_by": "ARCH_Ground_Fences",
+       "block_t": 42.59
+      },
+      {
+       "n": "CRF_Fig_081",
+       "in_frustum": true,
+       "dist_m": 76.54,
+       "box": [
+        225.3,
+        2064.6,
+        294.9,
+        2185.6
+       ],
+       "px_h": 121.1,
+       "occluded": true,
+       "blocked_by": "ARCH_Ground_Fences",
+       "block_t": 42.58
+      },
+      {
+       "n": "CRF_Fig_082",
+       "in_frustum": true,
+       "dist_m": 76.97,
+       "box": [
+        157.2,
+        2064.6,
+        234.4,
+        2183.2
+       ],
+       "px_h": 118.6,
+       "occluded": true,
+       "blocked_by": "ARCH_Ground_Fences",
+       "block_t": 44.03
+      },
+      {
+       "n": "CRF_Fig_083",
+       "in_frustum": true,
+       "dist_m": 73.15,
+       "box": [
+        -23.3,
+        2055.4,
+        46.1,
+        2172.3
+       ],
+       "px_h": 116.9,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_084",
+       "in_frustum": true,
+       "dist_m": 74.46,
+       "box": [
+        38.4,
+        2058.6,
+        118.5,
+        2169.5
+       ],
+       "px_h": 110.9,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_085",
+       "in_frustum": true,
+       "dist_m": 76.16,
+       "box": [
+        15.0,
+        2061.8,
+        84.7,
+        2178.1
+       ],
+       "px_h": 116.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_086",
+       "in_frustum": false,
+       "dist_m": 76.01,
+       "box": [
+        -97.3,
+        2060.3,
+        -25.1,
+        2174.2
+       ],
+       "px_h": 113.9,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_087",
+       "in_frustum": true,
+       "dist_m": 79.92,
+       "box": [
+        243.8,
+        2070.8,
+        321.2,
+        2170.9
+       ],
+       "px_h": 100.1,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_088",
+       "in_frustum": true,
+       "dist_m": 81.68,
+       "box": [
+        225.7,
+        2073.1,
+        289.0,
+        2180.7
+       ],
+       "px_h": 107.6,
+       "occluded": true,
+       "blocked_by": "ARCH_Ground_Fences",
+       "block_t": 42.59
+      },
+      {
+       "n": "CRF_Fig_089",
+       "in_frustum": true,
+       "dist_m": 63.51,
+       "box": [
+        742.1,
+        2040.8,
+        787.9,
+        2156.2
+       ],
+       "px_h": 115.5,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_090",
+       "in_frustum": true,
+       "dist_m": 66.88,
+       "box": [
+        -40.2,
+        2041.4,
+        10.8,
+        2156.7
+       ],
+       "px_h": 115.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_091",
+       "in_frustum": false,
+       "dist_m": 58.97,
+       "box": [
+        -232.0,
+        2016.8,
+        -144.1,
+        2172.2
+       ],
+       "px_h": 155.4,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_092",
+       "in_frustum": false,
+       "dist_m": 59.29,
+       "box": [
+        -126.7,
+        2018.9,
+        -41.1,
+        2160.5
+       ],
+       "px_h": 141.6,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_093",
+       "in_frustum": false,
+       "dist_m": 60.2,
+       "box": [
+        -153.8,
+        2021.2,
+        -36.2,
+        2175.0
+       ],
+       "px_h": 153.8,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_094",
+       "in_frustum": true,
+       "dist_m": 67.28,
+       "box": [
+        418.5,
+        2047.2,
+        474.9,
+        2153.5
+       ],
+       "px_h": 106.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_095",
+       "in_frustum": true,
+       "dist_m": 67.15,
+       "box": [
+        309.0,
+        2045.9,
+        382.3,
+        2187.2
+       ],
+       "px_h": 141.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_096",
+       "in_frustum": true,
+       "dist_m": 65.95,
+       "box": [
+        271.9,
+        2042.5,
+        337.8,
+        2194.3
+       ],
+       "px_h": 151.8,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_097",
+       "in_frustum": true,
+       "dist_m": 64.91,
+       "box": [
+        317.6,
+        2040.3,
+        411.8,
+        2166.8
+       ],
+       "px_h": 126.5,
+       "occluded": true,
+       "blocked_by": "ARCH_Ground_Fences",
+       "block_t": 56.18
+      },
+      {
+       "n": "CRF_Fig_098",
+       "in_frustum": true,
+       "dist_m": 64.91,
+       "box": [
+        408.2,
+        2041.4,
+        484.9,
+        2175.0
+       ],
+       "px_h": 133.6,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_099",
+       "in_frustum": false,
+       "dist_m": 74.44,
+       "box": [
+        -839.5,
+        2047.6,
+        -743.2,
+        2165.6
+       ],
+       "px_h": 118.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_100",
+       "in_frustum": false,
+       "dist_m": 76.41,
+       "box": [
+        -838.1,
+        2051.8,
+        -730.4,
+        2181.6
+       ],
+       "px_h": 129.8,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_101",
+       "in_frustum": false,
+       "dist_m": 75.37,
+       "box": [
+        -973.3,
+        2047.5,
+        -902.2,
+        2168.9
+       ],
+       "px_h": 121.5,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_102",
+       "in_frustum": true,
+       "dist_m": 64.48,
+       "box": [
+        907.6,
+        2044.4,
+        979.3,
+        2167.7
+       ],
+       "px_h": 123.4,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_103",
+       "in_frustum": false,
+       "dist_m": 79.66,
+       "box": [
+        -416.3,
+        2063.3,
+        -341.4,
+        2163.7
+       ],
+       "px_h": 100.4,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_104",
+       "in_frustum": false,
+       "dist_m": 80.31,
+       "box": [
+        -533.4,
+        2063.1,
+        -463.5,
+        2173.1
+       ],
+       "px_h": 110.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_105",
+       "in_frustum": false,
+       "dist_m": 78.96,
+       "box": [
+        -596.8,
+        2059.6,
+        -492.5,
+        2176.7
+       ],
+       "px_h": 117.2,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_106",
+       "in_frustum": false,
+       "dist_m": 77.92,
+       "box": [
+        -477.1,
+        2059.1,
+        -383.3,
+        2175.9
+       ],
+       "px_h": 116.8,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_107",
+       "in_frustum": false,
+       "dist_m": 71.89,
+       "box": [
+        -628.7,
+        2045.1,
+        -538.8,
+        2187.6
+       ],
+       "px_h": 142.5,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_108",
+       "in_frustum": true,
+       "dist_m": 65.5,
+       "box": [
+        1109.3,
+        2047.4,
+        1189.2,
+        2174.4
+       ],
+       "px_h": 127.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_109",
+       "in_frustum": true,
+       "dist_m": 86.24,
+       "box": [
+        721.6,
+        2083.6,
+        774.1,
+        2179.7
+       ],
+       "px_h": 96.1,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_110",
+       "in_frustum": true,
+       "dist_m": 86.71,
+       "box": [
+        662.7,
+        2083.8,
+        710.2,
+        2173.0
+       ],
+       "px_h": 89.2,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_111",
+       "in_frustum": true,
+       "dist_m": 86.3,
+       "box": [
+        611.8,
+        2083.0,
+        669.8,
+        2178.9
+       ],
+       "px_h": 95.9,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_112",
+       "in_frustum": true,
+       "dist_m": 85.04,
+       "box": [
+        586.9,
+        2081.0,
+        643.6,
+        2175.9
+       ],
+       "px_h": 94.9,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_113",
+       "in_frustum": true,
+       "dist_m": 84.11,
+       "box": [
+        622.6,
+        2080.1,
+        665.2,
+        2173.2
+       ],
+       "px_h": 93.1,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_114",
+       "in_frustum": true,
+       "dist_m": 75.26,
+       "box": [
+        614.7,
+        2065.5,
+        687.3,
+        2172.1
+       ],
+       "px_h": 106.5,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_115",
+       "in_frustum": false,
+       "dist_m": 73.6,
+       "box": [
+        -240.0,
+        2053.4,
+        -164.5,
+        2170.2
+       ],
+       "px_h": 116.9,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_116",
+       "in_frustum": false,
+       "dist_m": 75.08,
+       "box": [
+        -258.8,
+        2056.7,
+        -185.1,
+        2181.1
+       ],
+       "px_h": 124.4,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_117",
+       "in_frustum": false,
+       "dist_m": 74.32,
+       "box": [
+        -371.4,
+        2053.7,
+        -304.7,
+        2181.5
+       ],
+       "px_h": 127.8,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_118",
+       "in_frustum": true,
+       "dist_m": 65.98,
+       "box": [
+        744.6,
+        2047.0,
+        803.5,
+        2176.2
+       ],
+       "px_h": 129.2,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "CRF_Fig_119",
+       "in_frustum": true,
+       "dist_m": 67.54,
+       "box": [
+        708.1,
+        2050.5,
+        769.7,
+        2157.8
+       ],
+       "px_h": 107.4,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      }
+     ]
+    },
+    "timing_stand": {
+     "n_units": 10,
+     "n_in_frustum": 0,
+     "n_visible": 0,
+     "n_occluded": 0,
+     "units": [
+      {
+       "n": "TS_Stand00_BOREAL",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "TS_Stand01_CORVUS",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "TS_Stand02_DELMAR",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "TS_Stand03_ESTIVAL",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "TS_Stand04_FULGOR",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "TS_Stand05_GRISAILLE",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "TS_Stand06_HALCYON",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "TS_Stand07_IRIDIA",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "TS_Stand08_JUNIPER",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "TS_Stand09_KESTREL",
+       "in_frustum": false,
+       "why": "behind"
+      }
+     ]
+    }
+   }
+  },
+  "1126": {
+   "cam": [
+    140.71689,
+    38.8779,
+    16.73466
+   ],
+   "lens": 35.0,
+   "items": {
+    "crew_figure": {
+     "n_units": 120,
+     "n_in_frustum": 0,
+     "n_visible": 0,
+     "n_occluded": 0,
+     "units": [
+      {
+       "n": "CRF_Fig_000",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_001",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_002",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_003",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_004",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_005",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_006",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_007",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_008",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_009",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_010",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_011",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_012",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_013",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_014",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_015",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_016",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_017",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_018",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_019",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_020",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_021",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_022",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_023",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_024",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_025",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_026",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_027",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_028",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_029",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_030",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_031",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_032",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_033",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_034",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_035",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_036",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_037",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_038",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_039",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_040",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_041",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_042",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_043",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_044",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_045",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_046",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_047",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_048",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_049",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_050",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_051",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_052",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_053",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_054",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_055",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_056",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_057",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_058",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_059",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_060",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_061",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_062",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_063",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_064",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_065",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_066",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_067",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_068",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_069",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_070",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_071",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_072",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_073",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_074",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_075",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_076",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_077",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_078",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_079",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_080",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_081",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_082",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_083",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_084",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_085",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_086",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_087",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_088",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_089",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_090",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_091",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_092",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_093",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_094",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_095",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_096",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_097",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_098",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_099",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_100",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_101",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_102",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_103",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_104",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_105",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_106",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_107",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_108",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_109",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_110",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_111",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_112",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_113",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_114",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_115",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_116",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_117",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_118",
+       "in_frustum": false,
+       "why": "behind"
+      },
+      {
+       "n": "CRF_Fig_119",
+       "in_frustum": false,
+       "why": "behind"
+      }
+     ]
+    },
+    "timing_stand": {
+     "n_units": 10,
+     "n_in_frustum": 9,
+     "n_visible": 9,
+     "n_occluded": 0,
+     "units": [
+      {
+       "n": "TS_Stand00_BOREAL",
+       "in_frustum": true,
+       "dist_m": 27.41,
+       "box": [
+        1279.6,
+        -294.5,
+        2092.9,
+        704.8
+       ],
+       "px_h": 999.3,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "TS_Stand01_CORVUS",
+       "in_frustum": true,
+       "dist_m": 45.3,
+       "box": [
+        839.8,
+        892.8,
+        1322.3,
+        1391.6
+       ],
+       "px_h": 498.8,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "TS_Stand02_DELMAR",
+       "in_frustum": true,
+       "dist_m": 66.1,
+       "box": [
+        664.3,
+        1405.5,
+        986.9,
+        1706.6
+       ],
+       "px_h": 301.1,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "TS_Stand03_ESTIVAL",
+       "in_frustum": true,
+       "dist_m": 93.33,
+       "box": [
+        564.4,
+        1730.3,
+        770.9,
+        1929.3
+       ],
+       "px_h": 199.1,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "TS_Stand04_FULGOR",
+       "in_frustum": true,
+       "dist_m": 113.21,
+       "box": [
+        478.9,
+        1864.2,
+        678.8,
+        2044.0
+       ],
+       "px_h": 179.8,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "TS_Stand05_GRISAILLE",
+       "in_frustum": true,
+       "dist_m": 135.06,
+       "box": [
+        453.1,
+        1969.9,
+        607.9,
+        2097.9
+       ],
+       "px_h": 128.0,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "TS_Stand06_HALCYON",
+       "in_frustum": true,
+       "dist_m": 156.1,
+       "box": [
+        431.2,
+        2046.0,
+        556.1,
+        2163.7
+       ],
+       "px_h": 117.6,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "TS_Stand07_IRIDIA",
+       "in_frustum": true,
+       "dist_m": 177.23,
+       "box": [
+        401.6,
+        2100.4,
+        519.0,
+        2197.6
+       ],
+       "px_h": 97.1,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "TS_Stand08_JUNIPER",
+       "in_frustum": true,
+       "dist_m": 203.12,
+       "box": [
+        371.8,
+        2152.7,
+        483.0,
+        2238.3
+       ],
+       "px_h": 85.6,
+       "occluded": false,
+       "blocked_by": null,
+       "block_t": null
+      },
+      {
+       "n": "TS_Stand09_KESTREL",
+       "in_frustum": false,
+       "dist_m": 225.04,
+       "box": [
+        370.1,
+        2190.6,
+        457.2,
+        2271.3
+       ],
+       "px_h": 80.7,
+       "occluded": true,
+       "blocked_by": "ARCH_PitWall",
+       "block_t": 223.13
+      }
+     ]
+    }
+   }
+  }
+ },
+ "placement_gate_rc": 0,
+ "camera": "ONER",
+ "occluders_used": [
+  [
+   "ARCH_PitBuilding_Shell",
+   287992,
+   276654
+  ],
+  [
+   "ARCH_PitBuilding_Detail",
+   151412,
+   123912
+  ],
+  [
+   "ARCH_PaddockBuildings",
+   272628,
+   225744
+  ],
+  [
+   "ARCH_Ground_Compound",
+   35956,
+   28742
+  ],
+  [
+   "ARCH_Ground_Fences",
+   136180,
+   92079
+  ],
+  [
+   "ARCH_Ground_Decks",
+   56088,
+   47721
+  ],
+  [
+   "ARCH_RaceControl",
+   7568,
+   4527
+  ],
+  [
+   "ARCH_PitWall",
+   64960,
+   48778
+  ],
+  [
+   "ARCH_ShowroomSurrounds",
+   50328,
+   19460
+  ],
+  [
+   "ARCH_Grandstand_03_PRINCIPALE",
+   501874,
+   275604
+  ],
+  [
+   "Wall_BackX",
+   8,
+   6
+  ],
+  [
+   "Ceiling",
+   8,
+   6
+  ],
+  [
+   "Floor",
+   8,
+   6
+  ]
+ ]
+}
