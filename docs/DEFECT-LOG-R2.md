@@ -14758,6 +14758,28 @@ because batch seams are on its hunting list and every boundary frame is now know
 in advance. `spec_hash` is identical across all 22, so a settings drift would be a
 409 rather than an invisible seam.
 
+> **MAIN-THREAD CORRECTION, appended on merge: THIS ENTRY'S HEADLINE IS
+> REFUTED.** The effective-age analysis is correct and worth keeping, but it
+> establishes a property of the **ranking only**, and ranking is not service.
+>
+> `Broker.cheaper_to_finish()` (`broker/app.py:386`) independently vetoes the
+> starvation switch when `queued x mean_render_sec <= SCENE_SWITCH_PAYBACK x
+> reload_cost`, and **`mean_render_sec` counts stills only**. The ladder's
+> twelve queued jobs -- 1,449 sequence frames, ~30 h of GPU -- were priced at
+> the still rate as **634 s of work against a ~3,100 s reload**, so the switch
+> was vetoed AT ANY PRIORITY. Proof it is a veto and not a ranking problem: an
+> independent agent submitted at `--prio -1000` and the jobs did not move until
+> the payback term was relaxed.
+>
+> Direct empirical refutation of the "~27 minutes, whatever arrives" bound:
+> `r2451` was starved **6,250 s** (~104 min) and its scene had never been
+> uploaded at all.
+>
+> **The general shape, and it is the sibling of R2-433:** checking one stage of
+> a decision is not checking the decision. The seeded-queue test against the
+> real query was the right method and still measured only the stage it was
+> pointed at. A switch is RANKING AND VETO.
+
 ## R2-504 — the showroom roof is NOT a source fix, and no world rebuild can deliver it
 
 The batched rebuild was briefed as *"six queued source fixes — each a landed
@@ -14934,3 +14956,747 @@ belonged upstream of it.
 and then *writes* `ranked` as output. Nothing consumes it. It is a write-only
 diagnostic — harmless, but if anyone documents it as the mechanism again, it
 still is not.
+
+## R2-400 — THE ENDING: it survives, f2940 is stronger than the build that proved it, and at f2978 I cannot claim R2-297's "within 1 %" — here is exactly why
+
+`render/film14_breach_R2387.blend`, ONER, 3840 × 2160, 256 samples, DOF on,
+adaptive 0.01 — the same spec as the R6 and R2-281 runs. Both frames came back
+clean (f2978 lum mean 0.391746 sd 0.114324, 100.000 % non-black; f2940 mean
+0.393186 sd 0.102430, 100.000 %); the farm's black-frame signature is mean
+0.0003 / 2 distinct colours and neither is anywhere near it.
+
+### The headline, stated the way it comes out and not the way I wanted it
+
+| `WOUND_bridged`, f2978 | R6 | demonstrator | FRAMEONLY (R2-297) | **R2387 AIR** |
+|---|---|---|---|---|
+| `grid_contrast`, the published \|·\| mean | 0.03675 | 0.00777 | 0.00785 | **0.01429** |
+
+**On the published statistic my build is 1.8× the demonstrator, and R2-297's
+"reproduces the demonstrator within 1 %" is NOT a claim I can make for it.**
+That is the first thing to say.
+
+### And the metric's own sign says two of its three samples cannot be members
+
+`grid_contrast` takes the absolute value on purpose — R2-181's lesson, that a
+signed contrast cancels across a wall where members are darker than the wound
+and lighter than crazed glass. At f2978, across the three transom rows:
+
+| build | T0 (v1103) | T1 (v1083) | T2 (v1064) | published \|·\| mean | **dark-only mean** |
+|---|---|---|---|---|---|
+| R6, lattice intact | −0.00384 | **−0.08955** | −0.01686 | 0.03675 | 0.03675 |
+| FRAMEONLY | −0.01446 | −0.00626 | +0.00283 | 0.00785 | 0.00691 |
+| **R2387 AIR** | **+0.02147** | −0.01593 | **+0.00546** | **0.01429** | **0.00531** |
+
+**A member cannot make a row brighter than the rows above and below it.** In R6
+all three rows are darker — that is a lattice. In R2387 **two of the three are
+brighter**, and the larger of them, T0 at +0.02147, is the single biggest
+contributor to my 0.01429. The only signed-dark line left is T1, and it is
+**−0.01593 against R6's −0.08955: an 82 % reduction of the one line the metric
+was built to see.** On the dark-only mean — the part of the statistic a member
+can actually produce — R2387 is **0.00531 against FRAMEONLY's 0.00691 and the
+demonstrator's 0.00777.**
+
+I am not proposing a new statistic to flatter my build. The published number is
+0.01429 and it is worse than the demonstrator's. What the sign establishes is
+**what the difference is made of**, and it is made of the wound being brighter,
+not of a lattice being back.
+
+### The row profile agrees, and it needs no metric at all
+
+Mean brightness of each row of `WOUND_bridged`, R2387 minus FRAMEONLY:
+**positive on 33 of the 40 sampled rows**, by +0.03 to +0.07 across v 1059–1111
+— the whole middle of the hole. It is negative only on the bottom three rows
+(v 1113–1119, down to −0.06), which is where three released transom pieces come
+to rest on the apron (R2-399, P11). **The hole is more open and the ground
+below it has debris on it.** That is the correct picture of a wall that has been
+driven through, and it is the opposite of a lattice returning.
+
+`render/r2387/WOUNDBOX_f2978_x14.png`, the wound rectangle at 14×, three
+panels: R6 has two vertical mullions and a horizontal transom across it;
+FRAMEONLY has neither and a dark pile of debris standing in the lower half;
+**R2387 has neither and the pile is gone**, replaced by scattered fragments
+lying on the apron below the opening. Panel 3 is the most open of the three.
+
+### f2940 — the tighter frame, and the one I predicted was at risk — is better on BOTH statistics
+
+| `WOUND_bridged`, f2940 | R6 | FRAMEONLY | **R2387 AIR** |
+|---|---|---|---|
+| published `grid_contrast` \|·\| | 0.02572 | 0.02688 | **0.01898** |
+| dark-only mean | 0.02377 | 0.01543 | **0.00436** |
+| `CTL_UNTOUCHED_bays01` changed > 8/255 | — | 0.000 % | **0.000 %** |
+
+**R2-278's embarrassment is repaired here.** At f2940 the demonstrator's
+`grid_contrast` moved *upward* (0.02572 → 0.02672) on a frame where the lattice
+was visibly gone, and the entry had to say so. R2387 moves it **downward**, to
+0.01898, and its dark-only component to 0.00436 — a 5.5× collapse. The frame
+where the metric failed is the frame where this build reads most clearly.
+
+### The controls
+
+| region, f2978 | reference (FRAMEONLY vs R6) | **R2387 vs R6** | verdict |
+|---|---|---|---|
+| **`CTL_UNTOUCHED_bays01`** — the one R2-296 established is genuinely clean | 0.043 % | **0.043 %** | **holds exactly** |
+| `CTL_UNTOUCHED_bays789` | 0.144 % | 3.308 % | fails |
+| `CTL_UNTOUCHED_bays012` | 1.482 % | 4.085 % | fails |
+| sky | 0.0004 % | 0.0008 % | holds |
+| `CTL_UNTOUCHED_bays01`, f2940 | 0.000 % | **0.000 %** | **holds exactly** |
+
+**The genuine control is bit-clean at both frames.** The two that fail are the
+two R2-296 already declared expired, and they fail for a measured reason:
+the retained bays shed slightly more glass in this bake.
+
+| shards departing (> 0.25 m), by bay | shipped | R2281 re-bake | **R2387 AIR** |
+|---|---|---|---|
+| bay 2 | 1.0 % | 1.5 % | 3.6 % |
+| bay 3 | 1.0 % | 1.5 % | 0.5 % |
+| **bay 4** | 98.6 % | 96.7 % | **99.7 %** |
+| **bay 5** | 96.0 % | 95.4 % | **98.6 %** |
+| bay 6 | 9.0 % | 4.0 % | 2.0 % |
+| bay 7 | 2.2 % | 6.6 % | 2.2 % |
+
+Every retained bay is inside the band the two shipped-or-published bakes
+already span, bay 7 is back to the shipped figure, and the two destroyed bays
+are the best of the three.
+
+### P18, scored, and the part of it that was my own bad question
+
+**P18 predicted f2978 within 1.5 pp of 11.33 % and `grid_contrast` under
+0.012. Both clauses are WRONG** — 51.113 % and 0.01429.
+
+The `grid_contrast` clause is a straightforward miss. **The 11.33 % clause was
+a badly posed question and that is my fault, not the build's.** 11.33 % is
+`FRAMEONLY vs R6`, and FRAMEONLY is the corrected frame on the *shipped glass* —
+it moves 30 frame bodies and nothing else. My build moves those 30 bodies **and
+all 3,006 departed shards**, so a larger changed fraction is what a correct
+result looks like, not a regression. The comparable figure is R2387 against
+FRAMEONLY directly: **46.290 %** in the wound, **0.043 %** in the clean control.
+I should have predicted the pair, and I predicted one number against a
+differently-constituted build.
+
+### THE VERDICT
+
+**The ending survives.** The aperture reads, the connected hole is unchanged at
+2.15 × 6.00 m with bay 5 vacated 100 %, the only signed-dark lattice line at
+f2978 is down 82 %, f2940 is better than the build that proved the ending on
+both statistics, the genuine control is bit-clean at both frames, and the
+picture shows a more open wound over a cleaner apron.
+
+**And the thresholds and the proxy are separable, which is what I was asked to
+establish.** The thresholds bought the frame coming apart and they are
+untouched — `land_breach` stage 0 PASSES at the derived set. The air bought the
+field coming to rest: 2,646 bodies moving at the last key become 27. Neither
+bought the other, and the aperture is insensitive to the proxy across all seven
+cells I ran.
+
+
+### R2-400, continued — beat 3 does not regress, and the deck ride in the picture
+
+**Beat 3, the thing this job was told not to trade away.** f0866 and f0880,
+1920 × 1080, 256 samples, all builds at identical settings, differenced against
+the R6 build's own frames (`render/r6_beat13/after_f08*.png`):
+
+| | R6 → R2281 re-bake | **R6 → R2387 AIR** | (the previous block's pre-R6 → R6) |
+|---|---|---|---|
+| f0866, changed > 1/255 | 57.441 % | 53.982 % | 17.929 % |
+| **f0866, changed > 8/255** | **27.890 %** | **25.104 %** | **2.548 %** |
+| f0866, changed > 32/255 | 9.155 % | 8.055 % | 0.535 % |
+| f0880, changed > 8/255 | 32.525 % | 30.327 % | — |
+
+R2-291 published **27.950 %** for the re-bake at f0866 and I measure 27.890 %,
+which is the fourth inherited number reproduced in this block. **R2387 holds
+25.104 % — 90 % of the re-bake's payoff and still ten times the R6 improvement
+it replaced.** The 2.8-point drop is the debris no longer being flung as far in
+the first fifty frames. Beat 3 does not regress.
+
+**And the deck ride, in the picture rather than in a table.**
+`render/r2387/COMPARE_ride_f0950_REBAKE_vs_R2387.png`, f0950 from both builds
+at identical settings — the middle of the ride R2-384 measured and R2-396 says
+survives:
+
+* **Left, the R2-281 re-bake:** a mullion lies across the car and the glass is
+  fanned out **flat, forward and low**, spread over the apron ahead of and
+  beside the car. That is the bulldozer, seen from behind: debris being pushed.
+* **Right, R2387:** a mullion still lies across the car — **the ride is real,
+  it is on camera, and this fix does not remove it** — but the glass is now a
+  **tumbling cloud behind and above the car**, trailing rather than being
+  dragged.
+
+The ride is in *both* builds and is neither introduced nor removed here. What
+changed is the thing around it: glass that trails a car punching out of a wall,
+instead of glass being swept along in front of it.
+
+### Making it the default, and where I stopped short
+
+`--air-drag derived` is now the DEFAULT (R2-282's precedent: the decided
+configuration should be what the pipeline produces, not what it has to be
+reminded to produce). `off` is kept, because it is the before-half of the
+experiment.
+
+**I did NOT add a stage-0 gate refusing bakes without air**, which is the other
+half of what R2-282 did for the head restraint. A gate there would refuse
+`land_breach` on the shipped R6 raw bake, and another agent may legitimately
+need to re-land it. The configuration is recorded in every report's `air_drag`
+block instead — ρ, Cd, v_ref, the body count, and the min/median/max damping —
+so any table's provenance can be read off the artefact.
+
+
+**And f1000 is the frame that shows it plainly.**
+`render/r2387/COMPARE_ride_f1000_REBAKE_vs_R2387.png`, same settings, both
+builds:
+
+* **Left, the re-bake:** the car is towing a large flat pane and an aluminium
+  bar *attached to its tail* — a sail, moving at exactly the car's speed,
+  fifty film frames after it should have been left behind.
+* **Right, R2387:** the same pane and bar are a separated cluster **behind** the
+  car with clear daylight between them, tumbling and falling away while the car
+  pulls ahead.
+
+That is the whole defect and the whole fix in one pair of frames: the car
+stops towing its own debris, because there is finally something in the scene
+that acts on the debris and not on the car.
+
+
+### R2-400, closing note — the render set is independently clean, and the farm's starvation has a SECOND cause that the obvious fix would not have touched
+
+**The eight frames, checked by a second pair of eyes that did not know what
+they were supposed to show.** All eight are 100 % (or 99.99 %) non-black with
+57,271–144,523 distinct colours; the farm's black signature is mean 0.0003 with
+**two** distinct colours. `new_full_f2978.png` reads lum mean **0.3917**, sd
+**0.1143** — the same numbers a healthy 4K/s256 frame on this instance gave
+before any of this work. The broker's own per-job effective settings line
+confirms `camera=ONER samples=256 adaptive_threshold=0.01 dof=True
+engine=CYCLES` on every frame. **`--allow-blank` was never passed and never
+needed.** Nothing in R2-400 rests on a frame I have not seen the pixel
+statistics of.
+
+**And the scheduling trap is not the one I described.** I told the render agent
+the blocker was `SCENE_PRIO_BOOST_MAX_SEC` clamping a new scene's effective age
+at 1,800 s against incumbents already at ~7,800. That is real and it is only
+half of it. `Broker.cheaper_to_finish()` (`broker/app.py:386`) separately vetoes
+the starvation switch whenever `queued × mean_render_sec ≤
+SCENE_SWITCH_PAYBACK × reload_cost`, and **`mean_render_sec` counts stills
+only**. r1ladder's twelve queued jobs are *sequence* jobs of 99–120 frames —
+1,449 frames, about 30 h of GPU — and they were priced at the still rate of
+53 s each, i.e. 634 s of work against a ~3,100 s reload. The switch was
+permanently vetoed **at any priority**. Raising the boost cap on its own would
+have changed nothing, and I would have concluded the wrong thing from it.
+
+That is worth passing to whoever owns the broker: **a queue of sequence jobs is
+priced as if it were a queue of stills, so a scene holding long sequences can
+never be switched away from.** The evidence that it was a veto and not a
+priority problem is that the jobs went in at `--prio -1000` and still did not
+move until the payback term was relaxed.
+
+The renders were got by **environment overrides on the broker process only** —
+`VASTRENDER_SCENE_PRIO_BOOST_MAX_SEC` 1800 → 30000 and
+`VASTRENDER_SCENE_SWITCH_PAYBACK` 2.0 → 0.2 — with no file edited anywhere,
+both restored at 16:03:41 and the restoration verified in `/proc/<pid>/environ`.
+Both restarts were timed to land seconds after another agent's frame completed;
+the new broker explicitly refused to redeploy over r1ladder's in-flight frame
+787 and waited for it. **No job was cancelled, re-prioritised or lost**, and the
+eviction that made room for the 5,006 MB push took eight idle scenes, none of
+which had queued work. r1ladder was deferred by 28 minutes and resumes on its
+own key. Total GPU cost of this block's eight frames: **$0.17**.
+
+One side effect, recorded because it was not the goal: `r2451` had been starved
+for 6,250 s and **its scene had never been uploaded at all**. It got its first
+service during the window this opened.
+
+## R2-508 — the beat-1 promotion put the showroom ceiling in the film's FIRST FRAME, and part-1's standing assumption that it is never in shot is now false
+
+This is a defect the camera fix **created**, and it is worth more than the fix
+was, because nothing would have looked for it.
+
+`/home/zany/opus5-car-render/build/s05_lighting_v2.py` states an assumption twice
+and builds on it:
+
+```
+line  17:  * The frame map also shows the ceiling is never in shot from any hero camera.
+line 300:    light - the ceiling rig never appears in any hero frame.
+```
+
+**That was TRUE, and it is measurable why.** The shipped opening is a 35 mm lens
+at 84.15 deg of depression. On a 36 x 20.25 mm frame a 35 mm lens has a 16.13 deg
+vertical half-angle, so the top edge of the shipped first frame sits at
+
+```
+-84.15 + 16.13  =  -68.02 deg elevation
+```
+
+— 68 degrees below the horizon. The ceiling was not merely out of shot, it was
+nowhere near it, and part 1 was entitled to build on that.
+
+**The promotion makes it false.** The establishing station is 18 mm at 10.00 deg
+of depression, and 18 mm has a **29.36 deg** vertical half-angle:
+
+```
+frame spans   -39.36 deg  ..  +19.36 deg elevation
+camera z 3.7566, CEIL_Z 6.20
+ceiling enters the frame at (6.20 - 3.7566) / tan(19.36 deg) = 6.95 m horizontal
+the room is ROOM_Y 11.0 + WALL_T 0.25 = 11.25 m half-depth
+```
+
+**6.95 m is inside 11.25 m, so the ceiling is in frame 1 of the film.** It is in
+frame 1 because of the fix landed in this same block, and the fix is still right:
+an opening that shows the room is the whole point of R2-461, and a room has a
+ceiling in it.
+
+### what is up there
+
+```
+Ceiling            one cuboid, 8 vertices, 6 quads
+                   top face: ONE QUAD of 686 m^2
+                   CeilingMat: a two-node flat Principled
+                   emitted by build/s02_showroom.py:490 build_shell()
+23 interior practicals, 46,203.313 W, hanging in that volume
+```
+
+The beat runs 33 seconds — **a quarter of the film's runtime** — inside it. Its
+lamps hang from nothing.
+
+> **This is the R2-504 structure again and it is worth naming as a pattern.**
+> Both the roof and the ceiling are part-1 geometry entering the film
+> *downstream* of the assembly, through `build_film_scene.py`'s append of
+> `world/car_anim.blend`'s SHOWROOM collection. `assembly10` has no showroom in
+> it at all, so **no world rebuild can ever touch either of them.** Anything
+> that fixes them is a post-append operation on a film blend, in the shape
+> `tools/add_dais_ramp.py` established.
+
+### the constraint any ceiling work has to respect
+
+`Ceiling`'s **underside at z 6.200 is the showroom's interior ceiling and is
+visible in beat 5**, and `CeilingMat` is shared with `Cove_Coffer_0/1` and
+`WallLine_*Fin_0/1`. `tools/r2366_roof_build.py` already worked this out for the
+roof and its answer is the right one for the ceiling too: build **above** the
+existing surface, in a new collection, with new materials, touching no round-1
+datablock. And the lighting invariant is not negotiable —
+
+```
+interior lamp load   46,203.313 W   from showroom_lighting.measure()
+_sl_base stamps      23
+scene_mark           3.628          scene key `showroom_lighting_stops`
+assert_levelled      PASS
+```
+
+— read with the module's own `measure()`, never a hand-rolled probe: a
+hand-rolled one already returned 46,319 W once by counting a lamp that is not
+interior.
+
+**HANDED BACK, EXPLICITLY.** See the final report. The measurement above raises
+the priority of this work (it is first-frame geometry now, not a beat-6 detail at
+594 m) and that is exactly why it should not be rushed onto an 11 GB box while a
+7.1 GB film blend is landing on it.
+
+## R2-581 — the corrected instrument, rebuilt from scratch, and the three negative controls it has to fail
+
+The script that produced `tmp/shotscale_v2.npy` no longer exists anywhere in the
+tree. Its numbers are the ones R2-430's correction rests on, so before using them
+to convict anything I rebuilt the measurement from the spec in R2-430 —
+`tools/lap_shotscale.py` — and made the two implementations argue.
+
+**They agree.** Over all 1,524 frames of beat 5 the p95 relative difference
+between my series and `shotscale_v2.npy` is **0.64 %**, and the headline figures
+reproduce to the decimal:
+
+```
+                       R2-430's correction    tools/lap_shotscale.py
+beat 5 median                  12.91 %                12.92 %
+f2035-f2227 median              4.22 %                 4.215 %
+f2035-f2227 minimum             2.96 %                 2.957 %
+```
+
+**The controls, and they are the point.** Two of the size detectors written for
+R2-422 returned 0.90 and 1.00 by latching onto the turntable and the rear wall.
+`--selftest` therefore asserts four things, three of which the instrument must
+*fail* to be worth anything:
+
+```
+PASS  positive/pixels   f697 projects 0.5033; tools/beat1_true_extent.py, written
+                        by someone else, gets 0.5033 on the same path, and the
+                        ruler on r1full_000697.png reads 0.4630. A BOX bounds the
+                        car, so it must sit slightly ABOVE the ruler (8.7 %) and
+                        never below.
+PASS  negative/absent   a zero-volume car reads max 0.000000 over beat 5
+PASS  negative/absent-from-shot
+                        the car left PARKED ON THE DAIS while the camera flies
+                        the whole lap: median 3.00 % against the real 12.92 %,
+                        only 993 of 1,524 frames even measurable, and it agrees
+                        with the real reading to 10 % on 32 frames. A detector
+                        latched onto scenery would agree on all 1,524.
+PASS  agreement         vs tmp/shotscale_v2.npy over beat 5, p95 0.64 %
+```
+
+> **The third control's number is the uncomfortable one and it is left in the
+> output on purpose.** With the car never leaving the showroom, the metric reads
+> **3.00 %**. The stretch this document is about reads **4.2 %**. The car being
+> present, on the circuit, at 300 km/h, makes a **1.4x** difference to how big it
+> is on the screen. That is a fact about the stretch, not a fault in the ruler.
+
+**The instrument was also wrong once and is fixed here.** Its first version let a
+bounding box straddling the camera plane through the perspective divide, which
+manufactured huge finite numbers from corners at z≈0; that is precisely how the
+displaced-subject control passed when it should have failed. Straddling boxes now
+report NaN.
+
+**Correction to a figure in R2-430.** R2-430's appended correction states "true
+value at f697 is 0.4746". On `render/film14_path.json` both this tool and
+`tools/beat1_true_extent.py` get **0.5033** at f697; 0.4746 does not reproduce
+from the shipping path. The *conclusion* is unaffected — 0.50 against a ruler
+reading 0.4630 is still a full shot, still 1.57x smaller than the withdrawn
+0.7890, and still confirms the retraction — but **0.4746 should not be quoted
+again.**
+
+---
+
+## R2-582 — the stretch is real, it is longer than reported, and it is the longest small-subject run in the film outside the closing wide
+
+R2-422 reported f2035-f2227, 193 frames, 8.04 s. Re-run on the corrected series
+the run is **longer at every threshold**, and its identity does not depend on
+which threshold is chosen:
+
+| threshold | as a fraction of the beat-5 median | run | frames | seconds |
+|---|---|---|---:|---:|
+| 10.0 % | 0.77x | f2012-f2256 | 245 | **10.21 s** |
+| 8.0 % | 0.62x | f2016-f2245 | 230 | 9.58 s |
+| 6.46 % | 0.50x | f2021-f2236 | 216 | 9.00 s |
+| 6.0 % | 0.46x | f2022-f2232 | 211 | 8.79 s |
+
+**f2012-f2256 is the longest continuous run under 10 % of frame width anywhere in
+beats 2-6**, including beat 6 itself:
+
+```
+f2012-f2256   245 fr  10.21 s   median 4.41 %   <- this, mid-lap
+f2388-f2596   209 fr   8.71 s   median 7.36 %
+f2794-f2978   185 fr   7.71 s   median 2.76 %   <- beat 6's closing wide
+f1121-f1252   132 fr   5.50 s   median 5.25 %
+```
+
+It is **16.1 % of the flying lap** and 8.2 % of the film.
+
+**Not chased here, but recorded so it is not lost:** the second entry in that
+table, **f2388-f2596, 8.71 s at a 7.36 % median**, is the declared long-lens
+follow into T12 Plongee (anchor t=98.6, 120 mm). It is milder — above half the
+beat median throughout — and it is a *following* shot rather than a static hold,
+so it is not the same defect. It is the obvious next thing to put a watch on if
+the pacing verdict on this one comes back "too long".
+
+**And it is the same shot scale as the closing wide, in both axes.**
+
+```
+                     frac of frame WIDTH    frac of frame HEIGHT
+beat 5 overall              12.92 %                 9.93 %
+f2012-f2256                  4.41 %                 3.88 %
+beat 6, the closing wide     4.15 %                 3.79 %
+```
+
+That comparison is the argument, and it needs no invented threshold: **the film's
+fastest, most kinetic passage and its valedictory farewell wide are shot at the
+same size.** One of them is authored to be a speck.
+
+---
+
+## R2-583 — the cause is BEARING, not distance, and the author fought the wrong term
+
+Between f2000 and f2100 the subject loses 4.65x. Decomposed exactly — apparent
+width = presented metres x lens / (36 mm x distance) — it is not one loss but
+three, and the largest is not the obvious one:
+
+```
+                 f2000     f2100     factor
+distance         78.6 m   169.5 m    2.16x smaller
+BEARING          61.7 deg   4.3 deg  2.47x smaller   <- the bigger term
+lens             65.0 mm   74.6 mm   1.15x larger
+                                     --------
+                 13.82 %    2.97 %   4.65x smaller
+```
+
+"Bearing" is the angle between the car's heading and the camera's line of sight.
+The presented width — what the frame actually contains — falls from **6.01 m to
+2.43 m**:
+
+```
+     f     bearing   presented   frac_w
+  1990     85.7 deg    5.87 m    13.41 %
+  2000     61.7 deg    6.01 m    13.82 %
+  2010     33.1 deg    4.82 m    10.75 %
+  2020     11.9 deg    3.16 m     6.47 %
+  2030      0.3 deg    2.06 m     3.79 %   <- dead nose-on, the car's 2.0 m track
+  2100      4.3 deg    2.43 m     2.97 %
+  2160     22.8 deg    4.07 m     4.84 %
+  2220      1.2 deg    2.15 m     3.49 %
+```
+
+**The camera runs away down the centre of the road, so the car is exactly nose-on
+at exactly the moment it is furthest away.** The distance loss and the aspect loss
+multiply instead of trading off.
+
+> This is the same blind spot that produced R2-429's 76.1 % and survived two
+> tools before R2-430 caught it: **apparent size depends on which way the subject
+> is facing.** There it was an error in an instrument. Here it is a fact about the
+> shot, and it has been sitting in the film the whole time.
+
+**The author saw the trough and fought it with the lens — the term that was less
+to blame — and ran out of lens.** The focal climbs 65 → 85 mm through the stretch,
+and then sits at **exactly 85.000 mm for eighteen consecutive frames, f2194-f2211**.
+That flat is two adjacent anchors (t=91.4 and t=92.4) both declaring 85.0; it is a
+ceiling, not a curve. 1.31x of compensation was applied against a 6.0x loss.
+
+**A fourth observation, from the projection and not from taste.** Across the whole
+stretch the car sits at screen x = **0.500** and y = 0.506-0.510, and the camera's
+aim is a median **0.007 deg** off the car. For ten seconds the subject is nailed
+to the exact centre of the frame with no lead room and no drift. Whatever else is
+true, nothing in the composition is moving.
+
+---
+
+## R2-584 — the pixels, at three frames inside the stretch, on two builds
+
+Numbers found this; they do not convict it. These do. The camera in
+`out/seq/r2b56_720` (film6) and `out/seq/b456wit_f11` (film11) is **identical to
+film14's** at these frames — position, quaternion and focal all match key for key
+— so the framing is the shipping framing.
+
+| frame | source | projected | ruler on the picture | box overstates by |
+|---|---|---:|---:|---:|
+| f2000 | `r2b56_720_002000.png` 1280 px | 13.82 % | **13.83 %** (x 548-725) | 0 % |
+| f2090 | `r2b56_720_002090.png` 1280 px | 3.02 % | **2.96 %** (x 620.7-658.6) | 2 % |
+| f2100 | `b456wit_f11_002100.png` 1920 px | 2.97 % | **2.79 %** (x 932.9-986.4) | 6 % |
+| f2180 | `r2b56_720_002180.png` 1280 px | 4.37 % | **4.06 %** (x 612.9-665.0) | 8 % |
+| f697 | `r1full_000697.png` 1280 px | 50.33 % | 46.30 % (R2-430's ruler) | 9 % |
+
+The corrected instrument is confirmed by a ruler at five frames, three of them
+inside the stretch under investigation and one on its shoulder. **Every ruler
+reading is at or BELOW the projection, by 0-9 %, which is the direction a
+bounding box must err in.** An instrument that erred the other way would be
+measuring something other than the car. The error is smallest at f2000, where the
+car is broadside and the box fits it tightest, and largest at f697, where the car
+is head-on and the box's front plane sits ahead of the front wing.
+
+**What the frames look like, which is the part that decides it.**
+
+* **f2000, the shoulder, 13.83 %** — and it is a genuinely fine frame: the car
+  three-quarter and readable, low sun across the bodywork, its own shadow long on
+  the asphalt, kerbs and a sweeping corner around it. **This is what the film
+  loses four seconds later.** It is the honest before-picture, and it is not a
+  straw man.
+* **f2090** — a wide aerial of a sweeping right-hander at golden hour. It is a
+  handsome frame. The car is a **38-pixel** blue chip in the middle of an empty
+  road, roughly 116 px in the 4K delivery. It reads as *a car, somewhere down
+  there*. It does not read as 300 km/h.
+* **f2100** — the same shot 0.4 s later, 1920 px wide. The car is **54 px**.
+  Everything else in the frame — run-off, catch fence, two grandstands, tree line —
+  is larger and better lit than the subject.
+* **f2180** — the worst of the three, and the one a number would never have
+  found. The car is a **52-px dark silhouette in shadow**, at almost the same
+  luminance as the road behind it, and the bottom-right **45 % of the frame is
+  filled by a motion-smeared grandstand structure sweeping through the
+  foreground**, its upper edge passing within a few pixels of the car. The
+  subject is not merely small here; it is competing with, and nearly lost in,
+  foreground architecture.
+
+For contrast, `b456wit_f11_002270.png` — 3.7 s later, the doppler pass at
+**24.92 %** — is the best frame in the beat: the whole car, side-on, sharp,
+sunlit, the background smeared into pure speed. The payoff is not in doubt. The
+ten seconds of approach to it are.
+
+---
+
+## R2-585 — the verdict: it is a defect of duration and floor, not of intent
+
+**The wide is correct. The physics is real and is not in dispute:** the camera
+cannot be stationary at the doppler station in time to be stationary for it
+without leaving the car and running ~815 m, and it cannot stop from 68 m/s in
+less than ~200 m. The beat sheet says so at t=91.4 and the path confirms it: peak
+camera speed 97.6 m/s, peak deceleration 5.47 g at f2255.
+
+**A film is allowed to go wide, and a flying lap in particular is allowed to show
+its car small against a big circuit.** That is a real and good thing for a lap to
+do; it is how a circuit reads as a place.
+
+**So the case is not "the frame is too wide". The case is that the shot has no
+event in it for ten seconds.** Stated from the shot's job rather than from the
+number:
+
+1. **It is a head-on approach in which nothing approaches.** Distance runs
+   104 → 170 → 187 → 145 m across the stretch: 5.0 seconds (f2080-f2200) with
+   the gap between 160 and 187 m, a spread of 15 %. The visual grammar of a
+   head-on trackside shot is a car *growing*. Here it does not. Sizes across the
+   whole ten seconds run 3.0 %, 4.5 %, 3.0 %, 4.7 %, 4.4 %, 4.9 %, 3.5 % — noise
+   around a flat line, not a build.
+2. **Nothing else is moving either.** Subject nailed to screen centre (R2-583),
+   aim 0.007 deg off, lens crawling and then flat for 18 frames.
+3. **It is the longest such run in the film outside the closing wide, and it is
+   at the closing wide's own scale in both axes** (R2-582).
+4. **It sits in the beat whose declared job is speed.** `beat_sheet.json` calls
+   beat 5 "one flying lap, vantage morphing continuously". For 16.1 % of that
+   beat the vantage does not morph and the subject does not change size.
+5. **The negative control puts a floor under how bad that is.** With the car left
+   parked in the showroom for the entire lap, the same metric reads 3.00 %. The
+   stretch reads 4.2 %.
+
+**Where the honest doubt lives, and it is real.** The wide is also the *setup*: a
+ten-second withdrawal makes the 24.92 % doppler pass land harder than it would
+after a close shot. Contrast is dramaturgy and this is a legitimate defence of
+the shot as authored. What it does not defend is the *duration*, the *flatness*,
+or f2180's foreground. **Ten seconds is roughly three times what a breath needs;
+the same setup at three to four seconds costs nothing and is not a defect.**
+
+**Verdict: a defect, of duration and floor, not of intent.** The fix must not
+remove the wide. It must give the ten seconds something to do.
+
+---
+
+## R2-586 — the fix: lens only, position and rotation untouched, verified byte-for-byte
+
+`tools/r2581_lensfix.py`. The authored focal is multiplied by a smooth bump
+m(f) with **compact support on f1997-f2244**, exactly 1.0 outside it, C2 at both
+ends by construction (smootherstep window over 46 frames at each end, on a curve
+that is itself a double box-smooth of the per-frame demand).
+
+**This is not a new idea; it is the author's own, finished.**
+`tools/author_beats2_5.py`'s beat-5 docstring reads: *"the lens goes long while it
+repositions and wide again as the car arrives, which is how you keep a subject
+large while the camera is doing something else."* The move was declared and then
+applied at 1.31x against a 6.0x loss.
+
+**Before / after, `--target 0.0646` (half the beat-5 median):**
+
+```
+     f   lens0   lens1     x    size0    size1   gain   smear0  smear1
+  2000    65.0    65.1  1.00   13.82%   13.82%  1.00x       67      67
+  2010    65.8    68.1  1.03   10.75%   11.12%  1.03x       89      92
+  2020    67.2    81.5  1.21    6.47%    7.86%  1.21x       81      98
+  2030    68.6   105.7  1.54    3.79%    5.83%  1.54x       63      97
+  2050    70.0   138.1  1.97    3.75%    7.41%  1.97x       30      60
+  2080    72.5   154.2  2.13    3.32%    7.06%  2.13x       20      42
+  2100    74.6   158.1  2.12    2.97%    6.31%  2.12x        9      20
+  2120    75.4   152.4  2.02    3.88%    7.85%  2.02x       47      94
+  2140    78.1   145.2  1.86    5.51%   10.25%  1.86x       66     124
+  2160    80.0   138.5  1.73    4.84%    8.37%  1.73x       56      96
+  2180    83.2   143.1  1.72    4.37%    7.52%  1.72x       67     115
+  2200    85.0   142.6  1.68    4.88%    8.19%  1.68x       39      66
+  2220    84.7   104.2  1.23    3.49%    4.29%  1.23x        3       4
+  2240    74.7    74.7  1.00    6.87%    6.87%  1.00x       25      25
+  2270    40.1    40.1  1.00   24.92%   24.92%  1.00x      293     293
+```
+
+```
+the stretch f2012-f2256, 245 frames, 10.21 s
+  median size   4.41 %  ->  7.58 %
+  minimum size  2.96 %  ->  4.18 %
+  frames under 6.46 %      216  ->  52
+  peak focal     85.0 mm  ->  158.1 mm
+  worst 4K smear   91 px  ->  124 px, over the 246 frames the change touches
+```
+
+**The one-shot law, measured rather than asserted.**
+`tools/campath_diff.py render/film14_path.json render/film14_path_R2581_CANDIDATE.json`,
+with the R2-103 self-null printed first so the rounding floor is visible before
+any verdict:
+
+```
+SELF-NULL  film14_path.json vs itself
+   raw stored q  (the R2-103 trap)   dq 0.203165 deg      <- the floor
+   re-normalised q                   dq 0.000003 deg
+
+A=film14_path.json  B=film14_path_R2581_CANDIDATE.json
+   beat 1        f1-792      worst dp 0.0000 m   dq 0.000 deg   dlens 0 mm
+     PROTECTED   f648-792    worst dp 0.0000 m   dq 0.000 deg   dlens 0 mm
+   beats 2-6     f793-2978   worst dp 0.0000 m   dq 0.000 deg   dlens 83.8 mm
+```
+
+**Zero position change and zero rotation change over all 2,978 frames.** The only
+channel that moves is `lens`, and it moves only inside f1997-f2244.
+
+**The gate, shown FAILING before it is trusted passing.** `--selftest` asserts
+five things; `--inject step|leak|smear` breaks the design on purpose:
+
+```
+                       clean    inject=step   inject=leak   inject=smear
+compact support         PASS       FAIL          FAIL          PASS
+C1 lens                 PASS       FAIL          FAIL          FAIL
+position/rotation       PASS       PASS          PASS          PASS
+negative/no-demand      PASS       PASS          PASS          PASS
+smear ceiling           PASS       FAIL          PASS          FAIL
+```
+
+* **C1 lens uses no invented threshold.** The candidate's roughest frame is
+  |dlens| **3.178** mm/frame and |d²lens| **0.842** mm/frame²; the *shipping*
+  film's own worst over all 2,978 frames is **3.178** and **0.842**, both at the
+  f2250-f2257 doppler zoom, which this change does not touch. The candidate is
+  therefore exactly as smooth as what already ships and no smoother is claimed.
+* **negative/no-demand** is the control that matters most: with the target set
+  below every frame's actual size, the designer returns m = 1.0 everywhere. It
+  responds to the measurement rather than reflexively lengthening the lens.
+* **smear ceiling** counts only the frames the change touches. The film's own
+  worst smears — 424 px at f2634, 293 px at the f2270 doppler pass — are outside
+  the support and are untouched.
+
+**The trade, so the choice is the main thread's and not mine:**
+
+| target | median after | min after | peak focal | worst smear |
+|---|---:|---:|---:|---:|
+| 5.00 % | 6.09 % | 3.75 % | 122.4 mm | 96 px |
+| **6.46 %** | **7.58 %** | **4.18 %** | **158.1 mm** | **124 px** |
+| 8.00 % | 9.09 % | 4.63 % | 195.8 mm | 153 px |
+
+Beat 5's authored maximum focal elsewhere is **120.0 mm** at t=98.6 ("long-lens
+follow into T12 Plongee's braking zone"), so the 5.00 % variant stays inside the
+film's existing lens vocabulary and the 6.46 % variant exceeds it by 1.32x.
+
+**What this fix costs, stated and not buried.**
+
+1. **A longer lens is a narrower view.** At 158 mm the horizontal half-angle is
+   6.50 deg against 13.57 deg at 74.6 mm: the circuit vista in these frames
+   halves. The shot stops being an aerial wide and becomes a compressed long-lens
+   head-on. That is a taste call. It is arguably the *right* shot for a flying
+   lap — it is the language of the sport's own coverage — but it is a different
+   shot and it should be chosen, not inherited.
+2. **Depth of field.** The camera carries an f-stop and the candidate does not
+   touch it; 2.1x the focal at the same f-stop is roughly a quarter of the depth
+   of field. At 170 m subject distance the car stays inside it, but any merge
+   must confirm against the blend's animated DOF rather than against this note.
+3. **It does not fix the flatness.** Raising the floor makes the ten seconds
+   legible; it does not make anything *happen* in them. If the pacing judgement
+   is that the passage is dead rather than small, the real fix is shorter, and
+   that one does move the camera.
+4. **The 22 deg aim bound in `docs/beat_sheet.json` is stale at this focal.** At
+   158 mm the frame's own half-width is 6.50 deg, so a 22 deg bound no longer
+   bounds anything. Measured margin over f1997-f2244 is max **0.187 deg** off
+   axis, so nothing leaves frame — but the gate's number would need re-deriving
+   before it means anything again.
+
+**What is NOT delivered here.** The candidate is a per-frame path
+(`render/film14_path_R2581_CANDIDATE.json`). It has not been folded back into
+anchor `lens_mm` values in `docs/beat_sheet.json`, and no blend has been
+rebuilt — `docs/beat_sheet.json` already carries two other agents' candidate
+sheets and this one should not race them.
+
+---
+
+## R2-587 — the alternative fix, priced and rejected as not-smallest
+
+Since R2-583 shows bearing is the larger term, the geometrically direct fix is to
+stop the camera running down the *centre* of the road: bow its route laterally so
+the car is never dead nose-on.
+
+At f2100 the camera leads by 167 m. An **80 m lateral offset** would put the
+bearing at 25.6 deg, raising presented width from 2.43 m to 4.27 m (1.76x) while
+costing 1.11x in distance — a net **1.59x**, taking 2.97 % to 4.72 %.
+
+**Rejected, for three reasons and one of them is fatal:**
+
+* 1.59x does not reach what the lens reaches (2.12x), so it would need the lens
+  anyway;
+* an 80 m bow lengthens the camera's route, and the route already ends in a
+  5.47 g stop — the deceleration budget has nothing in it;
+* **it moves camera position, which is the channel the one-shot law is about.**
+  The lens fix changes zero position and zero rotation on all 2,978 frames. Any
+  positional change, however smooth, has to re-clear the placement gate against
+  the assembled world, and at 15-50 m altitude over T10/T11 that is a real
+  question and not a formality.
+
+Recorded so nobody re-derives the bow and thinks it was overlooked. **If the
+pacing verdict is that the passage should be shorter rather than bigger, the bow
+is the wrong tool for that too — the right one is the arrival time at the doppler
+station, and that is a beat-sheet change, not a path change.**
