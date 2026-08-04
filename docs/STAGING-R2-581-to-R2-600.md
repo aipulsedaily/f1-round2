@@ -6,8 +6,9 @@ it properly, decide whether it is actually a defect, and fix it with the smalles
 possible change to the camera path.
 
 **Method.** A corrected shot-scale instrument built independently of the one that
-produced `tmp/shotscale_v2.npy`, validated against it and against a ruler on five
-delivered frames; then the frames themselves; then a path-level A/B.
+produced `tmp/shotscale_v2.npy`, validated against it and against a ruler on
+seven delivered frames; then the frames themselves; then a path-level A/B, then
+a rendered A/B off the shipping blend.
 
 **Provenance.** `render/film14_path.json`, `telemetry/telemetry.csv`,
 `anim/filmtime.py`'s time map. Pixels from `out/seq/r2b56_720` (film6 build) and
@@ -383,6 +384,30 @@ returns to 1.2 deg and the window is already easing out; that is one second of
 **Recommendation: B**, with A as the conservative fallback if the 185 mm peak is
 judged too long. Both are the same tool, the same support, the same guarantees.
 
+### How the "after" frames are rendered without touching a blend
+
+For a fixed camera, a longer focal length is *exactly* a centred crop at higher
+pixel density. `rq render --zoom Z --border (0.5-0.5/Z .. 0.5+0.5/Z)` therefore
+produces the frame a lens `Z x` longer would produce — same position, same
+rotation, same motion blur, same shutter — with no blend rebuilt. It is valid
+here because the car sits at screen x = **0.500** in every frame of the stretch
+(R2-583), so a centred crop cannot lose it.
+
+**This is not my invention and it has a precedent in this project's own render
+history.** `out/seq/b456wit_lens40` and `out/seq/b456wit_lens74` were rendered by
+another agent from `film11.blend`, whose authored focal at f2978 is
+**18.7500 mm**, at `zoom 2.1333334` and `zoom 3.9479167`. Those are 40/18.75 and
+74/18.75, and the border in both jobs is exactly `0.5 +/- 0.5/Z`. Two sequences
+named after the focal lengths they emulate, from a base focal that recovers both
+to four decimals — and film14 now ships **73.9969 mm** at f2978, so the 74 mm
+option is the one that won. The method is established and it decided a shot.
+
+**The one exception, stated:** depth of field. A real 158 mm lens at the same
+f-stop has roughly a quarter the depth of field of the 74.6 mm it replaces; a
+crop does not. At 170 m subject distance nothing in these frames is near enough
+for that to show, but the "after" frames are a faithful emulation of *framing*
+and only an approximation of *focus*.
+
 ### The one-shot law, measured rather than asserted
 
 `tools/campath_diff.py render/film14_path.json <candidate>`, with the R2-103
@@ -529,3 +554,78 @@ Recorded so nobody re-derives the bow and thinks it was overlooked. **If the
 pacing verdict is that the passage should be shorter rather than bigger, the bow
 is the wrong tool for that too — the right one is the arrival time at the doppler
 station, and that is a beat-sheet change, not a path change.**
+
+---
+
+## R2-588 — the fix, in pixels: four matched pairs off the shipping blend
+
+Rendered from **`render/film14_breach_r6.blend`** — the blend the ladder pass is
+rendering, i.e. the shipping build — at 1280x720 / 64 samples / adaptive 0.01 /
+camera `ONER`, the scene's own AgX and exposure. Eight frames, **$0.05 of GPU**,
+slotted at prio 89 so they cost the r1ladder pass about seven minutes of its
+seven hours. Archived in `docs/peep/r2581/`.
+
+`before` is the film as it ships. `after` is variant A's focal at that frame,
+rendered as `--zoom Z --border 0.5±0.5/Z`.
+
+**First: the emulation is exact, and it has a control.** Downscale each `after`
+by its own zoom factor and correlate it against the centre of its own `before`:
+
+```
+frame   zoom    corr vs its OWN before    corr vs a DIFFERENT frame's before
+2050   1.9726          0.9935                        0.2069
+2110   2.0839          0.9822                        0.1038
+2170   1.7106          0.9785                       -0.0685
+2200   1.6781          0.9977                        0.1356
+```
+
+0.98-1.00 against the right frame, 0.10-0.21 against the wrong one. **The `after`
+frames are the same camera through a longer lens and nothing else.**
+
+**Second: the ruler agrees with the projection on both sides of the A/B.** f2110,
+measured off the delivered pixels:
+
+```
+             projected     ruler on the picture       box overstates
+before          3.26 %     3.19 %  (x 618.7-659.5)         2 %
+after           6.78 %     6.64 %  (x 596.2-681.2)         2 %
+measured ratio           2.08x                 zoom requested 2.0839x
+```
+
+**Third, and this is the part that is not a number.** `zoom_before_2110.png` and
+`zoom_after_2110.png` are the same 16 % x 22 % patch of frame at 6x. Before, the
+car is a **blue smudge with two dark blobs for tyres**. After, at the same
+sampling and the same grade, the rear wing endplates, the halo, the front-wing
+elements, the tyre sidewalls and the livery's pattern are all separately legible.
+**That is the difference between a car being present in a frame and a car reading
+in a frame**, and it is what 3.2 % versus 6.6 % of frame width means in practice.
+
+**Fourth, the honest cost, seen rather than argued.** The four pairs do not all
+improve equally, and one of them is a warning:
+
+* **f2050 — clear improvement.** Before: a chip on a wide corner with a sand
+  trap. After: the car reads on the kerb line, and the kerb, verge and track
+  edges are all still in frame. Nothing of value is lost.
+* **f2110 — improved but bare.** This is the deepest point of the trough and the
+  biggest zoom (2.08x). The car reads, but what surrounds it is now a strip of
+  empty asphalt and two grass verges; the buildings and the horizon are gone.
+  **The wide had more in it than the long lens does here.** If any frame argues
+  for the gentler `--target 0.05` variant, it is this one.
+* **f2170 — clear improvement, and the best frame of the eight.** The car reads
+  on the kerb line of a sweeping corner with the barrier wall and the tree line
+  still behind it. Both the subject and the place are in the frame at once.
+* **f2200 — improvement, and it exposes a second defect.** The *before* frame is
+  the camera passing a bridge: **two large concrete pylons occupy the left and
+  right foreground and the car is a 62 px chip between them.** That is the same
+  failure as f2180's grandstand — architecture in the near field competing with a
+  distant subject — and it is now confirmed at two separate frames 20 frames
+  apart. The longer lens crops most of the pylons out and the car reads under the
+  `TELCOM` grandstand, so the lens fix *incidentally* improves it. **The
+  foreground-architecture problem is real, it is separate from the shot-scale
+  problem, and it is not fixed by a lens; it is a placement question and it is
+  handed on rather than solved here.**
+
+**Verdict on the fix.** Three of four pairs are unambiguously better pictures and
+the fourth is better as a shot of a car and worse as a shot of a place. The
+change is worth making; **f2110 is the argument for tuning the target down rather
+than up**, and the trade table in R2-586 is where that choice lives.
