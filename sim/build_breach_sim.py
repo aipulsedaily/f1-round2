@@ -113,6 +113,14 @@ FRICTION_GLASS = 0.32
 REST_GLASS = 0.14       # glass on concrete barely bounces; it skitters
 FRICTION_ALU = 0.45
 REST_ALU = 0.10
+CAR_FRICTION = 0.55     # THE CAR PROXY'S SURFACE.  Kept at what shipped so
+                        # that nothing in this file changes under its own
+                        # steam; it is exposed as `--car-friction` because it
+                        # is the ONLY material constant in this scene that is
+                        # not derived from anything, and it is the second
+                        # highest in the file -- above aluminium-on-anything
+                        # and just under concrete.  Painted composite is not
+                        # grippier than aluminium.  See R2-385.
 DAMP_LIN, DAMP_ANG = 0.02, 0.06
 SLEEP_LIN, SLEEP_ANG = 0.010, 0.030      # m/s and rad/s
 
@@ -990,6 +998,57 @@ def build(args):
         fc.keyframe_points.foreach_set(
             "interpolation", [1] * nsim)          # 1 == LINEAR
         fc.update()
+
+    # ---- 5b.  WITHDRAWING THE BOUNDARY CONDITION  (R2-386) ---------------- #
+    #
+    # The proxy is a boundary condition for the BREACH.  The car crosses the
+    # glass plane at sim frame 145 and its tail clears it 80 frames later; the
+    # sim window then runs for another 1,430 frames, over which the AUTHORED
+    # animation takes the car 262 m down the forecourt and up to 58.2 m/s.  For
+    # all of that the proxy is a sealed, rigid, aerodynamically-null box with
+    # infinite mass, and every body it has picked up rides it (R2-384).
+    #
+    # `--car-collide-until X` stops the proxy colliding once the car's ORIGIN
+    # passes world x = X.  It does NOT touch the car's transform: the same six
+    # curves drive the same eighteen parts to the same places, and the parts go
+    # on being drawn and go on being keyed.  What changes is one boolean.
+    #
+    # WHICH BOOLEAN, AND WHY THIS ONE.  `sim/tmp/test_rb_enabled.py` puts an
+    # active cube on a passive kinematic plate and keys, in turn,
+    # `rigid_body.enabled`, `rigid_body.kinematic` and
+    # `rigid_body.collision_collections`, then asks the only question that
+    # settles it: does the cube fall through?  In Blender 5.2 the first two are
+    # NOT honoured per frame -- the cube sits there for all 60 frames -- and
+    # only the collision collections work.  So the switch is a move from
+    # collision collection 0, which every other body in this scene is in, to
+    # collection 1, which nothing is in.
+    #
+    # The keys go on the SHARED action, so the whole proxy costs two more
+    # curves rather than thirty-six, and every part switches on the same frame
+    # by construction.
+    wd_frame = 0
+    until_x = float(getattr(args, "car_collide_until", 0.0) or 0.0)
+    if parts and until_x > 0.0:
+        past = np.where(loc[:, 0] > until_x)[0]
+        if len(past) == 0:
+            raise SystemExit(
+                "REFUSING: --car-collide-until %.3f is never reached; the car "
+                "spans x %.3f .. %.3f over this sim window."
+                % (until_x, loc[0, 0], loc[-1, 0]))
+        wd_frame = int(past[0]) + 1                # 1-based sim frame
+        for idx, before, after in ((0, 1.0, 0.0), (1, 0.0, 1.0)):
+            fc = cbag.fcurves.new("rigid_body.collision_collections",
+                                  index=idx)
+            fc.keyframe_points.add(count=2)
+            fc.keyframe_points.foreach_set(
+                "co", [1.0, before, float(wd_frame), after])
+            fc.keyframe_points.foreach_set("interpolation", [0, 0])  # CONSTANT
+            fc.update()
+        log("car proxy WITHDRAWS at sim frame %d (car origin x %.3f > %.3f, "
+            "world t %.4f, film f%.1f)"
+            % (wd_frame, loc[wd_frame - 1, 0], until_x, wts[wd_frame - 1],
+               BL.Clock().frame_at_world_t(wts[wd_frame - 1])))
+
     car_objs = []
     for nm, pts in parts:
         P = np.asarray(pts, float)
@@ -999,11 +1058,15 @@ def build(args):
         ob.animation_data_create()
         ob.animation_data.action = act
         ob.animation_data.action_slot = slot
-        add_rb(ob, "PASSIVE", shape="CONVEX_HULL", friction=0.55, rest=0.05,
-               kinematic=True)
+        add_rb(ob, "PASSIVE", shape="CONVEX_HULL",
+               friction=float(getattr(args, "car_friction", CAR_FRICTION)),
+               rest=0.05, kinematic=True)
         car_objs.append(ob)
-    log("car proxy: %d convex parts on one shared %d-key LINEAR action%s"
+    log("car proxy: %d convex parts on one shared %d-key LINEAR action, "
+        "friction %.3f, withdraw %s%s"
         % (len(car_objs), nsim,
+           float(getattr(args, "car_friction", CAR_FRICTION)),
+           ("sim f%d" % wd_frame) if wd_frame else "never",
            "  [NULL CONTROL: NO CAR]" if args.no_car else ""))
 
     # ---- 6. the rigid body world ------------------------------------------ #
@@ -1055,6 +1118,17 @@ def build(args):
                                                "fixed"),
                         head=args.t_mullion_joint * 0.5,
                         bond_per_m=args.t_bond_per_m),
+        # R2-386.  The proxy's configuration is part of the bake's identity:
+        # two bakes at the same thresholds and different proxy settings are
+        # different bakes, and a table that does not say which it was cannot
+        # be attributed afterwards.  `land_breach.sh`'s stage-0 gate reads
+        # `thresholds` by name and ignores keys it does not list, so this
+        # block is additive and breaks nothing.
+        car_proxy=dict(
+            friction=float(getattr(args, "car_friction", CAR_FRICTION)),
+            collide_until_x=float(getattr(args, "car_collide_until", 0.0)),
+            withdraw_sim_frame=int(wd_frame),
+            parts=len(car_objs)),
         detail=args.detail,
         penetration_gate=pen,
         shard_meta=meta)
@@ -1238,7 +1312,19 @@ def _hull_faces_reindexed(P, verts, faces):
 #  PROOF that the car curve is linear, by EVALUATION
 # --------------------------------------------------------------------------- #
 
-def _act_fcurves(act):
+MOTION_PATHS = ("location", "rotation_euler")
+
+
+def _act_fcurves(act, motion_only=True):
+    """The action's fcurves.
+
+    `motion_only` keeps this to the six curves that carry the car's TRANSFORM.
+    R2-386 puts a second pair of curves on the same action -- the proxy's
+    collision collections, which are booleans and are CONSTANT on purpose --
+    and `prove_linear` must neither test them for linearity nor index the car's
+    location array with their array_index.  They are counted separately so the
+    exclusion is visible rather than silent.
+    """
     out = []
     for lay in act.layers:
         for st in lay.strips:
@@ -1246,13 +1332,17 @@ def _act_fcurves(act):
                 cb = st.channelbag(sl)
                 if cb:
                     out.extend(list(cb.fcurves))
+    if motion_only:
+        out = [fc for fc in out if fc.data_path in MOTION_PATHS]
     return out
 
 
 def prove_linear(act, nsim, car, wts):
     """Read the flag AND evaluate the curve.  The flag has lied before."""
     out = {"n_keys": 0, "flag_linear": 0, "max_eval_err_m": 0.0,
-           "max_bezier_err_m": 0.0}
+           "max_bezier_err_m": 0.0,
+           "non_motion_curves": len(_act_fcurves(act, motion_only=False))
+           - len(_act_fcurves(act))}
     loc, rot = car.at_world_t(wts)
     for fc in _act_fcurves(act):
         kps = fc.keyframe_points
@@ -1710,6 +1800,16 @@ def parse_args():
                         "(R2-268).  Kept as an option because it is the "
                         "before-half of the experiment.")
     p.add_argument("--t-bond-per-m", type=float, default=THRESH_BOND_PER_M)
+    p.add_argument("--car-friction", type=float, default=CAR_FRICTION,
+                   help="the car proxy's surface friction.  Bullet MULTIPLIES "
+                        "the two bodies' values, so this scales every "
+                        "tangential force the car can put into the debris.")
+    p.add_argument("--car-collide-until", type=float, default=0.0,
+                   help="world x of the CAR'S ORIGIN past which the proxy "
+                        "stops colliding.  0 = never (what shipped).  The "
+                        "car's tail clears the glass plane at origin x = "
+                        "17.678 (GLASS_PLANE_X 15.000 - TAIL_DX -2.678).  "
+                        "The transform is untouched either way.")
     p.add_argument("--substeps", type=int, default=SUBSTEPS)
     p.add_argument("--solver-iter", type=int, default=SOLVER_ITER)
     return p.parse_args(argv)
