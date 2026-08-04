@@ -15700,3 +15700,796 @@ Recorded so nobody re-derives the bow and thinks it was overlooked. **If the
 pacing verdict is that the passage should be shorter rather than bigger, the bow
 is the wrong tool for that too — the right one is the arrival time at the doppler
 station, and that is a beat-sheet change, not a path change.**
+
+## R2-435 — CHECKING ONE STAGE OF A DECISION IS NOT CHECKING THE DECISION
+
+R2-434 seeded a queue, drove the **real** `oldest_waiting_scene` query under
+continuous arrival, and measured a 28.3-minute bound. The method was right and
+the result is reproducible. **It was still the wrong answer, because the switch
+is RANKING AND VETO and I measured only the stage I pointed the test at.**
+
+```
+next_job()
+  |
+  +-- oldest_waiting_scene()   <- RANKING. R2-434 tested this. Bound holds.
+  |
+  +-- cheaper_to_finish()      <- VETO.    Not tested. Unbounded. The real gate.
+```
+
+`broker/app.py:385`. If the loaded scene's queued work can be drained for less
+than a round trip, the starvation switch is cancelled — **at any priority**,
+because this gate never consults `prio` or effective age at all. The proof that
+it is a veto rather than a ranking effect: another agent submitted at
+`--prio -1000` and its jobs did not move until the payback term was relaxed.
+
+**This is the sibling of the lesson I had written one entry earlier.** R2-433
+says *"fixing one instance of a defect is not fixing the defect."* The same
+shape, one level up: **checking one stage of a decision is not checking the
+decision.** A seeded-queue test against the real code is exactly the right
+method and it still only measures what it is aimed at. Before claiming a
+property of a decision, enumerate its stages — and test that the list is
+complete, not just each item on it.
+
+---
+
+## R2-436 — the work estimator was wrong by 67x on the only job class the ladder has
+
+`cheaper_to_finish` priced the loaded scene as:
+
+```python
+queued = self.db.depth_by_scene().get(current, 0)   # a COUNT OF JOBS
+per    = self.db.mean_render_sec()                  # seconds per STILL
+drain  = queued * per
+```
+
+`mean_render_sec` counts stills only, and its docstring says so deliberately —
+`seq IS NULL` is load-bearing there, because averaging a sequence job's
+hours-long `render_sec` into a per-still mean wrecks the queue ETA. **The bug is
+not in that function. It is that `cheaper_to_finish` asked it a question it
+never claimed to answer.**
+
+Measured on my own queue, 22 jobs / 1,247 frames:
+
+```
+OLD pricing   22 jobs x 52.7 s  =    1,159 s   (0.32 h)
+NEW pricing   1,247 frames x 62.3 s = 77,688 s  (21.58 h)      67x
+round trip    2.0 x 1,550 s reload  =  3,100 s
+```
+
+1,159 <= 3,100, so the veto fired and held. **A scene holding 21.6 GPU-hours was
+judged finishable inside a 52-minute round trip.**
+
+Fixed by `db.pending_work_sec(scene)`, which prices each queued job as what it
+actually is — a sequence job at `frames remaining x mean_frame_sec`, a still at
+`mean_render_sec`. `mean_frame_sec` already existed and already prefers the
+sequence's own frames as its estimator.
+
+### The bound, and the FIXED bound that was wrong first
+
+My first attempt capped the veto by the *waiting scene's wait*
+(`SCENE_VETO_MAX_SEC = 1800`). **The suite caught it: 375/377 against a 377/377
+baseline**, and the two failures were exactly the test that protects this
+behaviour. That test seeds a rival which has waited **2,400 s** against a loaded
+scene holding 42 s of work behind a 180 s round trip — draining is genuinely
+correct there, and it records the measured 2026-08-03 incident where two 292 MB
+scenes traded the worker every job at 89 % overhead.
+
+**A fixed cap on the rival's wait re-creates the exact thrashing the veto exists
+to prevent.** The distinction I had missed:
+
+> in the legitimate case the work **runs out**; in the starvation case the scene
+> is continuously **replenished**.
+
+So the bound belongs on the veto's **own promise**. It claims the scene drains in
+`drain` seconds; if it is still vetoing well past that, the claim was false. The
+promise recorded is the **first** one, so topping the scene up cannot extend the
+grace. `SCENE_VETO_GRACE = 3.0`, floored at `SCENE_STARVE_SEC` so a tiny drain
+still gets a fair chance to finish.
+
+### Controls, run against the real `Broker.cheaper_to_finish`
+
+```
+PASS  POSITIVE  ladder loaded, 1247 sequence frames priced 20.54 h -> no veto
+PASS  NEGATIVE  7 stills, 42 s of work, rival waited 2400 s        -> VETO, 42 s
+PASS  BOUND     same scene, veto running 6250 s past a 42 s promise -> no veto
+```
+
+**The NEGATIVE control is the one that matters** and it is the rubber-stamp
+guard the fix was required to have: the 2026-08-03 case must still be vetoed, or
+the fix has simply broken the veto in the other direction and reintroduced
+89 % switch overhead.
+
+**Offline suite: 377/377, identical to the unpatched baseline** — which was
+established by running the same suite on an untouched copy first, because
+attributing a regression before measuring the baseline is a failure this log
+already records.
+
+### One thing the fix does NOT do, stated because it would be easy to assume
+
+**Correct pricing alone does not end the ladder's starvation.** The negative
+control proves it: when another agent's small scene is loaded with two genuinely
+cheap stills, the veto is still correct and the ladder is still not served. What
+the pricing fixes is the **reverse** direction — it stops the ladder's own scene
+from vetoing everyone else once it is loaded. Only the promise bound ends the
+starvation. They are two defects that happened to live in one expression.
+
+## R2-509 — the doubled text is a SCREEN-space collision, not a writer collision. Nothing writes those panels twice, and the gate built for this defect class cannot see it
+
+I was told the doubling came from *"two modules writing the same panel 45 mm
+apart"*, first on the gantry and then, corrected, on the **MERIDIAN facade sign**
+and the **"24 P1" pit board**. I went looking for the second writer.
+
+**There is no second writer. On any of them.** Four independent measurements:
+
+```
+1  duplicate objects       strings over world/car_anim_driver.blend,
+                           render/film14.blend, render/film14_breach_r6.blend
+                           -> WallSign_Word x1, WallSign_Strap x1, PitBoard_Num x1,
+                              PitBoard_Pos x1, PitBoard_Gap x1, PitBoard_Lap x1
+                           exactly one of each, in every blend.  No `.001`.
+
+2  world-space overlap     every pair of text runs on both panels, world AABBs
+                           -> STAGE RESULT: SIGN_TEXT_CLEAR
+                              Word/Strap are 46.3 mm APART in z, cleanly.
+
+3  neighbour sweep         every mesh object in world/beat1_anim.blend (919 of
+                           them) within 0.35 m -- the gate's own SEP_M -- of any
+                           sign text run
+                           -> 22 hits, and every one is the sign's OWN hardware
+                              (PitBoard_Face/Edge/Pole, WallSign_Rule) or the wall
+                              it is mounted on (Wall_BackX, WallLine_Back,
+                              WallLine_BackFin_0/1).  No second legend. None.
+
+4  provenance              both panels are emitted ONCE each by part-1's
+                           build/s07_props.py -- build_wall_wordmark() at :347 and
+                           build_pit_board() at :951, each called once from :1458
+                           and :1464.
+```
+
+### what it actually is
+
+The doubling is **projective**. Measured through the film's own ONER camera at
+4K, beat 1, with real glyph vertices rather than bounding boxes:
+
+```
+largest on-screen size, beat 1                 overlap at f1
+  WallSign_Word    394.1 x 72.4 px @f9    WallSign_Strap x WallSign_Word
+  WallSign_Strap   334.7 x 38.5 px @f9      305.9 x 16.8 px = 45.7% of the strapline
+                                            (strapline is 306 x 37 px -- the overlap
+                                             is its FULL WIDTH and 45% of its area)
+  PitBoard_Num     119.6 x 77.9 px @f151  PitBoard_Gap x PitBoard_Pos
+  PitBoard_Pos      97.1 x 71.8 px @f151    46.1 x 2.8 px = 7.2% of the smaller
+```
+
+These are legible-scale objects — 360 x 68 px at 4K — so the reading is not an
+artefact of measuring specks.
+
+### the root cause, and it is one number
+
+```
+WallSign_Word extrusion depth  = 2*extrude(0.022) + 2*bevel(0.004) = 52.0 mm
+Word-to-Strap vertical gap     =                                     46.3 mm
+                                                        DEPTH EXCEEDS GAP BY 5.7 mm
+```
+
+**A 52 mm-deep letterform stacked 46.3 mm above its neighbour will collide on
+screen at any grazing view angle, and the wall is seen at a grazing angle.** The
+runs are correctly separated in the plane of the wall; they are not separated in
+the direction the camera actually integrates. The extruded body of MERIDIAN
+sweeps down across the strapline.
+
+> **And the "45 mm" I was handed is real but belongs to something else.** It is
+> R2-256's La Passerelle figure — a genuine, already-fixed two-writer collision.
+> Near this sign there are three unrelated 45-46 mm quantities: the 52 mm glyph
+> depth, the 46 mm the wordmark stands proud of the fluting, and the 46.3 mm
+> line gap. A number that appears everywhere is not a diagnosis.
+
+### why the gate that exists for this passed it
+
+`tools/text_overlap_gate.py` was written for exactly this defect class and is
+correct about its own domain. It fails two panels together only when *"their
+in-plane rectangles overlap by >= 15% of the smaller one"* — **in-plane**, in
+world space. Word and Strap are *stacked*, not overlapping, in that plane, so
+rule 3 never fires and the gate passes them honestly.
+
+It also cannot reach them at all: it works by monkey-patching
+`build_architecture.MB.text` and `build_dressing.emit_art` and re-running the
+round-2 modules. **The showroom props are part-1 geometry from
+`build/s07_props.py`** and are never in its universe. So the panels the defect
+is actually on are outside both its test and its reach.
+
+**The gate is not wrong. It is measuring world-space coplanarity, and this is
+screen-space occlusion.** Those are different defects that produce the same
+complaint, and only one of them has an instrument.
+
+### the gantry: UNMEASURED, not clean
+
+The track gantry's lettering is round-2 (`build_architecture.build_gantry`, and
+`build_architecture.py:5703` concedes this module owns "the S/F gantry and its
+lettering"). It appears in one delivered frame and carries no legible text there,
+and at 720p a 45 mm offset is ~2 px and indistinguishable from an extruded
+letterform's bevel. **I did not measure it and I am not calling it clean.** The
+test that would settle it is now cheap and specific, and it is not "look for two
+writers" — it is:
+
+```
+for every pair of stacked legend runs on one panel:
+    does  glyph extrusion depth  exceed  the gap to the neighbouring run?
+```
+
+That is a one-number check, it is what actually failed here, and no existing
+gate performs it.
+
+### R2-509b — the gantry does NOT share the root cause, and here is the source that settles it
+
+`build_architecture.build_gantry` writes exactly **two** legends, and they are on
+opposite faces of the beam:
+
+```
+mb.text("CIRCUIT VITRINE", T(-1.20, 0.6, soffit+1.05) @ Rz(-90) @ Rx(90), 0.80, extrude=0.02)
+mb.text("START / FINISH",  T( 1.20, 0.0, soffit+1.05) @ Rz( 90) @ Rx(90), 0.80, extrude=0.02)
+```
+
+* **one run per face** — so there is no stacked neighbour to collide with;
+* the two runs are **2.40 m apart in x** and face opposite directions;
+* extrusion is 0.02 -> **40 mm of depth against 2,400 mm of separation**, a
+  ratio of 1:60 where the wall sign's is 52:46.3, i.e. worse than 1:1.
+
+So the `depth > gap` failure that produces the MERIDIAN and pit-board doubling
+**cannot occur on the gantry**. One fix does not buy three panels; it buys two,
+and the gantry was never in the same family.
+
+**The gantry is still UNMEASURED in pixels and is not being called clean.** This
+is a statement about its construction, derived from source, not about its
+appearance. At the 720p of the delivered ladder frames a 40 mm extrusion is ~2 px
+and an extruded letterform's bevel is indistinguishable from a doubled glyph, so
+only a frame at delivery resolution can retire the question.
+
+## R2-521 — TRANSMISSION IS NOT THE CAUSE. It is exactly zero, and the control that says so is a rendered A/B, not a socket reading
+
+### 1. The static reading, on the file that was actually rendered
+
+`world/car_anim.blend` is the file the film scene appends the car from, but it is
+not the file the ladder rendered. `render/film14_breach_r6.blend` is — 4.99 GB,
+against 11 GB of RAM, so it cannot be opened. `bpy.data.libraries.load()` reads
+the datablock index and pulls only what is asked for, which makes the question
+answerable in 40 seconds (`work/r2521/probe_filmblend.py`):
+
+```
+render/film14_breach_r6.blend      192 materials, 33,565 objects
+  car materials present: LiveryPaint CarbonFibre CarbonMatte CarbonCeramic
+                         MatteBlack Titanium SteelFastener AnodisedRed
+                         AnodisedGold SuedeGrip WheelRim TyreRubber
+
+  EVERY ONE:   Transmission Weight = 0.0   unlinked
+               Alpha               = 1.0   unlinked
+               Thin Wall           = 0.0
+               0 Glass / Refraction / Transparent / Translucent / Mix Shader /
+                 Add Shader / Volume / SSS nodes anywhere in any of their trees
+  LiveryPaint: 120 nodes, byte-for-byte the same tree as in car_anim.blend
+```
+
+That is a reading, not a control, and this project has repeatedly paid for fixes
+aimed at the wrong cause. So it was rendered.
+
+### 2. The control the brief asked for — same panel, same light, transmission forced to zero
+
+`work/r2521/build_ab.py` builds one .blend carrying twelve shader variants as
+twelve FRAMES, with the car, the turntable and everything else FROZEN at world
+frame 697 (measured drift between variant frames: **0.000e+00 m**), and one
+camera keyframed to two stations taken straight out of `render/film14_path.json`
+— the ONER's own f697 head-on and its own f655 three-quarter. Twelve separate
+files would have been 3.6 GB of upload into a farm box with 9.9 GB free.
+
+Rendered as sequence `r2521ab`, 1280x720 / 64 samples, fixed seed, AgX / look
+None / exposure -3.628.
+
+```
+                                        max     mean    px differing
+                                        LSB     |d|     by >2 LSB
+A_shipped  vs  B_trans0                   1    0.0168        0        <- THE CONTROL
+A_shipped  vs  P_trans035                99    0.3104   28,763        <- positive control
+```
+
+**Forcing `Transmission Weight` to zero changes nothing** — one LSB of GPU
+non-determinism, not a single pixel moving by more than two. **Setting it to 0.35
+changes 28,763 pixels.** The rig can see transmission; the shipped material has
+none.
+
+### 3. The complete energy budget, which needs no ablation at all
+
+`work/r2521/pass_probe.py` masks the 14 panels by `pass_index` — exact, no edge
+estimation, no colour keying — and measures every light path leaving them.
+**Light passes multiplied by their colour passes:** Cycles stores `Diffuse
+Direct` WITHOUT the surface colour, and the first draft of this probe summed the
+uncoloured passes and read "47 % diffuse" off a surface whose diffuse colour is
+0.012 and whose glossy colour is 0.27. That number was wrong by 17x.
+
+```
+station                     diffuse   glossy   emission   TRANSMISSION
+head-on     (ONER f697)      2.78 %   96.44 %    0.78 %     0.0000 %
+three-quarter (ONER f655)    7.32 %   88.94 %    3.74 %     0.0000 %
+
+  transmission-pass pixels above 1e-6, out of 5,138 / 11,622:   0 and 0
+  maximum transmission-pass pixel:                              0.0 and 0.0
+  diffuse + glossy + emission + transmission  vs  the Combined pass:
+      head-on        19.03819  vs  19.03819      delta 2.9e-06
+      three-quarter   6.01280  vs   6.01280      delta 3.4e-06
+
+positive control — the SAME panels, the SAME light, Transmission Weight 0.35:
+      2,612 and 6,593 transmission-pass pixels light up, peaking at 29.4 / 51.4
+```
+
+**The picture of the bodywork is fully accounted for by reflection, paint and
+glow, at both stations, to six decimal places. Nothing arrives through these
+panels.** Hypothesis 2 is dead, and it is dead at the three-quarter station too,
+which is the station that was thought to prove it.
+
+### 4. And the visibility control, which is the one to look at
+
+Variant `K_panelsonly` hides all 602 other CAR meshes and renders the 14
+bodywork panels alone — no suspension, no wheels, no wings, no internals, no
+lattice, nothing whatsoever behind the skin.
+
+**The shell still reads as translucent pale-blue glass.**
+`out/seq/r2521ab/r2521ab_000012.png`.
+
+There is nothing left for it to be transparent *to*. What is being read as
+"internal structure seen through the skin" is the panel's own surface.
+
+---
+
+## R2-522 — WHAT IT ACTUALLY IS: the panel has no paint in it. 96 % of the hero subject's appearance is the room reflected in it
+
+Measured, from the same probe:
+
+```
+the bodywork's DIFFUSE COLOUR (its albedo), luminance:   0.0121
+```
+
+For scale: fresh asphalt is 0.05-0.07, a "midnight" automotive navy 0.02-0.04, a
+mid navy 0.05-0.09. **The hero subject of the film is painted in something
+darker than a road surface**, and then 62 % of what little diffuse response that
+leaves is removed again by `Metallic = 0.62`.
+
+A surface with no diffuse response is not a dark surface. It is a **mirror**, and
+a mirror in a showroom full of structure looks like a window onto structure. That
+is the whole of the effect:
+
+| | head-on | three-quarter |
+|---|---|---|
+| the room, reflected | **96.4 %** | **88.9 %** |
+| the car's own paint | 2.8 % | 7.3 % |
+| the livery, glowing | 0.8 % | 3.7 % |
+
+And it explains the thing the two hypotheses were built to explain — why f697
+looks like glass and f655 looks like navy. It is not the material swinging with
+angle. **It is what the mirror is pointed at.** Head-on the panels reflect a
+bright ceiling and a lit room; at three-quarter they reflect a darker wall, so
+the same 2.8-7.3 % of actual paint is a bigger share of a smaller number and the
+navy shows. The material never changed.
+
+### The ablation ladder, ranked by how much each moved the picture
+
+All at the head-on station, 1280x720/64, against `A_shipped`:
+
+```
+variant          mean |d|   px>2LSB    what it says
+K_panelsonly      14.1124   281,680    (visibility, not a shader change)
+Q_albedolift       2.2002    77,724    lifting the basecoat x6 is the single
+                                       biggest shader change available
+N_noartwork        0.9171    44,222    livery colour AND glow both off
+C_nocoat           0.8313    53,096    the clearcoat is NOT the mirror on its own
+H_nometal          0.6666    31,934
+G_flatpaint        0.6260    35,452
+D_coatwhite        0.4614    39,220    the pale blue is not the coat tint either
+F_noemis           0.3938    26,914    the teal network goes; the glass stays
+P_trans035         0.3104    28,763    <- ADDING 35 % REAL TRANSMISSION
+B_trans0           0.0168         0    <- the noise floor
+```
+
+**Adding thirty-five per cent genuine transmission moves the picture less than
+five of the ablations do, and barely more than the noise floor.** The panel was
+already behaving like glass without any.
+
+Two negatives worth keeping, because both were plausible and both are wrong:
+
+* **The clearcoat is not the mirror.** `C_nocoat` removes it entirely and the
+  body is still glassy — `Metallic 0.62` over a 0.006 base is its own near-black
+  mirror, and it goes white at grazing on its own.
+* **The pale blue is not `Coat Tint`.** `D_coatwhite` neutralises
+  (0.68, 0.82, 0.90) and moves 0.46 mean LSB. On a panel that is 96 % reflection
+  the tint had almost nothing to tint. The blue is the room.
+
+### What the glowing network is, and what it is not
+
+`F_noemis` removes the teal cell network from the body and leaves the glass read
+untouched. So the network is not the cause — but it *is* the thing being
+described as "internal lattice and wiring", and it is worth naming exactly:
+
+round 1 puts the artwork's entire pattern in **`Emission Strength`**, as a
+five-rung ladder (streams 0.35, graph edges 0.40, graph junctions 3.20, pulse
+line 6.00, numeral 9.00). `Emission Color` is a **flat** cyan. So the body-wide
+node-graph network is a body-wide *light source*, radiating through the paint,
+and it reads as glowing internals wherever the mirror behind it is dark. That is
+also why it is far more visible at three-quarter (3.74 %) than head-on (0.78 %).
+
+---
+
+## R2-523 — a rig that measures a room 12.4x too dark measures nothing. The first build of this one did
+
+Recorded because it nearly produced a confident wrong answer, and because the
+next agent to build a rig out of `world/car_anim.blend` will hit it.
+
+The first build of the A/B rig rendered the showroom almost black, and the first
+pass-probe run reported **29.5 % emission** at the three-quarter station. Both
+came from the same cause:
+
+> `world/car_anim.blend` carries round 1's practicals at the level they were
+> authored for, which `s05_lighting_v2.py`'s own docstring pins to **view
+> exposure 0.000**. The film grades at **-3.628**, and `world/showroom_lighting.py`
+> lifts every interior practical by exactly `+3.628` stops **in the film scene**
+> to cancel that. `car_anim.blend` has not had that lift applied.
+
+Verified against the shipped scene rather than assumed — light energies linked
+out of `render/film14_breach_r6.blend`:
+
+```
+              car_anim.blend    film14_breach_r6.blend    car_anim x 2^3.628
+Key                 1097.5              13568.94               13568.8
+Fill                 743.0               9186.59
+Rim                  300.6               3716.01
+Spot_0               471.9               5834.65
+FloorGraze            21.8                269.47
+```
+
+Every rig in this block now calls `showroom_lighting.apply(scene)` and then
+`assert_levelled(scene)` before it does anything else. With the room at the
+film's level the emission share falls from 29.5 % to **3.74 %** and the glossy
+share rises to 88.9 % — the diagnosis got *stronger*, but it would have been
+argued from the wrong numbers.
+
+**The rule this leaves:** any rig built on `car_anim.blend` (or
+`car_anim_driver.blend`) and graded at `FILM_EXPOSURE` must level the practicals
+first, or it is not looking at the film's room.
+
+---
+
+## R2-524 — the fix: `world/car_paint.py`
+
+Round 1's tree is read-only, so round 2 retro-fits the car's materials from its
+own side. This is the sibling of `tools/imperfections.py`:
+**`imperfections.py` owns wear, dust, scratches and the clearcoat's micro
+break-up; `world/car_paint.py` owns the paint STACK — what the panel is made
+of.** Run `car_paint` first, `imperfections` second; both chain onto whatever
+they find, both are reversible.
+
+Everything is procedural and hand-built. Nothing downloaded, nothing generated.
+
+```
+substrate   2x2 twill carbon, TRIPLANAR, 5.0 mm tow pitch, telegraphing through
+            the paint in albedo (+-8.5 %), roughness and normal (40 um).
+            The twill is `mod(i - j, 4) < 2` — a 2/2 float advancing one tow per
+            row — and each tow is a parabolic dome across its own width, so the
+            albedo, the gloss and the relief are all read off ONE height field
+            and cannot disagree with each other. Faded toward its own mean over
+            |dot(N,I)| 0.10-0.42, because Cycles cannot prefilter a procedural
+            and a foreshortened twill aliases into moire.
+basecoat    a SCREEN lift, not a gain: screen(a,b) maps black to b exactly and
+            leaves white at white, so VOID_NAVY goes 0.0107 -> 0.0283 luminance
+            (2.6x) while the livery's signal-white bars, calibrated in round 1
+            against a 1100 W key, do not move at all. A multiply would have
+            pushed them to 1.7 and clipped them.
+metallic    0.62 -> 0.10, as a SCALE on the existing link so the nose's carbon
+            dissolve still reaches 0. Metallic is not "has flake in it": it
+            deletes the diffuse lobe and colours the specular by the base
+            colour, which is precisely the two things measured wrong.
+flake       per-cell facet normals from a smooth-F1 Voronoi at 0.35 mm, gated by
+            a 55/m drift field so the flake settles in drifts as real paint
+            does, plus a per-cell gloss lift. The shipped material's "flake" was
+            a SCREEN blend of a scalar noise into the colour — that brightens,
+            it cannot sparkle. FLAKE IS A NORMAL, NOT A COLOUR.
+pearl       a LayerWeight FACING shift navy -> teal, peaking 0.35 at the
+            shoulder. Facing, not Fresnel, for the reason round 1 established on
+            this same car: at Blend 0.28 the Fresnel output puts its whole
+            transition inside the last 12 degrees before grazing.
+clear       Coat Tint (0.68,0.82,0.90) -> (0.96,0.975,1.00); Coat Roughness
+            0.022 -> 0.038. imperfections.py adds a PROPORTIONAL +-20 % on top,
+            so lifting the base value widens that break-up in proportion too.
+orange peel ROUND 1 PUT IT ON THE WRONG NORMAL. `livery_paint` builds a
+            scale-140 noise -> Bump(0.035, 0.0025) and feeds it to
+            `Principled.Normal` — the BASE. Orange peel is a clearcoat surface;
+            it is what makes a reflection ripple. Under a 0.022-roughness coat a
+            base-normal perturbation is very nearly invisible. The existing bump
+            chain is not rebuilt, it is RE-ROUTED to `Coat Normal`, so round 1's
+            tuning of its amplitude survives intact.
+livery      moved out of the glow and into the pigment. The pattern is in
+            Emission STRENGTH and the colour socket is flat, so the STRENGTH
+            drives the mix factor and the colour is what gets mixed in — feeding
+            the colour socket to a factor, which the first draft of this module
+            did, floods the whole body flat cyan. Emission itself is passed
+            through a ramp that cuts the BOTTOM of round 1's ladder (streams
+            0.35, graph edges 0.40 -> x0.25) and leaves the TOP alone (pulse line
+            6.00, numeral 9.00 -> x1.00), so the body-wide network stops being a
+            light source and the film's two designed light sources do not move.
+```
+
+**Reversibility is gated, not asserted.** `--strip` removes every `R2CP_*` node
+and restores the ten Principled sockets from a JSON snapshot stored on the
+material. Measured: apply then strip on a copy of `world/car_anim.blend` and
+compare the full node list, the full link list and every unlinked socket value
+against the untouched original — **IDENTICAL: True**, 98 nodes removed, 10
+sockets restored.
+
+Cost: +100 nodes on a 120-node tree.
+
+
+*(R2-525 onward: the rendered before/after, and the scope R2-544 opens.)*
+
+## R2-601 — the wall does un-break, but not the half everybody has been measuring, and not for the reason the log names
+
+Three claims were handed to me. Two of them are false and the third is true of a
+file that has not been in the ship path since 08-03.
+
+### The glass does not spring back, and the reading that says it does belongs to a superseded bake
+
+R2-097 records *"at bond 4000 the pane bulges as a sheet and springs back —
+483 mm at f866 and 17 mm by f900"*. That is a true statement about
+`sim/tmp/breach_bake.npz` and a false one about everything downstream of it.
+Measured with one instrument across every bake on disk (`persistence`, below):
+
+| bake | bond | glass median end/peak | shards home again |
+|---|---|---|---|
+| `breach_bake` (**superseded**, the file R2-097 measured) | 4000 | **0.159** | **1,261 of 3,796** |
+| `breach_full_m1` (**the shipped table**) | 100 | **0.9994** | 57 of 3,789 |
+| `breach_full_r2281` | 100 | **1.0000** | 99 of 3,656 |
+| `p_base` / `p_hfix` / `p_hsld` / `p_t17` / `p_t4` | 100 | **1.0000** | 51–136 of ~3,400 |
+
+The config change to bond 100 did what R2-097 said it would. **The glass
+half of the defect is closed and has been for a day.** The 50–130 shards that
+do come home at bond 100 are gravel settling — a shard whose peak clears 10 mm
+and lands back near its origin — and they do not move the median by a
+thousandth.
+
+### The aperture already persists across the entire tail, measured on the blend that renders
+
+`sim/tail_persist.py` (new) reads `render/film14_breach_r6.blend` and measures
+the connected aperture off the **F-curves**, never through `matrix_world` —
+R2-188, and 3,796 of these objects are hidden for the first 859 frames.
+
+```
+frame     visible     gone   WOUND m2      w x h    CONTROL m2
+1               0        0      0.000   0.00x0.00      0.0000
+859             0        0      0.000   0.00x0.00      0.0000
+860          3796      391      0.145   0.30x0.75      0.0000
+900          3796     2767     11.658   2.15x6.00      0.0000
+1165         3796     2962     12.482   2.15x6.00      0.0000
+1166         3796     2962     12.482   2.15x6.00      0.0000
+2978         3796     2962     12.482   2.15x6.00      0.0000
+```
+
+**2.15 × 6.00 m, 12.482 m², identical at f1165 and at f2978.** And not by
+sampling: the tail is covered by proof, not by probe. Every F-curve on all
+3,845 BREACH objects has its last key at f1165, extrapolates CONSTANT, and
+carries no F-curve modifier; no BREACH object has a parent, a constraint, a
+driver, a modifier or a delta transform. Given that, the pose at **all 1,813**
+frames in f1166..f2978 is identically the pose at f1165. The five probes past
+f1165 are a spot-check of the proof, not the proof.
+
+**The controls, and why the number is not vacuous:**
+
+| control | reads | what it kills |
+|---|---|---|
+| **NEG-2, the free negative control** — the same instrument, same scene, same frames, on the bays the plan never breaks (0/1/8/9, `intact`) | **0.0000 m²** at every frame, f1 to f2978 | an instrument that reports a hole wherever there is glass. The wound half reads 12.482 m² against it |
+| **POS** — the wound bays *before* the swap frame | **0.0000 m²** at f1, f400, f859 | an instrument measuring the mesh instead of the motion |
+| **NEG-1** — "no keys after f1165", asked of objects that are *not* the breach | **10 of 626** animated non-breach objects key past f1165 | a tail-static test that passes because nothing in the scene is keyed that late. If this arm found zero, stage A would be measuring nothing |
+
+### What actually un-breaks is the aluminium, and every report in the pipeline is blind to it by construction
+
+`apply_breach.build_frame` reports `max_travel_m`. `breach_metrics` reports
+`mullion_max_disp_m`, `transom_max_disp_m`, `bent_3_m`, `bent_7_m`. R2-267's
+table is max travel. **All of them are maxima.** A member that deflects 303 mm
+and springs back to 0 mm and a member that deflects 303 mm and stays there
+print the *same number* in every one of them.
+
+**A printed peak looks exactly like a persisted peak** — the same shape as
+R2-266, where a printed count looked exactly like a used count.
+
+Read off the shipping blend's own curves:
+
+| piece | peak | end | end/peak |
+|---|---|---|---|
+| `BF_MUL05_S01` | 4.7421 | 4.4311 | 0.9344 |
+| `BF_MUL05_S00` | 3.9318 | 3.9318 | 1.0000 |
+| **`BF_MUL05_S02`** | **0.1449** | **0.0007** | **0.0048** |
+| **`BF_MUL05_S03`** | **0.1119** | **0.0005** | **0.0042** |
+| **`BF_TRN0_b05`** | **0.0892** | **0.0004** | **0.0048** |
+| **`BF_TRN0_b04`** | **0.0859** | **0.0004** | **0.0052** |
+| **`BF_MUL05_S04`** | **0.0826** | **0.0003** | **0.0034** |
+
+**30 of the 32 deflected east-frame pieces in `film14_breach_r6.blend` return to
+home.** Mullion 5's six surviving segments and all twelve released transom
+pieces bend as the car goes through and are perfectly straight again by f1165 —
+and then hold that repaired pose for the remaining 1,813 frames. R2-267 said
+"mullion 5 travelling 4.43 m and shedding two segments" and it was true; what it
+could not say, because it printed a max, is that everything else *came back*.
+
+---
+
+## R2-602 — the lever is the TRANSOM threshold, and it is not the head restraint the log named
+
+R2-268 calls the head restraint *"the one parameter that decides whether the
+aperture reads"* and R2-282 made `--head-restraint slider` the default on the
+strength of it. **Measured against a single-variable control, the head
+restraint barely moves the defect and the transom threshold decides it
+outright.** Five pilot bakes already on disk in `sim/tmp`, all 4,048 bodies,
+14,075 constraints, 8 substeps, 24 iterations, one variable apart:
+
+| bake | head | transom | frame bodies deflected | **came home** | largest recovery | verdict |
+|---|---|---|---|---|---|---|
+| `p_base` | fixed | 260 | 68 | **64 (94.1 %)** | 0.3028 m | FAIL |
+| `p_hsld` | **slider** | 260 | 70 | **60 (85.7 %)** | 0.2961 m | **FAIL** |
+| `p_hfix` | fixed | **8.8** | 46 | **2 (4.3 %)** | 0.0192 m | **PASS** |
+| `p_t17` | slider | 17.6 | 52 | 24 (46.2 %) | — | — |
+| `p_t4` | slider | 4.4 | 45 | 8 (17.8 %) | — | — |
+
+* **head fixed → slider, transom held at 260: 94.1 % → 85.7 %.** The named
+  lever, moved on its own, leaves the defect standing.
+* **transom 260 → 8.8, head held at fixed: 94.1 % → 4.3 %.** The unnamed one,
+  moved on its own, closes it.
+* and it is monotone in the transom threshold at fixed head restraint:
+  260 → 17.6 → 4.4 gives 85.7 % → 46.2 % → 17.8 %.
+
+Mullion 5's own column, same two bakes, head restraint identical in both:
+
+```
+                p_base (transom 260)          p_hfix (transom 8.8)
+                peak     end   end/peak       peak      end   end/peak
+MUL05_S00      8.102   8.102     1.000      15.468   15.468     1.000
+MUL05_S01      7.697   7.697     1.000      15.616   15.616     1.000
+MUL05_S02      0.303   0.000     0.001      15.907   15.907     1.000
+MUL05_S03      0.254   0.000     0.001       7.607    7.607     1.000
+MUL05_S04      0.205   0.000     0.002       7.173    7.173     1.000
+MUL05_S05      0.151   0.000     0.002       6.856    6.856     1.000
+MUL05_S06      0.096   0.000     0.003       6.671    6.671     1.000
+MUL05_S07      0.066   0.000     0.003       6.629    6.629     1.000
+```
+
+**The mechanism.** `t_transom = 260` is 499 kN across two M6 self-tappers — the
+source's own note says so, and `sim/frame_thresholds.py` derives 8.8. At 260 the
+three full-width transom rails never break their bolt to mullions 4/5/6, so bays
+3–6 stay welded into one rigid ladder that terminates on members which do not
+release. A Bullet `FIXED` rigid-body constraint is a *position* constraint: it
+holds a rest relative transform, and any deflection is constraint error the
+solver drives to zero. That is the restoring spring. It is the brief's
+"pin/anchor group that was never released on fracture" — right in kind, wrong in
+station.
+
+**Ruled out, each with evidence rather than by elimination:**
+
+* **solver stiffness / damping.** Identical in all five pilots (`substeps` 8,
+  `solver_iterations` 24, `DAMP_LIN`/`DAMP_ANG` untouched) while the outcome
+  swings 94 % → 4 %. And damping removes energy; it cannot define a pose to
+  return to.
+* **the PVB springs** (`_pvb_post`, the only literal springs in the bake:
+  `spring_stiffness 55`, equilibrium at the intact rest offset). They join
+  **glass to glass only**, and the glass median end/peak is 0.999–1.000 in every
+  bond-100 bake. If the springs were driving anything home, the glass would be
+  the first thing to go.
+* **a shape key or modifier still driving toward the intact rest state.** None
+  exists — not in the bake, and stage A of `tail_persist` finds zero modifiers,
+  zero drivers and zero constraints on all 3,845 BREACH objects in the delivered
+  scene.
+* **the fracture never severing connectivity.** 2,962 shards are more than
+  0.25 m from home at f1165 and 2,960 of them are still there at f2978.
+
+---
+
+## R2-603 — the fix, and the blocker it lands on
+
+**In source:**
+
+1. `sim/breach_metrics.py` — new `persistence()`. Peak, end and **end/peak** for
+   every body, aluminium and glass reported separately, with its own three
+   controls (`POS` a synthetic body out 1 m and back must be flagged; `NEG` one
+   out 1 m that stays must not be; `ZERO` a bit-identical body is neither
+   deflected nor recovered). Every future bake is now scored on whether
+   anything came back.
+2. `sim/land_breach.sh` — new **stage 3b**, which refuses. Stage 3 has never
+   gated on anything: it pipes `slabcheck` through `tail -3` and the script
+   carries on whatever it says, and slabcheck asks the question of the *glass*,
+   which is the half that has not failed since bond went to 100. 3b asks it of
+   the aluminium and calls `die` on a FAIL. Stage 4's duplicate
+   `breach_metrics` run is removed — it was scoring a 152 MB table twice.
+3. `sim/tail_persist.py` — new. The persistence question asked of the **blend
+   that renders**, over the whole remaining take, with the three controls above.
+   It imports its rule and its gate from `breach_metrics` rather than restating
+   them; a second copy of a threshold is the mechanism behind R2-071, R2-061 and
+   R2-100.
+
+**The gate is on the size of the largest recovery, not on the count.** A count
+of zero cannot be asked for and should not be — a mullion that is still bolted
+in is *supposed* to flex a few millimetres and come back, and every bake on disk
+has a handful of sub-20 mm ones on the neighbouring members. What is a defect is
+a recovery you can see. **25 mm is 4.7 px at the beat-3 pass's own measured near
+scale of 5.3 mm/px** (f945, 5.9 m). The glass arm gates on the field median
+(0.90) for the same reason: 57 shards of 3,789 settling is not a pane
+un-breaking.
+
+Verdicts, one instrument, every artefact:
+
+| artefact | head | transom | largest recovery | glass median | verdict |
+|---|---|---|---|---|---|
+| `breach_bake` (superseded) | fixed | 260 | 0.4892 m | **0.159** | **FAIL both arms** |
+| `breach_full_m1` → **`film14_breach_r6.blend`, the ship candidate** | fixed | 260 | **0.1571 m** | 0.9994 | **FAIL** |
+| `p_base` | fixed | 260 | 0.3028 m | 1.0000 | FAIL |
+| `p_hsld` | slider | 260 | 0.2961 m | 1.0000 | FAIL |
+| `p_hfix` | fixed | **8.8** | **0.0192 m** | 1.0000 | **PASS** |
+| `breach_full_r2281` | slider | **8.8** | **0.0195 m** | 1.0000 | **PASS** |
+| `film14_breach_R2387.blend` (applied) | slider | 8.8 | **0.0271 m** | — | **FAIL by 2.1 mm** |
+
+Read off the two applied scenes rather than the tables, which is what actually
+renders:
+
+| | `film14_breach_r6` | `film14_breach_R2387` |
+|---|---|---|
+| aperture at f1165 = f2978 | **12.482 m², 2.15 × 6.00 m** | **12.895 m², 2.15 × 6.00 m** |
+| intact-bay control | 0.0000 m² | 0.0000 m² |
+| tail-static over f1166–2978 | PASS (1,813 frames) | PASS (1,813 frames) |
+| deflected frame pieces that came home | **30 of 32 (93.8 %)** | **6 of 20 (30.0 %)** |
+| largest recovery | **0.1449 m** | **0.0271 m** |
+
+**The correction is real and it is 5.3×.** R2387 still misses the gate, by
+2.1 mm, and the number is reported as it fell rather than the gate being moved
+to meet it — the gate was fixed off the pixel scale before R2387 was measured.
+
+**And here is the blocker.** Every configuration that stops the aluminium
+springing back is a configuration in which mullion 5's column *leaves*, and in
+every one of them it leaves at a speed nothing in this sim can take back:
+`p_hfix` 15.9 m in 1.67 s, `breach_full_r2281` **89.79 m**, `film14_breach_R2387`
+**55.35 m**. That is `MUL05_S02` in the brief, and it is the kinematic car
+proxy — infinite mass, cannot lose momentum to 2,240.9 kg of glass. **The
+transom fix and the car-proxy fix are not independent: the transom threshold is
+what releases the ladder, and the car proxy is what decides where it goes.**
+That fix has another owner and is not duplicated here. Until it lands there is
+no bake that passes both arms, and `film14_breach_r6.blend` remains the ship
+candidate with a known, now-measured, 145 mm un-bend on `MUL05_S02`.
+
+`render/film14_breach_r6b.blend` is still not shippable for exactly that reason,
+and `film9` / `film10` are untouched — film10's 27-finding audit FAIL is what
+makes every other PASS non-vacuous.
+
+**Cost of this block: $0.00.** Nothing was queued. The whole result is
+geometric, read off tables and F-curves that already existed; the farm's ladder
+pass was not interrupted.
+
+---
+
+## R2-604 — `apply_breach`'s R5 asks the pocket question at one frame and skips the only objects that could answer it
+
+Not fixed here; recorded because it is the hole that a persistence bug would
+fall through next time. `preflight()`'s R5 — the check that nothing stands in
+the glazing pocket — runs `_world_aabb` / `_world_verts` at whatever frame the
+applier happens to be on (f1, before the breach), and its very first filter is
+
+```python
+if o.name.startswith(("GP_b", "GS_b")):
+    continue
+```
+
+so it skips every pane and every shard: the only objects in the scene whose
+visibility and position change over the take. R5 is a *build-time foreign-object*
+check and it is a good one — it is what caught eleven aluminium bars lying
+through the glass — but it cannot see a wound that closes, and it has been read
+as though it could. `tail_persist.py` is the arm that asks the question across
+frames.
+
+
+### Files
+
+* `sim/tail_persist.py` — new
+* `sim/breach_metrics.py` — `persistence()`, `DEFLECT_M`, `RETURN_FRAC`,
+  `RECOVERY_GATE_M`, `GLASS_MEDIAN_FLOOR`
+* `sim/land_breach.sh` — stage 3b; stage 4's duplicate scoring run removed
+* `sim/out/tail_persist_r6.json`, `sim/out/tail_persist_R2387.json` — the
+  measurement records
