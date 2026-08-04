@@ -1,0 +1,87 @@
+{
+ "frame": 1126,
+ "item": "timing_stand",
+ "before": "work/r2226/f1126_before.png",
+ "after": "work/r2226/f1126_after.png",
+ "null": "work/r2226/f1126_null.png",
+ "gate": "work/r2226/gate_after.json: PLACED, 10 objects",
+ "resolution": [
+  3840,
+  2160
+ ],
+ "units": {
+  "in_frustum": 9,
+  "visible": 9,
+  "occluded": 0
+ },
+ "regions": {
+  "whole_frame": {
+   "ab": {
+    "px": 8294400,
+    "frac_changed_gt0": 0.384797,
+    "frac_changed_gt2": 0.129729,
+    "frac_changed_gt8": 0.076896,
+    "mean_abs_levels": 2.6027,
+    "max_levels": 133
+   },
+   "null": {
+    "px": 8294400,
+    "frac_changed_gt0": 0.00433,
+    "frac_changed_gt2": 0.000158,
+    "frac_changed_gt8": 2.6e-05,
+    "mean_abs_levels": 0.0055,
+    "max_levels": 68
+   }
+  },
+  "visible_units": {
+   "ab": {
+    "px": 1046575,
+    "frac_changed_gt0": 0.90256,
+    "frac_changed_gt2": 0.695665,
+    "frac_changed_gt8": 0.494694,
+    "mean_abs_levels": 14.4672,
+    "max_levels": 132
+   },
+   "null": {
+    "px": 1046575,
+    "frac_changed_gt0": 0.002147,
+    "frac_changed_gt2": 9.9e-05,
+    "frac_changed_gt8": 1.7e-05,
+    "mean_abs_levels": 0.0029,
+    "max_levels": 63
+   }
+  },
+  "occluded_units_CONTROL": {
+   "ab": {
+    "px": 0,
+    "note": "empty region"
+   },
+   "null": {
+    "px": 0,
+    "note": "empty region"
+   }
+  },
+  "rest_of_frame_CONTROL": {
+   "ab": {
+    "px": 7247825,
+    "frac_changed_gt0": 0.310033,
+    "frac_changed_gt2": 0.048009,
+    "frac_changed_gt8": 0.016566,
+    "mean_abs_levels": 0.8895,
+    "max_levels": 133
+   },
+   "null": {
+    "px": 7247825,
+    "frac_changed_gt0": 0.004645,
+    "frac_changed_gt2": 0.000166,
+    "frac_changed_gt8": 2.7e-05,
+    "mean_abs_levels": 0.0059,
+    "max_levels": 68
+   }
+  }
+ },
+ "ok": true,
+ "notes": [
+  "no occluded unit at this frame, so the internal control is unavailable here and only the repeat-render null applies"
+ ]
+}

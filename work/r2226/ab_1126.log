@@ -1,0 +1,9 @@
+frame 1126   item timing_stand   9 units in frustum: 9 visible, 0 occluded
+region                             px      AB >8/255   AB mean|d| |    NULL >8/255 NULL mean|d|
+whole_frame                   8294400          7.69%         2.60 |          0.00%         0.01
+visible_units                 1046575         49.47%        14.47 |          0.00%         0.00
+occluded_units_CONTROL              0  (empty)
+rest_of_frame_CONTROL         7247825          1.66%         0.89 |          0.00%         0.01
+  NOTE no occluded unit at this frame, so the internal control is unavailable here and only the repeat-render null applies
+wrote work/r2226/ab_1126_timing_stand.json
+>> STAGE RESULT: ITEM_AB_OK

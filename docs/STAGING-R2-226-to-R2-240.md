@@ -214,6 +214,78 @@ A gate that cannot tell the shipping world from a placed one is not measuring
 placement.  `tools/item_ab_measure.py` **refuses to interpret an A/B at all**
 unless it is handed this gate's verdict for the AFTER blend.
 
+## R2-232 — the pixels, and R2-182's own frame is no longer identical
+
+Both A/Bs are `film14` against `render/r2226_items.blend`, 4K, 256 samples,
+`--denoiser NONE`, camera `ONER`, same farm.  NULL is `film14` rendered a
+**second** time.  `tools/item_ab_measure.py` refuses to interpret either until
+handed `tools/item_placement_gate.py`'s verdict for the AFTER blend.
+
+**f654 — `crew_figure`, 88 of 120 figures in frustum, 75 visible, 13 occluded:**
+
+| region | px | AB >8/255 | AB mean \|Δ\| | NULL >8/255 | NULL mean \|Δ\| |
+|---|---:|---:|---:|---:|---:|
+| whole frame | 8,294,400 | 1.02 % | 0.38 | 0.00 % | 0.00 |
+| **visible units** | 153,413 | **51.05 %** | **18.83** | 0.00 % | 0.00 |
+| **occluded units — CONTROL** | 2,941 | **7.07 %** | 2.52 | 0.00 % | 0.00 |
+| **rest of frame — CONTROL** | 8,138,046 | **0.08 %** | 0.03 | 0.00 % | 0.01 |
+
+**f1126 — `timing_stand`, R2-182's own frame, 9 of 10 stands in frustum:**
+
+| region | px | AB >8/255 | AB mean \|Δ\| | NULL >8/255 |
+|---|---:|---:|---:|---:|
+| whole frame | 8,294,400 | 7.69 % | 2.60 | 0.00 % |
+| **visible units** | 1,046,575 | **49.47 %** | **14.47** | 0.00 % |
+| rest of frame | 7,247,825 | 1.66 % | 0.89 | 0.00 % |
+
+R2-182: *"Rendering f1126 from the film before and after the fix would have
+produced two identical images — and been read as 'the fix is invisible, close
+it'."*  **It does not, once the item is in the world.**  49.47 % of the pixels
+in the nine stands' boxes move, against a repeat-render floor that rounds to
+0.00 % at the same threshold.  There is no occluded stand at this frame, so the
+internal control is unavailable and the tool says so rather than inventing one.
+
+**Three controls, saying three different things.**  The NULL says the floor is
+clean at the 8-level threshold (with the denoiser off, sampling noise reaches 26
+levels on isolated pixels; nothing survives the threshold).  REST OF FRAME says
+the change is confined to where the figures project — 0.08 % against 51.05 %,
+**659×**, and 574× on mean |Δ|.  THE OCCLUDED HALF is R2-150's control, and at
+7.07 % against 51.05 % it is **7.2×**, weaker than R2-150's 50×.  The reason is
+measurable rather than mysterious: occlusion is classified by ONE ray to each
+figure's centroid and the region is that figure's screen BOUNDING BOX, so a
+figure whose chest is behind a wall and whose head clears it is scored occluded
+and contributes a box full of visible head.  7.07 % is the size of that leak,
+not of a light leak.  A per-pixel depth split would separate them.
+
+**And the instrument failed first, loudly.**  The initial f654 run reported
+visible **0.00 %** / occluded 0.00 % / rest-of-frame 1.04 % — the frame had
+plainly changed and the boxes were empty, because the projection puts v = 0 at
+the frame's bottom while numpy rows run top-down, so every box was vertically
+mirrored.  It printed *"either the item is not where the projection says, or the
+frame does not see it"* and returned `ITEM_AB_FAIL` rather than a tidy null.
+Both logs are kept: `work/r2226/ab_654.log` mirrored, `ab_654_flip.log`
+corrected.
+
+**Looked at, not only measured.**  `work/r2226/peep_*.png`.  At f654 the BEFORE
+is empty tarmac behind the paddock fence and the AFTER is a row of team-coloured
+crew, motion-blurred by a fast camera.  At f1126 the BEFORE pit wall is bare and
+the AFTER carries a run of decks, fascias and canopies — and the clutter along
+that wall **is** the R2-229 debt made visible: ten hero stands standing among
+five welded ones.
+
+## R2-233 — two A/B tools in `tools/` cannot run on this box at all
+
+`tools/r2179_ab_measure.py` and `tools/glass_winding_ab_measure.py` both do
+`from PIL import Image` at module scope.  **Neither `/usr/bin/python3` nor
+Blender 5.2's bundled interpreter has PIL** — checked again today, both raise —
+which is exactly why `world/items/human_png.py` exists and says so in its own
+header.  `tools/item_ab_measure.py` reads through that instead.
+
+This is R2-150's shape a third time: *"the rewritten script died on
+`No module named 'PIL'` while Blender exited 0.  The printed `STAGE RESULT` line
+caught it; `$?` would not have."*  Noted, not fixed — those two files are
+somebody else's.
+
 ---
 
 ## What is owed
