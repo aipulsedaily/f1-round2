@@ -159,9 +159,13 @@ and it declined to turn "no hole visible at 18.7°" into a waiver, which was the
 call. What settles the matter is not a better crop, it is **an A/B with a
 reproducibility floor under it**, which nobody had until both worlds existed.
 
-And: **f1104 is the ONER's *shallowest* view of the region** (line of sight 16.8–34.2°,
-against −45.9° at the never-rendered f1119). The most favourable frame available was
-also the least favourable geometry, and it still reads.
+And a correction to a phrase that is easy to repeat wrongly, including by me:
+**f1104 is the ONER's *best* view of the region — best by unoccluded area, 71.50 m² of
+427.60 — not its shallowest.** `work/r2140/beat_visibility.log` measures f1098 at line
+of sight [13.11, 23.53]°, shallower than f1104's [16.8, 34.18]°, but showing only
+55.0 m² unoccluded. The two rankings are not the same ranking and R2-133's prose runs
+them together. What f1104 is, is the frame with the most of the region visible in it,
+which is the right frame to test on either way.
 
 ---
 
