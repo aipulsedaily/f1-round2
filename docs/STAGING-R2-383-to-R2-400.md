@@ -572,3 +572,54 @@ If P12c holds, the underfloor clamp and the deck ride survive into the shipped
 bake as **stated residual defects**, and the reason will be that the only lever
 that moves them is the same lever that closes the aperture.
 
+
+---
+
+## R2-391 — the seam table, BEFORE column, measured with the script that will measure the AFTER column
+
+`sim/seams.py`, run on the two tables that already exist. It measures the car's
+seams and the table's seams with one piece of code so the two columns cannot
+drift, and it was validated against numbers it did not produce: it reproduces
+`rest_gate.py`'s **1,599** bodies over 1 mm/film-frame on the shipped table and
+R2-290's **2,647** over 1 m/s and **u 884…3465** on the re-bake, to the body.
+
+### The car — the one-take law
+
+| | R6 SHIPPED | R2281 RE-BAKE |
+|---|---|---|
+| `car_anim_measured.json`, 2,978 frames, sha256[:16] | `7fe6b8a97b362ac0` | `7fe6b8a97b362ac0` |
+| **f865, beat 2 \| beat 3** loc | 14.969 → 15.590 → 16.091 | identical |
+| speed across the join | 16.769 → 15.677 → 15.617 m/s | identical |
+| worst \|a\| within ±5 frames (beat median) | 25.39 (9.34) m/s² | identical |
+| **f1057, beat 3 \| beat 4** loc | 52.556 → 53.901 → 55.265 | identical |
+| speed across the join | 32.061 → 32.508 → 32.955 m/s | identical |
+| worst \|a\| within ±5 frames (beat median) | 10.76 (11.60) m/s² | identical |
+
+They are identical because **the car's transform is an input to this sim and an
+output of nothing in it.** `breachlib.Car` reads
+`world/car_anim_measured.json`; the sim keys the proxy from it and writes
+nothing back. That is the whole reason I refused the dynamic proxy in R2-385 on
+numbers rather than on cost — the cost was going to be this table.
+
+### The table — the release seam and the last key
+
+| | R6 SHIPPED (live) | **R2281 RE-BAKE (not shippable)** |
+|---|---|---|
+| span | f845 – f1165 | f845 – f1165 |
+| **release pop** (first key vs the static wall) | **0.000000 m** | **0.000000 m** |
+| bodies over 1 mm / film frame at the last key | 1,599 | **2,734** |
+| **bodies over 1 m/s at the last key** | **70** | **2,646** |
+| median speed at the last key | 0.016 m/s | **4.736 m/s** |
+| max speed at the last key | 73.17 m/s | 24.89 m/s |
+| end x: median / p95 / max | 16.26 / 17.07 / 641.8 | **102.81 / 103.57 / 261.9** |
+| bodies in the closing raster (f2978) | 3,891 | 3,947 |
+| **frozen-and-moving in the closing raster** | **13** | **2,645** |
+| their pixel extent | 477 × 896 px | **2,581 × 1,018 px** |
+| their u range | 1,774 – 2,268 | **884 – 3,465** |
+
+**The release seam is clean in both** — nothing pops on the frame it is
+released — so the whole of the seam defect is at the far end: 2,645 bodies
+freeze mid-slide across two-thirds of the closing frame's width. That is the
+number the fix has to move, and it is the number the AFTER column will be read
+on.
+
