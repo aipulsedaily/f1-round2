@@ -18346,3 +18346,177 @@ between "breach" and "defect", beat 3 has a chaotic degree of freedom that no
 threshold controls. **Any future A/B on this shot needs more than one frame and
 probably more than one seed.** A one-frame comparison of this beat can report
 the opposite of the truth without anything being wrong with the measurement.
+
+## R2-513 — the breach is landed on `film16`, and it reproduces the ship's apply exactly
+
+`render/film16_breach.blend`, 7,600 MB, built by `sim/apply_breach.py` against
+the pinned R6 table. Its apply report is **identical to the ship's in every
+statistic**:
+
+```
+                          film14_breach_r6 (SHIP)   film16_breach (NEW)
+objects                            3,845                  3,845
+tris                             278,864                278,864
+keys                           5,806,793              5,806,793
+hero                               3,573                  3,573
+east frame objects                    39                     39
+east frame keys                    8,092                  8,092
+mullions_replaced                [4, 5, 6]              [4, 5, 6]
+n_transom_pieces                      12                     12
+BF_MUL05_S02 max travel         0.1449 m               0.1449 m
+coverage PASS                       True                   True
+east wall PASS / panes / missing  True / 10 / []     True / 10 / []
+```
+
+**`BF_MUL05_S02` at 0.1449 m is the number that proves the RIGHT bake landed.**
+R2-387's table on the same disk gives that body **55.3509 m** and replaces four
+mullions instead of three; had `land_breach.sh` been run end to end, its stage 1
+would have regenerated `sim/out/breach_film.npz` from whatever raw bake sits in
+`sim/tmp/` and could have swapped it in silently. The applier was invoked
+directly with `--film sim/out/breach_film_R6_SHIPPED.npz` instead, and stages 0–5
+skipped. Stage 5b was checked first and is not read by `apply_breach.py`.
+
+The two documented mid-apply verdicts both came out right:
+
+```
+R5 after the build: 0 intruders in the clear opening OVER THE WOUND
+                    (was 3 -- GW_Right_Transom_0/1/2), 9 elsewhere
+```
+
+The 9 elsewhere are the south wall's `GW_Front_*` frame and the light fins, which
+`sim/land_breach.sh` names as deliberate and not this module's to move — the
+preflight's headline `glazing_pocket_clear FAIL` is that same population and is
+what `--force` exists for. Read `R5_intruders_over_the_wound_after`, not the
+preflight count.
+
+### the readback diff, which is the arm that should have caught this
+
+With `film14` measured on the same instrument, every invariant is identical and
+only three fields move:
+
+```
+bytes            4,530,665,076 -> 7,507,149,067
+n_objects               29,415 -> 31,133      (+1,718: 4 item families + driver)
+n_objects_data          29,726 -> 31,444
+interior_lamp_watts  46,203.313 = 46,203.313
+23 stamps / 3.628 / AgX / None / -3.628 / 24 fps / 1..2978 / ONER   all identical
+```
+
+**And that is exactly why the missing breach survived it.** Every arm compared
+`film16` against `film14` — the *pre-breach* scene — and on that comparison
+`film16` is perfect. The ship is `film14_breach_r6`. **A readback diff against
+the wrong baseline is a clean bill of health for the wrong file.** The baseline,
+not the instrument, was the defect.
+
+## R2-529 — the specular LEVEL is not inflated. Its DOMINANCE and its SHARPNESS were
+
+Put to this block from a 4x crop of `r1full_000817.png`: *"even a perfect
+clearcoat over a proper base should not return the room at this intensity —
+whatever is driving that specular response needs to come down, or a base coat
+will just sit under a mirror."*
+
+Measured, and the second half of that is right and the first half is not.
+
+```
+                     diff_col   gloss_col     what gloss_col is
+head-on   before      0.0121      0.2714      the panel's specular TINT, per pixel
+          after       0.0438      0.2942
+3/4       before      0.0121      0.1982
+          after       0.0473      0.2164
+```
+
+**The specular tint did not come down and should not have.** 0.20-0.29 is what an
+IOR-1.5 clearcoat returns averaged over a body this curved: normal incidence is
+0.04, but a large fraction of a nose or a sidepod's visible area sits at 45-80
+degrees where Fresnel climbs through 0.1 to 0.4, and the mean lands where it
+lands. There is no non-physical multiplier in there to remove — no emissive
+specular, no metallic left worth the name (0.10), no doubled lobe. Driving it
+lower would mean authoring a paint that is not paint.
+
+**What WAS wrong is that it had nothing to compete with, and that it was
+mirror-sharp.** Both are now addressed and both are visible in the distribution
+above rather than in the mean:
+
+* nothing to compete with — the basecoat lift, `x3.6` on albedo;
+* mirror-sharp — `Coat Roughness` 0.022 -> 0.055, and round 1's orange peel moved
+  onto the coat normal where it perturbs the reflection instead of sitting
+  invisibly under it. 0.022 returns a LEGIBLE IMAGE of the ceiling, which is what
+  makes a panel read as chromed; 0.055 returns the same energy as a sheen.
+
+The reflection is still bright, and it should be. A gloss-navy car in a room lit
+to 46 kW of practicals *is* mostly reflection. The difference between that and
+chrome is whether there is a car underneath, and now there is.
+
+---
+
+## R2-530 — what the ladder can and cannot be asked about surface detail
+
+Two claims about the car's detail arrived from 720p and 4K crops of `r1full`.
+Measured against this block's own frames, they resolve into a rule rather than a
+verdict, and it is worth writing down because it will keep coming up.
+
+**The rule is px/m, and it is arithmetic, not judgement.**
+
+```
+rung 1, 1280x720, car ~600 px for 5.6 m                      107 px/m
+the macro station, 1920x1080, 0.62 m on a 65 mm lens       ~5,500 px/m
+
+CarbonFibre's twill              190 repeats/m   ->  0.56 px/cell at rung 1
+                                                    29   px/cell at macro
+```
+
+A 0.56 px feature cannot be seen, cannot be authored into visibility, and does
+not indicate missing authorship. `r2521before_000003.png` puts a `CarbonFibre`
+part and a `LiveryPaint` panel in one frame at 5,500 px/m: **the carbon's twill
+is crisp and correct; the paint has nothing.** Both statements are about
+authorship. Neither could be made at 107 px/m.
+
+Corroborated independently from a 4x crop of `r1full_000817.png`: the engine
+cover carries fine louvres, rivet lines, marker lights and correctly swept wing
+pylons; the rear-wing element is a thin, properly swept aerofoil section. So
+"the car has no surface detail" is too broad. **Detail is present on some
+components and absent on others, and the absent one that this block owns is the
+paint.**
+
+**And a number that is not about the car at all.** A rear-wing mainplane measured
+at 1.070 m span x 0.280 m thick — a 58.6 % thickness-to-chord ratio against a
+real 10-15 % — is a measurement of `sim/breachlib.py`'s COLLISION PROXY, not of
+the rendered wing. The visible wing is fine. Any fix aimed at that number would
+have rebuilt geometry that was never wrong, and the frames would have shown no
+improvement. *Generalises to:* **before acting on a measurement of the car, check
+which artefact it was taken from** — this project carries a render car, a physics
+proxy and several diagnostic blends, and they do not have the same geometry.
+
+---
+
+## R2-593 — the confirming render, and what it can still overturn
+
+**What the crop cannot answer.** R2-589's previewer is exact on framing and
+silent on resolution, so it settles "does f2110 keep its context" and cannot
+settle "does the car still read at 1.50x". At 1.50x the car is **4.87 % of frame
+width — 62 px at 1280, ~187 px in the 4K delivery** — against 42 px as shipped
+and the 85 px at which R2-588 could read endplates, halo and front-wing elements.
+The retune is therefore expected to land between "a blue smudge with two dark
+blobs for tyres" and "a car that reads", and that is the one claim in this pass
+which is asserted from a projection rather than seen.
+
+**Two frames, off the loaded `film14_breach_r6.blend`, 1280x720 / 64 samples /
+adaptive 0.01, camera `ONER`, the scene's own AgX and −3.628, prio 89:**
+
+```
+ba8ed022c396   f2110  --zoom 1.4969  --border 0.165983 0.834017 (both axes)   the cap frame
+b67b883a270f   f2190  --zoom 1.6752  --border 0.201530 0.798470 (both axes)   the new peak, never rendered
+```
+
+**Cost: ~$0.013** — two stills against the eight that cost $0.05 in R2-588, on a
+GPU already holding the scene.
+
+If the delivered f2110 shows the car failing to read at 4.87 %, the retune is
+wrong in the other direction and the honest answer is the middle of the ladder in
+R2-590 (1.55x, the boundary) rather than 1.50x — or the passage needs the fix
+R2-586 §3 names, which is shorter rather than longer, and that one is a beat-sheet
+change.
+
+**Out of scope and left alone:** the near-field architecture at f2180
+(grandstand) and f2200 (two bridge pylons). It is a separate defect, it belongs
+to another agent, and the retune's shorter lens improves it less than B's did.
