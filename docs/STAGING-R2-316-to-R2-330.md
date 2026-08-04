@@ -494,24 +494,24 @@ candidate's perturbation is exactly zero from f720.
 
 ## R2-328 — what was NOT confirmed
 
-* **The motion-blur decomposition has not been closed by a rendered A/B.** It is
-  now supported by two independent lines — the geometry of the built path, and the
-  direction of the surviving gradients in the delivered pixels, agreeing on six
-  frames to 0.8-6.4 degrees (R2-329) — but the `--dof off` control frames (f200,
-  f400, f591) had not been delivered when this was written. A controlled pair
-  would settle the MAGNITUDE split as directly as the direction agreement settles
-  the cause, and it should still be rendered.
+* ~~**The motion-blur decomposition has not been closed by a rendered A/B.**~~
+  **CLOSED by R2-331.** All three `--dof off` controls delivered and the
+  prediction, committed before they landed, held on every one. The magnitude split
+  is now measured and not inferred.
 * **No frame of the candidate has been rendered**, because `render/film*.blend`
   is off limits to this block. Every candidate number above is geometry. In
   particular **the 104 px the candidate moves f648 by has not been looked at**,
   and 104 px at 4K is a shift a review would see.
-* **f532 did not render.** It stalled the farm and was skipped. It is the frame
-  with the largest predicted smear anywhere in the tour — 475 px at the on-axis
-  cluster centre, 808 px at its near face — and it is the frame `continuity_gate`
-  independently flags as the worst nominated-cluster aim in beat 1 (76.94 deg).
-  **It is the single most diagnostic frame of the beat and it is the one there is
-  no picture of.** Whether the stall and the frame's content are related is not
-  established either way.
+* ~~**f532 did not render.**~~ **CLOSED — f532 delivered, and it is the most
+  damning frame in the beat.** It carries the largest predicted smear anywhere in
+  the take (475 px at the on-axis cluster centre, 808 px at its near face) and is
+  the frame `continuity_gate` independently flags as the worst nominated-cluster
+  aim in beat 1 (76.94 deg). The picture is not a picture of anything: every
+  feature is drawn into a long horizontal streak. Its measured surviving-gradient
+  axis is **91.6 deg against a predicted 97.6 deg — 6.0 deg**, the seventh
+  agreement and the one on the most extreme frame in the set. The stall was a dead
+  container behind a frozen status line and had nothing to do with the frame's
+  content: it rendered normally on the retry.
 * **The re-solve is not attempted**, so "+7.4 s" is the cost at the same speed
   limit on the same tour order, not the cost of the tour Held-Karp would choose
   for the new stations. It could be less.
