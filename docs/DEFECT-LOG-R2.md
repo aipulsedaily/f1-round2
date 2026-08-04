@@ -6748,3 +6748,67 @@ Refusing is the only one of the three that cannot itself fail silently: the
 scene either has no unresolved libraries or the job does not exist. If linked
 workflows become common, revisit **resolve at push** — but only with the
 per-library cache accounting the current one does not have.
+
+## R2-381 — a 180-second ceiling on every scene push, and it condemned healthy GPUs
+
+`push_scene` and `push_scene_siblings` rode the **multiplexed SSH master**, whose `ssh_base`
+sets `ServerAliveInterval=30 × CountMax=6` — **180 s**. A bulk stream starves the master's own
+keepalive replies until ssh tears the whole master down. Two 5.2 GB pushes died at **181.4 s**
+and **168.7 s** with `ssh exit 255, no stderr | zstd exit -13`.
+
+> **This is not a flaky link. Any scene needing more than 180 s to push would fail FOREVER** —
+> and the broker reads a failed push as a bad host, so it condemns the GPU, rents a replacement,
+> and fails identically on the same scene.
+
+**That is the mechanism behind every "the 5090 died" incident on this project** — six false
+alarms, two healthy boxes destroyed by the broker's own error classification, and a near
+24-hour machine ban. The instances were fine. The push was hitting a wall the clock put there.
+
+Moved to `ssh_nomux`. **Proved in production: a 4.68 GB push ran 590 s and completed.**
+
+**A second, separate fault in the same area:** `host_at_fault` correctly declined to blame a
+host stuck pulling its image — but it **condemned only the OFFER**, so machine 73811 was
+re-rented on a *second offer of the same machine* and burned another 900 s. Fixed with
+`stalled_machines`, deliberately kept **in memory** rather than added to the 24-hour-persisted
+`bad_machines`, because that would have re-broken the DNS-outage protection. **A guard acting at
+the wrong granularity is a guard that fires and changes nothing.**
+
+## R2-382 — VRAM exhaustion returns a structurally perfect PNG with no picture
+
+**Proven by controlled experiment, not inferred.** `film14_breach_R2281_DIAGNOSTIC.blend`,
+content hash `20245107f4ef7a79`, **byte-identical both times**:
+
+```
+instance 46712525   BLACK   mean 0.000323
+instance 46780377   OK      mean 0.3932, 189 levels
+```
+
+Corroborated by `film14_breach_r6b.blend`, unchanged on disk, rendering **4 good frames then 4
+black** on that same box amid CUDA OOM and `OPTIX_ERROR_UNKNOWN`.
+
+**The cause was measured independently by a second agent:** a fixed **17,737 MiB, constant to
+the megabyte across 40+ minutes**, while our own Blender swung 518 → 13,432 MiB. One Blender in
+the container, no defunct processes, block never moves. **A co-tenant, leaving us 14,870 of
+32,607 MiB — 46 % of a card billed at $0.3444/hr.** It also explains why small `pvg_*` scenes
+kept rendering correctly in between: only the 5 GB scenes reached the exhausted region.
+
+The same fault seen from the other direction produced **six consecutive OOMs on one 4K frame,
+then success on the seventh with nothing changed.**
+
+> **Cycles under VRAM exhaustion returns a zero-filled buffer that becomes a structurally
+> perfect PNG — correct dimensions, correct sha256, no picture. Every check upstream of the
+> blank gate passes it.**
+
+**The blank gate was right every time, and `--allow-blank` would have been exactly the wrong
+response.** That is worth stating plainly because the pressure next time will be to silence the
+alarm rather than read it.
+
+Instance replaced. **46780377 verified genuinely ours** — three samples 4 s apart, identical:
+12,928 MiB used / 19,184 free, exactly one compute process at 12,918 MiB, our Blender accounting
+for all but 10 MiB of driver context. Total cost of the diagnosis: **$0.33** across four dud
+instances.
+
+**A method note worth more than the fault.** An early diagnostic query counted only
+`blank IS NULL` as success and missed every `blank='OK'` row, which made it look as though **no
+scene had ever rendered both black and fine — the exact opposite of the truth.** Correcting the
+query is what exposed the good→black transitions that led to the root cause.
