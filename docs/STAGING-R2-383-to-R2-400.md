@@ -344,3 +344,54 @@ showed a 0.2 m one, the cube started 2 m inside it, and all three switches
 results is not three measurements; it is one bug. The fix was one
 `view_layer.update()`.
 
+
+---
+
+## R2-387 — what the ending can and cannot cost, committed before the fix exists
+
+The 11.33 % was measured on
+`render/film14_breach_R2281_FRAMEONLY_DIAGNOSTIC_DO_NOT_SHIP.blend` — the
+corrected FRAME on the SHIPPED glass — so the statistic that says the aperture
+reads is a statistic about **where the frame's thirty released bodies end up**.
+Three of them end up 89 m downrange. It is therefore a fair question whether
+the ending was bought by the very bulldozer I am about to remove, and it has to
+be answered *before* the answer is available.
+
+`sim/sagpx.py`, projecting each released frame body's RESTING position through
+the ONER track, against `wallstats.py`'s own `WOUND_bridged` rectangle
+(u 1891–1949, v 1041–1120):
+
+| body | travel | rests at x | u, v at f2978 | in the wound box |
+|---|---|---|---|---|
+| `MUL05_S00 / S01 / S02` (+plates) | 88.3 / 89.0 / 89.8 m | 103–105 | 1800–1805, **1436–1445** | no |
+| `MUL05_S03 / S04` | 13.3 / 12.7 m | 27–28 | 1902–1904, 1157–1160 | no |
+| `MUL05_S05 / S06 / S07` | 7.6 / 7.6 / 7.6 m | 19.7–21.3 | 1922–1924, 1134–1139 | no |
+| `TRN_z0_b04 / b05` | 53.1 / 69.8 m | 68 / 85 | 1914 / 1941, 1300 / 1364 | no |
+| `TRN_z1_b04 / b05`, `TRN_z2_b04 / b05` | 5.5–8.6 m | 18.0–22.8 | 1894–1950, 1128–1145 | no |
+
+**At f2978, zero of the thirty released frame bodies rest inside the wound
+box.** The ground plane at the wall itself projects to v 1119 at f2978 — one
+pixel above the box's lower edge — so *anything* that comes to rest on the
+apron beyond x ≈ 15.5 m is below the measured region. **The 11.33 % was not
+bought by the 89 m.** Had those three segments stopped at 30 m they would have
+projected at v ≈ 1167, still forty-seven pixels clear.
+
+**f2940 is the tighter frame and that is where the risk is.** Its box bottom
+corresponds to ground at x ≈ 19.6 m, and **two bodies already rest inside it**
+— `TRN_z2_b04` and its pressure plate, at x = 18.05, u 1909, v 1116. So the
+f2940 result is already tolerant of released members lying in the lower
+aperture, which is what R2-294 predicted and got right.
+
+### The prediction
+
+**P10.** The fix moves `MUL05_S00/S01/S02` from x ≈ 104 to somewhere in
+x 25–50, and moves nothing else in the frame by more than 3 m. **f2978's
+11.33 % holds to within 1.5 percentage points and `grid_contrast` stays under
+0.012.** f2940's result holds.
+
+**P11.** The number at risk is **f2940, not f2978**, and the mechanism if it
+fails is *more* frame bodies coming to rest inside x < 19.6 m with |y| < 2.9 m
+— i.e. the fix stopping them too early rather than too late. If f2940 moves and
+f2978 does not, that is the reason, and I will report the resting x of every
+released member rather than argue about the pixels.
+
