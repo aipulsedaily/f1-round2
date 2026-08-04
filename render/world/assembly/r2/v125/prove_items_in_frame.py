@@ -69,6 +69,7 @@ print(">> objects tagged per family: %s" % counts_scene)
 sc.render.engine = "CYCLES"
 sc.cycles.samples = a.samples
 sc.cycles.use_denoising = False
+sc.cycles.use_adaptive_sampling = False
 try:
     sc.cycles.device = "CPU"
 except Exception:
@@ -76,17 +77,47 @@ except Exception:
 sc.render.resolution_x = a.res
 sc.render.resolution_y = int(round(a.res * 2160.0 / 3840.0))
 sc.render.resolution_percentage = 100
-sc.render.film_transparent = False
-vl = sc.view_layers[0]
-vl.use_pass_object_index = True
 
-sc.use_nodes = True
-nt = sc.node_tree
-for n in list(nt.nodes):
-    nt.nodes.remove(n)
-rl = nt.nodes.new("CompositorNodeRLayers")
-vw = nt.nodes.new("CompositorNodeViewer")
-nt.links.new(rl.outputs["IndexOB"], vw.inputs["Image"])
+# NO COMPOSITOR.  Blender 5.2 moved `scene.node_tree`, so the IndexOB-through-a-
+# Viewer-node route this file was first written with raises AttributeError, and
+# in background mode the Render Result's passes are not readable either.
+#
+# ALPHA + HOLDOUT instead, which needs neither and is occlusion-correct:
+#
+#   film_transparent            -> alpha marks "some geometry covers this pixel"
+#   A_all      everything visible
+#   A_minus_F  family F set as a HOLDOUT -- it punches alpha to 0 wherever it is
+#              the FRONTMOST surface, and contributes no shading of its own
+#   A_all - A_minus_F  =  the pixels on which F is what the camera actually sees
+#
+# A holdout cannot subtract pixels F does not own, so this cannot over-report;
+# and anything hidden behind the world never enters the difference, so it cannot
+# credit an item that is in the scene but not in the picture.  That distinction
+# is the entire point of task #121.
+sc.render.film_transparent = True
+sc.render.image_settings.file_format = "PNG"
+sc.render.image_settings.color_mode = "RGBA"
+
+TMP = "/tmp/claude-0/-home-zany-opus5-car-render/262f2abe-1dfb-4a32-9544-52393037f67a/scratchpad/items.png"
+os.makedirs(os.path.dirname(TMP), exist_ok=True)
+_BY_PREFIX = {}
+for pref, idx, label in FAMILIES:
+    _BY_PREFIX[pref] = [o for o in bpy.data.objects if o.name.startswith(pref)]
+
+
+def _alpha():
+    sc.render.filepath = TMP
+    bpy.ops.render.render(write_still=True)
+    for im in list(bpy.data.images):
+        if im.filepath and os.path.basename(im.filepath) == "items.png":
+            bpy.data.images.remove(im)
+    im = bpy.data.images.load(TMP)
+    px = list(im.pixels)
+    n = len(px) // 4
+    c = sum(1 for i in range(n) if px[i * 4 + 3] > 0.5)
+    bpy.data.images.remove(im)
+    return c
+
 
 report = {"frames": {}, "objects_tagged": counts_scene,
           "res": [sc.render.resolution_x, sc.render.resolution_y],
@@ -96,27 +127,28 @@ control_clean = True
 
 for f in [int(x) for x in a.frames.split(",") if x.strip()]:
     sc.frame_set(f)
-    bpy.ops.render.render(write_still=False)
-    img = bpy.data.images.get("Viewer Node")
-    px = list(img.pixels)
-    n = len(px) // 4
-    hist = {}
-    for i in range(n):
-        v = int(round(px[i * 4]))
-        if v:
-            hist[v] = hist.get(v, 0) + 1
+    for o in bpy.data.objects:
+        o.is_holdout = False
+    a_all = _alpha()
     row = {}
     for pref, idx, label in FAMILIES:
-        c = hist.get(idx, 0)
+        objs = _BY_PREFIX[pref]
+        for o in objs:
+            o.is_holdout = True
+        a_less = _alpha() if objs else a_all
+        for o in objs:
+            o.is_holdout = False
+        c = a_all - a_less
         row[label] = c
         if label == "NEGATIVE CONTROL":
             if c:
                 control_clean = False
         elif c:
             ok_any = True
-    total_px = n
-    report["frames"][f] = {"counts": row, "total_px": total_px}
-    print(">> f%-5d of %d px: %s" % (f, total_px, row))
+    report["frames"][f] = {"counts": row, "a_all": a_all,
+                           "total_px": sc.render.resolution_x
+                           * sc.render.resolution_y}
+    print(">> f%-5d frame covers %d px; item pixels: %s" % (f, a_all, row))
 
 report["negative_control_clean"] = control_clean
 report["any_item_on_screen"] = ok_any
