@@ -18149,3 +18149,149 @@ beat-4/5 boundary**, which is 38 seconds of a 124-second film.
 Nothing in this block used that table; `tools/r2651_track_scale.py` carries the
 rig's boundaries and says in a comment why. Flagged because anything else that
 copied it inherited the error.
+
+## R2-512 — `film16` reached the ladder queue with NO BREACH IN IT, and nothing in the pipeline could have said so
+
+**The defect.** `sim/apply_breach.py` was never run on `film16.blend`. Not
+degraded — absent. The car drives through an **unbroken glass wall**, with round
+1's undeformed aluminium grid still standing across it. That is R2-266's defect
+in total form: the wall never breaks, so there is no wound to persist, and every
+continuity result downstream of it is void.
+
+**How it happened, exactly.** `render/world/assembly/r2/v124/build_film14.sh`
+documents "THE FULL CHAIN, IN ORDER, and none of it skipped" — and that chain is
+**three steps**, ending at `tools/build_film_scene.py`. The breach is landed by a
+*different* script, `sim/land_breach.sh`, which is not named in it. I copied the
+film14 harness one generation forward, faithfully, and inherited its blind spot.
+The chain that says it is complete is not complete.
+
+> **My verification was thorough on lighting, camera, items and levelling, and
+> the breach was not on the list.** Every arm I built compared `film16` against
+> `film14` — the *pre-breach* scene — and on that comparison `film16` is
+> correct. The ship is `film14_breach_r6`, and nothing I ran ever compared
+> against it. **A bar copied from the wrong baseline passes for the wrong
+> reason.**
+
+### the instrument: complementary signatures, not a string
+
+Checking for one created object is weak — a name can be missing because the
+applier did not run, because it was renamed, or because a read failed. So
+`tools/breach_gate.py` asserts **both directions of the same event** on the same
+file:
+
+```
+                                    film14_breach_r6   film16
+CREATED  BREACH_Shards (collection)          1            0
+CREATED  GP_b04        (pane)                2            0
+CREATED  GS_b04_00000  (shard)               3            0
+CREATED  BF_MUL05_S02  (baked frame piece)   3            0
+DELETED  GW_Right_Mull_04    round-1 mullion 0            2
+DELETED  GW_Right_Transom_0  round-1 transom 0            2
+CONTROL  ONER          (camera)              6            6
+```
+
+A blend that never saw the applier fails on **both** arms at once — its created
+objects missing AND its deleted objects still standing. No rename, no read error
+and no compression artefact can imitate that. And the **CONTROL being non-zero
+on the same file** is what makes the zeros mean anything: without it, "no
+shards" and "the reader is broken" are the same reading, which is the failure
+mode this project keeps rediscovering. The gate refuses with
+`BREACH_GATE_UNREADABLE` if the control is zero, and with
+`BREACH_GATE_INVALID` if the positive control blend fails.
+
+### WHICH BAKE — the trap next to the fix
+
+There are two landed tables on disk and applying the wrong one would have been
+worse than applying none:
+
+```
+apply_film14_r6.json  (THE SHIP)   BF_MUL05_S02 max travel   0.1449 m   mullions [4,5,6]
+apply_NEW.json        (R2-387)     BF_MUL05_S02 max travel  55.3509 m   mullions [3,4,5,6]
+```
+
+`sim/land_breach.sh` **stage 1 regenerates `sim/out/breach_film.npz` from
+whatever raw bake sits in `sim/tmp/`**, so running the script end to end could
+have silently swapped R2-387's table in. It was pinned instead:
+
+```
+sha256 3e312977987ac57a...  sim/out/breach_film.npz
+sha256 3e312977987ac57a...  sim/out/breach_film_R6_SHIPPED.npz   <- byte-identical
+sha256 b7f6041d30560b44...  sim/out/breach_film_R2387.npz        <- NOT this one
+```
+
+and the applier invoked directly with `--film sim/out/breach_film_R6_SHIPPED.npz`,
+skipping stages 0–5 entirely. Stage 5b (the camera track) was checked and is not
+read by `apply_breach.py`, so skipping it costs nothing.
+
+### the general lesson, which is bigger than the breach
+
+This is R2-502 one level up. R2-502 was a *build* that printed success having
+written no file. This is a *pipeline* that produced an entirely plausible 7.5 GB
+film with a whole stage missing, and every gate on it passed, because every gate
+asked about the stages that did run.
+
+**The pattern to hunt is: any stage that mutates the film AFTER
+`build_film_scene.py`.** Those are exactly the ones an assembly-focused rebuild
+does not think to invoke, because they are not in the assembly's chain and not in
+the film builder's chain — they are in a third script nobody's checklist names.
+Grepping `save_as_mainfile` over `tools/`, `sim/` and `anim/` returns 32 files;
+most are A/B probes, but the ship-path mutators are a short list and it should be
+written down in one place, the way `SHIPPING.md` names the one shipping world.
+
+**The durable check is not a list of appliers, though — it is a set difference.**
+Once `film16_breach.blend` exists, diff its object-name census against
+`film14_breach_r6.blend`'s. Any family present in the ship and absent in the new
+scene is a missed stage, whether or not anybody remembered it existed. That
+subsumes guessing, and it is the only version of this check that cannot go stale
+as appliers are added.
+
+## R2-659 — the coverage number was cross-checked by a second method, and the SECOND method was the broken one
+
+The headline "the racing surface is 44.5 % of the delivered frame" comes from an
+area-crediting projection: each `(s, u)` sample carries its own cell area and is
+credited `area · cos(incidence) · (f_px / d)²`. That is exactly the shape of
+metric that has failed on this project before — a coverage number believed
+without a control.
+
+So it was cross-checked against a completely independent per-pixel method: cast
+one ray per pixel, intersect the ground, ask `world_contract` whether the point
+is inside `verge_edge`. No area crediting anywhere.
+
+| frame | per-pixel road | area-credit road | ratio |
+|---|---:|---:|---:|
+| f2000 | 0.461 | 0.503 | 0.92 |
+| f2225 | 0.170 | 0.178 | 0.96 |
+| f1226 | 0.462 | 0.412 | 1.12 |
+| **f1547** | **0.065** | **0.464** | **0.14** |
+
+**One frame in four disagreed by 7×, and it was the frame chosen as the hero
+close-up.** That is not a result to write around, and the contamination is not
+small: the camera at f1547 sits **2.85 m** above the road, and **41.3 % of beat
+5 has the camera under 5 m**. If the area-credit method over-read by 7× on those
+frames the beat-5 median would fall from 0.445 to 0.238 and most of this block's
+framing would be wrong.
+
+**Resolved by building a case with an answer known in advance.** A camera at
+2.85 m on a 39.93 mm lens over an *infinite flat plane*, viewing a 20 m strip:
+the strip's image can be integrated exactly in image space, because a ground
+point `(u, y, 0)` lands at `py = f_px·h/y + H/2`.
+
+| | coverage |
+|---|---:|
+| area-credit method | 0.3227 |
+| **exact image-space integral** | **0.3733** |
+| ratio | **0.864 — it UNDER-reads** |
+
+The area-credit formula is sound and conservative; the residual is the 2 m
+station sampling truncating the far field. **The per-pixel cross-check is the
+instrument that fails**: its 3-step fixed-point solve for the ray/ground
+intersection does not converge for near-horizontal rays from a low camera, which
+is precisely the f1547 geometry and precisely why it agreed on the three
+high-camera frames and not on the low one.
+
+The numbers in R2-653/R2-654 stand, and are if anything slightly low. **f1547 is
+still flagged**: it is the one queued frame whose geometry the analysis handles
+worst, and the render — not either projection — is what will settle what it
+actually looks like.
+
+---
