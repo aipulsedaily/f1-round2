@@ -115,3 +115,95 @@ speed it had when the collider went away, and a 2.5 kg aluminium box sliding
 on concrete at μ = 0.45 from 16 m/s runs **29 m** before it stops. So 10 m may
 be unreachable without a second mechanism, and if it is, I will say so and
 name the second mechanism rather than move the number.
+
+---
+
+## R2-384 — the 89.79 m is a RIDE, not a launch: `MUL05_S02` spends 161 film frames on the car's airbox, dead centre of a camera locked 6 m off it
+
+`sim/carproxy_probe.py` puts every body of a breach table into the CAR'S OWN
+frame at every key. The car's pose is known independently of the solver — it is
+read from `world/car_anim_measured.json`, the same file the sim keys the proxy
+from — so "is this body being carried?" is answerable without a contact
+manifold, which is just as well, because `bpy` exposes none.
+
+**The event, with its first frame.** `MUL05_S02` in
+`sim/out/breach_film_R2281_REBAKE.npz`:
+
+| | |
+|---|---|
+| first movement > 0.05 m | **film f860.0** |
+| the car's nose crosses x = 15.000 | **film f859.876** (`Car.impact_frame()`) |
+| travel | **89.79 m**, d = (+89.63, −4.95, −1.90) |
+| peak speed | **23.06 m/s at f1050** |
+| keys inside the car's envelope | **125 of 260, one unbroken run f859 → f1017** |
+
+**P1 lands to within 0.13 of a film frame.** The segment starts moving the
+frame the nose arrives, which is what a member struck head-on does.
+
+**And then it does not leave.** The trace, in the car's own coordinates:
+
+| film | world x | z | speed | car-local x | car-local z | what |
+|---|---|---|---|---|---|---|
+| f862 | 15.77 | 1.98 | 10.34 | +2.29 | 1.96 | ahead of the nose |
+| f890 | 19.18 | 1.22 | 12.71 | **+0.05** | 1.22 | arriving on the deck |
+| f905 | 20.33 | 1.06 | 15.47 | −0.54 | 1.07 | **on the airbox** (`CAR_TOP_Z` = 0.992) |
+| f1000 | 30.61 | 1.17 | 21.79 | −3.43 | 1.20 | sliding aft, still aboard |
+| f1047 | 37.99 | 0.63 | 22.58 | −5.25 | 0.68 | past the tail (`TAIL_DX` = −2.678) |
+| f1051 | 40.44 | **0.11** | 22.83 | −6.03 | 0.17 | on the ground |
+| f1165 | 104.53 | 0.05 | **4.79** | −205.34 | 1.25 | still sliding |
+
+**So the 89.79 m is two numbers, and only one of them is a defect:**
+
+* **25.6 m of RIDE**, f890 → f1051, lying on the car's airbox and engine cover
+  while the authored animation takes the car from 19.1 to 41.6 m and from 12.7
+  to 22.8 m/s;
+* **64.1 m of ordinary slide**, f1051 → f1165, at 3.33 m/s² — which is
+  µ = 0.34 against `FRICTION_ALU` × concrete = 0.45 × 0.62 = 0.279 combined,
+  i.e. plain sliding friction doing exactly what it should.
+
+The slide is honest physics applied to a speed the segment should never have
+had. **The ride is the defect**, and P2 is confirmed with room to spare: a
+single contact with a plane moving at 16.398 m/s and `rest` 0.05 / 0.10 cannot
+send a body above ≈18 m/s, and this one reaches 23.06.
+
+**It is not a small defect and it is not off camera.** `sim/sagpx.py` through
+the ONER track: at f905 the car projects at u = 1792, at f1000 at u = 1913, at
+f1050 at u = 2136 — the camera is **locked on the car** at **6.0 to 12.9 m**
+for the whole ride. A 2.5 kg aluminium mullion segment lies on the airbox of an
+F1 car, in the middle of a 4K frame, six metres from the lens, for 161 film
+frames of beat 3.
+
+### The other two capture modes, and the worst travellers in the file
+
+`sim/carproxy_census.py`, same method over all 3,948 bodies, envelope = the
+convex union of `breachlib.car_proxy_parts()` inflated by 120 mm:
+
+| | R6 SHIPPED | **R2281 RE-BAKE** |
+|---|---|---|
+| distance TRANSPORTED inside the car's envelope | 5,802 m | **40,587 m** |
+| distance travelled free | 26,722 m | 199,427 m |
+| transport share of all travel | 17.8 % | **16.9 %** |
+| bodies carried > 1 m | 2,395 | **2,629** |
+| — at the nose | 1,475 (19.4 kg) | 1,771 (29.4 kg) |
+| — on the deck | 870 (26.2 kg) | **795 (151.3 kg)** |
+| — under the floor | 37 (0.3 kg) | 46 (1.2 kg) |
+
+**The transport SHARE is the same in both bakes.** The capture mechanism is not
+something the corrected thresholds introduced — it is pre-existing, it is in
+the shipped table too, and correcting the frame only gave it seven times as
+much to carry. That is R2-290's "both bakes are wrong about the debris",
+measured.
+
+**The worst travellers are not on the deck, they are underneath it.** The
+fifteen furthest-travelled bodies in the re-bake are all `GS_b05_004xx`, at
+**204.96 – 205.01 m**, and their car-local position is **x = −1.72 m ± 0.01 m,
+z ≈ 0.01 m, held for 236 consecutive keys (f859 → f1094)**. Ten millimetres of
+scatter over 226 film frames is not sliding contact — it is a clamp. They are
+wedged between the proxy's `floor` part and the slab and dragged at the car's
+own speed to **43.58 m/s**.
+
+**And the geometry says they had no way out.** `breachlib.car_proxy_parts()`
+puts `floor` at **z 0.008 … 0.055** — an 8 mm ground clearance — while the
+curtain wall's glass is **11.5 mm laminate**. Nothing lying on the slab in the
+car's track can pass under that floor. It is a squeegee, and it is 1.52 m wide.
+
