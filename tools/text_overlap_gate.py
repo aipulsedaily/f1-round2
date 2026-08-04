@@ -461,7 +461,21 @@ def run(want_pos, want_neg, json_path):
           % ("PASS" if ok_pos else "FAIL", len(pos_hits)))
     print("[TOG] real findings    : %d" % len(real))
 
-    out = dict(panels_arch=n_arch, panels_dress=n_dress, panels_total=n,
+    # Census by the object each legend surface ends up on, so "the sweep covered
+    # every text-bearing surface" is a list and not a claim.
+    census = {}
+    for p in PANELS:
+        if p.get("control"):
+            continue
+        key = "%s/%s" % (p["src"], p.get("obj", "?"))
+        census[key] = census.get(key, 0) + 1
+    print("")
+    print("[TOG] legend surfaces by host object:")
+    for k in sorted(census, key=lambda k: -census[k]):
+        print("        %-42s %4d" % (k, census[k]))
+
+    out = dict(census=census,
+               panels_arch=n_arch, panels_dress=n_dress, panels_total=n,
                parallel_deg=PARALLEL_DEG, sep_m=SEP_M,
                overlap_frac=OVERLAP_FRAC,
                control_negative_hits=len(neg_hits),
