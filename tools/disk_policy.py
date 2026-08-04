@@ -107,6 +107,25 @@ describe the bytes I am about to delete", and it answers with sha256, not mtime.
     G6 macro_at_4k            at 3840x2160 (campaign deliverable 3), and
     G7 witness_pair           witness.png + witness_spec.json both exist, so the
                               verdict stays reproducible after the blend is gone.
+    G8 report_is_about_this_item
+                              the report's own `item` field, and the log's own
+                              `>> item <id>` line, agree with the DIRECTORY the
+                              report is filed under.  Added after this tool's
+                              first run: `render/items/spectator_crowd/gate.json`
+                              carries `"item": "spectator_seated"` and its
+                              `gate_run.log` opens `spectator_crowd_test.blend`,
+                              prints `>> item spectator_seated`, selects
+                              collection `ITEM_spectator_crowd`, scores
+                              `spectator_seated`'s witness PNG via `--from-png`,
+                              and prints `STAGE RESULT: ITEM_ACCEPTED`.  One run,
+                              three items' identities.  Without G8 this tool would
+                              have purged `spectator_crowd_test.blend` on the
+                              strength of an ACCEPT about a different item as soon
+                              as somebody rendered it a macro.  Meanwhile
+                              `spectator_seated` -- the ONLY item of the 32 with a
+                              macro on disk -- has NO `gate_run.log` at all: its
+                              printed evidence lives in `spectator_crowd`'s
+                              directory.  R2-121's mechanism, one layer out.
 
     INFO (not blocking) stale_closure -- itemkit.py / world_contract.py sha256
     recorded in the report against those files now.  A blend stale against a
@@ -401,6 +420,19 @@ def cmd_blend1(a):
 # ---------------------------------------------------------------- the guard
 
 VERDICT_RE = re.compile(r"STAGE RESULT:\s*(ITEM_[A-Z_]+)")
+LOG_ITEM_RE = re.compile(r"^>>\s*item\s+(\S+)")
+
+
+def printed_item(log_path):
+    """The id the RUN said it was gating, off the log's own `>> item <id>` line."""
+    if not os.path.exists(log_path):
+        return None
+    with open(log_path, "r", errors="replace") as f:
+        for line in f:
+            m = LOG_ITEM_RE.match(line.strip())
+            if m:
+                return m.group(1)
+    return None
 
 
 def printed_verdict(log_path):
@@ -546,6 +578,19 @@ def evaluate(item, items_dir=ITEMS_DIR, reports_dir=REPORTS_DIR, r2=R2):
     else:
         R("G7_witness_pair_incomplete")
 
+    # G8 ------------------------------------- the report is about THIS item id
+    said = printed_item(log_p)
+    out["log_says_item"] = said
+    out["report_says_item"] = (report or {}).get("item")
+    for src, val in (("report", out["report_says_item"]), ("log", said)):
+        if val is not None and val != item:
+            R("G8_report_is_about_%s_not_%s" % (val, item))
+            out["notes"].append(
+                "the %s filed under render/items/%s/ says it is about %r "
+                "(R2-121: a report filed under the wrong id is worse than a "
+                "missing one, because every consumer keys on the directory)"
+                % (src, item, val))
+
     # INFO ------------------------------------------------------ stale closure
     if report is not None:
         stale = []
@@ -638,7 +683,7 @@ def _fake_png(path, w, h):
 def _fixture(root, item, *, blend_bytes=b"BLENDER-TEST-PAYLOAD",
              report=True, log_verdict="ITEM_ACCEPTED", json_result="ITEM_ACCEPTED",
              blend_sha_matches=True, macro=True, macro_wh=(MACRO_W, MACRO_H),
-             witness=True):
+             witness=True, report_item=None, log_item=None):
     idir = os.path.join(root, "world", "items")
     rdir = os.path.join(root, "render", "items", item)
     wdir = os.path.join(root, "render", "gate_witness", item)
@@ -663,10 +708,11 @@ def _fixture(root, item, *, blend_bytes=b"BLENDER-TEST-PAYLOAD",
         _fake_png(os.path.join(rdir, "macro.png"), *macro_wh)
     if log_verdict:
         with open(os.path.join(rdir, "gate_run.log"), "w") as f:
+            f.write(">> item %s  hero=True\n" % (log_item or item))
             f.write("... gate ran ...\n>> STAGE RESULT: %s\n" % log_verdict)
     if report:
         rep = {
-            "item": item,
+            "item": report_item or item,
             "result": json_result,
             "witness": {"blend": None,
                         "png": os.path.join(wdir, "witness.png"),
@@ -705,6 +751,10 @@ def cmd_selftest(a):
         ("NEGATIVE macro not 4K",    {"macro_wh": (1920, 1080)},            False, ["G6_macro_not_at_gate_resolution"]),
         ("NEGATIVE witness pair torn",
                                      {"witness": False},                    False, ["G7_witness_pair_incomplete"]),
+        ("NEGATIVE report filed under the wrong item id",
+                                     {"report_item": "other_item"},         False, ["G8_report_is_about_other_item_not_ctl_item"]),
+        ("NEGATIVE log says it gated a DIFFERENT item",
+                                     {"log_item": "other_item"},            False, ["G8_report_is_about_other_item_not_ctl_item"]),
     ]
     print("%-58s %-8s %s" % ("control", "expect", "got"))
     for name, kw, expect_purgeable, expect_refusals in cases:
