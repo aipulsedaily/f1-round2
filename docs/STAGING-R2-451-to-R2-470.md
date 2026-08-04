@@ -743,4 +743,34 @@ detail, material or noise should be read off them.
   R2-062's machinery does by construction and is the opposite of pinning an order
   that was optimal for stations that no longer exist — but the order changed and
   nobody has watched it.
-* **`fill` is untouched by design.** All fifteen still fail R2-317's framing gate.
+* **`fill` is untouched by design.** All fifteen still fail R2-317's framing gate,
+  and f25 shows what that costs: an opening frame can be fixed for angle and stay
+  unreadable for distance.
+* **Nothing is promoted.** `docs/presentation_normals.json` and
+  `docs/beat_sheet.json` are both gitignored build artefacts and were left at
+  their shipped values. The candidates are committed as
+  `docs/R2451_presentation_normals_CANDIDATE.json` and
+  `docs/R2451_beat_sheet_CANDIDATE.json`. Promotion is one command:
+
+  ```
+  B1_NORMALS=docs/R2451_presentation_normals_CANDIDATE.json \
+      python3 tools/build_beatsheet.py
+  ```
+
+  **It is not run here because a 52-hour ladder pass is in flight against the
+  current camera and four other agents share the budget it is spending.** Every
+  frame that pass has already produced, and R2-416..R2-427 with them, describe a
+  camera this change replaces. That is a scheduling decision about shared money,
+  not a technical one, and it is not this block's to make.
+* **`render/film14.blend` is not rebuilt.** The candidate reaches pixels only
+  through `render/r2451_b1ab.blend`. Rebuilding the film scene is a 4.5 GB
+  operation and would invalidate the running pass.
+* **The tool changes ARE live** — `tools/build_beatsheet.py` and
+  `tools/presentation_normals.py` are committed. Both were checked to be exact
+  no-ops on the shipped data before committing: a default invocation with the
+  shipped normals reproduces beat 1's 22 camera keys to zero. The backstop clamp
+  defaults OFF for any cluster without an `r2451_reaimed` marker precisely so
+  that stays true. **Defaulting it ON, which is what I wrote first, made
+  `build_beatsheet.py` raise SystemExit against the shipped normals — in a
+  working tree six agents share, from the moment the file was saved and before
+  anything was committed.**
