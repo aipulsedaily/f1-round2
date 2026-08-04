@@ -4635,3 +4635,141 @@ that reads on screen, and nobody yet knows which this is.**
 What *is* visible, at 8× on f1104: the pit-lane strokes **terminate with blunt, abrupt cut-off
 ends in open ground** — they do not fade, do not run off-screen, do not continue onto anything.
 That is defects 1 and 2 in pixels.
+
+## R2-150 — the occluded half of the same region is the control, and it is internal
+
+f1104, rendered from film13 (defective world) and film14 (apron laid), ONER, 4K, 256 samples,
+same farm. The floor is a **repeat render of film13 against itself**.
+
+| region | px | changed >8/255 | repeat floor | mean \|Δ\| |
+|---|---|---|---|---|
+| **VOID, unoccluded — the claim** | 5,669 | **74.40 %** | **0.00 %** | **36.27** |
+| **VOID, hidden by the pit building in BOTH** | 6,821 | **1.47 %** | 0.00 % | 2.04 |
+| VOID, all in-frustum (earlier lower bound) | 12,490 | 34.57 % | 0.00 % | 17.58 |
+| CTL_PAVED / CTL_SKY | 5,066 / 660,480 | 0.00 % / 0.00 % | 0.00 % | 0.30 |
+
+> **Row 2 is the strongest control in this entire log, and it costs nothing to obtain.** It is
+> the *same void region*, in the *same two builds*, under the *same fix* — differing only in
+> that a wall stands between it and the lens. It must not move. At **1.47 % against 74.40 %**
+> it does not.
+
+A repair that "showed up" behind the wall as well would have been light leaking in from
+somewhere else, and no external control could have distinguished that. **Where a fix has a
+region the camera cannot see, that region is a free negative control — use it.**
+
+Unoccluded void mean RGB **(72.0, 64.8, 57.1) → (108.2, 96.0, 81.2)**, about half a stop
+lighter, because a lit concrete apron is now there.
+
+**It independently reproduces the diagnostic camera by a different route.** R2-132's
+purpose-built camera cast straight down and got **78 % changed against a 1.33 % control**; this
+is the film's own ONER at 16.7–34.4° line of sight, a different scene and a different
+instrument, at **74.40 % against 1.47 %**. The geometry agrees too — **70.86 m² unoccluded of
+156.12 in frustum**, against R2-140's separately measured 71.50 of 157.50.
+
+**Two process notes, both paid for in wall clock.** The first raycast used `scene.ray_cast`,
+walking a depsgraph BVH over **29,415 objects — 28,314 of them vegetation nowhere near the pit
+exit**; it ran an hour without finishing and was killed. R2-140 had **already named every
+occluder of this region**, so casting against those four objects' own BVHs answered the same
+question in three minutes, and the blocker census returning `ARCH_PitBuilding_Shell` 6,821 and
+nothing else is what confirms the narrow question was the right one.
+
+And the rewritten script **died on `No module named 'PIL'` while Blender exited 0.** The printed
+`STAGE RESULT` line caught it; `$?` would not have. That rule earned its place again.
+
+## R2-171 — `build_sky` never reads `SKY_IRRADIANCE`, and the shortfall constant is a plug
+
+The standing description — *"`C.SKY_IRRADIANCE` is 0.123 stops low"* — is **arithmetically the
+wrong statement.** 0.123 stops is what the shortfall **costs the film**; the sky term itself is
+out by **log2(11.1818 / 8.4593) = +0.402 stops**, ten times the instrument's floor rather than
+three. It reads as 0.123 only because the sky is 8.459 of a predicted 25.985 W/m², diluting the
+error 3.07×.
+
+**Neither "the constant is wrong" nor "`build_sky` delivers more" is the right frame.**
+`build_sky` never reads the constant at all — its Background Strength is a literal 1.0. The
+constant is a **downstream description**, and `calibrate()` bakes it from a throwaway `CAL_world`
+holding one bare Sky Texture, while `build_world()` — *the film's world* — is that node **plus
+three alpha-composited cloud decks**. Measured on `calibrate()`'s own rig:
+
+```
+bare Sky Texture at the contract's parameters   8.4602   +0.0001 stops   <- positive control
+build_sky.build_world(), untouched             11.1524   +0.3987 stops
+the same world, three deck factors forced to 0  8.4602   +0.0001 stops
+```
+
+**The decks are 100 % of the gap**; the aerosol mottle is 0.000 of it. Two rigs agree to 0.0038
+stops. **So the constant is an exact measurement of a sky the film does not build.**
+
+**Decision: do not fix it.** Re-baking to the shipped sky moves `FILM_EXPOSURE` −3.628 → −3.653.
+The shipped value sits **+0.0063 stops** from the 5090's measured −3.6343; the "corrected" chain
+sits **−0.0187**, three times further out. **The present chain is wrong twice with opposite signs
+and the errors cancel to 0.006 stops.** A re-bake would also fail the contract's own
+`DIRECT_TO_DIFFUSE` assertion (2.072 vs 1.572), move `lambert_radiance` — the material
+calibration law of the whole film — and is **circular**, since `CUMULUS_SHADE` is computed *from*
+`sum(SKY_IRRADIANCE)/3`, making a re-bake a fixed-point iteration rather than an assignment.
+
+**Two findings recorded rather than acted on.** The **tint is out by more than the level**: the
+decks add +1.076 / +0.464 / +0.054 stops per channel, so against a published
+`C.SKY_TINT` of (0.3115, 0.5582, 1.0000) the shipped sky measures **(0.6323, 0.7412, 1.0000)** —
+the film's fill light is far less blue than the contract says, and at least one item's shading was
+reasoned from the published tint. And **`SKY_SHORTFALL_STOPS = -0.117` is a plug, not a
+measurement** — the measured value is **0.1231**, quoted three lines above it, and −0.117 was
+chosen so that `round(-3.048 - 0.463 - 0.117, 3)` lands on the shipped −3.628.
+`SKY_SHORTFALL_MEASURED_STOPS` now publishes the real number beside it.
+
+## R2-172 — inverted glass: catastrophic for a solid, invisible for a sheet
+
+`GW_Front_Glass_00..13`, the 30 × 6 m south glazing, is wound **inconsistently across one flat
+wall**: panes 00–02 and 11–13 face **+Y, into the showroom**; panes 03–10 face out. Six of
+fourteen. `Vitrine_Glass_2` is the same defect on a display case. Both are inherited **verbatim
+from round 1's `f1_showroom.blend`**. The ten `GP_b*` breach panes are **clean**, verified two
+independent ways (analytic face table +0.0805 m³; measured in the built blend, 0 inward pieces,
++0.150354 m³).
+
+**The answer splits by geometry, and only one half was what anyone assumed:**
+
+| invert every pane | |
+|---|---|
+| **closed solid**, 11.5 mm, east wall | **1,281,402 px, mean 34.244 — 89 % of frame** |
+| **zero-thickness sheet**, south wall | **1,291 px, mean 0.00091** |
+
+For a closed solid, inverting costs **196 % of deleting the glass entirely — an inside-out pane
+is worse than no pane.** For a single interface there is no interior for Cycles to get the wrong
+side of, so the Fresnel and the bend stay symmetric. **The panes that are wrong are all
+zero-thickness; the panes with real thickness are all right.** Net cost as shipped: **568 px,
+max 3/255**, and the pixels that move are exactly the six mis-wound panes (00/01/02 move
+0.003–0.004 levels; 03/04/05 move 0.000).
+
+**The control that made the verdict non-vacuous was "delete the glass entirely"** —
+1,402,932 px, mean 12.515. Without it, the south result would have been indistinguishable from
+*"this camera cannot see the glass at all"*.
+
+**And the first rig was refuted by its own positive control.** Five variants in one blend at
+2–8 km offsets, to save a scene push: inverting all fourteen panes moved the picture **1.583
+levels against a null of 1.618**. At 8 km float32 spacing is ~1 mm and many-bounce interior paths
+diverge chaotically. Rebuilt as one variant per blend at identical coordinates, the null drops to
+**25 px of 1.44 M at one 8-bit level**.
+
+## R2-173 — the metric went to zero while the defect got worse
+
+`TS_Stand00_BOREAL`'s deck **walking surface** — 2.903 × 2.834 m at z = 0.6793 — has mean normal
+exactly **(0, 0, −1)**, with the sheet below it at 0.6513 facing **+1**. The slab is built upside
+down, along with three step treads and the console worktops: **9 inverted slab pairs, 22.953 m²,
+18.33 % of the object's area facing straight down.** `marshal_post_deck` has the same defect at
+1.267 m².
+
+**It is on screen 493 of 2,978 frames**, peaking at f1126 in beat 4 — camera at z = 16.7 m
+looking down on a deck at z = 0.68 from 25.4 m, so **the reversed side is the one presented to
+the lens** — at **426 px across, 11.1 % of frame width.**
+
+**Why the repair could not catch it:** signed volume is undefined for a zero-thickness sheet, so
+`--fix` correctly abstains. The `timing_stand` repair flipped 1,310 pieces and drove
+`inward_area_frac` **0.3436 → 0.0**, while `piece4721` **stayed the largest back-face contributor
+and went from 26 to 28 of 500 rays.**
+
+> **The headline metric reached zero while the actual defect got marginally worse.** A summary
+> statistic that a fix can satisfy without touching the fault is not a verification.
+
+`winding_audit --sheet-facing` now pairs coplanar sheets and names a pair inverted when the upper
+one faces down, with both synthetic controls run every time and **`SHEET_FACING_UNMEASURED`
+rather than `OK`** when nothing horizontal is found. Its own first version **wiped the scene
+before `collect()` and printed `OK` on an empty blend.**
