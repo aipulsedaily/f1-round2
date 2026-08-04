@@ -7,6 +7,28 @@ Everything below is measured on `render/film14.blend` at `FILM_EXPOSURE = -3.628
 (imported from `world/film_exposure.py`, verified equal in the dump's own
 selftest) and on 4K frames rendered on the 5090 through `~/vast-render`.
 
+## THE VERDICT, IN FOUR LINES
+
+1. **The focus track is correct and the suspicion against it is withdrawn.** At
+   every one of the fifteen stations `focus_distance` lands on the presented
+   cluster's centre to within **0.053 m worst, 0.000-0.028 m typical**. The
+   `CAR_ROOT` comparison that suspected it was measuring a body 1.904 m away from
+   the one on screen (R2-319).
+2. **The framing is not correct, and the gate that was supposed to catch it could
+   not.** All fifteen clusters overflow their own presentation frame, 1.06x to
+   2.59x, seven of them in both axes. `edge_angle_deg` was zero by construction
+   (R2-316, R2-317).
+3. **The two are one defect, and framing comes first — as a precondition, not a
+   preference.** At the shipped standoff the aperture that would hold a corner
+   cluster sharp is **f/37**. At a standoff that makes it fit, it is **f/6.9**.
+   `N = D (fill h)^2 / (2 c E^2)`, independent of lens and of distance (R2-320).
+4. **Neither is the biggest reason the middle third does not read.** The camera
+   smears the picture by a median of **42 px and up to 808 px** at 4K, and the
+   pixels confirm the direction to within a few degrees (R2-321, R2-329). Beat
+   1's own pan limit, 0.12 frame-widths per frame, *permits* 230 px of smear
+   because it is written in a unit that has no pixels in it. **The framing fix is
+   the only one of the three levers that pays into all three.**
+
 New instruments, all with selftests that include a negative control:
 
 | tool | what it settles |
@@ -212,9 +234,22 @@ has no edge in it anywhere: at those frames the depth-of-field blur is 2-8 px an
 the motion blur is 40-120 px. **A DOF fix alone would not have made the middle
 third read.**
 
-It also explains the protected region without appeal to taste: **f648-792 is the
-part of beat 1 where the camera stops moving fast.** 1.6 px of smear at f700
-against 42 px median across the tour.
+**It also explains the protected region without one word about taste.** Across all
+791 measurable frames of beat 1 (`tools/beat1_smear_profile.py`, the smear of
+whichever cluster is nearest the optical axis at each frame):
+
+```
+                          n    median      p90       max   frames over 20 px
+beat 1, all             791    42.1 px  149.4 px  628.1 px   580  (73 %)
+  the presentation tour 590    54.7 px  184.5 px  628.1 px   519  (88 %)
+  CORNER_FL + close-out  57    30.1 px   49.8 px   62.8 px    55  (96 %)
+  PROTECTED f648-792    144     1.5 px    6.7 px   28.3 px     6  ( 4 %)
+```
+
+**The region a review called the best material in the film is the region where the
+camera stops moving: 1.5 px of median smear against 54.7 px over the tour, a
+factor of 36.** 88 % of the tour is over 20 px and 4 % of the protected region is.
+No aesthetic judgement is needed to separate them.
 
 The three defects share one lever. Pulling a station back to make its cluster fit
 also cuts the parallax smear and lowers the angular rate needed to hold the
