@@ -56,6 +56,26 @@ REGIONS = [
     ("NB_right_bay6", (2.2375, 4.3625), (0.11, 6.09)),
     ("CTL_UNTOUCHED_bays789", (4.4375, 10.9625), (0.11, 6.09)),
     ("CTL_UNTOUCHED_bays012", (-10.9625, -4.4375), (0.11, 6.09)),
+    # R2-296.  THE NEGATIVE CONTROL'S PREMISE EXPIRED WHEN THE FIX GOT BIGGER.
+    #
+    # `CTL_UNTOUCHED_bays012` is R2-150's free negative control and its premise
+    # is stated in this file's own docstring: "the R6 fix cuts up mullions
+    # 4/5/6 and the transoms between y +-4.3625 and does not touch a single
+    # vertex outside that band".  That was TRUE of the R6 bake.  It is FALSE of
+    # the R2-281 re-bake: at the derived transom threshold the solver also
+    # releases mullion 7 and the transom over bays 2 and 7, so
+    # `eastframe.plan()` deletes GW_Right_Mull_07 as well and partitions the
+    # transom across bay 2 -- and bay 2 (y -6.6 .. -4.4) is INSIDE this
+    # rectangle.
+    #
+    # So a 1.48 % reading here against a 0.00 % floor is the control working:
+    # it is reporting that geometry inside it changed, and geometry inside it
+    # did.  The repair is to state the premise that still holds rather than to
+    # widen the limit.  Bays 0 and 1 are untouched by BOTH bakes.
+    #
+    # The old rectangle is KEPT, not replaced, so every number already
+    # published through it stays reproducible.
+    ("CTL_UNTOUCHED_bays01", (-10.9625, -6.6375), (0.11, 6.09)),
 ]
 TRANSOM_Z = (1.350, 2.850, 4.350)
 
@@ -186,7 +206,8 @@ def main():
 
     # ---- verdicts ----------------------------------------------------------
     if LB is not None:
-        for ctl in ("CTL_UNTOUCHED_bays789", "CTL_UNTOUCHED_bays012"):
+        for ctl in ("CTL_UNTOUCHED_bays789", "CTL_UNTOUCHED_bays012",
+                    "CTL_UNTOUCHED_bays01"):
             r = rep["regions"][ctl]
             v = r["changed_pct_gt_8_255"]
             fl = r.get("repeat_floor_pct_gt_8_255")

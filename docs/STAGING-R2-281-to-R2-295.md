@@ -757,3 +757,72 @@ entirely, which is exactly the rows `grid_contrast` samples.
 
 **This is an argument, not the control.** The control is the diagnostic, and it
 is listed under "not confirmed".
+
+## R2-296 — the negative control's PREMISE expired, and the control correctly reported it
+
+`CTL_UNTOUCHED_bays012` failed at **1.482 % against a 0.000 % floor** on the
+frame-only diagnostic, where nothing but the east frame differs. It is not a
+false alarm. This module's own docstring states the premise: *"the R6 fix cuts
+up mullions 4/5/6 and the transoms between y ±4.3625 and does not touch a
+single vertex outside that band"*. True of R6. **False of the re-bake:**
+
+| | mullions replaced | transoms partitioned (level, bay) |
+|---|---|---|
+| R6 | 4, 5, 6 | levels 0–2 over bays 3–6 |
+| **re-bake** | **4, 5, 6, 7** | **also (0,7), (1,2), (1,7), (2,7)** |
+
+`GW_Right_Mull_07` is now deleted and rebuilt as well, and the transom over
+**bay 2** is partitioned — and bay 2 (y −6.6 … −4.4) lies **inside** that
+control rectangle. The control was doing exactly its job: reporting that
+geometry inside it changed, because geometry inside it did.
+
+**The repair is to state the premise that still holds, not to widen the limit.**
+`CTL_UNTOUCHED_bays01` (y −10.9625 … −6.6375) is untouched by *both* bakes:
+
+> **0.0435 % changed at 8/255 against a 0.0000 % floor.**
+
+The old rectangle is kept rather than replaced, so every number already
+published through it stays reproducible.
+
+---
+
+## R2-297 — THE VERDICT: the corrected frame reproduces the demonstrator, in both statistics and in the picture
+
+`render/film14_breach_R2281_FRAMEONLY_DIAGNOSTIC_DO_NOT_SHIP.blend` — the
+derived frame on the shipped glass, so nothing but the east frame differs —
+against the R6 build, **both 256 samples**:
+
+| region | grid_contrast R6 → corrected frame | changed > 8/255 | repeat floor |
+|---|---|---|---|
+| **WOUND_bridged** | **0.03675 → 0.00785** | **11.33 %** | 1.77 % |
+| WOUND_connected | 0.03078 → 0.04871 | 11.67 % | 1.59 % |
+| NB_left_bay3 | 0.03697 → 0.03571 | 0.221 % | 1.50 % |
+| NB_right_bay6 | 0.06954 → 0.06977 | 0.663 % | 0.93 % |
+| CTL_UNTOUCHED_bays789 | 0.05310 → 0.05190 | 0.144 % | 0.043 % |
+| **CTL_UNTOUCHED_bays01** | 0.03788 → 0.03798 | **0.0435 %** | **0.0 %** |
+| sky | — | **0.0004 %**, max 8/255 | — |
+
+**Against the demonstrator's 0.00777 and 11.17 %.**
+
+| | `grid_contrast` | changed > 8/255 |
+|---|---|---|
+| R2-273 demonstrator — *members deleted* | **0.00777** | **11.17 %** |
+| **R2-281 corrected frame — *members broken*** | **0.00785** | **11.33 %** |
+| difference | **1.0 %** | **1.4 %** |
+
+**The thing the demonstrator faked by deleting six segments and six transom
+stubs, a threshold derived from two M6 self-tappers produces by breaking them —
+and it lands within one percent on both statistics.** Both neighbours hold,
+both valid controls hold, the sky is 0.0004 %.
+
+`render/r2281/COMPARE_f2978_R6_vs_FRAMEONLY_vs_DEMO_256.png`, 1:1 × 7. Panel 1
+is a regular lattice across the full width. **Panels 2 and 3 are the same
+picture: two bays with no lattice in them, the plinth and the lit interior
+reading clean through an opening.** The difference between them is that panel 3
+achieved it by deleting members that then do not exist for 2,978 frames, and
+panel 2 achieved it by breaking them — so in panel 2 they are *visible on the
+apron below*, which is the honest version the demonstrator could not give.
+
+**R2-273 asked whether 2h25m of re-bake would buy the shot. It bought the
+shot.** The bake cost 3h06m, the frame comes apart across a fourfold threshold
+band, and the whole effect is attributable to one derived number.
