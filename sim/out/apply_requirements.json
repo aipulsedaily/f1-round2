@@ -31,8 +31,8 @@
   },
   "R6": {
    "id": "frame_transform_binding",
-   "need": "whoever meshes mullion_intact / mullion_bent_stub / curtain_wall_transom binds to the MUL*/TRN* names in sim/out/breach_film.npz",
-   "why": "this module writes those bodies' TRANSFORMS; their geometry belongs to world/items/"
+   "need": "round 1's GW_Right_Mull_* / GW_Right_Transom_* are present and unmodified, so this module can cut them into the pieces the bake moves.  SATISFIED BY THIS MODULE since 2026-08-04 (R2-266): `sim/eastframe.py` binds geometry to the MUL*/TRN* names in sim/out/breach_film.npz.",
+   "why": "R6 asked somebody else to do this and for four film builds nobody did, so build() counted 152 frame bodies and wrote none of them: the film rendered a static, undeformed aluminium grid straight across a 2.15 x 6.00 m hole for the whole take.  Naming a requirement is not the same as meeting it, and a count that is printed and then discarded looks exactly like a count that was used."
   },
   "R7": {
    "id": "no_parent_on_breach",

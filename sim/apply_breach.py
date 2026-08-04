@@ -74,6 +74,7 @@ for _p in (os.path.join(R2, "sim"), os.path.join(R2, "anim")):
         sys.path.insert(0, _p)
 
 import breachlib as BL                                            # noqa: E402
+import eastframe as EF                                            # noqa: E402
 import fracture as FR                                             # noqa: E402
 import shardmesh as SM                                            # noqa: E402
 
@@ -149,11 +150,18 @@ REQUIREMENTS = dict(
                 "sill laid through it starts every clamped shard inside "
                 "metal, which is exactly what the null control caught"),
     R6=dict(id="frame_transform_binding",
-            need="whoever meshes mullion_intact / mullion_bent_stub / "
-                 "curtain_wall_transom binds to the MUL*/TRN* names in "
-                 "sim/out/breach_film.npz",
-            why="this module writes those bodies' TRANSFORMS; their geometry "
-                "belongs to world/items/"),
+            need="round 1's GW_Right_Mull_* / GW_Right_Transom_* are present "
+                 "and unmodified, so this module can cut them into the pieces "
+                 "the bake moves.  SATISFIED BY THIS MODULE since 2026-08-04 "
+                 "(R2-266): `sim/eastframe.py` binds geometry to the MUL*/TRN* "
+                 "names in sim/out/breach_film.npz.",
+            why="R6 asked somebody else to do this and for four film builds "
+                "nobody did, so build() counted 152 frame bodies and wrote "
+                "none of them: the film rendered a static, undeformed "
+                "aluminium grid straight across a 2.15 x 6.00 m hole for the "
+                "whole take.  Naming a requirement is not the same as meeting "
+                "it, and a count that is printed and then discarded looks "
+                "exactly like a count that was used."),
     R7=dict(id="no_parent_on_breach",
             need="the BREACH collection is not parented or offset",
             why="the keys are absolute world transforms, not local"),
@@ -640,18 +648,201 @@ def build(args):
         ob.animation_data.action_slot = slot
 
     # -- the frame bodies (mullion segments, transoms) ------------------------ #
-    n_frame = 0
-    for j, nm in enumerate(names):
-        if not (nm.startswith("MUL") or nm.startswith("TRN")):
-            continue
-        n_frame += 1
-    log("frame bodies in the table: %d (their MESHES belong to "
-        "world/items/mullion_intact.py and mullion_bent_stub; this writes "
-        "their TRANSFORMS only)" % n_frame)
+    # THIS LOOP USED TO COUNT THEM AND WRITE NOTHING.  R2-266.
+    frame = build_frame(args, film, C_frame)
+    stats["objects"] += frame["objects"]
+    stats["keys"] += frame["keys"]
+    stats["frame"] = frame
 
     log("built %d objects, %d tris, %d keys"
         % (stats["objects"], stats["tris"], stats["keys"]))
-    return stats, C_shard, C_pane
+    return stats, C_shard, C_pane, C_frame
+
+
+# --------------------------------------------------------------------------- #
+
+def build_frame(args, film, coll):
+    """Round 1's east frame, cut into the bake's own pieces and keyed.
+
+    The geometry is round 1's, to the vertex — see `sim/eastframe.py` for why
+    it is not the section's, and for the 80 mm / 250 mm the two disagree by.
+    What this adds is the PARTITION and the MOTION.
+
+    THERE IS NO SWAP AND NOTHING HIDES.  Every piece exists on all 2,978
+    frames.  Before its first key the F-curve extrapolates CONSTANT backwards
+    to the home pose, which is exactly where round 1's solid stood, so beat 1
+    and beat 2 are unchanged by construction rather than by a keyed visibility
+    that somebody has to get right.  That is a stronger continuity guarantee
+    than the glass gets, and it is available here only because a mullion does
+    not have to stop being one object and start being 3,796.
+    """
+    if args.no_frame:
+        log("--no-frame: round 1's static grid is left standing across the "
+            "aperture.  This is the shipped defect, kept as a control.")
+        return dict(objects=0, keys=0, skipped=True)
+
+    names = film["names"]
+    idx = {n: i for i, n in enumerate(names)}
+    home = np.array([film["keys_of"](i)[1][0] for i in range(len(names))],
+                    float)
+    pl = EF.plan(names, film["release"], home)
+    cov = EF.coverage(pl)
+    if not cov["PASS"]:
+        raise SystemExit(
+            "REFUSING: the east-frame plan does not tile round 1's members: "
+            "%s.  Writing it would delete aluminium and not put it back, "
+            "which is exactly how R2-124 shipped." % json.dumps(cov))
+
+    mat = bpy.data.materials.get(EF.R1_MATERIAL)
+    if mat is None:
+        raise SystemExit(
+            "REFUSING: material %r is not in this scene.  It is round 1's, it "
+            "is what every other east-wall member is shaded with, and "
+            "inventing a lookalike would put two aluminiums in one elevation."
+            % EF.R1_MATERIAL)
+
+    # ---- delete round 1's unbroken solids ---------------------------------
+    gone, absent = [], []
+    for nm in pl["delete"]:
+        ob = bpy.data.objects.get(nm)
+        if ob is None:
+            absent.append(nm)
+            continue
+        bpy.data.objects.remove(ob, do_unlink=True)
+        gone.append(nm)
+    if absent:
+        raise SystemExit(
+            "REFUSING: %s not in the target scene.  This module replaces "
+            "round 1's east frame; if it is already missing then something "
+            "else has taken it and the two answers would both be in the "
+            "elevation." % absent)
+
+    # ---- build the pieces -------------------------------------------------
+    n_obj = n_keys = 0
+    div = []
+    for p in pl["pieces"]:
+        V, F = EF.box_mesh(p["boxes"], p["pivot"])
+        me = bpy.data.meshes.new(p["name"])
+        me.from_pydata(V, [], F)
+        me.validate(verbose=False)
+        me.update()
+        me.materials.append(mat)
+        ob = bpy.data.objects.new(p["name"], me)
+        coll.objects.link(ob)
+        ob.rotation_mode = "QUATERNION"
+        ob.location = tuple(p["pivot"])
+        n_obj += 1
+        if p["driver"] is None:
+            continue
+        j = idx[p["driver"]]
+        fk, kl, kq = film["keys_of"](j)
+        act, slot, fcs = make_action("BF_%s" % p["name"],
+                                     [("location", 0), ("location", 1),
+                                      ("location", 2),
+                                      ("rotation_quaternion", 0),
+                                      ("rotation_quaternion", 1),
+                                      ("rotation_quaternion", 2),
+                                      ("rotation_quaternion", 3)])
+        for c in range(3):
+            key_linear(fcs[c], fk, kl[:, c])
+        for c in range(4):
+            key_linear(fcs[3 + c], fk, kq[:, c])
+        n_keys += 7 * len(fk)
+        ob.animation_data_create()
+        ob.animation_data.action = act
+        ob.animation_data.action_slot = slot
+        # THE COVER CAP IS ITS OWN BODY IN THE SIM AND ROUND 1'S IS NOT.
+        # Every mullion and transom is TWO bodies in the bake — the extrusion
+        # `X` and the pressure plate `X_P`, joined at ten times the mullion's
+        # own threshold.  Round 1's member is one 160 mm solid, so it can only
+        # follow one of them, and it follows the extrusion.  Measure how far
+        # the two part company so the error is a number and not a shrug.
+        pj = idx.get(p["driver"] + "_P")
+        if pj is not None:
+            f2, l2, _q2 = film["keys_of"](pj)
+            fu = np.union1d(fk, f2)
+
+            def _ev(f, l):
+                if len(f) == 1:
+                    return np.repeat(l, len(fu), axis=0)
+                i = np.searchsorted(f, fu).clip(1, len(f) - 1)
+                a = ((fu - f[i - 1]) /
+                     np.maximum(f[i] - f[i - 1], 1e-9)).clip(0.0, 1.0)
+                return l[i - 1] * (1 - a)[:, None] + l[i] * a[:, None]
+
+            d = np.linalg.norm((_ev(f2, l2) - _ev(fk, kl))
+                               - (l2[0] - kl[0]), axis=1).max()
+            div.append((p["driver"], float(d)))
+    div.sort(key=lambda t: -t[1])
+
+    trav = {}
+    for p in pl["pieces"]:
+        if p["driver"] is None:
+            continue
+        _f, l, _q = film["keys_of"](idx[p["driver"]])
+        trav[p["name"]] = float(np.linalg.norm(l - l[0], axis=1).max())
+
+    rep = dict(objects=n_obj, keys=n_keys,
+               deleted=gone, coverage=cov,
+               mullions_replaced=pl["mullions_replaced"],
+               n_transom_pieces=len([p for p in pl["pieces"]
+                                     if p["kind"] == "transom"]),
+               max_travel_m={k: round(v, 4) for k, v in
+                             sorted(trav.items(), key=lambda t: -t[1])[:8]},
+               cap_divergence_m=[[n, round(v, 4)] for n, v in div[:5]],
+               measured_from=pl["measured_from"], rule=pl["rule"])
+    log("east frame: deleted %d round-1 solids, built %d pieces, %d keys; "
+        "worst travel %s"
+        % (len(gone), n_obj, n_keys, json.dumps(rep["max_travel_m"])))
+    return rep
+
+
+def frame_census(film, at_frame=1):
+    """IS THE EAST WALL'S ALUMINIUM ALL THERE, IN THE SCENE, AT `at_frame`?
+
+    The plan-level check in `eastframe.coverage` proves the ARITHMETIC tiles.
+    This one proves the SCENE does — it reads the objects back out of
+    `bpy.data` after they have been built, which is the step that R2-124 shows
+    nobody had between "the module supplies it" and "the film has it".
+
+    It counts `BF_*` and round 1's survivors together, because either alone
+    reads the same for a correct scene and a stripped one.
+    """
+    names = film["names"]
+    home = np.array([film["keys_of"](i)[1][0] for i in range(len(names))],
+                    float)
+    pl = EF.plan(names, film["release"], home)
+    want = {p["name"] for p in pl["pieces"]}
+    have = {o.name for o in bpy.data.objects if o.name.startswith(EF.PIECE_PREFIX)}
+    stale = [n for n in pl["delete"] if bpy.data.objects.get(n) is not None]
+    survivors = [n for n in pl["untouched"] if n.startswith("GW_Right_Mull_")
+                 and bpy.data.objects.get(n) is None]
+    # aluminium visible in the wall plane at `at_frame`, by z band, as a
+    # crude but PRESENT-vs-ABSENT quantity: total y-length of transom at each
+    # level, taken from the objects themselves
+    lens = {}
+    for lvl in range(len(EF.R1_TRANSOM_Z)):
+        tot = 0.0
+        for o in bpy.data.objects:
+            if not o.name.startswith("%sTRN%d" % (EF.PIECE_PREFIX, lvl)):
+                continue
+            V = np.array([tuple(o.matrix_world @ Vector(v.co))
+                          for v in o.data.vertices])
+            # only pieces still at home count toward the intact length
+            tot += float(V[:, 1].max() - V[:, 1].min())
+        lens["transom_%d_total_y_m" % lvl] = round(tot, 4)
+    return dict(
+        criterion="every piece eastframe.plan() names is an object in the "
+                  "scene, every round-1 solid it replaces is gone, and every "
+                  "mullion it does NOT replace is still there",
+        pieces_wanted=len(want), pieces_built=len(want & have),
+        pieces_missing=sorted(want - have),
+        round1_solids_not_deleted=stale,
+        untouched_mullions_missing=survivors,
+        transom_length=lens,
+        note="counting GW_Right_Transom_* would read 0 for a correct scene "
+             "and 0 for a stripped one.  R2-124.",
+        PASS=bool(not (want - have) and not stale and not survivors))
 
 
 # --------------------------------------------------------------------------- #
@@ -954,13 +1145,21 @@ def parse_args():
     p.add_argument("--force", action="store_true",
                    help="apply even though preflight failed.  Deliberate, "
                         "logged, and never the default.")
+    p.add_argument("--no-frame", action="store_true",
+                   help="do NOT supply the east frame; leave round 1's static "
+                        "grid standing across the aperture.  This reproduces "
+                        "the shipped defect and exists to be a control, not a "
+                        "fallback.")
     return p.parse_args(argv)
 
 
 def main():
     a = parse_args()
     if a.selftest:
-        sys.exit(census_selftest())
+        print("--- sim/eastframe.py (the east frame plan, no bpy) ---")
+        rc = EF.selftest()
+        print("--- east wall census ---")
+        sys.exit(census_selftest() or rc)
     rq = requirements_json()
     pre = preflight(bpy.context.scene)
     log("requirements published to %s" % rq)
@@ -979,13 +1178,73 @@ def main():
             "requirements (see %s).  Writing into it would produce a scene "
             "that looks right and is not.  --force to override deliberately."
             % rq)
-    stats, C_shard, C_pane = build(a)
+    stats, C_shard, C_pane, C_frame = build(a)
     proof = prove_curves(C_shard)
     log("curve proof: %s" % json.dumps(proof))
     if proof["flags"]["other"] or not proof["control_fires"] or \
             proof["max_linear_eval_err"] > 1e-4:
         raise SystemExit("REFUSING: the applied curves are not LINEAR by "
                          "evaluation: %s" % proof)
+    fproof = prove_curves(C_frame) if len(C_frame.objects) else None
+    if fproof is not None:
+        log("frame curve proof: %s" % json.dumps(fproof))
+        if fproof["flags"]["other"] or fproof["max_linear_eval_err"] > 1e-4:
+            raise SystemExit("REFUSING: the east frame's curves are not "
+                             "LINEAR by evaluation: %s" % fproof)
+    # R5 AGAIN, ON THE SCENE THAT WILL RENDER.  The preflight above measures
+    # the target as it arrived; this measures it as it leaves.  Round 1's three
+    # east transoms are named in `pocket_intruders_in_the_clear_opening` on
+    # every apply this project has ever run, and `land_breach.sh` says in as
+    # many words that the refusal is true and that the geometry "is not ours".
+    # It is ours now (R6), so the same instrument has to be able to say so.
+    # AND THE CLASSIFICATION IS BY WHERE THE INTRUDER IS, NOT BY ITS NAME.
+    # `BF_TRN*_STATIC` is the same aluminium as `GW_Right_Transom_*`; filtering
+    # on the round 1 prefix would have reported "0 east-wall intruders" while
+    # three of this module's own objects lay in the pocket.  That is R2-124's
+    # mistake in a fresh coat of paint.  What R6 claims to have cleared is the
+    # WOUND -- bays 4 and 5, y -2.1625 .. 2.1625 -- and nowhere else: the six
+    # retained bays keep round 1's transoms across their glass on purpose.
+    # AN AABB WOULD GET THIS WRONG IN BOTH DIRECTIONS.  `BF_TRN*_STATIC` is one
+    # mesh holding TWO boxes, y -10.919..-4.3625 and 4.3625..11.0; its bounding
+    # box spans the gap between them and would report it standing in a hole it
+    # is nowhere near.  Round 1's single 21.9 m transom has the opposite
+    # problem -- it really does cross the wound and its eight vertices are 11 m
+    # away at the ends.  So this asks the same question R5 asks, triangles
+    # against the box, restricted to bays 4 and 5's clear openings.
+    EDGE_ = 0.0225 + 0.001
+    _pl = FR.load(a.shards)
+    WOUND_BOXES = [((14.9455, r[0] + EDGE_, r[2] + EDGE_),
+                    (14.9695, r[1] - EDGE_, r[3] - EDGE_))
+                   for b, r in _pl["rects"].items() if b in (4, 5)]
+    post = preflight(bpy.context.scene)
+    over_wound, elsewhere = [], []
+    for x in post["pocket_intruders_in_the_clear_opening"]:
+        ob = bpy.data.objects.get(str(x[0]))
+        hit = 0
+        if ob is not None and ob.type == "MESH":
+            V = _world_verts(ob)
+            loops = [list(pl.vertices) for pl in ob.data.polygons]
+            for blo, bhi in WOUND_BOXES:
+                hit += _tris_hit_box(V, loops, blo, bhi)
+        (over_wound if hit else elsewhere).append(list(x) + [hit])
+    log("R5 after the build: %d intruders in the clear opening OVER THE WOUND "
+        "(was 3 -- GW_Right_Transom_0/1/2), %d elsewhere on this and the "
+        "south wall, deliberately unchanged: %s"
+        % (len(over_wound), len(elsewhere), [x[0] for x in elsewhere]))
+    east_intr = over_wound
+    import resample as _RS
+    fcen = (frame_census(_RS.read_film(a.film)) if not a.no_frame
+            else dict(PASS=True, skipped=True))
+    fcen["R5_intruders_over_the_wound_after"] = east_intr
+    fcen["R5_intruders_elsewhere_after"] = elsewhere
+    log("east frame census: %s" % json.dumps(fcen, default=float))
+    if not fcen["PASS"] and not a.force:
+        raise SystemExit(
+            "REFUSING: after applying, the east wall's aluminium is not all "
+            "there: missing %s, round-1 solids left behind %s, untouched "
+            "mullions gone %s."
+            % (fcen["pieces_missing"], fcen["round1_solids_not_deleted"],
+               fcen["untouched_mullions_missing"]))
     east = east_wall_census(FR.load(a.shards))
     log("east wall census: %s" % json.dumps(east, default=float))
     if not east["PASS"] and not a.force:
@@ -996,8 +1255,8 @@ def main():
             % (east["panes_missing"], east["panes_hidden_at_frame"],
                east["round1_planes_still_present"]))
     bpy.ops.wm.save_as_mainfile(filepath=a.out)
-    rep = dict(stats=stats, proof=proof, preflight=pre, east_wall=east,
-               out=a.out,
+    rep = dict(stats=stats, proof=proof, frame_proof=fproof, preflight=pre,
+               east_wall=east, east_frame=fcen, out=a.out,
                bytes=os.path.getsize(a.out), origin_rule=SM.ORIGIN_RULE)
     with open(a.report, "w") as fh:
         json.dump(rep, fh, indent=1, default=float)

@@ -1,0 +1,35 @@
+{
+ "written_before_the_after_render_was_submitted": "2026-08-04",
+ "by": "R6 (sim/), block R2-266..R2-280",
+ "why_a_prediction_exists": "R2-091 and the six refuted beat-5 sightings: a geometric sighting is not a sighting, and a projection that is only checked AFTER the picture arrives cannot be wrong. This file is the projection, committed before the AFTER frames were queued, so the render can refute it.",
+ "instrument": {
+  "track": "sim/out/oner_camera_track_film14_breach.json",
+  "tool": "sim/tmp/proj.py",
+  "validated_against": "an independent agent's report of the wound at f2978 as 28.5 x 77.6 px. This tool computes 28.5 x 77.6 px for the connected 2.15 x 6.00 m aperture at that frame. The agreement was not arranged.",
+  "f2978": {"lens_mm": 74.0, "range_m": 595.4, "px_per_m_horizontal": 13.268, "px_per_m_vertical": 12.963}
+ },
+ "the_wound_on_screen_f2978": {
+  "connected_2.15x6.00m": {"u": [1891.0, 1919.5], "v": [1041.2, 1118.8], "px": [28.5, 77.6]},
+  "bridged_4.35x6.00m": {"u": [1891.0, 1948.7], "v": [1041.2, 1119.0], "px": [57.7, 77.8]}
+ },
+ "what_the_fix_changes_and_nothing_else": {
+  "mullion_5_bottom_1.550_m_removed": {
+   "u": 1920.0, "v_from": 1119.9, "v_to": 1100.0,
+   "px": "1.0 wide x 19.9 tall",
+   "note": "the bottom quarter of the ONE vertical line that crosses the bridged aperture"
+  },
+  "two_shed_segments_on_the_apron": {
+   "BF_MUL05_S00": {"u": [1965.9, 1967.5], "v": [1120.5, 1125.1], "px": [1.6, 4.6]},
+   "BF_MUL05_S01": {"u": [1965.7, 1967.1], "v": [1123.0, 1127.5], "px": [1.4, 4.5]},
+   "note": "both bars lie ALONG the view axis (they run in x, the camera looks down -x), so a 0.775 m member foreshortens to under 2 px. They land 3.5 m north of the wall centreline, level with bay 6's left edge, not inside the aperture."
+  },
+  "everything_else": "unchanged by construction. Mullions 0,1,2,3,7,8,9,10, the sill, the head, the base reveal and the transom remainder outside y +-4.3625 keep round 1's vertices exactly, so six of the ten bays must be PIXEL-IDENTICAL between the two builds."
+ },
+ "THE_PREDICTION": {
+  "changed_pixels_inside_the_bridged_wound": "about 20 of roughly 4,500, i.e. 0.4 percent",
+  "the_three_transoms_do_not_move": "z 1.350 / 2.850 / 4.350 -> v 1102.6 / 1083.2 / 1063.9, unchanged. The bake gives every transom body a maximum travel of 0.089 m, which is 1.2 px at this range.",
+  "so": "THE APERTURE WILL STILL NOT READ. Supplying the frame is necessary and is not sufficient. If the AFTER frame shows the aperture reading, this prediction is wrong and the reason must be found rather than celebrated.",
+  "what_WOULD_make_it_read": "mullion 5 gone over its full 6.2 m and the six transom stubs in bays 4 and 5 gone with it, which turns a 57.7 x 77.8 px patch of lattice into a 57.7 x 77.8 px patch with no lattice in it. That needs the bake to break them, and the bake does not."
+ },
+ "falsifiable_by": "render/r6_after/full_f2978.png against render/r6_before/full_f2978.png"
+}

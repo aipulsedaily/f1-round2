@@ -101,11 +101,17 @@ $BL -b "$FILM" -P sim/dump_camera_track.py -- \
   || die "camera track"
 
 say "6.  apply onto $FILM"
-echo "NOTE: R5 will refuse.  The refusal is TRUE and it is about ROUND ONE's"
-echo "frame -- three transoms across the bays at z 1.35/2.85/4.35 -- not about"
-echo "the glass being restored.  That is R6 and the geometry is not ours."
-echo "--force is deliberate and sim/out/preflight_pocket_R5.json names every"
-echo "intruder."
+echo "NOTE: R5 still refuses, and what it refuses on has CHANGED (R2-266)."
+echo "It used to name GW_Right_Transom_0/1/2 -- three unbroken 21.9 m bars"
+echo "across the aperture -- and this script said the geometry 'was not ours'."
+echo "It is: R6 is implemented now, sim/eastframe.py cuts round 1's east frame"
+echo "into the pieces the bake moves, and the applier reports R5 AGAIN after"
+echo "the build with the intruders classified by whether they cross the WOUND."
+echo "Over the wound that count is 0.  What is left is the SOUTH wall's frame"
+echo "(GW_Front_*), two light fins, and this module's own transom remainder"
+echo "over the six bays that keep their glass -- all deliberate, none ours to"
+echo "move.  --force is still right; read R5_intruders_over_the_wound_after in"
+echo "the apply report, not the preflight's headline count."
 OUT="render/$(basename "$FILM" .blend)_breach.blend"
 $BL -b "$FILM" -P sim/apply_breach.py -- \
     --out "$OUT" --report sim/out/apply_NEW.json --force 2>&1 | tail -25
