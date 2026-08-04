@@ -570,3 +570,64 @@ derived*".
 joint whatever the impulse does, and because R2-268's reasoning about what a
 stick curtain wall is remains right. It just must not be credited with the
 result.
+
+## R2-294 — THE APERTURE READS, my committed prediction said it would not, and the controls say I cannot yet call it clean
+
+`sim/out/rebake_prediction.json`, **P5**, written before the bake was launched:
+
+> *"THE APERTURE WILL STILL NOT READ AS A HOLE AT 595 m. It will read as a
+> DAMAGED lattice — a grid with one line interrupted — and not as an opening…
+> I am predicting my own job does not achieve the thing it was pointed at."*
+> Confidence 60–65 %.
+
+**That is wrong.** f2978, R6 build against the re-bake, **both at 96 samples**,
+same camera, same crop, same everything — a matched pair, because the first
+attempt at this measurement compared 96 samples against 256 and failed its own
+sky control at 1.49 % with max |Δ| 36/255, which is what the sky control is for:
+
+| region | grid_contrast R6 → re-bake | changed > 8/255 | repeat floor |
+|---|---|---|---|
+| **WOUND_bridged** | **0.03963 → 0.00908** | **51.55 %** | 0.0 % |
+| WOUND_connected | 0.03812 → 0.03917 | 44.92 % | 0.0 % |
+| NB_left_bay3 | 0.03678 → 0.04311 | 14.77 % | 0.0 % |
+| NB_right_bay6 | 0.06676 → 0.06971 | 14.72 % | 0.0 % |
+| CTL_UNTOUCHED_bays789 | 0.05569 → 0.05467 | **5.21 %** | 0.0 % |
+| CTL_UNTOUCHED_bays012 | 0.04262 → 0.03594 | **4.20 %** | 0.0 % |
+| sky | — | **0.0004 %**, max 9/255 | — |
+
+**And the demonstrator, rendered at 96 samples for the first time so it can be
+compared on the same footing: 0.03963 → 0.00912.**
+
+> **The re-bake's 0.00908 and the demonstrator's 0.00912 are the same number.**
+> The thing R2-273 faked by deleting six segments and six stubs, the corrected
+> threshold produces by breaking them — and it moves **51.55 %** of the wound
+> region's pixels at 8/255 where the demonstrator moves 12.75 %, because the
+> demonstrator only removed members while this also empties the bays.
+
+`render/r2281/COMPARE_f2978_MATCHED96.png`, 1:1 × 7, three panels all at 96
+samples. Panel 1 is a regular lattice across the full width. **Panel 2 has no
+lattice in the middle two bays at all** — no vertical member, no transom lines,
+the plinth and the lit interior reading clean through an opening. Panel 3, the
+demonstrator, is *less* open than panel 2. It is a hole, and it is a bigger
+hole than the thing that was built to prove a hole would be worth having.
+
+### Why this is not yet the verdict
+
+**Both untouched bay-groups fail: 5.21 % and 4.20 % at 8/255 against a measured
+0.0 % repeat floor.** The fix touches no vertex in either. The sky is clean
+(0.0004 %, max 9/255), so this is not exposure or tone-map — it is real content.
+
+It is R2-290. The frozen debris field projects across **u 884…3465, v
+1041…2399**, and both control rectangles (88 × 79 px, at u 1774–1862 and
+1978–2066) sit inside that span; 772 kg of glass relocated 88 m also moves
+every bounce and reflection in the shot. **So this pair shows that the aperture
+reads, and cannot show that the frame is why.**
+
+That separation is what `render/film14_breach_R2281_FRAMEONLY_DIAGNOSTIC_DO_NOT_SHIP.blend`
+exists for — the corrected frame on the shipped glass, so the controls have
+nothing moving over them. Its 256-sample render is outstanding: the farm's GPU
+failed under it (R2-292).
+
+**I am recording P5 as wrong now, before that render lands, because the matched
+pair and the picture already settle the question it asked.** What the
+diagnostic can still change is the *attribution*, not the answer.
