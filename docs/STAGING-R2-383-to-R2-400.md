@@ -207,3 +207,93 @@ puts `floor` at **z 0.008 … 0.055** — an 8 mm ground clearance — while the
 curtain wall's glass is **11.5 mm laminate**. Nothing lying on the slab in the
 car's track can pass under that floor. It is a squeegee, and it is 1.52 m wide.
 
+
+---
+
+## R2-385 — the kinematic proxy is NOT what makes the debris travel, and no re-massing of it — dynamic, hybrid or otherwise — would have helped
+
+My brief names the prime suspect and quotes `build_breach_sim.py`'s own
+docstring for it: the proxy is `kinematic=True`, so it has infinite mass, "cannot
+lose momentum", and "every joule the collision should have taken out of the car
+is instead pumped into the field". The docstring's supporting figure is that the
+shard field takes **up to 45 %** of the car's momentum.
+
+**The 45 % is real as an aggregate and it is the wrong quantity for this
+defect.** Here is the impedance the actual bodies see.
+
+### The masses at the three contacts that produce the travel
+
+| body | mass | mass ratio to the car's 798 kg |
+|---|---|---|
+| `MUL05_S02`, the 89.79 m mullion segment | 4.7 kg/m × 0.775 m × 0.72 = **2.623 kg** | **304 : 1** |
+| `GS_b05_00434`, the 205.01 m underfloor shard | **0.0025 kg** | **319,000 : 1** |
+| the whole deck-carried population | 151.3 kg | 5.3 : 1 |
+
+### What the ride actually costs the car
+
+`MUL05_S02` gains 12.707 → 22.829 m/s over the 1.149 s it lies on the deck.
+That is an impulse of **26.54 N·s**, a mean force of **23.10 N**, and
+**0.203 % of the car's 13,086 kg·m/s at the glass plane**. A dynamic 798 kg car
+would have been slowed by **0.033 m/s** by the entire event and would have
+carried the segment to within a third of a percent of the same place.
+
+The underfloor case is worse for the hypothesis, not better. Dragging a 2.5 g
+shard against µ = 0.32 × 0.62 needs **0.005 N**. The car's static weight alone
+is **7,828 N**. The surplus is a factor of a million and a half. Whether the
+thing pressing down has infinite mass or 798 kg is not a question the shard can
+tell the difference between.
+
+**And the deck ride is not even a mass phenomenon.** A body lying on a surface
+is carried by friction, and the carrying force is µ·m_body·g — it contains the
+carrier's mass nowhere at all. `FRICTION_ALU` × the proxy's 0.55 gives
+2.428 m/s²; the segment is actually accelerating at **8.81 m/s²**, so the rest
+comes from normal impacts on the airbox's and rear wing's vertical faces — and
+those are bounded by the car's *momentum*, of which this costs 0.2 %.
+
+**P4 is confirmed, and it was a prediction against my own brief.** A dynamic
+proxy at the car's real mass and inertia would not have moved this defect. Nor
+would a hybrid with a finite effective mass at the contact, unless that
+effective mass were of the order of the *shard's* — 2.6 kg for the mullion
+segment, 2.5 g for the glass — which is not "the car's real mass and inertia",
+it is a car made of polystyrene.
+
+**I therefore decline the fix my brief names first, and I am declining it on
+the numbers rather than on cost.** It is also the fix that would have been
+expensive: it puts a solver inside a keyed animation the rest of the film's
+continuity is built on, and it would have bought nothing.
+
+### Where the 45 % IS true, and what it is true about
+
+`sim/carproxy_census.py` runs the momentum budget the docstring argues from,
+Σm|v| over all 3,948 bodies against 798·v_car, in world time:
+
+| film frame | field | car | field / car |
+|---|---|---|---|
+| f860 | 1,732 | 13,283 | 13.0 % |
+| f880 | 3,290 | 13,392 | **24.6 %** |
+| f950 | 3,851 | 17,308 | 22.2 % |
+| **f1049 (peak)** | **6,510** | 23,392 | **27.8 %** |
+| f1165 | 1,191 | 58,748 | 2.0 % |
+
+So the field really does hold a quarter of the car's momentum during the
+breach, and a car that were dynamic really would decelerate hard. **That is a
+statement about the car, not about the debris** — and it is already recorded as
+a DECISION rather than a consequence (R2-099): the film's car does not slow
+down because its animation says so, and changing that is a change to
+`anim/carrig.py`. What it is *not* is an explanation of why one mullion segment
+went 89.79 m, because that segment is 0.2 % of the budget.
+
+### Two predictions half-right, said plainly
+
+* **P3** predicted the carrying signature and got the mechanism right — the
+  acceleration runs for 276 sim frames beginning 130 sim frames after first
+  contact, exactly the "not a launch" shape. Its second clause asked for **≥
+  300 consecutive sim frames** inside the envelope and the measurement is
+  **288**. Narrowly wrong, and I am not moving the number.
+* **P5** predicted the kinematic proxy would still show up in the *field*
+  statistic through the same carrying mechanism. It does — 40,587 m of
+  transport — but the census also shows the transport SHARE is **17.8 % in the
+  shipped table against 16.9 % in the re-bake**, i.e. the mechanism is
+  unchanged and only the amount of loose debris grew. P5 is right about the
+  mechanism and understated how old it is.
+
