@@ -23,7 +23,8 @@ selftest) and on 4K frames rendered on the 5090 through `~/vast-render`.
    cluster sharp is **f/37**. At a standoff that makes it fit, it is **f/6.9**.
    `N = D (fill h)^2 / (2 c E^2)`, independent of lens and of distance (R2-320).
 4. **Neither is the biggest reason the middle third does not read.** The camera
-   smears the picture by a median of **42 px and up to 808 px** at 4K, and the
+   smears the picture by a median of **42 px, and by 628 px at its worst** at 4K,
+   and the
    pixels confirm the direction to within a few degrees (R2-321, R2-329). Beat
    1's own pan limit, 0.12 frame-widths per frame, *permits* 230 px of smear
    because it is written in a unit that has no pixels in it. **The framing fix is
@@ -242,7 +243,8 @@ pixels, holding the cluster box fixed between f and f+1 so this isolates the
 ```
 median smear at the presented cluster's CENTRE      42.3 px
 worst at a station                                 189.4 px   NOSE, f85
-worst measured anywhere in the tour                808.0 px   f532
+worst anywhere in the tour, at a cluster's CENTRE  628.1 px   f532
+worst anywhere in the tour, at its NEAR FACE       808.0 px   f532
 best frames of the close-out                    1.6-28 px    f648-792
 ```
 
@@ -260,6 +262,9 @@ third read.**
 **It also explains the protected region without one word about taste.** Across all
 791 measurable frames of beat 1 (`tools/beat1_smear_profile.py`, the smear of
 whichever cluster is nearest the optical axis at each frame):
+
+(all four columns are the smear at the cluster's CENTRE, which is the smallest
+value on that cluster; the near face runs higher — 808 px at f532)
 
 ```
                           n    median      p90       max   frames over 20 px
