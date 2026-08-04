@@ -306,3 +306,58 @@ carries `mobility` so that a null passing because nothing can move is visible.
 
 The seven shards R2-199 left open at bond 100 as "a different mechanism,
 off camera, logged rather than chased" are almost certainly this population.
+
+## R2-288 — the low bracket point is the alternative reading of the declaration, and it takes the frame apart past the demonstrator
+
+`p_t4`: **T = 4.4**, head slider, 400 frames — impact (sim frame 145) plus
+1.06 s. This is not "half, for the sake of it". **4.4 is what the derivation
+gives if `transom_landings`' one pair of screws per (line, mullion) is shared
+between the two transoms landing there rather than being two per end.** The
+bracket's low end is the other reading of the declaration, so this run is the
+answer to a question about the source data, not about a knob.
+
+Measured with `framemotion`, against the shipped table **truncated to the same
+400 frames**:
+
+| | shipped, 260 / fixed | **p_t4, 4.4 / slider** |
+|---|---|---|
+| frame joints broken (of 95) | 2 | **23** |
+| mullion 5's transom ends broken (of 6) | 0 | **6** |
+| max transom-body travel | **0.097 m** | **12.222 m** |
+| mullion 5 column (S02…S07) max travel | 0.16 m | **13.603 m** |
+| lattice line z0 / z1 / z2 max travel | 0.097 / 0.073 / 0.043 m | **12.22 / 6.77 / 5.62 m** |
+
+**Every one of mullion 5's eight segments leaves, all three transom lines leave
+across both bays, and this goes past the demonstrator** — which only removed
+mullion 5 above 1.55 m and six stubs.
+
+**And it does not stop at the wound.** `TRN_z0_b02→MUL02_S00`,
+`TRN_z0_b02→MUL03_S02` and `TRN_z0_b06→MUL07_S02` break too: transoms coming
+off **bay 2 and bay 6**, and bay 2 is a *retained* bay whose glass stays put
+(max shard travel 0.283 m, 0 of 195 over 1 m). At 4.4 the film would render an
+undamaged bay of glass with its transom hanging off it.
+
+**The glass tells the same story from the other side, and the retained bays
+hold in both:**
+
+| bay | role | shipped med / max @400f | p_t4 med / max @400f |
+|---|---|---|---|
+| 2 | **retained** | 0.005 / 0.048 m | 0.005 / **0.283** m — 0 of 195 over 1 m |
+| 3 | destroyed | 0.012 / 0.028 m | 0.007 / 0.046 m |
+| **4** | destroyed | 3.663 / **113.601** m | **14.717 / 18.534** m |
+| **5** | destroyed | 1.876 / 19.093 m | **15.109 / 19.213** m |
+| 6 | destroyed | 0.027 / 6.969 m | 0.013 / 3.849 m |
+| 7 | **retained** | 0.025 / 0.196 m | 0.010 / **0.528** m — 0 of 183 over 1 m |
+
+The cascade is confined to the two bays the car goes through. Note what else
+changed: bay 4's **113.6 m outlier is gone** — p_t4's whole field maxes at
+18.5 m and its distribution *tightens* (p95 15.16 against a median of 14.72).
+A frame that lets go releases its glass as a coherent field instead of holding
+some of it while the solver squeezes a few shards out at 110 m/s. That is the
+opposite of what a "weaker means wilder" intuition predicts and it is
+consistent with R2-199's finding that the blow-up is an over-determined
+network shedding residual as velocity.
+
+**So the bracket's low end is not obviously wrong physically — it is wrong
+compositionally**, and that is a judgement about a picture, which is where the
+brief says such calls belong.
