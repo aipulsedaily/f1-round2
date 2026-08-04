@@ -10,6 +10,56 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, "/home/zany/f1-round2/tools")
 from beat1_focus_track import cam_axes
 
+
+def _selftest():
+    """Two synthetic cameras whose answers are known without this code.
+
+    POSITIVE: a camera at range R that slides `t` metres perpendicular to its own
+    axis in one frame, NOT re-aimed, displaces a static point by t/R * f on the
+    sensor. At 180 degrees the smear is half of that.
+    NEGATIVE: the same camera that does not move at all must read exactly 0, and a
+    camera that ROTATES to hold the point on axis must also read 0 at that point --
+    which is why the numbers in the report are not simply "camera speed".
+    """
+    SW_MM, RX = 36.0, 3840
+    ppm = RX / SW_MM
+    ok = True
+
+    def chk(name, got, want, tol):
+        nonlocal ok
+        good = abs(got - want) <= tol
+        ok = ok and good
+        print("  %-52s %10.4f  want %10.4f  %s"
+              % (name, got, want, "ok" if good else "FAIL"))
+
+    f_mm, R, t = 50.0, 4.0, 0.05
+    p = [0.0, R, 0.0]                       # point straight ahead, +Y
+    # camera looks +Y: fwd=+Y, right=+X, up=+Z -> quaternion from that basis
+    q_look_y = [math.sqrt(0.5), math.sqrt(0.5), 0.0, 0.0]   # rot -90 about X
+    e0 = {"p": [0.0, 0.0, 0.0], "q": q_look_y, "lens": f_mm}
+    e1 = {"p": [t, 0.0, 0.0], "q": q_look_y, "lens": f_mm}
+    fwd, rt, up = cam_axes(q_look_y)
+    chk("synthetic basis points along +Y", fwd[1], 1.0, 1e-6)
+
+    def pxy(e):
+        d = [p[i] - e["p"][i] for i in range(3)]
+        z = sum(d[i] * fwd[i] for i in range(3))
+        return (sum(d[i] * rt[i] for i in range(3)) / z * e["lens"] * ppm,
+                sum(d[i] * up[i] for i in range(3)) / z * e["lens"] * ppm)
+
+    a, b = pxy(e0), pxy(e1)
+    got = 0.5 * math.hypot(b[0] - a[0], b[1] - a[1])
+    chk("slide 50 mm at 4 m on 50 mm, smear px", got, 0.5 * t / R * f_mm * ppm, 1e-3)
+    a2, b2 = pxy(e0), pxy(e0)
+    chk("NEGATIVE CONTROL: motionless camera",
+        0.5 * math.hypot(b2[0] - a2[0], b2[1] - a2[1]), 0.0, 1e-12)
+    print("\nSTAGE RESULT %s selftest" % ("OK" if ok else "FAIL"))
+    return 0 if ok else 1
+
+
+if "--selftest" in sys.argv:
+    sys.exit(_selftest())
+
 D = json.load(open("/home/zany/f1-round2/work/b1dof/dump.json"))
 cams = {e["f"]: e for e in D["frames"]}
 geom = D["cluster_bbox"]

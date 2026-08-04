@@ -17,6 +17,7 @@ New instruments, all with selftests that include a negative control:
 | `tools/beat1_smear.py` | the 180-degree shutter's smear in 4K pixels at each station |
 | `tools/campath_diff.py` | before/after path diff with the R2-103 floor handled and the self-null printed first |
 | `tools/beat1_restand_candidate.py` | the corrected candidate sheet, written to `work/`, never to `docs/` |
+| `tools/blur_anisotropy.py` | defocus vs motion blur, from the rendered pixels, no second render needed |
 
 ---
 
@@ -397,3 +398,46 @@ candidate's perturbation is exactly zero from f720.
   read; it also flattens the separation the brief asks for. The background at
   10 m still blurs by 8-12 px at f/6.5 focused at 4 m, which is separation, but
   it is not the f/2.2 look.
+
+---
+
+## R2-329 — the motion-blur finding, confirmed in the PIXELS and not only in the geometry
+
+R2-321's smear figures are geometry off the built path. `tools/blur_anisotropy.py`
+settles them from the rendered frames alone, with no second render, because
+**defocus and motion blur do not have the same shape**: the circle of confusion is
+a circle and suppresses gradients equally in every direction, while a 180-degree
+shutter is a line integral along one direction and leaves the gradients ACROSS it
+almost intact.
+
+The structure tensor of the frame gives the axis gradients survive in. The camera
+path independently predicts the smear direction. **They are computed from
+disjoint inputs and must agree.**
+
+| frame | predicted surviving axis, from the path | measured, from the pixels | delta | predicted smear | anisotropy |
+|---|---|---|---|---|---|
+| f120 | 17.8 deg | 11.4 deg | 6.4 | 107 px | 0.585 |
+| f200 | 162.4 deg | 160.2 deg | **2.2** | 40 px | 0.845 |
+| f300 | 88.6 deg | 92.9 deg | **4.3** | 85 px | 0.896 |
+| f460 | 52.4 deg | 51.5 deg | **0.9** | 117 px | 0.832 |
+| f400 | 169.1 deg | 90.2 deg | **79** | **11 px** | **0.401** |
+
+Four of the five agree to within 6.4 degrees on a quantity nothing in the image
+pipeline was told about. **The middle third is smeared by the camera, and the
+direction proves it.**
+
+**And the fifth is the point, not the exception.** f400 is the one frame of the
+five where the predicted smear is small — 11 px against 40-117 — and it is also
+the only one whose anisotropy collapses, to 0.40 against 0.83-0.90. With no
+smear to align to, the surviving axis reverts to the scene's own structure (the
+turntable rim that fills its lower half). **So the instrument separates the two
+causes rather than merely confirming one:** f120, f200, f300 and f460 are
+motion-blurred frames; f400 — the frame the earlier agent flagged as "a bright
+smear, no subject in focus" — is a genuine depth-of-field frame, and its subject
+is 0.328 m behind the focus plane with 29.5 px of defocus and its centre outside
+the vertical frame.
+
+Limit, stated with the finding: a sharp picture of parallel edges is anisotropic
+before anything blurs it, and the selftest carries that case explicitly (sharp
+horizontal stripes read 1.0000). The verdict above rests on the AGREEMENT of two
+independent estimates of a direction, never on the magnitude alone.
