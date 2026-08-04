@@ -19302,3 +19302,107 @@ And the thing R2-547 called *"a dark grid with yellow dashes and no seat
 geometry"* **is the seats**: `ARCH_Grandstand_02_OUEST` / `A_Seat` at 237 m,
 base `#3c4348` with a `#c9a227` gold chequer laid by `_seat_colour()`
 (`build_architecture.py:4692-4723`). The yellow dashes are gold seats.
+
+## R2-633 — the relief statistic: the contaminated-band finding is real, the fix I proposed for it is NOT, and the known-truth ladder is what said so
+
+Three separate things, and they have to be kept apart because two of them
+survive and one does not.
+
+### (a) the contaminated band — STANDS
+
+`relief_reads_as_lip_and_shade` gates on a dip measured over a band that MIXES
+the half that moved when the sun crossed sides with the half that did not —
+relief diluted by paint. The gate computes the undiluted number, prints it in
+brackets, and does not gate on it:
+
+```
+kerb_precast_unit      mixed +0.0301   light-driven +0.2963
+asphalt_wearing_course mixed -0.0027   light-driven +0.3463
+showroom_facade_panel  mixed -0.0679   light-driven +0.3151
+```
+
+Six of the fifteen relief FAILs invert on the undiluted number.
+
+### (b) `ok_bal` CANNOT FIRE ON ITS OWN WORST CASE — STANDS, AND IS INDEPENDENT
+
+`tools/item_gate.py:3071`:
+
+```python
+ok_bal = (foc is None or focc is None or foc >= focc)
+```
+
+The spectral-balance clause **silently PASSES when it cannot be measured**, and
+`foc` is `None` exactly when `fine_subject` or `coarse_subject` is zero — a
+surface with no energy in a band, which is the wave-1 signature the clause was
+written to catch ("all the energy sat at r8-r16 and none at r1-r4"). It fires on
+everything except the thing it exists for. `crew_fireproof_overall` and
+`driver_figure` both report `spectral balance None` and both are let through it.
+
+**Fix it with VACUOUS, the verdict this project already has for an arm that
+cannot pass on an empty set.** Silently passing is the one option that is
+definitely wrong. This is worth doing whatever happens to (a).
+
+### (c) the proposed swap — FAILS ITS CONTROLS, AND IS WITHDRAWN
+
+Two independent controls, in order.
+
+**The known-bad set.** `crew_fireproof_overall` is MUST-REJECT and the dip
+clause is the ONLY check currently failing it. Its light-driven dip is +0.1612 —
+a PASS. Swapping statistics moves the gate from 1 false-accept to 2. **(a) was
+incidentally covering for (b)**, which is why the swap looked free and was not,
+and why anyone who fixed the dip in isolation would have concluded their fix was
+bad and reverted it.
+
+**The 15-specimen known-truth ladder** (`render/relief_2light/truth_table_*.json`,
+already rendered — no new GPU work). Both rules scored AS THE GATE ACTUALLY RUNS
+THEM, i.e. the dip clause AND `light_amplitude` together:
+
+```
+A vs B  (the gate's own runner-up sun -- the OPERATIONAL case)
+    CURRENT  14 / 15        PROPOSED  14 / 15     tied; both miss e_bolts_3mm
+A vs C  (180 deg reversal)
+    CURRENT  13 / 15        PROPOSED  12 / 15     proposed loses e_bolts and l_cyl_rib
+```
+
+**On the ladder the proposed rule is a wash at the operational geometry and
+worse at the reversal. It is not an improvement and it is not landing.**
+
+### the puzzle this leaves, which is the actual next question
+
+Isolating the dip clause alone, PROPOSED beats CURRENT 12/15 to 9/15 on A vs B —
+CURRENT passes six painted decoys that the light-driven dip rejects. Combined
+with `light_amplitude` the difference vanishes, because **`light_amplitude` is
+already doing all the paint rejection** (paint decoys measure x0.02-1.40 against
+its x2.00 bar).
+
+So on the ladder the dip clause contributes almost nothing. On the ITEMS it
+rejects 15 of 21 while `light_amplitude` passes every one of them at x29-x427.
+**Those two facts cannot both describe a healthy statistic**, and the ladder
+cannot say which is wrong because it contains no specimen resembling a real item
+— every panel is a single-material plate, cylinder or sphere, and the items are
+multi-material bodies at 170-2333 px/m.
+
+**The missing control is a ladder specimen that looks like an item.** That is
+the next measurement, it needs renders, and it should be built before anyone
+touches the dip clause again.
+
+---
+
+## R2-634 — `driver_figure` reads as INVERTED relief, and the corrected statistic convicts it harder
+
+Flagged rather than fixed, because the gate is unsettled and fixing an item
+against a statistic under review is how rework gets done twice.
+
+```
+driver_figure    mixed dip        -0.0137
+                 light-driven     -0.2289      <- worse, not better
+                 spectral balance  None        <- and unmeasurable, per R2-633(b)
+```
+
+Both of the gate's relief routes convict it, and the sharper one convicts it
+harder. This is not one of the six that invert. The driver was specifically
+asked for, is in the cockpit, and is on screen in the hero shot — so of the
+three items reading as inverted relief (`grandstand_riser_unit` -1.2396,
+`dais_delivery_ramp` -0.2460, `driver_figure` -0.2289) this is the one that
+reaches the picture. Whoever reworks the figure should have the corrected
+number, not the mixed one.
