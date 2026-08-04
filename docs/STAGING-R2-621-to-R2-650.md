@@ -388,13 +388,28 @@ identity, through the real grade (AgX, look `None`, exposure −3.628) with
 `showroom_lighting.apply()` on and `assert_levelled` PASS:
 
 ```
-work/ceiling/peep/before_f0001.png   f1    round-1 flat ceiling
-work/ceiling/peep/before_f0300.png   f300      "
-work/ceiling/peep/before_f0320.png   f320      "
-work/ceiling/peep/after_f0001.png    f1    ceiling, first cut
-work/ceiling/peep/after_f0300.png    f300      "
-work/ceiling/peep2/afterv2_f0001.png f1    ceiling, final geometry
+work/ceiling/ab/before_f0001.png   f1    round-1 flat ceiling   |  MATCHED PAIRS,
+work/ceiling/ab/after_f0001.png    f1    ceiling, FINAL         |  same instrument,
+work/ceiling/ab/before_f0300.png   f300  round-1 flat ceiling   |  same settings,
+work/ceiling/ab/after_f0300.png    f300  ceiling, FINAL         |  960 px / 48 spp
+work/ceiling/ab/before_f0320.png   f320  round-1 flat ceiling
+work/ceiling/peep/after_f0001.png  f1    ceiling, FIRST CUT (kept: it is the
+work/ceiling/peep/after_f0300.png  f300  control R2-625's design change is
+                                         measured against)
 ```
+
+What the pairs show, and they show different things on purpose:
+
+* **f1** — before is one flat quad with two glowing annuli painted on it and no
+  thickness anywhere. After is the concentric feature: ribbed stepped drum over
+  the turntable, two splayed white light slots with the coves recessed in them,
+  three ring beams, two segmented aprons with their fittings, and a perimeter
+  shadow gap at the wall head.
+* **f300** — before is a flat khaki band above the wall with a single corner
+  line in it. After is the WAFFLE FIELD: the primary Vierendeel girders read
+  clearly with their web posts, the secondaries cross them, and the outer ring
+  beam curves through. This is the pair that justifies building the field at
+  all, because R2-627 shows none of it reaches frame 1.
 
 f1, f300 and f320 are the three beat-1 stations that look up: f1 is the
 establishing frame (21.05 % ceiling), f300 and f320 are inside the second run
@@ -413,8 +428,22 @@ curtain wall).
   stuck at 1,910. My scenes are now FIRST in the waiting list. Reported, not
   worked around — this looks like the known `cheaper_to_finish()` scene-switch
   condition plus a worker stall.
-* **The landing on `film16.blend`.** See the operational note above; the
-  memory gate is armed and will run it when the box has a window.
+* **The landing on `film16.blend`.** Running, and it is I/O bound rather than
+  wedged: `showroom_lighting.classify()` touches every object's `bound_box`,
+  which pages in the whole 7.5 GB file. MEASURED on the second attempt — 9.94 GB
+  read, then **471 KB in 30 s** once three other agents' jobs (including an
+  independent `film16_breach.blend` at 3.1 GB) took swap back down to 9 of
+  43 GB free. It will finish when the box gives it a window and not before.
+  Handed off self-healing rather than babysat:
+  `work/ceiling/land_on_film2.sh` retries on the newest `film1[6-9].blend`,
+  and `work/ceiling/swap_guard.sh` kills MY attempt if swap free drops under
+  3 GB — giving up my work rather than gambling with somebody else's bake.
+
+  **The first gate was itself a defect worth recording.** It required 9 GB of
+  free RAM on an 11 GB box shared by six agents, which never happens, so it
+  would have waited forever while looking careful. What actually went wrong on
+  attempt one was swap EXHAUSTION (36 of 43 GB used, 7 GB left), so swap
+  headroom is the term that matters and free RAM is the term that does not.
 
 ### the invariant this design turns on
 

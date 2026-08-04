@@ -1043,3 +1043,83 @@ not justified.
 2.40 m apart, 40 mm extrusion, so it cannot produce either mechanism. It is still
 unmeasured in pixels and still not being called clean, but it is no longer
 suspected of anything.
+
+---
+
+## R2-515 — the gate works, the breach is in, and the breach was the ONLY stage that was missed
+
+### the complementary signature, read off the saved blends
+
+```
+                                film14_breach_r6   film16_breach   film16
+                                (POSITIVE CTL)     (NEW)           (NEGATIVE CTL)
+CREATED  BREACH_Shards                1                1              0
+CREATED  GP_b04                       1                1              0
+CREATED  GS_b04_*                  1531             1531              0
+CREATED  BF_MUL05_S02                 1                1              0
+DELETED  GW_Right_Mull_04             0                0              1
+DELETED  GW_Right_Transom_0           0                0              1
+CONTROL  ONER                         1                1              1
+                              BREACH_PRESENT   BREACH_PRESENT   BREACH_ABSENT
+```
+
+`film16_breach` matches the ship on every row. `film16` fails **both arms at
+once** — every created object absent AND every deleted object still standing —
+while its CONTROL is 1, which is what makes those zeros evidence rather than a
+failed read. That is the whole design: no rename, no compression and no reader
+bug can produce a complementary failure.
+
+> **A note on counting.** The figures this defect was first reported with
+> (`GS_b04_00000` = 3, `GP_b04` = 2, `BF_MUL05_S02` = 3 in r6) are *string
+> occurrences* in the blend file; the real object counts are 1531, 1 and 1. The
+> conclusion was right and the direction of every row was right, but a name can
+> appear several times in a blend for reasons that have nothing to do with how
+> many objects carry it. `tools/breach_gate.py` counts **datablocks**, via
+> Blender, for that reason.
+
+### nothing else was dropped — and the audit is shown catching one
+
+`tools/film_stage_audit.py`, ship = `film14_breach_r6`, subject =
+`film16_breach`:
+
+```
+   ship 67 families / 33,565 objects      subject 72 / 35,283
+     NEW  CFP    676      NEW  CRF   120      NEW  DRV    11
+     NEW  SPECX  900      NEW  TS     10
+     no family in the ship is missing or halved in the subject
+     collections only in SHIP: []
+>> STAGE RESULT: ALL_SHIP_STAGES_PRESENT
+```
+
+**The five NEW families are exactly the four placed item families and the
+driver**, and no collection exists in the ship that is absent from the subject.
+So `apply_breach` was the only post-build stage that had been missed — there is
+no second one hiding.
+
+**And that pass is not vacuous**, because the same instrument is run against
+`film16` before the applier and does report the miss:
+
+```
+   pre-applier control
+     MISSING  BF    ship has    39   subject has 0
+     MISSING  GP    ship has    10   subject has 0
+     MISSING  GS    ship has 3,796   subject has 0
+>> control sees a skipped stage: True
+```
+
+`DRV = 11` also closes one of the outstanding verification arms by itself: **the
+driver is in the film**, counted off the saved blend.
+
+### why a set difference and not a list of appliers
+
+The obvious fix for R2-512 is to write the appliers down. That fixes this miss
+and goes stale on the next one — and a written-down list of stages is a second
+copy of a fact, which is the thing `tools/shipping_world.py` exists to prevent.
+The set difference asks the question the list was standing in for and cannot go
+stale: **is there any family in the ship that is not in the subject?** A missed
+applier shows up that way whether or not anybody remembered it exists.
+
+The asymmetry is deliberate and is what makes it usable on this build: MISSING
+fails, NEW does not, because this rebuild adds five families on purpose and an
+audit that called those regressions would be useless on exactly the build it was
+written for.
