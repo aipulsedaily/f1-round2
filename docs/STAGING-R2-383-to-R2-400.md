@@ -821,3 +821,60 @@ unchanged at 2.15 × 6.00 m.
 it. That is the column of the seam table that matters, and it is the reason
 this was the fix worth looking for.
 
+
+---
+
+## R2-395 — three controls on the air model, none of which the ablation could have given
+
+A new force in a sim that has run for two days is exactly the kind of thing that
+gets believed because it improved a number. So here are three checks that have
+nothing to do with the breach, computed straight off the damping the build
+wrote (`bodies 3912`, d from 0.1948 to 0.6554, median 0.3703).
+
+### 1. Does it imply a sane terminal velocity?
+
+λ = −ln(1 − d). The drag it models equals gravity at v_t = √(g·v_ref/λ).
+
+| | d | λ | a at v_ref | **terminal velocity** |
+|---|---|---|---|---|
+| lightest damping (the biggest pane fragments) | 0.1948 | 0.2167 /s | 3.59 m/s² | **27.4 m/s** |
+| median shard | 0.3703 | 0.4625 /s | 7.67 m/s² | **18.8 m/s** |
+| heaviest damping (the smallest chips) | 0.6554 | 1.0655 /s | 17.67 m/s² | **12.4 m/s** |
+
+Big laminate fragments fall at 27 m/s, small chips at 12. That is the right
+ordering and the right magnitudes, and **nothing in the fit was aimed at it** —
+it falls out of Cauchy's S/4 on 3,912 different collision meshes.
+
+### 2. What does it do to the fall the aperture is made of?
+
+The aperture is glass leaving a 6 m wall. If the air made that floaty, the fix
+would be worse than the defect.
+
+| | time to fall 6 m | speed on arrival |
+|---|---|---|
+| no air (what shipped) | 1.106 s | 10.85 m/s |
+| lightest damping | 1.152 s | 10.00 m/s |
+| median | 1.209 s | 9.08 m/s |
+| heaviest | 1.373 s | 7.07 m/s |
+
+**Between 4 % and 24 % slower.** Not floaty, and in the direction real
+laminated glass goes. It is also why B0's aperture came out *better* rather than
+worse: glass that falls slightly slower stays in the bay longer and is cleared
+by the car rather than dropping past it.
+
+### 3. And the number this whole block is about
+
+A body launched at the car's own 16.58 m/s, sliding on the showroom slab:
+
+| | with air | **with no air (what shipped)** |
+|---|---|---|
+| glass, µ = 0.32 × 0.62 = 0.198 | stops in **3.43 s, 21.3 m** | **8.50 s, 70.7 m** |
+| aluminium, µ = 0.45 × 0.62 = 0.279 | stops in **3.85 s, 27.7 m** | 6.04 s, 50.2 m |
+
+**8.50 seconds is longer than the sim window has left.** The sim opens 0.60 s
+before impact and closes 6.30 s after it, so a shard the car hits has about
+5.9 s to stop in, and without air it needs 8.5. **That is the whole of R2-290's
+"2,647 shards still moving at the last key", in one line, and it is arithmetic
+that could have been done before any bake.** With air it needs 3.43 s and has
+5.9. It stops.
+
