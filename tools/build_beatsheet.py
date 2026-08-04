@@ -1110,6 +1110,65 @@ def main(check=None):
         u = u * u * (3.0 - 2.0 * u)
         return [exp[i] + (final[name][i] - exp[i]) * u for i in range(3)]
 
+    # ----------------------------------------------------------------- R2-316
+    #
+    # THIS BLOCK USED TO REPORT `edge_angle_deg = 0.000` FOR ALL FIFTEEN
+    # PRESENTATIONS AND CALL IT A PASS.  It could not have reported anything
+    # else.  It computed
+    #
+    #     edge = max(0, ang - asin(rad / nd))
+    #
+    # where `ang` is the angle from the optical axis to the cluster's CENTRE --
+    # and `camera_station()` puts the lens on the ray through that centre, so
+    # `ang` is identically zero at every presentation.  Subtracting the cluster's
+    # own angular radius from zero and clamping at zero measures the angle to the
+    # NEAR edge of a body the axis passes through, which is always inside the
+    # frame.  The thing that overflows is the FAR edge, and the sign in front of
+    # `asin` is what decides which one you get.  Same class as R2-062: the aim
+    # was measured, the photographability was not.
+    #
+    # Measured with the sign corrected, on the shipped stations: every one of the
+    # fifteen overflows, from 1.06x the frame (SW) to 2.59x (NOSE).
+    #
+    # It now measures the projected extent of the eight bounding-box corners
+    # rather than a sphere of the bbox half-diagonal, because that is what the
+    # audience sees, and it reports the two numbers the fix needs:
+    #
+    #   * `extent_frac_frame_h/w` -- >1.0 means the audience gets a fragment.
+    #   * `fstop_required` -- the f-number that would hold the WHOLE cluster
+    #     inside `SHARP_BUDGET_PX` at 4K, from the exact thin-lens blur
+    #         C = (f/N) f |s - s_f| / ((s_f - f) s)
+    #     evaluated at the cluster's own near and far depth.  This is the number
+    #     that says the two defects are one: at the shipped standoff the corner
+    #     clusters need about f/52, which is not a photographable aperture; at a
+    #     standoff that makes them FIT they need about f/6.5, which is.  Framing
+    #     is therefore a precondition of focus, not a parallel defect.
+    #
+    # `tools/beat1_present_gate.py` is the standalone form with the selftest.
+    SENSOR_W_MM = 36.0
+    RES_XY = (3840, 2160)
+    SENSOR_H_MM = SENSOR_W_MM * RES_XY[1] / RES_XY[0]
+    SHARP_BUDGET_PX = 2.0
+    COC_MM = SHARP_BUDGET_PX / (RES_XY[0] / SENSOR_W_MM)
+    FILL_TARGET = 0.85
+
+    def _basis(cam, look):
+        v = [look[i] - cam[i] for i in range(3)]
+        n = math.sqrt(sum(x * x for x in v)) or 1.0
+        fwd = [x / n for x in v]
+        wu = [0.0, 0.0, 1.0]
+        if abs(sum(fwd[i] * wu[i] for i in range(3))) > 0.999:
+            wu = [0.0, 1.0, 0.0]
+        rt = [fwd[1] * wu[2] - fwd[2] * wu[1],
+              fwd[2] * wu[0] - fwd[0] * wu[2],
+              fwd[0] * wu[1] - fwd[1] * wu[0]]
+        n = math.sqrt(sum(x * x for x in rt)) or 1.0
+        rt = [x / n for x in rt]
+        up = [rt[1] * fwd[2] - rt[2] * fwd[1],
+              rt[2] * fwd[0] - rt[0] * fwd[2],
+              rt[0] * fwd[1] - rt[1] * fwd[0]]
+        return fwd, rt, up
+
     framing, framing_fail = [], []
     for k in b1keys:
         t = k.get("focus_target")
@@ -1117,23 +1176,94 @@ def main(check=None):
             continue
         ctr, rad = where(t, k["t"]), geo[t]["radius"]
         cam, look = k["world"], k["look_at"]
-        v = [look[i] - cam[i] for i in range(3)]
-        nv = math.sqrt(sum(x * x for x in v)) or 1.0
+        lens = float(k["lens_mm"])
         d = [ctr[i] - cam[i] for i in range(3)]
         nd = math.sqrt(sum(x * x for x in d)) or 1.0
-        c = max(-1.0, min(1.0, sum(v[i] * d[i] for i in range(3)) / (nv * nd)))
+        fwd, rt, up = _basis(cam, look)
+        c = max(-1.0, min(1.0, sum(fwd[i] * d[i] for i in range(3)) / nd))
         ang = math.degrees(math.acos(c))
-        edge = max(0.0, ang - math.degrees(math.asin(min(1.0, rad / max(nd, rad)))))
-        half_v = math.degrees(math.atan(0.5 * (36.0 * 2160 / 3840) / k["lens_mm"]))
+        half_r = math.degrees(math.asin(min(1.0, rad / max(nd, rad))))
+        near_edge = max(0.0, ang - half_r)
+        far_edge = ang + half_r                       # <-- the one that overflows
+        half_v = math.degrees(math.atan(0.5 * SENSOR_H_MM / lens))
+
+        # the cluster's own box, translated to where it is at this film time
+        cp = plan["clusters"][t]
+        off = cp["explode_offset"]
+        exp_ctr = geo[t]["centre"]
+        sh = [ctr[i] - exp_ctr[i] for i in range(3)]
+        blo = [cp["bbox_min"][i] + off[i] + sh[i] for i in range(3)]
+        bhi = [cp["bbox_max"][i] + off[i] + sh[i] for i in range(3)]
+        us, vs, zs = [], [], []
+        for ix in (0, 1):
+            for iy in (0, 1):
+                for iz in (0, 1):
+                    p = [blo[0] if ix == 0 else bhi[0],
+                         blo[1] if iy == 0 else bhi[1],
+                         blo[2] if iz == 0 else bhi[2]]
+                    dd = [p[i] - cam[i] for i in range(3)]
+                    z = sum(dd[i] * fwd[i] for i in range(3))
+                    zs.append(z)
+                    if z > 1e-6:
+                        us.append(sum(dd[i] * rt[i] for i in range(3)) / z * lens)
+                        vs.append(sum(dd[i] * up[i] for i in range(3)) / z * lens)
+        if us:
+            ext_h = (max(vs) - min(vs)) / SENSOR_H_MM
+            ext_w = (max(us) - min(us)) / SENSOR_W_MM
+        else:
+            ext_h = ext_w = float("inf")
+
+        # the f-number that would hold the whole box inside the pixel budget
+        sfoc = float(k.get("focus_distance_m", nd)) * 1000.0
+        z_lo, z_hi = min(zs) * 1000.0, max(zs) * 1000.0
+        z_worst = z_lo if abs(z_lo - sfoc) > abs(z_hi - sfoc) else z_hi
+        if z_worst > lens and sfoc > lens:
+            n_req = (lens * lens * abs(z_worst - sfoc)
+                     / (COC_MM * (sfoc - lens) * z_worst))
+        else:
+            n_req = float("inf")
+        # and the standoff at which FILL_TARGET would be met on this lens
+        s_fit = nd * max(ext_h, ext_w) / FILL_TARGET if max(ext_h, ext_w) else nd
+
+        is_presentation = bool(k.get("presentation_dir_measured"))
         framing.append({"cluster": t, "t": k["t"], "range_m": round(nd, 3),
-                        "edge_angle_deg": round(edge, 3),
+                        "edge_angle_deg": round(near_edge, 3),
+                        "far_edge_angle_deg": round(far_edge, 3),
                         "half_frame_deg": round(half_v, 3),
-                        "lens_mm": k["lens_mm"]})
-        if edge > half_v:
+                        "lens_mm": lens,
+                        "extent_frac_frame_h": round(ext_h, 3),
+                        "extent_frac_frame_w": round(ext_w, 3),
+                        "depth_span_m": round((z_hi - z_lo) / 1000.0, 4),
+                        "fstop_shipped": k.get("fstop"),
+                        "fstop_required": (round(n_req, 2)
+                                           if n_req != float("inf") else None),
+                        "standoff_for_fill_m": round(s_fit, 3),
+                        "fill_target": FILL_TARGET,
+                        "sharp_budget_px": SHARP_BUDGET_PX,
+                        "presentation": is_presentation})
+        if is_presentation and max(ext_h, ext_w) > 1.0:
             framing_fail.append(
-                "%s is %.2f deg outside a %.2f deg half-frame at its own "
-                "presentation key (t = %.2f s, %.0f mm, %.2f m away)"
-                % (t, edge - half_v, half_v, k["t"], k["lens_mm"], nd))
+                "%s does not FIT its own presentation frame: %.2fx frame height, "
+                "%.2fx frame width at t = %.2f s (%.0f mm, %.2f m). It would fit "
+                "at %.2f m on this lens, and holding its %.2f m of depth inside "
+                "%.1f px then needs f/%.1f against the shipped f/%.2f"
+                % (t, ext_h, ext_w, k["t"], lens, nd, s_fit,
+                   (z_hi - z_lo) / 1000.0, SHARP_BUDGET_PX,
+                   n_req, k.get("fstop", 0.0)))
+        elif not is_presentation and near_edge > half_v:
+            # THE BRIDGES AND THE CLOSE-OUT KEEP THE OLD TEST, DELIBERATELY.
+            # Those keys are hand-placed and reviewed, and they are SUPPOSED to
+            # let a wing run off the edge of frame -- the front wing at t=25.90
+            # reads 30.46 deg on the far edge against an 11.91 deg half-frame
+            # and that is the shot, not a defect. The fit test is a claim about
+            # a PRESENTATION: a station built to make one cluster large enough
+            # to read has failed if the cluster does not fit. Applying it to a
+            # composed wide would have failed two frames a review already
+            # accepted, which is how a corrected metric loses its credibility.
+            framing_fail.append(
+                "%s is %.2f deg outside a %.2f deg half-frame at t = %.2f s "
+                "(%.0f mm, %.2f m away)"
+                % (t, near_edge - half_v, half_v, k["t"], lens, nd))
 
     # beat time offsets
     t0, offsets = 0.0, {}
@@ -1344,11 +1474,14 @@ def main(check=None):
     print(">> beat 1 FRAMING — each cluster's angle OUTSIDE the frame edge at "
           "its own presentation key, against the plan as it stands now")
     for r in framing:
-        over = r["edge_angle_deg"] - r["half_frame_deg"]
+        big = max(r["extent_frac_frame_h"], r["extent_frac_frame_w"])
         print(f"   {r['cluster']:<16} t {r['t']:6.2f}s  {r['range_m']:5.2f} m  "
-              f"{r['lens_mm']:4.0f} mm   edge {r['edge_angle_deg']:6.2f} deg vs "
-              f"half-frame {r['half_frame_deg']:5.2f} deg"
-              + ("   <-- OFF SCREEN by %.2f deg" % over if over > 0 else ""))
+              f"{r['lens_mm']:4.0f} mm   fills {r['extent_frac_frame_h']:5.2f} x "
+              f"{r['extent_frac_frame_w']:5.2f} of frame   far edge "
+              f"{r['far_edge_angle_deg']:6.2f} vs half-frame "
+              f"{r['half_frame_deg']:5.2f} deg   f/{str(r['fstop_shipped']):>4} "
+              f"needs f/{r['fstop_required']}"
+              + ("   <-- OVERFLOWS by %.2fx" % big if big > 1.0 else ""))
 
     fails = flight_fail + framing_fail + (
         ["clusters that seat unseen: " + ", ".join(unseen)] if unseen else [])
