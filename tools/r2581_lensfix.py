@@ -163,12 +163,20 @@ def design(path, car, world_t, target, smooth=25, ceiling=SMEAR_CEILING_PX):
 
 
 # ------------------------------------------------------------------ selftest --
-def selftest(path, car, world_t, inject=""):
+def selftest(path, car, world_t, inject="", tgt=0.0646):
     """`inject` breaks the design on purpose so the gate can be SEEN failing.
     A passing gate that has never been shown failing proves nothing -- R2-427.
+
+    `tgt` is whatever target the command line asked for, so the gate runs on the
+    curve actually being shipped rather than on a fixed one. R2-589: the retuned
+    ramp is a different curve from variant A's floor and has to clear the gate on
+    its own numbers.
     """
     ok = True
-    m, rows, _c = design(path, car, world_t, 0.0646)
+    lbl = (f"ramp {tgt[0]*100:.2f} -> {tgt[1]*100:.2f} %" if isinstance(tgt, tuple)
+           else f"floor {tgt*100:.2f} %")
+    print(f"  gating the curve for target {lbl}")
+    m, rows, _c = design(path, car, world_t, tgt)
     if inject == "step":
         # a one-frame lens jump in the middle of the support: a cut, in the
         # only channel this change touches
@@ -278,7 +286,8 @@ def main():
     path = {int(k["f"]): k for k in raw["path"]}
 
     if a.selftest:
-        okay = selftest(path, car, world_t, a.inject)
+        okay = selftest(path, car, world_t, a.inject,
+                        tuple(a.ramp) if a.ramp else a.target)
         print(f">> STAGE RESULT: {'LENSFIX_SELFTEST_OK' if okay else 'LENSFIX_SELFTEST_FAILED'}")
         return
 

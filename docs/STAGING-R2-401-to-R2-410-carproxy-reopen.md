@@ -145,3 +145,80 @@ criterion is pixels — but the answer that follows is not "55 m is acceptable".
 It is that the ride, not the distance, is the thing on screen, and the ride is
 enormous.** I am not claiming these pieces are out of shot. They are the shot.
 
+
+---
+
+## R2-4xx — the ride ends in the REAR WING, and my own transport census could not see it
+
+### The mechanism, frame by frame
+
+`MUL05_S02` in the car's own frame, through the production bake. The proxy's
+solid vertical faces are at car-local x = +1.500 (`tub` front), +1.150 (`halo`
+front), +0.100 (`airbox` front), −0.700 (cover/airbox rear) and **−2.200
+(`wing_r` front)**:
+
+| sim f | film | car-local x | car-local z | d(x)/dt rel. | world v |
+|---|---|---|---|---|---|
+| 150 | f860.4 | +2.719 | 1.907 | −8.22 | 8.75 |
+| 206 | f866.4 | +0.793 | 1.985 | −10.33 | 6.99 |
+| 248 | f890.4 | −0.526 | 1.112 | −7.41 | 10.28 |
+| 290 | f917.7 | **−1.716** | 0.956 | −4.76 | 14.76 |
+| 304 | f926.8 | −1.843 | 0.952 | **+1.56** | 21.85 |
+| 318 | f936.0 | −1.679 | 1.073 | **+3.68** | 25.41 |
+| 360 | f963.3 | −2.005 | 1.519 | +1.08 | 23.68 |
+| 430 | f1008.8 | −2.522 | 1.502 | +1.24 | 27.13 |
+| 472 | f1036.1 | −2.900 | 1.687 | −4.36 | 23.31 |
+
+From **film f917 to f1044 — 127 film frames — the segment sits within half a
+metre of car-local x = −2.200**, and its velocity relative to the car
+**oscillates between −6 and +3.7 m/s**. It is not sliding. It is being caught,
+released and caught again by a wall, while the car's authored animation takes
+its world speed from 14.8 to 27.1 m/s.
+
+**That wall is the rear wing.** `wing_r` is
+`box(TAIL_DX, −2.200, −0.535, 0.535, 0.700, 0.980)` — a solid slab **0.478 m of
+chord, 1.07 m of span and 0.280 m thick** — flanked by `rep_l` / `rep_r`, two
+endplates rising from z 0.320 to 0.980. Together they are a **tray**: a
+full-width leading face to stop anything sliding aft, two side walls to stop it
+leaving sideways, and a floor. Anything that reaches it is kept.
+
+**A real rear wing is an aerofoil.** Its mainplane is a 30–50 mm element, not a
+280 mm block, and the space between it, the beam wing and the crash structure
+is open air. A member sliding off the engine cover falls **through** that gap
+onto the track. In the proxy the gap is filled and it lands in a box.
+
+**This is the same class of finding as the floor's 8 mm ground clearance
+against 11.5 mm glass (R2-384): a convex decomposition turning an open,
+skeletal structure into a solid one, and the debris behaving accordingly.** It
+is also why friction was never going to fix the ride — of the 9.3 m/s² the
+segment gains, only 2.43 m/s² is available from friction (µ_combined 0.2475 × g).
+**The rest is normal contact against a face, and a normal force does not care
+what µ is.**
+
+### P26 — committed while the three cells bake
+
+**The ride survives at every friction.** `MUL05_S02` will be held on the deck
+in all three 700-frame cells — µ 0.20, 0.35 and 0.55 — and B1's "0 frames held"
+at 400 frames will not survive the longer window. If the ride is a rear-wing
+trap, µ is not the lever and no value of it is.
+
+### And a correction to my own instrument, which is why I nearly missed this
+
+`carproxy_census.py` measures "transport" as distance covered inside the
+proxy's own point-cloud envelope inflated by 120 mm. That envelope's **upper
+bound is car-local z = 1.112 m**. `MUL05_S02` rides at **car-local z 0.95 to
+1.69**. **For most of the ride it is above the box I was measuring transport
+inside**, so every `transport_m` figure I have published under-counts the
+high-riding members — including the headline **40,587 m → 8,445 m**.
+
+It is the same error in both tables, so the −79 % ratio is probably close to
+right, but "probably" is not a measurement and the corrected figures are being
+computed now. **B1's `MUL05_S02 transported 0.0 m, 0 frames held` — which I
+came within an inch of treating as evidence that friction 0.20 kills the ride —
+means only that the segment was not inside a box that stops 118 mm above the
+car's roof.** It says nothing about whether it was riding.
+
+The measurement that *did* see it — "on the deck" as car-local z > 0.55 within
+the car's plan — is the one in the phase decomposition above, and it reports
+**335 frames aboard**, not zero.
+
