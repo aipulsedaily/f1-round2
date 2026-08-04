@@ -1,7 +1,7 @@
-# Staged for the defect log's owner — R2-266 to R2-276
+# Staged for the defect log's owner — R2-266 to R2-277
 
 Kept out of `docs/DEFECT-LOG-R2.md` deliberately: that file has one owner. My
-block is **R2-266 to R2-280** and I have used eleven of it. Paste or renumber as
+block is **R2-266 to R2-280** and I have used twelve of it. Paste or renumber as
 you see fit.
 
 All of it is one job: **making the aperture read in the closing frame.** This
@@ -348,6 +348,29 @@ otherwise perfectly regular lattice with no lattice in them.
 R2-275 are what it has to change.** The demonstrator is an *upper bound* — a
 real bake would have those members fall, and some would come to rest in the
 lower aperture or on the sill rather than vanish.
+
+---
+
+## R2-277 — the one-take law, checked in pixels rather than argued from the mechanism
+
+The continuity claim is that the supplied frame is invisible until it breaks,
+because every piece exists on all 2,978 frames and its F-curve extrapolates
+CONSTANT backwards to the home pose, which is where round 1's solid stood. That
+is an argument about a mechanism. **Beat 1, f0400, rendered from both builds:**
+
+| | |
+|---|---|
+| pixels bit-identical | **78.52 %** |
+| changed > 1/255 | 0.1729 % (3,586 px) |
+| **changed > 8/255** | **0.0000 % (0 px)** |
+| **max &#124;Δ&#124;** | **3/255** |
+| mean &#124;Δ&#124; | 0.2165/255 |
+
+Against a measured repeat floor of **max 41/255** on the same camera at f2978,
+3/255 is not a change, it is the renderer. **The east wall of beat 1 is the
+wall it has always been**, and it stays that way until f860, where the AABB
+readback also puts every replaced member on round 1's coordinates to
+**0.0000 mm** at f844.
 
 ---
 
