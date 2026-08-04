@@ -768,8 +768,9 @@ grandstand roof at 260 m *outside* the white bar.
   and f901 while its outline barely moves. Confirming it needs a Cycles A/B with
   `BREACH` hidden, **and that A/B was never run** — so the hypothesis stays
   unproven rather than quietly hardening into the answer. A sub-frame shutter
-  sweep (does a shard cross the bar during the shutter?) was started and did not
-  produce output.
+  sweep (does a shard cross the bar during the shutter?) was started and was
+  **killed by memory pressure before producing output** — abandoned, not
+  pending.
 * **The one caveat, kept rather than buried, and now closed as abandoned:**
   `VEG_*` — 24,654 trees, 3,299 hedges, 26 instance libraries — was **never
   raycast**. Three load attempts were killed by memory pressure. A canopy
