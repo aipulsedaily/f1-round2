@@ -692,3 +692,43 @@ friction alone**: the shipped value is the one the verified frame result was
 measured at, and the honest thing to do with a knife-edge is not to walk along
 it.
 
+
+---
+
+## R2-393 — seven predictions about the production bake, committed while it runs
+
+`sim/tmp/run_r2387_production.sh "--air-drag derived"`, 1,657 frames, launched
+13:19, detached under `setsid`. Written now, with 400-frame cells in hand and
+the full window not yet baked. The 400-frame cells are explicitly NOT
+sufficient evidence for most of these: at f1005 the field is still being
+plowed, and B0's *instantaneous* speed there is no better than A0's. Every
+number below is an extrapolation from the drag rate, and they are on the record
+as such.
+
+* **P13** `MUL05_S02` travels **under 30 m**, against 89.79 m. Its 25.6 m of
+  deck ride was worth ~10 m/s of extra speed, and 64 m of the 89.79 was the
+  slide that speed bought; drag at λ ≈ 0.28 /s takes most of that back.
+* **P14** Bodies over 1 m/s at the last key: **under 400**, against 2,646. The
+  median body's drag rate is 0.46 /s, so over the 3 s between the car pulling
+  away and the last key the field loses a factor of four on top of friction.
+* **P15** The field's median end x: **25–50 m**, against 102.81. And the
+  frozen-and-moving population in the closing raster falls **below 400** from
+  2,645, with a pixel extent under **1,200 × 700**, against 2,581 × 1,018.
+* **P16** The connected aperture stays **2.15 × 6.00 m**, bay 4 ≥ 96 %, bay 5
+  ≥ 95 %, **8 of 8** mullion-5 segments gone, `CONTROLS PASS`, and the untouched
+  mullions under 10⁻³ m. This is the one I am most confident of, because B0
+  already shows it at 400 frames and it *improved*.
+* **P17** The seam table's car columns come back **bit-identical** —
+  `car_anim_measured.json` sha256[:16] `7fe6b8a97b362ac0`, the same two joins,
+  the same speeds to six decimals. Not "within tolerance": identical. If they
+  are not, something has written to the car and the whole block is void.
+* **P18** At f2978, `WOUND_bridged` changed > 8/255 lands within **1.5
+  percentage points of 11.33 %** and `grid_contrast` stays under **0.012**
+  (the demonstrator is 0.00777, the corrected frame 0.00785). f2940 holds too.
+* **P19** The one I expect to be wrong: **P14's 400.** Air drag is linearised
+  about 16.58 m/s and is therefore *weakest* exactly where the field ends up —
+  the last metres are run at 1–3 m/s, where the linearisation over-states drag
+  but the absolute force is tiny and dry friction has to do the stopping.
+  If the count lands between 400 and 1,200 I will say the fix is partial and
+  name what is left rather than move the threshold.
+
