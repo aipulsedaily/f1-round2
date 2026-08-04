@@ -202,3 +202,45 @@ Scripts: `sim/tmp/cont/an_{tail,sink2,visible,impulse,hang,hang2}.py`,
 | **P6** | the wound reads as a dark hole at f2901 | **REFUTED BY THE PICTURE.** It reads as **crazed glass in a complete standing frame**, with debris on the apron. The static round-1 mullion grid runs unbroken across the aperture. R2-095/R6, seen from a real beat-6 frame. |
 | **P6 `[2nd]`** | mullion 5's stub is legible at f2565 | **UNANSWERABLE AS ASKED.** At f2565 the wound's projected position is **behind the gantry pylon**, and at f2575 (the closest beat-5 approach, 184 m) it is destroyed by motion blur. Beat 5 never gives a legible look at the wall. |
 | **P7** | the fix moves only the treated population | **NOT EXERCISED.** No tail fix was applied, because the freeze was measured to be off camera and the residual under a pixel. The negative-control design stands unused. |
+
+---
+
+## CORRECTIONS FROM THE COORDINATOR, APPLIED
+
+Three numbers in my brief were superseded mid-task. What changed, and what it
+did to the results above:
+
+**"2,275 bodies not at rest" vs "1,599".** Both are right and they are
+different measurements. Settled in `sim/rest_gate.load_state`:
+
+| artefact | measure | over 1 mm/frame | worst |
+|---|---|---|---|
+| the reconstruction | step between the last two FILM keys, f1164→f1165 | **1,599 of 3,796 (42.1 %)** | 3.049 m/frame |
+| the raw bake | last SIM step (1/240 s) scaled to a film frame | **2,275 of 3,948 (57.6 %)** | 4.510 m/frame |
+
+The gap is the decimator — it drops any key whose linear reconstruction error
+is under 1.5 mm, which is exactly the small residual motions — and one film
+frame spans ten sim frames at the end of beat 3's ramp, so the reconstruction
+reports an average where the bake reports an instantaneous velocity. The gate
+now uses the reconstruction, per `verify_breach.run`'s own rule, and reports the
+bake beside it as `solver_state`. **It does not change the verdict**: the
+residual at the next sighting falls 0.518 → 0.103 px, inside a 1.0 px tolerance
+either way.
+
+**The `matrix_world` trap.** `p1_extrap.py` did read `matrix_world`, so it was
+exposed. Re-measured on the **F-curves** in `sim/rest_gate.py --blend`, which
+are defined whether or not anything is drawn: 26,572 transform curves, census
+`{CONSTANT: 34164}`, `max|delta| = 0.0` at f1166/f1400/f2565/f2901/f2978 with
+**0 curves moving**, positive control 42.417 over 26,524 curves. The two methods
+agree to the last bit — 42.41694641113281 either way — so P1 stands, but it now
+stands on the arm that cannot be fooled.
+
+**"627 below the floor" splices two instruments.** Agreed, and independently
+reproduced: 70 rotated vs 626/627 axis-aligned (I measure 627 at the 4 mm
+tolerance; the difference is one body at the boundary), with every dropped body
+above the floor. R2-197 owns the cause and the fix is next-bake-only, so the 70
+are still in `film14_breach.blend`.
+
+**`check_persist` returned no verdict for 1,813 frames.** Not in my predictions
+at all — I had not looked at it. Fixed as R2-200: it now REFUSES with
+`PASS=False`, names the frames it cannot see, and names the arm that can.
