@@ -20040,3 +20040,31 @@ re-framing work.  The track is therefore exactly right for this block, and this
 is a measurement rather than an assumption — which matters, because "the camera
 has moved twice since" is written into `sim/land_breach.sh` as a standing
 hazard.
+
+## R2-707 — PARTIAL, agent lost to a usage limit mid-investigation: the rear-wing tray hypothesis is REFUTED at 240 Hz
+
+*Captured by the main thread from the agent's last message before it was
+terminated. It is a fragment, not a finished finding, and the follow-through
+was never done.*
+
+The rear-wing aerofoil bake was dispatched on the strength of R2-700's
+mechanism: the collision proxy's mainplane is 1.070 m span x 0.280 m thick, a
+58.6 % thickness-to-chord ratio against a real mainplane's 10-15 %, and that
+solid tray was believed to be what holds a mullion segment on the car for 127
+film frames.
+
+**Re-simulated at 240 Hz, the member never comes within 60 mm of the solid
+wing, against a 40 mm collision margin.** So the tray is NOT what it is
+resting on. The named lever is refuted before the bake was run - which is the
+same shape as the momentum hypothesis before it (26.54 N.s, 0.203 % of the
+car's momentum) and the collider-withdrawal hypothesis before that.
+
+Its own next words were *"let me find what it IS touching"*, and that work was
+never done.
+
+**What remains open:** the deck ride is real and measured at 1,879 px against
+the slide's 11 px, so it is the visible half of the defect. Two named
+mechanisms are now refuted and the contact surface is unidentified. The
+acceptance criterion from R2-700 stands and is unaffected: nothing may come to
+rest on top of the car, judged over the peak window f0967-f0977 and preferably
+more than one seed.
