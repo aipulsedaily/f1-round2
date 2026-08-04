@@ -44,6 +44,21 @@ It went in **without a bake behind it**: the shipped table `breach_full_m1.npz`
 registers **233** box colliders and this build registers **234**, and the extra
 one is the outfield.
 
+**And R2-197 was itself a fix.** It was the repair for the 70 bodies that ran
+off the end of the static ground and hung motionless 154 m underground for the
+last 1,813 frames of the take. So **the repair for one defect silently
+disabled the entire pipeline it was repairing**, and nothing noticed, because
+the only thing that would have noticed is a bake and nobody ran one. **A fix
+that has never once been exercised is not a fix, it is a claim** — and this one
+sat in the tree for hours reading as done. The two commits either side of it
+touched the same file and neither could have baked either.
+
+Whether the outfield actually *does* catch the 70 is still unmeasured here and
+is not this block's to certify: what can be said is that `motion_report` now
+reports `caught_by_the_outfield`, it read **0** in the null (nothing should
+reach it with no car in the scene), and the production bake is the first run
+that will exercise it at all.
+
 The rule the gate is for is *"nothing may be ejected by its own initial
 condition"*, and a PASSIVE body cannot be ejected — Bullet never integrates it.
 Every defect this gate has ever caught was an ACTIVE body: 582 clamped shards
