@@ -1,7 +1,7 @@
-# Staged for the defect log's owner — R2-266 to R2-277
+# Staged for the defect log's owner — R2-266 to R2-278
 
 Kept out of `docs/DEFECT-LOG-R2.md` deliberately: that file has one owner. My
-block is **R2-266 to R2-280** and I have used twelve of it. Paste or renumber as
+block is **R2-266 to R2-280** and I have used thirteen of it. Paste or renumber as
 you see fit.
 
 All of it is one job: **making the aperture read in the closing frame.** This
@@ -398,6 +398,38 @@ rendered, and beat 3 is where it was always going to show. **The wound reads at
 
 **The uncomfortable half:** none of that helps the last image of the film, and
 the last image was the brief. It should not be allowed to.
+
+---
+
+## R2-278 — `grid_contrast` stops working below one pixel per member, and the picture caught it
+
+Found by running my own metric on a frame I had not planned to measure, and it
+fails there. The demonstrator against R6 at **f2940** (55.3 mm, wound
+43.1 × 58.1 px):
+
+| | f2978 (74.0 mm) | **f2940 (55.3 mm)** |
+|---|---|---|
+| changed >8/255, WOUND_bridged | 11.17 % | **12.44 %** |
+| CTL_UNTOUCHED ×2 | 0.0288 / 0.0000 % | **0.0000 / 0.0000 %** |
+| **`grid_contrast`, WOUND_bridged** | **0.03675 → 0.00777** | **0.02572 → 0.02672** |
+
+**More pixels changed at f2940 than at f2978, the controls are cleaner, and
+`COMPARE_f2940_R6_vs_DEMO.png` plainly shows two bays of lattice replaced by
+two bays of nothing — and the metric does not move.**
+
+The cause is scale and it is arithmetic. At f2978 the wall is 12.96 px/m, so a
+75 mm transom is **1.00 px**. At f2940 it is 9.69 px/m and the same transom is
+**0.58 px** — sub-pixel, spread by antialiasing across the very rows the local
+baseline is taken from (±3–5 px = 0.31–0.52 m of wall at this range). The
+"line" and the "baseline" are sampling the same thing, so their difference is
+noise whether or not the member is there.
+
+**So `grid_contrast` is valid only where the members it measures are at least
+about one pixel**, and that is the closing frame and nothing shallower. It is
+reported here rather than quietly used on the one frame where it worked. The
+pixel-change fraction against a measured repeat floor has no such limit and
+agreed with the picture at both frames; **where the two disagree, the picture
+and the change fraction win.**
 
 ---
 
