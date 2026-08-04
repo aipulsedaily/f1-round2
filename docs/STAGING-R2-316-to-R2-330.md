@@ -652,5 +652,68 @@ If f200 sharpens as much as f400 does, the motion-blur finding is wrong and R2-3
 and R2-329 both have to be withdrawn. That is the outcome this pair is being
 rendered to permit.
 
-**Result: not yet delivered.** The three controls were still queued behind f792
-when this block was written.
+### RESULT — all three delivered, and the prediction held on every one
+
+`tools/dof_ab.py`, per block, with the null taken from inside the same pair: DOF
+cannot sharpen what was already at the focus plane, so those blocks differ only by
+Monte Carlo noise between two independent renders and their change fraction IS the
+noise floor. It measures **-0.004 to +0.003** on all three pairs, so everything
+below is far outside it.
+
+```
+                     p10 (the null)   p50 (typical)   p90 (what the lens blurred)   whole frame
+f200   predicted:                     little change
+f200   measured:        +0.003          +0.138             +0.580                     +0.312
+f400   predicted:                     LARGE change
+f400   measured:        -0.004          +0.689             +7.430                     +2.158
+f591   predicted:                     split: tyre sharpens, centre stays smeared
+f591   measured:        -0.003          +0.028             +0.469                     +0.264
+```
+
+**THE FALSIFIER IS SURVIVED, AND NOT NARROWLY.** f400's typical block gains 69 %
+and its worst decile gains **743 %** — 8.4x the gradient energy — when the lens is
+opened up. f200's typical block gains 13.8 %. That is **5x less at the median,
+12.8x less at p90, and 6.9x less on the whole frame.** R2-321 and R2-329 stand.
+
+f591 split exactly as predicted: **+2.8 % at the median and +46.9 % at p90** — the
+lens was blurring the tyre wall in the near foreground and leaving the rest of the
+frame alone, because the rest of the frame is smeared, not defocused.
+
+**The anisotropy moves the way the theory requires and nothing else would.**
+Removing an ISOTROPIC blur from a picture that also carries a DIRECTIONAL one must
+leave the anisotropy the same or higher; if defocus had been the dominant term it
+would have fallen.
+
+```
+f200  0.845 -> 0.882      surviving axis 160.2 -> 158.5 deg   (smear axis, unmoved)
+f591  0.685 -> 0.753      surviving axis  58.5 ->  54.8 deg   (smear axis, unmoved)
+f400  0.401 -> 0.642      surviving axis  90.2 ->  94.1 deg   (SCENE axis, unmoved;
+                                                    its predicted smear axis is 169)
+```
+
+**And the pictures say it more plainly than the numbers do.** f400 with the lens
+opened up stops being a bright smear and becomes a crisp architectural frame — the
+glass-wall mullions, the floor tiling, the suspension arm, the turntable rim, all
+sharp. f200 with the lens opened up is **visually indistinguishable** from f200
+with it closed: the same vertical streaks through the floor panels and sidepods,
+the same illegibility, with only the far ceiling a touch crisper.
+
+### What this settles, and it is worth more than the finding it was testing
+
+**The standing complaint about f400 — "a bright smear, no subject in focus" — is
+correct, and it is ISOLATED.** Beat 1 is not uniformly soft. It has two different
+defects that look alike in a single frame and have different fixes:
+
+* **f400 is a focus-placement failure.** The focus plane sits at 1.173 m, the
+  nominated cluster (SW) is at 1.501 m, and SW's centre is outside the vertical
+  frame anyway. The content is fine — the DOF-off frame proves the geometry and
+  materials there are sharp and legible. **Fixing the standoff and the aim fixes
+  f400.**
+* **f200, f591 and the rest of the tour are a camera-speed failure.** No aperture,
+  no focus pull and no standoff change will touch them. **Only slowing the camera
+  or shortening the lens will.**
+
+Nobody could tell these apart before this pair existed, and the whole-frame number
+would not have separated them either: f200's whole frame moves +0.312 and f591's
++0.264, which look like the same frame until you see that f200's p50 is five times
+f591's.
