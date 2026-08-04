@@ -774,3 +774,100 @@ this entry: **render the candidate legend alone, render it again behind its
 neighbour as a holdout, and compare pixel counts** — with the neighbour's own
 solo render as the positive control, because 0 % occlusion and a dead instrument
 are indistinguishable without it.
+
+---
+
+## R2-512 — `film16` reached the ladder queue with NO BREACH IN IT, and nothing in the pipeline could have said so
+
+**The defect.** `sim/apply_breach.py` was never run on `film16.blend`. Not
+degraded — absent. The car drives through an **unbroken glass wall**, with round
+1's undeformed aluminium grid still standing across it. That is R2-266's defect
+in total form: the wall never breaks, so there is no wound to persist, and every
+continuity result downstream of it is void.
+
+**How it happened, exactly.** `render/world/assembly/r2/v124/build_film14.sh`
+documents "THE FULL CHAIN, IN ORDER, and none of it skipped" — and that chain is
+**three steps**, ending at `tools/build_film_scene.py`. The breach is landed by a
+*different* script, `sim/land_breach.sh`, which is not named in it. I copied the
+film14 harness one generation forward, faithfully, and inherited its blind spot.
+The chain that says it is complete is not complete.
+
+> **My verification was thorough on lighting, camera, items and levelling, and
+> the breach was not on the list.** Every arm I built compared `film16` against
+> `film14` — the *pre-breach* scene — and on that comparison `film16` is
+> correct. The ship is `film14_breach_r6`, and nothing I ran ever compared
+> against it. **A bar copied from the wrong baseline passes for the wrong
+> reason.**
+
+### the instrument: complementary signatures, not a string
+
+Checking for one created object is weak — a name can be missing because the
+applier did not run, because it was renamed, or because a read failed. So
+`tools/breach_gate.py` asserts **both directions of the same event** on the same
+file:
+
+```
+                                    film14_breach_r6   film16
+CREATED  BREACH_Shards (collection)          1            0
+CREATED  GP_b04        (pane)                2            0
+CREATED  GS_b04_00000  (shard)               3            0
+CREATED  BF_MUL05_S02  (baked frame piece)   3            0
+DELETED  GW_Right_Mull_04    round-1 mullion 0            2
+DELETED  GW_Right_Transom_0  round-1 transom 0            2
+CONTROL  ONER          (camera)              6            6
+```
+
+A blend that never saw the applier fails on **both** arms at once — its created
+objects missing AND its deleted objects still standing. No rename, no read error
+and no compression artefact can imitate that. And the **CONTROL being non-zero
+on the same file** is what makes the zeros mean anything: without it, "no
+shards" and "the reader is broken" are the same reading, which is the failure
+mode this project keeps rediscovering. The gate refuses with
+`BREACH_GATE_UNREADABLE` if the control is zero, and with
+`BREACH_GATE_INVALID` if the positive control blend fails.
+
+### WHICH BAKE — the trap next to the fix
+
+There are two landed tables on disk and applying the wrong one would have been
+worse than applying none:
+
+```
+apply_film14_r6.json  (THE SHIP)   BF_MUL05_S02 max travel   0.1449 m   mullions [4,5,6]
+apply_NEW.json        (R2-387)     BF_MUL05_S02 max travel  55.3509 m   mullions [3,4,5,6]
+```
+
+`sim/land_breach.sh` **stage 1 regenerates `sim/out/breach_film.npz` from
+whatever raw bake sits in `sim/tmp/`**, so running the script end to end could
+have silently swapped R2-387's table in. It was pinned instead:
+
+```
+sha256 3e312977987ac57a...  sim/out/breach_film.npz
+sha256 3e312977987ac57a...  sim/out/breach_film_R6_SHIPPED.npz   <- byte-identical
+sha256 b7f6041d30560b44...  sim/out/breach_film_R2387.npz        <- NOT this one
+```
+
+and the applier invoked directly with `--film sim/out/breach_film_R6_SHIPPED.npz`,
+skipping stages 0–5 entirely. Stage 5b (the camera track) was checked and is not
+read by `apply_breach.py`, so skipping it costs nothing.
+
+### the general lesson, which is bigger than the breach
+
+This is R2-502 one level up. R2-502 was a *build* that printed success having
+written no file. This is a *pipeline* that produced an entirely plausible 7.5 GB
+film with a whole stage missing, and every gate on it passed, because every gate
+asked about the stages that did run.
+
+**The pattern to hunt is: any stage that mutates the film AFTER
+`build_film_scene.py`.** Those are exactly the ones an assembly-focused rebuild
+does not think to invoke, because they are not in the assembly's chain and not in
+the film builder's chain — they are in a third script nobody's checklist names.
+Grepping `save_as_mainfile` over `tools/`, `sim/` and `anim/` returns 32 files;
+most are A/B probes, but the ship-path mutators are a short list and it should be
+written down in one place, the way `SHIPPING.md` names the one shipping world.
+
+**The durable check is not a list of appliers, though — it is a set difference.**
+Once `film16_breach.blend` exists, diff its object-name census against
+`film14_breach_r6.blend`'s. Any family present in the ship and absent in the new
+scene is a missed stage, whether or not anybody remembered it existed. That
+subsumes guessing, and it is the only version of this check that cannot go stale
+as appliers are added.
