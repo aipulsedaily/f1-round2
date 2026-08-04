@@ -176,6 +176,59 @@ THRESH_TRANSOM = 260.0           # M6 self-tappers into the front screw port
 # sequential-impulse iterations to satisfy, not easier — see `null_verdict`'s
 # `mobility` field, which exists so that this can never again be invisible.
 #
+# AND THAT SENTENCE IS NOW MEASURED, NOT ASSERTED — R2-199, THE BLOW-UP.
+# ---------------------------------------------------------------------
+# `sim/tmp/bu1..bu9.json` characterised two clusters of ejected shards: A, 480
+# shards to 137.05 m/s at sim frames ~170-179, and B, 348 shards to 106.5 m/s
+# at ~240-259, cluster B with NO measurable contact — p50 distance to the
+# nearest car proxy part 1.02 m, nothing within 10 mm of a static surface,
+# nearest neighbour 15 mm.  Cluster B was left open and undiagnosed.
+#
+# **BOTH CLUSTERS BELONG TO A BAKE THAT IS NOT THE ONE IN THE FILM.**  bu1..bu9
+# ran at 19:36-19:46 on `sim/tmp/breach_bake.npz` — bond 4000, mullion
+# 900/1400, the SUPERSEDED config.  `breach_full_m1.npz` (22:28, bond 100,
+# mullion 40/120) is what `apply_breach` keyed, and the identity is not an
+# inference: the shipped film table's last frame is **bit-identical** to
+# `breach_full_m1`'s last frame (max |diff| = 0 m) and **626.781 m** from
+# `breach_bake`'s.  Measured on the two bakes with one script, same method:
+#
+#     bond_per_m                 4000        100
+#     shards over 60 m/s          828          7
+#     peak speed                137.05     110.41  m/s
+#     cluster A                   480          0
+#     cluster B                   348          0
+#
+# Every other input is identical — same fracture plan, same seed, 3,796 shards,
+# 12,756 bonds, 641 glass edges, 539 PVB, 14,075 constraints — so the bond and
+# mullion thresholds are the only independent variable and this is a controlled
+# experiment that had already been run and never read across.
+#
+# WHY, AND IT IS NOT THE STORY THAT LOOKED OBVIOUS.  The predicted mechanism
+# was a stretched joint slinging a shard back: it is REFUTED.  At peak-1 the
+# hot shards' PVB partners are stretched a median of 1.4 mm with **0.0 %** over
+# the 45 mm limit, and their bonded neighbours 1.9 mm with **0.0 %** over
+# 100 mm.  Nothing is stretched, nothing is touching, and one sim frame later
+# the shard is doing 137 m/s backwards.  The second prediction — a fixed
+# breaking IMPULSE, so v = J/m — is refuted too, and by its own controls:
+# `m * v_peak` for cluster B has a median of 0.834 kg m/s, temptingly close to
+# THRESH_PVB = 0.9, but the ordinary population sits at 0.616 (ratio 1.34, not
+# the 5x predicted) and the log v vs log m slope over the hot set is **-0.017,
+# r = -0.06** — no mass dependence at all — while the ORDINARY shards show
+# -0.358, r = -0.80.  Reported as failing rather than dropped.
+#
+# What survives is the plain reading, and it is the sentence above: at 4000 a
+# bond's cap is a median **168 kg m/s**, which for the median 14.98 g shard is
+# **11,215 m/s** of headroom.  The network therefore never sheds a constraint,
+# stays fully connected and over-determined, and the residual the 24 iterations
+# cannot satisfy leaves as velocity.  At 100 the same cap is 4.2 kg m/s, bonds
+# break, the network relaxes, and 828 ejections become 7.
+#
+# So cluster B is closed as a defect of the superseded config.  The 7 that
+# remain at bond 100 are a DIFFERENT mechanism and are the stretched-joint case
+# the prediction described: 66.7 % of them are over the PVB's 45 mm limit at
+# peak-1 (p50 stretch 105 mm) against 3.6 % of ordinary shards.  Seven shards,
+# and the freeze is off camera, so they are logged rather than chased.
+#
 # THE RESIDUAL IS STILL OPEN (R2-097).  At 100 the wake-all null loses 3 of
 # 3,796 and the panes that stay sag 11.5 px against a 1 px criterion.  It also
 # missed that criterion at 4000 (10.75 px) and it has never met it at any
@@ -550,7 +603,31 @@ def build(args):
     # falls down a 60 mm slot at the breach plane
     thr = box_obj("SIM_Threshold", (14.94, -14.0, -0.30), (15.0, 14.0, 0.0),
                   C_static, M_conc)
-    for ob in ([floor_in, floor_out, thr, sill, head]
+    # THE OUTFIELD, AND WHY THE FLOOR HAD AN EDGE TO FALL OFF (R2-197).
+    #
+    # `SIM_FloorIn` stops at x 14.94 / |y| 11 and `SIM_FloorOut` at x 46 /
+    # |y| 14.  The field's maximum horizontal travel in the shipped 6.9 s bake
+    # is **653 m**.  So 70 bodies ran off the end of the static ground and were
+    # still in FREE FALL at the last key, the worst 154.6 m down at 108.2 m/s —
+    # and because apply_breach extrapolates CONSTANT, they then hang there,
+    # motionless, 154 m underground, for the remaining 1,813 frames of the take.
+    #
+    # This was not tunnelling.  Measured at the sim frame each one first crosses
+    # z = 0: 55 of the 70 are OUTSIDE the union of the three slabs above (28
+    # beyond x 46, 27 past |y| 14, 1 west of x -15), crossing at a median
+    # -0.34 m/s — a body walking off a ledge, not a body punching through one.
+    # The other 15 cross inside the footprint and are the real tunnelling
+    # residue, at 1.9 % of what the edge costs.
+    #
+    # The outfield is sized from that 653 m with a 1.5x margin, and it is a
+    # SINGLE BOX so it costs one broadphase proxy.  It sits 1 mm below the
+    # floor slabs' top so it can never win a contact against them inside the
+    # showroom.  `motion_report` counts what lands on it, because a catch slab
+    # that silently absorbs a different bug is worse than no catch slab.
+    OUTFIELD_M = 1000.0
+    out_field = box_obj("SIM_Outfield", (-OUTFIELD_M, -OUTFIELD_M, -0.60),
+                        (OUTFIELD_M, OUTFIELD_M, -0.001), C_static, M_conc)
+    for ob in ([floor_in, floor_out, thr, sill, head, out_field]
                + sill_parts + head_parts):
         add_rb(ob, "PASSIVE", shape="BOX", friction=0.62, rest=0.06)
     log("static ground built")
@@ -1141,7 +1218,40 @@ def motion_report(loc, quat, names, info):
         never_moved=int((d <= 1e-6).sum()),
         below_floor=int((loc[:, :, 2].min(axis=0) < -0.02).sum()),
         outside_x=int((loc[:, :, 0].max(axis=0) > 60.0).sum()),
+        # R2-197.  `below_floor` alone cannot tell a body that TUNNELLED from a
+        # body that walked off the edge of the static ground, and the two have
+        # different fixes.  Split it by where the body was when it crossed:
+        # inside the three slabs' footprint is a solver failure, outside it is a
+        # missing floor.  `caught_by_the_outfield` must be the whole of the
+        # second column once SIM_Outfield exists -- if it is not, the catch slab
+        # is absorbing something it was not built for.
+        left_the_slab_footprint=int(_off_edge(loc)),
+        below_floor_inside_the_footprint=int(
+            (loc[:, :, 2].min(axis=0) < -0.02).sum() - _off_edge(loc)),
+        caught_by_the_outfield=int(
+            ((loc[:, :, 2].min(axis=0) < -0.02)
+             & (loc[:, :, 2].min(axis=0) > -0.60)).sum()),
         nan=int(np.isnan(loc).sum() + np.isnan(quat).sum()))
+
+
+# the three slabs `build()` lays down, as one place rather than three literals
+SLAB_FOOTPRINT = ((-15.00, 14.94, -11.0, 11.0),
+                  (14.94, 15.00, -14.0, 14.0),
+                  (15.00, 46.00, -14.0, 14.0))
+
+
+def _off_edge(loc):
+    """How many bodies first go below z = 0 while OUTSIDE the slab footprint."""
+    n = 0
+    for i in range(loc.shape[1]):
+        below = np.where(loc[:, i, 2] < 0.0)[0]
+        if not len(below) or below[0] == 0:
+            continue
+        x, y = loc[below[0], i, 0], loc[below[0], i, 1]
+        if not any(x0 <= x <= x1 and y0 <= y <= y1
+                   for x0, x1, y0, y1 in SLAB_FOOTPRINT):
+            n += 1
+    return n
 
 
 RELEASE_FRAME = 860        # nothing can be SEEN to sag before the swap
