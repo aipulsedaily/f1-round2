@@ -18295,3 +18295,54 @@ worst, and the render — not either projection — is what will settle what it
 actually looks like.
 
 ---
+
+## R2-700 — MEMBER COUNT IS NOT THE ACCEPTANCE CRITERION FOR THE RIDE. Pose is, and the eye says so before any number does
+
+*Main-thread entry, written from the pictures in `render/r2387/`.*
+
+`COMPARE_ride_f0972_R6_vs_REBAKE_vs_R2387.png` puts three bakes side by side at
+the peak of the deck ride. The measured population inside a car-local envelope
+tall enough to see the ride (z up to 2.19 m):
+
+```
+f0972              frame members on car   glass shards   glass mass
+R6 SHIPPED                  0                  16          0.2 kg
+R2281 RE-BAKE               8               2,580        139.1 kg
+R2387 AIR                   8                 249        120.2 kg
+```
+
+**The two corrected bakes are identical on the number we have been gating on,
+and they read completely differently.**
+
+- **R6 is wrong and obviously so.** The car drives through a glass wall and
+  emerges pristine. Its frame never failed because its thresholds were 29.5x
+  too strong, so the "clean" panel is the defect, not the baseline. Anyone
+  reviewing the three would pick it as the safest and be picking the broken one.
+- **R2281 reads best.** One pale structural member alongside the cockpit at an
+  angle, debris in the air. It reads as an accident: something got knocked
+  loose and is travelling with the car.
+- **R2387 reads worst**, on the same count. Its member lies **across the top of
+  the car** and reads as *resting on it* -- it has the stillness of an object
+  at rest in a shot where everything else is smeared.
+
+**The criterion the eye is actually applying:** debris travelling alongside,
+tumbling or trailing is fine and desirable; **something lying flat across the
+bodywork with no relative motion is what reads as broken.** That is checkable
+without taste: a member whose position RELATIVE TO THE CAR is near-static for N
+frames while above the bodywork.
+
+Note this gate would have passed R2281 and failed R6 -- for the opposite
+reason, since nothing can come to rest on the car when nothing comes off it.
+
+**A second observation that is not about count either.** R2387 shows glass down
+one side as a CONTINUOUS SHEET rather than fragments, on **ten times fewer
+shards** than R2281 (249 vs 2,580). Fewer, larger, sheet-like pieces may read
+worse than many small ones. If so the relevant variable is the **shard size
+distribution**, and neither count nor mass captures it. Related: R2-129 records
+that the breach has no debris cloud at all -- absent by construction.
+
+**And the structural warning that follows.** If a single member's pose decides
+between "breach" and "defect", beat 3 has a chaotic degree of freedom that no
+threshold controls. **Any future A/B on this shot needs more than one frame and
+probably more than one seed.** A one-frame comparison of this beat can report
+the opposite of the truth without anything being wrong with the measurement.
