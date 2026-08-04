@@ -1,0 +1,370 @@
+[
+ {
+  "cell": "A0.npz",
+  "frames": 400,
+  "bodies": 3948,
+  "car_proxy": {
+   "friction": 0.55,
+   "collide_until_x": 0.0,
+   "withdraw_sim_frame": 0,
+   "parts": 18
+  },
+  "aperture": {
+   "gone": 2903,
+   "of": 3796,
+   "y_min": -4.6223745831297745,
+   "y_max": 6.462859781635474,
+   "z_min": 0.09090023334949932,
+   "z_max": 6.067179054625006,
+   "width_m": 11.085234364765249,
+   "height_m": 5.976278821275507,
+   "declared_width_m": 9.6,
+   "declared_height_m": 5.6,
+   "gone_mass_kg": 729.4390213857728,
+   "total_mass_kg": 2240.90936834077
+  },
+  "thresholds": {
+   "glass_edge": 2.5,
+   "pvb": 0.9,
+   "mullion_joint": 40.0,
+   "mullion_base": 120.0,
+   "transom": 8.8,
+   "head_restraint": "slider",
+   "head": 20.0,
+   "bond_per_m": 100.0
+  },
+  "watch": {
+   "GS_b05_00434": {
+    "travel_m": 15.842,
+    "peak_speed": 24.797,
+    "end_speed": 24.797,
+    "first_move_sim_frame": 160,
+    "transport_m": 16.233,
+    "frames_held": 257
+   },
+   "MUL05_S00": {
+    "travel_m": 15.983,
+    "peak_speed": 18.572,
+    "end_speed": 18.148,
+    "first_move_sim_frame": 144,
+    "transport_m": 12.098,
+    "frames_held": 180
+   },
+   "MUL05_S02": {
+    "travel_m": 14.457,
+    "peak_speed": 18.387,
+    "end_speed": 18.364,
+    "first_move_sim_frame": 146,
+    "transport_m": 2.925,
+    "frames_held": 44
+   },
+   "MUL05_S07": {
+    "travel_m": 5.98,
+    "peak_speed": 10.858,
+    "end_speed": 1.59,
+    "first_move_sim_frame": 161,
+    "transport_m": 0.0,
+    "frames_held": 0
+   }
+  },
+  "controls": {
+   "untouched_mullion_max_travel_m": 0.000133,
+   "worst": "MUL06_S04_P"
+  },
+  "interpenetration": {
+   "sampled_every": 2,
+   "max_bodies_inside": 111,
+   "at_sim_frame": 145,
+   "at_last_frame": 16,
+   "mean_after_the_car_is_through": 19.6,
+   "sampled_frames_over_100": 0,
+   "of_samples": 100
+  },
+  "transport_m_total": 32063.6,
+  "bodies_carried_over_1m": 2655,
+  "field_end": {
+   "over_1ms": 2917,
+   "of": 3948,
+   "median": 18.1456,
+   "max": 45.762,
+   "x_median": 30.735,
+   "x_max": 59.72
+  }
+ },
+ {
+  "cell": "B0.npz",
+  "frames": 400,
+  "bodies": 3948,
+  "car_proxy": {
+   "friction": 0.55,
+   "collide_until_x": 0.0,
+   "withdraw_sim_frame": 0,
+   "parts": 18
+  },
+  "aperture": {
+   "gone": 2974,
+   "of": 3796,
+   "y_min": -2.1579707863439332,
+   "y_max": 4.2622217241934655,
+   "z_min": 0.09043112453366513,
+   "z_max": 6.067179054625006,
+   "width_m": 6.420192510537399,
+   "height_m": 5.976747930091341,
+   "declared_width_m": 9.6,
+   "declared_height_m": 5.6,
+   "gone_mass_kg": 741.4578312697707,
+   "total_mass_kg": 2240.90936834077
+  },
+  "thresholds": {
+   "glass_edge": 2.5,
+   "pvb": 0.9,
+   "mullion_joint": 40.0,
+   "mullion_base": 120.0,
+   "transom": 8.8,
+   "head_restraint": "slider",
+   "head": 20.0,
+   "bond_per_m": 100.0
+  },
+  "watch": {
+   "GS_b05_00434": {
+    "travel_m": 0.139,
+    "peak_speed": 11.262,
+    "end_speed": 0.597,
+    "first_move_sim_frame": 160,
+    "transport_m": 0.587,
+    "frames_held": 85
+   },
+   "MUL05_S00": {
+    "travel_m": 15.648,
+    "peak_speed": 20.946,
+    "end_speed": 18.25,
+    "first_move_sim_frame": 144,
+    "transport_m": 3.548,
+    "frames_held": 65
+   },
+   "MUL05_S02": {
+    "travel_m": 15.203,
+    "peak_speed": 25.407,
+    "end_speed": 23.176,
+    "first_move_sim_frame": 147,
+    "transport_m": 4.618,
+    "frames_held": 71
+   },
+   "MUL05_S07": {
+    "travel_m": 2.639,
+    "peak_speed": 6.441,
+    "end_speed": 6.441,
+    "first_move_sim_frame": 162,
+    "transport_m": 0.0,
+    "frames_held": 0
+   }
+  },
+  "controls": {
+   "untouched_mullion_max_travel_m": 0.000138,
+   "worst": "MUL04_S03"
+  },
+  "interpenetration": {
+   "sampled_every": 2,
+   "max_bodies_inside": 113,
+   "at_sim_frame": 145,
+   "at_last_frame": 10,
+   "mean_after_the_car_is_through": 7.3,
+   "sampled_frames_over_100": 0,
+   "of_samples": 100
+  },
+  "transport_m_total": 8805.2,
+  "bodies_carried_over_1m": 2662,
+  "field_end": {
+   "over_1ms": 3004,
+   "of": 3948,
+   "median": 17.8971,
+   "max": 25.421,
+   "x_median": 30.007,
+   "x_max": 38.75
+  }
+ },
+ {
+  "cell": "B1.npz",
+  "frames": 400,
+  "bodies": 3948,
+  "car_proxy": {
+   "friction": 0.2,
+   "collide_until_x": 0.0,
+   "withdraw_sim_frame": 0,
+   "parts": 18
+  },
+  "aperture": {
+   "gone": 2881,
+   "of": 3796,
+   "y_min": -4.571508609713424,
+   "y_max": 3.9967309030785207,
+   "z_min": 0.09111625393744545,
+   "z_max": 6.067179054625006,
+   "width_m": 8.568239512791944,
+   "height_m": 5.9760628006875605,
+   "declared_width_m": 9.6,
+   "declared_height_m": 5.6,
+   "gone_mass_kg": 724.1111352952626,
+   "total_mass_kg": 2240.90936834077
+  },
+  "thresholds": {
+   "glass_edge": 2.5,
+   "pvb": 0.9,
+   "mullion_joint": 40.0,
+   "mullion_base": 120.0,
+   "transom": 8.8,
+   "head_restraint": "slider",
+   "head": 20.0,
+   "bond_per_m": 100.0
+  },
+  "watch": {
+   "GS_b05_00434": {
+    "travel_m": 0.092,
+    "peak_speed": 13.082,
+    "end_speed": 0.908,
+    "first_move_sim_frame": 161,
+    "transport_m": 0.66,
+    "frames_held": 86
+   },
+   "MUL05_S00": {
+    "travel_m": 12.731,
+    "peak_speed": 17.388,
+    "end_speed": 14.859,
+    "first_move_sim_frame": 144,
+    "transport_m": 3.412,
+    "frames_held": 54
+   },
+   "MUL05_S02": {
+    "travel_m": 12.03,
+    "peak_speed": 16.979,
+    "end_speed": 8.944,
+    "first_move_sim_frame": 147,
+    "transport_m": 0.0,
+    "frames_held": 0
+   },
+   "MUL05_S07": {
+    "travel_m": 7.39,
+    "peak_speed": 13.432,
+    "end_speed": 4.877,
+    "first_move_sim_frame": 162,
+    "transport_m": 0.0,
+    "frames_held": 0
+   }
+  },
+  "controls": {
+   "untouched_mullion_max_travel_m": 0.000228,
+   "worst": "MUL04_S04"
+  },
+  "interpenetration": {
+   "sampled_every": 2,
+   "max_bodies_inside": 110,
+   "at_sim_frame": 145,
+   "at_last_frame": 0,
+   "mean_after_the_car_is_through": 6.4,
+   "sampled_frames_over_100": 0,
+   "of_samples": 100
+  },
+  "transport_m_total": 10261.4,
+  "bodies_carried_over_1m": 2588,
+  "field_end": {
+   "over_1ms": 2934,
+   "of": 3948,
+   "median": 10.0671,
+   "max": 24.73,
+   "x_median": 27.263,
+   "x_max": 33.626
+  }
+ },
+ {
+  "cell": "B2.npz",
+  "frames": 400,
+  "bodies": 3948,
+  "car_proxy": {
+   "friction": 0.35,
+   "collide_until_x": 0.0,
+   "withdraw_sim_frame": 0,
+   "parts": 18
+  },
+  "aperture": {
+   "gone": 2862,
+   "of": 3796,
+   "y_min": -2.1579707863439332,
+   "y_max": 5.134151738164429,
+   "z_min": 0.09090023334949932,
+   "z_max": 6.067179054625006,
+   "width_m": 7.292122524508363,
+   "height_m": 5.976278821275507,
+   "declared_width_m": 9.6,
+   "declared_height_m": 5.6,
+   "gone_mass_kg": 741.1320070016657,
+   "total_mass_kg": 2240.90936834077
+  },
+  "thresholds": {
+   "glass_edge": 2.5,
+   "pvb": 0.9,
+   "mullion_joint": 40.0,
+   "mullion_base": 120.0,
+   "transom": 8.8,
+   "head_restraint": "slider",
+   "head": 20.0,
+   "bond_per_m": 100.0
+  },
+  "watch": {
+   "GS_b05_00434": {
+    "travel_m": 0.003,
+    "peak_speed": 12.179,
+    "end_speed": 0.051,
+    "first_move_sim_frame": 161,
+    "transport_m": 1.023,
+    "frames_held": 87
+   },
+   "MUL05_S00": {
+    "travel_m": 16.435,
+    "peak_speed": 24.099,
+    "end_speed": 23.145,
+    "first_move_sim_frame": 144,
+    "transport_m": 2.859,
+    "frames_held": 48
+   },
+   "MUL05_S02": {
+    "travel_m": 15.672,
+    "peak_speed": 25.859,
+    "end_speed": 25.859,
+    "first_move_sim_frame": 147,
+    "transport_m": 13.079,
+    "frames_held": 167
+   },
+   "MUL05_S07": {
+    "travel_m": 1.808,
+    "peak_speed": 5.456,
+    "end_speed": 5.456,
+    "first_move_sim_frame": 161,
+    "transport_m": 0.0,
+    "frames_held": 0
+   }
+  },
+  "controls": {
+   "untouched_mullion_max_travel_m": 0.000124,
+   "worst": "MUL06_S05"
+  },
+  "interpenetration": {
+   "sampled_every": 2,
+   "max_bodies_inside": 114,
+   "at_sim_frame": 145,
+   "at_last_frame": 3,
+   "mean_after_the_car_is_through": 6.1,
+   "sampled_frames_over_100": 0,
+   "of_samples": 100
+  },
+  "transport_m_total": 7878.7,
+  "bodies_carried_over_1m": 2591,
+  "field_end": {
+   "over_1ms": 2884,
+   "of": 3948,
+   "median": 23.55,
+   "max": 30.507,
+   "x_median": 30.586,
+   "x_max": 35.006
+  }
+ }
+]

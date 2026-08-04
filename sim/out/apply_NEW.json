@@ -1,23 +1,31 @@
 {
  "stats": {
-  "objects": 3856,
-  "tris": 278910,
-  "keys": 5693428,
-  "hero": 3576,
+  "objects": 3857,
+  "tris": 278890,
+  "keys": 5988268,
+  "hero": 3575,
   "frame": {
-   "objects": 50,
-   "keys": 16814,
+   "objects": 51,
+   "keys": 16310,
    "deleted": [
+    "GW_Right_Mull_03",
     "GW_Right_Mull_04",
     "GW_Right_Mull_05",
     "GW_Right_Mull_06",
-    "GW_Right_Mull_07",
     "GW_Right_Transom_0",
     "GW_Right_Transom_1",
     "GW_Right_Transom_2"
    ],
    "coverage": {
     "members": [
+     {
+      "member": "GW_Right_Mull_03",
+      "axis": "z",
+      "want_m": 6.2,
+      "got_m": 6.2,
+      "double_counted_m": 0.0,
+      "passed": true
+     },
      {
       "member": "GW_Right_Mull_04",
       "axis": "z",
@@ -36,14 +44,6 @@
      },
      {
       "member": "GW_Right_Mull_06",
-      "axis": "z",
-      "want_m": 6.2,
-      "got_m": 6.2,
-      "double_counted_m": 0.0,
-      "passed": true
-     },
-     {
-      "member": "GW_Right_Mull_07",
       "axis": "z",
       "want_m": 6.2,
       "got_m": 6.2,
@@ -78,42 +78,42 @@
     "PASS": true
    },
    "mullions_replaced": [
+    3,
     4,
     5,
-    6,
-    7
+    6
    ],
-   "n_transom_pieces": 15,
+   "n_transom_pieces": 16,
    "max_travel_m": {
-    "BF_MUL05_S02": 89.7919,
-    "BF_MUL05_S01": 89.0413,
-    "BF_MUL05_S00": 88.2977,
-    "BF_TRN0_b05": 69.8316,
-    "BF_TRN0_b04": 53.1092,
-    "BF_MUL05_S03": 13.3126,
-    "BF_MUL05_S04": 12.7417,
-    "BF_TRN1_b05": 8.6043
+    "BF_MUL05_S02": 55.3509,
+    "BF_TRN0_b05": 55.1403,
+    "BF_MUL05_S01": 54.6787,
+    "BF_MUL05_S00": 54.0232,
+    "BF_TRN0_b04": 52.9295,
+    "BF_MUL05_S07": 9.2194,
+    "BF_MUL05_S03": 6.0065,
+    "BF_MUL05_S06": 5.8799
    },
    "cap_divergence_m": [
     [
-     "TRN_z0_b05",
+     "MUL05_S07",
      0.185
     ],
     [
-     "TRN_z1_b04",
-     0.1834
+     "TRN_z0_b04",
+     0.1845
     ],
     [
-     "TRN_z1_b05",
-     0.181
+     "MUL05_S00",
+     0.1832
     ],
     [
-     "MUL05_S06",
-     0.169
+     "MUL05_S01",
+     0.1827
     ],
     [
-     "MUL05_S05",
-     0.169
+     "MUL05_S02",
+     0.1825
     ]
    ],
    "measured_from": "world/car_anim.blend SHOWROOM collection, 2026-08-04",
@@ -123,23 +123,23 @@
  "proof": {
   "objects_checked": 40,
   "flags": {
-   "LINEAR": 9079,
+   "LINEAR": 8771,
    "CONSTANT": 240,
    "other": 0
   },
   "max_linear_eval_err": 4.76837158203125e-07,
-  "bezier_control_err": 0.0016469955444335938,
+  "bezier_control_err": 0.0010037422180175781,
   "control_fires": true
  },
  "frame_proof": {
   "objects_checked": 40,
   "flags": {
-   "LINEAR": 14056,
+   "LINEAR": 12642,
    "CONSTANT": 0,
    "other": 0
   },
   "max_linear_eval_err": 3.814697265625e-06,
-  "bezier_control_err": 4.76837158203125e-07,
+  "bezier_control_err": 0.0,
   "control_fires": false
  },
  "preflight": {
@@ -340,15 +340,15 @@
  },
  "east_frame": {
   "criterion": "every piece eastframe.plan() names is an object in the scene, every round-1 solid it replaces is gone, and every mullion it does NOT replace is still there",
-  "pieces_wanted": 50,
-  "pieces_built": 50,
+  "pieces_wanted": 51,
+  "pieces_built": 51,
   "pieces_missing": [],
   "round1_solids_not_deleted": [],
   "untouched_mullions_missing": [],
   "transom_length": {
-   "transom_0_total_y_m": 32.544,
-   "transom_1_total_y_m": 34.669,
-   "transom_2_total_y_m": 30.419
+   "transom_0_total_y_m": 34.669,
+   "transom_1_total_y_m": 32.544,
+   "transom_2_total_y_m": 32.544
   },
   "note": "counting GW_Right_Transom_* would read 0 for a correct scene and 0 for a stripped one.  R2-124.",
   "PASS": true,
@@ -399,14 +399,14 @@
    [
     "BF_TRN0_STATIC",
     0,
-    16,
+    24,
     6,
     0
    ],
    [
     "BF_TRN1_STATIC",
     0,
-    24,
+    16,
     6,
     0
    ],
@@ -419,7 +419,7 @@
    ]
   ]
  },
- "out": "render/film14_breach_r6b.blend",
- "bytes": 4985119525,
+ "out": "render/film14_breach_R2387.blend",
+ "bytes": 5006356501,
  "origin_rule": "shard origin = (0.5*(x_in+x_out), centroid_u, centroid_v) in WORLD metres; mesh verts are stored relative to it"
 }

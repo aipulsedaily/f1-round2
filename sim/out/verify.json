@@ -7,61 +7,61 @@
  ],
  "measured_on": "the decimated reconstruction",
  "pop": {
-  "median_step_m": 0.104933223740697,
-  "median_turn_deg": 1.3030877394068878,
-  "pos_pops": 226,
-  "rot_pops": 2262,
+  "median_step_m": 0.07232103776271333,
+  "median_turn_deg": 1.624421829625514,
+  "pos_pops": 300,
+  "rot_pops": 2329,
   "worst": [
    {
-    "frame": 863,
-    "body": 482,
-    "step_m": 1.953517500685308
+    "frame": 861,
+    "body": 1782,
+    "step_m": 1.4564635775316654
    },
    {
-    "frame": 862,
-    "body": 482,
-    "step_m": 1.948230059360304
+    "frame": 861,
+    "body": 1783,
+    "step_m": 1.4322385968227844
    },
    {
-    "frame": 864,
-    "body": 482,
-    "step_m": 1.8276747548797283
+    "frame": 861,
+    "body": 1780,
+    "step_m": 1.415499035954245
    },
    {
-    "frame": 863,
-    "body": 2700,
-    "step_m": 1.5420170679418683
+    "frame": 861,
+    "body": 1779,
+    "step_m": 1.4146588862653595
    },
    {
-    "frame": 863,
-    "body": 2699,
-    "step_m": 1.5206878833207473
+    "frame": 861,
+    "body": 1781,
+    "step_m": 1.4014662193350573
    },
    {
-    "frame": 863,
-    "body": 2638,
-    "step_m": 1.5092808577967016
+    "frame": 861,
+    "body": 1777,
+    "step_m": 1.3961168299176012
    },
    {
-    "frame": 863,
-    "body": 2637,
-    "step_m": 1.5074010055396083
+    "frame": 861,
+    "body": 1575,
+    "step_m": 1.3921214818717822
    },
    {
-    "frame": 863,
-    "body": 2648,
-    "step_m": 1.4954520360188575
+    "frame": 861,
+    "body": 1776,
+    "step_m": 1.3920322459148944
    }
   ],
   "threshold_note": "per body, max(6.0 x its own local median, 0.050 m / 12.0 deg)"
  },
  "visibility": {
   "bodies": 3948,
-  "never_released": 80,
-  "released": 3868,
+  "never_released": 70,
+  "released": 3878,
   "outside_table": 0,
   "first": 860,
-  "last": 894
+  "last": 979
  },
  "swap": {
   "criterion": "every shard of a fractured bay must appear on the SAME frame its pane hides.  Any later is a hole with nothing behind it.",
@@ -69,8 +69,8 @@
   "release_spread_within_a_bay": {
    "2": {
     "min": 860,
-    "max": 881,
-    "n_later": 114,
+    "max": 870,
+    "n_later": 105,
     "frames": [
      860,
      861,
@@ -79,77 +79,69 @@
      864,
      865,
      866,
-     867,
-     868,
-     874,
-     876,
-     881
+     870
     ]
    },
    "3": {
     "min": 860,
-    "max": 894,
-    "n_later": 52,
+    "max": 979,
+    "n_later": 49,
     "frames": [
      860,
      861,
      862,
      863,
-     864,
-     866,
-     867,
-     879,
-     880,
-     894
+     865,
+     887,
+     892,
+     896,
+     897,
+     964,
+     979
     ]
    },
    "4": {
     "min": 860,
-    "max": 863,
-    "n_later": 12,
+    "max": 861,
+    "n_later": 8,
     "frames": [
      860,
-     861,
-     862,
-     863
+     861
     ]
    },
    "5": {
     "min": 860,
-    "max": 869,
-    "n_later": 29,
+    "max": 862,
+    "n_later": 33,
     "frames": [
      860,
      861,
-     862,
-     863,
-     867,
-     868,
-     869
+     862
     ]
    },
    "6": {
     "min": 860,
     "max": 865,
-    "n_later": 66,
+    "n_later": 73,
     "frames": [
      860,
      861,
      862,
      863,
-     864,
      865
     ]
    },
    "7": {
     "min": 860,
-    "max": 863,
-    "n_later": 99,
+    "max": 869,
+    "n_later": 98,
     "frames": [
      860,
      861,
      862,
-     863
+     863,
+     868,
+     869
     ]
    }
   },
@@ -159,268 +151,268 @@
     "role": "retained",
     "n_shards": 195,
     "pane_hides_at": 860,
-    "shards_uncovered": 114,
-    "worst_gap_frames": 21,
-    "uncovered_shard_frames": 503,
+    "shards_uncovered": 105,
+    "worst_gap_frames": 10,
+    "uncovered_shard_frames": 257,
     "never_release": 0
    },
    "3": {
     "role": "destroyed",
     "n_shards": 202,
     "pane_hides_at": 860,
-    "shards_uncovered": 52,
-    "worst_gap_frames": 34,
-    "uncovered_shard_frames": 198,
+    "shards_uncovered": 49,
+    "worst_gap_frames": 119,
+    "uncovered_shard_frames": 532,
     "never_release": 0
    },
    "4": {
     "role": "destroyed",
     "n_shards": 1531,
     "pane_hides_at": 860,
-    "shards_uncovered": 12,
-    "worst_gap_frames": 3,
-    "uncovered_shard_frames": 16,
+    "shards_uncovered": 8,
+    "worst_gap_frames": 1,
+    "uncovered_shard_frames": 8,
     "never_release": 0
    },
    "5": {
     "role": "destroyed",
     "n_shards": 1485,
     "pane_hides_at": 860,
-    "shards_uncovered": 32,
-    "worst_gap_frames": 2118,
-    "uncovered_shard_frames": 6436,
-    "never_release": 3
+    "shards_uncovered": 33,
+    "worst_gap_frames": 2,
+    "uncovered_shard_frames": 45,
+    "never_release": 0
    },
    "6": {
     "role": "destroyed",
     "n_shards": 200,
     "pane_hides_at": 860,
-    "shards_uncovered": 66,
+    "shards_uncovered": 73,
     "worst_gap_frames": 5,
-    "uncovered_shard_frames": 118,
+    "uncovered_shard_frames": 105,
     "never_release": 0
    },
    "7": {
     "role": "retained",
     "n_shards": 183,
     "pane_hides_at": 860,
-    "shards_uncovered": 99,
-    "worst_gap_frames": 3,
-    "uncovered_shard_frames": 128,
+    "shards_uncovered": 98,
+    "worst_gap_frames": 9,
+    "uncovered_shard_frames": 137,
     "never_release": 0
    }
   },
-  "worst_gap_frames": 2118,
-  "shards_uncovered": 375,
-  "uncovered_shard_frames": 7399,
+  "worst_gap_frames": 119,
+  "shards_uncovered": 366,
+  "uncovered_shard_frames": 1084,
   "PASS": false
  },
  "sink": {
   "criterion": "lowest MESH VERTEX, rotated into world, at the last key",
-  "below_floor": 10,
-  "worst_m": 0.3710000175982714,
+  "below_floor": 7,
+  "worst_m": 0.37100001759827195,
   "tol_m": 0.004,
-  "axis_aligned_bound_below_floor": 526,
+  "axis_aligned_bound_below_floor": 662,
   "reclassified_by_rotation": {
-   "counted_by_both": 10,
-   "dropped_by_the_rotation": 516,
+   "counted_by_both": 7,
+   "dropped_by_the_rotation": 655,
    "found_ONLY_by_the_rotation": 0,
    "dropped_true_lowest_vertex_z_m": [
-    -0.0025075804973504062,
-    0.0025393132905222873,
-    0.11222638444330325
+    -0.0025274835331498616,
+    0.0015163682638794623,
+    0.1965932653082439
    ],
    "note": "the dropped bodies' TRUE lowest vertex.  If any of these is negative the rotation is not what changed the answer."
   }
  },
  "overlap": {
   "870": {
-   "pairs_tested": 1274,
-   "worst_depth_m": 0.026439193586034193,
-   "over_tol": 22,
+   "pairs_tested": 1254,
+   "worst_depth_m": 0.025982267256216218,
+   "over_tol": 23,
    "tol_m": 0.003,
    "worst_pairs": [
     [
      3623,
      3883,
-     0.026439193586034193
-    ],
-    [
-     3493,
-     3875,
-     0.024637456132934332
-    ],
-    [
-     719,
-     3917,
-     0.024265127015691945
-    ],
-    [
-     11,
-     3933,
-     0.024252921205704325
-    ],
-    [
-     3494,
-     3875,
-     0.024038338844446727
+     0.025982267256216218
     ],
     [
      3667,
      3867,
-     0.023609868669712597
+     0.024132840983959625
+    ],
+    [
+     11,
+     3933,
+     0.02404049985464063
+    ],
+    [
+     3682,
+     3871,
+     0.023754872489034184
+    ],
+    [
+     124,
+     3893,
+     0.02362876699448968
+    ],
+    [
+     102,
+     3811,
+     0.02184902775350661
     ]
    ]
   },
   "900": {
-   "pairs_tested": 1189,
-   "worst_depth_m": 0.045095711415843454,
-   "over_tol": 27,
+   "pairs_tested": 1185,
+   "worst_depth_m": 0.05774862031712236,
+   "over_tol": 29,
    "tol_m": 0.003,
    "worst_pairs": [
     [
-     167,
-     3913,
-     0.045095711415843454
+     930,
+     3897,
+     0.05774862031712236
     ],
     [
-     3841,
-     3843,
-     0.025074099361518165
-    ],
-    [
-     3568,
-     3879,
-     0.02408904366165565
-    ],
-    [
-     3566,
-     3879,
-     0.023506075981845953
-    ],
-    [
-     3463,
-     3871,
-     0.02256760371023603
-    ],
-    [
-     135,
-     3805,
-     0.020732726993587747
-    ]
-   ]
-  },
-  "960": {
-   "pairs_tested": 1191,
-   "worst_depth_m": 0.021534621255518083,
-   "over_tol": 16,
-   "tol_m": 0.003,
-   "worst_pairs": [
-    [
-     3788,
-     3879,
-     0.021534621255518083
-    ],
-    [
-     395,
-     3819,
-     0.021484218425930734
-    ],
-    [
-     3769,
-     3943,
-     0.021254675322170513
-    ],
-    [
-     671,
-     3937,
-     0.021170675454362353
+     946,
+     3897,
+     0.03618453844860747
     ],
     [
      158,
      3893,
-     0.021126850816367337
+     0.02485781644545426
+    ],
+    [
+     170,
+     3913,
+     0.02369774676958869
+    ],
+    [
+     135,
+     3805,
+     0.023408718201361367
+    ],
+    [
+     3725,
+     3943,
+     0.022045777928921595
+    ]
+   ]
+  },
+  "960": {
+   "pairs_tested": 1182,
+   "worst_depth_m": 0.0347627592854689,
+   "over_tol": 14,
+   "tol_m": 0.003,
+   "worst_pairs": [
+    [
+     671,
+     3937,
+     0.0347627592854689
+    ],
+    [
+     715,
+     3917,
+     0.024623963466987142
+    ],
+    [
+     158,
+     3893,
+     0.024018246763375828
+    ],
+    [
+     124,
+     3893,
+     0.023804117573668293
     ],
     [
      3647,
      3903,
-     0.020901691380027287
+     0.022601860749992042
+    ],
+    [
+     395,
+     3819,
+     0.022079695612951866
     ]
    ]
   },
   "1020": {
-   "pairs_tested": 1145,
-   "worst_depth_m": 0.025054827044780348,
+   "pairs_tested": 1155,
+   "worst_depth_m": 0.03270872088308163,
    "over_tol": 17,
    "tol_m": 0.003,
    "worst_pairs": [
     [
      671,
      3937,
-     0.025054827044780348
-    ],
-    [
-     3847,
-     3849,
-     0.02505439653539554
+     0.03270872088308163
     ],
     [
      339,
      3807,
-     0.02459989318190381
+     0.025475728013075738
     ],
     [
-     3733,
-     3923,
-     0.022880541168591506
-    ],
-    [
-     101,
-     3809,
-     0.021731348110318294
+     105,
+     3801,
+     0.02375452552780466
     ],
     [
      395,
      3819,
-     0.021640864671324422
+     0.02349104652053491
+    ],
+    [
+     170,
+     3913,
+     0.023193245646197624
+    ],
+    [
+     336,
+     3823,
+     0.019955791214053775
     ]
    ]
   },
   "1056": {
-   "pairs_tested": 1150,
-   "worst_depth_m": 0.023391763575350666,
-   "over_tol": 15,
+   "pairs_tested": 1167,
+   "worst_depth_m": 0.05863276439864418,
+   "over_tol": 20,
    "tol_m": 0.003,
    "worst_pairs": [
     [
-     3733,
-     3923,
-     0.023391763575350666
+     632,
+     3937,
+     0.05863276439864418
     ],
     [
-     3777,
-     3881,
-     0.0229887656971286
-    ],
-    [
-     3769,
-     3943,
-     0.02233876356097042
+     3849,
+     3918,
+     0.0488460283575014
     ],
     [
      3547,
      3863,
-     0.021756473732091663
+     0.02457798839877512
     ],
     [
-     221,
-     3817,
-     0.021339240947996885
+     93,
+     3913,
+     0.022070844444808557
     ],
     [
-     349,
+     87,
+     3913,
+     0.02194770486766906
+    ],
+    [
+     350,
      3805,
-     0.020913736910459946
+     0.021926235718336073
     ]
    ]
   }
@@ -428,30 +420,30 @@
  "seams": [
   {
    "pos_m": {
-    "seam_max": 1.953517500685308,
-    "neighbourhood_median": 0.2978452992802264,
-    "ratio": 6.55883274104437,
+    "seam_max": 1.3599970053814308,
+    "neighbourhood_median": 0.17894349889168074,
+    "ratio": 7.600147609747327,
     "verdict": "SEAM"
    },
    "rot_deg": {
-    "seam_max": 179.71355076345665,
-    "neighbourhood_median": 162.32106398947434,
-    "ratio": 1.1071486740322878,
+    "seam_max": 178.92852738126908,
+    "neighbourhood_median": 142.38522786658967,
+    "ratio": 1.2566509185132553,
     "verdict": "OK"
    },
    "seam": 865
   },
   {
    "pos_m": {
-    "seam_max": 1.8094236675069464,
-    "neighbourhood_median": 1.7428436233859754,
-    "ratio": 1.0382019609949973,
+    "seam_max": 1.5552724264782984,
+    "neighbourhood_median": 1.3395094771853793,
+    "ratio": 1.1610760901418087,
     "verdict": "OK"
    },
    "rot_deg": {
-    "seam_max": 179.27977543644116,
-    "neighbourhood_median": 173.20057361125478,
-    "ratio": 1.0350992014543268,
+    "seam_max": 179.52822077913015,
+    "neighbourhood_median": 168.7911358954761,
+    "ratio": 1.0636116631758614,
     "verdict": "OK"
    },
    "seam": 1057

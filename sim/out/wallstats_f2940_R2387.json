@@ -1,0 +1,679 @@
+{
+ "frame": 2940,
+ "before": "render/r6_after/full_f2940.png",
+ "after": "render/r2387/new_full_f2940.png",
+ "repeat": "",
+ "regions": {
+  "WOUND_bridged": {
+   "px": [
+    1898,
+    1942,
+    1051,
+    1110
+   ],
+   "n": 2596,
+   "before": {
+    "mean": 0.51635,
+    "sd": 0.18599
+   },
+   "grid_before": {
+    "transom_0": {
+     "v": 1097,
+     "u": [
+      1898,
+      1941
+     ],
+     "line": 0.47058,
+     "baseline": 0.50425,
+     "signed": -0.03367,
+     "contrast": 0.03367
+    },
+    "transom_1": {
+     "v": 1082,
+     "u": [
+      1898,
+      1941
+     ],
+     "line": 0.607,
+     "baseline": 0.64464,
+     "signed": -0.03764,
+     "contrast": 0.03764
+    },
+    "transom_2": {
+     "v": 1068,
+     "u": [
+      1898,
+      1941
+     ],
+     "line": 0.53442,
+     "baseline": 0.52856,
+     "signed": 0.00586,
+     "contrast": 0.00586
+    },
+    "mean_contrast": 0.02572
+   },
+   "after": {
+    "mean": 0.55074,
+    "sd": 0.21693
+   },
+   "grid_after": {
+    "transom_0": {
+     "v": 1097,
+     "u": [
+      1898,
+      1941
+     ],
+     "line": 0.51991,
+     "baseline": 0.533,
+     "signed": -0.01309,
+     "contrast": 0.01309
+    },
+    "transom_1": {
+     "v": 1082,
+     "u": [
+      1898,
+      1941
+     ],
+     "line": 0.71098,
+     "baseline": 0.69479,
+     "signed": 0.01618,
+     "contrast": 0.01618
+    },
+    "transom_2": {
+     "v": 1068,
+     "u": [
+      1898,
+      1941
+     ],
+     "line": 0.59658,
+     "baseline": 0.5689,
+     "signed": 0.02767,
+     "contrast": 0.02767
+    },
+    "mean_contrast": 0.01898
+   },
+   "changed_pct_gt_8_255": 52.735,
+   "changed_pct_gt_1_255": 90.5624,
+   "mean_abs_diff_255": 15.7889,
+   "max_abs_diff_255": 109.0
+  },
+  "WOUND_connected": {
+   "px": [
+    1898,
+    1920,
+    1051,
+    1110
+   ],
+   "n": 1298,
+   "before": {
+    "mean": 0.41738,
+    "sd": 0.12385
+   },
+   "grid_before": {
+    "transom_0": {
+     "v": 1097,
+     "u": [
+      1898,
+      1920
+     ],
+     "line": 0.37592,
+     "baseline": 0.35891,
+     "signed": 0.01701,
+     "contrast": 0.01701
+    },
+    "transom_1": {
+     "v": 1082,
+     "u": [
+      1898,
+      1920
+     ],
+     "line": 0.63289,
+     "baseline": 0.51833,
+     "signed": 0.11456,
+     "contrast": 0.11456
+    },
+    "transom_2": {
+     "v": 1068,
+     "u": [
+      1898,
+      1920
+     ],
+     "line": 0.43588,
+     "baseline": 0.43543,
+     "signed": 0.00045,
+     "contrast": 0.00045
+    },
+    "mean_contrast": 0.04401
+   },
+   "after": {
+    "mean": 0.43139,
+    "sd": 0.15752
+   },
+   "grid_after": {
+    "transom_0": {
+     "v": 1097,
+     "u": [
+      1898,
+      1920
+     ],
+     "line": 0.29318,
+     "baseline": 0.32874,
+     "signed": -0.03557,
+     "contrast": 0.03557
+    },
+    "transom_1": {
+     "v": 1082,
+     "u": [
+      1898,
+      1920
+     ],
+     "line": 0.73214,
+     "baseline": 0.56414,
+     "signed": 0.168,
+     "contrast": 0.168
+    },
+    "transom_2": {
+     "v": 1068,
+     "u": [
+      1898,
+      1920
+     ],
+     "line": 0.45283,
+     "baseline": 0.4735,
+     "signed": -0.02067,
+     "contrast": 0.02067
+    },
+    "mean_contrast": 0.07475
+   },
+   "changed_pct_gt_8_255": 45.6086,
+   "changed_pct_gt_1_255": 92.0647,
+   "mean_abs_diff_255": 12.8213,
+   "max_abs_diff_255": 94.0
+  },
+  "NB_left_bay3": {
+   "px": [
+    1876,
+    1898,
+    1050,
+    1109
+   ],
+   "n": 1298,
+   "before": {
+    "mean": 0.4037,
+    "sd": 0.11111
+   },
+   "grid_before": {
+    "transom_0": {
+     "v": 1097,
+     "u": [
+      1877,
+      1898
+     ],
+     "line": 0.47304,
+     "baseline": 0.35575,
+     "signed": 0.11729,
+     "contrast": 0.11729
+    },
+    "transom_1": {
+     "v": 1082,
+     "u": [
+      1877,
+      1898
+     ],
+     "line": 0.49192,
+     "baseline": 0.45455,
+     "signed": 0.03737,
+     "contrast": 0.03737
+    },
+    "transom_2": {
+     "v": 1068,
+     "u": [
+      1877,
+      1898
+     ],
+     "line": 0.42469,
+     "baseline": 0.44393,
+     "signed": -0.01924,
+     "contrast": 0.01924
+    },
+    "mean_contrast": 0.05797
+   },
+   "after": {
+    "mean": 0.40266,
+    "sd": 0.11108
+   },
+   "grid_after": {
+    "transom_0": {
+     "v": 1097,
+     "u": [
+      1877,
+      1898
+     ],
+     "line": 0.47605,
+     "baseline": 0.35992,
+     "signed": 0.11612,
+     "contrast": 0.11612
+    },
+    "transom_1": {
+     "v": 1082,
+     "u": [
+      1877,
+      1898
+     ],
+     "line": 0.49356,
+     "baseline": 0.45767,
+     "signed": 0.03589,
+     "contrast": 0.03589
+    },
+    "transom_2": {
+     "v": 1068,
+     "u": [
+      1877,
+      1898
+     ],
+     "line": 0.4161,
+     "baseline": 0.4347,
+     "signed": -0.0186,
+     "contrast": 0.0186
+    },
+    "mean_contrast": 0.05687
+   },
+   "changed_pct_gt_8_255": 17.2573,
+   "changed_pct_gt_1_255": 84.2835,
+   "mean_abs_diff_255": 5.379,
+   "max_abs_diff_255": 53.0
+  },
+  "NB_right_bay6": {
+   "px": [
+    1942,
+    1964,
+    1051,
+    1110
+   ],
+   "n": 1298,
+   "before": {
+    "mean": 0.56722,
+    "sd": 0.19586
+   },
+   "grid_before": {
+    "transom_0": {
+     "v": 1097,
+     "u": [
+      1942,
+      1963
+     ],
+     "line": 0.63958,
+     "baseline": 0.71504,
+     "signed": -0.07546,
+     "contrast": 0.07546
+    },
+    "transom_1": {
+     "v": 1083,
+     "u": [
+      1942,
+      1963
+     ],
+     "line": 0.59757,
+     "baseline": 0.72232,
+     "signed": -0.12475,
+     "contrast": 0.12475
+    },
+    "transom_2": {
+     "v": 1068,
+     "u": [
+      1942,
+      1963
+     ],
+     "line": 0.51068,
+     "baseline": 0.52003,
+     "signed": -0.00935,
+     "contrast": 0.00935
+    },
+    "mean_contrast": 0.06985
+   },
+   "after": {
+    "mean": 0.57101,
+    "sd": 0.19506
+   },
+   "grid_after": {
+    "transom_0": {
+     "v": 1097,
+     "u": [
+      1942,
+      1963
+     ],
+     "line": 0.64384,
+     "baseline": 0.7171,
+     "signed": -0.07326,
+     "contrast": 0.07326
+    },
+    "transom_1": {
+     "v": 1083,
+     "u": [
+      1942,
+      1963
+     ],
+     "line": 0.59804,
+     "baseline": 0.72212,
+     "signed": -0.12409,
+     "contrast": 0.12409
+    },
+    "transom_2": {
+     "v": 1068,
+     "u": [
+      1942,
+      1963
+     ],
+     "line": 0.51509,
+     "baseline": 0.51672,
+     "signed": -0.00163,
+     "contrast": 0.00163
+    },
+    "mean_contrast": 0.06633
+   },
+   "changed_pct_gt_8_255": 13.9445,
+   "changed_pct_gt_1_255": 72.9584,
+   "mean_abs_diff_255": 4.4129,
+   "max_abs_diff_255": 49.0
+  },
+  "CTL_UNTOUCHED_bays789": {
+   "px": [
+    1963,
+    2029,
+    1051,
+    1110
+   ],
+   "n": 3894,
+   "before": {
+    "mean": 0.33667,
+    "sd": 0.08734
+   },
+   "grid_before": {
+    "transom_0": {
+     "v": 1097,
+     "u": [
+      1964,
+      2029
+     ],
+     "line": 0.36431,
+     "baseline": 0.30669,
+     "signed": 0.05762,
+     "contrast": 0.05762
+    },
+    "transom_1": {
+     "v": 1083,
+     "u": [
+      1964,
+      2029
+     ],
+     "line": 0.37555,
+     "baseline": 0.33467,
+     "signed": 0.04088,
+     "contrast": 0.04088
+    },
+    "transom_2": {
+     "v": 1068,
+     "u": [
+      1964,
+      2029
+     ],
+     "line": 0.39867,
+     "baseline": 0.35188,
+     "signed": 0.04679,
+     "contrast": 0.04679
+    },
+    "mean_contrast": 0.04843
+   },
+   "after": {
+    "mean": 0.33866,
+    "sd": 0.08674
+   },
+   "grid_after": {
+    "transom_0": {
+     "v": 1097,
+     "u": [
+      1964,
+      2029
+     ],
+     "line": 0.36928,
+     "baseline": 0.31281,
+     "signed": 0.05647,
+     "contrast": 0.05647
+    },
+    "transom_1": {
+     "v": 1083,
+     "u": [
+      1964,
+      2029
+     ],
+     "line": 0.37372,
+     "baseline": 0.3347,
+     "signed": 0.03903,
+     "contrast": 0.03903
+    },
+    "transom_2": {
+     "v": 1068,
+     "u": [
+      1964,
+      2029
+     ],
+     "line": 0.39757,
+     "baseline": 0.35377,
+     "signed": 0.0438,
+     "contrast": 0.0438
+    },
+    "mean_contrast": 0.04643
+   },
+   "changed_pct_gt_8_255": 3.621,
+   "changed_pct_gt_1_255": 57.5244,
+   "mean_abs_diff_255": 2.1939,
+   "max_abs_diff_255": 89.0,
+   "control_limit_pct": 1.0
+  },
+  "CTL_UNTOUCHED_bays012": {
+   "px": [
+    1811,
+    1877,
+    1050,
+    1109
+   ],
+   "n": 3894,
+   "before": {
+    "mean": 0.35622,
+    "sd": 0.06824
+   },
+   "grid_before": {
+    "transom_0": {
+     "v": 1096,
+     "u": [
+      1812,
+      1876
+     ],
+     "line": 0.4031,
+     "baseline": 0.3357,
+     "signed": 0.0674,
+     "contrast": 0.0674
+    },
+    "transom_1": {
+     "v": 1082,
+     "u": [
+      1811,
+      1876
+     ],
+     "line": 0.39182,
+     "baseline": 0.3481,
+     "signed": 0.04373,
+     "contrast": 0.04373
+    },
+    "transom_2": {
+     "v": 1067,
+     "u": [
+      1811,
+      1876
+     ],
+     "line": 0.39514,
+     "baseline": 0.36507,
+     "signed": 0.03007,
+     "contrast": 0.03007
+    },
+    "mean_contrast": 0.04707
+   },
+   "after": {
+    "mean": 0.3554,
+    "sd": 0.06793
+   },
+   "grid_after": {
+    "transom_0": {
+     "v": 1096,
+     "u": [
+      1812,
+      1876
+     ],
+     "line": 0.40021,
+     "baseline": 0.33658,
+     "signed": 0.06364,
+     "contrast": 0.06364
+    },
+    "transom_1": {
+     "v": 1082,
+     "u": [
+      1811,
+      1876
+     ],
+     "line": 0.39099,
+     "baseline": 0.34668,
+     "signed": 0.04431,
+     "contrast": 0.04431
+    },
+    "transom_2": {
+     "v": 1067,
+     "u": [
+      1811,
+      1876
+     ],
+     "line": 0.39492,
+     "baseline": 0.3649,
+     "signed": 0.03002,
+     "contrast": 0.03002
+    },
+    "mean_contrast": 0.04599
+   },
+   "changed_pct_gt_8_255": 3.7237,
+   "changed_pct_gt_1_255": 51.849,
+   "mean_abs_diff_255": 1.9682,
+   "max_abs_diff_255": 37.0,
+   "control_limit_pct": 1.0
+  },
+  "CTL_UNTOUCHED_bays01": {
+   "px": [
+    1811,
+    1855,
+    1050,
+    1109
+   ],
+   "n": 2596,
+   "before": {
+    "mean": 0.35372,
+    "sd": 0.0599
+   },
+   "grid_before": {
+    "transom_0": {
+     "v": 1096,
+     "u": [
+      1812,
+      1854
+     ],
+     "line": 0.38413,
+     "baseline": 0.33715,
+     "signed": 0.04698,
+     "contrast": 0.04698
+    },
+    "transom_1": {
+     "v": 1082,
+     "u": [
+      1811,
+      1854
+     ],
+     "line": 0.37698,
+     "baseline": 0.33793,
+     "signed": 0.03904,
+     "contrast": 0.03904
+    },
+    "transom_2": {
+     "v": 1067,
+     "u": [
+      1811,
+      1854
+     ],
+     "line": 0.38974,
+     "baseline": 0.35764,
+     "signed": 0.0321,
+     "contrast": 0.0321
+    },
+    "mean_contrast": 0.03937
+   },
+   "after": {
+    "mean": 0.35399,
+    "sd": 0.06009
+   },
+   "grid_after": {
+    "transom_0": {
+     "v": 1096,
+     "u": [
+      1812,
+      1854
+     ],
+     "line": 0.38396,
+     "baseline": 0.33709,
+     "signed": 0.04687,
+     "contrast": 0.04687
+    },
+    "transom_1": {
+     "v": 1082,
+     "u": [
+      1811,
+      1854
+     ],
+     "line": 0.37688,
+     "baseline": 0.33803,
+     "signed": 0.03886,
+     "contrast": 0.03886
+    },
+    "transom_2": {
+     "v": 1067,
+     "u": [
+      1811,
+      1854
+     ],
+     "line": 0.39035,
+     "baseline": 0.3584,
+     "signed": 0.03195,
+     "contrast": 0.03195
+    },
+    "mean_contrast": 0.03923
+   },
+   "changed_pct_gt_8_255": 0.0,
+   "changed_pct_gt_1_255": 37.057,
+   "mean_abs_diff_255": 0.9037,
+   "max_abs_diff_255": 6.0,
+   "control_limit_pct": 1.0
+  }
+ },
+ "sky": {
+  "px": [
+   200,
+   900,
+   60,
+   400
+  ],
+  "before_mean": 0.36681,
+  "changed_pct_gt_1_255": 4.4324,
+  "changed_pct_gt_8_255": 0.0,
+  "max_abs_diff_255": 4.0
+ },
+ "PASS": false,
+ "fails": [
+  "CTL_UNTOUCHED_bays789 changed 3.621% of pixels at 8/255 against a limit of 1.000% (repeat floor None); the fix does not touch a vertex in it, so it must not move",
+  "CTL_UNTOUCHED_bays012 changed 3.724% of pixels at 8/255 against a limit of 1.000% (repeat floor None); the fix does not touch a vertex in it, so it must not move"
+ ]
+}
