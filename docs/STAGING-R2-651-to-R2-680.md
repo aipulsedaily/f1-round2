@@ -793,79 +793,100 @@ base `#3c4348` with a `#c9a227` gold chequer laid by `_seat_colour()`
 
 ---
 
-## R2-664 — the occlusion generalises to 65 frames in two clusters, and the first version of this measurement was a broken instrument
+## R2-664 — CORRECTED BY THE RAY-CAST: one occlusion event on the lap, not two, and my second cluster was a false positive
 
-The ray-cast against the assembled world is still unavailable (see R2-665), so
-this is a **projection proxy**: which built points lie inside the cone between
-the lens and the car, and nearer than the car. `tools/r2651_occ_proxy.py`,
-against `docs/screen_presence_points.npz` — the 1 m occupancy dump of the built
-world, 3,053,506 points over 560 named objects. No world load, no farm.
+**This section originally reported two clusters. The exact ray-cast has killed
+the second one and I am correcting it in place rather than leaving the wrong
+number standing.**
 
-### The first version reported the road as the occluder, on 72 % of the lap
+`tools/r2651_occlusion_sweep.py` casts one ray per each of 58 sample points on
+the car's real `world_contract.CAR_BODY_*` box, per frame, against a world
+rebuilt on the rented box from its own modules — **`surface + barriers +
+architecture + terrain`, contract 1.2.1**. It never opened `film16.blend`.
+22 controls, all passing.
 
-v1 came back with **`SURF_Track` — the road the car is driving on — blocking the
-car on 1,102 of 1,524 beat-5 frames.** Of course it did: the road lies along the
-line of sight to a car sitting on the road, so every road point inside the
-corridor scored. That is this project's single most repeated detector failure,
-the same shape as the turntable-and-back-wall detector that returned 0.90 for a
-car occupying 0.47. **It is recorded rather than quietly fixed** because the
-number was superficially plausible and would have been a spectacular false
-finding.
+### What my projection proxy got wrong, and why
 
-v2 drops the ground classes by name — `SURF_*`, `TER_*`, `ARCH_Paving/Apron/
-Forecourt`, 64 objects, 693,821 points — because none of them can hide a car
-standing on them. Everything that can (barriers, architecture, dressing,
-bridges) is kept.
-
-### The result: 65 of 1,524 frames, 4.3 % of beat 5, in two clusters
-
-| frames | dur | owner |
+| | frames flagged f2253-2327 | verdict |
 |---|---:|---|
-| **f2182-2196** | **0.62 s** | `ARCH_PontPlongee` + **`DR_BridgeBanners`** |
-| f2253-2257, 2269, 2271-2274, 2281 | 0.46 s | `BR_Verge_R` |
-| f2283-2290, 2295-2306, 2309-2327 | 1.62 s | `BR_Trap_outer_R_2579`, `BR_Subbase_R` |
+| `r2651_occ_proxy.py` (1 m voxels, cone test) | **50** | **WRONG** |
+| `r2651_occlusion_sweep.py` (rays, depth test) | 2, max `occ_frac` **0.0968**, and the owner is `SURF_Track` | correct |
 
-**Fence channel: zero frames.** No catch fence or mesh screen is ever the sole
-thing in the corridor, so nothing here depends on the see-through/opaque
-judgement — which is worth having established, because that ambiguity was the
-trap most likely to manufacture a defect.
+`BR_Trap_outer_R_2579`, `BR_Verge_R` and `BR_Subbase_R` **never occlude the car
+anywhere**. The proxy's 1 m occupancy cells over-read at grazing incidence: at a
+shallow angle a 1 m cell straddles a sightline that the real surface misses by
+centimetres. I flagged that cluster as proxy-only and explicitly declined to
+claim severity, which was right — but the frame count itself was noise, and
+"contiguity across 8 runs argues they are real" was **wrong reasoning**: a
+systematic geometric over-read is contiguous too.
 
-### Two independent methods agree on the bridge, and a delivered frame confirms it
+### The actual occlusion ledger, beats 4-6
 
-| | blocked window |
-|---|---|
-| `r2651_pont_sightline.py` — analytic box, 5 controls | **f2181-2192** |
-| `r2651_occ_proxy.py` — point cloud, ground-excluded | **f2182-2196** |
-| the delivered frame `r2b56_720_002180.png` | **f2180 is clear by ~10-20 px at 720p** |
+| frames | dur | wholly hidden | object | channel | occluder distance |
+|---|---:|---:|---|---|---:|
+| **f1113-1118** (beat 4) | 0.25 s | **f1114-1116** | `ARCH_PitBuilding_Shell` | solid | 10-11 m |
+| **f2180-2193** (beat 5) | 0.58 s | **f2180-2191, 12 frames** | `ARCH_PontPlongee` | f2180 fence, rest solid | 26-57 m |
+| f2306-2309 | 0.17 s | none (0.097) | `SURF_Track` | surface | 107 m |
+| f2717-2719 (beat 6) | 0.12 s | none (0.194 max) | `ARCH_Gantry` | solid | 75 m |
+| **f2974-2978** (beat 6) | 0.21 s | **f2976-2978** | `BR_FenceMesh_L03` | **fence** | — |
 
-Both methods put f2180 outside the window and f2200 outside it, and the
-delivered pixel shows the car as a dark chip just clear of the concrete edge —
-so **f2180 is the boundary frame, predicted and then seen.**
+**Beat 5 has exactly one occlusion event.** The Pont de la Plongee pass is the
+only thing that hides the car on the entire flying lap.
 
-The proxy also catches something my box reconstruction could not:
-**`DR_BridgeBanners`**, `build_dressing`'s fascia banners hanging on this
-bridge's faces, extending the window by ~4 frames. That is the same face R2-256
-records a collision on. **Any placement move must carry the banners with it**;
-they are not part of `build_architecture`'s bridge and will not follow
-`PONT_S` on their own.
+### Three corrections to the anchor as it was handed to me
 
-### What this does and does not settle
+1. **f2190 is frame 11 of a 12-frame blackout, not the event.** The blackout
+   starts at **f2180** and had been running for ten frames before anyone looked.
+2. **It is not a parapet at f2190.** At f2190 the thing over the car is a
+   **steel plate girder at 51.9 m**. The parapet frames are f2181-2184. The
+   bridge is one object carrying concrete, steel and mesh, so the channel has to
+   be decided by the **hit face's material**, not the object's name — classifying
+   by name would have called f2180 concrete when it is the see-through screen.
+3. **The camera has already flown past the bridge and is looking back**, at a car
+   130-160 m short of it. The occluder is 26-57 m from the lens while the
+   subject is at 183 m. My analytic slab model happened to be direction-agnostic
+   so it survived this, but the mental picture I had was backwards.
 
-* **Settled**: f2190 is not one bad frame, and it is not thirty scattered round
-  the lap either. It is a 0.62 s bridge pass plus a separate ~2 s cluster of
-  trackside barrier furniture 60-130 frames later.
-* **Proxy-only, needs the ray-cast**: the `BR_Verge_R` / `BR_Trap_outer_R_2579`
-  / `BR_Subbase_R` cluster. Those are low objects at the track edge and their
-  point counts are thin (1-17 points), so they are consistent with the car being
-  *partly clipped* rather than hidden. Contiguity across 8 runs argues they are
-  real rather than noise, but severity is not established and I am not claiming
-  it.
-* **Unchanged**: the recommended fix. `PONT_S = 2410 -> 2460` was tested against
-  the whole of beat 5, not just the known window, and gives zero blocked frames
-  at every 10 m step from 2460 to 2610 — so it does not simply move the bridge
-  pass onto the barrier cluster.
+### The fix is unchanged, and now better supported
+
+`PONT_S = 2410 -> 2460` was already tested against the whole of beat 5 rather
+than the known window. With the ray-cast confirming the bridge is the **only**
+lap occluder, that move now closes the entire beat-5 occlusion problem rather
+than one of two clusters.
+
+**One thing the ray-cast cannot see and my proxy could:** `dressing` and `items`
+were not in the rebuilt world, so **`DR_BridgeBanners` is absent from it**. The
+proxy put the banners in the corridor out to f2196. They hang on this bridge's
+faces — the same faces R2-256 records a collision on — and **they will not
+follow `PONT_S` on their own.**
 
 ---
+
+## R2-666 — two occlusions nobody was looking for, and one of them is on the film's last frame
+
+Both fall out of the same sweep and neither was in anyone's brief.
+
+**Beat 4: the car is wholly hidden behind `ARCH_PitBuilding_Shell` for three
+frames (f1114-1116), six affected.** The occluder is **10-11 m from the lens** —
+this is the transit, threading past the pit building at close range. It is a
+harder blackout than the bridge in one respect: at 10 m there is no possibility
+of reading the car through anything.
+
+**Beat 6: `BR_FenceMesh_L03` covers the car completely on f2976, f2977 and
+f2978 — the last three frames of the film.** It is the **fence** channel, so in
+reality the car is seen *through* a catch fence rather than hidden by it, and
+this is a composition question rather than a blackout. But:
+
+> `BR_FenceMesh_L03` is **already a logged defect**. R2's placement audit
+> measured it at **+7.105 m of lateral intrusion against a 7.39 m half-width at
+> s = 926** — "spans the racing surface", crossing from one edge nearly to the
+> other.
+
+So the object standing between the lens and the car on the closing frame of the
+film is the same object already measured as standing on the racing line. That is
+not a coincidence to be filed twice: **fixing the L03 intrusion should be
+checked against the closing frame**, and whoever closes that defect should be
+told the closing frame is a witness for it.
 
 ## R2-665 — the farm blocked this measurement twice, for two different reasons, and the second one was mine
 
