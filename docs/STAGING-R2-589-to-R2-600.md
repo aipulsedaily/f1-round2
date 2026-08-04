@@ -8,6 +8,15 @@ variant B's peak is too aggressive, so B is retuned and re-gated. The candidate
 stays a candidate — `docs/beat_sheet.json` carries other agents' live sheets and
 this must not race them.
 
+**Artefacts.** Candidate:
+`render/film14_path_R2581B_ramp_RETUNED_CANDIDATE.json` (untracked; `render/*` is
+gitignored). Pixels: `docs/peep/r2581/retune/`. Tools: `tools/r2581_cropview.py`
+(new) and one gap closed in `tools/r2581_lensfix.py`.
+
+**One thing came back that was not being looked for:** the peak frame renders
+with no car in it at all. See R2-594 — it is occlusion, it belongs to another
+agent's defect, and it is not caused by the lens.
+
 ---
 
 ## R2-589 — the instrument for a framing decision, and the control it has to fail
@@ -226,6 +235,99 @@ at merge; the 22 deg aim bound in the sheet is stale at any of these focals
 (measured margin is max 0.187 deg off axis, so nothing leaves frame, but the
 bound's number would need re-deriving); and a longer lens is still a narrower
 view, which is a taste call that a merge is choosing, not inheriting.
+
+## R2-593 — the confirming render, and what it can still overturn
+
+**What the crop cannot answer.** R2-589's previewer is exact on framing and
+silent on resolution, so it settles "does f2110 keep its context" and cannot
+settle "does the car still read at 1.50x". At 1.50x the car is **4.87 % of frame
+width — 62 px at 1280, ~187 px in the 4K delivery** — against 42 px as shipped
+and the 85 px at which R2-588 could read endplates, halo and front-wing elements.
+The retune is therefore expected to land between "a blue smudge with two dark
+blobs for tyres" and "a car that reads", and that is the one claim in this pass
+which is asserted from a projection rather than seen.
+
+**Two frames, off the loaded `film14_breach_r6.blend`, 1280x720 / 64 samples /
+adaptive 0.01, camera `ONER`, the scene's own AgX and −3.628, prio 89:**
+
+```
+ba8ed022c396   f2110  --zoom 1.4969  --border 0.165983 0.834017 (both axes)   the cap frame
+b67b883a270f   f2190  --zoom 1.6752  --border 0.201530 0.798470 (both axes)   the new peak, never rendered
+```
+
+**Cost: ~$0.013** — about 110 s of GPU at $0.4203/hr, against the eight frames
+that cost $0.05 in R2-588. Both delivered; `tmp/r2581_retune/retune_*.png`.
+
+**f2110 at 1.4969x — the retune does what it was retuned for.**
+
+* **The framing.** The far esses the car is driving toward are in frame at the
+  top, with the barrier-wall diagonal, the marshal post and the run-off. It is
+  still a shot of a circuit. Against variant A's 2.08x — asphalt and two grass
+  verges — this is the whole point of the pass.
+* **The previewer predicted the render.** The R2-589 crop at z=1.50 correlates
+  **+0.9939** with the delivered frame and **−0.0360** with a different frame's.
+  The cheap instrument was right about the framing, which is all it claimed.
+* **The ruler agrees with the projection, in the direction it must.** Measured
+  off the delivered pixels the car spans x 607–665, **59 px = 4.61 %** of frame
+  width against the projected **4.87 %** — the box overstates by 5.3 %, inside
+  the 0–9 % band R2-584 established over five frames.
+* **The subject reads, less well than at 2.08x, better than as shipped.** At 6x
+  (`tmp/r2581_retune/zoom_retune_2110.png` against R2-588's
+  `zoom_before_2110.png`) the front wing is a distinct blade with endplates, the
+  rear wing carries a legible sponsor strip, the four tyres separate cleanly and
+  the livery pattern is visible on nose and sidepods. R2-588's `before` at the
+  same magnification is a compact blob with the rear wing merged into the
+  bodywork. **That is the price of the retune, paid and visible: 59 px where A
+  bought 85 px, against 42 px as shipped.**
+
+**Verdict: the retune holds.** f2110 keeps its context and the car still reads.
+
+---
+
+## R2-594 — the peak frame came back with NO CAR IN IT, and the instrument said 8.23 %
+
+`b67b883a270f`, f2190 at 1.6752x — the peak of the retuned ramp — contains a
+concrete parapet, a wall with posts and green fencing above it, and a kerb and
+gravel trap below. **There is no car anywhere in the frame.** The projection says
+the car is 8.23 % of frame width there — about 105 px, impossible to miss.
+
+**It is occlusion, and the instrument declares itself blind to it.**
+`tools/lap_shotscale.py`'s own LIMITS section says so in one line: *"Occlusion is
+not modelled: a car behind a barrier still measures full size."* At f2190 the car
+projects to screen **x 0.500, y 0.493** — dead centre, 183.3 m away, camera 13.7 m
+up — and the centre of the delivered frame is the parapet.
+
+**It is the same structure R2-584 already measured, ten frames later.** R2-584 on
+f2180: *"the bottom-right 45 % of the frame is filled by a motion-smeared
+grandstand structure sweeping through the foreground, its upper edge passing
+within a few pixels of the car."* By f2190 that edge has swept over it. R2-588
+saw the far side of the same pass at f2200, where the car is visible again as a
+62 px chip between two bridge pylons. So the blocked window sits between two
+frames that are known-visible, and it is narrow.
+
+**What this does and does not mean for the fix.**
+
+* **The candidate did not cause it and cannot cure it.** Whether a sightline is
+  blocked is a property of the ray from camera to car; **focal length does not
+  enter it.** The car is equally hidden at the authored 84.8 mm. What the longer
+  lens does is make the occluder fill more of the frame.
+* **It does mean the fix's back-half numbers are overstated on some frames.**
+  The demand curve is driven by measured size, and on the blocked frames the
+  measured size is fiction — the delivered subject is 0 %. The ramp's peak is
+  therefore parked, by coincidence, on frames where nothing is gained.
+* **How many frames are blocked is not established here**, and finding out means
+  a ray-cast against the assembled world. The local box has 0 GB of 11 GB free
+  and 38 GB of swap in use, so a 5 GB blend cannot be opened here; the honest
+  next step is `rq exec` on the rented box, and it belongs with the placement
+  defect rather than with the lens.
+
+**Handed on, not chased.** The near-field architecture at f2180/f2190/f2200 is
+another agent's defect (R2-588 says so explicitly). This entry adds one fact to
+it that was not previously known: **at f2190 the architecture does not merely
+compete with the subject, it hides it completely.** Whoever fixes the placement
+should re-run `tools/r2581_lensfix.py` afterwards, because the demand curve that
+sets this candidate's peak is partly driven by frames whose subject is not
+actually on screen.
 
 **Out of scope and left alone:** the near-field architecture at f2180
 (grandstand) and f2200 (two bridge pylons). It is a separate defect, it belongs
