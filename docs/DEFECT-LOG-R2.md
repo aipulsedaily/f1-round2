@@ -13999,7 +13999,7 @@ a control for SHAPE and VARIANCE but never for absolute level.**
 > does NOT.** The measurement was also wrong. **76.1 % is the subtense of the
 > car's 5.72 m LENGTH** — its apparent width only when broadside. Two
 > independent tools reproduced that error before anyone projected the car
-> through the actual camera. True value at f700 is **0.497**. Measured off the
+> through the actual camera. True value at f700 is **0.497**. *(Later dispute: the precise figure does NOT reproduce across tools -- 0.4531 by ruler on the delivered frame, 0.463/0.4746 from the ladder agent's projection, **0.5033** from two independent tools on `film14_path.json`. All of them refute 0.76/0.83, so the conclusion is unaffected, but DO NOT re-quote a single value.)* Measured off the
 > delivered pixels directly (`r1full_000697.png`), the front wing spans
 > x=365..945 of 1280 = **0.45 of frame width**.
 >
@@ -16493,3 +16493,234 @@ frames.
 * `sim/land_breach.sh` — stage 3b; stage 4's duplicate scoring run removed
 * `sim/out/tail_persist_r6.json`, `sim/out/tail_persist_R2387.json` — the
   measurement records
+
+## R2-588 — the fix, in pixels: four matched pairs off the shipping blend
+
+Rendered from **`render/film14_breach_r6.blend`** — the blend the ladder pass is
+rendering, i.e. the shipping build — at 1280x720 / 64 samples / adaptive 0.01 /
+camera `ONER`, the scene's own AgX and exposure. Eight frames, **$0.05 of GPU**,
+slotted at prio 89 so they cost the r1ladder pass about seven minutes of its
+seven hours. Archived in `docs/peep/r2581/`.
+
+`before` is the film as it ships. `after` is variant A's focal at that frame,
+rendered as `--zoom Z --border 0.5±0.5/Z`.
+
+**First: the emulation is exact, and it has a control.** Downscale each `after`
+by its own zoom factor and correlate it against the centre of its own `before`:
+
+```
+frame   zoom    corr vs its OWN before    corr vs a DIFFERENT frame's before
+2050   1.9726          0.9935                        0.2069
+2110   2.0839          0.9822                        0.1038
+2170   1.7106          0.9785                       -0.0685
+2200   1.6781          0.9977                        0.1356
+```
+
+0.98-1.00 against the right frame, 0.10-0.21 against the wrong one. **The `after`
+frames are the same camera through a longer lens and nothing else.**
+
+**Second: the ruler agrees with the projection on both sides of the A/B.** f2110,
+measured off the delivered pixels:
+
+```
+             projected     ruler on the picture       box overstates
+before          3.26 %     3.19 %  (x 618.7-659.5)         2 %
+after           6.78 %     6.64 %  (x 596.2-681.2)         2 %
+measured ratio           2.08x                 zoom requested 2.0839x
+```
+
+**Third, and this is the part that is not a number.** `zoom_before_2110.png` and
+`zoom_after_2110.png` are the same 16 % x 22 % patch of frame at 6x. Before, the
+car is a **blue smudge with two dark blobs for tyres**. After, at the same
+sampling and the same grade, the rear wing endplates, the halo, the front-wing
+elements, the tyre sidewalls and the livery's pattern are all separately legible.
+**That is the difference between a car being present in a frame and a car reading
+in a frame**, and it is what 3.2 % versus 6.6 % of frame width means in practice.
+
+**Fourth, the honest cost, seen rather than argued.** The four pairs do not all
+improve equally, and one of them is a warning:
+
+* **f2050 — clear improvement.** Before: a chip on a wide corner with a sand
+  trap. After: the car reads on the kerb line, and the kerb, verge and track
+  edges are all still in frame. Nothing of value is lost.
+* **f2110 — improved but bare.** This is the deepest point of the trough and the
+  biggest zoom (2.08x). The car reads, but what surrounds it is now a strip of
+  empty asphalt and two grass verges; the buildings and the horizon are gone.
+  **The wide had more in it than the long lens does here.** If any frame argues
+  for the gentler `--target 0.05` variant, it is this one.
+* **f2170 — clear improvement, and the best frame of the eight.** The car reads
+  on the kerb line of a sweeping corner with the barrier wall and the tree line
+  still behind it. Both the subject and the place are in the frame at once.
+* **f2200 — improvement, and it exposes a second defect.** The *before* frame is
+  the camera passing a bridge: **two large concrete pylons occupy the left and
+  right foreground and the car is a 62 px chip between them.** That is the same
+  failure as f2180's grandstand — architecture in the near field competing with a
+  distant subject — and it is now confirmed at two separate frames 20 frames
+  apart. The longer lens crops most of the pylons out and the car reads under the
+  `TELCOM` grandstand, so the lens fix *incidentally* improves it. **The
+  foreground-architecture problem is real, it is separate from the shot-scale
+  problem, and it is not fixed by a lens; it is a placement question and it is
+  handed on rather than solved here.**
+
+**Verdict on the fix.** Three of four pairs are unambiguously better pictures and
+the fourth is better as a shot of a car and worse as a shot of a place. The
+change is worth making; **f2110 is the argument for tuning the target down rather
+than up**, and the trade table in R2-586 is where that choice lives.
+
+## R2-525 — the before/after, and the two things the macro station settled
+
+`render/r2521/r2521_before.blend` and `render/r2521/r2521_after.blend` are one
+geometry, one freeze, one camera, four stations, and **the only difference
+between the two files is whether `world/car_paint.py` has been run.** Sequences
+`r2521before` and `r2521after2`, 1920x1080 / 160 samples, AgX / None / -3.628.
+
+```
+f1  wide head-on      the ONER at world f697
+f2  wide three-quarter the ONER at world f655
+f3  flank macro       0.62 m off MB_sidepod_L on a 65 mm lens  (~5,500 px/m)
+f4  nose macro        0.55 m off MB_nose on a 58 mm lens
+```
+
+### What the BEFORE macro settles, and it is not what was expected
+
+`r2521before_000003.png` puts a `CarbonFibre` part and a `LiveryPaint` panel in
+the same frame at the same distance.
+
+**The carbon has a crisp, correct 2x2 twill.** It resolves cleanly, no tiling,
+no smear. **The painted panel has nothing at all** — a smooth teal-to-navy
+gradient with no weave, no flake, no clearcoat structure, no texture of any kind.
+
+This is a partial correction to R2-544 ("no carbon weave anywhere on the car;
+the wings read as flat clay"), and the correction matters because it changes
+what has to be built:
+
+> **The carbon weave is authored, it is correct, and it is invisible at rung 1
+> for a reason that is arithmetic.** At 1280x720 the car spans roughly 600 px for
+> 5.6 m, i.e. **107 px/m**. `CarbonFibre`'s twill is 190 repeats/m — **0.56 px
+> per weave cell.** It cannot appear at rung 1 and no amount of authoring will
+> make it. At the macro station, 5,500 px/m, the same weave is 29 px per cell and
+> it is there. R2-544's evidence is a 720p sequence; the finding it supports is
+> "rung 1 cannot show weave", not "the car has no weave".
+>
+> **What R2-544 is right about is the PAINT**, and the macro frame shows it with
+> nothing to argue about: the bodywork panels carry no surface at any distance.
+
+`r2521before_000004.png`, the nose macro, is the frame to put in front of anyone
+who wants the defect in one picture: the nose reads as a sheet of wet cellophane
+over pale-blue shards. The "shards" are round 1's own designed carbon-dissolve
+cells at the nose tip, seen through a mirror finish with no paint over them.
+
+### Where the measurement lands after the fix
+
+Same probe, same rig, same frames, `LiveryPaint` the only thing changed:
+
+```
+station                   diffuse    glossy   emission   albedo
+head-on         before      2.78 %   96.44 %    0.78 %   0.0121
+                after       8.20 %   91.16 %    0.64 %   0.0388
+three-quarter   before      7.32 %   88.94 %    3.74 %   0.0121
+                after      20.73 %   76.22 %    3.04 %   0.0413
+
+  albedo x3.2-3.4    diffuse share x2.8-2.9    transmission still exactly 0
+```
+
+The panel is no longer a mirror with nothing behind the mirror. It is still
+specular-dominated, which is correct — a gloss-navy car in a showroom lit to
+46 kW of practicals *is* mostly reflection — but the paint is now a term in the
+picture instead of a rounding error.
+
+---
+
+## R2-526 — a step in a height field is an infinite gradient, and a Bump node reads the gradient
+
+The first rendered pass of the weave came back as **flat rectangular plateaus
+with hard stair-steps**, roughly 110 x 30 px at the macro station, which is a
+parquet floor and not a woven laminate.
+
+The construction was combinatorially right and numerically wrong. A 2/2 twill
+floats each warp over two wefts and under two, advancing one tow per row, and
+that is exactly `mod(floor(u) - floor(v), 4) < 2`. But `floor` makes it a **step
+function**, and it was being used to SELECT between the warp's height profile and
+the weft's. At every tile edge the height jumped discontinuously — and a Bump
+node does not read a height, it reads its derivative. 110 x 30 px is 4 tows by 1
+tow at a 5 mm pitch: the tile size *is* the twill's repeat, rendered as plateaus.
+
+The fix is to carry the same period, the same diagonal and the same phase in a
+function that is smooth:
+
+```
+f = 0.5 + 0.5 * cos(2*pi*(u - v)/4)        1 -> warp proud, 0 -> weft proud
+h = mix(dome(fract(u)), dome(fract(v)), f)
+```
+
+The two domes cross over through the valley where both are near zero, so the
+field is continuous everywhere and its gradient is bounded. It is also five nodes
+cheaper per projection.
+
+*Generalises to:* **anything a Bump node reads must be C0 at minimum.** `floor`,
+`round`, `LESS_THAN`, `GREATER_THAN` and a hard `Mix` factor are all steps, and
+all of them will render as faceted plateaus rather than as the pattern they
+correctly describe.
+
+---
+
+## R2-527 — a printed livery is an INK, not a light source's colour
+
+Also from the first rendered pass, and worth keeping because the mistake is
+tempting whenever artwork is moved out of an emission slot.
+
+The livery's pattern lives in `Emission Strength`; `Emission Color` is a flat
+`PULSE_CYAN` (0.028, 0.807, 1.000). Moving the artwork into the paint therefore
+means "use the STRENGTH as the mix factor" — but the first version also reused
+the flat cyan as the ink, at 0.60, normalised over 0.90. The graph edges (0.40)
+and the particle streams (0.35) cover essentially the whole upper body, so every
+painted panel printed at ~0.3 of a saturated cyan and **the car came back pale
+slate-cyan instead of navy** (`r2521after_000001.png`, superseded).
+
+A light source's colour is what it emits; an ink's colour is what it reflects,
+and those are not interchangeable. Retuned to a deep teal ink
+`(0.013, 0.072, 0.098)` at 0.30, normalised over 2.20 so the ladder's faint rungs
+print faintly and its junctions print. The pearl came down with it (0.35 -> 0.20,
+and its own teal darkened), because two independent teal terms were stacking.
+
+---
+
+## R2-528 — handover: where this has to land, and what is still open
+
+**The fix is `world/car_paint.py` and it is not yet applied to any car source.**
+It is verified on `render/r2521/r2521_after.blend`, which is a rig.
+
+The car goes into the film through `tools/build_film_scene.py --car <blend>`, and
+the rebuild in flight for `film16` is running with `--car
+world/car_anim_driver.blend`. So the module has to be applied to **both** car
+sources for the next rebuild to pick it up:
+
+```
+blender -b world/car_anim.blend        -P world/car_paint.py -- --save
+blender -b world/car_anim_driver.blend -P world/car_paint.py -- --save
+```
+
+It is idempotent, it is exactly reversible (`--strip`, gated: IDENTICAL True on
+nodes, links and every unlinked socket value), and it must run BEFORE
+`tools/imperfections.py`, which chains onto the coat roughness and coat normal
+this module leaves.
+
+**`tools/imperfections.py` has still never been applied to the car either.**
+R2-015 closed on the audit blend and its own note says so: "it has NOT yet been
+injected into `world/beat1_anim.blend` or into the unified world". Measured here
+— `LiveryPaint` in `render/film14_breach_r6.blend` contains **zero
+`ShaderNodeGroup` nodes**, so `R2_Imperfection` is not in the shipped car. The
+clearcoat orange-peel micro-relief that R2-015 spent six tuning passes on is not
+in a single rendered frame of the ladder.
+
+**Still open on the hero subject, and NOT in this block's scope:**
+
+* Tyre tread pattern and sidewall lettering (R2-544). `TyreRubber` is a 15-node
+  material with one noise and a bump; whether the tread should be geometry or
+  shader is a separate decision from the paint.
+* The wings. Their carbon IS authored and correct; whether the rung-1 read of
+  "flat clay" needs a lower-frequency, larger-scale surface story that survives
+  107 px/m is a real question and a different one from this.
+* Fibre striation along each tow. The twill here carries tow shape and the
+  twill diagonal; it does not carry the individual filaments, which would show at
+  ranges closer than the 0.62 m macro station.
