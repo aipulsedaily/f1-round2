@@ -198,7 +198,10 @@ Two consequences decide the order of the fixes:
    needs **f/35 to f/37**. That is not a photographable aperture, it destroys the
    background separation the brief asks for, and it is deep into diffraction.
 2. **At a standoff that makes them FIT, f/5.2 to f/9.0 suffices** — a normal
-   aperture, and the rest of the film already runs at f/5.6.
+   aperture, and not an unfamiliar one in this film: **beats 4 and 5 run at f/5.6
+   for all 346 of their keys**, and beat 3 ramps 4.0 -> 5.6 across its 43. Beat 1
+   is the outlier at f/2.2-3.2, and it is the beat that has to hold a 1.3 m body
+   1.5 m from the lens.
 
 > **Fix the framing first. Not as a preference — as a precondition.** The focus
 > cannot be fixed at today's standoff by any means. Once the fill target is
