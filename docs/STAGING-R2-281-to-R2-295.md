@@ -403,3 +403,75 @@ threshold decides whether the six ends let go (0 of 6 at 260, 6 of 6 at both
 to hang. `p_hfix` (8.8, head **fixed**) and `p_hsld` (260, head **slider**) are
 baked to settle it; they are the two off-diagonal cells of the 2×2 and they are
 queued behind the production bake.
+
+## R2-290 — the corrected frame unmasks a kinematic bulldozer: 2,647 shards freeze mid-slide, 88 m downrange, across two-thirds of the closing frame
+
+**The production re-bake at the derived thresholds landed clean and its
+headline numbers are right.** 1,657 frames, `EXIT=0`, `land_breach` stage 0
+and stage 4 both PASS:
+
+| | shipped | **re-bake** |
+|---|---|---|
+| connected aperture | 2.15 × 6.00 m | **2.15 × 6.00 m** |
+| bay 4 / bay 5 vacated | 96.7 / 95.4 % | **96.7 / 95.4 %** |
+| shards gone | 2,962 | **2,923** |
+| glass mass gone | 772.4 kg | **765.9 kg** |
+| mullion 5 max displacement | 4.43 m, **2** of 8 segments gone | **89.79 m, ALL 8 gone** |
+| transom max displacement | **0.089 m** | **69.83 m** |
+| mullions 0–4, 6–10 displacement | 0.0000 m | **0.0000 m** — controls hold |
+
+**P8 confirmed, P2 confirmed, and P3 — which I wrote as 50/50 and declined to
+predict — resolves in favour of the column falling.** I was too conservative
+and the reason is instructive: I reasoned statically, and the six transom ends
+that would have held the column up are broken by the same transient that
+breaks everything else.
+
+**And the bake is not shippable, for a reason that is not the thresholds.**
+
+The car proxy is `kinematic=True` — it is driven by the film's own authored
+animation and *must* be, so it cannot be slowed by anything it hits. In the
+shipped bake that never showed, because the frame was 29.5× too strong and
+held the glass back from it. With the frame correctly weak, the car ploughs
+the unrestrained field down the forecourt at its own speed:
+
+| median destroyed-bay shard | shipped | re-bake |
+|---|---|---|
+| speed at sim f200 / f400 / f1000 / f1650 | 5.56 / 1.78 / 0.25 / **0.05** m/s | 12.95 / **18.88** / 14.15 / **7.33** m/s |
+| final position | x = 16.5, **at rest by t = 2.9 s** | **x = 103.0, still sliding** |
+| median travel | **3.77 m** | **88.17 m** |
+
+It *accelerates* between f200 and f400 while lying on the ground at z = 0.02,
+up to 18.88 m/s — and the car proxy's own parts never exceed 19.90 m/s
+(R2-096). It is being pushed, and an infinitely massive bulldozer does not
+stop pushing.
+
+**The consequence is R2-197's defect at thirty-eight times the scale.** At the
+table's last key **2,647 of 3,796 shards are still moving faster than 1 m/s
+(median 6.995 m/s)**, and `apply_breach` extrapolates CONSTANT, so they hang
+motionless for the remaining ~1,300 film frames of a take with zero cuts. The
+camera is east of the wall, so 88 m of eastward travel moves the debris
+*toward* it: the frozen field projects across **u 884…3465, v 1041…2067** of
+the 4K closing frame — 2,581 × 1,026 px, two-thirds of the frame width — where
+the shipped field occupies 476 × 1,040 px at the base of the wall and is at
+rest (median 0.033 m/s, 77 shards over 1 m/s).
+
+**This is not a threshold defect and correcting the thresholds did not create
+it.** Both bakes are wrong about the debris; the shipped one is wrong in a way
+that happens to look plausible, because an over-strong frame was doing the job
+the car proxy's mass should have been doing. Fixing one exposed the other, and
+that is the second time in this block (R2-283 is the first).
+
+**It also sits between the camera and the wound**, so the closing frame from
+this bake cannot be used to measure whether the aperture reads. That is what
+R2-291 is for.
+
+### What is NOT wrong with it
+
+* the `--wake-all --no-car` null holds (R2-287);
+* the two untouched bay-groups are untouched — mullions 0–4 and 6–10 at
+  **0.0000 m**;
+* `swap-scene`, the R2-098 check asked of the scene that actually renders,
+  **PASSES** with 0 problems;
+* the table-level `--swap` check FAILs at 375 uncovered shards — **and it fails
+  on the shipped table too, at 301**, same 2,118-frame worst gap. Pre-existing,
+  24 % larger, not introduced here.

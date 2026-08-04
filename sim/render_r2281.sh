@@ -23,13 +23,14 @@
 # under the AFTER image).
 set -u
 cd /home/zany/f1-round2
-NEW="${1:-render/film14_breach_r6b.blend}"
-OLD=render/film14_breach_r6.blend
+NEW="${1:-/home/zany/f1-round2/render/film14_breach_r6b.blend}"
+OLD=/home/zany/f1-round2/render/film14_breach_r6.blend
 RQ=/home/zany/vast-render/rq
 A=r2281
 D=render/r2281
 mkdir -p $D
 
+NEW=$(realpath "$NEW"); OLD=$(realpath "$OLD")   # the broker resolves a RELATIVE name against ITS scene roots, not your cwd
 [ -f "$NEW" ] || { echo "STAGE RESULT: FAIL -- no $NEW"; exit 1; }
 [ -f "$OLD" ] || { echo "STAGE RESULT: FAIL -- no $OLD"; exit 1; }
 
