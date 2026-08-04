@@ -85,8 +85,39 @@ say "3.  does the wall un-break?  (the f0866 prediction)"
 $PY sim/slabcheck.py --film sim/out/breach_film.npz \
     --out sim/out/slab_NEW.json 2>&1 | tail -3
 
-say "4.  the aperture, on the honest connected measure"
+say "3b. does the wall un-break?  asked of the ALUMINIUM  (R2-601)"
+# STAGE 3 ABOVE HAS NEVER GATED ON ANYTHING -- it prints slabcheck's tail and
+# the script carries on regardless -- and slabcheck asks the question of the
+# GLASS, which is the half that has not failed since bond went to 100.  The
+# half that fails is the frame: in the shipped table 62 of 66 deflected frame
+# bodies end up back at home, MUL05_S02 peaking at 157 mm and ending at 0.7 mm.
+# Nothing saw it because every frame number in this pipeline is a MAX.
 $PY sim/breach_metrics.py "$B" "$J" > sim/out/metrics_NEW.json 2>&1
+$PY -c "
+import json
+d = json.load(open('sim/out/metrics_NEW.json'))
+p = d['persistence']
+f, g = p['frame_bodies'], p['glass']
+print('rule:', p['rule'])
+print('CONTROLS', json.dumps(p['CONTROLS']))
+print('aluminium: %d of %d deflected bodies came home, largest %s at %.4f m'
+      % (f['RECOVERED'], f['deflected'], f['max_recovered_name'],
+         f['max_recovered_peak_m']))
+print('           worst', json.dumps(f['worst'][:4]))
+print('glass:     %d of %d came home, median end/peak %s'
+      % (g['RECOVERED'], g['deflected'], g['median_end_over_peak']))
+print('STAGE RESULT: persistence', 'PASS' if p['PASS'] else 'FAIL')
+" | tee sim/tmp/persist_stage.txt
+grep -q "STAGE RESULT: persistence PASS" sim/tmp/persist_stage.txt \
+    || die "the wall un-breaks: a deflected member returns to the intact rest \
+pose.  This is R2-601.  The lever is t_transom, NOT the head restraint: at \
+transom 260 the three full-width rails never break their bolt to mullions \
+4/5/6, bays 3-6 stay one rigid ladder, and its FIXED constraints drive every \
+deflection back to zero.  Re-bake at the derived transom threshold (8.8)."
+
+say "4.  the aperture, on the honest connected measure"
+# metrics_NEW.json was written by stage 3b -- scoring a 152 MB table twice is
+# four minutes of nothing.
 $PY -c "
 import json
 d=json.load(open('sim/out/metrics_NEW.json'))
