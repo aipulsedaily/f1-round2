@@ -1,0 +1,43 @@
+{
+ "n_objects": 3796,
+ "n_transform_curves": 26572,
+ "extrapolation_census": {
+  "CONSTANT": 34164
+ },
+ "reference_frame": 1165,
+ "hidden_now": 0,
+ "method": "F-curve evaluate(), NOT matrix_world -- matrix_world is not updated for a hidden object and would report 0.000 displacement for every hidden shard",
+ "evaluated": {
+  "1166": {
+   "max_abs_delta": 0.0,
+   "n_curves_that_moved": 0
+  },
+  "1400": {
+   "max_abs_delta": 0.0,
+   "n_curves_that_moved": 0
+  },
+  "2565": {
+   "max_abs_delta": 0.0,
+   "n_curves_that_moved": 0
+  },
+  "2901": {
+   "max_abs_delta": 0.0,
+   "n_curves_that_moved": 0
+  },
+  "2978": {
+   "max_abs_delta": 0.0,
+   "n_curves_that_moved": 0
+  }
+ },
+ "POSITIVE_CONTROL": {
+  "frames": [
+   1000,
+   1050
+  ],
+  "max_abs_delta": 42.41694641113281,
+  "n_curves_that_moved": 26524,
+  "FIRES": true
+ },
+ "PASS": true,
+ "assurance": "every transform curve holds its f1165 value to f2978, and the positive control moved 42.417 -- so this is a measured freeze, not an absence of curves"
+}

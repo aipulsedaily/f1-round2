@@ -5,26 +5,26 @@
  "freeze_is_inside_a_shot": false,
  "margin_frames": 115,
  "min_margin_frames": 24,
- "bodies_still_moving_at_the_last_key": 2275,
- "max_residual_ms": 108.2401,
+ "bodies_still_moving_at_the_last_key": 1599,
+ "max_residual_ms": 73.1736,
  "bodies_in_raster_at_next_sighting": 3665,
- "residual_px_per_frame_at_next_sighting": 0.5178,
+ "residual_px_per_frame_at_next_sighting": 0.1029,
  "residual_px_p50_p90_p99_max": [
-  0.0084,
-  0.0498,
-  0.083,
-  0.5178
+  0.0044,
+  0.0319,
+  0.055,
+  0.1029
  ],
  "residual_px_bodies_over": {
-  "0.1": 24,
-  "0.25": 7,
-  "0.5": 1,
+  "0.1": 1,
+  "0.25": 0,
+  "0.5": 0,
   "1.0": 0
  },
  "tol_px": 1.0,
  "sub_floor": {
   "bodies_in_raster_but_under_the_floor": 24,
-  "residual_px_per_frame": 11.9803,
+  "residual_px_per_frame": 8.0814,
   "counted_towards_the_verdict": false,
   "why": "R2-197: they left the sim's finite static ground and are in free fall.  They are behind the terrain from every camera in this take, so they cannot make a picture wrong -- but they are wrong, and this line exists so a passing gate cannot be read as their absence."
  },
@@ -33,5 +33,12 @@
  "PASS": true,
  "assurance": "the residual is under tolerance AND the freeze is off screen",
  "frames_the_wound_is_on_screen": 410,
+ "solver_state": {
+  "measured_on": "sim/tmp/breach_full_m1.npz, last SIM step scaled to a film frame -- the solver's instantaneous velocity, not what the decimated curves reconstruct",
+  "bodies_over_1mm_per_film_frame": 2275,
+  "of": 3948,
+  "max_ms": 108.2401,
+  "why_it_differs": "the decimator drops keys whose linear reconstruction error is under 1.5 mm, and one film frame spans ten sim frames here.  Both figures are live; the verdict uses the one that renders."
+ },
  "note_on_occlusion": "on_screen() does not model occlusion, so it OVER-states visibility. A rendered check at f2565 found the wound behind the gantry pylon while this test called it visible.  For a gate that has to prove something is UNSEEN that is the safe direction; for any claim that it IS seen, open the frame."
 }

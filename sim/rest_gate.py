@@ -7,14 +7,28 @@ WHAT THIS IS FOR
 ================
 `apply_breach.py` keys the bake in film frames and lets every curve extrapolate
 CONSTANT.  Past the last key — f1165 — every body holds its pose exactly, for
-the remaining 1,813 frames of a film with **zero cuts**.  Measured on the
-artefact, not on the flag: 34,164 curves, all CONSTANT, and evaluating
-`render/film14_breach.blend` at f1166, f1400, f2565, f2901 and f2978 gives
-`max |p(f) - p(f1165)| = 0.000 m` on all 3,796 shard objects, against a positive
-control that moves 42.417 m between f1000 and f1050.
+the remaining **1,813 frames** of a film with **zero cuts**.  That range is not
+simulated, it is HELD, and `verify_breach --persist-from 1200` used to decline
+to answer it entirely ("table ends before 1200") because the table stops at
+f1165 and persistence past the last key is a property of the SCENE, not of the
+table.  `--blend` below is the arm that answers it.
+
+Measured on the artefact, not on the flag: 34,164 F-curves in
+`render/film14_breach.blend`, census `{CONSTANT: 34164}`, and EVALUATING THE
+CURVES (not `matrix_world`, which is not updated for a hidden object and would
+have made every hidden shard read as frozen for free) at f1166, f1400, f2565,
+f2901 and f2978 gives `max |v(f) - v(f1165)| = 0.000` on every channel, against
+a positive control that moves 42.417 m between f1000 and f1050.
 
 So the field does not twitch and it does not drift.  It STOPS, in one frame,
-and **2,275 of 3,948 bodies are still moving when it does.**
+and a large fraction of it is still moving when it does:
+
+    the RECONSTRUCTION, last two FILM keys   1,599 of 3,796 (42.1 %) over
+                                             1 mm/frame, worst 3.049 m/frame
+    the RAW BAKE, last SIM step scaled       2,275 of 3,948 (57.6 %), worst
+                                             4.510 m/frame
+
+Both are live; the verdict uses the first, because that is what renders.
 
 That is only not a cut because of where the camera is.  This gate measures that,
 because it is currently true by luck and nothing was watching it:
@@ -27,7 +41,7 @@ because it is currently true by luck and nothing was watching it:
 
 The freeze happens 115 frames after the last clear sight of the wall and 157
 frames before the next one.  Re-author beat 4's camera to hold on the showroom
-a second longer and the audience watches 2,275 pieces of glass stop dead
+a second longer and the audience watches 1,599 pieces of glass stop dead
 together.
 
 THE `mobility` PROPERTY, CARRIED FORWARD
@@ -98,9 +112,11 @@ RES_X, RES_Y = 3840.0, 2160.0
 # frame the raster cannot represent the difference between "still moving" and
 # "stopped", so the freeze is not merely subtle, it is unrepresentable.  That is
 # a statement about a 3840x2160 image, not about this field.
-# Measured on the shipped bake at f1322, over 3,665 above-floor bodies in the
-# raster: p50 0.008, p99 0.083, max 0.518 px, ONE body over 0.5 and NONE over
-# 1.0.  The gate reports that distribution so the max is not taken on trust.
+# Measured on the RECONSTRUCTION at f1322, over 3,665 above-floor bodies in the
+# raster: p50 0.002, max 0.103 px, NONE over 0.25.  (On the raw bake the same
+# quantity is p50 0.008, max 0.518 -- still inside tolerance, so the choice of
+# artefact does not decide the verdict, which is the point of reporting both.)
+# The gate publishes the whole distribution so the max is not taken on trust.
 TOL_PX = 1.0
 MIN_MARGIN_FRAMES = 24   # one second of screen time either side of the freeze
 
@@ -222,19 +238,113 @@ def evaluate(track, vis, last_key, resid_ms, P_end, tol_px=TOL_PX,
     )
 
 
+def fcurves(action):
+    """Blender 5.x SLOTTED actions: `Action.fcurves` DOES NOT EXIST."""
+    out = []
+    for lay in getattr(action, "layers", []):
+        for st in getattr(lay, "strips", []):
+            for cb in getattr(st, "channelbags", []):
+                out.extend(cb.fcurves)
+    return out
+
+
+def blend_arm(frames=(1166, 1400, 2565, 2901, 2978), ref=1165,
+              control=(1000, 1050)):
+    """PERSISTENCE PAST THE LAST KEY, MEASURED ON THE SCENE.
+
+    `verify_breach.check_persist` reads the TABLE, and the table ends at f1165.
+    Asked about f1200 it returned `{"status": "table ends before 1200"}` -- no
+    verdict at all, for the 1,813 frames that carry beats 4, 5 and 6.  Those
+    frames are held by F-curve extrapolation, which is a property of the scene.
+
+    THE TRAP THIS AVOIDS.  `object.matrix_world` is NOT evaluated for a hidden
+    object; it returns the pose the blend was saved with.  Every intact pane is
+    hidden after its release frame and 82 shards never release at all, so a
+    displacement measured through `matrix_world` would read 0.000 for exactly
+    the objects a freeze test must not give a free pass to -- and a warm-up
+    `frame_set` does not fix it.  So this evaluates the F-CURVES, which are
+    defined whether or not anything is drawn.
+
+    Must be run inside Blender:
+        blender -b render/film14_breach.blend -P sim/rest_gate.py -- --blend
+    """
+    import bpy
+    obs = [o for o in bpy.data.objects
+           if o.name.startswith("GS_") or o.name.startswith("GF_")]
+    modes, curves = {}, []
+    for o in obs:
+        ad = o.animation_data
+        if not ad or not ad.action:
+            modes["NO_ACTION"] = modes.get("NO_ACTION", 0) + 1
+            continue
+        for fc in fcurves(ad.action):
+            modes[fc.extrapolation] = modes.get(fc.extrapolation, 0) + 1
+            if fc.data_path in ("location", "rotation_quaternion"):
+                curves.append(fc)
+    base = np.array([fc.evaluate(ref) for fc in curves])
+    rep = {"n_objects": len(obs), "n_transform_curves": len(curves),
+           "extrapolation_census": modes, "reference_frame": ref,
+           "hidden_now": int(sum(1 for o in obs if o.hide_render)),
+           "method": "F-curve evaluate(), NOT matrix_world -- matrix_world is "
+                     "not updated for a hidden object and would report 0.000 "
+                     "displacement for every hidden shard"}
+    ev = {}
+    for f in frames:
+        d = np.abs(np.array([fc.evaluate(f) for fc in curves]) - base)
+        ev[str(f)] = {"max_abs_delta": float(d.max()),
+                      "n_curves_that_moved": int((d != 0.0).sum())}
+    rep["evaluated"] = ev
+    a = np.array([fc.evaluate(control[0]) for fc in curves])
+    b = np.array([fc.evaluate(control[1]) for fc in curves])
+    dd = np.abs(b - a)
+    rep["POSITIVE_CONTROL"] = {
+        "frames": list(control), "max_abs_delta": float(dd.max()),
+        "n_curves_that_moved": int((dd != 0.0).sum()),
+        "FIRES": bool(dd.max() > 0.01)}
+    rep["PASS"] = bool(rep["POSITIVE_CONTROL"]["FIRES"]
+                       and all(v["max_abs_delta"] == 0.0 for v in ev.values())
+                       and set(modes) <= {"CONSTANT"})
+    rep["assurance"] = (
+        "every transform curve holds its f%d value to f%d, and the positive "
+        "control moved %.3f -- so this is a measured freeze, not an absence of "
+        "curves" % (ref, max(frames), rep["POSITIVE_CONTROL"]["max_abs_delta"])
+        if rep["PASS"] else "FAILED")
+    return rep
+
+
 def load_state():
+    """THE RESIDUAL IS MEASURED ON THE RECONSTRUCTION, NOT ON THE BAKE.
+
+    Both numbers are real and they are not the same measurement:
+
+      the RECONSTRUCTION, step between the last two FILM keys (f1164 -> f1165)
+          1,599 of 3,796 shards over 1 mm/frame (42.1 %), worst 3.049 m/frame
+      the RAW BAKE, last SIM step (1/240 s) scaled to a film frame
+          2,275 of 3,948 bodies over 1 mm/frame (57.6 %), worst 4.510 m/frame
+
+    The gap is the decimator: it drops any key whose linear reconstruction error
+    is under 1.5 mm, which is exactly the small residual motions, and one film
+    frame spans ten sim frames at the end of beat 3's ramp, so the
+    reconstruction reports the average over that interval rather than the
+    solver's instantaneous velocity.
+
+    `verify_breach.run` already says why the reconstruction wins: "measuring the
+    pre-decimated table would grade an artefact that never renders."  The bake
+    figure is reported beside it as `solver_state`, because a gate that quietly
+    picked the smaller of two live numbers would be choosing its own answer."""
     track = SP.load_track()
     film = RS.read_film(os.path.join(R2, "sim/out/breach_film.npz"))
     span = film["span"]
     frames = np.arange(int(span[0]), int(span[1]) + 1)
     L, _Q = film["expand"](frames)
+    resid = np.linalg.norm(L[-1] - L[-2], axis=1) * 24.0        # m/s, as filmed
     bake = np.load(os.path.join(R2, "sim/tmp/breach_full_m1.npz"))
-    resid = np.linalg.norm(bake["loc"][-1] - bake["loc"][-2], axis=1) * 240.0
-    return track, int(span[1]), L[-1], resid
+    solver = np.linalg.norm(bake["loc"][-1] - bake["loc"][-2], axis=1) * 240.0
+    return track, int(span[1]), L[-1], resid, solver
 
 
 def selftest():
-    track, last_key, P_end, resid = load_state()
+    track, last_key, P_end, resid, solver = load_state()
     vis = on_screen(track)
     res, n = [], [0]
 
@@ -288,16 +398,38 @@ def selftest():
 
 
 def main():
+    argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else None
     ap = argparse.ArgumentParser()
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--blend", action="store_true",
+                    help="run INSIDE Blender against the open scene: prove the "
+                         "1,813 held frames on the F-curves")
     ap.add_argument("--out", default=os.path.join(R2, "sim/out/rest_gate.json"))
-    a = ap.parse_args()
+    a = ap.parse_args(argv)
     if a.selftest:
         sys.exit(selftest())
-    track, last_key, P_end, resid = load_state()
+    if a.blend:
+        rep = blend_arm()
+        with open(a.out, "w") as fh:
+            json.dump(rep, fh, indent=1)
+        print(json.dumps(rep, indent=1))
+        print("STAGE RESULT: %s" % ("PASS" if rep["PASS"] else "FAIL"))
+        return
+    track, last_key, P_end, resid, solver = load_state()
     vis = on_screen(track)
     rep = evaluate(track, vis, last_key, resid, P_end)
     rep["frames_the_wound_is_on_screen"] = int(vis.sum())
+    rep["solver_state"] = dict(
+        measured_on="sim/tmp/breach_full_m1.npz, last SIM step scaled to a "
+                    "film frame -- the solver's instantaneous velocity, not "
+                    "what the decimated curves reconstruct",
+        bodies_over_1mm_per_film_frame=int((solver / 24.0 > 1e-3).sum()),
+        of=int(len(solver)),
+        max_ms=round(float(solver.max()), 4),
+        why_it_differs="the decimator drops keys whose linear reconstruction "
+                       "error is under 1.5 mm, and one film frame spans ten "
+                       "sim frames here.  Both figures are live; the verdict "
+                       "uses the one that renders.")
     rep["note_on_occlusion"] = (
         "on_screen() does not model occlusion, so it OVER-states visibility. "
         "A rendered check at f2565 found the wound behind the gantry pylon "

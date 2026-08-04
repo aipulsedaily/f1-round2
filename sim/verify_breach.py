@@ -496,16 +496,45 @@ def seam_stat(frames, L, Q, seam_frame):
 
 
 def check_persist(frames, L, Q, from_frame):
-    """From `from_frame` to the end of the table, nothing may move at all."""
+    """From `from_frame` to the end of the table, nothing may move at all.
+
+    R2-200.  THIS USED TO RETURN NOTHING AT ALL.  The default `--persist-from`
+    is 1200 and the table ends at **1165**, so the arm that is supposed to
+    certify the wound's persistence returned `{"status": "table ends before
+    1200"}` — no verdict, no PASS, no FAIL — for the **1,813 frames** that
+    carry beats 4, 5 and 6.  A silent arm reads exactly like a passing one in a
+    report anybody skims.
+
+    It is also the wrong artefact for that question, and saying so is the fix
+    rather than moving the default.  Past f1165 nothing is in the table: the
+    wound is held by the SCENE's F-curve extrapolation, which a table cannot
+    express.  So this refuses, names the range it cannot see, and names the arm
+    that can — `sim/rest_gate.py --blend`, which evaluates the F-curves inside
+    Blender (and evaluates the CURVES rather than `matrix_world`, because
+    `matrix_world` is not updated for a hidden object and would hand every
+    hidden shard a free pass).
+    """
     f = np.asarray(frames)
     i = int(np.searchsorted(f, from_frame))
     if i >= len(f) - 1:
-        return dict(status="table ends before %d" % from_frame)
+        return dict(
+            PASS=False, status="REFUSED",
+            from_frame=int(from_frame), table_ends_at=int(f[-1]),
+            frames_this_table_cannot_see=int(from_frame) - int(f[-1]),
+            why="the table ends at %d and you asked about %d.  Persistence "
+                "past the last key is a property of the SCENE's F-curve "
+                "extrapolation, not of this table." % (f[-1], from_frame),
+            what_would_make_it_measurable=(
+                "either pass --persist-from <= %d to ask a question this table "
+                "can answer, or run `blender -b <film>.blend -P "
+                "sim/rest_gate.py -- --blend`, which measures the held range on "
+                "the curves themselves." % f[-1]))
     d = np.linalg.norm(L[i:] - L[i][None], axis=2).max()
     a = np.abs(np.sum(Q[i:] * Q[i][None], axis=2)).clip(-1, 1)
+    turn = float(np.degrees(2 * np.arccos(a.min())))
     return dict(from_frame=int(from_frame), to_frame=int(f[-1]),
-                max_drift_m=float(d),
-                max_turn_deg=float(np.degrees(2 * np.arccos(a.min()))))
+                max_drift_m=float(d), max_turn_deg=turn,
+                PASS=bool(d < 1e-9 and turn < 1e-4))
 
 
 # --------------------------------------------------------------------------- #
@@ -700,7 +729,19 @@ def selftest():
     Lp[250, 9, 0] += 0.002
     p2 = check_persist(frames, Lp, Qp, 1000)
     check("+ve control: a 2 mm drift after rest is caught",
-          p2["max_drift_m"] > 1e-3, "%.4f m" % p2["max_drift_m"])
+          p2["max_drift_m"] > 1e-3 and p2["PASS"] is False,
+          "%.4f m" % p2["max_drift_m"])
+    # R2-200.  The arm that returned NOTHING for 1,813 frames.  Asking about a
+    # frame past the end of the table must be a FAIL that says what would make
+    # it measurable, never a dict with no verdict in it.
+    p3 = check_persist(frames, Lp, Qp, int(frames[-1]) + 35)
+    check("+ve control: a window past the end of the table REFUSES, and fails",
+          p3.get("status") == "REFUSED" and p3["PASS"] is False
+          and "rest_gate" in p3["what_would_make_it_measurable"],
+          "%d frames unseen" % p3["frames_this_table_cannot_see"])
+    check("discrimination: the refusal is not how it answers everything",
+          p["PASS"] is True and "status" not in p,
+          "in-range verdict PASS=%s" % p["PASS"])
 
     # -- SWAP (R2-098).  A synthetic two-bay plan, so the controls do not
     #    depend on whatever the current fracture happens to look like.
