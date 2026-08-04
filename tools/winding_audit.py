@@ -438,31 +438,30 @@ def _material_between(Pw, T, lo, hi, n_probe=5):
 def _facets(tris):
     """Label connected runs of triangles. `tris` is (k, 3) WELDED indices.
 
-    Union-find with path halving. Pure numpy indices, no scipy -- Blender's
-    interpreter does not ship it.
+    Label propagation with pointer jumping, not a union-find. The union-find
+    this replaced was a Python loop over every triangle, which is fine on a
+    timing stand and is not fine on `pont_deck_slab`, whose deck carries
+    104,236 displaced blowholes -- a detector nobody can afford to run is a
+    detector nobody runs.
     """
-    k = len(tris)
-    if not k:
+    if not len(tris):
         return np.zeros(0, np.int64)
-    idx = np.unique(tris)
-    ren = {int(v): i for i, v in enumerate(idx)}
-    parent = np.arange(len(idx), dtype=np.int64)
-
-    def find(x):
-        while parent[x] != x:
-            parent[x] = parent[parent[x]]
-            x = parent[x]
-        return x
-
-    for t in tris:
-        a = find(ren[int(t[0])])
-        for c in (t[1], t[2]):
-            b = find(ren[int(c)])
-            if a != b:
-                parent[b] = a
-    root = np.array([find(ren[int(t[0])]) for t in tris], np.int64)
-    _, lab = np.unique(root, return_inverse=True)
-    return np.asarray(lab).ravel()
+    idx, ren = np.unique(tris, return_inverse=True)
+    W = np.asarray(ren).reshape(-1, 3)
+    a = np.concatenate([W[:, 0], W[:, 1], W[:, 2]])
+    b = np.concatenate([W[:, 1], W[:, 2], W[:, 0]])
+    lab = np.arange(len(idx), dtype=np.int64)
+    for _ in range(64):
+        prev = lab
+        m = np.minimum(lab[a], lab[b])
+        lab = lab.copy()
+        np.minimum.at(lab, a, m)
+        np.minimum.at(lab, b, m)
+        lab = lab[lab]
+        if np.array_equal(lab, prev):
+            break
+    _, out = np.unique(lab[W[:, 0]], return_inverse=True)
+    return np.asarray(out).ravel()
 
 
 def sheet_facing(objs, cos_flat=0.99, min_area=0.05):
