@@ -471,3 +471,104 @@ collider can leave without the car then passing through what it left behind.
   *carrying* the debris and does nothing about the debris having been *launched*
   at the car's own speed. Which is R2-389.
 
+
+---
+
+## R2-389 — cutting the proxy's grip puts five mullion segments back in the middle of the aperture, and R2-293's four cells could not have seen it
+
+A2 is refused, and the reason is the one thing this job was told not to trade.
+
+`MUL05_S03 … S07` — the 4.65 m of mullion above the car's roofline — in the two
+cells at sim frame 400:
+
+| segment | z at impact | A0 (friction 0.55) end | A2 (friction 0.20) end | A0 travel | A2 travel |
+|---|---|---|---|---|---|
+| `MUL05_S03` | 2.73 | (23.00, −0.91, 0.13) | **(15.00, 0.02, 2.64)** | 8.56 m | **0.14 m** |
+| `MUL05_S04` | 3.51 | (22.24, −0.74, 0.12) | **(15.01, 0.02, 3.41)** | 8.12 m | **0.15 m** |
+| `MUL05_S05` | 4.28 | (18.70, 0.08, 1.07) | **(15.01, 0.01, 4.19)** | 4.98 m | **0.15 m** |
+| `MUL05_S06` | 5.06 | (18.03, 0.27, 0.74) | **(15.02, 0.01, 4.96)** | 5.35 m | **0.16 m** |
+| `MUL05_S07` | 5.83 | (17.36, 0.47, 0.40) | **(15.02, 0.00, 5.74)** | 5.98 m | **0.16 m** |
+
+In A2 the column **does not come down**. It drops 0.09 m in 1.06 s and stops —
+2 % of a free fall — and it is still standing in the wall plane at the end of
+the cell. Projected through the ONER track onto the closing frame it lands
+**dead centre of `wallstats`'s own wound rectangle**:
+
+| segment | u, v at f2978 | u, v at f2940 | inside the wound box |
+|---|---|---|---|
+| `MUL05_S03` | 1920.3, 1085.9 | 1920.2, 1084.4 | **yes** |
+| `MUL05_S04` | 1920.3, 1076.0 | 1920.2, 1077.0 | **yes** |
+| `MUL05_S05` | 1920.1, 1066.0 | 1920.1, 1069.5 | **yes** |
+| `MUL05_S06` | 1920.1, 1056.0 | 1920.1, 1062.1 | **yes** |
+| `MUL05_S07` | 1920.0, 1046.0 | 1920.0, 1054.6 | **yes** |
+
+Five aluminium members standing in a vertical line down the middle of the hole
+the whole block exists to open. **That is the ending, and cutting the proxy's
+friction takes it away.** This is the P11 mechanism, committed in R2-387 before
+any of these cells existed, and it fires at f2978 as well as f2940.
+
+### Why the column falls, and what actually pulls it out
+
+The car's roof is at 0.992 m and `MUL05_S04` starts at 3.51 m, so the car never
+touches it. What takes it out is the **chain**: the car tears out the bottom
+2.3 m, that piece is gripped and dragged, and the segment-to-segment joints
+above it are pulled through their threshold one after another. Cut the grip and
+the bottom piece slides off the nose instead of being held against it, the
+impulse the chain sees is shorter and smaller, the joint above breaks early,
+and the column above is left hanging with nothing to pull it.
+
+**That is real, and it is the right behaviour.** A mullion is one extrusion;
+taking the bottom of it out at 16 m/s brings the rest with it. So the car's grip
+is not a nuisance parameter here — it is load-bearing for the frame result.
+
+### And this qualifies an inherited conclusion, without overturning it
+
+R2-293 separated the transom threshold from the head model with four
+off-diagonal cells and concluded, correctly, that **the derived transom
+threshold does all of it and the head model does nothing measurable**. Its
+`8.8/FIXED` cell reproduces the whole collapse with the head still bolted on.
+
+**All four of those cells hold the car proxy at friction 0.55.** They vary the
+frame against itself, so they can rank the two frame parameters against each
+other — which is what they were built to do — and they cannot see that a third
+parameter, outside the frame entirely, is also necessary. A2 is the fifth cell,
+and it says the transom threshold is **necessary but not sufficient**: at 8.8
+with a slippery car, six of six transom ends still let go and the column still
+stays up.
+
+I am not proposing to change anything in R2-293's conclusion. I am recording
+that "the derived transom threshold does all of it" is true *within the
+experiment that measured it*, and that the car's grip is the other half.
+
+---
+
+## R2-390 — P12: what the air-drag cell will show, committed while it bakes
+
+`--air-drag derived` (R2-388) with the car proxy left exactly as it shipped.
+Written and committed while B0/B1/B2 are still baking.
+
+* **P12a** The frame collapse survives untouched. `MUL05_S03…S07` travel within
+  20 % of A0's 8.56 / 8.12 / 4.98 / 5.35 / 5.98 m, and none of them is left
+  standing in the wall plane.
+* **P12b** The deck ride is reduced but not removed: `MUL05_S02`'s peak speed
+  falls from 18.39 m/s to under 16 m/s. The drag on that segment is
+  0.284 per second, i.e. 5.7 m/s² at 20 m/s, against the 8.81 m/s² the car puts
+  into it — the same order, and short of cancelling it.
+* **P12c** The underfloor clamp is NOT fixed by air. `GS_b05_00434` is held
+  rigidly between the floor and the slab; drag on a clamped body changes
+  nothing. Its travel stays above 10 m. **Only the friction that clamps it
+  moves it, and friction is now refused.**
+* **P12d** Total transport falls by less than 40 % (against friction's 75 %),
+  because transport is contact-driven and air only opposes it.
+* **P12e** The thing that matters — the field's speed when the keys run out —
+  falls substantially: median under 12 m/s at the last frame of the cell,
+  against A0's 18.15.
+* **P12f** No interpenetration price at all: fewer than 150 bodies inside the
+  car at the worst frame, and that frame is the impact itself.
+* **P12g** The connected aperture is unchanged at 2.15 × 6.00 m with
+  `CONTROLS PASS`.
+
+If P12c holds, the underfloor clamp and the deck ride survive into the shipped
+bake as **stated residual defects**, and the reason will be that the only lever
+that moves them is the same lever that closes the aperture.
+
