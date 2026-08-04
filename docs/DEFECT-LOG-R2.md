@@ -20068,3 +20068,29 @@ mechanisms are now refuted and the contact surface is unidentified. The
 acceptance criterion from R2-700 stands and is unaffected: nothing may come to
 rest on top of the car, judged over the peak window f0967-f0977 and preferably
 more than one seed.
+
+## R2-666 — two occlusions nobody was looking for, and one of them is on the film's last frame
+
+Both fall out of the same sweep and neither was in anyone's brief.
+
+**Beat 4: the car is wholly hidden behind `ARCH_PitBuilding_Shell` for three
+frames (f1114-1116), six affected.** The occluder is **10-11 m from the lens** —
+this is the transit, threading past the pit building at close range. It is a
+harder blackout than the bridge in one respect: at 10 m there is no possibility
+of reading the car through anything.
+
+**Beat 6: `BR_FenceMesh_L03` covers the car completely on f2976, f2977 and
+f2978 — the last three frames of the film.** It is the **fence** channel, so in
+reality the car is seen *through* a catch fence rather than hidden by it, and
+this is a composition question rather than a blackout. But:
+
+> `BR_FenceMesh_L03` is **already a logged defect**. R2's placement audit
+> measured it at **+7.105 m of lateral intrusion against a 7.39 m half-width at
+> s = 926** — "spans the racing surface", crossing from one edge nearly to the
+> other.
+
+So the object standing between the lens and the car on the closing frame of the
+film is the same object already measured as standing on the racing line. That is
+not a coincidence to be filed twice: **fixing the L03 intrusion should be
+checked against the closing frame**, and whoever closes that defect should be
+told the closing frame is a witness for it.
