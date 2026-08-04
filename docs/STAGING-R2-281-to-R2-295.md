@@ -465,6 +465,20 @@ that is the second time in this block (R2-283 is the first).
 this bake cannot be used to measure whether the aperture reads. That is what
 R2-291 is for.
 
+> **A diagnosis I got wrong, corrected here rather than quietly dropped.** The
+> first 4K render of this scene died with `Out of memory in CUDA queue enqueue
+> (integrator_shade_volume)` and I attributed it to the enlarged debris field
+> blowing up the volume integrator's bounds. **That is refuted.** The
+> atmosphere is built by `world/build_sky.py` as two fixed boxes at
+> `SLAB_HALF = 40000.0` — ±40 km — independent of anything the sim does, so
+> debris going from 20 m to 250 m is nothing against it; `sim/` creates no
+> volume object at all; the identical OOM hit a different agent's unrelated
+> scene in the same 21-minute window; and the same scene rendered fine at 256
+> samples minutes later. The instance was failing, not the scene (R2-292). The
+> geometry barely moved either: 3,845 → 3,856 objects, 278,864 → 278,910 tris.
+> I state it because the wrong diagnosis was plausible, self-serving — it made
+> my own defect look bigger — and would have been believed.
+
 ### What is NOT wrong with it
 
 * the `--wake-all --no-car` null holds (R2-287);
