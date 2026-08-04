@@ -422,3 +422,23 @@ see this — it reports `"table ends before 1200"` and returns no verdict at all
 | curve proof (in-applier) | LINEAR 6,783 / CONSTANT 240 / **other 0**, max linear eval err 4.768e−07, `control_fires: true` | the Bezier control arm, which must and does register 4.797e−04 |
 | east wall | **1,255 of 4,096 rays meet `GP_b*`** | `film14` unapplied: **0 of 4,096** (R2-190) |
 | f0866 / f0890 A/B | signal 0.0037 % / 0.0048 % over 8/255 | live repeat-render floor **0.0000 %**, max 1/255 (R2-191) |
+
+## The nulls
+
+Three things had to NOT move, and did not:
+
+* **the camera track.** `sim/dump_camera_track.py` re-run on `film14_breach` and
+  compared with the copy dumped from `film13_breach`: 2,978 rows x 9 columns,
+  **max|diff| exactly 0.0**, and the two files have the same sha256
+  (`4cafe712c405b43b…`). Every pixel figure on this defect goes through that
+  track, including R2-095's corrected ranges, and it did not have to be
+  re-derived — but it did have to be checked, because the track was dumped from
+  a scene that no longer ships.
+* **`sim/out/apply_requirements.json`**, republished by the preflight run:
+  no diff.
+* **the curve proof**, byte-for-byte identical to film13's including the
+  Bezier control's 4.797e−04.
+
+And the one thing that did move, `render/film14_breach.blend` is
+**462,507 bytes larger** than `film13_breach.blend` — which is the apron, and
+is the only difference either file should have.
