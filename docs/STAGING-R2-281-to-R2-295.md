@@ -677,3 +677,55 @@ differences against anything as a very large change.
 repaired, and nothing detects "this GPU has started returning noise" other than
 the blank gate catching the extreme case. A frame that came back *subtly* wrong
 would not have been caught.
+
+## R2-295 — the nine predictions against the outcome, including the three I got wrong
+
+`sim/out/rebake_prediction.json` was committed **before the bake was launched**,
+so it could be wrong about the mechanism and not only about the pixels. It was.
+
+| | claim | outcome |
+|---|---|---|
+| **P1** | the wake-all null still holds, frame sub-millimetre | **RIGHT** — 0.341 mm mullion, 0.148 mm transom, 0 of 95 joints broken |
+| **P2** | the z = 1.600 transoms tear off mullion 5; max transom travel > 1 m | **RIGHT** — 0.089 m → 69.83 m |
+| **P3** | mullion 5's column is 50/50; *cannot fall from statics* | **WRONG, and wrong in the interesting direction.** All eight segments leave, and they leave **with the head still FIXED** (R2-293). I reasoned about a static load path in a problem whose answer is a transient |
+| **P4** | grid_contrast lands 0.015–0.032, central estimate 0.024; will not reach the demonstrator's 0.00777 | **WRONG** — 0.00908, which *is* the demonstrator (0.00912 on the same footing). My reasoning — "the fallen members do not vanish, they land in the lower aperture" — was right about the mechanism (they land at v 1293–1446) and wrong about the consequence |
+| **P5** | **the aperture will still not read at 595 m**, 60–65 % | **WRONG.** It reads, and it reads bigger than the demonstrator |
+| **P6** | 3–12 % changed at 8/255 in the wound | **WRONG, 4×** — 51.55 %. I flagged this as my least confident number and cited the previous agent under-counting by 4.5×; I under-counted by 4.3× |
+| **P7** | beat 3 does not regress; more material moves | **RIGHT in outcome, WRONG in reasoning** — I said the same two segments would be at least as large; they are 18× and 10× *smaller*, and beat 3 is stronger anyway (R2-291) |
+| **P8** | glass essentially unchanged, 2,900–3,020 gone, aperture within 1.95–2.35 × 5.80–6.10 m | **RIGHT** — 2,923 gone, 2.15 × 6.00 m exactly |
+| **P9** | the one-take law is not at risk | **RIGHT on the mechanism, but see R2-290** — nothing pops out of existence and `swap-scene` passes, yet 2,647 shards freeze mid-slide, which is a different way to break a continuous take |
+
+**Five right, three wrong, one right for the wrong reason.** The three wrong
+ones are P3, P4 and P5, and they are all the same error: **I reasoned statically
+about an event whose whole content is a transient.** P3 counted six transom
+ends at 16.9 kN against 400 N of dead load and concluded they would hold — they
+break, because the thing that loads them is the impulse that just threw a
+775 mm bar 4.7 m, not the weight of the column.
+
+**The one I most wanted to be right about was P5, and being wrong about it is
+the result.** A derived threshold, bracketed on both sides, with the head model
+held fixed as a control, makes the closing wide read as an opening. The frame
+*was* the lever. The scale argument that made "it cannot read at 595 m" so
+persuasive — 1 px transoms, a 57.7 × 77.8 px wound — was an argument about how
+much *contrast* is available, and it turns out that removing a 1 px line from a
+regular grid is exactly the kind of change a viewer's eye is built to see.
+
+---
+
+## The recommendation
+
+**Do not ship `render/film14_breach_r6b.blend`.** The thresholds in it are
+right and demonstrably so; the debris field in it is not (R2-290), and 2,647
+shards frozen at 7 m/s across two-thirds of the closing frame for ~1,300 frames
+is not a thing to put in a take with no cuts.
+
+**Do not revert the thresholds.** They are derived, bracketed over a factor of
+four, attributed to a single parameter by a 2×2, and they produce the picture
+the demonstrator was built to argue for.
+
+**The next job is the car proxy, not the frame.** It is kinematic because it
+carries the film's authored animation and it must stay that way, so the
+question is how an unrestrained field escapes an infinitely massive bulldozer —
+and it is a question that only became askable once the frame stopped holding
+the glass out of its way. `post_s` is also too short: the field is still doing
+7 m/s at the last key and needs roughly two more seconds to come to rest.
