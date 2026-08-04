@@ -114,11 +114,32 @@ against each rod's own measured station.
 
 The four genuinely unhoused lamps are `Key`, `Fill`, `Rim` and `Kick` — the
 car rig, at z 0.62 to 4.60. **A ceiling cannot fix those, and this work does
-not claim to.** Whether three area lamps of 4.6 × 3.4 m, 5.0 × 3.4 m and
-4.8 × 0.62 m floating at 2.8 – 4.6 m are camera-visible in beat 1 is a live
-question this work did not settle: `Fill` at (4.2, 5.6, 2.8) and `Rim` at
-(-6.6, 1.8, 3.2) both fall inside frame 1's 90 ° horizontal and −39/+19 °
-vertical span. **Recommended as its own finding for whoever picks it up.**
+not claim to.**
+
+**But the obvious follow-on defect is NOT there, and the negative is worth more
+than the suspicion was.** `Fill` (5.00 × 3.40 m) and `Rim` (4.80 × 0.62 m) both
+fall inside frame 1's cone — measured against the real frustum at frame 1
+(18 mm, half-angles 45.00 ° h / 29.36 ° v, camera at (-0.8409, -8.8633,
+3.7566)):
+
+```
+Fill    az +19.28   el  +6.21   15.3 m   IN FRAME
+Rim     az -28.52   el  +7.01   12.1 m   IN FRAME
+Kick    az +40.65   el -25.10    6.9 m   IN FRAME
+Key     az +62.55   el +22.31    8.1 m   outside (az beyond 45 deg)
+```
+
+In Cycles a camera-visible area lamp renders as a glowing rectangle, and two
+5 m panels hanging in mid-air in the film's first frame would be a far worse
+defect than a flat ceiling. **They do not render.** MEASURED with
+`work/ceiling/lampvis.py`: `visible_camera` is **False on all 23 practicals and
+on `SKY_Sun`** — round 1 turned it off on every one. `>> STAGE RESULT:
+LAMPVIS_CLEAN`.
+
+Also measured there, and it is why the canopy work matters: `Spot_1`, `Spot_3`
+and `Spot_5` are all inside frame 1 at el +16.6 to +17.4 °, near the top of the
+picture. `Spot_5`'s rod at (0.0, 7.0) lands inside slot 2, so its canopy is on
+the slot head, in shot, at frame 1.
 
 ---
 
@@ -232,6 +253,26 @@ failure (one asset spammed) arriving through a helper that looks like it
 prevents it. `showroom_ceiling._h()` maps strings through FNV-1a and quantises
 floats to millimetres before calling it.
 
+**(d) A per-instance attribute that was silently constant — the project's own
+headline failure wearing the clothes of the fix for it.** The ceiling's
+variation is driven by a per-island float attribute the materials read as
+`pnl`. The emitter baked it under the name **`isl`**, and it baked the raw
+island **index**. Two independent faults, either alone fatal:
+
+* the name did not match, so `ShaderNodeAttribute("pnl")` evaluated to a
+  constant 0.0 and 72 apron segments came out one flat white across 17 m — in
+  the part of the ceiling that IS frame 1 (R2-627);
+* even with the name fixed, an index running 1, 2, 3 … 72 into a mix factor
+  that clamps at 1 makes every segment past the first identical anyway.
+
+Nothing failed. The build passed, the material-depth floor passed (the
+attribute node is present and wired), and the render was plausible. It was
+found by *looking at* the first frame and asking why 72 segments were one
+tone. `_emit()` now hashes the island id through `_h` and bakes it as `pnl`,
+and `showroom_ceiling._variety()` is the control: 560 of 560 trays get a
+distinct value, against a negative-control arm feeding `hash01` the raw floats
+which collapses to **190 of 560** — so the control can fail, and does.
+
 **(c) Every `itemkit.NT` builder already returns a socket tuple.**
 `t.noise(...)`, `t.vor(...)`, `t.ramp(...)`, `t.math(...)`, `t.maprange(...)`
 all return `(node, index)`. Wrapping one again as `(noise_result, 0)` makes
@@ -312,6 +353,32 @@ MATERIALS        every one >= 3 texture nodes, >= 2 bump nodes, 0 image nodes,
 `gate_exit.code_for` rather than assumed — the first four tokens drafted mapped
 to CRASH because they contained none of the project's markers, which
 `gate_exit` says out loud rather than guessing them into a pass.
+
+### how it composes with the rebuild agent's film, WITHOUT racing them
+
+`tools/build_film_scene.py` is in flight — `film16.blend` was built from
+`assembly10.blend` at 16:26 on 2026-08-04 while this work was going on — so
+nothing here edits it. The ceiling is a separate post-append stage, exactly as
+`tools/add_dais_ramp.py` is, and it chains onto any film blend:
+
+```
+blender -b render/film16.blend --factory-startup \
+    -P tools/r2621_ceiling_build.py -- --out render/film16_ceiling.blend
+```
+
+It is idempotent (`itemkit.purge(PFX, COLL)` first), so re-running it on a
+blend that already has a ceiling replaces it rather than doubling it, and it
+re-asserts every datum on the way in, so a newer film with a moved set stops it
+rather than getting a ceiling in the wrong place.
+
+**One operational note, not a defect in anything.** The box is 11 GB and
+`film16.blend` is 7.5 GB. The first attempt to land the ceiling on it read
+6.9 GB, drove the machine to 36 of 43 GB of swap and had not reached its first
+print in 13 minutes, while six agents' jobs competed for the same page cache —
+including a second, independent load of the same `film16.blend`. It was killed
+rather than allowed to OOM somebody else's bake.
+`work/ceiling/land_on_film.sh` re-runs it behind a memory gate and picks up
+whatever the newest `film1[6-9].blend` is when the window opens.
 
 ### the invariant this design turns on
 

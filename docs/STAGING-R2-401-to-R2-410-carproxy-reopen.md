@@ -375,3 +375,68 @@ had outgrown, `cheaper_to_finish` pricing sequence jobs at the stills rate. In
 each case the number was right and the volume it described was not the one
 anybody was asking about.
 
+
+---
+
+## ADDENDUM — the peak-ride frames landed after I stood down, and they change the handoff
+
+`render/r2387/COMPARE_ride_f0972_R6_vs_REBAKE_vs_R2387.png` and
+`STRIP_R2387_ride_f0967_f0972_f0977.png`. All five frames verified non-blank
+(lum mean 0.284–0.320, sd 0.114–0.134, 60,065–66,500 distinct colours). Scenes
+were already cached; no push. GPU cost about $0.05.
+
+### What the pictures show
+
+| f0972 | |
+|---|---|
+| **R6 SHIPPED** | the car is **clean** — no structural member anywhere near it |
+| **R2281 RE-BAKE** | one long mullion lies **alongside/behind** the cockpit, plus a thin bar |
+| **R2387 AIR (mine)** | a slab lies **across the top of the car**, spanning most of the frame width, with a glass veil down the left side |
+
+Across f0967 → f0977 it is sustained, not an instant: at f0967 a mullion lies
+diagonally over the whole car with a curtain of shards above the cockpit; by
+f0977 it has swung right and is trailing off.
+
+**My first reading of that was "my build is visibly the worst of the three",
+and the measurement says that reading was wrong.** Counting what is actually
+inside a car-local envelope tall enough to see the ride (z to 2.19 m — the one
+my census could not see, R2-4xx above), at f0972:
+
+| | frame members on/around the car | glass shards | glass mass |
+|---|---|---|---|
+| R6 SHIPPED | **0** | 16 | 0.2 kg |
+| R2281 RE-BAKE | **8** | **2,580** | 139.1 kg |
+| **R2387 AIR** | **8** | **249** | **120.2 kg** |
+
+**The same eight structural members are on the car in both corrected bakes.
+Mine did not add one.** And it has **ten times fewer glass shards** in the car's
+vicinity and 19 kg less glass. The difference at f0972 is that **one of those
+eight happens to lie across the car in my bake and alongside it in the
+other** — a pose, at one instant, in a chaotic rigid-body sim. **I will not
+claim either build is better on the strength of one frame, and I nearly did.**
+
+### What this does and does not settle
+
+* **Settled, and it is the important one:** the ride is a consequence of the
+  frame correctly coming apart, not of the air. R6 has **zero** members on the
+  car because its thresholds were 29.5× too strong and its frame never failed —
+  the "clean" panel is the defect this whole block exists to remove. Between
+  the two bakes whose frames *do* fail, the member count is identical.
+* **Settled:** my handoff's claim that the ride is "neither introduced nor
+  removed here" now rests on the peak frames and a population count, not on
+  f0950/f1000 alone. It holds.
+* **NOT settled:** whether eight structural members on the car at 2.4–3.6 m
+  from the lens reads as a breach or as a defect. That is a judgement about the
+  picture and it is now made with the picture in hand, which is what was asked
+  for. The frames are on disk.
+* **NOT settled and worth flagging:** if a single member's pose can put a slab
+  across the car or beside it, then **the beat-3 picture has a chaotic degree of
+  freedom that no threshold controls**, and any future A/B on this shot needs
+  more than one frame and probably more than one seed. That is a caution about
+  the method, not a defect in either bake.
+
+The rear-wing aerofoil correction remains the one candidate fix left standing
+and remains unbaked. If it works it removes the mechanism that keeps a member
+on the car for 127 film frames, which is the only lever that would change these
+frames on purpose rather than by luck.
+

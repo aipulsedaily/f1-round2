@@ -369,15 +369,26 @@ class Acc(object):
                 np.concatenate(self.island))
 
 
-def _emit(acc, name, coll, mat, smooth_deg=33.0, attr="isl"):
-    """Accumulator -> object, recentred on emit (itemkit law 6)."""
+def _emit(acc, name, coll, mat, smooth_deg=33.0, attr="pnl"):
+    """Accumulator -> object, recentred on emit (itemkit law 6).
+
+    THE ATTRIBUTE IS HASHED, AND IT IS NAMED `pnl`, AND BOTH WERE WRONG ONCE.
+    It used to bake the raw island INDEX under the name `isl`.  Every material
+    here reads `pnl`, so a missing attribute evaluates to 0.0 and the aprons
+    came out one flat tone across 17 m -- and even had the name matched, the
+    index runs 1, 2, 3 ... 72 into a mix factor that clamps at 1, so every
+    segment past the first would still have been identical.  A per-instance
+    attribute that is silently constant is exactly the failure this project is
+    named for, wearing the clothes of the fix for it.
+    """
     import bpy
     V, Q, I = acc.arrays()
     if not len(V):
         return None
     me, off = K.new_mesh(name, V, quads=Q, smooth_deg=smooth_deg)
     if attr:
-        K.bake_attributes(me, {attr: I})
+        lut = {int(v): _h(int(v), name) for v in np.unique(I)}
+        K.bake_attributes(me, {attr: np.array([lut[int(v)] for v in I])})
     ob = bpy.data.objects.new(name, me)
     ob.location = off
     if mat is not None:
@@ -439,13 +450,19 @@ def _mats():
     else:
         t = K.NT(n)
         p = t.object_coords()
+        pnl = t.attr("pnl", out=2)
         mott = t.noise(p, wavelength_m=1.900, detail=6.0, rough=0.55)
         base = t.cmix(mott, (0.0455, 0.0455, 0.0480),
                       (0.0620, 0.0605, 0.0590))
+        # and one more degree of freedom PER PIECE: two beams sprayed in the
+        # same booth on different days are not the same black.
+        base = t.cmix(t.math("MULTIPLY", pnl, 0.55), base,
+                      (0.0730, 0.0700, 0.0665))
         nap = t.noise(p, wavelength_m=0.0090, detail=5.0, rough=0.60)
         peel = t.noise(p, wavelength_m=0.0021, detail=3.0, rough=0.50)
         # sheen wanders with the roller pass -- a sprayed beam never reads flat
-        rough = t.maprange(nap, 0.25, 0.75, 0.290, 0.420)
+        rough = t.maprange(nap, 0.25, 0.75,
+                           t.fmix(pnl, 0.265, 0.330), 0.430)
         b1 = t.bump(peel, 0.40, distance=0.00013)     # 0.13 mm coat texture
         b2 = t.bump(nap, 0.50, distance=0.00042, normal=b1)     # roller nap
         b3 = t.bump(mott, 0.30, distance=0.00090, normal=b2)    # panel oilcan
@@ -508,11 +525,15 @@ def _mats():
     else:
         t = K.NT(n)
         p = t.object_coords()
+        pnl = t.attr("pnl", out=2)
         grain = t.vor(p, wavelength_m=0.00135, feature="F1", out=0)
         drift = t.noise(p, wavelength_m=0.055, detail=5.0, rough=0.55)
         base = t.cmix(drift, (0.0210, 0.0208, 0.0212),
                       (0.0295, 0.0290, 0.0288))
-        rough = t.maprange(grain, 0.0, 1.0, 0.470, 0.610)
+        base = t.cmix(t.math("MULTIPLY", pnl, 0.7), base,
+                      (0.0385, 0.0372, 0.0360))
+        rough = t.maprange(grain, 0.0, 1.0,
+                           t.fmix(pnl, 0.430, 0.510), 0.620)
         b1 = t.bump(grain, 0.75, distance=0.00011)    # 0.11 mm crackle coat
         b2 = t.bump(drift, 0.35, distance=0.00040, normal=b1)
         t.principled_out(base_color=base, roughness=rough, metallic=0.0,
@@ -532,9 +553,12 @@ def _mats():
         grit = t.noise(p, wavelength_m=0.0020, detail=5.0, rough=0.55)
         dirt = t.noise(p, wavelength_m=0.850, detail=6.0, rough=0.62)
         base = t.cmix(spang, (0.512, 0.520, 0.532), (0.582, 0.588, 0.596))
-        base = t.cmix(t.maprange(dirt, 0.35, 0.80, 0.0, 0.55),
+        pnl = t.attr("pnl", out=2)
+        base = t.cmix(t.maprange(dirt, 0.35, 0.80, 0.0,
+                                 t.fmix(pnl, 0.38, 0.70)),
                       base, (0.300, 0.296, 0.286))
-        rough = t.maprange(spang, 0.0, 1.0, 0.255, 0.430)
+        rough = t.maprange(spang, 0.0, 1.0,
+                           t.fmix(pnl, 0.235, 0.300), 0.450)
         b1 = t.bump(grit, 0.40, distance=0.00009)
         b2 = t.bump(edge, 0.55, distance=0.00055, normal=b1)   # facet borders
         b3 = t.bump(dirt, 0.25, distance=0.00080, normal=b2)
@@ -602,8 +626,12 @@ def _mats():
         peel = t.noise(p, wavelength_m=0.0018, detail=4.0, rough=0.52)
         ext = t.wave(p, wavelength_m=0.0095, direction="X", distortion=0.3)
         soil = t.noise(p, wavelength_m=0.240, detail=6.0, rough=0.60)
+        pnl = t.attr("pnl", out=2)
         base = t.cmix(soil, (0.735, 0.733, 0.726), (0.792, 0.790, 0.780))
-        rough = t.maprange(soil, 0.25, 0.75, 0.215, 0.330)
+        base = t.cmix(t.math("MULTIPLY", pnl, 0.45), base,
+                      (0.700, 0.694, 0.680))
+        rough = t.maprange(soil, 0.25, 0.75,
+                           t.fmix(pnl, 0.200, 0.245), 0.340)
         b1 = t.bump(peel, 0.35, distance=0.00011)
         b2 = t.bump(ext, 0.30, distance=0.00022, normal=b1)
         t.principled_out(base_color=base, roughness=rough, metallic=0.0,

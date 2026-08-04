@@ -97,12 +97,29 @@ def parse_args():
 #  THE SET THIS CEILING WAS CUT TO
 # --------------------------------------------------------------------------- #
 
+def _hidden(ob):
+    """Is this object hidden?  Safely.
+
+    `ob.hide_get()` RAISES `RuntimeError` when the object is not in the active
+    view layer, which a 7.5 GB film blend with 30-odd collections can easily
+    contain -- and it would raise from inside a Blender `-P` script, which
+    exits 0.  `hide_viewport` is a plain property and never raises, so it is
+    the fallback.  This matters because the answer decides whether the caller
+    reads `matrix_world` or `matrix_basis`, and `matrix_world` IS NOT EVALUATED
+    for a hidden object: the worst error that mistake has produced on this
+    project is 120.7 m.
+    """
+    try:
+        return bool(ob.hide_get()) or bool(ob.hide_viewport)
+    except RuntimeError:
+        return bool(ob.hide_viewport)
+
+
 def _world_bounds(ob):
     """MEASURED in world space.  `matrix_world` is not evaluated for a hidden
     object (worst error on this project: 120.7 m) and is stale for a freshly
     created one, so this uses `matrix_basis` when the object is hidden."""
-    M = ob.matrix_world if not (ob.hide_get() or ob.hide_viewport) \
-        else ob.matrix_basis
+    M = ob.matrix_basis if _hidden(ob) else ob.matrix_world
     V = np.array([tuple(M @ v.co) for v in ob.data.vertices])
     return V
 
@@ -208,8 +225,7 @@ def _new_bvh(SC):
         if not ob.name.startswith(SC.PFX) or ob.type != "MESH":
             continue
         n_obj += 1
-        M = ob.matrix_basis if (ob.hide_get() or ob.hide_viewport) \
-            else ob.matrix_world
+        M = ob.matrix_basis if _hidden(ob) else ob.matrix_world
         base = len(verts)
         me = ob.data
         co = np.empty(len(me.vertices) * 3)
@@ -299,8 +315,7 @@ def z_probe(SC):
     for ob in bpy.data.objects:
         if not ob.name.startswith(SC.PFX) or ob.type != "MESH":
             continue
-        M = ob.matrix_basis if (ob.hide_get() or ob.hide_viewport) \
-            else ob.matrix_world
+        M = ob.matrix_basis if _hidden(ob) else ob.matrix_world
         me = ob.data
         co = np.empty(len(me.vertices) * 3)
         me.vertices.foreach_get("co", co)
