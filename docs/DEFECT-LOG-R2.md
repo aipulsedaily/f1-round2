@@ -4773,3 +4773,112 @@ and went from 26 to 28 of 500 rays.**
 one faces down, with both synthetic controls run every time and **`SHEET_FACING_UNMEASURED`
 rather than `OK`** when nothing horizontal is found. Its own first version **wiped the scene
 before `collect()` and printed `OK` on an empty blend.**
+
+## R2-179 — `extrude()` reversed the wrong cap, and signed volume is structurally blind to it
+
+Three sites, one class, and **none of them was in the deck code.**
+
+**Site 1 — `extrude()`, both modules.** `_grid_quads` gives the side quads normal `t × e`, outward
+for a CCW ring. For that same ring the **start** cap's outward normal is `−e` and the end cap's is
+`+e`. Both files reversed the **end** cap. **Every solid in both modules was a correct tube with
+both lids facing into itself.**
+
+**Why `Acc.solid` could not catch it, which is the part worth keeping:**
+
+> Every face of a box contributes `V/6`. Four right sides and two wrong lids integrate to
+> **+V/3 — positive, no flip — on a solid a third of whose area is wrong.** On the 2.903 × 2.834 m
+> deck slab the lids are **98.07 % of the area.**
+
+Corroboration that the corrected convention is the project's own: `hospitality_deck.py` already
+writes `reverse=True` on the *start* cap, and its slabs were always clean.
+
+**Site 2 — `box()`, both modules.** The bottom quad walks +x then +y round the underside: CCW from
+above, normal +z, into the box. **`Acc.solid` integrates about the world origin**, so that face
+contributes `area · z0 / 3` and **vanishes for a box sitting on z = 0** — precisely the case it was
+eyeballed against.
+
+**Site 3 — `slab_grid()`, found only after the first two were fixed.** Top quads wound −z, and two
+of four edge strips inward. **A mixed winding has no meaningful signed volume**, and `Acc.solid`
+decides the whole slab's orientation from it — so **whether a hut floor came out the right way up
+was a function of where it stood.** 24 of 25 decks were flipped back by luck; `MPD_Deck_05_hut` at
+z = −1.03 was not, and shipped 1.513 m² of floor facing down.
+
+| `timing_stand` | before | after |
+|---|---|---|
+| inverted slab pairs | **138** (175.442 m²) | **0** |
+| `inside_out_fraction` | **0.48000** | **0.02400** |
+| objects / facets / slab pairs / triangles | 14 / 1456 / 532 / 3,087,808 | *identical* |
+
+All ten `TS_Stand*` appear before, none after. `marshal_post_deck` 72 → 1 → **0**.
+
+**Note which number moved.** `inward_area_frac` barely shifted, **0.3733 → 0.3363**, because it
+counts the volumeless sheets signed volume abstains on — *the exact figure the previous repair
+drove to 0.0 while the defect got worse* (R2-173). A fix that leaves the headline nearly still and
+moves the fault is the right shape; the reverse is the warning sign.
+
+`slab_grid` is now checked **at five heights**, which is the control that would have caught site 3
+on day one. Restoring the old wiring at runtime fails **9 of 9** primitive checks in one module and
+**4 of 4** in the other.
+
+## R2-180 — the item under test was chosen by "biggest collection wins"
+
+`collect()`'s `cands = pick or cands` fell through to *"any item collection, take the biggest"*
+whenever the `--item` name matched nothing. And the naming convention is not one convention:
+`W_Item_TimingStand` / `ITEM_MARSHAL_POST_DECK` / `PDS_Deck` + `PGD_Girders`.
+
+`hospitality_deck`'s own collection carries no `W_Item_` prefix, while its **context** ships 41
+`W_Item_PaddockPavingBay*` collections whose 54 members are **instancer empties holding no
+polygons**. So the detector measured another item's floor, found zero objects, and returned a clean
+zero.
+
+Now: `ITEM_` is in the convention, **a collection with no qualifying mesh can never be the
+subject**, an unmatched `--item` falls back to the **scene** and never to a different item,
+`>> SUBJECT:` is printed every run, and **`NO_SUBJECT` is a separate verdict from `UNMEASURED`.**
+Reads 5 objects, 15,693,726 triangles, 504 slab pairs, 0 inverted.
+
+## R2-181 — a welded slab's mean normal cancels, so the detector reported zero
+
+`sheet_facing` grouped by **connected component** and took its mean normal. That works only where
+the walking surface *is* its own component — true in `timing_stand` because `extrude` duplicates
+cap vertices. **A welded manifold slab puts top, soffit and sides in one component whose mean
+normal cancels**, so a bridge deck reported "0 flat pieces". Now grouped over connected runs of
+near-horizontal triangles *of the same sign*, with every rejection counted: 13 objects,
+30,943,406 triangles, 34 slab pairs, 0 inverted.
+
+**The change costs a false-positive class and it was closed properly rather than tuned around.**
+Facet grouping sees inside grooves, and a slot floor under a lip has the *same signature* as an
+inverted slab — 15 such pairs from a T-slot profile whose opposing slots are cut deeper than half
+its 18.6 mm height, so the cavities meet and the profile runs back along itself. Settled by two
+independent arms: a winding-independent **vertical ray-parity** test and a **closure test on the
+pair's own welded component**. The file records the two candidates that failed first —
+`enclosure_q` measures chunkiness, so a 4.5 m purlin scores 0.0025 against a 0.005 bound; `tri_piece`
+is split by the duplicate cap vertices. **Ten controls, built live, both directions each.**
+
+## R2-182 — the item is not in the world, and a before/after render would have proved nothing
+
+`timing_stand` **has never been placed into the shipping world.** `TS_` appears **0 times** in
+assembly9's 28,781 objects, and `TS_Stand` / `W_Item_TimingStand` / `MPD_Deck` appear **0 times** in
+the 4.53 GB `film14.blend` — with `ARCH_PitWall`, which does appear, as the positive control.
+`docs/screen_presence.json` nonetheless scores the item against `hosts: ["ARCH_PitWall"]` and peaks
+it at **631 px in beat 4**.
+
+**Rendering f1126 from the film before and after the fix would have produced two identical images
+— and been read as "the fix is invisible, close it".**
+
+The camera was right; the world was not. Planting the film's own f1126 camera into the item test
+blend instead, at 4K / 256 spp / denoiser off / seed 0 / grade −3.628:
+
+```
+null (AFTER rendered twice)        260 px of 8,294,400, max 1 level
+whole frame                  1,378,182 px (16.62 %), max 87   -> 5,301x null
+TS_Stand00_BOREAL's box         60,077 px (10.47 %), max 11   -> 5,462x null
+```
+
+**Why it survived every check: a reversed face does not render black.** Cycles flips a back-facing
+normal for diffuse, so an upside-down deck shows as every chequer rib and tread nosing **lit from
+the wrong side** — wrong, plausible, and invisible to any check looking for absence.
+
+**The open question this leaves is larger than the defect:** an item can be gated, tiered, and
+scored for screen presence while being **absent from the ship**. Wave 2's entire 113-module scope
+was drawn from measured screen presence, so **how many others are in this position is now worth
+knowing.**
