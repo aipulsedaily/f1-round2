@@ -963,3 +963,92 @@ That is the third inherited number reproduced before being extended in this
 block — `rest_gate`'s 1,599, R2-290's 2,647 and u 884…3465, and now R2-297's
 11.33 %.
 
+
+---
+
+## R2-398 — THE PRODUCTION BAKE: the field stops. 2,646 bodies moving at the last key become 27, and the shipped table's own figure is 70
+
+`sim/tmp/run_r2387_production.sh "--air-drag derived"`, 1,657 frames, `EXIT=0`,
+**1 h 52 m** — an hour and a quarter *faster* than the R2-281 bake at 3 h 06 m,
+because debris that comes to rest deactivates and Bullet stops integrating it.
+The fix pays for its own bake time.
+
+`bash sim/tmp/land_r2387.sh`: **thresholds PASS** (the derived set, untouched),
+**resample PASS**, **metrics PASS**, **camera track PASS**, **apply PASS**,
+**swap-scene PASS (0 problems)**. Scene at
+`render/film14_breach_R2387.blend`, 5,006 MB, 3,857 objects, 278,890 tris.
+
+### The seam table, all three tables, one script
+
+| | R6 SHIPPED (live) | R2281 RE-BAKE | **R2387 AIR** |
+|---|---|---|---|
+| **the car**: `car_anim_measured.json` sha256[:16] | `7fe6b8a97b362ac0` | `7fe6b8a97b362ac0` | **`7fe6b8a97b362ac0`** |
+| f865 beat 2 \| 3, loc | 14.969 → 15.590 → 16.091 | identical | **identical** |
+| f865 speed across the join | 16.7693 → 15.6765 → 15.6168 | identical | **identical** |
+| f1057 beat 3 \| 4, loc | 52.556 → 53.901 → 55.265 | identical | **identical** |
+| f1057 speed across the join | 32.0605 → 32.5075 → 32.9548 | identical | **identical** |
+| worst \|a\| ±5 frames of each join | 25.39 / 10.76 m/s² | identical | **identical** |
+| **release pop** | 0.000000 m | 0.000000 m | **0.000000 m** |
+| bodies over 1 mm / film frame at the last key | 1,599 | 2,734 | **2,004** |
+| **bodies over 1 m/s at the last key** | **70** | **2,646** | **27** |
+| median speed at the last key | 0.0158 m/s | 4.736 m/s | **0.0246 m/s** |
+| **max speed at the last key** | 73.17 m/s | 24.89 m/s | **3.885 m/s** |
+| end x: median / p95 / max | 16.26 / 17.07 / 641.8 | 102.81 / 103.57 / 261.9 | 69.02 / 69.49 / 131.1 |
+| **frozen-and-moving in the closing raster** | **13** | **2,645** | **27** |
+| their pixel extent | 477 × 896 | 2,581 × 1,018 | **1,156 × 479** |
+
+**The car's columns are identical, not close.** Same hash, same six numbers to
+four decimals, both joins. That is the one-take law, and it is free because the
+fix never touches the car.
+
+**And the shippability blocker is gone.** R2-290's defect is 2,647 bodies
+freezing mid-slide across two-thirds of the closing frame. It is now **27**,
+which is *fewer than the shipped table's 70*, and the worst body in the file is
+doing 3.885 m/s where the shipped table's worst does 73.17.
+
+### The event this block was given
+
+| | R2281 RE-BAKE | **R2387 AIR** |
+|---|---|---|
+| `MUL05_S02` travel | **89.79 m** | **55.35 m** |
+| ...peak speed / speed at the last key | 23.06 / 4.79 m/s | 27.09 / **0.01 m/s** |
+| `GS_b05_00434`, the underfloor clamp | **205.01 m**, 43.58 m/s | **1.12 m**, 8.26 m/s |
+| furthest-travelled body in the file | 248.17 m | **116.18 m** |
+| distance TRANSPORTED by the car | 40,587 m | **8,445 m (−79 %)** |
+| transport share of all travel | 16.9 % | **5.5 %** |
+| — underfloor mode | 46 bodies, 368 m | **27 bodies, 0.2 kg** |
+| mullion 5 max displacement | 89.79 m, 8 of 8 gone | 55.35 m, **8 of 8 gone** |
+| transom max displacement | 69.83 m | 55.14 m |
+| mullions 0–4, 6–10 (CONTROL) | 0.0000 m | **0.0000–0.0002 m** |
+
+### The aperture, which had to survive and did not merely survive
+
+| | shipped | R2281 re-bake | **R2387 AIR** |
+|---|---|---|---|
+| connected aperture | 2.15 × 6.00 m | 2.15 × 6.00 m | **2.15 × 6.00 m** |
+| bay 4 vacated | 96.7 % | 96.7 % | **96.8 %** |
+| **bay 5 vacated** | 95.4 % | 95.4 % | **100.0 %** |
+| shards gone / mass | 2,962 / 772.4 kg | 2,923 / 765.9 kg | 3,006 / 793.5 kg |
+| `metrics CONTROLS` | PASS | PASS | **PASS** |
+| R5 intruders over the wound, after apply | — | — | **0** |
+
+### The one gate that failed, and it failed on the other two tables as well
+
+`land_breach` stage 2, the R2-098 table-level swap: **FAIL, worst gap 119
+frames, 366 shards uncovered**. It fails on the shipped table at **301** and on
+the R2-281 re-bake at **375** (R2-290). Mine sits between them. Pre-existing,
+not introduced here, and **the version of the same check that is asked of the
+scene that actually renders — `--swap-scene` — PASSES with 0 problems**, which
+is the one R2-098 was written for.
+
+My wrapper `sim/tmp/land_r2387.sh` counts any `STAGE RESULT: … FAIL` and
+restores the live table on principle, so it declared `land FAIL` and put
+`sim/out/breach_film.npz` back to the R6 table byte-for-byte (md5
+`ce704629abdfaeb948831f4179080015`, verified). **That is the gate being too
+broad, not the bake being bad**, and I would rather report a wrapper that cried
+wolf than one that let a real failure through. The landed table is kept as
+`sim/out/breach_film_R2387.npz` and the scene is built and verified.
+
+**The live path is still the R6 table.** Nothing I have done has changed what
+another agent building a scene today will pick up.
+
