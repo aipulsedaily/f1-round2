@@ -155,7 +155,51 @@ THRESH_MULLION_JOINT = 40.0      # segment-to-segment, 6063-T6, 0.075 x 0.160
                                  # = 76.8 kN sustained.  Was 900 = 1.73 MN.
 THRESH_MULLION_BASE = 120.0      # the anchor studs into the slab
                                  # = 230 kN sustained.  Was 1400 = 2.69 MN.
-THRESH_TRANSOM = 260.0           # M6 self-tappers into the front screw port
+# THE TRANSOM THRESHOLD (R2-281).  THE THIRD SURVIVOR OF R2-092'S SWEEP.
+# ---------------------------------------------------------------------
+# R2-092 converted `THRESH_MULLION_JOINT` and `THRESH_MULLION_BASE` into units
+# and left this one and the head constraint alone.  260 is 260 x 1920 =
+# **499 kN** and the comment on the line names the fastener that is supposed to
+# carry it: `wall_iface`'s screw port SP1, "M6 self-tapper, 6.0 mm nominal,
+# cuts its own thread; 40 mm minimum engagement", TWO of them per transom end
+# (counted off `transom_landings`, 90 mm apart at all 33 stations).
+#
+# You do not need the arithmetic to see it is wrong: the same block priced the
+# mullion's cast-in anchor studs at 120.  260 is TWO SELF-TAPPING SCREWS MORE
+# THAN TWICE AS STRONG AS THE ANCHORS IN THE SLAB.
+#
+# The arithmetic, in `sim/frame_thresholds.py`, which runs outside Blender so
+# it can be checked without a 2 h 25 m bake.  Three modes, smallest governs:
+#   screw shear   0.60 x 700 MPa (A2-70, EN 1993-1-8 alpha_v through the
+#                 thread) x 20.12 mm^2 (M6 A_s) = 8 450 N x 2 =  16 901 N
+#   thread strip  FED-STD-H28 internal shear area 659.9 mm^2, reduced to 80.0 %
+#                 because SP1 is an OPEN race (5.0 mm mouth on an 8.5 mm bore
+#                 = 72.1 deg of circumference missing), x 152 MPa 6063-T6
+#                 ultimate shear x 2                          = 160 463 N
+#   bearing       6.0 x 40.0 mm x 0.80 x 1.5 x 241 MPa x 2    = 138 785 N
+# Screw shear governs at **16.90 kN**, and T = 16 901 / 1920 = **8.80**.
+# The shipped 260 is **29.5x** that.
+#
+# The previous estimate of this joint was "~15 kN, call it T = 8" and was
+# stated as engineering judgement.  It was right to within 13 %.  What is new
+# here is that the number now comes from the declared grade and the declared
+# engagement rather than from a feel for the fastener, and that the two modes
+# that DON'T govern have been computed rather than dismissed -- the open-race
+# reduction in particular was the one that could have made the aluminium
+# govern instead, and it does not: 160 kN against 17 kN.
+#
+# WHAT IS STILL JUDGEMENT, stated so it can be argued with:
+#   * the shear plane passes through the thread, not a plain shank.  A plain
+#     shank would give 23.75 kN, T = 12.4.
+#   * no flute reduction: a thread-CUTTING screw's flutes are at the lead, not
+#     at the joint face.  A 15 % allowance would give 14.37 kN, T = 7.5.
+#   * shear, not tension, is the scalar that stands for all six DOF of a FIXED
+#     constraint.  The pair's tensile capacity is 28.2 kN, so this is the
+#     conservative end.
+# The derived value therefore sits in a defensible band of T = 7.5 .. 12.4 and
+# 8.8 is what the declared numbers give with no allowances either way.
+THRESH_TRANSOM = 8.8             # two M6 self-tappers into SP1 = 16.90 kN.
+                                 # Was 260 = 499 kN (R2-281).
 # THE BOND.  Every pair of shards that shares boundary is joined, and the joint
 # is as strong as the glass across that boundary — so the threshold is PER METRE
 # of shared edge, not per pair.  This is the constraint set that makes the crack
@@ -720,10 +764,22 @@ def build(args):
             # `slider` is the physical model: lateral load only.  Lock x and y
             # (wind, in and out), leave z and all rotation free, keep the same
             # breaking threshold for the lateral capacity it really does have.
-            # DEFAULT IS STILL `fixed`, so this changes no bake until somebody
-            # asks for it -- and `land_breach.sh` pins the threshold set as
-            # "the configuration that was decided", so a re-bake is a decision,
-            # not a side effect.
+            #
+            # R2-282: `slider` IS NOW THE DEFAULT.  The re-bake is a decision
+            # and it has been made; `land_breach.sh`'s stage-0 gate has been
+            # moved onto the new set so a bake at the OLD one is now what the
+            # pipeline refuses.
+            #
+            # AND THE THRESHOLD IS DELIBERATELY NOT TOUCHED.  20 stays.  The
+            # lateral capacity of a head anchor is not declared anywhere in
+            # `wall_iface` -- unlike SP1, which declares its fastener, its
+            # grade and its engagement -- so it cannot be derived and will not
+            # be invented.  Keeping it means NOTHING THAT FALLS IN THIS BAKE
+            # CAN HAVE BEEN BOUGHT BY WEAKENING THE HEAD: the only thing that
+            # changed here is the joint's KIND, and that follows from a
+            # declared geometric fact (a 17.2 mm expansion gap at this very
+            # station, and a gap at all eleven) rather than from a number
+            # somebody chose.
             def _slider(c):
                 for _ax in ("x", "y"):
                     setattr(c, "use_limit_lin_%s" % _ax, True)
@@ -989,6 +1045,15 @@ def build(args):
                         mullion_joint=args.t_mullion_joint,
                         mullion_base=args.t_mullion_base,
                         transom=args.t_transom,
+                        # R2-282: the head joint's KIND is part of the
+                        # configuration, not a build detail.  It goes in the
+                        # thresholds block because `land_breach.sh`'s stage-0
+                        # gate reads that block and nothing else, and a bake
+                        # whose head model is not recorded is a bake whose
+                        # frame behaviour cannot be attributed afterwards.
+                        head_restraint=getattr(args, "head_restraint",
+                                               "fixed"),
+                        head=args.t_mullion_joint * 0.5,
                         bond_per_m=args.t_bond_per_m),
         detail=args.detail,
         penetration_gate=pen,
@@ -1053,13 +1118,37 @@ def penetration_gate(bodies, plan=None, tol=PEN_TOL_M, skip_own=True):
     FASTER THAN FREE FALL, which is what an ejection looks like and what a
     collapse never does.  A gate that only looks where you already suspect is
     not a gate.
+
+    BUT IT ONLY *REFUSES* ON BODIES THAT CAN MOVE — R2-283.
+    ------------------------------------------------------
+    R2-197 added `SIM_Outfield`, a 2 km catch slab spanning z -0.60 .. -0.001,
+    and said in as many words that it "sits 1 mm below the floor slabs' top so
+    it can never win a contact against them".  The floor slabs run z -0.30 ..
+    0.0.  So by construction the outfield contains 299 mm of `SIM_FloorIn`,
+    `SIM_FloorOut` and `SIM_Threshold`, this gate reported three penetrators,
+    and `build_breach_sim.py` HAS REFUSED TO BAKE SINCE THAT COMMIT.  It went
+    in without a bake behind it — the shipped table `breach_full_m1.npz`
+    predates it and registers 233 boxes to this build's 234 — so the first
+    thing anybody who tried to re-bake would hit is a gate stopping them on a
+    deliberate overlap between two slabs that cannot move.
+
+    The rule the gate is actually for is "nothing may be EJECTED by its own
+    initial condition", and a PASSIVE body cannot be ejected: it has no
+    velocity state and Bullet never integrates it.  Every defect this gate has
+    ever caught — 582 clamped shards inside the sill, a mullion foot 88 mm
+    inside it, a head 110 mm inside the head beam — was an ACTIVE body, and
+    all of them are still refused.  Static-into-static overlap is REPORTED,
+    with its worst offenders, and does not stop the bake.  It is not dropped,
+    because a catch slab that silently overlaps something else is exactly the
+    thing R2-197 said it did not want to be.
     """
     if not BOX_COLLIDERS:
         return dict(status="VACUOUS: no box colliders registered")
     lo = np.array([b[1] for b in BOX_COLLIDERS])
     hi = np.array([b[2] for b in BOX_COLLIDERS])
     names = [b[0] for b in BOX_COLLIDERS]
-    worst = []
+    worst = []            # movable bodies -- these REFUSE the bake
+    static_worst = []     # passive-into-passive -- reported only
     for ob in bodies:
         if ob.data is None or not len(ob.data.vertices):
             continue
@@ -1075,12 +1164,20 @@ def penetration_gate(bodies, plan=None, tol=PEN_TOL_M, skip_own=True):
                     d[:, kk] = -1.0
         if d.max() > tol:
             k = int(np.unravel_index(np.argmax(d), d.shape)[1])
-            worst.append((float(d.max()), ob.name, names[k]))
+            rb = getattr(ob, "rigid_body", None)
+            movable = rb is None or rb.type == "ACTIVE"
+            (worst if movable else static_worst).append(
+                (float(d.max()), ob.name, names[k]))
     worst.sort(reverse=True)
+    static_worst.sort(reverse=True)
     return dict(bodies_tested=len(bodies), boxes=len(BOX_COLLIDERS),
                 penetrating=len(worst), tol_m=tol,
                 worst=[dict(depth_m=w[0], shard=w[1], into=w[2])
-                       for w in worst[:8]])
+                       for w in worst[:8]],
+                # reported, not refused on -- see the docstring (R2-283)
+                static_overlaps=len(static_worst),
+                static_worst=[dict(depth_m=w[0], body=w[1], into=w[2])
+                              for w in static_worst[:8]])
 
 
 def _pvb_post(c):
@@ -1595,21 +1692,23 @@ def parse_args():
                    default=THRESH_MULLION_JOINT)
     p.add_argument("--t-mullion-base", type=float, default=THRESH_MULLION_BASE)
     p.add_argument("--t-transom", type=float, default=THRESH_TRANSOM,
-                   help="transom end into the mullion's screw port.  THE "
-                        "SHIPPED 260 IS 499 kN (R2-275) for two M6 "
-                        "self-tappers into 6063-T6, which carry about 15 kN "
-                        "-- T is nearer 8.  It is also more than twice "
-                        "THRESH_MULLION_BASE, i.e. two screws stronger than "
-                        "the anchor studs in the slab.  Not changed by "
-                        "default because it would silently move a shipped "
-                        "bake; pass it deliberately.")
+                   help="transom end into the mullion's screw port SP1.  "
+                        "DERIVED, not fitted: two M6 A2-70 self-tappers, "
+                        "shear governs at 16.90 kN, T = 8.8 "
+                        "(sim/frame_thresholds.py).  The old 260 was 499 kN, "
+                        "29.5x this, and more than twice "
+                        "THRESH_MULLION_BASE -- two screws stronger than the "
+                        "anchor studs in the slab (R2-275, R2-281).")
     p.add_argument("--head-restraint", choices=("fixed", "slider"),
-                   default="fixed",
-                   help="how the mullion meets the head beam.  `fixed` is what "
-                        "shipped: a 38.4 kN rigid joint across a 17.2 mm "
-                        "declared expansion gap, so a mullion whose base has "
-                        "gone hangs from its head (R2-268).  `slider` is the "
-                        "physical model -- lateral load only, free in z.")
+                   default="slider",
+                   help="how the mullion meets the head beam.  `slider` is "
+                        "the physical model and is now the DEFAULT: lateral "
+                        "load only, free in z, which is what the declared "
+                        "17.2 mm head_expansion_gap_m is.  `fixed` is what "
+                        "shipped -- a 38.4 kN rigid joint across that gap, so "
+                        "a mullion whose base has gone hangs from its head "
+                        "(R2-268).  Kept as an option because it is the "
+                        "before-half of the experiment.")
     p.add_argument("--t-bond-per-m", type=float, default=THRESH_BOND_PER_M)
     p.add_argument("--substeps", type=int, default=SUBSTEPS)
     p.add_argument("--solver-iter", type=int, default=SOLVER_ITER)

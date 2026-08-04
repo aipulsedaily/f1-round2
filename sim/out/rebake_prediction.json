@@ -1,0 +1,96 @@
+{
+ "block": "R2-281 to R2-295",
+ "written": "2026-08-04, BEFORE the re-bake was launched and therefore before any number in it existed",
+ "why_this_file_exists": [
+  "The previous agent committed sim/out/eastframe_prediction.json before its after-render was queued, was right including being right that the aperture would NOT read, and said so.  That is the standard.  This file is written earlier in the chain than that one: before the SIM, not just before the render, so it can be wrong about the mechanism as well as about the pixels.",
+  "A prediction written after the bake is a description."
+ ],
+
+ "the_change_being_predicted": {
+  "t_transom": {
+   "was": 260.0,
+   "now": 8.8,
+   "derivation": "two M6 A2-70 self-tappers into SP1; screw shear governs at 0.60 x 700 MPa x 20.12 mm^2 x 2 = 16 901 N; T = 16901 / 1920 = 8.803",
+   "ratio": "the shipped value was 29.5x the derived one"
+  },
+  "head_restraint": {
+   "was": "FIXED at T = 20 (38.4 kN) across a declared 17.2 mm expansion gap",
+   "now": "GENERIC with x and y locked and z + all rotation free, breaking threshold UNCHANGED at 20",
+   "note": "the threshold is deliberately not moved, so nothing that falls can have been bought by weakening the head"
+  },
+  "everything_else": "bond 100, mullion joint 40, base 120, glass edge 2.5, pvb 0.9, 8 substeps, 24 solver iterations, 8 mullion segments, same fracture plan, same seed -- so this is a controlled experiment with two coupled changes to one member type"
+ },
+
+ "PREDICTIONS": [
+  {
+   "id": "P1",
+   "claim": "The wake-all / no-car NULL still holds at the new thresholds.  Frame bodies stay sub-millimetre under dead load.",
+   "reasoning": "A transom is 2.9 kg/m x 2.2 m = 6.4 kg carried on two ends, so ~31 N per end against a 16 901 N capacity -- a factor of 540.  R2-093 showed the mullion thresholds are never approached under dead load; the transom threshold at 8.8 is not approached either.",
+   "confidence": "very high",
+   "falsifier": "any TRN body moving more than 1 mm in the wake-all null"
+  },
+  {
+   "id": "P2",
+   "claim": "The lowest transom line (z = 1.600) in bays 4 and 5 tears off mullion 5 during the impact transient.  Max transom travel across all twelve rises from 89 mm to over 1 m.",
+   "reasoning": "_seg_at bolts the z = 1.600 transom to MUL05_S02.  In the shipped bake S01 left at 4.74 m and S02 stayed at 0.145 m, which means the S01-S02 joint (T = 40, 76.8 kN) DID break -- so the impulse arriving at S02 exceeded 76.8 kN.  A joint at 16.9 kN in the same load path cannot survive an impulse that broke one at 76.8 kN.",
+   "confidence": "high, ~80%",
+   "falsifier": "max TRN travel stays under 0.5 m"
+  },
+  {
+   "id": "P3",
+   "claim": "Mullion 5's upper column (S02..S07, 4.65 m, 21.9 kg) is 50/50.  IT CANNOT FALL FROM STATICS AND I DO NOT PREDICT THAT IT WILL.",
+   "reasoning": "Removing the head hanger does NOT leave that column unsupported.  It is still bolted to six transom ends (3 lines x 2 bays) whose far ends land on mullions 4 and 6, and mullions 4 and 6 stand (they moved 0.024 / 0.026 m in the shipped bake and their base anchors are at 230 kN).  Six connections at 16.9 kN is 101 kN of capacity against roughly 400 N of dead load -- a factor of 250.  For the column to come down, ALL SIX have to break in the transient, and only the two at z = 1.600 are in the direct load path of the impact.  The two upper lines are 1.5 m and 3.0 m away from it.",
+   "confidence": "genuinely uncertain",
+   "note": "This is the prediction I most expect to be told I got wrong in one direction or the other, and it is the one that decides whether the closing frame moves.  The demonstrator DELETED those six segments; the re-bake has to break six joints to match it, and deleting is not a prediction of breaking."
+  },
+  {
+   "id": "P4",
+   "claim": "grid_contrast over WOUND_bridged at f2978 lands between 0.015 and 0.032, central estimate 0.024.  It will NOT reach the demonstrator's 0.00777.",
+   "reasoning": "The demonstrator removed one whole mullion above 1.55 m and six transom stubs and got 0.03675 -> 0.00777.  If only the lowest transom line goes (P2 without P3) roughly one of the three lattice lines over the wound is broken, which is about a third of the amplitude: ~0.025.  If the column goes too (P3), the fallen members do not VANISH -- they land on the sill, in the lower aperture, or on the apron, and some of them land inside the wound region, so even the best case stays above the demonstrator, which is an upper bound by construction.",
+   "confidence": "medium",
+   "controls_that_must_hold": "CTL_UNTOUCHED_bays012 stays 0.0000 % changed at 8/255; CTL_UNTOUCHED_bays789 stays under 0.10 %"
+  },
+  {
+   "id": "P5",
+   "claim": "THE APERTURE WILL STILL NOT READ AS A HOLE AT 595 m.  It will read as a DAMAGED lattice -- a grid with one line interrupted -- and not as an opening.",
+   "reasoning": "R2-267's arithmetic does not change: the wound is 57.7 x 77.8 px at 12.96 px/m, the transoms are 1 px lines, and breaking one of three of them changes a fraction of a 4,500 px region.  The thing that makes the closing frame read is scale, and no threshold fixes scale.  I am predicting my own job does not achieve the thing it was pointed at, and if it does achieve it I will have been wrong here rather than lucky.",
+   "confidence": "medium-high, ~60-65%",
+   "falsifier": "the three-way comparison panel at 1:1 x 7 shows two bays of missing lattice the way render/r6_demo/COMPARE_f2978_before_R6_DEMO.png panel 3 does"
+  },
+  {
+   "id": "P6",
+   "claim": "Changed-at-8/255 in the WOUND_bridged region at f2978: 3 % to 12 %.  Pixel change over the whole 4K frame: 300 to 1,500 px.",
+   "reasoning": "R6 alone moved 216 px against a repeat floor of 6.  The demonstrator moved 11.17 % of the wound region.  I expect to land between them and nearer the low end.",
+   "confidence": "low -- the previous agent under-counted its own pixel change by 4.5x and said so, and this is the same statistic"
+  },
+  {
+   "id": "P7",
+   "claim": "BEAT 3 DOES NOT REGRESS.  At f0866 mullion 5's foot is still torn out and at f0880 the two shed segments still project at least 400 x 280 px at 4K.  More material moves, not less.",
+   "reasoning": "S00 and S01 leave because the car hits them; nothing in this change makes that weaker.  Weakening the transom ends can only release MORE, never less -- a constraint that broke at 260 also breaks at 8.8.",
+   "confidence": "very high",
+   "falsifier": "either shed segment projecting smaller than it does in the R6 build, or the f0866 comparison showing mullion 5 standing"
+  },
+  {
+   "id": "P8",
+   "claim": "The GLASS is essentially unchanged: shards gone stays within 2,900-3,020 of 3,796 (shipped 2,962) and the connected aperture stays within 1.95-2.35 m x 5.80-6.10 m (shipped 2.15 x 6.00).",
+   "reasoning": "The glass is held by CONG_ glass-edge constraints at 2.5 and bonded to its neighbours at 100 per metre.  The transom constraint is a frame-to-frame joint and is not in the glass's load path except through contact.  A transom that comes loose can knock shards about, so a small change is expected; a large one would mean the frame and the glass were more coupled than anybody thought, which would itself be the finding.",
+   "confidence": "medium-high"
+  },
+  {
+   "id": "P9",
+   "claim": "The one-take law is not at risk.  Every body in the table exists on all 2,978 frames with CONSTANT extrapolation to the home pose, exactly as before, because nothing about the applier changed and this bake has the same 4,048 bodies as the last one.",
+   "confidence": "very high",
+   "falsifier": "any member appearing or vanishing between f0400 and f0860 in the before/after pair"
+  }
+ ],
+
+ "what_would_make_me_call_the_whole_thing_a_failure": [
+  "P1 failing -- a frame that sheds itself under gravity is not a corrected threshold, it is a broken one, and the derived value would have to be defended against its own null.",
+  "P7 failing -- beat 3 is where R6 actually pays, and trading it for the closing frame would be a bad trade made without asking."
+ ],
+
+ "what_i_cannot_predict": [
+  "Whether the four upper transom-end joints see enough impulse to break.  This is a 4,048-body 14,075-constraint solve and the transient at z = 3.1 and z = 4.6 is not something I can compute by hand.  P3 is written as 50/50 rather than dressed up.",
+  "Where the members land if they do fall.  The demonstrator makes them vanish; the bake has to put them somewhere, and where they land is the difference between a hole and a pile of aluminium in a hole."
+ ]
+}

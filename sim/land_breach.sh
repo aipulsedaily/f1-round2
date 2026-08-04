@@ -34,11 +34,23 @@ print('thresholds', json.dumps(d['thresholds']))
 print('sim_frames', d['sim_frames'], 'bodies', d['n_bodies'],
       'constraints', d['n_constraints'])
 t=d['thresholds']
-ok = (t['bond_per_m']==100.0 and t['mullion_joint']==40.0
-      and t['mullion_base']==120.0 and t['glass_edge']==2.5
-      and t['pvb']==0.9 and t['transom']==260.0)
+# R2-282.  THE DECIDED CONFIGURATION HAS MOVED, AND THIS GATE IS WHY IT COULD
+# NOT MOVE BY ACCIDENT.  It used to pin transom == 260.0, which is 499 kN for
+# two M6 self-tappers, so any bake that corrected the frame would have been
+# refused here.  The two frame numbers are now the DERIVED ones
+# (sim/frame_thresholds.py): transom 8.8 = 16.90 kN, and the head is a SLIDER
+# because wall_iface declares a 17.2 mm expansion gap at that joint.  The
+# head's breaking threshold is unchanged at mullion_joint * 0.5 = 20 on
+# purpose -- see the note in build_breach_sim.
+want = dict(bond_per_m=100.0, mullion_joint=40.0, mullion_base=120.0,
+            glass_edge=2.5, pvb=0.9, transom=8.8, head=20.0,
+            head_restraint='slider')
+bad = {k: (t.get(k), v) for k, v in want.items() if t.get(k) != v}
+ok = not bad
+if bad:
+    print('MISMATCH got/want', json.dumps(bad))
 print('STAGE RESULT: thresholds', 'PASS' if ok else 'FAIL',
-      '(want bond 100, mullion 40/120, everything else unchanged)')
+      '(want bond 100, mullion 40/120, transom 8.8, head slider at 20)')
 sys.exit(0 if ok else 1)
 " || die "the bake is not at the configuration that was decided"
 

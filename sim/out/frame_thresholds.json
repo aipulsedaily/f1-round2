@@ -1,0 +1,84 @@
+{
+ "unit_conversion": {
+  "sim_fps": 240,
+  "substeps": 8,
+  "N_per_threshold_unit": 1920
+ },
+ "published": {
+  "M6_pitch_mm": 1.0,
+  "M6_stress_area_mm2": 20.12,
+  "M6_minor_dia_mm": 4.773,
+  "M6_pitch_dia_mm": 5.35,
+  "A2_70_Rm_MPa": 700.0,
+  "shear_factor_threaded": 0.6,
+  "AL6063T6_Rm_MPa": 241.0,
+  "AL6063T6_shear_ultimate_MPa": 152.0,
+  "mullion_kg_per_m": 4.7,
+  "transom_kg_per_m": 2.9,
+  "g": 9.80665
+ },
+ "transom": {
+  "declared": {
+   "screw_port_takes": "M6 self-tapper, 6.0 mm nominal, cuts its own thread; 40 mm minimum engagement",
+   "bore_diameter_m": 0.0085,
+   "mouth_width_m": 0.005,
+   "fastener_grade": "A2-70 stainless",
+   "extrusion_alloy": "6063-T6",
+   "nominal_dia_mm": 6.0,
+   "min_engagement_mm": 40.0,
+   "screws_per_transom_end": 2,
+   "screw_spacing_m": [
+    0.09
+   ]
+  },
+  "modes": {
+   "screw_shear_N": 16900.8,
+   "screw_shear_detail": "420.00 MPa x 20.12 mm^2 = 8450 N per screw x 2 = 16901 N",
+   "thread_strip_N": 160462.77324977837,
+   "thread_strip_detail": "A_full 659.9 mm^2, open race keeps 80.0% of the circumference (mouth 5.0 mm on a 8.5 mm bore = 72.1 deg missing) -> 527.8 mm^2 x 152 MPa x 2 = 160463 N",
+   "bearing_N": 138785.2685741384,
+   "bearing_detail": "6.0 mm x 40.0 mm x 0.800 = 192.0 mm^2 x 1.5 x 241 MPa x 2 = 138785 N"
+  },
+  "judgement": [
+   "bearing factor 1.5 x f_u is a convention, not a measurement; it is 4x clear of the governing mode so it does not decide anything",
+   "the shear plane is taken through the THREAD, not a plain shank: a thread-cutting screw is threaded to the head, so alpha_v = 0.6 and A_s rather than 0.6 x A_shank.  If the screw had a plain shank at the joint face the capacity would be 23750 N (T = 12.37) -- 24% higher and still the governing mode.",
+   "the flutes of a thread-CUTTING screw remove material at the lead, not at the head end where the shear plane is, so no flute reduction is applied.  If one were applied at 15% the capacity would be 14366 N (T = 7.48).",
+   "one scalar has to stand for all six degrees of freedom of a FIXED constraint.  SHEAR is used because the transom's own dead load and the impact are both transverse to the screw axis.  The two screws are [0.09] m apart, so a moment about y is carried as a couple; the tensile capacity of the pair (28168 N) is HIGHER than the shear capacity, so shear remains the conservative scalar."
+  ],
+  "governing_mode": "screw_shear",
+  "capacity_N": 16900.8,
+  "T": 8.8025
+ },
+ "head": {
+  "declared": {
+   "head_expansion_gap_m": 0.017200982288813976,
+   "station": {
+    "uid": 5,
+    "y": 0.0,
+    "foot_z": 0.019,
+    "head_z": 6.219
+   },
+   "gap_declared_at_every_station": true,
+   "gap_range_m": [
+    0.010227900183825113,
+    0.020513567289566707
+   ]
+  },
+  "judgement": [
+   "the LATERAL capacity of the head anchor is NOT declared anywhere in wall_iface, so it cannot be derived here.  The shipped 20 is KEPT UNCHANGED, deliberately: keeping it means nothing that falls in the re-bake can have been bought by weakening the head.  The only thing changed about this joint is its KIND, and that comes from a declared geometric fact (the gap), not from a strength estimate.",
+   "the dead load above is the STATIC case.  It is not what decides whether the column comes down in the bake -- the impact transient is orders larger.  It is quoted because 97x is the size of the modelling error, not a prediction."
+  ],
+  "hanging_length_m": 4.65,
+  "hanging_mass_kg": 40.995000000000005,
+  "dead_load_N": 402.02361675000003,
+  "shipped_T": 20.0,
+  "shipped_F_N": 38400.0,
+  "over_strength_ratio": 95.51677662727758,
+  "fix": "GENERIC constraint, x and y locked at 0, z and all three rotations free -- a slider, which is what a 17.2 mm declared expansion gap is.",
+  "T_kept": 20.0
+ },
+ "recommends": {
+  "t_transom": 8.8,
+  "head_restraint": "slider"
+ }
+}
