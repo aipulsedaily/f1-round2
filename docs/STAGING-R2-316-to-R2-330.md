@@ -254,6 +254,28 @@ camera stops moving: 1.5 px of median smear against 54.7 px over the tour, a
 factor of 36.** 88 % of the tour is over 20 px and 4 % of the protected region is.
 No aesthetic judgement is needed to separate them.
 
+Put beside the defocus at the same point in the same frame
+(`tools/beat1_blur_budget.py`) — the two blurs, per frame, at the centre of
+whichever cluster is nearest the optical axis:
+
+```
+                          n   motion > defocus   both under 2 px   med motion   med defocus
+beat 1, all             791    752   (95 %)        95  (12 %)        42.1 px       3.6 px
+  the presentation tour 590    555   (94 %)         2  ( 0 %)        54.7 px       6.1 px
+  CORNER_FL + close-out  57     57  (100 %)         0  ( 0 %)        30.1 px       1.8 px
+  PROTECTED f648-792    144    140   (97 %)        93  (65 %)         1.5 px       0.3 px
+```
+
+**Camera motion is the larger of the two blurs in 95 % of beat 1, by a factor of
+12 in the median. Two frames out of 590 in the presentation tour have both blurs
+inside 2 px. Sixty-five per cent of the protected region does.**
+
+Read the defocus column as the BEST case and not the typical one: it is measured
+at the cluster's centre, which is the one point the focus is pinned to. At the
+corner stations the same cluster's near face is 76-89 px out (R2-317), so defocus
+is a real defect too — it is simply not the biggest one, and it is not the one
+that would have been found by looking only at where the focus plane sits.
+
 The three defects share one lever. Pulling a station back to make its cluster fit
 also cuts the parallax smear and lowers the angular rate needed to hold the
 subject, so the framing fix is the only one of the three that pays into all
