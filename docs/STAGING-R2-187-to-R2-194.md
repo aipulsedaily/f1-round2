@@ -245,8 +245,23 @@ which is what makes the containment mean something:
     f0890   apron band  x  855 .. 1920   y 358.5 .. 428.2   (70 px tall)
             pixels >8   x 1463 .. 1498   y 398   .. 401
 
-Crops confirm it by eye: a lit strip of apron at ground level, seen through the
-gap in the barrier wall, that is brighter and longer in the defective world.
+**And they move in R2-150's direction, to R2-150's values.** Taken over just the
+pixels that changed:
+
+    f0890   film13 (86.3, 78.6, 67.2)  ->  film14 (118.0, 108.3, 93.7)   +31.7 / +29.8 / +26.5
+    f0866   film13 (112.7, 101.3, 84.4) -> film14 (125.2, 113.5, 95.9)   +12.5 / +12.2 / +11.5
+    R2-150 at f1104, the void region:  (99.1, 88.2, 74.9) -> (116.6, 103.3, 86.6)
+
+They **lighten**, because a lit concrete apron is now there — the same sign, the
+same magnitude class and very nearly the same destination RGB as the region
+R2-150 measured at a completely different frame. That agreement was not
+arranged and is the best independent check that this is the apron and not
+something else that happens to be in the band.
+
+Worth recording as a caution: reading the crops by eye, I first called the
+direction backwards — the film13 strip looked like the brighter one. The
+measurement is what settled it, on 100 pixels, and the eye was wrong about a
+32/255 difference.
 
 **This falsifies the quantitative half of my own P4**, which predicted the two
 frames would differ only at the floor. It falsifies it in the direction the
@@ -292,9 +307,50 @@ scene at all, so 627-against-3,948 and 575-against-3,796 were never comparable.
 part is not an instrument. `GS_b04_00446` at −154.6 m, then two at −114.9 and
 three at −105.9.
 
+**And the 70 now have an owner and a cause.** `e2d7d85` (R2-197, another agent,
+committed while this was being written) diagnoses them: the static ground stops
+at x 46 / |y| 14 and the field travels 653 m, so **55 of the 70 are outside the
+slab footprint at the frame they first cross z = 0**, crossing at a median
+−0.34 m/s — walking off a ledge, not punching through one. 15 genuinely tunnel.
+`SIM_Outfield` closes it and **takes effect on the next bake only**, so the 70
+are still in `film14_breach` and will be until the wall is baked again. That is
+the correct call — none of them is on camera — and it should be recorded on the
+scene rather than assumed fixed.
+
 ---
 
-## R2-193 — cluster B is not in the motion that renders: exactly ONE shard exceeds 60 m/s on the film-frame table
+## R2-193 — cluster B is not in the motion that renders — and my explanation of WHY was wrong; R2-199 has the real one
+
+**Superseded within the hour, and corroborating it.** While I was measuring
+this, another agent closed cluster B properly at `e2d7d85` (R2-199): clusters A
+and B were measured on `sim/tmp/breach_bake.npz`, **the superseded bond-4000
+bake**, and on the bake that is actually in the film they are **0 and 0**. They
+proved the identity rather than inferring it — the shipped table's last frame is
+bit-identical to `breach_full_m1.npz` and 626.781 m from `breach_bake.npz`.
+
+**The two measurements agree where they overlap, and one of them is exact.** My
+chord-speed measure on the film-frame reconstruction finds the fastest body at
+**110.4 m/s**; their raw-bake measure on the same config finds the peak at
+**110.41 m/s**. Same body, two different instruments, four significant figures.
+Their count over 60 m/s is 7 and mine is 1; that residual factor of seven *is*
+the film-frame sampling, and it is the only part of my explanation that
+survives.
+
+**What I got wrong, and it is worth recording as wrong rather than dropped:** I
+wrote that cluster B "lives at sub-film-frame timescales and the delivered
+animation samples over it". That is not why it is absent. It is absent because
+**it was never in this bake at all** — it belongs to a configuration that was
+replaced. Sampling explains 7 → 1. It does not explain 348 → 0, and I had no
+evidence that it did. The observation was right and the mechanism I attached to
+it was a guess dressed as a finding.
+
+What stands from this entry on its own: the rendered motion is much slower than
+either bake figure suggests, and that is worth knowing for motion blur and for
+anyone quoting a speed at a frame.
+
+---
+
+### the measurement, as taken
 
 R2-096 left cluster B open — *"348 shards to 106 m/s with no measurable
 contact"* — and recorded *"828 shards exceed 60 m/s, 661 of them on screen."*
@@ -309,19 +365,21 @@ has — the picture is completely different:
         bodies over 60 m/s          1        (110.4 m/s, and it is sunk)
         bodies over 106 m/s         1
 
-**This does not diagnose cluster B and does not contradict R2-096.** A chord
-between film frames is a lower bound on instantaneous speed, and a body that
-accelerates and reverses inside 1/24 s has most of its speed averaged away. What
-it does is **bound the visible consequence**: whatever cluster B is, it lives at
-sub-film-frame timescales and the delivered animation samples over it. Nothing
-on screen is travelling at 106 m/s.
+A chord between film frames is a lower bound on instantaneous speed, and a body
+that accelerates and reverses inside 1/24 s has most of its speed averaged away
+— so this bounds what is ON SCREEN and nothing more. **Nothing in the delivered
+animation is travelling at 106 m/s.**
 
 The overlap with the sink was tested at the same time, with a random-subset
 control at each threshold. The 70 sunk shards **are** the fast tail —
 median max speed **38.9 m/s against 11.4** for the rest, above the 99th
-percentile of everything else — but they are not the 106 m/s population, because
-on this table that population is one body. So the two open items are related in
-direction and are not the same set. `work/r2187/clusterb.py`.
+percentile of everything else — but they are not a 106 m/s population, because
+on the shipped config there is no such population (R2-199). So the hypothesis
+that the two open items were one item is **not supported**: the sunk bodies are
+fast relative to their neighbours and ordinary in absolute terms, and R2-197's
+diagnosis — 55 of the 70 walked off the edge of a ground plane that stops at
+x 46 / |y| 14 — is the actual cause and has nothing to do with speed at all.
+`work/r2187/clusterb.py`.
 
 ---
 
