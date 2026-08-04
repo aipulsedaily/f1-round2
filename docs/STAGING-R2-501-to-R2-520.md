@@ -658,3 +658,119 @@ written and none should be quoted as passing:**
   **"the items are in the scene" is established and "the items reach a frame"
   is NOT.** Those are the two claims task #121 is about and only the second one
   is the task.
+
+---
+
+## R2-511 — **R2-509's HEADLINE IS REFUTED, BY MY OWN INSTRUMENT.** The wordmark eats 0.00 % of the strapline. The AABB artefact I named for the pit board was in my own finding
+
+R2-509 claimed the doubled text was MERIDIAN's 52 mm extruded body occluding the
+strapline, on the strength of a screen-space **axis-aligned bounding box**
+overlap of 305.9 x 16.8 px, "45.7 % of the strapline". In the very same entry I
+wrote that an AABB overlap is not glyph overlap, and used that to dismiss the pit
+board's 7.2 %. **I did not apply it to my own headline.**
+
+Measured properly — per pixel, with a holdout, through the film's own camera:
+
+```
+>> WallSign_Word depth 0.0520 m (52.0 mm), gap to strapline 0.0463 m (46.3 mm)
+   f1     strapline    273 px alone ->    273 px seen   EATEN   0.00 %
+   f9     strapline     84 px alone ->     84 px seen   EATEN   0.00 %
+   f25    NO_SUBJECT -- the strapline renders 0 px; this frame says nothing
+>> STAGE RESULT: SIGN_OCCL_ABSENT
+```
+
+**And the refutation carries the positive control the first measurement lacked**,
+because "0 % eaten" and "the instrument does nothing" look identical:
+
+```
+POSITIVE CONTROL   WallSign_Word alone renders          1316 px   -> ON SCREEN
+HOLDOUT CHECK      strap + word, word IS holdout         273 px
+                   strap + word, word NOT holdout       1589 px
+                   delta                                1316 px = exactly the word
+```
+
+1589 = 273 + 1316 exactly, so the holdout is functioning and the wordmark is on
+screen. **Zero strapline pixels are occluded.** The two runs are 46.3 mm apart in
+world z and they do not touch on screen either. The `depth > gap` mechanism is
+wrong: 52 mm of depth does not reach across a 46.3 mm gap, because the depth is
+projected along the VIEW direction and the gap is measured along the WALL, and
+those are not the same axis. My arithmetic compared two lengths that never meet.
+
+> **Two "settled" numbers in this block have now turned out to be artefacts of
+> how they were reduced** — the crowd's 70.5 % (a mean of ratios, R2-506) and
+> this one (a box overlap read as a glyph overlap). Both were mine to catch and
+> I caught one of them late. The rule that keeps failing is not "measure" — both
+> were measured. It is *name the quantity you compared*.
+
+### what IS real, measured, and unexplained
+
+The 52 mm depth produces a genuine artefact, but a different one: the wordmark
+**doubles ITSELF.** An extruded letterform seen off-axis shows its near and far
+outlines as two offset copies of the same word. Measured as the projected
+separation of the front and back halves of the mesh, at 3840x2160:
+
+```
+frame  scale  depth_mm   front/back separation @4K
+f1      1.00     52.0        6.77 px
+f9      1.00     52.0        7.24 px
+f60     1.00     52.0       15.95 px
+f120    1.00     52.0       15.95 px
+```
+
+**Up to 15.95 px of double outline on a wordmark whose caps are ~68 px.** That is
+a real, visible doubling of the word MERIDIAN and it is exactly what "doubled,
+illegible" describes — but it is the letterform doubling itself, not two legends
+colliding.
+
+**I am not asserting this is what the user saw.** I asserted a mechanism once in
+this block and it was wrong; this one is measured but it has NOT been tied to the
+delivered frame, and I do not have that frame. It is a candidate with a number
+on it, and that is all.
+
+### the fix, validated but DELIBERATELY NOT LANDED
+
+The remedy is the same either way and it is one line: scale `WallSign_Word`'s
+local Z, which is the curve's extrusion axis, so glyph shapes, cap height,
+letter-spacing, the fitted 2.60 m width and the mounting datum are all untouched.
+The separation is exactly linear in depth:
+
+```
+scale 1.00 -> 52.0 mm -> 15.95 px worst
+scale 0.50 -> 26.0 mm ->  7.97 px worst
+scale 0.30 -> 15.6 mm ->  4.78 px worst
+```
+
+25-40 mm is the ordinary depth of applied wall letters at a 340 mm cap height, so
+0.50 is a physically better sign as well as a less doubled one.
+
+`tools/r2511_sign_occlusion.py --fix 0.5 --save <new.blend>` applies and
+re-measures it in one pass.
+
+**It is not applied to `film16.blend`, and that is a decision, not an omission:**
+
+1. `film16` is the shipping candidate and its verification arms were still
+   running against it. Mutating the artefact under a measurement in flight
+   invalidates the measurement.
+2. The ladder is being switched onto `film16`. Changing it now changes the thing
+   being rendered halfway through.
+3. **I have just refuted my own diagnosis of this defect once.** Landing a
+   geometry change on the ship for a mechanism that is measured but not yet tied
+   to the delivered frame is the move this project keeps punishing.
+
+What would settle it is the delivered frame the user pointed at. With that, the
+6.77-15.95 px double outline either matches what they saw or it does not, and the
+fix follows in one command against a blend that is no longer under a running
+pass.
+
+### the gate
+
+R2-509's two structural findings about `tools/text_overlap_gate.py` **stand and
+are unaffected** by this refutation: it tests world-space coplanarity (so it
+cannot see a screen-space effect of any kind) and it only walks round-2 modules
+(so it cannot reach part-1 props at all). What has changed is what should replace
+it. Not the `depth > gap` check R2-509 proposed — that check would have fired
+here and it would have been wrong. The right instrument is the one that produced
+this entry: **render the candidate legend alone, render it again behind its
+neighbour as a holdout, and compare pixel counts** — with the neighbour's own
+solo render as the positive control, because 0 % occlusion and a dead instrument
+are indistinguishable without it.
