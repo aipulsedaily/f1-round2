@@ -629,3 +629,28 @@ None of the three is attempted here. `render/film*.blend` is off limits to this
 block, and a station change that cannot be rendered cannot be judged.
 
 ---
+
+---
+
+## R2-331 — the `--dof off` A/B, PREDICTED BEFORE THE FRAMES ARRIVED
+
+Committed while the three control frames were still queued, so it is a prediction
+and not a postdiction. Each is the same frame, same camera, same 512 samples, same
+4K, with Blender's depth of field disabled and nothing else changed — so the
+difference between the pair is defocus and only defocus, and whatever survives in
+the `--dof off` version is motion blur.
+
+The measure is RMS image gradient per pixel, the same absolute one used above.
+
+| frame | predicted smear | defocus at the on-axis centre | prediction for `--dof off` |
+|---|---|---|---|
+| f200 | 39.7 px | 2.1 px | **little change.** Motion dominates by ~19x; killing the defocus should barely move the gradient energy. |
+| f400 | 11.4 px | 29.5 px | **large change.** This is the one defocus-dominated frame of the three; it should sharpen substantially and its anisotropy should stay low. |
+| f591 | 49.8 px | 1.8 px at centre, **177 px at the tyre** | **split.** The tyre wall filling the left half should sharpen a lot; the centre of frame should stay smeared, because 1.8 px of defocus is not what is softening it. |
+
+If f200 sharpens as much as f400 does, the motion-blur finding is wrong and R2-321
+and R2-329 both have to be withdrawn. That is the outcome this pair is being
+rendered to permit.
+
+**Result: not yet delivered.** The three controls were still queued behind f792
+when this block was written.
