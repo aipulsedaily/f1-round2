@@ -489,3 +489,45 @@ R2-291 is for.
 * the table-level `--swap` check FAILs at 375 uncovered shards — **and it fails
   on the shipped table too, at 301**, same 2,118-frame worst gap. Pre-existing,
   24 % larger, not introduced here.
+
+## R2-291 — beat 3 does not regress, it gets substantially stronger, and my own numeric check said the opposite
+
+The one thing this job was told not to trade away. **f0866, 1920 × 1080, 256
+samples, all three builds at identical settings**, so the comparison needs no
+caveat:
+
+| | changed > 1/255 | **> 8/255** | > 32/255 | mean &#124;Δ&#124; | max |
+|---|---|---|---|---|---|
+| pre-R6 → R6 (the previous block's result) | 17.929 % | **2.548 %** | 0.535 % | 1.208/255 | 150/255 |
+| **R6 → R2-281 re-bake** | 65.834 % | **27.950 %** | **9.186 %** | **10.398/255** | 201/255 |
+
+The 2.548 % reproduces the previous block's published 2.54 % exactly — the
+third time this session an inherited number has been reproduced before being
+extended. **The re-bake moves eleven times as many pixels at 8/255 as R6 did**,
+and seventeen times as many at 32/255.
+
+`render/r2281/COMPARE_f0866_preR6_R6_REBAKE.png`, three panels:
+
+* **pre-R6**: the car is through and the mullion runs straight and unbroken
+  behind it. Round 1's static grid.
+* **R6**: mullion 5's foot is torn out. Real, and subtle.
+* **re-bake**: **a full-height aluminium member is torn out and tumbling
+  diagonally across the upper frame**, the structure above the car is broken
+  and displaced, and the wall is visibly *open* over the car rather than
+  cracked. It is a different and much stronger image, and every member is still
+  present — nothing was deleted to get it.
+
+**And my own numeric no-regression check called this a regression.**
+`sim/shedpx.py` reported `BF_MUL05_S00` shrinking 140,310 → 7,800 px and
+`BF_MUL05_S01` 106,754 → 10,394 px at f0880, an 18× and 10× loss on precisely
+the two segments R2-276 celebrated. That reading is *correct and irrelevant*:
+those two segments are the ones the car sweeps downrange (R2-290), so they get
+smaller because they leave, while `BF_MUL05_S07` grows 375,069 → 582,492 px and
+twelve pieces exist that did not exist before, because the upper column the
+shipped bake left hanging now comes down.
+
+**A per-piece metric cannot see that the event got bigger when the pieces are
+not the same pieces.** It flagged `regression=CHECK`, which is what it should
+do, and then the picture had to decide — exactly the order the brief sets out.
+**P7 holds**, but not for the reason I wrote: I predicted the same two segments
+would be at least as large, and they are not.
