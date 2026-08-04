@@ -1,7 +1,14 @@
 #!/bin/bash
 # LAND THE BAKE.  Everything between a finished raw table and a rendered frame.
 #
-#   bash sim/land_breach.sh <raw_bake.npz> <sim_report.json> <target_film.blend>
+#   bash sim/land_breach.sh <raw_bake.npz> <sim_report.json> <target_film.blend> [out.blend]
+#
+# The 4th argument is the scene to WRITE.  It used to be computed as
+# "render/<film>_breach.blend", which means landing a second bake onto the same
+# film silently overwrote the first one's delivered scene -- a 5 GB artefact
+# other agents are rendering from.  It still defaults to that name so nothing
+# that called this script with three arguments changes; pass a fourth when the
+# old one has to survive, which is every A/B.
 #
 # Every stage prints a STAGE RESULT line and this script STOPS on the first
 # one that is not PASS.  Blender 5.2 exits 0 on an uncaught exception, so `$?`
@@ -17,6 +24,7 @@ cd /home/zany/f1-round2
 B="${1:-sim/tmp/breach_full_m1.npz}"
 J="${2:-sim/tmp/breach_full_m1.json}"
 FILM="${3:-}"
+OUT_ARG="${4:-}"
 BL=/opt/blender-5.2.0-linux-x64/blender
 PY=.venv/bin/python
 
@@ -124,7 +132,8 @@ echo "(GW_Front_*), two light fins, and this module's own transom remainder"
 echo "over the six bays that keep their glass -- all deliberate, none ours to"
 echo "move.  --force is still right; read R5_intruders_over_the_wound_after in"
 echo "the apply report, not the preflight's headline count."
-OUT="render/$(basename "$FILM" .blend)_breach.blend"
+OUT="${OUT_ARG:-render/$(basename "$FILM" .blend)_breach.blend}"
+echo "writing $OUT"
 $BL -b "$FILM" -P sim/apply_breach.py -- \
     --out "$OUT" --report sim/out/apply_NEW.json --force 2>&1 | tail -25
 $PY -c "
