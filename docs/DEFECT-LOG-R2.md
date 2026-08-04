@@ -18520,3 +18520,237 @@ change.
 **Out of scope and left alone:** the near-field architecture at f2180
 (grandstand) and f2200 (two bridge pylons). It is a separate defect, it belongs
 to another agent, and the retune's shorter lens improves it less than B's did.
+
+## R2-514 — the user's frame is **La Passerelle's fascia, not the gantry**, it is two DIFFERENT words, and it was already fixed nine hours before this rebuild started
+
+The frame is `2972abcb3fa1.png`. The broker's own job record says what it is:
+
+```
+job 2972abcb3fa1   frame 2575   scene render/film14_breach.blend
+                   ONER, 3840x2160, 400 samples, DOF on, CYCLES
+                   finished 2026-08-04 02:02
+```
+
+**That hash is quoted verbatim in `world/build_architecture.py`.** R2-256's own
+comment names this exact file:
+
+> *"the delivered 4K frame 2972abcb3fa1.png shows gold CADENCE and white
+> PASSERELLE printed through each other and garbling into 'PASSERELICE'."*
+
+So the frame the user pointed at is the frame R2-256 was written from. It is **La
+Passerelle**, a pedestrian overpass — the crop shows its truss above and its
+supports below — and not the start/finish gantry.
+
+### it is two words, measured, not one word doubled
+
+The proposed reading was a gold front face with a grey extruded side wall behind
+it: one word, self-doubled, ~16 px. Measured over the crop region of the 4K
+original, splitting by saturation:
+
+```
+GOLD  8,340 px   mean RGB (0.484, 0.394, 0.267)   x 1637..1999 (362 px)   centroid (1832, 340)
+GREY  1,889 px   mean RGB (0.293, 0.280, 0.264)   x 1620..2018 (398 px)   centroid (1796, 355)
+GOLD letter spans: 8 distinct runs
+```
+
+**Self-doubling cannot produce this.** The front and back faces of one extrusion
+are the same glyph set: same letter count, same run width, rigidly offset. These
+two populations have **different widths (362 vs 398 px), different centroids
+offset (36, 15), and different letter counts** — 8 gold runs against a longer
+grey word. They are two different strings. The composite reads `PASSERELICE`,
+which is `PASSERELLE` and `CADENCE` printed through each other, exactly as
+R2-256 recorded.
+
+Of the coordinator's three outcomes this is **(2) — two objects after all** — but
+it is not a new defect and it does not resurrect anything. It is the *known* one:
+
+```
+build_architecture   "PASSERELLE  2"  white  at (-452.100, 2.000, 9.650)
+build_dressing       CADENCE banner   gold   at (-452.055, 2.000, 8.920)
+                                             45 mm in front, concentric, containing it
+```
+
+**That is the "two modules writing the same panel 45 mm apart" my brief named in
+the first place, and my brief called it the gantry sign.** It is not the gantry;
+it is the bridge. The misnomer is the whole reason this took four entries.
+
+### what this means for the rebuild — it is already fixed, and film16 has the fix
+
+```
+2026-08-04 02:02   frame 2972abcb3fa1.png rendered from film14_breach.blend
+2026-08-04 03:10   f9eb94b R2-256 lands: the truss-face lettering is DELETED
+2026-08-04 15:46   assembly10 built from that source
+2026-08-04 16:26   film16 built on assembly10
+```
+
+**The delivered frame predates the fix by 68 minutes.** `assembly9` was built
+2026-08-03 23:09 and `film14` 23:42, both before `f9eb94b`, which is why every
+`film14*` scene still carries it. `assembly10` is the first world built after it,
+and `film16`/`film16_breach` are the first films that cannot show it — the
+lettering is not in the source any more, so there is nothing to collide with the
+banner. This was one of the six queued fixes and it is the one the user reported.
+
+### what I got wrong, and it cost four entries
+
+R2-509 and R2-511 measured the **MERIDIAN facade sign and the pit board**, which
+were nominated as the real panels after the gantry framing was withdrawn. Both
+conclusions about those panels stand and both were correct:
+
+* they have exactly one writer each and no collision (four measurements);
+* the wordmark occludes 0.00 % of the strapline (R2-511's refutation of my own
+  R2-509 headline, with a working positive control).
+
+**They were the wrong panels.** Neither was ever the defect. The defect was on a
+third object that the brief named wrongly, that I had explicitly left flagged as
+*"unmeasured, not clean"*, and that had already been fixed before I was briefed.
+
+> **The durable lesson is about the identifier, not the geometry.** Three
+> different objects were called "the sign" in this block — a trackside gantry, a
+> showroom facade wordmark, and a bridge fascia — and every re-aim of the
+> investigation moved to a different one while the name stayed the same. The
+> frame hash was in the source the entire time. **One `grep 2972abcb3fa1` over
+> the tree would have answered it in the first minute**, and it is the first
+> thing to do with a delivered-frame complaint: the artefact has a name, so ask
+> the tree what already knows about it before measuring anything.
+
+**The self-doubling measurement from R2-511 is unaffected and still true** — a
+52 mm extrusion does project 6.77–15.95 px of double outline at 4K on the
+MERIDIAN wordmark. It is simply not what the user saw, and there is now no
+evidence anyone has ever complained about it. **The `--fix 0.5` depth reduction
+is therefore withdrawn as a proposal**: it addresses a real but unreported
+artefact on a panel nobody raised, and cutting geometry on the ship for that is
+not justified.
+
+### the gantry, finally
+
+**Not implicated at all.** R2-509b's source reading stands — one legend per face,
+2.40 m apart, 40 mm extrusion, so it cannot produce either mechanism. It is still
+unmeasured in pixels and still not being called clean, but it is no longer
+suspected of anything.
+
+## R2-594 — the peak frame came back with NO CAR IN IT, and the instrument said 8.23 %
+
+`b67b883a270f`, f2190 at 1.6752x — the peak of the retuned ramp — contains a
+concrete parapet, a wall with posts and green fencing above it, and a kerb and
+gravel trap below. **There is no car anywhere in the frame.** The projection says
+the car is 8.23 % of frame width there — about 105 px, impossible to miss.
+
+**It is occlusion, and the instrument declares itself blind to it.**
+`tools/lap_shotscale.py`'s own LIMITS section says so in one line: *"Occlusion is
+not modelled: a car behind a barrier still measures full size."* At f2190 the car
+projects to screen **x 0.500, y 0.493** — dead centre, 183.3 m away, camera 13.7 m
+up — and the centre of the delivered frame is the parapet.
+
+**It is the same structure R2-584 already measured, ten frames later.** R2-584 on
+f2180: *"the bottom-right 45 % of the frame is filled by a motion-smeared
+grandstand structure sweeping through the foreground, its upper edge passing
+within a few pixels of the car."* By f2190 that edge has swept over it. R2-588
+saw the far side of the same pass at f2200, where the car is visible again as a
+62 px chip between two bridge pylons. So the blocked window sits between two
+frames that are known-visible, and it is narrow.
+
+**What this does and does not mean for the fix.**
+
+* **The candidate did not cause it and cannot cure it.** Whether a sightline is
+  blocked is a property of the ray from camera to car; **focal length does not
+  enter it.** The car is equally hidden at the authored 84.8 mm. What the longer
+  lens does is make the occluder fill more of the frame.
+* **It does mean the fix's back-half numbers are overstated on some frames.**
+  The demand curve is driven by measured size, and on the blocked frames the
+  measured size is fiction — the delivered subject is 0 %. The ramp's peak is
+  therefore parked, by coincidence, on frames where nothing is gained.
+* **How many frames are blocked is not established here**, and finding out means
+  a ray-cast against the assembled world. The local box has 0 GB of 11 GB free
+  and 38 GB of swap in use, so a 5 GB blend cannot be opened here; the honest
+  next step is `rq exec` on the rented box, and it belongs with the placement
+  defect rather than with the lens.
+
+**Handed on, not chased.** The near-field architecture at f2180/f2190/f2200 is
+another agent's defect (R2-588 says so explicitly). This entry adds one fact to
+it that was not previously known: **at f2190 the architecture does not merely
+compete with the subject, it hides it completely.** Whoever fixes the placement
+should re-run `tools/r2581_lensfix.py` afterwards, because the demand curve that
+sets this candidate's peak is partly driven by frames whose subject is not
+actually on screen.
+
+**Out of scope and left alone:** the near-field architecture at f2180
+(grandstand) and f2200 (two bridge pylons). It is a separate defect, it belongs
+to another agent, and the retune's shorter lens improves it less than B's did.
+
+## R2-515 — the gate works, the breach is in, and the breach was the ONLY stage that was missed
+
+### the complementary signature, read off the saved blends
+
+```
+                                film14_breach_r6   film16_breach   film16
+                                (POSITIVE CTL)     (NEW)           (NEGATIVE CTL)
+CREATED  BREACH_Shards                1                1              0
+CREATED  GP_b04                       1                1              0
+CREATED  GS_b04_*                  1531             1531              0
+CREATED  BF_MUL05_S02                 1                1              0
+DELETED  GW_Right_Mull_04             0                0              1
+DELETED  GW_Right_Transom_0           0                0              1
+CONTROL  ONER                         1                1              1
+                              BREACH_PRESENT   BREACH_PRESENT   BREACH_ABSENT
+```
+
+`film16_breach` matches the ship on every row. `film16` fails **both arms at
+once** — every created object absent AND every deleted object still standing —
+while its CONTROL is 1, which is what makes those zeros evidence rather than a
+failed read. That is the whole design: no rename, no compression and no reader
+bug can produce a complementary failure.
+
+> **A note on counting.** The figures this defect was first reported with
+> (`GS_b04_00000` = 3, `GP_b04` = 2, `BF_MUL05_S02` = 3 in r6) are *string
+> occurrences* in the blend file; the real object counts are 1531, 1 and 1. The
+> conclusion was right and the direction of every row was right, but a name can
+> appear several times in a blend for reasons that have nothing to do with how
+> many objects carry it. `tools/breach_gate.py` counts **datablocks**, via
+> Blender, for that reason.
+
+### nothing else was dropped — and the audit is shown catching one
+
+`tools/film_stage_audit.py`, ship = `film14_breach_r6`, subject =
+`film16_breach`:
+
+```
+   ship 67 families / 33,565 objects      subject 72 / 35,283
+     NEW  CFP    676      NEW  CRF   120      NEW  DRV    11
+     NEW  SPECX  900      NEW  TS     10
+     no family in the ship is missing or halved in the subject
+     collections only in SHIP: []
+>> STAGE RESULT: ALL_SHIP_STAGES_PRESENT
+```
+
+**The five NEW families are exactly the four placed item families and the
+driver**, and no collection exists in the ship that is absent from the subject.
+So `apply_breach` was the only post-build stage that had been missed — there is
+no second one hiding.
+
+**And that pass is not vacuous**, because the same instrument is run against
+`film16` before the applier and does report the miss:
+
+```
+   pre-applier control
+     MISSING  BF    ship has    39   subject has 0
+     MISSING  GP    ship has    10   subject has 0
+     MISSING  GS    ship has 3,796   subject has 0
+>> control sees a skipped stage: True
+```
+
+`DRV = 11` also closes one of the outstanding verification arms by itself: **the
+driver is in the film**, counted off the saved blend.
+
+### why a set difference and not a list of appliers
+
+The obvious fix for R2-512 is to write the appliers down. That fixes this miss
+and goes stale on the next one — and a written-down list of stages is a second
+copy of a fact, which is the thing `tools/shipping_world.py` exists to prevent.
+The set difference asks the question the list was standing in for and cannot go
+stale: **is there any family in the ship that is not in the subject?** A missed
+applier shows up that way whether or not anybody remembered it exists.
+
+The asymmetry is deliberate and is what makes it usable on this build: MISSING
+fails, NEW does not, because this rebuild adds five families on purpose and an
+audit that called those regressions would be useless on exactly the build it was
+written for.

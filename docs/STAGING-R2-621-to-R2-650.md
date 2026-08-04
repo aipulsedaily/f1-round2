@@ -284,6 +284,75 @@ first line.
 
 ---
 
+## R2-629 — A GUARD WHOSE CONDITION CAN NEVER BE MET IS INDISTINGUISHABLE FROM A GUARD THAT IS WORKING, RIGHT UP UNTIL YOU NEED IT
+
+Stated as a law, because this pass turned up three members of the same family
+and this is the cleanest statement of it.
+
+`film16.blend` is 7.5 GB and this box is 11 GB with six agents on it. After the
+first landing attempt drove the machine to 36 of 43 GB of swap, I put the retry
+behind a memory gate:
+
+```
+if [ "$AVAIL" -ge 9 ] || { [ "$AVAIL" -ge 4 ] && [ "$SWAPFREE" -ge 25 ]; }
+```
+
+**Free RAM on that box never reaches 9 GB.** The gate would have waited for
+ever, logged nothing, and looked like caution. It had the shape of a
+safety mechanism and the behaviour of a decision not to do the work — and
+nothing would have reported the difference, because a gate that is waiting and
+a gate that can never open produce the same output: silence.
+
+It is the same shape as the rest of this pass:
+
+* R2-625's occlusion probe — a check whose only clean answer was "do not build
+  a recess", so passing it meant not doing the work;
+* R2-626(d)'s per-instance attribute — present, wired, node-count-clean, and
+  constant;
+* and this.
+
+The correction is not a bigger number, it is **the right term**. What actually
+went wrong was swap EXHAUSTION (7 GB left, with another agent independently
+loading the same 7.5 GB film), so swap headroom is the term that matters and
+free RAM is the term that does not. The gate now needs 5 GB of RAM **or** 2 GB
+plus 18 GB of swap headroom, and it opened within seconds of being re-armed.
+
+**The paired instinct is worth keeping too:** the gate yields rather than
+gambles. If swap free drops under 3 GB it kills MY attempt, because when swap
+runs out the kernel picks the victim and it may not be me. Giving up my own
+15 minutes is cheap; OOM-ing another agent's four-hour bake is not.
+
+---
+
+## R2-630 — I reported a broker stall that was a scene push, and the status line said so in plain text
+
+Recorded against myself, because it is the instrument-reading failure this
+project keeps finding and I made it while writing up the last one.
+
+I reported broker 8760 as **stalled**: `running ... no progress reported yet`,
+`0/5 frames (0%)`, `done` frozen at 1,910, idle climbing past 600 s. Every one
+of those readings was true and the conclusion was wrong. The broker was
+**sending a 7,507 MB scene at 13.71 MB/s** — nine minutes of push — and the
+probe showing 0/5 frames was queued behind it, exactly as it should be.
+`rq status` prints `sending <scene> <size> <elapsed> <rate>` in plain text and
+I did not read that line before drawing a conclusion from the ones underneath
+it.
+
+Two things follow:
+
+* **"No progress" is not a symptom until you have checked what the thing is
+  doing.** A transfer in flight and a hung worker look identical from the
+  frame counter alone, and only one of them is a defect.
+* **There is a second broker.** `VASTRENDER_URL=http://127.0.0.1:8761` — an
+  exclusive card (`gpu_frac 1.0`), measured **1.64× faster** on adjacent frames
+  of the same scene (36.6 s vs 59.9 s), with 79.4 GB free against 8760's 9.0 GB.
+  The standing routing policy is bulk to 8761 and stills to 8760 on cache
+  economics, but that assumes 8760 is *available*; committed to a 7.5 GB push
+  and then a 21-hour pass, it is not. The six 4K A/B jobs were cancelled on
+  8760 and requeued on 8761, which woke it from `stopped` inside one poll.
+
+---
+
 ## R2-627 — what is actually in frame 1, measured, and why the ceiling was designed around it rather than around the plan
 
 The obvious way to build this ceiling is a waffle grid over the whole plan.
