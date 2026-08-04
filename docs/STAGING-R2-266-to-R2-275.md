@@ -1,7 +1,7 @@
-# Staged for the defect log's owner — R2-266 to R2-274
+# Staged for the defect log's owner — R2-266 to R2-275
 
 Kept out of `docs/DEFECT-LOG-R2.md` deliberately: that file has one owner. My
-block is **R2-266 to R2-280** and I have used nine of it. Paste or renumber as
+block is **R2-266 to R2-280** and I have used ten of it. Paste or renumber as
 you see fit.
 
 All of it is one job: **making the aperture read in the closing frame.** This
@@ -130,6 +130,48 @@ already takes `kind=` and a `post=` hook onto the `rigid_body_constraint` — or
 if a FIXED joint is kept, set its threshold from the dead load rather than from
 the joint threshold. Predicted outcome: mullion 5's remaining 4.67 m falls, and
 the six transom stubs bolted into it in bays 4 and 5 go with it.
+
+---
+
+## R2-275 — two M6 self-tappers are modelled as stronger than the mullion's anchor studs into the slab
+
+The second reason nothing in the frame comes apart, and it needs no external
+engineering data at all — the inconsistency is visible inside four consecutive
+lines of `sim/build_breach_sim.py`:
+
+```python
+THRESH_MULLION_JOINT = 40.0      # segment-to-segment, 6063-T6, 0.075 x 0.160
+                                 # = 76.8 kN sustained.  Was 900 = 1.73 MN.
+THRESH_MULLION_BASE  = 120.0     # the anchor studs into the slab
+                                 # = 230 kN sustained.  Was 1400 = 2.69 MN.
+THRESH_TRANSOM       = 260.0     # M6 self-tappers into the front screw port
+```
+
+**260 is 499 kN.** The comment names the fastener: `wall_iface`'s screw port
+`SP1` *"takes M6 self-tapper, 6.0 mm nominal, cuts its own thread; 40 mm
+minimum engagement."* Two of those per transom end carry on the order of
+**15 kN** before the screws shear or the 6063-T6 port strips — call it **T ≈ 8**,
+so the shipped value is roughly **33× too strong**.
+
+> **You do not need that estimate to see it.** The same block prices the
+> mullion's cast-in anchor studs at 120 and two self-tapping screws into an
+> aluminium extrusion at 260. **The screws are more than twice the anchors.**
+
+R2-092 found exactly this failure for `THRESH_MULLION_JOINT` and
+`THRESH_MULLION_BASE` — *"not a tuned value, a value that had never been
+converted into units"* — corrected those two by 55× and 13×, and **left the
+other two alone.** `THRESH_TRANSOM` and the head constraint (R2-268) are the
+survivors of that sweep, and between them they are why the frame across the
+aperture is welded to itself:
+
+| joint | modelled | can carry | ratio |
+|---|---|---|---|
+| transom end → mullion | **499 kN** | ~15 kN (2 × M6) | **33×** |
+| mullion head → head beam | **38.4 kN** | ~0 (it is a **17.2 mm expansion gap**) | ∞ |
+
+Neither was ever swept, and `land_breach.sh`'s threshold assertion pins
+`transom == 260.0` as part of "the configuration that was decided", so a bake
+that changed it would be refused by the pipeline's own gate.
 
 ---
 

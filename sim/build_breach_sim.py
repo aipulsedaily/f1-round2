@@ -702,9 +702,43 @@ def build(args):
                                thresh=args.t_mullion_joint * (
                                    3.0 if bs[uid] == "bent_stub" else 1.0),
                                loc=(xf1, y, z))
+            # THE HEAD IS A MOVEMENT JOINT, NOT A HANGER.  R2-268.
+            #
+            # As shipped this is a FIXED constraint at t_mullion_joint * 0.5 =
+            # 20, which at 240 Hz x 8 substeps is 38.4 kN sustained.  What it
+            # carries once the car has taken mullion 5's bottom 1.55 m out is
+            # 4.65 m of extrusion at 4.7 kg/m plus half of six transom stubs:
+            # 396 N.  NINETY-SEVEN TIMES the load, across a joint that
+            # `wall_iface` itself records as `head_expansion_gap_m` = 17.2 mm
+            # at this very mullion.  A stick curtain wall is BOTTOM-anchored;
+            # the head exists so the mullion can grow and shrink without being
+            # loaded.  So in the shipped bake six of mullion 5's eight segments
+            # hang in the air with nothing under them, all three transoms keep
+            # their support, and the film renders an unbroken grid across the
+            # hole.
+            #
+            # `slider` is the physical model: lateral load only.  Lock x and y
+            # (wind, in and out), leave z and all rotation free, keep the same
+            # breaking threshold for the lateral capacity it really does have.
+            # DEFAULT IS STILL `fixed`, so this changes no bake until somebody
+            # asks for it -- and `land_breach.sh` pins the threshold set as
+            # "the configuration that was decided", so a re-bake is a decision,
+            # not a side effect.
+            def _slider(c):
+                for _ax in ("x", "y"):
+                    setattr(c, "use_limit_lin_%s" % _ax, True)
+                    setattr(c, "limit_lin_%s_lower" % _ax, 0.0)
+                    setattr(c, "limit_lin_%s_upper" % _ax, 0.0)
+                c.use_limit_lin_z = False
+                for _ax in ("x", "y", "z"):
+                    setattr(c, "use_limit_ang_%s" % _ax, False)
+
+            _sl = getattr(args, "head_restraint", "fixed") == "slider"
             add_constraint("CON_MUL%02d_HEAD" % uid, segs[-1], head, C_con,
+                           kind="GENERIC" if _sl else "FIXED",
                            thresh=args.t_mullion_joint * 0.5,
-                           loc=(xf1, y, z1))
+                           loc=(xf1, y, z1),
+                           post=_slider if _sl else None)
     log("mullions: %d bodies" % sum(len(v) for v in mull.values()))
 
     # transoms: three full-width rails, bolted into the front screw port
@@ -1560,7 +1594,22 @@ def parse_args():
     p.add_argument("--t-mullion-joint", type=float,
                    default=THRESH_MULLION_JOINT)
     p.add_argument("--t-mullion-base", type=float, default=THRESH_MULLION_BASE)
-    p.add_argument("--t-transom", type=float, default=THRESH_TRANSOM)
+    p.add_argument("--t-transom", type=float, default=THRESH_TRANSOM,
+                   help="transom end into the mullion's screw port.  THE "
+                        "SHIPPED 260 IS 499 kN (R2-275) for two M6 "
+                        "self-tappers into 6063-T6, which carry about 15 kN "
+                        "-- T is nearer 8.  It is also more than twice "
+                        "THRESH_MULLION_BASE, i.e. two screws stronger than "
+                        "the anchor studs in the slab.  Not changed by "
+                        "default because it would silently move a shipped "
+                        "bake; pass it deliberately.")
+    p.add_argument("--head-restraint", choices=("fixed", "slider"),
+                   default="fixed",
+                   help="how the mullion meets the head beam.  `fixed` is what "
+                        "shipped: a 38.4 kN rigid joint across a 17.2 mm "
+                        "declared expansion gap, so a mullion whose base has "
+                        "gone hangs from its head (R2-268).  `slider` is the "
+                        "physical model -- lateral load only, free in z.")
     p.add_argument("--t-bond-per-m", type=float, default=THRESH_BOND_PER_M)
     p.add_argument("--substeps", type=int, default=SUBSTEPS)
     p.add_argument("--solver-iter", type=int, default=SOLVER_ITER)
