@@ -237,3 +237,57 @@ bay-groups are inherited unchanged as the negative control.
 ---
 
 *(results sections follow once the bake lands)*
+
+## R2-287 — the null holds, and its headline number is a maximum over 378 shards decided by one of them
+
+**P1 of the committed prediction, and the first result in.** 480 frames,
+`--wake-all --no-car`: every body awake at frame 1, no car in the scene, the
+wall must stand on its own. Run at the derived thresholds and with the head as
+a slider, against `sim/tmp/n1.npz` — **the same 480 frames at transom 260 with
+the head FIXED**, which is the exact before-half — and against `n2`, the
+mullion 15/50 config R2-093 identified as the one that *breaks* the null.
+
+**The frame stands, and that is the claim P1 made:**
+
+| | n1 — transom 260, head FIXED | n2 — mullion 15/50 | **new — transom 8.8, head slider** |
+|---|---|---|---|
+| max mullion-body sag | 0.175 mm | 0.273 mm | **0.341 mm** |
+| max transom-body sag | 0.078 mm | 0.139 mm | **0.148 mm** |
+| frame joints broken (of 95) | 0 | 0 | **0** |
+| mullion 5 column travel | 0.001 m | 0.001 m | **0.001 m** |
+
+A third of a millimetre, on a wall filmed at 12.96 px/m. The joint got 29.5×
+softer and the frame's dead-load response roughly doubled, from 0.175 mm to
+0.341 mm. **P1 predicted sub-millimetre and it is sub-millimetre.**
+
+**And the glass did not move either — but the verdict line says it did.**
+`NULL VERDICT` reports `worst_px_on_a_pane_that_stays`: **11.52 px** for n1 and
+**360.31 px** for this bake, which reads like a large regression. It is one
+shard.
+
+| retained bays 2 and 7, 378 shards | n1 | n2 | **new** |
+|---|---|---|---|
+| median | 15.0 mm | 19.5 mm | 21.3 mm |
+| **p95** | **27.7 mm** | **27.6 mm** | **27.6 mm** |
+| p99 | 30.2 mm | 37.3 mm | 52.1 mm |
+| over 100 mm | 0 | 2 | **1** |
+| over 1 m | 0 | 0 | **0** |
+| worst shard | 33 mm | **`GS_b07_00010` 510 mm** | **`GS_b07_00010` 918 mm** |
+
+**The p95 is identical to three significant figures across all three
+configurations.** The bulk of the retained glass is unchanged. The whole
+difference in the headline is `GS_b07_00010` — **the same shard n2 lost at a
+completely different threshold**, and the third-worst shard in n1 at 32 mm. It
+is one marginal shard in bay 7 that this solver intermittently loses hold of,
+it was doing it before the transom threshold was touched, and a **maximum over
+378 shards is decided by whichever one of them it is.**
+
+That is R2-274's lesson wearing different clothes — there the *mean* was the
+wrong statistic for the wound, here the *max* is the wrong statistic for the
+null — and R2-098's, which is the same mistake twice already. The null verdict
+should carry a percentile beside its maximum, the way `null_verdict` already
+carries `mobility` so that a null passing because nothing can move is visible.
+**Logged, not fixed: it is not this block's file to change mid-bake.**
+
+The seven shards R2-199 left open at bond 100 as "a different mechanism,
+off camera, logged rather than chased" are almost certainly this population.
