@@ -1,28 +1,28 @@
 {
- "generated": "2026-08-04T01:49:37",
- "SOURCE": "/home/zany/f1-round2/work/w2_0/retier_a9/item_presence.json -- measured, not assigned. This file is a PROPOSAL; docs/item_manifest.json is deliberately untouched, because changing the manifest is a decision and this is a measurement.",
+ "generated": "2026-08-03T03:58:55",
+ "SOURCE": "/home/zany/f1-round2/work/tier2/item_presence_a6_full.json -- measured, not assigned. This file is a PROPOSAL; docs/item_manifest.json is deliberately untouched, because changing the manifest is a decision and this is a measurement.",
  "RULE": "HERO = >=300 px, sharp, unoccluded, on >=24 frames (1.0 s) in total. MID = >=150 px on >=12 frames. BULK = on screen but never both big and sharp for long enough. NEVER = not in frustum on any of the 2,978 frames. Only NEVER is a fact rather than a threshold.",
  "INPUT_IDENTITY": {
-  "stamped_at": "2026-08-04T01:42:17",
+  "stamped_at": "2026-08-03T03:44:06",
   "host": "zed",
   "WHY": "Defect #97: a report changed on an unchanged blend because the telemetry and camera were rebuilt underneath it and nothing recorded it. sha256 is the load-bearing field; mtime and the declared version are context. A result that cannot be told apart from a stale one is not a result.",
   "inputs": [
    {
     "role": "world",
-    "path": "/home/zany/f1-round2/render/world/assembly/r2/assembly9.blend",
-    "bytes": 4214604334,
-    "mtime": "2026-08-03T23:09:36",
-    "mtime_epoch": 1785798576,
-    "sha256": "cd4e0c22f6d794475a4132851aad19b4ce9a768f16c7165eb3087dfacfc7eb04",
-    "declares": "1.2.1"
+    "path": "/home/zany/f1-round2/render/world/assembly/r2/assembly6.blend",
+    "bytes": 4214168011,
+    "mtime": "2026-08-02T15:51:49",
+    "mtime_epoch": 1785685909,
+    "sha256": "82cd7065d66b24ec484eb5cc70e6a16883cf9e5fd524dfaa84037fcfca707dd1",
+    "declares": "1.2.0"
    },
    {
     "role": "camera_path",
     "path": "/home/zany/f1-round2/world/camera_rig_path.json",
-    "bytes": 335752,
-    "mtime": "2026-08-03T23:30:49",
-    "mtime_epoch": 1785799849,
-    "sha256": "f1c65c46459d4488d252434f6ce123473f03051498f4c471110619026010a5e0",
+    "bytes": 335596,
+    "mtime": "2026-08-02T13:55:55",
+    "mtime_epoch": 1785678955,
+    "sha256": "635b7f3c6e8abcf40ddbd7403e81337a020bc10495d04aeac52226dcc84dc206",
     "declares": "frames=2978"
    },
    {
@@ -37,10 +37,10 @@
    {
     "role": "beat_sheet",
     "path": "/home/zany/f1-round2/docs/beat_sheet.json",
-    "bytes": 155494,
-    "mtime": "2026-08-03T23:30:08",
-    "mtime_epoch": 1785799808,
-    "sha256": "2ee973b889a241af493e3ba485d3738a9a94e9bad367aae3b33c491a39f8c148",
+    "bytes": 139334,
+    "mtime": "2026-08-02T13:55:12",
+    "mtime_epoch": 1785678912,
+    "sha256": "dbcbc2296c97dd9d489866db77b7e3a6cbb8d4891f68168ffd246c9dc437022f",
     "declares": "frames=2978 beats=6"
    },
    {
@@ -55,28 +55,46 @@
    {
     "role": "world_contract",
     "path": "/home/zany/f1-round2/world/world_contract.py",
-    "bytes": 230216,
-    "mtime": "2026-08-03T22:41:03",
-    "mtime_epoch": 1785796863,
-    "sha256": "d1e6ec608b7651ec7f77c5a2930a5abfaa0e53a99c9a05edcdc8e3a05f831f9d",
+    "bytes": 224176,
+    "mtime": "2026-08-02T15:30:02",
+    "mtime_epoch": 1785684602,
+    "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a",
     "declares": "1.2.1"
+   },
+   {
+    "role": "points",
+    "path": "/home/zany/f1-round2/work/tier2/world_points_a6_full.npz",
+    "bytes": 8870932,
+    "mtime": "2026-08-03T03:32:56",
+    "mtime_epoch": 1785727976,
+    "sha256": "8213083e50434ecf0a754ea9c5ac27f29ae3ba488f7e695d79290c3a93a42ec7",
+    "declares": null
+   },
+   {
+    "role": "sweep_npz",
+    "path": "/home/zany/f1-round2/work/tier2/sp_points_a6_full.npz",
+    "bytes": 70460728,
+    "mtime": "2026-08-03T03:43:49",
+    "mtime_epoch": 1785728629,
+    "sha256": "153ba6ff79c4d4225174493a1064591ab8b841b332bc34ca17405c1e1b502941",
+    "declares": null
    }
   ]
  },
  "tier_counts": {
   "BULK": 308,
-  "MID": 58,
-  "HERO": 69
+  "MID": 56,
+  "HERO": 71
  },
  "agents_per_round": {
   "hero_build": {
-   "items": 69,
-   "agents": 45,
+   "items": 71,
+   "agents": 47,
    "unit": "(module, name-family); one agent owns the family and emits its children"
   },
   "reads_at_speed": {
-   "items": 58,
-   "agents": 42,
+   "items": 56,
+   "agents": 40,
    "unit": "(module, name-family); silhouette, mass, value, per-instance variation"
   },
   "texture_and_mass": {
@@ -85,11 +103,11 @@
    "unit": "(module, zone) cells of >=6 items get an agent each (16 cells, 267 items); the 20 cells under 6 items (41 items) roll into their module owner (architecture, barriers, car, dressing, surface, terrain)"
   },
   "adversarial_review": {
-   "agents": 40,
-   "frame_peeps": 29,
+   "agents": 39,
+   "frame_peeps": 28,
    "macro_peeps": 11,
    "macro_items": 21,
-   "unit": "29 FRAME-peeps -- one per vantage regime MEASURED in the built rig (beat x speed-band x lens-band x altitude-band, >=24 frames each), each judged at the real camera, lens, distance and shutter. Plus 11 MACRO-peeps, one per name-family among the 21 HERO items whose measured peak_sharp_px_4k exceeds 1000 -- the only items in the film that genuinely receive macro scrutiny. NOT one peep per item in a test scene at nearest_camera_m.",
+   "unit": "28 FRAME-peeps -- one per vantage regime MEASURED in the built rig (beat x speed-band x lens-band x altitude-band, >=24 frames each), each judged at the real camera, lens, distance and shutter. Plus 11 MACRO-peeps, one per name-family among the 21 HERO items whose measured peak_sharp_px_4k exceeds 1000 -- the only items in the film that genuinely receive macro scrutiny. NOT one peep per item in a test scene at nearest_camera_m.",
    "FRAME_PEEP_ROUTE": "VANTAGE REGIMES of the built camera rig -- the FRAME-peep count, derived.\n\n    python3 tools/frame_peeps.py --path world/camera_rig_path.json         --sheet docs/beat_sheet.json --out work/tier2/frame_peeps.json\n\nWHY THIS FILE EXISTS AT ALL\n---------------------------\n`docs/proposed_tiers.json` has, since 2026-08-02, asserted:\n\n    \"36 FRAME-peeps -- one per vantage regime MEASURED in the built rig\n     (beat x speed-band x lens-band x altitude-band, >=24 frames each;\n     36 of them covering 89% of the take)\"\n\nand **the script that produced it is not in the repository.**  It is not in\n`tools/`, not in `work/`, not in `anim/`; the strings \"FRAME-peep\",\n\"frame_peep\" and \"agents_per_round\" appear in exactly one file in the whole\nproject, which is the output itself.  So the 36 was, until this file, a\nnumber nobody could re-derive, sitting in the plan that decides how many\nadversarial reviewers a build round gets.\n\nCAN THE ORIGINAL BE RECOVERED FROM ITS OWN SIGNATURE?  NO -- AND THAT WAS\nTESTED RATHER THAN ASSUMED.  The old camera is recoverable (the `campos` and\n`lens` arrays inside `docs/screen_presence_points.npz` are the exact per-frame\ncamera the 12:19 run used), so the binning could be searched for directly.\n1,296 combinations of speed / lens / altitude band edges were swept against\nthat camera.  **Twelve of them land on exactly 36 regimes at 88-90 % coverage**\n-- among them speed edges as unlike each other as [1, 10, 40, 80] m/s and\n[2.78, 16.7, 55.6] m/s.  \"36 regimes, 89 %\" therefore does not identify a\nbinning.  Any band set reproducing it would be a coincidence dressed as a\nrecovery, so this file does NOT try to reproduce 36.  It states its own bands,\non stated grounds, and reports whatever they give.\n\nTHE ROUTE, WHICH IS THE POINT OF THIS FILE\n------------------------------------------\nA FRAME-peep judges one frame at the real camera, lens, distance and shutter.\nTwo frames need separate judging when what a reviewer would look at differs.\nFour axes, each cut where the PERCEPTUAL class changes, not on round numbers:\n\n  BEAT           the film's own six declared segments.  Different subject,\n                 different intent, and the beat is what a reviewer is told\n                 they are looking at.\n\n  SPEED BAND     film-time speed of the camera body, m/s, cut at 1 / 10 / 30.\n                 <1     the camera is effectively locked; the reviewer is\n                        judging static detail and every flaw holds still.\n                 1-10   walking to fast-jog; detail readable, edges softening.\n                 10-30  road speed; silhouette and value survive, macro does not.\n                 >=30   108 km/h and up -- beat 4 and 5's pace, where the\n                        measured smear exceeds the 6 px sharp threshold for\n                        anything close and only mass and tone are judgeable.\n                 Speed is FILM time (position delta x 24 fps), because the\n                 shutter is a flat 180 degrees of a FILM frame since R2-037 and\n                 the smear a reviewer sees is a film-frame quantity.\n\n  LENS BAND      cut at 28 / 50 / 85 mm, the photographic classes on this\n                 rig's 36 mm horizontal sensor: wide, normal, short tele, tele.\n                 These are the boundaries at which the relationship between\n                 subject size and background compression visibly changes, and\n                 they are not tuned to this film.\n\n  ALTITUDE BAND  camera z, cut at 2 / 6 / 15 m.\n                 <2     eye height -- the viewer reads it as standing there.\n                 2-6    vehicle / low crane.\n                 6-15   grandstand and gantry height.\n                 >=15   aerial.\n                 Absolute z, not height above terrain: the circuit's ground is\n                 within about a metre of z=0 across the whole camera corridor,\n                 and using absolute z keeps this tool free of any dependency on\n                 the terrain build, which is owned by another agent and moves.\n\n  MIN_FRAMES     24 (1.0 s).  A regime the camera passes through for under a\n                 second is not a vantage anyone can review; its frames are\n                 reported as UNCOVERED rather than silently folded into a\n                 neighbour, so the coverage figure is honest.\n\nThe band edges are CLI arguments.  Changing them changes the answer and the\noutput records the edges used, so two runs can be compared.\n",
    "frame_peep_bands": {
     "speed_ms_edges": [
@@ -109,7 +127,7 @@
     ],
     "min_frames": 24
    },
-   "frame_peep_coverage_pct": 94.4,
+   "frame_peep_coverage_pct": 94.5,
    "macro_families": [
     "breach",
     "escarpment",
@@ -124,7 +142,7 @@
     "tree"
    ]
   },
-  "TOTAL_PER_ROUND": 149
+  "TOTAL_PER_ROUND": 148
  },
  "bulk_cells": [
   {
@@ -474,6 +492,24 @@
     ],
     "items": [
      "lighting_mast"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "media"
+    ],
+    "items": [
+     "media_centre_building"
+    ]
+   },
+   {
+    "family": [
+     "architecture",
+     "medical"
+    ],
+    "items": [
+     "medical_centre_building"
     ]
    },
    {
@@ -922,24 +958,6 @@
    {
     "family": [
      "architecture",
-     "media"
-    ],
-    "items": [
-     "media_centre_building"
-    ]
-   },
-   {
-    "family": [
-     "architecture",
-     "medical"
-    ],
-    "items": [
-     "medical_centre_building"
-    ]
-   },
-   {
-    "family": [
-     "architecture",
      "paddock"
     ],
     "items": [
@@ -1194,9 +1212,23 @@
   ]
  },
  "comparison": {
-  "against": "/home/zany/f1-round2/docs/proposed_tiers.json",
-  "against_generated": "2026-08-03T03:58:55",
+  "against": "/home/zany/f1-round2/docs/proposed_tiers_SUPERSEDED_a2_contract101.json",
+  "against_generated": "2026-08-02T12:19:19",
   "previous": {
+   "tier_counts": {
+    "BULK": 297,
+    "MID": 63,
+    "HERO": 75
+   },
+   "agents": {
+    "hero_build": 51,
+    "reads_at_speed": 45,
+    "texture_and_mass": 22,
+    "adversarial_review": 51,
+    "TOTAL_PER_ROUND": 169
+   }
+  },
+  "now": {
    "tier_counts": {
     "BULK": 308,
     "MID": 56,
@@ -1208,20 +1240,6 @@
     "texture_and_mass": 22,
     "adversarial_review": 39,
     "TOTAL_PER_ROUND": 148
-   }
-  },
-  "now": {
-   "tier_counts": {
-    "BULK": 308,
-    "MID": 58,
-    "HERO": 69
-   },
-   "agents": {
-    "hero_build": 45,
-    "reads_at_speed": 42,
-    "texture_and_mass": 22,
-    "adversarial_review": 40,
-    "TOTAL_PER_ROUND": 149
    }
   }
  }
