@@ -925,3 +925,41 @@ f0950 and f1000 pair, one frame from each build at identical settings, is
 what decides whether it reads as debris or as a defect, and I am rendering both
 builds rather than describing one.
 
+
+---
+
+## R2-397 — the ending's instrument reproduces R2-297 exactly, before it is asked to extend it
+
+Before any frame of the new build exists, `sim/wallstats.py` was pointed at the
+frames R2-297 was written from —
+`render/r6_after/full_f2978.png` against `render/r2281/diag_full_f2978.png`,
+repeat floor from `render/r6_before/repeat_f2978.png`:
+
+| region | R2-297 published | **reproduced now** |
+|---|---|---|
+| `WOUND_bridged` grid_contrast | 0.03675 → **0.00785** | 0.03675 → **0.00785** |
+| `WOUND_bridged` changed > 8/255 | **11.33 %** | **11.327 %** |
+| `WOUND_connected` grid_contrast | 0.03078 → 0.04871 | 0.03078 → 0.04871 |
+| `WOUND_connected` changed > 8/255 | 11.67 % | 11.671 % |
+| `NB_left_bay3` | 0.221 % | 0.221 % |
+| `NB_right_bay6` | 0.663 % | 0.663 % |
+| `CTL_UNTOUCHED_bays789` | 0.144 % | 0.144 % |
+| `CTL_UNTOUCHED_bays01` | 0.0435 % | 0.043 % |
+| sky | 0.0004 % | 0.0004 % |
+
+Every number, to the digits published. **The instrument that will judge my
+build is the same instrument, on the same frames, giving the same answer** — so
+if the AFTER column moves, it will be the build that moved and not the ruler.
+
+It also reproduces the *failure* the inherited record carries:
+`CTL_UNTOUCHED_bays012` at **1.482 %** against a 0.5 % limit, which is R2-296's
+expired control — the blast radius grew past the rectangle that was drawn
+before it, and `bays01` (0.043 %) is the one that is genuinely untouched. I am
+keeping both in my own AFTER column rather than quietly dropping the one that
+fails, because the failing one is informative: it is where the fix's reach can
+be seen.
+
+That is the third inherited number reproduced before being extended in this
+block — `rest_gate`'s 1,599, R2-290's 2,647 and u 884…3465, and now R2-297's
+11.33 %.
+
