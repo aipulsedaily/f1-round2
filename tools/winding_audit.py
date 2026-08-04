@@ -382,7 +382,8 @@ def _material_between(Pw, T, lo, hi, n_probe=5):
 
     RETURNS `True` / `False` / `None`. Parity is only meaningful on a surface
     that bounds a region, and the caller establishes that separately with
-    `_nonmanifold_verts` before trusting an answer -- see `sheet_facing`. This
+    a closure test on the pair's own welded component before trusting an
+    answer -- see `_piece_is_outward_solid` and `sheet_facing`. This
     returns `None` when its own probes disagree or cannot find the column.
     """
     zq = 0.5 * (lo["z"] + hi["z"])
@@ -596,9 +597,9 @@ def sheet_facing(objs, cos_flat=0.99, min_area=0.05):
                 #
                 # The deck slabs this file exists for are NOT cleared by this,
                 # and that is the point: `extrude` gives each cap its own
-                # vertices, so a cap is a volumeless SHEET piece, `enclosure_q`
-                # falls under `Q_MIN`, and the question stays open for parity
-                # to answer. One rule, and it splits the two cases exactly.
+                # vertices, so a deck slab's top face is its own OPEN piece,
+                # closure fails, and the question stays open for parity to
+                # answer. One rule, and it splits the two cases exactly.
                 Pw, T = ent[0], ent[1]
                 if ent[3] is None:      # lazy: only objects with a suspect
                     ent[3] = _welded_components(ent[2], T)
