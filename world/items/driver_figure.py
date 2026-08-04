@@ -5015,8 +5015,25 @@ def build(coll_name=ROOT_COLL, pose="hairpin_apex", an=DRIVER, uid=0,
     if place is not None:
         from mathutils import Matrix
         Mw = Matrix([list(r) for r in np.asarray(place, float)])
+        # THROUGH matrix_basis, NEVER matrix_world.  R2-243.
+        #
+        # `Acc.emit` recentres every mesh on its own bounding box and records
+        # the offset in `ob.location`.  `matrix_world` is a DERIVED value that
+        # the depsgraph writes; on an object created moments ago it can still
+        # read IDENTITY.  The first cut did `o.matrix_world = Mw @
+        # o.matrix_world`, so for the objects emitted late in this function the
+        # right-hand side was Mw @ IDENTITY and the assignment DISCARDED the
+        # recentre offset.  MEASURED in `tools/place_driver.py`: DRV_Helmet,
+        # emitted early, landed within 0.0 mm of its anchor; DRV_Glove_L,
+        # emitted sixth, landed 209 mm from its own grip anchor with
+        # `matrix_basis.translation` equal to the placement translation alone.
+        # The figure came apart limb by limb and the module reported success.
+        #
+        # `matrix_basis` is composed from the stored loc/rot/scale and is never
+        # stale, so this is order-independent.  Every object here is unparented
+        # at this point, so basis and world describe the same transform.
         for o in objs:
-            o.matrix_world = Mw @ o.matrix_world
+            o.matrix_basis = Mw @ o.matrix_basis
 
     tris = 0
     for o in objs:
