@@ -988,6 +988,9 @@ def winding_selftest(chk):
             a, (0, 0, 0.5), (0.3, 0, 0), (0, 0.2, 0), (0, 0, 0.1))),
         ("box", lambda a: box(a, (-1, -1, 0.61), (1, 1, 0.66))),
         ("tube", lambda a: tube(a, (0, 0, 0), (0, 0, 1), 0.05)),
+        ("slab_grid, deck sheet", lambda a: slab_grid(
+            a, -0.6, 0.6, -0.5, 0.5, lambda X, Y: np.full_like(X, 1.2),
+            0.018, step=0.05)),
     )
     for nm, fn in prims:
         a = Acc("wchk")
@@ -998,6 +1001,24 @@ def winding_selftest(chk):
             "%d faces, %d bad edges, vol %+.6g, top_nz %+.3f, bottom_nz %+.3f"
             % (s["faces"], s["duplicate_directed_edges"] + s["unpaired_edges"],
                s["volume"], s["top_nz"], s["bottom_nz"]))
+
+    # THE CONTROL THAT WOULD HAVE FOUND THE THIRD SITE ON DAY ONE.
+    # `Acc.solid` integrates its signed volume about the WORLD ORIGIN, so on a
+    # mesh that is not consistently wound the answer depends on WHERE THE
+    # PIECE STANDS -- and `slab_grid` was not consistently wound, so 24 of 25
+    # hut floors came out right way up by luck and `MPD_Deck_05_hut` at
+    # z = -1.03 did not. Build the same slab at five heights and require the
+    # same verdict: a primitive whose orientation is a function of its
+    # position is broken even where it happens to be correct.
+    for zz in (-5.0, -1.03, 0.0, 1.2, 40.0):
+        a = Acc("wchk_z")
+        slab_grid(a, -0.6, 0.6, -0.5, 0.5, lambda X, Y, _z=zz:
+                  np.full_like(X, _z), 0.018, step=0.05)
+        s = winding_stats(*_acc_arrays(a))
+        chk("winding: slab_grid at z %+.2f" % zz,
+            s["consistent"] and s["outward"] and s["lids_ok"] is True,
+            "vol %+.6g, top_nz %+.3f, bottom_nz %+.3f"
+            % (s["volume"], s["top_nz"], s["bottom_nz"]))
 
     a = Acc("wctl_ok")
     obox(a, (0, 0, 1.2), (0.7, 0, 0), (0, 0.075, 0), (0, 0, 0.0105))
@@ -2478,13 +2499,39 @@ def slab_grid(acc, x0, x1, y0, y1, ztop, t, mat=M_PLY, step=0.013, seed=0.0,
     V = np.concatenate([np.stack([X, Y, ZT], -1).reshape(-1, 3),
                         np.stack([X, Y, ZB], -1).reshape(-1, 3)])
     idx = np.arange(NT).reshape(nx, ny)
-    top = np.stack([idx[:-1, :-1].ravel(), idx[:-1, 1:].ravel(),
-                    idx[1:, 1:].ravel(), idx[1:, :-1].ravel()], 1)
+    # R2-179, THIRD SITE, AND THE WORST-BEHAVED OF THE THREE.
+    #
+    # `top` used to walk (i,j) -> (i,j+1) -> (i+1,j+1) -> (i+1,j): +y then +x,
+    # so `cross(+y, +x) = -z` and the WALKING SURFACE FACED THE GROUND, with
+    # `bot` (its reverse) facing up. Two of the four edge strips were wound
+    # outward and two inward, which is what made this one so hard to see:
+    #
+    #   x = x0 strip   +y then -z -> -x   OUTWARD, correct
+    #   x = x1 strip   +y then -z -> -x   INWARD
+    #   y = y0 strip   +x then -z -> +y   INWARD
+    #   y = y1 strip   +x then -z -> +y   OUTWARD, correct
+    #
+    # A mesh wound partly one way and partly the other has no meaningful
+    # signed volume, and `Acc.solid` decides the orientation of the whole
+    # slab from exactly that number, integrated about the WORLD ORIGIN. So
+    # whether a hut floor came out right way up depended on WHERE IT STOOD.
+    # Twenty-four of the twenty-five decks were flipped back by luck;
+    # `MPD_Deck_05_hut`, whose floor sits at z = -1.03, was not, and it is
+    # 1.513 m2 of walking surface facing down. That is not a defect that can
+    # be found by reading one deck.
+    #
+    # Every face is now authored outward, so `solid` has a true volume to
+    # judge and cannot change its mind about a slab because it moved.
+    top = np.stack([idx[:-1, :-1].ravel(), idx[1:, :-1].ravel(),
+                    idx[1:, 1:].ravel(), idx[:-1, 1:].ravel()], 1)
     bot = top[:, ::-1] + NT
     strips = []
-    for (a, b) in ((idx[0, :], idx[0, :] + NT), (idx[-1, :], idx[-1, :] + NT),
-                   (idx[:, 0], idx[:, 0] + NT), (idx[:, -1], idx[:, -1] + NT)):
-        strips.append(np.stack([a[:-1], a[1:], b[1:], b[:-1]], 1))
+    for (a, b, flip) in ((idx[0, :], idx[0, :] + NT, False),
+                         (idx[-1, :], idx[-1, :] + NT, True),
+                         (idx[:, 0], idx[:, 0] + NT, True),
+                         (idx[:, -1], idx[:, -1] + NT, False)):
+        q = np.stack([a[:-1], a[1:], b[1:], b[:-1]], 1)
+        strips.append(q[:, ::-1] if flip else q)
     Q = np.concatenate([top, bot] + strips)
     a = dict(mpd_wear=0.0, mpd_age=0.5, mpd_wet=0.2, mpd_moss=0.0, mpd_rust=0.0,
              mpd_end=0.0, mpd_paint=0.0, mpd_id=h01(seed, 101), mpd_ao=0.2,
