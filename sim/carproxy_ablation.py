@@ -90,19 +90,23 @@ def cell(path):
                thresholds=rep.get("thresholds"), watch={}, controls={})
 
     # interpenetration, per frame, over every body at once
-    pen = np.zeros(nf, int)
     step = max(1, nf // 200)
-    for fi in range(0, nf, step):
+    sample = list(range(0, nf, step))
+    pen = np.zeros(nf, int)
+    for fi in sample:
         L = to_car_local(loc[fi].astype(float),
                          np.repeat(c_loc[fi][None], len(names), 0),
                          np.repeat(c_rot[fi][None], len(names), 0))
         pen[fi] = int(inside_parts(L).sum())
+    post = [f for f in sample if f >= 200]     # after the car is through
     out["interpenetration"] = dict(
         sampled_every=step,
         max_bodies_inside=int(pen.max()),
         at_sim_frame=int(pen.argmax()) + 1,
-        at_last_frame=int(pen[(nf - 1) // step * step]),
-        mean_after_impact=round(float(pen[145::step].mean()), 1))
+        at_last_frame=int(pen[sample[-1]]),
+        mean_after_the_car_is_through=round(float(pen[post].mean()), 1),
+        sampled_frames_over_100=int((pen[post] > 100).sum()),
+        of_samples=len(post))
 
     lo, hi = proxy_env()
     tot_tr = 0.0
@@ -183,8 +187,11 @@ def main():
         lambda c: c["interpenetration"]["max_bodies_inside"])
     row("PRICE   ... at that sim frame",
         lambda c: c["interpenetration"]["at_sim_frame"])
-    row("PRICE mean inside, post-impact",
-        lambda c: c["interpenetration"]["mean_after_impact"])
+    row("PRICE mean inside, car through",
+        lambda c: c["interpenetration"]["mean_after_the_car_is_through"])
+    row("PRICE samples over 100 inside",
+        lambda c: "%d of %d" % (c["interpenetration"]["sampled_frames_over_100"],
+                                c["interpenetration"]["of_samples"]))
     row("CONTROL untouched mullions max m",
         lambda c: c["controls"]["untouched_mullion_max_travel_m"])
     row("aperture width m",
