@@ -3067,8 +3067,59 @@ def main():
         else:
             foc, focc = img.get("fine_over_coarse"), img.get("fine_over_coarse_control")
             ok_amp = img["fine_over_control"] >= FINE_OVER_CONTROL
-            ok_bal = (foc is None or focc is None or foc >= focc)
-            micro_ok = bool(ok_amp and ok_bal)
+            # R2-635. THE SPECTRAL-BALANCE CLAUSE COULD NOT FIRE ON ITS OWN
+            # WORST CASE, AND IT SAID NOTHING WHILE FAILING TO.
+            #
+            # This was:
+            #
+            #     ok_bal = (foc is None or focc is None or foc >= focc)
+            #
+            # -- an unmeasurable balance PASSED.
+            #
+            # MEASURED CAUSE, and it is not the one that looks obvious. Across
+            # ALL ELEVEN wave-1 items reporting `spectral balance None`, it is
+            # the COARSE band that is missing and never the fine one:
+            #
+            #   crew_fireproof_overall  bands r1,r2,r4,r8,r16 = 9.86,16.82,40.89,null,null
+            #   spectator_seated                               8.71,13.48,null,null,null
+            #   tyre_wall_tyre                                 1.41, 1.83,null,null,null
+            #
+            # So `fine_over_coarse` is None because r8/r16 COULD NOT BE MEASURED
+            # at this subject's pixel size -- the lit patch is too small to
+            # survive a radius-8 or radius-16 band-pass and its erosion -- NOT
+            # because the surface carries no energy there. This is an INSTRUMENT
+            # LIMIT, not a property of the item, which is exactly why the answer
+            # is VACUOUS and not FAIL.
+            #
+            # And it is systematic in the worst place: the clause exists to
+            # catch "all the energy sat at r8-r16 and none at r1-r4", which
+            # REQUIRES a measurable coarse band. On 11 of 30 measured wave-1
+            # items there never is one, so on a third of the campaign the clause
+            # could not fire at all -- and said nothing, because it passed.
+            # Among those eleven: `crew_fireproof_overall`, a MUST-REJECT the
+            # wave-1 peep found renders as vinyl and measured FLATTER THAN THE
+            # PLACEHOLDER BLOB HEAD, and `driver_figure`.
+            #
+            # VACUOUS, NOT PASS -- and not FAIL either. This project already
+            # has a verdict for an arm that cannot decide on an empty set, and
+            # it is the one `gate_exit` calls VACUOUS: NOT a pass, and
+            # deliberately distinguishable from a failure so a caller can tell
+            # "your item is flat" from "the instrument could not see". Silently
+            # passing is the one option that is definitely wrong.
+            #
+            # ORDER MATTERS. A definite amplitude failure is still a FAILURE --
+            # vacuity only applies when the undecidable clause is the DECIDING
+            # one. An item that already fails `fine_over_control` does not get
+            # upgraded to "could not measure" by a second clause going blind.
+            if not ok_amp:
+                ok_bal = None
+                micro_ok = False
+            elif foc is None or focc is None:
+                ok_bal = None
+                micro_ok = None
+            else:
+                ok_bal = foc >= focc
+                micro_ok = bool(ok_bal)
             micro_why = (f"fine(r{FINE_BANDS[0]}-r{FINE_BANDS[-1]}) "
                          f"{img['fine_subject']:.3f} % of mean vs the strictest "
                          f"brightness-matched smooth control "
@@ -3082,11 +3133,21 @@ def main():
                          f"; spectral balance fine/coarse "
                          f"{img.get('fine_over_coarse')} vs control "
                          f"{img.get('fine_over_coarse_control')}"
-                         + ("" if ok_bal else
+                         + ("" if ok_bal is True or ok_bal is None else
                             " -- MORE COARSE-WEIGHTED THAN A FEATURELESS SMOOTH "
                             "SURFACE: there is a mechanism at centimetre scale "
                             "and nothing at millimetre scale, which is a "
-                            "3-5x amplitude shortfall, not an absence"))
+                            "3-5x amplitude shortfall, not an absence")
+                         + ("" if not (ok_amp and ok_bal is None) else
+                            " -- SPECTRAL BALANCE NOT MEASURABLE: "
+                            f"fine_over_coarse={foc!r}, control={focc!r}. "
+                            "The COARSE band could not be measured at this "
+                            "subject's pixel size, so there is nothing to "
+                            "compare the fine band against. VACUOUS: NOT a "
+                            "pass, and NOT a failure of the item -- it is an "
+                            "instrument limit. See R2-635."))
+            if micro_ok is None:
+                unmeasurable.append("surface_microstructure: " + micro_why)
 
         # 6. RELIEF.
         if img.get("relief_subject") is None:

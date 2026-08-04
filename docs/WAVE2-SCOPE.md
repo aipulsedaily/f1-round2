@@ -279,6 +279,28 @@ those, exactly one hosts on `TER_Ground` and nothing else: **`escarpment_skyline
 already tiered HERO at 1,134 px**. A far horizon that rose 326 m can only make it
 *more* visible, so the direction of the error is safe.
 
+> **RE-DERIVED 2026-08-04 (R2-634), AND THE CONCLUSION NEEDS SPLITTING.**
+> Two of the six stamped inputs in `docs/tiering_inputs.json` had CHANGED against
+> their recorded sha256 — **`camera_rig_path.json` and `beat_sheet.json`** — not
+> the world this section worried about. Re-swept with the SAME a9 point cloud and
+> the SAME code so only the camera differs:
+>
+> ```
+> TIER changed:                    1 of 560 objects  (ARCH_Ground_ServiceRoad BULK -> MID)
+> peak sharp px/m moved > 10 %:   14 of 560 objects
+>     ARCH_Paving_Forecourt   476.7 -> 1224.2   +157 %
+>     SURF_AccessRoad         533.8 -> 1089.8   +104 %
+>     SURF_Kerb_T14_in0        72.1 ->     9.0   -87 %
+> ```
+>
+> **TIER ASSIGNMENT IS ROBUST TO THE CAMERA. `px_per_m` IS NOT, AND `px_per_m` IS
+> WHAT AGENTS ACTUALLY BUILD AGAINST.** Sec 3 of the campaign brief makes the
+> detail budget a function of it — "a 0.4 mm chip in the paint is a visible
+> pixel" — so an item built for 477 px/m that is filmed at 1224 px/m is built to
+> a quarter of the resolution it needs. The tier count surviving at 1 of 560 is
+> reassuring and slightly misleading. **Re-stamp the detail budgets for those 14
+> before anyone authors against them.**
+
 **Verdict: the tiering is usable, and re-deriving it on `assembly8` is a
 recommended cheap first action, not a blocker.** It is one `screen_presence.py`
 sweep over an already-dumped point cloud. Do it before dispatching, so no wave-2
@@ -611,6 +633,16 @@ designates five items as **MUST-REJECT** — known-bad artefacts the gate is
 required to catch. It caught three (`armco_w_beam`, `marshal_post_deck`,
 `spectator_seated`) and **passed two**: `crew_fireproof_overall` and
 `terrain_ground`, both marked `*** PASSED ***` in the table's own margin.
+
+> **CORRECTED 2026-08-04 (R2-633). THIS 2-OF-5 IS STALE AND IS NOW 1 OF 5.**
+> `TABLE.txt` is dated **Jul 30 02:14**. The per-item `gate.json` files are
+> **Aug 3 13:50-14:39**, written by a NEWER `tools/item_gate.py`, and in between
+> the gate was fixed: `crew_fireproof_overall` moved from false-accept to
+> correctly REJECTED. Measured on the authoritative artefacts, the gate now
+> false-accepts **1 of 5** — `terrain_ground` alone. `TABLE.txt` is a snapshot of
+> a superseded gate and must not be quoted as a live measurement. The paragraph
+> below is kept because its ARGUMENT survives the correction: 1 of 5 is still not
+> a last word, so the macro peep tier stays.
 
 **A measured 2-of-5 false-accept rate on the gate's own known-bad set.** At 113
 items that is an expected ~40 % of the bad ones surviving. *The gate is
@@ -1028,7 +1060,7 @@ reproducible from a command in this document.
 | 50 items droppable outright | **MEASURED**, and the measurement is a proven upper bound | — |
 | build 89 s · gate wall 155 s · GPU 7.2 s/frame · **0.58 GPU-h for all of wave 1** | **MEASURED** — `work/r2038/queue*.log`, `_work/sweep2.log`, `_results/*/gate.json`, `broker.db` | — |
 | 3–5 gate runs per item | **MEASURED**, two independent counts | — |
-| 25 % first-pass yield; gate false-accepts **2 of 5** known-bads | **MEASURED**, `render/gate_witness/_work/TABLE.txt` | — |
+| 25 % first-pass yield; gate false-accepts **1 of 5** known-bads (was quoted 2 of 5 from the stale `TABLE.txt`; see R2-633) | **MEASURED**, per-item `render/items/*/gate.json`, Aug 3 | — |
 | peep agent 27.1 min (5.5× the planning assumption) | **MEASURED** completions, **ESTIMATED** per-agent split (concurrency-4 deconvolution) | instrument one tranche |
 | **2.0 h per hero build unit** | **UNMEASURED.** The 2.4 h it derives from is a back-fit; the wave-1 build workflow record does not exist | one instrumented tranche — the single highest-value measurement left |
 | ≈ 500 agent-hours over two rounds | **ESTIMATE, LOWER BOUND**, compounding the row above | same |
