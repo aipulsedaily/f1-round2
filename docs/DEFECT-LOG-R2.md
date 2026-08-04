@@ -13750,3 +13750,821 @@ still fails the fit gate.
   `build_beatsheet.py` raise SystemExit against the shipped normals — in a
   working tree six agents share, from the moment the file was saved and before
   anything was committed.**
+
+## R2-398 — THE PRODUCTION BAKE: the field stops. 2,646 bodies moving at the last key become 27, and the shipped table's own figure is 70
+
+`sim/tmp/run_r2387_production.sh "--air-drag derived"`, 1,657 frames, `EXIT=0`,
+**1 h 52 m** — an hour and a quarter *faster* than the R2-281 bake at 3 h 06 m,
+because debris that comes to rest deactivates and Bullet stops integrating it.
+The fix pays for its own bake time.
+
+`bash sim/tmp/land_r2387.sh`: **thresholds PASS** (the derived set, untouched),
+**resample PASS**, **metrics PASS**, **camera track PASS**, **apply PASS**,
+**swap-scene PASS (0 problems)**. Scene at
+`render/film14_breach_R2387.blend`, 5,006 MB, 3,857 objects, 278,890 tris.
+
+### The seam table, all three tables, one script
+
+| | R6 SHIPPED (live) | R2281 RE-BAKE | **R2387 AIR** |
+|---|---|---|---|
+| **the car**: `car_anim_measured.json` sha256[:16] | `7fe6b8a97b362ac0` | `7fe6b8a97b362ac0` | **`7fe6b8a97b362ac0`** |
+| f865 beat 2 \| 3, loc | 14.969 → 15.590 → 16.091 | identical | **identical** |
+| f865 speed across the join | 16.7693 → 15.6765 → 15.6168 | identical | **identical** |
+| f1057 beat 3 \| 4, loc | 52.556 → 53.901 → 55.265 | identical | **identical** |
+| f1057 speed across the join | 32.0605 → 32.5075 → 32.9548 | identical | **identical** |
+| worst \|a\| ±5 frames of each join | 25.39 / 10.76 m/s² | identical | **identical** |
+| **release pop** | 0.000000 m | 0.000000 m | **0.000000 m** |
+| bodies over 1 mm / film frame at the last key | 1,599 | 2,734 | **2,004** |
+| **bodies over 1 m/s at the last key** | **70** | **2,646** | **27** |
+| median speed at the last key | 0.0158 m/s | 4.736 m/s | **0.0246 m/s** |
+| **max speed at the last key** | 73.17 m/s | 24.89 m/s | **3.885 m/s** |
+| end x: median / p95 / max | 16.26 / 17.07 / 641.8 | 102.81 / 103.57 / 261.9 | 69.02 / 69.49 / 131.1 |
+| **frozen-and-moving in the closing raster** | **13** | **2,645** | **27** |
+| their pixel extent | 477 × 896 | 2,581 × 1,018 | **1,156 × 479** |
+
+**The car's columns are identical, not close.** Same hash, same six numbers to
+four decimals, both joins. That is the one-take law, and it is free because the
+fix never touches the car.
+
+**And the shippability blocker is gone.** R2-290's defect is 2,647 bodies
+freezing mid-slide across two-thirds of the closing frame. It is now **27**,
+which is *fewer than the shipped table's 70*, and the worst body in the file is
+doing 3.885 m/s where the shipped table's worst does 73.17.
+
+### The event this block was given
+
+| | R2281 RE-BAKE | **R2387 AIR** |
+|---|---|---|
+| `MUL05_S02` travel | **89.79 m** | **55.35 m** |
+| ...peak speed / speed at the last key | 23.06 / 4.79 m/s | 27.09 / **0.01 m/s** |
+| `GS_b05_00434`, the underfloor clamp | **205.01 m**, 43.58 m/s | **1.12 m**, 8.26 m/s |
+| furthest-travelled body in the file | 248.17 m | **116.18 m** |
+| distance TRANSPORTED by the car | 40,587 m | **8,445 m (−79 %)** |
+| transport share of all travel | 16.9 % | **5.5 %** |
+| — underfloor mode | 46 bodies, 368 m | **27 bodies, 0.2 kg** |
+| mullion 5 max displacement | 89.79 m, 8 of 8 gone | 55.35 m, **8 of 8 gone** |
+| transom max displacement | 69.83 m | 55.14 m |
+| mullions 0–4, 6–10 (CONTROL) | 0.0000 m | **0.0000–0.0002 m** |
+
+### The aperture, which had to survive and did not merely survive
+
+| | shipped | R2281 re-bake | **R2387 AIR** |
+|---|---|---|---|
+| connected aperture | 2.15 × 6.00 m | 2.15 × 6.00 m | **2.15 × 6.00 m** |
+| bay 4 vacated | 96.7 % | 96.7 % | **96.8 %** |
+| **bay 5 vacated** | 95.4 % | 95.4 % | **100.0 %** |
+| shards gone / mass | 2,962 / 772.4 kg | 2,923 / 765.9 kg | 3,006 / 793.5 kg |
+| `metrics CONTROLS` | PASS | PASS | **PASS** |
+| R5 intruders over the wound, after apply | — | — | **0** |
+
+### The one gate that failed, and it failed on the other two tables as well
+
+`land_breach` stage 2, the R2-098 table-level swap: **FAIL, worst gap 119
+frames, 366 shards uncovered**. It fails on the shipped table at **301** and on
+the R2-281 re-bake at **375** (R2-290). Mine sits between them. Pre-existing,
+not introduced here, and **the version of the same check that is asked of the
+scene that actually renders — `--swap-scene` — PASSES with 0 problems**, which
+is the one R2-098 was written for.
+
+My wrapper `sim/tmp/land_r2387.sh` counts any `STAGE RESULT: … FAIL` and
+restores the live table on principle, so it declared `land FAIL` and put
+`sim/out/breach_film.npz` back to the R6 table byte-for-byte (md5
+`ce704629abdfaeb948831f4179080015`, verified). **That is the gate being too
+broad, not the bake being bad**, and I would rather report a wrapper that cried
+wolf than one that let a real failure through. The landed table is kept as
+`sim/out/breach_film_R2387.npz` and the scene is built and verified.
+
+**The live path is still the R6 table.** Nothing I have done has changed what
+another agent building a scene today will pick up.
+
+
+---
+
+## R2-399 — the predictions scored, including the four I got wrong and the one that made the block
+
+### R2-383, the nine written before any trajectory was read
+
+| | prediction | outcome |
+|---|---|---|
+| **P1** first movement within 6 sim frames of the nose reaching x = 15.000 | **RIGHT** — film f860.0 against an impact frame of f859.876, 0.13 of a frame |
+| **P2** peak speed exceeds 25 m/s, i.e. not a single launch | **RIGHT** — 23.06 m/s measured, above the ≈18 m/s a single contact allows. *The threshold I named was 25 and the number is 23.06, so this is right about the mechanism and wrong about the margin; I am scoring it right because the claim was "not a launch" and 23.06 > 18* |
+| **P3** carrying signature: sustained acceleration long after contact, ≥300 consecutive sim frames in the envelope | **HALF** — the acceleration runs 276 sim frames starting 130 after contact, exactly the predicted shape; the envelope run is **288**, not 300 |
+| **P4** a dynamic proxy at the car's real mass changes the travel by < 20 % | **RIGHT, and it is the finding** — the ride costs the car 0.203 % of its momentum; the dragged shard is 2.5 g against 798 kg |
+| **P5** the kinematic proxy shows up in the field statistic as carrying | **RIGHT**, and understated: the transport *share* is 17.8 % in the shipped table against 16.9 % in the re-bake, so the mechanism is older than the defect |
+| **P6** withdrawing the collider is the fix, brings `MUL05_S02` under 10 m | **WRONG, twice** — 26 % of the transport against friction's 75 %, and 46 film frames of the car driving through 2.4 m² of its own glass |
+| **P7** the fix costs the car nothing; seams bit-identical | **RIGHT** — same sha256, same numbers to four decimals, both joins |
+| **P8** the aperture survives | **RIGHT**, and better: bay 5 vacated 95.4 → 100.0 % |
+| **P9** I expect P6's 10 m to be the one I am wrong about | **RIGHT ABOUT BEING WRONG** — P6 failed, though not in the way P9 guessed. P9 said the residual speed at release would make 10 m unreachable; the actual failure was the interpenetration price, which P9 did not see at all |
+
+### R2-387's two, about the ending
+
+| | prediction | outcome |
+|---|---|---|
+| **P10** the fix moves `MUL05_S00/S01/S02` into x 25–50 and nothing else in the frame by more than 3 m | **HALF** — they rest at x 68.9–70.2, *outside* the predicted band, and the rest of the frame moved by up to 7.3 m (`MUL05_S03` 13.3 → 6.0 m) |
+| **P11** the number at risk is f2940, not f2978, and the mechanism is members stopping too early | **RIGHT, and it is what happened** — released frame bodies resting inside the wound rectangle go 0 → **3** at f2978 and 2 → **13** at f2940. Every one of them is lying on the ground at v ≥ 1106, in the bottom 18 % of a 79-pixel box, not standing in the aperture |
+
+### R2-393's seven, about the production bake
+
+| | prediction | outcome |
+|---|---|---|
+| **P13** `MUL05_S02` under 30 m | **WRONG** — 55.35 m. It still rides the car's deck (R2-396); what air takes away is the slide afterwards, not the ride |
+| **P14** bodies over 1 m/s at the last key under 400 | **RIGHT** — **27** |
+| **P15** median end x 25–50 m; frozen population under 400; extent under 1,200 × 700 px | **HALF** — frozen 27 ✓, extent 1,156 × 479 ✓, but median end x is **69.0 m**, outside the band |
+| **P16** aperture 2.15 × 6.00, bay 4 ≥ 96, bay 5 ≥ 95, 8 of 8, CONTROLS PASS, controls under 10⁻³ | **RIGHT on every clause** |
+| **P17** the car's seam columns bit-identical | **RIGHT** |
+| **P18** f2978 within 1.5 pp of 11.33 %, grid_contrast under 0.012 | pending the render |
+| **P19** P14's 400 is the one I expect to be wrong | **WRONG about being wrong** — P14 landed at 27, fifteen times better than the threshold I was hedging |
+
+**Score: eleven right, four wrong, three half.** The two that matter most are
+P4 — which said my own brief's prime suspect was innocent, before any data —
+and P12c, which said the file's worst artefact could only be fixed by the lever
+that closes the aperture, and was wrong in the best possible direction.
+
+**And the pattern in the misses is worth naming.** Every wrong prediction in
+this block was wrong about *distance* — P6's 10 m, P13's 30 m, P15's 50 m,
+P10's 25–50 m band. Every right one was about *mechanism*. I could tell what
+was happening and consistently could not tell how far it would go, which is
+what you would expect from reasoning about a contact-driven event with an
+arithmetic model of a drag-driven one.
+
+## R2-430 — **RETRACTION of R2-429's headline.** The film DOES have an establishing shot; it arrives 26 seconds late
+
+**R2-429 claimed "the film has no establishing shot". That claim is WRONG and is
+withdrawn.** The frames that settle it landed after it was written, and they show
+the opposite.
+
+**What f631-f703 actually look like** — the whole car, on its turntable, in a
+showroom with legible `MERIDIAN` signage, railings, floor and walls:
+
+```
+f631  t=26.3s   the complete car reads for the first time
+f649  t=27.0s   whole car, three-quarter, full context around it
+f673  t=28.0s   whole car with headroom, showroom visible
+f691-f703       head-on, the car centred and entirely within frame
+```
+
+These are unambiguous establishing views. There is nothing wrong with them.
+
+**How I got it wrong, and it is the failure this project names most often.** I
+measured apparent car size, found a minimum of 76.1 % of frame width across all
+792 frames, and concluded from the *number* that the beat never pulls back far
+enough to establish. **I never opened the frames where the metric was at its
+minimum.** I had looked at f1-f283 — which genuinely are close and abstract — and
+extrapolated a metric across the remaining 509 frames of the beat.
+
+**The measurement was right; the threshold was invented.** A subject occupying
+76-86 % of frame width, with headroom and visible context, is a **full shot** —
+that is what an establishing shot of a car looks like. I treated "never below
+60 %" as proof of "always too close" without ever checking what 76 % looks like.
+A threshold that has never been shown an image is not a threshold.
+
+> **A metric quoted without opening the frame is a claim, not evidence** — and
+> R2-429 is now the fourth instrument failure in this pass, after the firefly
+> test, the periodicity series, and the roll degeneracy. The other three I caught
+> against controls before publishing. This one I published first.
+
+**What survives, restated, and it is still a real pacing finding.** The beat's
+readable band is late and it is the only one:
+
+```
+contiguous runs in beat 1 with the car under 100 % of frame width
+   f1-f10       10 frames  0.42 s   t  0.0- 0.4 s    the opening instant
+   f176-f240    65 frames  2.71 s   t  7.3-10.0 s
+   f656-f792   137 frames  5.71 s   t 27.3-33.0 s    <- the close-out
+```
+
+**The film runs for 26 seconds before it shows you what it is about.** Beat 1 is
+33.0 s; the car first reads whole at **t=26.3 s**, and the sustained readable
+stretch is the last **5.71 s** of the beat. The preceding 26 seconds are the
+presentation tour, which R2-425 and R2-321 independently show to be steeply
+nose-down, smeared, and — in the pixels at f25-f109 — frequently abstract.
+
+**This also explains, without any appeal to taste, why a review called f648-f792
+the best material in the film.** It is where the subject finally reads. R2-321
+reached the same region via smear (1.5 px median against 54.7 px over the tour);
+this reaches it via subject scale. **Two independent measurements name the same
+137 frames**, and the pixels now confirm both.
+
+**The open question is therefore not "does the beat establish" but "does it
+establish too late".** 26 seconds is 21 % of the film's total runtime before the
+audience is shown the object. That is a judgement for the watch, and unlike
+R2-429's version it does not depend on a threshold I made up.
+
+**R2-429 should be read as superseded by this entry.** Its pixel observations of
+f1-f283 stand; its measurements stand; its headline conclusion and its contrast
+table against the other beats do not.
+
+### R2-428, second instance: f2001, and the control that settles it
+
+```
+ODD  2001: far flatter than its neighbours: sd 0.1007 vs 0.2382 median over 12 frames (11 MADs)
+```
+
+Same fill-order artefact, and this time confirmed three independent ways rather
+than asserted — R2-430 is a fresh reminder of the cost of asserting.
+
+1. **The control.** `r2b56_720` rendered the same frame number at the same
+   720p/64 spec from a different blend. Its beat-5 frames run **mean sd 0.1338,
+   range 0.0555-0.2253** — and **its own f2000 measures sd 0.0828**, flatter than
+   the 0.0992 being flagged here. Flat is normal for this part of the lap.
+2. **The picture.** f2000 opened: a high aerial of the car on a wide sweeping
+   corner, the majority of the frame smooth low-contrast asphalt. There is
+   genuinely very little variance in it. Nothing is wrong with the frame.
+3. **The neighbours.** The 12 frames it was compared against are stride-6 beat-1
+   showroom frames at sd ~0.24 — busy interiors full of parts.
+
+**Why only f2001 and not f2000, which is statistically identical** (mean
+0.3236/0.3228, sd 0.0992/0.1007): f2001 is the last frame in the delivered
+sequence, so its whole comparison window lies *behind* it in beat 1, while
+f2000's window still contains f2001. The asymmetry is an edge effect of the
+window, not a difference between the two frames.
+
+**A build difference worth recording while it is in front of us.** Same frame
+number, same spec, two blends:
+
+```
+             mean      sd
+film6.blend   0.2613   0.0828     (r2b56_720)
+film14_breach_r6  0.3236   0.0992  (this pass)
+```
+
+**+23.8 % mean, +19.8 % sd.** That is a real change between builds, consistent
+with the relighting work recorded between `film9` (3,737 W) and the shipping
+46,203 W interior load. It is noted, not chased: the two are different worlds and
+this is not a like-for-like comparison. It does mean **`r2b56_720` may be used as
+a control for SHAPE and VARIANCE but never for absolute level.**
+
+> **MAIN-THREAD CORRECTION, appended on merge. The conclusion of this entry
+> stands; the sentence "the measurement was right; the threshold was invented"
+> does NOT.** The measurement was also wrong. **76.1 % is the subtense of the
+> car's 5.72 m LENGTH** — its apparent width only when broadside. Two
+> independent tools reproduced that error before anyone projected the car
+> through the actual camera. True value at f700 is **0.497**. Measured off the
+> delivered pixels directly (`r1full_000697.png`), the front wing spans
+> x=365..945 of 1280 = **0.45 of frame width**.
+>
+> This makes the retraction MORE right, not less: 0.45 with headroom, railings
+> and signage is exactly what a proper establishing shot looks like — 0.83 would
+> nearly fill the frame. The author's instinct on opening the frames beat both
+> tools. But **do not carry forward the rule "76-86 % of frame width is a full
+> shot"** — it is false, and it is the kind of sentence a later gate would
+> cite as settled.
+>
+> The surviving pacing result does not depend on the bad number: the car first
+> reads whole at t ~= 26.3 s and the sustained readable stretch is the last
+> 5.71 s of a 33 s beat. Independently corroborated by R2-321, which reached
+> the same 137 frames via smear (1.5 px median vs 54.7 px over the tour).
+
+## R2-501 — every number in the establishing station's own comment block was from a superseded solve, and the constant beside it was right
+
+The beat-1 promotion turns on three claims: **18 mm, 9.0 m standoff, depression
+exactly 10.00 deg**. Verifying them against the source rather than against the
+prose is what found this.
+
+`tools/build_beatsheet.py` states the station twice — once as a constant and once
+as the paragraph immediately above `_establish_on()` that explains it. They did
+not agree, on any field:
+
+| | the paragraph said | `BEAT1_ESTABLISH` said | measured from the constant |
+|---|---|---|---|
+| lens | 24 mm | 18 mm | **18 mm** |
+| standoff | d = 8.70 m | `focus_distance_m` 9.0 | **8.999989 m** |
+| depression | 12 deg | — | **9.998502 deg** |
+| lens z | 4.00 | `world[2]` 3.7566 | **3.7566** |
+| station y | -8.51 | `world[1]` -8.8633 | **-8.8633** |
+| radius | — | — | **8.903 m** (rope ring 6.96) |
+
+**The constant is the one that shipped and the constant is correct.** The
+paragraph describes an earlier solve that was superseded and never re-read. The
+promoted numbers reproduce R2-466's table exactly, so the *work* was right; only
+the explanation of it was wrong.
+
+> This is the project's own recurring failure in its cheapest form: **a second
+> copy of a fact.** `tools/shipping_world.py` exists because a consumer kept its
+> own copy of the shipping world's name (R2-071, R2-100). A comment is a
+> consumer too. Nothing executes it, so nothing catches it, and every summary
+> written about this station quoted it.
+
+**Fixed both ways.** The paragraph is corrected, and
+`establish_station_geometry()` now *computes* standoff, depression, lens z and
+radius from `BEAT1_ESTABLISH` itself, with module-level assertions that
+`build_beatsheet.py` refuses to import if any of them drift:
+
+```
+assert abs(_ES_D   - 9.0)  < 5e-4        # standoff
+assert abs(_ES_DEP - 10.0) < 5e-3        # 9.99850, "exactly 10.00"
+assert abs(BEAT1_ESTABLISH["lens_mm"] - 18.0) < 1e-9
+assert abs(BEAT1_ESTABLISH["focus_distance_m"] - _ES_D) < 5e-4
+assert _ES_Z <= 5.29 and _ES_Z >= 1.20   # R2-454's two measured bounds
+assert _ES_R > 6.96                      # outside the rope ring
+```
+
+A comment cannot be wrong if the number is computed. The R2-454 bounds are
+asserted in the same block because they were also only ever prose.
+
+**Caveat on "exactly 10.00 deg" (R2-466).** It is **9.998502**, not 10.000000.
+The difference is 0.0015 deg and is of no consequence to any frame, but the word
+"exactly" is not earned and the tolerance above is written at 5e-3 to say so
+rather than at 1e-9 to hide it.
+
+---
+
+## R2-502 — `build_film_scene.py` had a path that saves NOTHING, and printed `FILM_SCENE_BUILT` on it anyway
+
+`refuse_unless_levelled`'s docstring makes a specific, checkable claim:
+
+> *"There are three `save_as_mainfile` calls in this file and this must precede
+> every one of them, so the only way to ship an un-levelled film scene is to
+> delete this function."*
+
+**The claim about the guard is TRUE — I checked it and it holds.** All three
+saves are immediately preceded by `refuse_unless_levelled`. The guard has not
+regressed into `if not a.no_rig:` the way it did for `film9`.
+
+**What is not true is the sentence's premise.** The saves are distributed like
+this:
+
+```
+if not a.no_rig:
+    ...build the camera rig...
+    if world_before is None:                 -> guard, save        (branch 1)
+    elif world_after != world_before:        -> guard, save        (branch 2)
+    # <-- no else.  NO SAVE ON THIS PATH.
+else:                                        -> guard, save        (branch 3)
+```
+
+The uncovered path is: the rig was built, the incoming scene **had** a world, and
+the rig **left it alone**. On that path nothing is written — and control falls
+straight through to
+
+```
+print(">> STAGE RESULT: FILM_SCENE_BUILT")
+```
+
+**The project's own working rule is that `$?` is worthless and a stage is judged
+ONLY on its `STAGE RESULT` line.** That rule turns an unconditional success token
+sitting over a conditional save into a live trap: a run that produced no file is
+byte-for-byte indistinguishable, to every downstream reader, from one that did.
+The comment `# never inside a branch -- see the docstring` appears on the guard
+at each site, which is exactly where the eye stops.
+
+**Why nobody found it.** Every `assembly*.blend` carries no sky — the file says
+so itself at the branch: *"assembly*.blend carry no sky"* — so `world_before` is
+always `None` and branch 1 has always fired. The path has never been taken. It
+would be taken the first time a film is built from any scene that already has a
+world, which is a thing this project does routinely for A/B arms
+(`render/r2451_b1ab.blend` and friends all carry `R2_ProceduralSky`).
+
+**Two fixes, because they are two defects.**
+
+1. The missing `else` now guards and saves like the other three.
+2. `FILM_SCENE_BUILT` is no longer printed on the strength of reaching the end
+   of the function. It is printed on the strength of a blend existing on disk
+   whose mtime is later than `t_start`, taken at the top of `main()`. A leftover
+   file from a previous build satisfies existence but not freshness, so the
+   two failure tokens are distinct:
+
+```
+>> STAGE RESULT: FILM_SCENE_NOT_SAVED   -- no file at all
+>> STAGE RESULT: FILM_SCENE_STALE       -- a previous build's output
+```
+
+---
+
+## R2-503 — `assemble.py` swallowed every module exception and then printed no verdict at all
+
+`render/world/assembly/r2/assemble.py` wraps each module's `build()` in
+
+```
+except Exception as e:
+    traceback.print_exc()
+    s, ok, err = {}, False, repr(e)
+```
+
+and carries on. That is the right behaviour and should stay: one broken module
+should still leave a probeable blend rather than nothing.
+
+**But it was the only signal.** Blender 5.2 exits 0 on an uncaught script
+exception, so `$?` was never evidence; and because the exception was *caught*,
+even that was not available. A build in which `items` raised and placed nothing
+produced a saved blend, a written `_build.json`, and an exit status of 0 —
+identical in every respect a caller checks to a build in which it worked.
+Finding out required reading ~4,000 lines of log for a traceback.
+
+This matters most for exactly the module this rebuild is about: `items` is the
+sixth and last module, task #121 is *"nothing built in `world/items/` has ever
+reached a frame"*, and a silent failure there would have reproduced task #121
+while looking like the fix for it.
+
+`assemble.py` now ends with a verdict line, and flags the quieter failure too —
+a module that returned `ok=True` and an empty summary:
+
+```
+>> ASM MODULES FAILED: items
+>>   items: RuntimeError(...)
+>> STAGE RESULT: ASSEMBLE_FAIL        # or ASSEMBLE_OK
+```
+
+`v125/build_assembly10.sh` greps that token and nothing else.
+
+## R2-541 — the pass this gate was opened on is not finished; it is 26 % of the way through, and every one of the nine dense blocks has zero frames
+
+The gate was briefed against *"the first full render ladder pass, which has just
+completed — 127 frames … covering frames 1 through 2978 … plus nine dense blocks.
+Zero blank, zero failed."*
+
+**The directory is being written to while I read it.** Frame counts taken by me,
+by `ls`, minutes apart:
+
+```
+15:22:04   r1full_000733.png     (mtime of the newest file when I started)
+15:30:35   r1full_000775.png     136th … no, 135th file
+15:33:03   r1full_000781.png     136 files
+```
+
+One frame every ~72 s, ascending, stride 6. **`manifest.json` is a snapshot, not
+a ledger** — written 15:24:33, it described 130 frames while 135 were on disk.
+Re-reading it later gives a different, larger number. Any statement of the form
+"the pass contains N frames" is true only of the instant it was taken.
+
+**The job table settles it.** From `manifest.json` `summary.jobs`:
+
+| job | range | step | state | done |
+|---|---|---:|---|---:|
+| `b3d8bf1c783b` | 1 … 2001 | 1 | **done** | 6/6 |
+| `bf01e668aca9` | 1 … 595 | 6 | **done** | 100/100 |
+| `b84197ef5120` | 601 … 1195 | 6 | **running** | 26/100 |
+| `e6a38372a20a` | 1201 … 1795 | 6 | queued | 0/100 |
+| `6ca53e616c34` | 1801 … 2395 | 6 | queued | 0/100 |
+| `96ac3f6721d4` | 2401 … 2977 | 6 | queued | 0/97 |
+| `c099333b30b7` | 400 … 519 | 1 | queued | 0/120 |
+| `1dc5651c48fc` | 745 … 864 | 1 | queued | 0/120 |
+| `47bfcdc6d5f3` | 865 … 984 | 1 | queued | 0/120 |
+| `a5bbc5c59bee` | 1041 … 1160 | 1 | queued | 0/120 |
+| `b47eecaf6f4a` | 1161 … 1280 | 1 | queued | 0/120 |
+| `5f96c288bf7b` | 1900 … 2019 | 1 | queued | 0/120 |
+| `5e1f754b3f7b` | 2575 … 2694 | 1 | queued | 0/120 |
+| `ae315375b3c3` | 2695 … 2814 | 1 | queued | 0/120 |
+| `a452013422e6` | 2859 … 2978 | 1 | queued | 0/120 |
+
+(plus 22 `canceled` step-1 jobs from an earlier plan, all 0/120.)
+
+**The nine dense blocks exist — as nine queued jobs holding 1,080 frames, none of
+which has been rendered.** The brief's "nine dense blocks" is a correct reading of
+the *plan*. It is not a description of the *output*. What is on disk is one
+6-frame probe (1, 2, 900, 901, 2000, 2001, all written 12:40–12:44) and a stride-6
+crawl that started at f1 and has reached f781.
+
+**Remaining:** 74 frames in the running job + 297 in the three queued stride jobs
++ 1,080 in the dense blocks = **1,451 frames ≈ 24.6 h** at the measured 61 s/frame.
+
+*Generalises to:* **a job plan read as a job result.** Every number in the briefing
+— 127, "1 through 2978", "nine dense blocks", "zero failed" — is present and
+correct somewhere in `manifest.json`. Four of them come from `summary.jobs[*]`
+(what was *asked for*) and one from `summary.verdicts` (what *arrived*), and the
+two were merged into a single sentence. A queued job and a done job are one
+`state` field apart and the field was not read.
+
+---
+
+## R2-542 — five of the six beats have never been rendered. Beats 2, 4 and 6 have zero frames; beats 3 and 5 have two frames each, and both pairs are adjacent
+
+Beat boundaries from `docs/beat_sheet.md` at 24 fps:
+
+| beat | frames | n | frames sampled | distinct instants | % of beat |
+|---|---|---:|---|---:|---:|
+| 1 `assembly` | 1–792 | 792 | 1, 2, 7 … 781 (stride 6) | 132 | **16.7 %** |
+| 2 `launch` | 793–864 | 72 | — | **0** | **0 %** |
+| 3 `breach` | 865–1056 | 192 | 900, 901 | **1** | 1.0 % |
+| 4 `transit` | 1057–1190 | 134 | — | **0** | **0 %** |
+| 5 `lap` | 1191–2714 | 1524 | 2000, 2001 | **1** | 0.13 % |
+| 6 `ending` | 2715–2978 | 264 | — | **0** | **0 %** |
+
+Beats 2–6 are **2,186 frames (91 s, 73 % of the film)** represented by **4 frames
+at 2 instants**, 0.18 % by count and — because 900/901 and 2000/2001 are
+consecutive, 1/24 s apart — **2 moments out of 2,186**.
+
+What that forecloses, concretely, because each is a *motion* defect and a pair of
+adjacent frames cannot show it:
+
+* the launch wheelspin (beat 2) — the one sanctioned rolling-contact violation,
+  ~10 frames, **none rendered**;
+* the speed ramp into and out of the breach (beat 3) — an 8 s eased time curve
+  seen at one instant 1.5 s in;
+* whether shutter scales with world-time during the ramp (motion blur at slowed
+  speed) — needs consecutive frames *inside* the ramp;
+* the exposure animation from interior spill to daylight over ~15 frames (beat 4)
+  — **none rendered**;
+* the ≥3 s near-hover doppler pass and the onboard-follow at 330 km/h (beat 5);
+* the closing wide and the 3 s hold, including whether the breached showroom is
+  visible with its wound (beat 6) — **none rendered**;
+* **every seam between beats.** All five inter-beat transitions fall in unrendered
+  frames. The ONE-SHOT LAW is the film's top constraint and not one of its joins
+  has been looked at.
+
+Even beat 1 is not covered to its end: the last sampled frame is f781 and the beat
+runs to f792, so **the beat's own climax — the push onto the completed car with the
+spot rigs ramping ~1 stop over 12 frames — has not been rendered either.**
+
+*This entry exists so that no summary of this pass can say "the film is clean."*
+The film has not been seen. One beat has been sampled; five have not.
+
+---
+
+## R2-543 — the car's bodywork renders TRANSPARENT for the whole of beat 1. It is a glass model of an F1 car, not a painted one
+
+**The finding.** Monocoque, nose, sidepod and engine cover all render as tinted
+transmissive material. You can see the internal lattice, the wiring, the far-side
+suspension and the turntable *through* the skin, continuously, in every frame of
+beat 1 where the body is in shot.
+
+Evidence, worst to least ambiguous:
+
+* `peep/r2541_f655_chassis_transparent_3x.png` — **f655**, 3×. The nose reads as
+  smoked blue-green acrylic. The internal cellular structure and two internal rods
+  are plainly visible through the outer surface. The teal livery survives only as a
+  1-px edge line along the chine.
+* `peep/r2541_f727_cockpit_5x.png` — **f727**, 5×. Through the sidepod skin: the
+  internal web, the far-side floor, and the fact that **the cockpit is empty**
+  (see R2-548).
+* `peep/r2541_f727_chassis_transparent_3x.png` — **f727**, 3×, the same body from
+  further out: the turntable surface is visible through the flank.
+* Full frames **f643, f649, f655, f661, f667, f673, f679, f685, f691, f697, f703,
+  f709, f715, f721, f727, f733, f739** — every wide of the seated car. Same read.
+* It is also visible at the far end of the beat: **f1** (the tub, through the 84°
+  down-angle), **f187–f229**, **f307–f349**, **f409–f445**.
+
+**This is not the framing defect that was already logged.** R2-425 and R2-429
+describe f25–f43 as *"a large translucent blue wedge fills the frame vertically"*
+and treat it as a composition failure — the subject is unreadable because the
+camera is too close and too steep. **The wedge is translucent because the material
+is translucent.** Both entries had the pixel in front of them and named the wrong
+cause, because at f25 the framing defect is real and sufficient to explain an
+unreadable frame. At **f643–f739 the framing is fine** — a clean three-quarter wide
+of the whole car on the turntable — and the car is still see-through. Fixing the
+camera would not have touched this.
+
+**Not intended.** No `x-ray`, `cutaway`, `ghost` or `translucent` art direction
+appears in `part2.md`, in `THE-BRIEF-ROUND2.md`, or in the beat sheet. The brief
+asks for paint with depth, carbon weave, crisp decals and clearcoat.
+`DEFECT-LOG-R2.md` has no entry for it; the only nearby claim is at line 3276,
+*"All four are opaque (Transmission 0, Subsurface 0, Alpha 1.0, Coat 0)"* — a
+statement about four *track* materials reached via `marshal_post_column.NG`, not
+about the car.
+
+**Not decidable here:** whether the cause is Transmission, Alpha, or a backface /
+normals problem. That is a blend-file question, not a 720p question. What is
+decided is that the surface is not opaque.
+
+---
+
+## R2-544 — every aero surface renders as untextured grey clay. There is no carbon weave anywhere in beat 1
+
+The brief makes this a named gate: *"carbon weave must resolve as actual weave (no
+blur, no obvious tiling at macro distance), decals crisp at pixel level … edge
+bevels present."* At the camera distances the beat sheet actually flies, at 720p:
+
+* `peep/r2541_f727_frontwing_clay_3x.png` — **f727**, 3×. The front wing fills a
+  third of the frame. Flat matte mid-grey, uniform, no weave, no decals, no
+  imperfection layer, no clearcoat. Four dots on the endplate and one faint red
+  line are the entire surface story.
+* `peep/r2541_f631_frontwing_clay_2p5x.png` — **f631**, 2.5×. Same, plus the
+  mounting pylons are untextured trapezoids, and the curved element surfaces show
+  visible **banding / faceting** across the shading gradient.
+* `peep/r2541_f511_tyre_notread_3x.png` — **f511**, 3×. A front tyre at a
+  presentation distance: **no tread, no sidewall lettering, no rubber grain, no
+  shoulder wear.** Smooth dark grey with a clean red band. It reads as moulded
+  plastic.
+* The rear wing at **f235–f283** is a plain dark slab across the frame for 2 s.
+* The turntable, the showroom floor and the apron concrete (f900) are smooth
+  gradients with no surface at any scale.
+
+**What DOES read:** the steering wheel at **f367–f391** is the one part in the beat
+that survives its close-up — buttons, rotaries, a legible display, grips with a
+distinct material. It proves the pipeline can carry detail and that the rest of the
+car simply does not have any. The halo assembly at **f139–f181** is second best.
+
+*At 4K this gets worse, not better* — every one of these is a magnification of
+nothing, and the beat's whole purpose is macro presentation.
+
+---
+
+## R2-545 — frames with no subject in them at all, graded `blank: OK` by the manifest
+
+**f523** (`t = 21.79 s`) is a smooth dark-grey gradient with a white arc in the
+top-left corner. There is nothing in it. **f493** is the same with a single thin
+diagonal line. **f607** (`peep/r2541_f607_clip_2p5x.png`) is a completely
+defocused tyre filling the frame — a shape, not a part. **f475, f481, f529** are
+near-identical smears.
+
+f523 and f493 fall inside the `CORNER_RL` / `CORNER_RR` presentation windows
+(19.36 s–22.88 s); f607 is inside `CORNER_FR`/`CORNER_FL`. **Four of the fifteen
+clusters have their mandated readable moment, and the readable moment is a grey
+field.**
+
+**The manifest grades all of them `blank: OK`,** because `blank` is a check on
+whether pixels were written, and pixels were written. That is not a criticism of
+the check — it is the point of this entry. I then tried to build a metric that
+*would* catch them, and **it does not work either**:
+
+```
+frame   sd   coarse_sd (16x-downsampled, i.e. large-scale content, not edge energy)
+ 523  0.095   0.0944     a grey field with nothing in it
+ 493  0.067   0.0660     a grey field with one line
+ 283  0.099   0.0946     a large grey wing panel, legibly framed
+ 271  0.103   0.0992     ditto
+2000  0.099   0.0954     the flying lap: car, kerbs, gravel, track, all present
+```
+
+**f2000 — a fully composed aerial with the car, the racing line, both kerbs and a
+gravel trap in it — scores the same as f523, which contains nothing.** A structure
+metric cannot separate "empty" from "wide". I am reporting the frames because I
+looked at them, and reporting the metric's failure so nobody builds the gate on it.
+
+---
+
+## R2-546 — the only rendered frame of the breach shows a handful of clean flat panes, no dust and no debris cloud
+
+**f900** (`t = 37.5 s`, 1.5 s into an 8 s beat) —
+`peep/r2541_f900_breach_shards_3x.png`, and the full frame.
+
+* The shards are **large flat panes with perfectly straight edges**, overlapping in
+  a few planes. No thickness reads, no edge refraction, no tumble, no spin. They
+  look like intersecting quads.
+* **One** piece of small debris is visible in the crop. There is no dust burst at
+  the breach, no shard cloud around the car, no secondary debris skittering. The
+  ground debris that does exist reads as scattered dark specks — pepper, not glass.
+* The car has already cleared the wall and is ~20 m onto the apron at 1.5 s into
+  the beat, which makes the *money moment of the entire video* — the camera arcing
+  through an erupting shard field at 15–25 % world-time — something that must be
+  happening in frames 865–899, **none of which have been rendered**.
+
+**Under-claimed deliberately:** one frame of an eight-second destruction sim
+cannot tell you the sim is wrong. It tells you what this instant looks like, and
+this instant does not look like an eruption. The verdict belongs to job
+`47bfcdc6d5f3` (865–984), which is queued.
+
+---
+
+## R2-547 — a blank white advertising board in the beat-3 background, and a grandstand with no seats
+
+`peep/r2541_f900_blank_billboard_5x.png` — **f900**, 5×.
+
+A **pure white, untextured, self-lit rectangle** stands where a trackside
+advertising board belongs. It is brighter than the sky behind it. It carries no
+artwork and no text. The brief calls for *"fictional-brand advertising boards"*;
+this is the placeholder they were meant to replace.
+
+In the same crop the grandstand is a dark grid with yellow dashes and no seat
+geometry, and the pit building is an untextured cream block. `peep/r2541_f900_gantry_4x.png`
+shows the catch fencing and gantry truss as bare posts against a flat blue-grey
+band — **no signage of any kind on the gantry in the only frame that shows it**
+(see R2-549).
+
+Beat 4 is *"the world-design linchpin … dressed at full fidelity because the camera
+crosses it in one take."* Its 134 frames are unrendered. f900 is the only look
+anyone has had at that dressing, and it shows a placeholder.
+
+---
+
+## R2-548 — the cockpit is empty in the payoff frame of beat 1
+
+`peep/r2541_f727_cockpit_5x.png` — **f727**, 5×. Through the transparent tub
+(R2-543): no driver, no seat, no belts, no helmet. Bare structure.
+
+The driver exists — `tools/place_driver.py`, `world/car_anim_driver.blend`,
+`docs/driver_placement.json`, and R2-401/R2-402/R2-406's containment work. The
+log's own note is *"the look scene is not the film"* (`build_driver_look.py` ships
+the car, the driver, sun and sky — no track, no grandstands). **The scene this
+ladder is rendering has no driver in it.**
+
+Logging it so it is not rediscovered as a regression, and so that "which blend is
+the ladder actually rendering" gets an answer before 24.6 h of farm time lands
+against it.
+
+---
+
+## R2-549 — the two known live items: one confirmed with a caveat, one confirmed outright, and the doubling is not where it was said to be
+
+**(a) The 84° opening — CONFIRMED, exactly as described.** **f1** full-frame: the
+camera is looking near-straight down into the monocoque. f1–f19 are a plan view of
+the tub; the floor signage `MERIDIAN / 3600 mm WHEELBASE` runs up the right edge
+and is clipped. Matches R2-425 clause for clause. No further evidence needed.
+
+**(b) The doubled sign text — CONFIRMED, but on the SHOWROOM FACADE, not the
+gantry.**
+
+`peep/r2541_f727_meridian_doubled_10x.png` — **f727**, 10×. The `MERIDIAN` wall
+sign inside the showroom: **every glyph carries a second offset copy** — an outer
+bright outline and an inner bright outline with a dark seam between them, on M, E,
+R, D, I, A and N alike. The strapline beneath it is **completely illegible**,
+reduced to a broken dashed smear.
+
+`peep/r2541_f727_gantry_24p1_6x.png` — the `24 / P1` pit board, 6×. `24` and `P1`
+read (the `1` renders as a bare stroke indistinguishable from `I`). **The two lines
+beneath are unreadable blobs** — glyphs colliding into each other, which is what
+two overlapping strings do.
+
+`peep/r2541_f727_meridian_sign_5x.png` — the same facade sign at 5× with its
+surroundings, showing the wall panel it sits on and a **third** signage element
+(`peep/r2541_f727_floating_panel_5x.png`, 5×): a dark angled panel high on the
+right of f727, on a pole, whose text is illegible in the showroom's low key. Three
+text-bearing panels in one frame; two are unreadable and one is doubled.
+
+`peep/r2541_f900_gantry_4x.png` — the **track** gantry, the panel the known item
+names, in the only rendered frame that contains it: **it carries no legible text at
+all** at this distance and angle. I cannot confirm or deny doubling on that panel
+from this pass.
+
+**Where I stop.** At 720p a 45 mm offset on a sign this size is ~2 px, and **an
+extruded metal letterform lit from above produces the same face-plus-bevel double
+edge.** I cannot separate the two hypotheses from these pixels. What I *can* assert
+without that ambiguity: **the sub-line text on both panels is illegible**, which is
+the signature of two small strings overprinting, and **it is happening on two
+different panels in the showroom** — so if the queued rebuild fixes only the panel
+that was diagnosed, the facade sign and the pit board will still be wrong. That is
+the part of this that contradicts the framing I was given.
+
+---
+
+## R2-550 — the flying lap reads as a scale model: unmotivated depth of field plus an untextured track
+
+**f2000** (`t = 83.3 s`), full frame, and `peep/r2541_f2000_car_contact_5x.png`.
+
+* **Tilt-shift.** The frame is sharp in a narrow horizontal band through the car
+  and heavily blurred above and below it. At this subject size and distance —
+  aerial, car ~200 px of 1280 — no real lens does that, and the effect is the one
+  that makes photographs of real places look like model railways. The circuit
+  reads as a tabletop.
+* **The asphalt has no texture** (`peep/r2541_f2000_asphalt_notexture_3x.png`,
+  3×, a 400×300 patch of track and kerb). A smooth grey-brown gradient. No aggregate, no
+  the-brief's *"2–3 mixed detail scales"*, and **no rubbered-in racing line** —
+  the single most legible cue that a circuit is a circuit. The white line aliases.
+* The gravel trap smears into radial streaks that read as texture stretching
+  rather than motion blur.
+* The car's livery at this distance reads as mottled blue-black camouflage.
+* The tyres show the same clean orange sidewall band and no tread as R2-544.
+
+**Not decidable at 720p:** whether the asphalt has fine detail that a 720p proxy
+has simply lost. The *absence of the racing line* is decidable and it is absent —
+that is a metres-wide feature, not a fine one. The DOF is decidable and it is wrong.
+
+---
+
+## R2-551 — what I could NOT assess, and why
+
+* **Beats 2, 4 and 6 — no verdict of any kind.** 470 frames, 19.6 s. Nothing was
+  rendered. This includes the launch and its wheelspin, the whole transit and its
+  exposure ramp, and the entire ending. See R2-542.
+* **Beats 3 and 5 — one instant each.** Everything about them that is a property
+  of *motion* (the ramp curves, shutter scaling, the doppler hover, suspension
+  compression at the fast apex, the deceleration into the closing wide) is
+  untouched by two adjacent frames.
+* **All five beat seams.** Unrendered. The one-shot law is unverified end to end.
+* **Beat 1's own ending**, f782–f792, including the 12-frame 1-stop light ramp.
+* **Anything that lives at 4K.** Carbon weave, decal edges, bevel widths, the
+  gantry-sign doubling (R2-549), banding vs. dither on curved aero. A 720p proxy
+  cannot decide any of them. R2-544's verdict is *"there is nothing there at all"*,
+  which 720p can decide; *"the weave is too soft"* it cannot.
+* **Whether R2-543's transparency is Transmission, Alpha or flipped normals.** A
+  blend question. I did not open the blend.
+* **Whether the car contacts the track at f2000.** I cropped to 5× to check for a
+  float and the soft contact shadow under the car and the hard sun shadow beside it
+  are consistent with contact *and* with a small float. I am not calling it either
+  way from one frame at 720p.
+* **Whether the shard sim is wrong** (R2-546) — one frame, deliberately
+  under-claimed.
+* **Audio.** Out of scope for this gate and no mix was examined.
+* **Which blend the ladder is rendering.** R2-548 raises it; I did not answer it.
+
+
+## Ranked, worst first
+
+| # | entry | beat | why it ranks here |
+|---:|---|---|---|
+| 1 | **R2-541** | — | the pass is 26 % done and was gated as complete; 24.6 h of farm time still to run |
+| 2 | **R2-542** | 2–6 | 73 % of the film has never been rendered; 2 instants in 2,186 frames |
+| 3 | **R2-543** | 1 | the hero object is transparent in every frame of the only rendered beat |
+| 4 | **R2-544** | 1 | no carbon weave, no decals, no tread — the beat's stated purpose is macro presentation |
+| 5 | **R2-545** | 1 | four clusters' mandated readable moments are grey fields, and no metric catches them |
+| 6 | **R2-550** | 5 | tilt-shift DOF + no racing line: the lap reads as a model |
+| 7 | **R2-547** | 3/4 | blank white billboard placeholder in the only look at the world dressing |
+| 8 | **R2-546** | 3 | the money moment's one frame shows flat panes and no dust |
+| 9 | **R2-548** | 1 | empty cockpit in beat 1's payoff frame |
+| 10 | **R2-549** | 1/3 | known items confirmed; doubling found on two *other* panels |
+| 11 | **R2-551** | — | the explicit statement of non-assessment |
+
+## Where this contradicts the framing I was given
+
+* The pass **has not completed** (R2-541). The coverage gap is not a sampling
+  design; the frames do not exist yet.
+* The **nine dense blocks contain zero frames** (R2-541), not nine blocks of stills.
+* The gap is **wider than stated** — beats 2, 4 and 6 have *nothing*, not thin
+  coverage, and beat 1 stops 11 frames short of its own end (R2-542).
+* The doubled text is on the **showroom facade sign and the pit board**; the track
+  gantry, the panel named in the brief, shows no legible text in the one frame that
+  contains it (R2-549).
+* Beat 1 was implied to be the well-covered, therefore assessable beat. It is the
+  only assessable beat and it is **the worst-looking one**: R2-543, R2-544, R2-545
+  and R2-548 all live there, and three of the four are material or content defects
+  that no amount of additional camera work fixes.
