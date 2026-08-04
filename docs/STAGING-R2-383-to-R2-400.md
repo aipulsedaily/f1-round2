@@ -297,3 +297,50 @@ went 89.79 m, because that segment is 0.2 % of the budget.
   unchanged and only the amount of loose debris grew. P5 is right about the
   mechanism and understated how old it is.
 
+
+---
+
+## R2-386 — two of Blender 5.2's three ways to switch a collider off do nothing, and the test that found it is four lines of scene
+
+The fix I am going to argue for needs the car proxy to stop colliding partway
+through a bake without its transform changing. Blender exposes three plausible
+switches and the manual distinguishes none of them for a PASSIVE KINEMATIC
+body, so `sim/tmp/test_rb_enabled.py` builds the smallest scene that can answer
+it — an active cube resting on a passive kinematic plate — keys each switch to
+turn off at frame 30, bakes 60 frames, and asks the only question that settles
+it: **does the cube fall through?**
+
+| keyed property | cube z at f5 / f25 / f31 / f59 | fell through |
+|---|---|---|
+| `rigid_body.enabled` | 2.26 / 2.20 / 2.20 / **2.20** | **no** |
+| `rigid_body.kinematic` | 2.26 / 2.20 / 2.20 / **2.20** | **no** |
+| `rigid_body.collision_collections` | 2.26 / 2.20 / 2.19 / **−4.87** | **YES** |
+
+Only the collision collections are re-read per frame. So the withdrawal is a
+move from collision collection 0 — which every other body in this scene is in,
+by `objects_add`'s default — to collection 1, which nothing is in.
+
+**And it costs two F-curves, not thirty-six.** The eighteen proxy parts already
+share one action and one slot (that is the whole reason the car costs 6 curves
+instead of 108), so the two boolean curves go on the same channelbag and every
+part switches on the same frame *by construction* rather than by eighteen
+correct writes.
+
+**It also broke the gate that proves the car's curve is linear, and that is
+worth recording.** `prove_linear()` walked every fcurve in the action and did
+`ref = loc[:, fc.array_index] if fc.data_path == "location" else rot[:, ...]`,
+so the two new CONSTANT boolean curves would have been read as *rotation*
+curves, failed the LINEAR flag test, and refused the bake — with a message
+about the car's curve that would have been true and completely misleading.
+`_act_fcurves()` now filters to `location` / `rotation_euler` and **counts what
+it excluded** into `linearity.non_motion_curves`, so the exclusion is in the
+report rather than in the code's memory.
+
+**A note on the smoke test that failed first.** The first version of the switch
+test had the plate scaled after creation and the rigid body added before the
+depsgraph had seen the scale, so Bullet built a 4 m box where the picture
+showed a 0.2 m one, the cube started 2 m inside it, and all three switches
+"failed" identically — by launching the cube upward at 72 m/s. Three identical
+results is not three measurements; it is one bug. The fix was one
+`view_layer.update()`.
+
