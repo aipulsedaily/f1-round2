@@ -1047,7 +1047,8 @@ def build(args):
         % (n_edge, n_bond, n_pvb, len(_CON_QUEUE)))
 
     # ---- 5. the car ------------------------------------------------------- #
-    parts = [] if args.no_car else BL.car_proxy_parts()
+    parts = [] if args.no_car else BL.car_proxy_parts(
+        getattr(args, "rear_wing", "solid"))
     # Blender 5.x SLOTTED actions: `Action.fcurves` is gone.  An action is
     # layers -> strips -> channelbag(slot) -> fcurves, and an object binds to
     # BOTH the action and a slot.  Sharing one action across the 18 proxy parts
@@ -1214,6 +1215,7 @@ def build(args):
                       for r in _DRAG_LOG[:3]
                       + [x for x in _DRAG_LOG if x[0] == "MUL05_S02"]}),
         car_proxy=dict(
+            rear_wing=getattr(args, "rear_wing", "solid"),
             friction=float(getattr(args, "car_friction", CAR_FRICTION)),
             collide_until_x=float(getattr(args, "car_collide_until", 0.0)),
             withdraw_sim_frame=int(wd_frame),
@@ -1889,6 +1891,16 @@ def parse_args():
                         "(R2-268).  Kept as an option because it is the "
                         "before-half of the experiment.")
     p.add_argument("--t-bond-per-m", type=float, default=THRESH_BOND_PER_M)
+    p.add_argument("--rear-wing", choices=("solid", "aerofoil"),
+                   default="solid",
+                   help="the proxy's rear wing mainplane.  `solid` is what "
+                        "shipped: 0.478 m of chord, 0.280 m thick, a 58.6 %% "
+                        "thickness ratio, boxed in by two correctly-modelled "
+                        "35 mm endplates -- a TRAY, which holds a released "
+                        "mullion for 127 film frames.  `aerofoil` thins the "
+                        "mainplane to 12 %% of its own chord at the top of the "
+                        "same band; span, chord, height and endplates are "
+                        "unchanged and nothing is added.")
     p.add_argument("--air-drag", choices=("off", "derived"), default="derived",
                    help="aerodynamic drag on every ACTIVE body, linearised "
                         "about the car's speed at the glass plane and sized "

@@ -270,8 +270,38 @@ class Car(object):
 #  and the measured contact points, and `verify_proxy()` asserts the proxy's
 #  bounding box against them rather than trusting this comment.
 
-def car_proxy_parts():
-    """[(name, Nx3 local points)] — the convex parts of the car collider."""
+# THE REAR WING IS A BRICK, AND IT IS A TRAY.
+#
+# `wing_r` as first written is 0.478 m of chord, 1.070 m of span and 0.280 m
+# THICK -- a thickness-to-chord ratio of 58.6 %.  No aerofoil is 59 % thick; a
+# rear wing mainplane runs 10-15 %.  The inconsistency is internal and needs no
+# outside data: `rep_l` / `rep_r` beside it are modelled correctly, as 35 mm
+# fins 660 mm tall, so the proxy has two right endplates enclosing a solid
+# block where the car has open air.
+#
+# What that costs is measured, not argued.  A released mullion segment slides
+# aft along the deck, reaches the wing's leading face at car-local x = -2.200,
+# and is then held there for 127 FILM FRAMES -- its velocity relative to the
+# car oscillating between -6 and +3.7 m/s while the authored animation takes
+# its world speed from 14.8 to 27.1 m/s.  The endplates stop it leaving
+# sideways and the block stops it falling through.  It is a tray.
+#
+# `rear_wing="aerofoil"` gives the mainplane a 12 % thickness ratio at the TOP
+# of the band it already occupies, so the assembly's overall height, span,
+# chord and endplates are all unchanged and 0.478 x 0.660 m of air opens up
+# between the endplates -- which is the route a member sliding off the engine
+# cover takes in the real car.  NOTHING IS INVENTED: no part is added, no
+# dimension comes from outside this file, and the only number that changes is
+# a thickness that was never a wing's.
+REAR_WING_TC = 0.12                   # thickness / chord for the mainplane
+
+
+def car_proxy_parts(rear_wing="solid"):
+    """[(name, Nx3 local points)] — the convex parts of the car collider.
+
+    `rear_wing`: "solid" is what shipped; "aerofoil" thins the mainplane to
+    `REAR_WING_TC` of its own chord.  See the note above.
+    """
     hw = CAR_HALF_W
     parts = []
 
@@ -319,7 +349,12 @@ def car_proxy_parts():
     # --- floor
     box("floor", -2.100, 1.500, -0.760, 0.760, 0.008, 0.055)
     # --- rear wing
-    box("wing_r", TAIL_DX, -2.200, -0.535, 0.535, 0.700, 0.980)
+    if rear_wing == "aerofoil":
+        _c = abs(-2.200 - TAIL_DX)                 # 0.478 m of chord
+        box("wing_r", TAIL_DX, -2.200, -0.535, 0.535,
+            0.980 - REAR_WING_TC * _c, 0.980)
+    else:
+        box("wing_r", TAIL_DX, -2.200, -0.535, 0.535, 0.700, 0.980)
     box("rep_l", TAIL_DX, -2.150, 0.500, 0.535, 0.320, 0.980)
     box("rep_r", TAIL_DX, -2.150, -0.535, -0.500, 0.320, 0.980)
     # --- four wheels, as 16-gons of the tyre's outer profile
@@ -339,9 +374,9 @@ def car_proxy_parts():
     return parts
 
 
-def verify_proxy():
+def verify_proxy(rear_wing="solid"):
     """The proxy's envelope against the numbers it claims to be built from."""
-    parts = car_proxy_parts()
+    parts = car_proxy_parts(rear_wing)
     P = np.vstack([p for _n, p in parts])
     lo, hi = P.min(axis=0), P.max(axis=0)
     out = dict(
