@@ -80,14 +80,37 @@ sentinel and then BOX-FILTERING it.
 **#62 harness** — `world/itemkit.py`, `tools/campaign_preflight.py`, a worked reference
 item, and section 4 of the campaign brief rewritten for the eight checks.
 
-### THE SHIPPING WORLD IS `assembly6.blend`, contract 1.2.1
+### THE SHIPPING WORLD IS `assembly9.blend` — SUPERSEDED THREE TIMES, 2026-08-04
 
-**`render/world/assembly/r2/assembly6.blend`** — contract **1.2.1**, 4018.9 MB, 28,781
-objects. **`assembly5.blend` MUST NOT BE RENDERED FROM.** See `SHIPPING.md` in that
-directory; the A/B copy is deliberately renamed
-`verify_world_a5_SUPERSEDED_ab_reference.blend` so nobody picks it up by accident.
-`assembly2.blend` (1.0.1) is a baseline, not a subject. **#91** (the HERO/MID/BULK
-tiering) and `tools/build_and_dump_points.py` still measure it.
+**`SHIPPING.md` is the single declaration and this file is not it.** `build_film_scene.py`
+parses the ship out of `SHIPPING.md` and **refuses an undeclared world** without an explicit
+`--world-override REASON`; `tools/shipping_world.py` is the one parser both callers use. Do
+not add a second copy of this fact anywhere — **R2-071 happened because two films were built
+from the broken world after the fixed one already existed**, and **R2-100** because
+`input_stamp.py` carried its own literal.
+
+| world | what it is |
+|---|---|
+| **`assembly9.blend`** | **THE SHIP.** assembly8 + the pit-exit apron laid — `ARCH_Paving_ApronPlatform`, 128,722 → 140,593 verts. Exactly **1 object of 28,781 moved**, 0 of 132 materials. |
+| `assembly8.blend` | assembly7 + `TER_Ground`'s far horizon (z only, beyond 3600 m). Superseded. |
+| `assembly7.blend` | the socket repair — 9 `DR_*` materials off `Thin Wall` onto `Normal`. Superseded. |
+| `assembly6.blend` | **KEEP. The deliberate control.** Its 27-finding socket-audit **FAIL** is what makes every later world's PASS non-vacuous. |
+| `assembly5` and earlier | baselines. **MUST NOT BE RENDERED FROM.** |
+
+**The film scenes have the same rule.** The ship is **`render/film14.blend`**
+(assembly9, final camera) and **`render/film14_breach.blend`** with the breach applied.
+**`film10.blend` is a deliberate assembly6 control — deleting it as "an old scene" silently
+turns every audit that cites it into a vacuous pass.** `film9.blend` is the un-relit
+historical reference, 3,737 W against 46,203.
+
+**What "verified" means for a film scene**, and all four were read back from the saved blend
+rather than from a build log: interior lamp load **46,203.313 W** with **23** `_sl_base`
+stamps and `scene_mark` **3.628**, `assert_levelled` **PASS**, camera `ONER` clip
+**0.05 / 200000**, and `socket_index_audit --blend` **PASS** against `film10`'s standing
+27-finding FAIL.
+
+**#91's tiering and `docs/screen_presence.json` are still stamped against `assembly6`** and
+are being re-derived. **`tools/build_and_dump_points.py` also still measures it.**
 
 Evidence: `v120/` for the assembly5 battery, `v121/` for this one.
 
