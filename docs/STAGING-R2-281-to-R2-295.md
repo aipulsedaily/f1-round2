@@ -729,3 +729,31 @@ question is how an unrestrained field escapes an infinitely massive bulldozer �
 and it is a question that only became askable once the frame stopped holding
 the glass out of its way. `post_s` is also too short: the field is still doing
 7 m/s at the last key and needs roughly two more seconds to come to rest.
+
+### The attribution, as far as the frames in hand can carry it
+
+The frame-only diagnostic render is still outstanding (R2-292 cost roughly
+three hours of farm availability and four instances). What the matched-96 pair
+can already say, without it:
+
+**The debris field crosses every region. The lattice only collapses where the
+frame left.**
+
+| region | grid_contrast R6 → re-bake | change | frame in this region |
+|---|---|---|---|
+| **WOUND_bridged** | 0.03963 → 0.00908 | **−77 %** | **gone** |
+| CTL_UNTOUCHED_bays012 | 0.04262 → 0.03594 | −16 % | intact, 0.0000 m |
+| NB_left_bay3 | 0.03678 → 0.04311 | +17 % | intact |
+| NB_right_bay6 | 0.06676 → 0.06971 | +4 % | intact |
+| CTL_UNTOUCHED_bays789 | 0.05569 → 0.05467 | −2 % | intact, 0.0000 m |
+
+The wound's collapse is **five times larger than the largest movement in any
+region whose frame did not move**, and two of those regions move *upward*. A
+debris field lying in front of everything cannot selectively erase the lattice
+in the two bays whose members are the ones that left; it adds structure rather
+than removing it. The projected positions agree: `BF_TRN0_b04` and `_b05` have
+left row v 1102 for v 1293–1371 and `BF_MUL05_S02/S03` are off the wound
+entirely, which is exactly the rows `grid_contrast` samples.
+
+**This is an argument, not the control.** The control is the diagnostic, and it
+is listed under "not confirmed".
