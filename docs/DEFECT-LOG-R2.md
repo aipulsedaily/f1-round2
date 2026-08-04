@@ -20180,3 +20180,57 @@ Incidental confirmation from the other side: per-render cost was **flat at
 80.3-83.6 s across all seven renders** at 4K. The renders are cheap and
 uniform; the cost is all in the load. That independently corroborates
 R2-708's finding that resolution is not the dial for this class of job.
+
+## R2-443 — R2-439 ANSWERED. No exposure ramp defect; the flags were fill-order; P4 failed and my bound was wrong
+
+Run against `film16_breach`, f890-f930, **41 of 41 frames contiguous**, f901's
+neighbourhood **21 of 21**, one `spec_hash`, one scene — P6 satisfied. Results
+recorded before consulting the fill-order explanation, as the procedure required.
+
+| | prediction | result |
+|---|---|---|
+| **P1** exposure flat, any change is content | no ~1 stop rise | **PASS** — f901->f916 is **-0.038 stops** |
+| **P2** control: a ~1 stop rise would BE the defect | must not fire | **did not fire** — `INTERIOR_STOPS = 0.0` did reach this blend |
+| **P3** f901 flags with a full neighbourhood? | — | **does NOT flag.** The earlier ODD flags were fill-order artefacts |
+| **P4** 2nd difference of `lum_mean`, no sample > 6 MADs | predicted pass | **FAIL** — 6 samples, \|z\| max 58.19, at f897, 899-903 |
+| **P5** p99/p01 separates exposure from content | — | ratio moves **+70.8 %** -> **content, not exposure** |
+
+**The exposure-ramp hypothesis is CLOSED, and closed properly.** R2-428 raised it,
+R2-437 showed the four clears that "explained" it were all caused by frames
+elsewhere, and R2-438 found there is no ramp to step. Now the direct test on a
+full neighbourhood says f901 is not an outlier at all. **There is no iris move at
+the breach** — which matters, because an exposure ramp across a cut-free breach is
+the thing `film_exposure.py` set `INTERIOR_STOPS = 0.0` specifically to prevent.
+
+### P4 failed, and the bound was mine, not the film's
+
+```
+f898 0.4473  f899 0.4414  f900 0.4469  f901 0.4400  f902 0.4553  f903 0.4489
+f904 0.4466 -> f920 0.4198   monotone, no outliers
+d1   f894-903  ~0.050-0.058      f904 onward  ~0.021-0.025
+```
+
+`d1` **halves in a single frame at f903->f904**, and f904 is exactly where the
+camera crosses the glass plane (`cross_f`, since `f0 = cross_f - 3 = 901`). The
+f901->f902 change localises to the lower-left (0.072 against 0.031 on the right;
+0.077 bottom against 0.042 top) — the breach region.
+
+The frames settle it: f899-901 are dominated by large translucent shards sweeping
+across frame, f902 fewer, f903 nearly clear, f904 clean. **The camera passes
+through the breach and the near-field glass exits.** The mean-luma oscillation is
+each frame catching a different amount of bright specular glass; the `d1` step is
+that field leaving. P5 independently said content, not exposure, before the frames
+were opened.
+
+**So P4's bound was too strict for the beat it was applied to.** A 6-MAD bound on
+the second difference of mean luma is right for smooth camera work over static
+content; **beat 3 contains a violent transient by design.** I set that bound in
+advance, which was the correct discipline, and it was the wrong number — a
+pre-registered prediction that fails and is then explained is weaker evidence than
+one that passes, and it should be recorded as such rather than smoothed over.
+
+**What was NOT observed:** the known slab un-break (483 mm -> 17 mm, the pane
+bulging as a sheet and springing back). Nothing in f899-904 shows a pane deforming
+and returning — what is there is shards transiting. That event, if it is visible at
+all, is earlier, near impact around f865-880, and this window does not cover it.
+**Absence here is not evidence of absence there.**
