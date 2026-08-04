@@ -1135,7 +1135,8 @@
      "kind": "PARTIAL_BUILD",
      "detail": "the blend holds 801 units; the item declares 7800. A gating sample is not the shipping population."
     }
-   ]
+   ],
+   "gate_path_note": "spectator_crowd.py sets ITEM = 'spectator_seated', so this row's gate verdict is read from render/items/spectator_seated/gate.json (ITEM_REJECTED) and NOT from render/items/spectator_crowd/gate.json (ITEM_ACCEPTED), which exists for a directory that is not a manifest id -- census \u00a71.3's off-by-one. The row is HOLD either way on NO_WORLD_FRAME, which is decisive and independent of the gate, but the GATE_NOT_ACCEPTED blocker on this one row is reading the sibling item's report and is flagged rather than silently taken as true."
   },
   {
    "key": "spectator_seated",
@@ -1322,7 +1323,8 @@
      "kind": "GATE_NOT_ACCEPTED",
      "detail": "canonical gate.json result is 'ITEM_REJECTED'"
     }
-   ]
+   ],
+   "nearest_next_note": "the only row whose ONLY blocker is the gate verdict: 56 of 56 declared units, world frame, and nothing in assembly9 it would double-build. If it re-gates ITEM_ACCEPTED it is placeable as it stands."
   },
   {
    "key": "tyre_wall_tyre",
