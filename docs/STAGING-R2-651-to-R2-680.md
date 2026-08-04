@@ -573,7 +573,10 @@ agree with**, not a replacement for it.
 | parapet | 8.42 – 9.52 | **solid concrete — the "parapet" in the report** |
 | mesh screen | 9.52 – 10.50 | see-through in reality, opaque to a raycast |
 
-**Result: 12 frames, f2181–f2192, 0.50 s.** Fully blocked at all three sampled
+**Result: 12 frames, f2181–f2192, 0.50 s.** *(Superseded in detail by the
+exact ray-cast, R2-664: the true window is **f2180–f2193** with **f2180–f2191**
+wholly hidden. This analytic model was one frame out at each end because it
+omits the bridge's own dressing. The mechanism below is unaffected.)* Fully blocked at all three sampled
 car heights on 11 of them. The car is 182–186 m away throughout. f2180 crosses
 the **mesh screen only** — see-through in life, so it should not be counted as
 concrete. **f2195 and f2200 are completely clear**: f2200 is near-field crowding,
@@ -862,6 +865,31 @@ follow `PONT_S` on their own.**
 
 ---
 
+## R2-665 — the farm blocked this measurement twice, for two different reasons, and the second one was mine
+
+Recorded because both are reusable lessons rather than incidents.
+
+1. **`WorkerBusy` burned retry attempts instead of requeueing.** The guard
+   itself is right — deploying over a worker mid-frame would SIGKILL minutes of
+   GPU time — but a refusal spent an attempt, and three attempts expired inside
+   a single 39-second frame while both cards held 14-hour sequence passes. Four
+   jobs died at `3/3` having never run. **Fixed by the farm agent**: it now
+   requeues without spending an attempt, after a 90 s backoff, verified by an
+   exec job completing between two frames of a running pass.
+2. **`StaleBundle`, and that one was self-inflicted.** The bundle was 96 files /
+   38.3 MB drawn from `world/*.py`, `world/items/*` and `telemetry/*.csv` —
+   directories that eight agents are actively editing. The digest is taken at
+   submit and re-checked at dispatch, and the 90 s backoff *widens* that window.
+   **`--include` must name the files a script actually reads, not the
+   directories they live in.**
+
+The lesson worth keeping: **a farm job's bundle is a shared-state dependency,
+and the busier the tree the narrower it has to be.** Meanwhile the entire
+occlusion question turned out to be answerable without the farm at all — once
+from source constants (R2-660) and once from an existing point dump (R2-664).
+
+---
+
 ## R2-666 — two occlusions nobody was looking for, and one of them is on the film's last frame
 
 Both fall out of the same sweep and neither was in anyone's brief.
@@ -887,26 +915,3 @@ film is the same object already measured as standing on the racing line. That is
 not a coincidence to be filed twice: **fixing the L03 intrusion should be
 checked against the closing frame**, and whoever closes that defect should be
 told the closing frame is a witness for it.
-
-## R2-665 — the farm blocked this measurement twice, for two different reasons, and the second one was mine
-
-Recorded because both are reusable lessons rather than incidents.
-
-1. **`WorkerBusy` burned retry attempts instead of requeueing.** The guard
-   itself is right — deploying over a worker mid-frame would SIGKILL minutes of
-   GPU time — but a refusal spent an attempt, and three attempts expired inside
-   a single 39-second frame while both cards held 14-hour sequence passes. Four
-   jobs died at `3/3` having never run. **Fixed by the farm agent**: it now
-   requeues without spending an attempt, after a 90 s backoff, verified by an
-   exec job completing between two frames of a running pass.
-2. **`StaleBundle`, and that one was self-inflicted.** The bundle was 96 files /
-   38.3 MB drawn from `world/*.py`, `world/items/*` and `telemetry/*.csv` —
-   directories that eight agents are actively editing. The digest is taken at
-   submit and re-checked at dispatch, and the 90 s backoff *widens* that window.
-   **`--include` must name the files a script actually reads, not the
-   directories they live in.**
-
-The lesson worth keeping: **a farm job's bundle is a shared-state dependency,
-and the busier the tree the narrower it has to be.** Meanwhile the entire
-occlusion question turned out to be answerable without the farm at all — once
-from source constants (R2-660) and once from an existing point dump (R2-664).
