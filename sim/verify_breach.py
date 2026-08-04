@@ -382,12 +382,52 @@ def check_swap_scene(blend_path, plan):
         blend=blend_path, bays=out, problems=bad, PASS=not bad)
 
 
-def check_sink(L, verts_r, floor_z=0.0):
-    """Lowest vertex of every body at the last frame, against the floor."""
-    lo = L[-1][:, 2] - verts_r
-    return dict(below_floor=int((lo < floor_z - SINK_M).sum()),
-                worst_m=float((floor_z - lo).max()),
-                tol_m=SINK_M)
+def check_sink(L, Q, verts, floor_z=0.0):
+    """Lowest vertex of every body at the last frame, WITH ITS ROTATION.
+
+    R2-196.  The previous revision bounded a body's lowest point as
+    `origin_z - max|local v_z|`.  A shard's LOCAL z axis is the PANE's vertical,
+    so for a shard lying flat on the floor — which is what most of 2,962
+    departed shards are doing by the last key — that axis is HORIZONTAL and the
+    bound charges it half its HEIGHT IN THE WALL of penetration.  It reported
+    **627** bodies under the floor, worst 154.599 m.  Rotating the vertices
+    first gives **70**, worst 154.600 m, and of the 557 it drops, the highest
+    true lowest-vertex is z = +0.1055 m and the LOWEST is z = +0.0001 m: every
+    one of them is above the floor, not near it, and the old figure was the
+    instrument.
+
+    The headline falls 9x, so the axis-aligned number is reported ALONGSIDE it
+    rather than deleted.  A metric that drops to a ninth is a claim that needs
+    its own evidence, and `reclassified_by_rotation` is that evidence: the
+    bodies the two measures disagree about, and how far above the floor they
+    actually are.
+    """
+    P, R = L[-1], qmat(Q[-1])
+    n = len(verts)
+    lo_true = np.empty(n)
+    for i in range(n):
+        V = verts[i][0] if isinstance(verts[i], tuple) else verts[i]
+        lo_true[i] = (V @ R[i].T)[:, 2].min() + P[i, 2]
+    r_axis = np.array([np.abs((v[0] if isinstance(v, tuple) else v)[:, 2]).max()
+                       for v in verts])
+    lo_axis = P[:, 2] - r_axis
+    bad, old = lo_true < floor_z - SINK_M, lo_axis < floor_z - SINK_M
+    spur = old & ~bad
+    return dict(
+        criterion="lowest MESH VERTEX, rotated into world, at the last key",
+        below_floor=int(bad.sum()),
+        worst_m=float((floor_z - lo_true).max()),
+        tol_m=SINK_M,
+        axis_aligned_bound_below_floor=int(old.sum()),
+        reclassified_by_rotation=dict(
+            counted_by_both=int((bad & old).sum()),
+            dropped_by_the_rotation=int(spur.sum()),
+            found_ONLY_by_the_rotation=int((bad & ~old).sum()),
+            dropped_true_lowest_vertex_z_m=(
+                [float(lo_true[spur].min()), float(np.median(lo_true[spur])),
+                 float(lo_true[spur].max())] if spur.any() else None),
+            note="the dropped bodies' TRUE lowest vertex.  If any of these is "
+                 "negative the rotation is not what changed the answer."))
 
 
 def check_overlap(L, Q, meshes, frame_i, k_nearest=6, sample=600, rng=None):
@@ -517,8 +557,7 @@ def run(args):
     import fracture as _FR
     rep["swap"] = check_swap(rel, names, _FR.load(args.shards))
     meshes = load_meshes(args.shards, names, detail=0)
-    r = np.array([np.abs(m[0][:, 2]).max() for m in meshes])
-    rep["sink"] = check_sink(L, r)
+    rep["sink"] = check_sink(L, Q, [m[0] for m in meshes])
     rng = np.random.default_rng(11)
     rep["overlap"] = {}
     for ff in args.overlap_frames:
@@ -574,14 +613,46 @@ def selftest():
     check("+ve control: a 137 deg one-frame flip is caught",
           check_pop(frames, L, Q2)["rot_pops"] >= 2)
 
-    # -- SINK
-    r = np.full(n, 0.05)
-    check("-ve control: nothing is under the floor", check_sink(L, r)["below_floor"] == 0)
-    L3 = L.copy()
-    L3[-1, 3, 2] = -0.30
-    check("+ve control: a shard 300 mm under the floor is caught",
-          check_sink(L3, r)["below_floor"] == 1,
-          "worst %.3f m" % check_sink(L3, r)["worst_m"])
+    # -- SINK.  The bodies are 300 x 100 x 12 mm plates: LONG in local z, which
+    # is what makes the axis-aligned bound wrong once they lie down.
+    plate = np.array([[x, y, z] for x in (-.006, .006) for y in (-.05, .05)
+                      for z in (-.15, .15)], float)
+    V = [plate.copy() for _ in range(n)]
+    L4 = L.copy()
+    L4[-1, :, 2] = 0.16                       # upright, clear of the floor
+    Q4 = np.zeros_like(Q)
+    Q4[:, :, 0] = 1.0                         # identity
+    check("-ve control: nothing is under the floor",
+          check_sink(L4, Q4, V)["below_floor"] == 0)
+    L5 = L4.copy()
+    L5[-1, 3, 2] = -0.30
+    s5 = check_sink(L5, Q4, V)
+    check("+ve control: a plate 300 mm under the floor is caught",
+          s5["below_floor"] == 1, "worst %.3f m" % s5["worst_m"])
+
+    # THE CONTROL THAT DISCRIMINATES THE TWO MEASURES, and the reason this
+    # function was rewritten.  Lay every plate flat with its lowest vertex 6 mm
+    # above the floor.  Laid flat the plate's WORLD z half-extent is its local
+    # y (0.05), not its local z (0.15) — the first revision of this control put
+    # the ORIGIN at 0.006 and buried 44 mm of plate, then blamed the code.
+    # With the origin at 0.056 the true lowest vertex is +0.006 and nothing is
+    # sunk, while the axis-aligned bound still charges 0.15 - 0.056 = 0.094 m.
+    # If this control ever passes with the two numbers EQUAL, the rotation has
+    # stopped being applied and the fix has silently reverted.
+    L6 = L4.copy()
+    L6[-1, :, 2] = 0.056
+    Q6 = Q4.copy()
+    Q6[-1, :, 0] = math.cos(math.pi / 4)      # 90 deg about x: local z -> world y
+    Q6[-1, :, 1] = math.sin(math.pi / 4)
+    s6 = check_sink(L6, Q6, V)
+    check("discrimination: plates lying flat 6 mm up are NOT under the floor",
+          s6["below_floor"] == 0, "%d" % s6["below_floor"])
+    check("discrimination: and the OLD axis bound would have called them all sunk",
+          s6["axis_aligned_bound_below_floor"] == n
+          and s6["reclassified_by_rotation"]["dropped_by_the_rotation"] == n,
+          "old %d of %d, dropped %d"
+          % (s6["axis_aligned_bound_below_floor"], n,
+             s6["reclassified_by_rotation"]["dropped_by_the_rotation"]))
 
     # -- OVERLAP (SAT)
     box = np.array([[x, y, z] for x in (-.1, .1) for y in (-.05, .05)
