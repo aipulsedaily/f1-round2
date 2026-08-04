@@ -548,3 +548,128 @@ worst, and the render — not either projection — is what will settle what it
 actually looks like.
 
 ---
+
+---
+
+## R2-660 — the car is hidden behind Le Pont de la Plongee for 12 frames, and the window is half a second, not the 49-frame pass
+
+Handed over as "at f2190 the car is not in the frame at all — the centre of the
+delivered frame is a concrete parapet", with a suspicion it was the grandstand
+from f2180. **It is neither a grandstand nor the whole pass.**
+
+### Measured analytically, because the bridge is eleven numbers in source
+
+`tools/r2651_pont_sightline.py`. `build_architecture.py` builds
+`ARCH_PontPlongee` in a local frame on the centreline at `PONT_S = 2410.0`, so
+it can be reconstructed exactly as an oriented box and the camera-to-car segment
+intersected against it — no 7.5 GB scene, no rented box, one second, on a
+machine that is swapping. It is a **cheap prediction the full raycast must
+agree with**, not a replacement for it.
+
+| band | z above the road | |
+|---|---|---|
+| girders | 6.80 – 8.15 | solid |
+| deck slab | 8.15 – 8.42 | solid |
+| parapet | 8.42 – 9.52 | **solid concrete — the "parapet" in the report** |
+| mesh screen | 9.52 – 10.50 | see-through in reality, opaque to a raycast |
+
+**Result: 12 frames, f2181–f2192, 0.50 s.** Fully blocked at all three sampled
+car heights on 11 of them. The car is 182–186 m away throughout. f2180 crosses
+the **mesh screen only** — see-through in life, so it should not be counted as
+concrete. **f2195 and f2200 are completely clear**: f2200 is near-field crowding,
+not occlusion, and the two were different problems all along.
+
+### Why it happens, which is the whole of the fix
+
+The sightline sweeps **down and inward** across the bridge plane as the shot
+progresses — it enters over the top and leaves under the soffit:
+
+| frame | crosses at lateral u | height over the road |
+|---|---:|---:|
+| f2178 | −20.70 m | +10.51 m — outside the span, above everything |
+| f2180 | −16.57 m | +9.84 m — just outside, in the mesh only |
+| f2182 | −12.95 m | +9.21 m — **inside the parapet** |
+| f2190 | −4.02 m | +7.11 m — **inside the girders** |
+| f2192 | −3.08 m | +6.67 m — below the soffit, clearing |
+| f2194 | −2.55 m | +6.26 m — under the bridge, clear |
+
+The line descends through **10.51 → 6.26 m** while the solid band occupies
+**6.80 → 9.52 m**. The band sits squarely inside the sweep, so it is crossed.
+
+**This is why raising the bridge is the wrong lever.** To clear vertically the
+band must be wholly above 10.51 m (soffit ≥ 10.0 m — a **+3.2 m** raise, and a
+pedestrian overpass at 10 m of clearance is a different structure) or wholly
+below 6.26 m (soffit ≤ 3.54 m — impossible over a racetrack). Measured:
+
+| soffit over the road | blocked frames |
+|---:|---:|
+| 6.80 (shipped) | 12 |
+| 8.00 | 8 |
+| 9.20 | 3 |
+| 10.00 | **0** |
+
+### The fix: move it 50 m along the track, and it is robust
+
+| station | blocked frames |
+|---:|---:|
+| 2410 (shipped) | 12 |
+| 2430 | 11 |
+| 2450 | 5 |
+| **2460 … 2610** | **0 at every 10 m step tested** |
+
+**A 50 m move to `PONT_S = 2460.0` clears it, with a 150 m plateau beyond — not
+a knife-edge.** And it is the right *kind* of fix under the caution in the
+brief:
+
+* the bridge keeps its lateral position, its height and its span. It still
+  crosses directly over the racing surface and still whips past the lens. **No
+  architecture is stood politely back from the track**; the speed cue is intact.
+* it is **lens-independent**. A sightline does not care about focal length, so
+  the focal retune neither causes nor cures this, and this fix cannot be undone
+  by a later lens change. Only a change to the camera *path* could move it.
+* it spends the pass at a moment the sightline is not descending through the
+  deck, which is spacing along the lap — the same lever R2-581's sweep already
+  recommended for the near-field crowding.
+
+### Not applied yet, and the reason is not caution for its own sake
+
+1. **The authoritative full-world raycast is in flight.** If there are other
+   occluders on the lap — armco, catch fence, the grandstand — the placement
+   plan should be made **once, for all of them**. Two separate placement edits
+   to the same passage is exactly how a one-shot film acquires a seam.
+2. **`ARCH_PontPlongee` is a host, not just a shape.** Eight item families sit
+   on it (`pont_girder`, `pont_parapet`, `pont_abutment`, …) and
+   `build_dressing` hangs its fascia banners on this bridge's faces — R2-256
+   records a real collision on that face that took a gate to find. Moving it has
+   cross-module effects that should be verified rather than assumed, and the
+   local box cannot currently rebuild the world to check.
+3. `build_dressing` treats **s = 2440–2680** as the doppler straight and lifts
+   trackside dressing density there to 0.86 on the −1 side. Station 2460 lands
+   inside that run. That is not a collision — the bridge spans overhead — but it
+   is a crowding interaction to check before committing, not after.
+
+---
+
+## R2-661 — the lens demand curve is contaminated, but by 4.9 % and with the opposite sign to the obvious guess
+
+`lap_shotscale.py` declares in its own LIMITS that it does not model occlusion,
+so frames where the car is hidden still contribute their apparent size to the
+demand curve that set the focal ramp. True, and it must be re-run. But the size
+of the correction is measurable rather than rhetorical:
+
+| | |
+|---|---:|
+| occluded frames | **12** |
+| the lens demand stretch, f2012–2256 | 245 frames |
+| occluded share of that stretch | **4.9 %** |
+| occluded share of beat 5 | **0.79 %** |
+| median `subj_frac_w` across the stretch | 0.0441 |
+| median `subj_frac_w` on the occluded frames | **0.0475** |
+
+**The occluded frames were reporting a subject slightly LARGER than the stretch
+median.** So they were mildly *suppressing* the demand for focal length, not
+inflating it: dropping them makes the passage look marginally worse and would,
+if anything, argue for a little more zoom rather than less. The curve should
+still be re-fitted once the placement is settled — **flagged for whoever owns
+the focal ramp, as requested** — but it should be re-fitted expecting a small
+move in the direction of more zoom, not a retreat from the 142.5 mm peak.
