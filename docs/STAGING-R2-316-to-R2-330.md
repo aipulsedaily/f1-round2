@@ -117,10 +117,30 @@ implementations, same numbers):
 **Fifteen of fifteen do not fit. Seven overflow in BOTH axes**, so there is no
 crop of the frame that contains them. The audience is shown a fragment.
 
-Confirmed in the picture and not only in the projection — `render/b1focus` at
-3840x2160, 512 samples, scene DOF: f120 is one defocused tube across the frame
-with no identifiable part in it; f460 is one rear corner larger than the frame
-with its suspension links drawn out into streaks.
+Confirmed in the picture and not only in the projection. `tools/beat1_bbox_overlay.py`
+projects the cluster's evaluated world bbox through the film's own camera and
+draws it on the rendered pixels, so the arithmetic and the photograph are the same
+object:
+
+```
+f460  CORNER_RR   box spans x -962..5032   y -1540..4334   in 3840x2160   1.56 x 2.72
+f591  CORNER_FL   box spans x -849..5101   y -1050..4216   in 3840x2160   1.55 x 2.44
+```
+
+On both, the centre marker lands exactly on the assembly and **all twelve box
+edges leave the frame.** f120 is one defocused tube across the picture with no
+identifiable part in it; f460 is a rear corner with its suspension links drawn
+into ribbons.
+
+**And f591 is the frame that says the geometry is not the problem.** It is
+CORNER_FL's own presentation station, and the right-hand third of it genuinely
+resolves — individual fasteners, the wishbone pickups, the upright, the weave on
+the duct. What the audience gets is a tyre wall filling the left half and running
+off the top and bottom of frame, with the assembly it is attached to cut off on
+every side. **The parts are good enough to survive this beat. The camera is not
+showing them whole, and it is not holding them still.** At 100 % zoom the centre
+of that same frame is soft — 1.8 px of defocus and 49.8 px of smear, and the
+smear is what you see.
 
 ---
 
@@ -479,9 +499,10 @@ disjoint inputs and must agree.**
 | f300 | 88.6 deg | 92.9 deg | **4.3** | 85 px | 0.896 |
 | f460 | 52.4 deg | 51.5 deg | **0.9** | 117 px | 0.832 |
 | f400 | 169.1 deg | 90.2 deg | **79** | **11 px** | **0.401** |
+| f591 | 59.3 deg | 58.5 deg | **0.8** | 50 px | 0.685 |
 
-Four of the five agree to within 6.4 degrees on a quantity nothing in the image
-pipeline was told about. **The middle third is smeared by the camera, and the
+Five of the six agree to within 6.4 degrees, and three of them to within 2.2, on
+a quantity nothing in the image pipeline was told about. **The middle third is smeared by the camera, and the
 direction proves it.**
 
 **And the fifth is the point, not the exception.** f400 is the one frame of the
