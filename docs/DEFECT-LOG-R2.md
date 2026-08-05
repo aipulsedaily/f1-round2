@@ -20275,3 +20275,39 @@ f860-930.
 resolution floor, and a defect whose signature is below it cannot be cleared
 there at any level of care. Knowing which rung can decide a given defect is
 part of planning the ladder, not something to discover by looking.
+
+## R2-711 — THE ONE-SHOT LAW HOLDS IN PIXELS AT FOUR OF FIVE SEAMS, ACROSS FOUR DIFFERENT MECHANISMS
+
+```
+f792/793     beat 1->2                            2.03 % from interpolation
+f864/865     beat 2->3, INTO the 15.4 % ramp      1.86 %
+f1056/1057   beat 3->4, OUT of the ramp           3.96 %
+f1190/1191   beat 4->5, fastest camera in film    0.85 %
+f2714/2715   beat 5->6                            pending, queued
+```
+
+Every one measured the same way: the frame-difference series through the
+boundary, against what interpolation from its neighbours predicts, plus the
+ratio to the local median and the MAD distance.
+
+**The four are not four instances of one test - they are four different
+mechanisms:**
+
+- **f792/793** joins two normally-timed beats, and was additionally rendered
+  **on two different machines**, so it cleared the batch seam at the same time
+  (R2-442).
+- **f864/865** is the entry to the speed ramp, where `filmtime.py` collapses
+  world time to a **15.4 % floor over 6 frames** - 2.5x more abrupt than the
+  exit, and the one predicted most likely to snap. The pixels show the ease
+  rendering as a C1 smoothstep: 0.114 -> 0.108 -> 0.095 -> 0.076 -> 0.067 ->
+  0.065 over exactly the six declared frames.
+- **f1056/1057** is the restoration, 15 frames, joining **two different time
+  bases** rather than two beats.
+- **f1190/1191** is the transition into the flying lap, where the camera moves
+  **~3.5 m/frame** - faster than anywhere else in the film, so a positional
+  discontinuity had the most room to show. It is the tightest of the four:
+  **0.85 % and -0.03 MADs**, indistinguishable from its own neighbours.
+
+**R2-423 had tested all five boundaries on the authored path and stated plainly
+that a path test cannot see "a light that switches, a sim that starts, an LOD
+that swaps".** That gap is now closed at four of five, from the pixel side.
