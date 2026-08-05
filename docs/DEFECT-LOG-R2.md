@@ -20279,12 +20279,17 @@ part of planning the ladder, not something to discover by looking.
 ## R2-711 — THE ONE-SHOT LAW HOLDS IN PIXELS AT FOUR OF FIVE SEAMS, ACROSS FOUR DIFFERENT MECHANISMS
 
 ```
-f792/793     beat 1->2                            2.03 % from interpolation
-f864/865     beat 2->3, INTO the 15.4 % ramp      1.86 %
-f1056/1057   beat 3->4, OUT of the ramp           3.96 %
-f1190/1191   beat 4->5, fastest camera in film    0.85 %
-f2714/2715   beat 5->6                            pending, queued
+f792/793     beat 1->2   normal join                     2.03 % from interpolation
+f864/865     beat 2->3   INTO the 6-frame collapse       1.86 %
+f1056/1057   beat 3->4   OUT of the 15-frame restore     3.96 %
+f1190/1191   beat 4->5   fastest camera move, 3.5 m/f    0.85 %
+f2714/2715   beat 5->6   peel-off at 83.1 m/s            1.33 %   <- ALL FIVE NOW CLEAN
 ```
+
+**COMPLETE.** Every boundary lands within **4 % of linear interpolation from
+its own neighbours**, and none exceeds **+/-0.72 MADs** of its local baseline.
+Five boundaries, five different mechanisms, not one leaving a measurable
+trace.
 
 Every one measured the same way: the frame-difference series through the
 boundary, against what interpolation from its neighbours predicts, plus the
