@@ -20311,3 +20311,49 @@ mechanisms:**
 **R2-423 had tested all five boundaries on the authored path and stated plainly
 that a path test cannot see "a light that switches, a sim that starts, an LOD
 that swaps".** That gap is now closed at four of five, from the pixel side.
+
+## R2-712 — A SYNTHETIC CONTROL MADE OF SMOOTH NOISE CANNOT EXPOSE A FAILURE MODE THAT NEEDS SHARP FEATURES
+
+Beat 1's temporal scan flagged f329 with 104 impulse pixels. The frames show
+**smooth motion of a detailed part** - no geometry appearing or vanishing - and
+the breakdown explains itself: **102 of the 104 are dark**, scattered over a
+478x141 region rather than clustered. Panel gaps, slat shadows, 1-px dark lines
+sweeping across pixels.
+
+**A genuinely thin dark feature in motion IS both a temporal impulse and a
+spatial outlier, so it passes both halves of the firefly test.** The test was
+validated against a synthetic control built from a **smoothed random field with
+no sub-pixel-wide high-contrast lines** - so that control could never have
+exposed this mode, at any level of care.
+
+This is the sibling of R2-708: there, an instrument was validated on a *sample*
+and applied over a *range*. Here it was validated against a *stimulus* that
+lacked the feature the real signal has. **A control must contain the structure
+the subject contains, or it licenses nothing about it.** Compare the item
+gate's known-truth ladder, which is single-material plates against
+multi-material bodies at 170-2333 px/m and cannot adjudicate them either.
+
+**Beat 1's 417 contiguous frames, honestly characterised:**
+
+```
+80 flagged of 417
+  ~70 frames   8-30 impulse px, overwhelmingly BRIGHT
+  f5-f12       42-187 impulse px, bright-only, decaying
+  f329         67 bright + 81 dark + jerk +24.7 MADs   <- moving fine detail
+  6 jerk-only  f104, f252-254, f331, f334, f350
+  spectral     mean-series lines at 7.6 / 10.5 / 14.1 frames, 148-200x
+```
+
+- **The bright-only impulses are Cycles fireflies at 64 samples**, and the
+  largest run sits exactly where the camera is nearly static at
+  0.004-0.07 m/frame. **When consecutive frames are almost identical, what
+  differs between them is sampling noise** - so fireflies are *most* detectable
+  there. A rung-1 artefact that 512 samples would largely remove, not a film
+  defect.
+- **The spectral lines are flagged, not concluded.** 148-200x against a
+  measured 75x floor, but beat 1 has parts arriving continuously, which can be
+  quasi-periodic content. Above the floor and unexplained.
+
+**The useful negative:** the classes this pass exists to catch - **held frames,
+dropouts, one-frame pops, batch seams, stepped time** - show nothing across 417
+frames of the new camera, alongside four of five beat seams clean.
