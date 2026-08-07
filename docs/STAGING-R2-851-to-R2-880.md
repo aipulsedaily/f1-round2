@@ -179,11 +179,68 @@ So the lens **removes most of the patch boundaries from the frame** — that is 
 real and cheap answer to the literal complaint. It does **not** make the ground
 good, and it makes one thing worse: at 72 mm/px the missing 0.4–19 m detail band
 lands at 5–260 px, so the smoothness is now *more* legible per pixel even though
-the blotching is less legible per frame. **The candidate's final frame is
-centred on T1, which is inside the camera path's own grass-scatter radius**, so
-it should have real blade geometry where the shipped final frame (aimed across
-6 hectares of paddock concrete and open field) has none. That is a prediction,
-and the 4K stills in flight are what tests it.
+the blotching is less legible per frame. See R2-856, which measures this instead
+of predicting it, and which contradicts the prediction I made first.
+
+---
+
+## R2-856 — how much of each closing frame is bare, grass-less mesh — MEASURED
+
+Method: ray-cast a 96×54 grid through the frustum of the actual built path onto
+z=0, then evaluate `build_terrain.py`'s own two scatter conditions at each hit —
+`D < 430 m` from the centreline (line 3808) and `smoothstep(700, 260, dcam)`
+against the camera path (line 3812). "Bare" means the ground is in frame and
+carries **no grass geometry at all**, only the shader.
+
+| | sky | grass | **bare mesh** | ground range |
+|---|---:|---:|---:|---|
+| **f2860, the widest moment of the pull-back** | | | | |
+| shipped, 18.75 mm | 31.5 % | 42.0 % | **58.0 %** | 198 – 5,221 m |
+| candidate, 30 mm | 20.4 % | 77.5 % | **22.5 %** | 250 – 4,657 m |
+| **f2978, the last frame** | | | | |
+| shipped, 74 mm | 0.0 % | 62.3 % | **37.7 %** | 392 – 1,463 m |
+| candidate, 130 mm | 0.0 % | 54.4 % | **45.6 %** | 644 – 2,122 m |
+
+**At the moment the client is describing** — the widest point of the pull-back —
+**58 % of the shipped frame is ground with no plant geometry on it whatsoever**,
+sampled at ~339 mm/px by a shader whose finest surviving colour term is 19 m.
+That is the patchwork, and it is now a number. The candidate cuts it to 22.5 %,
+because a 30 mm lens aimed at the car is looking at circuit, and the circuit is
+inside the scatter radius.
+
+**But the candidate's last frame is worse on this metric, not better** — 45.6 %
+bare against 37.7 %. My earlier prediction in R2-854 that T1 would be inside the
+grass radius was right about T1 and wrong about the frame: a 130 mm lens at 8.4°
+depression reaches from 644 m to **2,122 m**, and the far half of that is past
+`dcam < 700`. The long lens buys patch-boundary cropping and pays for it in
+bare ground. Recorded rather than smoothed over.
+
+**Lens sweep at f2978, same viewpoint** (the camera is static from f2906, so
+only the lens differs):
+
+| lens | car px @4K | sky | bare | horizon in frame |
+|---:|---:|---:|---:|:--:|
+| 70 mm | 43.5 | 6.3 % | 42.2 % | **yes** |
+| 85 mm | 52.4 | 0.0 % | 47.5 % | no |
+| 100 mm | 61.4 | 0.0 % | 47.1 % | no |
+| **130 mm (candidate)** | **79.5** | 0.0 % | 45.6 % | no |
+| 160 mm | 97.7 | 0.0 % | 44.4 % | no |
+
+Two things fall out. **`bare` is flat at 44–48 % across 85–160 mm** — going
+longer does not buy back ground quality, so 130 mm is not costing anything a
+shorter lens would save. And **the horizon leaves frame between 70 and 85 mm.**
+The shipped final frame is also 0 % sky; a closing frame with no horizon in it
+is part of why both read as a plan rather than a view, and it is worth deciding
+deliberately rather than inheriting.
+
+The refinement this points at, **not** in the candidate and untested: ~85 mm
+with the car framed in the **lower third** rather than centred, which puts the
+horizon back across the top with the car still at ~52 px. `sheet["aim"]` has a
+`z_off` but it is a constant over the whole beat and the car is 85 m away at
+f2715 and 1,000 m away at f2978, so a fixed offset cannot do it — it would need
+a declared framing offset that scales with subject range. f2937 in the candidate
+is the same viewpoint at ~84 mm and is being rendered at 4K, so this can be
+judged on pixels before anyone writes that parameter.
 
 **Minimum terrain work this shot still needs, in priority order** (all
 procedural, all inside existing files, none of it mine to land):
