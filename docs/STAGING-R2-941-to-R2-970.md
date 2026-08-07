@@ -316,13 +316,30 @@ the same variable R2-862 identified.
 
 **Two caveats, stated rather than buried.**
 
-1. **My absolute numbers do not reproduce R2-856's.** For the shipped f2860 frame
-   R2-856 reports 42.0 % grass / 58.0 % bare *of the ground*; I get 83 % / 17 %
-   of the ground on what I believe is the same test. I have not reconciled them
-   and I am not claiming R2-856 is wrong. What survives the disagreement is the
-   **ground range** column, which involves no scatter model at all: 644–2,122 m
-   against 295–421 m is a fact about the frustum, and it is the whole mechanism.
-   Anyone acting on the absolute percentages should re-derive them first.
+1. **My absolute numbers do not reproduce R2-856's, AND THE PICTURE REFUTES
+   MINE.** I first wrote that I had not reconciled the two and that anyone acting
+   on the percentages should re-derive them. Then I opened the rendered frame,
+   which settles it against me. My metric calls the constant-speed arm's f2978
+   **65.9 % bare mesh**; the actual 4K render of that exact frame
+   (`out2/seq/r2851_4k_B_candidate/..._002978.png`) is a corner enclosed by a
+   dense treeline, grass banks, tarmac, gravel and tyre walls, and there is no
+   part of it a reasonable person would call untextured ground.
+
+   The cause is that `build_terrain.py`'s **meadow grass scatter is one of
+   several vegetation systems**, and I gated on its two conditions alone. A hit
+   that fails the meadow test can still be carrying woodland, verge clumps or
+   hedge. **"Fails the meadow gate" is not "bare".** My percentages measure a
+   thing that is not what the client is looking at, and they are withdrawn.
+
+   What survives, and it is the entire mechanism, is the **ground range** column,
+   which involves no scatter model at all: the last frame reaches 644–2,122 m in
+   the constant-speed arm and **295–421 m** in the lap-down. That is arithmetic
+   on the frustum. It is also the only column I would now quote.
+
+   > A metric that disagrees with the picture is not a second opinion. This one
+   > was built in twenty minutes to answer the client's literal complaint, agreed
+   > with a staged measurement's *direction*, and was wrong. Looking at the frame
+   > cost thirty seconds and was decisive.
 2. **Finer sampling cuts both ways.** The closing frame's ground sampling goes
    from ~72 mm/px to **24.7 mm/px**, so `mat_ground`'s missing 0.4–19 m detail
    band (R2-854 item 2) now lands at 16–770 px instead of 5–260. The frame has
@@ -487,6 +504,29 @@ rendered at `out2/seq/r2851b6` and `out2/seq/r2851_4k_B_candidate`.
 whole finding was that the geometry was right and the picture was not, and the
 only thing that found it was watching all 264 frames and the stills at 1:1. A
 rung-1 frame cannot tell you whether a car reads at 343 m; the 4K still can.
+
+### The A side, looked at first, so the comparison is honest
+
+Before rendering anything of my own I opened the two arms already on disk at 1:1.
+**R2-862's verdict is correct and I am recording that I checked it rather than
+inherited it.**
+
+* **Constant-speed candidate, f2978, 130 mm.** A handsome, deep, correctly-hazed
+  aerial of a circuit corner — treeline, banking, kerbs, gravel, tyre wall. At a
+  300×169 crop of the exact frame centre the car is a **pale blue-grey horizontal
+  smear about the width of the gravel trap's rake marks**, sitting in front of
+  the tyre wall's shadow. You can find it once you know it is at frame centre.
+  Nothing about the image asks you to look there. *"A handsome aerial of a
+  circuit corner with no subject in it"* is not rhetoric; it is a description.
+* **Shipped, f2978, 74 mm.** Pit building, grandstand, paddock, containers,
+  crowd, and the breached showroom mid-frame — dense, detailed, and no car in it
+  anywhere. R2-855's *"a 65 px wound in a truck park"* is also literally
+  accurate. The client's *"patches in the land"* are visible in this frame as
+  the flat olive-brown fields upper right, which is R2-854's Voronoi partition.
+
+Worth stating because it cuts against a convenient story: **the world is not the
+problem in either frame.** Both are well-built pictures. The ending failed for
+the reason R2-862 gave and for no other.
 
 ### Pre-registered, so it cannot be rationalised after the fact
 
