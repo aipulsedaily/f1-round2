@@ -204,7 +204,38 @@ def profile(frames, L, Q, sel, swap_frame, at=(866, 880, 900, 920), area=None):
     return out
 
 
-def run(film_path, bays=(3, 4, 5, 7), shards=None):
+#: what each role is REQUIRED to do.  `intact` bays are never rigid bodies and
+#: never hide, so there is nothing to measure; every other bay has an outcome
+#: the plan is asserting, and R2-1049 is what happened when nobody checked it.
+ROLE_REQUIRES = {"destroyed": ("LEAVES",),
+                 "retained": ("DID_NOT_MOVE", "RETURNS")}
+
+
+def adjudicate(rep):
+    """Does each bay do what its ROLE says?  Returns the list of failures.
+
+    Separate from `run` so the controls can drive it with synthetic reports:
+    a checker that can only be exercised through a 20 MB bake is a checker
+    nobody proves.
+    """
+    bad = []
+    for b, v in sorted(rep.get("bays", {}).items()):
+        role, verdict = v.get("role"), v.get("verdict")
+        want = ROLE_REQUIRES.get(role)
+        if want is None:                      # intact, or a role we don't know
+            continue
+        if verdict not in want:
+            bad.append(dict(bay=b, role=role, verdict=verdict,
+                            expected=list(want),
+                            vacated_pct_by_area=v.get("gone_pct_by_area_last")))
+    missing = rep.get("bays_not_measured") or []
+    for b in missing:
+        bad.append(dict(bay=str(b), role="destroyed", verdict="NOT_MEASURED",
+                        expected=["LEAVES"], vacated_pct_by_area=None))
+    return bad
+
+
+def run(film_path, bays=None, shards=None):
     import resample as RS
     import fracture as FR
     film = RS.read_film(film_path)
@@ -215,13 +246,23 @@ def run(film_path, bays=(3, 4, 5, 7), shards=None):
     rel = np.asarray(film["release"], int)
     plan = FR.load(shards or os.path.join(R2, "sim/out/fracture_wall.npz"))
     idx = {n: i for i, n in enumerate(names)}
+    # R2-1049: this was hardcoded `(3, 4, 5, 7)`.  Bay 6 is `destroyed` and was
+    # never once measured.  The bay list must come from the plan, so that adding
+    # a bay to the breach cannot silently leave it unwatched.
+    if bays is None:
+        bays = tuple(b for b, r in sorted(plan["roles"].items())
+                     if r in ROLE_REQUIRES)
     out = dict(film=film_path, frames=[int(frames[0]), int(frames[-1])],
-               bays={})
+               bays={}, bays_requested=list(bays), bays_not_measured=[])
     for bay in bays:
         ii = [idx["GS_b%02d_%05d" % (bay, s["id"])]
               for s in plan["panes"].get(bay, [])
               if "GS_b%02d_%05d" % (bay, s["id"]) in idx]
         if not ii:
+            # A bay the plan wants broken, whose shards are not in the bake at
+            # all.  Silence here is how bay 6 stayed invisible; record it.
+            if plan["roles"].get(bay) == "destroyed":
+                out["bays_not_measured"].append(int(bay))
             continue
         rr = rel[ii]
         sw = int(rr[rr > 0].min()) if (rr > 0).any() else int(frames[0])
@@ -374,6 +415,43 @@ def selftest():
           r["last_net_median_mm"] == 0.0,
           "%.1f mm" % r["last_net_median_mm"])
 
+    # ----------------------------------------------------------------- #
+    #  R2-1049.  The role/verdict adjudicator.  Everything above proves the
+    #  MEASUREMENT is honest; these prove the JUDGEMENT can actually fire.
+    #  Before this existed, `role` was attached to the report and never once
+    #  compared to `verdict` -- the tool computed both facts and never joined
+    #  them, which is why a `destroyed` bay reading DID_NOT_MOVE shipped.
+    # ----------------------------------------------------------------- #
+    def rep_of(*bays):
+        return dict(bays={str(b): dict(role=r, verdict=v,
+                                       gone_pct_by_area_last=a)
+                          for b, r, v, a in bays})
+
+    check("ADJ_CLEAN: destroyed LEAVES + retained DID_NOT_MOVE passes",
+          adjudicate(rep_of((4, "destroyed", "LEAVES", 96.8),
+                            (7, "retained", "DID_NOT_MOVE", 3.6))) == [])
+
+    r = adjudicate(rep_of((3, "destroyed", "DID_NOT_MOVE", 0.9)))
+    check("ADJ_STUCK: a destroyed bay that does not move FAILS",
+          len(r) == 1 and r[0]["bay"] == "3",
+          "%d failure(s)" % len(r))
+
+    r = adjudicate(rep_of((3, "destroyed", "RETURNS", 40.0)))
+    check("ADJ_UNBREAK: a destroyed bay that RETURNS FAILS",
+          len(r) == 1, "%d failure(s)" % len(r))
+
+    r = adjudicate(rep_of((7, "retained", "LEAVES", 90.0)))
+    check("ADJ_INVERSE: a retained bay that LEAVES FAILS too",
+          len(r) == 1, "%d failure(s)" % len(r))
+
+    check("ADJ_INTACT: an intact bay is not judged at all",
+          adjudicate(rep_of((0, "intact", "DID_NOT_MOVE", 0.0))) == [])
+
+    r = adjudicate(dict(bays={}, bays_not_measured=[6]))
+    check("ADJ_UNMEASURED: a destroyed bay absent from the bake FAILS",
+          len(r) == 1 and r[0]["verdict"] == "NOT_MEASURED",
+          "%d failure(s)" % len(r))
+
     print("\nSTAGE RESULT: slabcheck selftest %s (%d failed)"
           % ("FAIL" if fails else "PASS", len(fails)))
     return 1 if fails else 0
@@ -390,12 +468,21 @@ def main():
     if a.selftest:
         sys.exit(selftest())
     rep = run(a.film, shards=a.shards)
+    bad = adjudicate(rep)
+    rep["role_failures"] = bad
     print(json.dumps(rep, indent=1, default=float))
     if a.out:
         with open(a.out, "w") as fh:
             json.dump(rep, fh, indent=1, default=float)
     v = {b: rep["bays"][b]["verdict"] for b in rep["bays"]}
-    print("STAGE RESULT: slabcheck %s" % json.dumps(v))
+    for f in bad:
+        print("  BAY %s IS '%s' AND READS %s -- expected %s%s"
+              % (f["bay"], f["role"], f["verdict"], "/".join(f["expected"]),
+                 "" if f["vacated_pct_by_area"] is None
+                 else "  (%.1f%% vacated by area)" % f["vacated_pct_by_area"]))
+    print("STAGE RESULT: slabcheck %s %s"
+          % ("FAIL" if bad else "PASS", json.dumps(v)))
+    sys.exit(1 if bad else 0)
 
 
 if __name__ == "__main__":

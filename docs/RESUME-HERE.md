@@ -81,11 +81,26 @@ position.
   before fracture and motion blur, and by f870 there is no coherent sheet left
   to track.
 - **Occlusion (R2-651..666)**: the car is wholly hidden behind the pit building
-  for f1114-1116 at 10-11 m, and behind `BR_FenceMesh_L03` on **f2976-2978,
-  the film's last three frames** — an object already logged at +7.105 m of
-  lateral intrusion against a 7.39 m half-width. `PONT_S 2410 -> 2460` closes
-  the beat-5 blackout. NOT tested: `DR_BridgeBanners`, because the raycast
-  world omits dressing and items, and the banners will not follow `PONT_S`.
+  for f1114-1116 at 10-11 m — **still open and unowned**, and the harder of the
+  two cases: the occluder is a near-field wall **9.3 m from the lens**, not a
+  bridge at 26-55 m. `tools/r2731_pit_sightline.py` already exists for it.
+
+  **CORRECTED — do not re-raise the `BR_FenceMesh_L03` case.** This entry used
+  to say the car was hidden behind it on f2976-2978, the film's last three
+  frames. Read from source those rows carry **`in_frame: false`** — the car is
+  **outside the frustum, not occluded**, and it is owned by the closing-beat
+  rebuild. *Anyone counting rows in that ledger must filter on `in_frame`
+  first: "hidden" and "not in shot" are indistinguishable in a summary.*
+
+  **CORRECTED — `PONT_S 2410 -> 2460` does NOT close the beat-5 blackout, it
+  makes it worse.** R2-732 landed it and measured **25 blocked frames against
+  2410's 12**, then reverted. Source is correctly back at **2410**. The
+  original line here said the opposite, and this is the first document anyone
+  reads after a break — it was one reading away from costing a redo of a
+  reverted change.
+
+  NOT tested: `DR_BridgeBanners`, because the raycast world omits dressing and
+  items, and the banners will not follow `PONT_S`.
 - **Seven orphaned Blender processes reaped**, ~35 GB, using
   `ppid == 1 AND /proc/PID/cwd reads "(deleted)"`. An exec-server restart
   leaks its children and nothing reaps them; the leak is invisible to the

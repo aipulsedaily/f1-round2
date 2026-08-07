@@ -28433,3 +28433,90 @@ disguises itself as a result, and precisely the failure mode this project has
 found more often than any other: an operation that reports success because
 nothing objected. A guard on *presence* of the expected change, not merely
 absence of unexpected ones.
+
+## R2-1049 — the un-break is FIXED, and the instrument that says so never looked at bay 6
+
+#117 asked whether the wall un-breaks on camera. **It no longer does.** R2-092's
+parameter correction (`bond_per_m` 4000 -> 100) removed the shatter-and-
+un-shatter: no bay reads `RETURNS` on the shipped bake, and bays 4 and 5 read
+**LEAVES at 96.8% and 95.4% vacated by area.** The original defect is closed.
+
+**Two things were hiding behind that answer.**
+
+**1. `run()` had its bay list hardcoded as `(3, 4, 5, 7)`.** The plan's roles are:
+
+```
+0,1,8,9  intact      never rigid bodies
+2,7      retained    must NOT leave
+3,4,5,6  destroyed   MUST leave
+```
+
+**Bay 6 is `destroyed` and was never once measured.** Bay 2 was never measured
+either. The tuple was written independently of the plan and drifted from it in
+silence - and because a missing bay produces no output rather than a failure,
+**nothing anywhere said a bay was unwatched.**
+
+**2. `role` was attached to the report and never compared to `verdict`.** Line
+232 wrote `out["bays"][str(bay)]["role"]` and no code read it back. The tool
+computed both facts and never joined them - **exactly R2-111's shape**, where
+`fp_diff` computed a number, printed it, and never consulted it. `main()` printed
+the verdict dict and **always exited 0**.
+
+**With the bay list taken from the plan and the two facts joined, the shipped
+bake FAILS:**
+
+```
+BAY 3 IS 'destroyed' AND READS DID_NOT_MOVE   (0.9% vacated by area)
+BAY 6 IS 'destroyed' AND READS DID_NOT_MOVE   (9.0% vacated by area)
+STAGE RESULT: slabcheck FAIL     exit 1
+```
+
+**Two of the four bays the plan requires to break do not break** - and one of
+them had never been looked at. The shard counts say the same thing from the
+build side: bays 4 and 5 carry **1531 and 1485** shards, bays 3 and 6 carry
+**202 and 200** - the same density as the *retained* bays (195 and 183), an
+order of magnitude below the bays that actually go.
+
+**This is not automatically a picture defect.** 202 fractured-but-standing
+shards beside the hole read as laminated glass that cracked and held, which is
+physically right and may be better than four bays leaving. **What is wrong is
+that the plan and the outcome disagree and nothing noticed.** Either the bays
+should leave, or they should be re-labelled `retained` - and that is a look
+decision, not a correctness one. It is now impossible to ship without making it.
+
+**Six controls added, and every one fires:** `ADJ_CLEAN` (a correct pair
+passes), `ADJ_STUCK` (destroyed + DID_NOT_MOVE fails), `ADJ_UNBREAK` (destroyed
++ RETURNS fails - the original defect, now permanently caught), `ADJ_INVERSE`
+(retained + LEAVES fails, so the check works in both directions), `ADJ_INTACT`
+(an intact bay is not judged at all), `ADJ_UNMEASURED` (a destroyed bay absent
+from the bake fails - the bay 6 hole itself). Sixteen controls total, selftest
+exits 0, the film path exits 1.
+
+`adjudicate()` is deliberately separate from `run()` and driven by synthetic
+reports: **a checker that can only be exercised through a 20 MB bake is a
+checker nobody proves.**
+
+## R2-1050 — RESUME-HERE told the next reader to redo a change that had been landed, measured and reverted
+
+`docs/RESUME-HERE.md` said **`PONT_S 2410 -> 2460` closes the beat-5
+blackout.** It does the opposite. R2-732 landed exactly that, measured **25
+blocked frames against 2410's 12**, and reverted it. Source is correctly back
+at 2410.
+
+**RESUME-HERE is the first document anyone reads after a break** - that is its
+entire purpose - so a wrong line in it is not one wrong line, it is the wrong
+starting position for whoever comes next. It was one reading away from costing
+a full redo of a change already proven worse.
+
+The same entry also carried the `BR_FenceMesh_L03` claim that the car is hidden
+on the film's last three frames. **Those rows carry `in_frame: false`** - the car
+is outside the frustum, not occluded. **"Hidden" and "not in shot" are
+indistinguishable in a summary**, and anyone counting rows in that ledger has to
+filter on `in_frame` first.
+
+Both corrected in place, with the correction stated rather than the line quietly
+replaced - **a document that silently changes its mind teaches nobody anything.**
+
+Still open and now correctly labelled: **f1114-1116**, the car wholly hidden
+behind the pit building, and the harder of the two cases - the occluder is a
+near-field wall **9.3 m from the lens**, not a bridge at 26-55 m.
