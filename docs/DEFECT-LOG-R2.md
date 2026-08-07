@@ -36956,3 +36956,75 @@ comparisons at 0.0000, and **a negative control fed the shipped box fires at
 saw the other's selftest running while its own was queued on the blender lock.
 **That is defect #115 live** - and it was caught by a message, not by a
 mechanism.
+
+## R2-1162 — THE BLIND SLICE IS BOUNDED: 92.20 % provably unaffected, and the open 7.80 % is exactly where two intrusions already live
+
+The peer bounded its own finding rather than leaving it open, and **the bounding
+is better work than the fix.**
+
+`road_corridor` already sweeps the same space wherever the car is on the
+circuit: its disc is **7.00-8.50 m + 0.50** against car_path's **1.6025 m**, and
+its band **-0.50…+4.50 m about `elevation_c(s)` strictly contains the blind
+slice 1.592…1.932 m.** Telemetry z tracks `elevation_c` to **0.2 mm**, so they
+are **the same datum**, not two numbers that happen to agree.
+
+```
+car-path disc inside the road-corridor disc          1607   92.20 %
+ ... AND the 1.592..1.932 slice inside its z band    1607   92.20 %
+NOT covered by the road corridor                      136    7.80 %
+    one contiguous run: frames 0..135, t 0.00..5.62 s, |u| to 81.64 m
+```
+
+**On 92.20 % of the driven line the corrected band cannot move
+`closest_approach`** - anything in the blind slice would already have been
+caught by `road_corridor`, which reported CLEAN with **+1.149 m to spare**
+(`ARCH_Gantry`).
+
+**And the uncovered 136 frames are not a leftover - they are the Beat-4
+transit**, the car on the dais and access road, up to **81.64 m off the
+circuit**. **That is exactly where `ARCH_PitWall` (1.067 m in) and
+`ARCH_RetainEdge` (1.198 m in) were found inside the car body.** **The one
+stretch no second volume watches is the one stretch that has already produced
+two intrusions.**
+
+**Neither session can load it**: `assembly10.blend` is 7.08 GB, the box has held
+**3 GB free of 11** with one Blender process holding **6.37 GB** and four alive,
+and the blend is **not at the expected path** at depth 3. When RAM frees, diff
+`closest_approach_m.car_path` against the **+4.608 m** in
+`work/instrument-fixes/placement_assembly5_fixed.json`, **restricted to frames
+0-135** - the other 1,607 cannot move, and loading 7 GB to confirm that is a lock
+wait spent proving something already proved on paper.
+
+## R2-1163 — TWO CORRECTIONS TO ME, BOTH TAKEN, AND THE SECOND RESHAPES #97
+
+**1. I understated `intrusion()`.** Returning **-1e9** does not merely mean the
+slice was invisible to `closest_approach` - **those vertices never reached the
+distance test at all**, so the slice was invisible to **`closest_approach` AND
+`violations`. Both outputs, not one.**
+
+**2. And the reproducibility point goes further than I put it.** The selftest
+report writes **`controls`/`failures` and not `closest_approach_m`** - so **four
+REPRODUCED runs say nothing about that path either way.** Worse, where
+`road_corridor` overlaps, car_path's closest approach is a quantity **two
+volumes measure redundantly by construction**, so **agreement there is not
+evidence of anything.**
+
+> **A number that moves without the world moving, in the 7.80 % where nothing
+> else is watching, is worth more attention than the 92.20 % where two volumes
+> agree by construction.**
+
+**That reframes #97 rather than answering it.** "Not reproducible" was being
+investigated as a determinism defect; the shape it actually has is **a
+redundantly-measured majority and an unwatched minority**, and only the minority
+can carry the symptom.
+
+**A control that agrees with another control by construction is not a control.**
+That is the same family as `BEGIN DEFERRED` being safe by discarding 70 % of its
+work, and a synthetic gate claiming 6.6× on an axis the substrate wins 13× on.
+
+Status from the peer: contract selftest **PASS, 155 checks, 0 failed**, new
+section [19]; gate selftest **`PLACEMENT_SELFTEST_OK`, 26 controls**, with 8b's
+negative control firing at **0.3400 m**. A mutation run - `CAR_BODY_TOP_M`
+1.332 -> 1.232, **which must go red** - has been queued on the lock 15 minutes.
+**A guard that has not been shown to fail is a guard nobody should trust**, and
+that is the check most worth waiting for.
