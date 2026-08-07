@@ -36148,3 +36148,58 @@ is **no transaction at all**, which handed one job to three processes. The
 multi-GPU guard refuses an unannounced wide box against **13 assertions on
 `ast`-extracted shipping source**, and was seen live logging `1 of 1 OPTIX
 device(s)`.
+
+## R2-1137 — A BROKEN INSTRUMENT THAT READS AS A NULL RESULT: 0.04 dB looked exactly like "the beds are not the problem"
+
+Sweeping the shelf depth from **-6 to -18 dB moved the result by 0.04 dB.**
+**That is indistinguishable from a finding** - it reads as *"the noise beds are
+not the problem after all"*, which is a clean, publishable, completely wrong
+conclusion.
+
+The cause was the shelf itself: `x - highpass(x)*(1-g)` with a **causal**
+high-pass **comb-filters instead of shelving.** Rebuilt in the zero-phase
+complementary form `dsp.split_bands` already uses, the same sweep moves **5.9
+dB.**
+
+**This is the project's commonest defect wearing new clothes.** Usually a broken
+instrument produces a false PASS. **Here it produced a false NULL** - and a null
+is harder to doubt, because nobody interrogates a change that did nothing.
+**A lever that does not move the result is either the wrong lever or a broken
+one, and those look identical.**
+
+**And the second method error was caught the harder way, by suspecting the
+window.** The metric's **93 ms** window was smearing a Doppler-shifting source
+into its own noise floor: the engine bus reads **14.35 dB at 43 ms** against
+**10.38 at 93 ms.**
+
+**Crucially, the rejected master was re-measured at the same window before any
+threshold was chosen** - so the window could not have been picked to flatter the
+fix. **Changing a measurement and re-baselining the thing you are trying to beat
+is the difference between a better instrument and a moved goalpost.**
+
+## R2-1138 — thirteen and a half dB of the rebuild was being thrown away by three noise beds
+
+The engine bus alone reads **14.35 dB** above 2.6 kHz over the flying lap. **The
+full mix read 0.71 dB.** Everything between those two numbers was the beds.
+
+**Remedy, declared as a mix decision rather than disguised as physics:** wind's
+target **-18 -> -23 LUFS-S**, and wind/tyres/bed take a **declared -12 dB shelf
+above 2 kHz, post-trim.**
+
+**And the distinction it drew is the honest one.** It explicitly **did not** call
+the wind's rolloff a modelling error - *it is inside the physical range for
+aerodynamic edge noise.* What it called wrong is that **the air at the lens was
+4.7 dB louder than the car.** A plausible model at an indefensible level is a
+mix problem, and calling it a physics bug would have licensed changing the model
+until the mix came out right.
+
+**Predicted: 0.71 -> 6.70 dB.** And the film gets **brighter where it matters** -
+**+3.6 dB at 500 Hz-1 kHz, +3.5 dB at 1-2 kHz** - because the engine's harmonics
+now occupy the space the noise was in. **Removing noise did not make it quieter;
+it made the car audible.**
+
+**R2-1405 stays found-but-not-fixed, for a reason worth keeping**: `scene.classify`
+renders ~40 % of the flying lap as a hollow timber deck rather than asphalt. It
+is real and it is in `audio/` - but **the dais voice is DARKER than asphalt, so
+fixing it now would add broadband energy in exactly the band just cleared.** A
+true fix that spends the budget of the fix under review belongs to the next pass.
