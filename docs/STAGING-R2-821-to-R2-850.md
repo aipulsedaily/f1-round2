@@ -1510,3 +1510,177 @@ helmet in the cockpit, correctly seated. He becomes visible at f400 OFF SCREEN
 (R2-840m) and is legitimately in shot by f580 — the fix was to stop him
 MATERIALISING in view, never to hide him, and both halves of that now have a
 picture behind them.
+
+## R2-840o — THE FOCUS RESULT IS NOT VOID, AND THE STALE PATH IS IN THE CONTROL, NOT THE PASS
+
+A correction, because getting this wrong in either direction misreports the client's
+own feedback loop.
+
+**The claim:** `tools/r2791_beat1_focus.py` reads `render/film16_path.json` — the
+superseded camera — and hardcodes it at line 574 for frames 1-792, so the focus
+fix was computed against a camera the film does not have, and the client's blur
+note is unanswered.
+
+**The path is real. It is in two places, and the applied pass calls neither:**
+
+```
+line 574  ->  inside  def selftest():   (line 518)   R2-800's two-sided control
+line 621  ->  inside  def main():                    the standalone CLI's --path default
+```
+
+`tools/r2791_apply_focus.py` — the thing that actually wrote the keys — touches
+only `CLOSEOUT_F`, `HANDOFF_FRAMES`, `depth_from_grid()`, `solve()` and
+`load_field()`. None reads a camera. The `cams` handed to `solve()` are built
+inside `apply_focus` from the OPENED BLEND, frame by frame through Blender's own
+evaluation, and its log says which blend:
+
+```
+>> read 792 frames of camera ONER from /home/zany/f1-round2/render/film17.blend
+>> subject/background depth MEASURED from work/r2840/depthgrid_R2842.json (386/396)
+>> GUARD: position 0.000e+00 m, rotation 0.000e+00, lens 0.000e+00 mm over 42 frames
+```
+
+and the grid it used was measured on the rebuilt R2842 rig, which
+`campath_identity.py` proved bit-identical to film17's ONER — `dp 0.000e+00 m,
+dq 0.000e+00, dlens 0.000e+00 mm over 792 beat-1 frames`. **The focus curve was
+solved against the camera the film actually has.** That is the property R2-796
+was designed to guarantee: *"the solved curve contains no frame numbers... re-run
+it and the focus is re-derived from the camera that actually exists."*
+
+**What IS stale is the CONTROL, and that matters differently.** R2-800's
+two-sided selftest — solver must AGREE at stations, DIVERGE between them — reads
+`film16_path.json` and the shipped `docs/beat_sheet.json`. Against the R2-829/842
+sheet those are different generations, so it reports **SKIP, not PASS**, exactly
+as R2-806a already recorded. So:
+
+* the focus **was applied** correctly, per-frame, from measured depth, with the
+  camera provably untouched;
+* the solver's **validating control has not been re-run on this generation**.
+
+"Applied against the right camera but with an unre-run control" and "computed
+against the wrong camera" are not the same statement, and only the first is true.
+
+*Generalises to:* **a grep for a stale filename finds every use of it, including
+the uses that do not matter.** Which function encloses the line decides whether it
+is a defect or a footnote, and that is one `awk` away.
+
+## R2-840p — WATCHING IT: PACING IS ANSWERED ON PIXELS, AND THE BLUR NOTE HAS MOVED HOUSE
+
+Adjacent-frame RMSE off the delivered 720p frames, as a proxy for on-screen
+motion. It is the same instrument used for the driver appearance (R2-840m) and it
+needs no access to the scene.
+
+```
+TOUR    f80-450     median 0.138    range 0.056 .. 0.182
+PAYOFF  f470-600    median 0.081    range 0.057 .. 0.102
+```
+
+**PACING — answered.** R2-823 measured the shipped payoff at 4.89 mean
+frame-to-frame change against 20.27 across the tour: a ratio of **0.24**, which is
+the "camera goes still exactly when there is finally something to look at" that
+the client actually objected to. The delivered payoff runs at **0.59** of the
+tour. It is no longer the dead spot, and it is still visibly calmer than the tour,
+which is the distinction R2-833 was aiming at — *shot*, not *still*, and not
+frantic either.
+
+**FRAMING — answered.** R2-840n: f580, measured at fill 1.046 before, holds the
+whole car with margin. f464 holds the assembled body plus the presenting corners.
+
+**BLUR — the fix landed and the complaint may survive it, for a different
+reason.** At f258, the frame R2-804 described in the shipped arm as *"one sharp
+object in a cream field... the tyre behind it is a formless dark blob with no
+tread, no rim and no brake gear"*, the delivered frame resolves the tyre's tread,
+rim, brake gear and red sidewall band, and the glass wall reads as mullions rather
+than a wash. **The focus change is visible and it works.**
+
+But the dominant softness in that frame is now **MOTION BLUR**, not defocus, and
+nobody has asked about this:
+
+* the tour runs at 0.11-0.18 adjacent-frame RMSE — fast camera motion, and at a
+  1/2-ish shutter that is a lot of smear at the close stations;
+* **R2-831 made the tour 1.62 s FASTER than shipped.** Whatever the re-pacing did
+  for the payoff, it can only have increased motion blur across the presentation
+  stations;
+* R2-804 already flagged motion blur as "a separate and untouched defect... that
+  is shutter and camera speed" and assigned it elsewhere. It is still untouched.
+
+**So if the client watches this and still says "too blurry", the cause will be
+shutter, not aperture, and the correct response will NOT be to stop down further.**
+Recording it now, before the verdict comes back, so the diagnosis is not
+re-litigated from scratch against a fix that already landed.
+
+## R2-840q — f150 IS THE FRAME THAT SETTLES WHETHER THE FOCUS FIX REACHED THE PICTURE
+
+R2-840o argued from the code that the focus was solved against film17's own
+camera. f150 settles it from the other end, on a delivered frame, and it is the
+right frame to settle it on because R2-804 nominated it in advance:
+
+> *"f150, a transit frame — the largest measured focus error in the beat, 3.71 m,
+> and the one that ISOLATES FOCUS FROM APERTURE. The shipping curve is at
+> 2.041 m; the lens is actually pointed at material 5.754 m away. Nothing whatever
+> in the shipping frame is sharp — not the wheel, not the stanchion, not the floor
+> line, not the wall."*
+
+and it predicted what a working fix would look like:
+
+> *"the plane lands on the wheel and suspension at ~5.7 m. The tyre's red sidewall
+> band, the rim and the brake structure resolve; the suspension links read as metal
+> with defined edges; the rope stanchion gains a hard edge and a defined base disc."*
+
+**The delivered frame shows every one of those.** Rim, brake disc and hub are
+legible, the red sidewall band reads, the suspension links read as metal with
+defined edges, and the stanchion has a hard edge and a defined base disc.
+
+**This is the arm of the evidence that aperture cannot fake.** At f258 an
+improvement could be attributed to stopping down. Here the shipped frame had NO
+sharp content anywhere, so a readable wheel can only have come from moving the
+plane — which is precisely why R2-804 nominated this frame. A prediction
+registered in advance, on a frame chosen in advance, met on the delivered pixels.
+
+**The blur that remains in it is motion blur** and it is directional: the tyre's
+trailing edge and the floor's light streaks smear left-to-right while the
+suspension links stay crisp. Focus and shutter are separable in this frame and
+only one of them was fixed (R2-840p).
+
+## R2-840r — DELIVERED
+
+```
+watch/AFTER_beat1_33s.mp4     18,218,991 bytes
+                              h264 / 1280x720 / yuv420p / 24 fps / 792 frames / 33.000 s
+
+sequence r2beat1_v2           792 frames, 0.80 GB, mean 31.7 s/frame
+                              rq seq verify DEEP: every file re-hashed and re-measured, 792 OK
+                              independent missing-frame-number check: 792/792, missing none
+cost                          792 x 31.7 s = 6.97 GPU-h x $0.4403/hr = $3.07
+                              (projected $4.21; the brief budgeted $5.50-6.00)
+```
+
+**Spec-identical to the BEFORE clip** — same codec, resolution, pixel format,
+frame rate, frame count and duration to the millisecond — so nothing in the
+comparison is a container artefact.
+
+### The three client notes, and only two of them are answered
+
+| note | verdict | the evidence, on delivered pixels |
+|---|---|---|
+| "way too slow" | **ANSWERED** | payoff motion 0.24 -> **0.59** of the tour (R2-840p) |
+| "way too zoomed in" | **ANSWERED** | f580 fill 1.046 -> holds with margin; f464 holds body + corners (R2-840n) |
+| "too much blur" | **FIX LANDED, NOTE NOT CLOSED** | f150 and f258 resolve exactly as R2-804 predicted (R2-840q) — but motion blur is now the dominant softness and the tour got **1.62 s faster** (R2-840p) |
+
+The third line is the one to hold carefully. The focus fix is real, was applied
+against the film's own camera (R2-840o), and is demonstrated on a frame nominated
+in advance. **It is still not a claim that the client's blur note is closed**,
+because shutter was never touched and R2-800's validating control reports SKIP on
+this generation. If the note comes back, the answer is shutter, not aperture.
+
+### And the comparison carries an uncontrolled variable
+
+**film17 is the first film in this project with a showroom ceiling** (R2-840i).
+Seeing f1 rendered, this is larger than first described: the ceiling is a coffered
+drum with a radial ribbed dish directly over the turntable and it occupies roughly
+the top third of the establishing frame. **The opening shot of the AFTER clip is
+dominated by geometry that does not exist in the BEFORE clip.**
+
+Attributable to R2-829/842: framing, fill, pacing, focus, depth of field.
+NOT attributable: brightness, ambient, fill on the parts' upper surfaces, and
+anything read off the establishing frame's upper half.
