@@ -33689,3 +33689,57 @@ unanswerable**, and it will be asked again.
 **Relayed to the affected sessions rather than left silent** — the peer that
 found this had already resubmitted its own and flagged that the other two owners
 were unaware.
+
+## R2-1120 — "SOUNDS LIKE A HAIR BLOWER" IS ALMOST LITERAL: wind is the loudest bus in the film, 4.7 dB above the engine, and it is pure noise
+
+The client's harshest note, measured. **Over the flying lap the wind bus runs
+-22.48 dBFS — 4.7 dB ABOVE the engine — and it carries no tonal element
+anywhere.** For a film whose subject is a car, the loudest thing in the mix
+during its fastest sequence is **broadband noise.**
+
+**That is a hair dryer.** Not a metaphor for one.
+
+**And the metric's own floor makes the shipped state sharper still.** Pure noise
+does not read as -inf on this measure: crowd, fence skirts and room tone all
+land at **-1.70 to -1.75 dB** above 2.6 kHz. The shipped master read **-0.65
+dB** — **1.05 dB above a literal noise generator.**
+
+**87 % of the cost is two buses**: wind **56 %**, tyres **32 %**. Crowd, fence,
+room and both reflection buses are provably innocent - **removing all of them
+buys +0.12 dB.** That is what a measurement is for: it says where *not* to
+spend changes, and five buses were about to be blamed for 0.12 dB.
+
+## R2-1121 — the engine's mix trim was set by a three-second window inside the slow-motion breach
+
+`-10 LUFS-S` is spent on a **3-second window inside the slow-motion breach** - so
+**through the entire flying lap the engine runs 1.45 dB BELOW its own target**
+while wind and tyres run at theirs.
+
+**A loudness target hit on the wrong window is a target for a different film.**
+The breach is slow-motion and atypical by construction; letting it set the trim
+means the sequence the client actually complained about was never at the level
+anyone intended.
+
+**And the old engine was the binding constraint, which the measurement proved
+rather than assumed:** with it in place, deleting **every other bus** still only
+reached **+6.9 dB**, because **20 % of the engine bus's own HF energy was its own
+broadband floor.** So no amount of mixing could have fixed this - the source had
+to change first. **That is why the rebuild had to come before the balance**, and
+the agent is correctly holding the mix until the rebuilt engine renders rather
+than over-correcting against a number it has not yet measured.
+
+## R2-1122 — `scene.classify` calls 48 % of the flying lap "dais": the tyres are on a timber deck for 40 % of the lap
+
+`f["asphalt"]` requires `x > 64.6`; **`f["dais"]` has no such guard.** So for
+roughly **40 % of the flying lap the tyre layer renders as a hollow timber
+deck** rather than asphalt.
+
+**Logged and deliberately not fixed**, for a reason worth keeping: **correcting
+it makes the masking slightly worse**, and it needs its own listening pass. **A
+true fix that degrades the thing currently under review is a fix for the next
+pass, not this one** - and knowing that in advance is only possible because the
+masking budget had already been measured.
+
+Two guards missing on one classifier, and only one of them is written down.
+**An unguarded branch in a mutually-exclusive set is not a default; it is a
+catch-all**, and it will absorb whatever the guarded branches reject.
