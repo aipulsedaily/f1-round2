@@ -217,6 +217,112 @@ something that exists.
 
 ---
 
+## R2-1605 — THE SAME DEFECT LIVES IN THE OTHER GENERATOR, AND IT IS WORSE THERE
+
+Beat 5 was scoped but **not changed**. What the scope found is that R2-1602 is
+not a beat-1 defect; it is the project's house style, implemented twice.
+
+**First, a correction to R2-1601's own wording.** Beat 5's image motion is *not*
+constant. Its 3-second mean runs from **0.0092** at t=88 s (182 m out on an
+80 mm lens) to **0.6956** at t=68 s (the hairpin exit, 16 m out on 34 mm) — a
+**75x swing**, and the highest coefficient of variation in the film at 162.9 %.
+Plenty happens. What is flat is that **every transition between those levels
+takes longer than three seconds**, so the derivative never registers: the sliding
+jerk ratio inside beat 5 runs min 0.5 %, median 1.9 %, max 9.8 %, and **1,524 of
+1,524 frames** sit under the 10 % threshold. Not one frame escapes.
+
+"The camera never changes what it is doing" was the right conclusion from the
+wrong sentence. It changes constantly, and never quickly.
+
+**Six rate-equalising mechanisms are stacked** in `tools/author_beats2_5.py`:
+
+* `_tangents()` L306 — **Bessel secant averaging**: the spline's velocity at each
+  anchor is a time-weighted mean of its two neighbours' chord velocities, so it
+  cannot lie outside the interval they span. A low-pass filter on velocity,
+  applied down a 40-anchor chain. Same signature as `_allocate`.
+* `_tangents()` L303-308 — **Fritsch-Carlson clamp to `3.0 * min(|d0|,|d1|)`**,
+  i.e. to three times the *slower* neighbour. It bites hardest exactly at the
+  transitions where an authored acceleration would live.
+* `scalar_at()` L377 and `lerp_aim()` L259 — **smoothstep on lens, fstop and
+  aim**, which has zero derivative at *both* ends of every interval. The lens
+  cannot step, burst or snap anywhere in beats 2-5. Measured median lens rate
+  3.02 mm/s.
+* `emit_keys()` L508-523 — a **constant-5-degree-bearing allocator**
+  (`BEARING_PER_KEY_DEG = 5.0`). Of beat 5's 315 key intervals, **216 (69 %) sit
+  on a rail**: 121 at `MIN_KEY_GAP=2` (clipped) and 95 at `MAX_KEY_GAP=8`, where
+  the rig becomes a 3 Hz sampler and AUTO_CLAMPED erases anything shorter than a
+  third of a second. The 5-degree criterion is only in control 31 % of the time.
+* **`speed_key` is OFF for beat 5** — L899, `speed_key=(name == "2_launch")`. The
+  emitter is therefore *structurally blind to speed change*. **Any acceleration
+  authored into beat 5's anchors will not survive key emission.** R2-087 declined
+  enabling it globally because "beats 3-5 do not do that"; a re-pacing pass makes
+  beat 5 do exactly that, which inverts the argument. Known cost: +16 keys, 321
+  frames move up to 0.234 m, accel p99.9 4.20x -> 4.25x.
+* **The anchor list itself** is an anti-acceleration document, four times over in
+  its own notes — "laid out as four decelerating anchors and not as one",
+  "five anchors, because arriving at a hover in one is a 6 g stop", "on a smooth
+  speed profile rather than at the corners". The helicopter arc runs 50, 51, 54,
+  55, 54 m/s across five consecutive anchors: five seconds of constant speed by
+  construction.
+
+**The slack is enormous and almost entirely unspent:**
+
+| constraint | bound | beat 5 actual | headroom |
+|---|---|---|---|
+| aim `bound_deg` | 22.0 deg | worst **1.298** deg | 17x |
+| aim `frame_margin` | 0.92 | worst **0.0548** | 16.8x |
+| camera speed | 137.8 m/s | 101.9 | 26 % |
+| camera accel | 9.78 g | 6.08 | 38 % |
+| camera-to-car | 1.40 m floor | **10.57 m** closest over f1191-2559 | 9.2 m |
+| lens rate | **ungated** (R2-113) | 76.3 mm/s | unbounded |
+
+A sensitivity probe (lens channel only, position and quaternion bit-identical)
+sized the weakest lever: **lens x (1 +- 0.40) at 1 Hz cuts the 82.5 s flat run to
+32.8 s** and the film-wide flat fraction from 96.7 % to 80.9 %. That is not a
+proposal — a 1 Hz sinusoid is not choreography — but it proves the lever is real
+and that it is *not sufficient alone*.
+
+**Levers, ranked**: (1) anchor time spacing and count — the defect is transition
+*duration*, and compressing a 3.0 s transition to 0.8 s is seam-free if the
+endpoint anchors hold; (2) enable `speed_key`, which is a **precondition** for
+(1) and (3), not an optimisation; (3) standoff via `tp()`/`cp()`, since
+`S ∝ 1/depth` at Spearman -0.904 and there is 10.57 m of unused approach;
+(4) along-track lead — and note `aim_car()`'s `lead_s` and `along_m` are
+**implemented, wired through `lerp_aim()` L250, and zero on all 40 anchors**, so
+there is a dormant pure-rotation lever costing no position risk at all;
+(5) lens, weak and needing the easing changed as well as the values.
+
+**Pinned**: the f1190/1191 seam (the fastest camera move in the film, ~3.5 m per
+frame), the f2714/2715 peel, and f2630-2714 which is jointly owned by R2-063's
+36-frame Hermite blend, R2-112's nadir roll window and the beat-6 workstream.
+Beats 2-5 share **one** cubic Hermite chain, so beat 5's first anchor is an
+interior knot of beat 4's spline.
+
+**The tightest real constraint is not the aim gate.** It is the C1 rotation
+smear: beat 5 sits at **22.07 %** against **25.47 %, a value already refused
+once** in R2-112's cone/rate table. Three points of margin, and R2-089/R2-112
+both spent beat 5's smear to buy beat 6's roll.
+
+### THE GATES THAT WILL NOT CATCH A RE-PACING PASS
+
+Recorded here because a fix shipped against these is a fix nobody has checked:
+
+* **aim `bound_deg 22.0` is documented stale three times** (R2-586, R2-592,
+  R2-1012): at 158 mm the half-width is 6.50 deg, so a 22 deg bound bounds
+  nothing. `frame_margin 0.92` is the only real containment test.
+* **`campath_gate` has no roll term at all** (R2-151).
+* **`continuity_gate`'s `rot_limit_deg = 45.0`** per frame is 1,080 deg/s — a
+  whip would have to be twelve times worse before it fired (R2-851).
+* **`continuity_gate`'s acceleration detector is a robust-z against a rolling
+  local median** (R2-086), so **a RHYTHMIC re-pacing becomes its own baseline and
+  goes unreported.** This is the single most likely way a beat-5 re-pacing ships
+  broken, and it is the direct analogue of what R2-1601 hit: an instrument one
+  derivative away from the thing being changed.
+* **lens rate is computed and never bounded** (R2-113).
+* **`subject_sweep.py` exits 0 with no `STAGE RESULT` on a vacuous run**
+  (R2-111 L299) — the gate most needed for any lateral-offset change cannot be
+  distinguished from a pass.
+
 ## WHAT IS NOT DONE, AND WHO SHOULD DO IT
 
 **1. The 85-second flat stretch (f938-2978) is untouched.** R2-1603 changes ~14 s
