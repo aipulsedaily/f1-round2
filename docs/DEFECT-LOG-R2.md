@@ -22748,3 +22748,332 @@ that decelerates on its lap-down would let the camera stay much closer to it and
 would make a far tighter ending possible. That is a change to the car, not the
 camera, and it should be decided by whoever owns the car — but the closing wide
 is the only beat it would affect.
+
+## R2-775 — THE FINES WERE BUILT STANDING STILL WHILE THE GLASS LEFT AT 19 m/s, AND NOTHING IN THE MASS, SIZE OR PIXEL INSTRUMENTATION SAID A WORD
+
+The worst defect in this block, found late, by asking the table a question none
+of the three gates asks.
+
+`debris.parent_state()` gives each puff the velocity of the two shards its crack
+lies between. Its first revision took that velocity as the slope of the shard's
+**first key interval**:
+
+```python
+dt = clock.world_t(fk[1]) - clock.world_t(fk[0])
+return kl[0], (kl[1] - kl[0]) / dt
+```
+
+The resampled table keeps a key at the start of the sim span and then keys the
+motion. `GS_b04_00000` has keys at **f845, f859, f860, f861, ...** and its
+displacement over **f845 -> f859 is exactly zero**, because it has not released
+yet. So that expression returned **0.00 m/s for every shard in the wall.**
+
+Measured consequences, on the built field:
+
+```
+                                  first revision   corrected
+shard launch speed  p50             (not used)      19.0 m/s
+puff initial speed  p05/p50/p95   0.53/0.68/0.86   0.6/8.8/12.9 m/s (max 22.3)
+puff total travel   p05/p50/p95   ----/0.45/3.51   1.24/3.00/4.58 m (max 5.63)
+puff EASTWARD dx    p05/p50/p95        ~0          0.07/2.38/4.49 m
+```
+
+The corrected field is the drag law's own prediction made visible: the fines
+leave with the glass at 9-22 m/s, and because `drag_k` goes as 1/d they shed
+most of it inside three metres and stall in the air at the wall while the car
+goes on. **A burst that leaves with the glass and is left behind by the car** —
+which is what car-through-glass footage shows, and it was not arranged.
+
+Every puff launched on the `EJECT_MIN_MS = 0.8` floor alone, 0.53-1.05 m/s
+against a shard field doing 20. **A debris field that stays at the wall while
+the glass leaves is worse than no debris field**: it reads as dirt on the lens,
+which is precisely the pointable-effect failure this whole pass is scaled to
+avoid.
+
+**And every instrument in the module passed it.** The mass ledger balances — the
+fines weigh what they should. The size law matches its closed form. The pixel
+grade reports p50 3.2 px at 4K. Not one of them has an opinion about velocity.
+The three gates measure *how much*, *how big* and *how visible*, and the defect
+was *how fast*.
+
+Now gated, with the bug itself as the negative control:
+
+```
+struck-bay shards launch at 5-40 m/s on the shipped table   PASS  p05 14.2
+                                                                  p50 19.0
+                                                                  p95 21.3 m/s
+NEGATIVE: differencing the FIRST two keys reads ~zero        PASS  p50 0.0000 m/s
+```
+
+The general lesson, which is not new on this project but is newly earned:
+**a set of gates that all measure the same noun cannot catch a defect in a
+different noun.** R2-700 said the same thing about member count versus pose.
+
+---
+
+## R2-776 — THE DEMONSTRATION HARNESS, AND WHAT IT IS HONEST ABOUT
+
+The deliverable asked for rendered frames at a resolution where the fines can
+be seen. On 2026-08-07 neither route to a *film* frame exists: both vast.ai
+brokers were torn down after the render ladder, and the local card reports
+`Unable to determine the device handle for GPU0: 0000:07:00.0`. The film blends
+are 7-8 GB against 11 GB of host RAM on a box running at load average 15.
+
+So `sim/debris_demo.py` builds the **breach alone** — shards, panes and fines,
+from the same tables, through the same `apply_breach.build()` — under
+
+* the film's sun (`world/build_sky.py`'s `SUN_DIR`, `SUN_ENERGY`, `SUN_COLOR`,
+  0.526 deg disc),
+* the film's sky generator (`ShaderNodeTexSky`, `MULTIPLE_SCATTERING`, the same
+  elevation and rotation — **no HDRI**, the prohibition holds),
+* the film's exposure and view transform (AgX, -3.048),
+* the film's camera transform, lens and sensor **at a named frame**, read from
+  `sim/out/oner_camera_track.json`, and
+* the film's 180 deg shutter, with motion blur on.
+
+`sim/debris_ab.py` then renders the **same file twice** at the same frame, seed,
+samples and crop, with the `BREACH_Fines` collection excluded in the control,
+and reports the changed-pixel fraction at three thresholds. Nothing is rebuilt
+between the two, so a difference is the fines and cannot be anything else.
+
+**HONEST from these frames:** a chip's size in pixels; whether a flake reads as
+a streak under this beat's blur; the density of the field; the A/B.
+**NOT HONEST:** anything about occlusion by the car or the showroom, the fines
+against a particular background, or the grade in context. Those need the film
+scene and a card.
+
+The crop is a 4K **border** render, so the pixel scale is the delivery format's
+and not a downscale of it. That is the whole point: at 720p this field is
+1.07 px at p50 (R2-766) and a 720p frame would show a smooth grey wall and prove
+nothing.
+
+---
+
+## R2-777 — HOW TO TURN THIS ON, AND WHAT IT COSTS
+
+```bash
+# 1. the table (numpy only, ~8 min; writes sim/out/breach_debris.npz,
+#    NOT breach_film.npz -- the shipping table is not touched)
+.venv/bin/python sim/debris.py --selftest        # 19 controls
+.venv/bin/python sim/debris.py --report          # ledger, budget, size law, powder
+.venv/bin/python sim/debris.py --build
+
+# 2. land it with the breach, on whatever film scene is current
+bash sim/land_breach.sh <raw.npz> <report.json> <film.blend> <out.blend>
+#    ...or apply directly, adding --debris to the apply stage:
+blender -b <film>.blend -P sim/apply_breach.py -- \
+    --out <out>.blend --report sim/out/apply_NEW.json --force \
+    --debris sim/out/breach_debris.npz
+```
+
+`land_breach.sh` is NOT modified: its apply stage does not pass `--debris`, so
+landing a bake today behaves exactly as it did yesterday. Turning the fines on
+is a deliberate edit to one line of that script or a direct `apply_breach` call.
+That is the same reason the flag defaults off (R2-769).
+
+**Sweeps that need no rebuild of anything upstream:**
+
+| flag | what it moves |
+|---|---|
+| `--f-spall` | the one judgement in the budget (R2-763). 0.12 shipped. |
+| `--chips` | the grade budget. 260,000 shipped; linear in tris and keys. |
+| `--px-min` | the visibility floor, in 4K pixels. 1.6 shipped. |
+| `--sites` / `--site-cap` | spatial and per-site density of the emission |
+| `--seed` | a different field at the same statistics — for the "more than one seed" R2-700 asks any A/B on this beat to use |
+
+---
+
+## R2-778 — THE SHIPPING TABLE IS UNTOUCHED, VERIFIED
+
+```
+sim/out/breach_film.npz              ce704629abdfaeb948831f4179080015
+sim/out/breach_film_R6_SHIPPED.npz   ce704629abdfaeb948831f4179080015
+```
+
+Byte-identical to each other and to the md5 this task was handed. No bake was
+run, `sim/tmp/` was not written, `land_breach.sh` was not invoked, and the fines
+went to a **new** name, `sim/out/breach_debris.npz`. `sim/resample.py`,
+`sim/fracture.py`, `sim/shardmesh.py` and `sim/build_breach_sim.py` are
+unmodified; the only edit to an existing file in this block is
+`sim/apply_breach.py`, which gains an opt-in `--debris` flag, a
+`fines_material()` builder and a `build_debris()` pass, and whose own selftest
+still reports **PASS, 0 failed**.
+
+`/home/zany/opus5-car-render` was read only, and `docs/DEFECT-LOG-R2.md` was not
+edited.
+
+## R2-839 — the orbit was turning the way the film does not go, and that is a reversal, not a kink
+
+R2-838 softened the seam but did not fix it: the gate still read frame 754 at
+`0.3 -> 1.2 m/s`. The cause was not the easing. It was the **direction**.
+
+The orbit took the short way round — azimuth 177 deg -> 327 deg, +150 deg —
+arriving at the seam travelling **+x +y**. The film's very next key
+(`beat1_2_seam`, f755, [6.757, -4.424, 1.884]) leaves it travelling **-x -y**.
+That is not a kink, it is a **reversal**: the camera stops dead at f754 and goes
+back the way it came. Blender's AUTO_CLAMPED handles then flatten the key, because
+a local extremum is precisely what a reversal is.
+
+**Measured — per-frame chord either side of the seam, candidate against shipped:**
+
+```
+f744   cand 0.045   ship 0.064
+f750   cand 0.023   ship 0.056
+f754   cand 0.010   ship 0.051      <- the seam
+f756   cand 0.049   ship 0.049      <- the seam bridge takes over, identical
+```
+
+The shipped path never had this problem because its close-out arrived **already
+travelling -x -y**, monotone through the key, so nothing flattened. That is a
+constraint on the orbit's direction and it comes from the one-shot law.
+
+**So the sign is now chosen by where the film goes next**, not by which way is
+shorter: `seam_onward_point()` reads the first camera position after t=31.4 out of
+`beat1_2_seam` / `beat2` — blocks this file does not author — and the orbit turns
+whichever way leaves its azimuth rate matching. If that point cannot be found the
+short way is kept and the log says the seam's velocity continuity is NOT
+established, because a missing input must not become a silent claim.
+
+The long way is 210 deg instead of 150, and at a 7.5 m mean radius that is 27.5 m
+of arc in 12.08 s — which the pre-flight duly rejected at **4.04-4.52 m/s against
+beat 1's 4.00 m/s peak limit** (`BEATSHEET_VIOLATION`). Two changes paid for it:
+
+* **the rate profile is flat, not eased.** Start rate 1.00 — the camera reaches
+  the group station already moving at ~1.96 m/s and easing to a standstill and out
+  again is a deceleration the energy curve cannot afford. End rate 0.57, which is
+  ~1.2 m/s, matching the carried-forward seam-bridge keys instead of fighting them.
+* **the orbit cuts the corner.** The radius dips 1.0 m below the straight
+  interpolation at mid-arc and returns to it at both ends, removing ~2.4 m of arc
+  without moving either endpoint. **Bounded by the picture, not by the gate**: at
+  mid-arc the radius is 6.5 m and the lens ~37.5 mm, so the 5.72 m car spans 0.92
+  of frame width — still whole, which is the whole point of the payoff.
+
+Result — the six orbit segments become near-uniform and then ease into the seam:
+
+```
+4.33  4.44  4.43  4.37  4.09  3.38 m       2.15 -> 1.68 m/s
+peak estimates 2.29-3.35 m/s, all inside the 4.00 limit
+```
+
+### The path is cleaner than the film that shipped
+
+Per-frame campath gate, both paths, same tool:
+
+```
+SHIPPED    PASS — 0 FAIL, 6 advisory
+           kinks at f369, f370, f434 (the retired bridge keys' handles), f755
+           rotation smears f2266-2274, f2631-2655   (beat 5, pre-existing)
+
+CANDIDATE  PASS — 0 FAIL, 3 advisory
+           kink at f754 only
+           the same two beat-5 smears, unchanged
+```
+
+**Three of the shipped film's four path kinks were inside beat 1 and are gone.**
+The two beat-5 rotation smears are untouched and are not mine.
+
+**And the remaining f754 advisory is now the same character as the shipped film's
+own seam advisory, not a speed step:**
+
+```
+before R2-839   f754   0.3 -> 1.2 m/s   z = 32.9      a reversal
+after  R2-839   f754   1.2 -> 1.2 m/s   z = 10.2      residual curvature
+shipped film    f755   1.2 -> 1.2 m/s   z =  8.8      the same thing
+```
+
+Rig verdict: **`CAMERA_RIG_CONTINUOUS_AND_AIMED`, all six beats PASS**, beat 1
+worst aim 9.21 deg / frame-offset 0.598 against a 0.92 margin.
+
+---
+
+## R2-840 — the re-pacing moves the driver's entrance into the centre of the payoff shot
+
+**Found downstream, caused here.** `tools/place_driver.py` makes the driver figure
+appear at frame 580, and gates that choice with `figure_offscreen(...,
+render/film14_path.json, ...)` — a camera **two generations old**, so its PASS was
+never evidence about the shipping film and is certainly not evidence about this
+one.
+
+Under the shipped sheet f580 sat inside a 58 mm close-up of a single cluster, with
+the lens 0.29 m from the cockpit; the figure appeared far outside the frame and
+nobody saw it arrive. **R2-830/831/833 changes that completely**: the car is whole
+at f521 and f464-754 is one continuous orbit of the assembled car.
+
+**Measured by projecting the cockpit through both paths directly (path JSON only,
+no Blender):**
+
+```
+                f575        f580        f585
+SHIPPED    u  17.418      13.896      10.565     range 0.10-0.56 m   outside
+R2-829     u  -0.134      -0.131      -0.128     range 6.7-6.8 m     DEAD CENTRE
+```
+
+At f580 the steering wheel is at u -0.131, v -0.068 — the middle of a clean 6.7 m
+wide — with the halo (u -0.016, v 0.094) and cockpit internals (u -0.117, v
+-0.043) centred beside it. **A driver materialising there is a pop in the centre
+of the payoff.**
+
+### There is exactly one window left, and it is early
+
+Scanning from f396 (halo seats f388-396, so the cockpit is complete) to f792 for
+frames where the cockpit is **out** of frame:
+
+```
+f396-427    32 frames, 1.33 s     <- the only one in the whole beat
+```
+
+From f428 to the end the cockpit is in frame continuously, because the payoff is
+one unbroken orbit of the car. **The re-pacing does not merely move the hiding
+place; it very nearly abolishes it.** That is a general consequence worth stating:
+a beat whose payoff is a long continuous wide has almost no frames in which
+anything may quietly change.
+
+Re-measured with a DRIVER-SIZED box (the CI cluster grown 0.15 m in x, 0.30 m in
+y and 0.55 m upward for helmet clearance), worst |u,v| over all eight corners,
+1.00 = frame edge:
+
+```
+f400   101.96      f414   4.40      f428   1.38
+f406    21.00      f420   2.41      f430   1.22   marginal
+f410     8.45      f424   1.80      f434   1.05   marginal
+```
+
+**Recommendation: `--appear 400`.** The whole driver box is 102x outside the frame
+there — the camera is on RW's presentation key (f399), tight on the rear wing at
+58 mm. It is also motivated rather than merely hidden: the cockpit finishes
+assembling at f396 and the driver arrives four frames later. Anything in f396-412
+is safe; 400 is the maximum-margin choice.
+
+**Not landed here.** `place_driver.py` is not this block's to author and the change
+is one argument in the rebuild chain. Handed to the agent running that chain, with
+the instruction to re-gate against `film17_path.json` rather than `film14`, and to
+trust the tool over these numbers if the two disagree.
+
+## R2-714 — MAIN-THREAD CORRECTION: two claims I relayed to the client about the ending were both wrong
+
+Recorded because they were reported upward, not merely held internally.
+
+**1. "`BR_FenceMesh_L03` covers the car on the film's last three frames" — WITHDRAWN.**
+The `occ_frac_front = 1.000` rows are real, but the same rows carry
+`in_frame: false, in_frame_n: 0`. The sweep's own `runs_of()` gates on
+`in_frame`; **the finding came from reading past that guard.**
+
+**2. "That fence intrudes +7.105 m onto the racing surface" — WITHDRAWN.**
+Re-measured on built geometry with on-road/off-road controls and a
+`su_to_world`/`world_su` round-trip: **-6.756 m, i.e. 6.76 m OUTSIDE the
+surface.** Closed by R2-036's `world_contract` fix. Three placement reports
+disagree and the newest carries **byte-identical rows to the pre-fix run** -
+stale, which is R2-097's non-reproducibility defect biting a consumer.
+
+**The cross-reference between them held in neither direction.**
+
+**And what it was concealing is larger than either claim.** The car is
+**out of frame for f2834-2978 - 145 frames, 6.0 seconds, unbroken.** At f2978
+it is **69.26 deg off the camera axis inside a 13.67 deg half-angle**, confirmed
+by hand-reprojection from the camera path (screen-x 5.917 against the sweep's
+5.919). Not occluded, not small: absent. **The film's last six seconds do not
+contain their subject**, which is very likely what the client's "the ending I
+don't like" was reacting to.
+
+This also voids R2-709's `DRV_ = 0 px` as evidence about the driver - the car
+is not in shot at that frame. Re-measure where the driver reads.
