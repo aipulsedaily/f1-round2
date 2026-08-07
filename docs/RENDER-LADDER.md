@@ -331,3 +331,41 @@ on one card, 3.8 on two, 2.5 on three.**
 **Both cards bill at $0.9239/hr combined** = ~78 h of runway against $72.39. The
 per-broker $150 caps are **blind to each other** - $300 nominal against $72 real
 - so **credit is the binding constraint and the caps protect nothing.**
+
+---
+
+# CORRECTION 2026-08-07 (second) — 196.5 s/frame IS ALSO NOT THE FILM'S RATE
+
+The correction above replaced 510.5 s/frame with 196.5. **196.5 is 11 % low.**
+Full derivation in `STAGING-R2-971-to-R2-999.md`; the short version:
+
+The only whole-film measurement at the delivery spec is job `fc737127a232` —
+`film16_breach.blend`, 3840x2160, 512 spp, **9 frames spanning 30..2850**,
+1974 s, on an exclusive card with **zero overlapping jobs**:
+
+```
+                    THIS DOC      MEASURED (fc737127a232)
+4K/512 s/frame       196.5              219.3
+adaptive 0.02 saving  ~11 %              7.3 %   (frame 880, same card, 4 min apart)
+```
+
+Re-derived: **172.2 h, ~7.2 days, $76.5** at the current card's $0.4444/hr —
+**not $71.40.** Against $69.52 credit (read from the vast.ai account) less ~$3.8
+in flight, **the master is ~$11 short on the card we are on.**
+
+**This document has now been wrong about the master three times, in both
+directions, and every time for the same reason: a rate measured on one scene,
+or one frame, extrapolated across 2,978.** The rule that keeps being written
+here and not followed — *measure the artefact* — applies to per-frame time as
+much as to per-frame bytes. Before the master is scheduled, re-read
+`fc737127a232` from `state2/broker.db` rather than any number on this page.
+
+**The gap closes on the card, not on the look.** Exclusive `gpu_frac=1.0` 5090s
+exist at **$0.3356/hr** — 26 % under what we pay — and are invisible only
+because `vastctl.MIN_CPU_CORES_EFFECTIVE = 32.0`, a floor written for `rq exec`
+**build** throughput. A 4K master is one Blender process with Cycles and
+denoise on the GPU and the scene loaded once; CPU is 1.9 % of its wall clock.
+On such a card the master is **~$61** and fits. See R2-973.
+
+**Do not reach for 256 spp.** It fits at ~$40 and the client declined it as a
+look decision. It is not a budget lever.

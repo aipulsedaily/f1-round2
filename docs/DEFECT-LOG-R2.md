@@ -25668,3 +25668,1527 @@ success and only a fourth, watching every frame at 1:1, found that *"the
 candidate fixes the geometry and does not fix the ending."* The builder of a fix
 is the worst-placed judge of it, and here we can afford a judge who built
 nothing.
+
+## R2-840l — THE PROXY IS SUBMITTED, AND IT WAS RESUBMITTED IN CHUNKS RATHER THAN AS ONE JOB
+
+Submitted `r2beat1_v2` off `render/film17_breach.blend`, 1280x720 / 64 samples /
+CYCLES / OPENIMAGEDENOISE / `--dof scene` / adaptive 0.01, frames 1-792.
+
+**The first submission was cancelled without ever running, and the reason is worth
+keeping.** `rq anim` accepted the whole 792-frame range as ONE job and then said:
+
+```
+!! ONE JOB, 792 FRAMES — this holds a worker for ~9.4h and nothing preempts it:
+!! run_sequence does not yield, and the dispatcher only re-evaluates fairness
+!! BETWEEN jobs. Two such submissions once held the farm for 10,200 s while
+!! seven agents' 60 s renders could not run.
+```
+
+The broker was not speaking hypothetically: at that moment it had **6 other jobs
+queued and 1 running**, and the running one was another agent's `r2851ab`, itself
+submitted as `20/62 frames` — **they were already following the convention.** A
+792-frame job at `--prio 90` would have taken the only worker for nine and a half
+hours and starved every one of them.
+
+Cancelled `4fc754a6e63d` and resubmitted as **13 chunks of <= 62 frames** under
+the same `--name`, which is the resume key, so chunking costs nothing and the
+7.98 GB scene stays resident across them.
+
+```
+1-62   5dcd5edad9b1     435-496  fe23eeb4be35
+63-124 339d8471225f     497-558  8cc80d2d6cb1
+125-186 9093af29781d    559-620  0f12f7f62a0c
+187-248 2a4533c42d99    621-682  fe349e095287
+249-310 c4a393e49f04    683-744  d4d7e236b1cf
+311-372 527eca7ecba2    745-792  2744aa4b659e
+373-434 0067b8bcadaa
+```
+
+Projected **$4.21** total (12 x $0.33 + $0.25), against a $150 cap with $9.24
+spent. The broker flags its own estimate as a BASIS MISMATCH — 43 s/frame measured
+on other sequences, not this spec — so the actual will be reported when it lands.
+
+*Generalises to:* **the tool's warnings are load-bearing and this one names its own
+incident.** A submission that is accepted is not a submission that is neighbourly,
+and on a shared farm the difference is nine hours of somebody else's work.
+
+## R2-862 — WATCHED. The candidate fixes the geometry and does NOT fix the ending.
+
+264 frames at 720p (`watch/R2851_ending_CANDIDATE.mp4`) against the shipped arm,
+plus the 4K stills at 1:1. **MEASURED ON FRAMES**, not on the path.
+
+**What it fixes, and these hold up on screen:** the whip is gone, the pull-back
+reads as one continuous gesture, the hold breathes instead of freezing, and the
+frame at f2860 is circuit and treeline rather than 58 % bare mown-looking field.
+Against the shipped arm it is better in every respect the client complained about.
+
+**What it does not fix.** At 1:1 on the 4K final frame the car is dead centre and
+is **a grey-blue smudge on the run-off, of a piece with the tyre-wall shadow and
+the gravel behind it.** The frame is a handsome, layered, correctly-hazed aerial
+of a circuit corner **with no subject in it.**
+
+This is not the wash-out I was worried about — the car is *visible*. It is that
+**visible and "a subject" are different things, and I conflated them.** The 4K
+measurement said so in numbers before I looked: peak luminance contrast **7 %
+below** background, the car actually *brighter* than its surround (0.516 vs
+0.476), carried by a specular hit on the airbox and a 0.14 blue-minus-red break.
+That is a detail you can find when told where to look. A closing image cannot be
+built on it.
+
+### The camera cannot fix this. The distance can.
+
+At 130 mm and 4K:
+
+| car distance | width @4K | reads as |
+|---:|---:|---|
+| **1,000 m — today** | **79.5 px** | a smudge on the run-off |
+| 700 m | 113.6 px | findable, still not a subject |
+| 450 m | 176.7 px | a car |
+| 300 m | 265.0 px | a car with a visible wing and airbox |
+
+There is no lens and no aim that turns a 5.698 m object at 1 km into a closing
+subject — R2-860 already showed the framing is rotation- and scale-invariant.
+**The only free variable left is how far away the car is**, and that is
+`carpath.py`'s extrapolation at a constant 83.1 m/s, which carries it 913 m in
+the closing 11 s.
+
+A lap-down deceleration is not enough on its own:
+
+| 83.1 m/s decays to | travelled | approx camera distance | width |
+|---:|---:|---:|---:|
+| 60 m/s (216 kph) | 787 m | ~862 m | 92 px |
+| 40 m/s (144 kph) | 677 m | ~742 m | 107 px |
+| 15 m/s (54 kph) | 540 m | ~591 m | 134 px |
+
+**But the car coming to rest near the start/finish line does it.** From the hold
+at `[594.19, 16.05, 140.0]` to `start_finish_world [329.396, 169.82, 0]` is
+**336.7 m — 236 px.** That is a subject, and a car easing to a stop after a
+flying lap is what actually happens. It is also a better *idea* than the current
+one: the film would end where the lap began.
+
+### Recommendation
+
+**Ship R2-853 anyway, and do not call the ending solved.** It is strictly better
+than the shipped arm on every axis, and — the reason it matters — **it is the
+necessary first half.** Its aim tracks the car, so a car that ends up closer is
+framed automatically and correctly. The shipped camera would still be pointed at
+the facade and would miss a nearer car entirely.
+
+**The second half is not mine.** It is `anim/carpath.py:28-33` and it costs an
+11-second rebuild of the spatialised audio. R2-857 flagged it as the
+highest-leverage change available; **R2-862 upgrades it from an option to the
+finding.** The ending is a car-motion problem wearing a camera problem's clothes,
+and three passes of camera work were needed to establish that it is not a camera
+problem.
+
+## R2-941 — the flying lap ends 4.15 m before the line, and the beat boundary is 0.018 s after it
+
+**MEASURED** on `telemetry/telemetry.csv` and `anim/filmtime.py`.
+
+Nobody had put these four numbers next to each other, and once they are, the
+ending authors itself.
+
+| | |
+|---|---:|
+| telemetry ends | world t **72.58333** s, track s **3670.850** m |
+| lap length (`headline.length_m`) | **3675.0** m |
+| so the car crosses the start/finish line at | world t **72.62957** s |
+| last frame of beat 5, f2714 | world t **72.61153** s |
+| first frame of beat 6, f2715 | world t **72.65320** s |
+
+**The car crosses the start/finish line BETWEEN the two frames of the
+f2714/2715 seam.** Beat 5 is the flying lap and it ends, to within 0.43 of a
+frame, at the moment the lap ends. That is not a coincidence anyone has to
+arrange — it falls out of the beat sheet as it already stands.
+
+Two consequences, both load-bearing:
+
+1. **The whole of the lap-down is inside beat 6.** A deceleration keyed off the
+   line crossing cannot touch a single frame of beats 1-5, and f2714 — the seam
+   frame whose 1.33 % interpolation measurement must survive — is still flat out
+   at 89.767 m/s and **bit-identical**.
+2. R2-862's phrase *"the film ends where the lap began"* is literally available.
+   The car does not have to be brought back to the line; it is AT the line when
+   beat 6 starts, at 323.2 km/h, and the beat is the 11 s after.
+
+**A correction to the brief this task was given.** The authorised target was
+*"336.7 m is where the car comes to rest near the start/finish line"* — the
+distance from the camera's hold at `[594.19, 16.05, 140.0]` to the line itself.
+The car cannot come to rest **at** the line: it arrives there at 323 km/h on the
+first frame of the beat. It comes to rest **past** it, on the pit straight, and
+that is *better* rather than a compromise — see R2-942.
+
+---
+
+## R2-942 — the pit straight is exactly 250.0 m long and the distance to the camera has a minimum inside it
+
+**MEASURED** on `docs/circuit_spec.json`'s own element table and centreline.
+
+```
+elements[0]   S   s_start 0.0    length 250.0   "S0  pit straight S/F->T1"
+elements[1]   A   s_start 250.0  length 108.21  R100 62 deg  "T1  Vitrine"
+```
+
+So there is a **declared 250 m box** the car may come to rest in. Past it the car
+is stopped in the middle of a 100 m-radius corner, which does not read as a
+lap-down — it reads as a retirement.
+
+Distance from the camera's hold to the centreline, and the car's width at 4K
+through the candidate's closing 130 mm lens:
+
+| track s | dist to hold | car @4K | |
+|---:|---:|---:|---|
+| −50 | 355.3 m | 222 px | before the line |
+| **0** | **336.7 m** | **235 px** | the line — the brief's figure |
+| 50 | 324.7 m | 243 px | |
+| **100** | **320.2 m** | **247 px** | **the minimum** |
+| 150 | 323.5 m | 244 px | |
+| 200 | 334.3 m | 236 px | |
+| **226.5** | **342.9 m** | **231 px** | where it stops (R2-943) |
+| 250 | 351.9 m | 224 px | T1 entry — the boundary |
+| 300 | 383.9 m | 206 px | inside T1 |
+| 500 | 562.2 m | 141 px | |
+
+**The function is flat.** Anywhere on the pit straight is 320-352 m and 224-247
+px. There is no fine tuning to do and no reason to chase the 320 m minimum: what
+matters is landing inside the 250 m box at all, and every point in it clears
+R2-862's *"a subject"* threshold of ~236 px or sits within 5 % of it.
+
+---
+
+## R2-943 — CANDIDATE: the lap-down. Grip-limited, aero-assisted, released at rest.
+
+`anim/carpath.py`. Beats 1-5 are **bit-identical**, proved against a control
+built from the same source with the model switched off.
+
+    >> STAGE RESULT: LAPDOWN_OK
+
+### The model, and why each term is there
+
+```
+a(v) = [ A_ROLL + (A_BRAKE + K_AERO v^2) * smoothstep(v / V_RELEASE) ]
+       * smoothstep(dt / ONSET_S)
+
+A_ROLL     1.2 m/s^2    rolling resistance + engine braking
+A_BRAKE    7.0 m/s^2    the brake where only mechanical grip is available
+K_AERO     0.0038 /m    the aero term: +30.6 m/s^2 at the speed it crosses at
+V_RELEASE  15.0 m/s     the brake is progressively released below 54 km/h
+ONSET_S    0.30 s       the driver's foot
+```
+
+* **`A_ROLL` never vanishes, and that is the whole reason it is a separate term.**
+  Every profile that tapers the deceleration to zero as `v -> 0` — including the
+  three I tried first — makes the car approach rest *asymptotically*: it is still
+  creeping at 0.3-0.5 m/s on the last frame and never actually stops. A car that
+  nearly stops is not an ending. With a floor of 1.2 m/s² the speed reaches
+  **exactly** zero in finite time and stays there.
+* **`K_AERO v²` is not decoration.** An F1 car's braking is grip-limited and its
+  grip is aero-assisted, so deceleration falls with speed. A constant-g stop from
+  89.767 m/s either takes 493 m (too far — 141 px) or needs 4.7 g (a limit stop,
+  not a lap-down). The aero term is what buys a firm early brake AND a long, slow
+  arrival inside the same 11 s.
+* **`ONSET_S` exists for the seam.** Without it the deceleration steps from 0 to
+  35 m/s² in one instant. It is not visible — 1.5 m/s of speed change in a frame
+  moves the 180° motion blur by 27 mm — but the seam is the one place in this
+  film where "not visible" is not the standard.
+
+### The brake point is derived, not chosen
+
+`t_brake = t_end + (lap_m − track_s_end) / v_end = 72.62957 s`, i.e. the line
+crossing from R2-941. Not `t_end`. The 4.15 m between them is the difference
+between a lap-down that starts at the line and one that starts 0.046 s early.
+
+### What it does
+
+| | |
+|---|---:|
+| speed at the line | 89.7671 m/s = **323.2 km/h** |
+| peak deceleration | 35.27 m/s² = **3.60 g** at world t+0.9 s |
+| comes to rest | **9.226 s** after the lift = **film frame 2936** |
+| distance travelled | **226.52 m** |
+| margin to T1 | **23.5 m** inside the 250 m pit straight |
+| stationary for | frames 2936-2978, **42 frames = 1.75 s** |
+
+An F1 car brakes at 5-6 g from 320 km/h. **3.60 g is roughly 65 % brake** — a
+driver crossing the line and braking firmly, not a limit stop and not an
+emergency. It is the one number in this model that is a taste judgement, and it
+is stated so it can be argued with.
+
+Per-frame, against the candidate camera:
+
+```
+    f   track_s    v m/s     kph    dist m   px @4K   px/frame   | SHIPPED dist    px
+ 2714      -1.6    89.77   323.2      85.0    171.6     112.65   |        85.0  171.6
+ 2715       2.1    89.76   323.1      87.3    167.1     109.70   |        87.3  167.1
+ 2760     106.1    53.75   193.5     156.8     83.3      32.75   |       175.8   74.3
+ 2820     203.4    15.83    57.0     272.8     51.6       5.98   |       431.0   32.7
+ 2880     223.2     3.27    11.8     335.0     76.5       1.83   |       664.9   38.6
+ 2906     225.6     1.58     5.7     342.5     97.6       1.13   |       751.7   44.5
+ 2936     226.5     0.00     0.0     342.9    146.4       0.00   |       860.5   58.3
+ 2978     226.5     0.00     0.0     342.9    230.4       0.00   |      1000.1   79.0
+```
+
+### Everything downstream of the car had a constant-speed assumption in it
+
+The model is one function, `Car._extrap`, and **four** other places were reading
+`v[-1] * (t - t_end)` or holding a constant. All four now walk the same table:
+
+| file | what it was doing | what it would have shipped |
+|---|---|---|
+| `anim/carrig.ground_distance` | `dist_c[-1] + v[-1]*dt` | tyres spinning at 323 km/h under a car standing still for 42 frames |
+| `anim/carrig.body_pitch` | `return 0.0` | a car braking at 3.60 g sitting dead level on its springs |
+| `anim/carrig.body_roll` | `v[-1]**2 * curvature` | lateral lean computed at 323 km/h while stationary |
+| `audio/scene.Telemetry.sample` | its own copy of the extrapolation | the engine at 323 km/h under a stopped car |
+| `tools/car_anim_gate._ctrl_*` | `v[-1]*dt / r` | the control failing on beat 6 and no longer naming the launch |
+
+`body_pitch` now uses **`tools/build_telemetry.py` line 533's own closed form** —
+`clip(-ax/30, -1, 1) * 1.6 deg` — on the lap-down's deceleration, so the car dives
+onto its nose under braking with the same law the telemetry itself was written
+with. At 3.60 g the term clips, i.e. the full declared 1.6°.
+
+### The 0.08 deg pitch step at `t_end` is PRE-EXISTING and is deliberately not fixed
+
+Raised by the audio rebuild (R2-953) and checked here. `carrig.body_pitch`
+returns the telemetry's own `pitch_c` up to `t_end` — where `ax = +1.5073`, i.e.
+0.080 deg nose-UP under power — and 0 immediately after. The step lands between
+frames 2713 and 2714, inside the 46.2 ms flat-out segment.
+
+**It is not mine.** The shipped `body_pitch` returned a flat `0.0` for the entire
+extrapolation, so the identical step is in the shipped film. R2-943 only changes
+behaviour past `t_brake`; between `t_end` and `t_brake` it still returns 0.
+
+**And I am declining to fix it, which is the part worth writing down.** Carrying
+the telemetry's last acceleration across those 4.15 m would cost **f2714's car
+pose its bit-identity with the shipped film** — the single strongest claim in
+R2-944 and R2-947, and the one that makes the f2714/2715 seam safe without
+re-measuring it. The gain is 0.080 deg of body pitch, which at a 3.600 m
+wheelbase is **5 mm of nose height**, on one frame, at 85 m, through a 24 mm
+lens: about 0.02 px. **Trading a proof for 0.02 px is a bad trade** and the
+tidiness of not leaving a known step is not worth it. Recorded so the next agent
+does not "fix" it and quietly spend the guarantee.
+
+### `F1_LAPDOWN=0` is an A/B fixture and nothing on the ship path may read it
+
+It exists so a control arm can be built from the same source on the same box —
+see R2-944 — and it is default-on. Named here because R2-723 is exactly the rule
+it could violate: *a fixture that proves a checker works must never become a
+default.*
+
+---
+
+## R2-943b — the car stops past the pits, and no braking rate can change that
+
+**MEASURED** by taking `world/build_architecture.py`'s own declared pit-building
+box through `WC.circuit_to_world` and projecting it into the built closing frame.
+
+The circuit frame is aligned with the pit straight — track s **is** circuit x,
+and the centreline sits at circuit y = 0 — which makes the architecture's
+declared numbers directly comparable:
+
+```
+pit building   PB_X0, PB_X1 = -245.0, 75.0      i.e. from 235 m BEFORE the
+               PB_Y0, PB_Y1 =   23.5, 40.5           line to 75 m AFTER it,
+                                                      23.5-40.5 m to one side
+car comes to rest                s = 226.5 m     i.e. 151 m past its east end
+```
+
+Projected into the 130 mm closing frame, with the camera aiming at the car:
+
+| car rests at | dist | car px | start/finish line | pit building |
+|---:|---:|---:|---|---|
+| s=100 | 320.2 m | 246.7 | ndc x −2.25, out | **3 corners IN frame** |
+| s=150 | 323.5 m | 244.2 | out | none |
+| s=200 | 334.3 m | 236.3 | out | none |
+| **s=226.5** | **342.7 m** | **230.6** | ndc x −5.73, out | none |
+| s=250 | 351.9 m | 224.5 | out | none |
+
+**Only s=100 puts any architecture in the closing frame, and s=100 is not
+reachable.** Stopping in 100 m from 89.767 m/s is 4.03 g *mean*, which the aero
+profile delivers at about 8 g peak. Even a genuine limit stop — 5.34 g peak, the
+hardest profile in my grid search — covers 161.6 m and still finishes 87 m past
+the building. **The car crosses the line at 323 km/h and physically cannot stop
+inside the 75 m of pit building that remains in front of it.**
+
+So the closing frame is *determined*: a 95 m-wide stretch of the pit straight
+past the pit exit, with the car at its centre, and no architecture and no
+start/finish line in it. That is not a choice I made and it is not one available
+to be made differently.
+
+**Whether that is good is a separate question and I am not going to pretend the
+arithmetic answers it.** The case for it is R2-855's own statement of what the
+ending is for — *"the car, alone, still running"* — and that the shipped ending's
+failure was partly clutter: a 65 px wound in a truck park. A clean frame of the
+car alone on the circuit is the opposite failure mode from the one we have. The
+case against is that *"the film ends where the lap began"* is then true in the
+world and invisible in the frame. **R2-950 has to settle it by looking.**
+
+---
+
+## R2-944 — the rig rebuilt: beats 1-5 bit-identical, and the seam step is the same object in all three arms
+
+Built with `anim/build_camera_rig.py` from `docs/R2851_beat_sheet_CANDIDATE.json`
+— **R2-853's sheet, unmodified.** The camera candidate ships as it stands; the
+only new variable is where the car is.
+
+    >> STAGE RESULT: CAMERA_RIG_FAIL     (1_assembly, PRE-EXISTING — see below)
+
+Three arms, all measured with one instrument:
+
+* **A** `work/r2941/camrig_R2943_path.json` — the lap-down.
+* **B** `work/r2941/camrig_CTRL_constv_path.json` — the SAME build with
+  `F1_LAPDOWN=0`. One variable, same box, same minute.
+* **S** `render/film17_path.json` — the shipped film, for scale.
+
+### A against its own control
+
+| | position | rotation |
+|---|---:|---:|
+| f1 – f2713 | **0.000e+00 m** | **0.00000 deg** |
+| **f2714, the seam frame** | **0.000e+00 m** | **0.00000 deg** |
+| **f2715** | **0.000e+00 m** | **0.00000 deg** |
+| f2716 – f2978 | 0.000e+00 m | 18.38 deg (f2795) |
+
+**The lap-down changes nothing before frame 2716.** Not "nothing measurable" —
+nothing. And the control is itself bit-identical to the previous agent's R2-853
+build over all 2,978 frames, so the chain back to R2-853 is closed.
+
+### The f2714/2715 seam
+
+| arm | position step | rotation step | lens |
+|---|---:|---:|---|
+| A lap-down | 2.5454 m | 0.06240 deg | 24.003 → 23.999 |
+| B const-v | 2.5454 m | 0.06240 deg | 24.003 → 23.999 |
+| S shipped | 2.5454 m | 0.06239 deg | 24.003 → 23.999 |
+
+**Every input to the 1.33 % seam measurement is identical to the shipped film's,
+to 1e-5 deg.** The seam is not at risk and does not need re-measuring on pixels
+to know that — nothing that feeds it moved.
+
+### R2-944b — the one path by which a beat-6 key can still reach frame 2714, closed
+
+Prompted by the audio rebuild, which found **three** whole-film reductions that
+turned a change to the last 11 s into a change from sample 42 onward. The picture
+has one structural analogue and it is worth naming rather than assuming away:
+**Cycles reads the F-curves at SUB-FRAME times for motion blur**, so frame
+2714's shutter samples into the LINEAR segment 2714 → 2715, whose far endpoint
+this change moves. Frame 2714 being bit-identical *at its own key* does not by
+itself settle what its blur integrates.
+
+    >> STAGE RESULT: SEAM_MOTION_BLUR_CLEAN
+
+| | |
+|---|---:|
+| car delta at f2713 and f2714 | 0.000000e+00 m |
+| car delta at f2715 | **3.540e-05 m** |
+| car delta at f2716 | 1.843e-03 m |
+| worst displacement inside f2714's shutter, CENTER (Blender default) | 8.850e-06 m = **2.666e-04 px** at 4K |
+| worst, if the shutter were END-aligned | 1.770e-05 m = 5.331e-04 px at 4K |
+
+The reason it is this small is the same reason R2-941 matters: at f2715 the brake
+has been on for **23.6 ms** and the onset smoothstep is only 1.8 % applied, so
+the car has lost 35 microns against the constant-speed arm. The camera is
+bit-identical at f2715 in both position and rotation, so its own blur is
+untouched. **Half a thousandth of a pixel** is not a tolerance, it is an absence.
+
+### Pan rate, smear and the aim gate
+
+| | peak pan | mean | worst smear @4K 180° |
+|---|---:|---:|---:|
+| S shipped | 91.47 deg/s (f2832) | 10.29 | 84.7 px |
+| B const-v candidate | 10.50 deg/s (f2811) | 3.84 | 34.0 px |
+| **A lap-down** | **6.12 deg/s** (f2761) | **2.56** | **6.0 px** |
+
+The lap-down more than halves the candidate's own peak pan and cuts its worst
+smear by 5.7x, for a reason that is obvious once stated: **a camera tracking a
+decelerating car has less angle to cover than one tracking a car that keeps
+going.** The whip R2-851 found is not merely gone, the beat is now the calmest in
+the film.
+
+Aim gate, `6_ending`: **0.029 deg worst at f2758** against a 26.0 bound, max
+subject range **342.5 m**. The shipped rig's beat-6 entry read 1000.0 m.
+
+`worst_position_jump_m 4.2469 at f1209` and `worst_rotation_step_deg 12.957 at
+f2634` are **unchanged from the R2-853 build** — beat 6 does not become the
+film's worst case in either.
+
+### The 1_assembly FAIL is not mine and is not new
+
+`1_assembly FAIL — subject reaches 1.155 of the half-frame at frame 431` appears
+identically in A, in B, and in the previous agent's R2-853 build, and R2-861
+already proved it reproduces with the **original, unmodified** `build_camera_rig`
+on the shipped sheet. It belongs to whoever owns the beat-1 re-pace. **A film
+cannot be rebuilt from this sheet until f431 is resolved**, and that is true with
+or without this change.
+
+---
+
+## R2-945 — the car is in the picture on all 264 frames and never below 51 px
+
+**MEASURED** by projecting `carpath.Car` through each built path with a
+rectilinear projection (R2-858's correction: a perspective camera is
+rectilinear, `ndc_x = (loc_x/fw)/tan(hfov/2)`, not equidistant).
+
+| arm | frames OUT of frame | worst \|ndc\| | min car px | **car px at f2978** |
+|---|---:|---:|---:|---:|
+| S shipped | **146 / 264** | 11.457 (f2969) | 27.9 | 79.0 |
+| B const-v candidate | 0 / 264 | 0.009 (f2977) | 31.5 (f2862) | 79.0 |
+| **A lap-down** | **0 / 264** | **0.000** (f2719) | **51.3** (f2817) | **230.7** |
+
+`|ndc| = 0.000` is not a rounding of something small: the car is on the frame's
+centre line to better than a pixel for the entire beat, because the aim keys are
+now dense enough (R2-859's `max_stride_frames: 2`) and the subject's bearing
+changes smoothly.
+
+**230.7 px against R2-862's own ladder** — 176.7 px "a car", 236 px "a subject",
+265 px "a car with a visible wing and airbox". 230.7 px is 2.92x the shipped
+arm and lands 2 % below the "a subject" mark. **That is a geometric claim and
+not a claim about the picture**; only the 4K still can settle whether it reads.
+
+---
+
+## R2-946 — the closing frame stops containing bare ground at all
+
+**MEASURED** by reproducing R2-856's method on all three arms: a 96×54 grid
+through the frustum of the actual built path, cast onto z=0, with
+`build_terrain.py`'s own two meadow-scatter gates evaluated at each hit —
+`D < 430 m` from the centreline (line 3808) and `smoothstep(700, 260, dcam)`
+against the camera path (line 3812). Percentages are **of the whole frame**.
+
+| frame | arm | lens | sky | grass | **bare mesh** | ground range |
+|---:|---|---:|---:|---:|---:|---|
+| 2860 | shipped | 18.82 | 29.6 % | 58.4 % | 11.9 % | 198 – 12,095 m |
+| 2860 | const-v | 30.08 | 16.7 % | 57.5 % | 25.8 % | 250 – 18,382 m |
+| **2860** | **lap-down** | 30.08 | 0.0 % | 87.0 % | **13.0 %** | 192 – 1,556 m |
+| 2906 | shipped | 40.00 | 3.7 % | 73.0 % | 23.3 % | 306 – 24,533 m |
+| 2906 | const-v | 54.99 | 0.0 % | 54.4 % | 45.6 % | 391 – 17,862 m |
+| **2906** | **lap-down** | 54.99 | 0.0 % | 100.0 % | **0.0 %** | 249 – 618 m |
+| 2978 | shipped | 74.00 | 0.0 % | 94.4 % | 5.6 % | 392 – 1,463 m |
+| 2978 | const-v | 129.99 | 0.0 % | 34.1 % | 65.9 % | 644 – 2,122 m |
+| **2978** | **lap-down** | 129.99 | 0.0 % | **100.0 %** | **0.0 %** | 295 – 421 m |
+
+**R2-856's cost is paid back.** That entry recorded, honestly, that the long lens
+bought patch-boundary cropping and paid for it in bare ground — 45.6 % at f2978
+against the shipped 37.7 %. The reason was arithmetic: a 130 mm lens on a camera
+looking 1 km away reaches from 644 m to 2,122 m, and everything past 700 m is
+outside the grass scatter radius. **A 130 mm lens looking 343 m away reaches from
+295 m to 421 m, and all of it is inside.** The bare ground was never a property
+of the lens. It was a property of how far away the camera was pointing, which is
+the same variable R2-862 identified.
+
+**Two caveats, stated rather than buried.**
+
+1. **My absolute numbers do not reproduce R2-856's, AND THE PICTURE REFUTES
+   MINE.** I first wrote that I had not reconciled the two and that anyone acting
+   on the percentages should re-derive them. Then I opened the rendered frame,
+   which settles it against me. My metric calls the constant-speed arm's f2978
+   **65.9 % bare mesh**; the actual 4K render of that exact frame
+   (`out2/seq/r2851_4k_B_candidate/..._002978.png`) is a corner enclosed by a
+   dense treeline, grass banks, tarmac, gravel and tyre walls, and there is no
+   part of it a reasonable person would call untextured ground.
+
+   The cause is that `build_terrain.py`'s **meadow grass scatter is one of
+   several vegetation systems**, and I gated on its two conditions alone. A hit
+   that fails the meadow test can still be carrying woodland, verge clumps or
+   hedge. **"Fails the meadow gate" is not "bare".** My percentages measure a
+   thing that is not what the client is looking at, and they are withdrawn.
+
+   What survives, and it is the entire mechanism, is the **ground range** column,
+   which involves no scatter model at all: the last frame reaches 644–2,122 m in
+   the constant-speed arm and **295–421 m** in the lap-down. That is arithmetic
+   on the frustum. It is also the only column I would now quote.
+
+   > A metric that disagrees with the picture is not a second opinion. This one
+   > was built in twenty minutes to answer the client's literal complaint, agreed
+   > with a staged measurement's *direction*, and was wrong. Looking at the frame
+   > cost thirty seconds and was decisive.
+2. **Finer sampling cuts both ways.** The closing frame's ground sampling goes
+   from ~72 mm/px to **24.7 mm/px**, so `mat_ground`'s missing 0.4–19 m detail
+   band (R2-854 item 2) now lands at 16–770 px instead of 5–260. The frame has
+   less bad ground in it and resolves what is there three times better. **That is
+   a question only the 4K still can answer**, and R2-854's terrain items are not
+   discharged by this entry.
+
+---
+
+## R2-947 — the film re-key: the car stage, and the bug it caught before the farm did
+
+`work/r2941/rekey_film_R2943.py`, derived from the proven
+`work/r2851/rekey_film_R2851.py`. Two stages — the car, then the camera — and it
+refuses to do one without the other, because camera-only tracks a car that is not
+there and car-only brakes out of a frame still pointed at the facade.
+
+Proved on `world/car_anim.blend` (302 MB, opens locally) before going near an
+8 GB film scene:
+
+    >> STAGE RESULT: TEST_REKEY_CAR_OK
+    11,088 key values rewritten on frames 2715-2978 across 9 objects
+    113,988 keys at or before f2714 verified BIT-IDENTICAL
+    FL wheel angle at f2936 / f2950 / f2978: 11916.96777 (delta 0.000e+00 rad)
+    car position f2936 vs f2978: 0.0000e+00 m
+
+### `pose_series` accumulates from its first sample, and slicing it rolls the tyres back 1,796 revolutions
+
+`carrig.pose_series` builds wheel rotation as a running chord sum starting at
+**zero on its first sample** — deliberately, so rolling contact is exact against
+the chords the LINEAR keys actually travel (its own docstring). Handing it frames
+2715..2978 therefore restarted the wheels: the first version of this stage keyed
+the front-left from **11,283.23 rad at f2714 to 9.14 rad at f2715**, an 1,796
+revolution snap backwards inside one frame, in the last beat of the film.
+
+The fix is to compute all 2,978 poses and write only the tail — which costs
+seconds and **buys a check for nothing**: the same call also produces values for
+frames 1..2714 that this stage does NOT write, so they can be compared against
+what is already in the file. Worst disagreement **4.882e-04** on values up to
+14,026 rad, i.e. float32 storage. A stage that only checked what it changed could
+not have seen either problem.
+
+> The general shape, and it is the third time this project has met it: **a
+> function that is correct over a whole domain is not automatically correct over
+> a slice of it.** `pose_series` is right; calling it on a window is wrong.
+
+### The car_anim gate's central claim, checked directly on the new motion
+
+    >> STAGE RESULT: ROLLING_CONTACT_OK
+
+| over all 2,977 intervals | |
+|---|---:|
+| worst \|d(spin)·r − d(chord)\| | **1.350e-12 m** |
+| worst backwards wheel step | **0.000e+00 rad** |
+| beat-6 speed monotone non-increasing | **True** |
+| beat-6 brake dive, peak | **1.6000 deg** nose-down — the telemetry's own declared ceiling, i.e. the term clips |
+| brake dive at rest | 0.0000 deg |
+| beat-6 steer, peak | 0.0000 deg — the pit straight is straight |
+
+Rolling contact is exact by construction rather than to a tolerance, because the
+wheels are built from the same chord series the positions are, which is what
+`pose_series` exists to guarantee.
+
+---
+
+## R2-948 — my own instrument was wrong twice, in opposite directions, in one hour
+
+Recorded because both errors produced plausible numbers and one of them
+manufactured a defect that does not exist.
+
+**First: `2*acos(dot)` on a path JSON stored to 6 decimal places.** Near zero
+rotation, `acos` loses all precision — a 5e-7 rounding in each quaternion
+component amplifies to a **0.19 deg floor between two BIT-IDENTICAL
+quaternions**. I used it to report a "0.1961 deg beat-1 difference at f751"
+between two builds whose quaternions print identically. There was no difference.
+
+**Second: the replacement was off by a factor of two.** `2*atan2(|a−b|, |a+b|)`
+is numerically stable and returns **half** the rotation angle: `|a−b| = 2
+sin(Δ/4)`, so the atan2 gives Δ/4 and the factor is **4**, not 2. Every rotation
+number in the first revision of R2-944 was halved, and they all still looked
+reasonable — 45.74 deg/s for a whip pan is a perfectly plausible whip pan.
+
+What caught it: the halved shipped-arm peak came out at **45.74 deg/s against
+R2-851's independently staged 91.5**, an exact factor of two, which is the shape
+of a units error rather than a disagreement. With `4*atan2` the same instrument
+reproduces R2-851's figures — 91.47 vs 91.5 deg/s, 84.7 vs 84.8 px of smear,
+34.0 vs 36.5 px for the candidate — on a metric it now also verifies against
+known rotations of 0.001, 0.5, 5, 45 and 179 degrees, and whose noise floor on a
+6-dp round trip is **0.000e+00**.
+
+> **An agreement is only evidence if the two instruments could have disagreed.**
+> R2-858 wrote that about an angle that was projection-independent. Here it is
+> the reverse and better: a *disagreement* by exactly 2.000 was the only thing
+> that could have found this, and it only existed because a previous agent had
+> staged its numbers where I could collide with them.
+
+`work/r2941/qmetric.py` is the corrected metric and carries both errors in its
+docstring.
+
+---
+
+## R2-949 — what the arrival costs, stated before anyone watches it
+
+Three things get worse or stay unresolved, and none of them are hidden in the
+tables above.
+
+1. **The last 1.75 s is a car at rest under a lens push on a static camera.**
+   The camera holds from f2906 and the car stops at f2936, so frames 2936-2978
+   contain no motion at all except the 55 → 130 mm push. R2-852 named exactly
+   this gesture as the defect in the shipped ending — *"a lens push on a frozen
+   camera … what a still photograph being zoomed looks like"*. The difference I
+   am claiming is that there is now a subject in it and the stillness is the
+   subject's, not the camera's: the last thing that happens in the film is the
+   car stopping. **That is an assertion about a picture and it is the one thing
+   in this entry that a metric cannot settle.**
+2. **R2-853's "the hold breathes" is spent.** That entry earned 2.89 deg of pan
+   across f2906-2978 because the camera was still tracking a moving car. Tracking
+   a stopped car is 0 deg. The hold is a hold again.
+3. **The closing frames contain no sky and no horizon at any lens.** Registered
+   BEFORE watching, so it cannot be rationalised afterwards. The camera holds
+   140 m up and 313 m out, so the car sits **24.10 deg below horizontal**, and
+   the frame's half-vertical angle only reaches that at about **22.6 mm** — where
+   the car is 40 px. Every lens that makes the car legible puts the horizon out
+   of frame:
+
+   | lens | car px | frame width at the car | horizon |
+   |---:|---:|---:|---|
+   | 45 mm | 79.8 | 274.3 m | 11.42 deg above frame |
+   | 74 mm (shipped) | 131.2 | 166.8 m | 16.31 deg above frame |
+   | 85 mm (R2-856's suggestion) | 150.7 | 145.2 m | 17.31 deg above frame |
+   | **130 mm (candidate)** | **230.4** | **94.9 m** | 19.65 deg above frame |
+   | 160 mm | 283.6 | 77.1 m | 20.48 deg above frame |
+
+   R2-856 flagged that *"a closing frame with no horizon in it is part of why
+   both read as a plan rather than a view"*, and its proposed remedy — ~85 mm
+   with the car in the lower third — **is not available at this camera
+   position**; it was costed against a car 1 km away at an 8.4 deg depression,
+   and the depression is now 24.1 deg. This is a property of the declared hold,
+   not of the lap-down: sky leaves the frame around f2830 in this arm and does
+   not come back. It is the strongest argument for revisiting the hold's
+   altitude, and it is not this task's to move.
+
+4. **The wound is still gone.** R2-857 costed the loss of beat 3's callback
+   honestly and this change does not recover it — it makes it further out of
+   reach, because the camera now ends framed tight on a car 343 m away. If the
+   ending is ever to have both, it is a different camera, not a different car.
+
+There is no version of this beat where the car is close AND still moving at
+f2978. It is arithmetic, not taste: covering only ~230 m in 11 s from 89.767 m/s
+means a mean speed of 21 m/s, so the car must spend most of the beat slow or
+stopped. Every profile I tried that kept it moving to the last frame put it 390 –
+430 m out and 185 – 200 px. Three families were tried and the trade did not move.
+
+---
+
+## R2-950 — WATCHED
+
+Pending. 264 frames at 720p (`watch/R2943_ending_LAPDOWN.mp4`) and 4K stills at
+f2760, f2811, f2937, f2978, against the R2-853 constant-speed arm already
+rendered at `out2/seq/r2851b6` and `out2/seq/r2851_4k_B_candidate`.
+
+**Nothing in R2-941..R2-949 is a claim that the ending now works.** R2-862's
+whole finding was that the geometry was right and the picture was not, and the
+only thing that found it was watching all 264 frames and the stills at 1:1. A
+rung-1 frame cannot tell you whether a car reads at 343 m; the 4K still can.
+
+### The A side, looked at first, so the comparison is honest
+
+Before rendering anything of my own I opened the two arms already on disk at 1:1.
+**R2-862's verdict is correct and I am recording that I checked it rather than
+inherited it.**
+
+* **Constant-speed candidate, f2978, 130 mm.** A handsome, deep, correctly-hazed
+  aerial of a circuit corner — treeline, banking, kerbs, gravel, tyre wall. At a
+  300×169 crop of the exact frame centre the car is a **pale blue-grey horizontal
+  smear about the width of the gravel trap's rake marks**, sitting in front of
+  the tyre wall's shadow. You can find it once you know it is at frame centre.
+  Nothing about the image asks you to look there. *"A handsome aerial of a
+  circuit corner with no subject in it"* is not rhetoric; it is a description.
+* **Shipped, f2978, 74 mm.** Pit building, grandstand, paddock, containers,
+  crowd, and the breached showroom mid-frame — dense, detailed, and no car in it
+  anywhere. R2-855's *"a 65 px wound in a truck park"* is also literally
+  accurate. The client's *"patches in the land"* are visible in this frame as
+  the flat olive-brown fields upper right, which is R2-854's Voronoi partition.
+
+Worth stating because it cuts against a convenient story: **the world is not the
+problem in either frame.** Both are well-built pictures. The ending failed for
+the reason R2-862 gave and for no other.
+
+### Pre-registered, so it cannot be rationalised after the fact
+
+Written before a single frame of this arm exists. Five ways this can fail, and
+what each looks like:
+
+1. **The car reads as broken down, not as a lap-down.** A car stopped on the
+   racing line is, in every other context, a retirement. The defence is that the
+   audience watches it brake continuously for four seconds first, which a
+   failure does not do — but that is an argument, not a measurement, and the only
+   test is whether the last frame looks like an ending or an incident. **Watch
+   f2820-2936 for whether the deceleration reads as a driver or as a failure.**
+2. **The last 1.75 s is dead.** Nothing moves in frames 2936-2978 but the lens.
+   If it reads as a zoom into a photograph, R2-852's criticism has been moved
+   rather than answered, and the answer is R2-949's fallback: do not stop, end
+   at ~208 px still rolling at ~10 m/s and keep the pan alive. That costs 22 px
+   and is already costed.
+3. **No horizon anywhere in the closing 5 s** (R2-949 item 3). If the frame
+   reads as a plan rather than a view, the lens is not the lever — the hold's
+   140 m altitude is, and that is somebody else's key.
+4. **3.60 g looks violent at 24 fps.** 109.7 px of on-screen travel per frame at
+   f2715 falling to 5.98 px by f2820 is a very fast collapse. If it snaps rather
+   than eases, lower `K_AERO` — it costs distance, and R2-942's table says the
+   whole pit straight is within 5 % of the target anyway.
+5. **The car is occluded.** No ray-cast was run on the new resting position; the
+   264 frames answer it directly and more cheaply than a sweep would. R2-651's
+   `BR_FenceMesh_L03` finding was retracted in R2-852, and the fence re-measures
+   6.76 m OUTSIDE the surface, so nothing is expected — but nothing was proved.
+
+If two or more of these land, the arrival has not fixed the ending either, and
+that is what this file will say.
+
+### The grade was not touched, and the constraint that protected it still holds
+
+Nothing in R2-941..R2-950 changes the view transform, the look or the exposure.
+The re-key script asserts **3840×2160 / AgX / look None / exposure −3.628** and
+refuses to save if any of them drifted; its own output line reports what it saw.
+
+**The standing constraint — no crushing saturation, no lifting blacks — is not
+discharged by this change and must not be treated as if it were.** R2-862
+measured the car at 1 km as *brighter* than its surround with a **0.14
+blue-minus-red** colour break doing the work, and warned that a routine grade
+pass would destroy the only thing making it findable. At 231 px the car is
+resolved rather than inferred, so it no longer *depends* on that break — but
+every other distant read in the film still does, the lap is 63.5 s of distant
+car, and a grade is one pass over the whole duration by the brief's own law.
+**The constraint outlives this task, and this task is not evidence for relaxing
+it.**
+
+
+# R2-951 .. R2-965 — THE AUDIO REBUILD AGAINST THE LAP-DOWN
+
+Appended by the audio agent. Owner of `audio/`, `tools/audio_ending_ab.py` and
+these entries only.
+
+---
+
+## R2-951 — the shipped `audio/out/master.wav` is not reproducible from this tree, so it cannot be the A-side
+
+The brief asks for the closing 11 s to be rebuilt while frames 1-2714 stay
+bit-identical to "the current master". The current master is
+`audio/out/master.wav`, written 2026-08-02 14:29. Three of its inputs have moved
+since:
+
+| input | what happened | when |
+|---|---|---|
+| `world/camera_rig_path.json` | 710 of 2,978 frames moved, worst 9.206 m at f1; the changed frames are f1-716 (beats 1-2), contiguous but for six single-frame gaps | uncommitted, mtime 2026-08-03 21:06 |
+| `docs/beat_sheet.json` | rewritten | commit 2e13c12, 2026-08-07 04:57 |
+| `docs/circuit_spec.json` | rewritten | same commit |
+
+The camera rig IS the listener (`audio/scene.py:CameraPath`) and the beat sheet
+IS the film clock (`audio/clock.py:Clock`). A re-render of this tree cannot
+reproduce the shipped WAV anywhere in beats 1-2 no matter what the ending does,
+so a bit-comparison against it would have measured R2-731..760's camera move and
+reported it as an audio regression.
+
+**The A-side is therefore a control rendered from THIS tree** with the lap-down
+switched off at its own A/B switch:
+
+    F1_LAPDOWN=0 .venv/bin/python -m audio.master --out audio/out/ab/master_A_nolapdown.wav
+
+which is the pre-R2-943 constant-speed extrapolation and nothing else
+(`anim/carpath.py:LAPDOWN_ENABLED`). The shipped file is kept at
+`audio/out/ab/master_SHIPPED_aug2.wav` for reference only.
+
+---
+
+## R2-952 — the audio's car and the picture's car are now one object to 8.0e-14 m
+
+R2-943's `audio/scene.py` edit built its own `LapDown` from
+`vend = v_world[-1]` = 89.766125 m/s — the Savitzky-Golay derivative of the
+position track — while `anim/carpath.Car` builds its from the CSV's
+`speed_ms[-1]` = 89.767080. Two tables, two seeds 0.955 mm/s apart, `t_brake`
+4.9e-07 s apart, and the audio's car 2.349 mm from the picture's at f2936.
+
+**Changed: the audio now reads the picture's seed.** R2-026's rule is "follow the
+car the AUDIENCE sees", and past `t_end` there is no independent position track
+to differentiate — the car's position IS `LapDown`'s distance along the
+centreline. So the same rule that makes the engine follow `v_world` ON the
+telemetry makes it follow the lap-down's own v PAST it. Measured on the picture's
+own frame convention (`world_of_frame[f]`, which is what
+`anim/build_car_anim.py` keys), f2650-2978:
+
+    worst |position| audio.sample vs carpath.Car.state    8.039e-14 m
+    t_brake                                               identical to the last bit
+
+Cost, stated: `speed` steps by 0.955 mm/s at `t_end` — 1.1e-5 relative, i.e.
+1.8e-4 cents of engine pitch and 1.4e-4 dB of tyre level, under a 90 ms
+driveline lag. The `F1_LAPDOWN=0` control keeps the pre-R2-943 `v[-1]` of the
+chosen speed source, so the A-side is untouched.
+
+A FRAME-CONVENTION TRAP, recorded because it has now caught one agent:
+`CameraPath.frame_t` puts frame f at film t = (f-1)/24 (the START of its display
+interval) while `build_car_anim` keys frame f at `world_of_frame[f]` (the END).
+The two are one whole frame apart. A position check will not see it; a SPEED
+check will, and it is the difference between reading 166.9 km/h and 193.5 km/h
+at f2760.
+
+---
+
+## R2-953 — R2-943's edit put a step in `accel_long` at `t_end`, and my first fix for it was wrong
+
+`out["accel_long"][past] = -aa` is a step, not a continuation. The CSV's last row
+is `accel_long_ms2 = +1.5073` (the car is flat out) and the lap-down's flat-out
+segment is a CONSTANT SPEED, so `-aa` is exactly 0.000 there:
+`accel_long` went `+1.5073 -> 0.0000` between two adjacent samples at world
+t = 72.583333.
+
+That number is not decoration. `engine.throttle_from_spec` inverts it directly:
+
+    v = 89.77:  a_drag = 0.00092 v^2 = 7.412   a_pow = min(800/v, ...) = 8.912
+    accel_long = +1.5073 -> thr = 8.919/8.912 = 1.001 -> clipped to 1.00
+    accel_long =  0.0000 -> thr = 7.412/8.912 = 0.832
+
+so the combustion gate `(0.35 + 0.65*load)` stepped 1.000 -> 0.918 in one sample:
+a 0.74 dB discontinuity 46 ms before the beat-5/beat-6 seam, and a claim that the
+driver lifted BEFORE the line, which is the opposite of what R2-943 says the shot
+is.
+
+**FIX 1, WRONG.** I first blended the CSV's last acceleration out over
+`LAPDOWN_ONSET_S` (0.30 s) from `t_brake`. It removed the step and it was wrong:
+it left `accel_long` at **+0.796 m/s^2 at f2715**, 23 ms after the driver had
+lifted, while the `speed` field returned by the SAME call was already falling.
+Two fields of one sample disagreeing about which way the car is going is a worse
+defect than the step it replaced. Caught by a peer measuring f2715 directly
+rather than trusting the continuity scan I had run — the scan was true and
+answered a different question.
+
+**FIX 2, SHIPPED.** The handover runs over the FLAT-OUT SEGMENT itself — `t_end`
+to `t_brake`, 46.2 ms, the 4.15 m the telemetry stops short of the line — so past
+`t_brake` accel_long is exactly `-aa`, which is exactly `-carpath.Car.decel(t)`:
+
+    frame   world      v (km/h)   accel_long   -car.decel(t)
+    2714   72.61153     323.2       +0.509        -0.000     (flat out, 4.15 m short)
+    2715   72.65320     323.1       -0.685        -0.685
+    2716   72.69487     322.8       -4.708        -4.708
+    2720   72.86153     311.6      -31.872       -31.872
+    2760   74.52820     166.9      -16.374       -16.374
+    2820   77.02820      59.8       -9.248        -9.248
+    2880   79.52820      12.4       -2.142        -2.142
+    2906   80.61153       5.7       -1.417        -1.417
+    2936   81.86153       0.0       +0.000        -0.000
+
+    largest change in accel_long per 0.1 ms sample, 72.40-73.30 s : 0.0185 m/s^2
+    samples with accel_long > 0 past t_brake                      : none
+
+The speed column reproduces the lead's brief digit for digit. Guarded by
+`if self._lapdown is not None` so the control keeps the pre-R2-943 held value.
+
+NOTE FOR THE PICTURE, not audio's to fix: `carrig.body_pitch` past `t_end`
+returns `-car.decel(t)` = 0 through the same flat-out segment while the last
+KEYED pitch comes from ax = +1.5073. A 0.08 deg step. Invisible; stated for
+completeness.
+
+---
+
+## R2-954 — the car stops at f2936 and the engine's injectors were cut: a stall, not an idle
+
+With the car stopped, `gear_and_rpm` correctly holds the crank at
+`RPM_IDLE = 4300` (`rpm = max(rpm_wheel, hold)`), but `throttle_from_spec`
+returned `thr = 2.1e-05`, so `fuel = clip(thr/0.06) = 3.5e-04` and the injectors
+were shut. The last 1.75 s of the film — the last sound in it — was a V6 being
+MOTORED at 12.8 % of its combustion gate.
+
+A category error, not a tuning error. `throttle_from_spec` inverts a ROAD-LOAD
+model: the throttle needed to produce a given road acceleration THROUGH A CLOSED
+CLUTCH. Below the speed at which first gear pulls idle there is no closed clutch
+and the model has nothing to say. That speed is derived, not chosen:
+
+    v_clutch = RPM_IDLE / (r1 * FD * 60) * 2*pi*R
+             = 4300 / (2.9400 * 6.4471 * 60) * 2.2619 = 8.55 m/s
+
+and `gear_and_rpm` already computes exactly this, as `lock = rpm_wheel / rpm`.
+
+**Fixed** in `audio/engine.py`: `thr = maximum(thr, IDLE_THROTTLE * (1 - lock))`,
+`IDLE_THROTTLE = 0.08` — the figure the PRE-LAUNCH idle already used, now named
+once instead of written twice.
+
+**A bit-exact no-op before the ending, measured rather than assumed.** Scanned at
+1 kHz over the whole world span (-35 .. +85 s), the floor raises `thr` at exactly
+zero samples before `t_end`; the first sample it touches is world t = 78.061 s,
+5.478 s past the end of the telemetry, which is the moment the decelerating car
+drops through 8.55 m/s. It cannot bite on the lap: the lap's minimum speed is
+7.80 m/s (the hairpin, where `lock` does fall to 0.0996), but the driver is on
+the throttle there and the road-load model's own minimum `thr` wherever
+`lock < 1` is 0.301 — 3.8x the largest possible floor. `np.maximum` returns its
+first argument bit-for-bit when it wins, so those samples are untouched, not
+merely unchanged to a tolerance.
+
+---
+
+## R2-955 — the ending was changing the whole film, and it was not the ending's fault
+
+Before comparing any master I ran the cheap version of the brief's own question at
+the SOURCE: render every world-clock layer twice, once with `F1_LAPDOWN=0` and
+once with `F1_LAPDOWN=1`, and compare with `==` for every world time up to
+`t_end`. `tools/audio_prefix_identity.py`. The first run:
+
+    speed accel_long accel_lat slip wheel_w heading s_m track_s pos rpm gear
+                                                    all bit-identical, 0.000e+00
+    eng   (the dry engine)                          NOT identical, worst 1.360e-01
+    tyre  (the dry tyre bed)                        NOT identical, worst 1.192e-06
+
+Every INPUT to the engine was bit-identical for the whole 72.58 s and its OUTPUT
+was not. That is not a rounding story; it is a whole-film reduction somewhere
+inside `synth`. Three were found, all of the same shape — a value read from the
+future — and they are R2-956 and R2-957.
+
+Recorded because of what it implies beyond this defect: **any** change to **any**
+part of this film was silently re-deciding the engine everywhere else in it, and
+no gate in `audio/verify.py` looks for that. It would have been invisible for as
+long as nobody rebuilt one beat and checked another.
+
+---
+
+## R2-956 — `f_crank.mean()`: one scalar made every sample of the engine a function of every other
+
+    ph_crank += 0.004 * np.cumsum(jit) * (2*pi/sr) * f_crank.mean()
+
+`f_crank.mean()` is a reduction over the ENTIRE world grid. The lap-down drops
+the last 11 s from ~13,000 rpm to a 4,300 rpm idle, which moves that mean, which
+rescales the combustion jitter over all 124 s.
+
+Measured on a 20 s bench where only the SECOND HALF of the speed track was
+changed (60 m/s -> 20 m/s) and the first half was held identical:
+
+    rpm over the first half              bit-identical
+    engine signal over the first half    first difference at sample 42 of 960,000
+    delta RMS over the first half        0.0287   against a signal RMS of 0.0489
+                                         i.e. the "unchanged" half differed by -4.6 dB
+
+**It is inaudible.** Same rpm, same gears, same pipes, same firing order — a
+differently seeded 0.4 % wander. And it is still a defect, because it means the
+film before a change cannot be shown to survive the change, and the whole point
+of R2-943 is that beats 1-5 survive it.
+
+**Fixed:** `ph_crank += 0.004 * np.cumsum(jit * f_crank) * (2*pi/sr)`. A prefix
+sum, therefore causal, and the more physical of the two statements: cycle-to-cycle
+variation is a fraction of the speed the crank is turning AT THAT MOMENT, so it
+is small at a 4,300 rpm idle and large at 14,400 rpm. The old form applied the
+film's average to both.
+
+CHECKED AND NOT A LEAK, stated so it is not re-investigated: `synth` has one
+other whole-film reduction, `np.nanmax(f)` selecting the turbo-whine branch. The
+largest order-18 shaft line the model can produce is 125,000/60 * 18 * 0.9981 =
+37,428.75 Hz, which is below 0.45*sr at 96 kHz (43,200) and above it at 48 kHz
+(21,600), so the branch is decided by the SAMPLE RATE and not by the film at
+either rate this project uses. Left alone.
+
+---
+
+## R2-957 — two block loops that read 512 and 2,048 samples into the future
+
+With R2-956 closed, the bench's first differing sample moved from 42 to 479,235 —
+765 samples BEFORE the change at 480,000. Two block-processing loops set a
+coefficient from the MEAN of the block they are about to write:
+
+| where | block | reads ahead | measured |
+|---|---|---|---|
+| `engine.synth`, turbo shaft `demand[a0:b0].mean()` | 2048 | 21.3 ms at 96 kHz | 0.0087 on a 0.049 RMS signal |
+| `dsp.tv_onepole_lp`, `fc[a0:b0].mean()` | 512 | 5.3 ms at 96 kHz | 1.2e-06 on the tyre bed |
+
+479,235 is three samples into the 2,048-block that straddles 480,000, which is
+the turbo loop identified without ambiguity.
+
+21.3 ms of world time at `t_end` is 21.3 ms of film time (the ramp is long past,
+scale = 1), and `t_end` lands at film t 113.055, i.e. INSIDE frame 2714. So the
+turbo window reaches back to film t 113.034 — **frame 2713**. It is not a
+rounding artefact that can be waved through; it would have made frames 2713 and
+2714 differ.
+
+**Fixed:** both take the coefficient at the block's FIRST sample instead of the
+block mean. `tv_onepole_lp`'s own docstring already justifies this — the block is
+far shorter than any audible change in the coefficient — and `demand` is a smooth
+function of rpm through a 90 ms driveline lag and a 240/900 ms turbo inertia, so
+its value at the block start and its mean over 21 ms differ by far less than the
+quantisation the block structure already imposes. Neither loop now reads a sample
+it has not yet reached.
+
+**Verified on the same bench, after both fixes:**
+
+    ENGINE  first differing sample = 480,000   (the change itself, not one earlier)
+    TYRE    first differing sample = 480,000
+
+---
+
+## R2-958 — one shared RNG, and seven downshifts 61 seconds in the future
+
+With R2-956 and R2-957 fixed, the SOURCE check still failed on one track:
+
+    eng   bit-identical before t_end = False,  worst 1.102e-01
+    first differing sample: index 2,198,824 -> WORLD t 10.809 s
+
+61.8 s before the end of the telemetry, and nowhere near a block boundary. No
+block-window argument can produce that; only a shared random stream can.
+
+`engine.synth` opened ONE `default_rng(seed)` and walked it through three event
+loops in order: upshift cracks, then downshift cracks, then overrun pops. The
+lap-down adds seven downshifts in the last 11 s. Those seven `standard_normal`
+draws are consumed BEFORE the pops loop starts, so every pop in the film was
+drawn from a stream offset by them — and world t 10.809 is the first overrun of
+the lap, i.e. the first pop in the film.
+
+The upshift and downshift cracks themselves were fine by luck: `np.flatnonzero`
+returns sorted indices, so the seven new events landed at the END of their own
+loop. That is not a property worth relying on.
+
+**Fixed:** every event draws from its own stream, keyed on its own sample index:
+
+    def _ev_rng(kind, i):
+        return np.random.default_rng([seed, kind, int(i)])
+
+so neither the NUMBER of events nor their ORDER can perturb an existing one. The
+film's cracks and pops are different random realisations than before; they are
+the same process with the same statistics, and they are now local.
+
+**RESULT — the claim the brief actually asks for, at the source:**
+
+    tools/audio_prefix_identity.py --sr 48000
+
+    speed accel_long accel_lat slip wheel_w heading s_m track_s pos
+    rpm gear eng tyre                    ALL bit-identical before t_end, 0.000e+00
+    >> ALL_BIT_IDENTICAL_BEFORE_T_END = True
+
+Every world-clock source the render is built from is identical, sample for
+sample, for all 72.583 s of world time up to the end of the telemetry, with the
+lap-down on and off. The finished masters still differ by one broadband gain —
+see R2-959 — and that is a mix-bus fact, not a rebuilt beat.
+
+STILL LATENT, NOT TRIGGERED, recorded so the next agent does not have to find it
+the hard way: `layers.tyres` has the same shape of hazard — one `rng` consumed
+inside two branches that are gated on WHOLE-FILM maxima
+(`surf["gravel"].max() > 1e-3`, `surf["glass_debris"].max() > 1e-3`). If a future
+change ever puts a wheel on the gravel, the glass-debris crackle in beat 3
+changes with it. It does not fire on this telemetry (max lateral offset on the
+lap is 10 mm) and `tyre` measures bit-identical, so it is left alone.
+
+---
+
+## R2-959 — what R2-956..958 cost the film, measured on the gates rather than asserted
+
+The three causality fixes change the engine everywhere in the film: a different
+random realisation of every crack and pop, a jitter that scales with
+instantaneous rather than mean crank speed, and two filter coefficients read at a
+block's start instead of its middle. None of that is audible, but "not audible"
+is a claim, so it was put through `audio/verify.py` against the same WAV the
+stored report was written from:
+
+| gate | stored report (2026-08-02) | after R2-956..958 |
+|---|---|---|
+| levels | PASS | PASS |
+| seam | PASS | PASS |
+| external_assets | PASS | PASS |
+| pitch | PASS | PASS |
+| doppler | PASS | PASS |
+| pitch: corr(measured f0, rpm/60*3) | 0.99830 | 0.99754  (threshold > 0.97) |
+| pitch: fraction within 50 cents | 0.99095 | 0.98643  (threshold > 0.85) |
+| pitch: median abs error | 0.979 cents | 1.288 cents |
+| seam: worst d3 local percentile | 88.49 | 88.49  (threshold < 99.9) |
+| seam controls (splice, 3 dB step) | both correctly FAIL | both correctly FAIL |
+
+The median pitch error rises by 0.31 cents — three tenths of one hundredth of a
+semitone — and that rise is the fix working: the jitter is now 0.4 % of the
+INSTANTANEOUS crank speed, so it is larger at 14,400 rpm than the old film-mean
+form made it, and the f0 tracker sees exactly that. Everything else is unchanged
+to the digit.
+
+---
+
+## R2-971 — PRE-REGISTERED. Twelve falsifiers, written before a single frame of this arm existed.
+
+Written and saved before the re-key had finished loading the film scene, i.e.
+before `watch/r2943_4k/` or `watch/r2943b6_frames/` contained anything at all.
+I have read R2-950's five pre-registered failure modes; they are the builder's
+list. These are mine. Where they overlap I say so, and where I think the
+builder's own number is wrong I give mine.
+
+Two of these (**F1**, **F8**) are already measured, on geometry rather than
+pixels, and are stated here as findings rather than as questions.
+
+### F1 — the closing car is 215 px, not 231, and "a subject" is 236
+
+**MEASURED** on `work/r2941/camrig_R2943_path.json` and `anim/carpath.Car`,
+before looking at a frame.
+
+R2-945 and R2-949 report the closing car at **230.7 / 230.4 px**. That figure is
+`CAR_LEN * px_per_metre` — the car's full 5.698 m held broadside and square to
+the lens. The car is not square to the lens. At f2978:
+
+| | |
+|---|---:|
+| car heading | 40.00 deg |
+| bearing camera → car | 106.95 deg |
+| **yaw between car axis and view azimuth** | **66.95 deg** |
+| depression of the view | **24.10 deg** |
+| foreshortening factor `sin∠(car_fwd, view_dir)` | **0.9337** |
+| **projected long axis** | **215.2 px** |
+| projected across-car axis | **44.0 px** |
+
+Against R2-862's own ladder — 176.7 px "a car", **236 px "a subject"**, 265 px
+"a car with a visible wing and airbox" — the honest number is **215 px, which is
+8.8 % short of the quoted figure and 8.8 % below the "a subject" line**, not 2 %
+below it. The car is between "a car" and "a subject" on the builder's own scale.
+
+This does not decide anything on its own. It does mean the arithmetic no longer
+reaches the threshold the whole change was aimed at, and that the decision must
+be made on the picture with no margin in hand.
+
+**Falsifier:** if the silhouette measured on the rendered 4K frame is materially
+shorter than 215 px, the size claim has been overstated twice and the ending is
+being defended by a number that was never true.
+
+### F2 — a subject has internal structure
+
+The discriminator between "a car" and "a bigger dot" is not extent, it is
+whether the object resolves into *parts*. At three-quarter-rear-high — which is
+what 66.95 deg of yaw and 24.10 deg of depression give — the parts that must
+show are the **rear wing as a distinct horizontal bar**, the engine cover /
+airbox ridge, the front wing beyond the nose, the four wheels separated from the
+body, and the waist between sidepod and floor.
+
+**Falsifier:** at 1:1 in a 400×300 crop, if the car is a single elongated blob
+with no internal edge — in particular **if the rear wing cannot be seen as
+separate from the body** — it is a bigger dot and the ending fails.
+
+### F3 — figure/ground at the car's edge, and the new risk nobody costed
+
+R2-862's failure was that the car separated from its background by a **0.14
+blue-minus-red break and a specular hit**, not by luminance — it measured
+*brighter* than its surround (0.516 vs 0.476). At 1 km it sat on gravel run-off.
+**It now stands on tarmac.** A dark blue-grey car on grey asphalt is a different
+and worse figure/ground problem, and I cannot find it costed anywhere in
+R2-941..R2-950.
+
+**Falsifier:** if the car's median luminance is within ±8 % of the pit-straight
+tarmac immediately around it *and* the colour break is again the only separator,
+then R2-862's failure has been reproduced at 2.7× the size and the extra pixels
+bought nothing.
+
+### F4 — "we just zoom out" is the client's actual sentence, and the gesture is byte-identical
+
+R2-944 states it plainly and it is the most important sentence in the staging
+file: the beat sheet is **R2-853's, unmodified**, and every camera `world[]` and
+every `speed` is unchanged from the shipped film. So:
+
+* the camera still climbs from **27.5 m to 140.0 m** across the beat,
+* it still travels **+279 m in x and −73 m in y** away from the car,
+* the lens still opens to its widest at f2763,
+* and the frame's world width still runs **131 m → 422 m** by f2823.
+
+**The gesture the client complained about is still in the film, in full, and
+R2-943 does not touch a byte of it.** The only thing that changed is what is at
+the end of it.
+
+**Falsifier:** watching f2715-2860 at speed, if the dominant read is still
+*retreat* — the world opening up and the eye losing its anchor — then the change
+has appended a payoff to the complaint rather than answered it. What would clear
+it: the widening reading as a reveal *of the car's deceleration*, the eye staying
+on the car because the car is visibly slowing against a streaming background.
+
+### F5 — the widest frame is where the patches live, and it is still there
+
+Frame world width peaks at **422 m at f2823**, and is **420 m at f2811** at
+22 mm from 99 m of altitude. R2-854's "patches" are a **155 m Voronoi
+partition**, so a 420 m frame holds about **seven cells across** — the worst
+possible sampling, wide enough to show the tiling and tight enough for the
+straight cell edges to read as edges.
+
+**Falsifier:** if the 4K stills at f2760 and f2811 show straight-edged tonal
+polygons, the client's literal complaint survives at the exact moment the beat
+is widest, whatever the last frame does.
+
+### F6 — the last 4.1 s is a pure lens push on a locked frame — not 1.75 s
+
+R2-949 item 1 and R2-950 item 2 register this as **42 frames / 1.75 s**, from
+the car stopping at f2936 to f2978. I make it far worse, and the difference is
+the whole argument.
+
+The camera *tracks the car dead centre* for all 264 frames (`|ndc| = 0.000`), so
+the car does not move on screen at all. All perceived car motion is carried by
+the **background streaming past it**. R2-943's own table gives that rate:
+
+| frame | background streaming past the car, px/frame @4K |
+|---:|---:|
+| f2715 | 109.70 |
+| f2760 | 32.75 |
+| f2820 | 5.98 |
+| f2880 | **1.83** |
+| f2906 | **1.13** |
+| f2936 | 0.00 |
+
+The camera's position stops at **f2906**. Below roughly 2 px/frame at 4K there
+is nothing an audience can see, so from about **f2880** the only thing moving in
+the frame is the lens. That is **98 frames = 4.1 s**, not 42 frames = 1.75 s.
+
+**Falsifier:** if, watching, I cannot say within ~10 frames when the car stopped,
+then nothing *arrives* — the motion dissolves rather than resolves — and
+R2-852's *"a lens push on a locked-off frame is what a still photograph being
+zoomed looks like"* applies to the new ending exactly as it applied to the old.
+
+### F7 — the arrival happens in the middle of the beat, not at the end
+
+Of 264 frames, essentially all of the perceptible deceleration happens in the
+first **105** (f2715-2820, 109.70 → 5.98 px/frame, an 18× collapse). The
+remaining **159 frames / 6.6 s** are a lens move on a car that has, to the eye,
+already arrived.
+
+**Falsifier:** if the event lands at ~f2820 and the last 6.6 s is a zoom, then
+the film's final gesture is still a zoom and the arrival is not the ending — it
+is six and a half seconds before the ending.
+
+### F8 — the light is frontal and flat, and the shadow is behind the car
+
+**MEASURED** on `world/build_sky.py`, before looking at a frame. I can find no
+entry in R2-941..R2-950 that costs the lighting of the closing frame at all.
+
+`SUN_ELEV = 12.4706 deg`, `SUN_BEARING = −57.9697 deg`. At f2978 the camera lies
+at bearing **286.95 deg** from the car and the sun at **302.03 deg** — they are
+**15.1 deg apart**. The sun is therefore almost directly behind the camera:
+
+* the car is **front-lit and flat-lit**, with no shape-defining shadow on its own
+  body — which is the light that most suppresses the internal structure F2
+  requires;
+* its cast shadow is **4.49 m** long (0.992 m of car at 12.47 deg of sun) and
+  points at bearing **122.03 deg**, i.e. **within 15 deg of directly away from
+  the camera**, so it projects to ~**86 px** but falls largely *behind* the car's
+  own body where the camera cannot see it.
+
+**Prediction, registered so it can be wrong in my favour:** a 4.49 m cast shadow
+from a 12.5 deg sun is a large feature, and a shadow anchoring an object to a
+plane is the single strongest cue that a thing is an object rather than a
+texture patch. **I expect the shadow, not the car's own 215 px, to decide F2.**
+If it is visible the ending has a chance; if the geometry has hidden it behind
+the car, the car floats.
+
+### F9 — arrival needs a destination, and R2-943b proves there is none in frame
+
+R2-943b establishes, and I accept, that the closing frame contains **no
+start/finish line, no pit building, no grandstand and no architecture of any
+kind** — a 95 m stretch of pit straight and grass, and that this is determined
+rather than chosen. *"The film ends where the lap began"* is therefore true in
+the world and, by the builder's own measurement, **invisible**.
+
+This is the sharper form of R2-950's item 1. The question is not whether the car
+reads as broken down; it is that **arriving requires somewhere to have arrived**,
+and there is nothing in the frame that says *finish* rather than *stop*.
+
+**Falsifier:** if the closing frame contains no cue that this is an end of a lap
+— no line, no structure, no marshal, no flag, nothing — then the image is "a car
+stopped in a field", and the entire difference between arriving and breaking
+down is being carried by four seconds of braking that have already ended, and
+not by the frame the film actually ends on.
+
+### F10 — no horizon and no sky anywhere in the closing 5 s
+
+Taken over unchanged from R2-949 item 3, because it is correctly registered and
+I have nothing to add except that it is now load-bearing in a way it was not:
+the closing frame is 95 m of ground with no sky, no horizon and (F9) no
+architecture. A frame with none of those three is a **plan**, not a view.
+
+### F11 — runtime, the seam, and the aim gate
+
+Re-measured, not assumed:
+
+* runtime must remain **2,978 frames / 124.0833 s**;
+* the **f2714/2715 seam** must re-measure at ~1.33 % from interpolation **on
+  rendered frames**, not on the path;
+* the **aim gate** claim of 0.029 deg worst at f2758 against a 26.0 bound.
+
+### F12 — the grade
+
+Delivery is **3840×2160 / 24 fps / AgX / look None / exposure −3.628 / SDR**.
+The car's legibility at distance across the whole film depends on a **0.14
+blue-minus-red** break and a specular glint, not on luminance. **Falsifier:**
+any crushed saturation or lifted black floor measured against the already-
+rendered B-candidate 4K stills at the same frames.
+
+---
+
+## R2-972 — where my list and the builder's differ
+
+| | R2-950's five | mine |
+|---|---|---|
+| dead final phase | 42 frames / 1.75 s | **98 frames / 4.1 s** (F6) — the car is imperceptible from f2880, not f2936 |
+| the car's size | 230.7 px, "2 % below a subject" | **215.2 px, 8.8 % below** (F1) — the quoted figure ignores 66.95 deg of yaw |
+| reads as broken down | defended by the preceding braking | **F9** — the frame has no destination in it, which is a property of the last frame and not of the braking |
+| the client's sentence | not addressed | **F4** — the "zoom out" gesture is byte-identical to the shipped film's |
+| lighting | not addressed anywhere | **F8** — 12.47 deg frontal sun; flat light and a hidden shadow |
+| grade, seam, runtime, occlusion | registered | kept (F11, F12) |
+
+## R2-973 — THE CPU FLOOR IS A BUILD CONSTANT AND IT IS PRICING THE MASTER OUT
+
+`vastctl.MIN_CPU_CORES_EFFECTIVE = 32.0` is why the cheap exclusive stock is
+invisible. Every word of its justification is about **build** throughput —
+items/h, concurrent Blender processes, exec slots. Drop it and the same
+exclusive query returns whole machines at **$0.3356/hr**:
+
+| id | $/hr | gpu_frac | cpu | rel | disk | $/TB up,dn |
+|---|---|---|---|---|---|---|
+| `44173748` | **0.3356** | **1.0** | 16 | 0.995 | 533 GB | 2.60 / 2.60 |
+| `44173814` | 0.3356 | 1.0 | 16 | 0.991 | 388 GB | 2.60 / 2.60 |
+| `44499405` | 0.3747 | 1.0 | 28 | **0.998** | 1325 GB | 3.91 / 2.60 |
+| `47062871` | 0.4281 | 1.0 | 12 | 0.997 | 605 GB | 1.30 / 1.30 |
+
+These are **`gpu_frac = 1.0`** — whole machines, verified, direct ports, inside
+the $4/TB bandwidth ceiling. They are not the shared trap. The only thing they
+have less of is CPU.
+
+**A 4K master does not use CPU.** One Blender process, Cycles on the GPU,
+`denoise_gpu: true`, and under `persistent_data` the scene loads *once* across
+all 2,978 frames. Measured on 47039886: `load 341s` against `render 17730s` —
+**1.9 %**. Tripling the load phase on an 8-core host adds ~0.6 % to the master.
+
+**Bandwidth is a non-issue for this job specifically.** The master pulls
+2,978 x 7.5 MB = 22 GB down and pushes the scene once (~5 GB). At $2.60/TB that
+is **under $0.10 total**. The $4/TB ceiling exists for the *item campaign*
+(~384 GB), not for this.
+
+### The master costed against each candidate (172.2 h, 45 GB disk, incl. transfer)
+
+| card | $/hr | GPU | disk | net | **total** | vs $65.7 credit |
+|---|---|---|---|---|---|---|
+| `47039886` **current** | 0.4444 | 76.5 | incl. | 0.10 | **$76.6** | **short $10.9** |
+| `37400096` cheapest under filter | 0.4547 | 78.3 | 2.12 | 0.10 | **$80.5** | short $14.8 |
+| `44499405` rel 0.998, cpu 28 | 0.3747 | 64.5 | 2.12 | 0.10 | **$66.7** | short $1.0 |
+| `44173748` rel 0.995, cpu 16 | 0.3356 | 57.8 | 3.54 | 0.10 | **$61.4** | **fits, $4.3** |
+
+## R2-974 — INSTANCE 47049525 IS BURNING STORAGE FOR NOTHING
+
+Read straight from the vast.ai API:
+
+```
+47049525  renderbroker-1786081905  actual_status = exited
+          80 GB @ $0.20/GB/mo  =  $0.0219/hr  =  $0.53/day
+```
+
+`vastctl`'s own module docstring: *"Destroy, never stop. Storage bills for as
+long as an instance exists."* This one is **exited**, has served **zero** renders
+(`rq status`: `load 37s (100%) render 0s`), and broker 1's queue is empty
+(`depth=0`, idle >30 min). Over the master's 7.2 days it will quietly spend
+**~$3.9** — which is most of the headroom in the table above.
+
+It is broker 1's card and other agents submit stills to broker 1, so this is
+**reported, not actioned**. But it is the cheapest recoverable dollar on the
+board.
+
+## R2-975 — THE TWO-BROKER STATUS READ, AND WHY IT LOOKED LIKE ONE CARD
+
+`rq --state state2` and `BROKER_STATE=state2` are both wrong; neither is an
+interface. `rq` addresses a broker **by URL**:
+
+```
+VASTRENDER_URL=http://127.0.0.1:8760 ./rq status    # broker 1, state/
+VASTRENDER_URL=http://127.0.0.1:8761 ./rq status    # broker 2, state2/
+```
+
+`BROKER_STATE` is not read anywhere in `rq`, so setting it returns broker 1
+silently — **a prior read of "both brokers" was broker 1 twice.** The two cards
+are not alike:
+
+| | broker 1 (8760) | broker 2 (8761) |
+|---|---|---|
+| instance | 47049525 | 47039886 |
+| rate | $0.4844 (API) | **$0.4444** |
+| state | **exited**, 0 renders | running, 17,930 s up |
+| queue | empty | depth 13, 625 frames |
+| storage | $0.20/GB/mo | **$0.04/GB/mo** |
+
+The `load 37s (100%) render 0s` card and "the current instance at $0.4627" are
+**the same machine** — broker 1's, the idle one. The card doing the work is the
+*cheaper* of the two.
+
+Note also that `rq` reports $0.4627/hr for 47049525 while the API says $0.4844,
+and $0.4403 for 47039886 against the API's $0.4444. **Cost the master off the
+API, not off `rq status`.**
+
+## R2-976 — CHANGE MADE, NOT DEPLOYED
+
+`vastctl/vastctl.py` (the file was git-clean; none of the ~10 uncommitted files
+from other agents were touched):
+
+```python
+MIN_CPU_CORES_EFFECTIVE = float(os.environ.get("VASTRENDER_MIN_CPU") or 32.0)
+```
+
+**Default is unchanged at 32**, so nothing that runs `rq exec` changes
+behaviour and the build broker keeps its cores. A render-only broker sets
+`VASTRENDER_MIN_CPU=8` in its launcher next to `VASTRENDER_DISK_GB`, exactly the
+mechanism `scripts/broker2.sh` already uses. Verified end to end: the env var
+changes the emitted query and `search_offers` then returns the $0.3356
+exclusive stock.
+
+**A broker that rents on a lowered floor must not be sent `rq exec` build
+work** — which is why this is a per-process knob and not a new default.
+
+Not deployed. Picking it up needs a broker restart, and restarting broker 2 now
+would cut 625 frames mid-pass.
+
+## R2-977 — WHAT IS NOT RECOMMENDED
+
+- **Do not migrate mid-pass.** Broker 2 has ~8.7 h of queued 720p work. The job
+  boundary is when that queue drains.
+- **Do not drop to 256 spp.** It fits (~$40) and it is a look decision the
+  client already declined. It is not on the table as a budget lever.
+- **Do not auto-migrate on price.** An automatic re-rent that chases $/hr is
+  what walks into `gpu_frac 0.125` at 3 a.m. Any migration must re-assert
+  `gpu_frac >= 0.99` and be taken deliberately, at a boundary.
+
+## R2-978 — every number I used to declare the budget blocker was wrong, and the blocker was real anyway
+
+I raised the master as unaffordable on three figures. **All three were wrong, and
+the conclusion survived all three corrections** - which is the only reason this
+is a lesson and not a false alarm.
+
+| I said | measured | source of my error |
+|---|---|---|
+| credit $69.59 | **$69.52** | `rq status`, not the account API |
+| 196.5 s/frame @4K | **219.3** (11% low) | RENDER-LADDER, n=9 vs my n unstated |
+| adaptive 0.02 saves ~11% | **7.3%** | a saving nothing in this project measures |
+| gap $1.81 | **~$11** | all of the above, compounding one way |
+
+**Every error pushed the same direction.** That is the tell: when independent
+mistakes all favour one answer they are not independent, and mine shared a
+cause - I took each figure from the most convenient reading rather than the
+authoritative one. `rq status` **under-reports instance rates against the API**
+($0.4403 vs $0.4444, $0.4627 vs $0.4844), and I quoted it because it was the
+thing already on my screen.
+
+**RENDER-LADDER.md has now been wrong about the master three times, in both
+directions, always for one reason: a rate measured on one scene extrapolated
+across 2,978 frames.** It was 2.6x too high when the anchor was `render3.blend`;
+it is 11% too low now. The document is not unlucky - **the shape of the claim is
+the defect.** A single-scene rate has no business standing in for a 124-second
+film whose beats differ in cost, and the fix is not a better anchor but a
+refusal to quote one without its n and its blend.
+
+## R2-979 — I read one broker twice and reported it as two
+
+`rq` addresses brokers **by URL**. `BROKER_STATE` is read nowhere in it. My
+`BROKER_STATE=state2 rq status` returned **broker 1**, identically to the
+unprefixed call, and I reported the result as broker 2's state - concluding that
+a card was idle with `load 37s render 0s`. That card is broker 1's. **The card
+actually doing the work is the cheaper one**, and my "current instance at
+$0.4627/hr" was the wrong machine.
+
+The tell was in my own output and I walked past it: **two invocations returned
+byte-identical status differing only in an idle counter.** I read that as
+confirmation. **Identical output from a call meant to address a different target
+is evidence the parameter did nothing** - the same shape as R2-724's `ps | grep`
+that cleared a kill because it was matching the checker's own shell.
+
+Correct form is `VASTRENDER_URL=http://127.0.0.1:8761`.
+
+## R2-980 — the constant that hid the cheap stock was justified entirely by a workload the master does not run
+
+`vastctl.MIN_CPU_CORES_EFFECTIVE = 32.0` made every affordable whole machine
+invisible to the offer query. **Every word of its justification is about `rq
+exec` build throughput.** A 4K master is one Blender process with Cycles and
+denoise on the GPU, loading the scene once under `persistent_data`; measured CPU
+share is **1.9%** - `load 341s` against `render 17730s`.
+
+Dropping it returns `gpu_frac=1.0` whole machines at **$0.3356/hr**, which is the
+difference between a master that costs $76.6 and one that costs $61.4. **A
+filter written for one workload silently priced a different workload out of the
+project**, and nothing in the codebase connected the two.
+
+Now `float(os.environ.get("VASTRENDER_MIN_CPU") or 32.0)` - default unchanged, so
+build work is untouched, and a render-only broker opts out explicitly.
+
+**Not a licence to take any cheap card.** The $0.336-0.348 entries at `gpu_frac`
+0.25/0.125 are the R2-382 trap, measured 1.64x slower with a zero-filled-buffer
+failure mode. **The lesson is that the filter conflated "cheap" with "shared",
+and only one of those was ever the problem.**
+
+## R2-981 — an exited instance is not a free instance
+
+Instance 47049525 is `exited`, has served **zero renders**, holds an empty
+queue - and holds **80 GB at $0.20/GB/month = $0.53/day.** Across the master's
+duration that is **~$3.9**, against $4.3 of projected headroom. **Nearly all the
+margin on the film's final render was being spent on a machine doing nothing.**
+
+Storage bills on rented instances survive the thing that made them look
+finished. "Exited" reads as terminal and is not; the meter that stopped is the
+GPU's.
