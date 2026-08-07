@@ -25635,3 +25635,36 @@ proxy to **~$3.37** from a $4.21 projection and a $5.50-6.00 brief. Wall rate is
 ~69 s/frame because the card is shared three ways - **which is the chunking
 working**: 13 chunks interleaving with other agents' jobs instead of locking the
 worker for 9.4 h.
+
+## R2-725 — I dispatched an agent to build something that was already built, because I read a finding and not the tree
+
+The beat-6 agent's handover ended with a recommendation and a lost transcript.
+I re-dispatched the recommendation to a fresh agent. **The work had already been
+done** - `carpath.py` carries a lap-down, `audio/scene.py` has the rebuilt
+closing, R2-941..R2-950 are logged, and a render of the beat was in flight while
+I was writing the brief.
+
+**The failure is not that I forgot. It is that I never looked.** I had the
+agent's analysis in front of me and treated it as the current state of the
+project. An analysis is a snapshot of the moment it was written; between it and
+me sat a completed build, an audio rebuild, ten log entries and a running render.
+**A finding tells you what was true when it was found, not what is true now.**
+Two minutes of `git log` would have shown all of it - and `git log` is what
+eventually did.
+
+This is the same shape as R2-720, where a provenance was invented for a true
+fact: here a plan was inherited for a solved problem. In both, **the content was
+correct and the relationship to the world was not.**
+
+The guard is cheap and I did not use it: **before dispatching work, read the
+tree, not the report.** Specifically `git log --oneline`, the staging files, and
+the live agent list - the last of which the harness prints unprompted and which
+already named a running closing-beat render.
+
+**Recovered rather than discarded.** The duplicate was redirected to the one job
+that could not be done from inside the work: **independent adjudication of the
+rendered ending.** The precedent is the reason - three camera passes reported
+success and only a fourth, watching every frame at 1:1, found that *"the
+candidate fixes the geometry and does not fix the ending."* The builder of a fix
+is the worst-placed judge of it, and here we can afford a judge who built
+nothing.
