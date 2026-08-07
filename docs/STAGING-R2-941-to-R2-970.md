@@ -620,6 +620,73 @@ written the door shut with the word "arithmetic" and it is not shut.
 
 ---
 
+## R2-949b — the A/B is across two film builds, and f2715 is a free control for it
+
+**Recorded before the frames exist, because it is the kind of confound that is
+invisible once a verdict has been formed.**
+
+| arm | film build | when |
+|---|---|---|
+| `r2851b6`, `r2851_4k_B_candidate` | `film16_R2851.blend` | 2026-08-04 16:26 |
+| `r2943b6`, `r2943_4k` (mine) | `film17_breach.blend` | 2026-08-07 06:09 |
+
+So the difference between the arms is **the car's motion plus 62 hours of film
+construction.** R2-917 checked the *camera* across the same two builds and found
+the delta confined to beats 1-2 — but a camera check says nothing about what the
+car is made of, and at least one item in the gap bears directly on the question
+being asked. `NEXT-REBUILD.md` lists a car-paint change worth **albedo 0.0121 ->
+0.0372** and three-quarter diffuse **7.32 % -> 19.96 %**. A car that reads better
+at 343 m may be reading better because it returns three times the light.
+
+**The control is free and exact: frame 2715.** The driver lifts BETWEEN f2714 and
+f2715 (R2-941), so at f2715 the car has lost **35 microns** and the camera's
+position, rotation and lens are all `0.000e+00` different between the arms.
+
+> **Any pixel difference at f2715 is the film build. None of it is the ending.**
+
+Both 720p sequences contain f2715. Diffing them measures the confound directly
+instead of arguing about it, and whatever it shows must be discounted from every
+later frame before any improvement is credited to the arrival.
+
+That control was not designed. It falls out of where the start/finish line
+happens to sit relative to a beat boundary, which is the same accident that makes
+the whole change possible. **Noting it because the honest version of R2-950 needs
+it and the flattering version does not.**
+
+---
+
+## R2-949c — exec starvation: an 8 GB open cannot run while any render queue is non-empty
+
+**MEASURED** on broker 8761 by the render agent, and recorded here because it is
+structural, it is currently costing two agents about seven hours each, and one of
+them is not us.
+
+```
+ExecMemoryShort: opening film17_breach.blend (7.98 GB) needs about 43.9 GB
+free and the box has 6.3 GB — the render worker is holding a scene of its own.
+```
+
+An 8 GB blend needs ~44 GB of the box's 48.9 GB, so **no `rq exec` job can be
+admitted while the render worker holds a scene.** The re-key has been in an
+admit-and-bounce cycle for ninety minutes without its child ever starting —
+`exec_sec` is null and there is no `>> STAGE RESULT:` line to judge, which is
+exactly why the rule is to judge only on that line.
+
+**The broker has no starvation guard for this.** Any agent feeding the render
+queue indefinitely blocks all 8 GB exec work indefinitely, regardless of
+priority, because the block is a memory admission test rather than a queue
+ordering. R2-860's object-ID raycast has been starved by the same mechanism
+since 07:39 and sits *ahead* of us at prio 40.
+
+**Nothing was done about it, deliberately.** Cancelling, re-prioritising or
+raising our own priority would take the window from a job we were explicitly told
+to let land. The queue's arrivals have stopped — 6 frames queued in the last two
+hours against 167 drained — so it will clear on its own. **Flagged for whoever
+owns the broker; the fix is not ours to deploy** (`~/vast-render` has ten
+uncommitted files and two changes that have never run in production).
+
+---
+
 ## R2-950 — WATCHED
 
 Pending. 264 frames at 720p (`watch/R2943_ending_LAPDOWN.mp4`) and 4K stills at
@@ -1037,5 +1104,57 @@ semitone — and that rise is the fix working: the jitter is now 0.4 % of the
 INSTANTANEOUS crank speed, so it is larger at 14,400 rpm than the old film-mean
 form made it, and the f0 tracker sees exactly that. Everything else is unchanged
 to the digit.
+
+---
+## R2-960 — the shipped film opens with a click, and it is the END of the film wrapped onto the start
+
+With every source proved bit-identical before `t_end` (R2-955..958), the two
+finished masters still differed over frames 1-2714 by 8.02e-01 — and a best-fit
+broadband gain of +0.0200 dB did not reduce it. A gain difference cannot do that,
+so something structural was still crossing from the ending to the front.
+
+Locating it by frame:
+
+    worst frame over the whole film      FRAME 1,  |delta| 0.8021
+    all other frames 1..2714             |delta| ~1e-3 .. 4e-3  (the 0.02 dB gain)
+
+Frame 1. Not frame 2713, not the seam — the FIRST FRAME. And the cause is in the
+shipped master too:
+
+| master | peak inside frame 1 | at | programme RMS, frames 2-24 |
+|---|---|---|---|
+| shipped 2026-08-02 | **0.8505** (-1.4 dBFS) | sample 29, t = 0.60 ms | 0.0233 (-32.7 dBFS) |
+| A, lap-down off | 0.8504 | sample 29 | 0.0217 |
+| B, lap-down on | 0.1163 | sample 106 | 0.0222 |
+
+**A 32 dB transient on the first frame of a film that opens on a silent
+showroom.** It has been in every master this project has produced, no gate looks
+at frame 1 (`seam_gate` only visits beat BOUNDARIES: frames 793, 865, 1057, 1191,
+2715), and it is plainly visible as a bright vertical stripe at t = 0 in
+`audio/out/master_spectrogram.png` once you know to look.
+
+    audio/master.py:392
+        interior = np.stack([tail * 0.75 + np.roll(tail, d1) * 0.35,
+                             np.roll(tail, d2) * 0.75 + tail * 0.30], axis=1)
+
+`np.roll` is CIRCULAR. Used as a stereo decorrelation delay on the showroom's
+2.4 s FDN tail, it wraps the LAST d samples of the tail onto the FIRST d. The
+burst is exactly `d2 = int(0.0113 * sr) = 1,085` samples long — 11.3 ms — which
+is the tell: it is not a filter startup, it is a wrap, and its length is the
+delay constant.
+
+And that is why the ending reached frame 1. In A the film ends with a car at
+323 km/h exciting the room; in B it ends with a car stopped 490 m outside it. The
+tail's last 11.3 ms is 17 dB quieter in B, so B's frame 1 is 17 dB quieter — the
+two renders disagreed about the FIRST FRAME because they disagreed about the
+last.
+
+**Fixed:** `dsp.delay(x, n)`, a shift with a silent head.
+`np.roll(x, n)[i] == x[i-n]` for every `i >= n`, so the replacement is identical
+everywhere except the first `n` samples, which is precisely the wrapped-in
+material. Applied at all four sites that used a roll as a delay:
+`master.py` (showroom tail x2, room tone), `layers.wind_at_camera`,
+`layers.outdoor_bed`. `verify.py`'s two rolls are deliberate — they BUILD the
+splice and jump-cut positive controls — and are left alone.
 
 ---
