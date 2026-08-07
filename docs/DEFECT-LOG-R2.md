@@ -30763,3 +30763,52 @@ it - including that the 8760 jobs were theirs, and that the round trip they
 asked about genuinely cannot be skipped: `resolve_scene` requires a local
 `is_file()` and hashes locally, and `_ensure_scene_cached` checks the scene
 cache, not `/workspace/exec/<id>/out/`.
+
+## R2-1087 — the closing frame at 4K: the car IS a subject now, and the client's actual complaint is still in the frame
+
+Watched `watch/r2943_4k/r2943_4k_002978.png` at 4K.
+
+**The lap-down worked.** The car reads as a car - blue-teal livery, red-rimmed
+tyres, its own shadow on the asphalt, sitting on the racing surface with the
+kerb beside it. **79.5 px became 230.7 px** and the difference between "a
+grey-blue smudge on the run-off" and a legible subject is exactly that. The
+composition is a handsome aerial: track running diagonally, kerbing, catch
+fencing, tyre barriers and a grandstand with spectators bottom-left.
+
+**But the client's note was not "the car is too small." It was:**
+
+> *"we just zoom out so you see all the patches in the land"*
+
+**And they are still there.** Large-scale tonal spread, 160 px blocks, on
+regions that are pure terrain:
+
+```
+upper-left terrain    n=40   p10 0.3139  p90 0.3950   20.7 code values
+lower-right terrain   n=32   p10 0.2707  p90 0.2909    5.2 code values
+lower-left terrain    n=36   p10 0.2603  p90 0.4324   43.9 code values  <- CONTAMINATED
+```
+
+**The 43.9 must not be quoted**: that region contains the grandstand and its
+shadow, so most of the spread is real lighting rather than patchiness. **The
+honest range is 5.2 to 20.7 code values** - and the fact that it varies **4x
+across the frame** is itself the finding, because uniform ground under uniform
+light should not.
+
+**For scale: the car's legibility at distance rests on a 0.14 colour break,
+which is 36 code values.** So the worst *defensible* patch contrast, 20.7, is
+within a factor of two of the signal the whole ending depends on. It is not
+louder than the subject - my first reading of the contaminated figure suggested
+it was, and that was wrong - but it is the same order, in a frame where terrain
+occupies most of the area.
+
+**Two things I am NOT claiming.** I have not established that the patches read
+as *defects* rather than as ground - grass genuinely varies, and 5-21 levels is
+subtle. And this is one frame of 264; a still cannot tell you whether the
+patches crawl, pulse or sit still as the camera moves, and **a static blotch and
+a shimmering one are completely different problems.**
+
+The formal verdict belongs to the adjudicator watching all 264 frames, which is
+the right instrument. **This entry exists so that verdict is made against the
+client's actual words rather than against the metric that replaced them** - the
+ending was measured for *subject size* through four passes because that is what
+was measurable, while the sentence that started it named the *ground*.
