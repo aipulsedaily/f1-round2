@@ -23870,3 +23870,45 @@ hardest, which is the cross-check that was missing.
 > The film's ending contains its subject. **This is a claim about geometry, not
 > about the picture** — whether the car is *legible* at 1,000 m through 130 mm of
 > haze is a separate question and only the 4K stills can answer it.
+
+## R2-716 — A SUITE AIMED ENTIRELY AT WHETHER THE ANSWER IS RIGHT WILL NOT TELL YOU THE ANSWER NEVER ARRIVED
+
+Three silent failures inside forty minutes, in one block, **none caught by a
+test that block's author wrote** - and that block carries **27 controls**.
+
+```
+failure                    would have happened                        caught by
+empty-scene dress          dresses the factory cube, saves 8 GB of     breach_dress's
+                           nothing, exits 0, sha256 verifies           preflight - AIMED
+                                                                       AT SOMETHING ELSE
+missing .npz               Blender EXITS 0 on FileNotFoundError;       rq exec --output
+                           the job reports success with no artefact
+missing .json              same, AFTER all 260,000 chips were meshed   rq exec --output
+```
+
+**The diagnosis, in the author's words:** *"this block has 27 controls and every
+one of them tests the physics. All three failures were in delivery - where the
+file is, which scene is loaded, what the exit code means."*
+
+This is a **different class** from everything else in this log. The other laws
+are about instruments that measure the wrong thing, measure at the wrong scale,
+or cannot fail. This one is about a suite that is **correct and complete about
+the answer, and silent about whether the answer was produced at all.** Every
+control passed. Nothing arrived.
+
+`land_breach.sh` warns in its own header that Blender 5.2 exits 0 on an uncaught
+exception and that `$?` is not evidence. **It was hit three times anyway**,
+which is the measure of how weak a documented warning is against a habit.
+
+**What actually caught them is the shape to copy:** the broker's `--output`
+**declares the artefact**, refuses when it does not appear, *and* verifies its
+hash - so it cannot be satisfied by a job that merely prints the right thing.
+A declared output is a delivery control; a passing assertion is not.
+
+**And one of the three produced a real design fix.** The third failure raised
+over a **3 KB provenance file, after fifteen minutes of correct meshing.** A
+missing report is not a reason to discard that work, so it is now **soft** -
+recorded in the build report rather than raised - while the 23 MB table the
+build genuinely needs stays **hard and refuses early**, naming **the CWD and the
+bundle root**. The traceback had named which file was missing and **neither
+directory that would have explained why**, which is half an error message.
