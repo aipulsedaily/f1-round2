@@ -180,6 +180,27 @@ The model is one function, `Car._extrap`, and **four** other places were reading
 onto its nose under braking with the same law the telemetry itself was written
 with. At 3.60 g the term clips, i.e. the full declared 1.6°.
 
+### The 0.08 deg pitch step at `t_end` is PRE-EXISTING and is deliberately not fixed
+
+Raised by the audio rebuild (R2-953) and checked here. `carrig.body_pitch`
+returns the telemetry's own `pitch_c` up to `t_end` — where `ax = +1.5073`, i.e.
+0.080 deg nose-UP under power — and 0 immediately after. The step lands between
+frames 2713 and 2714, inside the 46.2 ms flat-out segment.
+
+**It is not mine.** The shipped `body_pitch` returned a flat `0.0` for the entire
+extrapolation, so the identical step is in the shipped film. R2-943 only changes
+behaviour past `t_brake`; between `t_end` and `t_brake` it still returns 0.
+
+**And I am declining to fix it, which is the part worth writing down.** Carrying
+the telemetry's last acceleration across those 4.15 m would cost **f2714's car
+pose its bit-identity with the shipped film** — the single strongest claim in
+R2-944 and R2-947, and the one that makes the f2714/2715 seam safe without
+re-measuring it. The gain is 0.080 deg of body pitch, which at a 3.600 m
+wheelbase is **5 mm of nose height**, on one frame, at 85 m, through a 24 mm
+lens: about 0.02 px. **Trading a proof for 0.02 px is a bad trade** and the
+tidiness of not leaving a known step is not worth it. Recorded so the next agent
+does not "fix" it and quietly spend the guarantee.
+
 ### `F1_LAPDOWN=0` is an A/B fixture and nothing on the ship path may read it
 
 It exists so a control arm can be built from the same source on the same box —
