@@ -43,6 +43,22 @@
 # place because it was built 71 minutes before the telemetry fix it is believed
 # to be built against, and its module summaries are BIT-IDENTICAL to
 # assembly6's, so no summary-level check can tell them apart.
+#
+# WHICH CAMERA. docs/LIVE-CAMERA.md is the authority, and it is the authority
+# for exactly the reason SHIPPING.md is: the answer must live in ONE place that
+# somebody updates on purpose. Steps 2 and 4 below read
+# `world/camera_rig_path.json` for three days while `render/film17_path.json`
+# was the film's camera -- that file is byte-identical to `film16_path.json`
+# and is an orphan of a retired build script, so nothing rewrote it and nothing
+# could notice. 43 tools read it; this was one of them. R2-1007 / R2-1091, and
+# R2-1271 is this script being taken off the list.
+#
+# The camera is resolved ONCE, below, through tools/live_campath.py, which
+# parses the declaration and RAISES if the file is missing, if the declaration
+# pins no hash, if the hash disagrees with the bytes on disk, or if the file
+# resolved to is one of the path files known to have been read stale. It is
+# NOT re-stated at each use site: two copies of the answer is the defect, and
+# a second copy inside the fix would be the same defect wearing the fix's name.
 set -e
 cd "$(dirname "$0")/.." || exit 1
 # WHICH BLEND, by default, IS WHATEVER SHIPPING.md SAYS -- not a hardcoded name.
@@ -52,6 +68,32 @@ cd "$(dirname "$0")/.." || exit 1
 # like a decision. There is one authority and tools/shipping_world.py reads it.
 BLEND=${1:-$(python3 tools/shipping_world.py --path 2>/dev/null || echo render/world/assembly/r2/assembly6.blend)}
 OUT=${OUT:-work/retier}
+# THE LIVE CAMERA, resolved once. `load()` is called and not merely
+# `declared_campath()`: declared_campath checks that the declaration and the
+# bytes agree, load() ALSO refuses a file on live_campath's known-stale list.
+# Those are different failures -- "rebuilt and not announced" versus "the
+# declaration itself now names a superseded file" -- and only one of them is
+# caught by the hash pin. There is deliberately NO way to pass a camera to this
+# script; a control or an A/B against a non-live camera goes through
+# live_campath.load_explicit(..., why=...), which prints what it is doing.
+CAMPATH=$(python3 -c "
+import sys
+sys.path.insert(0, 'tools')
+import live_campath as L
+L.load()
+print(L.declared_campath())
+") || { echo "REFUSING: the live camera did not resolve; see docs/LIVE-CAMERA.md"; exit 3; }
+echo "CAMPATH $CAMPATH"
+# POINTS: reuse an ALREADY-DUMPED point cloud instead of running step 1.
+# Step 1 is the only heavy step -- it opens the whole assembly, and assembly10
+# is 7.1 GB on an 11 GB box -- so it is the one step that may have to be run
+# somewhere else (the farm) or not at all (a camera-only re-derive, where the
+# world is deliberately held fixed and ONLY the projection is redone). Steps
+# 2-5 are numpy over the npz and cost seconds.
+# The npz records the blend it came out of, and that is CHECKED against $BLEND
+# below rather than trusted, because a reused point cloud is precisely the
+# artefact that can silently belong to a different world than the stamp says.
+POINTS=${POINTS:-}
 # /usr/bin/blender has no CUDA kernels; nothing here renders, but the two
 # binaries are different builds and a measurement should name the one it used.
 BLENDER=${BLENDER:-/opt/blender-5.2.0-linux-x64/blender}
@@ -64,16 +106,53 @@ case "$BLEND" in
   *assembly5.blend) echo "REFUSING: assembly5 is SUPERSEDED, see SHIPPING.md"; exit 2;;
 esac
 
-# 0. identity of every input, BEFORE anything reads them
-python3 tools/input_stamp.py --out $OUT/inputs.json --file world "$BLEND"
+# 0. identity of every input, BEFORE anything reads them.
+# --file camera_path overrides input_stamp's default_inputs(), which still
+# names world/camera_rig_path.json. That literal is R2-100's shape in the one
+# tool whose entire job is to say what was read, and it is overridden here
+# rather than trusted.
+python3 tools/input_stamp.py --out $OUT/inputs.json \
+  --file world "$BLEND" --file camera_path "$CAMPATH"
 
 # 1. world positions: a 1 m voxel surface sample, uncapped
-"$BLENDER" -b --factory-startup -P tools/dump_world_points.py -- \
-  --blend "$BLEND" --out $OUT/world_points.npz --cell 1.0 --cap 2000000
+if [ -n "$POINTS" ]; then
+  python3 - "$POINTS" "$BLEND" <<'PY'
+import json, os, sys
+import numpy as np
+npz, blend = sys.argv[1], os.path.abspath(sys.argv[2])
+meta = json.loads(str(np.load(npz, allow_pickle=True)["meta"]))
+got = os.path.abspath(meta.get("blend", ""))
+print("POINTS  %s\n        dumped from %s" % (npz, got))
+if got != blend:
+    raise SystemExit(
+        "REFUSING: the reused point cloud was dumped from\n    %s\nbut this run "
+        "stamps the world as\n    %s\nA tiering whose points and whose stamp "
+        "name different worlds is unattributable." % (got, blend))
+for k, want in (("cell_m", 1.0), ("cap_per_object", 2000000)):
+    if meta.get(k) != want:
+        raise SystemExit(
+            "REFUSING: the reused point cloud has %s=%r, not %r. See this "
+            "script's header for why the cap is load-bearing."
+            % (k, meta.get(k), want))
+if meta.get("base_mesh_only"):
+    raise SystemExit(
+        "REFUSING: the reused point cloud is a --base-mesh dump, which misses "
+        "everything a modifier adds. That is a different measurement.")
+PY
+  # A dump that was written straight into $OUT (step 1 run by hand, elsewhere,
+  # or on the farm) is already where it belongs; copying it onto itself
+  # truncates it.
+  if [ "$(readlink -f "$POINTS")" != "$(readlink -f $OUT/world_points.npz)" ]; then
+    cp "$POINTS" $OUT/world_points.npz
+  fi
+else
+  "$BLENDER" -b --factory-startup -P tools/dump_world_points.py -- \
+    --blend "$BLEND" --out $OUT/world_points.npz --cell 1.0 --cap 2000000
+fi
 
-# 2. screen presence against the real camera
+# 2. screen presence against the LIVE camera
 python3 tools/screen_presence.py --points $OUT/world_points.npz \
-  --path world/camera_rig_path.json --sheet docs/beat_sheet.json \
+  --path "$CAMPATH" --sheet docs/beat_sheet.json \
   --uniform-shutter --out $OUT/sp_objects.json --npz $OUT/sp_points.npz
 
 # 3. per-item table + the re-tier
@@ -82,7 +161,7 @@ python3 tools/item_presence.py --npz $OUT/sp_points.npz \
   --out $OUT/item_presence.json --tiers $OUT/tiers_raw.json
 
 # 4. vantage regimes -> the FRAME-peep count
-python3 tools/frame_peeps.py --path world/camera_rig_path.json \
+python3 tools/frame_peeps.py --path "$CAMPATH" \
   --sheet docs/beat_sheet.json --out $OUT/frame_peeps.json
 
 # 5. the campaign plan: tier counts, agent counts, stamped
