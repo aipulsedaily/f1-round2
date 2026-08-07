@@ -182,6 +182,7 @@ INTERIOR_STOPS = FX.INTERIOR_STOPS if FX else 0.85
 # gate's scope was next argued about.
 sys.path.insert(0, os.path.join(R2, "tools"))
 import horizon_gate as HG                                          # noqa: E402
+import gate_exit                                                   # noqa: E402
 
 ROLL_RATE_DEG = 3.0            # everywhere, except:
 NADIR_ROLL_RATE_DEG = 10.0     # inside the peel-off's nadir pass.  R2-112.
@@ -1628,13 +1629,41 @@ def main():
         fails.append(f"rotation step {worst_rot:.3f} deg at frame {worst_rot_f}")
     if missing:
         fails.append("beats with no camera keys at all: " + ", ".join(missing))
-    if fails:
-        for x in fails:
-            print("   FAIL " + x)
-        print(">> STAGE RESULT: CAMERA_RIG_FAIL")
-    else:
-        print(">> STAGE RESULT: CAMERA_RIG_CONTINUOUS_AND_AIMED")
+    for x in fails:
+        print("   FAIL " + x)
+
+    # ---- THE VERDICT, AND IT LEAVES THE FUNCTION.  R2-1084. ---------------
+    #
+    # This used to `print` and fall off the end of main(), so a FAIL was a
+    # string on stdout and nothing else. Two readers were wrong at once:
+    #
+    #   * the shell, because Blender exits 0 on its own and nothing here said
+    #     otherwise -- `blender ... -P build_camera_rig.py` returned 0 with
+    #     `CAMERA_RIG_FAIL` in the log;
+    #   * tools/build_verify_scene.py, which loads THIS FILE and calls main()
+    #     IN-PROCESS. main() returned normally after printing the failure, so
+    #     the re-key stage carried on, finished its own job, and printed its own
+    #     passing verdict below this one. The log ended in a pass. The camera rig
+    #     inside it had failed since 03:48 and the closing re-key is how anyone
+    #     found out -- it printed the rig's verdict on its way past.
+    #
+    # So the verdict is raised, not returned, and gate_exit maps the token to
+    # the status from the same string (its whole point: the text and the number
+    # cannot disagree if there is only one of them).
+    #
+    # ON PASS IT RETURNS RATHER THAN EXITING, deliberately. A SystemExit(0) here
+    # would unwind the CALLER too, and build_verify_scene.py has work after
+    # mod.main() -- the grade assertion that deletes a mis-graded blend. Success
+    # must not abort the chain; failure must.
+    rc = gate_exit.verdict("CAMERA_RIG_FAIL" if fails
+                           else "CAMERA_RIG_CONTINUOUS_AND_AIMED")
+    if rc != gate_exit.PASS:
+        if fails:
+            print("   the rig above is on disk and it does not pass. Do not "
+                  "render from it.")
+        sys.exit(rc)
+    return rc
 
 
 if __name__ == "__main__":
-    main()
+    gate_exit.guard(main, tool="build_camera_rig")

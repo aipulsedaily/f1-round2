@@ -116,9 +116,19 @@ _VACUOUS_MARKERS = ("VACUOUS", "REFUS", "UNMEASURABLE", "NOT_MEASURED",
                     "NOTHING_TESTED", "UNDECLARED", "SKIPPED")
 _FAIL_MARKERS = ("FAIL", "VIOLAT", "REJECT", "SUSPECT", "MISBEHAV", "SPAM",
                  "STRAGGLER", "STILL_MISSING", "OUT_OF_RANGE", "BROKEN",
-                 "INTRUSION", "COLLIDE", "NOT_CLEAN", "STALE")
+                 "INTRUSION", "COLLIDE", "NOT_CLEAN", "STALE",
+                 # R2-1084: the camera rig's own refusal, which used to be
+                 # printed and then walked past. Listed before the PASS markers
+                 # get a look, as every FAIL marker is.
+                 "SEAM_BRIDGE_MOVED")
 _PASS_MARKERS = ("CLEAN", "_OK", "OK_", "PASS", "ACCEPT", "VALIDATED",
-                 "MONOTONIC", "BUILT", "NO_BEAT_CLIPS", "AIRBORNE_OK")
+                 "MONOTONIC", "BUILT", "NO_BEAT_CLIPS", "AIRBORNE_OK",
+                 # R2-1084: anim/build_camera_rig.py and the re-key stage.
+                 # Both were UNRECOGNISED, i.e. CRASH, which is why neither
+                 # could adopt this module without saying so first. Spelled in
+                 # full rather than as "AIMED"/"REKEY" so a future
+                 # CAMERA_RIG_AIM_FAIL cannot be swallowed by a loose prefix.
+                 "CONTINUOUS_AND_AIMED", "REKEYED")
 
 
 def code_for(verdict):
@@ -155,6 +165,82 @@ def verdict(token, detail="", stream=None):
               "treating it as CRASH rather than guessing it is a pass." % token,
               file=out)
     print(">> STAGE RESULT: %s%s" % (token, detail), file=out)
+    out.flush()
+    return rc
+
+
+# ---------------------------------------------------------------------------
+# EVERY verdict in a log, not the last one. R2-1084.
+#
+# A stage that CHAINS another stage prints two verdicts. `build_verify_scene.py`
+# loads `anim/build_camera_rig.py` and calls its `main()` in-process; the rig
+# printed `>> STAGE RESULT: CAMERA_RIG_FAIL` and *returned*, so the caller ran on
+# to its own work and printed its own passing verdict underneath. The log then
+# ends in a pass and the build is judged on it.
+#
+# Every reader in this project took the LAST line -- including
+# gate_exit_selftest.py, which is the control that is supposed to catch this
+# family. The last line is the verdict of the OUTERMOST stage, which is not the
+# same claim as "the build is clean", and the difference is invisible in exactly
+# the case that matters.
+#
+# So: a log has ONE status, and it is the worst thing anybody printed in it.
+# ---------------------------------------------------------------------------
+import re                                                          # noqa: E402
+
+_VERDICT_RE = re.compile(r">>\s*STAGE RESULT:\s*(\S+)")
+
+# Severity order for reducing many verdicts to one status. NOT numeric order:
+# VACUOUS is 3 and CRASH is 2, and "the gate blew up" outranks "the gate
+# refused". PASS is last precisely so that one pass among failures never wins.
+_SEVERITY = (CRASH, FAIL, VACUOUS, PASS)
+
+
+def scan(text):
+    """Every `STAGE RESULT` verdict in `text`, worst-first status.
+
+    Returns `(rc, found)` where `found` is a list of `(token, code)` in the
+    order printed and `rc` is the worst code among them.
+
+    A text with NO verdict line at all is CRASH, not PASS: a stage that
+    produced no verdict did not pass, and Blender exits 0 on an uncaught
+    exception, so silence is the shape a crash actually has here.
+    """
+    found = [(t, code_for(t)) for t in _VERDICT_RE.findall(text or "")]
+    if not found:
+        return CRASH, found
+    codes = {c for _, c in found}
+    for sev in _SEVERITY:
+        if sev in codes:
+            return sev, found
+    return CRASH, found
+
+
+def scan_report(text, source="<text>", stream=None):
+    """`scan()`, printed. Returns the same code."""
+    out = stream or sys.stdout
+    rc, found = scan(text)
+    if not found:
+        print(">> gate_exit.scan %s: NO STAGE RESULT LINE — a stage that "
+              "printed no verdict did not pass." % source, file=out)
+        return rc
+    print(">> gate_exit.scan %s: %d verdict(s)" % (source, len(found)), file=out)
+    for i, (tok, c) in enumerate(found, 1):
+        mark = "  " if c == PASS else "<<"
+        print("   %s %d/%d  %-34s %s" % (mark, i, len(found), tok, NAMES[c]),
+              file=out)
+    if rc != PASS:
+        bad = [t for t, c in found if c != PASS]
+        last = found[-1]
+        print(">> gate_exit.scan %s: STATUS %s — %d non-pass verdict(s): %s"
+              % (source, NAMES[rc], len(bad), ", ".join(bad)), file=out)
+        if last[1] == PASS:
+            print("   THE LAST LINE IS A PASS (%s) AND THE BUILD IS NOT. "
+                  "This is R2-1084: judging on the last verdict reports "
+                  "success here." % last[0], file=out)
+    else:
+        print(">> gate_exit.scan %s: STATUS PASS — all %d verdict(s) clean"
+              % (source, len(found)), file=out)
     out.flush()
     return rc
 
@@ -284,7 +370,23 @@ def selftest_summary():
 
 
 if __name__ == "__main__":
+    # With log files: scan them and EXIT ON THE WORST VERDICT IN THEM.
+    #     python tools/gate_exit.py build.log        # $? is the real status
+    #     blender ... | tee build.log; python tools/gate_exit.py build.log
+    args = [a for a in sys.argv[1:] if a != "-"]
+    if sys.argv[1:]:
+        worst = PASS
+        srcs = args or ["<stdin>"]
+        for src in srcs:
+            txt = sys.stdin.read() if src == "<stdin>" else open(src).read()
+            rc = scan_report(txt, source=src)
+            if rc != PASS and (worst == PASS or
+                               _SEVERITY.index(rc) < _SEVERITY.index(worst)):
+                worst = rc
+        sys.exit(worst)
+
     print(__doc__)
     for tok in ("PLACEMENT_CLEAN", "PLACEMENT_FAIL", "COLLISION_VACUOUS",
-                "DEPTH_PROBE_OK", "ITEM_REJECTED", "WHAT_IS_THIS"):
-        print("  %-22s -> %d (%s)" % (tok, code_for(tok), NAMES[code_for(tok)]))
+                "DEPTH_PROBE_OK", "ITEM_REJECTED", "WHAT_IS_THIS",
+                "CAMERA_RIG_FAIL", "CAMERA_RIG_CONTINUOUS_AND_AIMED"):
+        print("  %-32s -> %d (%s)" % (tok, code_for(tok), NAMES[code_for(tok)]))

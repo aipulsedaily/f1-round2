@@ -361,6 +361,83 @@ def main():
     check("placement_gate --selftest still exits 0 (the wrapper did not break "
           "it)", r.returncode == gate_exit.PASS, "rc=%d" % r.returncode)
 
+    # ---- 7. TWO VERDICTS IN ONE LOG, AND THE LAST ONE IS A PASS. R2-1084 --
+    print("\n7. A LOG WITH TWO VERDICTS. The last line is the verdict of the "
+          "OUTERMOST\n   stage, not of the build. Section 4 above reads "
+          "`said[-1]`, and so did every\n   other reader in this project, "
+          "which is why this went unseen:\n   build_verify_scene.py chains "
+          "build_camera_rig.py, the rig printed\n   CAMERA_RIG_FAIL and "
+          "RETURNED, and the re-key stage finished and printed\n   its own "
+          "pass underneath it.")
+
+    TWO = (">> ONER camera: 532 keys over 2978 frames\n"
+           "   FAIL 1_assembly: subject reaches 1.155 of the half-frame at "
+           "frame 431 (margin 0.92)\n"
+           ">> STAGE RESULT: CAMERA_RIG_FAIL\n"
+           ">> re-keyed 2978 frames\n"
+           ">> STAGE RESULT: FILM_SCENE_REKEYED_R2851\n")
+
+    # The control that matters: the OLD reader must call this a pass, or this
+    # case is not reproducing the fault and proves nothing about the fix.
+    old_reader = gate_exit.code_for(
+        [l for l in TWO.splitlines() if "STAGE RESULT" in l][-1]
+        .split("STAGE RESULT:")[1].strip())
+    check("the last-line reader calls the two-verdict log a PASS "
+          "(the fault, reproduced)",
+          old_reader == gate_exit.PASS,
+          "last-line -> %s" % gate_exit.NAMES[old_reader])
+
+    rc, found = gate_exit.scan(TWO)
+    check("scan() reads BOTH verdicts and returns FAIL(1)",
+          rc == gate_exit.FAIL and len(found) == 2,
+          "rc=%s, %d verdict(s): %s" % (gate_exit.NAMES[rc], len(found),
+                                        [t for t, _ in found]))
+
+    # Not vacuous: it must still pass a log that is genuinely clean.
+    rc, found = gate_exit.scan(">> STAGE RESULT: CAMERA_RIG_CONTINUOUS_AND_"
+                               "AIMED\n>> STAGE RESULT: FILM_SCENE_REKEYED_X\n")
+    check("scan() passes a log whose verdicts are ALL clean",
+          rc == gate_exit.PASS and len(found) == 2,
+          "rc=%s" % gate_exit.NAMES[rc])
+
+    rc, found = gate_exit.scan("built 2978 frames\nno verdict here\n")
+    check("scan() calls a log with NO verdict CRASH(2), not PASS",
+          rc == gate_exit.CRASH and not found, "rc=%s" % gate_exit.NAMES[rc])
+
+    # Severity, not numeric order: VACUOUS is 3 and CRASH is 2, and a crash
+    # among refusals must still be the status.
+    rc, _ = gate_exit.scan(">> STAGE RESULT: COLLISION_VACUOUS\n"
+                           ">> STAGE RESULT: WHAT_IS_THIS\n"
+                           ">> STAGE RESULT: PLACEMENT_CLEAN\n")
+    check("scan() reduces {VACUOUS, CRASH, PASS} to CRASH(2)",
+          rc == gate_exit.CRASH, "rc=%s" % gate_exit.NAMES[rc])
+
+    rc, _ = gate_exit.scan(">> STAGE RESULT: COLLISION_VACUOUS\n"
+                           ">> STAGE RESULT: PLACEMENT_FAIL\n")
+    check("scan() reduces {VACUOUS, FAIL} to FAIL(1)",
+          rc == gate_exit.FAIL, "rc=%s" % gate_exit.NAMES[rc])
+
+    # The rig's own tokens had NO code before R2-1084 -- both were CRASH, which
+    # is why build_camera_rig.py could not adopt this module until they did.
+    for tok, want in (("CAMERA_RIG_CONTINUOUS_AND_AIMED", gate_exit.PASS),
+                      ("CAMERA_RIG_FAIL", gate_exit.FAIL),
+                      ("SEAM_BRIDGE_MOVED_BEAT1", gate_exit.FAIL),
+                      ("FILM_SCENE_REKEYED_R2851", gate_exit.PASS)):
+        got = gate_exit.code_for(tok)
+        check("code_for(%s) is %s" % (tok, gate_exit.NAMES[want]), got == want,
+              "-> %s" % gate_exit.NAMES[got])
+
+    # THE CLI, which is how a batch step actually uses this.
+    lp = os.path.join(TMP, "two_verdict.log")
+    with open(lp, "w") as fh:
+        fh.write(TWO)
+    r = subprocess.run([sys.executable, os.path.join(HERE, "gate_exit.py"), lp],
+                       capture_output=True, text=True, cwd=TMP)
+    check("`python tools/gate_exit.py <log>` exits FAIL(1) on that log",
+          r.returncode == gate_exit.FAIL
+          and "THE LAST LINE IS A PASS" in (r.stdout or ""),
+          "rc=%d" % r.returncode)
+
     return summarise(TMP)
 
 
