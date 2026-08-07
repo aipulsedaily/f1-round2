@@ -37123,3 +37123,104 @@ workstream is mid-edit in `master.py`/`dsp.py`/`engine.py`; the beat-5
 sheet→bezier→built-path hop is **inferred, not measured** (bounded at 0.259 m
 against a 6 m plateau) and is now checkable on film19's rig; and **no master has
 been rendered and no cost committed.**
+
+## R2-1167 — THE CLIENT'S BLANK FIELD IS A HAND-DRAWN RECTANGLE THAT DRIFTED FROM THE CONTRACT
+
+`habitat()`'s `built` is a **16.50 ha rectangle drawn by hand** in circuit
+space. `world_contract` §11 declares the actual paving at **6.66 ha** - and says
+in terms that the two are meant to be **"the same region stated once so the
+extents cannot drift."**
+
+**They had drifted, by 2.5x.**
+
+```
+inside the drawn district:  31.9 % actually paved
+                            20.7 % road corridor
+                            47.7 % OPEN GROUND  (7.98 ha)
+its entire SOUTHERN half (circuit y -70..0, 4.83 ha):  0.0 % paved
+```
+
+**That southern half is the client's field.** Every ground-cover tier multiplies
+down by this box: the verge band **deletes on it outright**, meadow **x0.08**,
+and **R2-1661's sward drifts inherited it verbatim at x0.10.** On f2760's own
+frustum **46.7 % of the ground in frame sits inside it** - sward density
+**0.049 inside against 0.472 outside.**
+
+**And this is why f2811 passed while f2760 failed**, in one table - predicted
+cover banded by distance from the pit wall:
+
+```
+outer field   0.998      mid field  0.521
+near wall     0.058      along wall 0.069
+```
+
+**f2811 is all outer field.** **The client's sentence is a gradient in distance
+from a rectangle nobody had ever drawn on the picture.**
+
+**The transition question answered both ways.** The tier crossfades **hold** -
+A→B at 200 m is **-2.3 %**, B→C at 520 m **+11.9 %**, both inside the layer's own
+patchiness scatter. **But the district's feathered edge laid a 9.7x cover step
+as a straight line across the client's field** - **the exact artefact R2-1661
+removed at 200 m and 520 m, drawn by the mask instead of the tiers.**
+
+**And the built-structure case was worse than a cliff.** A `x0.90` multiplier
+means **8-10 % of the grass everywhere, including on the buildings** - **833
+clumps and drifts were standing on `build_architecture`'s concrete.** **The old
+mask gave less grass where grass belongs and more where it does not.**
+
+## R2-1168 — one predicate, +267 % on the client's own frame, and three invariants held exactly
+
+`paved = smoothstep(BUILT_STANDOFF_M, 0.0, C.platform_field(x, y))`, driving
+**the three ground-cover tiers only** - trees, shrubs, ferns, weeds and grit keep
+`built`. **The same scope discipline R2-1149 used for `dist3`: change one
+predicate, not five.** `build_terrain` already cuts its ground *mesh* to this
+field, so a plant outside it always has ground under it, and `Ground.height`
+keeps its own copy - **the landform is untouched.**
+
+**4K at f2760, matched camera and exposure**, with arm A reproducing R2-1661's
+published statistics field-for-field so the rebake is proven inert:
+
+```
+grass, first 5 m off the road   1.40 -> 5.12   +267 %   (the verge band itself is 5.35)
+paddock ground                  1.82 -> 4.91   +169 %
+everything outside the district        <= 3.6 %
+b6_2811 - R2-1661's OWN frame:  bare_frac 0.151 -> 0.082   -46 %
+placement: verge +318,816 · sward tier A +9.8 % · tier C and in-corridor IDENTICAL
+```
+
+**Three invariants held exactly, which is stronger evidence than one number
+moving.** And it improved the *other* agent's verification frame by 46 % while
+fixing its own - the two fixes are complementary, not competing.
+
+## R2-1169 — DECIDED: accept the resample. This change redraws every grass clump in the film
+
+**`build_grass` draws species and size with `rng.random(n)` where `n` is the
+surviving clump count** - so changing that count **displaces the shared random
+stream** and every clump downstream draws differently.
+
+`t5_verge` texture moved **-17 %** on ground the arithmetic says cannot change.
+**The agent looked rather than reconciling**: it is **one different clump, 0.6 m
+from a knee-height lens**, same verge, same kerb, same treeline. **A resample,
+not a regression** - but **beats 1-5 will differ in foreground grass from what
+was signed off.**
+
+**DECIDED: accept it.** The client's instruction is *"fill the WHOLE map with
+trees and detail no blank green spots period"*, and a different blade of grass
+in a foreground beat is not a cost against that. **Escalating it rather than
+absorbing it was right** - a shared RNG stream is exactly the coupling that
+silently invalidates a signed-off comparison, and it deserved a decision rather
+than a footnote.
+
+**Also decided: fix R2-1829 and R2-1824.** The **44 m residual step** is
+pre-existing (`verge_band`'s `out_extra = 42.0`, not the mask) and already a
+third the size of what it replaced - but *"no blank green spots, period"* leaves
+no room for a visible band, and **it was found by looking at the crop, not by any
+metric.** **Tier C cutting dead at 1076 m** with no outward fade is one line and
+strictly a softening.
+
+**And a sequencing fact that matters: `assembly11` does NOT carry this.** Its log
+reads `sward: 264890 drifts` - R2-1661's figure to the unit - so it read
+`build_terrain` **before** this edit. **The next assembly is the first to carry
+R2-1821**, and the film built from assembly11 will still show the client's blank
+field. The agent **checked rather than assumed**, and held its own build rather
+than compete for an 11 GB box. Cost: **$0.10.**
