@@ -36279,3 +36279,57 @@ the per-frame arrays.
 not reached yet** - the same beat-1 time-gating defect already flagged for the
 deck, appearing independently on two more surfaces. **A defect found once in a
 family is worth testing for across the family.**
+
+## R2-1142 — BEAT 1's LIMIT IS THE CAR ITSELF: at hero scale it reads as one moulded shell, not a machine
+
+The client: *"i feel like beat1 can still be extraordinarily better."* Watched
+f1 and f599 at 1:1. **They point at two different things and neither is what the
+last three fixes addressed.**
+
+**f599, the payoff — the car does not hold up as a hero subject.** The paint work
+landed (`R2521_CARPAINT_APPLY_OK`, `IMPERFECTIONS_OK`, 376 markers), so **this is
+not the albedo defect that was fixed.** What reads wrong is **structure**:
+
+- **No panel separation.** Nose, monocoque, sidepod, engine cover and floor are
+  one continuous glossy surface. A real car is five materials meeting at visible
+  seams.
+- **The front wing is a plain white bent sheet** - no elements, no endplate
+  detail, no flap adjusters, no mounting pylons.
+- **The underfloor is a flat grey slab.**
+- **The tyres have no sidewall** - no branding, no sculpting, no shoulder wear.
+- **No carbon weave at hero scale**, where the car is ~60 % of frame width.
+
+**This is the client's "materials must have depth" bar, arriving at the one
+object it was never applied to.** The road got twenty layers re-budgeted into
+the camera's band; the items got a relief law; **the car got paint and nothing
+else.**
+
+**And the lighting is not defining the form.** No key, no rim, no specular that
+describes a curve - **the shape is being read by its silhouette alone**, which is
+why an accurate model still reads as a toy.
+
+## R2-1143 — f1's room is architecturally competent and dramatically inert, and a reflective band splits it in half
+
+The opening frame is grey concrete, grey floor, grey ceiling, evenly lit. **The
+only colour in the establishing shot of a car film is the car's own teal and
+about forty pixels of red tyre rim.**
+
+- **No lighting design** - no pools, no falloff, no warm/cool contrast. The car
+  is lit exactly as brightly as the floor it stands on.
+- **The specular wall band runs across the frame at eye level and carries the
+  ghost** already flagged: a reflected second car, at the horizontal centre of
+  the establishing shot.
+- **That band also splits the frame almost exactly in half**, which is the most
+  static division available.
+- The floor's bright patch bottom-left reads as noise rather than as a
+  reflection of anything.
+
+**The ceiling - the newest asset in the shot - is the best thing in it.** It has
+depth, structure and shadow. **Which is the argument: the room can carry this
+treatment, and everything below the ceiling has not had it.**
+
+**Nothing here is a defect in the sense this log usually means.** Every gate
+passes, the frame is technically clean, and no measurement would flag either
+image. **This is the difference between correct and good**, and it is the second
+time on this project the client has had to be the instrument for it - the first
+was *"okay kinda cute"*, which was also right.
