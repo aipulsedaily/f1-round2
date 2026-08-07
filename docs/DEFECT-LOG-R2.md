@@ -30319,3 +30319,40 @@ did `"%s" % some_tuple`, which Python unpacks - `TypeError`, no output, **and
 Blender exited 0.** The bug was found by reading the printed output, not the
 status code, which is exactly the discipline this project judges Blender stages
 by, and the comment now sits on the fixed line.
+
+## R2-1080 — #139 looked at, at 720p: the standing bays are defensible, and this is NOT the 4K verdict
+
+Three frames of the shipping contiguous render, watched rather than measured:
+
+**f866** (six frames after the swap at 860) - the wall is fractured **in place**.
+Crack lines run through the panes, the mullions stand, and the car reads
+cleanly through it. Correct: six frames is 0.25 s and nothing should have
+travelled yet.
+
+**f900** - the frame is veiled in glass, with several large hard-edged
+translucent quads crossing it, one over the car. **This is the frame that
+decides #139**, and at 720p it reads as *glass* rather than as *slabs*: the
+veil is dramatic and the quads catch light like large shards should.
+
+**f1000** - completely clear. Debris scattered across the apron, the car reading
+whole and well-lit, the wound behind it. A handsome frame with nothing wrong.
+
+**Provisional recommendation for #139: re-label bays 3 and 6 `retained` rather
+than re-bake them to leave.** Laminated glass that cracks and stands beside the
+hole is physically right, it is what the picture already shows, and the
+alternative costs a re-bake for a wider aperture the car does not need - R2-092
+measured the connected hole at 2.15 x 6.00 m against a car under 2 m wide.
+
+**This is explicitly not the verdict.** It is 1280x720, and the standard this
+project has enforced all night - after a closing shot passed every measurement
+and still had no subject in it - is **4K at 1:1**. The specific question a 4K
+look must answer is whether those large quads read as **fractured glass or as
+flat sheets** at delivery resolution, because 202 shards over a 13 m2 bay is
+~25 cm a piece and that is a size that can go either way. **A 720p frame cannot
+resolve a crack.**
+
+Recording the provisional read anyway, because the alternative is that the
+decision waits on a render nobody has scheduled - and because it is worth
+knowing that the picture is **not obviously broken**, which is not what the
+failing gate on its own would suggest. **A gate that fails is a question, not a
+verdict.**
