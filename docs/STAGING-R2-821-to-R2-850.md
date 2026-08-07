@@ -767,3 +767,68 @@ shipped film    f755   1.2 -> 1.2 m/s   z =  8.8      the same thing
 
 Rig verdict: **`CAMERA_RIG_CONTINUOUS_AND_AIMED`, all six beats PASS**, beat 1
 worst aim 9.21 deg / frame-offset 0.598 against a 0.92 margin.
+
+---
+
+## R2-840 — the re-pacing moves the driver's entrance into the centre of the payoff shot
+
+**Found downstream, caused here.** `tools/place_driver.py` makes the driver figure
+appear at frame 580, and gates that choice with `figure_offscreen(...,
+render/film14_path.json, ...)` — a camera **two generations old**, so its PASS was
+never evidence about the shipping film and is certainly not evidence about this
+one.
+
+Under the shipped sheet f580 sat inside a 58 mm close-up of a single cluster, with
+the lens 0.29 m from the cockpit; the figure appeared far outside the frame and
+nobody saw it arrive. **R2-830/831/833 changes that completely**: the car is whole
+at f521 and f464-754 is one continuous orbit of the assembled car.
+
+**Measured by projecting the cockpit through both paths directly (path JSON only,
+no Blender):**
+
+```
+                f575        f580        f585
+SHIPPED    u  17.418      13.896      10.565     range 0.10-0.56 m   outside
+R2-829     u  -0.134      -0.131      -0.128     range 6.7-6.8 m     DEAD CENTRE
+```
+
+At f580 the steering wheel is at u -0.131, v -0.068 — the middle of a clean 6.7 m
+wide — with the halo (u -0.016, v 0.094) and cockpit internals (u -0.117, v
+-0.043) centred beside it. **A driver materialising there is a pop in the centre
+of the payoff.**
+
+### There is exactly one window left, and it is early
+
+Scanning from f396 (halo seats f388-396, so the cockpit is complete) to f792 for
+frames where the cockpit is **out** of frame:
+
+```
+f396-427    32 frames, 1.33 s     <- the only one in the whole beat
+```
+
+From f428 to the end the cockpit is in frame continuously, because the payoff is
+one unbroken orbit of the car. **The re-pacing does not merely move the hiding
+place; it very nearly abolishes it.** That is a general consequence worth stating:
+a beat whose payoff is a long continuous wide has almost no frames in which
+anything may quietly change.
+
+Re-measured with a DRIVER-SIZED box (the CI cluster grown 0.15 m in x, 0.30 m in
+y and 0.55 m upward for helmet clearance), worst |u,v| over all eight corners,
+1.00 = frame edge:
+
+```
+f400   101.96      f414   4.40      f428   1.38
+f406    21.00      f420   2.41      f430   1.22   marginal
+f410     8.45      f424   1.80      f434   1.05   marginal
+```
+
+**Recommendation: `--appear 400`.** The whole driver box is 102x outside the frame
+there — the camera is on RW's presentation key (f399), tight on the rear wing at
+58 mm. It is also motivated rather than merely hidden: the cockpit finishes
+assembling at f396 and the driver arrives four frames later. Anything in f396-412
+is safe; 400 is the maximum-margin choice.
+
+**Not landed here.** `place_driver.py` is not this block's to author and the change
+is one argument in the rebuild chain. Handed to the agent running that chain, with
+the instruction to re-gate against `film17_path.json` rather than `film14`, and to
+trust the tool over these numbers if the two disagree.
