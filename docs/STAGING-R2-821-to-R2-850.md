@@ -1006,3 +1006,75 @@ keep working, and it now prints a warning naming itself as superseded.
 Landed on top of another agent's uncommitted R2-401 work in the same file
 (`--hip-raise` / `--fit-warn-only`), in disjoint regions, and left uncommitted
 work untouched.
+
+## R2-840e — `--campath render/film17_path.json` IS NOT REACHABLE, AND WHAT IS USED INSTEAD
+
+R2-840's new `--campath` is right and the instruction attached to it — *"pass
+`--campath render/film17_path.json`"* — cannot be followed, for a structural
+reason rather than a preference.
+
+`render/film17_path.json` is **written by** `tools/build_film_scene.py`: it runs
+`build_camera_rig.main()` internally with its own `--out`, and the rig builder
+dumps `<out>_path.json`. `build_film_scene.py` consumes the driver blend as
+`--car`. So `place_driver.py` must run BEFORE the file it is being asked to gate
+against exists. The dependency is circular.
+
+**Used instead: `world/R2829_camera_rig_path.json`** — the standalone rig, built
+by the same `anim/build_camera_rig.py` from the same
+`docs/R2829_beat_sheet_CANDIDATE.json`, therefore the same camera.
+
+**That is verified, not assumed.** `work/r2840/campath_identity.py` runs
+immediately after the film build and compares the two paths frame by frame over
+every beat-1 frame the two share, on position, quaternion and lens, requiring
+exactly 0.0 on all three. Anything else means the appearance gate was measured on
+a camera the film does not have, and the correct response is to redo
+`place_driver`, not to accept the result.
+
+The same substitution is what lets `tools/r2791_depth_grid.py` be measured on the
+291 MB rig blend instead of the 7.5 GB film — R2-805's own instruction — so one
+check licenses both. Worth stating plainly: **two stages of this chain depend on
+that identity, and neither would announce itself if it were false.**
+
+---
+
+## R2-841 — the instrument for the client's actual note, validated against R2-823 before use
+
+`tools/beat1_energy.py`. R2-823's inversion measurement — 20.27 across the tour
+against 4.89 across the payoff — is the mechanism behind "way too slow I feel" and
+is the thing R2-830/831/833 were built to fix. **It was published with no tool
+beside it.** That matters here more than usual: two other beat-1 figures in this
+project turned out to have come from instruments that do not measure beat 1
+(`lap_shotscale.py` prints `car exploded; not measured`) or that are unreliable
+over a quarter of it (`beat1_true_extent.py`, R2-826).
+
+So this tool reproduces R2-823 on R2-823's own frames FIRST and refuses to report
+any comparison until it does — an instrument that cannot recover a known result is
+not evidence about a new one.
+
+```
+REPRODUCING R2-823 on /home/zany/vast-render/out/seq/r2beat1
+  segment                   n  pub n     mean      pub   median      pub
+  establishing wide        60     60    13.16    13.16    13.34    13.34  ok
+  unreadable tour         571    571    20.27    20.27    19.83    19.83  ok
+  car resolves             65     65    14.59    14.59    10.79    10.79  ok
+  readable payoff          95     95     4.89     4.89     4.60     4.60  ok
+>> STAGE RESULT: ENERGY_SELFTEST_OK
+```
+
+Exact on all four segments, means and medians both, so the AFTER numbers will be
+directly comparable rather than merely similar.
+
+**The AFTER sequence is reported against its OWN landmarks, not the old ones.**
+The R2-823 segment edges (2.5 / 26.3 / 29.0 s) are properties of the cut being
+replaced; using them on the new cut would score the fix against the geometry of
+the thing it fixed. The new edges are the new landmarks: establishing 0-2.0 s,
+tour 2.0-19.33 s (to the corner-group presentation), car resolves 19.33-21.71 s
+(to the last part settling at f521), payoff 21.71-33.0 s.
+
+**Prediction, registered before the frames exist**, so it can be wrong: the tour
+figure should fall (the stations are 2-3x further out, so the same camera motion
+subtends less image change) and the payoff figure should rise substantially (the
+payoff is now a 210 deg orbit rather than a near-static hold). The ratio should
+come down from 4.14x toward ~1. If the payoff figure does NOT rise, the orbit is
+not doing its job and the client's note is not answered, whatever the framing
+numbers say.
