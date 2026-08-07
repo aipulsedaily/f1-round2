@@ -33647,3 +33647,45 @@ normally and should return a frame.
 had not been "resuming for 90 minutes" — it was hibernated 14:22-15:05 and
 resuming for 20. **A wrong duration in a status report is a wrong diagnosis
 waiting to happen**, and it corrected it unprompted.
+
+## R2-1119 — A BLANKET CANCEL TOOK FOUR JOBS FROM THREE OWNERS, and one of them had already finished rendering
+
+Four jobs on broker 8760 went `canceled` in a **27-second window**:
+
+```
+15:36:59  064b88b666c9  itemgate    (created 15:04:49)   not its owner's doing
+15:37:24  1419666a7924  cypress     (created 15:28:28)
+15:37:25  b4362d1b783a  itemgate    (created 15:29:35)
+15:37:26  9597da429a04  brokerfix   (its owner's own)
+```
+
+**The worst detail: `064b88b666c9` was already in flight and its render FINISHED
+on the box at 15:37:55** — 6.0 s, 33.9 MB, stats identical to a known-good
+proof — **but the row had been cancelled 56 seconds earlier, so no result was
+delivered.** The caller's `--wait` returned a cancellation. **Paid GPU work
+completed and was thrown away because a database row said it should not exist.**
+
+**Most likely cause, and it is mine.** I had just instructed the item-campaign
+agent to stop building and re-scope. Two of the four jobs are `itemgate` — its
+own. **A re-scope that cancels broadly rather than selectively takes other
+agents' work with it**, and `cypress` and `brokerfix` belonged to two other
+sessions who lost queued work **and did not know.**
+
+I cannot prove it from the broker log: **`rq cancel` records no caller.** That
+is the second defect here and the more durable one. **A destructive operation on
+a shared queue that leaves no trace of who invoked it makes this exact question
+unanswerable**, and it will be asked again.
+
+**Three things follow:**
+
+1. **Cancel by job id you own, never by sweep.** The same shape as `pkill -f`,
+   which three agents have now misused on this box today: an operation whose
+   default scope is *everything present* rather than *everything mine*.
+2. **A cancel should not discard a completed render.** The frame existed on
+   disk. Delivering it costs nothing and the row can be marked however it likes.
+3. **Attribution belongs in the queue.** Every job already carries a label
+   prefix; the cancel path should record one too.
+
+**Relayed to the affected sessions rather than left silent** — the peer that
+found this had already resubmitted its own and flagged that the other two owners
+were unaware.
