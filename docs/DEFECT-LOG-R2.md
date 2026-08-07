@@ -25544,3 +25544,55 @@ docs/STAGING-R2-911-to-R2-940.md     this file
 
 Nothing in `sim/out/` was written or overwritten. `sim/out/breach_film.npz`
 md5 is untouched — no stage of `land_breach.sh` was run.
+
+## R2-723 — A FIXTURE THAT PROVES A CHECKER WORKS MUST NEVER BECOME A DEFAULT. And container limits are a property of the rental, not of the container
+
+Two findings from a middleware agent, one of which prevented a fix from
+shipping.
+
+**1. The proposed fix would have converted a hard error into a silent wrong
+output.** An exec-only workload could not bootstrap, because `Fleet.ensure_ready`
+is the only code that may rent a box and it insists on a scene - so with none
+loaded it waited (correctly, refunding attempts) for a *render* job to rent
+hardware first. **The diagnosis was right.** The proposed remedy was to set
+`VASTRENDER_SCENE=scenes/blank_probe.blend`.
+
+**That file is the fixture built to prove the blank-frame checker works.** Its
+own docstring says so. It contains `CAM_VOID`, aimed 5 km into empty space
+against a black world, and it **renders black on purpose**. `VASTRENDER_SCENE`
+is what a render job gets when it omits `--scene` - so the fix would have
+answered a forgotten flag with **a black frame instead of an error**, in a
+broker that refuses silent-wrong-output everywhere else: no dedup, no defaulted
+worker fields, a terminal verdict on blank frames.
+
+> **A missing render default has to stay a hard error.**
+
+The real fix is a separate knob, `EXEC_BOOTSTRAP_SCENE`, reached only when
+nothing is loaded **and** there is no render default: loaded scene -> render
+default -> bootstrap -> `FleetUnavailable`. It cannot cause a scene switch under
+a render, and with all three absent it is still a refunded wait rather than a
+`FileNotFoundError` that would burn an attempt. **Side benefit: deploy 140.3 s
+-> 37.3 s**, because the bootstrap is 0.59 MB against a 409 MB assembly.
+
+**2. The container's memory ceiling is a property of the rental.**
+
+```
+instance          memory.max    cpu.max     nproc   MemTotal
+47049525 (now)    58.1 GiB      30.72 CPUs  32      63.5 GB
+46819442 (doc's)  90.5 GiB      23.04 CPUs  96      188 GB
+```
+
+**Same image, same price - more CPU and a third less memory.** `docs/protocol.md`
+presented both as constants and would have misled the next agent identically;
+corrected. The `ExecMemoryShort` gate was never mis-reasoning: it asks the exec
+server for live `mem_available` on every check and touches no constant, which is
+why it was right on both boxes without knowing either.
+
+**And a caution worth carrying:** `memory_available()` is
+`memory.max - memory.current`, **which includes page cache** - so a large figure
+early in a rental is not a promise.
+
+**All three defects fixed this session are the same family:** *the render path
+had something the exec path did not* - a teardown guard, a refunded fault class,
+and the ability to bootstrap its own instance. 435/435 offline checks pass with
+three new tests pinning each.
