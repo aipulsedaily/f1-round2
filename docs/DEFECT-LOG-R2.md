@@ -33743,3 +33743,85 @@ masking budget had already been measured.
 Two guards missing on one classifier, and only one of them is written down.
 **An unguarded branch in a mutually-exclusive set is not a default; it is a
 catch-all**, and it will absorb whatever the guarded branches reject.
+
+## R2-1123 — `tree_italian_cypress` IS NOT A CYPRESS, and 25 selftests including negative controls could not see it
+
+At 1:1 it reads as a **bay laurel**: spray length **~4x** oversize, width
+**~8x**, order-1 branch diameter **~7x**, and a hollow crown with sky visible
+through it. The frame is technically sound - 0.0000 clipped, 5.7 % crushed
+against a 60 % refusal threshold - **so this is a verdict on the subject, not the
+exposure.**
+
+**All 25 selftests passed, negative controls included, and not one could see
+it.** Root cause: **the foliage unit was sized backwards** - a spray big enough
+that 1,200 of them fit a triangle budget, rather than sized to what a cypress
+actually is. **A constraint was allowed to author the subject.**
+
+**A second defect the sizing account does not cover**, found by looking rather
+than by the report: **the branches are flat untapered ribbons**, hard parallel
+edges with visible polygon silhouettes. **Fixing the spray alone would leave
+correct foliage on flat slabs** - which is exactly how a single-root-cause
+rebuild ships half a fix.
+
+## R2-1124 — the same asset reads CORRECTLY in the background of the same frame, and that is the whole tier's answer
+
+**The background trees, an order of magnitude further away, read acceptably as
+cypress.** Same asset, same light, same frame - **the only variable is angular
+size.**
+
+That is the pixel-footprint law demonstrating itself inside one image, and it is
+the third independent time this project has hit it: the circuit surface had
+twenty layers authored outside the camera's band, the relief law found 14 of 28
+modules mis-scaled, and now a tree that is wrong at 4 m and right at 40.
+
+**And it matters because the tier looks unbuildable without it.** Two
+independent builds agree a correct cypress needs **~800 k tris** (44 sources =
+35 M, will not fit 11 GB), a full-density pine measures **1.35-1.89 M**, and
+dropping below **37 sources breaks the variety floor.** **Eleven trees carry
+50.2 % of all on-screen area-time** - 11 of the top 11 ranks.
+
+**But every tree reports an IDENTICAL `min_depth_m` of 4.577 m.** That is **one
+shared host, not eleven measurements.** The single item where this was
+re-derived properly moved from 7.602 m to **84.18 m - an 11x error.**
+
+**If trees are actually seen at tens of metres, the triangle crisis largely
+dissolves** - at 80 m the correct spray is sub-pixel. **Hypothesis with a
+precedent, not a finding**, and the cheap test that settles it now sits at the
+top of the resume order **ahead of rebuilding any tree.** Rebuilding first would
+have spent days solving a budget that may not exist.
+
+## R2-1125 — 32 UNMEASURABLE reports that would have looked like data, and a kill that took three attempts
+
+The re-gate was producing **2 of 2 `ITEM_UNMEASURABLE`** - **transport failures,
+not verdicts.** Left running it would have written **32 UNMEASURABLE reports
+that look like results**, and **a NOT-MEASURED is a rejection, not a skip.**
+Manufacturing 32 of those unattended is worse than producing none.
+
+**Killing it exposed the scope error twice more, each a level up.** The structure
+was `shell -> run_all.sh -> regate.sh -> timeout -> blender -> rq`, and the kill
+went in **at the middle**: killing the shell left an orphaned `item_gate` that
+immediately submitted a fresh job; killing that left `run_all.sh`, which had
+already started arm C.
+
+> **The correct scope is neither "everything present" (too wide - the blanket
+> cancel, R2-1119) nor "the thing I named" (too narrow) but "everything mine,
+> including what it started."**
+
+**And what actually caught all three was not thoroughness of intent** - it was
+re-checking `ps` and the queue **after each kill, then waiting 20 s and checking
+again.** Ownership was confirmed **by ancestry, not by name**, and the kill went
+parent-first.
+
+**Two paid renders survived on disk and are recoverable via `--from-png` rather
+than re-bought**: `064b88b666c9.png` (3840x2160, 33.9 MB) and `650d03fabe40.png`.
+
+**The deliverable stands**: **44 items carry 80 % of all on-screen area-time, 90
+carry 95 %, and 190 of 435 never exceed 60 px in any of 2,978 frames.** Ranking
+in `work/w2_0/wave2_ranking.json`, method and resume order in
+`docs/WAVE2-RANKING.md`.
+
+**And it corrected itself unprompted**: it had told me it would kill the re-gate
+on my word, then killed it without waiting **because the evidence changed** -
+false negatives rather than the verdicts it had justified keeping it for. That
+is the right reason to break a commitment, and saying so is what makes it
+checkable.
