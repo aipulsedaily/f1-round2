@@ -277,3 +277,57 @@ them:
     stills at 4K, 1:1      ->  material, geometry, texture, detail
 
 Both must be clean before the master renders.
+
+---
+
+# CORRECTION 2026-08-07 — BOTH RATE ANCHORS IN THIS DOCUMENT ARE THE WRONG SCENE
+
+**Every schedule and cost figure above this line is drawn on files that are not
+the film.** Three agents measured this independently, from different data, and
+converged:
+
+```
+                    THIS DOC        MEASURED ON film16_breach      source
+4K  s/frame          510.5           196.5 / 194 / 212 (weighted)  3 agents
+720p s/frame          63.4            42.3                         completed pass
+```
+
+- The **510.5 s** 4K anchor is `render3.blend`, n=2.
+- The **63.4 s** 720p anchor is `film6.blend`.
+- Neither is `film16_breach.blend`, which is what ships.
+
+**The 4K figure is ~2.6x too high**, so the "$108 / 13.4 days" master budget is
+not a figure for this film. Re-measured properly, sampling **all six beats**:
+**175.2 h render + 4.0 h overhead + 0.8 h cold starts = 180.0 h, $79.99** on one
+exclusive card at $0.4444/hr.
+
+**The beat-to-beat variance this doc is built on does not exist in the real
+scene.** It assumes 8.5x. Measured: **1.5x across the whole film**, and beat 6 -
+the closing wide it feared most - is *cheaper* than beat 5. At 720p the
+completed pass puts the breach window f860-930 at 43.71 s/frame, **1.03x the
+film average**. Per-frame overhead is **4.8 s, not 31**.
+
+## The budget as it actually stands
+
+```
+master @ 512 spp                    180.0 h    $79.99
+master @ adaptive_threshold 0.02    160.7 h    ~$71.40   <- visually free
+credit                                          $72.39
+```
+
+`adaptive_threshold 0.02` was measured against a frame: mean delta **0.06**,
+p99.9 of **1 level**, **0.00 %** of samples beyond 2 levels - below what any
+delivery codec carries. **256 samples fits comfortably (~$47) and is NOT taken**:
+17.5 % of samples move beyond 2 levels, so it is a look decision, not a budget
+one.
+
+**Headroom at the threshold setting is $1.93, not a percentage.** Fifteen
+rentals is fifteen chances to draw a slower host than the one measured.
+
+**Card count is not a money question** - under $3 across 1 to 8 cards, because
+cold starts are 102 s on this class of host. It is purely wall clock: **7.5 days
+on one card, 3.8 on two, 2.5 on three.**
+
+**Both cards bill at $0.9239/hr combined** = ~78 h of runway against $72.39. The
+per-broker $150 caps are **blind to each other** - $300 nominal against $72 real
+- so **credit is the binding constraint and the caps protect nothing.**
