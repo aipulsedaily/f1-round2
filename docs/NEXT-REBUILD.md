@@ -14,7 +14,20 @@ rendered before it is superseded by construction. Written 2026-08-07.
 | **Beat-1 re-pace + re-frame** | `tools/build_beatsheet.py`, `world/beat1_anim.blend` regenerated | payoff 4.01 s -> 11.29 s; beats 2-6 frame-identical over 2,186 frames |
 | **Beat-1 focus** | post-pass, keyed to subject not frame numbers | subject inside the 2 px budget 0.9 -> 45.0 % median; frames with nothing sharp 174/292 -> 86/292 |
 | **Beat-6 ending re-key** | `film16_breach` -> re-keyed candidate | aim worst 0.11 deg at f2977 against a 26.0 bound; lens f2978 73.997 -> 129.993 mm |
-| **Breach frost + fines** | `sim/apply_breach.py --debris --fracture-faces`, both **off by default** | pending probe |
+| **Breach frost** | `sim/apply_breach.py --fracture-faces`, **off by default** — a material edit on `BREACH_Glass`, no geometry, not appendable | pending probe |
+| **Breach fines** | `world/breach_fines.blend` (101.9 MB library) landed by **`apply_breach.py --fines-lib`** — NOT a `build_film_scene` append | round-trip EXACT: 11,246 of 11,246 objects, 2,844,012 of 2,844,012 keys, worst world-position error **1.70e-06 m = 0.0037 px**, **0** visibility mismatches across f866/880/900/930/1200/2978 |
+
+**Why `apply_breach` and not `build_film_scene`:** the applier **already opens
+the film once**, so the append lands inside a pass that was happening anyway -
+no second film-sized open anywhere in the pipeline - and the fines end up
+*inside* `BREACH` rather than as a sibling collection a later tool has to know
+about. `--debris` is now **only** how the library is regenerated; `--debris` and
+`--fines-lib` **refuse together**, because doing both would put two copies of
+260,000 chips in the wound.
+
+**f2978 is in the round-trip sample deliberately**: it proves CONSTANT
+extrapolation survived the append, so the wound keeps its fallen glass through
+beats 4-6 without a single extra key.
 
 ## THE PROBE BLENDS ARE THROWAWAY — DO NOT MERGE THEM
 
