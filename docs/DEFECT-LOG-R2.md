@@ -33825,3 +33825,117 @@ on my word, then killed it without waiting **because the evidence changed** -
 false negatives rather than the verdicts it had justified keeping it for. That
 is the right reason to break a commitment, and saying so is what makes it
 checkable.
+
+## R2-1126 — THE ENDING VERDICT: the car is fixed, the GROUND is not, and the ground is what the client named in the first place
+
+**Independent adjudication, on pixels.** The lap-down **genuinely fixed the
+subject.** What remains broken is the department the client named at the start
+and **none of the four passes touched.**
+
+**My f2811 question, answered properly.** The car is in frame, **within 0.08 ndc
+of centre, in all 264 frames.** Widths at 3840x2160: **f2760 84 px, f2811 63 px,
+f2937 ~180 px, f2978 ~230 px.** The trough is **60-65 px across ~f2790-2845,
+about 2.3 s.**
+
+So the beat *does* dip below the 79 px once called a smudge - **and it is not the
+same failure.** At 1:1 f2811 shows a car with body, wheels and its own shadow,
+held dead centre on clean asphalt, **visibly decelerating and growing
+continuously to the payoff.** The rejected 79 px was a **held final frame** at
+1000 m in haze with nowhere for the eye to go.
+
+> **A beat is not judged by its final frame, and it is not condemned by its
+> thinnest one either.**
+
+## R2-1127 — the review I commissioned was IMPOSSIBLE: only 4 frames of this ending exist at 4K
+
+`watch/R2943_ending_LAPDOWN.mp4` is **1280x720.** The 264-frame source
+`out/seq/r2943b6/` is **720p by manifest.** **Only four 4K stills exist.**
+
+I commissioned "all 264 frames, at 4K, at 1:1" against material that does not
+exist, and **the adjudicator made my exact error first** - reading f2811 as
+subjectless **because at 720p the car is 21 px.** Two of us, independently,
+judged a 4K question on a 720p file.
+
+**Anyone judging subject presence from the watch file will say "no subject" and
+be right about that file.** The standing rule was already "judge at 4K" - what
+was missing is the step before it: **check that what you are looking at is 4K.**
+
+Full 264-frame 4K ending: **21.3 GPU-hours, ~$10.10.** A 24-frame sample:
+**$0.92.**
+
+## R2-1128 — the patches are BAKED FIELD COLOUR the grass never covers, and the proof is 41 frames away in the same beat
+
+`world/build_terrain.py` colours terrain **per agricultural field**:
+
+```
+fam = floor(fid * 3.0)
+pal = [[0.118,0.170,0.052],   # deep pasture
+       [0.235,0.243,0.083],   # hay meadow
+       [0.290,0.215,0.093]]   # cut/stubble
+```
+
+**A patchwork of large flat regions with hard boundaries, by construction** -
+a ~50 % relative albedo step between families. Measured **20-25 CV p5-p95, up to
+59 CV peak-to-peak**, over **50-55 % of the frame.**
+
+**Why only this beat sees it:** `GRASS_HERO_D = 48.0` makes clumps hero only
+within 48 m **of the camera PATH**. **Beat 6 is the one place the camera leaves
+the path**, climbs to a high aerial and looks across hundreds of metres.
+
+**And the proof it is a covering problem, not a colour problem, is inside the
+same beat:** at **f2978 the near bank is within hero distance and the ground is
+excellent** - real instanced clumps, wildflowers, varied blades. **Same shader,
+same beat, 41 frames apart.** The only difference is whether grass geometry sits
+on top.
+
+**The still-versus-motion question I could not answer, answered by having 264
+frames:** cross-correlation across 8-frame gaps gives **r = 0.97-0.999 at a
+NON-ZERO screen shift**, much lower at zero. **The patches are world-locked and
+translate with the camera** - baked colour, not a shading or sampling
+instability. **Fixable in the terrain, and it will not fight the denoiser.**
+
+**Do not fix it in the grade.** Under the closing haze asphalt and field measure
+almost identically (0.367/0.333/0.246 vs 0.380/0.354/0.263), so a grade fix
+would **take the car's colour break with it** - the exact thing the ending's
+legibility rests on.
+
+## R2-1129 — `live_campath` DECLARES A CAMERA THE FILM DOES NOT HAVE, and its selftest is green
+
+**R2-1007 has recurred inside the guard built to prevent it.**
+`render/film17_path.json` is declared LIVE, **sha256-verified**, selftest
+passing - and it is **not the camera that rendered R2943.**
+
+Projecting the live carpath through it puts the car at ndc **+10.999** at f2978
+- eleven frame half-widths off the right edge, out of frame from f2837, camera
+aimed at the world origin. **The render has the car at ndc (-0.001, -0.001).**
+The broker log confirms both the 4K stills and the 264-frame sequence came from
+`film17_R2943.blend` **using the blend's own baked camera.**
+
+**So any geometry gate run on beat 6 through `live_campath` measures a camera the
+film does not have - possibly including the quoted 0.11 deg aim gate.**
+
+**A hash proves a file is unchanged. It does not prove the file is the one that
+rendered the frames.** The guard was built to make the *wrong file* unreachable
+and it succeeded; it cannot make a *stale-but-authentic* file wrong. Provenance
+needs to bind to the render, not to the declaration.
+
+Separately: **`tools/lap_shotscale.py` cannot measure this beat at all** - its
+`Car` clamps at the telemetry end time, freezing the car **4.15 m short of the
+line for all 264 frames**, so it never sees the lap-down.
+
+## R2-1130 — stated as unverified rather than assumed, and one omission that should be a decision
+
+- **The f2714/2715 seam is unverified on pixels.** No f2714 exists from this
+  build; the only one on disk is a different spec hash from Aug 3. **The
+  "beats 1-5 bit-identical / 113,988 keys" claim is likewise unverified.**
+- **The car is at rest by ~f2936, not f2978** - the last **1.75 s is a fully
+  static car.** Probably intended, but *"at rest at f2978"* understates how
+  early motion stops.
+- **The brief asks for the breached showroom visible in the distance with its
+  wound. It is not in the closing frame.** Car and wound are **966 m apart and
+  cannot both be framed.** **A defensible trade - but it should be a decision,
+  not an omission.**
+
+**And the adjudicator declined to write its own staging file**, on the grounds
+that staging is a repo mutation and it was brought in as the independent judge.
+**A judge that edits the record is no longer only a judge.**
