@@ -889,17 +889,46 @@ def main():
     for t in b6_ts:
         b6_frames.add(max(b6_f0, min(b6_f1, int(math.floor(t * FPS)))))
         b6_frames.add(max(b6_f0, min(b6_f1, int(math.ceil(t * FPS)))))
+    # THE STRIDE IS SHEET-DRIVEN, and the defaults below are the historical
+    # constants, so a sheet that says nothing builds a bit-identical rig.
+    #
+    # R2-859. The rule is "step 2..8 frames, break when the bearing has moved
+    # more than 5 deg". It was written for a beat 6 whose aim swings 82 deg from
+    # the car to a fixed facade, where 5 deg triggers constantly and the stride
+    # stays short. It is WRONG for any beat 6 that tracks a subject smoothly:
+    # R2-853's candidate moves its aim ~2.9 deg in total, so the 5 deg test
+    # NEVER fires, the stride pins at its maximum 8, and the rotation is keyed
+    # every 8 frames straight through the one place it must not be — the last
+    # half second, where the car rounds T1 and the pan the camera owes it
+    # accelerates 7x, from 0.030 to 0.213 deg/frame.
+    #
+    # MEASURED on the 8-frame build: the car oscillates +-27 px about frame
+    # centre over f2968-2978 (a 51 px swing in 5 frames) and the camera
+    # over-pans by ~17 px/frame at f2976. The rig's own aim gate reports it as
+    # 0.1109 deg at f2977 and PASSES it against a 26 deg bound, because a bound
+    # sized for "is the subject in shot" cannot see a wobble three orders of
+    # magnitude below it.
+    #
+    # A degree threshold alone cannot fix this: the failure is that the aim's
+    # SECOND derivative is large while its first derivative is small, and a
+    # first-order test is blind to that by construction. So the stride cap is
+    # the parameter that matters, and it is exposed.
+    keying = sheet.get("beat6", {}).get("aim_keying", {}) or {}
+    max_stride = int(keying.get("max_stride_frames", 8))
+    max_deg = float(keying.get("max_bearing_deg", 5.0))
     f = b6_f0
     while f < b6_f1:
         b0 = b6_bearing(f)
         step = 2
-        for cand in range(2, 9):
+        for cand in range(2, max_stride + 1):
             g = min(f + cand, b6_f1)
-            if math.degrees(math.acos(max(-1.0, min(1.0, b0.dot(b6_bearing(g)))))) > 5.0:
+            if math.degrees(math.acos(max(-1.0, min(1.0, b0.dot(b6_bearing(g)))))) > max_deg:
                 break
             step = cand
         f = min(f + step, b6_f1)
         b6_frames.add(f)
+    print(">> beat 6 aim keying: stride <= %d frames, bearing bound %.2f deg%s"
+          % (max_stride, max_deg, "" if not keying else "  (from the sheet)"))
 
     # ---- THE BEAT 5 -> BEAT 6 HAND-OFF.  R2-063, and it is a ROUNDING. -----
     #

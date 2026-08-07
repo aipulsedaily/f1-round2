@@ -44,20 +44,17 @@
  "beat1": {
   "present_order": [
    "MB",
-   "BB",
    "CI",
    "halo_assembly",
-   "FW",
-   "NOSE",
-   "SW",
-   "SP",
-   "EC",
+   "BB",
    "FD",
+   "EC",
+   "SP",
+   "SW",
+   "NOSE",
+   "FW",
    "RW",
-   "CORNER_RL",
-   "CORNER_RR",
-   "CORNER_FR",
-   "CORNER_FL"
+   "CORNER_GROUP"
   ],
   "schedule": [
    {
@@ -65,134 +62,149 @@
     "n_parts": 17,
     "tris": 1844927,
     "presented_t": 2.0,
-    "presented_until_t": 3.3333,
-    "seat_t": 13.86,
-    "seen_before_seat": true
-   },
-   {
-    "cluster": "BB",
-    "n_parts": 10,
-    "tris": 534848,
-    "presented_t": 3.333333,
-    "presented_until_t": 4.2083,
-    "seat_t": 16.61,
+    "presented_until_t": 3.5833,
+    "presented_as": null,
+    "seat_t": 9.9,
     "seen_before_seat": true
    },
    {
     "cluster": "CI",
     "n_parts": 15,
     "tris": 459202,
-    "presented_t": 4.208333,
-    "presented_until_t": 5.0417,
-    "seat_t": 19.36,
+    "presented_t": 3.583333,
+    "presented_until_t": 4.2917,
+    "presented_as": null,
+    "seat_t": 14.08,
     "seen_before_seat": true
    },
    {
     "cluster": "halo_assembly",
     "n_parts": 53,
     "tris": 329722,
-    "presented_t": 5.041667,
-    "presented_until_t": 7.875,
-    "seat_t": 22.11,
+    "presented_t": 4.291667,
+    "presented_until_t": 5.2917,
+    "presented_as": null,
+    "seat_t": 16.17,
     "seen_before_seat": true
    },
    {
-    "cluster": "FW",
-    "n_parts": 120,
-    "tris": 720048,
-    "presented_t": 7.875,
-    "presented_until_t": 9.2917,
-    "seat_t": 26.235,
-    "seen_before_seat": true
-   },
-   {
-    "cluster": "NOSE",
-    "n_parts": 33,
-    "tris": 477818,
-    "presented_t": 9.291667,
-    "presented_until_t": 10.7083,
-    "seat_t": 24.86,
-    "seen_before_seat": true
-   },
-   {
-    "cluster": "SW",
-    "n_parts": 65,
-    "tris": 288904,
-    "presented_t": 10.708333,
-    "presented_until_t": 12.4583,
-    "seat_t": 20.735,
-    "seen_before_seat": true
-   },
-   {
-    "cluster": "SP",
-    "n_parts": 13,
-    "tris": 485712,
-    "presented_t": 12.458333,
-    "presented_until_t": 13.7083,
-    "seat_t": 23.485,
-    "seen_before_seat": true
-   },
-   {
-    "cluster": "EC",
-    "n_parts": 13,
-    "tris": 394122,
-    "presented_t": 13.708333,
-    "presented_until_t": 14.5417,
-    "seat_t": 17.985,
+    "cluster": "BB",
+    "n_parts": 10,
+    "tris": 534848,
+    "presented_t": 5.291667,
+    "presented_until_t": 7.625,
+    "presented_as": null,
+    "seat_t": 11.99,
     "seen_before_seat": true
    },
    {
     "cluster": "FD",
     "n_parts": 10,
     "tris": 685308,
-    "presented_t": 14.541667,
-    "presented_until_t": 15.4167,
-    "seat_t": 15.235,
+    "presented_t": 7.625,
+    "presented_until_t": 8.3333,
+    "presented_as": null,
+    "seat_t": 10.945,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "EC",
+    "n_parts": 13,
+    "tris": 394122,
+    "presented_t": 8.333333,
+    "presented_until_t": 9.4583,
+    "presented_as": null,
+    "seat_t": 13.035,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "SP",
+    "n_parts": 13,
+    "tris": 485712,
+    "presented_t": 9.458333,
+    "presented_until_t": 10.9583,
+    "presented_as": null,
+    "seat_t": 17.215,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "SW",
+    "n_parts": 65,
+    "tris": 288904,
+    "presented_t": 10.958333,
+    "presented_until_t": 12.2083,
+    "presented_as": null,
+    "seat_t": 15.125,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "NOSE",
+    "n_parts": 33,
+    "tris": 477818,
+    "presented_t": 12.208333,
+    "presented_until_t": 13.4167,
+    "presented_as": null,
+    "seat_t": 18.26,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "FW",
+    "n_parts": 120,
+    "tris": 720048,
+    "presented_t": 13.416667,
+    "presented_until_t": 16.625,
+    "presented_as": null,
+    "seat_t": 19.305,
     "seen_before_seat": true
    },
    {
     "cluster": "RW",
     "n_parts": 97,
     "tris": 535588,
-    "presented_t": 15.416667,
-    "presented_until_t": 18.1,
-    "seat_t": 27.61,
-    "seen_before_seat": true
-   },
-   {
-    "cluster": "CORNER_RL",
-    "n_parts": 44,
-    "tris": 745562,
-    "presented_t": 19.291667,
-    "presented_until_t": 21.625,
-    "seat_t": 28.985,
-    "seen_before_seat": true
-   },
-   {
-    "cluster": "CORNER_RR",
-    "n_parts": 44,
-    "tris": 745562,
-    "presented_t": 21.625,
-    "presented_until_t": 23.0833,
-    "seat_t": 28.985,
-    "seen_before_seat": true
-   },
-   {
-    "cluster": "CORNER_FR",
-    "n_parts": 41,
-    "tris": 690930,
-    "presented_t": 23.083333,
-    "presented_until_t": 24.625,
-    "seat_t": 28.985,
+    "presented_t": 16.625,
+    "presented_until_t": 19.3333,
+    "presented_as": null,
+    "seat_t": 20.35,
     "seen_before_seat": true
    },
    {
     "cluster": "CORNER_FL",
     "n_parts": 41,
     "tris": 690930,
-    "presented_t": 24.625,
-    "presented_until_t": 25.9,
-    "seat_t": 28.985,
+    "presented_t": 19.333333,
+    "presented_until_t": null,
+    "presented_as": "CORNER_GROUP",
+    "seat_t": 21.395,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "CORNER_FR",
+    "n_parts": 41,
+    "tris": 690930,
+    "presented_t": 19.333333,
+    "presented_until_t": null,
+    "presented_as": "CORNER_GROUP",
+    "seat_t": 21.395,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "CORNER_RL",
+    "n_parts": 44,
+    "tris": 745562,
+    "presented_t": 19.333333,
+    "presented_until_t": null,
+    "presented_as": "CORNER_GROUP",
+    "seat_t": 21.395,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "CORNER_RR",
+    "n_parts": 44,
+    "tris": 745562,
+    "presented_t": 19.333333,
+    "presented_until_t": null,
+    "presented_as": "CORNER_GROUP",
+    "seat_t": 21.395,
     "seen_before_seat": true
    }
   ],
@@ -222,9 +234,9 @@
     "t": 2.0,
     "beat": "1_assembly",
     "world": [
-     0.8801,
-     -4.4088,
-     2.7755
+     1.156,
+     -6.386,
+     3.6495
     ],
     "look_at": [
      0.265,
@@ -234,41 +246,19 @@
     "lens_mm": 35.0,
     "fstop": 2.8,
     "focus_target": "MB",
-    "focus_distance_m": 4.8594,
+    "focus_distance_m": 7.0387,
     "presentation_dir_measured": true,
     "visible_materials": 3,
     "world_time_scale": 1.0,
     "note": "present MB (17 parts, 1,844,927 tris)"
    },
    {
-    "t": 3.333333,
+    "t": 3.583333,
     "beat": "1_assembly",
     "world": [
-     -0.0279,
-     -1.6229,
-     2.3933
-    ],
-    "look_at": [
-     -0.2543,
-     0.0,
-     1.6292
-    ],
-    "lens_mm": 35.0,
-    "fstop": 2.8,
-    "focus_target": "BB",
-    "focus_distance_m": 1.808,
-    "presentation_dir_measured": true,
-    "visible_materials": 3,
-    "world_time_scale": 1.0,
-    "note": "present BB (10 parts, 534,848 tris)"
-   },
-   {
-    "t": 4.208333,
-    "beat": "1_assembly",
-    "world": [
-     1.2577,
-     -1.3494,
-     3.8935
+     1.3951,
+     -2.3344,
+     4.4124
     ],
     "look_at": [
      1.0694,
@@ -278,19 +268,19 @@
     "lens_mm": 58.0,
     "fstop": 2.2,
     "focus_target": "CI",
-    "focus_distance_m": 1.4808,
+    "focus_distance_m": 2.6007,
     "presentation_dir_measured": true,
     "visible_materials": 3,
     "world_time_scale": 1.0,
     "note": "present CI (15 parts, 459,202 tris)"
    },
    {
-    "t": 5.041667,
+    "t": 4.291667,
     "beat": "1_assembly",
     "world": [
-     1.1946,
-     -1.7323,
-     4.598
+     1.2482,
+     -2.1166,
+     4.8178
     ],
     "look_at": [
      0.9528,
@@ -300,129 +290,41 @@
     "lens_mm": 35.0,
     "fstop": 2.8,
     "focus_target": "halo_assembly",
-    "focus_distance_m": 1.8809,
+    "focus_distance_m": 2.3234,
     "presentation_dir_measured": true,
     "visible_materials": 5,
     "world_time_scale": 1.0,
     "note": "present halo_assembly (53 parts, 329,722 tris)"
    },
    {
-    "t": 7.875,
+    "t": 5.291667,
     "beat": "1_assembly",
     "world": [
-     5.4552,
-     1.5624,
-     1.288
+     0.0345,
+     -2.07,
+     2.4541
     ],
     "look_at": [
-     4.3794,
+     -0.2543,
      0.0,
-     0.4396
+     1.6292
     ],
     "lens_mm": 35.0,
     "fstop": 2.8,
-    "focus_target": "FW",
-    "focus_distance_m": 2.078,
+    "focus_target": "BB",
+    "focus_distance_m": 2.247,
     "presentation_dir_measured": true,
-    "visible_materials": 1,
+    "visible_materials": 3,
     "world_time_scale": 1.0,
-    "note": "present FW (120 parts, 720,048 tris)"
+    "note": "present BB (10 parts, 534,848 tris)"
    },
    {
-    "t": 9.291667,
+    "t": 7.625,
     "beat": "1_assembly",
     "world": [
-     3.3601,
-     1.2074,
-     1.9836
-    ],
-    "look_at": [
-     3.7518,
-     0.0,
-     1.4484
-    ],
-    "lens_mm": 58.0,
-    "fstop": 2.2,
-    "focus_target": "NOSE",
-    "focus_distance_m": 1.3776,
-    "presentation_dir_measured": true,
-    "visible_materials": 4,
-    "world_time_scale": 1.0,
-    "note": "present NOSE (33 parts, 477,818 tris)"
-   },
-   {
-    "t": 10.708333,
-    "beat": "1_assembly",
-    "world": [
-     0.2723,
-     0.4407,
-     2.3185
-    ],
-    "look_at": [
-     0.8056,
-     0.0,
-     2.0289
-    ],
-    "lens_mm": 58.0,
-    "fstop": 2.2,
-    "focus_target": "SW",
-    "focus_distance_m": 0.75,
-    "presentation_dir_measured": true,
-    "visible_materials": 6,
-    "world_time_scale": 1.0,
-    "note": "present SW (65 parts, 288,904 tris)"
-   },
-   {
-    "t": 12.458333,
-    "beat": "1_assembly",
-    "world": [
-     -0.8007,
-     2.4668,
-     3.67
-    ],
-    "look_at": [
-     -1.0959,
-     0.0,
-     3.515
-    ],
-    "lens_mm": 35.0,
-    "fstop": 2.8,
-    "focus_target": "SP",
-    "focus_distance_m": 2.4892,
-    "presentation_dir_measured": true,
-    "visible_materials": 5,
-    "world_time_scale": 1.0,
-    "note": "present SP (13 parts, 485,712 tris)"
-   },
-   {
-    "t": 13.708333,
-    "beat": "1_assembly",
-    "world": [
-     -2.9134,
-     2.4972,
-     1.8382
-    ],
-    "look_at": [
-     -2.8769,
-     0.001,
-     2.0737
-    ],
-    "lens_mm": 35.0,
-    "fstop": 2.8,
-    "focus_target": "EC",
-    "focus_distance_m": 2.5075,
-    "presentation_dir_measured": true,
-    "visible_materials": 5,
-    "world_time_scale": 1.0,
-    "note": "present EC (13 parts, 394,122 tris)"
-   },
-   {
-    "t": 14.541667,
-    "beat": "1_assembly",
-    "world": [
-     -2.6107,
-     2.7615,
-     2.0143
+     -2.0283,
+     3.6074,
+     2.4888
     ],
     "look_at": [
      -4.5122,
@@ -432,19 +334,129 @@
     "lens_mm": 35.0,
     "fstop": 2.8,
     "focus_target": "FD",
-    "focus_distance_m": 3.6668,
+    "focus_distance_m": 4.798,
     "presentation_dir_measured": true,
     "visible_materials": 3,
     "world_time_scale": 1.0,
     "note": "present FD (10 parts, 685,308 tris)"
    },
    {
-    "t": 15.416667,
+    "t": 8.333333,
     "beat": "1_assembly",
     "world": [
-     -3.78,
-     1.1779,
-     1.7066
+     -2.9236,
+     3.1945,
+     1.7641
+    ],
+    "look_at": [
+     -2.8769,
+     0.001,
+     2.0737
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_target": "EC",
+    "focus_distance_m": 3.2088,
+    "presentation_dir_measured": true,
+    "visible_materials": 5,
+    "world_time_scale": 1.0,
+    "note": "present EC (13 parts, 394,122 tris)"
+   },
+   {
+    "t": 9.458333,
+    "beat": "1_assembly",
+    "world": [
+     -0.7184,
+     3.1546,
+     3.7021
+    ],
+    "look_at": [
+     -1.0959,
+     0.0,
+     3.515
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_target": "SP",
+    "focus_distance_m": 3.1826,
+    "presentation_dir_measured": true,
+    "visible_materials": 5,
+    "world_time_scale": 1.0,
+    "note": "present SP (13 parts, 485,712 tris)"
+   },
+   {
+    "t": 10.958333,
+    "beat": "1_assembly",
+    "world": [
+     0.0356,
+     0.6362,
+     2.4509
+    ],
+    "look_at": [
+     0.8056,
+     0.0,
+     2.0289
+    ],
+    "lens_mm": 58.0,
+    "fstop": 2.2,
+    "focus_target": "SW",
+    "focus_distance_m": 1.0843,
+    "presentation_dir_measured": true,
+    "visible_materials": 6,
+    "world_time_scale": 1.0,
+    "note": "present SW (65 parts, 288,904 tris)"
+   },
+   {
+    "t": 12.208333,
+    "beat": "1_assembly",
+    "world": [
+     3.0943,
+     2.0269,
+     2.3527
+    ],
+    "look_at": [
+     3.7518,
+     0.0,
+     1.4484
+    ],
+    "lens_mm": 58.0,
+    "fstop": 2.2,
+    "focus_target": "NOSE",
+    "focus_distance_m": 2.3148,
+    "presentation_dir_measured": true,
+    "visible_materials": 4,
+    "world_time_scale": 1.0,
+    "note": "present NOSE (33 parts, 477,818 tris)"
+   },
+   {
+    "t": 13.416667,
+    "beat": "1_assembly",
+    "world": [
+     5.7189,
+     1.9454,
+     1.4854
+    ],
+    "look_at": [
+     4.3794,
+     0.0,
+     0.4396
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_target": "FW",
+    "focus_distance_m": 2.5831,
+    "presentation_dir_measured": true,
+    "visible_materials": 1,
+    "world_time_scale": 1.0,
+    "note": "present FW (120 parts, 720,048 tris)"
+   },
+   {
+    "t": 16.625,
+    "beat": "1_assembly",
+    "world": [
+     -2.5753,
+     2.9275,
+     2.5134
     ],
     "look_at": [
      -4.5911,
@@ -454,217 +466,137 @@
     "lens_mm": 58.0,
     "fstop": 2.2,
     "focus_target": "RW",
-    "focus_distance_m": 1.5298,
+    "focus_distance_m": 3.8021,
     "presentation_dir_measured": true,
     "visible_materials": 3,
     "world_time_scale": 1.0,
     "note": "present RW (97 parts, 535,588 tris)"
    },
    {
-    "t": 18.1,
-    "world": [
-     -3.7,
-     1.11,
-     2.16
-    ],
-    "look_at": [
-     -1.35,
-     0.05,
-     1.02
-    ],
-    "lens_mm": 50.0,
-    "fstop": 2.4,
-    "focus_distance_m": 2.81,
-    "focus_target": "EC_SEATING",
-    "note": "bridge RW -> CORNER_RL, part 1: the engine cover is landing (frames 432-440) and the pan is on it",
-    "beat": "1_assembly",
-    "world_time_scale": 1.0
-   },
-   {
-    "t": 18.6,
-    "world": [
-     -3.02,
-     1.06,
-     2.18
-    ],
-    "look_at": [
-     -1.6,
-     0.1,
-     0.95
-    ],
-    "lens_mm": 54.0,
-    "fstop": 2.3,
-    "focus_distance_m": 2.11,
-    "focus_target": "EC_SEATED",
-    "note": "bridge RW -> CORNER_RL, part 2: seated, and the lens tightens back toward the rear-left corner",
-    "beat": "1_assembly",
-    "world_time_scale": 1.0
-   },
-   {
-    "t": 19.291667,
+    "t": 19.333333,
     "beat": "1_assembly",
     "world": [
-     -3.1759,
-     2.9023,
-     1.4761
+     -6.9037,
+     0.3661,
+     4.2657
     ],
     "look_at": [
-     -2.2674,
-     1.741,
-     1.0624
-    ],
-    "lens_mm": 58.0,
-    "fstop": 2.2,
-    "focus_target": "CORNER_RL",
-    "focus_distance_m": 1.5313,
-    "presentation_dir_measured": true,
-    "visible_materials": 8,
-    "world_time_scale": 1.0,
-    "note": "present CORNER_RL (44 parts, 745,562 tris)"
-   },
-   {
-    "t": 21.625,
-    "beat": "1_assembly",
-    "world": [
-     -3.1571,
-     -2.9253,
-     1.4508
-    ],
-    "look_at": [
-     -2.2674,
-     -1.741,
-     1.0624
-    ],
-    "lens_mm": 58.0,
-    "fstop": 2.2,
-    "focus_target": "CORNER_RR",
-    "focus_distance_m": 1.5313,
-    "presentation_dir_measured": true,
-    "visible_materials": 8,
-    "world_time_scale": 1.0,
-    "note": "present CORNER_RR (44 parts, 745,562 tris)"
-   },
-   {
-    "t": 23.083333,
-    "beat": "1_assembly",
-    "world": [
-     0.8656,
-     -2.0464,
-     1.6288
-    ],
-    "look_at": [
-     2.2228,
-     -1.7341,
-     1.0633
-    ],
-    "lens_mm": 58.0,
-    "fstop": 2.2,
-    "focus_target": "CORNER_FR",
-    "focus_distance_m": 1.5031,
-    "presentation_dir_measured": true,
-    "visible_materials": 8,
-    "world_time_scale": 1.0,
-    "note": "present CORNER_FR (41 parts, 690,930 tris)"
-   },
-   {
-    "t": 24.625,
-    "beat": "1_assembly",
-    "world": [
-     1.0779,
-     2.3216,
-     1.8402
-    ],
-    "look_at": [
-     2.2228,
-     1.7341,
-     1.0633
-    ],
-    "lens_mm": 58.0,
-    "fstop": 2.2,
-    "focus_target": "CORNER_FL",
-    "focus_distance_m": 1.5031,
-    "presentation_dir_measured": true,
-    "visible_materials": 8,
-    "world_time_scale": 1.0,
-    "note": "present CORNER_FL (41 parts, 690,930 tris)"
-   },
-   {
-    "t": 25.9,
-    "world": [
-     3.3,
-     3.1,
-     1.95
-    ],
-    "look_at": [
-     2.7,
-     0.3,
-     0.62
-    ],
-    "lens_mm": 48.0,
-    "fstop": 2.6,
-    "focus_distance_m": 3.16,
-    "focus_target": "FW",
-    "note": "the front wing arrives (seats 630); CORNER_FL sweeps past the lens 1.2 m out on the left",
-    "beat": "1_assembly",
-    "world_time_scale": 1.0
-   },
-   {
-    "t": 27.3,
-    "world": [
-     5.3,
-     2.55,
-     2.2
-    ],
-    "look_at": [
-     0.6,
-     0.2,
-     0.85
-    ],
-    "lens_mm": 40.0,
-    "fstop": 3.0,
-    "focus_distance_m": 5.42,
-    "focus_target": "RW",
-    "note": "wide enough to carry the rear wing's seat at 663 \u2014 RW lands 10.4 deg off axis inside a 14.2 deg half-frame",
-    "beat": "1_assembly",
-    "world_time_scale": 1.0
-   },
-   {
-    "t": 28.6,
-    "world": [
-     6.6,
-     0.9,
-     2.35
-    ],
-    "look_at": [
-     0.2,
-     0.05,
-     0.8
-    ],
-    "lens_mm": 36.0,
-    "fstop": 3.1,
-    "focus_distance_m": 6.65,
-    "focus_target": "CORNERS",
-    "note": "ahead of the nose for the simultaneous four-wheel seat at 696; all four corners are inside 8.2 deg of a 15.7 deg half-frame",
-    "beat": "1_assembly",
-    "world_time_scale": 1.0
-   },
-   {
-    "t": 29.9,
-    "world": [
-     7.15,
-     -1.9,
-     2.2
-    ],
-    "look_at": [
-     0.15,
+     -0.0451,
      0.0,
-     0.78
+     1.0629
     ],
-    "lens_mm": 38.0,
-    "fstop": 3.15,
-    "focus_distance_m": 7.4,
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_target": "CORNER_GROUP",
+    "focus_distance_m": 7.5784,
+    "presentation_dir_measured": true,
+    "visible_materials": 8,
+    "world_time_scale": 1.0,
+    "note": "present the four corners AS ONE GROUP (170 parts, 2,872,984 tris) \u2014 they seat simultaneously, they are pairwise the same asset, and four separate presentations cost 9.20 s to show the audience the same wheel four times at 2.0-2.3x frame overflow",
+    "r2830_members": [
+     "CORNER_FL",
+     "CORNER_FR",
+     "CORNER_RL",
+     "CORNER_RR"
+    ]
+   },
+   {
+    "t": 21.3444,
+    "world": [
+     -6.9317,
+     -0.9847,
+     4.0905
+    ],
+    "look_at": [
+     -0.0306,
+     0.0,
+     1.0397
+    ],
+    "lens_mm": 35.37,
     "focus_target": "CAR",
-    "note": "the car is complete; the camera drifts right into the closing three-quarter",
+    "fstop": 3.015,
+    "focus_distance_m": 7.609,
+    "note": "R2-833 payoff orbit 1/6: the assembled car, 11 deg of azimuth at 7.00 m",
+    "beat": "1_assembly",
+    "world_time_scale": 1.0
+   },
+   {
+    "t": 23.3556,
+    "world": [
+     -5.8502,
+     -4.2328,
+     3.6524
+    ],
+    "look_at": [
+     0.0055,
+     0.0,
+     0.9818
+    ],
+    "lens_mm": 36.296,
+    "focus_target": "CAR",
+    "fstop": 3.052,
+    "focus_distance_m": 7.703,
+    "note": "R2-833 payoff orbit 2/6: the assembled car, 39 deg of azimuth at 7.22 m",
+    "beat": "1_assembly",
+    "world_time_scale": 1.0
+   },
+   {
+    "t": 25.3667,
+    "world": [
+     -2.3159,
+     -7.1402,
+     3.0828
+    ],
+    "look_at": [
+     0.0524,
+     0.0,
+     0.9064
+    ],
+    "lens_mm": 37.5,
+    "focus_target": "CAR",
+    "fstop": 3.1,
+    "focus_distance_m": 7.831,
+    "note": "R2-833 payoff orbit 3/6: the assembled car, 75 deg of azimuth at 7.51 m",
+    "beat": "1_assembly",
+    "world_time_scale": 1.0
+   },
+   {
+    "t": 27.3778,
+    "world": [
+     2.4301,
+     -7.4033,
+     2.5133
+    ],
+    "look_at": [
+     0.0994,
+     0.0,
+     0.8311
+    ],
+    "lens_mm": 38.704,
+    "focus_target": "CAR",
+    "fstop": 3.148,
+    "focus_distance_m": 7.942,
+    "note": "R2-833 payoff orbit 4/6: the assembled car, 111 deg of azimuth at 7.79 m",
+    "beat": "1_assembly",
+    "world_time_scale": 1.0
+   },
+   {
+    "t": 29.3889,
+    "world": [
+     5.7605,
+     -5.5679,
+     2.0752
+    ],
+    "look_at": [
+     0.1355,
+     0.0,
+     0.7732
+    ],
+    "lens_mm": 39.63,
+    "focus_target": "CAR",
+    "fstop": 3.185,
+    "focus_distance_m": 8.021,
+    "note": "R2-833 payoff orbit 5/6: the assembled car, 139 deg of azimuth at 8.01 m",
     "beat": "1_assembly",
     "world_time_scale": 1.0
    },
@@ -689,8 +621,8 @@
     "note": "push toward the completed car; spot rigs ramp ~1 stop over 12 frames. THE SEAM: beat 2's first key is 2.09 m away 39 frames later at 39.95 mm, so this key is fixed and beats 1 and 2 join at 1.29 m/s with no step in position, aim or focal length"
    }
   ],
-  "path_length_m": 59.68,
-  "mean_camera_speed_ms": 1.808,
+  "path_length_m": 63.048,
+  "mean_camera_speed_ms": 1.911,
   "clusters_seating_unseen": [],
   "flight": [
    {
@@ -704,14 +636,14 @@
      0,
      48
     ],
-    "chord_m": 4.875,
-    "speed_ms": 2.438,
-    "peak_speed_ms": 3.705,
-    "peak_speed_ms_lo": 3.315,
+    "chord_m": 3.184,
+    "speed_ms": 1.592,
+    "peak_speed_ms": 2.42,
+    "peak_speed_ms_lo": 2.165,
     "bearing_deg": 15.61,
     "peak_pan_widths_per_frame": 0.0091,
     "peak_pan_widths_per_frame_lo": 0.0081,
-    "min_clearance_m": 3.703,
+    "min_clearance_m": 5.864,
     "lens_mm": [
      18.0,
      35.0
@@ -719,47 +651,23 @@
    },
    {
     "from": "MB",
-    "to": "BB",
+    "to": "CI",
     "t": [
      2.0,
-     3.333333
+     3.583333
     ],
     "frames": [
      48,
-     80
+     86
     ],
-    "chord_m": 2.955,
-    "speed_ms": 2.216,
-    "peak_speed_ms": 3.369,
-    "peak_speed_ms_lo": 3.014,
+    "chord_m": 4.13,
+    "speed_ms": 2.608,
+    "peak_speed_ms": 3.965,
+    "peak_speed_ms_lo": 3.547,
     "bearing_deg": 1.36,
-    "peak_pan_widths_per_frame": 0.0012,
-    "peak_pan_widths_per_frame_lo": 0.0011,
-    "min_clearance_m": 1.232,
-    "lens_mm": [
-     35.0,
-     35.0
-    ]
-   },
-   {
-    "from": "BB",
-    "to": "CI",
-    "t": [
-     3.333333,
-     4.208333
-    ],
-    "frames": [
-     80,
-     101
-    ],
-    "chord_m": 1.995,
-    "speed_ms": 2.279,
-    "peak_speed_ms": 3.465,
-    "peak_speed_ms_lo": 3.1,
-    "bearing_deg": 1.93,
-    "peak_pan_widths_per_frame": 0.0041,
-    "peak_pan_widths_per_frame_lo": 0.0036,
-    "min_clearance_m": 1.232,
+    "peak_pan_widths_per_frame": 0.0016,
+    "peak_pan_widths_per_frame_lo": 0.0014,
+    "min_clearance_m": 3.359,
     "lens_mm": [
      35.0,
      58.0
@@ -769,21 +677,21 @@
     "from": "CI",
     "to": "halo_assembly",
     "t": [
-     4.208333,
-     5.041667
+     3.583333,
+     4.291667
     ],
     "frames": [
-     101,
-     121
+     86,
+     103
     ],
-    "chord_m": 0.804,
-    "speed_ms": 0.965,
-    "peak_speed_ms": 1.467,
-    "peak_speed_ms_lo": 1.313,
-    "bearing_deg": 1.53,
-    "peak_pan_widths_per_frame": 0.0034,
-    "peak_pan_widths_per_frame_lo": 0.003,
-    "min_clearance_m": 2.587,
+    "chord_m": 0.483,
+    "speed_ms": 0.682,
+    "peak_speed_ms": 1.037,
+    "peak_speed_ms_lo": 0.928,
+    "bearing_deg": 1.93,
+    "peak_pan_widths_per_frame": 0.005,
+    "peak_pan_widths_per_frame_lo": 0.0045,
+    "min_clearance_m": 3.359,
     "lens_mm": [
      58.0,
      35.0
@@ -791,143 +699,47 @@
    },
    {
     "from": "halo_assembly",
-    "to": "FW",
+    "to": "BB",
     "t": [
-     5.041667,
-     7.875
+     4.291667,
+     5.291667
     ],
     "frames": [
-     121,
-     189
+     103,
+     127
     ],
-    "chord_m": 6.322,
-    "speed_ms": 2.231,
-    "peak_speed_ms": 3.391,
-    "peak_speed_ms_lo": 3.034,
-    "bearing_deg": 118.44,
-    "peak_pan_widths_per_frame": 0.0486,
-    "peak_pan_widths_per_frame_lo": 0.0435,
-    "min_clearance_m": 1.462,
+    "chord_m": 2.658,
+    "speed_ms": 2.658,
+    "peak_speed_ms": 4.039,
+    "peak_speed_ms_lo": 3.614,
+    "bearing_deg": 1.53,
+    "peak_pan_widths_per_frame": 0.0018,
+    "peak_pan_widths_per_frame_lo": 0.0016,
+    "min_clearance_m": 1.552,
     "lens_mm": [
      35.0,
      35.0
     ]
    },
    {
-    "from": "FW",
-    "to": "NOSE",
-    "t": [
-     7.875,
-     9.291667
-    ],
-    "frames": [
-     189,
-     223
-    ],
-    "chord_m": 2.236,
-    "speed_ms": 1.578,
-    "peak_speed_ms": 2.399,
-    "peak_speed_ms_lo": 2.146,
-    "bearing_deg": 47.9,
-    "peak_pan_widths_per_frame": 0.0621,
-    "peak_pan_widths_per_frame_lo": 0.0556,
-    "min_clearance_m": 0.765,
-    "lens_mm": [
-     35.0,
-     58.0
-    ]
-   },
-   {
-    "from": "NOSE",
-    "to": "SW",
-    "t": [
-     9.291667,
-     10.708333
-    ],
-    "frames": [
-     223,
-     257
-    ],
-    "chord_m": 3.199,
-    "speed_ms": 2.258,
-    "peak_speed_ms": 3.432,
-    "peak_speed_ms_lo": 3.071,
-    "bearing_deg": 29.86,
-    "peak_pan_widths_per_frame": 0.0387,
-    "peak_pan_widths_per_frame_lo": 0.0346,
-    "min_clearance_m": 0.7,
-    "lens_mm": [
-     58.0,
-     58.0
-    ]
-   },
-   {
-    "from": "SW",
-    "to": "SP",
-    "t": [
-     10.708333,
-     12.458333
-    ],
-    "frames": [
-     257,
-     299
-    ],
-    "chord_m": 2.661,
-    "speed_ms": 1.521,
-    "peak_speed_ms": 2.312,
-    "peak_speed_ms_lo": 2.068,
-    "bearing_deg": 58.53,
-    "peak_pan_widths_per_frame": 0.0614,
-    "peak_pan_widths_per_frame_lo": 0.055,
-    "min_clearance_m": 0.988,
-    "lens_mm": [
-     58.0,
-     35.0
-    ]
-   },
-   {
-    "from": "SP",
-    "to": "EC",
-    "t": [
-     12.458333,
-     13.708333
-    ],
-    "frames": [
-     299,
-     329
-    ],
-    "chord_m": 2.796,
-    "speed_ms": 2.237,
-    "peak_speed_ms": 3.4,
-    "peak_speed_ms_lo": 3.042,
-    "bearing_deg": 11.78,
-    "peak_pan_widths_per_frame": 0.011,
-    "peak_pan_widths_per_frame_lo": 0.0098,
-    "min_clearance_m": 1.595,
-    "lens_mm": [
-     35.0,
-     35.0
-    ]
-   },
-   {
-    "from": "EC",
+    "from": "BB",
     "to": "FD",
     "t": [
-     13.708333,
-     14.541667
+     5.291667,
+     7.625
     ],
     "frames": [
-     329,
-     349
+     127,
+     183
     ],
-    "chord_m": 0.439,
-    "speed_ms": 0.526,
-    "peak_speed_ms": 0.8,
-    "peak_speed_ms_lo": 0.716,
-    "bearing_deg": 45.24,
-    "peak_pan_widths_per_frame": 0.0632,
-    "peak_pan_widths_per_frame_lo": 0.0565,
-    "min_clearance_m": 1.595,
+    "chord_m": 6.041,
+    "speed_ms": 2.589,
+    "peak_speed_ms": 3.935,
+    "peak_speed_ms_lo": 3.521,
+    "bearing_deg": 118.44,
+    "peak_pan_widths_per_frame": 0.0591,
+    "peak_pan_widths_per_frame_lo": 0.0528,
+    "min_clearance_m": 1.131,
     "lens_mm": [
      35.0,
      35.0
@@ -935,23 +747,143 @@
    },
    {
     "from": "FD",
-    "to": "RW",
+    "to": "EC",
     "t": [
-     14.541667,
-     15.416667
+     7.625,
+     8.333333
     ],
     "frames": [
-     349,
-     370
+     183,
+     200
     ],
-    "chord_m": 1.992,
-    "speed_ms": 2.277,
-    "peak_speed_ms": 3.461,
-    "peak_speed_ms_lo": 3.097,
+    "chord_m": 1.224,
+    "speed_ms": 1.727,
+    "peak_speed_ms": 2.626,
+    "peak_speed_ms_lo": 2.349,
+    "bearing_deg": 45.47,
+    "peak_pan_widths_per_frame": 0.0747,
+    "peak_pan_widths_per_frame_lo": 0.0668,
+    "min_clearance_m": 2.248,
+    "lens_mm": [
+     35.0,
+     35.0
+    ]
+   },
+   {
+    "from": "EC",
+    "to": "SP",
+    "t": [
+     8.333333,
+     9.458333
+    ],
+    "frames": [
+     200,
+     227
+    ],
+    "chord_m": 2.936,
+    "speed_ms": 2.61,
+    "peak_speed_ms": 3.967,
+    "peak_speed_ms_lo": 3.549,
+    "bearing_deg": 11.74,
+    "peak_pan_widths_per_frame": 0.0121,
+    "peak_pan_widths_per_frame_lo": 0.0109,
+    "min_clearance_m": 2.248,
+    "lens_mm": [
+     35.0,
+     35.0
+    ]
+   },
+   {
+    "from": "SP",
+    "to": "SW",
+    "t": [
+     9.458333,
+     10.958333
+    ],
+    "frames": [
+     227,
+     263
+    ],
+    "chord_m": 2.911,
+    "speed_ms": 1.941,
+    "peak_speed_ms": 2.95,
+    "peak_speed_ms_lo": 2.64,
+    "bearing_deg": 58.65,
+    "peak_pan_widths_per_frame": 0.0718,
+    "peak_pan_widths_per_frame_lo": 0.0643,
+    "min_clearance_m": 1.121,
+    "lens_mm": [
+     35.0,
+     58.0
+    ]
+   },
+   {
+    "from": "SW",
+    "to": "NOSE",
+    "t": [
+     10.958333,
+     12.208333
+    ],
+    "frames": [
+     263,
+     293
+    ],
+    "chord_m": 3.361,
+    "speed_ms": 2.689,
+    "peak_speed_ms": 4.088,
+    "peak_speed_ms_lo": 3.657,
+    "bearing_deg": 29.83,
+    "peak_pan_widths_per_frame": 0.0438,
+    "peak_pan_widths_per_frame_lo": 0.0392,
+    "min_clearance_m": 1.093,
+    "lens_mm": [
+     58.0,
+     58.0
+    ]
+   },
+   {
+    "from": "NOSE",
+    "to": "FW",
+    "t": [
+     12.208333,
+     13.416667
+    ],
+    "frames": [
+     293,
+     322
+    ],
+    "chord_m": 2.765,
+    "speed_ms": 2.289,
+    "peak_speed_ms": 3.479,
+    "peak_speed_ms_lo": 3.112,
+    "bearing_deg": 47.91,
+    "peak_pan_widths_per_frame": 0.0728,
+    "peak_pan_widths_per_frame_lo": 0.0652,
+    "min_clearance_m": 1.424,
+    "lens_mm": [
+     58.0,
+     35.0
+    ]
+   },
+   {
+    "from": "FW",
+    "to": "RW",
+    "t": [
+     13.416667,
+     16.625
+    ],
+    "frames": [
+     322,
+     399
+    ],
+    "chord_m": 8.415,
+    "speed_ms": 2.623,
+    "peak_speed_ms": 3.987,
+    "peak_speed_ms_lo": 3.567,
     "bearing_deg": 3.09,
-    "peak_pan_widths_per_frame": 0.0065,
-    "peak_pan_widths_per_frame_lo": 0.0058,
-    "min_clearance_m": 1.073,
+    "peak_pan_widths_per_frame": 0.0018,
+    "peak_pan_widths_per_frame_lo": 0.0016,
+    "min_clearance_m": 1.341,
     "lens_mm": [
      35.0,
      58.0
@@ -959,273 +891,177 @@
    },
    {
     "from": "RW",
-    "to": "EC_SEATING",
+    "to": "CORNER_GROUP",
     "t": [
-     15.416667,
-     18.1
+     16.625,
+     19.333333
     ],
     "frames": [
-     370,
-     434
+     399,
+     464
     ],
-    "chord_m": 0.465,
-    "speed_ms": 0.173,
-    "peak_speed_ms": 0.264,
-    "peak_speed_ms_lo": 0.236,
-    "bearing_deg": 90.51,
-    "peak_pan_widths_per_frame": 0.062,
-    "peak_pan_widths_per_frame_lo": 0.0554,
-    "min_clearance_m": 1.158,
+    "chord_m": 5.326,
+    "speed_ms": 1.967,
+    "peak_speed_ms": 2.989,
+    "peak_speed_ms_lo": 2.674,
+    "bearing_deg": 107.01,
+    "peak_pan_widths_per_frame": 0.0726,
+    "peak_pan_widths_per_frame_lo": 0.0649,
+    "min_clearance_m": 2.173,
     "lens_mm": [
      58.0,
-     50.0
+     35.0
     ]
    },
    {
-    "from": "EC_SEATING",
-    "to": "EC_SEATED",
-    "t": [
-     18.1,
-     18.6
-    ],
-    "frames": [
-     434,
-     446
-    ],
-    "chord_m": 0.682,
-    "speed_ms": 1.364,
-    "peak_speed_ms": 2.074,
-    "peak_speed_ms_lo": 1.855,
-    "bearing_deg": 14.53,
-    "peak_pan_widths_per_frame": 0.0499,
-    "peak_pan_widths_per_frame_lo": 0.0447,
-    "min_clearance_m": 0.91,
-    "lens_mm": [
-     50.0,
-     54.0
-    ]
-   },
-   {
-    "from": "EC_SEATED",
-    "to": "CORNER_RL",
-    "t": [
-     18.6,
-     19.291667
-    ],
-    "frames": [
-     446,
-     463
-    ],
-    "chord_m": 1.978,
-    "speed_ms": 2.86,
-    "peak_speed_ms": 4.348,
-    "peak_speed_ms_lo": 3.89,
-    "bearing_deg": 25.59,
-    "peak_pan_widths_per_frame": 0.068,
-    "peak_pan_widths_per_frame_lo": 0.0608,
-    "min_clearance_m": 0.883,
-    "lens_mm": [
-     54.0,
-     58.0
-    ]
-   },
-   {
-    "from": "CORNER_RL",
-    "to": "CORNER_RR",
-    "t": [
-     19.291667,
-     21.625
-    ],
-    "frames": [
-     463,
-     519
-    ],
-    "chord_m": 5.828,
-    "speed_ms": 2.498,
-    "peak_speed_ms": 3.796,
-    "peak_speed_ms_lo": 3.397,
-    "bearing_deg": 99.98,
-    "peak_pan_widths_per_frame": 0.0787,
-    "peak_pan_widths_per_frame_lo": 0.0704,
-    "min_clearance_m": 0.481,
-    "lens_mm": [
-     58.0,
-     58.0
-    ]
-   },
-   {
-    "from": "CORNER_RR",
-    "to": "CORNER_FR",
-    "t": [
-     21.625,
-     23.083333
-    ],
-    "frames": [
-     519,
-     554
-    ],
-    "chord_m": 4.121,
-    "speed_ms": 2.826,
-    "peak_speed_ms": 4.296,
-    "peak_speed_ms_lo": 3.844,
-    "bearing_deg": 38.67,
-    "peak_pan_widths_per_frame": 0.0487,
-    "peak_pan_widths_per_frame_lo": 0.0436,
-    "min_clearance_m": 1.088,
-    "lens_mm": [
-     58.0,
-     58.0
-    ]
-   },
-   {
-    "from": "CORNER_FR",
-    "to": "CORNER_FL",
-    "t": [
-     23.083333,
-     24.625
-    ],
-    "frames": [
-     554,
-     591
-    ],
-    "chord_m": 4.378,
-    "speed_ms": 2.84,
-    "peak_speed_ms": 4.317,
-    "peak_speed_ms_lo": 3.862,
-    "bearing_deg": 36.78,
-    "peak_pan_widths_per_frame": 0.0438,
-    "peak_pan_widths_per_frame_lo": 0.0392,
-    "min_clearance_m": 0.352,
-    "lens_mm": [
-     58.0,
-     58.0
-    ]
-   },
-   {
-    "from": "CORNER_FL",
-    "to": "FW",
-    "t": [
-     24.625,
-     25.9
-    ],
-    "frames": [
-     591,
-     622
-    ],
-    "chord_m": 2.357,
-    "speed_ms": 1.849,
-    "peak_speed_ms": 2.81,
-    "peak_speed_ms_lo": 2.514,
-    "bearing_deg": 65.19,
-    "peak_pan_widths_per_frame": 0.0939,
-    "peak_pan_widths_per_frame_lo": 0.084,
-    "min_clearance_m": 1.417,
-    "lens_mm": [
-     58.0,
-     48.0
-    ]
-   },
-   {
-    "from": "FW",
-    "to": "RW",
-    "t": [
-     25.9,
-     27.3
-    ],
-    "frames": [
-     622,
-     655
-    ],
-    "chord_m": 2.089,
-    "speed_ms": 1.492,
-    "peak_speed_ms": 2.268,
-    "peak_speed_ms_lo": 2.03,
-    "bearing_deg": 49.19,
-    "peak_pan_widths_per_frame": 0.0541,
-    "peak_pan_widths_per_frame_lo": 0.0484,
-    "min_clearance_m": 2.197,
-    "lens_mm": [
-     48.0,
-     40.0
-    ]
-   },
-   {
-    "from": "RW",
-    "to": "CORNERS",
-    "t": [
-     27.3,
-     28.6
-    ],
-    "frames": [
-     655,
-     686
-    ],
-    "chord_m": 2.106,
-    "speed_ms": 1.62,
-    "peak_speed_ms": 2.462,
-    "peak_speed_ms_lo": 2.203,
-    "bearing_deg": 18.46,
-    "peak_pan_widths_per_frame": 0.0186,
-    "peak_pan_widths_per_frame_lo": 0.0166,
-    "min_clearance_m": 2.891,
-    "lens_mm": [
-     40.0,
-     36.0
-    ]
-   },
-   {
-    "from": "CORNERS",
+    "from": "CORNER_GROUP",
     "to": "CAR",
     "t": [
-     28.6,
-     29.9
+     19.333333,
+     21.3444
     ],
     "frames": [
-     686,
-     718
+     464,
+     512
     ],
-    "chord_m": 2.857,
-    "speed_ms": 2.198,
-    "peak_speed_ms": 3.341,
-    "peak_speed_ms_lo": 2.989,
-    "bearing_deg": 22.35,
-    "peak_pan_widths_per_frame": 0.0215,
-    "peak_pan_widths_per_frame_lo": 0.0192,
-    "min_clearance_m": 3.722,
+    "chord_m": 1.362,
+    "speed_ms": 0.677,
+    "peak_speed_ms": 1.03,
+    "peak_speed_ms_lo": 0.921,
+    "bearing_deg": 10.27,
+    "peak_pan_widths_per_frame": 0.006,
+    "peak_pan_widths_per_frame_lo": 0.0054,
+    "min_clearance_m": 5.052,
     "lens_mm": [
-     36.0,
-     38.0
+     35.0,
+     35.37
     ]
    },
    {
     "from": "CAR",
     "to": "CAR",
     "t": [
-     29.9,
+     21.3444,
+     23.3556
+    ],
+    "frames": [
+     512,
+     561
+    ],
+    "chord_m": 3.451,
+    "speed_ms": 1.716,
+    "peak_speed_ms": 2.608,
+    "peak_speed_ms_lo": 2.334,
+    "bearing_deg": 25.9,
+    "peak_pan_widths_per_frame": 0.0155,
+    "peak_pan_widths_per_frame_lo": 0.0138,
+    "min_clearance_m": 4.761,
+    "lens_mm": [
+     35.37,
+     36.296
+    ]
+   },
+   {
+    "from": "CAR",
+    "to": "CAR",
+    "t": [
+     23.3556,
+     25.3667
+    ],
+    "frames": [
+     561,
+     609
+    ],
+    "chord_m": 4.612,
+    "speed_ms": 2.293,
+    "peak_speed_ms": 3.486,
+    "peak_speed_ms_lo": 3.119,
+    "bearing_deg": 34.18,
+    "peak_pan_widths_per_frame": 0.021,
+    "peak_pan_widths_per_frame_lo": 0.0188,
+    "min_clearance_m": 5.033,
+    "lens_mm": [
+     36.296,
+     37.5
+    ]
+   },
+   {
+    "from": "CAR",
+    "to": "CAR",
+    "t": [
+     25.3667,
+     27.3778
+    ],
+    "frames": [
+     609,
+     657
+    ],
+    "chord_m": 4.787,
+    "speed_ms": 2.38,
+    "peak_speed_ms": 3.618,
+    "peak_speed_ms_lo": 3.237,
+    "bearing_deg": 34.91,
+    "peak_pan_widths_per_frame": 0.022,
+    "peak_pan_widths_per_frame_lo": 0.0197,
+    "min_clearance_m": 6.385,
+    "lens_mm": [
+     37.5,
+     38.704
+    ]
+   },
+   {
+    "from": "CAR",
+    "to": "CAR",
+    "t": [
+     27.3778,
+     29.3889
+    ],
+    "frames": [
+     657,
+     705
+    ],
+    "chord_m": 3.828,
+    "speed_ms": 1.903,
+    "peak_speed_ms": 2.893,
+    "peak_speed_ms_lo": 2.589,
+    "bearing_deg": 27.47,
+    "peak_pan_widths_per_frame": 0.0177,
+    "peak_pan_widths_per_frame_lo": 0.0158,
+    "min_clearance_m": 5.378,
+    "lens_mm": [
+     38.704,
+     39.63
+    ]
+   },
+   {
+    "from": "CAR",
+    "to": "CAR",
+    "t": [
+     29.3889,
      31.4
     ],
     "frames": [
-     718,
+     705,
      754
     ],
-    "chord_m": 2.542,
-    "speed_ms": 1.695,
-    "peak_speed_ms": 2.576,
-    "peak_speed_ms_lo": 2.305,
-    "bearing_deg": 18.27,
-    "peak_pan_widths_per_frame": 0.0159,
-    "peak_pan_widths_per_frame_lo": 0.0142,
-    "min_clearance_m": 4.316,
+    "chord_m": 1.573,
+    "speed_ms": 0.782,
+    "peak_speed_ms": 1.189,
+    "peak_speed_ms_lo": 1.064,
+    "bearing_deg": 11.14,
+    "peak_pan_widths_per_frame": 0.0072,
+    "peak_pan_widths_per_frame_lo": 0.0065,
+    "min_clearance_m": 5.116,
     "lens_mm": [
-     38.0,
+     39.63,
      40.0
     ]
    }
   ],
-  "min_clearance_to_car_m": 0.352,
-  "max_key_to_key_speed_ms": 2.86,
-  "max_estimated_peak_speed_ms": 4.348,
-  "max_estimated_pan_widths_per_frame": 0.0939,
+  "min_clearance_to_car_m": 1.093,
+  "max_key_to_key_speed_ms": 2.689,
+  "max_estimated_peak_speed_ms": 4.088,
+  "max_estimated_pan_widths_per_frame": 0.0747,
   "car_box": {
    "lo": [
     -2.7,
@@ -1256,6 +1092,9 @@
    ],
    "dwell_s": 0.72,
    "budget_ratio": {
+    "tour": 0.9966,
+    "span_s": 17.345,
+    "binding": "CORNER_GROUP",
     "spine": 0.852,
     "corners": 1.0759
    },
@@ -1265,308 +1104,218 @@
    {
     "cluster": "MB",
     "t": 2.0,
-    "range_m": 4.859,
+    "range_m": 7.039,
     "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 36.114,
+    "far_edge_angle_deg": 24.011,
     "half_frame_deg": 16.134,
     "lens_mm": 35.0,
-    "extent_frac_frame_h": 0.62,
-    "extent_frac_frame_w": 1.315,
+    "extent_frac_frame_h": 0.422,
+    "extent_frac_frame_w": 0.85,
     "depth_span_m": 2.3637,
     "fstop_shipped": 2.8,
-    "fstop_required": 4.35,
-    "standoff_for_fill_m": 7.515,
-    "fill_target": 0.85,
-    "sharp_budget_px": 2.0,
-    "presentation": true
-   },
-   {
-    "cluster": "BB",
-    "t": 3.333333,
-    "range_m": 1.808,
-    "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 29.689,
-    "half_frame_deg": 16.134,
-    "lens_mm": 35.0,
-    "extent_frac_frame_h": 1.185,
-    "extent_frac_frame_w": 0.79,
-    "depth_span_m": 1.6486,
-    "fstop_shipped": 2.8,
-    "fstop_required": 11.54,
-    "standoff_for_fill_m": 2.52,
+    "fstop_required": 1.88,
+    "standoff_for_fill_m": 7.039,
     "fill_target": 0.85,
     "sharp_budget_px": 2.0,
     "presentation": true
    },
    {
     "cluster": "CI",
-    "t": 4.208333,
-    "range_m": 1.481,
+    "t": 3.583333,
+    "range_m": 2.601,
     "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 27.527,
+    "far_edge_angle_deg": 15.258,
     "half_frame_deg": 9.902,
     "lens_mm": 58.0,
-    "extent_frac_frame_h": 1.171,
-    "extent_frac_frame_w": 1.635,
-    "depth_span_m": 0.6935,
+    "extent_frac_frame_h": 0.673,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 0.6978,
     "fstop_shipped": 2.2,
-    "fstop_required": 23.93,
-    "standoff_for_fill_m": 2.848,
+    "fstop_required": 8.35,
+    "standoff_for_fill_m": 2.601,
     "fill_target": 0.85,
     "sharp_budget_px": 2.0,
     "presentation": true
    },
    {
     "cluster": "halo_assembly",
-    "t": 5.041667,
-    "range_m": 1.881,
+    "t": 4.291667,
+    "range_m": 2.323,
     "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 30.072,
+    "far_edge_angle_deg": 23.933,
     "half_frame_deg": 16.134,
     "lens_mm": 35.0,
-    "extent_frac_frame_h": 0.717,
-    "extent_frac_frame_w": 1.109,
-    "depth_span_m": 1.0701,
+    "extent_frac_frame_h": 0.586,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 1.0703,
     "fstop_shipped": 2.8,
-    "fstop_required": 14.07,
-    "standoff_for_fill_m": 2.455,
+    "fstop_required": 8.55,
+    "standoff_for_fill_m": 2.323,
     "fill_target": 0.85,
     "sharp_budget_px": 2.0,
     "presentation": true
    },
    {
-    "cluster": "FW",
-    "t": 7.875,
-    "range_m": 2.078,
+    "cluster": "BB",
+    "t": 5.291667,
+    "range_m": 2.247,
     "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 30.982,
+    "far_edge_angle_deg": 23.487,
     "half_frame_deg": 16.134,
     "lens_mm": 35.0,
-    "extent_frac_frame_h": 1.14,
-    "extent_frac_frame_w": 0.894,
-    "depth_span_m": 1.9932,
+    "extent_frac_frame_h": 0.85,
+    "extent_frac_frame_w": 0.559,
+    "depth_span_m": 1.6622,
     "fstop_shipped": 2.8,
-    "fstop_required": 10.37,
-    "standoff_for_fill_m": 2.786,
-    "fill_target": 0.85,
-    "sharp_budget_px": 2.0,
-    "presentation": true
-   },
-   {
-    "cluster": "NOSE",
-    "t": 9.291667,
-    "range_m": 1.378,
-    "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 26.646,
-    "half_frame_deg": 9.902,
-    "lens_mm": 58.0,
-    "extent_frac_frame_h": 1.317,
-    "extent_frac_frame_w": 1.515,
-    "depth_span_m": 0.8402,
-    "fstop_shipped": 2.2,
-    "fstop_required": 59.66,
-    "standoff_for_fill_m": 2.455,
-    "fill_target": 0.85,
-    "sharp_budget_px": 2.0,
-    "presentation": true
-   },
-   {
-    "cluster": "SW",
-    "t": 10.708333,
-    "range_m": 0.75,
-    "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 14.857,
-    "half_frame_deg": 9.902,
-    "lens_mm": 58.0,
-    "extent_frac_frame_h": 1.235,
-    "extent_frac_frame_w": 0.681,
-    "depth_span_m": 0.3446,
-    "fstop_shipped": 2.2,
-    "fstop_required": 77.32,
-    "standoff_for_fill_m": 1.09,
-    "fill_target": 0.85,
-    "sharp_budget_px": 2.0,
-    "presentation": true
-   },
-   {
-    "cluster": "SP",
-    "t": 12.458333,
-    "range_m": 2.489,
-    "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 32.433,
-    "half_frame_deg": 16.134,
-    "lens_mm": 35.0,
-    "extent_frac_frame_h": 0.615,
-    "extent_frac_frame_w": 1.191,
-    "depth_span_m": 1.7569,
-    "fstop_shipped": 2.8,
-    "fstop_required": 6.94,
-    "standoff_for_fill_m": 3.487,
-    "fill_target": 0.85,
-    "sharp_budget_px": 2.0,
-    "presentation": true
-   },
-   {
-    "cluster": "EC",
-    "t": 13.708333,
-    "range_m": 2.508,
-    "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 32.486,
-    "half_frame_deg": 16.134,
-    "lens_mm": 35.0,
-    "extent_frac_frame_h": 0.636,
-    "extent_frac_frame_w": 1.128,
-    "depth_span_m": 0.7631,
-    "fstop_shipped": 2.8,
-    "fstop_required": 3.49,
-    "standoff_for_fill_m": 3.327,
+    "fstop_required": 17.34,
+    "standoff_for_fill_m": 2.247,
     "fill_target": 0.85,
     "sharp_budget_px": 2.0,
     "presentation": true
    },
    {
     "cluster": "FD",
-    "t": 14.541667,
-    "range_m": 3.248,
+    "t": 7.625,
+    "range_m": 4.798,
     "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 56.23,
+    "far_edge_angle_deg": 25.886,
     "half_frame_deg": 16.134,
     "lens_mm": 35.0,
-    "extent_frac_frame_h": 1.483,
-    "extent_frac_frame_w": 1.668,
-    "depth_span_m": 3.4236,
+    "extent_frac_frame_h": 0.708,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 3.4191,
     "fstop_shipped": 2.8,
-    "fstop_required": 28.81,
-    "standoff_for_fill_m": 6.374,
+    "fstop_required": 7.59,
+    "standoff_for_fill_m": 4.798,
     "fill_target": 0.85,
     "sharp_budget_px": 2.0,
     "presentation": true
    },
    {
-    "cluster": "RW",
-    "t": 15.416667,
-    "range_m": 1.53,
+    "cluster": "EC",
+    "t": 8.333333,
+    "range_m": 3.209,
     "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 27.907,
-    "half_frame_deg": 9.902,
-    "lens_mm": 58.0,
-    "extent_frac_frame_h": 2.28,
-    "extent_frac_frame_w": 1.34,
-    "depth_span_m": 1.4115,
-    "fstop_shipped": 2.2,
-    "fstop_required": 38.48,
-    "standoff_for_fill_m": 4.104,
+    "far_edge_angle_deg": 24.817,
+    "half_frame_deg": 16.134,
+    "lens_mm": 35.0,
+    "extent_frac_frame_h": 0.48,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 0.765,
+    "fstop_shipped": 2.8,
+    "fstop_required": 2.79,
+    "standoff_for_fill_m": 3.209,
     "fill_target": 0.85,
     "sharp_budget_px": 2.0,
     "presentation": true
    },
    {
-    "cluster": "CORNER_RL",
-    "t": 19.291667,
-    "range_m": 1.531,
+    "cluster": "SP",
+    "t": 9.458333,
+    "range_m": 3.183,
     "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 27.918,
-    "half_frame_deg": 9.902,
-    "lens_mm": 58.0,
-    "extent_frac_frame_h": 2.153,
-    "extent_frac_frame_w": 1.376,
-    "depth_span_m": 1.3863,
-    "fstop_shipped": 2.2,
-    "fstop_required": 37.95,
-    "standoff_for_fill_m": 3.879,
+    "far_edge_angle_deg": 24.801,
+    "half_frame_deg": 16.134,
+    "lens_mm": 35.0,
+    "extent_frac_frame_h": 0.432,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 1.7552,
+    "fstop_shipped": 2.8,
+    "fstop_required": 4.49,
+    "standoff_for_fill_m": 3.183,
     "fill_target": 0.85,
     "sharp_budget_px": 2.0,
     "presentation": true
    },
    {
-    "cluster": "CORNER_RR",
-    "t": 21.625,
-    "range_m": 1.531,
+    "cluster": "SW",
+    "t": 10.958333,
+    "range_m": 1.084,
     "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 27.919,
+    "far_edge_angle_deg": 10.215,
     "half_frame_deg": 9.902,
     "lens_mm": 58.0,
-    "extent_frac_frame_h": 2.124,
-    "extent_frac_frame_w": 1.367,
-    "depth_span_m": 1.3784,
+    "extent_frac_frame_h": 0.85,
+    "extent_frac_frame_w": 0.462,
+    "depth_span_m": 0.3449,
     "fstop_shipped": 2.2,
-    "fstop_required": 99.67,
-    "standoff_for_fill_m": 3.827,
+    "fstop_required": 23.99,
+    "standoff_for_fill_m": 1.084,
     "fill_target": 0.85,
     "sharp_budget_px": 2.0,
     "presentation": true
    },
    {
-    "cluster": "CORNER_FR",
-    "t": 23.083333,
-    "range_m": 1.503,
+    "cluster": "NOSE",
+    "t": 12.208333,
+    "range_m": 2.315,
     "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 27.704,
+    "far_edge_angle_deg": 15.479,
     "half_frame_deg": 9.902,
     "lens_mm": 58.0,
-    "extent_frac_frame_h": 2.008,
-    "extent_frac_frame_w": 1.427,
-    "depth_span_m": 1.123,
+    "extent_frac_frame_h": 0.762,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 0.8402,
     "fstop_shipped": 2.2,
-    "fstop_required": 74.04,
-    "standoff_for_fill_m": 3.551,
-    "fill_target": 0.85,
-    "sharp_budget_px": 2.0,
-    "presentation": true
-   },
-   {
-    "cluster": "CORNER_FL",
-    "t": 24.625,
-    "range_m": 1.503,
-    "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 27.703,
-    "half_frame_deg": 9.902,
-    "lens_mm": 58.0,
-    "extent_frac_frame_h": 2.318,
-    "extent_frac_frame_w": 1.449,
-    "depth_span_m": 1.2968,
-    "fstop_shipped": 2.2,
-    "fstop_required": 37.42,
-    "standoff_for_fill_m": 4.099,
+    "fstop_required": 12.21,
+    "standoff_for_fill_m": 2.315,
     "fill_target": 0.85,
     "sharp_budget_px": 2.0,
     "presentation": true
    },
    {
     "cluster": "FW",
-    "t": 25.9,
-    "range_m": 3.428,
+    "t": 13.416667,
+    "range_m": 2.583,
     "edge_angle_deg": 0.0,
-    "far_edge_angle_deg": 30.461,
-    "half_frame_deg": 11.911,
-    "lens_mm": 48.0,
-    "extent_frac_frame_h": 0.924,
-    "extent_frac_frame_w": 0.393,
-    "depth_span_m": 2.0439,
-    "fstop_shipped": 2.6,
-    "fstop_required": 10.94,
-    "standoff_for_fill_m": 3.727,
+    "far_edge_angle_deg": 24.463,
+    "half_frame_deg": 16.134,
+    "lens_mm": 35.0,
+    "extent_frac_frame_h": 0.85,
+    "extent_frac_frame_w": 0.692,
+    "depth_span_m": 1.9951,
+    "fstop_shipped": 2.8,
+    "fstop_required": 7.14,
+    "standoff_for_fill_m": 2.583,
     "fill_target": 0.85,
     "sharp_budget_px": 2.0,
-    "presentation": false
+    "presentation": true
    },
    {
     "cluster": "RW",
-    "t": 27.3,
-    "range_m": 8.971,
-    "edge_angle_deg": 7.311,
-    "far_edge_angle_deg": 16.467,
-    "half_frame_deg": 14.205,
-    "lens_mm": 40.0,
-    "extent_frac_frame_h": 0.194,
-    "extent_frac_frame_w": 0.157,
-    "depth_span_m": 1.2014,
-    "fstop_shipped": 3.0,
-    "fstop_required": 6.7,
-    "standoff_for_fill_m": 2.049,
+    "t": 16.625,
+    "range_m": 3.802,
+    "edge_angle_deg": 0.0,
+    "far_edge_angle_deg": 10.855,
+    "half_frame_deg": 9.902,
+    "lens_mm": 58.0,
+    "extent_frac_frame_h": 0.85,
+    "extent_frac_frame_w": 0.5,
+    "depth_span_m": 1.4115,
+    "fstop_shipped": 2.2,
+    "fstop_required": 10.92,
+    "standoff_for_fill_m": 3.802,
     "fill_target": 0.85,
     "sharp_budget_px": 2.0,
-    "presentation": false
+    "presentation": true
+   },
+   {
+    "cluster": "CORNER_GROUP",
+    "t": 19.333333,
+    "range_m": 7.578,
+    "edge_angle_deg": 0.0,
+    "far_edge_angle_deg": 27.119,
+    "half_frame_deg": 16.134,
+    "lens_mm": 35.0,
+    "extent_frac_frame_h": 0.749,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 5.2789,
+    "fstop_shipped": 2.8,
+    "fstop_required": 2.24,
+    "standoff_for_fill_m": 7.578,
+    "fill_target": 0.85,
+    "sharp_budget_px": 2.0,
+    "presentation": true
    }
   ]
  },
@@ -1718,6 +1467,11 @@
     11.0
    ],
    "why": "R2-85x. The hold is no longer a still: the subject is the car, which is still moving, so the camera pans through the hold and the frame has parallax on the ground. The push lengthens onto the car -- it grows from 45.8 px to 78.5 px over the last 3 s instead of shrinking -- and a 130 mm lens at 1,000 m crops the bare terrain out of the frame, which is the client's 'patches in the land' note answered by the lens rather than by a terrain rebuild."
+  },
+  "aim_keying": {
+   "max_stride_frames": 2,
+   "max_bearing_deg": 5.0,
+   "why": "R2-859. The default stride of 8 frames never gets shortened on a smoothly-tracked beat 6, because the 5 deg bearing test cannot fire when the whole beat only moves the aim 2.9 deg. That under-keys the rotation exactly where the car rounds T1 and the required pan accelerates 7x, and the car oscillates +-27 px about frame centre over the last 10 frames."
   }
  },
  "sources": {

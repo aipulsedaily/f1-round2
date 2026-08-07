@@ -474,3 +474,132 @@ hardest, which is the cross-check that was missing.
 > The film's ending contains its subject. **This is a claim about geometry, not
 > about the picture** — whether the car is *legible* at 1,000 m through 130 mm of
 > haze is a separate question and only the 4K stills can answer it.
+
+---
+
+## R2-859 — beat 6 keys its rotation every 8 frames on any smoothly-tracked aim, and the aim gate cannot see the result
+
+**The rule** (`anim/build_camera_rig.py`): step 2–8 frames, break when the bearing
+has moved more than **5.0 deg**. It was written for a beat 6 whose aim swings
+**82 deg** from the car to a fixed facade, where 5 deg trips constantly and the
+stride stays short.
+
+**It is wrong for any beat 6 that tracks a subject.** R2-853's candidate moves
+its aim ~2.9 deg *in total*, so the 5 deg test **never fires**, the stride pins
+at its maximum 8, and rotation is keyed every 8 frames straight through the one
+place it must not be — the last half second, where the car rounds T1 and the pan
+the camera owes it accelerates **7x, from 0.030 to 0.213 deg/frame**.
+
+Measured on the 8-frame build, car offset from frame centre, px @4K:
+
+    f2968  -5.5   f2971 -22.3   f2974 -14.5   f2977 +27.1
+    f2969 -11.8   f2972 -24.2   f2975  -0.0   f2978  -0.0
+    f2970 -17.8   f2973 -22.1   f2976 +19.7
+
+A **51 px swing in 5 frames** — the subject visibly drifts off centre, overshoots
+the other way and snaps back, in the last half second of the film.
+
+**The aim gate reports this as 0.1109 deg and PASSES it against a 26 deg bound.**
+A bound sized for *"is the subject in shot"* cannot see a wobble three orders of
+magnitude below it — the same shape as R2-851's missing pan-rate bound.
+
+**A degree threshold could not have caught it either.** The failure is that the
+aim's *second* derivative is large while its first derivative is small, and a
+first-order test is blind to that by construction. So the **stride cap** is the
+parameter that matters, and it is now the one exposed.
+
+**Fix:** the stride and the bearing bound are read from
+`sheet["beat6"]["aim_keying"]`, defaulting to `8` and `5.0`.
+
+* **The default is proven a no-op.** Built the *same* shipped sheet with the
+  original code and with the edit and diffed all 2,978 frames:
+  **position `0.000e+00` m, quaternion `0.000e+00`, lens `0.000e+00` mm.**
+* Candidate sets `max_stride_frames: 2` — 156 intermediate samples, up from 63.
+
+| | stride 8 | stride 2 |
+|---|---:|---:|
+| worst car excursion, whole beat | 27.1 px | **16.4 px** |
+| aim gate, `6_ending` | 0.1109 deg | **0.0717 deg** |
+| f2968–f2976 excursion | up to 24 px | **under 1.2 px** |
+
+Worst rotation smear is 36.5 → 33.7 px and that is **correct, not residual** —
+it is the pan the moving car actually requires, i.e. physics, not error.
+
+---
+
+## R2-860 — what can and cannot move the post off the car. My own hypothesis was wrong.
+
+The 2 px post at x=1941–1942 grazing the car's trailing edge at f2978.
+
+**I predicted the R2-859 wobble caused it. It does not.** f2978 is a *declared
+key* where the aim was already exact (car offset `+0.031 px` before and after),
+so densifying the keys leaves the post exactly where it was. Recorded because
+the prediction was wrong and the measurement is what settled it.
+
+Three levers tested against the geometry:
+
+1. **Camera rotation — CANNOT work, and this is exact, not approximate.** A pure
+   rotation moves the car and the background by the *same* angle. Measured at
+   f2978: separation is **20.87 px at 0.00 deg of extra yaw, 20.87 px at 0.07
+   deg, and 20.87 px at 0.30 deg.** Nudging the aim is not available.
+2. **Lens — CANNOT work.** The post is 21 px off-axis, and a focal change scales
+   the car and its offset together. The tangency is **scale-invariant**.
+3. **Camera translation — would work** (~1 m of lateral parallax), and is the
+   one thing that breaks R2-853's byte-identical position guarantee.
+
+So the tangency is **rotation-invariant and scale-invariant**. Only parallax or
+moving the post itself changes it.
+
+**And the post is not a free parameter.** `FENCE_SPAN = 8.00` is declared —
+`build_barriers.md`: *"debris (catch) fence, 3.6 m mesh on 6 m posts at **8 m
+centres** | spec §9"*. Posts sit at exact multiples of it along the barrier
+polyline (`u = pi * FENCE_SPAN`). Moving one post would (a) break a declared
+pitch locally, (b) have to propagate into the fence weave, which is built
+between consecutive posts, and the marshal-gate frames built from the same
+`posts` list, and (c) desynchronise `world/items/catch_fence_post.py`, which
+builds the same population independently and whose count agreement with this
+loop is an existing check (R2-331/R2-229). The *phase* is undeclared, but
+shifting it moves all 690 posts in every frame of the film.
+
+> **Verdict: this is not the cheap placement change it looked like.** It is a
+> camera-parallax question or an accepted tangency, and it should be decided
+> deliberately. Awaiting an object-ID ray-cast to confirm the post is in fact a
+> `BR_Fence*` member and whether it is nearer than the car (occluding) or
+> further (merely adjacent) — that distinction has not been established and I
+> have not assumed it.
+
+---
+
+## R2-861 — the shipped beat sheet fails its own camera-rig gate, and it moved mid-task
+
+`docs/beat_sheet.json` was rewritten at **03:48 today** — beat 1 went from 23
+camera keys to **19** (the re-paced beat 1). Two consequences.
+
+**1. The current sheet does not build a passing rig, and it is not mine.**
+
+    >> per-beat verdict:
+         1_assembly  FAIL  subject reaches 1.155 of the half-frame at frame 431 (margin 0.92)
+    >> STAGE RESULT: CAMERA_RIG_FAIL
+
+Proven pre-existing rather than asserted: the **original, unmodified**
+`build_camera_rig.py` produces the identical FAIL on the identical sheet. Beat 6
+passes in both. **Flagged for whoever owns the re-pacing — a film cannot be
+rebuilt from this sheet until f431 is resolved.**
+
+**2. R2-853's candidate has been re-based onto the current sheet** and now
+carries beat 1 identical to shipped (19 keys). Re-verified against a build of
+the *current* shipped sheet:
+
+* **f1–f2656 bit-identical** — 2,656 frames, position and quaternion both
+  `0.000e+00`.
+* Only **50 frames differ, f2657–f2714**, inside the beat-5→beat-6 hand-off
+  blend, worst **1.39 mm** and **0.0217 deg**. At f2680 the camera is travelling
+  ~3.3 m per frame, so 1.39 mm is 0.04 % of one frame's travel.
+* **The seam frames are untouched in position:** f2714 and f2715 both
+  `0.000e+00` m, quaternion `1e-6` (~0.0001 deg, about 0.006 px at 4K).
+  **The 1.33 % seam measurement is not at risk.**
+
+**The render in flight predates the re-base.** It carries the stride-8 keying
+and the old beat 1. Beat 1 does not affect f2715–2978, and f2978 is unchanged,
+so it remains valid for judging the *gesture* and the 4K stills; it does not
+carry the R2-859 wobble fix. Not worth re-queueing on its own.
