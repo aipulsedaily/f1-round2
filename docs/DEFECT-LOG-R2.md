@@ -36384,3 +36384,68 @@ take with zero cuts** - so attention cannot be bought with editing. In a one-sho
 it comes from **acceleration, direction change, and new information entering
 frame**, not from more movement. **The camera currently has almost none of the
 first two, and the third is decaying.**
+
+## R2-1145 — READING A SOCKET'S DEFAULT WHEN IT IS DRIVEN BY A LINK GIVES THE WRONG ANSWER, and it flattered the finding
+
+`LiveryPaint`'s `Metallic` socket reads **default 0.62** - which is round 1's
+value, and reading it concludes the repaint never landed.
+
+**It is linked.** Through a MULTIPLY by **0.16129031777381897**, which is
+**0.10/0.62 exactly**. **Effective metallic is 0.10.** `Coat Roughness` is 0.055
+against round 1's 0.022, `R2CP_VERSION` is **5**, and the blend carries **239
+nodes, 94 `R2CP_*`, 25 `R2IMP_*`.** **The paint is in the delivered film.**
+
+**And the link is deliberate**: `car_paint.py` applies the fix as a **scale on
+the existing link** so the nose's carbon-dissolve region still reaches metallic
+0. **A constant would have destroyed that.** So the socket *must* keep a default
+the pipeline does not use, and **any checker reading `default_value` will report
+round 1 forever.**
+
+**Two errors, both in the same direction.** The same agent also read
+`chain5.sh` having no carpaint stage as evidence of absence - **it means the
+paint landed upstream of the script being read.** Both mistakes were **source
+instead of artefact, and both flattered the finding.** That is the same shape as
+the transport census measuring the wrong volume, and it is worth more than the
+claim it replaced.
+
+**Verified the right way, and cheaply:** `libraries.load(link=True)` interrogates
+the **7.98 GB blend on an 11 GB box in ~2 minutes, no GPU, $0.00.** The artefact
+was always available to ask.
+
+**`docs/NEXT-REBUILD.md` is stale for the same reason** and I own it - its
+evidence column describes `film14_breach_r6.blend`, built **before** the
+repaint. Corrected.
+
+## R2-1146 — THE CARBON WEAVE IS 0.87 px, AND TWO AGENTS FIXED IT ON EITHER SIDE OF THE LARGEST CARBON AREA ON THE CAR
+
+**`CarbonFibre` is the only car material in the delivered blend carrying no
+round-2 fix.** 68 nodes, **zero `R2CP_*`**, and all three `Mapping` nodes feeding
+its six `TexWave` nodes still at **`Scale = 190.0`** - a **1.6535 mm weave,
+0.87 px at delivery.**
+
+**That is the pixel-footprint law for the fourth time today**, and this instance
+is the most expensive: it covers **the wings, barge boards, nose, engine cover,
+sidepod and halo** - which is why I looked at f599 and wrote *"reads as one
+moulded shell"* and *"the front wing is a plain white bent sheet."*
+
+**Round 1's own docstring predicted the symptom verbatim:** *"flat endplates
+caught the cove and rendered as white plastic."*
+
+**And the ownership gap is the whole story.** `car_paint.py` owns `LiveryPaint`.
+`cockpit_surface.py` owns `CarbonMatte`. **Two agents fixed the same bug on
+either side of the largest carbon area on the car, and nobody owned the
+middle.** Neither was careless; the material simply fell between two mandates.
+
+**The prescription collapses to two items:** `Mapping.Scale 190.0 -> 62.832`,
+and **one narrow strip source** added to the rig with the four clipping-tuned
+lamps untouched. **The model is not the problem** - 4.80 M polys, complete,
+bodywork max 0.9238 with zero pixels over 0.95.
+
+**One new thread, unasked and possibly serious:** **ten car materials exist twice
+in `film17` as `.001` twins** - CarbonFibre, TyreRubber, WheelRim, Titanium and
+six more - while `R2829_car_anim_driver.blend` has exactly one of each.
+**`LiveryPaint` has no twin.** The twins are value-identical so nothing above
+changes, **but something in the film assembly is bringing in a second copy of
+part of the car, and that may mean duplicate geometry in the shot.**
+
+Total spend this pass: **$0.14.**

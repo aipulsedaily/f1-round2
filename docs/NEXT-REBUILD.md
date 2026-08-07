@@ -7,7 +7,7 @@ rendered before it is superseded by construction. Written 2026-08-07.
 
 | what | where | evidence |
 |---|---|---|
-| **Car paint** v5 + imperfections | `world/car_paint.py`, `tools/imperfections.py`, applied to BOTH car sources | albedo 0.0121 -> 0.0372; head-on diffuse 2.78 -> 7.87 %; three-quarter 7.32 -> 19.96 % |
+| **Car paint** v5 + imperfections — **ALREADY IN film17_breach.blend, verified in the artefact** (R2-1145); the evidence below was measured on `film14_breach_r6.blend`, built BEFORE the repaint. `Metallic` reads default 0.62 but is LINKED through a MULTIPLY of 0.16129031777381897 = 0.10/0.62, so any checker reading `default_value` reports round 1 forever. | `world/car_paint.py`, `tools/imperfections.py`, applied to BOTH car sources | albedo 0.0121 -> 0.0372; head-on diffuse 2.78 -> 7.87 %; three-quarter 7.32 -> 19.96 % |
 | **Driver + seat** | promote `work/r2881/car_anim_driver_R2881_BOTH.blend` — **NOT either half**, they were built in parallel off the same shipping car | crown boundary 44 px -> 2 px; black pixels on the crown tile 1,910 -> 0; carbon fine-band 0.99/0.17 -> 2.63/1.73 |
 | **Showroom ceiling** | `world/showroom_ceiling.blend` (6.99 MB library); the three-line append is already in `tools/build_film_scene.py` | 21 objects, 73,996 polys, lighting identical at 46,203.313 W |
 | **Beat-4 pit building** | `world/build_architecture.py` — annexe loses one storey west of `PB_ANNEXE_X` | 6 frames occluded -> 0, nothing anywhere worse, worst clearance 0.94 m against 0.02 m in the draft it replaced |
@@ -106,24 +106,48 @@ ONER  clip 0.05/200000     3840x2160, 24 fps, 1..2978, AgX, look None, -3.628
 BF_MUL05_S02 = 0.1449 m    the guard that proves the right bake landed
 socket audit               film16 PASS, film10 FAIL 27 (the control that makes
                            every other PASS non-vacuous — keep film10)
-slabcheck                  MUST exit 0.  It exits 1 today: bays 3 and 6 are
-                           role `destroyed` and read DID_NOT_MOVE at 0.9 % and
-                           9.0 % vacated.  See the blocker below.
+slabcheck                  MUST exit 0.  It DOES, as of R2-1121 — and its
+                           selftest is now 22 controls, all of which must stay
+                           green.  Nothing in the sim or the bake changed to
+                           get there; see the closed blocker below.
 rig_preflight              any comparison rig used to judge this film must exit
                            0 — sun bearing, exposure, view transform, world
 ```
 
-## BLOCKER — decide bays 3 and 6 before building
+## ~~BLOCKER — decide bays 3 and 6 before building~~ CLOSED, R2-1121
 
-`slabcheck` now joins each bay's `role` to its `verdict` and **fails**. Bays 3
-and 6 are tagged `destroyed` and do not break; their shard counts (202, 200)
-match the *retained* bays (195, 183), not the bays that go (1531, 1485).
+**Decided: bays 3 and 6 STAY.** Judged at 4K/1:1 on the shipping camera, with
+ground truth from the bake projected over the frames. Full working in
+`docs/STAGING-R2-1121-to-R2-1150.md`.
 
-**This is a look call, not a correctness one.** Fractured-but-standing laminated
-glass flanking the hole is physically right and may be better than four bays
-leaving. Either make them leave (re-bake) or re-label them `retained` (free) —
-but **the plan and the outcome must agree before a 7-day render starts**, and
-they have disagreed for the life of the project without anything noticing.
+**Nothing in the sim changed. `fracture_wall.npz` and `breach_film.npz` are
+untouched, and the `BF_MUL05_S02 = 0.1449 m` guard still holds.** The edit is
+`sim/fracture.py` (new `outcome_of` / `bay_outcomes`) and `sim/slabcheck.py`
+(join on outcome, not on role).
+
+**Do not repeat the "relabelling is free" reasoning — it is false, and it was
+measured.** `fracture_pane` reads `pane.role` to pick `n_radial` (15 for
+`destroyed`, 7 for `retained`), so re-deriving the role re-fractures the bay:
+bay 3 goes 202 shards → 198 and bay 6 200 → 178, every polygon different, new
+`GS_bNN_NNNNN` names, and the 20 MB bake table no longer addresses them. That
+is a re-bake — **the same bill as making them leave**. One word was doing two
+jobs: `role` is a *fracture-density input*, and the gate was reading it as an
+*outcome assertion*. Bays 3 and 6 are `destroyed` **and** stay, and both are
+true — they are next to the strike so they are radialled hard, and they each
+keep a jamb so they do not go.
+
+Why they stay, physically: **only `MUL05_S00` and `MUL05_S01` ever leave** the
+east frame (3.93 m and 4.43 m, the segments below z ≈ 1.59). Every other
+mullion segment in the wall peaks at ≤ 26 mm and returns to 0.000 m — including
+mullions 4 and 6, which are *declared* `destroyed`. So bays 3 and 6 have both
+jambs standing and were never struck (the car's impactors span y −1.085…+1.085,
+which is bays 4 and 5). Option (b) was never "make two panes leave"; it was
+"destroy the frame the 4.35 m aperture is currently framed by".
+
+**See R2-1122 in the staging doc: mullions 4 and 6 are the same defect one level
+up, and are NOT fixed.** Changing a mullion's `beat3` state changes `active` and
+the constraint thresholds in `build_breach_sim`, so it is a re-bake. It belongs
+to whoever next has a reason to re-bake. The take is right; the label is not.
 
 ## Then the master
 
