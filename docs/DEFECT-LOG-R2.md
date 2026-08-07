@@ -33439,3 +33439,55 @@ was checking came from an agent that had already refuted my premise once; it was
 right, and it is still right — but *"the agent said all six pass"* and *"all six
 pass"* are different claims, and only one of them survives the agent being
 wrong.
+
+## R2-1111 — the focus fix is proven on a frame NOMINATED IN ADVANCE, and the client's blur complaint may still survive — for a different reason
+
+**f150 settles the focus question from the pixel side, and it is the frame
+R2-804 nominated *before* the render existed, for exactly this purpose.** It
+predicted a working fix would resolve the rim, the brake structure, the red
+sidewall band, the suspension links as metal, and give the stanchion a hard edge
+and a defined base disc. **The delivered frame shows every one.**
+
+**And the prediction isolates the variable.** In the shipped arm *nothing* in
+that frame was sharp anywhere — so a readable wheel can only have come from
+moving the focal plane. **That is what separates focus from aperture**, and it
+is why a pre-registered frame is worth more than any number of frames chosen
+after the fact: a frame picked afterwards can always be the one that flatters.
+
+So the focus position now stands on **two independent legs**: the **code path**
+(`apply_focus` reads film17's own camera; the stale `film16_path.json` appears
+only in `selftest()` and the CLI default - R2-1091), and a **prediction
+registered in advance and met on delivered pixels.**
+
+## R2-1112 — A CORRECT FIX CAN LEAVE THE COMPLAINT STANDING, because the complaint named a symptom with two causes
+
+The client said *"too much blur, what f-stop is that?"* **Focus was the cause
+everyone chased, and focus is fixed.** But the residual blur in f150 is
+**directional and separable**: the tyre's trailing edge and the floor's light
+streaks smear left-to-right while the suspension links stay crisp.
+
+**That is shutter, not aperture.** Two different mechanisms produce "blurry", and
+the client named the symptom, not the mechanism.
+
+**And the pacing fix may have made it worse.** The re-pace took the tour
+**1.62 s faster** - more screen movement per frame, so **motion blur is now the
+dominant term where defocus used to be.** Two fixes, each correct on its own
+axis, whose *combination* moves a third quantity nobody was measuring.
+
+So the honest ledger on the client's three beat-1 notes is:
+
+```
+"way too slow"        ANSWERED   payoff motion 0.24 -> 0.59 of the tour
+"way too zoomed in"   ANSWERED   f580 fill 1.046 -> holds with margin
+"too much blur"       FIX LANDED, COMPLAINT NOT CLOSED
+```
+
+**That third line must not be reported as closed**, for two reasons the agent
+stated rather than glossed: **shutter is untouched**, and R2-800's validating
+control **still reports SKIP** on this generation. **"We fixed the thing we found"
+and "the client will stop seeing it" are different claims**, and only the first
+is evidenced.
+
+This is the same discipline that saved the ending: the camera candidate fixed
+the geometry and did not fix the ending, and saying so cost one pass and
+prevented shipping a wrong answer.
