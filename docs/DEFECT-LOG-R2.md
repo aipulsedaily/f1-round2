@@ -30682,3 +30682,84 @@ at 96.8% and bay 5 at 100% vacated, bays 3 and 6 at 0.5% and 2.2%**, against a
 plan that permits **8.77 m** across bays 3-6. **The wall opens at half its
 authored ceiling** - the hole is real, the car fits through it with room, and
 the flanking bays stand.
+
+## R2-1084 — THE CURRENT BEAT SHEET REINTRODUCES A BEAT-1 CAMERA FAILURE, and it would have gone into the master
+
+The closing-beat re-key printed **two** `>> STAGE RESULT:` lines. The last is
+`FILM_SCENE_REKEYED_R2943` and the beat is delivered. **The earlier one is a
+failure:**
+
+```
+>> STAGE RESULT: CAMERA_RIG_FAIL
+   FAIL 1_assembly: subject reaches 1.155 of the half-frame at frame 431
+                    (margin 0.92)
+```
+
+Five beats PASS, including `6_ending`. **`1_assembly` FAILs**, and the numbers -
+1.155, f431, margin 0.92 - are character-for-character the pre-existing beat-1
+failure recorded in `docs/STAGING-R2-851-to-R2-880.md`.
+
+**The timeline is the finding.** The R2851 farm run at **04:15 reported
+`1_assembly PASS`**. The sheet was edited at **05:03**. **The current sheet
+reintroduces a failure that had been fixed**, and the only reason anyone knows
+is that a re-key for a completely different beat printed the rig's verdict on
+its way past.
+
+> Nobody should rebuild a film from this sheet believing it clean.
+
+**This is a `NEXT-REBUILD` blocker and it is a nastier one than the bays**,
+because the bays fail loudly on a gate someone will run. This failure is printed
+by a stage that is *succeeding at its own job* - the last STAGE RESULT line is a
+pass, and anything reading only the last line sees a clean run. **A build that
+prints two verdicts and is judged on one is a build with an unread verdict.**
+
+Beat 1 is f1-792; the re-keyed beat is f2715-2978. **The two do not overlap**,
+so the closing work is unaffected and the delivered clip stands.
+
+## R2-1085 — 8760 renders this scene 36% slower than 8761, and the master has never been priced against the difference
+
+The closing beat cost **$1.70 against a $1.27 estimate.** The whole overrun is
+that it ran on broker 8760, which renders this scene at **43.8 s/frame against
+8761's 32.3** and bills 5% more. The agent's own A-side measurement - 32.33
+s/frame at 720p, 225.82 s at 4K - was right, for the card it did not end up on.
+
+**Two cards we own differ by 36% on the same scene**, and every master estimate
+so far has quoted a single rate. That is a bigger source of error than the
+$2.11 the 1x-vs-2x card choice turns on, and it is the fourth time this project
+has found a rate that was true of a neighbouring configuration.
+
+**Cause of the misroute, worth knowing:** `rq exec` defaults to **8760**; only
+`anim` and `seq` default to **8761**. Caught in ~40 s and cancelled before the
+box admitted it.
+
+**And the exec starvation is structural, not scheduling.** An 8 GB blend needs
+**~44 GB of the box's 48.9 GB**, so **no exec can run while any render holds a
+scene.** One job admit-bounced for ~90 minutes behind 592 frames of a prio-90
+ladder; another has been waiting since 07:39 and still has not landed. **The
+broker has no starvation guard for exec.**
+
+## R2-1086 — a peer duplicated an entire job under this agent's key, and the right response was proof rather than protest
+
+Eight jobs appeared on 8760 under the agent's key that it did not submit. It did
+not argue and it did not re-render: it **proved equivalence from the broker's own
+record** - `spec_hash c49ed585b3812fe5` (4K) and `79d669a22a439d3a` (720p),
+hashes that cover all 13 image fields **and the scene content digest** - then
+**cancelled its own six duplicates** rather than double-spend ~$1.04 and stall
+the ladder behind them.
+
+It also cancelled a 264-frame monolith of its own after the broker warned it
+would hold a worker unpreemptable for 3 hours, and resubmitted in **62-frame
+chunks** matching the A-side.
+
+**And it settled the encode recipe by reproduction rather than by guesswork:**
+`-preset slow -crf 18 -movflags +faststart` re-creates the A-side clip
+**sha256-identical**. Every encoding parameter matches - h264 High, level 31,
+24/1, yuv420p, bt709, iec61966-2-1, tv range, 2 B-frames, same encoder build -
+and only bitrate differs, which is what CRF is for.
+
+**Four `SendMessage` attempts to the peer failed** with *"No agent named
+'general-purpose' is reachable"*, so none of this reached the agent that needs
+it - including that the 8760 jobs were theirs, and that the round trip they
+asked about genuinely cannot be skipped: `resolve_scene` requires a local
+`is_file()` and hashes locally, and `_ensure_scene_cached` checks the scene
+cache, not `/workspace/exec/<id>/out/`.
