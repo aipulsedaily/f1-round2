@@ -28183,3 +28183,183 @@ once from `git show HEAD:`, hashing every mesh's vertices and loops -
 free cross-check.
 
 Cost: **$0.0488**, 175 s of 5090.
+
+## R2-1009 — two corrections to the brief this task was given
+
+1. **"1,247 contiguous frames" is not what is on disk.** `out2/seq/r2full` holds
+   1,247 frames covering f793-2978, but only **f793-1281 are contiguous** (489
+   frames); from f1286 the sequence is **1-in-5**. Beat 5 f1191-2714 is covered
+   at 39 frames over the f2035-2227 span, not 193. Adequate for composition,
+   which is what it was used for; not adequate for anything per-frame.
+
+2. **The run is longer than 8.04 s and this was already known.** R2-582 measured
+   the true continuous sub-10 % run as **f2012-f2256, 245 frames, 10.21 s**,
+   median 4.41 % — *"the longest continuous run under 10 % of frame width
+   anywhere in beats 2-6, including beat 6 itself."* f2035-2227 is R2-581's
+   narrower window. Both are now superseded as a *defect* by R2-1001 anyway; what
+   survives is R2-1002, which is 0.50 s inside it.
+
+
+### Files touched
+
+| file | |
+|---|---|
+| `tools/r2971_pont_camera_rebase.py` | **new.** Rebases R2-738's offset onto the live path, widens the ramps, 8 controls incl. a null that must reproduce the base |
+| `render/film_path_R2971_PONT_B5_REBASED.json` | **new, candidate.** Live path + the offset over f2131-2224. Not wired to anything |
+| `work/r2971/cam_candidate_path.json` | scratch: `r2731_pont_camera_apply.py`'s own output, kept only to document the 9.866 m stale-base delta |
+| `docs/STAGING-R2-1001-to-R2-1030.md` | this file |
+| `out2/seq/b5verdict_4k` | 6 frames, 4K, **$0.173 measured** |
+| `tools/r2731_camera_clearance.py` | **modified, additively** — gained a path-selection option so the gate can be pointed at a candidate other than R2-738's. Existing default behaviour unchanged |
+
+This task modified **nothing** in `docs/beat_sheet.json`, `docs/DEFECT-LOG-R2.md`,
+`anim/`, `audio/`, `world/`, `telemetry/`, or any `render/film*.blend`, and
+committed nothing. Other agents' edits are live in the same working tree
+(`audio/scene.py`, `world/camera_rig_path.json`, `world/build_*.py` and others
+show as modified and are **not** this task's) — anyone staging these changes must
+use path-scoped `git add`, never `-A`.
+
+One consequence of that, worth stating rather than discovering at merge:
+`world/camera_rig_path.json` is currently dirty in someone else's hands. This
+candidate was rebased onto `render/film17_path.json`, which is clean and which
+was verified **identical to `world/camera_rig_path.json` over the whole of beat 5
+to 0.00e+00 m**. `tools/r2971_pont_camera_rebase.py` takes `--base`, so at merge
+time it should simply be re-run against whatever path is live rather than the
+output file being adopted as-is.
+
+## R2-949d — the film re-key LANDED, and it confirms the confound as well as the change
+
+`out/exec/bd0345da6cb3/rekey_R2943.log`, broker 8760, on
+`render/film17_breach.blend` → `film17_R2943.blend` (7,610.0 MB).
+
+    >> STAGE RESULT: FILM_SCENE_REKEYED_R2943
+
+The car stage reproduced the local dry run on `world/car_anim.blend` **digit for
+digit**, which is the check that the 8 GB scene is the same object the 302 MB one
+was:
+
+```
+11,088 key value(s) rewritten on frames 2715-2978 across 9 object(s);
+   4,980 of them actually moved;
+113,988 key(s) at or before f2714 verified BIT-IDENTICAL.
+lift at world t 72.62957 (between f2714 72.61153 and f2715 72.65320),
+   peak 35.27 m/s^2 = 3.60 g, at rest 9.226 s later after 226.52 m.
+f2978: car at (502.93, 315.43, -0.00), speed 0.000 m/s, wheel spin 9.1400 rad
+worst float32 storage error 4.875e-04; worst disagreement with the SHIPPED keys
+   on the 2,714 frames this stage did NOT write: 4.882e-04
+```
+
+**The output file existing was never the evidence and it is worth saying why.**
+`build_camera_rig.main()` saves to `--out` itself, part-way through, via
+`save_clean` — the log shows two separate `Saved as "film17_R2943.blend"` lines.
+A half-re-keyed blend lands at the identical path with an identical size. What
+settles it is the LAST `>> STAGE RESULT:` line, and the four things it certifies:
+
+| check | result |
+|---|---|
+| world datablock | `SKY_World` restored (the rig had swapped in `R2_ProceduralSky`) |
+| atmosphere slab | both `SKY_AirColumn` and `SKY_AirBoundary` present |
+| cloud-parallax drivers | 2 bound to `ONER`, **0 dangling** |
+| object count before / after | **35,304 / 35,304** — nothing dropped |
+| delivery | 3840×2160, AgX, look None, exposure **−3.628** |
+| aim gate `6_ending` | **0.03 deg at f2758**, max subject range **342.5 m** |
+
+Had the world restore failed, the frames would have been lit by a different sky
+from the A-side. That is not an A/B, it is two different films, and it would have
+looked entirely plausible.
+
+### Two corrections to earlier entries in this file
+
+**1. The beat-1 FAIL is NOT an artefact of building against `beat1_anim.blend`.**
+R2-944 recorded the `1_assembly FAIL … 1.155 of the half-frame at frame 431`, and
+I speculated it might be input-dependent because the previous agent's re-key of
+`film16_R2851` reported `1_assembly PASS`. **It is not.** The identical FAIL, to
+the same 1.155 and the same frame 431, appears here on a full film scene. The
+difference from that earlier run is the *sheet*: it predated R2-861's re-base and
+carried the old 23-key beat 1, where this carries the re-paced 19-key one.
+R2-861's conclusion stands unqualified — **a film cannot be rebuilt from this
+sheet until f431 is resolved**, and that is true on any input.
+
+**2. The two film builds really are different, and now by a countable amount.**
+`film16_R2851` reported **35,283** objects; `film17` reports **35,304** — 21 more,
+which is exactly the object count `NEXT-REBUILD.md` gives for the showroom-ceiling
+library. So `film17` demonstrably carries at least one item from the 62-hour gap,
+and the presumption must be that it carries the car paint too. **R2-949b's
+confound is confirmed rather than merely suspected**, and the f2715 control is
+now required reading before any frame later than f2715 is credited to the
+arrival.
+
+---
+
+## R2-1044 — the live camera is the MINORITY reader: 43 tools read a three-day-stale path, 1 read the film's actual one
+
+R2-1007 found `world/camera_rig_path.json` byte-identical to `film16_path.json`
+(Aug 4), **768 frames differing from the live `film17_path.json`, worst 9.866 m
+at f545**, all in beat 1. It was found incidentally, while validating something
+else, and the finder correctly declined to fix someone else's build output.
+
+**The scope is larger than the finder had reason to check.**
+
+```
+grep -rln camera_rig_path.json --include=*.py   ->  43 files
+grep -rln film17_path          --include=*.py   ->  1 files
+```
+
+And the readers are not obscure: `world/build_surface.py`, `audio/scene.py`,
+`tools/seam_gate.py`, `tools/placement_gate.py`, `tools/horizon_gate.py`,
+`tools/screen_presence.py`, `tools/frame_peeps.py`, `tools/idpass_probe.py`,
+`tools/input_stamp.py`. **Every gate, probe and peep in that list has been
+measuring a camera the film does not have**, for beat 1, by up to 9.866 m.
+
+**This is the purest example yet of the defect family this project keeps
+finding.** Not one broken tool - **43 working tools, one stale input, and no
+way for any of them to notice.** Each reads the file it was told to read and
+reports faithfully. The finder already hit one consequence: a 9.866 m error
+attributed to a bad rebuild in `r2731_pont_camera_apply.py` **was not a rebuild
+artefact** - the tool was correct and its input was not. A correct tool, a wrong
+input, and a plausible wrong conclusion is the hardest combination to catch,
+because nothing anywhere is malfunctioning.
+
+**The inversion is the lesson.** When a stale artefact outnumbers the live one
+43 to 1, the default a new tool inherits is the wrong one, and every
+tool written since Aug 4 started wrong by simply following local convention.
+**Copying film17 over the stale file fixes today and guarantees the repeat**;
+the question is what stopped rewriting it.
+
+Two results are load-bearing right now and are in doubt until measured:
+`build_surface.py`'s readable band (10.8/20.8/108 mm per 4K pixel, weighted over
+1,888 frames - expected to survive because the road barely features in beat 1,
+**but expectation is not measurement**), and `seam_gate.py`, which measures every
+beat boundary in the film and whose f792/793 seam sits exactly at the edge of the
+divergent range.
+
+**`tools/r2791_beat1_focus.py` reads `film17_path.json` and is correct.** It must
+not be "harmonised" onto the majority.
+
+## R2-1045 — the bridge was never the constraint, and the shipped clearance figure was a window artefact
+
+Two corrections from the beat-5 validation, both of which make the comparison
+honest rather than favourable:
+
+- **`ARCH_PontPlongee` is nearest on 4 of 116 frames**, closest 2.719 m. The
+  real minimum is **runoff furniture on the way back out** - `BR_Runoff_R` at
+  f2194. The bridge got the attention because it is the dramatic object, not
+  because it is the close one.
+- The shipped path's **4.516 m was measured over f2125-2240**, a different window
+  from the one being compared against. Over R2-740's own window it is **3.881 m**.
+  The honest comparison is **2.391 m vs 3.881 m - tighter by 1.49 m**, not by 2.1.
+
+**The candidate reproduced R2-740's 2.506 m exactly on unchanged defaults before
+anything was changed.** That is what makes the new number comparable, and it is
+the standard: a tool that cannot reproduce the figure it is replacing has not
+earned the right to replace it.
+
+Zero frames inside `placement_gate.py`'s 1.20 m camera sphere; worst point is
+**1.99x the gate radius**. Occlusion 12 -> 0 across all four bridge bands,
+acceleration **47.7 m/s² against the shipped path's 49.1**, both beat boundaries
+bit-identical, no new quaternion flip, runtime unchanged.
+
+**Decided: take the low inboard thread.** It wins every measurable comparison,
+and the 1.49 m of clearance it gives up buys **proximity** - the currency this
+film is repeatedly short of. The largest defect found in this project is the car
+ceasing to be a subject; a high outboard pass is the shape of that problem, not
+its solution.

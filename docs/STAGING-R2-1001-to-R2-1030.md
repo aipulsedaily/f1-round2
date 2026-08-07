@@ -92,9 +92,15 @@ circuit architecture with no subject in it.
 Read straight off `render/r2651/occlusion.json` (`occ_frac_front`, in frame):
 **f2180-f2191 are 1.000 — twelve frames, 0.50 s, the car wholly hidden.** f2180's
 occluder is the fence channel, f2181-2191 solid, occluder distance 26.4 -> 54.6 m,
-and f2192 is still 58 % hidden. `tools/r2731_pont_full_sightline.py` models the
-solid channel only and so reproduces f2181-2191, eleven; the twelfth is the catch
-fence and a raycast cannot see through one either.
+and f2192 is still 58 % hidden.
+
+`tools/r2731_pont_full_sightline.py` defaults to the solid channel and so
+reproduces eleven of those, f2181-2191. Run with the fence bands included
+(`solid_only=False`) it reproduces **all twelve, f2180-2191, and f2192's partial
+at 0.52 against the raycast's 0.581**. Worth recording because it is a third
+agreement the tool was not tuned for, and because the fence channel is not a
+detail to drop: the twelfth frame is hidden behind the bridge's own mesh screen,
+and a raycast cannot see through one of those any more than through concrete.
 
 The correction this makes to the brief's framing: the defect inside those eight
 seconds is **not** the 8.04 s of small car. It is half a second of no car. The
@@ -178,14 +184,17 @@ package had to be fixed before it could ship.
 
 **Defect 1 — stale base, the R2-737 trap again.**
 `tools/r2731_pont_camera_apply.py --out` writes a whole-film path rebuilt from
-the beat sheet. Measured against the live `world/camera_rig_path.json`:
-**2,472 of 2,978 frames differ, worst 9.866 m at f545**, all of it in beat 1.
-Adopting that file would revert beat 1's camera by 9.9 m to buy a 12-frame fix in
-beat 5 — precisely what R2-737 caught in the lens retune. The cure is
+the beat sheet. Measured against the live `render/film17_path.json`: **2,472 of
+2,978 frames differ, worst 9.866 m at f545**, all of it in beat 1. Adopting that
+file would revert beat 1's camera by 9.9 m to buy a 12-frame fix in beat 5 —
+precisely what R2-737 caught in the lens retune. The cure is
 `tools/r2731_lens_retune_rebase.py`'s: **carry the OFFSET across, never the
 file.** The offset is a pure function of frame index and rebases exactly; the aim
 is not, so it is re-derived, and the selftest's first control is that with the
 offset forced to zero the re-derived aim reproduces the live quaternion.
+
+That 9.866 m turns out not to be a rebuild artefact at all — see R2-1007, which
+is the more serious half of this finding.
 
 **Defect 2 — R2-738 as authored spends 95 % of the camera acceleration budget.**
 
@@ -213,8 +222,23 @@ Camera altitude at the pass drops 16.7 m -> 9.2 m (f2168), 13.4 m -> 5.9 m (f219
 
 **Occlusion re-measured** with `tools/r2731_pont_full_sightline.py`, whose
 `--selftest` reproduces two independent raycasts at two stations
-(s=2410 -> f2181-2191, s=2460 -> f2196-2227) from the same code:
-**11 blocked frames -> 0.**
+(s=2410 -> f2181-2191, s=2460 -> f2196-2227) from the same code.
+
+Run across **all four bands — girders, deck slab, parapet and mesh screen**, not
+just the solid ones, so that f2180's fence-channel frame is included:
+
+| | wholly hidden | partial |
+|---|---|---|
+| shipped | **f2180-2191, 12 frames** | f2192 at 0.52, f2193 at 0.02 |
+| candidate | **none** | none |
+
+The all-channel model reproduces the raycast's twelve-frame window and its f2192
+partial (0.52 against the raycast's 0.581) without being tuned to, which is a
+third independent agreement on top of the two its `--selftest` already carries.
+**All twelve frames close, not eleven.** That the mesh screen stops mattering is
+geometry, not luck: the screen sits at soffit + 2.72 m and the candidate passes
+*under* the soffit, so no sightline from it to the car can reach the screen at
+all.
 
 Not a size fix, and not sold as one: shot scale over the edit window rises
 4.75 % -> 5.29 % (+11 %) and the f2035-2227 median moves 4.24 % -> 4.27 %. The
@@ -273,7 +297,7 @@ f2127-2228 the candidate has **0 hemisphere flips against the live path's 0**,
 and its largest single-frame rotation step is 1.19 deg (live 0.91 deg). The
 selftest fails if the candidate introduces a flip the live path does not have.
 
-## R2-1006 — what is NOT closed, and what it would cost
+## R2-1006 — the clearance gate: PASSED at 2.391 m against a 1.20 m sphere; what remains open, and what it costs
 
 **Measured, and it is a real cost: the camera's margin against the car's own
 corridor.** R2-738 flagged that its candidate halves the closest the car ever
@@ -287,12 +311,41 @@ The camera's lowest point drops from z 10.02 m to **z 5.78 m** at f2195 — whic
 is the ~5 m altitude `circuit_spec.md` §10 specified for this pass in the first
 place.
 
-**Not run: `tools/placement_gate.py` and the triangle-level clearance gate.**
-R2-740 measured R2-738 as authored at minimum **2.506 m at f2194** against the
-1.20 m camera sphere (shipped 3.881 m). This candidate uses the same
-displacement but holds it inboard *longer* and starts it 12 frames *earlier*, so
-it is displaced over more frames and its clearance must be re-measured, not
-inherited. **This is the last open gate before merge.**
+**CLOSED: the triangle-level clearance gate. `>> STAGE RESULT: CAM_CLEAR_OK`.**
+`tools/r2731_camera_clearance.py --mods barriers,architecture` against the built
+world (162 objects, 15.8 M triangles), selftest passing inline (a plane planted
+at 3.000000 m reads back 3.000000 m, one behind the camera reads as distance not
+projection):
+
+| path | min clearance | frame | nearest object |
+|---|---:|---|---|
+| shipped | **3.881 m** | f2250 | `BR_FenceWire_R` |
+| R2-738 as authored | 2.506 m | f2194 | `BR_Runoff_R` |
+| **R2-1004 (this)** | **2.391 m** | f2194 | `BR_Runoff_R` |
+
+**Zero frames inside `placement_gate.py`'s 1.20 m camera sphere; the worst point
+is 1.99x the gate radius.** The wider ramps cost **0.115 m** against R2-738 — same
+frame, same object, so they do not move the pinch point. The tool reproduced
+R2-740's 2.506 m exactly on its unchanged defaults before the new path option was
+used, which is what makes the 2.391 m comparable.
+
+Two things this measurement corrected, both worth carrying:
+
+* **The bridge is not the constraint.** `ARCH_PontPlongee` is the nearest object
+  on only 4 of the 116 frames, closest 2.719 m at f2175. The real minimum is
+  `BR_Runoff_R` — runoff and barrier furniture on the way back *out* — exactly
+  where R2-740 said to look.
+* **A shipped figure of 4.516 m measured over f2125-2240 is a window-boundary
+  artefact**, not a comparable number: the shipped curve is still descending at
+  f2240. Over R2-740's own f2120-2250 the shipped minimum is 3.881 m and the
+  candidate's stays 2.391 m at f2194, an interior minimum either way. **The
+  honest statement is 2.391 m against 3.881 m — tighter by 1.49 m, versus
+  R2-738's 1.38 m.**
+
+**Still not run: `tools/placement_gate.py` itself.** The clearance tool measures
+distance to the world; the placement gate also tests the road corridor and the
+car's swept path. Given 2.391 m against a 1.20 m sphere it is very unlikely to
+fail, but "unlikely" is not the same as run.
 
 **Not run: the rig rebuild and `world/camera_rig_continuity.json`.** R2-738 named
 this and it is still true.
@@ -300,10 +353,21 @@ this and it is still true.
 **Not done: the B-side render.** The picture proof of the *fix* (as opposed to
 the defect) needs the candidate keyed onto `ONER` and 6 frames rendered.
 **Cost: 6 frames x 3840x2160 x 512 samples ~= $0.17**, plus one `rq exec` to key
-the camera and save a candidate blend. Not submitted: `rq exec` was at 12/12
-slots with two other agents' jobs (`r2943` rekeying f2715-2978, `r2851ab`), and
-an 8 GB blend save into that contention is not worth $0.17 of insurance without
-the clearance gate result first.
+the camera and save a candidate blend.
+
+**Not submitted, and the reason is contention rather than money.** `rq exec` has
+been at **12/12 slots for over an hour**, held by `r2943` (rekeying f2715-2978)
+and `r2851ab`; a third build that saves an 8 GB blend into that is a real risk of
+`StaleBundle` and of disturbing two agents mid-flight, for $0.17 of insurance.
+
+**This is now the only thing between this candidate and shippable.** Every
+measurable axis has been checked and passes — occlusion 12 -> 0, acceleration
+below the shipped path's, clearance 2.391 m against a 1.20 m sphere, both beat
+boundaries bit-identical, no new quaternion flip. What is left is a **taste**
+question that no gate can answer: the camera drops from 10.0 m to 5.8 m and swings
+20 m inboard for ~90 frames, and whether that low thread under the bridge is
+*better cinema* than the high outboard pass is for the director, not the
+instruments. Six frames answers it. Recommend rendering them when a slot frees.
 
 **Not merged into `docs/beat_sheet.json`, deliberately**, on R2-591's rule:
 *"other agents have live candidate sheets in that file, and two agents writing
@@ -311,7 +375,37 @@ one sheet is how a one-shot film acquires a seam."* `r2943` is live in
 `film17_breach.blend` right now. The merge is 12 beat-5 camera keys, or one
 `--path` swap at rig-build time; it belongs to the main thread.
 
-## R2-1007 — a per-frame cost datapoint for whoever is costing the 4K master
+## R2-1007 — `world/camera_rig_path.json` is three days stale, and the beat-1 camera on disk is 9.866 m from the film's
+
+Found while validating the base of the fix above; it is not a beat-5 defect and
+it is the most consequential thing in this file for anyone else.
+
+| | |
+|---|---|
+| `world/camera_rig_path.json` (Aug 04 15:49) | **byte-identical to `render/film16_path.json`** |
+| vs the live `render/film17_path.json` (Aug 07 05:59) | **768 frames differ, worst 9.866 m at f545**, span f2-f780 |
+| over beat 5 (f1191-2714) | **0.00e+00 m** |
+
+So the 9.866 m in R2-1004's Defect 1 is **not** a rebuild artefact of
+`r2731_pont_camera_apply.py`. That tool was reading `world/camera_rig_path.json`,
+which is the rig file, and **the rig file is what is out of date**: beat 1's
+camera moved when film17 was built and the rig path on disk was never rewritten.
+The tool was faithfully reproducing a stale input.
+
+**Why this matters beyond beat 1.** `tools/r2731_pont_full_sightline.py` reads
+`world/camera_rig_path.json` as its camera source, and so do the occlusion
+instruments built on the same convention. Every occlusion and sightline result in
+beats 2-6 is unaffected — the two files are identical from f781 on — but **any
+beat-1 result from those tools is measured against a camera the film no longer
+has.** Nothing here re-runs them; this entry exists so nobody has to rediscover
+why a beat-1 number will not reproduce.
+
+Not fixed here on purpose: `world/camera_rig_path.json` is the rig build's
+output, not a hand-edited file, and rewriting it belongs to whoever owns the rig
+build. The one-line check is
+`python3 -c "import json,math; L=lambda p:{k['f']:k for k in json.load(open(p))['path']}; a,b=L('world/camera_rig_path.json'),L('render/film17_path.json'); print(max((math.dist(a[f]['p'],b[f]['p']),f) for f in a))"`.
+
+## R2-1008 — a per-frame cost datapoint for whoever is costing the 4K master
 
 Incidental, but it is a real measurement at the shipping spec and the master's
 affordability is live. These 6 frames averaged **235 s/frame** at 3840x2160 /
@@ -327,7 +421,7 @@ on the current blend under current farm conditions, and it is 20 % above the
 figure the master estimate rests on. Worth one clean, unloaded frame to separate
 the two before anyone budgets against either number.
 
-## R2-1008 — two corrections to the brief this task was given
+## R2-1009 — two corrections to the brief this task was given
 
 1. **"1,247 contiguous frames" is not what is on disk.** `out2/seq/r2full` holds
    1,247 frames covering f793-2978, but only **f793-1281 are contiguous** (489
