@@ -148,6 +148,76 @@ LAP = C.LAP                # 3675.0
 HERO_ZONES = [(0.0, 300.0), (880.0, 1090.0), (1500.0, 1930.0),
               (2380.0, 2760.0), (3050.0, LAP)]
 
+# --------------------------------------------------------------------------- relief
+# THE RELIEF BUDGET IS DERIVED, NOT TYPED.  R2-1031.
+#
+# Every Distance on every ShaderNodeBump in `_mat_asphalt` is an output of
+# `itemkit.relief_amplitude_for(m, lambda)` evaluated at the film's own 12.471 deg
+# sun, so the number in the graph and the number the audit expects come from the
+# same function and cannot drift apart.  Typing 0.0055 here and asserting 0.0055
+# in a test is an algebraic identity — itemkit's own `emitted_wavelength_m`
+# docstring says exactly that about the check that let R2-058 live — so the
+# validation is `bump_relief_report` reading the BUILT graph back, in `verify()`,
+# not a comparison of this table with itself.
+#
+# WAVELENGTHS ARE QUOTED AS THE AUDITOR READS THEM: `NOISE_WAVELENGTH_FACTOR`
+# 1.60 / scale and `VORONOI_WAVELENGTH_FACTOR` 2.17 / scale.  Reading `1.0/scale`
+# instead — the obvious thing, and what an earlier census in this module's own
+# comments did — makes every Voronoi stage 2.17x too fine and every Noise stage
+# 1.6x too coarse, which is enough to move a stage two bands.
+# TWO KINDS OF STAGE, AND CONFLATING THEM IS HOW THE OLD STACK GOT TO m = 6.3.
+#
+#   "m"  — aimed at a radiance modulation. The amplitude is whatever the law says
+#          delivers it, and the gate holds the stage inside its band both ways.
+#   "mm" — bounded by the OBJECT, not by the light. Above about half a metre the
+#          law asks a wearing course for geometry it does not have: reaching
+#          `isotropic_macro` at 1.03 m needs 13.7 mm peak-to-peak, and a road that
+#          waved 14 mm every metre would be unraceable. These stages carry a
+#          physical amplitude, the gate holds them to a physical BOUND, and the
+#          modulation they deliver is reported rather than targeted.
+#
+# The thing worth noticing is that the two kinds AGREE wherever both apply. Every
+# "m" stage below comes out at an amplitude a wearing course really has —
+# 0.05 mm of grain, 1.16 mm of chip proud of the mortar, 2.9 mm of stone nest,
+# 4.2 mm of segregation, 9.1 mm of sawn joint — without any of those numbers
+# being chosen. The law and the object only diverge above 0.6 m, which is exactly
+# where the "mm" stages start.
+_RELIEF_PLAN = {
+    #  name          kind  target        lambda (m)      band / physical bound (mm)
+    "fine":         ("m",  0.40,         1.60 / 430.0,   "isotropic_micro"),
+    "aggregate":    ("m",  0.85,         2.17 / 56.0,    "isotropic_macro"),
+    "hard":         ("m",  2.40,         2.17 / 21.0,    "hard_feature"),
+    "nest":         ("m",  0.55,         2.17 / 14.5,    "isotropic_macro"),
+    "seg2":         ("m",  0.40,         1.60 / 5.33,    "isotropic_macro"),
+    "craze":        ("mm", 3.0,          2.17 / 3.30,    (1.0, 15.0)),
+    "waviness":     ("mm", 4.0,          1.60 / 1.55,    (0.5, 8.0)),
+}
+
+
+def _relief_table():
+    """{name: distance_m} straight out of `itemkit`'s law. Imported lazily so the
+    module still loads where `itemkit` is not on the path."""
+    if "relief" in _S:
+        return _S["relief"]
+    sys.path.insert(0, os.path.join(_ROOT, "world"))
+    import itemkit as K                                       # noqa: PLC0415
+    tab = {}
+    for nm, (kind, val, lam, _b) in _RELIEF_PLAN.items():
+        amp_mm = K.relief_amplitude_for(val, lam) if kind == "m" else float(val)
+        tab[nm] = amp_mm * 1e-3                                # mm -> m
+    _S["relief"] = tab
+    return tab
+
+
+class _ReliefLookup(dict):
+    """`_RELIEF["aggregate"]` without importing itemkit at module import time."""
+
+    def __missing__(self, k):
+        return _relief_table()[k]
+
+
+_RELIEF = _ReliefLookup()
+
 # --------------------------------------------------------------------------- state
 _S = {}          # module cache
 
@@ -171,20 +241,27 @@ def _load_telemetry():
     if not os.path.exists(TELEM_PATH):
         return None
     import csv
-    s, v, al, at = [], [], [], []
+    s, v, al, at, xs, ys = [], [], [], [], [], []
     with open(TELEM_PATH) as f:
         for r in csv.DictReader(f):
             s.append(float(r["s_m"]))
             v.append(float(r["speed_ms"]))
             al.append(float(r["accel_long_ms2"]))
             at.append(float(r["accel_lat_ms2"]))
+            # R2-1031: x/y are carried so `racing_line_telemetry_gate` can ask where
+            # the car actually IS, not only how hard it is working.  The usage fields
+            # only ever read the accelerations, which is exactly why the band could be
+            # five metres from the tyres that laid it and nothing noticed.
+            xs.append(float(r["x"]))
+            ys.append(float(r["y"]))
     s = np.asarray(s)
     off = 381.88
     m = s >= off
     st = s[m] - off
     keep = st <= LAP + 1e-6
     return dict(s=st[keep], v=np.asarray(v)[m][keep],
-                a_long=np.asarray(al)[m][keep], a_lat=np.abs(np.asarray(at)[m][keep]))
+                a_long=np.asarray(al)[m][keep], a_lat=np.abs(np.asarray(at)[m][keep]),
+                x=np.asarray(xs)[m][keep], y=np.asarray(ys)[m][keep])
 
 
 # ============================================================================
@@ -1734,6 +1811,124 @@ def _mat_asphalt():
                                   g.math("MULTIPLY", s, 0.30), 0.0),
                            1.0, detail=3.0, rough=0.5)
 
+    # ---- THE OCTAVES THE FILM ACTUALLY RESOLVES  (R2-1031) ----------------------
+    # MEASURED, NOT CHOSEN.  Over the 1 888 frames in which the road covers at
+    # least 2 % of the delivered frame, weighted by how much of the frame it
+    # covers (`render/r2651/track_scale.json`), the surface is sampled at
+    #
+    #     p25 10.8    p50 20.8    p75 108   mm of surface per 4K pixel
+    #
+    # A feature reads between roughly 2 and 30 px, so THE FILM'S OWN READABLE
+    # BAND ON THIS SURFACE IS ABOUT 40 mm TO 2 m.  The material's layer census
+    # against that band:
+    #
+    #     >= 2.9 m   macro2 139 m, cover 48 m, macro 33 m, snake 18 m,
+    #                patch 13 m, pour 9.5 m, dust 4.5 m, flush 2.9 m
+    #     40 mm-2 m  mott 0.65 m ... AND NOTHING ELSE
+    #     <= 48 mm   pluck 48, warp 42, agg0 30, agg 18, aggb 9, agg2 4.3,
+    #                grain 2.3, micro 0.6, bead 0.4
+    #
+    # Eleven layers above the band, nine below it, ONE inside it — carrying a
+    # 0.22 tint.  That is why `before_f2225.png` (21 mm/px) is a dead smooth
+    # cream ribbon and `before_f1547.png` (11.8 mm/px) is a uniform sandpaper
+    # stipple: at the first the aggregate is sub-pixel and nothing replaces it,
+    # at the second the aggregate is ALL there is and it has no structure.
+    #
+    # THE ATMOSPHERE DID NOT DO IT, and that had to be ruled out because R2-652
+    # found the last asphalt complaint belonged to the camera department.
+    # `tools/r21031_octave_contrast.py` on f2225, same frame, same depth:
+    #
+    #     kerb stripes (control)   0.017 / 0.021 / 0.034 / 0.054  rms per octave
+    #     ASPHALT                  0.011 / 0.012 / 0.016 / 0.019
+    #     runoff terrain           0.0023/ 0.0005/ 0.0003/ 0.0001
+    #     sky (null control)       0.0018/ 0.0004/ 0.0002/ 0.0001
+    #
+    # Contrast SURVIVES the haze at that range — the kerb carries 2.9x the
+    # road's at the 335 mm and 670 mm bands. The road is smooth because the
+    # material is smooth.
+    #
+    # FIVE DIFFERENT STRUCTURES, NOT FIVE DRAWS OF ONE NOISE.  Isotropic
+    # patches, a transverse ripple, a cell network, a cluster field and a
+    # longitudinal streak — five draws of one noise at five scales is the "one
+    # tree spammed a hundred times" failure moved to texture space, and it is
+    # also what a single tiling noise over 5 km of road looks like.
+    #
+    # AND THE MECHANISM THAT MAKES THEM SURVIVE DISTANCE is not their own
+    # relief — a real wearing course simply does not have 14 mm of geometry at
+    # 0.6 m, and the law's own numbers say it would need that to reach the
+    # `isotropic_macro` band (see the height section).  It is that they
+    # MODULATE THE AMPLITUDE OF THE AGGREGATE.  At 21 mm/px an 18 mm chip is
+    # sub-pixel, so what the pixel receives is the chip field's local MEAN; if
+    # the chip field's amplitude varies at 0.3 m, the delivered pixel varies at
+    # 0.3 m. That is how real tarmac reads from 100 m, and it is a
+    # texture-of-texture, which is also why it survives AgX where a flat albedo
+    # step does not (R2-654's 1.9 : 1 ceiling is a ceiling on LEVELS).
+
+    # (a) SEGREGATION, second scale.  A paver's auger starves and floods the mat
+    #     at about a fifth of a metre as well as at two thirds of one; the
+    #     coarse patches are chip-rich and pale, the fine ones mortar-rich.
+    seg2_f, _ = g.noise(g.scale(P, 5.33), 1.0, detail=5.0, rough=0.58)   # 0.30 m
+    seg2 = g.mr(seg2_f, 0.30, 0.76, 0.0, 1.0)
+
+    # (b) AGGREGATE NESTS.  In a graded mix the coarse stone does not sit on a
+    #     lattice, it bunches — stone-on-stone contact zones a few chips across
+    #     with mortar-rich ground between them.  This is the layer that turns an
+    #     even stipple into stones that are grouped, and an even stipple is
+    #     exactly what f1547 shows.
+    nest_v = g.voro(g.scale(P, 14.50), 1.0, "SMOOTH_F1", 1.0, 0.55)      # 0.15 m
+    nest = g.mr(nest_v.outputs["Distance"], 0.34, 0.06, 0.0, 1.0)
+
+    # (c) SCREED RIPPLE.  The paver's screed vibrates as it draws, and leaves a
+    #     faint TRANSVERSE corrugation at roughly a quarter-metre pitch — bars
+    #     across the road, repeating along it.  It is the only thing in this
+    #     material at this scale that runs across, and at a 12.47 deg sun a
+    #     sub-millimetre transverse bar is a visible shading feature down a
+    #     whole straight.  It dies out where the surface has been trafficked
+    #     smooth, so it is strongest OFF the racing line and in the old zones.
+    scr_f, _ = g.noise(g.comb(g.math("MULTIPLY", s, 3.60),
+                              g.math("MULTIPLY", u, 0.35), 0.0),
+                       1.0, detail=3.0, rough=0.45)                      # 0.44 m
+    screed = g.mr(scr_f, 0.22, 0.78, -1.0, 1.0)
+
+    # (d) RAVELLING / FRETTING.  Where the mortar has been stripped out the
+    #     coarse stone stands proud in patches half a metre across: paler
+    #     (fresh fracture faces, no binder film), rougher, and with MORE
+    #     aggregate relief, not less.  It collects where water sits, so it is
+    #     an off-line and near-edge feature and it needs age.
+    rav_v = g.voro(g.scale(P, 2.20), 1.0, "F1", 0.90)                    # 0.99 m
+    rav_id = g.sep(rav_v.outputs["Color"])[2]
+    ravel = g.math("MULTIPLY", g.mr(rav_id, 0.62, 0.70, 0.0, 1.0),
+                   g.mr(rav_v.outputs["Distance"], 0.34, 0.14, 0.0, 1.0))
+    ravel = g.math("MULTIPLY", ravel, g.mr(age, 0.30, 0.90, 0.10, 1.0))
+    # OFF-LINE, in units of the corridor's own width.  `ad` and `spread` are
+    # telemetry fields and exist here; the shaped band `rub` is built 300 lines
+    # later, so this is the only place the meso layers can be told where the
+    # cars are without duplicating the band.  Ravelling and screed marks are
+    # what SURVIVES outside the trafficked corridor — inside it the tyres
+    # knead the mortar back and polish the ripple flat.
+    offline = g.mr(ad, g.math("MULTIPLY", spread, 0.90),
+                   g.math("MULTIPLY", spread, 2.00), 0.0, 1.0)
+    g.tag("offline", offline)
+    ravel = g.math("MULTIPLY", ravel, g.mr(offline, 0.0, 1.0, 0.22, 1.0))
+    screed = g.math("MULTIPLY", screed, g.mr(offline, 0.0, 1.0, 0.40, 1.0))
+    g.tag("ravel", ravel)
+    g.tag("screed", screed)
+
+    # (e) CRAZING.  Fatigue cracking is a CELL NETWORK, not a snake: a mesh of
+    #     hairlines a third of a metre across, in the loaded parts of the
+    #     surface, in the old zones.  `snake` is the 18 m sealant line and is a
+    #     different object entirely — this is what is under it before anyone
+    #     brings a sealant lance.
+    craze_v = g.voro(g.scale(P, 3.30), 1.0, "F1", 1.0)                   # 0.66 m
+    craze = g.mr(craze_v.outputs["Distance"], 0.004, 0.030, 1.0, 0.0)
+    craze_cover, _ = g.noise(g.scale(P, 0.085), 1.0, detail=3.0, rough=0.55)
+    craze = g.math("MULTIPLY", craze, g.mr(craze_cover, 0.50, 0.72, 0.0, 1.0))
+    craze = g.math("MULTIPLY", craze, g.mr(age, 0.55, 0.95, 0.0, 1.0))
+    # fatigue needs load: it appears where the cars actually work the surface,
+    # which the telemetry already says (`rubber` is accel + brake + lateral).
+    craze = g.math("MULTIPLY", craze, g.mr(rubber, 0.45, 1.20, 0.20, 1.0))
+    g.tag("craze", craze)
+
     # -- resurfacing zones: age from the baked attribute, tint from the macro noise --
     # 0.42 of age swing here made the helicopter frame read as camouflage: at 33 m
     # the noise is exactly the scale of the road's own width.  0.16 keeps the zones
@@ -1813,6 +2008,19 @@ def _mat_asphalt():
                             g.mr(agg0.outputs["Distance"], 0.03, 0.26, 1.0, 0.0),
                             g.mr(g.sep(agg0.outputs["Color"])[0], 0.56, 0.76, 0.0, 1.45)))
     chip_hi = g.math("MULTIPLY", chip_hi, g.mr(segreg, 0.0, 1.0, 0.40, 1.0))
+    # THE AMPLITUDE FIELD — R2-1031, and the whole reason the meso layers above
+    # exist.  An 18 mm chip is sub-pixel over 89 % of the film's road pixels, so
+    # a pixel receives the chip field's local MEAN.  Modulating that mean at
+    # 0.16-0.45 m puts contrast into the octaves the camera resolves WITHOUT
+    # asking a wearing course to grow geometry it does not have.  Multiplied,
+    # not added, so the mean of the surface does not move and the resurfacing
+    # zones survive — the same reasoning that made the chip term multiplicative
+    # in the first place.
+    amp_field = g.math("ADD", 0.62, g.math("MULTIPLY", nest, 0.52))
+    amp_field = g.math("ADD", amp_field, g.math("MULTIPLY", seg2, 0.34))
+    amp_field = g.math("ADD", amp_field, g.math("MULTIPLY", ravel, 0.85))
+    g.tag("amp_field", amp_field)
+    chip_hi = g.math("MULTIPLY", chip_hi, amp_field)
     # polished stone under the driven line reflects instead of scattering
     chip_hi = g.math("MULTIPLY", chip_hi,
                      g.math("SUBTRACT", 1.0, g.math("MULTIPLY", polish, 0.40)))
@@ -1865,6 +2073,19 @@ def _mat_asphalt():
     base = g.vmulc(base, g.vmulc(chip_tint, g.grey(lum)))
     # the pluck socket floor is fresh, unweathered binder: darker and browner
     base = g.mixc(g.math("MULTIPLY", pluck, 0.62), base, g.rgb(0.0212, 0.0196, 0.0184))
+
+    # -- the meso octaves, in ALBEDO  (R2-1031) --------------------------------------
+    # Each one is a different colour move for a different physical reason, which is
+    # what stops four layers at neighbouring scales reading as one dirty noise.
+    #   segregation-2  chip-rich is paler and cooler (exposed stone), fine-rich warmer
+    #   ravelling      fresh fracture faces, no binder film -> distinctly paler
+    #   crazing        hairline cracks -> thin DARK lines, and they are lines
+    #   screed ripple  a tonal ripple only; its shading comes from the height stack
+    base = g.vmulc(base, g.grey(g.mr(seg2, 0.0, 1.0, 0.930, 1.075)))
+    base = g.mixc(g.math("MULTIPLY", ravel, 0.46), base, g.rgb(0.1180, 0.1128, 0.1035))
+    base = g.mixc(g.math("MULTIPLY", craze, 0.70), base, g.rgb(0.0258, 0.0248, 0.0244))
+    base = g.vmulc(base, g.grey(g.math("ADD", 1.0,
+                                       g.math("MULTIPLY", screed, 0.030))))
 
     # -- BINDER FLUSHING ("fatty" / bleeding patches) --------------------------------
     # Where the mat was laid rich or the traffic has kneaded it, bitumen rises and
@@ -1928,10 +2149,26 @@ def _mat_asphalt():
     #     first version had only these, at a 0.02-wide id window on 16 m cells - about
     #     four on the entire 3 675 m lap, which is why the plan view came back as an
     #     unbroken ribbon.  Widened to roughly one per 250 m.
-    patch_v = g.voro(g.scale(P, 0.075), 1.0, "F1", 0.85)
+    #     A REPAIR HAS AN EDGE, AND THAT IS THE WHOLE DIFFERENCE BETWEEN A REPAIR
+    #     AND A STAIN.  The first version ramped the cell distance 0.42 -> 0.30 on
+    #     a 13.3 m cell, i.e. a **1.6 m wide** feather all the way round, and what
+    #     that renders as is a soft pale cloud — which is precisely the "patches in
+    #     the land" the client rejected elsewhere, arriving here by the same
+    #     mechanism.  A planer leaves a cut you can put a straightedge against.
+    #     Two changes: the boundary is warped at 1.4 m so it is not a smooth
+    #     Voronoi arc (a planer works in passes and leaves a stepped outline), and
+    #     the feather is 0.13 m instead of 1.6 m, with a sealed lip round it like
+    #     the sawn patch already has.
+    pw_f, pw_c = g.noise(g.scale(P, 0.72), 1.0, detail=2.0, rough=0.45)
+    Pp = g.vadd(P, g.scale(g.vadd(pw_c, (-0.5, -0.5, -0.5)), 1.30))
+    patch_v = g.voro(g.scale(Pp, 0.075), 1.0, "F1", 0.85)
     pid = g.sep(patch_v.outputs["Color"])[2]
     milled = g.math("MULTIPLY", g.mr(pid, 0.858, 0.872, 0.0, 1.0),
-                    g.mr(patch_v.outputs["Distance"], 0.42, 0.30, 0.0, 1.0))
+                    g.mr(patch_v.outputs["Distance"], 0.420, 0.410, 0.0, 1.0))
+    # the planer's lip: a 40 mm bitumen-sealed line round the cut
+    milled_in = g.math("MULTIPLY", g.mr(pid, 0.858, 0.872, 0.0, 1.0),
+                       g.mr(patch_v.outputs["Distance"], 0.4170, 0.4140, 0.0, 1.0))
+    milled_lip = g.math("SUBTRACT", milled, milled_in, clamp=True)
     # (b) SAW-CUT PATCHES: a saw cuts straight lines, so these are rectangles in road
     #     space, not blobs.  A cell grid of 34 m x 4.4 m in (s, u) with a per-cell hash
     #     decides which cells carry one and how big and where inside the cell it sits;
@@ -1966,6 +2203,8 @@ def _mat_asphalt():
     patch_col = g.vmulc(patch_col, g.grey(g.math("ADD", 0.72,
                                                  g.math("MULTIPLY", chip_hi, 0.9))))
     base = g.mixc(g.math("MULTIPLY", patch, 0.88), base, patch_col)
+    kerf = g.math("MAXIMUM", kerf, milled_lip)
+    g.tag("kerf", kerf)
     base = g.mixc(g.math("MULTIPLY", kerf, 0.85), base, g.rgb(0.0221, 0.0212, 0.0206))
 
     # ================= paint ========================================================
@@ -2093,6 +2332,22 @@ def _mat_asphalt():
     rub = g.math("ADD", rub, g.math("MULTIPLY", g.math("MULTIPLY", trk_l, core), 0.16))
     rub = g.math("MULTIPLY", rub, g.mr(streak_f, 0.22, 0.80, 0.84, 1.08))
     rub = g.math("MULTIPLY", rub, g.mr(streak2_f, 0.25, 0.78, 0.90, 1.06))
+    # PICK-UP MOTTLE — R2-1031, and it is the only lever left on the racing line.
+    # R2-654 measured the delivered band at 1.62 : 1 against a ceiling of ~1.9 : 1
+    # imposed by AgX at this exposure, and concluded correctly that no amount of
+    # albedo buys a legible band.  That is a ceiling on LEVELS.  It is not a
+    # ceiling on TEXTURE: a rubbered surface is not a uniformly darker surface,
+    # it is a surface whose rubber lies in patches a quarter-metre across, and
+    # the eye reads the change of texture across the band's shoulder at
+    # distances where it can no longer read the change of tone.  The mottle is
+    # deliberately at the same 0.2-0.5 m scale as the meso layers it competes
+    # with, because that is the band the camera resolves.
+    pick_f, _ = g.noise(g.scale(P, 4.00), 1.0, detail=4.0, rough=0.55)   # 0.40 m
+    pick_g, _ = g.noise(g.scale(P, 1.35), 1.0, detail=3.0, rough=0.50)   # 1.19 m
+    pick = g.math("MULTIPLY", g.mr(pick_f, 0.24, 0.80, 0.72, 1.18),
+                  g.mr(pick_g, 0.30, 0.75, 0.86, 1.12))
+    g.tag("pick", pick)
+    rub = g.math("MULTIPLY", rub, pick)
     # LAUNCH RUBBER.  Twenty cars leave twenty pairs of black stripes off the grid and
     # they are the most recognisable marking on any pit straight - and the onboard
     # follow in beat 5 runs straight over them at 330 km/h.  Each slot lays its own,
@@ -2199,6 +2454,16 @@ def _mat_asphalt():
     rough = g.math("SUBTRACT", rough, g.math("MULTIPLY", fat, 0.30))
     rough = g.math("ADD", rough, g.math("MULTIPLY", pluck, 0.16))
     rough = g.math("ADD", rough, g.math("MULTIPLY", runnel, 0.07))
+    # -- the meso octaves, in ROUGHNESS  (R2-1031) -----------------------------------
+    # A ravelled patch has lost its binder film and is the roughest thing on the
+    # circuit; a crazed cell wall is a fracture face; and the 0.6 mm micro layer
+    # that used to be a bump stage lives HERE now — see the height section for
+    # why that is the physically correct place for it.
+    rough = g.math("ADD", rough, g.math("MULTIPLY", ravel, 0.19))
+    rough = g.math("ADD", rough, g.math("MULTIPLY", craze, 0.10))
+    rough = g.math("ADD", rough, g.math("MULTIPLY", seg2, 0.035))
+    rough = g.math("ADD", rough,
+                   g.math("MULTIPLY", g.mr(micro_f, 0.15, 0.85, -0.030, 0.030), 1.0))
     rough = g.math("MAXIMUM", g.math("MINIMUM", rough, 0.97), 0.24)
 
     # ANISOTROPY.  Tyres polish stone ALONG the direction of travel, so a racing line is
@@ -2223,7 +2488,6 @@ def _mat_asphalt():
     h_meso = g.math("MULTIPLY", chip_hi, 0.62)
     h_meso = g.math("ADD", h_meso,
                     g.math("MULTIPLY", g.mr(agg2.outputs["Distance"], 0.0, 0.3, 0.0, 1.0), 0.28))
-    h_meso = g.math("ADD", h_meso, g.math("MULTIPLY", grain_f, 0.30))
     # Rubber FILLS the mortar, it does not plane the stones off.  Suppressing 55 % of
     # the meso relief under the band left the racing line with no aggregate at all —
     # measured 0.141 rms contrast at the 18 mm scale against 0.222 on the clean tarmac
@@ -2231,31 +2495,128 @@ def _mat_asphalt():
     # frame.  0.28 keeps the stone and still reads as filled.
     h_meso = g.math("MULTIPLY", h_meso,
                     g.math("SUBTRACT", 1.0, g.math("MULTIPLY", rub, 0.28)))
-    h_meso = g.math("SUBTRACT", h_meso, g.math("MULTIPLY", joints, 0.85))
+    # Joints, the kerf, the planer lip and the pluck sockets have LEFT this stage —
+    # they are edges and they now have their own budgeted stage, `h_hard`.  Riding a
+    # 30 mm-wide sealed groove on the aggregate's amplitude meant one of the two had
+    # to be wrong, and both were.
     h_meso = g.math("ADD", h_meso, g.math("MULTIPLY", patch, 0.30))
-    h_meso = g.math("SUBTRACT", h_meso, g.math("MULTIPLY", snake, 0.20))
     h_meso = g.math("ADD", h_meso, g.math("MULTIPLY", paint_a, 0.42))
-    # a pluck-out is a HOLE — the one negative feature in the height field that is not a
-    # cut line, and the reason the rake frame reads as a surface rather than a print
-    h_meso = g.math("SUBTRACT", h_meso, g.math("MULTIPLY", pluck, 1.45))
     # flushed binder has drowned the stone, so the meso relief goes away with it
     h_meso = g.math("MULTIPLY", h_meso,
                     g.math("SUBTRACT", 1.0, g.math("MULTIPLY", fat, 0.62)))
     h_meso = g.math("SUBTRACT", h_meso, g.math("MULTIPLY", runnel, 0.22))
+    h_meso = g.math("ADD", h_meso, g.math("MULTIPLY", ravel, 0.40))
 
-    # The two finest bump layers are deliberately weak.  A 0.6 mm and a 2.3 mm normal
-    # perturbation is far below the ray footprint at any distance past about 8 m, so
-    # past that they are pure noise: Cycles samples them at random within the pixel,
-    # the denoiser smears the result into swirls, and the whole road reads as marbled
-    # paper from the helicopter arc - which is exactly what the first version of this
-    # frame came back as.  Keep them for the macro station, keep them quiet.
-    nrm = g.bump(micro_f, strength=0.42, distance=0.00035)
-    nrm = g.bump(g.math("ADD", g.math("MULTIPLY", grain_f, 0.6),
-                        g.math("MULTIPLY", g.mr(agg2.outputs["Distance"], 0.0, 0.3, 0.0, 1.0),
-                               0.4)),
-                 strength=0.58, distance=0.0013, normal=nrm)
-    nrm = g.bump(h_meso, strength=1.0, distance=0.0055, normal=nrm)
-    nrm = g.bump(mott_f, strength=0.40, distance=0.0035, normal=nrm)
+    # ONE STAGE, ONE WAVELENGTH, AND THE ARGUMENT ORDER IS LOAD-BEARING.
+    # `bump_relief_report` walks back from Height depth-first, LAST INPUT FIRST,
+    # and stops at the first procedural texture it meets. Every modulation above
+    # (rubber, flush, runnel, ravel, patch) has a texture of its own behind it, so
+    # whichever branch the walk enters first is the wavelength the whole stage
+    # gets audited at. The first cut of this reached the 18.8 m crazing-coverage
+    # noise and reported the aggregate stage at m = 0.0018 — a 470x error, in the
+    # direction that makes a HIGH stage look dead.
+    #
+    # So the final operation on every audited Height puts the stage's OWN texture
+    # in argument 1. This is a coupling to another module's traversal order and it
+    # is not defensible on its own; what makes it safe is that `relief_gate`
+    # refuses any stage whose read-back wavelength is not in `_RELIEF_PLAN`. If
+    # itemkit ever changes the walk, the gate FAILS rather than quietly auditing
+    # the wrong octave.
+    h_meso = g.math("MULTIPLY", h_meso,
+                    g.mr(agg.outputs["Distance"], 0.0, 0.62, 1.02, 0.98))
+
+    # ---------------------------------------------------------------- THE BUDGET
+    # R2-1031.  The previous stack was not disconnected — every stage was wired,
+    # every socket fed by name — and it was still wrong in exactly the way a dead
+    # bump stack is wrong, because ALL OF ITS RELIEF WAS SPENT WHERE THE CAMERA
+    # CANNOT SEE IT.  `itemkit.relief_budget` on what shipped, at the film's own
+    # 12.471 deg sun, conservative height_pp = 1.0:
+    #
+    #     micro   0.62 mm   amp 0.147 mm   slope 36.5 deg   m 5.374   HIGH
+    #     grain   2.33 mm   amp 0.754 mm   slope 45.5 deg   m 6.453   HIGH
+    #     h_meso 17.86 mm   amp 5.500 mm   slope 44.1 deg   m 6.289   HIGH
+    #     mott     645 mm   amp 1.400 mm   slope  0.4 deg   m 0.062   LOW
+    #
+    # against `RELIEF_BANDS["isotropic_macro"]` = 0.35-0.95.  The three layers the
+    # film cannot resolve run 4x to 18x OVER the accepted modulation, and the one
+    # layer in the octave it CAN resolve runs 6x to 26x UNDER it.  A 44-degree mean
+    # slope at 18 mm is not aggregate, it is sandpaper, and sandpaper is what
+    # `before_f1547.png` shows at 1:1.  The budget is now:
+    #
+    #     fines    4.25 mm   m 0.40   amp 0.0600 mm   (isotropic_micro 0.12-0.45)
+    #     aggregate 17.9 mm  m 0.85   amp 0.5366 mm   (isotropic_macro 0.35-0.95)
+    #     hard     60.0 mm   m 2.40   amp 5.2570 mm   (hard_feature 1.50-6.00)
+    #     meso    160-645 mm          amp 0.8-4.0 mm  (below the band, on purpose)
+    #
+    # THE 0.6 mm STAGE IS GONE, AND NOT BECAUSE IT WAS TOO STRONG.  Below the ray
+    # footprint a normal perturbation is not geometry, it is a BRDF: Cycles samples
+    # it at random inside the pixel and the denoiser turns the variance into
+    # swirls.  The physically correct home for sub-footprint texture is roughness,
+    # and that is where it went (see the roughness section).  0.6 mm is under the
+    # footprint at every station in this film except the closest, where it was
+    # generating m = 5.4.
+    #
+    # AND THE MESO STAGES ARE DELIBERATELY BELOW THE BAND.  `relief_amplitude_for`
+    # says reaching m = 0.60 at 645 mm needs 13.7 mm of peak-to-peak relief, and at
+    # 450 mm reaching the `sparse_crease` band needs 17.6 mm.  A wearing course does
+    # not have 14 mm of geometry at half a metre and building it would be a lie
+    # about the object.  What these octaves deliver instead is `amp_field` — they
+    # modulate the AMPLITUDE of the sub-pixel aggregate, which moves the delivered
+    # pixel without moving the surface.  The relief they do carry is quoted
+    # honestly: 8-25 % peak-to-peak radiance, which against a measured delivered
+    # road contrast of 0.019 rms is not a rounding error.
+    #
+    # HARD FEATURES GOT THEIR OWN STAGE.  Joints, the saw kerf, the planer lip and
+    # a pluck socket are EDGES — `hard_feature`, 1.50-6.00 — and riding them on the
+    # aggregate's 0.54 mm meant either the stone was sandpaper or the joints were
+    # invisible.  They are now budgeted at their own wavelength, which is the width
+    # of the cut and not the spacing of the cuts.
+    # SIGNED, because these are not all cuts.  A sawn joint, a planer lip and a
+    # pluck socket go DOWN; a crack-sealant snake is a bead of bitumen lapped
+    # OVER the crack and stands proud, which is why it glints.  One signed field
+    # keeps them on one stage at one budgeted amplitude.
+    h_hard = g.math("ADD", g.math("MULTIPLY", joints, 1.00),
+                    g.math("MULTIPLY", kerf, 0.85))
+    h_hard = g.math("ADD", h_hard, g.math("MULTIPLY", pluck, 1.10))
+    h_hard = g.math("SUBTRACT", g.math("MULTIPLY", snake, 0.45), h_hard)
+    # ... and the same argument-order rule: the pluck Voronoi (103 mm) is the
+    # wavelength this stage is budgeted at, so it goes last.
+    h_hard = g.math("MULTIPLY", h_hard,
+                    g.mr(pluck_v.outputs["Distance"], 0.0, 0.5, 1.02, 0.98))
+    g.tag("h_hard", h_hard)
+    # ONE TEXTURE PER STAGE WHERE THE AUDIT HAS TO READ A WAVELENGTH.  `h_fine`
+    # used to mix `grain` (3.7 mm) and `agg2` (9.2 mm) into one Height, and
+    # `bump_relief_report` walks back to the NEAREST texture — so which of the
+    # two it reported depended on the order the DFS happened to pop the ADD's
+    # inputs, and the stage's audited modulation changed by a factor of 2.5 with
+    # it. The 9.2 mm fines now ride `h_meso`, whose driver is the chip field they
+    # belong to, and `h_fine` is grain alone.
+    h_fine = g.math("MULTIPLY", grain_f, 1.0)
+    # the screed ripple rides the segregation stage. Its own coordinate is built
+    # in a CombineXYZ from two Math nodes, so `_vector_gain` cannot see the 3.60
+    # and reads its wavelength as 1.6 m instead of 0.44 m — itemkit's own
+    # documented trap, from the other side. Audited at seg2's 0.30 m, which is the
+    # branch the walk enters, and stated here rather than left to be discovered.
+    h_seg = g.math("ADD", g.math("MULTIPLY", screed, 0.45),
+                   g.math("SUBTRACT", seg2, 0.5))
+
+    # Distances are `itemkit.relief_amplitude_for` outputs, in metres, at the
+    # film's own sun.  Strength is 1.0 on every stage so that Distance IS the
+    # amplitude and `bump_relief_report` reads back what was intended — a
+    # strength/distance pair that multiply to the right number but read wrong
+    # individually is how a budget stops being auditable.
+    nrm = g.bump(h_fine, strength=1.0, distance=_RELIEF["fine"])
+    nrm = g.bump(h_meso, strength=1.0, distance=_RELIEF["aggregate"], normal=nrm)
+    nrm = g.bump(h_hard, strength=1.0, distance=_RELIEF["hard"], normal=nrm)
+    nrm = g.bump(nest, strength=1.0, distance=_RELIEF["nest"], normal=nrm)
+    nrm = g.bump(h_seg, strength=1.0, distance=_RELIEF["seg2"], normal=nrm)
+    # crazing goes DOWN (it is a crack), and the argument-order rule applies here
+    # too — without the trailing term the walk reaches `craze_cover`'s 18.8 m
+    # coverage noise and audits a 0.66 m cell network as a 19 m one.
+    h_craze = g.math("MULTIPLY", craze,
+                     g.mr(craze_v.outputs["Distance"], 0.0, 0.5, 1.02, 0.98))
+    nrm = g.bump(h_craze, strength=1.0, distance=-_RELIEF["craze"], normal=nrm)
+    nrm = g.bump(mott_f, strength=1.0, distance=_RELIEF["waviness"], normal=nrm)
 
     bsdf = g.n("ShaderNodeBsdfPrincipled")
     g.set(bsdf.inputs["Base Color"], base)
@@ -3226,6 +3587,139 @@ def verify(quiet=False, n_samples=200000, seed=20260728):
 
 
 # ============================================================================
+# 23b. THE TWO GATES THIS MODULE DID NOT HAVE  (R2-1031)
+# ============================================================================
+def relief_gate(quiet=False):
+    """Read the BUILT asphalt graph back through `itemkit`'s physical law.
+
+    THE POINT IS THAT IT READS THE GRAPH, NOT THE PLAN.  `_RELIEF_PLAN` and
+    `relief_amplitude_for` are the same function evaluated twice; comparing them
+    is an identity and cannot fail.  This walks every `ShaderNodeBump` that
+    actually exists in `SURF_Asphalt` after `build()`, takes the wavelength from
+    whatever texture is really upstream of its Height socket, and asks what the
+    stage does to the light at the film's own sun.
+
+    It fails on THREE things, and the first two are the ones that shipped:
+
+      * a stage whose Height socket is not linked at all — the 122-stage dead
+        bump stack, which is what this project has already paid for once;
+      * a stage whose modulation is outside the band it was aimed at, ON EITHER
+        SIDE.  The shipped material was 4x-18x over on its three finest layers
+        and 6x-26x under on the only layer the camera could resolve, and no gate
+        anywhere could see either;
+      * a stage whose Height is driven by another Bump, which means the height
+        signal and the normal chain have been crossed.
+    """
+    sys.path.insert(0, os.path.join(_ROOT, "world"))
+    import itemkit as K                                        # noqa: PLC0415
+    mat = bpy.data.materials.get(MPFX + "Asphalt")
+    if mat is None:
+        raise RuntimeError("relief_gate: SURF_Asphalt does not exist — build() first")
+    rows = K.bump_relief_report(mat.node_tree)
+    bad = []
+    if not quiet:
+        print("\n=== asphalt relief budget, read back off the built graph ===")
+    for row in rows:
+        # WHICH PLANNED STAGE IS THIS?  Matched on the wavelength the auditor
+        # actually read, never on node order — and if no plan entry matches, the
+        # stage is UNPLANNED and the gate FAILS.  That is deliberate: it is the
+        # clause that protects the material against `bump_relief_report`'s
+        # depth-first walk finding a different texture than the one the stage was
+        # budgeted for.  It has already fired once, on an aggregate stage whose
+        # Height reached the 18.8 m crazing-coverage noise before it reached the
+        # 38.8 mm aggregate it was supposed to be measuring.
+        plan = None
+        for nm, (kind, val, lam, bd) in _RELIEF_PLAN.items():
+            if row["wavelength_m"] and abs(row["wavelength_m"] - lam) / lam < 0.02:
+                plan = (nm, kind, val, bd)
+                break
+        verdict, band = "?", "-"
+        if row["height_unlinked"]:
+            verdict = "DEAD"
+        elif row["height_driven_by_a_bump"]:
+            verdict = "CROSSED"
+        elif row["m"] is None:
+            verdict = "NO-LAMBDA"
+        elif plan is None:
+            verdict = "UNPLANNED"
+        elif plan[1] == "m":
+            band = plan[3]
+            lo, hi = K.RELIEF_BANDS[band]
+            # MAGNITUDE. A negative Distance is how a bump is inverted — a crack
+            # and a pluck socket go DOWN — and the budget is about how much the
+            # surface bends the light, not which way.
+            mm = abs(row["m"])
+            verdict = "LOW" if mm < lo else "HIGH" if mm > hi else "ok"
+        else:
+            lo, hi = plan[3]
+            band = "physical %.1f-%.1f mm" % (lo, hi)
+            amp = abs(row["amp_mm"])
+            verdict = "THIN" if amp < lo else "THICK" if amp > hi else "ok"
+        if verdict != "ok":
+            bad.append((row["node"], verdict, row["m"], row["wavelength_m"]))
+        if not quiet:
+            print("  %-10s %-12s lam %8.2f mm  amp %7.4f mm  m %7.4f  %-22s %s"
+                  % (row["node"], plan[0] if plan else "-",
+                     (row["wavelength_m"] or 0.0) * 1000.0, row["amp_mm"],
+                     row["m"] if row["m"] is not None else float("nan"),
+                     band, verdict))
+    ok = not bad
+    print(">> STAGE RESULT: asphalt_relief_budget %s  (%d stages, %d out of band)"
+          % ("PASS" if ok else "FAIL", len(rows), len(bad)))
+    for nm, v, m, lam in bad:
+        print("   %-16s %-10s m=%s lambda=%s" % (nm, v, m, lam))
+    return {"stages": rows, "bad": bad, "pass": ok}
+
+
+def racing_line_telemetry_gate(quiet=False):
+    """Does the rubber sit where the car actually drives?  R2-651, re-armed.
+
+    R2-651 measured the shipped band a median **4.955 m** from the driven line
+    on a road whose half width is 7-8 m, routed the repair to whoever owns
+    `telemetry.csv`, and there it stopped — with nothing anywhere that would
+    notice if it regressed, or notice if it were fixed.  This is that check.
+
+    IT IS DELIBERATELY NOT A FIX.  Moving the rubber to the telemetry's own
+    lateral offset would paint a straight band down the middle of every corner,
+    and re-solving the telemetry moves picture against sound in a film with no
+    cuts.  Both repairs belong to other owners.  What this module can honestly
+    do is refuse to be silent about it.
+    """
+    prepare()
+    tel = _load_telemetry()
+    if tel is None or "x" not in tel:
+        print(">> STAGE RESULT: racing_line_vs_telemetry SKIP (no telemetry x/y)")
+        return None
+    s_t, u_t = C.project(np.asarray(tel["x"]), np.asarray(tel["y"]))
+    # only where the car is on the circuit at all: the transit crosses the paddock
+    on = np.abs(u_t) <= C.half_width(s_t) + 3.0
+    s_t, u_t = s_t[on], u_t[on]
+    u_line = racing_line_offset(s_t)
+    err = np.abs(u_t - u_line)
+    r = {"n": int(err.size),
+         "car_u_abs_p50": float(np.percentile(np.abs(u_t), 50)),
+         "line_u_abs_p50": float(np.percentile(np.abs(u_line), 50)),
+         "disagreement_p50_m": float(np.percentile(err, 50)),
+         "disagreement_p90_m": float(np.percentile(err, 90)),
+         "disagreement_max_m": float(err.max())}
+    # THE BAR.  The band's heart is 0.55 x spread wide per side, and `spread` runs
+    # 1.05-3.90 m, so the narrowest heart is +-0.58 m.  If the car is further from
+    # the painted line than the heart is wide, the tyres are not on the rubber they
+    # are supposed to have laid — which is the whole claim.
+    bar = 0.55 * float(np.min(_S["spread"]))
+    r["bar_m"] = bar
+    r["pass"] = bool(r["disagreement_p50_m"] <= bar)
+    if not quiet:
+        print("\n=== racing line vs telemetry ===")
+        for k in sorted(r):
+            print("  %-26s %s" % (k, r[k]))
+    print(">> STAGE RESULT: racing_line_vs_telemetry %s  "
+          "(p50 %.3f m against a %.3f m bar; owner = telemetry, task #19)"
+          % ("PASS" if r["pass"] else "FAIL", r["disagreement_p50_m"], bar))
+    return r
+
+
+# ============================================================================
 # 24. TEST RENDER HARNESS
 # ============================================================================
 _SHOT_NOTES = {
@@ -4101,6 +4595,10 @@ def main():
     print("\n=== world_contract conformance (v%s) ===" % C.__version__)
     for k in sorted(s["contract"]):
         print("  %-42s %s" % (k, s["contract"][k]))
+    # R2-1031: two gates that run on every build, because both defects they exist
+    # for shipped in a module that already had a conformance report.
+    relief_gate()
+    racing_line_telemetry_gate()
     if "--verify" in argv:
         import json as _json
         os.makedirs(RENDER_DIR, exist_ok=True)
