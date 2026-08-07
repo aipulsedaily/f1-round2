@@ -36333,3 +36333,54 @@ passes, the frame is technically clean, and no measurement would flag either
 image. **This is the difference between correct and good**, and it is the second
 time on this project the client has had to be the instrument for it - the first
 was *"okay kinda cute"*, which was also right.
+
+## R2-1144 — "SLEEPY 4 SECONDS IN": the camera moves at constant velocity, and the novelty curve goes flat at exactly four seconds
+
+The client: *"the camera angle overall is just too slow, not fast high attention
+paced, i get sleepy 4 seconds in."*
+
+**The obvious explanation is refuted.** The first four seconds carry **1.11x MORE
+frame-to-frame image change** than the rest of beat 1 (29.35 against 26.34
+levels). **The opening is not moving less.**
+
+**Two measurements say what is actually wrong:**
+
+```
+FIRST 6 SECONDS, every frame
+  mean change      16.52 levels
+  |acceleration|    0.898  =  5.4 % OF THE MEAN CHANGE
+
+NOVELTY  (each frame against the frame one second earlier)
+  0-1 s   48.50 levels
+  1-2 s   48.48
+  2-3 s   37.36     <- -23 %
+  3-4 s   35.66
+  4-5 s   36.09     <- flat from here
+```
+
+**1. The motion is near-constant-velocity.** The rate of change barely changes -
+acceleration is **5.4 %** of the movement itself. **A steady drift is hypnotic
+regardless of its magnitude.** It is the visual equivalent of a held note.
+
+**2. The novelty curve decays 26 % over the first three seconds and then goes
+flat** - and **the client reports going sleepy at exactly the frame it
+flattens.** After ~3 s, each second brings the same modest quantity of new
+information as the one before it, forever.
+
+**The lesson generalises past this beat, and it corrects a fix I already
+shipped.** R2-831 measured the *amount* of image change, found an inverted
+energy curve, and moved it - payoff 0.24 -> 0.59 of the tour. **That fix was
+correct and it did not address this**, because **image change is not attention.**
+
+> **The magnitude of motion was never the variable. Its DERIVATIVE is.**
+
+This is the same shape as the tyre mark two hours ago - **amplitude was never the
+variable, spatial frequency was** - and the same shape as the road's twenty
+layers authored outside the resolvable band. **Three times today, the quantity
+being optimised was one derivative away from the quantity being perceived.**
+
+**And the constraint makes the answer specific.** This film is **one continuous
+take with zero cuts** - so attention cannot be bought with editing. In a one-shot
+it comes from **acceleration, direction change, and new information entering
+frame**, not from more movement. **The camera currently has almost none of the
+first two, and the third is decaying.**
