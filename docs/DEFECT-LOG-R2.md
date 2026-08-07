@@ -36449,3 +36449,76 @@ changes, **but something in the film assembly is bringing in a second copy of
 part of the car, and that may mean duplicate geometry in the shot.**
 
 Total spend this pass: **$0.14.**
+
+## R2-1147 — THE TYRE-MARK FIX DOES NOT WORK, AND MY CORRECTION WAS WRONG THE SAME WAY THE ORIGINAL WAS
+
+Matched A/B at f981 - one blend, one process, one camera, one sun, one seed,
+three link states of a single material:
+
+```
+A  existing paint      mean -2.28 %   lateral gradient p99.5  0.324 %/mm   379 mm
+B  deposit, N=60       mean -0.20 %                           0.319 %/mm   119 mm
+C  the concrete ITSELF      sd 7.21 %                         4.272 %/mm
+```
+
+**The edge advantage is not there** - 0.324 against 0.319, against a
+synthetic-gate claim of **6.6x**. **B is invisible at 1:1** and reads about a
+third as much as the thing it replaces.
+
+**And the reason is structural: the concrete's own lateral gradient is 13x
+either mark.** The substrate already has more edge than the mark does. **No mark
+of this kind can win on edge contrast on this surface.**
+
+**So my own correction was wrong.** I replaced *"the mark is too weak"* with
+*"the mark has no edge"* and treated that as the answer. **It was right that
+amplitude was not the variable and wrong about what is** - and it was wrong for
+a reason that had been sitting in plain sight:
+
+> **Every measurement in this block, mine and the module's, was taken ACROSS
+> the mark. Nobody measured ALONG it.**
+
+The concrete's mottle is **isotropic**. A real skid mark reads because it is
+**anisotropic and unbroken over tens of metres.** **Longitudinal coherence, not
+lateral sharpness.** That hypothesis is **untested**, and it is now the most
+valuable thing in the block - because if it is right, **none of the numbers on
+either side of this argument are measuring the quantity that decides it.**
+
+**A correction inherits the axis of the thing it corrects.** I moved from
+amplitude to gradient and stayed on the same cross-section, which is exactly how
+a second wrong answer looks like progress.
+
+What the module *does* deliver is **containment**: B is bounded at |y|
+670-930 mm where A sprawls 350 -> 970+ mm with no boundary. **A correctness win,
+not a visibility one**, and it should be reported as such.
+
+Two limits stated rather than buried: **f981 is the least favourable of the four
+frames**, and **the launch patches were never in frame** - 31 m behind the car -
+so this tests **only the tractive film.** The deck's +23.2 % remains untested by
+any render.
+
+## R2-1148 — "QUEUE POLITELY" IS NOT ENFORCEMENT: an exec render killed another agent's job, terminally
+
+Rendering on **GPU** from `rq exec` put a **second 8 GB film on the same 32 GB
+card** as a warm worker. Another agent's job **died twice with CUDA OOM - the
+second time terminally.** Cancelling fixed it within seconds and the re-run was
+CPU-only.
+
+**I have written "queue politely" into most briefs today, and it failed exactly
+as an honour system fails.** The agent followed the instruction and collided
+anyway.
+
+> **`rq exec` should refuse `cycles.device = GPU` while the render worker holds
+> a scene.** Nothing enforces the CPU-only assumption the exec server is built
+> around.
+
+**And the guard that should have caught it was not deployed:** broker 1 was
+running code **older than its own fix** and staged to the legacy path, so
+`SceneStagingMismatch` **never fired.** A fix in the tree and not on the box is a
+fix that does not exist.
+
+This is the fourth member of one family today - `pkill -f` matching everything
+present, `rq cancel` sweeping four jobs from three owners, a kill entering a
+six-deep process chain at the middle, and now an exec claiming a GPU another
+process is using. **Every one is an operation whose default scope is "whatever
+is there" rather than "what is mine", and every one was met with a warning
+rather than a mechanism.**
