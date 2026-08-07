@@ -13,6 +13,48 @@ telemetry, and the world's own geometry.
 
 ---
 
+## THE ANSWER TO #125, IN ONE PLACE
+
+The dispatched question was *"the car is at one third its usual on-screen size
+for 8.04 seconds."* Three sub-questions, answered directly:
+
+**1. Is the 1/3 figure an artefact of the stale `world/camera_rig_path.json`?**
+**No.** Over f2035-2227 every camera file in the project is identical — the
+stale rig path, `film14_path.json` (which is `lap_shotscale.py`'s own default),
+`film16_path.json` and the live `film17_path.json` all agree to **dp 0.00e+00 m,
+dlens 0.00e+00 mm**, and to 1.0e-06 in quaternion, which is R2-103's 6-decimal
+storage floor. The staleness is confined to beat 1 (f2-f780). **It cannot have
+produced this number.** The figure is real.
+
+**2. What is the car's on-screen size across the 8.04 s, with the fix in place?**
+**Essentially unchanged. The fix does not address size and was never going to.**
+
+| | median | min | max | px at 4K |
+|---|---:|---:|---:|---:|
+| shipped | 4.24 % | 2.96 % | 5.74 % | 163 |
+| **with the R2-1004 candidate** | **4.27 %** | 2.96 % | 5.94 % | **164** |
+
+(beat-5 median 12.92 %, so "one third" = 4.31 % — the figure is accurate.)
+Split at the fix's own edge: f2035-2130 **3.58 % -> 3.58 %** (outside its
+support), f2131-2224 **4.75 % -> 5.29 %** (+11.4 %), f2225-2227 **4.97 % ->
+4.97 %**. Ninety-seven of the 193 frames lie outside the edit, and inside it the
+camera moves 21 m sideways against a 137-187 m subject distance. **+0.8 % overall.
+This is not a size fix and must not be filed as one.**
+
+**3. Does the film have a subject during those 8.04 seconds?**
+**Yes for 7.54 s of it, and no for 0.50 s** — and the 0.50 s is not the small-car
+problem, it is an occlusion. See R2-1001 (measured at 4K, 1:1: at the span's
+smallest subject the car is a fully resolved F1 car with a readable rear-wing
+endplate and the driver's visor) and R2-1002 (f2180-2191, the car wholly hidden
+behind the bridge, no car anywhere in the frame). **The premise is refuted; the
+defect underneath it is real and is fixed by R2-1004.**
+
+The size, therefore, is a **taste** question and not a defect one, and R2-1003
+prices the lever for anyone who later disagrees: a closer camera is reachable at
+3.65 g, which is inside the craft envelope and below the shipped path's own peak.
+
+---
+
 ## R2-1001 — the 8.04 s "one third size" defect is real as a NUMBER and false as a PICTURE. At 4K the car is a fully resolved F1 car at the span's worst frame
 
 **MEASURED ON FRAMES.** `out2/seq/b5verdict_4k`, 6 frames, 3840x2160, 512

@@ -28363,3 +28363,73 @@ and the 1.49 m of clearance it gives up buys **proximity** - the currency this
 film is repeatedly short of. The largest defect found in this project is the car
 ceasing to be a subject; a high outboard pass is the shape of that problem, not
 its solution.
+
+## R2-1046 — #125's premise REFUTED: the car is legible for 7.54 of the 8.04 seconds, and the fix I authorised is not a size fix
+
+I dispatched beat 5 as *"the car is at one third its usual size for 8.04
+seconds"* and told the client it was **probably the same no-subject defect as
+the ending**. Measured, it is not.
+
+**The film has a subject for 7.54 s and loses it for 0.50 s.** The 7.54 s is
+legible at 4K - the premise is refuted. The 0.50 s is **occlusion**, which
+R2-1004 already fixes. Beat 5's size is therefore a **taste** question, not a
+defect one.
+
+**And the candidate I approved does not change it:**
+
+```
+             median    min     px @4K
+shipped       4.24 %   2.96 %    163
+candidate     4.27 %   2.96 %    164     <- +0.8 %
+```
+
+**97 of the 193 frames lie outside the edit entirely**, and inside it the camera
+moves 21 m sideways against a subject 137-187 m away. Within its own support the
+gain is +11.4 % (4.75 % -> 5.29 %); across the beat it is noise. **It must not be
+filed as a size fix**, and the agent said so unprompted while its own change was
+being praised for something else.
+
+**The check that mattered was the one on my own suspicion.** I had suggested the
+1/3 figure might itself be an artefact of the stale rig path (R2-1044). It is
+not: over f2035-2227 the stale `camera_rig_path.json`, `film14_path.json`,
+`film16` and the live `film17` **all agree to dp 0.00e+00 m and dlens
+0.00e+00 mm.** The staleness is confined to beat 1. **A convenient explanation
+for an inconvenient number is exactly the thing to test first**, and this one
+died on contact.
+
+The lever remains priced if the taste call ever changes: a closer camera is
+reachable at **3.65 g**, inside the envelope and below the shipped path's own
+peak (R2-1003).
+
+## R2-1047 — the broker cannot leave a modified blend on a worker, so a $0.17 render costs 45 minutes of transfer
+
+Discovered while queueing six frames. Exec `tmp/` is **wiped when the child
+exits**, and linked scenes are **refused at submit** - they caused the
+silent-empty-render defect, R2-351. The only sanctioned route is `--output`.
+
+So modifying an 8 GB film blend on the farm means: **8 GB down (~14 min at
+8.5 MB/s), then 8 GB back up (~30 min at the 4-5 MB/s uplink).** About **45
+minutes of transfer for $0.17 of pixels.**
+
+Nothing is broken - each piece is behaving as designed, and the refusal of
+linked scenes is a fix, not a flaw. **But "cheap render" and "cheap round trip"
+are different quantities, and the pipeline only prices the first.** Any plan
+that assumes an in-place edit on the worker is mispriced by roughly an hour per
+iteration, and this has not been costed anywhere before now.
+
+## R2-1048 — a null control that must come back pixel-identical, and a guard against a re-key that succeeds while moving nothing
+
+The B-side set is f2160/2175/2185/2190/2200 in-window **plus f2225 as a null
+control** - outside the edit window, so it must return **pixel-identical** to
+the A-side. If it does not, the re-key leaked and the entire render is void.
+
+The re-key script rejects its own job if in-window frames don't match the
+candidate, if anything outside f2131-2224 moved, **or if the maximum
+displacement isn't the expected 21.360 m.**
+
+That third condition is the good one. **It catches a re-key that "succeeds"
+while moving nothing** - which is precisely how a wasted 8 GB round trip
+disguises itself as a result, and precisely the failure mode this project has
+found more often than any other: an operation that reports success because
+nothing objected. A guard on *presence* of the expected change, not merely
+absence of unexpected ones.
