@@ -603,3 +603,74 @@ the *current* shipped sheet:
 and the old beat 1. Beat 1 does not affect f2715–2978, and f2978 is unchanged,
 so it remains valid for judging the *gesture* and the 4K stills; it does not
 carry the R2-859 wobble fix. Not worth re-queueing on its own.
+
+---
+
+## R2-862 — WATCHED. The candidate fixes the geometry and does NOT fix the ending.
+
+264 frames at 720p (`watch/R2851_ending_CANDIDATE.mp4`) against the shipped arm,
+plus the 4K stills at 1:1. **MEASURED ON FRAMES**, not on the path.
+
+**What it fixes, and these hold up on screen:** the whip is gone, the pull-back
+reads as one continuous gesture, the hold breathes instead of freezing, and the
+frame at f2860 is circuit and treeline rather than 58 % bare mown-looking field.
+Against the shipped arm it is better in every respect the client complained about.
+
+**What it does not fix.** At 1:1 on the 4K final frame the car is dead centre and
+is **a grey-blue smudge on the run-off, of a piece with the tyre-wall shadow and
+the gravel behind it.** The frame is a handsome, layered, correctly-hazed aerial
+of a circuit corner **with no subject in it.**
+
+This is not the wash-out I was worried about — the car is *visible*. It is that
+**visible and "a subject" are different things, and I conflated them.** The 4K
+measurement said so in numbers before I looked: peak luminance contrast **7 %
+below** background, the car actually *brighter* than its surround (0.516 vs
+0.476), carried by a specular hit on the airbox and a 0.14 blue-minus-red break.
+That is a detail you can find when told where to look. A closing image cannot be
+built on it.
+
+### The camera cannot fix this. The distance can.
+
+At 130 mm and 4K:
+
+| car distance | width @4K | reads as |
+|---:|---:|---|
+| **1,000 m — today** | **79.5 px** | a smudge on the run-off |
+| 700 m | 113.6 px | findable, still not a subject |
+| 450 m | 176.7 px | a car |
+| 300 m | 265.0 px | a car with a visible wing and airbox |
+
+There is no lens and no aim that turns a 5.698 m object at 1 km into a closing
+subject — R2-860 already showed the framing is rotation- and scale-invariant.
+**The only free variable left is how far away the car is**, and that is
+`carpath.py`'s extrapolation at a constant 83.1 m/s, which carries it 913 m in
+the closing 11 s.
+
+A lap-down deceleration is not enough on its own:
+
+| 83.1 m/s decays to | travelled | approx camera distance | width |
+|---:|---:|---:|---:|
+| 60 m/s (216 kph) | 787 m | ~862 m | 92 px |
+| 40 m/s (144 kph) | 677 m | ~742 m | 107 px |
+| 15 m/s (54 kph) | 540 m | ~591 m | 134 px |
+
+**But the car coming to rest near the start/finish line does it.** From the hold
+at `[594.19, 16.05, 140.0]` to `start_finish_world [329.396, 169.82, 0]` is
+**336.7 m — 236 px.** That is a subject, and a car easing to a stop after a
+flying lap is what actually happens. It is also a better *idea* than the current
+one: the film would end where the lap began.
+
+### Recommendation
+
+**Ship R2-853 anyway, and do not call the ending solved.** It is strictly better
+than the shipped arm on every axis, and — the reason it matters — **it is the
+necessary first half.** Its aim tracks the car, so a car that ends up closer is
+framed automatically and correctly. The shipped camera would still be pointed at
+the facade and would miss a nearer car entirely.
+
+**The second half is not mine.** It is `anim/carpath.py:28-33` and it costs an
+11-second rebuild of the spatialised audio. R2-857 flagged it as the
+highest-leverage change available; **R2-862 upgrades it from an option to the
+finding.** The ending is a car-motion problem wearing a camera problem's clothes,
+and three passes of camera work were needed to establish that it is not a camera
+problem.
