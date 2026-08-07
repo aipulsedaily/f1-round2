@@ -31372,3 +31372,62 @@ margin for a beat-5 rate that is two samples wide.
 
 Probe spend **$1.90** against a $0.40 budget - $0.26 lost to a host whose own
 `apt-get` held the dpkg lock, and a 617 s scene push on a six-core uplink.
+
+## R2-1097 — the rebuild manifest AUDITED against the tree: all 19 artefacts present, the ceiling append is a live path, and the shipping bake is the right one
+
+`docs/NEXT-REBUILD.md` is the gate to the master and had never been checked
+against the filesystem it describes. **It survives.**
+
+**All 19 named artefacts exist**, including the three large ones the rebuild
+cannot proceed without: `work/r2881/car_anim_driver_R2881_BOTH.blend`
+(408.59 MB), `world/beat1_anim.blend` (291.19 MB), `world/breach_fines.blend`
+(101.91 MB).
+
+**The ceiling append was spot-checked as a CODE PATH, not a string** - the
+distinction I paid for an hour earlier in R2-1091. `tools/build_film_scene.py`
+line 372 is inside `main()`, and what follows is a real
+`bpy.data.libraries.load` + `children.link`, fronted by **two hard refusals**:
+one if the library is missing, one if it lacks the expected collection. It then
+**measures the ceiling's z-extent back off the appended datablocks** rather than
+trusting the library's own report - carrying R2-517's lesson in its comment,
+that the library once printed a `z_extent` from its constants and **was wrong by
+190 mm because the lowest thing up there is a track-head barrel, not a beam.**
+
+> A number read back from the datablocks cannot disagree with the datablocks.
+
+**And the shipping bake is verifiably the right one:**
+
+```
+MUL05_S00    3.9318 m     the two segments that LEAVE
+MUL05_S01    4.7421 m
+MUL05_S02    0.1449 m     bar 0.1449, delta +0.0000   <- RIGHT BAKE
+MUL05_S03    0.1119 m
+```
+
+Exactly the shape R2-092 describes: mullion 5 sheds `S00` and `S01`, and
+`S02`-`S07` stand. **A wrong bake reads 55.35 m here** - the manifest's own
+warning that `land_breach.sh` stage 1 can silently regenerate from whatever raw
+table sits in `sim/tmp/`.
+
+## R2-1098 — I nearly logged a broken guard that was my own namespace error
+
+My first run of that check reported **`GUARD_OBJECT_ABSENT`** - `BF_MUL05_S02`
+is not in the bake. I was one step from recording "the guard that proves the
+right bake landed cannot fire", which would have been a satisfying finding in
+this project's favourite genre and **completely false.**
+
+**The bake names them `MUL05_S02`. `apply_breach` adds the `BF_` prefix when it
+applies them to the scene.** R2-17460 already recorded this exactly - *"the
+applied pieces are named `BF_MUL05_S02`, not `MUL05_S02`"* - and I walked past
+it.
+
+**A name is only a name within a namespace**, and this project has three that
+look alike: the raw bake's, the applied scene's, and the plan's. The guard is
+correct; it operates on the scene. I was testing it against the wrong one.
+
+**The tell I should have taken:** 92 `MUL*` objects were present and *none* had a
+`BF_` prefix. **An absence that is total is a category error, not a defect** - a
+genuinely missing object leaves its siblings behind, and when the whole family
+is missing under one spelling and present under another, the spelling is the
+bug. That is worth more than this instance: it is a cheap first question for any
+"the object isn't there" finding.
