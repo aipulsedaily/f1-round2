@@ -90,3 +90,13 @@ position.
   `ppid == 1 AND /proc/PID/cwd reads "(deleted)"`. An exec-server restart
   leaks its children and nothing reaps them; the leak is invisible to the
   memory gate it then defeats. **Handed on, not fixed.**
+
+  **CORRECTION — that criterion also matches zombies, which hold no memory.**
+  A process in state `Z` has **RSS 0**: it is already dead and holds only a
+  process-table slot. It satisfies `ppid == 1` and its cwd reads deleted, so
+  the rule above flags it — and **reaping it recovers nothing.** A live
+  example sat on this box for 3 d 21 h. Anyone hunting a memory leak with the
+  rule as written would reap it, believe several GB had been freed, and have
+  freed **zero**. **Add a third condition: RSS must be non-zero.** A zombie is
+  a bookkeeping artefact, not a leak, and the two look identical to the first
+  two tests.
