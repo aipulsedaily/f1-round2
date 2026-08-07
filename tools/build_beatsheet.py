@@ -103,7 +103,12 @@ def cluster_geometry(plan):
         rad = max(0.5 * math.dist(lo, hi), 0.05)
         out[k] = {"centre": [round(v, 4) for v in ctr], "radius": round(rad, 4),
                   "n_parts": c["n_parts"], "tris": c["tris"],
-                  "size": [round(hi[i] - lo[i], 3) for i in range(3)]}
+                  "size": [round(hi[i] - lo[i], 3) for i in range(3)],
+                  # R2-829: the placer needs the BOX, not a sphere around it.
+                  # A sphere of the half-diagonal is up to sqrt(3) too big in the
+                  # narrow axis, and every cluster here is long and thin.
+                  "box_lo": [round(v, 4) for v in lo],
+                  "box_hi": [round(v, 4) for v in hi]}
     return out
 
 
@@ -171,6 +176,15 @@ def cluster_geometry(plan):
 DWELL_S = 0.72            # s of hold per presentation
 SENSOR_W_MM = 36.0
 SENSOR_H_MM = 36.0 * 2160 / 3840
+
+# R2-829.  THE FRACTION OF THE FRAME A PRESENTATION IS ALLOWED TO OCCUPY.
+#
+# This constant already existed -- as a local inside the FRAMING gate in main().
+# The gate used it to print "it would fit at X m" for fifteen clusters that did
+# not fit, fifteen times, in every run, for weeks. Nothing consumed the number,
+# because the thing that CHOSE the distance could not see the lens. It is hoisted
+# here so the placer and the gate are held to one number rather than two.
+FILL_TARGET = 0.85
 
 # The Bezier the rig lays through these keys overshoots the chord/dt mean, so a
 # schedule that sets the MEAN right still has to know what the PEAK will be.
@@ -356,14 +370,114 @@ def order_seconds(chord_m, bearing_deg, hfov):
     return DWELL_S + _transit_s(chord_m) + _pan_s(bearing_deg, hfov)
 
 
+# --------------------------------------------------------------------------- #
+#  THE CORNER GROUP — R2-830.                                                   #
+# --------------------------------------------------------------------------- #
+#
+# THE FOUR CORNERS ARE ONE SUBJECT AND THE FILM SHOT THEM AS FOUR.
+#
+# `docs/explode_plan.json` declares them a simultaneous group: they seat at the
+# same instant and impose no order on each other. They are also, pairwise, the
+# same object — CORNER_RL and CORNER_RR are both 745,562 tris, CORNER_FR and
+# CORNER_FL both 690,930 — and the project's brief has a no-repeated-assets red
+# line. Presenting them one after another cost 9.20 s, 28 % of beat 1, to show
+# the audience the same wheel four times at 2.0-2.3x frame overflow, none of them
+# legible. That is the single largest recoverable block of time in the beat.
+#
+# SO THEY GET ONE STATION, and it is a REAL station rather than a bookkeeping
+# convenience: the union of the four exploded boxes is a genuine 5.25 x 4.42 x
+# 0.72 m subject, it goes through the same R2-829 standoff solve as everything
+# else, and the FRAMING gate measures it exactly as it measures the other eleven.
+# Nothing here is exempted from a check; a new subject is declared and then
+# checked.
+#
+# THE DIRECTION IS STILL MEASURED. It is the normalised mean of the four measured
+# presentation normals, so the group is seen from the direction that the four
+# individual measurements agree on. It is not generated, and it is not chosen.
+#
+# AND IT PAYS TWICE. The four corners' seated positions are the four corners of
+# the car, so a station that contains the exploded group contains the assembled
+# car — the group's presentation frame IS a whole-car frame. The beat's climax
+# and its establishing payoff become the same shot instead of two shots 9 s apart.
+CORNER_GROUP = "CORNER_GROUP"
+
+
+def build_corner_group(geo, plan, normals):
+    """Declare the four corners as one subject, in memory only.
+
+    NOT written to docs/explode_plan.json, and deliberately: that file is read by
+    `anim/build_beat1_anim.py`, which iterates `clusters` and dereferences
+    `parts`. A synthetic cluster there would be animated as a 166-part duplicate
+    of four clusters that are already animated. The group is a CAMERA subject and
+    it lives only where the camera lives.
+    """
+    corners = [k for k in plan["seat_order"] if k.startswith("CORNER_")]
+    if not corners:
+        return None, []
+    lo = [min(geo[k]["box_lo"][i] for k in corners) for i in range(3)]
+    hi = [max(geo[k]["box_hi"][i] for k in corners) for i in range(3)]
+    plan["clusters"][CORNER_GROUP] = {
+        "bbox_min": [round(v, 4) for v in lo],
+        "bbox_max": [round(v, 4) for v in hi],
+        "explode_offset": [0.0, 0.0, 0.0],       # the box is ALREADY exploded
+        "n_parts": sum(geo[k]["n_parts"] for k in corners),
+        "tris": sum(geo[k]["tris"] for k in corners),
+        "parts": [],
+        "r2830_members": list(corners),
+    }
+    geo[CORNER_GROUP] = {
+        "centre": [round((lo[i] + hi[i]) / 2, 4) for i in range(3)],
+        "radius": round(max(0.5 * math.dist(lo, hi), 0.05), 4),
+        "n_parts": sum(geo[k]["n_parts"] for k in corners),
+        "tris": sum(geo[k]["tris"] for k in corners),
+        "size": [round(hi[i] - lo[i], 3) for i in range(3)],
+        "box_lo": [round(v, 4) for v in lo],
+        "box_hi": [round(v, 4) for v in hi],
+    }
+    nsum = [0.0, 0.0, 0.0]
+    for k in corners:
+        nv = (normals or {}).get(k, {}).get("normal")
+        if nv:
+            for i in range(3):
+                nsum[i] += nv[i]
+    m = math.sqrt(sum(v * v for v in nsum))
+    if m > 1e-6:
+        normals[CORNER_GROUP] = {
+            "normal": [round(v / m, 5) for v in nsum],
+            "distinct_materials": max(
+                (normals.get(k, {}).get("distinct_materials") or 0)
+                for k in corners),
+            # The mean of four legal directions can leave the legal band, so the
+            # group opts INTO the R2-451 clamp rather than inheriting whatever
+            # its members happened to carry.
+            "r2451_reaimed": True,
+            "r2830_mean_of": list(corners),
+        }
+    return CORNER_GROUP, corners
+
+
 def lens_for(g):
     """35 mm on the wide clusters, longer on the small dense ones so the
     steering wheel is not presented by shoving the lens 190 mm from it."""
     return 35.0 if g["radius"] > 0.8 else 58.0
 
 
+_KEY_GEOM_CACHE = {}
+
+
 def key_geom(geo, normals, k, idx, n):
-    """(station, standoff, lens, unit view direction) for a presentation."""
+    """(station, standoff, lens, unit view direction) for a presentation.
+
+    MEMOISED — R2-829. The station is now a fixed-point solve rather than one
+    multiplication, and the Held-Karp tour solver evaluates it O(m^2 * 2^m) times
+    over the same few hundred (cluster, index) pairs. It is a pure function of
+    (cluster, tour index, tour length) given the plan and the normals, both of
+    which are loaded once per process, so the cache is keyed on exactly that.
+    """
+    ck = (k, idx, n, id(geo), id(normals))
+    hit = _KEY_GEOM_CACHE.get(ck)
+    if hit is not None:
+        return hit
     g = geo[k]
     nv = (normals or {}).get(k, {})
     # R2-451.  The clamp engages ONLY for a cluster whose normals entry says it
@@ -384,13 +498,19 @@ def key_geom(geo, normals, k, idx, n):
     # So the backstop protects data that opted into the law and never retrofits
     # itself onto data that did not.
     legalise = nv.get("r2451_reaimed", False)
+    # R2-829: the lens is chosen BEFORE the distance, because the distance now
+    # depends on it. It always did depend on it; the code just could not say so.
+    lens = float(nv.get("r2429_lens_mm") or lens_for(g))
+    box = ((g["box_lo"], g["box_hi"]) if "box_lo" in g else None)
     pos, standoff = camera_station(g["centre"], g["radius"], idx, n,
                                    nv.get("normal"), legalise=legalise,
-                                   standoff_override=nv.get("r2429_standoff_m"))
+                                   standoff_override=nv.get("r2429_standoff_m"),
+                                   box=box, lens_mm=lens)
     d = [g["centre"][i] - pos[i] for i in range(3)]
     m = math.sqrt(sum(x * x for x in d)) or 1.0
-    lens = float(nv.get("r2429_lens_mm") or lens_for(g))
-    return pos, standoff, lens, [x / m for x in d]
+    out = (pos, standoff, lens, [x / m for x in d])
+    _KEY_GEOM_CACHE[ck] = out
+    return out
 
 
 def _bearing(u, v):
@@ -411,8 +531,98 @@ def _exit_cost(geo, normals, a, ia, n, exit_pos, exit_view, exit_lens,
                 min(hfov_deg(la), hfov_deg(exit_lens)))
 
 
+# --------------------------------------------------------------------------- #
+#  THE SEAT SCHEDULE — R2-831, and the two constants that caused "way too slow". #
+# --------------------------------------------------------------------------- #
+#
+#     seat_start = dur * 0.42
+#     seat_span  = dur * 0.50
+#
+# 0.42 + 0.50 = 0.92. Assembly completed at 92 % of beat 1 BY CONSTRUCTION, for
+# any value of `dur`, leaving the remaining 8 % as the payoff — 4.0 s of a 33 s
+# beat, 12 %. The client's note was "way too slow I feel", and the mechanism is
+# not that the camera moves slowly. It is that the beat spends its energy where
+# there is nothing to see and goes still the moment there is: measured frame-to-
+# frame image change is 20.27 across the unreadable tour and 4.89 across the
+# readable payoff, a 4.14x collapse exactly where the subject finally appears.
+#
+# THE INTUITIVE FIX IS BACKWARDS. Shortening beat 1 to 24 s — the obvious answer
+# to "too slow" — completes assembly at 22.08 s and leaves a 1.92 s payoff. It
+# MORE THAN HALVES the thing the client is waiting for, because everything here
+# is expressed as a fraction of `dur`, and it costs an audio-master rebuild for a
+# strictly worse result. Beat 1 stays 33.0 s and the film stays 124.0833 s.
+#
+# 0.30 / 0.36 WAS THE PLAN. IT IS NOT FLYABLE, AND THE SOLVER SAYS SO.
+#
+# The plan predicted 0.30 / 0.36 -> corners at t = 20.79 s, on a cost model that
+# expected the pulled-back stations (R2-829) to make the tour CHEAPER: from
+# farther out the bearing between adjacent clusters shrinks, so the pan term
+# falls. That half is true. The other half was not modelled: `move_seconds` is
+# `max(dwell, transit, pan)`, and pulling the stations back from 1.5-4.9 m to
+# 2.3-7.6 m moves them APART, so the TRANSIT term rises and becomes the binding
+# one. MEASURED, as minimum flyable tour time:
+#
+#     shipped 15-node tour, lens-blind stations     18.91 s
+#     the SAME tour with lens-aware stations        21.19 s   framing costs 2.28 s
+#     the 12-node grouped tour, lens-aware          17.29 s   grouping saves 3.90 s
+#
+# So the framing fix really does cost time and the corner group really does pay
+# for it, and the net is 1.62 s FASTER than what shipped. What the plan got wrong
+# was the size: it expected ~6.7 s of recovery and there is 3.90 s.
+#
+# AND THE TARGET WAS NEVER REACHABLE, WITH OR WITHOUT THE FRAMING FIX. A tour
+# that takes 17.29 s to fly, starting at 2.00 s after the establishing lead-in,
+# cannot present the corners before 19.29 s, and they may not seat until 2.05 s
+# after that (1.55 s of flight plus a 0.5 s margin). The floor is 21.34 s. Even
+# the shipped lens-blind geometry could not have seated them before 22.96 s.
+# 20.79 s was not a schedule that the framing fix took away; it was never on the
+# table.
+#
+# MEASURED, not asserted — a 21 x 20 grid over (start, span), each cell a full
+# Held-Karp solve against that cell's own deadlines:
+#
+#     0.30 / 0.36    NO visiting order exists, at any speed the beat allows
+#     0.28 / 0.40    corners t 21.340 s   the earliest feasible point on the grid
+#     0.30 / 0.38    corners t 21.395 s   <- SHIPPED
+#     0.42 / 0.50    corners t 28.985 s   what shipped before
+#
+# The frontier is flat: every feasible pair has `start + 11*span/12` ~ 0.647, so
+# trading start against span moves the answer by hundredths of a second and the
+# choice between them is free. 0.30 is therefore kept exactly as briefed and the
+# span alone absorbs the difference, which makes the deviation from the plan one
+# number instead of two.
+#
+# 0.30 / 0.38 puts the four corners down at t = 21.395 s (frame 513), last part
+# settled at frame 521, and the payoff becomes 11.29 s instead of 4.01 s — 2.81x,
+# against the 3.05x the plan hoped for. The missing 0.6 s is the price of the
+# framing fix, and it is the right trade: there is no schedule in which the car
+# assembles earlier AND every part is legible when it is shown.
+BEAT1_SEAT_START_FRAC = 0.30
+BEAT1_SEAT_SPAN_FRAC = 0.38
+
+
+def seat_schedule(plan, dur):
+    """{cluster: seat time}. Mechanical order, staggered, corners simultaneous.
+
+    THE ONE PLACE THIS IS COMPUTED. It used to live inside `build_beat1`, which
+    meant the presentation DEADLINES — which are derived from it — were read from
+    `world/beat1_anim_anim.json` instead, i.e. from the last build of a 291 MB
+    blend. The two could disagree and nothing compared them; see the desync check
+    in `main()`, which now does.
+    """
+    spine = [k for k in plan["seat_order"] if not k.startswith("CORNER_")]
+    corners = [k for k in plan["seat_order"] if k.startswith("CORNER_")]
+    start = dur * BEAT1_SEAT_START_FRAC
+    span = dur * BEAT1_SEAT_SPAN_FRAC
+    per = span / (len(spine) + 1)
+    seat_t = {k: round(start + i * per, 3) for i, k in enumerate(spine)}
+    for k in corners:
+        seat_t[k] = round(start + len(spine) * per, 3)   # simultaneous
+    return seat_t
+
+
 def solve_visit_order(geo, normals, start, rest, n, span_s, deadlines,
-                      exit_to=None, idx0=0, pin_last=None):
+                      exit_to=None, idx0=0, pin_last=None, t0=0.0):
     """Cheapest visiting order from `start` through `rest`, exactly.
 
     Held-Karp over the free nodes. The move cost depends on each cluster's
@@ -420,151 +630,244 @@ def solve_visit_order(geo, normals, start, rest, n, span_s, deadlines,
     not a problem for the DP because the index is |S| - 1, i.e. it is already
     part of the state.
 
-    `deadlines` is {cluster: latest film time it may be presented}. Feasibility
-    needs the schedule's scale factor, which needs the tour, so the solve is
-    iterated on the scale — twice is enough in practice and it is asserted to
-    converge rather than assumed to.
+    `deadlines` is {cluster: latest film time it may be presented}, in FILM time;
+    `t0` is when the tour starts, and leaving it out is how the shipped sheet
+    presented FD at 14.54 s against a 13.20 s deadline while the solver believed
+    it was inside it. The old code compared a cost measured from the tour's start
+    against a deadline measured from the beat's start, and the establishing
+    lead-in is 2.0 s of difference between those two origins.
+    R2-832.
+
+    THE FEASIBILITY TEST IS NOW THE MINIMUM-TIME SCHEDULE, not a guessed scale.
+    A move cannot be flown faster than `move_seconds`, so if the cumulative
+    `move_seconds` to reach a cluster already exceeds its deadline, no allocation
+    of any span can rescue it — the tour is infeasible, full stop, and no
+    iteration on a scale factor is needed to know that. The old loop guessed a
+    scale, filtered against it, then re-derived the scale from the filtered
+    answer; it converged on self-consistency rather than on feasibility.
+
+    Returns (sequence, order_cost, move_cost_to_each) — the third is what the
+    caller needs to choose the largest span that still meets every deadline.
     """
     free = [k for k in rest if k != pin_last]
     m = len(free)
-    exitc = None
-    scale = 1.0
-    best_seq = None
-    for _it in range(8):
-        INF = float("inf")
-        # dp[(mask, last)] = min cost to have visited `mask` and be at free[last]
-        dp = {}
-        par = {}
-        c0 = {}
-        for j, b in enumerate(free):
-            c = _hop_cost(geo, normals, start, idx0, b, idx0 + 1, n,
-                          cost=order_seconds)
-            if c * scale <= deadlines.get(b, 1e9):
-                dp[(1 << j, j)] = c
-                par[(1 << j, j)] = None
-            c0[j] = c
-        for mask in range(1, 1 << m):
-            for last in range(m):
-                if not mask & (1 << last):
-                    continue
-                cur = dp.get((mask, last))
-                if cur is None:
-                    continue
-                depth = bin(mask).count("1")            # == index of `last`
-                for nxt in range(m):
-                    if mask & (1 << nxt):
-                        continue
-                    c = cur + _hop_cost(geo, normals, free[last], idx0 + depth,
-                                        free[nxt], idx0 + depth + 1, n,
-                                        cost=order_seconds)
-                    if c * scale > deadlines.get(free[nxt], 1e9):
-                        continue
-                    key = (mask | (1 << nxt), nxt)
-                    if c < dp.get(key, INF):
-                        dp[key] = c
-                        par[key] = last
-        full = (1 << m) - 1
-        best, blast = INF, None
+    INF = float("inf")
+
+    def mhop(a, ia, b, ib):
+        return _hop_cost(geo, normals, a, ia, b, ib, n, cost=move_seconds)
+
+    def ohop(a, ia, b, ib):
+        return _hop_cost(geo, normals, a, ia, b, ib, n, cost=order_seconds)
+
+    # dp[(mask, last)] = (min order cost, move cost along that same path)
+    dp, par = {}, {}
+    for j, b in enumerate(free):
+        mc = mhop(start, idx0, b, idx0 + 1)
+        if t0 + mc <= deadlines.get(b, 1e9) + 1e-9:
+            dp[(1 << j, j)] = (ohop(start, idx0, b, idx0 + 1), mc)
+            par[(1 << j, j)] = None
+    for mask in range(1, 1 << m):
         for last in range(m):
-            v = dp.get((full, last))
-            if v is None:
+            if not mask & (1 << last):
                 continue
-            tail = 0.0
-            if pin_last is not None:
-                tail = _hop_cost(geo, normals, free[last], idx0 + m,
-                                 pin_last, idx0 + m + 1, n,
-                                 cost=order_seconds)
-                if (v + tail) * scale > deadlines.get(pin_last, 1e9):
+            cur = dp.get((mask, last))
+            if cur is None:
+                continue
+            oc, mc = cur
+            depth = bin(mask).count("1")               # == index of `last`
+            for nxt in range(m):
+                if mask & (1 << nxt):
                     continue
-            if exit_to is not None:
-                j = idx0 + m + (1 if pin_last else 0)
-                tail += _exit_cost(geo, normals,
-                                   pin_last if pin_last else free[last],
-                                   j, n, *exit_to, cost=order_seconds)
-            if v + tail < best:
-                best, blast = v + tail, last
-        if blast is None:
-            raise SystemExit(">> beat 1: no visiting order satisfies the flight "
-                             "deadlines; the presentation span is too short")
-        seq, mask, last = [], full, blast
-        while last is not None:
-            seq.append(free[last])
-            nl = par[(mask, last)]
-            mask ^= (1 << last)
-            last = nl
-        seq.reverse()
-        seq = [start] + seq + ([pin_last] if pin_last else [])
-        new_scale = span_s / best
-        if best_seq == seq and abs(new_scale - scale) < 1e-9:
-            break
-        best_seq, scale = seq, new_scale
-    return best_seq, best, scale
+                mc2 = mc + mhop(free[last], idx0 + depth,
+                                free[nxt], idx0 + depth + 1)
+                if t0 + mc2 > deadlines.get(free[nxt], 1e9) + 1e-9:
+                    continue
+                oc2 = oc + ohop(free[last], idx0 + depth,
+                                free[nxt], idx0 + depth + 1)
+                key = (mask | (1 << nxt), nxt)
+                if oc2 < (dp.get(key) or (INF, 0.0))[0]:
+                    dp[key] = (oc2, mc2)
+                    par[key] = last
+    full = (1 << m) - 1
+    best, blast, best_tail = INF, None, None
+    for last in range(m):
+        v = dp.get((full, last))
+        if v is None:
+            continue
+        oc, mc = v
+        o_tail, m_tail = 0.0, 0.0
+        if pin_last is not None:
+            o_tail = ohop(free[last], idx0 + m, pin_last, idx0 + m + 1)
+            m_tail = mhop(free[last], idx0 + m, pin_last, idx0 + m + 1)
+            if t0 + mc + m_tail > deadlines.get(pin_last, 1e9) + 1e-9:
+                continue
+        if exit_to is not None:
+            j = idx0 + m + (1 if pin_last else 0)
+            o_tail += _exit_cost(geo, normals,
+                                 pin_last if pin_last else free[last],
+                                 j, n, *exit_to, cost=order_seconds)
+        if oc + o_tail < best:
+            best, blast, best_tail = oc + o_tail, last, None
+    if blast is None:
+        raise SystemExit(
+            ">> beat 1: NO visiting order meets the flight deadlines even at the "
+            "minimum time every move needs. The tour cannot be flown before the "
+            "parts it is a tour of have left their stations. Widen the seat "
+            "schedule (BEAT1_SEAT_SPAN_FRAC) or pull the stations back further.")
+    seq, mask, last = [], full, blast
+    while last is not None:
+        seq.append(free[last])
+        nl = par[(mask, last)]
+        mask ^= (1 << last)
+        last = nl
+    seq.reverse()
+    seq = [start] + seq + ([pin_last] if pin_last else [])
+    return seq, best
 
 
-def present_order(geo, seat_order, normals=None, deadlines=None,
-                  spine_span_s=None, corner_span_s=None,
-                  spine_exit=None, corner_entry=None):
+def present_order(geo, seat_order, normals=None, deadlines=None, t0=0.0):
     """Camera visiting order: solved against the MOVE, not against the inventory.
 
-    The old version used seat order as the spine and only reordered the four
-    corners, on the argument that assembly order is roughly centre-outward and
-    therefore roughly flyable for free. It is not: seat order sends the camera
-    NOSE -> FW -> RW, which is +3.75 m to +4.38 m to -4.59 m, a 9.14 m traverse
-    inside one 1.76 s slot. That is the dash the campath gate found.
+    Seat order is not a visiting order. It is centre-outward in ASSEMBLY, not in
+    space, and following it sends the camera NOSE -> FW -> RW, +3.75 m to +4.38 m
+    to -4.59 m, a 9.14 m traverse in one slot. That is the dash the campath gate
+    found, and this is solved instead.
 
-    Both halves are now solved the same way and by the same cost:
+    ONE TOUR, TWELVE NODES — R2-830. It used to be two solves: a spine of eleven,
+    then the four corners as their own little problem entered from a bridge. The
+    four corners are now ONE node (`CORNER_GROUP`), so there is one tour: from MB,
+    which is the film's first frame and stays there, through the other ten, ending
+    on the corner group, which is pinned last because it is the beat's climax and
+    the close-out is authored out of its station.
 
-      * the SPINE (everything that is not a corner) — from MB, which is the
-        film's first frame and stays there, through the other ten, ending
-        wherever leaves the shortest run into the RW -> corner bridge.
-      * the FOUR CORNERS, which seat SIMULTANEOUSLY and so impose no order on
-        each other. CORNER_FL is pinned LAST because BEAT1_CLOSEOUT is authored
-        out of its station — "CORNER_FL sweeps past the lens 1.2 m out on the
-        left" — and the close-out is the part of beat 1 that already works.
-
-    The corners used to be ordered by centre-to-centre DISTANCE, which is not
-    the cost the camera pays: two stations 1.02 m apart can be 87 degrees apart
-    in bearing, and that is exactly the pair (bridge -> CORNER_RL) that produced
-    beat 1's worst rotation.
+    The corners used to be ordered by centre-to-centre DISTANCE, which is not the
+    cost the camera pays: two stations 1.02 m apart can be 87 degrees apart in
+    bearing. That ordering problem no longer exists, because there is nothing left
+    to order — they seat simultaneously and they are now shot simultaneously.
     """
     corners = [k for k in seat_order if k.startswith("CORNER_")]
     spine = [k for k in seat_order if not k.startswith("CORNER_")]
     if normals is None or deadlines is None:
         return spine + corners          # geometry-free fallback; gated below
-    n = len(spine) + len(corners)
-    sp_seq, _c, _s = solve_visit_order(
-        geo, normals, spine[0], spine[1:], n, spine_span_s, deadlines,
-        exit_to=spine_exit, idx0=0)
-    # The corner tour starts from the BRIDGE, not from a cluster, so it is
-    # solved as its own little problem with the bridge as the fixed entry.
-    co_seq = _solve_corner_order(geo, normals, corners, n, len(spine),
-                                 corner_entry)
-    return sp_seq + co_seq
+    nodes = spine + ([CORNER_GROUP] if CORNER_GROUP in geo else corners)
+    n = len(nodes)
+    seq, cost = solve_visit_order(
+        geo, normals, spine[0], nodes[1:], n, None, deadlines,
+        idx0=0, pin_last=(CORNER_GROUP if CORNER_GROUP in geo else None), t0=t0)
+    return seq
 
 
-def _solve_corner_order(geo, normals, corners, n, idx0, entry):
-    """Four corners, CORNER_FL last, entered from the bridge. 3! = 6 tours."""
-    import itertools
-    free = [k for k in corners if k != "CORNER_FL"]
-    best, bseq = None, None
-    for perm in itertools.permutations(free):
-        seq = list(perm) + ["CORNER_FL"]
-        tot, prev = 0.0, None
-        for i, k in enumerate(seq):
-            if i == 0:
-                tot += _exit_cost(geo, normals, k, idx0 + i, n, *entry,
-                                  cost=order_seconds)
-            else:
-                tot += _hop_cost(geo, normals, prev, idx0 + i - 1, k, idx0 + i,
-                                 n, cost=order_seconds)
-            prev = k
-        if best is None or tot < best:
-            best, bseq = tot, seq
-    return bseq
+# --------------------------------------------------------------------------- #
+#  THE STANDOFF LAW — R2-829.  A distance that cannot see the lens is a guess.   #
+# --------------------------------------------------------------------------- #
+#
+# WHAT WAS THERE, for the whole of round 2:
+#
+#     standoff = max(radius * 1.55 + 0.42, 0.75)
+#
+# It is a function of the SUBJECT alone. It fixes the subtended angle at ~80 deg
+# and then the picture is taken with whatever lens `lens_for()` hands back — 35 mm
+# on the big clusters, 58 mm on the small dense ones. An 80 deg subject through a
+# 58 mm lens (a 31.6 deg horizontal field) is a subject two and a half times wider
+# than the picture, and that is not a marginal miss, it is the arithmetic working
+# exactly as written. Every one of the fifteen presentations overflowed its own
+# frame, 1.11x to 2.32x, and the gate said so on every run.
+#
+# THE REPLACEMENT MEASURES THE PICTURE, not a proxy for it. The subject is not a
+# sphere of the bbox half-diagonal — it is eight bounding-box corners, projected
+# through the real lens from the real direction, and what matters is the extent of
+# that projection on the sensor. So the law is stated as the thing we actually
+# want and then solved for:
+#
+#     max(extent_h / SENSOR_H, extent_w / SENSOR_W) == FILL_TARGET
+#
+# SOLVED, NOT APPROXIMATED. Projected extent falls as ~1/distance but not exactly,
+# because a box near the lens is not a small object: the near face is magnified
+# relative to the far one and the perspective term does not scale. So this is a
+# fixed point, `s <- s * fill / FILL_TARGET`, iterated on the true projection until
+# it stops moving. It converges in three or four passes and the caller asserts
+# that it converged rather than assuming it.
+#
+# WHY THIS IS COUPLED TO THE DIRECTION AND SOLVED JOINTLY WITH IT. The elevation
+# clamp (`_legalise_station_dir`, R2-451) depends on the standoff — it is the
+# standoff that decides whether a given depression puts the lens through the
+# ceiling or under the rope barrier. And the standoff depends on the direction,
+# because a box is not the same width from every side. Solving either one first
+# and then the other gives a station that satisfies whichever was solved second.
+# They are therefore iterated together.
+def _cam_basis(fwd):
+    """Right/up for a forward direction, matching the FRAMING gate's `_basis`."""
+    wu = [0.0, 0.0, 1.0]
+    if abs(sum(fwd[i] * wu[i] for i in range(3))) > 0.999:
+        wu = [0.0, 1.0, 0.0]
+    rt = [fwd[1] * wu[2] - fwd[2] * wu[1],
+          fwd[2] * wu[0] - fwd[0] * wu[2],
+          fwd[0] * wu[1] - fwd[1] * wu[0]]
+    m = math.sqrt(sum(x * x for x in rt)) or 1.0
+    rt = [x / m for x in rt]
+    up = [rt[1] * fwd[2] - rt[2] * fwd[1],
+          rt[2] * fwd[0] - rt[0] * fwd[2],
+          rt[0] * fwd[1] - rt[1] * fwd[0]]
+    return rt, up
+
+
+def frame_fill(cam, centre, box_lo, box_hi, lens_mm):
+    """Fraction of the frame the box's projection occupies, worst of h and w.
+
+    This is the FRAMING gate's own measurement, lifted so the placer is scored by
+    the instrument that judges it. >1.0 means the audience gets a fragment.
+    """
+    fwd = [centre[i] - cam[i] for i in range(3)]
+    m = math.sqrt(sum(x * x for x in fwd)) or 1.0
+    fwd = [x / m for x in fwd]
+    rt, up = _cam_basis(fwd)
+    us, vs = [], []
+    for ix in (0, 1):
+        for iy in (0, 1):
+            for iz in (0, 1):
+                p = [box_lo[0] if ix == 0 else box_hi[0],
+                     box_lo[1] if iy == 0 else box_hi[1],
+                     box_lo[2] if iz == 0 else box_hi[2]]
+                dd = [p[i] - cam[i] for i in range(3)]
+                z = sum(dd[i] * fwd[i] for i in range(3))
+                if z <= 1e-6:
+                    return float("inf")        # a corner behind the lens
+                us.append(sum(dd[i] * rt[i] for i in range(3)) / z * lens_mm)
+                vs.append(sum(dd[i] * up[i] for i in range(3)) / z * lens_mm)
+    return max((max(vs) - min(vs)) / SENSOR_H_MM,
+               (max(us) - min(us)) / SENSOR_W_MM)
+
+
+def standoff_for_fill(centre, box_lo, box_hi, d, lens_mm, s0,
+                      fill=None, iters=24, tol=1e-4):
+    """Distance along `d` at which the box's projection fills `fill` of frame.
+
+    Returns (standoff, converged). `d` points FROM the cluster centre TOWARD the
+    camera, which is the convention `camera_station` returns its position in.
+
+    `fill` defaults to the module's FILL_TARGET *at call time*, not at definition
+    time. Writing `fill=FILL_TARGET` in the signature binds the value once when
+    the module loads, so every sweep over FILL_TARGET silently measures the same
+    number — which is exactly what happened on the first attempt at this sweep,
+    and it produced four identical rows that looked like a real (null) result.
+    """
+    fill = FILL_TARGET if fill is None else fill
+    s = max(float(s0), 0.05)
+    for _ in range(iters):
+        cam = [centre[i] + d[i] * s for i in range(3)]
+        f = frame_fill(cam, centre, box_lo, box_hi, lens_mm)
+        if f == float("inf"):
+            s *= 2.0                      # inside the box; walk out and retry
+            continue
+        s_new = s * f / fill
+        if abs(s_new - s) <= tol * max(s, 1.0):
+            return s_new, True
+        s = s_new
+    return s, False
 
 
 def camera_station(centre, radius, idx, n, look_dir=None, legalise=True,
-                   standoff_override=None):
+                   standoff_override=None, box=None, lens_mm=None):
     """Where the lens sits to make this cluster large AND legible in frame.
 
     Standoff scales with the cluster's own size so a 0.19 m steering wheel is
@@ -609,15 +912,14 @@ def camera_station(centre, radius, idx, n, look_dir=None, legalise=True,
     the whole point of `presentation_normals` — and elevation is the quantity
     that had no constraint on it.
     """
+    # THE OLD LAW, kept as the seed for the fixed point and as the fallback for a
+    # caller with no box. It is a decent starting distance and a bad final one.
     standoff = max(radius * 1.55 + 0.42, 0.75)
-    # R2-464.  The standoff law fixes the SUBTENDED ANGLE at ~80 deg regardless
-    # of lens (task #116), which is why the subject always fills the frame and is
-    # therefore never seen whole -- R2-429.  An override lets one station be an
-    # ESTABLISHING station without repealing the law for the other fourteen, and
-    # it is data in the normals file rather than a branch here, so the exception
-    # is visible in the artefact that records it.
-    if standoff_override:
-        standoff = float(standoff_override)
+    # R2-464.  An override lets one station be an ESTABLISHING station without
+    # repealing the law for the others, and it is data in the normals file rather
+    # than a branch here, so the exception is visible in the artefact that
+    # records it.  It also wins over the R2-829 solve, deliberately: an override
+    # is a hand-placed station and the whole point of it is that it is not solved.
     if look_dir:
         d = list(look_dir)
         # small deterministic tilt so 15 stations do not all sit at the same
@@ -630,10 +932,43 @@ def camera_station(centre, radius, idx, n, look_dir=None, legalise=True,
         d = [math.cos(az) * math.cos(el), math.sin(az) * math.cos(el), math.sin(el)]
     mag = max(math.sqrt(sum(v * v for v in d)), 1e-9)
     d = [v / mag for v in d]
-    if legalise:
+
+    if standoff_override:
+        standoff = float(standoff_override)
+        if legalise:
+            d = _legalise_station_dir(d, centre, standoff)
+    elif box is not None and lens_mm and STANDOFF_LENS_AWARE:
+        # R2-829.  Direction and distance are solved TOGETHER — see the block
+        # above this function for why neither can be solved first.
+        conv = False
+        for _ in range(8):
+            if legalise:
+                d = _legalise_station_dir(d, centre, standoff)
+            s_new, conv = standoff_for_fill(centre, box[0], box[1], d,
+                                            float(lens_mm), standoff)
+            if abs(s_new - standoff) <= 1e-4 * max(standoff, 1.0):
+                standoff = s_new
+                break
+            standoff = s_new
+        if not conv:
+            raise SystemExit(
+                ">> R2-829: the standoff fixed point did not converge for a "
+                "cluster at %s on a %.0f mm lens (last %.4f m). A station that "
+                "is not solved must not be shipped as one." % (centre, lens_mm,
+                                                               standoff))
+        if legalise:
+            d = _legalise_station_dir(d, centre, standoff)
+    elif legalise:
         d = _legalise_station_dir(d, centre, standoff)
     return [round(centre[i] + d[i] * standoff, 4) for i in range(3)], round(standoff, 4)
 
+
+# R2-829.  The lens-aware standoff is ON by default and `B1_LENS_STANDOFF=0`
+# reproduces the pre-R2-829 sheet exactly. Same discipline as B1_ESTABLISH: this
+# project keeps the arm it must fail, so the arm it must pass is not a vacuous
+# pass, and the null for every R2-829 measurement is taken with this off.
+STANDOFF_LENS_AWARE = os.environ.get("B1_LENS_STANDOFF", "1").strip() \
+    not in ("0", "off", "")
 
 # R2-451.  All four MEASURED, none asserted -- see tools/beat1_nadir_cause.py
 # and tools/beat1_reaim.py.
@@ -703,46 +1038,236 @@ def _legalise_station_dir(d, centre, standoff):
 # for all of them.  So the close-out is not a transition to be smoothed over; it
 # is the last act of the assembly and it has to be SHOT.
 #
-# THE MOVE.  The camera leaves CORNER_FL's station on the car's left flank,
-# swings forward around the NOSE — outside the car, never through it — rising
-# and widening from 58 mm to 36 mm so the whole 5.7 m car is held as the last
-# parts arrive, then settles right into the hero three-quarter the declared final
-# key already occupies.  Each key is placed against a landing:
+# WHAT R2-833 CHANGES, AND WHY THE FOUR HAND-PLACED KEYS COULD NOT SURVIVE.
 #
-#   t 25.90  f 622   the front wing arriving, corners still hanging outboard
-#   t 27.30  f 655   wide enough to hold the rear wing's seat at 663
-#   t 28.60  f 686   dead ahead, 10 frames before all four corners land together
-#   t 29.90  f 718   the completed car, drifting right into the closing station
+# Every one of those four times is an anchor against a LANDING FRAME — 630, 663,
+# 696 — and R2-831 moves all three. Keeping the keys where they are would point
+# the camera at four events that now happen 8 seconds earlier, which is the same
+# defect R2-029 was, reintroduced by arithmetic instead of by omission. So the
+# close-out is no longer four constants; it is DERIVED from the corner group's
+# solved station and the pinned seam key, and it moves whenever they move.
 #
-# CONSTRAINTS THE STATIONS ARE SOLVED AGAINST, all measured on beat1_anim.blend:
-#   * the car body occupies x -2.70..3.02, y +-1.00, z 0.34..1.33.  Closest
-#     approach of any station to that box is 2.14 m.
-#   * the showroom's rope barrier ring reaches radius 6.96 m and z 0.92; every
-#     station is either outside it or more than 1.2 m above it.
-#   * walls |x| 15.25 / |y| 11.25, ceiling 6.20, spot rigs from z 5.11 — the
-#     move never goes above 2.35 m.
+# AND IT IS NOW THE PAYOFF, WHICH IS A DIFFERENT JOB. The old close-out was a
+# 5.3 s transition that had to chase five landings scattered over 163 frames.
+# After R2-830/831 the camera is ALREADY at a station that holds the whole car
+# (the corner group's own presentation frame contains the assembled car at 0.83
+# of frame width — measured, not arranged), and the last part settles at frame
+# 507. That leaves ~11.9 s in which the subject is a finished Formula 1 car and
+# the camera has nothing left to explain.
+#
+# THE MEASUREMENT THAT DECIDES WHAT TO DO WITH IT. Frame-to-frame image change on
+# the delivered 720p beat: 20.27 across the unreadable tour, 4.89 across the
+# readable payoff — a 4.14x collapse exactly where the subject finally appears.
+# The beat did not read as slow because the camera was slow. It read as slow
+# because it went STILL at the moment there was finally something to look at.
+# Making the payoff three times longer without moving the camera would have made
+# that worse, not better, and it is the obvious way to get this wrong.
+#
+# THE MOVE. One continuous orbit, azimuth 177 deg -> 327 deg (150 deg the short
+# way, passing behind the car and down its right flank to the front-right
+# three-quarter), radius opening 6.9 -> 8.1 m, descending 4.27 -> 1.90 m from the
+# high group station to eye level, lens 35 -> 40 mm so the car holds a constant
+# size in frame while the vantage changes completely. It is a single gesture, it
+# never stops, and it arrives exactly on the pinned seam key.
+#
+# CONSTRAINTS IT IS SOLVED AGAINST, all measured on beat1_anim.blend:
+#   * the car body occupies x -2.70..3.02, y +-1.00, z 0.34..1.33. The orbit
+#     never comes inside 5.9 m of the box, against a 0.30 m floor.
+#   * the showroom's rope barrier ring reaches radius 6.96 m and z 0.92; the
+#     orbit is either outside it or more than 1.2 m above it, everywhere.
+#   * walls |x| 15.25 / |y| 11.25, ceiling 6.20, spot rigs from z 5.11.
 #
 # THE LAST KEY IS NOT TOUCHED.  t = 31.40 is the seam with beat 2, whose first
 # key sits 2.09 m away 39 frames later at 40.0 -> 39.95 mm.  Moving it would put
-# a discontinuity in a film whose one law is that there are none.
-BEAT1_CLOSEOUT = [
-    dict(t=25.90, world=[3.30, 3.10, 1.95], look_at=[2.70, 0.30, 0.62],
-         lens_mm=48.0, fstop=2.6, focus_distance_m=3.16, focus_target="FW",
-         note="the front wing arrives (seats 630); CORNER_FL sweeps past the "
-              "lens 1.2 m out on the left"),
-    dict(t=27.30, world=[5.30, 2.55, 2.20], look_at=[0.60, 0.20, 0.85],
-         lens_mm=40.0, fstop=3.0, focus_distance_m=5.42, focus_target="RW",
-         note="wide enough to carry the rear wing's seat at 663 — RW lands "
-              "10.4 deg off axis inside a 14.2 deg half-frame"),
-    dict(t=28.60, world=[6.60, 0.90, 2.35], look_at=[0.20, 0.05, 0.80],
-         lens_mm=36.0, fstop=3.1, focus_distance_m=6.65, focus_target="CORNERS",
-         note="ahead of the nose for the simultaneous four-wheel seat at 696; "
-              "all four corners are inside 8.2 deg of a 15.7 deg half-frame"),
-    dict(t=29.90, world=[7.15, -1.90, 2.20], look_at=[0.15, 0.0, 0.78],
-         lens_mm=38.0, fstop=3.15, focus_distance_m=7.40, focus_target="CAR",
-         note="the car is complete; the camera drifts right into the closing "
-              "three-quarter"),
-]
+# a discontinuity in a film whose one law is that there are none.  The orbit is
+# built to LAND on it: its final authored key is the seam key's own station.
+BEAT1_CLOSEOUT_KEYS = 6          # ~2 s apart; enough for the bezier to be an arc
+BEAT1_CLOSEOUT_LENS_END_MM = 40.0     # == the seam key, so the lens is C1 there
+# R2-838/839. The orbit's angular rate at each end, as a multiple of its own mean.
+#
+# START at 1.0: the camera reaches the corner group's station already moving at
+# ~1.96 m/s, so easing IN to a standstill and back out would be a deceleration
+# the shot does not want and the energy curve cannot afford. It carries straight
+# on into the orbit.
+#
+# END at 0.57: the beat 1/2 seam bridge's own keys run at ~1.2 m/s and they are
+# CARRIED FORWARD, i.e. fixed. Arriving faster than that puts a step at frame 754
+# no matter which way the orbit turns. 0.57 x the orbit's mean is ~1.2 m/s.
+#
+# TUNED AGAINST THE PER-FRAME CAMPATH GATE, not derived: arc length per unit
+# parameter is not constant, so the ratio of rates is not the ratio of speeds.
+BEAT1_ORBIT_START_RATE = 1.00
+BEAT1_ORBIT_END_RATE = 0.57
+
+# R2-839. The long way round is 210 deg instead of 150, and at a mean radius of
+# 7.5 m that is 27.5 m of arc in 12.08 s -- which the pre-flight rejected at
+# 4.04-4.52 m/s against beat 1's 4.00 m/s peak limit. The orbit therefore CUTS
+# THE CORNER: the radius dips below the straight interpolation at mid-arc and
+# returns to it at both ends, which shortens the path without moving either
+# endpoint. 1.0 m of dip removes ~2.4 m of arc.
+#
+# BOUNDED BY THE PICTURE, not by the gate. At mid-arc the radius is 6.5 m and the
+# lens is ~37.5 mm, so the 5.72 m car spans 0.92 of the frame width -- still
+# whole, which is the entire point of the payoff.
+BEAT1_ORBIT_RADIUS_DIP_M = 1.00
+
+
+# --------------------------------------------------------------------------- #
+#  THE APPROACH KEY — R2-837, and it is a LENS defect, not an aim defect.       #
+# --------------------------------------------------------------------------- #
+#
+# The hop into the corner group is structurally the largest reorientation in the
+# beat: it leaves the last close presentation (RW, 58 mm at 3.80 m) for the beat's
+# widest shot (the group, 35 mm at 7.58 m), and it turns 107 deg doing it. With
+# only its two endpoints keyed, the rig ramps the lens LINEARLY across all 65
+# frames — so at the midpoint the camera has finished most of its turn while still
+# carrying most of a 58 mm lens.
+#
+# MEASURED on the built per-frame path, every frame of beat 1 against the nearest
+# cluster's bounding-sphere EDGE (the aim gate's own metric, `ang / half_v`):
+#
+#     f420-433   14 frames over the 0.92 margin, peaking at 1.155 at f431
+#     everywhere else in the 792 frames:  inside the margin
+#
+# ONE excursion in the beat, and reading the row is what identifies the cause:
+#
+#     f431   lens 46.8 mm   half-frame 12.22 deg   nearest edge 14.12 deg
+#
+# The camera is not pointed at nothing. RW's edge is 14.12 deg off axis and the
+# frame is only 12.22 deg tall, so the subject is 1.9 deg outside a picture that a
+# 37 mm lens would have contained. THE AIM IS FINE AND THE LENS IS TOO LONG —
+# which is why the answer is not the old bridge (a key that points the camera at
+# something else); it is a key that finishes the widening BEFORE the turn needs
+# it, and that is also what the shot wants. You widen as you pull back, so the car
+# grows into the frame instead of snapping wide at the end.
+#
+# `_U` is where along the hop the key sits; the lens is at the destination's value
+# by then, so the entire excursion window is shot at ~36 mm rather than ~47-52.
+BEAT1_APPROACH_U = 0.28
+BEAT1_APPROACH_LENS_MM = 36.5
+
+
+def beat1_approach_key(t0, cam0, look0, lens0, t1, cam1, look1):
+    """The widening key on the hop into the corner group. Derived, not placed."""
+    u = BEAT1_APPROACH_U
+    w = [round(cam0[i] + (cam1[i] - cam0[i]) * u, 4) for i in range(3)]
+    la = [round(look0[i] + (look1[i] - look0[i]) * u, 4) for i in range(3)]
+    return dict(
+        t=round(round((t0 + (t1 - t0) * u) * 24.0) / 24.0, 6),
+        world=w, look_at=la, lens_mm=BEAT1_APPROACH_LENS_MM,
+        focus_target="CORNER_GROUP_APPROACH",
+        fstop=2.8, focus_distance_m=round(math.dist(w, la), 3),
+        note="R2-837 approach: the lens reaches its wide end BEFORE the turn "
+             "into the corner group needs it. Without it the rig ramps 58->35 mm "
+             "linearly over 65 frames and 14 frames (f420-433) carry a subject "
+             "outside a frame a 37 mm lens would have held.")
+
+
+def beat1_closeout(t0, cam0, look0, lens0, seam, onward=None):
+    """The payoff orbit: from the corner group's station to the beat 1/2 seam.
+
+    DERIVED FROM ITS TWO ENDPOINTS. `cam0/look0/lens0` are the corner group's
+    SOLVED presentation station and `seam` is the pinned seam key, so this move
+    cannot drift away from either of them when the schedule changes — which is
+    exactly what the four hand-placed constants it replaces could not promise.
+
+    Interpolated in CYLINDRICAL coordinates about the turntable, not in Cartesian
+    ones, and that is the whole trick: a straight line between two stations on
+    opposite sides of a car goes through the car (R2-029), while an arc in
+    azimuth cannot. The azimuth is unwrapped to the SHORT way round so the camera
+    never takes the 210 deg route to save 150 deg of the same move.
+    """
+    ax0 = math.atan2(cam0[1], cam0[0])
+    ax1 = math.atan2(seam["world"][1], seam["world"][0])
+    dax = (ax1 - ax0 + math.pi) % (2.0 * math.pi) - math.pi     # the short way
+    # R2-839.  THE ORBIT GOES THE WAY THE FILM CONTINUES, NOT THE SHORT WAY.
+    #
+    # Taking the short way round put the camera into the seam travelling +x +y
+    # while the film's very next key leaves it travelling -x -y. That is not a
+    # kink, it is a REVERSAL: the camera stops dead at frame 754 and goes back
+    # the way it came. Blender's AUTO_CLAMPED handles then flatten the key,
+    # because a local extremum is exactly what a reversal is, and the per-frame
+    # speed collapsed to 0.010 m/frame against 0.049 on either side.
+    #
+    # MEASURED, and this is what identified it — per-frame chord either side of
+    # the seam, candidate against the shipped path:
+    #
+    #     f744   cand 0.045   ship 0.064
+    #     f750   cand 0.023   ship 0.056
+    #     f754   cand 0.010   ship 0.051      <- the seam
+    #     f756   cand 0.049   ship 0.049      <- the seam bridge takes over
+    #
+    # The shipped path does not have this problem because its close-out arrived
+    # at the seam ALREADY travelling -x -y, monotone through the key, so nothing
+    # flattened. Matching that is a constraint on the orbit's direction, and it
+    # is the one-shot law: a velocity reversal is a cut.
+    #
+    # So the sign is chosen by where the film goes NEXT. `onward` is the first
+    # camera position after the seam (the beat 1/2 seam bridge's own first key);
+    # the orbit turns whichever way leaves its azimuth rate matching that.
+    if onward is not None:
+        ax_next = math.atan2(onward[1], onward[0])
+        d_next = (ax_next - ax1 + math.pi) % (2.0 * math.pi) - math.pi
+        if d_next != 0.0 and (d_next > 0.0) != (dax > 0.0):
+            # go the long way instead, so the azimuth rate does not change sign
+            dax -= math.copysign(2.0 * math.pi, dax)
+    if abs(dax) < math.radians(30.0):        # degenerate: nothing to orbit
+        dax = math.copysign(math.radians(30.0), dax or 1.0)
+    r0 = math.hypot(cam0[0], cam0[1])
+    r1 = math.hypot(seam["world"][0], seam["world"][1])
+    t1 = seam["t"]
+    keys = []
+    for i in range(1, BEAT1_CLOSEOUT_KEYS + 1):
+        u = i / float(BEAT1_CLOSEOUT_KEYS)
+        # R2-838.  THE ORBIT MUST NOT EASE OUT, BECAUSE BEAT 2 IS STILL MOVING.
+        #
+        # This was a smoothstep, `u*u*(3-2u)`, whose derivative is ZERO at both
+        # ends. That is the right curve for a move that stops. This move does not
+        # stop — it hands over to beat 2, whose first key is 2.09 m away 39 frames
+        # later, i.e. 1.29 m/s. Easing out parked the camera on the seam and beat
+        # 2 tore away from it, and the per-frame campath gate caught it exactly
+        # there: "frame 754: camera speed changes 0.0439 m/frame in one frame,
+        # z=56.4 against a local median of 0.00086 (0.2 -> 1.2 m/s). An eased
+        # curve does not do this; a keyframe with a linear handle does."
+        #
+        # A C0-continuous seam is not enough for this film. The one law is that
+        # there are no cuts, and a velocity step IS a cut — it just does not look
+        # like one in a still.
+        #
+        # So the easing is a cubic with the boundary conditions the shot actually
+        # has: e(0)=0, e(1)=1, e'(0)=0 (leave the group station gently, the camera
+        # has been nearly still there while the car assembled) and e'(1)=r, the
+        # rate that matches beat 2's departure instead of fighting it.
+        s0, r = BEAT1_ORBIT_START_RATE, BEAT1_ORBIT_END_RATE
+        a = r + s0 - 2.0
+        b = 3.0 - r - 2.0 * s0
+        e = a * u ** 3 + b * u ** 2 + s0 * u
+        a = ax0 + dax * e
+        r = r0 + (r1 - r0) * e - BEAT1_ORBIT_RADIUS_DIP_M * math.sin(math.pi * e)
+        z = cam0[2] + (seam["world"][2] - cam0[2]) * e
+        la = [look0[j] + (seam["look_at"][j] - look0[j]) * e for j in range(3)]
+        w = [round(r * math.cos(a), 4), round(r * math.sin(a), 4), round(z, 4)]
+        lens = lens0 + (BEAT1_CLOSEOUT_LENS_END_MM - lens0) * e
+        if i == BEAT1_CLOSEOUT_KEYS:
+            # LAND ON THE SEAM EXACTLY — by emitting the seam key ITSELF, not a
+            # copy of its numbers. A copy is a second place the seam is written
+            # down, and a second place is where the two drift apart.
+            keys.append(dict(seam))
+            break
+        # FOCUS IS NOT OWNED HERE — R2-834. `focus_distance_m` is set to the
+        # geometric range to the aim point and `fstop` is ramped onto the seam
+        # key's own 3.2, purely so the key is WELL-FORMED and the rig can build
+        # it. Both are the focus agent's to solve; they are not a focus decision,
+        # they are the absence of one, and the staging note says so.
+        keys.append(dict(
+            t=round(t0 + (t1 - t0) * u, 4), world=w, look_at=[round(v, 4) for v in la],
+            lens_mm=round(lens, 3), focus_target="CAR",
+            fstop=round(3.0 + 0.2 * e, 3),
+            focus_distance_m=round(math.dist(w, la), 3),
+            note="R2-833 payoff orbit %d/%d: the assembled car, %.0f deg of "
+                 "azimuth at %.2f m" % (i, BEAT1_CLOSEOUT_KEYS,
+                                        math.degrees(abs(dax)) * e, r)))
+    return keys
 
 
 # --------------------------------------------------------------------------- #
@@ -770,6 +1295,25 @@ BEAT1_CLOSEOUT = [
 # of the picture at 58 mm.  The second key sits ON those frames.  The lens widens
 # 58 -> 50 -> 54 -> 58 across the bridge, which is the camera taking in the car
 # so far before tightening back onto a wheel.
+# R2-830 — RETIRED, AND KEPT SO THE REASON IS NOT LOST.
+#
+# The bridge existed because RW's station looked at the rear wing hanging behind
+# the car in -Y and CORNER_RL's looked at the rear-left wheel in +Y: a 110 deg pan
+# between two stations 1.53 m from their subjects, halfway through which the lens
+# pointed at bare floor. BOTH of those facts are gone.
+#
+#   * R2-829 pulls RW's station to 3.80 m and the corner group's to 7.58 m, and
+#     from that far out every station is looking INWARD at the same car. The
+#     bearing between adjacent stations collapses; it is the close-in standoff
+#     that made the pan enormous, not the tour.
+#   * R2-830 removes CORNER_RL's individual presentation, so the pan the bridge
+#     was built to cover no longer occurs at all.
+#
+# It is not deleted because the measurement in the comment above is real and a
+# future close-in tour would need it again. It is simply no longer emitted, and
+# `build_beat1` no longer references it. What replaces it as the guarantee is the
+# measured pan rate in the FLIGHT block — which is the instrument that found the
+# problem in the first place.
 BEAT1_BRIDGES = [
     dict(t=18.10, world=[-3.70, 1.11, 2.16], look_at=[-1.35, 0.05, 1.02],
          lens_mm=50.0, fstop=2.4, focus_distance_m=2.81,
@@ -943,52 +1487,83 @@ assert _ES_Z >= 1.20, "R2-454: the lens must clear the rope barrier"
 assert _ES_R > 6.96, "the station is inside the rope ring"
 
 
-def build_beat1(geo, plan, dur, normals=None, deadlines=None):
-    n = len(plan["seat_order"])
-    # Reserve the last 20% for the final settle and the push toward the car, so
-    # the presentations occupy the first 80% and every part is seen before the
-    # corners land together.  That reservation is NOT a gap: see BEAT1_CLOSEOUT.
-    slot = dur * 0.80 / n                       # 1.76 s — the OLD uniform slot,
-    #                                             kept only to derive the two
-    #                                             times below, which are pinned.
-    # CORNER_FL LANDS ON THE SLOT IT ALWAYS HAD.  Everything at or after this
-    # time — CORNER_FL's presentation and the whole close-out — is byte-for-byte
-    # what shipped, because the contact-sheet review reads frames 591-792 as the
-    # best material in the film and nothing here is allowed to disturb it.
-    corner_last_t = round(dur * 0.80 - slot, 3)              # 24.64 s, frame 591
-    # The bridges are pinned to a SEAT time (the engine cover lands 432-440), and
-    # seat times do not move, so neither do they.
-    b1_t = BEAT1_BRIDGES[0]["t"]                             # 18.10 s, frame 434
-    b2_t = BEAT1_BRIDGES[1]["t"]                             # 18.60 s, frame 446
-    bridge1 = _fixed_key_geom(BEAT1_BRIDGES[0])
-    bridge2 = _fixed_key_geom(BEAT1_BRIDGES[1])
+def seam_onward_point(sheet_path):
+    """The first camera position AFTER beat 1's seam key. R2-839.
 
-    # R2-464: the establishing frame eats the front of the spine's span, so the
+    Read from the shipped sheet rather than hard-coded, because it belongs to
+    `beat1_2_seam` / `beat2`, which this file does not author. Returns None if it
+    cannot be found, and the caller then keeps the short-way orbit — a missing
+    onward point must not silently become a claim about one.
+    """
+    try:
+        sh = json.load(open(sheet_path))
+    except Exception:
+        return None
+    ks = list((sh.get("beat1_2_seam") or {}).get("camera_keys") or [])
+    ks += list((sh.get("beat2") or {}).get("camera_keys") or [])
+    ks = sorted((k for k in ks if "world" in k and "t" in k),
+                key=lambda k: float(k["t"]))
+    for k in ks:
+        if float(k["t"]) > 31.4 + 1e-9:
+            return list(k["world"])
+    return None
+
+
+def build_beat1(geo, plan, dur, normals=None, deadlines=None, onward=None):
+    # R2-830/831/832. ONE TOUR, ONE SPAN, AND THE SPAN IS SOLVED.
+    #
+    # What was here: a 1.76 s uniform slot used to derive `corner_last_t`, two
+    # bridge times pinned to the engine cover's landing frame, and two separately
+    # allocated spans. All four of those anchors are downstream of a seat schedule
+    # that R2-831 moves, so none of them survives as a constant. The structure is
+    # now: the tour starts after the establishing lead-in and ends on the corner
+    # group, and everything else is derived.
+    seat_t = seat_schedule(plan, dur)
+    n_spine = len([k for k in plan["seat_order"] if not k.startswith("CORNER_")])
+    grouped = CORNER_GROUP in geo
+    n = n_spine + (1 if grouped else 4)
+
+    # R2-464: the establishing frame eats the front of the tour's span, so the
     # tour is BOTH delayed and compressed. Both effects are in the solve.
     lead = float(os.environ.get("B1_ESTABLISH_LEAD_S",
                                 BEAT1_ESTABLISH_LEAD_S if _establish_on() else 0.0))
-    order = present_order(geo, plan["seat_order"], normals, deadlines,
-                          spine_span_s=b1_t - lead,
-                          corner_span_s=corner_last_t - b2_t,
-                          spine_exit=bridge1, corner_entry=bridge2)
-    n_spine = len([k for k in plan["seat_order"] if not k.startswith("CORNER_")])
-    spine, corners = order[:n_spine], order[n_spine:]
+    order = present_order(geo, plan["seat_order"], normals, deadlines, t0=lead)
 
-    # ---- the two solved schedules ------------------------------------------
-    sp_costs = [_hop_cost(geo, normals, spine[i], i, spine[i + 1], i + 1, n)
-                for i in range(len(spine) - 1)]
-    sp_costs.append(_exit_cost(geo, normals, spine[-1], len(spine) - 1, n, *bridge1))
-    sp_dt, sp_ratio = _allocate(sp_costs, b1_t - lead)
-
-    co_costs = [_exit_cost(geo, normals, corners[0], n_spine, n, *bridge2)]
-    co_costs += [_hop_cost(geo, normals, corners[i], n_spine + i,
-                           corners[i + 1], n_spine + i + 1, n)
-                 for i in range(len(corners) - 1)]
-    co_dt, co_ratio = _allocate(co_costs, corner_last_t - b2_t)
-    budget = {"spine": sp_ratio, "corners": co_ratio}
-    print(f">> beat 1 BUDGET RATIO: spine {sp_ratio:.3f}, corners "
-          f"{co_ratio:.3f}  (1.000 = the segment fits its span exactly; above "
-          f"1.000 every move in it is squeezed by that factor)")
+    # ---- THE SPAN IS CHOSEN, NOT ASSUMED -----------------------------------
+    #
+    # `_allocate` spreads a span over the moves in proportion to what they cost,
+    # so the time at which the k-th cluster is presented is
+    #
+    #     t_k = lead + span * (cum_cost_k / total_cost)
+    #
+    # and requiring t_k <= deadline_k inverts to a bound on the span, one per
+    # cluster. The beat should be as UNHURRIED as its deadlines allow — a tour
+    # flown faster than it needs to be is the "dash" R2-062 caught — so the span
+    # is the largest one that every cluster still tolerates, and the cluster that
+    # sets it is named in the log rather than left to be guessed at.
+    costs = [_hop_cost(geo, normals, order[i], i, order[i + 1], i + 1, n)
+             for i in range(len(order) - 1)]
+    total = sum(costs)
+    cum, acc = {}, 0.0
+    for i, k in enumerate(order[1:]):
+        acc += costs[i]
+        cum[k] = acc
+    span_cap, binder = float("inf"), None
+    for k, c in cum.items():
+        d = deadlines.get(k)
+        if d is None or c <= 0:
+            continue
+        lim = (d - lead) * total / c
+        if lim < span_cap:
+            span_cap, binder = lim, k
+    if span_cap <= 0:
+        raise SystemExit(">> beat 1: the presentation span solves to zero or "
+                         "less; the seat schedule leaves no room for the tour")
+    dt, ratio = _allocate(costs, span_cap)
+    budget = {"tour": ratio, "span_s": round(span_cap, 4), "binding": binder}
+    print(f">> beat 1 SPAN SOLVED: {span_cap:.3f} s for {len(order)} "
+          f"presentations, bound by {binder} (ratio {ratio:.3f}; 1.000 = every "
+          f"move sits exactly on its own limit, above 1.000 = squeezed)")
 
     # ---- ON THE FRAME, BECAUSE THE RIG PUTS IT THERE ANYWAY ----------------
     #
@@ -1004,23 +1579,31 @@ def build_beat1(geo, plan, dur, normals=None, deadlines=None):
 
     times = {}
     t = lead
-    for i, k in enumerate(spine):
+    for i, k in enumerate(order):
         times[k] = on_frame(t)
-        t += sp_dt[i]
-    t = b2_t
-    for i, k in enumerate(corners):
-        t += co_dt[i]
-        times[k] = on_frame(t)
+        if i < len(dt):
+            t += dt[i]
     seq_f = [int(round(times[k] * 24)) for k in order]
     assert all(b > a for a, b in zip(seq_f, seq_f[1:])), (
         f"two presentations quantised onto the same frame: {seq_f}")
-    # The pin is arithmetic, not aspiration -- and it is a pin on the FRAME.
-    # Frames 591-792 (CORNER_FL's presentation and the whole close-out) are the
-    # part of beat 1 the contact-sheet review calls the best material in the
-    # film, and they must come out of this rebuild unchanged.
-    assert int(round(times[corners[-1]] * 24)) == int(round(corner_last_t * 24)), (
-        f"CORNER_FL landed on frame {times[corners[-1]] * 24}, not its pinned "
-        f"{corner_last_t * 24}")
+    # R2-835.  THE `CORNER_FL LANDS ON FRAME 591` ASSERTION IS GONE, DELIBERATELY.
+    #
+    # It read:
+    #     assert int(round(times[corners[-1]] * 24)) == int(round(corner_last_t*24))
+    # where `corner_last_t = dur * 0.80 - dur * 0.80 / 15`, i.e. the 15th of
+    # fifteen equal 1.76 s slots. THAT SLOT SCHEME NO LONGER EXISTS. R2-062
+    # replaced the uniform slot with a cost-proportional allocation, and the
+    # constant survived only because it happened to still be reproducible; R2-830
+    # removes CORNER_FL's individual presentation entirely, so there is nothing
+    # left for it to be an assertion ABOUT.
+    #
+    # RECORDED HERE SO IT IS NOT RESTORED AS A SAFETY CHECK. It looks like one —
+    # "the best material in the film must come out unchanged" — but it is not a
+    # property of the picture, it is the arithmetic of a dead uniform slot. Any
+    # future change to the seat schedule, the tour, or the standoff law moves that
+    # frame legitimately, and an assertion that forbids it would forbid the fix
+    # rather than protect the shot. What protects the shot is the FRAMING gate and
+    # the campath gate, both of which measure the picture.
 
     keys, sched = [], []
     if lead > 0.0:
@@ -1029,12 +1612,15 @@ def build_beat1(geo, plan, dur, normals=None, deadlines=None):
         est["world_time_scale"] = 1.0
         est["presentation_dir_measured"] = False
         keys.append(est)
+    group_geom = None
+    prev_geom = None
     for i, k in enumerate(order):
         g = geo[k]
         nd = (normals or {}).get(k, {}).get("normal")
         pos, standoff, lens, _v = key_geom(geo, normals, k, i, n)
         t = times[k]
-        keys.append({
+        members = plan["clusters"].get(k, {}).get("r2830_members") or [k]
+        key = {
             "t": t, "beat": "1_assembly", "world": pos,
             "look_at": g["centre"], "lens_mm": lens,
             "fstop": 2.2 if g["radius"] < 0.8 else 2.8,
@@ -1043,57 +1629,77 @@ def build_beat1(geo, plan, dur, normals=None, deadlines=None):
             "visible_materials": (normals or {}).get(k, {}).get("distinct_materials"),
             "world_time_scale": 1.0,
             "note": f"present {k} ({g['n_parts']} parts, {g['tris']:,} tris)",
-        })
-        nxt = (times[order[i + 1]] if i + 1 < len(order)
-               else BEAT1_CLOSEOUT[0]["t"])
-        if i == n_spine - 1:
-            nxt = b1_t
-        sched.append({
-            "cluster": k, "n_parts": g["n_parts"], "tris": g["tris"],
-            "presented_t": t, "presented_until_t": round(nxt, 4),
-            "seat_t": None, "seen_before_seat": None,
-        })
+        }
+        if k == CORNER_GROUP:
+            key["r2830_members"] = list(members)
+            key["note"] = (
+                "present the four corners AS ONE GROUP (%d parts, %s tris) — "
+                "they seat simultaneously, they are pairwise the same asset, and "
+                "four separate presentations cost 9.20 s to show the audience the "
+                "same wheel four times at 2.0-2.3x frame overflow"
+                % (g["n_parts"], f"{g['tris']:,}"))
+            group_geom = (pos, list(g["centre"]), lens)
+            # R2-837: the widening key on the way in. Emitted here because this
+            # is the only place that has BOTH endpoints of the hop.
+            if prev_geom is not None:
+                keys.append(beat1_approach_key(prev_geom[3], prev_geom[0],
+                                               prev_geom[1], prev_geom[2],
+                                               t, pos, list(g["centre"])))
+        keys.append(key)
+        prev_geom = (pos, list(g["centre"]), lens, t)
+        nxt = times[order[i + 1]] if i + 1 < len(order) else None
+        for mname in members:
+            sched.append({
+                "cluster": mname, "n_parts": geo[mname]["n_parts"],
+                "tris": geo[mname]["tris"],
+                "presented_t": t,
+                "presented_until_t": (round(nxt, 4) if nxt is not None else None),
+                "presented_as": (k if k != mname else None),
+                "seat_t": None, "seen_before_seat": None,
+            })
 
-    # Seating: mechanical order, staggered, with the four corners simultaneous.
+    # R2-831. THE SEAT SCHEDULE IS NOW COMPUTED IN ONE PLACE (`seat_schedule`)
+    # and read here, because the presentation DEADLINES are derived from the same
+    # function. It used to be computed here and the deadlines read out of
+    # `world/beat1_anim_anim.json` — a build artefact of a 291 MB blend — so the
+    # two could disagree silently. `main()` now compares them and says so.
     #
-    # THIS IS THE ONE THING IN BEAT 1 THAT MUST NOT MOVE.  world/beat1_anim.blend
-    # was BUILT from these times (MB 333, FD 366, ... corners 696) and it is not
-    # rebuilt here, so a change to `seat_start`, `seat_span` or the seat order
-    # would silently desynchronise the parts from the camera.  The presentation
-    # schedule above is derived independently and only has to stay AHEAD of it.
-    seat_start = dur * 0.42
-    seat_span = dur * 0.50
-    seat_spine = [k for k in plan["seat_order"] if not k.startswith("CORNER_")]
-    seat_corners = [k for k in plan["seat_order"] if k.startswith("CORNER_")]
-    per = seat_span / (len(seat_spine) + 1)
-    seat_t = {}
-    for i, k in enumerate(seat_spine):
-        seat_t[k] = round(seat_start + i * per, 3)
-    for k in seat_corners:
-        seat_t[k] = round(seat_start + len(seat_spine) * per, 3)   # simultaneous
-
+    # THE BLEND MUST BE REBUILT WHENEVER THIS MOVES. `world/beat1_anim.blend` was
+    # BUILT from these times and is not rebuilt here, so a change to
+    # BEAT1_SEAT_START_FRAC, BEAT1_SEAT_SPAN_FRAC or the seat order desynchronises
+    # the parts from the camera. That is not a warning about a hypothetical: the
+    # desync is silent in every gate in this file, because every gate here reads
+    # the sheet.
     for s in sched:
         s["seat_t"] = seat_t[s["cluster"]]
         s["seen_before_seat"] = s["presented_t"] < s["seat_t"]
 
-    # BRIDGES and THE CLOSE-OUT — see the two blocks above.
-    for k in BEAT1_BRIDGES + BEAT1_CLOSEOUT:
-        e = dict(k)
-        e.update(beat="1_assembly", world_time_scale=1.0)
-        keys.append(e)
-
-    # final push toward the assembled car. THE SEAM WITH BEAT 2 — do not move it.
-    last = [6.8, -4.4, 1.9]
-    keys.append({
+    # THE SEAM WITH BEAT 2 — do not move it. Built first, because the close-out
+    # orbit is solved to LAND on it.
+    seam = {
         "t": round(dur - 1.6, 3), "beat": "1_assembly",
-        "world": last, "look_at": [0.15, 0.0, 0.75],
+        "world": [6.8, -4.4, 1.9], "look_at": [0.15, 0.0, 0.75],
         "lens_mm": 40.0, "fstop": 3.2, "focus_target": "CAR",
         "focus_distance_m": 8.3, "world_time_scale": 1.0,
         "note": "push toward the completed car; spot rigs ramp ~1 stop over 12 "
                 "frames. THE SEAM: beat 2's first key is 2.09 m away 39 frames "
                 "later at 39.95 mm, so this key is fixed and beats 1 and 2 join "
                 "at 1.29 m/s with no step in position, aim or focal length",
-    })
+    }
+
+    # THE CLOSE-OUT — R2-833, derived from the corner group's station and the
+    # seam, not from four constants anchored to landing frames that have moved.
+    closeout = []
+    if group_geom is not None:
+        closeout = beat1_closeout(times[order[-1]], group_geom[0],
+                                  group_geom[1], group_geom[2], seam,
+                                  onward=onward)
+    for k in closeout:
+        e = dict(k)
+        e.update(beat="1_assembly", world_time_scale=1.0)
+        keys.append(e)
+    if not closeout:
+        keys.append(seam)
     # ONE PATH means one ordering: the bridges and close-out are authored out of
     # sequence, so the keys are sorted by film time and the path length is
     # measured on the sorted list rather than on the order they were appended in.
@@ -1231,6 +1837,17 @@ def main(check=None):
     print(f">> presentation normals: {len(normals)} clusters measured"
           if normals else ">> WARNING: no presentation normals; spiral fallback")
 
+    # R2-830.  Declare the four corners as one camera subject, in memory only.
+    if normals and os.environ.get("B1_CORNER_GROUP", "1").strip() \
+            not in ("0", "off", ""):
+        gk, gmem = build_corner_group(geo, plan, normals)
+        if gk:
+            g = geo[gk]
+            print(">> corner group: %s = %s — one subject, %.2f x %.2f x %.2f m, "
+                  "%d parts, %s tris" % (gk, "+".join(gmem), g["size"][0],
+                                         g["size"][1], g["size"][2],
+                                         g["n_parts"], f"{g['tris']:,}"))
+
     # ---- WHEN EACH CLUSTER STOPS BEING WHERE ITS STATION SAYS IT IS ---------
     #
     # A presentation station is `explode_offset + bbox_centre` plus a standoff,
@@ -1240,23 +1857,74 @@ def main(check=None):
     # air. So the visiting order is constrained by the flight START, with a
     # margin, and world/beat1_anim_anim.json is the file the part animation was
     # actually built from, so it is the one that gets to say when.
-    anim_p = os.path.join(R2, "world/beat1_anim_anim.json")
+    # Overridable for the same reason B1_NORMALS and B1_SHEET_OUT are: a
+    # candidate must be measurable end to end before world/ is touched, and the
+    # part animation is half of what "end to end" means here.
+    anim_p = os.environ.get("B1_ANIM_JSON",
+                            os.path.join(R2, "world/beat1_anim_anim.json"))
+    if anim_p != os.path.join(R2, "world/beat1_anim_anim.json"):
+        print(f">> B1_ANIM_JSON override in force: {anim_p}")
     anim = json.load(open(anim_p)) if os.path.exists(anim_p) else {}
     flight_f = float(anim.get("flight_s", 1.55)) * 24
     PRESENT_MARGIN_S = 0.5
-    deadlines = {c: (v["seat_frame"] - flight_f) / 24.0 - PRESENT_MARGIN_S
-                 for c, v in anim.get("clusters", {}).items()}
-    if deadlines:
-        tight = sorted(deadlines.items(), key=lambda kv: kv[1])[:3]
-        print(">> presentation deadlines (flight start less a %.1f s margin), "
-              "tightest three: " % PRESENT_MARGIN_S
-              + ", ".join(f"{c} {t:.2f} s" for c, t in tight))
-    else:
-        print(">> WARNING: no world/beat1_anim_anim.json; the visiting order is "
-              "unconstrained and a cluster may be presented after it has flown")
 
+    # R2-831.  THE DEADLINES COME FROM THE SCHEDULE, NOT FROM THE LAST BUILD.
+    #
+    # They used to be read out of `world/beat1_anim_anim.json` — the sidecar of a
+    # 291 MB blend — while the seat times they are derived FROM were computed
+    # inside `build_beat1`. Two sources for one fact, and the sheet trusted the
+    # stale one: any change to the seat constants produced a sheet solved against
+    # the PREVIOUS assembly timing, which is precisely the silent desync the
+    # comment at the seat schedule warns about and which no gate here could see,
+    # because every gate here reads the sheet.
+    b1_seat = seat_schedule(plan, BEATS[0][1])
+    deadlines = {c: t - flight_f / 24.0 - PRESENT_MARGIN_S
+                 for c, t in b1_seat.items()}
+    if CORNER_GROUP in geo:
+        deadlines[CORNER_GROUP] = min(
+            deadlines[c] for c in plan["seat_order"] if c.startswith("CORNER_"))
+    tight = sorted(((c, t) for c, t in deadlines.items()
+                    if c != CORNER_GROUP), key=lambda kv: kv[1])[:3]
+    print(">> presentation deadlines (flight start less a %.1f s margin), "
+          "tightest three: " % PRESENT_MARGIN_S
+          + ", ".join(f"{c} {t:.2f} s" for c, t in tight))
+
+    # ---- AND THE BLEND IS CHECKED AGAINST THEM, LOUDLY ---------------------
+    anim_seat = {c: v["seat_frame"] / 24.0
+                 for c, v in anim.get("clusters", {}).items()}
+    desync = sorted((c, anim_seat[c], b1_seat[c]) for c in anim_seat
+                    if c in b1_seat
+                    and abs(anim_seat[c] - b1_seat[c]) > 1.0 / 24.0)
+    if not anim_seat:
+        print(">> WARNING: no world/beat1_anim_anim.json; nothing can confirm "
+              "that the parts assemble on the schedule this sheet declares")
+    elif desync:
+        print(">> !! PART/CAMERA DESYNC: world/%s was built from a DIFFERENT "
+              "seat schedule than this sheet declares — %d of %d clusters "
+              "disagree by more than one frame."
+              % (os.path.basename(anim.get("blend", "beat1_anim.blend")),
+                 len(desync), len(anim_seat)))
+        for c, a_t, b_t in desync[:6]:
+            print("   %-16s blend f%-4d (%.2f s)   sheet f%-4d (%.2f s)   "
+                  "%+.2f s" % (c, round(a_t * 24), a_t, round(b_t * 24), b_t,
+                               b_t - a_t))
+        print("   REBUILD REQUIRED: anim/build_beat1_anim.py reads seat_t from "
+              "this sheet. Until it is re-run, the camera is solved against one "
+              "assembly and the pictures show another.")
+    else:
+        print(">> part/camera sync: world/%s agrees with this sheet's seat "
+              "schedule on all %d clusters"
+              % (os.path.basename(anim.get("blend", "beat1_anim.blend")),
+                 len(anim_seat)))
+
+    onward = seam_onward_point(os.path.join(DOCS, "beat_sheet.json"))
+    print(">> beat 1/2 seam onward point: %s"
+          % ("%s (the orbit's direction is matched to it)"
+             % [round(v, 3) for v in onward] if onward else
+             "NOT FOUND — the orbit keeps the short way round and the seam's "
+             "velocity continuity is NOT established"))
     order, b1keys, sched, path_len, budget = build_beat1(
-        geo, plan, BEATS[0][1], normals, deadlines)
+        geo, plan, BEATS[0][1], normals, deadlines, onward=onward)
     mean_speed = path_len / BEATS[0][1]
     if check:
         print(f">> GATING AN EXISTING SHEET: {check}  (nothing will be written)")
@@ -1552,7 +2220,8 @@ def main(check=None):
                 "ease_speak_peak_over_mean": [EASE_PEAK_LO, EASE_PEAK_HI],
                 "ease_rotation_peak_over_mean": [EASE_ROT_LO, EASE_ROT_HI],
                 "dwell_s": DWELL_S,
-                "budget_ratio": {k: round(v, 4) for k, v in budget.items()},
+                "budget_ratio": {k: (round(v, 4) if isinstance(v, (int, float))
+                                     else v) for k, v in budget.items()},
                 "note": "each move is given time in proportion to whichever of "
                         "its three constraints (dwell, transit at the peak "
                         "speed limit, turn at the pan limit) needs the most, "
@@ -1688,8 +2357,9 @@ def main(check=None):
         json.dump(out, open(dest, "w"), indent=1)
 
     print(f">> film {total:.1f} s = {out['total_frames']} frames @ 24 fps")
-    print(f">> beat 1: {len(order)} clusters, path {path_len:.2f} m, "
-          f"mean camera speed {mean_speed:.2f} m/s")
+    print(f">> beat 1: {len(order)} presentations covering {len(sched)} "
+          f"clusters, path {path_len:.2f} m, mean camera speed "
+          f"{mean_speed:.2f} m/s")
     print(f">> every cluster seen before it seats: "
           f"{'YES' if not unseen else 'NO -> ' + ', '.join(unseen)}")
     print(">> beat 1 VISITING ORDER: " + " -> ".join(order))

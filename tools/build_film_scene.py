@@ -596,6 +596,46 @@ def main():
             print(">> build_sky stats: %s"
                   % {k: v for k, v in (sky_stats or {}).items()
                      if isinstance(v, (int, float, str, bool))})
+            # R2-836.  THE CLOUD PARALLAX MUST BE BOUND TO THE CAMERA THAT
+            # ACTUALLY EXISTS, AND THAT IS NOW CHECKED RATHER THAN ASSUMED.
+            #
+            # `build_camera_rig` DELETES every camera in the scene and builds a
+            # fresh ONER. `build_sky.bind_camera()` points two SCRIPTED drivers —
+            # the cloud decks' observer X and Y — at a camera object BY ID. If
+            # the sky is ever built BEFORE the rig, or re-bound to a camera the
+            # rig later replaces, those driver targets go to None and build_sky's
+            # own docstring says what happens next: the decks "sit at world XY
+            # (0,0) and behave as a skybox".
+            #
+            # THAT IS A GRACEFUL DEGRADATION, WHICH IS WHY IT NEEDS A GATE. No
+            # error, no warning, no crash — just a different sky, and a different
+            # sky is different LIGHT. It matters even for beat 1, which is an
+            # interior: the showroom has a glass curtain wall and two specular
+            # walls, so the sky arrives as reflection where it is not in shot.
+            #
+            # On THIS path the ordering is already correct — assembly*.blend
+            # carries no world and no camera (verified: 0 worlds, 0 cameras), so
+            # the sky cannot predate the rig. The check exists because "it has
+            # always fired that way" is not a guarantee, and because the failure
+            # it catches is invisible in every downstream artefact.
+            _cam = scene.camera
+            _w = scene.world
+            _ad = getattr(getattr(_w, "node_tree", None), "animation_data", None)
+            _tg = [t for fc in (_ad.drivers if _ad else [])
+                   for v in fc.driver.variables for t in v.targets]
+            _dangling = [t for t in _tg if t.id is None]
+            _wrong = [t for t in _tg if t.id is not None and t.id is not _cam]
+            if len(_tg) < 2 or _dangling or _wrong:
+                raise SystemExit(
+                    "REFUSING: the cloud-parallax drivers are not bound to the "
+                    "live camera — %d driver target(s), %d dangling, %d pointing "
+                    "at something other than %r. The decks would sit at world XY "
+                    "(0,0) and render as a skybox, silently, changing the film's "
+                    "light and its reflections. See R2-836."
+                    % (len(_tg), len(_dangling), len(_wrong),
+                       _cam.name if _cam else None))
+            print(">> sky/camera bind CHECKED: %d cloud-parallax driver targets, "
+                  "all live and all on %r" % (len(_tg), _cam.name))
             # the exposure/grade was applied before the rig and the rig keys a
             # DELTA from it; re-assert rather than assume nothing touched it
             got2 = FX.apply(scene)
