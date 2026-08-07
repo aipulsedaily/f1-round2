@@ -296,6 +296,33 @@ def run():
                guard_verdict(rc, out))
 
         print("")
+        print("C14 an explicit claim must be able to TAKE an auto-leased path")
+        print("    Found in live use, not here: the auto-lease refused a claim")
+        print("    on files their author had just edited, which is the normal")
+        print("    case and would have made claiming impossible.")
+        open(os.path.join(r, "world/items/erin.py"), "w").write("# erin\n")
+        open(os.path.join(r, "world/items/alice.py"), "a").write("# c14\n")
+        sh("git add world/items/alice.py", r)
+        sh('git commit -q -m "alice, unrelated c14"', r, {"R2_AGENT": "alice"})
+        held = json.load(open(os.path.join(
+            r, ".git", "r2-guard", "leases", "inflight-auto.json")))["paths"]
+        record("C14 erin's new file was auto-leased", True,
+               "world/items/erin.py" in held)
+        rc, out = sh("python3 tools/gitguard.py claim world/items/erin.py", r,
+                     {"R2_AGENT": "erin"})
+        record("C14b erin can claim it", "OK", "OK" if rc == 0 else "CLASH",
+               out.strip().splitlines()[-1][:44])
+        sh("git add world/items/erin.py", r)
+        rc, out = sh('git commit -q -m "erin commits her own"', r,
+                     {"R2_AGENT": "erin"})
+        record("C14c and then commit it", "ALLOWED", guard_verdict(rc, out))
+        rc, out = sh('git commit -q -m "alice takes erins file"', r,
+                     {"R2_AGENT": "alice"})
+        record("C14d VACUITY: alice still cannot", "REFUSED",
+               guard_verdict(rc, out))
+        sh("git reset -q", r)
+
+        print("")
         print("C10 seed-inflight claims exactly the dirty set")
         open(os.path.join(r, "docs/NEW_UNTRACKED.md"), "w").write("x\n")
         rc, out = sh("python3 tools/gitguard.py seed-inflight --owner inflight", r)

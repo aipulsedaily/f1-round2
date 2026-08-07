@@ -347,6 +347,13 @@ def cmd_claim(argv, cwd=None):
     clashes = []
     for path in argv:
         for lease in leases:
+            # AUTO_OWNER never clashes. The auto-lease means "dirty and nobody
+            # has said whose", so a claim is the answer to it, not a conflict
+            # with it -- and it is released a few lines below. Found in live
+            # use, one command after the auto-lease was added: claiming three
+            # files I had just edited was refused by the guard's own bookkeeping.
+            if lease.get("owner") == AUTO_OWNER:
+                continue
             if lease.get("live") and lease.get("owner") != who:
                 for lp in lease.get("paths", []):
                     if holds(lp, path) or holds(path, lp):
