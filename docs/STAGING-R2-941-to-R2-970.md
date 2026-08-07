@@ -816,6 +816,51 @@ what each looks like:
 If two or more of these land, the arrival has not fixed the ending either, and
 that is what this file will say.
 
+### THE BUILDER'S OBSERVATION — 4K stills, looked at. NOT the verdict.
+
+**I built this, so this is evidence, not adjudication.** An agent that did not
+build it is judging the same frames independently and its verdict goes in
+`docs/STAGING-R2-971-to-R2-990.md`. Where we disagree, prefer it — three passes
+of camera work in a row reported success on this ending from evidence weaker than
+what is below.
+
+All four stills, 3840×2160, `blank=OK`, one `spec_hash c49ed585b3812fe5`,
+233–304 s each.
+
+**f2978, the last frame of the film, at 1:1.** The car is not a smudge. It is a
+Formula 1 car with a **visible front and rear wing, airbox, halo, the driver's
+helmet, four tyres with coloured rims, and its own shadow on the tarmac.** At
+231 px it is past R2-862's top rung — that ladder described 265 px as *"a car
+with a visible wing and airbox"* and this delivers it at 231. Against the
+constant-speed arm's *"pale blue-grey horizontal smear the width of the gravel
+rake marks"* at the same frame, it is not an improvement in degree.
+
+**The wide frame is not empty, and R2-943b was wrong about that.** I predicted
+*"no architecture and no start/finish line"*, having projected only the pit
+building's declared box. The frame in fact contains the racing surface, red-and-
+white kerbing, catch fencing carrying **advertising hoardings**, run-off, grass,
+and **a grandstand corner with visible spectators at bottom-left**. The
+prediction failed because I tested one object and concluded about a frame — the
+same error shape as R2-946, one entry apart. **R2-943b's conclusion that the
+resting station is physically determined still stands; its description of what
+would therefore be in shot does not.**
+
+**What R2-949 got right.** No sky, no horizon, at the predicted ~24 deg
+depression. The frame is a high, plan-ish aerial. That was registered before the
+render and it is exactly what arrived.
+
+**And the thing I cannot settle, which is the whole reason R2-949b exists.** That
+car is *bright* — saturated blue, high-contrast livery, orange rims, orange
+helmet. Some unknown share of its legibility is `film17`'s car paint at ~3x the
+albedo of the `film16` build both comparison arms come from, and **at f2760 the
+car already reads clearly at 83 px, where R2-862's ladder called 79.5 px a
+smudge.** That is either the haze difference (157 m against 1,000 m), or the
+paint, or both, and this still cannot separate them. **The f2715 diff in the
+720p sequences is the only clean instrument and it has not arrived yet.** Until
+it does, "the arrival fixed the ending" is not a claim this file is entitled to
+make — only "the ending now has a subject in it", which is a claim about the
+film and not about the cause.
+
 ### The grade was not touched, and the constraint that protected it still holds
 
 Nothing in R2-941..R2-950 changes the view transform, the look or the exposure.
@@ -1222,3 +1267,13 @@ material. Applied at all four sites that used a roll as a delay:
 splice and jump-cut positive controls — and are left alone.
 
 ---
+**Measured after the fix**, same window, same measurement:
+
+| master | frame-1 peak | above the following second's RMS |
+|---|---|---|
+| shipped (np.roll) | 0.8505 | **+31.3 dB** |
+| A, after `dsp.delay` | 0.0507 | +7.2 dB |
+
+7.2 dB is an ordinary crest factor for a noise bed. The film no longer opens with
+a transient.
+
