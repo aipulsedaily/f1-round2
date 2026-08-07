@@ -17,6 +17,9 @@ rendered before it is superseded by construction. Written 2026-08-07.
 | **Beat-6 lap-down (R2-943)** | ALREADY IN SOURCE — `anim/carpath.py` (`LapDown`, `Car._extrap`), `anim/carrig.py` (`ground_distance`, `body_pitch`, `body_roll`), `audio/scene.py`, `tools/car_anim_gate.py`. **Nothing to fold in; the rebuild picks it up by running the source.** | car at the last frame 79.0 -> 230.7 px; beats 1-5 bit-identical at 0.000e+00 m and 0.00000 deg through f2715; rolling contact exact to 1.35e-12 m |
 | **Breach frost** | `sim/apply_breach.py --fracture-faces`, **off by default** — a material edit on `BREACH_Glass`, no geometry, not appendable | pending probe |
 | **Breach fines** | `world/breach_fines.blend` (101.9 MB library) landed by **`apply_breach.py --fines-lib`** — NOT a `build_film_scene` append | round-trip EXACT: 11,246 of 11,246 objects, 2,844,012 of 2,844,012 keys, worst world-position error **1.70e-06 m = 0.0037 px**, **0** visibility mismatches across f866/880/900/930/1200/2978 |
+| **Asphalt relief re-budget** | `world/build_surface.py` — 7 stages spanning 3.7 mm–1.03 m, all inside the camera's readable band, all from `relief_amplitude_for`; the 0.6 mm stage moved to roughness; six meso structures via `amp_field` | octave contrast **2.70× at f2000**, 1.90× on the wide; bit-identity survives (identical SHA256, 2,721,433 tris). Milled-repair feather **1.6 m → 0.13 m** with a sealed lip — the client's "patches in the land", second instance |
+| **Audio beat-1 camera** | `audio/master.py:117` builds `CameraPath()` with **no argument** and gets the stale rig. Beat 1's assembly layer is positional. | level error p50 **2.19 dB**, max 11.69; binaural azimuth max **178.1°** — the source is panned to the **wrong ear on 318 of 792 frames**. Beats 2–6 untouched |
+| **Beat-5 bridge blackout** | `render/film_path_R2971_PONT_B5_REBASED.json` — **staged, not merged**, and needs folding into the sheet like the beat-6 re-key | occlusion **12 → 0** across all four bridge bands; acceleration 47.7 m/s² *below* the shipped 49.1; clearance 2.391 m against a 1.20 m sphere; boundaries bit-identical |
 
 **Why `apply_breach` and not `build_film_scene`:** the applier **already opens
 the film once**, so the append lands inside a pass that was happening anyway -
@@ -81,6 +84,18 @@ produced by running the build.
    silently swap in a table where `BF_MUL05_S02` travels 55.35 m instead of
    0.1449 m. Invoke `apply_breach.py` directly with an explicit `--film`.
 
+6. **Rebuild the camera rig from the CURRENT sheet, and check the artefact it
+   writes.** `build_camera_rig.py:1585` names its output
+   `splitext(--out)[0] + "_path.json"` — **the artefact's name is a side effect
+   of an argument, so no build step owns it.** `world/camera_rig_path.json` is
+   therefore three days stale (byte-identical to `film16_path.json`), and **43
+   files read it against 1 that reads the live path.** Worse, `same_gen` still
+   SKIPs at 2.597 m when pointed at `film17_path.json`: **the sheet has been
+   re-authored since film17 was built**, so the live path is itself behind the
+   document that defines it. Use `tools/live_campath.py` — its `load()` takes
+   no path argument, so the wrong file is unreachable rather than merely
+   detectable.
+
 ## Verification bar the new film must meet
 
 ```
@@ -91,16 +106,49 @@ ONER  clip 0.05/200000     3840x2160, 24 fps, 1..2978, AgX, look None, -3.628
 BF_MUL05_S02 = 0.1449 m    the guard that proves the right bake landed
 socket audit               film16 PASS, film10 FAIL 27 (the control that makes
                            every other PASS non-vacuous — keep film10)
+slabcheck                  MUST exit 0.  It exits 1 today: bays 3 and 6 are
+                           role `destroyed` and read DID_NOT_MOVE at 0.9 % and
+                           9.0 % vacated.  See the blocker below.
+rig_preflight              any comparison rig used to judge this film must exit
+                           0 — sun bearing, exposure, view transform, world
 ```
+
+## BLOCKER — decide bays 3 and 6 before building
+
+`slabcheck` now joins each bay's `role` to its `verdict` and **fails**. Bays 3
+and 6 are tagged `destroyed` and do not break; their shard counts (202, 200)
+match the *retained* bays (195, 183), not the bays that go (1531, 1485).
+
+**This is a look call, not a correctness one.** Fractured-but-standing laminated
+glass flanking the hole is physically right and may be better than four bays
+leaving. Either make them leave (re-bake) or re-label them `retained` (free) —
+but **the plan and the outcome must agree before a 7-day render starts**, and
+they have disagreed for the life of the project without anything noticing.
 
 ## Then the master
 
-**180.0 h / $79.99** at 512 spp, or **160.7 h / ~$71.40** with
-`adaptive_threshold 0.02` (measured visually free: mean delta 0.06, p99.9 of
-1 level, 0.00 % of samples beyond 2). **Credit is $72.39.** 256 samples fits at
-~$47 and is NOT taken — 17.5 % of samples move beyond 2 levels, which is a look
-decision, not a budget one.
+**155.0 h**, measured — not 180.0 and not the 172.2 that stood here earlier.
+`adaptive_threshold 0.02` saves **7.3 %**, not the ~11 % once assumed.
 
-**Re-probe the changed beats before quoting a start figure.** Two of the six
-per-beat rates were measured on beat 1 and beat 6, both of which this rebuild
-changes. ~$0.44, 40 minutes.
+```
+current card 47039886   $0.4488/hr   186.7 s/f   $70.06   short $1.96
+cheap card   42731684   $0.3999/hr   203.1 s/f   $67.95   clear  $0.15
+```
+
+**Credit is $68.10, so the master fits by fifteen cents and only on the cheaper
+card** — and broker 2 still has queued jobs drawing on the same balance. **The
+ask to the client is ~$25.** 256 samples fits at ~$47 and is **not** taken: it
+is a look decision, not a budget one, and it was declined as one.
+
+**This section has now been wrong four times, always the same way** — a rate
+measured on a small sample extrapolated across 2,978 frames. 510.5 s/f was the
+wrong scene entirely (2.6× high); 196.5 omitted overhead; 219.3 was a cold start
+divided by nine (11 % high). **And the fifth error is already staged:** both the
+anchor and the probe measure `film16_breach.blend`, while the farm has served
+`film17_breach.blend` since 06:09 on 08-07.
+
+**Do not quote a start figure from this table.** What settles it: **one
+contiguous beat, 200–300 frames, delivery spec, on the shipping blend**, read
+off `frames.render_sec` — 11–17 h, **$5–7**. Host-to-host variance across the
+13–14 rentals a master needs is unmeasured and is now worth more than the $2.11
+the card choice is.
