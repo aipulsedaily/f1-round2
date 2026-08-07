@@ -33307,3 +33307,57 @@ the client's attention on something measurement had already bounded. **A
 listening pass is a budget of attention, not a dump of evidence.**
 
 Cost: **$0**, CPU only, farm untouched.
+
+## R2-1107 — THIRD instance: pattern-matched `pkill` on a shared box, by an agent that had the documentation
+
+A security check flagged a pattern-based `pkill` sweeping processes across the
+box rather than exact PIDs tracked from jobs the agent itself created.
+
+**Verified: nothing of ours died.** Encoder alive on PID 1083726 and logging
+normally through `[14:48] 673/792`; both brokers alive; **687 frames on disk and
+climbing**; broker 2's queue intact at depth 6. No harm done.
+
+**But that is luck, not design, and this is the third instance in a day.**
+
+```
+R2-724   pkill -f encode_when_ready.sh    matched the agent's OWN wrapper shell,
+                                          killed the command before its sed ran,
+                                          nothing armed for ~17 minutes
+R2-1107  pattern pkill across the box     flagged before it could cost anything
+         (and R2-724 itself was already the second instance of the vast-5090
+          skill's documented `pkill -f "broker.app"` warning)
+```
+
+**Every one of these was committed by an agent with access to the document
+describing it.** R2-724 concluded *"documentation that describes a failure does
+not prevent the failure — it only lets you recognise it afterwards."* **Three
+instances is no longer a lesson about diligence; it is a fact about the
+interface.** `pkill -f` takes a regex against every process on the machine and
+has no notion of ownership, and no amount of prose fixes an API whose default
+scope is *everything*.
+
+**The correction made runnable is what works**, and it is cheap: kill by
+recorded PID, or refuse to signal anything outside your own process group. This
+project has already proved the principle twice — `tools/live_campath.py`'s
+`load()` takes no path argument, and `rig_preflight` imports its constants
+rather than typing them. **Make the wrong thing unreachable, not merely
+documented.**
+
+## R2-1108 — OPEN: the tool certifying that the film does not depend on its ending runs at the ONE rate where it does
+
+`audio_prefix_identity.py` — the tool R2-1089's bit-identity result rests on —
+**defaults to 48 kHz.** The master is **96 kHz**. And `engine.py:411` carries a
+turbo branch that is film-independent at 96 kHz and **film-dependent at 48**.
+
+**The result still stands**, and the agent said so rather than inflating it: the
+peak shaft is on the flying lap, which the lap-down does not touch, and the
+post-fix run is bit-identical. **But a certification tool should certify at the
+rate it ships at**, or its passing result is about a signal chain the film never
+runs.
+
+Left open deliberately, and named here so it is not rediscovered.
+
+**And the agent closed on the caveat that matters most**, about its own
+deliverable: it verified the nine listening clips by spectrum and level, the
+numbers are right — **and nobody has heard them.** R2-1090 stands unchanged for
+the very clips cut to answer it.
