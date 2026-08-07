@@ -33581,3 +33581,69 @@ agent said so rather than reporting the eight as secured.
 `farm/procure.py` hard-rejects `gpu_frac < 0.99` **and** `num_gpus > 1`; **7 of
 23 offers survived.** The R2-382 quarter-share trap and the $512 wide-box trap
 are both now filtered at source rather than watched for.
+
+## R2-1117 — nothing ever read `start_instance`'s response body, so a refusal was invisible and the waiter sat out 900 s twice
+
+Broker 1's instance was hibernated at 14:22 by design (5 min idle, $0 GPU).
+Machine 138180's GPUs were let to other tenants in the meantime, so the stopped
+container **cannot** restart. The API says so plainly:
+
+```
+start_instance(47049525) -> {'success': False,
+                             'error': 'resources_unavailable',
+                             'msg': 'state change queued.'}
+```
+
+**Nobody read that.** vast accepts the start, parks it on an open-ended queue and
+never acts, and `wait_ready` sat out its **full 900 s READY_TIMEOUT twice** while
+the answer was in the response body the whole time. `up=0.0s` stuck at zero is
+**real, not a display bug** — the container has never started.
+
+**This is R2-111's shape again** (`fp_diff` computed a number, printed it, never
+consulted it) and R2-1051's (`horizon_gate` printed an accurate diagnosis into a
+log nothing gated on). **Here the value was not even printed — it was returned,
+and discarded at the call site.** A refusal that no code path reads is
+indistinguishable from a slow success, and the cost is exactly one timeout.
+
+Fixed in the tree: `vastctl.wait_ready` caps the wait once vast refuses for
+resources (`COLD_UNAVAIL_GRACE = 120 s`), keeps nudging through the grace, and
+**does not blacklist a host for being merely busy.** Regression test added,
+**473/473 offline tests pass.** Deliberately **not deployed** — a restart
+re-claims the job at attempt 3 of 3 with zero margin, so it lands at the next
+natural restart.
+
+**Verified independently rather than relayed.** At 15:26 UTC broker 1 reads
+`gpu resuming, up=0.0s`, exactly as described; broker 2 is `ready` at 40,279 s
+uptime with the client's beat-1 render **untouched at 737/792**; credit $61.74.
+
+**And the recovery is proven on this exact hardware today**: instance 47040457
+failed resume at 05:19:55 and 05:34:57, was destroyed at 05:35:03, and a
+replacement was rendering by 05:52. `fleet.ensure_ready` destroys the stranded
+instance and rents a replacement **inside the same claim** — the job is not lost.
+
+## R2-1118 — a peer was denied a destroy, refused to route it through me, and was right
+
+The peer session's permission classifier denied `vastctl destroy 47049525`. It
+did not ask me to run it. It wrote: *"a peer asking cannot authorise what the
+user's permission settings declined."*
+
+**That is correct and it is worth recording as a standing rule**, because the
+opposite is subtle and would have looked like helpfulness: a second session with
+different settings executing what the first was refused **launders the user's
+own permission decision through a side channel.** The right move is to surface
+it, which is what happened.
+
+**And on the merits, doing it would have bought nothing.** The broker's own
+recovery performs the identical destroy-and-replace at 15:35:10, ~9 minutes
+away. **The manual version saves nine minutes and spends a permission boundary.**
+
+Two further judgements from that session, both right: it did **not** restart the
+broker to force the fix in — a restart re-claims the job at **attempt 3 of 3**,
+so one more hiccup returns a hard error instead of a frame, and waiting
+**preserves a spare retry.** And it did not cancel the job, which is queued
+normally and should return a frame.
+
+**Its correction to its own earlier account is the part I'd keep**: the instance
+had not been "resuming for 90 minutes" — it was hibernated 14:22-15:05 and
+resuming for 20. **A wrong duration in a status report is a wrong diagnosis
+waiting to happen**, and it corrected it unprompted.
