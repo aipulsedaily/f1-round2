@@ -298,6 +298,32 @@ build over all 2,978 frames, so the chain back to R2-853 is closed.
 to 1e-5 deg.** The seam is not at risk and does not need re-measuring on pixels
 to know that — nothing that feeds it moved.
 
+### R2-944b — the one path by which a beat-6 key can still reach frame 2714, closed
+
+Prompted by the audio rebuild, which found **three** whole-film reductions that
+turned a change to the last 11 s into a change from sample 42 onward. The picture
+has one structural analogue and it is worth naming rather than assuming away:
+**Cycles reads the F-curves at SUB-FRAME times for motion blur**, so frame
+2714's shutter samples into the LINEAR segment 2714 → 2715, whose far endpoint
+this change moves. Frame 2714 being bit-identical *at its own key* does not by
+itself settle what its blur integrates.
+
+    >> STAGE RESULT: SEAM_MOTION_BLUR_CLEAN
+
+| | |
+|---|---:|
+| car delta at f2713 and f2714 | 0.000000e+00 m |
+| car delta at f2715 | **3.540e-05 m** |
+| car delta at f2716 | 1.843e-03 m |
+| worst displacement inside f2714's shutter, CENTER (Blender default) | 8.850e-06 m = **2.666e-04 px** at 4K |
+| worst, if the shutter were END-aligned | 1.770e-05 m = 5.331e-04 px at 4K |
+
+The reason it is this small is the same reason R2-941 matters: at f2715 the brake
+has been on for **23.6 ms** and the onset smoothstep is only 1.8 % applied, so
+the car has lost 35 microns against the constant-speed arm. The camera is
+bit-identical at f2715 in both position and rotation, so its own blur is
+untouched. **Half a thousandth of a pixel** is not a tolerance, it is an absence.
+
 ### Pan rate, smear and the aim gate
 
 | | peak pan | mean | worst smear @4K 180° |
@@ -805,5 +831,180 @@ the throttle there and the road-load model's own minimum `thr` wherever
 `lock < 1` is 0.301 — 3.8x the largest possible floor. `np.maximum` returns its
 first argument bit-for-bit when it wins, so those samples are untouched, not
 merely unchanged to a tolerance.
+
+---
+## R2-955 — the ending was changing the whole film, and it was not the ending's fault
+
+Before comparing any master I ran the cheap version of the brief's own question at
+the SOURCE: render every world-clock layer twice, once with `F1_LAPDOWN=0` and
+once with `F1_LAPDOWN=1`, and compare with `==` for every world time up to
+`t_end`. `tools/audio_prefix_identity.py`. The first run:
+
+    speed accel_long accel_lat slip wheel_w heading s_m track_s pos rpm gear
+                                                    all bit-identical, 0.000e+00
+    eng   (the dry engine)                          NOT identical, worst 1.360e-01
+    tyre  (the dry tyre bed)                        NOT identical, worst 1.192e-06
+
+Every INPUT to the engine was bit-identical for the whole 72.58 s and its OUTPUT
+was not. That is not a rounding story; it is a whole-film reduction somewhere
+inside `synth`. Three were found, all of the same shape — a value read from the
+future — and they are R2-956 and R2-957.
+
+Recorded because of what it implies beyond this defect: **any** change to **any**
+part of this film was silently re-deciding the engine everywhere else in it, and
+no gate in `audio/verify.py` looks for that. It would have been invisible for as
+long as nobody rebuilt one beat and checked another.
+
+---
+
+## R2-956 — `f_crank.mean()`: one scalar made every sample of the engine a function of every other
+
+    ph_crank += 0.004 * np.cumsum(jit) * (2*pi/sr) * f_crank.mean()
+
+`f_crank.mean()` is a reduction over the ENTIRE world grid. The lap-down drops
+the last 11 s from ~13,000 rpm to a 4,300 rpm idle, which moves that mean, which
+rescales the combustion jitter over all 124 s.
+
+Measured on a 20 s bench where only the SECOND HALF of the speed track was
+changed (60 m/s -> 20 m/s) and the first half was held identical:
+
+    rpm over the first half              bit-identical
+    engine signal over the first half    first difference at sample 42 of 960,000
+    delta RMS over the first half        0.0287   against a signal RMS of 0.0489
+                                         i.e. the "unchanged" half differed by -4.6 dB
+
+**It is inaudible.** Same rpm, same gears, same pipes, same firing order — a
+differently seeded 0.4 % wander. And it is still a defect, because it means the
+film before a change cannot be shown to survive the change, and the whole point
+of R2-943 is that beats 1-5 survive it.
+
+**Fixed:** `ph_crank += 0.004 * np.cumsum(jit * f_crank) * (2*pi/sr)`. A prefix
+sum, therefore causal, and the more physical of the two statements: cycle-to-cycle
+variation is a fraction of the speed the crank is turning AT THAT MOMENT, so it
+is small at a 4,300 rpm idle and large at 14,400 rpm. The old form applied the
+film's average to both.
+
+CHECKED AND NOT A LEAK, stated so it is not re-investigated: `synth` has one
+other whole-film reduction, `np.nanmax(f)` selecting the turbo-whine branch. The
+largest order-18 shaft line the model can produce is 125,000/60 * 18 * 0.9981 =
+37,428.75 Hz, which is below 0.45*sr at 96 kHz (43,200) and above it at 48 kHz
+(21,600), so the branch is decided by the SAMPLE RATE and not by the film at
+either rate this project uses. Left alone.
+
+---
+
+## R2-957 — two block loops that read 512 and 2,048 samples into the future
+
+With R2-956 closed, the bench's first differing sample moved from 42 to 479,235 —
+765 samples BEFORE the change at 480,000. Two block-processing loops set a
+coefficient from the MEAN of the block they are about to write:
+
+| where | block | reads ahead | measured |
+|---|---|---|---|
+| `engine.synth`, turbo shaft `demand[a0:b0].mean()` | 2048 | 21.3 ms at 96 kHz | 0.0087 on a 0.049 RMS signal |
+| `dsp.tv_onepole_lp`, `fc[a0:b0].mean()` | 512 | 5.3 ms at 96 kHz | 1.2e-06 on the tyre bed |
+
+479,235 is three samples into the 2,048-block that straddles 480,000, which is
+the turbo loop identified without ambiguity.
+
+21.3 ms of world time at `t_end` is 21.3 ms of film time (the ramp is long past,
+scale = 1), and `t_end` lands at film t 113.055, i.e. INSIDE frame 2714. So the
+turbo window reaches back to film t 113.034 — **frame 2713**. It is not a
+rounding artefact that can be waved through; it would have made frames 2713 and
+2714 differ.
+
+**Fixed:** both take the coefficient at the block's FIRST sample instead of the
+block mean. `tv_onepole_lp`'s own docstring already justifies this — the block is
+far shorter than any audible change in the coefficient — and `demand` is a smooth
+function of rpm through a 90 ms driveline lag and a 240/900 ms turbo inertia, so
+its value at the block start and its mean over 21 ms differ by far less than the
+quantisation the block structure already imposes. Neither loop now reads a sample
+it has not yet reached.
+
+**Verified on the same bench, after both fixes:**
+
+    ENGINE  first differing sample = 480,000   (the change itself, not one earlier)
+    TYRE    first differing sample = 480,000
+
+---
+## R2-958 — one shared RNG, and seven downshifts 61 seconds in the future
+
+With R2-956 and R2-957 fixed, the SOURCE check still failed on one track:
+
+    eng   bit-identical before t_end = False,  worst 1.102e-01
+    first differing sample: index 2,198,824 -> WORLD t 10.809 s
+
+61.8 s before the end of the telemetry, and nowhere near a block boundary. No
+block-window argument can produce that; only a shared random stream can.
+
+`engine.synth` opened ONE `default_rng(seed)` and walked it through three event
+loops in order: upshift cracks, then downshift cracks, then overrun pops. The
+lap-down adds seven downshifts in the last 11 s. Those seven `standard_normal`
+draws are consumed BEFORE the pops loop starts, so every pop in the film was
+drawn from a stream offset by them — and world t 10.809 is the first overrun of
+the lap, i.e. the first pop in the film.
+
+The upshift and downshift cracks themselves were fine by luck: `np.flatnonzero`
+returns sorted indices, so the seven new events landed at the END of their own
+loop. That is not a property worth relying on.
+
+**Fixed:** every event draws from its own stream, keyed on its own sample index:
+
+    def _ev_rng(kind, i):
+        return np.random.default_rng([seed, kind, int(i)])
+
+so neither the NUMBER of events nor their ORDER can perturb an existing one. The
+film's cracks and pops are different random realisations than before; they are
+the same process with the same statistics, and they are now local.
+
+**RESULT — the claim the brief actually asks for, at the source:**
+
+    tools/audio_prefix_identity.py --sr 48000
+
+    speed accel_long accel_lat slip wheel_w heading s_m track_s pos
+    rpm gear eng tyre                    ALL bit-identical before t_end, 0.000e+00
+    >> ALL_BIT_IDENTICAL_BEFORE_T_END = True
+
+Every world-clock source the render is built from is identical, sample for
+sample, for all 72.583 s of world time up to the end of the telemetry, with the
+lap-down on and off. The finished masters still differ by one broadband gain —
+see R2-959 — and that is a mix-bus fact, not a rebuilt beat.
+
+STILL LATENT, NOT TRIGGERED, recorded so the next agent does not have to find it
+the hard way: `layers.tyres` has the same shape of hazard — one `rng` consumed
+inside two branches that are gated on WHOLE-FILM maxima
+(`surf["gravel"].max() > 1e-3`, `surf["glass_debris"].max() > 1e-3`). If a future
+change ever puts a wheel on the gravel, the glass-debris crackle in beat 3
+changes with it. It does not fire on this telemetry (max lateral offset on the
+lap is 10 mm) and `tyre` measures bit-identical, so it is left alone.
+
+---
+## R2-959 — what R2-956..958 cost the film, measured on the gates rather than asserted
+
+The three causality fixes change the engine everywhere in the film: a different
+random realisation of every crack and pop, a jitter that scales with
+instantaneous rather than mean crank speed, and two filter coefficients read at a
+block's start instead of its middle. None of that is audible, but "not audible"
+is a claim, so it was put through `audio/verify.py` against the same WAV the
+stored report was written from:
+
+| gate | stored report (2026-08-02) | after R2-956..958 |
+|---|---|---|
+| levels | PASS | PASS |
+| seam | PASS | PASS |
+| external_assets | PASS | PASS |
+| pitch | PASS | PASS |
+| doppler | PASS | PASS |
+| pitch: corr(measured f0, rpm/60*3) | 0.99830 | 0.99754  (threshold > 0.97) |
+| pitch: fraction within 50 cents | 0.99095 | 0.98643  (threshold > 0.85) |
+| pitch: median abs error | 0.979 cents | 1.288 cents |
+| seam: worst d3 local percentile | 88.49 | 88.49  (threshold < 99.9) |
+| seam controls (splice, 3 dB step) | both correctly FAIL | both correctly FAIL |
+
+The median pitch error rises by 0.31 cents — three tenths of one hundredth of a
+semitone — and that rise is the fix working: the jitter is now 0.4 % of the
+INSTANTANEOUS crank speed, so it is larger at 14,400 rpm than the old film-mean
+form made it, and the f0 tracker sees exactly that. Everything else is unchanged
+to the digit.
 
 ---
