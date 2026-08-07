@@ -24892,3 +24892,190 @@ same failure occurred in its own prose, three times.
 retraction arrived, and this entry is the correction of record. The lesson is
 not about one agent: **a report is an instrument too, and nothing in this
 project was checking it.**
+
+## R2-740 — the candidate camera against the whole built world, and against the car's own future
+
+### Clearance to everything, not just the bridge
+
+`tools/r2731_camera_clearance.py` — triangle-level nearest distance from the
+camera origin to every evaluated render-visible mesh, per frame, for **both**
+paths, so the answer is a comparison rather than an absolute nobody can
+calibrate. Controls: a plane 3 m behind the camera reads 3.000000 (the metric is
+a distance, not a projection), 4 m in front reads 4.000000, a point on the
+surface reads 0.
+
+`barriers + architecture`, 162 objects, f2120-2250:
+
+```
+shipped     min 3.881 m at f2250
+candidate   min 2.506 m at f2194
+frames inside placement_gate's 1.20 m camera sphere:  NONE
+
+   f      shipped   candidate
+ 2172     10.617      4.311
+ 2176      9.130      3.091
+ 2184     11.100      3.320
+ 2192     10.139      2.590
+ 2196      9.224      2.561
+ 2200      6.795      3.331
+```
+
+`>> STAGE RESULT: CAM_CLEAR_OK`. **It clears everything, at 2.09x the gate's own
+radius at its worst.** The shipped path's own minimum over the same span is
+3.881 m, so the candidate is tighter by 1.4 m — not by an order of magnitude.
+
+Note the candidate's worst point is **f2194, not the bridge crossing**: 2.506 m
+against the runoff/barrier furniture on the way back out, not 2.716 m against a
+girder. The tightest moment of the move is not the moment it was designed around,
+which is worth knowing before anyone tunes the window.
+
+### The camera flies where the car later drives
+
+Same-frame clearance is not the whole question: the camera is 150-190 m ahead of
+the car, so it occupies places the car reaches later. Checked against every car
+frame to f2500:
+
+```
+             closest the car EVER gets to a camera POSITION
+shipped          21.43 m    camera f2137, car f2196
+candidate         9.40 m    camera f2181, car f2236
+```
+
+Same-frame separation barely moves: 186.2 m -> 174.6 m at the crossing, identical
+at both ends of the window.
+
+**Nothing here is near a collision** — at f2181 the camera is at u = -8.57, outside
+the 7.0 m half-width, and by the time the car reaches that station 55 frames later
+the camera is 400 m up the road. But the margin against the car's own corridor
+**halves**, and a low inboard camera pass is exactly the thing that gets
+re-authored later without anyone re-checking it. It belongs beside the 2.716 m.
+
+## R2-911 — NOTHING IS TOUCHING IT. THE MEMBER IS 172 mm CLEAR OF EVERY SURFACE ON THE CAR, AND THAT IS WHY THREE CONTACT MECHANISMS WERE ALL REFUTED
+
+R2-707 was cut off mid-sentence with the words *"let me find what it IS
+touching"*. The answer is **nothing**, and the three refutations were not three
+failures to find the contact — they were three correct measurements of an
+absence.
+
+**Method.** For every film frame in **f940-999** (bracketing R2-700's f967-977
+peak), take the member's ACTUAL box from `eastframe.plan()`, rotate it by its
+baked quaternion, transform it into car-local space through the car's own euler
+pose, and compute the **exact separation distance** to each of the **twenty**
+convex parts of `breachlib.car_proxy_parts()` by the separating-axis theorem —
+face normals of both bodies plus all edge-pair cross products, which is exact
+for disjoint convex polytopes.
+
+**This is the first time the question has been asked of anything but the rear
+wing.** R2-707 tested the mainplane and found 60 mm. Asked of the whole car:
+
+```
+R2701S  (solid wing -- the bake R2-700 called "reads worst, lies across the top")
+  MUL05_S02   wing_r 0.172 @f944   rep_r 0.221   tyre_RR 0.345   rep_l 0.377   cover 0.423
+  MUL05_S01   rep_l  0.678         wing_r 0.697  cover   0.785   tyre_RL 0.875
+  MUL05_S00   airbox 1.136         cover  1.188  rep_l   1.252   tyre_RL 1.280
+
+R2701A  (aerofoil)
+  MUL05_S02   wing_r 0.120 @f949   cover  0.133  rep_r   0.226
+  MUL05_S01   cover  0.051 @f959   rep_r  0.054  tyre_RR 0.074
+  MUL05_S00   tyre_RR 0.024 @f984  cover  0.078  pod_r   0.140
+```
+
+**In the bake whose pose is the defect, the nearest member is 172 mm from the
+nearest car surface — 4.3x the 40 mm collision margin.** Not the wing, not the
+engine cover, not the airbox, not the roll hoop, not a tyre. There is no contact
+to withdraw, no tray to rest on, and no momentum to transfer, which is exactly
+what the three refutations measured.
+
+**Note the inversion nobody would predict.** The AEROFOIL cell — the one built
+to *remove* the thing the member was thought to rest on — is where members come
+closest to the car (24-74 mm, inside and around the margin). The SOLID cell,
+believed to be holding a member up on a 58.6 %-thick slab, holds it **172 mm
+clear**. The tray hypothesis was not merely wrong, it was backwards.
+
+---
+
+## R2-912 — THE MECHANISM IS CO-MOVING FREE FLIGHT. IT IS NOT SUPPORTED, IT IS MATCHED
+
+Measured over the same contact-free window:
+
+```
+                       |v_member|  |v_car|   |v_rel| p50   vertical accel   rel. displacement
+                                                            (free fall -9.81)   over 60 frames
+R2701S MUL05_S02        21.01       23.09      3.00 m/s        -15.92 m/s2        1.014 m
+R2701S MUL05_S01        20.14       23.09      4.11            -12.30             1.317 m
+R2701A MUL05_S00        22.25       23.09      1.43            + 1.03             0.379 m
+```
+
+**No member is being supported.** Vertical accelerations of -15.9 and -12.3 m/s2
+are *steeper* than free fall — drag on a tumbling bar — and +1.03 is a body
+still rising. A supported body sits near zero. Nothing here is resting on
+anything.
+
+**What it is instead:** the car strikes the mullion and launches it at very
+nearly the car's own speed. 21 m/s against 23 m/s. Both then coast with similar
+drag, so the relative velocity is **1.4-4.1 m/s**, and over the whole 60-frame
+window that integrates to **0.38-1.32 m of relative displacement**.
+
+**That is the entire deck ride.** R2-700's criterion — *"a member whose position
+RELATIVE TO THE CAR is near-static for N frames while above the bodywork"* — is
+satisfied exactly, and the cause is not contact but a **velocity match set by
+the impact itself**. Which is also why R2-700's warning that beat 3 has *"a
+chaotic degree of freedom no threshold controls"* is literally true: no
+constraint threshold in `build_breach_sim` touches the launch velocity a
+collision imparts.
+
+---
+
+## R2-913 — BEFORE ANYTHING IS RE-BAKED: THE GAP IS 115 px AT 4K, AND THE "RESTING" READ MAY BE A RESOLUTION ARTEFACT
+
+**Flagged as a question, not a conclusion**, because it would change the verdict
+and I have not rendered it.
+
+172 mm of daylight between the member and the engine cover. At f930 the camera
+is 3.35 m from the wound, giving ~670 px/m at 4K:
+
+```
+                                     at 4K        at rung-1 720p
+172 mm gap, R2701S MUL05_S02        115 px           38 px
+ 51 mm gap, R2701A MUL05_S01         34 px           11 px
+ 24 mm gap, R2701A MUL05_S00         16 px            5 px
+```
+
+**115 px of visible gap does not read as an object resting on a car.** It reads
+as a member flying just above one — which is the thing R2-700 says is *fine and
+wanted*.
+
+R2-700's verdict came from `COMPARE_ride_f0972_..._R2387.png`, a three-way
+comparison panel. **If that panel was assembled below 4K, or cropped and
+downscaled, a 115 px gap becomes a few pixels and closes.** That is precisely
+the trap this project keeps re-finding — R2-710 could not adjudicate a 483 mm
+slab displacement at 720p, and the breach fines are 1.08 px there.
+
+**So the recommendation is: re-judge the pose at 4K before re-baking anything.**
+A re-bake to fix a contact that does not exist would be chasing a defect that
+may itself be an artefact of the resolution it was judged at. One 4K frame at
+f0972 of the existing `R2701S` cell answers it, and no new bake is needed to ask.
+
+---
+
+## R2-914 — AND IF THE POSE SURVIVES 4K, THE LEVER IS THE LAUNCH, NOT A THRESHOLD
+
+Stated so the next agent does not sweep the wrong parameter, as the bond sweep
+did across a 40x range before R2-092 found the mullion thresholds were the lever.
+
+The ride is set by **the relative velocity the impact imparts**, which is a
+function of the car proxy's shape and mass at the strike, the member's own mass,
+and the seed. It is not a function of `t_bond_per_m`, `t_mullion_joint`,
+`t_transom` or the head restraint. Sweeping those will move which members break
+and will not move how fast the broken ones travel relative to the car.
+
+**If the pose must be changed, the honest levers are the seed and the strike
+geometry** — and R2-700 already requires *"more than one frame and probably more
+than one seed"* for any A/B on this beat. Two cells at one seed cannot decide it.
+
+**A legitimate answer remains available and I would argue for it if the 4K frame
+supports it:** eight members travelling alongside a car bursting through a glass
+wall at 23 m/s is what that should look like. The defect R2-700 named is
+specifically the *across-the-roof* pose, and the measurement above says even
+that one is 172 mm clear and moving at 3 m/s relative. Nothing has come to rest
+on the car in either cell, because nothing is touching the car in either cell.
