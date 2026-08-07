@@ -1078,3 +1078,109 @@ payoff is now a 210 deg orbit rather than a near-static hold). The ratio should
 come down from 4.14x toward ~1. If the payoff figure does NOT rise, the orbit is
 not doing its job and the client's note is not answered, whatever the framing
 numbers say.
+
+## R2-840f — PARKED: THE SHEET CHANGED UNDER A RUNNING CHAIN
+
+`docs/R2829_beat_sheet_CANDIDATE.json` was re-authored (orbit radius dip
+1.00 -> 0.35, lens ramp ease-late) while `tools/build_film_scene.py` was 11
+minutes into reading it. Recorded because the response is the interesting part.
+
+**`render/film17.blend` was killed rather than kept.** It had not reached its
+save, so nothing is on disk — but the reason it would have been discarded even if
+it had is worth writing down: `build_film_scene.py` runs `build_camera_rig.main()`
+internally against `--sheet`, and a build that read an input while it was being
+rewritten cannot say *which version it got*. The artefact might well have been
+correct. **"Probably built from the right camera" is not a property anything
+downstream can check**, and every gate below it — the focus solve, the campath
+identity check, the appearance gate — would have reported PASS against whichever
+camera it happened to contain. A build whose provenance is unknown is worse than
+no build, because it looks exactly like a good one.
+
+**The depth grid is superseded and was renamed, not merely noted.**
+`R2791_GRID_OK` measured 912,384 rays against `world/R2829_camera_rig.blend` as
+it stood at dip 1.00. Focus fitted to that grid would be focus fitted to a camera
+that no longer exists — the R2-791 defect exactly, arrived at from the other
+direction. It is now
+`work/r2840/depthgrid_R2829_SUPERSEDED_dip100.json`, and because
+`work/r2840/chain2.sh` refuses to start without a grid at the live path, the
+staleness is structural: the chain cannot silently re-use it. A comment saying
+"this is stale" would have depended on the next reader reading it.
+
+**What survives, and why it is safe to keep.** `CAR_ANIM_BUILT`,
+`R2521_CARPAINT_APPLY_OK`, `IMPERFECTIONS_OK` and `place_driver`'s
+`STAGE RESULT: OK` are all independent of the camera. The one that needs an
+argument rather than an assertion is `place_driver`: its appearance gate is a
+statement about frames 392-408, the orbit re-author moves f464 onward, and the
+two do not overlap — so the 0-of-17 result holds. If a future change touches
+anything before f408, that gate has to be re-run, and this paragraph is the
+record of why it did not need to be this time.
+
+**Nothing was spent.** The 720p proxy was not submitted.
+
+---
+
+## R2-842 — the payoff cropped the car for 1.33 s, and I made R2-429's mistake to put it there
+
+**The FRAMING gate checks presentation KEYS. The payoff is 329 frames of
+continuous orbit BETWEEN keys, and every claim I made about it was a claim about
+a span checked only at its endpoints.** Projecting the assembled car's box through
+every frame of the built path:
+
+```
+dip 1.00 m    f464-792   min 0.588   max 1.046 @f580   mean 0.818
+              frames where the car does NOT fit: 32   (f565-596, 1.33 s)
+```
+
+1.33 s of a payoff whose entire purpose is that the car is finally whole,
+answering a note that was literally "too zoomed in".
+
+**The cause was my own arithmetic, and it is the error this file already
+documents.** R2-839 justified the 1.0 m radius dip like this: *"at mid-arc the
+radius is 6.5 m and the lens is ~37.5 mm, so the 5.72 m car spans 0.92 of the
+frame width."* 5.72 m is the car's **length**, which is its apparent width only
+when the camera is broadside. Mid-orbit the camera is neither broadside nor level,
+so the projected extent is larger than the length subtense. **R2-429's headline
+made precisely this mistake** — "the car is never smaller than 76.1 % of frame
+width" — and the correction sits three screens above the line I wrote. I
+reproduced it inside the block that corrects it.
+
+**Fixed two ways, both bounded by the measurement rather than by an estimate:**
+
+* `BEAT1_ORBIT_RADIUS_DIP_M` 1.00 -> **0.35**.
+* the orbit's lens ramp is **ease-late** (`e*e`), so it holds near 35 mm through
+  mid-arc — where the car is most oblique and therefore widest in frame — and
+  tightens only as the orbit settles. It still lands exactly on the seam's 40 mm.
+
+```
+dip 0.35 m    f464-792   min 0.559   max 0.921   mean 0.756
+              frames where the car does NOT fit: 0
+```
+
+### `tools/beat1_perframe_audit.py` — the other span claims, now checked
+
+Written because this defect was a class, not an incident:
+
+```
+CLAIM 1  the payoff orbit holds the whole car, every frame
+         max 0.921, 0 frames fail                              PASS
+CLAIM 2  the orbit never nears the car box (floor 0.30 m)
+         worst 4.514 m @f662                                   PASS
+CLAIM 3  beat 1 never flies through the car
+         worst 1.074 m @f273                                   PASS
+CLAIM 4  the establishing frame is untouched and still widest
+         f1 = 0.350 of frame width, exactly R2-826's 35.0%     PASS
+```
+
+Gates after the fix: `BEATSHEET_OK`, `CAMERA_RIG_CONTINUOUS_AND_AIMED` (six of six
+PASS, beat 1 aim 9.23 deg / offset 0.600), campath `PASS — 0 FAIL, 3 advisory`.
+**The seam advisory improved again to z = 8.1, now better than the shipped film's
+own f755 at z = 8.8.**
+
+### Cost, and what it says about the order of operations
+
+This invalidated a running rebuild: `render/film17.blend` was mid-build against
+the superseded sheet and the depth grid had been measured on the superseded rig.
+Both were discarded and re-run. **Editing a live input under a running chain is
+the mistake; the lesson is that the per-frame audit belongs before the chain
+starts, not after it.** No render spend was lost, because the chain was stopped
+before the 792-frame submission.

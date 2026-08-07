@@ -1099,17 +1099,32 @@ BEAT1_CLOSEOUT_LENS_END_MM = 40.0     # == the seam key, so the lens is C1 there
 BEAT1_ORBIT_START_RATE = 1.00
 BEAT1_ORBIT_END_RATE = 0.57
 
-# R2-839. The long way round is 210 deg instead of 150, and at a mean radius of
-# 7.5 m that is 27.5 m of arc in 12.08 s -- which the pre-flight rejected at
+# R2-839/842. The long way round is 210 deg instead of 150, and at a mean radius
+# of 7.5 m that is 27.5 m of arc in 12.08 s -- which the pre-flight rejected at
 # 4.04-4.52 m/s against beat 1's 4.00 m/s peak limit. The orbit therefore CUTS
 # THE CORNER: the radius dips below the straight interpolation at mid-arc and
 # returns to it at both ends, which shortens the path without moving either
-# endpoint. 1.0 m of dip removes ~2.4 m of arc.
+# endpoint.
 #
-# BOUNDED BY THE PICTURE, not by the gate. At mid-arc the radius is 6.5 m and the
-# lens is ~37.5 mm, so the 5.72 m car spans 0.92 of the frame width -- still
-# whole, which is the entire point of the payoff.
-BEAT1_ORBIT_RADIUS_DIP_M = 1.00
+# R2-842 -- THE FIRST VALUE WAS 1.00 m AND IT CROPPED THE CAR.
+#
+# It was justified like this: "at mid-arc the radius is 6.5 m and the lens is
+# ~37.5 mm, so the 5.72 m car spans 0.92 of the frame width". That is wrong, and
+# wrong in a way this project has already documented once: 5.72 m is the car's
+# LENGTH, which is its apparent width ONLY when the camera is broadside. R2-429's
+# headline made exactly this mistake and the correction is written down three
+# screens above. Mid-orbit the camera is neither broadside nor level, so the
+# projected extent is larger than the length subtense, not equal to it.
+#
+# MEASURED on the built per-frame path, the assembled car's box projected through
+# every frame of the orbit, worst of width and height:
+#
+#     dip 1.00 m   max fill 1.046 @f580   32 frames (f565-596) DO NOT FIT
+#
+# 1.33 s of a payoff whose entire purpose is that the car is finally whole, on a
+# note that was literally "too zoomed in". The dip is now bounded by that
+# measurement instead of by an estimate.
+BEAT1_ORBIT_RADIUS_DIP_M = 0.35
 
 
 # --------------------------------------------------------------------------- #
@@ -1247,7 +1262,11 @@ def beat1_closeout(t0, cam0, look0, lens0, seam, onward=None):
         z = cam0[2] + (seam["world"][2] - cam0[2]) * e
         la = [look0[j] + (seam["look_at"][j] - look0[j]) * e for j in range(3)]
         w = [round(r * math.cos(a), 4), round(r * math.sin(a), 4), round(z, 4)]
-        lens = lens0 + (BEAT1_CLOSEOUT_LENS_END_MM - lens0) * e
+        # R2-842. The lens ramp is EASE-LATE, not linear: it holds near its wide
+        # end through mid-arc -- where the car is most oblique and so widest in
+        # frame -- and tightens only as the orbit settles onto the seam. It still
+        # lands exactly on the seam's 40 mm, so the lens is C1 there either way.
+        lens = lens0 + (BEAT1_CLOSEOUT_LENS_END_MM - lens0) * e * e
         if i == BEAT1_CLOSEOUT_KEYS:
             # LAND ON THE SEAM EXACTLY — by emitting the seam key ITSELF, not a
             # copy of its numbers. A copy is a second place the seam is written
