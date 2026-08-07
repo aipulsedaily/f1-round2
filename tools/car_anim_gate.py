@@ -641,9 +641,11 @@ def _ctrl_from_s_m(m, rig, W):
             return rig.car._lerp(rig.wheel_c, t)
         # continued the way the column itself would continue, so the failure
         # this control produces is the LAUNCH and not an artefact of the
-        # control stopping where the telemetry does
-        return rig.wheel_c[-1] + rig.car.v[-1] * (t - rig.t_end) / \
-            CR.WHEEL_RADIUS_M
+        # control stopping where the telemetry does. The continuation walks
+        # `Car._extrap` (R2-943) so that past the line it is the lap-down and
+        # not a constant 89.767 m/s — otherwise this control would fail on
+        # beat 6 as well and stop naming the launch.
+        return rig.wheel_c[-1] + rig.car._extrap(t)[0] / CR.WHEEL_RADIUS_M
     s = np.array([col(max(W[f], 0.0)) for f in range(1, m["n"] + 1)])
     s = s - s[0]
     return np.repeat(s[:, None], 4, axis=1)

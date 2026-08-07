@@ -315,14 +315,20 @@ class CarRig:
         """Metres of ground the car's reference point has covered by world time t.
 
         Past the end of the telemetry `carpath.Car.state` continues the car along
-        the circuit's centreline at its final speed, and centreline arc length
-        advances at exactly that speed, so the continuation is `v * dt`.
+        the circuit's centreline, and centreline arc length advances at exactly
+        the car's speed, so the continuation is `Car._extrap`'s own distance —
+        THE SAME TABLE the aim and the audio walk, not a second integration of it.
+
+        This is what stops the wheels when the car does. Before R2-943 this line
+        read `v[-1] * (t - t_end)`, which is correct only while the extrapolation
+        is at constant speed; against the lap-down it would spin the tyres at
+        323 km/h under a car standing still on the pit straight for 42 frames.
         """
         if t <= 0.0:
             return 0.0
         if t <= self.t_end:
             return self._col(self.dist_c, t)
-        return self.dist_c[-1] + self.car.v[-1] * (t - self.t_end)
+        return self.dist_c[-1] + self.car._extrap(t)[0]
 
     def slip(self, t):
         """Radians of NON-ROLLING wheel rotation — the sanctioned launch spin."""
@@ -370,12 +376,20 @@ class CarRig:
         return math.atan(WHEELBASE_M * self.curvature(t))
 
     def body_pitch(self, t):
-        """Dive/squat only. The road's grade is added by the contact solve."""
+        """Dive/squat only. The road's grade is added by the contact solve.
+
+        Past the telemetry this is the SAME closed form `tools/build_telemetry.py`
+        line 533 uses — `clip(-ax / 30, -1, 1) * 1.6 deg` — evaluated on the
+        lap-down's own deceleration. It used to return a flat 0.0, which was right
+        while the extrapolation was at constant speed and would now stand a car
+        braking at 3.60 g dead level on its springs.
+        """
         if t <= 0.0:
             return 0.0
         if t <= self.t_end:
             return self._col(self.pitch_c, t)
-        return 0.0                        # extrapolated at constant speed
+        ax = -self.car.decel(t)                   # longitudinal accel, negative
+        return max(-1.0, min(1.0, -ax / 30.0)) * math.radians(1.6)
 
     def body_roll(self, t):
         """Lateral lean only. The road's camber is added by the contact solve."""
@@ -385,7 +399,8 @@ class CarRig:
             return self._col(self.roll_c, t)
         # same closed form `tools/build_telemetry.py` uses, on the extrapolated
         # speed and the centreline's curvature
-        ay = self.car.v[-1] ** 2 * self.curvature(t)
+        v = self.car.state(t)[2]
+        ay = v * v * self.curvature(t)
         return max(-1.0, min(1.0, ay / 45.0)) * math.radians(1.4)
 
     def wheelspin_flag(self, t):
