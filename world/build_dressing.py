@@ -589,7 +589,38 @@ BANNER_MOUNT_M = 0.055         # MEASURED: the fence POST flange reaches as far
 STRUCT_BACK_M = 0.45           # Armco posts, blockouts and the fence post flange
 STAY_FOOT_M = 2.45             # fence back-stay foot: post base + 2.1 m outboard
 STAY_HEAD_Z = 3.00             # ... rising to 0.62 * (6.0 - 1.2) at the post
-UNTRUSTED_PAD_M = 42.0         # build_barriers' deficit smoothing bleed
+# THE PAD OUTLIVED THE MECHANISM IT PADS FOR              (R2-071, item 78)
+#
+# This was `42.0`, hard-coded, justified as "build_barriers' deficit smoothing
+# bleed": that module used to smooth `max(0, bo - avail)` over +-13 samples of
+# dilation and +-24 of box filter, so a single broken station dragged the line for
+# ~37 m either side and 42 m covered it. THAT SMOOTHING NO LONGER EXISTS. It was
+# measured to produce a barrier face at u = -18.80 m -- 18.8 m past the centreline
+# -- and was replaced (build_barriers S4b) by a cone-erode blended in only where
+# the ownership cap bites, dilated by `CLAMP_BLEND_M = WC.OWNERSHIP_BLEND_M`.
+#
+# So the influence half-width is 60.0 m now, not 37. The frozen 42.0 was 18 m
+# SHORT of the mechanism that actually exists -- a pad sized for a deleted one.
+# It is read from the contract instead of guessed, which is RULE 1 and is what
+# R2-044 did to the other six private copies in this build.
+#
+# NOTHING MOVES FOR THIS, AND THAT IS MEASURED, NOT ASSUMED. The mask this pad
+# dilates is `barrier_offset(s, side) < verge_edge(s) + BARRIER_SANITY_M`, and
+# since contract 1.2.0 clamped `barrier_offset` by `owned_edge`, the clearance it
+# dilates is bounded BELOW by construction (build_barriers S4b property 1):
+#
+#     min(barrier_offset - verge_edge)   side +1   1.0000 m   at s = 0.0
+#                                        side -1   8.5000 m   at s = 0.0
+#     against BARRIER_SANITY_M = 0.30 m
+#     -> bad = 0 of 3675 stations on BOTH sides, so the dilation of an empty mask
+#        is empty at 42 m and empty at 60 m: 0 stations change hands.
+#
+# The pad is therefore LATENT, not live -- it suppresses no dressing today. It is
+# corrected rather than deleted because the mask is not dead by construction, only
+# by the current contract: `barrier_ok()` is the assertion that no furniture
+# follows a line that has left the steel, and on a line with a real break it still
+# fires (3 broken stations -> 87 suppressed at 42 m, 123 at 60 m).
+UNTRUSTED_PAD_M = float(C.OWNERSHIP_BLEND_M)   # 60.0 -- build_barriers' blend
 _FACE = {}
 _UNTRUSTED = {}
 

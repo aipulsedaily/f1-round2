@@ -4353,6 +4353,101 @@ def selftest(verbose=True):
         "so v1.1.1's ribbon-only derivation was right here by 1.70 m of luck"
         % PIT_WALL_S0)
 
+    # ------------------------------------------------------------------ [19]
+    # THE CONSUMERS' FALLBACK LITERALS ARE UNREACHABLE, AND STAY THAT WAY.
+    #                                                        (R2-071, item 78)
+    #
+    # Five modules read this file as `float(getattr(C, NAME, <literal>))`.  That
+    # form was kept ON PURPOSE (see the APRON_JOINT block above) so a builder
+    # pinned to a v1.0.x contract still runs, and R2-044 noted that from v1.2.0
+    # every one of those literals is dead code.  It is: all 11 sites resolve.
+    #
+    # Dead code that CANNOT COME BACK TO LIFE needs no guard.  This one can: the
+    # literals are unreachable only while this file still exports the name.  Drop
+    # or rename one — a refactor, a merge, a section moved — and the getattr
+    # falls through to a number that is NOT the contract's, in a module that will
+    # not raise, will not warn, and will build.  Three of the 11 sites carry a
+    # literal that DISAGREES with the value here:
+    #
+    #   build_architecture:110, :6637  ACCESS_RIBBON_T_MIN   -0.30 vs    0.0000
+    #                                                        ->  0.300 m
+    #   render_setup3:201              PIT_WALL_S0         3430.00 vs 3447.7092
+    #                                                        -> 17.709 m
+    #
+    # and 0.300 m is exactly the hinge v1.0.1 pinned to the glass plane after
+    # three modules used three different margins for the SAME boundary and 64 m2
+    # of the Beat-3 -> Beat-4 hinge came out with no ground at all.
+    #
+    # So the assertion is not "the literals agree" — they do not, and need not.
+    # It is: EVERY NAME A CONSUMER FALLS BACK ON IS STILL EXPORTED, therefore
+    # every fallback is still unreachable.  The deltas are printed so the cost of
+    # ever losing one is on the page instead of in the next defect log.
+    out.write("\n[19] THE CONSUMERS' getattr FALLBACKS ARE UNREACHABLE"
+              "  (R2-071)\n")
+    # (attribute, fallback literal, call site)
+    _FB = [
+        ("ACCESS_RIBBON_SAW_M",   0.30,   "build_surface:95"),
+        ("ACCESS_RIBBON_T_MIN",   0.0,    "build_surface:124"),
+        ("APRON_JOINT_LAP_M",     0.050,  "build_surface:136"),
+        ("APRON_JOINT_DEPTH_M",   0.005,  "build_surface:137"),
+        ("ACCESS_RIBBON_T_MIN",  -0.30,   "build_architecture:110"),
+        ("APRON_JOINT_LAP_M",     0.050,  "build_architecture:125"),
+        ("APRON_JOINT_DEPTH_M",   0.005,  "build_architecture:126"),
+        ("APRON_JOINT_DEPTH_M",   0.005,  "build_architecture:1907"),
+        ("ACCESS_RIBBON_T_MIN",  -0.30,   "build_architecture:6637"),
+        ("PIT_WALL_S0",        3430.0,    "render_setup3:201"),
+        ("ACCESS_GLASS_X",       15.0,    "build_film_scene:419"),
+    ]
+
+    def _fb_unresolved(sites):
+        """Sites whose fallback literal is ARMED — the name is not published.
+
+        `__all__`, not `globals()`: a name that survives a refactor as a private
+        global is still gone from this file's declared surface, and a consumer
+        importing `*` still falls through.  -> [(name, site)]
+        """
+        return [(n, w) for n, _f, w in sites
+                if n not in globals() or n not in __all__]
+
+    _armed = _fb_unresolved(_FB)
+    chk("every name a consumer falls back on is exported here",
+        not _armed,
+        ("%d sites over %d distinct names, all resolved — every fallback "
+         "literal is unreachable" % (len(_FB), len({n for n, _f, _w in _FB})))
+        if not _armed else "ARMED: %s" % (_armed,))
+
+    _div = [(n, w, float(globals()[n]), f) for n, f, w in _FB
+            if n in globals() and abs(float(globals()[n]) - f) > 1e-12]
+    chk("... and the divergence each dead literal hides is measured",
+        len(_div) == 3,
+        "%d of %d literals disagree with this file: %s"
+        % (len(_div), len(_FB),
+           "; ".join("%s@%s %.4f vs %.4f = %.3f m"
+                     % (n, w, v, f, abs(v - f)) for n, w, v, f in _div)))
+
+    # CONTROL.  The sweep above passes on names this file happens to have, which
+    # is the shape of a control that cannot fail.  Ask it about a name this file
+    # has never exported and require it to report the literal as ARMED.
+    _ctl = _fb_unresolved([("__NOT_A_CONTRACT_NAME__", 0.0, "control")])
+    chk("CONTROL: the same sweep FAILS a name this file does not export",
+        len(_ctl) == 1,
+        "a site falling back on `__NOT_A_CONTRACT_NAME__` is reported as "
+        "arming its literal (%d of 1 found)" % len(_ctl))
+
+    # CONTROL 2.  Deletion is not the realistic refactor; DEMOTION is.  These two
+    # are live globals of THIS file that it deliberately does not publish, so
+    # they are the honest test of "defined is not exported".  `GARAGE_X0` is not
+    # an idle choice: -245.0 is the circuit x behind render_setup3's own 3430.0
+    # fallback, i.e. the number that would come back if PIT_WALL_S0 were demoted.
+    _demoted = [n for n in ("GARAGE_X0", "ACCESS_ARC_DEG")
+                if n in globals() and n not in __all__]
+    _ctl2 = _fb_unresolved([(n, 0.0, "control") for n in _demoted])
+    chk("CONTROL: `defined but absent from __all__` still counts as armed",
+        len(_demoted) == 2 and len(_ctl2) == 2,
+        "%s are live globals this file does not publish; the sweep reads "
+        "__all__, so a demoted name cannot pass by merely existing"
+        % ", ".join(_demoted))
+
     out.write("\n%s  (%d checks, %d failed)\n"
               % ("PASS" if not fails else "FAIL", n_chk[0], len(fails)))
     rep = out.getvalue()

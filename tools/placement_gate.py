@@ -139,6 +139,41 @@ ROAD_ZLO = 0.50           # m below the road surface the band still tests
 CAR_MARGIN = 0.60         # m around the measured car box
 CAM_CLEAR_R = 1.20        # m sphere swept along the camera path
 
+# THE CAR BOX, AND THE 0.340 m THIS FILE USED TO LOSE            (R2-071, item 78)
+#
+# These four numbers are the SECOND copy of the box `world_contract` publishes as
+# `CAR_BODY_W_M / CAR_RIDE_HEIGHT_M / CAR_BODY_H_M / CAR_CLEARANCE_M`, and the copy
+# is DELIBERATE -- see "INDEPENDENCE, KEPT DELIBERATELY" in the header. What was not
+# deliberate is that it had drifted, in the one direction a second copy always drifts:
+# the number nobody diffed.
+#
+# The car path's z band was `(-0.3, 0.992 + CAR_MARGIN)`. `0.992` is the box's
+# THICKNESS (`CAR_BODY_H_M`), and it was used as though it were the box's TOP. The
+# measured box (round2_inventory S2, and the contract's own head comment) is
+# z 0.340 .. 1.332 above the road: it sits on 0.340 m of RIDE HEIGHT. So the top of
+# the car is 1.332 m, not 0.992 m, and the band stopped
+#
+#       0.992 + 0.60 = 1.592 m   where the contract's swept box reaches
+#       1.332 + 0.60 = 1.932 m
+#
+# -- 0.340 m short, over all 1743 telemetry stations. `intrusion()` returns -1e9 for
+# a point outside the band, so anything hanging in that 340 mm slice directly over
+# the driven line was not merely un-flagged, it never reached the distance test and
+# could not appear in `closest_approach` either. That is the same failure mode as the
+# road corridor's floating band (see the header), one volume along.
+#
+# The FLOOR stays at -0.30 m and is NOT re-derived: the contract's box would give
+# 0.340 - 0.60 = -0.26 m, and -0.30 m is 40 mm deeper, i.e. it tests strictly more.
+# Deeper is the safe direction here and it is stated rather than left to arithmetic.
+#
+# `--selftest` now diffs all four against the contract and FAILS on disagreement,
+# exactly as it already does for `elevation`. R2-044 asked for the two to "be diffed
+# by hand if either moves"; a hand diff that nobody schedules is not an instrument.
+CAR_BODY_W_M = 2.005      # m, measured (round2_inventory S2): y -1.003 .. +1.003
+CAR_RIDE_HEIGHT_M = 0.340 # m, underbody above the road
+CAR_BODY_TOP_M = 1.332    # m, top of the box above the road (= ride + 0.992 thick)
+CAR_ZLO = -0.30           # m below the road the band still tests (see above)
+
 # THE FLOOR IS BOUNDED ON BOTH SIDES, AND THE RESIDUAL IS MEASURED.
 #
 # The band's z reference is the CENTRELINE elevation, but the road is crowned and
@@ -591,14 +626,17 @@ def build_volumes(a, spec, verbose=True):
         with open(a.telemetry) as f:
             tel = list(csv.DictReader(f))
         pts = [(float(r["x"]), float(r["y"]), float(r["z"])) for r in tel]
-        r = 0.5 * 2.005 + CAR_MARGIN
+        r = 0.5 * CAR_BODY_W_M + CAR_MARGIN
+        czhi = CAR_BODY_TOP_M + CAR_MARGIN
         volumes["car_path"] = {
             "kd": station_tree([(p[0], p[1]) for p in pts]),
             "radius": [r] * len(pts), "s": list(range(len(pts))),
             "pts": pts, "zlo": None, "zhi": None,
-            "zband": (-0.3, 0.992 + CAR_MARGIN)}
+            "zband": (CAR_ZLO, czhi)}
         if verbose:
-            print(f">> car path: {len(pts)} stations, half-width {r:.2f} m")
+            print(f">> car path: {len(pts)} stations, half-width {r:.2f} m, "
+                  f"band {CAR_ZLO:+.3f} .. {czhi:+.3f} m about the telemetry z "
+                  f"(car box 0.340..{CAR_BODY_TOP_M:.3f} + {CAR_MARGIN:.2f} m)")
 
     # THE CAMERA VOLUME. Preference order, and the reason for it:
     #
@@ -1136,6 +1174,77 @@ def selftest(a):
               "cross-check between the two methods DID NOT RUN -- that is a "
               "hole, not a pass." % e)
         fails.append("elevation cross-check did not run")
+
+    # ---- 8b. THE PRIVATE CAR BOX vs THE CONTRACT'S    (R2-071, item 78) -----
+    # The copy above is deliberate. Its DRIFT is not, and drift is the only thing
+    # a second copy of a fact ever does. R2-044 recorded this pair with the
+    # instruction that "the two must be diffed by hand if either moves"; the hand
+    # diff never happened, and by the time it did the band top was 0.340 m low.
+    #
+    # So the diff runs on every selftest, on the four numbers that define the box
+    # and on the two derived quantities the gate actually measures with. Note this
+    # does NOT make the gate read the contract -- `build_volumes` still uses the
+    # private literals. It makes disagreement LOUD instead of silent, which is the
+    # only part of "semi-independent" that was missing.
+    print("\n>> SELFTEST: the gate's private car box vs world_contract's")
+
+    def car_box_rows(w, ride, top, marg):
+        """The six numbers, gate side vs contract side. -> [(name, mine, theirs)]"""
+        return [
+            ("body width",        w,                    WC.CAR_BODY_W_M),
+            ("ride height",       ride,                 WC.CAR_RIDE_HEIGHT_M),
+            ("body top above road", top,
+             WC.CAR_RIDE_HEIGHT_M + WC.CAR_BODY_H_M),
+            ("courtesy margin",   marg,                 WC.CAR_CLEARANCE_M),
+            ("swept half-width",  0.5 * w + marg,       WC.CAR_SWEPT_HALF_W_M),
+            ("band TOP above road", top + marg,
+             WC.CAR_RIDE_HEIGHT_M + WC.CAR_BODY_H_M + WC.CAR_CLEARANCE_M),
+        ]
+
+    def car_box_worst(rows_):
+        """Largest |gate - contract| over the six, in metres."""
+        return max(abs(m - t) for _n, m, t in rows_)
+
+    try:
+        import world_contract as WC        # noqa  (re-import: 8 may have failed)
+        live = car_box_rows(CAR_BODY_W_M, CAR_RIDE_HEIGHT_M,
+                            CAR_BODY_TOP_M, CAR_MARGIN)
+        for n, mine_, theirs_ in live:
+            print("   %-22s gate %9.4f   contract %9.4f   delta %+.4f m"
+                  % (n, mine_, theirs_, mine_ - theirs_))
+        worst = car_box_worst(live)
+        check("the gate's car box agrees with world_contract's",
+              worst <= 1e-9, True, "worst |delta| = %.3e m over %d quantities"
+              % (worst, len(live)))
+        rows[-1]["car_box_worst_delta_m"] = worst
+
+        # The band FLOOR is deliberately NOT equal to the contract's; assert the
+        # direction instead, so "deeper on purpose" cannot quietly become
+        # "shallower by accident".
+        contract_floor = WC.CAR_RIDE_HEIGHT_M - WC.CAR_CLEARANCE_M
+        check("the band FLOOR tests at least as deep as the contract's box",
+              CAR_ZLO <= contract_floor + 1e-9, True,
+              "gate %+.4f m, contract-derived %+.4f m, %.0f mm deeper"
+              % (CAR_ZLO, contract_floor, (contract_floor - CAR_ZLO) * 1000))
+
+        # NEGATIVE CONTROL. The check above is only worth running if it can fail.
+        # Feed it the box this file SHIPPED until item 78 -- top = 0.992 m, the
+        # thickness used as the height -- and require it to say so.
+        was = car_box_rows(2.005, 0.340, 0.992, 0.60)
+        was_worst = car_box_worst(was)
+        check("CONTROL: the same check FAILS the box this file shipped",
+              was_worst > 1e-9, True,
+              "worst |delta| = %.4f m (band top 1.5920 vs 1.9320) -- the "
+              "shipped band stopped %.0f mm under the car's own roof"
+              % (was_worst, was_worst * 1000))
+        rows[-1]["shipped_car_box_worst_delta_m"] = was_worst
+        if was_worst <= 1e-9:
+            fails.append("the car-box control no longer reproduces the drift "
+                         "it was written for -- the check cannot fail")
+    except Exception as e:                                    # noqa: BLE001
+        print("   SKIPPED: world_contract not importable (%s). The car-box "
+              "diff DID NOT RUN -- that is a hole, not a pass." % e)
+        fails.append("car box cross-check did not run")
 
     # ---- 9. THE SUBJECT/CONTEXT SPLIT MUST NOT SILENCE ANYTHING --------
     # Structural, so it has to be shown to be a no-op on a scene with no
