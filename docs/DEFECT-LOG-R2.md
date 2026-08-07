@@ -20362,3 +20362,46 @@ multi-material bodies at 170-2333 px/m and cannot adjudicate them either.
 **The useful negative:** the classes this pass exists to catch - **held frames,
 dropouts, one-frame pops, batch seams, stepped time** - show nothing across 417
 frames of the new camera, alongside four of five beat seams clean.
+
+## R2-713 — REBUILDING THE CAMERA RIG SILENTLY REPLACES THE SKY, and the degradation is documented as graceful
+
+Found by the beat-6 agent while preparing an A/B, **before queueing**, by reading
+the source rather than trusting the build.
+
+```
+build_camera_rig            DELETES every camera in the scene, builds a fresh ONER
+world/build_sky.py          bind_camera() points two SCRIPTED drivers - the cloud
+                            decks' observer XY - at the OLD camera object BY ID
+```
+
+Deleting that camera sets the driver targets to `None`, and **`build_sky`'s own
+docstring states the consequence**: the decks then *"sit at world XY (0,0) and
+behave as a skybox."*
+
+**No error, no warning, no crash. A different sky.** The A/B it was about to run
+covers 264 frames that are mostly sky, and would have been invalid for a reason
+neither the agent nor the coordinator anticipated.
+
+**It does not self-heal on most paths.** `tools/build_film_scene.py` re-binds
+only on the `world_before is None` branch, where `build_sky` is called fresh
+afterwards. Every other branch leaves the drivers dangling.
+
+**This is the most dangerous member of the family this log keeps recording**,
+because the failure is *documented as intended behaviour*. A guard that never
+fires, a guard blocked by its own condition, and a fallback chosen to look
+plausible are all silent. This one is silent **and** blessed - a reader who
+finds the skybox behaviour in the docstring will conclude it is working.
+
+**The fix, and the pattern to copy:** after any re-key, assert that **every
+driver target which was live before is not dangling after**, and fail loudly.
+Cheap, and it converts a silent wrong sky into a stopped build.
+
+**Scope is wider than exteriors.** Beat 1 is interior showroom and might be
+assumed sky-independent. It is not - the showroom has a glass curtain wall, the
+exterior is visible through it in delivered frames, and two of four walls are
+specular, so the sky arrives as reflection even where it is not in shot.
+
+Incidental, and it revises a standing project assumption: the same agent
+measured **4K at 194 s/frame**, against the ~510 s this project had carried from
+an older F/P decomposition. Master-render estimates drawn on the old figure are
+roughly 2.6x too high.
