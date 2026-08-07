@@ -36886,3 +36886,73 @@ re-probed **canopy tops** after realising the point cloud stores **trunk bases**
 is **Round 1**. All round-2 work is in `/home/zany/f1-round2`, and **none of the
 paths in my brief resolve under the former.** Every brief today has carried that
 cwd with a READ-ONLY warning; it should carry the round-2 root as well.
+
+## R2-1160 — THE WORKING TREE READ AS HISTORY: an uncommitted edit taken for prior art
+
+A peer session caught one of my agents recording a sub-claim as **ALREADY
+CLOSED** on the strength of code that was **written twenty minutes earlier and
+never committed.**
+
+```
+git log -S "THE PRIVATE CAR BOX" -- tools/placement_gate.py   -> empty
+git log -S "item 78"             -- tools/placement_gate.py   -> empty
+git show HEAD:tools/placement_gate.py | grep -n "0.992 + CAR_MARGIN"
+    594:        r = 0.5 * 2.005 + CAR_MARGIN
+    599:        "zband": (-0.3, 0.992 + CAR_MARGIN)}
+```
+
+**HEAD still carries the old band. There is no closing commit to find.** The
+correct status is **fixed-by-someone-else-uncommitted**, not closed.
+
+**This is the fifth form of source-versus-artefact today**, and the newest:
+
+```
+a socket DEFAULT read instead of its link
+a chain SCRIPT read instead of the blend
+a stale LEDGER read instead of the geometry
+a render ARM nobody interrogated after building
+the WORKING TREE read as history            <- this one
+```
+
+**On a box where a dozen agents share one checkout, "the file says so" and "the
+project decided so" are different claims.** `git log -S` is the cheap
+discriminator and it takes seconds.
+
+## R2-1161 — the car box's band top used the box's THICKNESS as its TOP, and `intrusion()` made the 340 mm slice unreachable
+
+The peer's finding, and it is real:
+
+```
+band TOP    gate 1.5920    contract 1.9320    delta -0.3400 m
+```
+
+**`0.992` is `CAR_BODY_H_M` - the box's THICKNESS - used as if it were the box's
+TOP.** The measured box is **z 0.340 … 1.332**: it sits on **340 mm of ride
+height** that the band never accounted for.
+
+**And the consequence is worse than a wrong number, because of how the function
+fails.** `intrusion()` returns **−1e9 outside the band**, so **anything in that
+340 mm slice over the driven line never reached the distance test at all** - and
+therefore **could not appear in `closest_approach` either.** In the peer's
+words: *"the same failure mode as the road corridor's floating band, one volume
+along."*
+
+**That bears directly on #97.** *"Closest approach changed with no world change
+and nothing recorded why"* may not be a reproducibility defect at all - **it may
+be a value that was never measuring what it claimed.** A blind slice does not
+report itself; it reports a smaller number.
+
+**The peer's discipline is worth recording too.** It kept the private car box
+**private** - R2-044 made it deliberately independent of the contract - and
+fixed the literals rather than making the gate read the contract. **Correcting a
+wrong constant and removing an independence are different changes**, and
+conflating them would have quietly destroyed a control.
+
+Verified: **26 controls, `>> STAGE RESULT: PLACEMENT_SELFTEST_OK`**, six
+comparisons at 0.0000, and **a negative control fed the shipped box fires at
+0.3400 m.**
+
+**Two sessions were editing `tools/placement_gate.py` simultaneously** and one
+saw the other's selftest running while its own was queued on the blender lock.
+**That is defect #115 live** - and it was caught by a message, not by a
+mechanism.
