@@ -23912,3 +23912,53 @@ recorded in the build report rather than raised - while the 23 MB table the
 build genuinely needs stays **hard and refuses early**, naming **the CWD and the
 bundle root**. The traceback had named which file was missing and **neither
 directory that would have explained why**, which is half an error message.
+
+## R2-717 — A GATE THAT CHECKS KEYS SAYS NOTHING ABOUT THE FRAMES BETWEEN THEM. And a documented correction did not prevent its own reproduction three screens away
+
+Two findings, both from the beat-1 agent auditing its own work before it
+rendered.
+
+**1. The framing gate checks presentation KEYS.** The payoff is **329 frames of
+continuous orbit between keys**, and every claim made about it had been verified
+only at its endpoints. Projected through every frame:
+
+```
+before   max fill 1.046 @ f580   —   32 frames (f565-596, 1.33 s) DO NOT FIT
+after    max fill 0.921          —    0 frames fail
+```
+
+**The payoff was cropping the car** - in the shot whose entire purpose is that
+the car is finally whole, answering a client note that was literally *"way too
+zoomed in."* Interpolation between two passing keys is not covered by either of
+them.
+
+**2. The cause was R2-429's exact error, reproduced inside the block that
+documents the correction.** The orbit's radius dip was justified with *"the
+5.72 m car spans 0.92 of the frame width"* - **that is the car's LENGTH**, which
+is its apparent width only when the camera is broadside, and mid-orbit it is
+neither broadside nor level.
+
+R2-429/430 record precisely this mistake, its magnitude, and the two independent
+tools that both reproduced it. **The agent read that block, worked inside it,
+and made the same error three screens below where it is written down.** A
+documented correction is not a guard. What now exists is
+`tools/beat1_perframe_audit.py` - the correction as a runnable check rather than
+as a sentence - and all four span claims pass it, including the establishing
+opening untouched at **exactly 0.350** of frame width.
+
+**Cost, stated by the author:** this invalidated a running `film17` build and a
+completed depth grid. **Editing a live input under a running chain is the
+error** - the per-frame audit belonged before the chain started, not after it.
+No render spend was lost.
+
+**And the chain agent was better than its instructions.** It **killed** `film17`
+rather than keeping it, on the grounds that a build which read the sheet
+mid-rewrite *"cannot say which version it got, and unknown provenance is worse
+than no build, because it is indistinguishable from a good one."* It **renamed**
+the stale depth grid rather than annotating it, so the chain **structurally**
+cannot reuse it. And it declined to edit `EXPLODE_LANDED` itself, correctly,
+since both stale constants were beat-1 measurements the pacing change
+invalidated.
+
+Seam advisory improved again to **z = 8.1, now better than the shipped film's
+own 8.8.**
