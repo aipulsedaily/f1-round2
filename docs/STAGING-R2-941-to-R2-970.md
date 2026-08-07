@@ -687,6 +687,70 @@ uncommitted files and two changes that have never run in production).
 
 ---
 
+## R2-949d — the film re-key LANDED, and it confirms the confound as well as the change
+
+`out/exec/bd0345da6cb3/rekey_R2943.log`, broker 8760, on
+`render/film17_breach.blend` → `film17_R2943.blend` (7,610.0 MB).
+
+    >> STAGE RESULT: FILM_SCENE_REKEYED_R2943
+
+The car stage reproduced the local dry run on `world/car_anim.blend` **digit for
+digit**, which is the check that the 8 GB scene is the same object the 302 MB one
+was:
+
+```
+11,088 key value(s) rewritten on frames 2715-2978 across 9 object(s);
+   4,980 of them actually moved;
+113,988 key(s) at or before f2714 verified BIT-IDENTICAL.
+lift at world t 72.62957 (between f2714 72.61153 and f2715 72.65320),
+   peak 35.27 m/s^2 = 3.60 g, at rest 9.226 s later after 226.52 m.
+f2978: car at (502.93, 315.43, -0.00), speed 0.000 m/s, wheel spin 9.1400 rad
+worst float32 storage error 4.875e-04; worst disagreement with the SHIPPED keys
+   on the 2,714 frames this stage did NOT write: 4.882e-04
+```
+
+**The output file existing was never the evidence and it is worth saying why.**
+`build_camera_rig.main()` saves to `--out` itself, part-way through, via
+`save_clean` — the log shows two separate `Saved as "film17_R2943.blend"` lines.
+A half-re-keyed blend lands at the identical path with an identical size. What
+settles it is the LAST `>> STAGE RESULT:` line, and the four things it certifies:
+
+| check | result |
+|---|---|
+| world datablock | `SKY_World` restored (the rig had swapped in `R2_ProceduralSky`) |
+| atmosphere slab | both `SKY_AirColumn` and `SKY_AirBoundary` present |
+| cloud-parallax drivers | 2 bound to `ONER`, **0 dangling** |
+| object count before / after | **35,304 / 35,304** — nothing dropped |
+| delivery | 3840×2160, AgX, look None, exposure **−3.628** |
+| aim gate `6_ending` | **0.03 deg at f2758**, max subject range **342.5 m** |
+
+Had the world restore failed, the frames would have been lit by a different sky
+from the A-side. That is not an A/B, it is two different films, and it would have
+looked entirely plausible.
+
+### Two corrections to earlier entries in this file
+
+**1. The beat-1 FAIL is NOT an artefact of building against `beat1_anim.blend`.**
+R2-944 recorded the `1_assembly FAIL … 1.155 of the half-frame at frame 431`, and
+I speculated it might be input-dependent because the previous agent's re-key of
+`film16_R2851` reported `1_assembly PASS`. **It is not.** The identical FAIL, to
+the same 1.155 and the same frame 431, appears here on a full film scene. The
+difference from that earlier run is the *sheet*: it predated R2-861's re-base and
+carried the old 23-key beat 1, where this carries the re-paced 19-key one.
+R2-861's conclusion stands unqualified — **a film cannot be rebuilt from this
+sheet until f431 is resolved**, and that is true on any input.
+
+**2. The two film builds really are different, and now by a countable amount.**
+`film16_R2851` reported **35,283** objects; `film17` reports **35,304** — 21 more,
+which is exactly the object count `NEXT-REBUILD.md` gives for the showroom-ceiling
+library. So `film17` demonstrably carries at least one item from the 62-hour gap,
+and the presumption must be that it carries the car paint too. **R2-949b's
+confound is confirmed rather than merely suspected**, and the f2715 control is
+now required reading before any frame later than f2715 is credited to the
+arrival.
+
+---
+
 ## R2-950 — WATCHED
 
 Pending. 264 frames at 720p (`watch/R2943_ending_LAPDOWN.mp4`) and 4K stills at
