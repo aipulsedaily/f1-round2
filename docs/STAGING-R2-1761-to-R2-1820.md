@@ -353,6 +353,108 @@ box.
 
 ---
 
+## R2-17xx — #90: THE THREE UNLOGGED DEFECTS, RE-MEASURED ON THE SHIP — AND `matrix_world` READS IDENTITY ON A LINKED OBJECT
+
+**#1 ALREADY CLOSED · #2 DECLINED (confirmed live, handed over) · #3 REFUTED
+(confirmed, not re-litigated).**
+
+All three recovered from one place — `docs/DEFECT-LOG-R2.md:4584-4589`, inside
+R2-132, under *"Three defects that had never been written up, now measured"*.
+Each string appears **exactly once** in the whole log, which is what made them
+recoverable at all.
+
+```
+1  paint over void -- 7.10 m2                                     pit exit
+2  paint floating up to 367.9 mm above its substrate              pit exit
+3  the glass mouth's 100 mm sink -- REFUTED                       glass mouth
+```
+
+*"All arrived at contract 1.1.1"* is right for #1 and #2: v1.1.1 moved
+`PIT_WALL_X0` 17.7 m west, the bay field's west end moved with it, and
+`apron_clearance`'s outboard cut did not follow. The *"assembly defect #2 / #3"*
+comments at `build_architecture.py:77` and `:113` are a **different, older
+numbering** and are not these three.
+
+### Two broken instruments, and the second is the one to keep
+
+**`matrix_world` is runtime data, and it reads IDENTITY for link-loaded
+objects.** `build_architecture` builds `ARCH_Markings` and the bay fields in the
+**circuit** frame (40°) but the forecourt and `ARCH_Paving_ApronPlatform` in the
+**world** frame. Reading identity for all of them put half the world 500 m from
+the other half —
+
+> **and it still produced plausible numbers**, because the paint and the pit-lane
+> bays were wrong *the same way*: a p50 gap of 6.37 mm, which looks like a clean
+> result.
+
+Caught arithmetically rather than by eye: the printed footprint window was
+**565 × 106 m** — the circuit-frame extent — where the world-frame one is
+**~491 × 435 m**. The first run's headline *"78.101 m² of floating paint"* was
+**pure artefact.** Fixed with `matrix_basis` plus a frame guard anchored to
+`_owned()`'s own predicate; control C9 accepts the correct frame (1.0000) and
+**refuses** the identity bug (0.4448).
+
+The other: a per-triangle sample cap made the declared 50 mm sampling pitch
+fiction — the real pitch was 144 mm — caught by a convergence control that shrank
+the cell 4× twice and watched the error **not move**, 0.0420 m² at every pitch.
+
+**The strongest control is the artefact one.** Run against `assembly8` — the
+world R2-132 itself measured — through the same binary, the instrument
+independently reproduces R2-132's numbers: **370.02 mm** max float against its
+**367.9 mm** (0.6 %), and **9.498 m²** paint-over-void against its **7.10 m²**
+(the window differs: whole world vs `s 3360-3500 × u 10-42`).
+
+### Results, assembly8 against the shipped assembly10
+
+```
+                        assembly8 (pre-fix)      assembly10 (SHIP)
+paint over void              9.498 m2                 0.032 m2
+gap max                    370.02 mm                146.67 mm
+float > 50 mm               36.971 m2               40.971 m2
+```
+
+**#1 ALREADY CLOSED** — 9.498 → 0.032 m², by `54dd6b8`, which landed **2 h 28 m
+after assembly8 was built** and was promoted in assembly9/10. The residual is one
+≤50 mm sliver at lap **s 3447.66–3447.70** — which is `PIT_WALL_S0 = 3447.71`,
+the declared apron/wall boundary — at the instrument's own quantisation floor.
+
+**#2 DECLINED, and confirmed live.** The premise reproduces exactly:
+`ARCH_Markings` is still 7,166 verts at **1 distinct z**. Isolated to that object
+on the ship: **26.587 m² above 20 mm, 18.213 m² above 50 mm, worst 146.67 mm.**
+
+**Fixing #1 did not fix #2 and never would** — it made the >20 mm area slightly
+*worse*, by giving flat paint a dipping surface to hover over. And the root cause
+is not the paint's height: at the worst point `world_ground_z` returns **exactly
+0.000** and the paint is exactly `MARK_Z` proud of it. It is
+`ARCH_Paving_ApronPlatform` sitting **139.2 mm below its own declared datum**.
+
+Declined honestly: **which side is wrong — low slab or flat paint — is not
+proven**, and neither fix is validatable without a rebuild while `assembly11` was
+building (the R2-380 hazard). The handover carries the discriminating measurement
+to run first (~6 min, no rebuild), the exact lines
+(`build_architecture.py:1485, 2449, 2474, 2506`, helper at `:213`), and the trap:
+**`sit_c` returns the *declared* height, so that fix alone does not close the
+139.2 mm.**
+
+**#3 REFUTED, confirmed on the artefact and then stopped.** The arithmetic
+reproduces exactly — **4950 samples in the 90–110 mm band, 0 deeper, drop max
+exactly 100.00 mm**, spanning **110 columns × 45 rows = 4950**. That is
+`R1_FORMATION_Z = -0.100`, deliberate. Both `film16.blend` and `film18.blend`
+give `Floor` z_top **+0.0000**, with `Turntable_Deck` reading **+0.3400** as a
+positive control proving the script reads meshes rather than a constant. The
+older glass-mouth void is now **1 sample** against a historical 1,276 (~64 m²).
+
+**No files in the repository were modified by this item.**
+
+### One operational note, and it is not a small one
+
+A rebuild to `assembly11.blend` was in flight throughout, and **several agents ran
+Blender outside the shared lock**. The box reached **0 GB available** and this
+item's queue waited ~40 minutes behind an 8-deep `flock` line. The lock only works
+if everyone takes it.
+
+---
+
 ## R2-17xx — #78: THREE CONTRACT LEFTOVERS, ALL THREE REAL, AND ONE OF THEM MADE A 340 mm SLICE OF THE DRIVEN LINE INVISIBLE
 
 **FIXED (1 and 3), CONFIRMED and guarded (2). None was already closed.**
