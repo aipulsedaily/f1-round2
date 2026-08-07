@@ -25079,3 +25079,56 @@ wall at 23 m/s is what that should look like. The defect R2-700 named is
 specifically the *across-the-roof* pose, and the measurement above says even
 that one is 172 mm clear and moving at 3 m/s relative. Nothing has come to rest
 on the car in either cell, because nothing is touching the car in either cell.
+
+## R2-721 — R2-700 IS REVERSED. The bake I accepted has 0.0000 m contact; the bake I rejected has nothing within 287 mm
+
+**Main-thread correction of my own visual verdict.** R2-700 was written from a
+three-way comparison panel, by eye, and it was wrong in both directions.
+
+**What I saw and what it was.** A pale bar lying across the car, "with the
+stillness of an object at rest in a shot where everything else is smeared." It
+is **depth order, not contact** - the chain flies *between the lens and the
+car*. `render/r2911/DEMO_f0972_chain_is_not_touching.png` overlays both
+colliders: the red boxes land exactly on the bar, and the bar crosses the whole
+car touching none of it.
+
+```
+bake            R2-700 by eye   px @4K   vs car's nearest surface   frames in front
+R2281 RE-BAKE      ACCEPT        1,417        -0.83 m BEHIND              0
+R2387 AIR          REJECT        1,893        +0.23 m IN FRONT           16  (f969-984)
+R2701A aerofoil      -           1,470        -1.04 m BEHIND              0
+```
+
+**The criterion is satisfied by the rejected bake and violated by the accepted
+one.** R2281 - *"reads as an accident, accept"* - has `MUL05_S00` on the
+**airbox at 0.0000 m** and `TRN_z0_b05` on **tyre_RL at 0.0000 m**. R2387, which
+I condemned, has **nothing within 287 mm**, certified with upper bound equal to
+lower bound at 0.1-frame steps.
+
+**And the window I chose was the artefact.** R2-700 picked f0967-f0977 from the
+pictures. That lands **on top of a 16-frame foreground crossing present in one
+bake and neither other.** The 1,893 px I quoted as "the ride" is the chain's
+screen extent while it is in front of the lens.
+
+**Three further corrections to things this log has asserted:**
+
+- **It is not a member.** It is **six bodies** - `MUL05_S00/S01/S02` plus three
+  pressure plates, **2.325 m, 10.9 kg**, joints holding to 1.1 mm across the
+  whole ride. **Every mechanism ever proposed was aimed at a 0.775 m bar.**
+- **The collision margin is 0.15 mm, not 40 mm.** 40 mm is Blender's *default*,
+  which `build_breach_sim` explicitly overrides. R2-707's refutation was **266x
+  stronger than it claimed**, and so is this one.
+- **`build_breach_sim.py` has no `--seed`.** R2-700's own *"use more than one
+  seed"* requirement **has never been satisfiable**, and nobody said so until
+  now. Nearest honest substitute is `--substeps` / `--solver-iter`.
+
+**The recommended fix is unchanged in name and changed in reason.**
+`--rear-wing aerofoil` is the right cell - **not because the tray holds
+anything** (it holds nothing, at 287 mm) but because it moves the chain behind
+the car: **16 foreground frames -> 0**, 1,893 -> 1,470 px, +0.23 -> -1.04 m,
+car-local z from 1.27-2.70 down to 0.28-0.88, below `CAR_TOP_Z`.
+
+**A fifth mechanism was nearly manufactured.** A textbook GJK returns **0.000**
+on the proxy's 16-gon tyre rings, and did - claiming `tyre_RL` contact at f973
+when the truth is **0.947 m**, one frame from the frame the whole defect is
+argued from. Only demanding a **dual certificate** from the solver caught it.
