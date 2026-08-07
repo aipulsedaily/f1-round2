@@ -30632,3 +30632,53 @@ affects all 31 downshifts, 24 of which are before f2714. Left for the next block
 with the ending's seven as the reason it is worth doing.
 
 ---
+
+## R2-1083 — the pipeline had BOTH aperture numbers all along and printed one; #31 closed by changing a print
+
+R2-606 diagnosed this and deliberately edited nothing, recording it *"for
+whoever owns them."* Nobody did, so it is now done.
+
+`sim/aperture.py` returns **both** measures from one call, and its own docstring
+says quoting one without the mullion state is a known error. **Both are in
+`metrics_NEW.json` and have been the whole time:**
+
+```
+hole_w_m           2.15    hole_bridged_w_m   4.35
+hole_h_m           6.00    hole_bridged_h_m   6.05
+hole_area_m2      12.895   hole_bridged_area_m2  25.380
+```
+
+`sim/land_breach.sh:127` printed **only `hole_w_m`, labelled `connected`** -
+and that is how **2.15 x 6.00 entered every document.** The narrower of two
+correct numbers, given the name of the honest one.
+
+**This was never a missing measurement. It was a missing sentence**, and the
+distinction matters because a missing measurement is expensive and a missing
+sentence is not: the fix is a print, on data already on disk, and it costs
+nothing to run.
+
+Now:
+
+```
+aperture, mullion strips OPAQUE                   2.15 x 6.00 m, vacated 34.6%
+aperture, strips PASSABLE where that segment left 4.35 x 6.05 m
+  -> the opening is 4.35 m wide at car height and 2.15 m above z=1.593, where
+     mullion 5 S02-S07 still stand.  Quote BOTH, always with the mullion state.
+```
+
+**The shape is the point and neither number carries it.** Mullion 5's segments
+are 0.753 m; only `S00` and `S01` leave, so the two bays join through a
+**1.51 m-tall gap at the bottom**. The car goes through a **4.35 m** opening; a
+camera at roof height sees a **2.15 m** one. A single figure cannot say that,
+which is precisely why the pair has to be quoted together.
+
+**And the missing-key branch is not decoration.** A bake predating R2-606 has no
+`hole_bridged_*`, and the line now says so loudly instead of silently printing
+the narrow number under a reassuring label - **which is the exact failure being
+fixed, one generation earlier.**
+
+Corroborates R2-1080's read from the other direction: the sim delivers **bay 4
+at 96.8% and bay 5 at 100% vacated, bays 3 and 6 at 0.5% and 2.2%**, against a
+plan that permits **8.77 m** across bays 3-6. **The wall opens at half its
+authored ceiling** - the hole is real, the car fits through it with room, and
+the flanking bays stand.

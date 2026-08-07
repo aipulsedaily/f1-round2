@@ -123,8 +123,24 @@ import json
 d=json.load(open('sim/out/metrics_NEW.json'))
 print('CONTROLS', json.dumps(d['CONTROLS']))
 a=d['aperture']
-print('connected %.2f x %.2f m, vacated %.1f%%'
+# R2-606 / R2-1083: the aperture has TWO correct values and this line quoted
+# only the narrower one, labelled 'connected' — which is how 2.15 x 6.00
+# entered every document.  \`sim/aperture.py\` returns both from one call and its
+# own docstring says quoting one without the mullion state is a known error.
+# Neither number is the aperture on its own; the pair is.
+print('aperture, mullion strips OPAQUE   %.2f x %.2f m, vacated %.1f%%'
       % (a['hole_w_m'], a['hole_h_m'], a['vacated_pct']))
+if 'hole_bridged_w_m' in a:
+    print('aperture, strips PASSABLE where that segment left'
+          '   %.2f x %.2f m'
+          % (a['hole_bridged_w_m'], a['hole_bridged_h_m']))
+    print('  -> the opening is %.2f m wide at car height and %.2f m above '
+          'z=1.593, where mullion 5 S02-S07 still stand.  Quote BOTH, always '
+          'with the mullion state.'
+          % (a['hole_bridged_w_m'], a['hole_w_m']))
+else:
+    print('  !! hole_bridged_* MISSING from metrics_NEW.json — this bake '
+          'predates R2-606 and the single number below is the NARROW one')
 print('per bay', json.dumps(a['per_bay']))
 print('frame bodies', json.dumps(d['frame_bodies']))
 print('STAGE RESULT: metrics', 'PASS' if d['CONTROLS']['PASS'] else 'FAIL')
