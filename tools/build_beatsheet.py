@@ -1126,6 +1126,61 @@ BEAT1_ORBIT_END_RATE = 0.57
 # measurement instead of by an estimate.
 BEAT1_ORBIT_RADIUS_DIP_M = 0.35
 
+# --------------------------------------------------------------------------- #
+#  THE ORBIT'S TEMPO — R2-1601.  12.07 s of one unvarying gesture.              #
+# --------------------------------------------------------------------------- #
+#
+# The payoff orbit is 36 % of beat 1 and it is a single monotone easing curve.
+# Its cubic `e` runs e'(0) = 1.00, e'(0.5) = 1.11, e'(1) = 0.57, so the camera
+# holds one rate for two thirds of the move and then eases onto the seam.
+# Measured on the shipped sheet, the six orbit segments' predicted peak speeds:
+#
+#     3.34  3.59  3.67  3.56  3.22  2.58   m/s
+#
+# — a 12-second arc whose speed varies by less than the width of the estimator.
+# `tools/campath_pacing.py` reads frames 373-830 as 19.1 s of flat at a 5.2 %
+# jerk ratio, and most of that is this.
+#
+# WHAT THE MODULATION IS, AND WHAT IT MAY NOT TOUCH.  `e` is the orbit's only
+# parameter: azimuth, radius, height, aim and lens are all functions of it.  So
+# adding a mean-zero term to `e` re-times the WHOLE gesture coherently — the
+# camera surges and settles along exactly the same arc, through exactly the same
+# pictures.  Three things are load-bearing and all three are preserved BY
+# CONSTRUCTION rather than by tuning, because `sin(pi*u)^2` and its derivative
+# both vanish at u = 0 and u = 1:
+#
+#   * e(0) = 0 and e(1) = 1     the corner-group station and THE SEAM are fixed
+#   * e'(0) = 1.00, e'(1) = 0.57 the velocity match into beat 2 (R2-838) holds,
+#                                so the seam is still C1 and still not a cut
+#   * e stays MONOTONE           a reversal of the azimuth rate IS a cut
+#                                (R2-839), and it is asserted, not hoped for
+#
+# THE AMPLITUDE IS SET BY THE HEADROOM, WHICH IS SMALL.  The orbit's worst
+# predicted peak is 3.67 m/s against beat 1's 4.00 m/s limit — 9 % of room.  So
+# the modulation cannot make the fast parts faster; it makes the SLOW parts
+# faster and the fast parts slower, which redistributes the same total distance
+# into a rhythm without raising the maximum.  The value below is the largest
+# that `beat1_flight_check` still passes, found by building and reading the
+# flight table, not by choosing a number that sounded safe.
+# `B1_ORBIT_TEMPO` overrides it so the amplitude can be SWEPT against the flight
+# gate rather than guessed at, and so the null (amp = 0, the shipped monotone
+# orbit) can be reproduced from this file exactly -- the same discipline as
+# B1_ESTABLISH and B1_LENS_STANDOFF.
+BEAT1_ORBIT_TEMPO_AMP = float(os.environ.get("B1_ORBIT_TEMPO", "0.040"))
+BEAT1_ORBIT_TEMPO_CYCLES = 1.5
+
+
+def _orbit_ease(u, s0, r, amp=None, cycles=None):
+    """The orbit's easing, with its tempo modulation. R2-838 + R2-1601."""
+    amp = BEAT1_ORBIT_TEMPO_AMP if amp is None else amp
+    cycles = BEAT1_ORBIT_TEMPO_CYCLES if cycles is None else cycles
+    a = r + s0 - 2.0
+    b = 3.0 - r - 2.0 * s0
+    e = a * u ** 3 + b * u ** 2 + s0 * u
+    if amp:
+        e += amp * math.sin(math.pi * u) ** 2 * math.sin(2.0 * math.pi * cycles * u)
+    return e
+
 
 # --------------------------------------------------------------------------- #
 #  THE APPROACH KEY — R2-837, and it is a LENS defect, not an aim defect.       #
@@ -1231,6 +1286,45 @@ def beat1_closeout(t0, cam0, look0, lens0, seam, onward=None):
     r0 = math.hypot(cam0[0], cam0[1])
     r1 = math.hypot(seam["world"][0], seam["world"][1])
     t1 = seam["t"]
+
+    # R2-1601.  THE MODULATED EASING IS CHECKED BEFORE IT IS USED, at 400 points
+    # rather than at the 6 keys, because the defect it could introduce lives
+    # BETWEEN keys.  Three claims, all of them load-bearing and none of them
+    # visible in a key list:
+    #
+    #   monotone      a fall in `e` reverses the azimuth rate, and R2-839 is the
+    #                 record of what that costs: the camera stops dead at the
+    #                 seam and goes back the way it came, because a local
+    #                 extremum is exactly what AUTO_CLAMPED flattens.
+    #   endpoints     e(0) = 0, e(1) = 1 — the station and the seam are pinned.
+    #   end rates     e'(0), e'(1) unchanged, so the seam's velocity match into
+    #                 beat 2 survives the modulation.
+    _s0, _r = BEAT1_ORBIT_START_RATE, BEAT1_ORBIT_END_RATE
+    _n = 400
+    _e = [_orbit_ease(i / _n, _s0, _r) for i in range(_n + 1)]
+    _bad = [i for i in range(_n) if _e[i + 1] <= _e[i]]
+    if _bad:
+        raise SystemExit(
+            ">> R2-1601: the orbit's tempo modulation (amp %.4f, %.2f cycles) "
+            "makes the easing NON-MONOTONE at u = %.3f. A fall in e reverses the "
+            "azimuth rate, and a velocity reversal is a cut in a film whose one "
+            "law is that there are none (R2-839). Reduce BEAT1_ORBIT_TEMPO_AMP."
+            % (BEAT1_ORBIT_TEMPO_AMP, BEAT1_ORBIT_TEMPO_CYCLES,
+               _bad[0] / _n))
+    if abs(_e[0]) > 1e-12 or abs(_e[-1] - 1.0) > 1e-12:
+        raise SystemExit(
+            ">> R2-1601: the orbit's easing no longer starts at 0 and ends at 1 "
+            "(%.6g .. %.6g); the corner-group station or THE SEAM would move."
+            % (_e[0], _e[-1]))
+    _h = 1.0 / _n
+    _d0 = (_e[1] - _e[0]) / _h
+    _d1 = (_e[-1] - _e[-2]) / _h
+    if abs(_d0 - _s0) > 0.02 or abs(_d1 - _r) > 0.02:
+        raise SystemExit(
+            ">> R2-1601: the orbit's END RATES moved (start %.4f want %.4f, end "
+            "%.4f want %.4f). The seam's velocity match into beat 2 (R2-838) is "
+            "one of those two numbers." % (_d0, _s0, _d1, _r))
+
     keys = []
     for i in range(1, BEAT1_CLOSEOUT_KEYS + 1):
         u = i / float(BEAT1_CLOSEOUT_KEYS)
@@ -1254,9 +1348,7 @@ def beat1_closeout(t0, cam0, look0, lens0, seam, onward=None):
         # has been nearly still there while the car assembled) and e'(1)=r, the
         # rate that matches beat 2's departure instead of fighting it.
         s0, r = BEAT1_ORBIT_START_RATE, BEAT1_ORBIT_END_RATE
-        a = r + s0 - 2.0
-        b = 3.0 - r - 2.0 * s0
-        e = a * u ** 3 + b * u ** 2 + s0 * u
+        e = _orbit_ease(u, s0, r)
         a = ax0 + dax * e
         r = r0 + (r1 - r0) * e - BEAT1_ORBIT_RADIUS_DIP_M * math.sin(math.pi * e)
         z = cam0[2] + (seam["world"][2] - cam0[2]) * e
@@ -1365,6 +1457,44 @@ def _allocate(costs, span_s):
     minimax: it leaves every move the same distance from its own worst limit.
     That distance is returned as `ratio`; 1.0 means the segment fits exactly,
     above 1.0 means it does not and by how much.
+
+    R2-1601 — AND MINIMAX IS WHY THE BEAT IS HYPNOTIC.  THIS IS NOT A BUG IN
+    THIS FUNCTION AND IT IS NOT REPAIRED HERE; IT IS WRITTEN DOWN HERE BECAUSE
+    THIS IS WHERE IT IS CAUSED.
+    ------------------------------------------------------------------------
+    For any move whose binding constraint is TRANSIT, `move_seconds` is
+    `chord * EASE / (design_speed * factor)` — proportional to the chord.  This
+    function then hands it `dt` proportional to that cost.  So
+
+        speed = chord / dt = chord / (k * chord * EASE / limit) = limit / (k * EASE)
+
+    and THE CHORD CANCELS.  Every transit-bound move in the beat flies at
+    EXACTLY THE SAME SPEED, as an algebraic identity, for any tour, any
+    stations and any span.  Measured on the shipped sheet, the six transit-bound
+    tour hops:
+
+        MB->CI 2.61   halo->BB 2.66   BB->FD 2.59
+        EC->SP 2.61   SW->NOSE 2.69   FW->RW 2.62   m/s
+
+    Six moves of 0.48 m to 8.41 m, six different subjects, one speed to within
+    4 %.  That is the "steady drift" the client reports as sleepy, and it is not
+    an accident of the numbers — it is what a speed-equalising allocator is FOR.
+    R2-062 introduced it to kill a 7.82 m/s dash and it did; the cost is that
+    the camera now has no derivative anywhere.
+
+    IT CANNOT BE FIXED BY RE-ALLOCATING, AND THAT IS MEASURED TOO.  The span is
+    chosen as the largest the deadlines tolerate, so the shipped `ratio` is
+    0.9966: the tour already sits at 100.3 % of its own minimum flyable time and
+    has 0.059 s of slack across eleven moves.  Any move made slower must make
+    another faster, and there is no move that can be made faster without going
+    through the pan or speed limit that R2-062 exists to hold.
+
+    So the tempo has to come from the two stretches that are NOT cost-allocated
+    — the establishing lead-in and the payoff orbit — and it does.  See
+    BEAT1_ESTABLISH_HOLD_S and BEAT1_ORBIT_TEMPO_AMP.  Re-tempoing the tour
+    ITSELF requires widening the seat schedule, which moves the assembly and so
+    requires rebuilding `world/beat1_anim.blend`; that is a separate piece of
+    work and it is named in the staging note rather than half-done here.
     """
     tot = sum(costs)
     if tot <= 0:
@@ -1471,6 +1601,66 @@ def _establish_on():
 
 
 BEAT1_ESTABLISH_LEAD_S = 2.0
+
+# --------------------------------------------------------------------------- #
+#  THE OPENING GESTURE — R2-1601.  "I get sleepy 4 seconds in."                 #
+# --------------------------------------------------------------------------- #
+#
+# THE ESTABLISHING FRAME IS NEVER SEEN.  R2-464 solved a station that contains
+# the whole exploded field in the darkened showroom — the brief's own first
+# image — and then gave it ZERO frames of screen time: the camera is at that
+# station on frame 1 and already moving on frame 2.  A composition that is
+# leaving before it has arrived is not an establishing shot, it is a start
+# position.
+#
+# AND IT IS ALSO WHY THE OPENING HAS NO DERIVATIVE.  The lead-in is a single
+# 2.0 s eased segment, and one eased segment between two keys is the definition
+# of a steady drift.  Measured on the delivered 720p beat, `tools/pacing_curve.py`
+# over the first six seconds: mean image change 17.08 levels, mean |acceleration|
+# 0.896 levels — 5.2 % of the movement itself.  The film opens at a constant
+# velocity and holds it, and a constant velocity is a held note.
+#
+# THE FIX IS FREE, WHICH IS WHY IT IS THIS ONE.  The lead-in has 0.79 s of slack:
+# it is allotted 2.0 s and the 3.18 m chord needs 1.21 s at beat 1's own peak
+# speed limit.  So the establishing frame is HELD, and then the camera launches
+# out of the hold into the same MB station at the same time.  Nothing downstream
+# moves — the tour still starts at t = 2.0 s, every deadline, every seat time and
+# the 33.0 s beat are untouched — and the first thing the film does becomes
+# still-then-moving, which is the largest derivative available to a camera.
+#
+# THE HOLD IS NOT DEAD TIME.  It is the only 15 frames in the film in which the
+# audience is allowed to read the picture the brief asked to open on.
+#
+# SIZED BY THE GATE, NOT BY TASTE.  0.625 s = 15 frames leaves 1.375 s for the
+# move: 3.18 m at 2.31 m/s, predicted peak 3.15-3.52 m/s against beat 1's 4.00
+# limit, and the pan goes from 0.9 % to 1.3 % of frame width per frame against a
+# 12 % limit.  Both stay inside, and `beat1_flight_check` re-measures them on
+# every build rather than trusting this paragraph.
+BEAT1_ESTABLISH_HOLD_S = 0.625
+
+
+def establish_hold_key(est, hold_s=None):
+    """The second copy of the establishing key that makes the hold a hold.
+
+    Emitted as a COPY of `est` with a later `t` and nothing else changed, so the
+    two keys are identical in position, aim and lens and Blender's AUTO_CLAMPED
+    handles flatten the tangent between them.  That flat tangent is the whole
+    point: it is what makes the launch out of the hold an acceleration instead
+    of the continuation of a drift.
+    """
+    hold_s = BEAT1_ESTABLISH_HOLD_S if hold_s is None else hold_s
+    k = dict(est)
+    k["t"] = round(round(hold_s * 24.0) / 24.0, 6)
+    k["focus_target"] = "FIELD_HOLD"
+    k["note"] = (
+        "R2-1601 HOLD. The establishing frame, held %d frames so it can be read, "
+        "and so the film's first move is an ACCELERATION out of stillness rather "
+        "than the middle of a drift. The lead-in had %.2f s of slack against its "
+        "own speed limit and this spends it on a gesture instead of on being "
+        "slower." % (round(hold_s * 24), BEAT1_ESTABLISH_LEAD_S - 1.21))
+    return k
+
+
 BEAT1_ESTABLISH = dict(
     t=0.0, world=[-0.8409, -8.8633, 3.7566], look_at=[-0.841, 0.0, 2.194],
     lens_mm=18.0, fstop=4.0, focus_distance_m=9.0, focus_target="FIELD",
@@ -1631,6 +1821,18 @@ def build_beat1(geo, plan, dur, normals=None, deadlines=None, onward=None):
         est["world_time_scale"] = 1.0
         est["presentation_dir_measured"] = False
         keys.append(est)
+        # R2-1601.  The hold, and then the launch out of it.  Guarded rather
+        # than assumed: a hold longer than the slack would push the launch
+        # through beat 1's own speed limit, and the guard names the number.
+        hold = float(os.environ.get("B1_ESTABLISH_HOLD_S",
+                                    BEAT1_ESTABLISH_HOLD_S))
+        if hold > 0.0:
+            if hold >= lead:
+                raise SystemExit(
+                    ">> R2-1601: the establishing hold (%.3f s) is not shorter "
+                    "than the lead-in (%.3f s); there would be no move left to "
+                    "launch into" % (hold, lead))
+            keys.append(establish_hold_key(est, hold))
     group_geom = None
     prev_geom = None
     for i, k in enumerate(order):

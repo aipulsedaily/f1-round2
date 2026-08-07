@@ -231,6 +231,27 @@
     "presentation_dir_measured": false
    },
    {
+    "t": 0.625,
+    "world": [
+     -0.8409,
+     -8.8633,
+     3.7566
+    ],
+    "look_at": [
+     -0.841,
+     0.0,
+     2.194
+    ],
+    "lens_mm": 18.0,
+    "fstop": 4.0,
+    "focus_distance_m": 9.0,
+    "focus_target": "FIELD_HOLD",
+    "note": "R2-1601 HOLD. The establishing frame, held 15 frames so it can be read, and so the film's first move is an ACCELERATION out of stillness rather than the middle of a drift. The lead-in had 0.79 s of slack against its own speed limit and this spends it on a gesture instead of on being slower.",
+    "beat": "1_assembly",
+    "world_time_scale": 1.0,
+    "presentation_dir_measured": false
+   },
+   {
     "t": 2.0,
     "beat": "1_assembly",
     "world": [
@@ -521,20 +542,20 @@
    {
     "t": 21.3444,
     "world": [
-     -5.3072,
-     4.4695,
-     3.8479
+     -5.1419,
+     4.6626,
+     3.8242
     ],
     "look_at": [
-     -0.0106,
+     -0.0087,
      0.0,
-     1.0076
+     1.0045
     ],
-    "lens_mm": 35.156,
+    "lens_mm": 35.174,
     "focus_target": "CAR",
-    "fstop": 3.035,
-    "focus_distance_m": 7.49,
-    "note": "R2-833 payoff orbit 1/6: the assembled car, 37 deg of azimuth at 6.94 m",
+    "fstop": 3.037,
+    "focus_distance_m": 7.486,
+    "note": "R2-833 payoff orbit 1/6: the assembled car, 39 deg of azimuth at 6.94 m",
     "beat": "1_assembly",
     "world_time_scale": 1.0
    },
@@ -561,20 +582,20 @@
    {
     "t": 25.3667,
     "world": [
-     3.5304,
-     6.3038,
-     2.9557
+     2.5538,
+     6.703,
+     3.0503
     ],
     "look_at": [
-     0.0629,
+     0.0551,
      0.0,
-     0.8896
+     0.9021
     ],
-    "lens_mm": 36.533,
+    "lens_mm": 36.32,
     "focus_target": "CAR",
-    "fstop": 3.111,
-    "focus_distance_m": 7.485,
-    "note": "R2-833 payoff orbit 3/6: the assembled car, 116 deg of azimuth at 7.23 m",
+    "fstop": 3.103,
+    "focus_distance_m": 7.469,
+    "note": "R2-833 payoff orbit 3/6: the assembled car, 108 deg of azimuth at 7.17 m",
     "beat": "1_assembly",
     "world_time_scale": 1.0
    },
@@ -601,20 +622,20 @@
    {
     "t": 29.3889,
     "world": [
-     7.7516,
-     -1.1408,
-     2.1765
+     7.7264,
+     -1.4279,
+     2.1529
     ],
     "look_at": [
-     0.1272,
+     0.1291,
      0.0,
-     0.7866
+     0.7834
     ],
-    "lens_mm": 38.899,
+    "lens_mm": 38.988,
     "focus_target": "CAR",
-    "fstop": 3.177,
-    "focus_distance_m": 7.834,
-    "note": "R2-833 payoff orbit 5/6: the assembled car, 185 deg of azimuth at 7.84 m",
+    "fstop": 3.179,
+    "focus_distance_m": 7.851,
+    "note": "R2-833 payoff orbit 5/6: the assembled car, 187 deg of azimuth at 7.86 m",
     "beat": "1_assembly",
     "world_time_scale": 1.0
    },
@@ -639,28 +660,52 @@
     "note": "push toward the completed car; spot rigs ramp ~1 stop over 12 frames. THE SEAM: beat 2's first key is 2.09 m away 39 frames later at 39.95 mm, so this key is fixed and beats 1 and 2 join at 1.29 m/s with no step in position, aim or focal length"
    }
   ],
-  "path_length_m": 69.839,
+  "path_length_m": 69.816,
   "mean_camera_speed_ms": 2.116,
   "clusters_seating_unseen": [],
   "flight": [
    {
     "from": "FIELD",
-    "to": "MB",
+    "to": "FIELD_HOLD",
     "t": [
      0.0,
-     2.0
+     0.625
     ],
     "frames": [
      0,
+     15
+    ],
+    "chord_m": 0.0,
+    "speed_ms": 0.0,
+    "peak_speed_ms": 0.0,
+    "peak_speed_ms_lo": 0.0,
+    "bearing_deg": 0.0,
+    "peak_pan_widths_per_frame": 0.0,
+    "peak_pan_widths_per_frame_lo": 0.0,
+    "min_clearance_m": 8.229,
+    "lens_mm": [
+     18.0,
+     18.0
+    ]
+   },
+   {
+    "from": "FIELD_HOLD",
+    "to": "MB",
+    "t": [
+     0.625,
+     2.0
+    ],
+    "frames": [
+     15,
      48
     ],
     "chord_m": 3.184,
-    "speed_ms": 1.592,
-    "peak_speed_ms": 2.42,
-    "peak_speed_ms_lo": 2.165,
+    "speed_ms": 2.315,
+    "peak_speed_ms": 3.519,
+    "peak_speed_ms_lo": 3.149,
     "bearing_deg": 15.61,
-    "peak_pan_widths_per_frame": 0.0091,
-    "peak_pan_widths_per_frame_lo": 0.0081,
+    "peak_pan_widths_per_frame": 0.0132,
+    "peak_pan_widths_per_frame_lo": 0.0118,
     "min_clearance_m": 5.864,
     "lens_mm": [
      18.0,
@@ -966,17 +1011,17 @@
      464,
      512
     ],
-    "chord_m": 4.423,
-    "speed_ms": 2.199,
-    "peak_speed_ms": 3.343,
-    "peak_speed_ms_lo": 2.991,
-    "bearing_deg": 33.99,
-    "peak_pan_widths_per_frame": 0.0197,
-    "peak_pan_widths_per_frame_lo": 0.0177,
-    "min_clearance_m": 4.584,
+    "chord_m": 4.665,
+    "speed_ms": 2.319,
+    "peak_speed_ms": 3.526,
+    "peak_speed_ms_lo": 3.154,
+    "bearing_deg": 35.92,
+    "peak_pan_widths_per_frame": 0.0209,
+    "peak_pan_widths_per_frame_lo": 0.0187,
+    "min_clearance_m": 4.549,
     "lens_mm": [
      35.0,
-     35.156
+     35.174
     ]
    },
    {
@@ -990,16 +1035,16 @@
      512,
      561
     ],
-    "chord_m": 4.75,
-    "speed_ms": 2.362,
-    "peak_speed_ms": 3.59,
-    "peak_speed_ms_lo": 3.212,
-    "bearing_deg": 36.78,
-    "peak_pan_widths_per_frame": 0.0216,
-    "peak_pan_widths_per_frame_lo": 0.0194,
-    "min_clearance_m": 4.972,
+    "chord_m": 4.508,
+    "speed_ms": 2.241,
+    "peak_speed_ms": 3.407,
+    "peak_speed_ms_lo": 3.048,
+    "bearing_deg": 34.86,
+    "peak_pan_widths_per_frame": 0.0205,
+    "peak_pan_widths_per_frame_lo": 0.0183,
+    "min_clearance_m": 5.034,
     "lens_mm": [
-     35.156,
+     35.174,
      35.667
     ]
    },
@@ -1014,17 +1059,17 @@
      561,
      609
     ],
-    "chord_m": 4.849,
-    "speed_ms": 2.411,
-    "peak_speed_ms": 3.665,
-    "peak_speed_ms_lo": 3.279,
-    "bearing_deg": 37.56,
-    "peak_pan_widths_per_frame": 0.0225,
-    "peak_pan_widths_per_frame_lo": 0.0202,
-    "min_clearance_m": 5.571,
+    "chord_m": 3.835,
+    "speed_ms": 1.907,
+    "peak_speed_ms": 2.899,
+    "peak_speed_ms_lo": 2.593,
+    "bearing_deg": 29.53,
+    "peak_pan_widths_per_frame": 0.0176,
+    "peak_pan_widths_per_frame_lo": 0.0158,
+    "min_clearance_m": 5.957,
     "lens_mm": [
      35.667,
-     36.533
+     36.32
     ]
    },
    {
@@ -1038,16 +1083,16 @@
      609,
      657
     ],
-    "chord_m": 4.713,
-    "speed_ms": 2.343,
-    "peak_speed_ms": 3.562,
-    "peak_speed_ms_lo": 3.187,
-    "bearing_deg": 36.11,
-    "peak_pan_widths_per_frame": 0.0223,
-    "peak_pan_widths_per_frame_lo": 0.0199,
-    "min_clearance_m": 4.353,
+    "chord_m": 5.708,
+    "speed_ms": 2.838,
+    "peak_speed_ms": 4.314,
+    "peak_speed_ms_lo": 3.86,
+    "bearing_deg": 44.13,
+    "peak_pan_widths_per_frame": 0.0272,
+    "peak_pan_widths_per_frame_lo": 0.0243,
+    "min_clearance_m": 4.262,
     "lens_mm": [
-     36.533,
+     36.32,
      37.667
     ]
    },
@@ -1062,17 +1107,17 @@
      657,
      705
     ],
-    "chord_m": 4.265,
-    "speed_ms": 2.121,
-    "peak_speed_ms": 3.223,
-    "peak_speed_ms_lo": 2.884,
-    "bearing_deg": 31.93,
-    "peak_pan_widths_per_frame": 0.0202,
-    "peak_pan_widths_per_frame_lo": 0.0181,
-    "min_clearance_m": 4.338,
+    "chord_m": 4.543,
+    "speed_ms": 2.259,
+    "peak_speed_ms": 3.433,
+    "peak_speed_ms_lo": 3.072,
+    "bearing_deg": 34.03,
+    "peak_pan_widths_per_frame": 0.0216,
+    "peak_pan_widths_per_frame_lo": 0.0193,
+    "min_clearance_m": 4.314,
     "lens_mm": [
      37.667,
-     38.899
+     38.988
     ]
    },
    {
@@ -1086,23 +1131,23 @@
      705,
      754
     ],
-    "chord_m": 3.407,
-    "speed_ms": 1.694,
-    "peak_speed_ms": 2.575,
-    "peak_speed_ms_lo": 2.304,
-    "bearing_deg": 24.73,
-    "peak_pan_widths_per_frame": 0.0161,
-    "peak_pan_widths_per_frame_lo": 0.0144,
-    "min_clearance_m": 4.642,
+    "chord_m": 3.123,
+    "speed_ms": 1.553,
+    "peak_speed_ms": 2.361,
+    "peak_speed_ms_lo": 2.112,
+    "bearing_deg": 22.63,
+    "peak_pan_widths_per_frame": 0.0147,
+    "peak_pan_widths_per_frame_lo": 0.0132,
+    "min_clearance_m": 4.68,
     "lens_mm": [
-     38.899,
+     38.988,
      40.0
     ]
    }
   ],
   "min_clearance_to_car_m": 1.093,
-  "max_key_to_key_speed_ms": 2.689,
-  "max_estimated_peak_speed_ms": 4.088,
+  "max_key_to_key_speed_ms": 2.838,
+  "max_estimated_peak_speed_ms": 4.314,
   "max_estimated_pan_widths_per_frame": 0.1072,
   "car_box": {
    "lo": [
