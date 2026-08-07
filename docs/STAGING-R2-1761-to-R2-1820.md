@@ -353,7 +353,94 @@ box.
 
 ---
 
-## R2-17xx — #100: THE TWO BLOCK CAMERAS ARE ONE DATABLOCK, IT HAS NO DEPTH OF FIELD, AND ITS SUBJECT IS NOT AT 148 m
+## R2-17xx — #78: THREE CONTRACT LEFTOVERS, ALL THREE REAL, AND ONE OF THEM MADE A 340 mm SLICE OF THE DRIVEN LINE INVISIBLE
+
+**FIXED (1 and 3), CONFIRMED and guarded (2). None was already closed.**
+
+The contract is at **1.2.1**, not 1.2.0. Selftest **151 checks, 0 failed** on
+arrival — `MASTER-PLAN.md`'s quoted "149" is stale by two revisions — and **155,
+0 failed** after this item.
+
+They were not discovered here. They are three of the four bullets under
+**"Found and NOT fixed"** at the end of R2-044, written down so the next agent
+would not have to rediscover them. This item is that agent, and the note worked.
+
+### 1. The stale pad — FIXED, latent rather than live
+
+`build_dressing.py:592` froze `UNTRUSTED_PAD_M = 42.0`, commented as
+*"build_barriers' deficit smoothing bleed"*. **That smoothing no longer exists** —
+it was deleted after being measured producing a barrier face 18.8 m past the
+centreline — and its replacement dilates by `OWNERSHIP_BLEND_M = 60.0 m`. The
+frozen pad was **18 m short of the mechanism it was named after**.
+
+**It suppresses nothing today, measured rather than assumed.** Since 1.2.0
+clamped `barrier_offset` by `owned_edge`, `min(barrier_offset − verge_edge)` is
+**1.0000 m** and **8.5000 m** against a 0.30 m threshold — `bad = 0 of 3675` on
+both sides, so the dilation is empty at 42 m *and* at 60 m. **0 stations change
+hands.** Now reads `float(C.OWNERSHIP_BLEND_M)`.
+
+**And the guard was proven able to fire:** injecting a 3-station break gives 3
+bad, and suppression jumps to **87 at 42 m and 123 at 60 m**. Without that
+control, "0 stations change hands" is indistinguishable from a dilation that
+never ran.
+
+### 2. The unreachable fallbacks — CONFIRMED by execution, closed with an assertion rather than a deletion
+
+All **11** `getattr(C, NAME, literal)` sites resolve; all 11 literals are dead
+code. **Three of them disagree with the contract** — `ACCESS_RIBBON_T_MIN` at
+`build_architecture:110` and `:6637` (**0.300 m**), and `PIT_WALL_S0` at
+`render_setup3:201` (**17.709 m**).
+
+They were **not deleted.** The back-compat justification has no beneficiary —
+every `world_contract.py` on the box is 1.2.1 — but deleting them would
+contradict a decision the contract states in prose and would remove nothing that
+can bite. **What can bite is that the literals are unreachable only while the
+name stays exported.** New contract selftest **[19]** asserts exactly that and
+prints each hidden delta.
+
+**Two controls, both fire:** an unexported name, and a name **demoted out of
+`__all__`**. And the first draft of control 2 named constants that live in
+`build_barriers` rather than the contract, and **failed** — the control caught its
+own author before it could pass vacuously.
+
+`build_surface.py` is forbidden and needed no handover: its four sites all agree,
+and [19] covers them from the contract side.
+
+### 3. The gate's private car box — FIXED, and this one was live
+
+The copy is **deliberate** (R2-044: *"a gate that imports the thing it checks can
+agree with a wrong number"*), and it stays private — `build_volumes` still uses
+its own literals. **Correcting a wrong literal is not the same as making the gate
+read the contract.** But it had drifted:
+
+```
+                    gate      contract     delta
+swept half-width    1.6025    1.6025       0.0000
+band TOP (z)        1.5920    1.9320      -0.3400
+```
+
+**`0.992` is `CAR_BODY_H_M` — the box's *thickness* — used as its *top*.** The
+measured box is z 0.340…1.332; it sits on 340 mm of ride height. And
+`intrusion()` returns **−1e9 outside the band**, so that 340 mm slice over the
+driven line **never reached the distance test at all** — invisible to
+`violations` *and* to `closest_approach`. The same failure mode as the road
+corridor's floating band, one volume along.
+
+**Proven able to fail twice**: 8b's own comparison fires at 0.3400 m against the
+shipped box, and a live mutation (`CAR_BODY_TOP_M` 1.332 → 1.232, 100 mm) turned
+the gate red — `>> STAGE RESULT: PLACEMENT_SELFTEST_FAIL`, by runtime
+monkeypatch, disk untouched at 1.332.
+
+### What this says about #97, which is the reason it matters
+
+Asked directly, and answered with a number rather than a worry: over **92.20 % of
+frames the corrected band provably cannot change `closest_approach`** —
+`road_corridor` already covers that space (band −0.5…+4.5 about elevation, which
+telemetry z tracks to 0.2 mm) and is clean at +1.149 m.
+
+**The uncovered 7.80 % is 136 frames — f0…f135, the transit** — which is R2-042's
+territory exactly. That is the only place the question is open, and the only
+place worth a 7 GB load., IT HAS NO DEPTH OF FIELD, AND ITS SUBJECT IS NOT AT 148 m
 
 **ALREADY CLOSED, premise REFUTED three ways; the stale record that generated the
 item is FIXED (comment only).**
