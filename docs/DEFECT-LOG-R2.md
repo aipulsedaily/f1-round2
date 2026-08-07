@@ -36598,3 +36598,80 @@ horizontal metric.
 have blown drifts up 1.86x, tiers that would have laid visible density rings at
 200 m and 520 m, and populating drifts off their drawn area rather than the
 ground they own - a **2.1x density error** toward a solid dark mat.
+
+## R2-1151 — THE RENDER THAT KILLED THE FIX HAD A DISCONNECTED CHANNEL, and every conclusion drawn from it rested on an arm that was not the thing it claimed to be
+
+R2-1225's arm B rendered with **`Interface` unlinked - the Specular IOR Level
+channel disconnected.** The A/B I reported to the client as *"the fix does not
+work"* was comparing the existing paint against **a material missing the channel
+the whole module wins on.**
+
+**Caught by asserting on the BUILT SOCKET rather than on the code meant to have
+built it** - the same method that caught the Cube. **Source is a claim; the
+artefact is the fact**, and this project has now paid for that distinction four
+times today: a socket default read instead of its link, a chain script read
+instead of the blend, a stale ledger read instead of the geometry, and now an
+arm nobody interrogated after building.
+
+**Eight instrument failures in this block, none of them about rubber.** In the
+author's own accounting: **five would have been prevented by a refusal rather
+than a habit - and two by the same one.**
+
+## R2-1152 — THE MARK READS AT N ~ 1000, and my N=60 was wrong by value, not by kind
+
+```
+arm                 SNR across   SNR ALONG   L to reach SNR 5   reads?
+A  existing paint       0.94        4.16          never         as mottle
+B  N=60                 0.41        1.60          never         NO
+B  N=300                1.52        8.21          0.85 m        faintly
+B  N=1000               2.54       13.90          0.40 m        PLAINLY
+```
+
+At **N=1000: -17.97 % / -14.04 %, 3.2x the existing paint, one unbroken segment,
+0.924 coherent, 98.3 % longitudinal** - and **no crushed black**, adding
++0.00078 pp against a control already carrying 0.00216 % from the car's own
+shadow. **Its darkest band pixel comes back brighter.** R2-082 is not at risk.
+
+**And the N=60 null is explained rather than explained away.** At 60 passes the
+mark breaks into **14 segments with 16 sign flips, and its two tracks carry
+opposite signs (-2.36 % / +2.36 %).** That is **the correct rendering of a
+gloss-only film - and it is not a tyre mark.** The saturation curves predicted
+exactly this.
+
+**I chose 60 and gave a reason - "a used pit exit, not a delivery bay."** The
+reasoning was right and the number was an order of magnitude short. **DECIDED:
+N = 1000 for the apron, N = 1 for deck and floor.** It says this pit exit has
+been run all season, **which is what makes it black**, and a working circuit is
+the honest subject.
+
+The deck patches read too - **+9.29 % over 3,476 px**, and **9x stronger on the
+shadowed patch (+33.99 % against +3.82 %)**, which confirms the
+conductor-to-dielectric mechanism **by its own gradient** rather than by
+assertion.
+
+## R2-1153 — my longitudinal hypothesis was right in mechanism and wrong as the explanation
+
+Scored honestly by the agent rather than quietly adopted:
+
+- **Measuring ALONG the axis is worth 4.4x** (SNR 0.94 -> 4.16). **Real**, and it
+  is why a 5.7 % wash is visible at all.
+- **But the concrete is NOT isotropic** - it decorrelates **1.43x faster along
+  the mark than across**, which runs the *helpful* way and which I did not
+  anticipate.
+- The exponent is **-0.39, not -0.50**, and **the ~18x I estimated is not
+  available. 4-5x is.**
+
+**What was actually missing was optical thickness**, and that came from the
+saturation curves - **not from any coherence argument.**
+
+> **Both corrections were needed; only one was the answer.**
+
+That is the sentence to keep. I corrected "too weak" to "no edge", then
+corrected "no edge" to "no coherence", and **the third correction was also not
+the cause** - it was a necessary instrument change that made the real cause
+measurable. **A chain of corrections can each be an improvement and still not
+one of them be the explanation.**
+
+Cost $1.05-1.27, CPU-only throughout, five cancels all on own job ids, no
+`pkill`, no restart, and **broker 2 read once and left alone** with another
+agent's work at depth 6 unharmed.
