@@ -820,12 +820,27 @@ def build_seat_standins(seats, facings, coll, mat, kind=0, every=1):
 # through the denoiser. The REAL fault is plain arithmetic and needs no render
 # at all -- `camera_preflight` projects the plan and reports:
 #
-#     BLOCK_ONAXIS  200 m / 50 mm  ->  median head  8.0 px, 0 faces >= 40 px
-#     BLOCK_CROSS   148 m / 50 mm  ->  median head 10.1 px, 0 faces >= 40 px
+#     BLOCK_ONAXIS  152.20 m / 50 mm / -9.0 deg  -> median head  8.0 px, 0 faces
+#     BLOCK_CROSS   112.50 m / 50 mm / -11.0 deg -> median head 10.1 px, 0 faces
+#
+# THE DISTANCES ABOVE READ 200 m AND 148 m UNTIL R2-1991, AND THEY WERE THE
+# SUPERSEDED PAIR -- HUMAN-REFERENCE sec 00000.1's corrected table already said
+# 152 / 112 while this comment kept the old numbers beside the NEW pixel
+# figures. They are recoverable and were recovered: `span * 1.15` and
+# `span * 0.85` over the real TRIBUNE PRINCIPALE plan (bbox span 132.35 m) give
+# 152.20 m and 112.50 m, and only that pair reproduces the 8.0 / 10.1 px heads
+# recorded here -- a 0.23 m head at 200 m on a 50 mm lens is 6.1 px, not 8.0.
+# A stale distance sitting next to a fresh pixel count reads as one
+# measurement and is two.
 #
 # and both look DOWN at 9-11 deg, so what they show is the tops of hats. You
 # cannot judge whether two neighbours are the same person at 8 px of head, and
-# no aperture setting was ever going to change that.
+# no aperture setting was ever going to change that -- there is no aperture
+# here to set: `use_dof` is False and `fstop 2.8` / `focus_distance 10.0` are
+# the datablock's untouched defaults. Focused at its own subject at f/2.8 this
+# lens is past hyperfocal (95.29 m at a 1 px budget), so its CEILING on
+# defocus is 0.85 px at 4K -- below the gradient change between two
+# independent renders of one frame. The blur was never available to blame.
 #
 # WHAT THE REPLACEMENTS DO. A 0.23 m head at 40 px needs 174 px/m, i.e.
 # `dist = 3840 * lens / (36 * 174)` -- a 300 mm lens reaches it at 184 m. So a
