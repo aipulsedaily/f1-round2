@@ -581,11 +581,42 @@ tables above.
    reach, because the camera now ends framed tight on a car 343 m away. If the
    ending is ever to have both, it is a different camera, not a different car.
 
-There is no version of this beat where the car is close AND still moving at
-f2978. It is arithmetic, not taste: covering only ~230 m in 11 s from 89.767 m/s
-means a mean speed of 21 m/s, so the car must spend most of the beat slow or
-stopped. Every profile I tried that kept it moving to the last frame put it 390 –
-430 m out and 185 – 200 px. Three families were tried and the trade did not move.
+> **CORRECTION, and it changes the decision.** I first wrote here: *"There is no
+> version of this beat where the car is close AND still moving at f2978. It is
+> arithmetic, not taste."* **That was wrong, and it was wrong because my search
+> was too coarse, not because the arithmetic says so.** I had swept `v_end` over
+> 8–18 m/s, which is a cool-down cruise, and every such profile does land 390–430
+> m out at 185–200 px. Sweeping 4–12 m/s instead — a car at *walking-to-jogging*
+> pace, still visibly rolling but covering almost no ground — changes the answer
+> completely.
+
+**The fallback, now measured rather than estimated.** `A_ROLL 0.0, A_BRAKE 6.0,
+K_AERO 0.0046, V_RELEASE 22.0`:
+
+| | shipped lap-down (R2-943) | fallback: never stops |
+|---|---:|---:|
+| peak deceleration | 3.60 g | 3.91 g |
+| distance travelled | 226.5 m | 256.7 m |
+| where it ends | pit straight, 23.5 m short of T1 | 6.7 m into T1's entry |
+| distance to camera | 342.9 m | 355.0 m |
+| **car at f2978** | **230.7 px** | **222.6 px** |
+| speed at f2978 | 0.00 m/s | **4.08 m/s = 14.7 km/h** |
+| on-screen motion at f2978 | 0.00 px/frame | **6.63 px/frame** |
+
+**It costs 8 px, not the 22 I claimed.** For that it buys back visible motion on
+the last frame, the camera pan in the hold that R2-949 item 2 says the stop
+spends, and it removes the "stopped on the racing line reads as a retirement"
+risk entirely — a *moving* car in a corner entry is a cool-down lap and nothing
+else. It arguably also lands a better moment: the film would end on the instant
+*before* rest rather than after it.
+
+**I am not switching to it.** The render of the stopping version is already in
+flight and an independent agent is judging it; changing the thing under
+assessment while it is being assessed is how three passes of camera work in a row
+came to report success. If R2-950 finds the stillness dead, this is a
+four-constant edit to `anim/carpath.py` with the numbers already measured and no
+other file touched. **What I am doing is correcting the record**, because I had
+written the door shut with the word "arithmetic" and it is not shut.
 
 ---
 
