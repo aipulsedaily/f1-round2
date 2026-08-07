@@ -33361,3 +33361,46 @@ Left open deliberately, and named here so it is not rediscovered.
 deliverable: it verified the nine listening clips by spectrum and level, the
 numbers are right — **and nobody has heard them.** R2-1090 stands unchanged for
 the very clips cut to answer it.
+
+## R2-1109 — I judged the ending's mid-frame by eye, said the patches were worse, and the measurement says they are not
+
+Watched `r2943_4k_002811.png` at 4K — mid pull-back, 167 frames before the last.
+**My impression was that the client's "patches in the land" complaint is much
+louder here than at the closing frame.** It is not.
+
+```
+f2978 upper-left terrain    n=40   spread 20.7 code values
+f2978 lower-right terrain   n=32   spread  5.2
+f2811 lower-right terrain   n=60   spread 13.7
+f2811 mid-left terrain      n=15   spread 11.9
+```
+
+**f2811's terrain is comparable to f2978's and lower than its worst region.**
+The blotches I saw are large in *area* and modest in *contrast*, and the eye
+reports area.
+
+**That is the second time today I have formed a visual impression and had the
+measurement contradict it** — the first was reading a contaminated 43.9 figure
+as "louder than the subject" when the defensible range was 5-21. **The standing
+rule on this project is that the rendered frame decides and the metric only
+argues, and it has held five times. But it is a rule about METRICS THAT
+DISAGREE WITH A RENDER, not a licence to skip measuring.** An impression is a
+hypothesis; it earns its status by surviving a number.
+
+**What IS true at f2811, and it is worse than a patch:** the car is a speck of a
+few pixels. The frame is a wide aerial of circuit, pit buildings, grandstands
+and treeline, and **there is no subject in it at all.** That is the same defect
+the ending was diagnosed with 167 frames later - *"a handsome, correctly-hazed
+aerial of a circuit corner with no subject in it"* - and the lap-down fixed it
+**only at the end.**
+
+**The open question, and it belongs to whoever adjudicates the ending: does the
+beat pass through a subjectless middle on its way to a good last frame?** 230.7
+px at f2978 says nothing about f2811. **A beat is not judged by its final
+frame** - which is exactly the error that let a 145-frame absence survive four
+passes of camera work.
+
+Two things I am NOT claiming: that the mid-beat needs fixing (a pull-back may
+legitimately pass through a wide), and anything about the trees, whose apparent
+repetition I did not measure and which the variety instrument already bounds at
+311 sources and a 2.0 % top share.
