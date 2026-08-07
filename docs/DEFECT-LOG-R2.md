@@ -31098,3 +31098,277 @@ agents that treat it as one have been the most useful part of this project.
 **Client-facing consequence: the beat-1 proxy answers all three notes**, not
 two. Focus is *lower confidence* than pacing and framing because its control
 reports SKIP — but that is a statement about the control, not about the fix.
+
+## R2-840o — THE FOCUS RESULT IS NOT VOID, AND THE STALE PATH IS IN THE CONTROL, NOT THE PASS
+
+A correction, because getting this wrong in either direction misreports the client's
+own feedback loop.
+
+**The claim:** `tools/r2791_beat1_focus.py` reads `render/film16_path.json` — the
+superseded camera — and hardcodes it at line 574 for frames 1-792, so the focus
+fix was computed against a camera the film does not have, and the client's blur
+note is unanswered.
+
+**The path is real. It is in two places, and the applied pass calls neither:**
+
+```
+line 574  ->  inside  def selftest():   (line 518)   R2-800's two-sided control
+line 621  ->  inside  def main():                    the standalone CLI's --path default
+```
+
+`tools/r2791_apply_focus.py` — the thing that actually wrote the keys — touches
+only `CLOSEOUT_F`, `HANDOFF_FRAMES`, `depth_from_grid()`, `solve()` and
+`load_field()`. None reads a camera. The `cams` handed to `solve()` are built
+inside `apply_focus` from the OPENED BLEND, frame by frame through Blender's own
+evaluation, and its log says which blend:
+
+```
+>> read 792 frames of camera ONER from /home/zany/f1-round2/render/film17.blend
+>> subject/background depth MEASURED from work/r2840/depthgrid_R2842.json (386/396)
+>> GUARD: position 0.000e+00 m, rotation 0.000e+00, lens 0.000e+00 mm over 42 frames
+```
+
+and the grid it used was measured on the rebuilt R2842 rig, which
+`campath_identity.py` proved bit-identical to film17's ONER — `dp 0.000e+00 m,
+dq 0.000e+00, dlens 0.000e+00 mm over 792 beat-1 frames`. **The focus curve was
+solved against the camera the film actually has.** That is the property R2-796
+was designed to guarantee: *"the solved curve contains no frame numbers... re-run
+it and the focus is re-derived from the camera that actually exists."*
+
+**What IS stale is the CONTROL, and that matters differently.** R2-800's
+two-sided selftest — solver must AGREE at stations, DIVERGE between them — reads
+`film16_path.json` and the shipped `docs/beat_sheet.json`. Against the R2-829/842
+sheet those are different generations, so it reports **SKIP, not PASS**, exactly
+as R2-806a already recorded. So:
+
+* the focus **was applied** correctly, per-frame, from measured depth, with the
+  camera provably untouched;
+* the solver's **validating control has not been re-run on this generation**.
+
+"Applied against the right camera but with an unre-run control" and "computed
+against the wrong camera" are not the same statement, and only the first is true.
+
+*Generalises to:* **a grep for a stale filename finds every use of it, including
+the uses that do not matter.** Which function encloses the line decides whether it
+is a defect or a footnote, and that is one `awk` away.
+
+## R2-840p — WATCHING IT: PACING IS ANSWERED ON PIXELS, AND THE BLUR NOTE HAS MOVED HOUSE
+
+Adjacent-frame RMSE off the delivered 720p frames, as a proxy for on-screen
+motion. It is the same instrument used for the driver appearance (R2-840m) and it
+needs no access to the scene.
+
+```
+TOUR    f80-450     median 0.138    range 0.056 .. 0.182
+PAYOFF  f470-600    median 0.081    range 0.057 .. 0.102
+```
+
+**PACING — answered.** R2-823 measured the shipped payoff at 4.89 mean
+frame-to-frame change against 20.27 across the tour: a ratio of **0.24**, which is
+the "camera goes still exactly when there is finally something to look at" that
+the client actually objected to. The delivered payoff runs at **0.59** of the
+tour. It is no longer the dead spot, and it is still visibly calmer than the tour,
+which is the distinction R2-833 was aiming at — *shot*, not *still*, and not
+frantic either.
+
+**FRAMING — answered.** R2-840n: f580, measured at fill 1.046 before, holds the
+whole car with margin. f464 holds the assembled body plus the presenting corners.
+
+**BLUR — the fix landed and the complaint may survive it, for a different
+reason.** At f258, the frame R2-804 described in the shipped arm as *"one sharp
+object in a cream field... the tyre behind it is a formless dark blob with no
+tread, no rim and no brake gear"*, the delivered frame resolves the tyre's tread,
+rim, brake gear and red sidewall band, and the glass wall reads as mullions rather
+than a wash. **The focus change is visible and it works.**
+
+But the dominant softness in that frame is now **MOTION BLUR**, not defocus, and
+nobody has asked about this:
+
+* the tour runs at 0.11-0.18 adjacent-frame RMSE — fast camera motion, and at a
+  1/2-ish shutter that is a lot of smear at the close stations;
+* **R2-831 made the tour 1.62 s FASTER than shipped.** Whatever the re-pacing did
+  for the payoff, it can only have increased motion blur across the presentation
+  stations;
+* R2-804 already flagged motion blur as "a separate and untouched defect... that
+  is shutter and camera speed" and assigned it elsewhere. It is still untouched.
+
+**So if the client watches this and still says "too blurry", the cause will be
+shutter, not aperture, and the correct response will NOT be to stop down further.**
+Recording it now, before the verdict comes back, so the diagnosis is not
+re-litigated from scratch against a fix that already landed.
+
+## R2-987 — THE RECOMMENDATION: EIGHT BROKERS, EIGHT CARDS, NO CODE
+
+Beat-weighted 211.80 s/frame x 0.927 (`adaptive 0.02`), 2,978 frames, serial
+broker work at the worst measured 4K host, cold starts at the 12 h
+`MAX_INSTANCE_HOURS` wall.
+
+| architecture | wall | days | total $ | code |
+|---|---|---|---|---|
+| 1 broker, 1 card (today) | 163.1 h | 6.8 | **$74.11** | — |
+| **8 brokers, 8 cards** | **20.4 h** | **0.8** | **$74.21** | **none** |
+| 1 broker, 8 workers, 8x box | 30.4 h | 1.3 | $83.60 | ~1,300 lines |
+| 1 broker, 1 worker, 8x box | 186.6 h | 7.8 | $512.05 | none — the default |
+
+**Eight broker processes on eight single cards: 8x the speed for +0.1 % money
+and no new code.** It is the "two brokers, one card each" pattern already built
+and proven, run eight times. The ~1,300-line N-worker build is **$9 dearer and
+50 % slower** than the free option, because the wide boxes on this market have
+slow GPUs.
+
+### How to do it without breaking the farm
+
+* **Contiguous blocks, never stripes.** `parse_range` supports `1-2978x8`, which
+  balances load perfectly and is exactly wrong: PNGs from different hosts are
+  **not bit-identical** (different driver, different OIDN build — measured,
+  luminance agrees to 6 dp, bytes do not). Striping puts a machine boundary
+  between every adjacent frame pair; contiguous blocks put seven in the whole
+  film. Size blocks by the per-beat table in R2-983, not by frame count.
+* **Eight disjoint labels**, pairwise — `startswith`, so "renderbroker2" is
+  reaped by "renderbroker".
+* **Eight disjoint tunnel and exec ports.** Startup reaping SIGKILLs any `ssh -L`
+  on its port that is not its own child; a collision kills a sibling's tunnel
+  mid-frame and reads as bad hardware.
+* **The local workstation is the bottleneck, not the market.** 6 cores, 11 GB
+  RAM. Eight concurrent `zstd -10` compressions of a 7.97 GB scene will
+  serialise on it: one push took 405 s today against the exec builds, and the 8x
+  box's took **617 s**. Stagger the starts.
+* **Probe each host with one frame before committing it to a block.** At ±45 %
+  host variance and ~$0.02/frame, one frame is the cheapest insurance on the
+  board.
+
+## R2-988 — WHAT I DID NOT BUILD, AND WHY
+
+**The N-worker path is not built, and on these numbers it should not be.** It
+costs ~1,300 lines to be $9 dearer and 50 % slower than eight broker processes.
+
+Independently of the economics, it was also **not mine to write**. Of the five
+files `multi-gpu.md` sizes the work across, **four are among the uncommitted
+files other agents hold right now** — `broker/config.py` (`WORKER_PORT`),
+`broker/fleet.py` (`ep`/`tunnel`/`scene_hash`, ~400–600 lines), `broker/remote.py`
+(`WORKER_PIDS`, `progress.json`, ~150), `broker/app.py` (`dispatch_once`, ~300).
+Only `worker/server.py` is clean. The brief forbids deploying those, and the
+build cannot be done without editing them.
+
+The three couplings that would break, from that doc's own table, are all still
+real and all still unaddressed: `progress.json` is one file and every
+do-not-kill-a-running-frame guard reads it; `WORKER_PIDS` kills by pattern, so
+one restart kills all eight; and `activity()` cannot answer both "is slot N
+rendering" and "is any slot rendering". **What has changed is only that they are
+no longer worth solving.**
+
+**What would reopen it:** an 8-GPU box whose per-GPU speed is within ~10 % of a
+good single card. n=1 here, and only 11 exclusive 8x offers exist. The test is
+one frame and ~$1 — rent, render frame 30, compare against 151.0 s. **Do not buy
+a wide box without doing that first.**
+
+### Spend and standing state
+
+The 8x probe cost **$1.90** — $0.26 on a first host that failed to deploy (its
+own `apt-get` still held the dpkg lock) and $1.64 on 36.4 min of the box that
+worked. Over the ~$0.40 budgeted; the failed host and a 617 s scene push on a
+6-core uplink are where it went. Both instances destroyed and confirmed gone.
+Credit **$62.66**. Broker 2 was not touched at any point and carried the
+client's beat-1 proxy throughout.
+
+## R2-1092 — THE ANSWER: eight brokers on eight single cards. Same money, one third of a day, zero code
+
+Measured, probed, and it overturns everything anyone assumed - including the
+client's own offer and two of my models.
+
+```
+architecture                        wall     days   total $    code
+1 broker, 1 card (today)           163.1 h    6.8   $74.11      -
+8 brokers, 8 cards                  20.4 h    0.8   $74.21      NONE
+1 broker, 8 workers, 8x box         30.4 h    1.3   $83.60      ~1,300 lines
+1 broker, 1 worker, 8x box          186.6 h    7.8  $512.05     none - THE DEFAULT
+```
+
+**Eight broker processes on eight separate single-GPU rentals costs ten cents
+more than one card and finishes in a fifth of the time, and it needs no code at
+all** - because a second broker process was already proven to work (R2-130) and
+every single-instance assumption inside `Fleet` stays true inside each process.
+
+**The N-worker path was correctly NOT built.** ~1,300 lines to be **$9 dearer
+and 50% slower** than eight broker processes - and four of its five files are
+among the uncommitted work other agents hold, so it could not have been written
+without touching them.
+
+**The last row is a live trap.** `enable_gpu()` enables **every** OptiX device,
+so pointing today's broker at an 8-GPU box **silently rents eight cards and uses
+1.27 of them** - $512 for a master, by doing nothing wrong.
+
+## R2-1093 — the client's 2x5090 offer is a quarter-GPU share, and the market is mostly that
+
+Offer `46815699` reads *"2x RTX 5090, 48 cores of 192"*. It is **`gpu_frac
+0.25`** - the **R2-382 trap**, already measured at 1.64x slower with a
+zero-filled-buffer failure mode.
+
+**Of 42 two-GPU listings, only 4 are exclusive. 28 are `gpu_frac 0.25`.** The
+listing text says "2x RTX 5090" either way; **the fraction is the only thing
+that distinguishes a machine from a slice of one**, and it is not in the
+headline.
+
+Supply is thin besides: only **1x (20 offers) and 8x (11)** are deep. **2x is
+five offers and none cheaper. 3x and 6x do not exist.**
+
+## R2-1094 — sticker price is nearly worthless: width buys 8.8%, the host lottery costs 45%
+
+```
+Florida     1x  $0.4488/GPU-hr x 151.0 s = $0.01882/frame
+S. Africa   1x  $0.3999/GPU-hr x 166.8 s = $0.01853/frame
+California  8x  $0.3387/GPU-hr x 225.4 s = $0.02121/frame   <- cheapest $/hr, DEAREST per frame
+```
+
+**The cheapest $/GPU-hr on the board is the most expensive per frame.** Two 1x
+hosts differed **11% in price and 10% in speed and cancelled to 1.6% in
+$/frame.**
+
+**Width buys 8.8% market-wide. The host lottery is +/-45%.** So the cheapest
+thing available is **a good host, not a wide box** - and any procurement rule
+that sorts on $/hr is optimising the smaller term.
+
+## R2-1095 — the probe overturned one model by 3.5x, and confirmed the other
+
+Same frame, same `spec_hash 1983dced5cacabb6`, luminance identical to 6 dp
+across hosts:
+
+```
+N independent workers, 1 GPU each    modelled 8.00x   MEASURED 7.80x    right
+N GPUs on ONE frame                  modelled 4.49x   MEASURED 1.27x    wrong by 3.5x
+```
+
+Eight concurrent workers cost only **2.6%** (225.42 s against 219.65 s solo) at
+322 GB of 503 GB RAM. **The architecture was never the problem; that box's
+individual cards are 45% slower.**
+
+**And my own serial-collect figure was wrong in the safe direction.** I used
+**14.1 s/frame**, measured at 720p on another host. Re-derived at 4K on the
+shipping film it is **4.52 s (Florida) and 11.14 s (S. Africa)** - host
+dependent. The conclusion survives with room: at the *worst* host, eight workers
+leave the dispatch thread **42% busy.**
+
+## R2-1096 — THE MASTER IS $74.84 AND THE CREDIT IS $62.57. The gap is real now
+
+**R2-980's 155.0 h used a flat mean of nine frames.** **Beat 5 is 58% of render
+time and only 2 of those 9 samples.** Beat-weighted:
+
+```
+211.80 s/frame  ->  166.8 h  ->  $74.84      (+7.8% on the flat mean)
+credit                              $62.57
+                                 ---------
+                                 SHORT $12.27
+```
+
+**That beat-5 rate is n=2 with a 29% internal spread, and it dominates every
+number here far more than any card choice does.** Which is the fifth time this
+document has been wrong the same way - a rate from too few samples, extrapolated
+across 2,978 frames - and the first time the *weighting* rather than the rate
+was the error.
+
+**The client was told "you can add later, it fits." That is now false and must
+be corrected.** The honest ask is **$25-30**: $12.27 to close the gap, plus
+margin for a beat-5 rate that is two samples wide.
+
+Probe spend **$1.90** against a $0.40 budget - $0.26 lost to a host whose own
+`apt-get` held the dpkg lock, and a 617 s scene push on a six-core uplink.

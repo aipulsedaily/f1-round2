@@ -493,3 +493,215 @@ never taken.
 $70.06 on the card we are on and $67.95 on the cheapest viable alternative.
 **There is no card on this market that makes a 512-spp 4K master comfortable.**
 The gap does not close on the card. It closes on credit, or it does not close.
+
+## R2-983 — MY OWN R2-980 WAS 7.8 % LOW, FOR THE REASON THIS FILE KEEPS LOGGING
+
+Caught before it shipped, and it is the fourth-time-wrong error in a new dress.
+
+R2-980 derived the master from **196.48 s/frame**, the flat mean of the anchor's
+nine sample frames. Those nine frames are not the film in the proportions the
+film has:
+
+| beat | frames | s/frame | share of render time | sampled by |
+|---|---|---|---|---|
+| 1_assembly | 792 | 161.8 | 20.3 % | 3 of 9 |
+| 2_launch | 72 | 158.1 | 1.8 % | 1 |
+| 3_breach | 192 | 216.0 | 6.6 % | 1 |
+| 4_transit | 134 | 230.5 | 4.9 % | 1 |
+| **5_lap** | **1,524** | **240.7** | **58.2 %** | **2** |
+| 6_ending | 264 | 197.1 | 8.2 % | 1 |
+
+**Beat 5 is 58 % of the master's render time and 51 % of its frames, and it is
+sampled by two frames whose times differ by 29 %** (f1500 270.9 s, f2300
+210.5 s). A flat mean weights it 2/9 instead of 1,524/2,978.
+
+```
+flat mean of nine frames   196.48 s/frame   ->  155.0 h  $69.57
+beat-weighted              211.80 s/frame   ->  166.8 h  $74.84    +7.8 %
+```
+
+Use **211.80**. And note what it implies: **no card decision in this document
+matters next to beat 5's rate, which is n=2 with a 29 % internal spread.** The
+whole 1x-versus-8x market spread is 8.8 %.
+
+## R2-984 — THE OFFER QUERY HAS ONLY EVER SEEN ONE EIGHTH OF THE MARKET
+
+`vastctl.build_query` contained the literal `num_gpus=1`. Not a default, not a
+parameter — a literal. **The broker has never been able to see a multi-GPU
+machine**, which is why `docs/multi-gpu.md` had to source its offers by hand.
+
+Third one in the same file, identical shape: `MIN_CPU_CORES_EFFECTIVE` hid the
+cheap exclusive stock (R2-973), the missing RAM floor hid that the cheap stock
+is a 32 GB desktop (R2-979), `num_gpus=1` hid multi-GPU entirely. Fixed in
+`f8aa76b`; **at `num_gpus=1` the emitted query is byte-identical to before.**
+
+### What scales with width and what does not
+
+Getting this backwards would make the filter exclude the box it exists to find.
+
+* **RAM scales.** Measured on nine concurrent runs: **41.4–41.6 GB resident per
+  Blender** holding the 7.97 GB scene. `VASTRENDER_MIN_RAM_GB` is now multiplied
+  by GPU count.
+* **Cores do not scale from the build floor.** `MIN_CPU_CORES_EFFECTIVE = 32` is
+  a *build* constant (12 concurrent `rq exec` processes on one box). Expressed
+  per GPU it would demand 256 cores and exclude the 192-core 8x boxes — the
+  cheapest GPU-hours on the market. The query takes `max(per-box, per-GPU x N)`
+  with a new `MIN_CPU_CORES_PER_GPU = 8`.
+* **Disk does not scale**, because the scene cache is content-addressed on a
+  shared filesystem: one 7.97 GB push serves every worker on the box.
+
+### The exclusive market, by width
+
+```
+        offers   viable (>=42 GB RAM/GPU)   cheapest viable $/GPU-hr
+  1x      20              14                      0.3803
+  2x       5               5                      0.3883
+  4x       2               1                      0.4670
+  8x      11              11                      0.3470
+  3x, 6x   none
+```
+
+**Only 1x and 8x are deep markets.** 2x is five offers and no cheaper than 1x;
+4x barely exists.
+
+### The client's own offer is the `gpu_frac` trap
+
+Offer `46815699` was described as *2x 5090, 48 cores of 192*. **48/192 = 0.25**,
+and a whole machine has `cpu_cores_effective == cpu_cores`. It had churned
+before it could be read directly, but the market says what it was: of **42**
+two-GPU 5090 listings, only **4** are `gpu_frac 1.0` — **28 are `gpu_frac
+0.25`**. That is the R2-382 co-tenancy class, measured 1.64x slower with a
+zero-filled-buffer failure mode, and it is not a candidate at any price.
+
+## R2-985 — BOTH MULTI-GPU MODELS MEASURED: ONE RIGHT, ONE WRONG BY 3.5x
+
+Rented an 8x RTX 5090 box (`47083562`, offer `47031300`, California, EPYC
+192c/503 GB, `gpu_frac 1.0`, $2.71/hr all-in = **$0.339/GPU-hr**) and rendered
+**frame 30 of `film16_breach.blend`, `spec_hash 1983dced5cacabb6`** — the same
+frame, same spec, as the R2-978 comparison. Luminance identical to six decimal
+places on every host, so only hardware differs.
+
+```
+                                        modelled       MEASURED    verdict
+N independent workers, 1 GPU each         8.00x          7.80x     RIGHT
+N GPUs on ONE frame                       4.49x          1.27x     WRONG by 3.5x
+```
+
+**Eight concurrent workers, one GPU pinned each via `CUDA_VISIBLE_DEVICES`, all
+on frame 30:**
+
+```
+render_s  229.3 217.7 224.7 228.0 221.9 227.4 227.4 227.1   mean 225.42
+solo on the same box, one GPU                               219.65
+concurrency penalty                                          2.6 %  -> 7.80x
+peak host RAM   322 GB of 503        per-process RSS  41.4-41.6 GB
+```
+
+Twenty-four effective cores per worker — below `MIN_CPU_CORES_EFFECTIVE = 32`,
+which `multi-gpu.md` flagged as an unquantified risk — cost **2.6 %**, including
+eight simultaneous 7.97 GB scene loads.
+
+**All eight GPUs on one frame: 172.8 s against 219.65 s solo — 1.27x, not
+4.49x.** The doc honestly labelled this *a model, not a measurement*; it was
+wrong in the expensive direction. **And it is what happens by default:**
+`enable_gpu()` sets `d.use` on every OptiX device, so pointing today's broker at
+an 8-GPU box silently rents eight cards and uses 1.27 of them. A master run that
+way is **$512 and 7.8 days.**
+
+## R2-986 — $/GPU-HR IS A TRAP. $/FRAME IS THE NUMBER.
+
+The client asked for "cheapest possible pricing, full stop". This is the honest
+answer and it is not the one the market's sticker prices suggest.
+
+```
+Florida    1x   $0.4488/GPU-hr x 151.0 s  = $0.01882/frame
+S. Africa  1x   $0.3999/GPU-hr x 166.8 s  = $0.01853/frame
+California 8x   $0.3387/GPU-hr x 225.4 s  = $0.02121/frame   <- DEAREST
+```
+
+> **The cheapest $/GPU-hr box on the market is the dearest per frame**, because
+> its individual GPUs are **45 % slower** than a good single card.
+
+Market-wide the per-GPU price spread from 1x to 8x is **8.8 %**. The host
+lottery — how fast the silicon you actually drew renders — is **±45 %** across
+three measured hosts. **Width is inside the noise of which host you get.**
+
+And the sharpest illustration: the two 1x hosts differ by **11 % in price** and
+**10 % in speed**, and those cancel to **1.6 % in $/frame**. Shopping on sticker
+price is close to worthless. **The cheapest thing available is a good host, not
+a wide box** — and the only way to know a good host is to render one frame on it
+and compare against 151.0 s.
+
+## R2-987 — THE RECOMMENDATION: EIGHT BROKERS, EIGHT CARDS, NO CODE
+
+Beat-weighted 211.80 s/frame x 0.927 (`adaptive 0.02`), 2,978 frames, serial
+broker work at the worst measured 4K host, cold starts at the 12 h
+`MAX_INSTANCE_HOURS` wall.
+
+| architecture | wall | days | total $ | code |
+|---|---|---|---|---|
+| 1 broker, 1 card (today) | 163.1 h | 6.8 | **$74.11** | — |
+| **8 brokers, 8 cards** | **20.4 h** | **0.8** | **$74.21** | **none** |
+| 1 broker, 8 workers, 8x box | 30.4 h | 1.3 | $83.60 | ~1,300 lines |
+| 1 broker, 1 worker, 8x box | 186.6 h | 7.8 | $512.05 | none — the default |
+
+**Eight broker processes on eight single cards: 8x the speed for +0.1 % money
+and no new code.** It is the "two brokers, one card each" pattern already built
+and proven, run eight times. The ~1,300-line N-worker build is **$9 dearer and
+50 % slower** than the free option, because the wide boxes on this market have
+slow GPUs.
+
+### How to do it without breaking the farm
+
+* **Contiguous blocks, never stripes.** `parse_range` supports `1-2978x8`, which
+  balances load perfectly and is exactly wrong: PNGs from different hosts are
+  **not bit-identical** (different driver, different OIDN build — measured,
+  luminance agrees to 6 dp, bytes do not). Striping puts a machine boundary
+  between every adjacent frame pair; contiguous blocks put seven in the whole
+  film. Size blocks by the per-beat table in R2-983, not by frame count.
+* **Eight disjoint labels**, pairwise — `startswith`, so "renderbroker2" is
+  reaped by "renderbroker".
+* **Eight disjoint tunnel and exec ports.** Startup reaping SIGKILLs any `ssh -L`
+  on its port that is not its own child; a collision kills a sibling's tunnel
+  mid-frame and reads as bad hardware.
+* **The local workstation is the bottleneck, not the market.** 6 cores, 11 GB
+  RAM. Eight concurrent `zstd -10` compressions of a 7.97 GB scene will
+  serialise on it: one push took 405 s today against the exec builds, and the 8x
+  box's took **617 s**. Stagger the starts.
+* **Probe each host with one frame before committing it to a block.** At ±45 %
+  host variance and ~$0.02/frame, one frame is the cheapest insurance on the
+  board.
+
+## R2-988 — WHAT I DID NOT BUILD, AND WHY
+
+**The N-worker path is not built, and on these numbers it should not be.** It
+costs ~1,300 lines to be $9 dearer and 50 % slower than eight broker processes.
+
+Independently of the economics, it was also **not mine to write**. Of the five
+files `multi-gpu.md` sizes the work across, **four are among the uncommitted
+files other agents hold right now** — `broker/config.py` (`WORKER_PORT`),
+`broker/fleet.py` (`ep`/`tunnel`/`scene_hash`, ~400–600 lines), `broker/remote.py`
+(`WORKER_PIDS`, `progress.json`, ~150), `broker/app.py` (`dispatch_once`, ~300).
+Only `worker/server.py` is clean. The brief forbids deploying those, and the
+build cannot be done without editing them.
+
+The three couplings that would break, from that doc's own table, are all still
+real and all still unaddressed: `progress.json` is one file and every
+do-not-kill-a-running-frame guard reads it; `WORKER_PIDS` kills by pattern, so
+one restart kills all eight; and `activity()` cannot answer both "is slot N
+rendering" and "is any slot rendering". **What has changed is only that they are
+no longer worth solving.**
+
+**What would reopen it:** an 8-GPU box whose per-GPU speed is within ~10 % of a
+good single card. n=1 here, and only 11 exclusive 8x offers exist. The test is
+one frame and ~$1 — rent, render frame 30, compare against 151.0 s. **Do not buy
+a wide box without doing that first.**
+
+### Spend and standing state
+
+The 8x probe cost **$1.90** — $0.26 on a first host that failed to deploy (its
+own `apt-get` still held the dpkg lock) and $1.64 on 36.4 min of the box that
+worked. Over the ~$0.40 budgeted; the failed host and a 617 s scene push on a
+6-core uplink are where it went. Both instances destroyed and confirmed gone.
+Credit **$62.66**. Broker 2 was not touched at any point and carried the
+client's beat-1 proxy throughout.
