@@ -29699,3 +29699,45 @@ over-states this host by 1.7x** against the API. My $0.53/day came from it.
 
 **Standing: exited is not idle, and a rental that stopped may be one another
 agent is about to wake.**
+
+## R2-1059 — the shot-scale instrument was most confident exactly where the car was invisible, and the fix is additive on purpose
+
+`tools/lap_shotscale.py` projects the car's bounding box and reports how much of
+the frame width it fills. **It has no idea whether anything is in front of the
+car.** At **f2185 it reported 4.66% and at f2190 4.91%** - among its most
+confident readings of the whole span - **for two frames in which the car is 100%
+hidden behind `ARCH_PontPlongee`.**
+
+The ledger already existed, so this cost nothing but wiring. Across the whole
+film there are **exactly 15 frames** where the car is in the frustum and wholly
+hidden: **f1114-1116** behind the pit building and **f2180-2191** behind the
+bridge.
+
+**And the annotation immediately said something the raw numbers did not.**
+Excluding hidden frames, beat 5's median barely moves (12.92% -> 12.97%) but
+**beat 4's median falls, 9.45% -> 9.15%.** The hidden frames were reading
+*above* the beat's average - the instrument was not merely blind, it was
+**confidently wrong in the flattering direction.** A blind spot that reported
+low would have been noticed long ago.
+
+**The fix is deliberately additive.** `frac_w` still prints in the same column
+with the same value; the occlusion figure is a new column and the per-beat
+summary gains a second line rather than replacing the first. Other agents are
+measuring with this tool right now, and **silently changing a shared instrument
+mid-flight is the failure this project keeps logging.** The agent that found
+this declined to fix it for exactly that reason and flagged it instead, which
+was the right call from inside a task that did not own the tool.
+
+**Five controls, all firing**, and one of them exists because of a mistake this
+project already made: `occlusion/in_frame_filter` proves that frames where the
+car is **outside the frustum** are excluded rather than scored as visible.
+**"Hidden behind a wall" and "not in shot" are indistinguishable in a summary**,
+and conflating them produced a wrong finding about the film's last three frames
+that had to be withdrawn. The loader filters `in_frame` first, and a control now
+holds it there.
+
+Also controlled: the positive case names all 15 frames exactly, the negative
+case proves clear frames either side of the bridge do **not** trip it, and a
+missing ledger **degrades to no annotation rather than crashing** - because a
+measurement tool that dies when an optional input is absent will simply be run
+without it.

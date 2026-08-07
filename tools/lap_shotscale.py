@@ -278,8 +278,74 @@ def selftest(path, car, world_t):
     except Exception as e:  # pragma: no cover
         print(f"  SKIP  agreement  ({e})")
 
+    # 5. R2-1011 OCCLUSION ANNOTATION.  This instrument cannot see occluders,
+    #    and its blindness was invisible because the numbers looked healthy.
+    #    These prove the annotation fires, that it does not fire everywhere,
+    #    and that it keeps `in_frame` and `occluded` apart -- conflating those
+    #    two has already produced one wrong finding about the film's last
+    #    frames, so the distinction gets a control of its own.
+    occ = load_occlusion(os.path.join(R2, OCCLUSION_LEDGER))
+    good = bool(occ)
+    ok &= good
+    print(f"  {'PASS' if good else 'FAIL'}  occlusion/ledger  loaded "
+          f"{len(occ)} in-frame rows")
+
+    hidden = sorted(f for f, v in occ.items() if v >= OCC_HIDDEN)
+    good = hidden == [1114, 1115, 1116] + list(range(2180, 2192))
+    ok &= good
+    print(f"  {'PASS' if good else 'FAIL'}  occlusion/positive  the car is "
+          f"in frame and wholly hidden on exactly {len(hidden)} frames "
+          f"({hidden[:3]}... ), the pit building and the bridge")
+
+    good = all(occ.get(f, 0.0) < OCC_HIDDEN for f in (2160, 2175, 2200, 2225))
+    ok &= good
+    print(f"  {'PASS' if good else 'FAIL'}  occlusion/negative  clear frames "
+          f"either side of the bridge do NOT read as occluded")
+
+    # The car is out of frame for the film's tail.  Those rows must be ABSENT
+    # from the ledger, not present-and-clear: "not in shot" is not "visible".
+    good = not any(f in occ for f in range(2900, 2979))
+    ok &= good
+    print(f"  {'PASS' if good else 'FAIL'}  occlusion/in_frame_filter  "
+          f"out-of-frustum frames are excluded, not scored as visible")
+
+    good = load_occlusion("/nonexistent/occlusion.json") == {}
+    ok &= good
+    print(f"  {'PASS' if good else 'FAIL'}  occlusion/absent  a missing ledger "
+          f"degrades to no annotation, and does not crash the tool")
+
     print("SELFTEST " + ("PASS" if ok else "FAIL"))
     return ok
+
+
+#: R2-1011.  This tool projects the car's box and reports how much of the frame
+#: width it fills.  It has no idea whether anything is IN FRONT of the car, so
+#: at f2185 and f2190 it printed 4.66 % and 4.91 % -- among its most confident
+#: readings of the whole span -- for two frames in which the car is 100 % hidden
+#: behind `ARCH_PontPlongee`.  A number is not wrong here so much as it is
+#: answering a different question than the reader is asking.
+#:
+#: The occlusion ledger already exists, so the fix costs nothing but wiring.
+#: It is ADDITIVE: `frac_w` still prints in the same column with the same value,
+#: because other agents are measuring with this tool right now and silently
+#: changing an instrument mid-flight is the failure this project keeps logging.
+OCCLUSION_LEDGER = "render/r2651/occlusion.json"
+OCC_HIDDEN = 0.99      # front-occluded fraction at which "the car" is not visible
+
+
+def load_occlusion(p):
+    """{frame: occ_frac_front} for frames that are IN the frustum.
+
+    `in_frame` is filtered first and deliberately: a car outside the frustum and
+    a car hidden behind a wall are indistinguishable in a summary, and conflating
+    them has already produced one wrong finding about the film's last frames.
+    """
+    try:
+        d = json.load(open(p))
+    except Exception:
+        return {}
+    return {int(r["f"]): float(r.get("occ_frac_front") or 0.0)
+            for r in d.get("frames", []) if r.get("in_frame")}
 
 
 def main():
@@ -288,7 +354,10 @@ def main():
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--dump", default="")
     ap.add_argument("--frames", default="")
+    ap.add_argument("--occlusion", default=os.path.join(R2, OCCLUSION_LEDGER),
+                    help="occlusion ledger; '' disables the annotation")
     a = ap.parse_args()
+    occ = load_occlusion(a.occlusion) if a.occlusion else {}
 
     sheet = json.load(open(os.path.join(R2, "docs/beat_sheet.json")))
     total = sheet["total_frames"]
@@ -304,7 +373,8 @@ def main():
     s = series(path, car, world_t, lo=1, hi=total)
 
     if a.frames:
-        print(f"{'frame':>6} {'t_s':>7} {'dist':>8} {'lens':>7} {'frac_w':>8}")
+        print(f"{'frame':>6} {'t_s':>7} {'dist':>8} {'lens':>7} {'frac_w':>8}"
+              f" {'occ':>6}")
         for tok in a.frames.split(","):
             if "-" in tok:
                 b, e = tok.split("-")
@@ -314,19 +384,41 @@ def main():
             for f in rr:
                 if f in s:
                     fw, d, ln = s[f]
-                    print(f"{f:6d} {f/24.0:7.2f} {d:8.1f} {ln:7.2f} {fw:8.4f}")
+                    o = occ.get(f)
+                    tail = ("     --" if o is None
+                            else f" {o*100:5.1f}%"
+                                 + ("   OCCLUDED -- the car is not visible on "
+                                    "this frame; the figure to its left is the "
+                                    "size it WOULD read at"
+                                    if o >= OCC_HIDDEN else ""))
+                    print(f"{f:6d} {f/24.0:7.2f} {d:8.1f} {ln:7.2f} {fw:8.4f}"
+                          f"{tail}")
 
     print()
-    print(f"{'beat':<12} {'frames':>7} {'median':>9} {'p10':>9} {'min':>9}")
+    print(f"{'beat':<12} {'frames':>7} {'median':>9} {'p10':>9} {'min':>9}"
+          f"  {'hidden':>7}")
     for name, f0, f1 in BEATS:
         vals = [s[f][0] for f in range(f0, f1 + 1) if f in s]
         good = sorted(x for x in vals if x == x)
+        hid = [f for f in range(f0, f1 + 1) if occ.get(f, 0.0) >= OCC_HIDDEN]
         if not good:
             print(f"{name:<12} {f1-f0+1:7d} {'--':>9} {'--':>9} {'--':>9}"
                   "   (car exploded; not measured)")
             continue
         print(f"{name:<12} {f1-f0+1:7d} {median(good)*100:8.2f}% "
-              f"{good[int(0.1*len(good))]*100:8.2f}% {good[0]*100:8.2f}%")
+              f"{good[int(0.1*len(good))]*100:8.2f}% {good[0]*100:8.2f}%"
+              f"  {len(hid):7d}")
+        if hid:
+            # The median above INCLUDES these frames.  Say so, and say what it
+            # is without them -- a beat's shot scale is not a claim about
+            # frames the audience cannot see the subject on.
+            vis = sorted(s[f][0] for f in range(f0, f1 + 1)
+                         if f in s and occ.get(f, 0.0) < OCC_HIDDEN
+                         and s[f][0] == s[f][0])
+            print(f"{'':<12} {'':>7} {median(vis)*100:8.2f}% "
+                  f"{vis[int(0.1*len(vis))]*100:8.2f}% {vis[0]*100:8.2f}%"
+                  f"  {'<- car visible only; %d frame(s) hidden behind '
+                       'geometry excluded' % len(hid):>7}")
 
     if a.dump:
         import numpy as np
