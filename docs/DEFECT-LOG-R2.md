@@ -36790,3 +36790,99 @@ altitude), seen from the client's side rather than the code's.
 **The client found this by watching a still nobody had re-examined**, in a
 region no metric was pointed at. **Every quality defect on this film has come
 from the same place.**
+
+## R2-1157 — `min_depth_m 4.577` WAS THE GRASS. It stopped two tree builds and `n_hosts: 93` was the tell, on the row all along
+
+All twelve `tree_*` rows carry **`n_hosts: 93`** - their host list is **the entire
+`VEG_` layer**, grass and grit included. So `min_depth_m` is the minimum over
+that whole layer (`VEG_grass_*_H` = **4.577 m**, to the centimetre) and
+`peak_px_4k 2160` is its **maximum** - grass filling the frame under the lens.
+
+**Every tree row was reporting the grass's numbers.**
+
+Re-derived independently by re-projecting through `live_campath.load()` over
+2,978 frames:
+
+```
+class            instances    nearest    median    peak px/m
+avenue tree             24    32.92 m     119 m       107.8
+woodland tree       23,487    74.54 m     883 m        52.0
+hedgerow tree        3,130    78.95 m     839 m        49.3
+grass            1,255,084     4.58 m     210 m       779.0
+```
+
+**Wrong by 7.2x against the nearest tree and 16.3x against the woodland tier.**
+Per-species peak px was overstated **1.6-7.7x** - and **since score goes as px²,
+up to ~60x in the ranking statistic.** Class-level *"trees dominate"* survives;
+**rank order inside it does not.**
+
+**The triangle crisis dissolves, and it had already been refuted empirically.**
+Both stopped builds were writing **per-item hero modules** in `world/items/`
+while **`world/build_terrain.py` already builds and places the whole layer.**
+From `assemble6.log`: **24,646 woodland + 3,299 hedgerow + 24 avenue trees,
+38,847 shrubs, 1,027 unique meshes, 33.26 M base-library triangles - built on
+this 11 GB box in 982 s.** **The number called impossible for 11 GB is what the
+shipping world already carries.**
+
+**And `VEG_tree_cypress0` does not exist.** No cypress is ever placed at L0, so
+**the ~800 k-tri spray that stopped two builds has no frame to appear in.** At
+the pine's nearest station a 1.70 mm needle is **0.076 px.**
+
+## R2-1158 — THE GROUND THE CAMERA SEES CLOSEST IS THE GROUND FURTHEST FROM A TREE, BY 8.2x
+
+60,000 `TER_Ground` samples, each weighted by its exact screen-area-time
+`sum (s/d)²` over the frames it is genuinely in frustum, against 72,297 placed
+woody instances:
+
+```
+ground's depth to camera   % of ground area-time   median distance to nearest tree
+25-50 m                            3.1 %                    78.9 m
+100-250 m                         35.4 %                    30.7 m
+> 250 m                           46.1 %                     9.6 m
+```
+
+**44.9 % of ground screen-area-time is more than 10 m from any woody instance.**
+
+**Legible in source**: woodland requires `h["D"] > 26.0` **plus**
+`outside_corridor(..., 8.0)`; hedgerows `h["f"] > 26.0` **plus**
+`outside_corridor(..., 18.0)`. **Those rules evacuate exactly the band the lens
+resolves best.**
+
+> **The map is not short of trees. It is short of them where the camera is.**
+
+**That is the client's complaint, in one line**: *"anything 5 feet away from the
+main road and buildings have blank grass no detail nothing."* The f2811 A/B
+agrees - the band beside the road is flat olive in **both** before and after,
+because the ground fix addressed cover and this is **placement.**
+
+**So the answer to "fill the WHOLE map" is a placement change against the
+existing 1,027-mesh library, not a build.** Same shape as R2-1150's sward fix:
+4 % -> 72 % for +0.32 % of triangles. **Decline the eleven hero tree modules and
+drop `tree_italian_cypress` rather than rebuild it; keep `paddock_avenue_tree`**,
+the one tree row whose hero framing survives measurement at 32.9 m and
+1,272-2,113 px.
+
+## R2-1159 — its first FOUR controls failed, and the controls were wrong rather than the probe
+
+Each planted a static point and **minimised over all 2,978 frames** - but the
+camera flies closer later, so the control was answering a different question
+than the probe. **Redone with the frame held fixed: 8/8 pass**, including the arm
+that matters - **planting a tree at 4.577 m and confirming the probe reports
+it** - and a discrimination arm showing a **+300 m camera shift moves the answer
+to 6.32 m.**
+
+**A control that fails is not automatically evidence against the thing being
+controlled.** Four failures in a row is usually the instrument; here it was the
+control's own framing, and distinguishing those two took holding one variable
+still.
+
+**Two self-caught errors, both in the direction of its own conclusion:** it
+filtered on `VEG_tree_` and dropped `VEG_hedge_*` / `VEG_avenue` - **and the
+avenue holds the minimum**, so its first answer of 74.54 m was wrong. And it
+re-probed **canopy tops** after realising the point cloud stores **trunk bases**
+(35.13 -> 32.92 m, 6 %, conclusion unchanged).
+
+**And a briefing error of mine it flagged:** the working directory it was handed
+is **Round 1**. All round-2 work is in `/home/zany/f1-round2`, and **none of the
+paths in my brief resolve under the former.** Every brief today has carried that
+cwd with a READ-ONLY warning; it should carry the round-2 root as well.
