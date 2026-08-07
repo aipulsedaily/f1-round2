@@ -262,6 +262,7 @@ def amend_violation():
 def check(cwd=None, verbose=True):
     """Returns (ok, [violation dicts]).  Never raises -- see FAILING OPEN."""
     staged = staged_paths(cwd)
+    autoseeded = auto_seed(staged, cwd)
     leases = load_leases(cwd)
     who = me()
     violations = []
@@ -308,6 +309,9 @@ def check(cwd=None, verbose=True):
         print("  staged paths    %d" % len(staged))
         print("  live leases     %d of %d on disk (TTL %.0f h)"
               % (sum(1 for x in leases if x.get("live")), len(leases), TTL_HOURS))
+        if autoseeded:
+            print("  auto-leased     %d dirty path(s) that nobody had claimed"
+                  % len(autoseeded))
         if violations:
             print("")
             print("  REFUSED -- the index carries paths leased by somebody else.")
@@ -355,6 +359,29 @@ def cmd_claim(argv, cwd=None):
     mine["paths"] = sorted(set(mine["paths"]) | set(argv))
     mine["updated"] = now_iso()
     save_lease(mine, cwd)
+
+    # AN EXPLICIT CLAIM BEATS AN AUTOMATIC LEASE, and the selftest is what
+    # forced this.  Adding `auto_seed` broke four green controls at once --
+    # including C5b, "the SAME index committed by its OWNER" -- because a path
+    # could end up held by both its real owner and by `inflight-auto`, and the
+    # guard then refused the author on their own file.  A guard that fights the
+    # person who did the claiming is a guard people turn off, and
+    # `R2_GITGUARD=off` is worse than no guard because it looks like one.
+    #
+    # The manual `inflight-*` seed is deliberately NOT released here.  That set
+    # is somebody's unfinished work from before the guard existed, and saying so
+    # out loud once is the entire point of it.
+    auto = next((x for x in load_leases(cwd) if x.get("owner") == AUTO_OWNER), None)
+    if auto:
+        keep = [p for p in auto.get("paths", [])
+                if not any(holds(a, p) or holds(p, a) for a in argv)]
+        freed = len(auto.get("paths", [])) - len(keep)
+        if freed:
+            auto["paths"] = keep
+            auto["updated"] = now_iso()
+            save_lease(auto, cwd)
+            print("  (%d path(s) released from %s -- an explicit claim wins)"
+                  % (freed, AUTO_OWNER))
     print("claimed %d path(s) for %s; lease now holds %d"
           % (len(argv), who, len(mine["paths"])))
     print(">> STAGE RESULT: OK (0 clashes)")
@@ -396,6 +423,10 @@ def cmd_seed_inflight(argv, cwd=None):
         owner = argv[argv.index("--owner") + 1]
     paths = dirty_paths(cwd)
     paths = [p for p in paths if not p.startswith(".git/")]
+    if "--merge" in argv:
+        prev = next((x for x in load_leases(cwd) if x.get("owner") == owner), None)
+        if prev:
+            paths = sorted(set(paths) | set(prev.get("paths", [])))
     lease = {"owner": owner, "created": now_iso(), "pid": os.getpid(),
              "paths": sorted(paths),
              "note": "auto-seeded from the dirty worktree at install time "
@@ -408,6 +439,71 @@ def cmd_seed_inflight(argv, cwd=None):
         print("   %s" % p)
     print(">> STAGE RESULT: OK (%d seeded)" % len(paths))
     return 0
+
+
+AUTO_OWNER = "inflight-auto"
+
+
+def auto_seed(staged, cwd=None):
+    """Lease every dirty, unleased, UNSTAGED path -- on every commit.
+
+    THE SEED IS A SNAPSHOT, AND THAT WAS A HOLE.  `seed-inflight` claimed the
+    312 paths that were dirty when the guard was installed, and nothing at all
+    after that.  Within twenty minutes another agent had started editing
+    `tools/placement_gate.py`, which had been CLEAN at seed time -- so their
+    work was unleased, and a `git add -A` would have taken it exactly as before.
+    A guard that protects only the work that existed at install time protects
+    the wrong set within the hour.
+
+    So the hook re-seeds continuously.  Every commit anybody makes leases
+    whatever else is in flight at that moment, which means the protection
+    tracks the tree instead of a timestamp, and it costs nobody anything: no
+    adoption, no new command, no change to how anyone commits.
+
+    STAGED PATHS ARE DELIBERATELY EXCLUDED.  Auto-leasing the files of the very
+    commit being made would refuse every commit in the repository until its
+    author claimed each file first.  That is a defensible rule and it is not
+    this one: the point here is to make the guard free, and a guard people must
+    negotiate with on every commit is a guard people turn off.  The cost is
+    that a sweep in the first moments of a file's life -- before ANY commit has
+    run the hook -- is still unguarded.  `seed-inflight --merge` closes that by
+    hand when somebody wants it closed.
+    """
+    if os.environ.get("R2_GUARD_AUTOSEED") == "off":
+        return []
+    try:
+        dirty = [p for p in dirty_paths(cwd) if not p.startswith(".git/")]
+        held = set()
+        for lease in load_leases(cwd):
+            if lease.get("live"):
+                held.update(lease.get("paths", []))
+        existing = next((x for x in load_leases(cwd)
+                         if x.get("owner") == AUTO_OWNER and x.get("live")), None)
+        held -= set((existing or {}).get("paths", []))
+        fresh = sorted(set(dirty) - set(staged) - held)
+
+        # AND PRUNE.  An auto-lease means exactly one thing -- "this path is
+        # uncommitted work in flight" -- so it must end when that stops being
+        # true.  Without this the lease is a ratchet: every path ever dirty
+        # stays leased forever, refusals accumulate against files that were
+        # committed hours ago, and the guard becomes noise. The selftest caught
+        # it as an --amend refusal naming the guard's own hook files.
+        lease = existing or {"owner": AUTO_OWNER, "created": now_iso(),
+                             "pid": os.getpid(), "paths": [],
+                             "note": "auto-leased by the pre-commit hook: dirty "
+                                     "and unclaimed at the moment somebody else "
+                                     "committed. Released automatically once the "
+                                     "path is committed and no longer in flight."}
+        keep = [p for p in lease["paths"] if p in set(dirty)]
+        new = sorted(set(keep) | set(fresh))
+        if new == sorted(lease["paths"]):
+            return []
+        lease["paths"] = new
+        lease["updated"] = now_iso()
+        save_lease(lease, cwd)
+        return fresh
+    except Exception:                                             # noqa: BLE001
+        return []                                    # never block on this path
 
 
 def cmd_status(argv, cwd=None):

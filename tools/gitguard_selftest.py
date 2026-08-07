@@ -56,6 +56,12 @@ def make_repo(tmp):
     sh("git add world tools docs", r)
     sh("git -c core.hooksPath=/dev/null commit -q -m base", r)
     sh("python3 tools/gitguard.py install", r)
+    # Commit the hooks in the BASE commit. Left dirty they are in-flight work
+    # like any other, the auto-lease correctly claims them, and every later
+    # control then inherits a refusal that has nothing to do with what it is
+    # testing. Removing a harness artefact, not weakening a check.
+    sh("git add tools/githooks", r)
+    sh("git -c core.hooksPath=/dev/null commit -q -m hooks", r)
     return r
 
 
@@ -139,8 +145,12 @@ def run():
         lease = os.path.join(r, ".git", "r2-guard", "leases", "bob.json")
         stash = lease + ".stashed"
         os.rename(lease, stash)
+        auto = os.path.join(r, ".git", "r2-guard", "leases", "inflight-auto.json")
+        if os.path.exists(auto):
+            os.remove(auto)
         sh("git add -A", r)
-        rc, out = sh('git commit -q -m "same sweep, no lease"', r, {"R2_AGENT": "alice"})
+        rc, out = sh('git commit -q -m "same sweep, no lease"', r,
+                     {"R2_AGENT": "alice", "R2_GUARD_AUTOSEED": "off"})
         record("C4 identical sweep with no lease present", "ALLOWED",
                guard_verdict(rc, out))
         os.rename(stash, lease)
@@ -246,6 +256,44 @@ def run():
                guard_verdict(rc, out), "names bob.py: %s"
                % ("world/items/bob.py" in out))
         sh("git reset -q", r)
+
+        print("")
+        print("C13 THE SNAPSHOT HOLE: work that STARTS after the seed")
+        print("    Twenty minutes after install, an agent began editing a file")
+        print("    that had been clean at seed time. It was unleased, and a")
+        print("    blanket add would have taken it exactly as before.")
+        sh("git reset -q", r)
+        dave = os.path.join(r, "world/items/dave.py")
+        open(dave, "w").write("# dave, started AFTER the seed\n")
+        # Alice makes an ordinary, unrelated commit. The hook auto-leases
+        # whatever else is in flight while it is there.
+        open(os.path.join(r, "world/items/alice.py"), "a").write("# c13\n")
+        sh("git add world/items/alice.py", r)
+        rc, out = sh('git commit -q -m "alice, unrelated"', r, {"R2_AGENT": "alice"})
+        record("C13 an unrelated commit still succeeds", "ALLOWED",
+               guard_verdict(rc, out))
+        record("C13b and it auto-leased dave's new file", True,
+               "auto-leased" in out, out.strip().splitlines()[3][:52]
+               if len(out.strip().splitlines()) > 3 else "")
+        # ONE variable. Stage dave.py and NOTHING else, so the verdict is
+        # about dave's auto-lease and not about bob's or carol's manual ones.
+        # The first version of this control staged the whole tree and came back
+        # REFUSED for three unrelated reasons -- a control that fires for the
+        # wrong reason is worth nothing, and it would have read as a pass.
+        sh("git add world/items/dave.py", r)
+        rc, out = sh('git commit -q -m "alice takes daves new file"', r,
+                     {"R2_AGENT": "alice"})
+        record("C13c staging dave's auto-leased file is REFUSED", "REFUSED",
+               guard_verdict(rc, out), "names dave: %s"
+               % ("world/items/dave.py" in out))
+        # VACUITY: the IDENTICAL index, with the auto-lease removed, must pass.
+        lp = os.path.join(r, ".git", "r2-guard", "leases", "inflight-auto.json")
+        if os.path.exists(lp):
+            os.remove(lp)
+        rc, out = sh('git commit -q -m "same index, no auto-lease"', r,
+                     {"R2_AGENT": "alice", "R2_GUARD_AUTOSEED": "off"})
+        record("C13d VACUITY: same index with the auto-lease gone", "ALLOWED",
+               guard_verdict(rc, out))
 
         print("")
         print("C10 seed-inflight claims exactly the dirty set")

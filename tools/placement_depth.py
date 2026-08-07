@@ -60,6 +60,7 @@ from mathutils.kdtree import KDTree
 if os.path.dirname(os.path.abspath(__file__)) not in sys.path:
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gate_exit                                                 # noqa: E402
+import report_repro as _repro                                   # noqa: E402
 
 R2 = "/home/zany/f1-round2"
 
@@ -84,6 +85,17 @@ def parse_args():
     p.add_argument("--spec", default=os.path.join(R2, "docs/circuit_spec.json"))
     p.add_argument("--zhi", type=float, default=4.50)
     p.add_argument("--zlo", type=float, default=-0.60)
+    # DEFECT #97, THE CONSUMER SIDE.  `placement_gate.py` stamps its reports
+    # now, but this tool read `rep["violations"]` without ever asking what the
+    # report measured -- so a four-day-old file computed exactly as smoothly
+    # as a fresh one, and the numbers came out looking identical.  R2-735
+    # settled an argument between three such reports by mtime and by
+    # byte-comparing rows, and found the NEWEST of them was the stale one.
+    # A stamp nobody checks is a header; this is the check.
+    p.add_argument("--allow-unstamped", default=None, metavar="WHY",
+                   help="proceed on a report with no provenance stamp, "
+                        "recording the reason in the output. Every placement "
+                        "report written before 2026-08-04 needs this.")
     return p.parse_args(argv)
 
 
@@ -134,7 +146,9 @@ def main():
     kd.balance()
     print(f">> centreline: {len(stations)} stations in a KD-tree")
 
-    rep = json.load(open(a.report))
+    # Refuses an unstamped report unless the caller says out loud why that is
+    # acceptable here.  See tools/report_repro.py.
+    rep = _repro.require(a.report, a.allow_unstamped)
     names = []
     for v in rep["violations"]:
         if v["object"] not in names:
