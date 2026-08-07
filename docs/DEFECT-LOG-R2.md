@@ -23077,3 +23077,42 @@ don't like" was reacting to.
 
 This also voids R2-709's `DRV_ = 0 px` as evidence about the driver - the car
 is not in shot at that frame. Re-measure where the driver reads.
+
+## R2-715 — TWO STALE CONSTANTS MADE A TOOL UNSATISFIABLE, and deriving one exposed a latent bug the shipped film only escaped by accident
+
+`place_driver.py` carried two typed values. Together they made the tool
+**unsatisfiable** under the re-paced beat-1 camera: the driver may not appear
+before frame 500, and after the re-pace **there is no frame after 500 where he
+is off screen.**
+
+The chain agent that hit it **refused to relax another block's safety gate to
+unblock its own pipeline**, which is why it was fixed rather than worked around.
+
+**Its measurement was the sharper one.** Over the tool's own +/-8 window at the
+default appear frame, the figure is on screen:
+
+```
+0 of 17 frames   under film14 (what the gate cited)
+0 of 17 frames   under film16
+17 of 17 frames  under the camera ACTUALLY BUILT
+```
+
+**The gate was passing on a film nobody was making.**
+
+**The fix:** `EXPLODE_LANDED` is now **derived** from the part-animation sidecar,
+over the three clusters the figure is actually in - cockpit internals, wheel,
+halo - using `last_land` rather than `seat_frame`. A missing sidecar **raises**
+rather than falling back on a remembered number. Same correction as R2-836,
+applied to a second site. And the appearance is gated against `--campath`
+instead of a hardcoded two-generation-old path.
+
+**Deriving it exposed a second defect that was never the one under
+investigation.** The constant was understated even for the *shipped* schedule.
+Its comment claimed *"cockpit interior is home by here"*, and 500 was correct
+for CI alone (473) - but **the wheel lands at 506 and the halo at 539.** A driver
+appearing at 501 would have had **the steering wheel fly into his hands.**
+
+The shipped film never exposed it because it used 580, an unrelated margin. So:
+**a constant right for one component and wrong for the others, masked for the
+life of the project by a margin chosen for a different reason.** Verified the
+stricter gate does not retro-break anything: 580 > 539 PASS, 400 > 396 PASS.
