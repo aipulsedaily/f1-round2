@@ -816,6 +816,56 @@ what each looks like:
 If two or more of these land, the arrival has not fixed the ending either, and
 that is what this file will say.
 
+### The audio landed, and NOBODY HAS LISTENED TO IT
+
+Cross-reference to R2-951..R2-965, which are the audio rebuild's own entries and
+not mine to edit. Three things belong here because they are the ending's to own.
+
+**1. I accept the master's non-bit-identity, and here is the reasoning.** I asked
+for frames 1-2714 bit-identical and got **exact at the source** — every
+world-clock track identical under `==` for all 72.583 s — but **5.8e-03 worst at
+the master**, traced to exactly two named scalars: the `crowd` bus trim moves
+**0.157 dB** and the −14 LUFS normalisation moves **0.026 dB**.
+
+That is not a leak, it is the brief's own law working. *"One grade, one pass,
+whole duration — a per-beat grade change would betray the cut."* A global bus
+trim and a programme normalisation are the audio's grade; they are computed over
+the whole film **by design**, so new content in the ending is *supposed* to move
+them. Freezing them to preserve a bit-comparison would have been the defect. Both
+figures are an order of magnitude under the ~1 dB just-noticeable difference.
+
+**2. An independent corroboration of the picture, from a different instrument.**
+The `crowd` bus trim moved *because the car now stops beside a grandstand* — the
+audio's spatialiser found a crowd source near the resting station. I had
+separately predicted in R2-943b that the closing frame would hold **no**
+architecture, and the 4K still shows **a grandstand corner with spectators**.
+Two systems that share no code agreed about what is at track s 226.5 m, and both
+disagreed with me. That is worth more than either observation alone.
+
+**3. THE LISTENING GAP, stated plainly because it is the one thing this whole
+task was told not to do.** The brief for the ending was *judge it by watching*,
+and its audio half has been judged by **spectrograms and per-frame band
+measurements**. The rebuilding agent says so itself: *"I did not literally
+listen."* **Neither have I, and I cannot.** So the closing 11 s of sound is
+verified — five gates pass, the 550 Hz lap tone terminates at film t 113.6 as
+the injectors cut, the last 1.75 s is a distant idle at 216.0 Hz with harmonics
+and no silent window — and it is **unheard**. `audio/out/ab/ending_A_nolapdown.wav`
+and `ending_B_lapdown.wav` are cut for exactly this. **This is the one open item
+on the ending that no agent can close.**
+
+Also carried forward, not fixed: `engine.synth`'s downshifts bump rpm without
+opening the throttle, so all 31 rev-matches happen with the injectors cut. 24 of
+them are before f2714, so it needs a block that may re-render beats 1-5.
+
+> **And one finding that has nothing to do with the ending and outranks it.**
+> R2-960: `np.roll` was used as a delay on the showroom's 2.4 s reverb tail, and
+> `np.roll` is **circular**. The tail of a car at 323 km/h was being wrapped onto
+> frame 1 of a film that opens on a silent showroom — **peak 0.8505 against a
+> 0.0233 programme RMS, +31.3 dB, inside the first frame of every master this
+> project has ever produced.** No gate looks at frame 1; `seam_gate` only visits
+> beat boundaries. Now +7.2 dB, an ordinary crest factor. Found only because
+> rebuilding 11 seconds at the end forced an audit of what reaches the beginning.
+
 ### THE BUILDER'S OBSERVATION — 4K stills, looked at. NOT the verdict.
 
 **I built this, so this is evidence, not adjudication.** An agent that did not
