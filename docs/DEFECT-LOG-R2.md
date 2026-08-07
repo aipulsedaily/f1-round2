@@ -25596,3 +25596,42 @@ early in a rental is not a promise.
 had something the exec path did not* - a teardown guard, a refunded fault class,
 and the ability to bootstrap its own instance. 435/435 offline checks pass with
 three new tests pinning each.
+
+## R2-724 — SECOND INSTANCE: a documented failure reproduced by someone who had read the document. And the check that cleared it was matching the same thing
+
+R2-717 recorded an agent reproducing R2-429's length-for-width error **three
+screens below where the correction is written down**, and concluded *a
+documented correction is not a guard*. **Here is the second instance, in a
+different agent, on a different document, within hours.**
+
+`pkill -f encode_when_ready.sh` matched **the agent's own wrapper shell**, and
+killed the compound command before its `sed` ran. The encoder died, the file was
+never modified, and **nothing was armed for ~17 minutes.**
+
+> It is the exact failure the vast-5090 skill documents - `pkill -f "broker.app"`
+> kills the shell running it. **I'd read it and still did it.**
+
+**And the verification had the same blind spot as the action.** The earlier
+`ps | grep` check *"looked fine only because it was matching my own wrapper
+too"*. The mistake and the check that should have caught it shared a single
+root: a pattern that matches the process you are inside. Only `pgrep` **after**
+the kill found it.
+
+**Two instances is a pattern, not an anecdote.** Documentation that describes a
+failure does not prevent the failure - it only lets you recognise it afterwards.
+What works is the thing R2-717 landed: **the correction made runnable.** A
+`--dry-run` that prints what a pattern matches, or a refusal to signal a PID in
+your own process group, would have stopped both this and the original.
+
+**Also worth carrying: a check whose scope is drawn the same way as the action
+it checks is not independent.** That is the same shape as R2-712's control built
+from smooth noise, and R2-718's pixel coordinate carried across cameras - the
+verification inherits the very assumption that made the thing wrong.
+
+**The render is healthy meanwhile**: 153 frames at 1280x720, no blanks, no
+truncation, verified by PNG header rather than by the broker's count. Mean
+**34.8 s/frame** against the broker's flagged 43 s basis, revising the beat-1
+proxy to **~$3.37** from a $4.21 projection and a $5.50-6.00 brief. Wall rate is
+~69 s/frame because the card is shared three ways - **which is the chunking
+working**: 13 chunks interleaving with other agents' jobs instead of locking the
+worker for 9.4 h.
