@@ -30261,3 +30261,61 @@ The generalisable part: **a comparison rig inherits none of the film's
 correctness by looking like it.** This one had the right elevation, the right
 resolution and the right frame numbers, and was wrong about the only thing the
 measurement depended on.
+
+## R2-1079 — the rig preflight: the builder is unrecoverable, but "used silently while broken" is not
+
+`world/surface_test_filmpose.blend` has no saved builder and cannot be
+reconstructed. **That half is lost.** What was recoverable is the guarantee that
+it - or any rig - can never again be used while disagreeing with the film, and
+that is now `tools/rig_preflight.py`.
+
+**It fires on the real file:**
+
+```
+>> SUN   rig  (0.0,      0.976407, 0.215939)
+>> SUN   film (0.517854, -0.827767, 0.215939)
+>> GRADE rig -3.0480 / AgX / look None    film -3.628 / AgX / look None
+   FAIL SUN_BEARING   sun is 139.61 deg from the film's
+                      (elevation -0.000 deg, bearing +147.970 deg)
+   FAIL EXPOSURE      rig grades at -3.048, the film at -3.628
+   FAIL WORLD_SKY     world is a bare Sky Texture (3 nodes)
+>> STAGE RESULT: RIG_PREFLIGHT FAIL          exit 1
+```
+
+**`elevation -0.000 deg` beside `139.61 deg from the film's` is the entire
+finding in one line of production output.** Elevation is invariant under
+rotation about Z, and the error was exactly a rotation about Z - so a check
+written on elevation would have passed this rig forever. The control
+`ELEVATION_TRAP` pins it: **12.47064 deg against the film's 12.47062**,
+identical to five decimals, while the sun sits 139.61 deg away. **The bearing is
+checked separately from the elevation for that reason, and the reason is
+recorded next to the check.**
+
+**Eight controls, all firing**, and the one that matters most is `REAL_RIG`: the
+blend **exactly as it sits on disk** must produce exactly
+`{SUN_BEARING, EXPOSURE, WORLD_SKY}` - not "a failure", the *right* failures.
+Also controlled: each check fires **alone** when only its own input is wrong (so
+a passing rig with one fault cannot be masked by a noisy neighbour), a rig with
+**no sun at all** fails rather than passes, and a rig **0.04 deg off passes** -
+the tolerance is tight, not zero, or float round-trips through a `.blend` would
+make the gate unusable and it would be switched off.
+
+**The reference constants are imported, never typed.** `SUN_DIR` comes from
+`world/world_contract.py` and `FILM_EXPOSURE` from `world/film_exposure.py`,
+because **a preflight carrying its own copy of the constant it is checking is
+checking itself.** A control asserts the imported values are the film's.
+
+`evaluate()` takes a plain dict and needs no Blender, so every control runs in
+milliseconds: **a checker that can only be exercised by opening a 58 MB blend is
+a checker nobody proves.**
+
+**And it exits 1.** That is deliberate and it is R2-1051's lesson made
+structural: `horizon_gate.py` printed an accurate description of a live defect
+on every run for three days as a `print()` that touched neither the verdict nor
+the exit code. **A detection that does not reach an exit code is a rumour.**
+
+**A demonstration arrived for free.** The first version of the reporting line
+did `"%s" % some_tuple`, which Python unpacks - `TypeError`, no output, **and
+Blender exited 0.** The bug was found by reading the printed output, not the
+status code, which is exactly the discipline this project judges Blender stages
+by, and the comment now sits on the fixed line.
