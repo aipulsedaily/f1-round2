@@ -401,6 +401,13 @@ exploded corner group   0.850 of frame
 ASSEMBLED CAR           0.831 of frame width
 ```
 
+(0.831 is measured from the SOLVED station. On the built per-frame path the same
+frame reads **0.834**, the difference being the bezier that passes through the
+key rather than stopping on it. The rendered number is 0.834; both are quoted
+because a claim measured off the solver and a claim measured off the path are
+different claims, and this block has already been bitten once by treating a
+key-derived figure as if it covered a span — see R2-842.)
+
 The beat's climax and its establishing payoff are now **the same shot**. The
 camera arrives at a wide that holds the whole car, and the car assembles inside
 it. R2-822's complaint — that the first whole-car frame arrives at t = 29.0 s —
