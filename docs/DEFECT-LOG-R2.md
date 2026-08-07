@@ -29145,3 +29145,557 @@ document that defines it.** The rig needs rebuilding from the current sheet
 before that control can be read at all - and until then, `same_gen` cannot
 distinguish "the rig is stale" from "the rig is fine", because it SKIPs either
 way.
+
+## R2-1061 — R2-1042's frame was rendered in a rig whose sun is 139.6° from the film's, and that is 100 % of the finding
+
+`world/surface_test_filmpose.blend` — the rig every number in R2-1036 and
+R2-1042 was measured on — was read with `tools/r21061_probe_testrig.py` and
+`tools/r21061_probe_mat.py`. It does not render the film's light:
+
+| | the rig | the film / the contract | worth |
+|---|---|---|---|
+| **sun lamp bearing** | `TEST_Sun` at **(0.00000, 0.97641, 0.21594)** | `C.SUN_DIR` **(0.51785, −0.82777, 0.21594)** | **139.61°** |
+| sun elevation, energy, colour | 12.471°, 115.754, (1.0, .7163, .3871) | identical | 0 |
+| world | `TEST_Sky`, **one bare `ShaderNodeTexSky`** | `build_sky.build_world()` + aerosol mottle + **three cloud decks** | +0.399 stops on the sky term |
+| atmosphere | **absent** — no `SKY_AirColumn`, no `SKY_AirBoundary` | present; 28.30 → 39.01 W/m² | +0.463 stops, **and all aerial perspective** |
+| ground | `TEST_Ground`, albedo (0.048, 0.052, 0.028) | `build_terrain` | — |
+| **view exposure** | **−3.048** | **−3.628** | **0.580 stops** |
+
+`−3.048` is `C.REFERENCE_EXPOSURE_EXTERIOR`, the value **R2-071 refuted and
+`world/film_exposure.py` documents as over-exposing by 0.586 stops.** The rig
+that condemned f2225 is graded at the number the project has already rejected.
+
+### The elevation is right and the bearing is not, and that is why f2225 was the odd frame out
+
+At f2225 the camera looks along (−0.2432, 0.9692, −0.0381):
+
+* against the **film's** sun that is **159.47°** — looking almost directly *away*
+  from it;
+* against the **rig's** sun it is **20.26°** — looking almost directly *into* it,
+  with the sun just outside a 24.6° horizontal field.
+
+The rig turned the one away-from-sun frame in the sample into an into-sun frame.
+**f2225 was not the hard frame; it was the frame whose camera happened to point
+at where the rig had put its sun.**
+
+### Measured on the same 4K crop, same camera, same frame
+
+`b5verdict_4k_002225.png` (film17_breach, −3.628, 512 spp) against
+`render/r21031/after_f2225.png` (the rig), crop (2300, 1200)–(3100, 1600), an
+open stretch of racing surface in both:
+
+| | display mean | scene-linear |
+|---|---:|---:|
+| **the film** | **0.3427** | **1.2525** |
+| **the rig** | **0.8161** | 11.9001 |
+
+**The rig renders that surface +3.248 stops brighter than the film does.**
+
+Decomposed, the rig's two *level* errors nearly cancel — exposure **−0.580**
+stops against light level **−0.609** stops (25.579 W/m² of sun-plus-bare-sky
+against the film's 39.011) — for a net **−0.029 stops**. So:
+
+> **+3.277 stops of the rig's error is not level at all.**
+
+And the film's own into-sun glare excursion, measured on delivered frames — clean
+road at f2225 (0.3427 → 1.2525) against glared road at f2360 (0.7692 → 12.2077)
+— is **+3.285 stops**. The two agree to **0.008 stops**.
+
+**The rig's f2225 error IS the film's sun glare, delivered at the wrong frame.**
+It is one quantity measured two ways, and it identifies the cause without
+appealing to anything else.
+
+### What survives of R2-1036 and what does not
+
+* **The A/B survives.** Both arms were rendered in the same rig, so the
+  before/after octave ratios are a fair comparison of the material with itself.
+  Three frames moved; that stands.
+* **Every absolute level in it is void** — 0.8617 display, "27× mid grey", the
+  "55 % of the slope" table, and the conclusion that f2225 has no headroom.
+* **"27× mid grey" was also an arithmetic slip.** Mid grey under this grade is
+  scene-linear **2.2254**, not 1.0. Display 0.8617 is scene-linear 27.35, i.e.
+  **12.3× mid grey, +3.62 stops** — and in the *delivered* grade that same
+  radiance is +3.04 stops, not +4.75.
+* **The lighting geometry of all four A/B frames is not the film's**, so which
+  frame is grazing, which surface features catch light, and where the sheen
+  falls are all rig properties. The contrast *ratios* are unaffected; the
+  *choice of which frames are representative* is.
+
+**R2-1042 is withdrawn as an exposure defect.** The agent's handling was
+correct — it stated the result against itself rather than texturing around it —
+and the rig it inherited is what was wrong.
+
+---
+
+## R2-1062 — the film's own AgX transfer, stated correctly, because R2-1036's version has been quoted twice
+
+Read from `render/r2651/agx.json`, which is Blender's own colour management
+measured on a known ramp at AgX / look None / **exposure −3.628**. `lin` is
+**scene-linear before exposure**; the exposure is baked into `disp`.
+
+| | |
+|---|---|
+| mid grey, scene-linear | **2.2254** ( = 0.18 / 2^−3.628 ) |
+| mid grey, display | **0.4613** |
+| **peak slope** | **0.1536 display/stop, at display 0.4712** — i.e. essentially *at* mid grey |
+| slope 75 % of peak | display **0.6817** = +1.61 stops over mid grey |
+| slope 60 % of peak | display **0.7739** = +2.50 stops |
+| slope 50 % of peak | display **0.8125** = +2.95 stops |
+| display saturates | **0.9330** |
+
+The three shoulder thresholds above are what `tools/r21061_knee_sweep.py`
+measures. **Level is not the complaint and must not be used as one** — a sky is
+meant to be bright. The complaint is *slope*, and slope is what is measured.
+
+`--selftest` is 4/4 with one arm that must fail: a frame **one** stop over mid
+grey is required **not** to be called shoulder, because a threshold that fires on
+everything bright explains nothing.
+
+---
+
+## R2-1063 — the sweep. 12.04 s of 124.1 s sits on the shoulder, and it is four arcs, not a diffuse condition
+
+**Cost: $0.00.** 1 745 delivered frames at the film's own grade were already on
+disk and nobody had measured them: `out2/seq/r2full` (film16_breach, f793–2978,
+1 247 frames, 1280×720/64, `exposure: null` → the scene's −3.628),
+`out2/seq/r2beat1_v2` (film17_breach, beat 1), `out2/seq/r2851b6` (beat 6).
+Beats 2–6 of `film16_path` are **bit-identical** to `film17_path` (they differ
+only over f2–753), so the sweep describes the shipping film.
+
+Shoulder area **below the horizon**, per beat:
+
+| beat | n | sh75 p50 / p90 / max | sh60 p50 / p90 / max | max clip |
+|---|---:|---|---|---:|
+| 1_assembly | 234 | 12.12 / 30.66 / 46.87 | 7.21 / 16.11 / 29.59 | 6.04 % |
+| 2_launch | 72 | 21.00 / 42.23 / 45.25 | 8.91 / 36.81 / 40.39 | 1.75 % |
+| 3_breach | 192 | 1.38 / 11.71 / 12.65 | 0.09 / 0.75 / 2.19 | 0.89 % |
+| 4_transit | 134 | 0.43 / 1.61 / 4.34 | 0.02 / 0.58 / 1.47 | 0.15 % |
+| **5_lap** | **585** | **0.40 / 12.93 / 69.11** | **0.02 / 1.47 / 40.25** | **20.87 %** |
+| 6_ending | 264 | 3.86 / 5.53 / 5.84 | 0.06 / 0.13 / 0.83 | 0.003 % |
+
+**The median lap frame has 0.40 % of its ground on the shoulder.** The condition
+is a tail, and the tail is four contiguous arcs:
+
+| arc | screen time | peak sh75 | peak clip | closest view-to-sun |
+|---|---:|---:|---:|---:|
+| f1376–f1436 | 2.54 s | 43.0 % | 10.6 % | **21.4°** |
+| f1671–f1746 | 3.17 s | 38.4 % | 20.9 % | **12.1°** |
+| f2185–f2235 | 2.12 s | 28.0 % | 0.00 % | 144.8° |
+| f2285–f2385 | 4.21 s | **69.1 %** | 18.3 % | **15.8°** |
+| **total** | **12.04 s of 124.1 s** | | | |
+
+Restricted to the **bottom 40 % of the frame** — road, never sky — the arcs are
+sharper and the clipping almost vanishes, which locates it:
+
+| frame | sh75 | sh50 | clip | mean |
+|---|---:|---:|---:|---:|
+| f2340 | **94.99 %** | 4.59 % | 0.05 % | 0.7477 |
+| f2360 | 87.19 % | **43.25 %** | **2.04 %** | 0.7692 |
+| f1426 | 43.83 % | 8.01 % | 0.00 % | 0.6533 |
+| f1686 | 43.12 % | 16.09 % | 0.02 % | 0.6119 |
+| **f2225** | **0.00 %** | **0.00 %** | **0.00 %** | **0.3791** |
+| f2000 / f2035 / f2160 / f2500 / f2700 | 0.00 % | 0.00 % | 0.00 % | 0.32 / 0.28 / 0.35 / 0.40 / 0.17 |
+
+**The 10–21 % clip figures are the sun's own glow in the sky, not the road.**
+Ground clip never exceeds 2.04 % anywhere in the film. A sun in shot clips; that
+is not a defect and there is no exposure at which it does not.
+
+**f2225 — the frame the whole question was opened on — is one of the cleanest
+frames in the film.** Zero percent of its road is even past the 75 %-slope
+point.
+
+---
+
+## R2-1064 — the bright road is the sun's specular sheen, and it is where geometry says it must be
+
+`tools/r21061_glitter.py`, **no render**. For a flat road it computes the
+**specular point** — the ground point whose mirror reflection of the view ray
+reaches the sun — from `C.SUN_DIR` and the delivered camera path, projects it
+into the frame, and compares it with the measured bright region's centroid.
+
+| frame | view-to-sun | predicted specular point | measured bright centroid | miss |
+|---|---:|---|---|---:|
+| f1426 | 21.4° | (694.8, 446.1) | (739.4, 447.5) | **0.03 frame-widths** |
+| f1391 | 27.1° | (662.6, 306.1) | (560.2, 362.9) | 0.09 |
+| f1686 | 23.0° | (246.1, 615.1) | (286.4, 507.8) | 0.09 |
+| f1421 | 26.9° | (1030.9, 450.5) | (900.5, 427.9) | 0.10 |
+| f1691 | 21.0° | (291.1, 623.1) | (291.4, 478.0) | 0.11 |
+
+**Negative control, and it fires.** f2225, f2000, f2035, f2160, f2185, f2190,
+f2600, f2700 — every away-from-sun frame — put the specular point **behind the
+camera**, and f2160 and f2700 have no bright region at all. The predictor does
+not put a hot spot in every frame.
+
+**The same test run on the rig's own misplaced sun explains the rig's frame.**
+At f2225 with `TEST_Sun`'s bearing the specular point lands at pixel
+(4119.7, 2743.2) — just off the bottom-right corner of the 3840×2160 frame — and
+the rig's bright band is an elongated glitter path pointing exactly at it,
+going to hard clip as it approaches. Two rigs, two suns, two predictions, both
+hit.
+
+**Across all 585 delivered lap frames**, `tools/r21061_sun_correlation.py`:
+
+| view-axis to sun | n | sh75 below-horizon, p50 |
+|---|---:|---:|
+| 0–30° | 41 | **31.17 %** |
+| 30–60° | 41 | 2.91 % |
+| 60–90° | 48 | 0.84 % |
+| 90–120° | 185 | **0.29 %** |
+| 120–150° | 148 | 0.64 % |
+| 150–180° | 122 | 0.03 % |
+
+A **100×** swing in shoulder area, ordered by where the sun is.
+Spearman ρ = **−0.447**.
+
+> **Stated against myself: the negative control is not comfortable.** Camera
+> height gives ρ = **−0.346** on the same data — nearly as strong. That is
+> expected (a low camera is both closer to the sun's azimuth in these arcs and
+> more grazing) but it means the *rank correlation alone* would not settle this.
+> What settles it is the binned table above, the five direct specular-point hits
+> at 0.03–0.11 frame-widths, and the away-from-sun control. The scalar is the
+> weakest of the four pieces of evidence and is reported as such.
+
+### Is it correct, or is it a defect?
+
+**Correct, and deliberately so.** `world/build_surface.md` shows the specular
+response at this sun was tuned twice, on measurements, before any of this:
+
+* §"binder flushing" — *"nearly invisible in plan and **blazes at a 12.47° sun**,
+  which is the condition every frame in this film is shot under"*;
+* defect 7 — rubber dropping roughness by 0.30 made the racing line *brighter*
+  than the asphalt at grazing angles; reduced to 0.12 so *"the sheen survives,
+  the line reads"*;
+* defect 13 — `Specular IOR Level` dropped 0.38 → 0.24 because a roughness-0.8
+  surface *"puts enough sky in the lobe to turn a warm-grey binder cold at every
+  grazing angle the film uses, and grazing angles are most of them."*
+
+Base roughness is **0.72–0.86**, which is dry asphalt. A +3.3-stop sheen on
+tarmac with the sun 12–21° off the lens axis is what tarmac does.
+
+**And the frame agrees.** At f1426 the sheen is a glitter path running up to the
+sun with the car sitting on it as a black silhouette — it is the most legible
+the car is anywhere in the lap. Nothing here reads as a mistake.
+
+---
+
+## R2-1065 — R2-084 is adjacent, not causal, and the brief's statement of it conflates two different numbers
+
+`C.SKY_IRRADIANCE` is **0.403 stops** low against the sky the film builds
+(11.1818 measured against 8.4593 published). It **costs the film 0.123 stops**,
+because the film's light is sun-dominated and the sky term is diluted 3.07×.
+Those are two different quantities and `world/film_exposure.py` says so
+explicitly (*"0.123 stops is what the shortfall COSTS THE FILM, not how far
+`C.SKY_IRRADIANCE` is out"*). The brief pairs the 0.123 with the 11.18-vs-8.46
+ratio, which is the 0.403.
+
+**It is already compensated.** `FILM_EXPOSURE = −3.048 − 0.463 − 0.117 = −3.628`
+carries `SKY_SHORTFALL_STOPS = −0.117` for exactly this. The uncompensated
+residual is **+0.0061 stops**.
+
+What that is worth in a delivered 8-bit frame:
+
+| at display | slope | **0.123 stops** | **0.0061 stops (the actual residual)** |
+|---|---:|---:|---:|
+| f2000 road 0.5656 | 0.1451 | 4.6 code values | **0.23** |
+| shoulder knee 0.6817 | 0.1123 | 3.5 | **0.17** |
+| glared road 0.7692 | 0.0980 | 3.1 | **0.15** |
+
+Against a glare excursion of **109 code values**. Even taken entirely
+uncompensated, 0.123 stops is **2.8 %** of the effect it was suspected of
+causing.
+
+**And the mechanism excludes it outright.** The shortfall is in the *sky* term.
+The shoulder excursion is the *sun's specular lobe*. Sky irradiance does not
+enter the specular term except as weak ambient, so a sky-term error cannot
+produce it in any amount.
+
+> **Two true facts sitting next to each other with no relationship** — the shape
+> this project has hit before. R2-084 remains open on its own merits (it is a
+> real error in a published constant, and `film_exposure.py` documents why fixing
+> it naively makes the film's number *worse* — a re-bake is a fixed-point
+> iteration). It has nothing to do with the tone curve.
+
+---
+
+## R2-1066 — where a fix would belong, and why four of the five candidates are wrong
+
+| candidate | verdict |
+|---|---|
+| **scene radiance** | No. Measured on the 5090 against a lambertian card and a 32-rung emissive ladder, two view transforms agreeing to 0.014 stops. |
+| **the sun** | No. `SUN_ENERGY`, `SUN_COLOR`, elevation and bearing were measured against the sky model, and the exposure is calibrated *to* them. Moving the sun moves every frame, including beat 1. |
+| **the material's albedo** | No, and it is the trap. The road is correctly dark when it is not in the glare (0.3791 at f2225, −0.83 stops under mid grey). Albedo drives the diffuse term; the excursion is specular. Lowering albedo would darken the 112 s that are already right to fix the 12 s that are not. |
+| **the view transform / the look** | Forbidden — a client decision — **and not the cause.** AgX at −3.628 is doing precisely what a 3.3-stop specular excursion demands of it. |
+| **the grade** | Forbidden twice over: one grade for the whole unbroken take, and the standing no-crush/no-lift constraint. |
+| **the camera path** | **The only place left, and the only one with a real lever.** Four arcs, 12.04 s, defined entirely by the camera's heading relative to a fixed 12.47° sun. This is R2-652's ruling applied again: *if the read is real it belongs to the camera department, and it must not be textured around.* |
+
+**And nothing needs to be done.** The sheen is authored, physically correct, and
+the frame that carries the most of it is the frame in which the car reads best.
+The honest answer to the question as asked is:
+
+> **AgX is behaving correctly and there is no defect here.**
+
+The one thing that *is* a defect is the instrument — `surface_test_filmpose.blend`
+(R2-1061), which will keep producing wrong verdicts until its sun is put where
+the contract says and its grade is set to `film_exposure.FILM_EXPOSURE`.
+
+### Adjacent, found by the sweep, not mine
+
+* **Beat 1's 6.04 % clip at f198–f205 is the daylight through the showroom
+  glass** — the exterior sky and apron behind the window, blowing exactly as an
+  interior-with-window shot does. It is unrelated to R2-082, which levelled the
+  interior *practicals* to reach 0.0000 % pure **black**. Not a defect.
+* **`world/surface_test_filmpose.blend` has no saved builder.** `CAM_filmpose_*`
+  appears in exactly two files, both consumers. An ad-hoc rig with no build
+  script cannot be regenerated, cannot be gated, and is how its sun got 139.6°
+  out with nothing to notice.
+
+## R2-982 — PROVENANCE AND THE BUILD CONFOUND, both checked before judging anything
+
+### The frames are from the re-keyed scene — verified three ways, one of them mine
+
+`out/exec/bd0345da6cb3/rekey_R2943.log` ends `>> STAGE RESULT:
+FILM_SCENE_REKEYED_R2943`, and I read it rather than take a summary of it:
+
+```
+BEFORE: world SKY_World, slab [SKY_AirBoundary, SKY_AirColumn], 3840x2160,
+        AgX, look None, exposure -3.628, camera ONER, objects 35304
+AFTER : identical on every field
+6_ending  worst 0.03 deg at frame 2758 (bound 26.0)  max subject range 342.5 m
+```
+
+The **`max subject range 342.5 m`** is the tell: the un-re-keyed film reports
+1000.0 m and aims at the facade. The world was swapped by the rig build and
+explicitly restored, so the frames are lit by the film's own sky and not by
+`R2_ProceduralSky`. The log also contains **two** `Saved as "film17_R2943.blend"`
+lines, so the existence of an 8 GB output proves nothing — only the final STAGE
+RESULT does. The render jobs record scene digest `ec95e539bb6a04d4` (the re-keyed
+blend) rather than `493845696f4899f6` (the original), and the delivered f2978 is
+a 130 mm frame, not the original's 74 mm.
+
+There is also a `>> STAGE RESULT: CAMERA_RIG_FAIL` earlier in the log — beat
+`1_assembly` at f431, the pre-existing R2-861 defect. Beats 2-6 PASS. It is not
+in my 264 frames and it is not caused by this change.
+
+### THE f2715 CONTROL — the build confound is real in principle and REFUTED in fact
+
+The comparison arms (`r2851b6`, `r2851_4k_B_candidate`) render from
+`film16_R2851` (35,283 objects, built 2026-08-04); the lap-down renders from
+`film17` (35,304 objects, built 2026-08-07). The 21-object difference is the
+showroom-ceiling library, which proves `film17` carries at least one item from the
+62-hour gap. `docs/NEXT-REBUILD.md` lists in that same gap a **car paint v5**
+change worth **albedo 0.0121 → 0.0372 and three-quarter diffuse 7.32 → 19.96 %** —
+a 2.7× change, at exactly the viewing angle of the closing frame. If only one
+build carried it, a car that reads better at 343 m might be reading better
+because it is a brighter object.
+
+**f2715 is the exact control**, and it is free: the driver lifts *between* f2714
+and f2715, so at f2715 the car has lost 35 microns and the camera position,
+rotation and lens are all `0.000e+00` different between the arms. Any pixel
+difference there is the film build.
+
+| | |
+|---|---:|
+| whole frame, mean \|RGB diff\| | **0.002194** |
+| whole frame, px changed > 8/255 | **0.083 %** |
+| whole frame, mean luminance | **+0.01 %** |
+| **car region** (60×34 px at 720p), luminance | **+1.20 %** |
+| background tarmac control patch | **−0.27 %** |
+| **car-specific difference** | **≈ +1.5 percentage points** |
+| car internal contrast | A 0.2122 vs B 0.2165 |
+
+**A 2.7× paint change would be +170 %. The measured car-specific difference is
++1.5 %.** Side by side at 5× the two cars are indistinguishable — same blue, same
+brightness, same shading, same tyres.
+
+**So the car paint v5 change is either in both builds or in neither, and the A/B
+is clean.** The confound was correctly raised and is now closed by measurement
+rather than by assumption. Every comparison below stands as a comparison about
+the ending.
+
+---
+
+## R2-983 — WATCHED AT 4K, 1:1. The car is a subject. F1, F2, F3 and F12 all clear.
+
+### The closing frame, f2978
+
+At true 1:1, in a 400×300 crop, the car resolves into **parts**: the rear wing
+as a distinct element, the front wing, **all four wheels separated from the body**
+with orange rims, the cockpit, the halo, the driver's helmet, the engine cover,
+the sidepod waist and the floor edge. At 3× the livery graphics are legible.
+
+**F2's falsifier — "a single elongated blob with no internal edge, in particular
+if the rear wing cannot be seen as separate from the body" — is not met, and is
+not close to being met.**
+
+Measured on the rendered frame with my R2-974 instrument, background boxes
+hand-placed on clean pit-straight tarmac:
+
+| | car | road |
+|---|---:|---:|
+| lum mean | 0.3062 | 0.2908 |
+| p5 / p95 | 0.2145 / 0.5089 | 0.2574 / 0.3145 |
+| **internal contrast** | **0.2944** | **0.0571** |
+| **RATIO** | **5.16×** | — |
+| luminance break | **+5.3 %** | |
+| b−r break | **+0.0127** | |
+
+**Pre-registered in R2-974: ratio ≥3× reads, ≤1.5× fails. Measured 5.16×.**
+Against the same instrument, the frame R2-862 called a smudge measures **0.90×**
+and the frame that unambiguously works measures 7.50×. The closing frame sits
+firmly in the reading regime.
+
+**And it confirms R2-974's mechanism rather than R2-862's.** The luminance break
+is +5.3 % and the colour break +0.0127 — both small, both roughly what they were
+in the failing arm. What changed is **internal contrast: 0.2944 against a road at
+0.0571.** The car's minimum luminance is **0.1465** against the road's 0.2327, so
+**the car supplies the local black point of its own neighbourhood** — the tyres
+and the shadow are the darkest things in the frame's centre.
+
+**F8's prediction was right and it is the shadow that does much of the work.** The
+low 12.47 deg sun throws a large, hard-edged cast shadow up-screen and to the
+left, with the wing shapes readable in it. It roughly doubles the car's visual
+footprint and welds it to the road surface. I registered before looking that I
+expected the shadow rather than the car's 215 px to decide F2; that is what
+happened. The flat frontal light I worried about does not flatten the car,
+because the shadow supplies the modelling the lighting does not.
+
+**F1's falsifier is not met either.** I predicted a 215.2 px projected long axis
+against R2-945's quoted 230.7. The measured silhouette bounding box is
+**237 × 74 px** — slightly *larger* than my figure, because the wings span wider
+than the body axis I projected. My correction to the arithmetic stands (R2-945's
+number ignores 66.95 deg of yaw) but it was a correction in the wrong direction
+for the picture, and the picture is what matters.
+
+### F3 — the tarmac risk I registered is refuted
+
+I flagged dark-car-on-grey-asphalt as an uncosted new risk. It is not a risk:
+this car is blue on neutral grey, and tarmac is a **better** ground for it than
+the gravel run-off the B arm parked it on, because tarmac is smooth and
+low-variance and lets the car win the internal-contrast comparison 5.16×.
+
+### The car reads far earlier and far smaller than any ladder predicted
+
+| frame | projected px | at 1:1 it reads as |
+|---:|---:|---|
+| **f2811** | **45.7** | **a racing car** — blue body, wheels, front wing, cast shadow |
+| f2760 | 57.0 | a racing car, clearly, with motion blur |
+| f2937 | 146.9 | fully resolved: wings, wheels, helmet, shadow |
+| f2978 | 215.2 (237 measured) | fully resolved, livery legible at 3× |
+
+**At f2811 the car is at its smallest in the entire beat — 45.7 px — and it still
+reads as a racing car.** That is a quarter of R2-862's 176.7 px "a car" rung.
+**R2-862's ladder is wrong by roughly 4× at the bottom end**, because it was
+calibrated on a car at 1 km through haze that had cost the frame half its
+dynamic range, and it has been quoted ever since as though it were a property of
+pixel counts. It is not. It is a property of pixel counts **and** haze **and**
+what the car is standing on.
+
+**F7 is therefore substantially weakened.** I registered that the beat's middle
+would be a dot. It is small, but it is never a dot — there is a legible car in
+every frame I have looked at, including the trough.
+
+### F12 — the grade is intact, and better than intact
+
+| f2978 | lum p0.1 | p50 | p95 | mean sat |
+|---|---:|---:|---:|---:|
+| **A lap-down** | **0.1750** | 0.3083 | 0.5441 | **0.3325** |
+| B candidate | 0.2913 | 0.4391 | 0.5648 | 0.2369 |
+| shipped | 0.1752 | 0.3651 | 0.7049 | 0.2046 |
+
+**The black floor is 0.1750 against the shipped film's 0.1752** — the lap-down
+recovers the shipped closing frame's black point exactly, while the arm it
+replaces sits at 0.2913 because 1 km of haze has lifted it. **Saturation is
+0.3325 against the shipped 0.2046 — 62 % higher.** Nothing is crushed and nothing
+is lifted; the delivery contract is asserted identical before and after the
+re-key. R2-975's prediction that closing at 343 m buys back the frame's dynamic
+range is confirmed on the delivered frames.
+
+## R2-1056 — R2-980 WAS WRONG WHERE IT MATTERED: the CPU filter was silently acting as a RAM floor
+
+I logged that `MIN_CPU_CORES_EFFECTIVE = 32` was *"justified entirely by a
+workload the master does not run"* and that dropping it opened up whole machines
+at $0.3356/hr. The first half is true. **The second half nearly cost the film.**
+
+**Every offer at that price is one SKU** - Ryzen 7 7800X3D, **30.5 GB RAM.** The
+project's own measured `EXEC_SCENE_MEM_FACTOR` of 5.3x resident puts a 7.97 GB
+blend at **~42 GB.** The probe loaded the scene, began rendering, then thrashed
+so hard that **sshd could not complete a banner exchange while ping stayed clean
+at 205 ms** - nine minutes, no frame, $0.10 spent.
+
+`cpu_cores_effective >= 32` was **an undocumented RAM floor wearing a CPU
+constraint's clothes.** Adding `cpu_ram >= 50` to the 32-core query **drops zero
+offers** - which is the proof: the two conditions had been selecting the same
+machines all along, and only one of them was written down.
+
+**The lesson generalises past this file.** A constraint whose stated
+justification is wrong can still be doing real work, and **removing it on the
+strength of refuting its documentation is not safe.** What the comment says a
+guard is for and what the guard actually excludes are two different facts, and
+only one of them is in the source. The correct move was the one taken after the
+failure: make the real constraint explicit (`VASTRENDER_MIN_RAM_GB`, default 50,
+behaviour-preserving) rather than delete the accidental one.
+
+## R2-1057 — RENDER-LADDER is wrong for the FOURTH time, and the fifth is already staged
+
+The measured comparison, paired, same 9 frames, same `spec_hash`, luminance
+matching the anchor to full precision:
+
+```
+                  $/hr all-in   s/frame   master        vs $68.10 credit
+current 47039886     0.4488      186.7    155.0 h  $70.06   short $1.96
+cheap   42731684     0.3999      203.1    168.6 h  $67.95   clear $0.15
+```
+
+**The cheap card is 9.0% slower**, so a 12.4% cheaper card is **2.2% cheaper per
+frame. It saves $2.11, not the $15 I reported.**
+
+**And R2-971's 219.3 s/frame was a cold start divided by nine.** A sequence job's
+`render_sec` is whole-pass wall clock **including rent and deploy**. Decomposed:
+**196.5 s Cycles + 4.52 s/frame overhead = 201.0 steady state**, plus a one-time
+165 s spread across 9 frames. R2-971 then **added that overhead and cold start a
+second time**, making its 172.2 h **11% high**. The master is **155.0 h.**
+
+**That is four wrong master estimates**, in both directions, every one of them
+from extrapolating a small sample across 2,978 frames:
+
+```
+510.5 s/frame   wrong scene entirely      2.6x too high
+196.5 s/frame   right scene, no overhead      too low
+219.3 s/frame   cold start / 9            11% too high
+```
+
+**And the fifth is already in place:** both the anchor and the probe measure
+`film16_breach.blend`, while **broker 2 has been serving `film17_breach.blend`
+since 06:09 today.** In the probe author's words, *"this document's recurring
+error one revision closer in."*
+
+**Host-to-host variance across the 13-14 rentals a master needs is unmeasured**,
+and is now worth more than the $2.11 the card choice is. What would settle it:
+**one contiguous beat, 200-300 frames, delivery spec, on the shipping blend**,
+read off `frames.render_sec` - 11-17 h and **$5-7**.
+
+## R2-1058 — the $3.9 of dead storage did not exist, and the instance was busy when I would have destroyed it
+
+I authorised reclaiming instance 47049525's 80 GB as *"~$3.9 over the master,
+against $4.3 of headroom - nearly all the margin, spent on a machine doing
+nothing."* **Every part of that is wrong.**
+
+`HIBERNATE_SEC` is **3600**, broker 1 announces *"destroying in 60 min"* on every
+stop, and the mechanism demonstrably fires - instance 46819442 was destroyed on
+schedule. **Maximum exposure is one window: $0.022.**
+
+**And it was not idle.** Other agents woke it at 07:31, 08:35 and 09:35, and at
+the moment I would have destroyed it **it was running, staging an 8 GB scene for
+job `9707a546f554`.**
+
+The brief said *"if any of this is unclear, report instead of acting"* and that
+instruction is the only reason another agent's job survived. **A destructive
+action justified by a cost figure I had not verified, against a state I had not
+checked** - the cost was 177x overstated and the state was the opposite of what
+I claimed.
+
+Separately: the broker's logged storage rate is a **hard-coded constant that
+over-states this host by 1.7x** against the API. My $0.53/day came from it.
+
+**Standing: exited is not idle, and a rental that stopped may be one another
+agent is about to wake.**
