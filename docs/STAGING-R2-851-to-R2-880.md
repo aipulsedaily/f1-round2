@@ -55,20 +55,49 @@ the smear it produces, since that is the thing that damages the picture:
 
 **MEASURED** by projecting `anim/carpath.Car` through the shipped rig, per frame.
 
-| frame | car distance | car width @4K | screen x (of 3840) | |
-|---:|---:|---:|---:|---|
-| f2714 | 85 m | 200.0 px | 1920 | centred, the seam |
-| f2790 | 300 m | 50.0 px | 1920 | centred |
-| f2810 | 381 m | 38.5 px | 1920 | centred |
-| f2830 | 464 m | 31.3 px | **3436** | at the right edge |
-| f2860 | 580 m | 24.7 px | 5385 | **off frame** |
-| f2978 | 1000 m | (45.8 px) | 11641 | off frame, 84 deg away |
+| frame | car distance | car width @4K | off-axis | h half-angle | |
+|---:|---:|---:|---:|---:|---|
+| f2714 | 85 m | 200.0 px | 0.00 deg | 36.9 | centred, the seam |
+| f2810 | 381 m | 38.5 px | 0.00 deg | 43.0 | centred, hand-off begins |
+| f2833 | 476 m | 31.3 px | **44.6 deg** | 43.2 | **exits frame** |
+| f2845 | 521 m | 27.9 px | 72.40 deg | 43.6 | gone |
+| f2978 | 1000 m | (45.8 px) | **69.27 deg** | **13.67** | gone |
 
-The car exits frame at roughly **f2845** and never returns. **133 frames — 5.5 s
-— of the film's ending have no car in them.** The film's last three frames were
-independently found to have the car hidden behind `BR_FenceMesh_L03`; that is
-true but it is downstream of this. The car is not occluded at f2978, it is
-*84 degrees outside the field of view*.
+**The car is out of frame for f2833–2978 — 146 frames, 6.08 s, unbroken.** Not
+occluded, not small: at the last frame it is **69.27 deg off the camera axis
+inside a 13.67 deg half-angle**. Independently derived by the occlusion sweep
+(f2834–2978, 145 frames, 69.26 deg) — the one-frame difference is an
+edge-inclusive boundary at f2833, where the car sits within a pixel of the frame
+edge, and is not a disagreement.
+
+**An earlier figure of "roughly f2845" in this file was mine and was wrong** —
+coarse frame sampling across a 12-frame stride. f2833 is the measured value.
+
+**RETRACTION, carried here so it does not propagate:** an earlier cross-reference
+in this staging file said the car was hidden behind `BR_FenceMesh_L03` on
+f2976–2978 and that the fence was +7.105 m onto the racing surface (R2-017).
+**Neither holds.** The `occ_frac_front = 1.000` rows are real but carry
+`in_frame: false`, so they say nothing about a picture; and the fence
+re-measures at **−6.756 m, i.e. 6.76 m *outside* the surface**, closed by a
+world-contract fix. Nothing in R2-851..R2-856 depends on either claim.
+
+### The hand-off was authored as a 2 s dissolve and executed as a 1 s cut-away
+
+This is the part that decides what kind of defect this is. `aim["6_ending"]`
+declares `car_until_t 4.0 → point_from_t 6.0` — a **two-second blend** of the
+aim from the car to the facade, i.e. an author asking for a gradual transfer of
+attention. f2810 is t=+4.0 and f2858 is t=+6.0.
+
+**The car left the frame at f2833 — 23 frames, 0.96 s in, 48 % through the
+blend, before the hand-off it was part of had finished.** At 19.1 mm the
+half-angle is 43.25 deg, so the aim only has to travel 43 deg before the car is
+outside the picture, and it has 82 deg to travel.
+
+So the beat sheet declares **where the lens points**. It never declares **what is
+in the picture**, and nothing measures it. The unwritten assumption was that a
+wide lens easing between two subjects keeps the first one in shot for a while.
+At an 82 deg separation it does not — it swings off it. The "letting go" beat
+that would have made a departure legible was *intended* and did not happen.
 
 R2-113 established the constraint honestly and it still holds: the car and the
 wound are ~1 km apart at f2978 and no single frame can hold both. **What R2-113
@@ -308,3 +337,80 @@ that decelerates on its lap-down would let the camera stay much closer to it and
 would make a far tighter ending possible. That is a change to the car, not the
 camera, and it should be decided by whoever owns the car — but the closing wide
 is the only beat it would affect.
+
+---
+
+## R2-857 — should the film end on its subject at all? The decision, weighed.
+
+Asked directly, because "put the car back in frame" is not automatically right
+and a deliberate final drift off the subject is a legitimate ending.
+
+### It WAS a decision. What was not decided is the thing that broke.
+
+The record is explicit: `aim["6_ending"].subject` reads *"car until t=+4.0, then
+the breached facade"*, `wound_enters_frame_t` is 6.0, `facade_px` is [109, 119],
+and R2-113 measured three lenses against it and chose 40→74 mm on the evidence.
+Somebody decided to leave the car, wrote it down, and defended it with numbers.
+**This is not an undecided ending and should not be fixed as if it were a bug.**
+
+What nobody decided — because nothing in the film measures it — is that the car
+would be **gone 1 s into a 2 s hand-off**, swung off at 91.5 deg/s rather than
+released. The beat sheet has a vocabulary for where the lens points and **no
+vocabulary at all for what is in the picture**. That gap is the defect, and it
+is the same family as R2-851's missing pan-rate bound and R2-113's dead `dlens`
+variable: a quantity the film depends on that nothing computes.
+
+### The drift ending, executed properly — costed, and rejected for now
+
+A legible release is mechanically reachable and I costed it rather than
+dismissing it. Slow the hand-off from `4.0 → 6.0` to roughly `4.0 → 9.0`: the
+aim then travels 82 deg at ~16 deg/s instead of 91.5, and the car stays in frame
+until about **f2875** instead of f2833 — a 42-frame improvement — and crucially
+it **exits at the frame edge under its own motion**, which is what a deliberate
+departure looks like. The whip dies at the same time.
+
+**Rejected for this pass, on the destination and not on the gesture.** What the
+camera lands on afterwards is unchanged: a 65 px wound in a truck park, and a
+frame that R2-856 measures at **58 % bare grass-less mesh** at its widest.
+Fixing the departure and keeping the arrival gives a well-executed move onto
+something not worth arriving at. The client's note is about what the wide
+*shows*, and this option changes only how we get there.
+
+> The two options are therefore **not rivals on taste — they are gated on the
+> world being finished.** When the terrain in R2-854 is done, the slow release
+> is the better ending and it should be revisited. Today it is not available.
+
+### Recommendation, and what it costs
+
+**End on the car.** Not because ending on a subject is a rule, but because the
+alternative's subject is a landscape that is 58 % untextured mesh under a
+155 m Voronoi patchwork with a featureless horizon, and the car is a finished
+hero asset. This is partly a verdict on the world's readiness and I would rather
+say so than dress it as a story judgement.
+
+**The cost, stated plainly: the film loses its callback to beat 3.** The wound
+is the only narrative idea in the ending — the arc is *built → broke out → ran*,
+and landing on the hole is what closes it. Ending on the car is a weaker idea
+cleanly executed instead of a stronger idea that does not read. I do not think
+that trade is close today, but it is a real loss and it should not be logged as
+a pure win.
+
+The callback cannot be rescued at these positions: the camera is 594 m from the
+showroom because it flew there on a decelerating cubic, and flying back is both
+outside the declared trajectory and would have to disturb the peel-off, which
+sits inside the beat-5 hand-off blend and therefore on the f2714/2715 seam.
+**That seam is measured clean at 1.33 % and this candidate does not touch it.**
+
+### The one change that would let a future version have both
+
+`anim/carpath.py:28-33` extrapolates the car past the end of telemetry *"along
+the circuit's own centreline at its final speed"*. That is a declared choice,
+not a measurement — and it is why the car is 1,000 m away and 69 deg off-axis at
+the last frame. A car that decelerates on its lap-down, which is what one
+actually does after a flying lap, would end the film far closer to the camera
+and could share a frame with the circuit meaningfully.
+
+**Cost of that change:** it moves the car for the whole of beat 6, so the
+spatialised audio — engine, doppler, the camera-as-listener — needs a rebuild
+over the last 11 s. It is not the camera's to make. Flagged for whoever owns the
+car, as the single highest-leverage change available to this ending.
