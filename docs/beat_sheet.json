@@ -1,0 +1,9579 @@
+{
+ "law": "ONE CONTINUOUS SHOT \u2014 zero cuts, one camera, one path",
+ "fps": 24,
+ "total_s": 124.1,
+ "total_frames": 2978,
+ "beats": [
+  {
+   "name": "1_assembly",
+   "start_s": 0.0,
+   "duration_s": 33.0,
+   "note": "exploded field, 15 clusters presented then seated"
+  },
+  {
+   "name": "2_launch",
+   "start_s": 33.0,
+   "duration_s": 3.0,
+   "note": "idle, then 11.98 m to the glass at 53.8 km/h"
+  },
+  {
+   "name": "3_breach",
+   "start_s": 36.0,
+   "duration_s": 8.0,
+   "note": "screen time; world-time ramps to 15-25% and back"
+  },
+  {
+   "name": "4_transit",
+   "start_s": 44.0,
+   "duration_s": 5.6,
+   "note": "world time; apron, merge arc, onto the pit straight"
+  },
+  {
+   "name": "5_lap",
+   "start_s": 49.6,
+   "duration_s": 63.5,
+   "note": "one flying lap, vantage morphing continuously"
+  },
+  {
+   "name": "6_ending",
+   "start_s": 113.1,
+   "duration_s": 11.0,
+   "note": "decelerate and rise to the closing wide, hold 3 s"
+  }
+ ],
+ "beat1": {
+  "present_order": [
+   "MB",
+   "CI",
+   "halo_assembly",
+   "BB",
+   "FD",
+   "EC",
+   "SP",
+   "SW",
+   "NOSE",
+   "FW",
+   "RW",
+   "CORNER_GROUP"
+  ],
+  "schedule": [
+   {
+    "cluster": "MB",
+    "n_parts": 17,
+    "tris": 1844927,
+    "presented_t": 2.0,
+    "presented_until_t": 3.5833,
+    "presented_as": null,
+    "seat_t": 9.9,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "CI",
+    "n_parts": 15,
+    "tris": 459202,
+    "presented_t": 3.583333,
+    "presented_until_t": 4.2917,
+    "presented_as": null,
+    "seat_t": 14.08,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "halo_assembly",
+    "n_parts": 53,
+    "tris": 329722,
+    "presented_t": 4.291667,
+    "presented_until_t": 5.2917,
+    "presented_as": null,
+    "seat_t": 16.17,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "BB",
+    "n_parts": 10,
+    "tris": 534848,
+    "presented_t": 5.291667,
+    "presented_until_t": 7.625,
+    "presented_as": null,
+    "seat_t": 11.99,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "FD",
+    "n_parts": 10,
+    "tris": 685308,
+    "presented_t": 7.625,
+    "presented_until_t": 8.3333,
+    "presented_as": null,
+    "seat_t": 10.945,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "EC",
+    "n_parts": 13,
+    "tris": 394122,
+    "presented_t": 8.333333,
+    "presented_until_t": 9.4583,
+    "presented_as": null,
+    "seat_t": 13.035,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "SP",
+    "n_parts": 13,
+    "tris": 485712,
+    "presented_t": 9.458333,
+    "presented_until_t": 10.9583,
+    "presented_as": null,
+    "seat_t": 17.215,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "SW",
+    "n_parts": 65,
+    "tris": 288904,
+    "presented_t": 10.958333,
+    "presented_until_t": 12.2083,
+    "presented_as": null,
+    "seat_t": 15.125,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "NOSE",
+    "n_parts": 33,
+    "tris": 477818,
+    "presented_t": 12.208333,
+    "presented_until_t": 13.4167,
+    "presented_as": null,
+    "seat_t": 18.26,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "FW",
+    "n_parts": 120,
+    "tris": 720048,
+    "presented_t": 13.416667,
+    "presented_until_t": 16.625,
+    "presented_as": null,
+    "seat_t": 19.305,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "RW",
+    "n_parts": 97,
+    "tris": 535588,
+    "presented_t": 16.625,
+    "presented_until_t": 19.3333,
+    "presented_as": null,
+    "seat_t": 20.35,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "CORNER_FL",
+    "n_parts": 41,
+    "tris": 690930,
+    "presented_t": 19.333333,
+    "presented_until_t": null,
+    "presented_as": "CORNER_GROUP",
+    "seat_t": 21.395,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "CORNER_FR",
+    "n_parts": 41,
+    "tris": 690930,
+    "presented_t": 19.333333,
+    "presented_until_t": null,
+    "presented_as": "CORNER_GROUP",
+    "seat_t": 21.395,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "CORNER_RL",
+    "n_parts": 44,
+    "tris": 745562,
+    "presented_t": 19.333333,
+    "presented_until_t": null,
+    "presented_as": "CORNER_GROUP",
+    "seat_t": 21.395,
+    "seen_before_seat": true
+   },
+   {
+    "cluster": "CORNER_RR",
+    "n_parts": 44,
+    "tris": 745562,
+    "presented_t": 19.333333,
+    "presented_until_t": null,
+    "presented_as": "CORNER_GROUP",
+    "seat_t": 21.395,
+    "seen_before_seat": true
+   }
+  ],
+  "camera_keys": [
+   {
+    "t": 0.0,
+    "world": [
+     -0.8409,
+     -8.8633,
+     3.7566
+    ],
+    "look_at": [
+     -0.841,
+     0.0,
+     2.194
+    ],
+    "lens_mm": 18.0,
+    "fstop": 4.0,
+    "focus_distance_m": 9.0,
+    "focus_target": "FIELD",
+    "note": "ESTABLISHING. The whole exploded field in the darkened showroom, with the empty turntable under it \u2014 the brief's own first image. R2-429/R2-464.",
+    "beat": "1_assembly",
+    "world_time_scale": 1.0,
+    "presentation_dir_measured": false
+   },
+   {
+    "t": 2.0,
+    "beat": "1_assembly",
+    "world": [
+     1.156,
+     -6.386,
+     3.6495
+    ],
+    "look_at": [
+     0.265,
+     0.0,
+     0.8267
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_target": "MB",
+    "focus_distance_m": 7.0387,
+    "presentation_dir_measured": true,
+    "visible_materials": 3,
+    "world_time_scale": 1.0,
+    "note": "present MB (17 parts, 1,844,927 tris)"
+   },
+   {
+    "t": 3.583333,
+    "beat": "1_assembly",
+    "world": [
+     1.3951,
+     -2.3344,
+     4.4124
+    ],
+    "look_at": [
+     1.0694,
+     0.0,
+     3.3133
+    ],
+    "lens_mm": 58.0,
+    "fstop": 2.2,
+    "focus_target": "CI",
+    "focus_distance_m": 2.6007,
+    "presentation_dir_measured": true,
+    "visible_materials": 3,
+    "world_time_scale": 1.0,
+    "note": "present CI (15 parts, 459,202 tris)"
+   },
+   {
+    "t": 4.291667,
+    "beat": "1_assembly",
+    "world": [
+     1.2482,
+     -2.1166,
+     4.8178
+    ],
+    "look_at": [
+     0.9528,
+     0.0005,
+     3.9075
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_target": "halo_assembly",
+    "focus_distance_m": 2.3234,
+    "presentation_dir_measured": true,
+    "visible_materials": 5,
+    "world_time_scale": 1.0,
+    "note": "present halo_assembly (53 parts, 329,722 tris)"
+   },
+   {
+    "t": 5.291667,
+    "beat": "1_assembly",
+    "world": [
+     0.0345,
+     -2.07,
+     2.4541
+    ],
+    "look_at": [
+     -0.2543,
+     0.0,
+     1.6292
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_target": "BB",
+    "focus_distance_m": 2.247,
+    "presentation_dir_measured": true,
+    "visible_materials": 3,
+    "world_time_scale": 1.0,
+    "note": "present BB (10 parts, 534,848 tris)"
+   },
+   {
+    "t": 7.625,
+    "beat": "1_assembly",
+    "world": [
+     -2.0283,
+     3.6074,
+     2.4888
+    ],
+    "look_at": [
+     -4.5122,
+     0.0,
+     0.5298
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_target": "FD",
+    "focus_distance_m": 4.798,
+    "presentation_dir_measured": true,
+    "visible_materials": 3,
+    "world_time_scale": 1.0,
+    "note": "present FD (10 parts, 685,308 tris)"
+   },
+   {
+    "t": 8.333333,
+    "beat": "1_assembly",
+    "world": [
+     -2.9236,
+     3.1945,
+     1.7641
+    ],
+    "look_at": [
+     -2.8769,
+     0.001,
+     2.0737
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_target": "EC",
+    "focus_distance_m": 3.2088,
+    "presentation_dir_measured": true,
+    "visible_materials": 5,
+    "world_time_scale": 1.0,
+    "note": "present EC (13 parts, 394,122 tris)"
+   },
+   {
+    "t": 9.458333,
+    "beat": "1_assembly",
+    "world": [
+     -0.7184,
+     3.1546,
+     3.7021
+    ],
+    "look_at": [
+     -1.0959,
+     0.0,
+     3.515
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_target": "SP",
+    "focus_distance_m": 3.1826,
+    "presentation_dir_measured": true,
+    "visible_materials": 5,
+    "world_time_scale": 1.0,
+    "note": "present SP (13 parts, 485,712 tris)"
+   },
+   {
+    "t": 10.958333,
+    "beat": "1_assembly",
+    "world": [
+     0.0356,
+     0.6362,
+     2.4509
+    ],
+    "look_at": [
+     0.8056,
+     0.0,
+     2.0289
+    ],
+    "lens_mm": 58.0,
+    "fstop": 2.2,
+    "focus_target": "SW",
+    "focus_distance_m": 1.0843,
+    "presentation_dir_measured": true,
+    "visible_materials": 6,
+    "world_time_scale": 1.0,
+    "note": "present SW (65 parts, 288,904 tris)"
+   },
+   {
+    "t": 12.208333,
+    "beat": "1_assembly",
+    "world": [
+     3.0943,
+     2.0269,
+     2.3527
+    ],
+    "look_at": [
+     3.7518,
+     0.0,
+     1.4484
+    ],
+    "lens_mm": 58.0,
+    "fstop": 2.2,
+    "focus_target": "NOSE",
+    "focus_distance_m": 2.3148,
+    "presentation_dir_measured": true,
+    "visible_materials": 4,
+    "world_time_scale": 1.0,
+    "note": "present NOSE (33 parts, 477,818 tris)"
+   },
+   {
+    "t": 13.416667,
+    "beat": "1_assembly",
+    "world": [
+     5.7189,
+     1.9454,
+     1.4854
+    ],
+    "look_at": [
+     4.3794,
+     0.0,
+     0.4396
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_target": "FW",
+    "focus_distance_m": 2.5831,
+    "presentation_dir_measured": true,
+    "visible_materials": 1,
+    "world_time_scale": 1.0,
+    "note": "present FW (120 parts, 720,048 tris)"
+   },
+   {
+    "t": 16.625,
+    "beat": "1_assembly",
+    "world": [
+     -2.5753,
+     2.9275,
+     2.5134
+    ],
+    "look_at": [
+     -4.5911,
+     0.0,
+     1.1635
+    ],
+    "lens_mm": 58.0,
+    "fstop": 2.2,
+    "focus_target": "RW",
+    "focus_distance_m": 3.8021,
+    "presentation_dir_measured": true,
+    "visible_materials": 3,
+    "world_time_scale": 1.0,
+    "note": "present RW (97 parts, 535,588 tris)"
+   },
+   {
+    "t": 17.375,
+    "world": [
+     -3.7873,
+     2.2103,
+     3.004
+    ],
+    "look_at": [
+     -3.3182,
+     0.0,
+     1.1353
+    ],
+    "lens_mm": 36.5,
+    "focus_target": "CORNER_GROUP_APPROACH",
+    "fstop": 2.8,
+    "focus_distance_m": 2.932,
+    "note": "R2-837 approach: the lens reaches its wide end BEFORE the turn into the corner group needs it. Without it the rig ramps 58->35 mm linearly over 65 frames and 14 frames (f420-433) carry a subject outside a frame a 37 mm lens would have held."
+   },
+   {
+    "t": 19.333333,
+    "beat": "1_assembly",
+    "world": [
+     -6.9037,
+     0.3661,
+     4.2657
+    ],
+    "look_at": [
+     -0.0451,
+     0.0,
+     1.0629
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_target": "CORNER_GROUP",
+    "focus_distance_m": 7.5784,
+    "presentation_dir_measured": true,
+    "visible_materials": 8,
+    "world_time_scale": 1.0,
+    "note": "present the four corners AS ONE GROUP (170 parts, 2,872,984 tris) \u2014 they seat simultaneously, they are pairwise the same asset, and four separate presentations cost 9.20 s to show the audience the same wheel four times at 2.0-2.3x frame overflow",
+    "r2830_members": [
+     "CORNER_FL",
+     "CORNER_FR",
+     "CORNER_RL",
+     "CORNER_RR"
+    ]
+   },
+   {
+    "t": 21.3444,
+    "world": [
+     -5.3072,
+     4.4695,
+     3.8479
+    ],
+    "look_at": [
+     -0.0106,
+     0.0,
+     1.0076
+    ],
+    "lens_mm": 35.156,
+    "focus_target": "CAR",
+    "fstop": 3.035,
+    "focus_distance_m": 7.49,
+    "note": "R2-833 payoff orbit 1/6: the assembled car, 37 deg of azimuth at 6.94 m",
+    "beat": "1_assembly",
+    "world_time_scale": 1.0
+   },
+   {
+    "t": 23.3556,
+    "world": [
+     -1.2593,
+     6.9137,
+     3.4018
+    ],
+    "look_at": [
+     0.0261,
+     0.0,
+     0.9486
+    ],
+    "lens_mm": 35.667,
+    "focus_target": "CAR",
+    "fstop": 3.073,
+    "focus_distance_m": 7.448,
+    "note": "R2-833 payoff orbit 2/6: the assembled car, 77 deg of azimuth at 7.03 m",
+    "beat": "1_assembly",
+    "world_time_scale": 1.0
+   },
+   {
+    "t": 25.3667,
+    "world": [
+     3.5304,
+     6.3038,
+     2.9557
+    ],
+    "look_at": [
+     0.0629,
+     0.0,
+     0.8896
+    ],
+    "lens_mm": 36.533,
+    "focus_target": "CAR",
+    "fstop": 3.111,
+    "focus_distance_m": 7.485,
+    "note": "R2-833 payoff orbit 3/6: the assembled car, 116 deg of azimuth at 7.23 m",
+    "beat": "1_assembly",
+    "world_time_scale": 1.0
+   },
+   {
+    "t": 27.3778,
+    "world": [
+     6.8843,
+     3.0194,
+     2.5379
+    ],
+    "look_at": [
+     0.0974,
+     0.0,
+     0.8344
+    ],
+    "lens_mm": 37.667,
+    "focus_target": "CAR",
+    "fstop": 3.146,
+    "focus_distance_m": 7.621,
+    "note": "R2-833 payoff orbit 4/6: the assembled car, 153 deg of azimuth at 7.52 m",
+    "beat": "1_assembly",
+    "world_time_scale": 1.0
+   },
+   {
+    "t": 29.3889,
+    "world": [
+     7.7516,
+     -1.1408,
+     2.1765
+    ],
+    "look_at": [
+     0.1272,
+     0.0,
+     0.7866
+    ],
+    "lens_mm": 38.899,
+    "focus_target": "CAR",
+    "fstop": 3.177,
+    "focus_distance_m": 7.834,
+    "note": "R2-833 payoff orbit 5/6: the assembled car, 185 deg of azimuth at 7.84 m",
+    "beat": "1_assembly",
+    "world_time_scale": 1.0
+   },
+   {
+    "t": 31.4,
+    "beat": "1_assembly",
+    "world": [
+     6.8,
+     -4.4,
+     1.9
+    ],
+    "look_at": [
+     0.15,
+     0.0,
+     0.75
+    ],
+    "lens_mm": 40.0,
+    "fstop": 3.2,
+    "focus_target": "CAR",
+    "focus_distance_m": 8.3,
+    "world_time_scale": 1.0,
+    "note": "push toward the completed car; spot rigs ramp ~1 stop over 12 frames. THE SEAM: beat 2's first key is 2.09 m away 39 frames later at 39.95 mm, so this key is fixed and beats 1 and 2 join at 1.29 m/s with no step in position, aim or focal length"
+   }
+  ],
+  "path_length_m": 69.839,
+  "mean_camera_speed_ms": 2.116,
+  "clusters_seating_unseen": [],
+  "flight": [
+   {
+    "from": "FIELD",
+    "to": "MB",
+    "t": [
+     0.0,
+     2.0
+    ],
+    "frames": [
+     0,
+     48
+    ],
+    "chord_m": 3.184,
+    "speed_ms": 1.592,
+    "peak_speed_ms": 2.42,
+    "peak_speed_ms_lo": 2.165,
+    "bearing_deg": 15.61,
+    "peak_pan_widths_per_frame": 0.0091,
+    "peak_pan_widths_per_frame_lo": 0.0081,
+    "min_clearance_m": 5.864,
+    "lens_mm": [
+     18.0,
+     35.0
+    ]
+   },
+   {
+    "from": "MB",
+    "to": "CI",
+    "t": [
+     2.0,
+     3.583333
+    ],
+    "frames": [
+     48,
+     86
+    ],
+    "chord_m": 4.13,
+    "speed_ms": 2.608,
+    "peak_speed_ms": 3.965,
+    "peak_speed_ms_lo": 3.547,
+    "bearing_deg": 1.36,
+    "peak_pan_widths_per_frame": 0.0016,
+    "peak_pan_widths_per_frame_lo": 0.0014,
+    "min_clearance_m": 3.359,
+    "lens_mm": [
+     35.0,
+     58.0
+    ]
+   },
+   {
+    "from": "CI",
+    "to": "halo_assembly",
+    "t": [
+     3.583333,
+     4.291667
+    ],
+    "frames": [
+     86,
+     103
+    ],
+    "chord_m": 0.483,
+    "speed_ms": 0.682,
+    "peak_speed_ms": 1.037,
+    "peak_speed_ms_lo": 0.928,
+    "bearing_deg": 1.93,
+    "peak_pan_widths_per_frame": 0.005,
+    "peak_pan_widths_per_frame_lo": 0.0045,
+    "min_clearance_m": 3.359,
+    "lens_mm": [
+     58.0,
+     35.0
+    ]
+   },
+   {
+    "from": "halo_assembly",
+    "to": "BB",
+    "t": [
+     4.291667,
+     5.291667
+    ],
+    "frames": [
+     103,
+     127
+    ],
+    "chord_m": 2.658,
+    "speed_ms": 2.658,
+    "peak_speed_ms": 4.039,
+    "peak_speed_ms_lo": 3.614,
+    "bearing_deg": 1.53,
+    "peak_pan_widths_per_frame": 0.0018,
+    "peak_pan_widths_per_frame_lo": 0.0016,
+    "min_clearance_m": 1.552,
+    "lens_mm": [
+     35.0,
+     35.0
+    ]
+   },
+   {
+    "from": "BB",
+    "to": "FD",
+    "t": [
+     5.291667,
+     7.625
+    ],
+    "frames": [
+     127,
+     183
+    ],
+    "chord_m": 6.041,
+    "speed_ms": 2.589,
+    "peak_speed_ms": 3.935,
+    "peak_speed_ms_lo": 3.521,
+    "bearing_deg": 118.44,
+    "peak_pan_widths_per_frame": 0.0591,
+    "peak_pan_widths_per_frame_lo": 0.0528,
+    "min_clearance_m": 1.131,
+    "lens_mm": [
+     35.0,
+     35.0
+    ]
+   },
+   {
+    "from": "FD",
+    "to": "EC",
+    "t": [
+     7.625,
+     8.333333
+    ],
+    "frames": [
+     183,
+     200
+    ],
+    "chord_m": 1.224,
+    "speed_ms": 1.727,
+    "peak_speed_ms": 2.626,
+    "peak_speed_ms_lo": 2.349,
+    "bearing_deg": 45.47,
+    "peak_pan_widths_per_frame": 0.0747,
+    "peak_pan_widths_per_frame_lo": 0.0668,
+    "min_clearance_m": 2.248,
+    "lens_mm": [
+     35.0,
+     35.0
+    ]
+   },
+   {
+    "from": "EC",
+    "to": "SP",
+    "t": [
+     8.333333,
+     9.458333
+    ],
+    "frames": [
+     200,
+     227
+    ],
+    "chord_m": 2.936,
+    "speed_ms": 2.61,
+    "peak_speed_ms": 3.967,
+    "peak_speed_ms_lo": 3.549,
+    "bearing_deg": 11.74,
+    "peak_pan_widths_per_frame": 0.0121,
+    "peak_pan_widths_per_frame_lo": 0.0109,
+    "min_clearance_m": 2.248,
+    "lens_mm": [
+     35.0,
+     35.0
+    ]
+   },
+   {
+    "from": "SP",
+    "to": "SW",
+    "t": [
+     9.458333,
+     10.958333
+    ],
+    "frames": [
+     227,
+     263
+    ],
+    "chord_m": 2.911,
+    "speed_ms": 1.941,
+    "peak_speed_ms": 2.95,
+    "peak_speed_ms_lo": 2.64,
+    "bearing_deg": 58.65,
+    "peak_pan_widths_per_frame": 0.0718,
+    "peak_pan_widths_per_frame_lo": 0.0643,
+    "min_clearance_m": 1.121,
+    "lens_mm": [
+     35.0,
+     58.0
+    ]
+   },
+   {
+    "from": "SW",
+    "to": "NOSE",
+    "t": [
+     10.958333,
+     12.208333
+    ],
+    "frames": [
+     263,
+     293
+    ],
+    "chord_m": 3.361,
+    "speed_ms": 2.689,
+    "peak_speed_ms": 4.088,
+    "peak_speed_ms_lo": 3.657,
+    "bearing_deg": 29.83,
+    "peak_pan_widths_per_frame": 0.0438,
+    "peak_pan_widths_per_frame_lo": 0.0392,
+    "min_clearance_m": 1.093,
+    "lens_mm": [
+     58.0,
+     58.0
+    ]
+   },
+   {
+    "from": "NOSE",
+    "to": "FW",
+    "t": [
+     12.208333,
+     13.416667
+    ],
+    "frames": [
+     293,
+     322
+    ],
+    "chord_m": 2.765,
+    "speed_ms": 2.289,
+    "peak_speed_ms": 3.479,
+    "peak_speed_ms_lo": 3.112,
+    "bearing_deg": 47.91,
+    "peak_pan_widths_per_frame": 0.0728,
+    "peak_pan_widths_per_frame_lo": 0.0652,
+    "min_clearance_m": 1.424,
+    "lens_mm": [
+     58.0,
+     35.0
+    ]
+   },
+   {
+    "from": "FW",
+    "to": "RW",
+    "t": [
+     13.416667,
+     16.625
+    ],
+    "frames": [
+     322,
+     399
+    ],
+    "chord_m": 8.415,
+    "speed_ms": 2.623,
+    "peak_speed_ms": 3.987,
+    "peak_speed_ms_lo": 3.567,
+    "bearing_deg": 3.09,
+    "peak_pan_widths_per_frame": 0.0018,
+    "peak_pan_widths_per_frame_lo": 0.0016,
+    "min_clearance_m": 1.341,
+    "lens_mm": [
+     35.0,
+     58.0
+    ]
+   },
+   {
+    "from": "RW",
+    "to": "CORNER_GROUP_APPROACH",
+    "t": [
+     16.625,
+     17.375
+    ],
+    "frames": [
+     399,
+     417
+    ],
+    "chord_m": 1.491,
+    "speed_ms": 1.988,
+    "peak_speed_ms": 3.022,
+    "peak_speed_ms_lo": 2.704,
+    "bearing_deg": 43.79,
+    "peak_pan_widths_per_frame": 0.1072,
+    "peak_pan_widths_per_frame_lo": 0.096,
+    "min_clearance_m": 2.173,
+    "lens_mm": [
+     58.0,
+     36.5
+    ]
+   },
+   {
+    "from": "CORNER_GROUP_APPROACH",
+    "to": "CORNER_GROUP",
+    "t": [
+     17.375,
+     19.333333
+    ],
+    "frames": [
+     417,
+     464
+    ],
+    "chord_m": 3.835,
+    "speed_ms": 1.958,
+    "peak_speed_ms": 2.976,
+    "peak_speed_ms_lo": 2.663,
+    "bearing_deg": 63.22,
+    "peak_pan_widths_per_frame": 0.0389,
+    "peak_pan_widths_per_frame_lo": 0.0348,
+    "min_clearance_m": 2.334,
+    "lens_mm": [
+     36.5,
+     35.0
+    ]
+   },
+   {
+    "from": "CORNER_GROUP",
+    "to": "CAR",
+    "t": [
+     19.333333,
+     21.3444
+    ],
+    "frames": [
+     464,
+     512
+    ],
+    "chord_m": 4.423,
+    "speed_ms": 2.199,
+    "peak_speed_ms": 3.343,
+    "peak_speed_ms_lo": 2.991,
+    "bearing_deg": 33.99,
+    "peak_pan_widths_per_frame": 0.0197,
+    "peak_pan_widths_per_frame_lo": 0.0177,
+    "min_clearance_m": 4.584,
+    "lens_mm": [
+     35.0,
+     35.156
+    ]
+   },
+   {
+    "from": "CAR",
+    "to": "CAR",
+    "t": [
+     21.3444,
+     23.3556
+    ],
+    "frames": [
+     512,
+     561
+    ],
+    "chord_m": 4.75,
+    "speed_ms": 2.362,
+    "peak_speed_ms": 3.59,
+    "peak_speed_ms_lo": 3.212,
+    "bearing_deg": 36.78,
+    "peak_pan_widths_per_frame": 0.0216,
+    "peak_pan_widths_per_frame_lo": 0.0194,
+    "min_clearance_m": 4.972,
+    "lens_mm": [
+     35.156,
+     35.667
+    ]
+   },
+   {
+    "from": "CAR",
+    "to": "CAR",
+    "t": [
+     23.3556,
+     25.3667
+    ],
+    "frames": [
+     561,
+     609
+    ],
+    "chord_m": 4.849,
+    "speed_ms": 2.411,
+    "peak_speed_ms": 3.665,
+    "peak_speed_ms_lo": 3.279,
+    "bearing_deg": 37.56,
+    "peak_pan_widths_per_frame": 0.0225,
+    "peak_pan_widths_per_frame_lo": 0.0202,
+    "min_clearance_m": 5.571,
+    "lens_mm": [
+     35.667,
+     36.533
+    ]
+   },
+   {
+    "from": "CAR",
+    "to": "CAR",
+    "t": [
+     25.3667,
+     27.3778
+    ],
+    "frames": [
+     609,
+     657
+    ],
+    "chord_m": 4.713,
+    "speed_ms": 2.343,
+    "peak_speed_ms": 3.562,
+    "peak_speed_ms_lo": 3.187,
+    "bearing_deg": 36.11,
+    "peak_pan_widths_per_frame": 0.0223,
+    "peak_pan_widths_per_frame_lo": 0.0199,
+    "min_clearance_m": 4.353,
+    "lens_mm": [
+     36.533,
+     37.667
+    ]
+   },
+   {
+    "from": "CAR",
+    "to": "CAR",
+    "t": [
+     27.3778,
+     29.3889
+    ],
+    "frames": [
+     657,
+     705
+    ],
+    "chord_m": 4.265,
+    "speed_ms": 2.121,
+    "peak_speed_ms": 3.223,
+    "peak_speed_ms_lo": 2.884,
+    "bearing_deg": 31.93,
+    "peak_pan_widths_per_frame": 0.0202,
+    "peak_pan_widths_per_frame_lo": 0.0181,
+    "min_clearance_m": 4.338,
+    "lens_mm": [
+     37.667,
+     38.899
+    ]
+   },
+   {
+    "from": "CAR",
+    "to": "CAR",
+    "t": [
+     29.3889,
+     31.4
+    ],
+    "frames": [
+     705,
+     754
+    ],
+    "chord_m": 3.407,
+    "speed_ms": 1.694,
+    "peak_speed_ms": 2.575,
+    "peak_speed_ms_lo": 2.304,
+    "bearing_deg": 24.73,
+    "peak_pan_widths_per_frame": 0.0161,
+    "peak_pan_widths_per_frame_lo": 0.0144,
+    "min_clearance_m": 4.642,
+    "lens_mm": [
+     38.899,
+     40.0
+    ]
+   }
+  ],
+  "min_clearance_to_car_m": 1.093,
+  "max_key_to_key_speed_ms": 2.689,
+  "max_estimated_peak_speed_ms": 4.088,
+  "max_estimated_pan_widths_per_frame": 0.1072,
+  "car_box": {
+   "lo": [
+    -2.7,
+    -1.0,
+    0.34
+   ],
+   "hi": [
+    3.02,
+    1.0,
+    1.33
+   ],
+   "clearance_floor_m": 0.3,
+   "speed_limit_ms": 6.0,
+   "measured_on": "world/beat1_anim.blend"
+  },
+  "weave_spec": {
+   "design_speed_ms": 2.0,
+   "peak_factor": 2.0,
+   "peak_speed_limit_ms": 4.0,
+   "pan_limit_widths_per_frame": 0.12,
+   "ease_speak_peak_over_mean": [
+    1.36,
+    1.52
+   ],
+   "ease_rotation_peak_over_mean": [
+    1.1,
+    2.5
+   ],
+   "dwell_s": 0.72,
+   "budget_ratio": {
+    "tour": 0.9966,
+    "span_s": 17.345,
+    "binding": "CORNER_GROUP",
+    "spine": 0.852,
+    "corners": 1.0759
+   },
+   "note": "each move is given time in proportion to whichever of its three constraints (dwell, transit at the peak speed limit, turn at the pan limit) needs the most, which is the exact minimax split; the visiting order is the one that minimises the total. budget_ratio is how far the tightest move in each segment is from its limit -- above 1.0 the segment is over-subscribed and every move in it is squeezed by that factor. Peaks here are ESTIMATED and the rotation estimate is weak; the authority is tools/continuity_gate.py --campath on the built path."
+  },
+  "presentation_framing": [
+   {
+    "cluster": "MB",
+    "t": 2.0,
+    "range_m": 7.039,
+    "edge_angle_deg": 0.0,
+    "far_edge_angle_deg": 24.011,
+    "half_frame_deg": 16.134,
+    "lens_mm": 35.0,
+    "extent_frac_frame_h": 0.422,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 2.3637,
+    "fstop_shipped": 2.8,
+    "fstop_required": 1.88,
+    "standoff_for_fill_m": 7.039,
+    "fill_target": 0.85,
+    "sharp_budget_px": 2.0,
+    "presentation": true
+   },
+   {
+    "cluster": "CI",
+    "t": 3.583333,
+    "range_m": 2.601,
+    "edge_angle_deg": 0.0,
+    "far_edge_angle_deg": 15.258,
+    "half_frame_deg": 9.902,
+    "lens_mm": 58.0,
+    "extent_frac_frame_h": 0.673,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 0.6978,
+    "fstop_shipped": 2.2,
+    "fstop_required": 8.35,
+    "standoff_for_fill_m": 2.601,
+    "fill_target": 0.85,
+    "sharp_budget_px": 2.0,
+    "presentation": true
+   },
+   {
+    "cluster": "halo_assembly",
+    "t": 4.291667,
+    "range_m": 2.323,
+    "edge_angle_deg": 0.0,
+    "far_edge_angle_deg": 23.933,
+    "half_frame_deg": 16.134,
+    "lens_mm": 35.0,
+    "extent_frac_frame_h": 0.586,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 1.0703,
+    "fstop_shipped": 2.8,
+    "fstop_required": 8.55,
+    "standoff_for_fill_m": 2.323,
+    "fill_target": 0.85,
+    "sharp_budget_px": 2.0,
+    "presentation": true
+   },
+   {
+    "cluster": "BB",
+    "t": 5.291667,
+    "range_m": 2.247,
+    "edge_angle_deg": 0.0,
+    "far_edge_angle_deg": 23.487,
+    "half_frame_deg": 16.134,
+    "lens_mm": 35.0,
+    "extent_frac_frame_h": 0.85,
+    "extent_frac_frame_w": 0.559,
+    "depth_span_m": 1.6622,
+    "fstop_shipped": 2.8,
+    "fstop_required": 17.34,
+    "standoff_for_fill_m": 2.247,
+    "fill_target": 0.85,
+    "sharp_budget_px": 2.0,
+    "presentation": true
+   },
+   {
+    "cluster": "FD",
+    "t": 7.625,
+    "range_m": 4.798,
+    "edge_angle_deg": 0.0,
+    "far_edge_angle_deg": 25.886,
+    "half_frame_deg": 16.134,
+    "lens_mm": 35.0,
+    "extent_frac_frame_h": 0.708,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 3.4191,
+    "fstop_shipped": 2.8,
+    "fstop_required": 7.59,
+    "standoff_for_fill_m": 4.798,
+    "fill_target": 0.85,
+    "sharp_budget_px": 2.0,
+    "presentation": true
+   },
+   {
+    "cluster": "EC",
+    "t": 8.333333,
+    "range_m": 3.209,
+    "edge_angle_deg": 0.0,
+    "far_edge_angle_deg": 24.817,
+    "half_frame_deg": 16.134,
+    "lens_mm": 35.0,
+    "extent_frac_frame_h": 0.48,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 0.765,
+    "fstop_shipped": 2.8,
+    "fstop_required": 2.79,
+    "standoff_for_fill_m": 3.209,
+    "fill_target": 0.85,
+    "sharp_budget_px": 2.0,
+    "presentation": true
+   },
+   {
+    "cluster": "SP",
+    "t": 9.458333,
+    "range_m": 3.183,
+    "edge_angle_deg": 0.0,
+    "far_edge_angle_deg": 24.801,
+    "half_frame_deg": 16.134,
+    "lens_mm": 35.0,
+    "extent_frac_frame_h": 0.432,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 1.7552,
+    "fstop_shipped": 2.8,
+    "fstop_required": 4.49,
+    "standoff_for_fill_m": 3.183,
+    "fill_target": 0.85,
+    "sharp_budget_px": 2.0,
+    "presentation": true
+   },
+   {
+    "cluster": "SW",
+    "t": 10.958333,
+    "range_m": 1.084,
+    "edge_angle_deg": 0.0,
+    "far_edge_angle_deg": 10.215,
+    "half_frame_deg": 9.902,
+    "lens_mm": 58.0,
+    "extent_frac_frame_h": 0.85,
+    "extent_frac_frame_w": 0.462,
+    "depth_span_m": 0.3449,
+    "fstop_shipped": 2.2,
+    "fstop_required": 23.99,
+    "standoff_for_fill_m": 1.084,
+    "fill_target": 0.85,
+    "sharp_budget_px": 2.0,
+    "presentation": true
+   },
+   {
+    "cluster": "NOSE",
+    "t": 12.208333,
+    "range_m": 2.315,
+    "edge_angle_deg": 0.0,
+    "far_edge_angle_deg": 15.479,
+    "half_frame_deg": 9.902,
+    "lens_mm": 58.0,
+    "extent_frac_frame_h": 0.762,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 0.8402,
+    "fstop_shipped": 2.2,
+    "fstop_required": 12.21,
+    "standoff_for_fill_m": 2.315,
+    "fill_target": 0.85,
+    "sharp_budget_px": 2.0,
+    "presentation": true
+   },
+   {
+    "cluster": "FW",
+    "t": 13.416667,
+    "range_m": 2.583,
+    "edge_angle_deg": 0.0,
+    "far_edge_angle_deg": 24.463,
+    "half_frame_deg": 16.134,
+    "lens_mm": 35.0,
+    "extent_frac_frame_h": 0.85,
+    "extent_frac_frame_w": 0.692,
+    "depth_span_m": 1.9951,
+    "fstop_shipped": 2.8,
+    "fstop_required": 7.14,
+    "standoff_for_fill_m": 2.583,
+    "fill_target": 0.85,
+    "sharp_budget_px": 2.0,
+    "presentation": true
+   },
+   {
+    "cluster": "RW",
+    "t": 16.625,
+    "range_m": 3.802,
+    "edge_angle_deg": 0.0,
+    "far_edge_angle_deg": 10.855,
+    "half_frame_deg": 9.902,
+    "lens_mm": 58.0,
+    "extent_frac_frame_h": 0.85,
+    "extent_frac_frame_w": 0.5,
+    "depth_span_m": 1.4115,
+    "fstop_shipped": 2.2,
+    "fstop_required": 10.92,
+    "standoff_for_fill_m": 3.802,
+    "fill_target": 0.85,
+    "sharp_budget_px": 2.0,
+    "presentation": true
+   },
+   {
+    "cluster": "CORNER_GROUP",
+    "t": 19.333333,
+    "range_m": 7.578,
+    "edge_angle_deg": 0.0,
+    "far_edge_angle_deg": 27.119,
+    "half_frame_deg": 16.134,
+    "lens_mm": 35.0,
+    "extent_frac_frame_h": 0.749,
+    "extent_frac_frame_w": 0.85,
+    "depth_span_m": 5.2789,
+    "fstop_shipped": 2.8,
+    "fstop_required": 2.24,
+    "standoff_for_fill_m": 7.578,
+    "fill_target": 0.85,
+    "sharp_budget_px": 2.0,
+    "presentation": true
+   }
+  ]
+ },
+ "speed_ramps": [
+  {
+   "beat": "3_breach",
+   "screen_s": 8.0,
+   "world_s": 1.6,
+   "min_world_time_scale": 0.153719,
+   "ease": "smooth (no stepped time); shutter scales with world time so motion blur reads correctly at slowed speed",
+   "audio": "all layers time-stretch AND pitch with world time",
+   "min_world_time_scale_note": "SOLVED, not chosen: the declared 8.0 s screen / 1.6 s world forces a mean scale of exactly 0.20, which with a 6-frame ease in and a 15-frame ease out lands the floor here. The previous 0.20 was the floor AND the mean, which is only possible with no ease at all; the implementation that shipped with it integrated to 3.73 s of world time, not 1.6."
+  }
+ ],
+ "doppler": {
+  "station_s": 2555.0,
+  "camera_world": [
+   -578.82,
+   -47.47,
+   4.802
+  ],
+  "offset_from_centreline_m": 26.0,
+  "height_above_grade_m": 2.4,
+  "peak_kph": 313.2,
+  "slant_range_m": 26.1,
+  "dwell_s": 7.46,
+  "semitone_sweep": 7.55,
+  "fallback_station_s": 2600.0
+ },
+ "beat6": {
+  "peel_off_t": -3.0,
+  "peel_off_world": [
+   129.84,
+   2.37,
+   2.8
+  ],
+  "key0_world": [
+   315.64,
+   89.61,
+   27.8
+  ],
+  "key0_lens_mm": 24.0,
+  "hold_world": [
+   594.19,
+   16.05,
+   140.0
+  ],
+  "hold_lens_mm": 74.0,
+  "hold_start_t": 8.0,
+  "hold_end_t": 11.0,
+  "trajectory": "minimum-energy cubic from (peel, v=83.1 m/s along the pit straight) to (hold, v=0) in 11.0 s; peak |a| 19.9 m/s^2 (2.03 g) at the peel-off, easing monotonically",
+  "keys": [
+   {
+    "t": -3.0,
+    "world": [
+     129.84,
+     2.37,
+     2.8
+    ],
+    "lens_mm": 32.0,
+    "speed": 83.1
+   },
+   {
+    "t": -1.0,
+    "world": [
+     255.52,
+     75.07,
+     14.8
+    ],
+    "lens_mm": 28.0,
+    "speed": 65.8
+   },
+   {
+    "t": 0.0,
+    "world": [
+     315.64,
+     89.61,
+     27.8
+    ],
+    "lens_mm": 24.0,
+    "speed": 61.1
+   },
+   {
+    "t": 2.0,
+    "world": [
+     425.14,
+     87.77,
+     62.1
+    ],
+    "lens_mm": 21.0,
+    "speed": 54.2
+   },
+   {
+    "t": 4.0,
+    "world": [
+     513.55,
+     61.43,
+     98.8
+    ],
+    "lens_mm": 19.5,
+    "speed": 44.3
+   },
+   {
+    "t": 6.0,
+    "world": [
+     572.69,
+     30.78,
+     128.0
+    ],
+    "lens_mm": 18.75,
+    "speed": 27.0
+   },
+   {
+    "t": 8.0,
+    "world": [
+     594.19,
+     16.05,
+     140.0
+    ],
+    "lens_mm": 40.0,
+    "speed": 0.0
+   },
+   {
+    "t": 11.0,
+    "world": [
+     594.19,
+     16.05,
+     140.0
+    ],
+    "lens_mm": 74.0,
+    "speed": 0.0
+   }
+  ],
+  "facade_px": [
+   109,
+   119
+  ],
+  "aperture_px": [
+   48,
+   52
+  ],
+  "wound_enters_frame_t": 6.0,
+  "sightline_clearance_m": 29.4,
+  "closing_lens_push": {
+   "from_mm": 40.0,
+   "to_mm": 74.0,
+   "over_t": [
+    8.0,
+    11.0
+   ],
+   "why": "R2-113. The circuit reads at 40 mm and the wound does not; the wound reads at 74 mm and the circuit is gone. The hold was a freeze, so the push is the only motion in the last 3 s."
+  }
+ },
+ "sources": {
+  "circuit": "docs/circuit_spec.json",
+  "explode": "docs/explode_plan.json",
+  "telemetry": "telemetry/telemetry.csv"
+ },
+ "beat2": {
+  "authored_by": "tools/author_beats2_5.py",
+  "anchors": [
+   {
+    "t": 31.416666666666668,
+    "world": [
+     6.8,
+     -4.4,
+     1.9
+    ],
+    "lens_mm": 40.0,
+    "note": "BEAT 1'S LAST KEY, transcribed. The spline starts here so the camera leaves beat 1 at the speed beat 1 is actually travelling (1.107 m/s measured) instead of at whatever a one-sided endpoint tangent implies. This anchor emits no key inside beat 1: the bridge starts at frame 755."
+   },
+   {
+    "t": 33.041666666666664,
+    "world": [
+     5.0337,
+     -5.3157,
+     1.2622
+    ],
+    "lens_mm": 39.949,
+    "note": "BEAT 2'S FIRST KEY, pinned. Being an INTERIOR anchor is the whole point: Fritsch-Carlson now limits the departure tangent to 3x the smaller adjacent secant, which takes the speed leaving frame 793 from 8.85 m/s to 3.17 m/s against the 3.33 m/s beat 1 delivers. The old first anchor sat at t = 33.00 \u2014 half a frame BEFORE this key and outside beat 2's own emission window, so it could never control the departure it was written to control."
+   },
+   {
+    "t": 34.07,
+    "world": [
+     -1.55,
+     -5.3,
+     0.58
+    ],
+    "lens_mm": 35.0,
+    "note": "IGNITION / LAUNCH. camera static, lens 5.5 m off the rear tyre"
+   },
+   {
+    "t": 34.55,
+    "world": [
+     -0.55,
+     -5.28,
+     0.6
+    ],
+    "lens_mm": 35.0,
+    "note": "10 frames of sanctioned wheelspin; the car erupts past a still camera"
+   },
+   {
+    "t": 35.2,
+    "world": [
+     4.6,
+     -4.9,
+     0.88
+    ],
+    "lens_mm": 32.0,
+    "note": "hook-up; the camera swings up and gives chase, deliberately slower"
+   },
+   {
+    "t": 36.0,
+    "world": [
+     10.6,
+     -4.0,
+     1.5
+    ],
+    "lens_mm": 28.0,
+    "note": "the nose meets the glass. beat 3 begins on this frame"
+   }
+  ],
+  "camera_keys": [
+   {
+    "t": 33.04167,
+    "beat": "2_launch",
+    "world": [
+     5.0337,
+     -5.3157,
+     1.2622
+    ],
+    "look_at": [
+     -0.0143,
+     0.0,
+     0.5985
+    ],
+    "lens_mm": 39.949,
+    "fstop": 3.196,
+    "focus_distance_m": 7.3607
+   },
+   {
+    "t": 33.125,
+    "beat": "2_launch",
+    "world": [
+     4.6815,
+     -5.3156,
+     1.2102
+    ],
+    "look_at": [
+     -0.0439,
+     0.0,
+     0.5948
+    ],
+    "lens_mm": 39.857,
+    "fstop": 3.189,
+    "focus_distance_m": 7.1389
+   },
+   {
+    "t": 33.20833,
+    "beat": "2_launch",
+    "world": [
+     4.1893,
+     -5.3153,
+     1.1489
+    ],
+    "look_at": [
+     -0.1258,
+     0.0,
+     0.5845
+    ],
+    "lens_mm": 39.601,
+    "fstop": 3.168,
+    "focus_distance_m": 6.8696
+   },
+   {
+    "t": 33.29167,
+    "beat": "2_launch",
+    "world": [
+     3.5885,
+     -5.3149,
+     1.0809
+    ],
+    "look_at": [
+     -0.2499,
+     0.0,
+     0.569
+    ],
+    "lens_mm": 39.214,
+    "fstop": 3.137,
+    "focus_distance_m": 6.576
+   },
+   {
+    "t": 33.375,
+    "beat": "2_launch",
+    "world": [
+     2.9104,
+     -5.3142,
+     1.0086
+    ],
+    "look_at": [
+     -0.4061,
+     0.0,
+     0.5495
+    ],
+    "lens_mm": 38.726,
+    "fstop": 3.098,
+    "focus_distance_m": 6.281
+   },
+   {
+    "t": 33.45833,
+    "beat": "2_launch",
+    "world": [
+     2.1863,
+     -5.3134,
+     0.9346
+    ],
+    "look_at": [
+     -0.5843,
+     0.0,
+     0.5271
+    ],
+    "lens_mm": 38.17,
+    "fstop": 3.054,
+    "focus_distance_m": 6.0062
+   },
+   {
+    "t": 33.54167,
+    "beat": "2_launch",
+    "world": [
+     1.4475,
+     -5.3123,
+     0.8615
+    ],
+    "look_at": [
+     -0.7744,
+     0.0,
+     0.5034
+    ],
+    "lens_mm": 37.577,
+    "fstop": 3.006,
+    "focus_distance_m": 5.7694
+   },
+   {
+    "t": 33.625,
+    "beat": "2_launch",
+    "world": [
+     0.7254,
+     -5.311,
+     0.7917
+    ],
+    "look_at": [
+     -0.9662,
+     0.0,
+     0.4793
+    ],
+    "lens_mm": 36.978,
+    "fstop": 2.958,
+    "focus_distance_m": 5.5827
+   },
+   {
+    "t": 33.70833,
+    "beat": "2_launch",
+    "world": [
+     0.0514,
+     -5.3095,
+     0.7277
+    ],
+    "look_at": [
+     -1.1495,
+     0.0,
+     0.4564
+    ],
+    "lens_mm": 36.406,
+    "fstop": 2.912,
+    "focus_distance_m": 5.4504
+   },
+   {
+    "t": 33.79167,
+    "beat": "2_launch",
+    "world": [
+     -0.5433,
+     -5.3078,
+     0.6722
+    ],
+    "look_at": [
+     -1.3144,
+     0.0,
+     0.4358
+    ],
+    "lens_mm": 35.891,
+    "fstop": 2.871,
+    "focus_distance_m": 5.3687
+   },
+   {
+    "t": 33.875,
+    "beat": "2_launch",
+    "world": [
+     -1.0273,
+     -5.3057,
+     0.6276
+    ],
+    "look_at": [
+     -1.4506,
+     0.0,
+     0.4187
+    ],
+    "lens_mm": 35.466,
+    "fstop": 2.837,
+    "focus_distance_m": 5.3267
+   },
+   {
+    "t": 33.95833,
+    "beat": "2_launch",
+    "world": [
+     -1.3692,
+     -5.3035,
+     0.5964
+    ],
+    "look_at": [
+     -1.548,
+     0.0,
+     0.4065
+    ],
+    "lens_mm": 35.162,
+    "fstop": 2.813,
+    "focus_distance_m": 5.3099
+   },
+   {
+    "t": 34.04167,
+    "beat": "2_launch",
+    "world": [
+     -1.5378,
+     -5.3009,
+     0.5811
+    ],
+    "look_at": [
+     -1.5965,
+     0.0,
+     0.4004
+    ],
+    "lens_mm": 35.011,
+    "fstop": 2.801,
+    "focus_distance_m": 5.3043
+   },
+   {
+    "t": 34.125,
+    "beat": "2_launch",
+    "world": [
+     -1.5391,
+     -5.2985,
+     0.58
+    ],
+    "look_at": [
+     -1.5595,
+     0.0,
+     0.4
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_distance_m": 5.3016
+   },
+   {
+    "t": 34.20833,
+    "beat": "2_launch",
+    "world": [
+     -1.4782,
+     -5.2972,
+     0.5805
+    ],
+    "look_at": [
+     -1.4744,
+     0.0,
+     0.4
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_distance_m": 5.3003
+   },
+   {
+    "t": 34.29167,
+    "beat": "2_launch",
+    "world": [
+     -1.3586,
+     -5.2959,
+     0.582
+    ],
+    "look_at": [
+     -1.374,
+     0.0,
+     0.4
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_distance_m": 5.299
+   },
+   {
+    "t": 34.375,
+    "beat": "2_launch",
+    "world": [
+     -1.1743,
+     -5.2935,
+     0.5851
+    ],
+    "look_at": [
+     -1.2709,
+     0.0,
+     0.4
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_distance_m": 5.2976
+   },
+   {
+    "t": 34.45833,
+    "beat": "2_launch",
+    "world": [
+     -0.9193,
+     -5.2889,
+     0.5906
+    ],
+    "look_at": [
+     -1.1775,
+     0.0,
+     0.4
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_distance_m": 5.2987
+   },
+   {
+    "t": 34.54167,
+    "beat": "2_launch",
+    "world": [
+     -0.5876,
+     -5.281,
+     0.599
+    ],
+    "look_at": [
+     -1.1065,
+     0.0,
+     0.4
+    ],
+    "lens_mm": 35.0,
+    "fstop": 2.8,
+    "focus_distance_m": 5.3102
+   },
+   {
+    "t": 34.625,
+    "beat": "2_launch",
+    "world": [
+     -0.1515,
+     -5.265,
+     0.6132
+    ],
+    "look_at": [
+     -0.8925,
+     0.0,
+     0.4055
+    ],
+    "lens_mm": 34.889,
+    "fstop": 2.815,
+    "focus_distance_m": 5.3209
+   },
+   {
+    "t": 34.70833,
+    "beat": "2_launch",
+    "world": [
+     0.4057,
+     -5.2361,
+     0.636
+    ],
+    "look_at": [
+     -0.4876,
+     0.0,
+     0.4224
+    ],
+    "lens_mm": 34.553,
+    "fstop": 2.86,
+    "focus_distance_m": 5.3161
+   },
+   {
+    "t": 34.875,
+    "beat": "2_launch",
+    "world": [
+     1.7675,
+     -5.147,
+     0.7026
+    ],
+    "look_at": [
+     0.7592,
+     0.0,
+     0.475
+    ],
+    "lens_mm": 33.5,
+    "fstop": 3.0,
+    "focus_distance_m": 5.2498
+   },
+   {
+    "t": 35.20833,
+    "beat": "2_launch",
+    "world": [
+     4.6646,
+     -4.8931,
+     0.8849
+    ],
+    "look_at": [
+     3.9355,
+     0.0,
+     0.55
+    ],
+    "lens_mm": 31.999,
+    "fstop": 3.2,
+    "focus_distance_m": 4.9584
+   },
+   {
+    "t": 35.33333,
+    "beat": "2_launch",
+    "world": [
+     5.6568,
+     -4.7798,
+     0.9687
+    ],
+    "look_at": [
+     5.2367,
+     0.0,
+     0.5611
+    ],
+    "lens_mm": 31.704,
+    "fstop": 3.259,
+    "focus_distance_m": 4.8155
+   },
+   {
+    "t": 35.41667,
+    "beat": "2_launch",
+    "world": [
+     6.3332,
+     -4.6956,
+     1.0329
+    ],
+    "look_at": [
+     6.2435,
+     0.0,
+     0.577
+    ],
+    "lens_mm": 31.279,
+    "fstop": 3.344,
+    "focus_distance_m": 4.7185
+   },
+   {
+    "t": 35.5,
+    "beat": "2_launch",
+    "world": [
+     7.0109,
+     -4.6056,
+     1.1015
+    ],
+    "look_at": [
+     7.3597,
+     0.0,
+     0.5975
+    ],
+    "lens_mm": 30.734,
+    "fstop": 3.453,
+    "focus_distance_m": 4.6462
+   },
+   {
+    "t": 35.58333,
+    "beat": "2_launch",
+    "world": [
+     7.681,
+     -4.5109,
+     1.1726
+    ],
+    "look_at": [
+     8.5793,
+     0.0,
+     0.6203
+    ],
+    "lens_mm": 30.125,
+    "fstop": 3.575,
+    "focus_distance_m": 4.6325
+   },
+   {
+    "t": 35.66667,
+    "beat": "2_launch",
+    "world": [
+     8.3344,
+     -4.4124,
+     1.2444
+    ],
+    "look_at": [
+     9.8966,
+     0.0,
+     0.6436
+    ],
+    "lens_mm": 29.505,
+    "fstop": 3.699,
+    "focus_distance_m": 4.7192
+   },
+   {
+    "t": 35.75,
+    "beat": "2_launch",
+    "world": [
+     8.962,
+     -4.311,
+     1.315
+    ],
+    "look_at": [
+     11.3005,
+     0.0,
+     0.6652
+    ],
+    "lens_mm": 28.928,
+    "fstop": 3.814,
+    "focus_distance_m": 4.9473
+   },
+   {
+    "t": 35.83333,
+    "beat": "2_launch",
+    "world": [
+     9.5549,
+     -4.2079,
+     1.3823
+    ],
+    "look_at": [
+     12.7785,
+     0.0,
+     0.6832
+    ],
+    "lens_mm": 28.448,
+    "fstop": 3.91,
+    "focus_distance_m": 5.3467
+   },
+   {
+    "t": 35.91667,
+    "beat": "2_launch",
+    "world": [
+     10.1039,
+     -4.1039,
+     1.4446
+    ],
+    "look_at": [
+     14.3168,
+     0.0,
+     0.6955
+    ],
+    "lens_mm": 28.121,
+    "fstop": 3.976,
+    "focus_distance_m": 5.9289
+   },
+   {
+    "t": 36.0,
+    "beat": "2_launch",
+    "world": [
+     10.6,
+     -4.0,
+     1.5
+    ],
+    "look_at": [
+     15.8667,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 28.0,
+    "fstop": 4.0,
+    "focus_distance_m": 6.6617
+   }
+  ]
+ },
+ "beat3": {
+  "authored_by": "tools/author_beats2_5.py",
+  "anchors": [
+   {
+    "t": 36.0,
+    "world": [
+     10.6,
+     -4.0,
+     1.5
+    ],
+    "lens_mm": 28.0,
+    "note": "IMPACT. world time collapses to 15.4 % over 6 frames"
+   },
+   {
+    "t": 37.2,
+    "world": [
+     13.9,
+     -2.3,
+     1.95
+    ],
+    "lens_mm": 21.0,
+    "note": "at the aperture, converging on its centre line; shards blooming"
+   },
+   {
+    "t": 38.6,
+    "world": [
+     17.6,
+     -1.2,
+     2.35
+    ],
+    "lens_mm": 21.0,
+    "note": "through the 9.6 x 5.6 m hole, 2 m off the car, inside the cloud"
+   },
+   {
+    "t": 40.2,
+    "world": [
+     24.0,
+     1.6,
+     3.3
+    ],
+    "lens_mm": 24.0,
+    "note": "crossing the wake left, climbing; glass hanging between lens and car"
+   },
+   {
+    "t": 41.8,
+    "world": [
+     38.0,
+     6.5,
+     4.9
+    ],
+    "lens_mm": 28.0,
+    "note": "MONEY FRAME: ahead-left and 5 m up, looking BACK at the car coming through the curtain, the wound in the building behind it"
+   },
+   {
+    "t": 43.0,
+    "world": [
+     48.0,
+     8.0,
+     5.6
+    ],
+    "lens_mm": 32.0,
+    "note": "time blooms back over 15 frames; the car surges"
+   },
+   {
+    "t": 44.0,
+    "world": [
+     58.0,
+     7.0,
+     5.4
+    ],
+    "lens_mm": 32.0,
+    "note": "hand-off to beat 4 at 10.1 m/s, still ahead of the car"
+   }
+  ],
+  "camera_keys": [
+   {
+    "t": 36.04167,
+    "beat": "3_breach",
+    "world": [
+     10.8253,
+     -3.9474,
+     1.525
+    ],
+    "look_at": [
+     16.5135,
+     0.0,
+     0.6996
+    ],
+    "lens_mm": 27.975,
+    "fstop": 4.0,
+    "focus_distance_m": 6.9727
+   },
+   {
+    "t": 36.29167,
+    "beat": "3_breach",
+    "world": [
+     11.881,
+     -3.6004,
+     1.6517
+    ],
+    "look_at": [
+     18.1485,
+     0.0,
+     0.6851
+    ],
+    "lens_mm": 26.96,
+    "fstop": 4.0,
+    "focus_distance_m": 7.2924
+   },
+   {
+    "t": 36.625,
+    "beat": "3_breach",
+    "world": [
+     12.7354,
+     -3.0943,
+     1.7752
+    ],
+    "look_at": [
+     19.2502,
+     0.0,
+     0.6469
+    ],
+    "lens_mm": 24.281,
+    "fstop": 4.0,
+    "focus_distance_m": 7.3
+   },
+   {
+    "t": 36.95833,
+    "beat": "3_breach",
+    "world": [
+     13.3538,
+     -2.6043,
+     1.8751
+    ],
+    "look_at": [
+     20.3431,
+     0.0,
+     0.6105
+    ],
+    "lens_mm": 21.737,
+    "fstop": 4.0,
+    "focus_distance_m": 7.5652
+   },
+   {
+    "t": 37.29167,
+    "beat": "3_breach",
+    "world": [
+     14.1433,
+     -2.2033,
+     1.9792
+    ],
+    "look_at": [
+     21.2738,
+     0.0,
+     0.6
+    ],
+    "lens_mm": 21.0,
+    "fstop": 4.0,
+    "focus_distance_m": 7.5895
+   },
+   {
+    "t": 37.625,
+    "beat": "3_breach",
+    "world": [
+     14.9782,
+     -1.9365,
+     2.0684
+    ],
+    "look_at": [
+     21.6262,
+     0.0,
+     0.6
+    ],
+    "lens_mm": 21.0,
+    "fstop": 4.0,
+    "focus_distance_m": 7.0783
+   },
+   {
+    "t": 37.95833,
+    "beat": "3_breach",
+    "world": [
+     15.7941,
+     -1.7348,
+     2.1473
+    ],
+    "look_at": [
+     21.6317,
+     0.0,
+     0.6
+    ],
+    "lens_mm": 21.0,
+    "fstop": 4.0,
+    "focus_distance_m": 6.2833
+   },
+   {
+    "t": 38.29167,
+    "beat": "3_breach",
+    "world": [
+     16.6694,
+     -1.5086,
+     2.2375
+    ],
+    "look_at": [
+     21.7436,
+     0.0,
+     0.6
+    ],
+    "lens_mm": 21.0,
+    "fstop": 4.0,
+    "focus_distance_m": 5.5412
+   },
+   {
+    "t": 38.625,
+    "beat": "3_breach",
+    "world": [
+     17.6816,
+     -1.169,
+     2.3608
+    ],
+    "look_at": [
+     22.4146,
+     0.0,
+     0.6001
+    ],
+    "lens_mm": 21.002,
+    "fstop": 4.0,
+    "focus_distance_m": 5.1834
+   },
+   {
+    "t": 38.91667,
+    "beat": "3_breach",
+    "world": [
+     18.5998,
+     -0.7836,
+     2.4943
+    ],
+    "look_at": [
+     23.3501,
+     0.0,
+     0.6102
+    ],
+    "lens_mm": 21.306,
+    "fstop": 4.0,
+    "focus_distance_m": 5.1701
+   },
+   {
+    "t": 39.20833,
+    "beat": "3_breach",
+    "world": [
+     19.5237,
+     -0.3497,
+     2.6437
+    ],
+    "look_at": [
+     24.3312,
+     0.0,
+     0.6324
+    ],
+    "lens_mm": 21.971,
+    "fstop": 4.0,
+    "focus_distance_m": 5.223
+   },
+   {
+    "t": 39.45833,
+    "beat": "3_breach",
+    "world": [
+     20.3929,
+     0.0672,
+     2.786
+    ],
+    "look_at": [
+     25.1967,
+     0.0,
+     0.6555
+    ],
+    "lens_mm": 22.664,
+    "fstop": 4.0,
+    "focus_distance_m": 5.2555
+   },
+   {
+    "t": 39.66667,
+    "beat": "3_breach",
+    "world": [
+     21.2179,
+     0.4502,
+     2.9157
+    ],
+    "look_at": [
+     25.9286,
+     0.0,
+     0.6741
+    ],
+    "lens_mm": 23.222,
+    "fstop": 4.0,
+    "focus_distance_m": 5.2362
+   },
+   {
+    "t": 39.83333,
+    "beat": "3_breach",
+    "world": [
+     21.969,
+     0.782,
+     3.0274
+    ],
+    "look_at": [
+     26.5195,
+     0.0,
+     0.6867
+    ],
+    "lens_mm": 23.6,
+    "fstop": 4.0,
+    "focus_distance_m": 5.1766
+   },
+   {
+    "t": 40.0,
+    "beat": "3_breach",
+    "world": [
+     22.8205,
+     1.1383,
+     3.1466
+    ],
+    "look_at": [
+     27.1076,
+     0.0,
+     0.6957
+    ],
+    "lens_mm": 23.871,
+    "fstop": 4.0,
+    "focus_distance_m": 5.0677
+   },
+   {
+    "t": 40.125,
+    "beat": "3_breach",
+    "world": [
+     23.5358,
+     1.4223,
+     3.2411
+    ],
+    "look_at": [
+     27.549,
+     0.0,
+     0.6994
+    ],
+    "lens_mm": 23.981,
+    "fstop": 4.0,
+    "focus_distance_m": 4.9588
+   },
+   {
+    "t": 40.20833,
+    "beat": "3_breach",
+    "world": [
+     24.0533,
+     1.6202,
+     3.3067
+    ],
+    "look_at": [
+     27.8397,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 24.0,
+    "fstop": 4.0,
+    "focus_distance_m": 4.874
+   },
+   {
+    "t": 40.29167,
+    "beat": "3_breach",
+    "world": [
+     24.6098,
+     1.8324,
+     3.3763
+    ],
+    "look_at": [
+     28.1427,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 24.038,
+    "fstop": 4.005,
+    "focus_distance_m": 4.796
+   },
+   {
+    "t": 40.375,
+    "beat": "3_breach",
+    "world": [
+     25.2056,
+     2.0625,
+     3.4509
+    ],
+    "look_at": [
+     28.4615,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 24.133,
+    "fstop": 4.017,
+    "focus_distance_m": 4.7352
+   },
+   {
+    "t": 40.45833,
+    "beat": "3_breach",
+    "world": [
+     25.8373,
+     2.3082,
+     3.5298
+    ],
+    "look_at": [
+     28.7931,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 24.279,
+    "fstop": 4.035,
+    "focus_distance_m": 4.6981
+   },
+   {
+    "t": 40.54167,
+    "beat": "3_breach",
+    "world": [
+     26.5013,
+     2.5671,
+     3.6124
+    ],
+    "look_at": [
+     29.1385,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 24.469,
+    "fstop": 4.059,
+    "focus_distance_m": 4.6933
+   },
+   {
+    "t": 40.625,
+    "beat": "3_breach",
+    "world": [
+     27.1941,
+     2.837,
+     3.6982
+    ],
+    "look_at": [
+     29.4962,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 24.697,
+    "fstop": 4.087,
+    "focus_distance_m": 4.7262
+   },
+   {
+    "t": 40.70833,
+    "beat": "3_breach",
+    "world": [
+     27.9121,
+     3.1156,
+     3.7865
+    ],
+    "look_at": [
+     29.8615,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 24.955,
+    "fstop": 4.119,
+    "focus_distance_m": 4.7993
+   },
+   {
+    "t": 40.79167,
+    "beat": "3_breach",
+    "world": [
+     28.6518,
+     3.4006,
+     3.8768
+    ],
+    "look_at": [
+     30.234,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 25.236,
+    "fstop": 4.155,
+    "focus_distance_m": 4.9152
+   },
+   {
+    "t": 40.875,
+    "beat": "3_breach",
+    "world": [
+     29.4096,
+     3.6896,
+     3.9684
+    ],
+    "look_at": [
+     30.6152,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 25.535,
+    "fstop": 4.192,
+    "focus_distance_m": 5.0744
+   },
+   {
+    "t": 40.95833,
+    "beat": "3_breach",
+    "world": [
+     30.182,
+     3.9805,
+     4.0607
+    ],
+    "look_at": [
+     30.9989,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 25.844,
+    "fstop": 4.23,
+    "focus_distance_m": 5.2732
+   },
+   {
+    "t": 41.04167,
+    "beat": "3_breach",
+    "world": [
+     30.9655,
+     4.2709,
+     4.1532
+    ],
+    "look_at": [
+     31.3835,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 26.156,
+    "fstop": 4.27,
+    "focus_distance_m": 5.5082
+   },
+   {
+    "t": 41.125,
+    "beat": "3_breach",
+    "world": [
+     31.7565,
+     4.5584,
+     4.2453
+    ],
+    "look_at": [
+     31.7729,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 26.465,
+    "fstop": 4.308,
+    "focus_distance_m": 5.7748
+   },
+   {
+    "t": 41.20833,
+    "beat": "3_breach",
+    "world": [
+     32.5514,
+     4.8409,
+     4.3363
+    ],
+    "look_at": [
+     32.1598,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 26.764,
+    "fstop": 4.345,
+    "focus_distance_m": 6.0671
+   },
+   {
+    "t": 41.29167,
+    "beat": "3_breach",
+    "world": [
+     33.3467,
+     5.116,
+     4.4256
+    ],
+    "look_at": [
+     32.5425,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 27.045,
+    "fstop": 4.381,
+    "focus_distance_m": 6.3797
+   },
+   {
+    "t": 41.41667,
+    "beat": "3_breach",
+    "world": [
+     34.5327,
+     5.5098,
+     4.5553
+    ],
+    "look_at": [
+     33.1119,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 27.421,
+    "fstop": 4.428,
+    "focus_distance_m": 6.8731
+   },
+   {
+    "t": 41.54167,
+    "beat": "3_breach",
+    "world": [
+     35.6998,
+     5.874,
+     4.6778
+    ],
+    "look_at": [
+     33.6638,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 27.721,
+    "fstop": 4.465,
+    "focus_distance_m": 7.3806
+   },
+   {
+    "t": 41.70833,
+    "beat": "3_breach",
+    "world": [
+     37.2056,
+     6.3004,
+     4.8267
+    ],
+    "look_at": [
+     34.3685,
+     0.0,
+     0.7
+    ],
+    "lens_mm": 27.962,
+    "fstop": 4.495,
+    "focus_distance_m": 8.0482
+   },
+   {
+    "t": 41.91667,
+    "beat": "3_breach",
+    "world": [
+     38.9799,
+     6.7325,
+     4.991
+    ],
+    "look_at": [
+     35.1914,
+     0.0,
+     0.7027
+    ],
+    "lens_mm": 28.106,
+    "fstop": 4.513,
+    "focus_distance_m": 8.8357
+   },
+   {
+    "t": 42.20833,
+    "beat": "3_breach",
+    "world": [
+     41.3512,
+     7.2631,
+     5.2234
+    ],
+    "look_at": [
+     36.35,
+     0.0,
+     0.7269
+    ],
+    "lens_mm": 29.074,
+    "fstop": 4.634,
+    "focus_distance_m": 9.8986
+   },
+   {
+    "t": 42.54167,
+    "beat": "3_breach",
+    "world": [
+     44.0407,
+     7.73,
+     5.4541
+    ],
+    "look_at": [
+     37.7006,
+     0.0,
+     0.7674
+    ],
+    "lens_mm": 30.695,
+    "fstop": 4.837,
+    "focus_distance_m": 11.0415
+   },
+   {
+    "t": 42.875,
+    "beat": "3_breach",
+    "world": [
+     46.8692,
+     7.9782,
+     5.5877
+    ],
+    "look_at": [
+     39.0784,
+     0.0,
+     0.797
+    ],
+    "lens_mm": 31.879,
+    "fstop": 4.985,
+    "focus_distance_m": 12.1367
+   },
+   {
+    "t": 43.16667,
+    "beat": "3_breach",
+    "world": [
+     49.5088,
+     7.9259,
+     5.5852
+    ],
+    "look_at": [
+     40.4095,
+     0.0,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.044,
+    "focus_distance_m": 12.9814
+   },
+   {
+    "t": 43.5,
+    "beat": "3_breach",
+    "world": [
+     52.5265,
+     7.5,
+     5.5
+    ],
+    "look_at": [
+     42.6097,
+     0.0,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.3,
+    "focus_distance_m": 13.2923
+   },
+   {
+    "t": 43.75,
+    "beat": "3_breach",
+    "world": [
+     55.0384,
+     7.1562,
+     5.4313
+    ],
+    "look_at": [
+     46.7475,
+     0.0,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.506,
+    "focus_distance_m": 11.8911
+   },
+   {
+    "t": 43.83333,
+    "beat": "3_breach",
+    "world": [
+     55.9651,
+     7.0741,
+     5.4148
+    ],
+    "look_at": [
+     48.9409,
+     0.0,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.556,
+    "focus_distance_m": 10.9854
+   },
+   {
+    "t": 43.91667,
+    "beat": "3_breach",
+    "world": [
+     56.9497,
+     7.0197,
+     5.4039
+    ],
+    "look_at": [
+     51.462,
+     0.0,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.588,
+    "focus_distance_m": 10.0293
+   },
+   {
+    "t": 44.0,
+    "beat": "3_breach",
+    "world": [
+     58.0,
+     7.0,
+     5.4
+    ],
+    "look_at": [
+     54.1576,
+     0.0,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 9.2154
+   }
+  ]
+ },
+ "beat4": {
+  "authored_by": "tools/author_beats2_5.py",
+  "anchors": [
+   {
+    "t": 44.0,
+    "world": [
+     58.0,
+     7.0,
+     5.4
+    ],
+    "lens_mm": 32.0,
+    "note": "the car is about to pass underneath and power away"
+   },
+   {
+    "t": 45.1,
+    "world": [
+     76.0,
+     13.0,
+     9.5
+    ],
+    "lens_mm": 32.0,
+    "note": "rising off the apron; the car overtakes the camera"
+   },
+   {
+    "t": 46.3,
+    "world": [
+     112.0,
+     26.0,
+     15.5
+    ],
+    "lens_mm": 35.0,
+    "note": "17 m up over the merge arc: paddock, pit lane and circuit in one frame"
+   },
+   {
+    "t": 47.5,
+    "world": [
+     172.0,
+     55.0,
+     17.0
+    ],
+    "lens_mm": 35.0,
+    "note": "cutting the chord of the R150 merge; the car is on the arc below"
+   },
+   {
+    "t": 48.6,
+    "world": [
+     236.0,
+     96.0,
+     11.0
+    ],
+    "lens_mm": 35.0,
+    "note": "diving back down onto the pit straight behind the car"
+   },
+   {
+    "t": 49.6,
+    "world": [
+     295.0,
+     141.0,
+     5.6
+    ],
+    "lens_mm": 35.0,
+    "note": "crossing the line 45 m behind the car and UNDER the start/finish gantry. 5.60 m and not the 6.20 the first draft used: the placement gate measured the gantry's lowest structure in the camera's way at z = 7.05, which left the 1.20 m camera sphere 0.513 m of clearance"
+   }
+  ],
+  "camera_keys": [
+   {
+    "t": 44.04167,
+    "beat": "4_transit",
+    "world": [
+     58.5433,
+     7.013,
+     5.4106
+    ],
+    "look_at": [
+     55.5182,
+     0.0,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 8.9214
+   },
+   {
+    "t": 44.125,
+    "beat": "4_transit",
+    "world": [
+     59.636,
+     7.1138,
+     5.4922
+    ],
+    "look_at": [
+     58.2561,
+     0.0,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 8.6329
+   },
+   {
+    "t": 44.20833,
+    "beat": "4_transit",
+    "world": [
+     60.7442,
+     7.3074,
+     5.6468
+    ],
+    "look_at": [
+     61.0202,
+     0.0,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 8.773
+   },
+   {
+    "t": 44.29167,
+    "beat": "4_transit",
+    "world": [
+     61.8771,
+     7.5856,
+     5.8655
+    ],
+    "look_at": [
+     63.816,
+     0.0,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 9.3252
+   },
+   {
+    "t": 44.375,
+    "beat": "4_transit",
+    "world": [
+     63.0438,
+     7.9402,
+     6.1393
+    ],
+    "look_at": [
+     66.6492,
+     0.0105,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 10.2169
+   },
+   {
+    "t": 44.45833,
+    "beat": "4_transit",
+    "world": [
+     64.2536,
+     8.3627,
+     6.4592
+    ],
+    "look_at": [
+     69.5281,
+     0.0783,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 11.3349
+   },
+   {
+    "t": 44.54167,
+    "beat": "4_transit",
+    "world": [
+     65.5155,
+     8.8451,
+     6.8164
+    ],
+    "look_at": [
+     72.4643,
+     0.205,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 12.6148
+   },
+   {
+    "t": 44.625,
+    "beat": "4_transit",
+    "world": [
+     66.8387,
+     9.3789,
+     7.2018
+    ],
+    "look_at": [
+     75.466,
+     0.394,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 14.0051
+   },
+   {
+    "t": 44.70833,
+    "beat": "4_transit",
+    "world": [
+     68.2324,
+     9.956,
+     7.6066
+    ],
+    "look_at": [
+     78.5421,
+     0.6502,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 15.4667
+   },
+   {
+    "t": 44.83333,
+    "beat": "4_transit",
+    "world": [
+     70.475,
+     10.8846,
+     8.2304
+    ],
+    "look_at": [
+     83.3168,
+     1.1742,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 17.7317
+   },
+   {
+    "t": 44.95833,
+    "beat": "4_transit",
+    "world": [
+     72.9276,
+     11.864,
+     8.8473
+    ],
+    "look_at": [
+     88.3155,
+     1.8889,
+     0.8
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 20.0262
+   },
+   {
+    "t": 45.125,
+    "beat": "4_transit",
+    "world": [
+     76.5744,
+     13.2002,
+     9.61
+    ],
+    "look_at": [
+     95.3907,
+     3.1968,
+     0.8
+    ],
+    "lens_mm": 32.004,
+    "fstop": 5.6,
+    "focus_distance_m": 23.0595
+   },
+   {
+    "t": 45.29167,
+    "beat": "4_transit",
+    "world": [
+     80.5299,
+     14.5251,
+     10.4167
+    ],
+    "look_at": [
+     102.8015,
+     4.9489,
+     0.8
+    ],
+    "lens_mm": 32.205,
+    "fstop": 5.6,
+    "focus_distance_m": 26.0808
+   },
+   {
+    "t": 45.45833,
+    "beat": "4_transit",
+    "world": [
+     84.7453,
+     15.8869,
+     11.3153
+    ],
+    "look_at": [
+     110.421,
+     7.173,
+     0.8
+    ],
+    "lens_mm": 32.643,
+    "fstop": 5.6,
+    "focus_distance_m": 29.0816
+   },
+   {
+    "t": 45.625,
+    "beat": "4_transit",
+    "world": [
+     89.2762,
+     17.36,
+     12.2569
+    ],
+    "look_at": [
+     118.2135,
+     9.9121,
+     0.8
+    ],
+    "lens_mm": 33.22,
+    "fstop": 5.6,
+    "focus_distance_m": 32.0016
+   },
+   {
+    "t": 45.83333,
+    "beat": "4_transit",
+    "world": [
+     95.4682,
+     19.4713,
+     13.4198
+    ],
+    "look_at": [
+     128.134,
+     14.1237,
+     0.8
+    ],
+    "lens_mm": 33.992,
+    "fstop": 5.6,
+    "focus_distance_m": 35.4248
+   },
+   {
+    "t": 46.04167,
+    "beat": "4_transit",
+    "world": [
+     102.3487,
+     22.0184,
+     14.4776
+    ],
+    "look_at": [
+     138.1661,
+     19.2832,
+     0.8
+    ],
+    "lens_mm": 34.643,
+    "fstop": 5.6,
+    "focus_distance_m": 38.4375
+   },
+   {
+    "t": 46.25,
+    "beat": "4_transit",
+    "world": [
+     110.0266,
+     25.1466,
+     15.3348
+    ],
+    "look_at": [
+     148.2009,
+     25.4624,
+     0.8
+    ],
+    "lens_mm": 34.985,
+    "fstop": 5.6,
+    "focus_distance_m": 40.849
+   },
+   {
+    "t": 46.45833,
+    "beat": "4_transit",
+    "world": [
+     118.6462,
+     28.907,
+     15.9443
+    ],
+    "look_at": [
+     158.1143,
+     32.7238,
+     0.8
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 42.4458
+   },
+   {
+    "t": 46.625,
+    "beat": "4_transit",
+    "world": [
+     126.248,
+     32.2633,
+     16.3105
+    ],
+    "look_at": [
+     165.94,
+     39.2214,
+     0.8
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 43.1792
+   },
+   {
+    "t": 46.83333,
+    "beat": "4_transit",
+    "world": [
+     136.4584,
+     36.891,
+     16.6399
+    ],
+    "look_at": [
+     175.9021,
+     47.5404,
+     0.8
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 43.8191
+   },
+   {
+    "t": 47.04167,
+    "beat": "4_transit",
+    "world": [
+     147.254,
+     42.0051,
+     16.8488
+    ],
+    "look_at": [
+     186.1214,
+     55.9775,
+     0.8
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 44.311
+   },
+   {
+    "t": 47.29167,
+    "beat": "4_transit",
+    "world": [
+     160.6771,
+     48.7931,
+     16.9735
+    ],
+    "look_at": [
+     198.7514,
+     66.2253,
+     0.8
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 44.89
+   },
+   {
+    "t": 47.625,
+    "beat": "4_transit",
+    "world": [
+     178.8831,
+     58.9926,
+     16.8535
+    ],
+    "look_at": [
+     216.233,
+     80.0755,
+     0.8
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 45.7954
+   },
+   {
+    "t": 47.95833,
+    "beat": "4_transit",
+    "world": [
+     198.0086,
+     70.6548,
+     15.3475
+    ],
+    "look_at": [
+     234.4206,
+     94.1713,
+     0.8
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 45.7218
+   },
+   {
+    "t": 48.29167,
+    "beat": "4_transit",
+    "world": [
+     217.7488,
+     83.4713,
+     13.0165
+    ],
+    "look_at": [
+     253.2295,
+     108.6136,
+     0.8
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 45.1693
+   },
+   {
+    "t": 48.625,
+    "beat": "4_transit",
+    "world": [
+     237.4614,
+     97.0333,
+     10.8619
+    ],
+    "look_at": [
+     272.5364,
+     123.5493,
+     0.8
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 45.1065
+   },
+   {
+    "t": 48.95833,
+    "beat": "4_transit",
+    "world": [
+     256.4975,
+     111.0016,
+     8.7303
+    ],
+    "look_at": [
+     292.2152,
+     139.1289,
+     0.8
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 46.1496
+   },
+   {
+    "t": 49.29167,
+    "beat": "4_transit",
+    "world": [
+     275.7324,
+     125.8437,
+     6.671
+    ],
+    "look_at": [
+     312.19,
+     155.4426,
+     0.8
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 47.3257
+   },
+   {
+    "t": 49.58333,
+    "beat": "4_transit",
+    "world": [
+     293.9018,
+     140.1354,
+     5.6253
+    ],
+    "look_at": [
+     330.0802,
+     170.3908,
+     0.8
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 47.4083
+   }
+  ]
+ },
+ "beat5": {
+  "authored_by": "tools/author_beats2_5.py",
+  "anchors": [
+   {
+    "t": 49.6,
+    "world": [
+     295.0,
+     141.0,
+     5.6
+    ],
+    "lens_mm": 35.0,
+    "note": "beat 5 opens on the same frame beat 4 closed: one camera, no seam"
+   },
+   {
+    "t": 50.9,
+    "world": [
+     392.9903,
+     220.5678,
+     5.0
+    ],
+    "lens_mm": 35.0,
+    "note": "still 42 m back: the camera matches the car's 85 m/s before it starts closing, because doing both at once bulges the spline to 111 m/s"
+   },
+   {
+    "t": 52.2,
+    "world": [
+     484.789,
+     292.3745,
+     3.0
+    ],
+    "lens_mm": 35.0,
+    "note": "dropping right as the car brakes for T1. The camera does NOT brake with it \u2014 holding ~70 m/s through the braking zone is what closes it from 30 m back to 2 m back without a speed oscillation"
+   },
+   {
+    "t": 53.1,
+    "world": [
+     535.6866,
+     332.0914,
+     2.2
+    ],
+    "lens_mm": 40.0,
+    "note": "tucked low off the right rear at 197 km/h into T1"
+   },
+   {
+    "t": 54.1,
+    "world": [
+     571.3309,
+     398.8773,
+     2.4
+    ],
+    "lens_mm": 40.0,
+    "note": "T1 apex from the outside, on the runoff, level with the kerb line"
+   },
+   {
+    "t": 55.7,
+    "world": [
+     547.5547,
+     498.9133,
+     4.5
+    ],
+    "lens_mm": 35.0,
+    "note": "T2 Threshold, level with the car and rising"
+   },
+   {
+    "t": 57.2,
+    "world": [
+     477.1328,
+     586.6126,
+     6.8603
+    ],
+    "lens_mm": 40.0,
+    "note": "east chute: the camera overtakes on the outside and starts running ahead \u2014 the only way to be somewhere before a 295 km/h car is"
+   },
+   {
+    "t": 59.0,
+    "world": [
+     365.8063,
+     680.3636,
+     4.5545
+    ],
+    "lens_mm": 40.0,
+    "note": "40 m ahead, crossing to the left of the line, descending"
+   },
+   {
+    "t": 60.23,
+    "world": [
+     334.6872,
+     766.0834,
+     2.3573
+    ],
+    "lens_mm": 32.0,
+    "note": "T3 Long Kink at 295 km/h from the INSIDE of the kink. The closest the car comes is 20.00 m, which is what this note used to claim and did not measure \u2014 see R2-085. 7.0 % of the frame width per frame at the pass: the fastest sustained pan of the lap outside the helicopter arc, and readable"
+   },
+   {
+    "t": 61.6,
+    "world": [
+     316.3277,
+     836.3746,
+     3.516
+    ],
+    "lens_mm": 40.0,
+    "note": "the camera has overtaken and is braking with the car. Stopping a camera from 68 m/s to a standstill takes 200 m, so it is laid out as four decelerating anchors and not as one; the first draft crammed it into a single segment and measured 16.8 g"
+   },
+   {
+    "t": 63.0,
+    "world": [
+     303.9923,
+     889.9828,
+     2.2177
+    ],
+    "lens_mm": 50.0,
+    "note": "the 295->80 km/h braking event comes head-on AT the lens, from 5.6 m up: BR_FenceMesh_L03 has a panel at s = 909.8, u = -14.10, top z = 0.88, and at 3.4 m the camera sphere passed 0.160 m from it"
+   },
+   {
+    "t": 64.4,
+    "world": [
+     289.494,
+     929.9037,
+     -0.2357
+    ],
+    "lens_mm": 40.0,
+    "note": "down to 1.6 m on the hairpin entry; the car arrives on the brakes"
+   },
+   {
+    "t": 65.67,
+    "world": [
+     248.2571,
+     953.2954,
+     -0.8265
+    ],
+    "lens_mm": 28.0,
+    "note": "T4 LE PIN apex from the OUTSIDE at 2.4 m. Two drafts of this shot were on the inside and the placement gate rejected both: at u = +13 the camera sphere reached 1.181 m into BR_TyreWall_T4, and at u = +10.5 it still reached 1.095 m into BR_FenceMesh_L03 \u2014 the same catch fence that is itself 7.606 m INTO the racing line at s = 926 and 1.434 m into the car's own swept path. The inside of this hairpin is furniture, and some of the furniture is in the wrong place"
+   },
+   {
+    "t": 67.3,
+    "world": [
+     229.7061,
+     929.2267,
+     0.1041
+    ],
+    "lens_mm": 35.0,
+    "note": "hairpin exit: the camera drops in behind, low, on the surface"
+   },
+   {
+    "t": 70.0,
+    "world": [
+     230.6641,
+     848.4912,
+     1.861
+    ],
+    "lens_mm": 32.0,
+    "note": "climbing S4 with the car"
+   },
+   {
+    "t": 73.01,
+    "world": [
+     237.3399,
+     697.2408,
+     10.3884
+    ],
+    "lens_mm": 35.0,
+    "note": "T5 La Rampe, inside, uphill"
+   },
+   {
+    "t": 76.0,
+    "world": [
+     114.112,
+     610.6361,
+     32.6163
+    ],
+    "lens_mm": 50.0,
+    "note": "rising into the helicopter arc over the infield ridge"
+   },
+   {
+    "t": 78.85,
+    "world": [
+     -27.151,
+     551.6476,
+     47.1734
+    ],
+    "lens_mm": 55.0,
+    "note": "T6 Weave 1 from 52 m out and 40 m up"
+   },
+   {
+    "t": 80.97,
+    "world": [
+     -105.1395,
+     465.2412,
+     55.6026
+    ],
+    "lens_mm": 60.0,
+    "note": "T7 Weave 2: the arc leads the car through the esses"
+   },
+   {
+    "t": 83.21,
+    "world": [
+     -222.5918,
+     435.2238,
+     53.9382
+    ],
+    "lens_mm": 65.0,
+    "note": "T8 Crest, the summit. the arc starts to leave the car here"
+   },
+   {
+    "t": 85.31,
+    "world": [
+     -393.009,
+     348.0719,
+     46.9
+    ],
+    "lens_mm": 70.0,
+    "note": "T9 seen from 105 m ahead: the camera is already running for T10. From the esses to the station the stations are laid out on a smooth speed profile (57, 65, 76, 84, 86 m/s) rather than at the corners, because an anchor list that reads well and accelerates badly is still a bad camera move"
+   },
+   {
+    "t": 88.0,
+    "world": [
+     -596.829,
+     278.7092,
+     29.5239
+    ],
+    "lens_mm": 75.0,
+    "note": "crossing the track line ahead of the car, descending"
+   },
+   {
+    "t": 90.01,
+    "world": [
+     -656.6862,
+     126.4474,
+     18.0381
+    ],
+    "lens_mm": 80.0,
+    "note": "T10 Panorama 1 at 255 km/h, seen from 195 m down the road: the camera is already on the doppler line and braking for it"
+   },
+   {
+    "t": 91.4,
+    "world": [
+     -615.3129,
+     29.3956,
+     13.23
+    ],
+    "lens_mm": 85.0,
+    "note": "T11 behind us; 170 m of deceleration is what a hover costs"
+   },
+   {
+    "t": 92.4,
+    "world": [
+     -596.0109,
+     -11.2545,
+     10.595
+    ],
+    "lens_mm": 85.0,
+    "note": "settling onto the station: 45, 33, 22, 8, 1.5 m/s, five anchors, because arriving at a hover in one is a 6 g stop"
+   },
+   {
+    "t": 93.1,
+    "world": [
+     -586.1454,
+     -32.0312,
+     9.126
+    ],
+    "lens_mm": 80.0,
+    "note": "settling"
+   },
+   {
+    "t": 93.6,
+    "world": [
+     -581.4271,
+     -41.9679,
+     8.1195
+    ],
+    "lens_mm": 70.0,
+    "note": "settling"
+   },
+   {
+    "t": 94.1,
+    "world": [
+     -579.6,
+     -46.8,
+     4.86
+    ],
+    "lens_mm": 45.0,
+    "note": "ARRIVED at the declared doppler station [-578.82, -47.47, 4.802], 26.0 m off the centreline at s = 2555"
+   },
+   {
+    "t": 94.63,
+    "world": [
+     -579.1,
+     -47.2,
+     4.81
+    ],
+    "lens_mm": 40.0,
+    "note": "THE DOPPLER BEAT: 313 km/h passes 26 m away. The lens goes 85 -> 40 as the car closes, so the subject stays large while the camera does not move at all \u2014 the reverse of a chase, and the reason the audio's 7.55-semitone sweep needs no special-casing. 40 mm and not the 24 the first draft used: at 24 mm a 5.698 m car at the declared 26.1 m slant range spans 12.5 deg of a 73.7 deg horizontal field, i.e. 14.6 % of the picture width, which is not a car ripping past. 40 mm puts it at 24.3 %. Both were rendered and looked at"
+   },
+   {
+    "t": 96.6,
+    "world": [
+     -577.6,
+     -48.6,
+     4.76
+    ],
+    "lens_mm": 70.0,
+    "note": "3.0 s below 3 m/s across the pass \u2014 the hover the brief asks for"
+   },
+   {
+    "t": 97.6,
+    "world": [
+     -568.8,
+     -60.8,
+     5.2
+    ],
+    "lens_mm": 90.0,
+    "note": "the whip after the car. A hover to 50 m/s is the one move in the film that costs more than beat 6's 2.03 g; three anchors keep it near 3"
+   },
+   {
+    "t": 98.6,
+    "world": [
+     -543.1,
+     -96.4,
+     7.2
+    ],
+    "lens_mm": 120.0,
+    "note": "long-lens follow into T12 Plongee's braking zone, 110 m away"
+   },
+   {
+    "t": 100.37,
+    "world": [
+     -493.2774,
+     -178.9301,
+     5.6381
+    ],
+    "lens_mm": 85.0,
+    "note": "T13 Hook: the camera is moving again and closing"
+   },
+   {
+    "t": 102.45,
+    "world": [
+     -373.4058,
+     -203.0319,
+     4.7778
+    ],
+    "lens_mm": 70.0,
+    "note": "T14 Flick"
+   },
+   {
+    "t": 105.19,
+    "world": [
+     -208.176,
+     -209.0753,
+     4.6855
+    ],
+    "lens_mm": 55.0,
+    "note": "T15 Gate, the last corner, camera closing hard"
+   },
+   {
+    "t": 106.3,
+    "world": [
+     -137.9092,
+     -211.6127,
+     4.8839
+    ],
+    "lens_mm": 45.0,
+    "note": "T15 exit, closing"
+   },
+   {
+    "t": 107.6,
+    "world": [
+     -46.3173,
+     -145.4389,
+     4.6
+    ],
+    "lens_mm": 40.0,
+    "note": "onto the pit straight at 300+ km/h, tucking in"
+   },
+   {
+    "t": 109.0,
+    "world": [
+     54.2659,
+     -59.0815,
+     3.6
+    ],
+    "lens_mm": 32.0,
+    "note": "the tight onboard-like follow"
+   },
+   {
+    "t": 109.6,
+    "world": [
+     96.7415,
+     -24.6151,
+     3.0
+    ],
+    "lens_mm": 32.0,
+    "note": "directly over the car at 83 m/s"
+   },
+   {
+    "t": 110.08333333333333,
+    "world": [
+     129.84,
+     2.37,
+     2.8
+    ],
+    "lens_mm": 32.0,
+    "note": "BEAT 6's declared peel-off point, matched exactly, on the frame the key actually occupies. Hand-off at 83 m/s, aim z-offset matched to beat 6's own so the two beats agree about where the car is"
+   }
+  ],
+  "camera_keys": [
+   {
+    "t": 49.625,
+    "beat": "5_lap",
+    "world": [
+     296.663,
+     142.3113,
+     5.5665
+    ],
+    "look_at": [
+     332.9568,
+     172.8046,
+     0.7999
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 47.6425
+   },
+   {
+    "t": 49.95833,
+    "beat": "5_lap",
+    "world": [
+     320.4401,
+     161.4235,
+     5.2996
+    ],
+    "look_at": [
+     356.4205,
+     192.4929,
+     0.7907
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 47.7517
+   },
+   {
+    "t": 50.29167,
+    "beat": "5_lap",
+    "world": [
+     346.1439,
+     182.4608,
+     5.2337
+    ],
+    "look_at": [
+     379.8842,
+     212.1813,
+     0.7726
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 45.1842
+   },
+   {
+    "t": 50.625,
+    "beat": "5_lap",
+    "world": [
+     372.2441,
+     203.8263,
+     5.1766
+    ],
+    "look_at": [
+     403.3478,
+     231.8696,
+     0.7558
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 42.1119
+   },
+   {
+    "t": 50.95833,
+    "beat": "5_lap",
+    "world": [
+     397.2569,
+     223.9651,
+     4.938
+    ],
+    "look_at": [
+     426.8115,
+     251.5579,
+     0.7497
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 40.6494
+   },
+   {
+    "t": 51.29167,
+    "beat": "5_lap",
+    "world": [
+     421.788,
+     243.3137,
+     4.4687
+    ],
+    "look_at": [
+     450.2673,
+     271.2397,
+     0.7391
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 40.0605
+   },
+   {
+    "t": 51.625,
+    "beat": "5_lap",
+    "world": [
+     446.0095,
+     262.2108,
+     3.8923
+    ],
+    "look_at": [
+     472.0679,
+     289.5326,
+     0.7207
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 37.8891
+   },
+   {
+    "t": 51.95833,
+    "beat": "5_lap",
+    "world": [
+     469.1418,
+     280.1861,
+     3.33
+    ],
+    "look_at": [
+     491.1497,
+     305.5441,
+     0.7045
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 33.6789
+   },
+   {
+    "t": 52.29167,
+    "beat": "5_lap",
+    "world": [
+     490.4814,
+     296.6657,
+     2.8914
+    ],
+    "look_at": [
+     507.9001,
+     319.5993,
+     0.7
+    ],
+    "lens_mm": 35.145,
+    "fstop": 5.6,
+    "focus_distance_m": 28.8819
+   },
+   {
+    "t": 52.5,
+    "beat": "5_lap",
+    "world": [
+     503.1821,
+     305.5038,
+     2.6386
+    ],
+    "look_at": [
+     517.319,
+     327.5028,
+     0.7
+    ],
+    "lens_mm": 36.296,
+    "fstop": 5.6,
+    "focus_distance_m": 26.2215
+   },
+   {
+    "t": 52.66667,
+    "beat": "5_lap",
+    "world": [
+     512.9565,
+     312.2096,
+     2.4529
+    ],
+    "look_at": [
+     524.304,
+     333.5089,
+     0.7
+    ],
+    "lens_mm": 37.639,
+    "fstop": 5.6,
+    "focus_distance_m": 24.197
+   },
+   {
+    "t": 52.79167,
+    "beat": "5_lap",
+    "world": [
+     519.9687,
+     317.3701,
+     2.3372
+    ],
+    "look_at": [
+     529.1798,
+     338.3092,
+     0.7
+    ],
+    "lens_mm": 38.642,
+    "fstop": 5.6,
+    "focus_distance_m": 22.9341
+   },
+   {
+    "t": 52.91667,
+    "beat": "5_lap",
+    "world": [
+     526.6409,
+     322.8884,
+     2.2517
+    ],
+    "look_at": [
+     533.7161,
+     343.4316,
+     0.7
+    ],
+    "lens_mm": 39.462,
+    "fstop": 5.6,
+    "focus_distance_m": 21.7828
+   },
+   {
+    "t": 53.04167,
+    "beat": "5_lap",
+    "world": [
+     532.9133,
+     328.9857,
+     2.2056
+    ],
+    "look_at": [
+     537.8914,
+     348.8524,
+     0.7
+    ],
+    "lens_mm": 39.94,
+    "fstop": 5.6,
+    "focus_distance_m": 20.5362
+   },
+   {
+    "t": 53.125,
+    "beat": "5_lap",
+    "world": [
+     536.8609,
+     333.4786,
+     2.2
+    ],
+    "look_at": [
+     540.4646,
+     352.6194,
+     0.7
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 19.5347
+   },
+   {
+    "t": 53.20833,
+    "beat": "5_lap",
+    "world": [
+     540.8689,
+     338.3166,
+     2.2003
+    ],
+    "look_at": [
+     542.8635,
+     356.4998,
+     0.7
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 18.3537
+   },
+   {
+    "t": 53.29167,
+    "beat": "5_lap",
+    "world": [
+     544.955,
+     343.4474,
+     2.2014
+    ],
+    "look_at": [
+     545.0828,
+     360.4856,
+     0.7
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 17.1048
+   },
+   {
+    "t": 53.375,
+    "beat": "5_lap",
+    "world": [
+     549.0337,
+     348.8238,
+     2.2042
+    ],
+    "look_at": [
+     547.1179,
+     364.5685,
+     0.7
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 15.932
+   },
+   {
+    "t": 53.45833,
+    "beat": "5_lap",
+    "world": [
+     553.0195,
+     354.3988,
+     2.2092
+    ],
+    "look_at": [
+     548.9648,
+     368.74,
+     0.7
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 14.9796
+   },
+   {
+    "t": 53.54167,
+    "beat": "5_lap",
+    "world": [
+     556.8268,
+     360.1253,
+     2.2172
+    ],
+    "look_at": [
+     550.6194,
+     372.9914,
+     0.7
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 14.3656
+   },
+   {
+    "t": 53.625,
+    "beat": "5_lap",
+    "world": [
+     560.37,
+     365.9562,
+     2.2289
+    ],
+    "look_at": [
+     552.0785,
+     377.3138,
+     0.7
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 14.145
+   },
+   {
+    "t": 53.70833,
+    "beat": "5_lap",
+    "world": [
+     563.5635,
+     371.8444,
+     2.245
+    ],
+    "look_at": [
+     553.3388,
+     381.6983,
+     0.7
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 14.284
+   },
+   {
+    "t": 53.79167,
+    "beat": "5_lap",
+    "world": [
+     566.322,
+     377.7427,
+     2.2662
+    ],
+    "look_at": [
+     554.3979,
+     386.1357,
+     0.7
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 14.6655
+   },
+   {
+    "t": 53.875,
+    "beat": "5_lap",
+    "world": [
+     568.5597,
+     383.6042,
+     2.2931
+    ],
+    "look_at": [
+     555.2534,
+     390.6168,
+     0.7
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 15.1251
+   },
+   {
+    "t": 53.95833,
+    "beat": "5_lap",
+    "world": [
+     570.1911,
+     389.3817,
+     2.3265
+    ],
+    "look_at": [
+     555.9038,
+     395.1322,
+     0.7
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 15.4867
+   },
+   {
+    "t": 54.04167,
+    "beat": "5_lap",
+    "world": [
+     571.1306,
+     395.028,
+     2.367
+    ],
+    "look_at": [
+     556.3474,
+     399.6726,
+     0.7
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 15.5851
+   },
+   {
+    "t": 54.16667,
+    "beat": "5_lap",
+    "world": [
+     571.2941,
+     403.2117,
+     2.4435
+    ],
+    "look_at": [
+     556.6236,
+     406.5093,
+     0.7005
+    ],
+    "lens_mm": 39.975,
+    "fstop": 5.6,
+    "focus_distance_m": 15.1373
+   },
+   {
+    "t": 54.29167,
+    "beat": "5_lap",
+    "world": [
+     571.0241,
+     411.2927,
+     2.543
+    ],
+    "look_at": [
+     556.4316,
+     413.349,
+     0.704
+    ],
+    "lens_mm": 39.802,
+    "fstop": 5.6,
+    "focus_distance_m": 14.8509
+   },
+   {
+    "t": 54.41667,
+    "beat": "5_lap",
+    "world": [
+     570.4851,
+     419.3158,
+     2.6637
+    ],
+    "look_at": [
+     555.7722,
+     420.1594,
+     0.7102
+    ],
+    "lens_mm": 39.49,
+    "fstop": 5.6,
+    "focus_distance_m": 14.8659
+   },
+   {
+    "t": 54.54167,
+    "beat": "5_lap",
+    "world": [
+     569.6693,
+     427.2835,
+     2.8029
+    ],
+    "look_at": [
+     554.6488,
+     426.9088,
+     0.7187
+    ],
+    "lens_mm": 39.067,
+    "fstop": 5.6,
+    "focus_distance_m": 15.1691
+   },
+   {
+    "t": 54.66667,
+    "beat": "5_lap",
+    "world": [
+     568.5691,
+     435.1982,
+     2.9579
+    ],
+    "look_at": [
+     553.2154,
+     433.6715,
+     0.7287
+    ],
+    "lens_mm": 38.563,
+    "fstop": 5.6,
+    "focus_distance_m": 15.5896
+   },
+   {
+    "t": 54.83333,
+    "beat": "5_lap",
+    "world": [
+     566.646,
+     445.6728,
+     3.1847
+    ],
+    "look_at": [
+     551.2414,
+     442.958,
+     0.7438
+    ],
+    "lens_mm": 37.812,
+    "fstop": 5.6,
+    "focus_distance_m": 15.8312
+   },
+   {
+    "t": 55.08333,
+    "beat": "5_lap",
+    "world": [
+     562.7466,
+     461.2286,
+     3.5552
+    ],
+    "look_at": [
+     548.1652,
+     457.4306,
+     0.7669
+    ],
+    "lens_mm": 36.656,
+    "fstop": 5.6,
+    "focus_distance_m": 15.3238
+   },
+   {
+    "t": 55.33333,
+    "beat": "5_lap",
+    "world": [
+     557.5741,
+     476.6144,
+     3.9432
+    ],
+    "look_at": [
+     544.8705,
+     472.2962,
+     0.7867
+    ],
+    "lens_mm": 35.667,
+    "fstop": 5.6,
+    "focus_distance_m": 13.7839
+   },
+   {
+    "t": 55.5,
+    "beat": "5_lap",
+    "world": [
+     553.3878,
+     486.7868,
+     4.2013
+    ],
+    "look_at": [
+     541.8405,
+     481.936,
+     0.7957
+    ],
+    "lens_mm": 35.215,
+    "fstop": 5.6,
+    "focus_distance_m": 12.9794
+   },
+   {
+    "t": 55.625,
+    "beat": "5_lap",
+    "world": [
+     549.8474,
+     494.3756,
+     4.39
+    ],
+    "look_at": [
+     538.9943,
+     488.9612,
+     0.7994
+    ],
+    "lens_mm": 35.032,
+    "fstop": 5.6,
+    "focus_distance_m": 12.6491
+   },
+   {
+    "t": 55.75,
+    "beat": "5_lap",
+    "world": [
+     545.9436,
+     501.933,
+     4.5753
+    ],
+    "look_at": [
+     535.671,
+     495.7736,
+     0.8
+    ],
+    "lens_mm": 35.016,
+    "fstop": 5.6,
+    "focus_distance_m": 12.5586
+   },
+   {
+    "t": 55.83333,
+    "beat": "5_lap",
+    "world": [
+     543.0866,
+     506.9574,
+     4.7128
+    ],
+    "look_at": [
+     533.1981,
+     500.1811,
+     0.7998
+    ],
+    "lens_mm": 35.111,
+    "fstop": 5.6,
+    "focus_distance_m": 12.6101
+   },
+   {
+    "t": 55.91667,
+    "beat": "5_lap",
+    "world": [
+     540.0264,
+     511.9699,
+     4.863
+    ],
+    "look_at": [
+     530.5253,
+     504.4702,
+     0.7989
+    ],
+    "lens_mm": 35.283,
+    "fstop": 5.6,
+    "focus_distance_m": 12.7685
+   },
+   {
+    "t": 56.0,
+    "beat": "5_lap",
+    "world": [
+     536.7765,
+     516.9693,
+     5.0233
+    ],
+    "look_at": [
+     527.6584,
+     508.632,
+     0.7974
+    ],
+    "lens_mm": 35.52,
+    "fstop": 5.6,
+    "focus_distance_m": 13.0579
+   },
+   {
+    "t": 56.08333,
+    "beat": "5_lap",
+    "world": [
+     533.3504,
+     521.9539,
+     5.1911
+    ],
+    "look_at": [
+     524.6033,
+     512.6578,
+     0.7951
+    ],
+    "lens_mm": 35.813,
+    "fstop": 5.6,
+    "focus_distance_m": 13.5001
+   },
+   {
+    "t": 56.16667,
+    "beat": "5_lap",
+    "world": [
+     529.7616,
+     526.9224,
+     5.3637
+    ],
+    "look_at": [
+     521.3665,
+     516.539,
+     0.7922
+    ],
+    "lens_mm": 36.151,
+    "fstop": 5.6,
+    "focus_distance_m": 14.1135
+   },
+   {
+    "t": 56.25,
+    "beat": "5_lap",
+    "world": [
+     526.0236,
+     531.8732,
+     5.5386
+    ],
+    "look_at": [
+     517.9898,
+     520.3135,
+     0.7886
+    ],
+    "lens_mm": 36.524,
+    "fstop": 5.6,
+    "focus_distance_m": 14.857
+   },
+   {
+    "t": 56.33333,
+    "beat": "5_lap",
+    "world": [
+     522.15,
+     536.8051,
+     5.713
+    ],
+    "look_at": [
+     514.5588,
+     524.124,
+     0.7843
+    ],
+    "lens_mm": 36.921,
+    "fstop": 5.6,
+    "focus_distance_m": 15.5797
+   },
+   {
+    "t": 56.41667,
+    "beat": "5_lap",
+    "world": [
+     518.1543,
+     541.7164,
+     5.8844
+    ],
+    "look_at": [
+     511.0841,
+     527.9831,
+     0.7793
+    ],
+    "lens_mm": 37.333,
+    "fstop": 5.6,
+    "focus_distance_m": 16.2682
+   },
+   {
+    "t": 56.54167,
+    "beat": "5_lap",
+    "world": [
+     511.9612,
+     549.0419,
+     6.1301
+    ],
+    "look_at": [
+     505.7924,
+     533.86,
+     0.7702
+    ],
+    "lens_mm": 37.956,
+    "fstop": 5.6,
+    "focus_distance_m": 17.2415
+   },
+   {
+    "t": 56.66667,
+    "beat": "5_lap",
+    "world": [
+     505.5692,
+     556.3131,
+     6.3542
+    ],
+    "look_at": [
+     500.4087,
+     539.8393,
+     0.7592
+    ],
+    "lens_mm": 38.553,
+    "fstop": 5.6,
+    "focus_distance_m": 18.1472
+   },
+   {
+    "t": 56.79167,
+    "beat": "5_lap",
+    "world": [
+     499.024,
+     563.5251,
+     6.5479
+    ],
+    "look_at": [
+     494.9363,
+     545.917,
+     0.7462
+    ],
+    "lens_mm": 39.09,
+    "fstop": 5.6,
+    "focus_distance_m": 18.9846
+   },
+   {
+    "t": 56.95833,
+    "beat": "5_lap",
+    "world": [
+     490.1375,
+     573.0407,
+     6.7435
+    ],
+    "look_at": [
+     487.5077,
+     554.1674,
+     0.7258
+    ],
+    "lens_mm": 39.652,
+    "fstop": 5.6,
+    "focus_distance_m": 19.9833
+   },
+   {
+    "t": 57.125,
+    "beat": "5_lap",
+    "world": [
+     481.1676,
+     582.431,
+     6.8484
+    ],
+    "look_at": [
+     479.9348,
+     562.5778,
+     0.7022
+    ],
+    "lens_mm": 39.964,
+    "fstop": 5.6,
+    "focus_distance_m": 20.8193
+   },
+   {
+    "t": 57.29167,
+    "beat": "5_lap",
+    "world": [
+     472.0382,
+     591.628,
+     6.85
+    ],
+    "look_at": [
+     472.2247,
+     571.1408,
+     0.6778
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 21.3976
+   },
+   {
+    "t": 57.41667,
+    "beat": "5_lap",
+    "world": [
+     464.5968,
+     598.2411,
+     6.8044
+    ],
+    "look_at": [
+     466.3561,
+     577.6586,
+     0.6591
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 21.5522
+   },
+   {
+    "t": 57.5,
+    "beat": "5_lap",
+    "world": [
+     459.3669,
+     602.5272,
+     6.7554
+    ],
+    "look_at": [
+     462.404,
+     582.0477,
+     0.6466
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 21.5859
+   },
+   {
+    "t": 57.58333,
+    "beat": "5_lap",
+    "world": [
+     453.9592,
+     606.7327,
+     6.6927
+    ],
+    "look_at": [
+     458.4213,
+     586.4711,
+     0.634
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 21.6137
+   },
+   {
+    "t": 57.66667,
+    "beat": "5_lap",
+    "world": [
+     448.4056,
+     610.8724,
+     6.6175
+    ],
+    "look_at": [
+     454.4086,
+     590.9276,
+     0.6213
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 21.6745
+   },
+   {
+    "t": 57.75,
+    "beat": "5_lap",
+    "world": [
+     442.7382,
+     614.9614,
+     6.5306
+    ],
+    "look_at": [
+     450.3665,
+     595.4167,
+     0.6085
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 21.8004
+   },
+   {
+    "t": 57.83333,
+    "beat": "5_lap",
+    "world": [
+     436.9888,
+     619.0146,
+     6.4332
+    ],
+    "look_at": [
+     446.2959,
+     599.9376,
+     0.5956
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 22.0143
+   },
+   {
+    "t": 57.91667,
+    "beat": "5_lap",
+    "world": [
+     431.1895,
+     623.0468,
+     6.3264
+    ],
+    "look_at": [
+     442.1973,
+     604.4896,
+     0.5826
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 22.3279
+   },
+   {
+    "t": 58.0,
+    "beat": "5_lap",
+    "world": [
+     425.3723,
+     627.0732,
+     6.2111
+    ],
+    "look_at": [
+     438.0715,
+     609.0718,
+     0.5695
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 22.7408
+   },
+   {
+    "t": 58.08333,
+    "beat": "5_lap",
+    "world": [
+     419.5692,
+     631.1085,
+     6.0885
+    ],
+    "look_at": [
+     433.9189,
+     613.6837,
+     0.5563
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 23.241
+   },
+   {
+    "t": 58.16667,
+    "beat": "5_lap",
+    "world": [
+     413.812,
+     635.1678,
+     5.9596
+    ],
+    "look_at": [
+     429.7404,
+     618.3244,
+     0.5431
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 23.8065
+   },
+   {
+    "t": 58.25,
+    "beat": "5_lap",
+    "world": [
+     408.1328,
+     639.2659,
+     5.8254
+    ],
+    "look_at": [
+     425.5364,
+     622.9934,
+     0.5298
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 24.4074
+   },
+   {
+    "t": 58.375,
+    "beat": "5_lap",
+    "world": [
+     399.8303,
+     645.5187,
+     5.6166
+    ],
+    "look_at": [
+     419.184,
+     630.0484,
+     0.5096
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 25.2977
+   },
+   {
+    "t": 58.54167,
+    "beat": "5_lap",
+    "world": [
+     389.3316,
+     654.1312,
+     5.3296
+    ],
+    "look_at": [
+     410.6305,
+     639.5481,
+     0.4825
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 26.2641
+   },
+   {
+    "t": 58.875,
+    "beat": "5_lap",
+    "world": [
+     371.2528,
+     672.7491,
+     4.7575
+    ],
+    "look_at": [
+     393.2526,
+     658.8483,
+     0.4274
+    ],
+    "lens_mm": 40.0,
+    "fstop": 5.6,
+    "focus_distance_m": 26.3813
+   },
+   {
+    "t": 59.08333,
+    "beat": "5_lap",
+    "world": [
+     362.5938,
+     685.6993,
+     4.4111
+    ],
+    "look_at": [
+     382.2194,
+     671.1017,
+     0.3911
+    ],
+    "lens_mm": 39.895,
+    "fstop": 5.6,
+    "focus_distance_m": 24.7874
+   },
+   {
+    "t": 59.16667,
+    "beat": "5_lap",
+    "world": [
+     359.6317,
+     691.2583,
+     4.2475
+    ],
+    "look_at": [
+     377.7713,
+     676.0419,
+     0.3734
+    ],
+    "lens_mm": 39.599,
+    "fstop": 5.6,
+    "focus_distance_m": 23.9915
+   },
+   {
+    "t": 59.25,
+    "beat": "5_lap",
+    "world": [
+     356.8988,
+     697.0041,
+     4.0682
+    ],
+    "look_at": [
+     373.3038,
+     681.0036,
+     0.3535
+    ],
+    "lens_mm": 39.143,
+    "fstop": 5.6,
+    "focus_distance_m": 23.2151
+   },
+   {
+    "t": 59.33333,
+    "beat": "5_lap",
+    "world": [
+     354.374,
+     702.9005,
+     3.8778
+    ],
+    "look_at": [
+     368.8175,
+     685.9862,
+     0.3319
+    ],
+    "lens_mm": 38.556,
+    "fstop": 5.6,
+    "focus_distance_m": 22.5229
+   },
+   {
+    "t": 59.41667,
+    "beat": "5_lap",
+    "world": [
+     352.0362,
+     708.911,
+     3.6809
+    ],
+    "look_at": [
+     364.3127,
+     690.9893,
+     0.309
+    ],
+    "lens_mm": 37.868,
+    "fstop": 5.6,
+    "focus_distance_m": 21.9834
+   },
+   {
+    "t": 59.5,
+    "beat": "5_lap",
+    "world": [
+     349.8643,
+     714.9994,
+     3.482
+    ],
+    "look_at": [
+     359.7899,
+     696.0123,
+     0.2852
+    ],
+    "lens_mm": 37.109,
+    "fstop": 5.6,
+    "focus_distance_m": 21.662
+   },
+   {
+    "t": 59.58333,
+    "beat": "5_lap",
+    "world": [
+     347.837,
+     721.1291,
+     3.2857
+    ],
+    "look_at": [
+     355.2494,
+     701.055,
+     0.2608
+    ],
+    "lens_mm": 36.309,
+    "fstop": 5.6,
+    "focus_distance_m": 21.6116
+   },
+   {
+    "t": 59.66667,
+    "beat": "5_lap",
+    "world": [
+     345.9333,
+     727.2639,
+     3.0967
+    ],
+    "look_at": [
+     350.6917,
+     706.1169,
+     0.2362
+    ],
+    "lens_mm": 35.497,
+    "fstop": 5.6,
+    "focus_distance_m": 21.8637
+   },
+   {
+    "t": 59.75,
+    "beat": "5_lap",
+    "world": [
+     344.1321,
+     733.3675,
+     2.9194
+    ],
+    "look_at": [
+     346.1172,
+     711.1974,
+     0.2118
+    ],
+    "lens_mm": 34.704,
+    "fstop": 5.6,
+    "focus_distance_m": 22.4228
+   },
+   {
+    "t": 59.83333,
+    "beat": "5_lap",
+    "world": [
+     342.4121,
+     739.4034,
+     2.7584
+    ],
+    "look_at": [
+     341.556,
+     716.3018,
+     0.188
+    ],
+    "lens_mm": 33.959,
+    "fstop": 5.6,
+    "focus_distance_m": 23.2599
+   },
+   {
+    "t": 59.91667,
+    "beat": "5_lap",
+    "world": [
+     340.7524,
+     745.3352,
+     2.6183
+    ],
+    "look_at": [
+     337.1936,
+     721.5475,
+     0.1652
+    ],
+    "lens_mm": 33.293,
+    "fstop": 5.6,
+    "focus_distance_m": 24.1773
+   },
+   {
+    "t": 60.0,
+    "beat": "5_lap",
+    "world": [
+     339.1317,
+     751.1267,
+     2.5037
+    ],
+    "look_at": [
+     333.092,
+     726.9986,
+     0.1437
+    ],
+    "lens_mm": 32.735,
+    "fstop": 5.6,
+    "focus_distance_m": 24.9843
+   },
+   {
+    "t": 60.08333,
+    "beat": "5_lap",
+    "world": [
+     337.5289,
+     756.7415,
+     2.4192
+    ],
+    "look_at": [
+     329.2607,
+     732.643,
+     0.124
+    ],
+    "lens_mm": 32.314,
+    "fstop": 5.6,
+    "focus_distance_m": 25.5806
+   },
+   {
+    "t": 60.16667,
+    "beat": "5_lap",
+    "world": [
+     335.9229,
+     762.1431,
+     2.3693
+    ],
+    "look_at": [
+     325.709,
+     738.4673,
+     0.1063
+    ],
+    "lens_mm": 32.061,
+    "fstop": 5.6,
+    "focus_distance_m": 25.8841
+   },
+   {
+    "t": 60.25,
+    "beat": "5_lap",
+    "world": [
+     334.2968,
+     767.2995,
+     2.358
+    ],
+    "look_at": [
+     322.4452,
+     744.4578,
+     0.0874
+    ],
+    "lens_mm": 32.005,
+    "fstop": 5.6,
+    "focus_distance_m": 25.8333
+   },
+   {
+    "t": 60.33333,
+    "beat": "5_lap",
+    "world": [
+     332.7322,
+     772.2872,
+     2.3761
+    ],
+    "look_at": [
+     319.4771,
+     750.6002,
+     0.0628
+    ],
+    "lens_mm": 32.13,
+    "fstop": 5.6,
+    "focus_distance_m": 25.5221
+   },
+   {
+    "t": 60.41667,
+    "beat": "5_lap",
+    "world": [
+     331.2626,
+     777.1512,
+     2.4159
+    ],
+    "look_at": [
+     316.8117,
+     756.8799,
+     0.0316
+    ],
+    "lens_mm": 32.405,
+    "fstop": 5.6,
+    "focus_distance_m": 25.0088
+   },
+   {
+    "t": 60.5,
+    "beat": "5_lap",
+    "world": [
+     329.8806,
+     781.8975,
+     2.4746
+    ],
+    "look_at": [
+     314.4556,
+     763.2819,
+     -0.0063
+    ],
+    "lens_mm": 32.81,
+    "fstop": 5.6,
+    "focus_distance_m": 24.3028
+   },
+   {
+    "t": 60.58333,
+    "beat": "5_lap",
+    "world": [
+     328.5786,
+     786.5322,
+     2.5487
+    ],
+    "look_at": [
+     312.414,
+     769.7912,
+     -0.0508
+    ],
+    "lens_mm": 33.322,
+    "fstop": 5.6,
+    "focus_distance_m": 23.4161
+   },
+   {
+    "t": 60.66667,
+    "beat": "5_lap",
+    "world": [
+     327.3494,
+     791.0612,
+     2.6354
+    ],
+    "look_at": [
+     310.6706,
+     776.3917,
+     -0.1019
+    ],
+    "lens_mm": 33.92,
+    "fstop": 5.6,
+    "focus_distance_m": 22.3802
+   },
+   {
+    "t": 60.75,
+    "beat": "5_lap",
+    "world": [
+     326.1856,
+     795.4906,
+     2.7314
+    ],
+    "look_at": [
+     309.0181,
+     783.0204,
+     -0.1597
+    ],
+    "lens_mm": 34.583,
+    "fstop": 5.6,
+    "focus_distance_m": 21.4147
+   },
+   {
+    "t": 60.83333,
+    "beat": "5_lap",
+    "world": [
+     325.0797,
+     799.8263,
+     2.8335
+    ],
+    "look_at": [
+     307.404,
+     789.494,
+     -0.2225
+    ],
+    "lens_mm": 35.288,
+    "fstop": 5.6,
+    "focus_distance_m": 20.7008
+   },
+   {
+    "t": 60.91667,
+    "beat": "5_lap",
+    "world": [
+     324.0243,
+     804.0744,
+     2.9388
+    ],
+    "look_at": [
+     305.8424,
+     795.7572,
+     -0.2892
+    ],
+    "lens_mm": 36.015,
+    "fstop": 5.6,
+    "focus_distance_m": 20.2528
+   },
+   {
+    "t": 61.0,
+    "beat": "5_lap",
+    "world": [
+     323.0121,
+     808.2409,
+     3.0439
+    ],
+    "look_at": [
+     304.3312,
+     801.8183,
+     -0.3595
+    ],
+    "lens_mm": 36.741,
+    "fstop": 5.6,
+    "focus_distance_m": 20.0451
+   },
+   {
+    "t": 61.08333,
+    "beat": "5_lap",
+    "world": [
+     322.0356,
+     812.3318,
+     3.1459
+    ],
+    "look_at": [
+     302.8686,
+     807.6847,
+     -0.4329
+    ],
+    "lens_mm": 37.445,
+    "fstop": 5.6,
+    "focus_distance_m": 20.0444
+   },
+   {
+    "t": 61.16667,
+    "beat": "5_lap",
+    "world": [
+     321.0874,
+     816.3531,
+     3.2416
+    ],
+    "look_at": [
+     301.4527,
+     813.3638,
+     -0.5088
+    ],
+    "lens_mm": 38.105,
+    "fstop": 5.6,
+    "focus_distance_m": 20.212
+   },
+   {
+    "t": 61.25,
+    "beat": "5_lap",
+    "world": [
+     320.1602,
+     820.3108,
+     3.3278
+    ],
+    "look_at": [
+     300.0817,
+     818.8621,
+     -0.5869
+    ],
+    "lens_mm": 38.7,
+    "fstop": 5.6,
+    "focus_distance_m": 20.5078
+   },
+   {
+    "t": 61.33333,
+    "beat": "5_lap",
+    "world": [
+     319.2466,
+     824.2109,
+     3.4014
+    ],
+    "look_at": [
+     298.7544,
+     824.1861,
+     -0.6669
+    ],
+    "lens_mm": 39.209,
+    "fstop": 5.6,
+    "focus_distance_m": 20.8921
+   },
+   {
+    "t": 61.41667,
+    "beat": "5_lap",
+    "world": [
+     318.339,
+     828.0595,
+     3.4593
+    ],
+    "look_at": [
+     297.469,
+     829.3414,
+     -0.7484
+    ],
+    "lens_mm": 39.609,
+    "fstop": 5.6,
+    "focus_distance_m": 21.3286
+   },
+   {
+    "t": 61.54167,
+    "beat": "5_lap",
+    "world": [
+     316.9731,
+     833.7489,
+     3.5099
+    ],
+    "look_at": [
+     295.6168,
+     836.7701,
+     -0.8721
+    ],
+    "lens_mm": 39.958,
+    "fstop": 5.6,
+    "focus_distance_m": 22.0096
+   },
+   {
+    "t": 61.70833,
+    "beat": "5_lap",
+    "world": [
+     315.1652,
+     841.1673,
+     3.5042
+    ],
+    "look_at": [
+     293.2823,
+     846.1331,
+     -1.0297
+    ],
+    "lens_mm": 40.17,
+    "fstop": 5.6,
+    "focus_distance_m": 22.8927
+   },
+   {
+    "t": 61.91667,
+    "beat": "5_lap",
+    "world": [
+     313.1404,
+     850.0185,
+     3.421
+    ],
+    "look_at": [
+     290.569,
+     857.0156,
+     -1.2129
+    ],
+    "lens_mm": 41.303,
+    "fstop": 5.6,
+    "focus_distance_m": 24.0812
+   },
+   {
+    "t": 62.25,
+    "beat": "5_lap",
+    "world": [
+     310.2926,
+     863.2816,
+     3.1529
+    ],
+    "look_at": [
+     286.666,
+     872.6696,
+     -1.4764
+    ],
+    "lens_mm": 44.465,
+    "fstop": 5.6,
+    "focus_distance_m": 25.8415
+   },
+   {
+    "t": 62.58333,
+    "beat": "5_lap",
+    "world": [
+     307.6202,
+     875.6058,
+     2.7696
+    ],
+    "look_at": [
+     283.2582,
+     886.3378,
+     -1.701
+    ],
+    "lens_mm": 47.87,
+    "fstop": 5.6,
+    "focus_distance_m": 26.9939
+   },
+   {
+    "t": 62.91667,
+    "beat": "5_lap",
+    "world": [
+     304.7726,
+     887.1828,
+     2.3297
+    ],
+    "look_at": [
+     280.3046,
+     898.1841,
+     -1.8772
+    ],
+    "lens_mm": 49.898,
+    "fstop": 5.6,
+    "focus_distance_m": 27.1553
+   },
+   {
+    "t": 63.25,
+    "beat": "5_lap",
+    "world": [
+     301.9588,
+     898.1302,
+     1.8244
+    ],
+    "look_at": [
+     277.7725,
+     908.3396,
+     -2.0223
+    ],
+    "lens_mm": 49.157,
+    "fstop": 5.6,
+    "focus_distance_m": 26.5331
+   },
+   {
+    "t": 63.58333,
+    "beat": "5_lap",
+    "world": [
+     299.7487,
+     908.3374,
+     1.1816
+    ],
+    "look_at": [
+     275.6361,
+     916.9085,
+     -2.1564
+    ],
+    "lens_mm": 46.238,
+    "fstop": 5.6,
+    "focus_distance_m": 25.8074
+   },
+   {
+    "t": 63.91667,
+    "beat": "5_lap",
+    "world": [
+     296.9865,
+     917.7525,
+     0.5165
+    ],
+    "look_at": [
+     273.5059,
+     924.105,
+     -2.2732
+    ],
+    "lens_mm": 42.753,
+    "fstop": 5.6,
+    "focus_distance_m": 24.4841
+   },
+   {
+    "t": 64.25,
+    "beat": "5_lap",
+    "world": [
+     292.445,
+     926.3297,
+     -0.0476
+    ],
+    "look_at": [
+     269.8107,
+     930.4529,
+     -2.371
+    ],
+    "lens_mm": 40.32,
+    "fstop": 5.6,
+    "focus_distance_m": 23.1238
+   },
+   {
+    "t": 64.5,
+    "beat": "5_lap",
+    "world": [
+     287.0728,
+     932.2868,
+     -0.3375
+    ],
+    "look_at": [
+     266.0213,
+     934.4609,
+     -2.4259
+    ],
+    "lens_mm": 39.789,
+    "fstop": 5.6,
+    "focus_distance_m": 21.2662
+   },
+   {
+    "t": 64.625,
+    "beat": "5_lap",
+    "world": [
+     283.4877,
+     935.3836,
+     -0.4489
+    ],
+    "look_at": [
+     263.8491,
+     936.1656,
+     -2.4532
+    ],
+    "lens_mm": 39.004,
+    "fstop": 5.6,
+    "focus_distance_m": 19.7561
+   },
+   {
+    "t": 64.70833,
+    "beat": "5_lap",
+    "world": [
+     280.8185,
+     937.4758,
+     -0.5137
+    ],
+    "look_at": [
+     262.3122,
+     937.1796,
+     -2.4719
+    ],
+    "lens_mm": 38.221,
+    "fstop": 5.6,
+    "focus_distance_m": 18.612
+   },
+   {
+    "t": 64.79167,
+    "beat": "5_lap",
+    "world": [
+     277.9756,
+     939.556,
+     -0.5714
+    ],
+    "look_at": [
+     260.712,
+     938.0903,
+     -2.4909
+    ],
+    "lens_mm": 37.28,
+    "fstop": 5.6,
+    "focus_distance_m": 17.4318
+   },
+   {
+    "t": 64.875,
+    "beat": "5_lap",
+    "world": [
+     275.0015,
+     941.5948,
+     -0.6223
+    ],
+    "look_at": [
+     259.0554,
+     938.8939,
+     -2.51
+    ],
+    "lens_mm": 36.22,
+    "fstop": 5.6,
+    "focus_distance_m": 16.283
+   },
+   {
+    "t": 64.95833,
+    "beat": "5_lap",
+    "world": [
+     271.9388,
+     943.5629,
+     -0.6667
+    ],
+    "look_at": [
+     257.3495,
+     939.5868,
+     -2.529
+    ],
+    "lens_mm": 35.081,
+    "fstop": 5.6,
+    "focus_distance_m": 15.2357
+   },
+   {
+    "t": 65.04167,
+    "beat": "5_lap",
+    "world": [
+     268.8299,
+     945.431,
+     -0.705
+    ],
+    "look_at": [
+     255.6017,
+     940.1661,
+     -2.5477
+    ],
+    "lens_mm": 33.906,
+    "fstop": 5.6,
+    "focus_distance_m": 14.3561
+   },
+   {
+    "t": 65.125,
+    "beat": "5_lap",
+    "world": [
+     265.7174,
+     947.1697,
+     -0.7373
+    ],
+    "look_at": [
+     253.8197,
+     940.6294,
+     -2.566
+    ],
+    "lens_mm": 32.733,
+    "fstop": 5.6,
+    "focus_distance_m": 13.6994
+   },
+   {
+    "t": 65.20833,
+    "beat": "5_lap",
+    "world": [
+     262.6437,
+     948.7498,
+     -0.7641
+    ],
+    "look_at": [
+     252.0111,
+     940.9743,
+     -2.5837
+    ],
+    "lens_mm": 31.604,
+    "fstop": 5.6,
+    "focus_distance_m": 13.2975
+   },
+   {
+    "t": 65.29167,
+    "beat": "5_lap",
+    "world": [
+     259.6516,
+     950.142,
+     -0.7857
+    ],
+    "look_at": [
+     250.1837,
+     941.1998,
+     -2.6007
+    ],
+    "lens_mm": 30.56,
+    "fstop": 5.6,
+    "focus_distance_m": 13.1491
+   },
+   {
+    "t": 65.375,
+    "beat": "5_lap",
+    "world": [
+     256.7834,
+     951.317,
+     -0.8023
+    ],
+    "look_at": [
+     248.3454,
+     941.3046,
+     -2.6167
+    ],
+    "lens_mm": 29.642,
+    "fstop": 5.6,
+    "focus_distance_m": 13.2188
+   },
+   {
+    "t": 65.45833,
+    "beat": "5_lap",
+    "world": [
+     254.0817,
+     952.2453,
+     -0.8144
+    ],
+    "look_at": [
+     246.5042,
+     941.2883,
+     -2.6316
+    ],
+    "lens_mm": 28.889,
+    "fstop": 5.6,
+    "focus_distance_m": 13.4453
+   },
+   {
+    "t": 65.54167,
+    "beat": "5_lap",
+    "world": [
+     251.589,
+     952.8978,
+     -0.8222
+    ],
+    "look_at": [
+     244.6681,
+     941.1512,
+     -2.6453
+    ],
+    "lens_mm": 28.343,
+    "fstop": 5.6,
+    "focus_distance_m": 13.7552
+   },
+   {
+    "t": 65.79167,
+    "beat": "5_lap",
+    "world": [
+     245.5419,
+     953.0851,
+     -0.8167
+    ],
+    "look_at": [
+     239.2691,
+     940.0221,
+     -2.6775
+    ],
+    "lens_mm": 28.111,
+    "fstop": 5.6,
+    "focus_distance_m": 14.61
+   },
+   {
+    "t": 66.125,
+    "beat": "5_lap",
+    "world": [
+     239.2342,
+     950.5897,
+     -0.7044
+    ],
+    "look_at": [
+     232.6124,
+     936.9174,
+     -2.7051
+    ],
+    "lens_mm": 29.332,
+    "fstop": 5.6,
+    "focus_distance_m": 15.3226
+   },
+   {
+    "t": 66.45833,
+    "beat": "5_lap",
+    "world": [
+     234.553,
+     945.8802,
+     -0.5023
+    ],
+    "look_at": [
+     226.9922,
+     932.1885,
+     -2.7206
+    ],
+    "lens_mm": 31.328,
+    "fstop": 5.6,
+    "focus_distance_m": 15.7972
+   },
+   {
+    "t": 66.79167,
+    "beat": "5_lap",
+    "world": [
+     231.4588,
+     939.7152,
+     -0.2556
+    ],
+    "look_at": [
+     222.7955,
+     926.1604,
+     -2.7273
+    ],
+    "lens_mm": 33.382,
+    "fstop": 5.6,
+    "focus_distance_m": 16.2755
+   },
+   {
+    "t": 67.125,
+    "beat": "5_lap",
+    "world": [
+     229.912,
+     932.8529,
+     -0.0096
+    ],
+    "look_at": [
+     220.3109,
+     919.2484,
+     -2.7004
+    ],
+    "lens_mm": 34.775,
+    "fstop": 5.6,
+    "focus_distance_m": 16.8672
+   },
+   {
+    "t": 67.45833,
+    "beat": "5_lap",
+    "world": [
+     229.7063,
+     925.9005,
+     0.1911
+    ],
+    "look_at": [
+     219.7097,
+     911.9279,
+     -2.6311
+    ],
+    "lens_mm": 34.97,
+    "fstop": 5.6,
+    "focus_distance_m": 17.4106
+   },
+   {
+    "t": 67.79167,
+    "beat": "5_lap",
+    "world": [
+     229.7118,
+     918.3337,
+     0.3321
+    ],
+    "look_at": [
+     220.7948,
+     904.4628,
+     -2.5033
+    ],
+    "lens_mm": 34.738,
+    "fstop": 5.6,
+    "focus_distance_m": 16.7318
+   },
+   {
+    "t": 68.125,
+    "beat": "5_lap",
+    "world": [
+     229.7334,
+     909.9968,
+     0.4405
+    ],
+    "look_at": [
+     222.3065,
+     895.8899,
+     -2.2866
+    ],
+    "lens_mm": 34.331,
+    "fstop": 5.6,
+    "focus_distance_m": 16.1741
+   },
+   {
+    "t": 68.375,
+    "beat": "5_lap",
+    "world": [
+     229.7665,
+     903.2356,
+     0.5184
+    ],
+    "look_at": [
+     223.5887,
+     888.6183,
+     -2.0473
+    ],
+    "lens_mm": 33.952,
+    "fstop": 5.6,
+    "focus_distance_m": 16.0752
+   },
+   {
+    "t": 68.58333,
+    "beat": "5_lap",
+    "world": [
+     229.8089,
+     897.2662,
+     0.5913
+    ],
+    "look_at": [
+     224.7557,
+     881.9996,
+     -1.7862
+    ],
+    "lens_mm": 33.611,
+    "fstop": 5.6,
+    "focus_distance_m": 16.256
+   },
+   {
+    "t": 68.79167,
+    "beat": "5_lap",
+    "world": [
+     229.8676,
+     890.991,
+     0.6792
+    ],
+    "look_at": [
+     226.0135,
+     874.8662,
+     -1.4592
+    ],
+    "lens_mm": 33.265,
+    "fstop": 5.6,
+    "focus_distance_m": 16.7163
+   },
+   {
+    "t": 68.95833,
+    "beat": "5_lap",
+    "world": [
+     229.928,
+     885.7495,
+     0.7654
+    ],
+    "look_at": [
+     227.0859,
+     868.7844,
+     -1.1436
+    ],
+    "lens_mm": 32.995,
+    "fstop": 5.6,
+    "focus_distance_m": 17.3072
+   },
+   {
+    "t": 69.16667,
+    "beat": "5_lap",
+    "world": [
+     230.0226,
+     878.9201,
+     0.8988
+    ],
+    "look_at": [
+     228.5103,
+     860.7062,
+     -0.7067
+    ],
+    "lens_mm": 32.681,
+    "fstop": 5.6,
+    "focus_distance_m": 18.347
+   },
+   {
+    "t": 69.375,
+    "beat": "5_lap",
+    "world": [
+     230.1409,
+     871.7809,
+     1.0678
+    ],
+    "look_at": [
+     230.0297,
+     852.0893,
+     -0.2426
+    ],
+    "lens_mm": 32.408,
+    "fstop": 5.6,
+    "focus_distance_m": 19.7355
+   },
+   {
+    "t": 69.625,
+    "beat": "5_lap",
+    "world": [
+     230.3178,
+     862.8031,
+     1.3278
+    ],
+    "look_at": [
+     231.9814,
+     841.0205,
+     0.3502
+    ],
+    "lens_mm": 32.158,
+    "fstop": 5.6,
+    "focus_distance_m": 21.8679
+   },
+   {
+    "t": 69.91667,
+    "beat": "5_lap",
+    "world": [
+     230.5781,
+     851.7596,
+     1.7258
+    ],
+    "look_at": [
+     234.4405,
+     827.0744,
+     1.0915
+    ],
+    "lens_mm": 32.008,
+    "fstop": 5.6,
+    "focus_distance_m": 24.9936
+   },
+   {
+    "t": 70.25,
+    "beat": "5_lap",
+    "world": [
+     231.0184,
+     837.9801,
+     2.2835
+    ],
+    "look_at": [
+     237.4835,
+     809.8166,
+     2.0031
+    ],
+    "lens_mm": 32.059,
+    "fstop": 5.6,
+    "focus_distance_m": 28.8975
+   },
+   {
+    "t": 70.58333,
+    "beat": "5_lap",
+    "world": [
+     231.7227,
+     822.2726,
+     2.867
+    ],
+    "look_at": [
+     240.7474,
+     791.3059,
+     2.9805
+    ],
+    "lens_mm": 32.294,
+    "fstop": 5.6,
+    "focus_distance_m": 32.2552
+   },
+   {
+    "t": 70.91667,
+    "beat": "5_lap",
+    "world": [
+     232.6164,
+     805.1118,
+     3.4997
+    ],
+    "look_at": [
+     244.1641,
+     771.9294,
+     4.0036
+    ],
+    "lens_mm": 32.665,
+    "fstop": 5.6,
+    "focus_distance_m": 35.1379
+   },
+   {
+    "t": 71.25,
+    "beat": "5_lap",
+    "world": [
+     233.6167,
+     787.0225,
+     4.21
+    ],
+    "look_at": [
+     247.2723,
+     754.3017,
+     4.8965
+    ],
+    "lens_mm": 33.122,
+    "fstop": 5.6,
+    "focus_distance_m": 35.4627
+   },
+   {
+    "t": 71.58333,
+    "beat": "5_lap",
+    "world": [
+     234.641,
+     768.5299,
+     5.0262
+    ],
+    "look_at": [
+     249.9853,
+     738.9153,
+     5.544
+    ],
+    "lens_mm": 33.617,
+    "fstop": 5.6,
+    "focus_distance_m": 33.3578
+   },
+   {
+    "t": 71.91667,
+    "beat": "5_lap",
+    "world": [
+     235.6066,
+     750.1589,
+     5.9768
+    ],
+    "look_at": [
+     251.5944,
+     724.8429,
+     6.0178
+    ],
+    "lens_mm": 34.1,
+    "fstop": 5.6,
+    "focus_distance_m": 29.9418
+   },
+   {
+    "t": 72.25,
+    "beat": "5_lap",
+    "world": [
+     236.4307,
+     732.4344,
+     7.0901
+    ],
+    "look_at": [
+     250.5941,
+     710.7652,
+     6.3824
+    ],
+    "lens_mm": 34.523,
+    "fstop": 5.6,
+    "focus_distance_m": 25.897
+   },
+   {
+    "t": 72.54167,
+    "beat": "5_lap",
+    "world": [
+     236.9709,
+     717.8686,
+     8.22
+    ],
+    "look_at": [
+     247.5661,
+     698.7887,
+     6.613
+    ],
+    "lens_mm": 34.805,
+    "fstop": 5.6,
+    "focus_distance_m": 21.8835
+   },
+   {
+    "t": 72.66667,
+    "beat": "5_lap",
+    "world": [
+     237.1361,
+     711.9878,
+     8.7538
+    ],
+    "look_at": [
+     245.6726,
+     693.8393,
+     6.6867
+    ],
+    "lens_mm": 34.892,
+    "fstop": 5.6,
+    "focus_distance_m": 20.1622
+   },
+   {
+    "t": 72.75,
+    "beat": "5_lap",
+    "world": [
+     237.2209,
+     708.2084,
+     9.1273
+    ],
+    "look_at": [
+     244.218,
+     690.6195,
+     6.7275
+    ],
+    "lens_mm": 34.937,
+    "fstop": 5.6,
+    "focus_distance_m": 19.0811
+   },
+   {
+    "t": 72.83333,
+    "beat": "5_lap",
+    "world": [
+     237.284,
+     704.5514,
+     9.5153
+    ],
+    "look_at": [
+     242.6133,
+     687.4717,
+     6.7614
+    ],
+    "lens_mm": 34.97,
+    "fstop": 5.6,
+    "focus_distance_m": 18.1025
+   },
+   {
+    "t": 72.91667,
+    "beat": "5_lap",
+    "world": [
+     237.324,
+     701.0251,
+     9.9185
+    ],
+    "look_at": [
+     240.8621,
+     684.403,
+     6.7887
+    ],
+    "lens_mm": 34.992,
+    "fstop": 5.6,
+    "focus_distance_m": 17.2803
+   },
+   {
+    "t": 73.0,
+    "beat": "5_lap",
+    "world": [
+     237.3397,
+     697.6376,
+     10.3371
+    ],
+    "look_at": [
+     238.9684,
+     681.4202,
+     6.8092
+    ],
+    "lens_mm": 35.0,
+    "fstop": 5.6,
+    "focus_distance_m": 16.6764
+   },
+   {
+    "t": 73.08333,
+    "beat": "5_lap",
+    "world": [
+     237.201,
+     694.3692,
+     10.7757
+    ],
+    "look_at": [
+     236.9363,
+     678.5298,
+     6.8237
+    ],
+    "lens_mm": 35.027,
+    "fstop": 5.6,
+    "focus_distance_m": 16.3271
+   },
+   {
+    "t": 73.16667,
+    "beat": "5_lap",
+    "world": [
+     236.7143,
+     691.1779,
+     11.2398
+    ],
+    "look_at": [
+     234.7703,
+     675.7384,
+     6.8369
+    ],
+    "lens_mm": 35.119,
+    "fstop": 5.6,
+    "focus_distance_m": 16.1724
+   },
+   {
+    "t": 73.25,
+    "beat": "5_lap",
+    "world": [
+     235.8915,
+     688.0609,
+     11.7282
+    ],
+    "look_at": [
+     232.4753,
+     673.0521,
+     6.8504
+    ],
+    "lens_mm": 35.274,
+    "fstop": 5.6,
+    "focus_distance_m": 16.1471
+   },
+   {
+    "t": 73.33333,
+    "beat": "5_lap",
+    "world": [
+     234.7471,
+     685.0157,
+     12.2395
+    ],
+    "look_at": [
+     230.0563,
+     670.4768,
+     6.8644
+    ],
+    "lens_mm": 35.488,
+    "fstop": 5.6,
+    "focus_distance_m": 16.1949
+   },
+   {
+    "t": 73.41667,
+    "beat": "5_lap",
+    "world": [
+     233.2953,
+     682.0397,
+     12.7725
+    ],
+    "look_at": [
+     227.5186,
+     668.0184,
+     6.8787
+    ],
+    "lens_mm": 35.757,
+    "fstop": 5.6,
+    "focus_distance_m": 16.2697
+   },
+   {
+    "t": 73.5,
+    "beat": "5_lap",
+    "world": [
+     231.5504,
+     679.1305,
+     13.3256
+    ],
+    "look_at": [
+     224.8679,
+     665.6823,
+     6.8934
+    ],
+    "lens_mm": 36.077,
+    "fstop": 5.6,
+    "focus_distance_m": 16.3366
+   },
+   {
+    "t": 73.58333,
+    "beat": "5_lap",
+    "world": [
+     229.527,
+     676.2856,
+     13.8977
+    ],
+    "look_at": [
+     222.1102,
+     663.4735,
+     6.9084
+    ],
+    "lens_mm": 36.443,
+    "fstop": 5.6,
+    "focus_distance_m": 16.3709
+   },
+   {
+    "t": 73.66667,
+    "beat": "5_lap",
+    "world": [
+     227.2392,
+     673.5026,
+     14.4872
+    ],
+    "look_at": [
+     219.2515,
+     661.3971,
+     6.9236
+    ],
+    "lens_mm": 36.853,
+    "fstop": 5.6,
+    "focus_distance_m": 16.357
+   },
+   {
+    "t": 73.75,
+    "beat": "5_lap",
+    "world": [
+     224.7014,
+     670.7789,
+     15.093
+    ],
+    "look_at": [
+     216.2983,
+     659.4576,
+     6.9392
+    ],
+    "lens_mm": 37.302,
+    "fstop": 5.6,
+    "focus_distance_m": 16.287
+   },
+   {
+    "t": 73.83333,
+    "beat": "5_lap",
+    "world": [
+     221.928,
+     668.1121,
+     15.7135
+    ],
+    "look_at": [
+     213.257,
+     657.6594,
+     6.9549
+    ],
+    "lens_mm": 37.786,
+    "fstop": 5.6,
+    "focus_distance_m": 16.1605
+   },
+   {
+    "t": 73.91667,
+    "beat": "5_lap",
+    "world": [
+     218.9333,
+     665.4998,
+     16.3476
+    ],
+    "look_at": [
+     210.1343,
+     656.0064,
+     6.9709
+    ],
+    "lens_mm": 38.301,
+    "fstop": 5.6,
+    "focus_distance_m": 15.9834
+   },
+   {
+    "t": 74.0,
+    "beat": "5_lap",
+    "world": [
+     215.7317,
+     662.9394,
+     16.9937
+    ],
+    "look_at": [
+     206.9372,
+     654.5023,
+     6.9871
+    ],
+    "lens_mm": 38.844,
+    "fstop": 5.6,
+    "focus_distance_m": 15.769
+   },
+   {
+    "t": 74.08333,
+    "beat": "5_lap",
+    "world": [
+     212.3375,
+     660.4285,
+     17.6506
+    ],
+    "look_at": [
+     203.6728,
+     653.1506,
+     7.0034
+    ],
+    "lens_mm": 39.411,
+    "fstop": 5.6,
+    "focus_distance_m": 15.5373
+   },
+   {
+    "t": 74.16667,
+    "beat": "5_lap",
+    "world": [
+     208.7651,
+     657.9645,
+     18.3169
+    ],
+    "look_at": [
+     200.3483,
+     651.954,
+     7.0198
+    ],
+    "lens_mm": 39.997,
+    "fstop": 5.6,
+    "focus_distance_m": 15.3164
+   },
+   {
+    "t": 74.25,
+    "beat": "5_lap",
+    "world": [
+     205.0287,
+     655.5451,
+     18.9912
+    ],
+    "look_at": [
+     196.9713,
+     650.9153,
+     7.0364
+    ],
+    "lens_mm": 40.6,
+    "fstop": 5.6,
+    "focus_distance_m": 15.1419
+   },
+   {
+    "t": 74.33333,
+    "beat": "5_lap",
+    "world": [
+     201.1429,
+     653.1677,
+     19.6723
+    ],
+    "look_at": [
+     193.549,
+     650.0369,
+     7.053
+    ],
+    "lens_mm": 41.214,
+    "fstop": 5.6,
+    "focus_distance_m": 15.057
+   },
+   {
+    "t": 74.41667,
+    "beat": "5_lap",
+    "world": [
+     197.1218,
+     650.8299,
+     20.3587
+    ],
+    "look_at": [
+     190.081,
+     649.2753,
+     7.0698
+    ],
+    "lens_mm": 41.836,
+    "fstop": 5.6,
+    "focus_distance_m": 15.119
+   },
+   {
+    "t": 74.5,
+    "beat": "5_lap",
+    "world": [
+     192.9798,
+     648.5292,
+     21.0491
+    ],
+    "look_at": [
+     186.5186,
+     648.5182,
+     7.0868
+    ],
+    "lens_mm": 42.462,
+    "fstop": 5.6,
+    "focus_distance_m": 15.3847
+   },
+   {
+    "t": 74.58333,
+    "beat": "5_lap",
+    "world": [
+     188.7314,
+     646.2631,
+     21.7421
+    ],
+    "look_at": [
+     182.8649,
+     647.7415,
+     7.1043
+    ],
+    "lens_mm": 43.089,
+    "fstop": 5.6,
+    "focus_distance_m": 15.8388
+   },
+   {
+    "t": 74.66667,
+    "beat": "5_lap",
+    "world": [
+     184.3907,
+     644.0291,
+     22.4364
+    ],
+    "look_at": [
+     179.1188,
+     646.9453,
+     7.122
+    ],
+    "lens_mm": 43.712,
+    "fstop": 5.6,
+    "focus_distance_m": 16.4568
+   },
+   {
+    "t": 74.75,
+    "beat": "5_lap",
+    "world": [
+     179.9723,
+     641.8248,
+     23.1307
+    ],
+    "look_at": [
+     175.2793,
+     646.1291,
+     7.1401
+    ],
+    "lens_mm": 44.327,
+    "fstop": 5.6,
+    "focus_distance_m": 17.2119
+   },
+   {
+    "t": 74.83333,
+    "beat": "5_lap",
+    "world": [
+     175.4903,
+     639.6476,
+     23.8235
+    ],
+    "look_at": [
+     171.3457,
+     645.2931,
+     7.1584
+    ],
+    "lens_mm": 44.931,
+    "fstop": 5.6,
+    "focus_distance_m": 18.0769
+   },
+   {
+    "t": 74.91667,
+    "beat": "5_lap",
+    "world": [
+     170.9593,
+     637.4952,
+     24.5135
+    ],
+    "look_at": [
+     167.3172,
+     644.4367,
+     7.1769
+    ],
+    "lens_mm": 45.52,
+    "fstop": 5.6,
+    "focus_distance_m": 19.0265
+   },
+   {
+    "t": 75.04167,
+    "beat": "5_lap",
+    "world": [
+     164.102,
+     634.3075,
+     25.5405
+    ],
+    "look_at": [
+     161.1014,
+     643.1155,
+     7.2051
+    ],
+    "lens_mm": 46.365,
+    "fstop": 5.6,
+    "focus_distance_m": 20.5614
+   },
+   {
+    "t": 75.20833,
+    "beat": "5_lap",
+    "world": [
+     154.9208,
+     630.1206,
+     26.8874
+    ],
+    "look_at": [
+     152.5058,
+     641.2885,
+     7.2432
+    ],
+    "lens_mm": 47.402,
+    "fstop": 5.6,
+    "focus_distance_m": 22.7255
+   },
+   {
+    "t": 75.5,
+    "beat": "5_lap",
+    "world": [
+     139.0713,
+     622.9123,
+     29.1527
+    ],
+    "look_at": [
+     136.6777,
+     637.9241,
+     7.3104
+    ],
+    "lens_mm": 48.882,
+    "fstop": 5.6,
+    "focus_distance_m": 26.6114
+   },
+   {
+    "t": 75.83333,
+    "beat": "5_lap",
+    "world": [
+     121.9779,
+     614.7416,
+     31.5342
+    ],
+    "look_at": [
+     117.4741,
+     633.8423,
+     7.3867
+    ],
+    "lens_mm": 49.865,
+    "fstop": 5.6,
+    "focus_distance_m": 31.1163
+   },
+   {
+    "t": 76.04167,
+    "beat": "5_lap",
+    "world": [
+     112.2073,
+     609.6174,
+     32.8755
+    ],
+    "look_at": [
+     104.9231,
+     631.1745,
+     7.4331
+    ],
+    "lens_mm": 50.003,
+    "fstop": 5.6,
+    "focus_distance_m": 34.1333
+   },
+   {
+    "t": 76.29167,
+    "beat": "5_lap",
+    "world": [
+     100.4169,
+     603.9593,
+     34.3903
+    ],
+    "look_at": [
+     89.3508,
+     627.8645,
+     7.4896
+    ],
+    "lens_mm": 50.146,
+    "fstop": 5.6,
+    "focus_distance_m": 37.6505
+   },
+   {
+    "t": 76.58333,
+    "beat": "5_lap",
+    "world": [
+     86.0067,
+     598.1662,
+     36.0764
+    ],
+    "look_at": [
+     70.5314,
+     623.8643,
+     7.5578
+    ],
+    "lens_mm": 50.543,
+    "fstop": 5.6,
+    "focus_distance_m": 41.3907
+   },
+   {
+    "t": 76.875,
+    "beat": "5_lap",
+    "world": [
+     71.0904,
+     592.9719,
+     37.6835
+    ],
+    "look_at": [
+     51.0674,
+     619.7271,
+     7.6284
+    ],
+    "lens_mm": 51.125,
+    "fstop": 5.6,
+    "focus_distance_m": 44.9452
+   },
+   {
+    "t": 77.20833,
+    "beat": "5_lap",
+    "world": [
+     53.6916,
+     587.4035,
+     39.4349
+    ],
+    "look_at": [
+     28.1018,
+     614.8456,
+     7.7117
+    ],
+    "lens_mm": 51.934,
+    "fstop": 5.6,
+    "focus_distance_m": 49.1352
+   },
+   {
+    "t": 77.54167,
+    "beat": "5_lap",
+    "world": [
+     36.2167,
+     581.8202,
+     41.108
+    ],
+    "look_at": [
+     5.8234,
+     610.1102,
+     7.7925
+    ],
+    "lens_mm": 52.806,
+    "fstop": 5.6,
+    "focus_distance_m": 53.2353
+   },
+   {
+    "t": 77.875,
+    "beat": "5_lap",
+    "world": [
+     18.9779,
+     575.797,
+     42.7163
+    ],
+    "look_at": [
+     -13.7745,
+     605.9445,
+     7.8636
+    ],
+    "lens_mm": 53.645,
+    "fstop": 5.6,
+    "focus_distance_m": 56.5358
+   },
+   {
+    "t": 78.20833,
+    "beat": "5_lap",
+    "world": [
+     2.287,
+     568.9087,
+     44.273
+    ],
+    "look_at": [
+     -30.9721,
+     602.289,
+     7.926
+    ],
+    "lens_mm": 54.354,
+    "fstop": 5.6,
+    "focus_distance_m": 59.5106
+   },
+   {
+    "t": 78.54167,
+    "beat": "5_lap",
+    "world": [
+     -13.5439,
+     560.7303,
+     45.7914
+    ],
+    "look_at": [
+     -46.5448,
+     597.7715,
+     7.9836
+    ],
+    "lens_mm": 54.837,
+    "fstop": 5.6,
+    "focus_distance_m": 62.3741
+   },
+   {
+    "t": 78.875,
+    "beat": "5_lap",
+    "world": [
+     -28.2015,
+     550.8337,
+     47.2857
+    ],
+    "look_at": [
+     -61.0146,
+     590.5065,
+     8.0411
+    ],
+    "lens_mm": 55.002,
+    "fstop": 5.6,
+    "focus_distance_m": 64.7361
+   },
+   {
+    "t": 79.20833,
+    "beat": "5_lap",
+    "world": [
+     -41.2989,
+     538.4906,
+     48.9177
+    ],
+    "look_at": [
+     -73.9083,
+     580.7132,
+     8.0987
+    ],
+    "lens_mm": 55.38,
+    "fstop": 5.6,
+    "focus_distance_m": 67.1738
+   },
+   {
+    "t": 79.54167,
+    "beat": "5_lap",
+    "world": [
+     -53.1501,
+     524.121,
+     50.6795
+    ],
+    "look_at": [
+     -84.9249,
+     568.7593,
+     8.1564
+    ],
+    "lens_mm": 56.249,
+    "fstop": 5.6,
+    "focus_distance_m": 69.3573
+   },
+   {
+    "t": 79.875,
+    "beat": "5_lap",
+    "world": [
+     -64.4008,
+     508.8059,
+     52.3986
+    ],
+    "look_at": [
+     -96.0848,
+     555.4595,
+     8.2179
+    ],
+    "lens_mm": 57.376,
+    "fstop": 5.6,
+    "focus_distance_m": 71.6405
+   },
+   {
+    "t": 80.20833,
+    "beat": "5_lap",
+    "world": [
+     -75.6968,
+     493.626,
+     53.9021
+    ],
+    "look_at": [
+     -106.856,
+     542.6229,
+     8.2774
+    ],
+    "lens_mm": 58.528,
+    "fstop": 5.6,
+    "focus_distance_m": 73.8457
+   },
+   {
+    "t": 80.54167,
+    "beat": "5_lap",
+    "world": [
+     -87.6838,
+     479.6621,
+     55.0173
+    ],
+    "look_at": [
+     -117.3319,
+     531.5474,
+     8.3316
+    ],
+    "lens_mm": 59.47,
+    "fstop": 5.6,
+    "focus_distance_m": 75.833
+   },
+   {
+    "t": 80.875,
+    "beat": "5_lap",
+    "world": [
+     -101.0075,
+     467.995,
+     55.5715
+    ],
+    "look_at": [
+     -129.5888,
+     522.5748,
+     8.3855
+    ],
+    "lens_mm": 59.971,
+    "fstop": 5.6,
+    "focus_distance_m": 77.6039
+   },
+   {
+    "t": 81.20833,
+    "beat": "5_lap",
+    "world": [
+     -115.7705,
+     459.7012,
+     55.5975
+    ],
+    "look_at": [
+     -143.2904,
+     516.0171,
+     8.4395
+    ],
+    "lens_mm": 60.158,
+    "fstop": 5.6,
+    "focus_distance_m": 78.4391
+   },
+   {
+    "t": 81.54167,
+    "beat": "5_lap",
+    "world": [
+     -130.9546,
+     454.6995,
+     55.5598
+    ],
+    "look_at": [
+     -157.9666,
+     512.0993,
+     8.4935
+    ],
+    "lens_mm": 60.811,
+    "fstop": 5.6,
+    "focus_distance_m": 78.9913
+   },
+   {
+    "t": 81.875,
+    "beat": "5_lap",
+    "world": [
+     -146.7784,
+     451.7561,
+     55.4624
+    ],
+    "look_at": [
+     -173.4248,
+     510.297,
+     8.5487
+    ],
+    "lens_mm": 61.789,
+    "fstop": 5.6,
+    "focus_distance_m": 79.6113
+   },
+   {
+    "t": 82.20833,
+    "beat": "5_lap",
+    "world": [
+     -163.5424,
+     449.6063,
+     55.2786
+    ],
+    "look_at": [
+     -189.9554,
+     508.5595,
+     8.6077
+    ],
+    "lens_mm": 62.895,
+    "fstop": 5.6,
+    "focus_distance_m": 79.695
+   },
+   {
+    "t": 82.54167,
+    "beat": "5_lap",
+    "world": [
+     -181.5471,
+     446.9853,
+     54.9817
+    ],
+    "look_at": [
+     -204.9327,
+     506.9539,
+     8.6611
+    ],
+    "lens_mm": 63.93,
+    "fstop": 5.6,
+    "focus_distance_m": 79.3014
+   },
+   {
+    "t": 82.875,
+    "beat": "5_lap",
+    "world": [
+     -201.0927,
+     442.6282,
+     54.545
+    ],
+    "look_at": [
+     -218.8458,
+     503.7589,
+     8.7106
+    ],
+    "lens_mm": 64.698,
+    "fstop": 5.6,
+    "focus_distance_m": 78.4406
+   },
+   {
+    "t": 83.125,
+    "beat": "5_lap",
+    "world": [
+     -216.9439,
+     437.4603,
+     54.1096
+    ],
+    "look_at": [
+     -228.7535,
+     499.6825,
+     8.7386
+    ],
+    "lens_mm": 64.979,
+    "fstop": 5.6,
+    "focus_distance_m": 77.9077
+   },
+   {
+    "t": 83.33333,
+    "beat": "5_lap",
+    "world": [
+     -231.0981,
+     431.5442,
+     53.672
+    ],
+    "look_at": [
+     -236.5047,
+     495.248,
+     8.754
+    ],
+    "lens_mm": 65.05,
+    "fstop": 5.6,
+    "focus_distance_m": 78.1347
+   },
+   {
+    "t": 83.5,
+    "beat": "5_lap",
+    "world": [
+     -243.2135,
+     425.88,
+     53.2852
+    ],
+    "look_at": [
+     -242.2975,
+     491.0643,
+     8.7613
+    ],
+    "lens_mm": 65.26,
+    "fstop": 5.6,
+    "focus_distance_m": 78.9444
+   },
+   {
+    "t": 83.625,
+    "beat": "5_lap",
+    "world": [
+     -252.7121,
+     421.1804,
+     52.9742
+    ],
+    "look_at": [
+     -246.37,
+     487.5794,
+     8.7637
+    ],
+    "lens_mm": 65.509,
+    "fstop": 5.6,
+    "focus_distance_m": 80.0226
+   },
+   {
+    "t": 83.75,
+    "beat": "5_lap",
+    "world": [
+     -262.516,
+     416.1544,
+     52.645
+    ],
+    "look_at": [
+     -250.1869,
+     483.8161,
+     8.7635
+    ],
+    "lens_mm": 65.822,
+    "fstop": 5.6,
+    "focus_distance_m": 81.5825
+   },
+   {
+    "t": 83.875,
+    "beat": "5_lap",
+    "world": [
+     -272.582,
+     410.8564,
+     52.2974
+    ],
+    "look_at": [
+     -253.729,
+     479.7933,
+     8.7608
+    ],
+    "lens_mm": 66.187,
+    "fstop": 5.6,
+    "focus_distance_m": 83.685
+   },
+   {
+    "t": 84.0,
+    "beat": "5_lap",
+    "world": [
+     -282.8668,
+     405.3407,
+     51.9311
+    ],
+    "look_at": [
+     -257.0768,
+     475.547,
+     8.7554
+    ],
+    "lens_mm": 66.59,
+    "fstop": 5.6,
+    "focus_distance_m": 86.3608
+   },
+   {
+    "t": 84.125,
+    "beat": "5_lap",
+    "world": [
+     -293.3273,
+     399.662,
+     51.5458
+    ],
+    "look_at": [
+     -260.5313,
+     471.1255,
+     8.7471
+    ],
+    "lens_mm": 67.021,
+    "fstop": 5.6,
+    "focus_distance_m": 89.5229
+   },
+   {
+    "t": 84.25,
+    "beat": "5_lap",
+    "world": [
+     -303.9203,
+     393.8745,
+     51.1413
+    ],
+    "look_at": [
+     -264.1174,
+     466.5354,
+     8.7366
+    ],
+    "lens_mm": 67.464,
+    "fstop": 5.6,
+    "focus_distance_m": 93.0701
+   },
+   {
+    "t": 84.41667,
+    "beat": "5_lap",
+    "world": [
+     -318.1757,
+     386.0829,
+     50.5715
+    ],
+    "look_at": [
+     -269.1072,
+     460.1488,
+     8.7218
+    ],
+    "lens_mm": 68.055,
+    "fstop": 5.6,
+    "focus_distance_m": 98.2083
+   },
+   {
+    "t": 84.58333,
+    "beat": "5_lap",
+    "world": [
+     -332.4875,
+     378.3239,
+     49.9664
+    ],
+    "look_at": [
+     -274.332,
+     453.4614,
+     8.7064
+    ],
+    "lens_mm": 68.618,
+    "fstop": 5.6,
+    "focus_distance_m": 103.5862
+   },
+   {
+    "t": 84.79167,
+    "beat": "5_lap",
+    "world": [
+     -350.3005,
+     368.8676,
+     49.1595
+    ],
+    "look_at": [
+     -281.1283,
+     444.7625,
+     8.6863
+    ],
+    "lens_mm": 69.237,
+    "fstop": 5.6,
+    "focus_distance_m": 110.3763
+   },
+   {
+    "t": 85.04167,
+    "beat": "5_lap",
+    "world": [
+     -371.2996,
+     358.2081,
+     48.1152
+    ],
+    "look_at": [
+     -289.5459,
+     434.9767,
+     8.6629
+    ],
+    "lens_mm": 69.776,
+    "fstop": 5.6,
+    "focus_distance_m": 118.8847
+   },
+   {
+    "t": 85.375,
+    "beat": "5_lap",
+    "world": [
+     -398.1614,
+     345.8934,
+     46.5875
+    ],
+    "look_at": [
+     -302.6319,
+     423.8809,
+     8.6316
+    ],
+    "lens_mm": 70.009,
+    "fstop": 5.6,
+    "focus_distance_m": 129.0294
+   },
+   {
+    "t": 85.70833,
+    "beat": "5_lap",
+    "world": [
+     -425.3869,
+     336.6864,
+     44.8101
+    ],
+    "look_at": [
+     -317.517,
+     415.3488,
+     8.6004
+    ],
+    "lens_mm": 70.296,
+    "fstop": 5.6,
+    "focus_distance_m": 138.3287
+   },
+   {
+    "t": 86.04167,
+    "beat": "5_lap",
+    "world": [
+     -453.4325,
+     329.9265,
+     42.7888
+    ],
+    "look_at": [
+     -333.7964,
+     408.6656,
+     8.5676
+    ],
+    "lens_mm": 70.908,
+    "fstop": 5.6,
+    "focus_distance_m": 147.254
+   },
+   {
+    "t": 86.375,
+    "beat": "5_lap",
+    "world": [
+     -481.5826,
+     324.4647,
+     40.5903
+    ],
+    "look_at": [
+     -351.3046,
+     401.5918,
+     8.4824
+    ],
+    "lens_mm": 71.731,
+    "fstop": 5.6,
+    "focus_distance_m": 154.7638
+   },
+   {
+    "t": 86.70833,
+    "beat": "5_lap",
+    "world": [
+     -509.1216,
+     319.1516,
+     38.2813
+    ],
+    "look_at": [
+     -369.9075,
+     394.0758,
+     8.3031
+    ],
+    "lens_mm": 72.649,
+    "fstop": 5.6,
+    "focus_distance_m": 160.9128
+   },
+   {
+    "t": 87.04167,
+    "beat": "5_lap",
+    "world": [
+     -535.3341,
+     312.8378,
+     35.9285
+    ],
+    "look_at": [
+     -389.4941,
+     386.1623,
+     8.0155
+    ],
+    "lens_mm": 73.548,
+    "fstop": 5.6,
+    "focus_distance_m": 165.6047
+   },
+   {
+    "t": 87.375,
+    "beat": "5_lap",
+    "world": [
+     -559.5046,
+     304.3742,
+     33.5986
+    ],
+    "look_at": [
+     -409.9705,
+     377.8893,
+     7.6089
+    ],
+    "lens_mm": 74.316,
+    "fstop": 5.6,
+    "focus_distance_m": 168.6427
+   },
+   {
+    "t": 87.70833,
+    "beat": "5_lap",
+    "world": [
+     -580.9174,
+     292.6115,
+     31.3582
+    ],
+    "look_at": [
+     -431.2542,
+     369.29,
+     7.1498
+    ],
+    "lens_mm": 74.836,
+    "fstop": 5.6,
+    "focus_distance_m": 169.8962
+   },
+   {
+    "t": 88.04167,
+    "beat": "5_lap",
+    "world": [
+     -598.8809,
+     276.4037,
+     29.2719
+    ],
+    "look_at": [
+     -453.2697,
+     360.3952,
+     6.6751
+    ],
+    "lens_mm": 75.006,
+    "fstop": 5.6,
+    "focus_distance_m": 169.6107
+   },
+   {
+    "t": 88.375,
+    "beat": "5_lap",
+    "world": [
+     -614.5713,
+     255.4048,
+     27.2261
+    ],
+    "look_at": [
+     -475.949,
+     351.2321,
+     6.2416
+    ],
+    "lens_mm": 75.457,
+    "fstop": 5.6,
+    "focus_distance_m": 169.8216
+   },
+   {
+    "t": 88.625,
+    "beat": "5_lap",
+    "world": [
+     -625.2656,
+     237.2358,
+     25.6793
+    ],
+    "look_at": [
+     -493.3557,
+     344.1994,
+     5.9773
+    ],
+    "lens_mm": 76.15,
+    "fstop": 5.6,
+    "focus_distance_m": 170.9667
+   },
+   {
+    "t": 88.875,
+    "beat": "5_lap",
+    "world": [
+     -634.779,
+     217.6339,
+     24.1481
+    ],
+    "look_at": [
+     -511.0754,
+     337.0402,
+     5.7693
+    ],
+    "lens_mm": 77.018,
+    "fstop": 5.6,
+    "focus_distance_m": 172.911
+   },
+   {
+    "t": 89.08333,
+    "beat": "5_lap",
+    "world": [
+     -641.6354,
+     200.621,
+     22.9011
+    ],
+    "look_at": [
+     -526.0599,
+     330.9861,
+     5.6414
+    ],
+    "lens_mm": 77.792,
+    "fstop": 5.6,
+    "focus_distance_m": 175.0733
+   },
+   {
+    "t": 89.29167,
+    "beat": "5_lap",
+    "world": [
+     -647.3731,
+     183.3479,
+     21.6948
+    ],
+    "look_at": [
+     -540.4953,
+     325.1538,
+     5.5599
+    ],
+    "lens_mm": 78.541,
+    "fstop": 5.6,
+    "focus_distance_m": 178.3034
+   },
+   {
+    "t": 89.5,
+    "beat": "5_lap",
+    "world": [
+     -651.8562,
+     166.1488,
+     20.5429
+    ],
+    "look_at": [
+     -553.9286,
+     319.0614,
+     5.5117
+    ],
+    "lens_mm": 79.198,
+    "fstop": 5.6,
+    "focus_distance_m": 182.2033
+   },
+   {
+    "t": 89.75,
+    "beat": "5_lap",
+    "world": [
+     -655.3886,
+     146.0777,
+     19.2517
+    ],
+    "look_at": [
+     -568.9577,
+     309.7865,
+     5.4563
+    ],
+    "lens_mm": 79.771,
+    "fstop": 5.6,
+    "focus_distance_m": 185.6373
+   },
+   {
+    "t": 90.0,
+    "beat": "5_lap",
+    "world": [
+     -656.6842,
+     127.1713,
+     18.082
+    ],
+    "look_at": [
+     -582.5295,
+     298.486,
+     5.4009
+    ],
+    "lens_mm": 80.0,
+    "fstop": 5.6,
+    "focus_distance_m": 187.1054
+   },
+   {
+    "t": 90.25,
+    "beat": "5_lap",
+    "world": [
+     -654.2237,
+     108.7103,
+     17.04
+    ],
+    "look_at": [
+     -594.3731,
+     285.3854,
+     5.3455
+    ],
+    "lens_mm": 80.396,
+    "fstop": 5.6,
+    "focus_distance_m": 186.9036
+   },
+   {
+    "t": 90.45833,
+    "beat": "5_lap",
+    "world": [
+     -648.87,
+     92.9832,
+     16.2506
+    ],
+    "look_at": [
+     -602.751,
+     273.281,
+     5.2993
+    ],
+    "lens_mm": 81.225,
+    "fstop": 5.6,
+    "focus_distance_m": 186.4247
+   },
+   {
+    "t": 90.66667,
+    "beat": "5_lap",
+    "world": [
+     -641.585,
+     77.3781,
+     15.5197
+    ],
+    "look_at": [
+     -609.6476,
+     260.2755,
+     5.2531
+    ],
+    "lens_mm": 82.293,
+    "fstop": 5.6,
+    "focus_distance_m": 185.9486
+   },
+   {
+    "t": 90.875,
+    "beat": "5_lap",
+    "world": [
+     -633.3753,
+     62.3033,
+     14.8348
+    ],
+    "look_at": [
+     -615.4886,
+     246.6,
+     5.2064
+    ],
+    "lens_mm": 83.399,
+    "fstop": 5.6,
+    "focus_distance_m": 185.4128
+   },
+   {
+    "t": 91.125,
+    "beat": "5_lap",
+    "world": [
+     -623.7206,
+     45.4885,
+     14.0562
+    ],
+    "look_at": [
+     -621.9402,
+     229.5607,
+     5.1494
+    ],
+    "lens_mm": 84.49,
+    "fstop": 5.6,
+    "focus_distance_m": 184.2961
+   },
+   {
+    "t": 91.41667,
+    "beat": "5_lap",
+    "world": [
+     -614.9199,
+     28.5196,
+     13.1804
+    ],
+    "look_at": [
+     -628.6092,
+     208.8852,
+     5.0813
+    ],
+    "lens_mm": 85.0,
+    "fstop": 5.6,
+    "focus_distance_m": 181.0656
+   },
+   {
+    "t": 91.75,
+    "beat": "5_lap",
+    "world": [
+     -607.6659,
+     12.8494,
+     12.2316
+    ],
+    "look_at": [
+     -633.867,
+     184.1322,
+     5.0018
+    ],
+    "lens_mm": 85.0,
+    "fstop": 5.6,
+    "focus_distance_m": 173.426
+   },
+   {
+    "t": 92.08333,
+    "beat": "5_lap",
+    "world": [
+     -601.3702,
+     -0.1724,
+     11.3591
+    ],
+    "look_at": [
+     -634.8757,
+     158.303,
+     4.9207
+    ],
+    "lens_mm": 85.0,
+    "fstop": 5.6,
+    "focus_distance_m": 162.1066
+   },
+   {
+    "t": 92.41667,
+    "beat": "5_lap",
+    "world": [
+     -595.7409,
+     -11.8232,
+     10.5565
+    ],
+    "look_at": [
+     -631.3237,
+     132.1912,
+     4.8381
+    ],
+    "lens_mm": 84.992,
+    "fstop": 5.6,
+    "focus_distance_m": 148.4553
+   },
+   {
+    "t": 92.75,
+    "beat": "5_lap",
+    "world": [
+     -590.6528,
+     -22.5387,
+     9.8368
+    ],
+    "look_at": [
+     -623.0767,
+     106.6791,
+     4.7539
+    ],
+    "lens_mm": 82.5,
+    "fstop": 5.6,
+    "focus_distance_m": 133.3206
+   },
+   {
+    "t": 93.08333,
+    "beat": "5_lap",
+    "world": [
+     -586.3363,
+     -31.6292,
+     9.1601
+    ],
+    "look_at": [
+     -611.4887,
+     81.957,
+     4.6691
+    ],
+    "lens_mm": 80.008,
+    "fstop": 5.6,
+    "focus_distance_m": 116.4243
+   },
+   {
+    "t": 93.41667,
+    "beat": "5_lap",
+    "world": [
+     -582.8619,
+     -38.8738,
+     8.6527
+    ],
+    "look_at": [
+     -599.6092,
+     56.9389,
+     4.5846
+    ],
+    "lens_mm": 73.047,
+    "fstop": 5.6,
+    "focus_distance_m": 97.3504
+   },
+   {
+    "t": 93.75,
+    "beat": "5_lap",
+    "world": [
+     -580.625,
+     -44.0258,
+     7.1108
+    ],
+    "look_at": [
+     -587.5785,
+     31.6022,
+     4.4638
+    ],
+    "lens_mm": 64.6,
+    "fstop": 5.6,
+    "focus_distance_m": 75.9932
+   },
+   {
+    "t": 93.91667,
+    "beat": "5_lap",
+    "world": [
+     -580.0501,
+     -45.7897,
+     5.6925
+    ],
+    "look_at": [
+     -581.5102,
+     18.8223,
+     4.3022
+    ],
+    "lens_mm": 52.619,
+    "fstop": 5.6,
+    "focus_distance_m": 64.6434
+   },
+   {
+    "t": 94.04167,
+    "beat": "5_lap",
+    "world": [
+     -579.7359,
+     -46.6038,
+     4.97
+    ],
+    "look_at": [
+     -576.9366,
+     9.1904,
+     4.1506
+    ],
+    "lens_mm": 45.941,
+    "fstop": 5.6,
+    "focus_distance_m": 55.8704
+   },
+   {
+    "t": 94.125,
+    "beat": "5_lap",
+    "world": [
+     -579.5447,
+     -46.8531,
+     4.8533
+    ],
+    "look_at": [
+     -573.8773,
+     2.7474,
+     4.0439
+    ],
+    "lens_mm": 44.968,
+    "fstop": 5.6,
+    "focus_distance_m": 49.9298
+   },
+   {
+    "t": 94.20833,
+    "beat": "5_lap",
+    "world": [
+     -579.4015,
+     -46.9854,
+     4.8365
+    ],
+    "look_at": [
+     -570.8097,
+     -3.7129,
+     3.9159
+    ],
+    "lens_mm": 44.459,
+    "fstop": 5.6,
+    "focus_distance_m": 44.1269
+   },
+   {
+    "t": 94.29167,
+    "beat": "5_lap",
+    "world": [
+     -579.3085,
+     -47.063,
+     4.8264
+    ],
+    "look_at": [
+     -567.7341,
+     -10.19,
+     3.7637
+    ],
+    "lens_mm": 43.511,
+    "fstop": 5.6,
+    "focus_distance_m": 38.6615
+   },
+   {
+    "t": 94.375,
+    "beat": "5_lap",
+    "world": [
+     -579.2491,
+     -47.1043,
+     4.8208
+    ],
+    "look_at": [
+     -564.6506,
+     -16.6838,
+     3.5918
+    ],
+    "lens_mm": 42.359,
+    "fstop": 5.6,
+    "focus_distance_m": 33.7644
+   },
+   {
+    "t": 94.45833,
+    "beat": "5_lap",
+    "world": [
+     -579.2065,
+     -47.1279,
+     4.8177
+    ],
+    "look_at": [
+     -561.5593,
+     -23.1942,
+     3.4045
+    ],
+    "lens_mm": 41.234,
+    "fstop": 5.6,
+    "focus_distance_m": 29.7699
+   },
+   {
+    "t": 94.54167,
+    "beat": "5_lap",
+    "world": [
+     -579.1639,
+     -47.1524,
+     4.8149
+    ],
+    "look_at": [
+     -558.4603,
+     -29.7206,
+     3.2068
+    ],
+    "lens_mm": 40.37,
+    "fstop": 5.6,
+    "focus_distance_m": 27.1126
+   },
+   {
+    "t": 94.625,
+    "beat": "5_lap",
+    "world": [
+     -579.1045,
+     -47.1963,
+     4.8104
+    ],
+    "look_at": [
+     -555.3537,
+     -36.2631,
+     3.0029
+    ],
+    "lens_mm": 40.001,
+    "fstop": 5.6,
+    "focus_distance_m": 26.2088
+   },
+   {
+    "t": 94.70833,
+    "beat": "5_lap",
+    "world": [
+     -579.0346,
+     -47.2539,
+     4.8043
+    ],
+    "look_at": [
+     -552.243,
+     -42.8144,
+     2.7914
+    ],
+    "lens_mm": 40.139,
+    "fstop": 5.6,
+    "focus_distance_m": 27.2314
+   },
+   {
+    "t": 94.79167,
+    "beat": "5_lap",
+    "world": [
+     -578.9759,
+     -47.3023,
+     4.7987
+    ],
+    "look_at": [
+     -549.1922,
+     -49.2392,
+     2.571
+    ],
+    "lens_mm": 40.573,
+    "fstop": 5.6,
+    "focus_distance_m": 29.9296
+   },
+   {
+    "t": 94.875,
+    "beat": "5_lap",
+    "world": [
+     -578.9271,
+     -47.3427,
+     4.7936
+    ],
+    "look_at": [
+     -546.2409,
+     -55.4546,
+     2.3453
+    ],
+    "lens_mm": 41.277,
+    "fstop": 5.6,
+    "focus_distance_m": 33.7667
+   },
+   {
+    "t": 94.95833,
+    "beat": "5_lap",
+    "world": [
+     -578.8867,
+     -47.3764,
+     4.7889
+    ],
+    "look_at": [
+     -543.3855,
+     -61.4682,
+     2.1153
+    ],
+    "lens_mm": 42.222,
+    "fstop": 5.6,
+    "focus_distance_m": 38.2892
+   },
+   {
+    "t": 95.04167,
+    "beat": "5_lap",
+    "world": [
+     -578.8532,
+     -47.4048,
+     4.7847
+    ],
+    "look_at": [
+     -540.6221,
+     -67.2878,
+     1.882
+    ],
+    "lens_mm": 43.383,
+    "fstop": 5.6,
+    "focus_distance_m": 43.1901
+   },
+   {
+    "t": 95.125,
+    "beat": "5_lap",
+    "world": [
+     -578.8251,
+     -47.429,
+     4.781
+    ],
+    "look_at": [
+     -537.9471,
+     -72.9213,
+     1.6459
+    ],
+    "lens_mm": 44.73,
+    "fstop": 5.6,
+    "focus_distance_m": 48.2773
+   },
+   {
+    "t": 95.25,
+    "beat": "5_lap",
+    "world": [
+     -578.7898,
+     -47.4607,
+     4.7761
+    ],
+    "look_at": [
+     -534.093,
+     -81.038,
+     1.2878
+    ],
+    "lens_mm": 47.044,
+    "fstop": 5.6,
+    "focus_distance_m": 56.0125
+   },
+   {
+    "t": 95.41667,
+    "beat": "5_lap",
+    "world": [
+     -578.7477,
+     -47.5007,
+     4.7708
+    ],
+    "look_at": [
+     -529.234,
+     -91.2711,
+     0.8116
+    ],
+    "lens_mm": 50.531,
+    "fstop": 5.6,
+    "focus_distance_m": 66.2052
+   },
+   {
+    "t": 95.70833,
+    "beat": "5_lap",
+    "world": [
+     -578.6541,
+     -47.5943,
+     4.7646
+    ],
+    "look_at": [
+     -521.4405,
+     -107.684,
+     0.047
+    ],
+    "lens_mm": 57.126,
+    "fstop": 5.6,
+    "focus_distance_m": 83.1049
+   },
+   {
+    "t": 96.04167,
+    "beat": "5_lap",
+    "world": [
+     -578.4455,
+     -47.7997,
+     4.7611
+    ],
+    "look_at": [
+     -513.5357,
+     -124.3317,
+     -0.7264
+    ],
+    "lens_mm": 64.137,
+    "fstop": 5.6,
+    "focus_distance_m": 100.5015
+   },
+   {
+    "t": 96.375,
+    "beat": "5_lap",
+    "world": [
+     -578.0369,
+     -48.19,
+     4.7601
+    ],
+    "look_at": [
+     -506.5897,
+     -138.9598,
+     -1.3944
+    ],
+    "lens_mm": 68.915,
+    "fstop": 5.6,
+    "focus_distance_m": 115.6794
+   },
+   {
+    "t": 96.70833,
+    "beat": "5_lap",
+    "world": [
+     -577.2963,
+     -48.932,
+     4.7616
+    ],
+    "look_at": [
+     -500.5135,
+     -151.7562,
+     -1.8968
+    ],
+    "lens_mm": 70.653,
+    "fstop": 5.6,
+    "focus_distance_m": 128.5019
+   },
+   {
+    "t": 97.04167,
+    "beat": "5_lap",
+    "world": [
+     -575.5308,
+     -51.3278,
+     4.8088
+    ],
+    "look_at": [
+     -495.2377,
+     -162.8671,
+     -2.2515
+    ],
+    "lens_mm": 78.258,
+    "fstop": 5.6,
+    "focus_distance_m": 137.6148
+   },
+   {
+    "t": 97.375,
+    "beat": "5_lap",
+    "world": [
+     -572.1776,
+     -56.0788,
+     4.9783
+    ],
+    "look_at": [
+     -490.3779,
+     -172.4502,
+     -2.4947
+    ],
+    "lens_mm": 87.418,
+    "fstop": 5.6,
+    "focus_distance_m": 142.4406
+   },
+   {
+    "t": 97.70833,
+    "beat": "5_lap",
+    "world": [
+     -566.7529,
+     -63.6073,
+     5.3704
+    ],
+    "look_at": [
+     -483.992,
+     -180.7758,
+     -2.6722
+    ],
+    "lens_mm": 90.98,
+    "fstop": 5.6,
+    "focus_distance_m": 143.675
+   },
+   {
+    "t": 98.04167,
+    "beat": "5_lap",
+    "world": [
+     -558.7089,
+     -74.4789,
+     6.1938
+    ],
+    "look_at": [
+     -476.0091,
+     -187.5853,
+     -2.79
+    ],
+    "lens_mm": 102.387,
+    "fstop": 5.6,
+    "focus_distance_m": 140.4031
+   },
+   {
+    "t": 98.375,
+    "beat": "5_lap",
+    "world": [
+     -549.3335,
+     -87.393,
+     6.9897
+    ],
+    "look_at": [
+     -466.7809,
+     -192.5787,
+     -2.8481
+    ],
+    "lens_mm": 116.127,
+    "fstop": 5.6,
+    "focus_distance_m": 134.0736
+   },
+   {
+    "t": 98.70833,
+    "beat": "5_lap",
+    "world": [
+     -540.2843,
+     -100.8788,
+     7.1873
+    ],
+    "look_at": [
+     -456.6881,
+     -195.5763,
+     -2.8634
+    ],
+    "lens_mm": 119.623,
+    "fstop": 5.6,
+    "focus_distance_m": 126.716
+   },
+   {
+    "t": 99.0,
+    "beat": "5_lap",
+    "world": [
+     -533.1639,
+     -114.4894,
+     7.0434
+    ],
+    "look_at": [
+     -446.9377,
+     -197.7558,
+     -2.8653
+    ],
+    "lens_mm": 115.445,
+    "fstop": 5.6,
+    "focus_distance_m": 120.2764
+   },
+   {
+    "t": 99.25,
+    "beat": "5_lap",
+    "world": [
+     -527.258,
+     -127.307,
+     6.8235
+    ],
+    "look_at": [
+     -437.7446,
+     -199.8107,
+     -2.8541
+    ],
+    "lens_mm": 109.307,
+    "fstop": 5.6,
+    "focus_distance_m": 115.5988
+   },
+   {
+    "t": 99.45833,
+    "beat": "5_lap",
+    "world": [
+     -522.2014,
+     -138.2708,
+     6.5973
+    ],
+    "look_at": [
+     -429.4808,
+     -201.6579,
+     -2.8334
+    ],
+    "lens_mm": 103.291,
+    "fstop": 5.6,
+    "focus_distance_m": 112.7119
+   },
+   {
+    "t": 99.66667,
+    "beat": "5_lap",
+    "world": [
+     -516.8007,
+     -149.0637,
+     6.3523
+    ],
+    "look_at": [
+     -420.6567,
+     -203.6303,
+     -2.8
+    ],
+    "lens_mm": 97.187,
+    "fstop": 5.6,
+    "focus_distance_m": 110.9277
+   },
+   {
+    "t": 99.875,
+    "beat": "5_lap",
+    "world": [
+     -510.8482,
+     -159.2846,
+     6.1075
+    ],
+    "look_at": [
+     -411.5788,
+     -205.6594,
+     -2.7535
+    ],
+    "lens_mm": 91.681,
+    "fstop": 5.6,
+    "focus_distance_m": 109.9252
+   },
+   {
+    "t": 100.125,
+    "beat": "5_lap",
+    "world": [
+     -502.6845,
+     -170.2303,
+     5.8409
+    ],
+    "look_at": [
+     -401.5273,
+     -207.8132,
+     -2.6878
+    ],
+    "lens_mm": 86.826,
+    "fstop": 5.6,
+    "focus_distance_m": 108.2497
+   },
+   {
+    "t": 100.41667,
+    "beat": "5_lap",
+    "world": [
+     -491.2995,
+     -180.3201,
+     5.6072
+    ],
+    "look_at": [
+     -389.9155,
+     -208.8211,
+     -2.5951
+    ],
+    "lens_mm": 84.978,
+    "fstop": 5.6,
+    "focus_distance_m": 105.6328
+   },
+   {
+    "t": 100.75,
+    "beat": "5_lap",
+    "world": [
+     -475.4863,
+     -188.4206,
+     5.3989
+    ],
+    "look_at": [
+     -376.633,
+     -207.6206,
+     -2.4652
+    ],
+    "lens_mm": 83.681,
+    "fstop": 5.6,
+    "focus_distance_m": 101.0073
+   },
+   {
+    "t": 101.08333,
+    "beat": "5_lap",
+    "world": [
+     -457.2581,
+     -193.8246,
+     5.2148
+    ],
+    "look_at": [
+     -362.5067,
+     -205.2821,
+     -2.3034
+    ],
+    "lens_mm": 80.917,
+    "fstop": 5.6,
+    "focus_distance_m": 95.7373
+   },
+   {
+    "t": 101.41667,
+    "beat": "5_lap",
+    "world": [
+     -437.3737,
+     -197.249,
+     5.058
+    ],
+    "look_at": [
+     -346.9005,
+     -202.6985,
+     -2.1224
+    ],
+    "lens_mm": 77.428,
+    "fstop": 5.6,
+    "focus_distance_m": 90.9212
+   },
+   {
+    "t": 101.75,
+    "beat": "5_lap",
+    "world": [
+     -416.5921,
+     -199.4111,
+     4.9314
+    ],
+    "look_at": [
+     -329.8192,
+     -199.8706,
+     -1.9242
+    ],
+    "lens_mm": 73.953,
+    "fstop": 5.6,
+    "focus_distance_m": 87.0445
+   },
+   {
+    "t": 102.08333,
+    "beat": "5_lap",
+    "world": [
+     -395.672,
+     -201.0277,
+     4.8382
+    ],
+    "look_at": [
+     -312.1854,
+     -196.9514,
+     -1.7197
+    ],
+    "lens_mm": 71.234,
+    "fstop": 5.6,
+    "focus_distance_m": 83.8429
+   },
+   {
+    "t": 102.41667,
+    "beat": "5_lap",
+    "world": [
+     -375.3724,
+     -202.816,
+     4.7814
+    ],
+    "look_at": [
+     -295.7462,
+     -195.2653,
+     -1.5302
+    ],
+    "lens_mm": 70.011,
+    "fstop": 5.6,
+    "focus_distance_m": 80.2321
+   },
+   {
+    "t": 102.75,
+    "beat": "5_lap",
+    "world": [
+     -355.7388,
+     -204.7414,
+     4.7507
+    ],
+    "look_at": [
+     -279.318,
+     -196.5402,
+     -1.3414
+    ],
+    "lens_mm": 69.5,
+    "fstop": 5.6,
+    "focus_distance_m": 77.1007
+   },
+   {
+    "t": 103.08333,
+    "beat": "5_lap",
+    "world": [
+     -336.0231,
+     -206.0739,
+     4.7274
+    ],
+    "look_at": [
+     -262.3574,
+     -199.5216,
+     -1.1443
+    ],
+    "lens_mm": 67.966,
+    "fstop": 5.6,
+    "focus_distance_m": 74.1892
+   },
+   {
+    "t": 103.41667,
+    "beat": "5_lap",
+    "world": [
+     -316.1995,
+     -206.9375,
+     4.7105
+    ],
+    "look_at": [
+     -244.0716,
+     -202.7459,
+     -0.9318
+    ],
+    "lens_mm": 65.716,
+    "fstop": 5.6,
+    "focus_distance_m": 72.4696
+   },
+   {
+    "t": 103.75,
+    "beat": "5_lap",
+    "world": [
+     -296.2498,
+     -207.4645,
+     4.6989
+    ],
+    "look_at": [
+     -224.608,
+     -206.1778,
+     -0.7055
+    ],
+    "lens_mm": 63.074,
+    "fstop": 5.6,
+    "focus_distance_m": 71.8568
+   },
+   {
+    "t": 104.08333,
+    "beat": "5_lap",
+    "world": [
+     -276.1557,
+     -207.7872,
+     4.6916
+    ],
+    "look_at": [
+     -204.0923,
+     -209.7953,
+     -0.4671
+    ],
+    "lens_mm": 60.364,
+    "fstop": 5.6,
+    "focus_distance_m": 72.2756
+   },
+   {
+    "t": 104.41667,
+    "beat": "5_lap",
+    "world": [
+     -255.899,
+     -208.0379,
+     4.6876
+    ],
+    "look_at": [
+     -184.0706,
+     -213.3141,
+     -0.2344
+    ],
+    "lens_mm": 57.91,
+    "fstop": 5.6,
+    "focus_distance_m": 72.1899
+   },
+   {
+    "t": 104.75,
+    "beat": "5_lap",
+    "world": [
+     -235.4614,
+     -208.3487,
+     4.6859
+    ],
+    "look_at": [
+     -164.9762,
+     -214.6781,
+     -0.015
+    ],
+    "lens_mm": 56.036,
+    "fstop": 5.6,
+    "focus_distance_m": 70.9247
+   },
+   {
+    "t": 105.08333,
+    "beat": "5_lap",
+    "world": [
+     -214.8247,
+     -208.852,
+     4.6855
+    ],
+    "look_at": [
+     -145.9532,
+     -212.5522,
+     0.2013
+    ],
+    "lens_mm": 55.066,
+    "fstop": 5.6,
+    "focus_distance_m": 69.1165
+   },
+   {
+    "t": 105.375,
+    "beat": "5_lap",
+    "world": [
+     -196.6606,
+     -209.5539,
+     4.7002
+    ],
+    "look_at": [
+     -129.8628,
+     -207.8828,
+     0.3671
+    ],
+    "lens_mm": 54.259,
+    "fstop": 5.6,
+    "focus_distance_m": 66.959
+   },
+   {
+    "t": 105.58333,
+    "beat": "5_lap",
+    "world": [
+     -183.7149,
+     -210.1763,
+     4.7426
+    ],
+    "look_at": [
+     -118.9268,
+     -203.0074,
+     0.4692
+    ],
+    "lens_mm": 52.123,
+    "fstop": 5.6,
+    "focus_distance_m": 65.3234
+   },
+   {
+    "t": 105.75,
+    "beat": "5_lap",
+    "world": [
+     -173.3061,
+     -210.6722,
+     4.786
+    ],
+    "look_at": [
+     -110.6223,
+     -198.2298,
+     0.5409
+    ],
+    "lens_mm": 49.932,
+    "fstop": 5.6,
+    "focus_distance_m": 64.0476
+   },
+   {
+    "t": 105.875,
+    "beat": "5_lap",
+    "world": [
+     -165.4332,
+     -211.0088,
+     4.8189
+    ],
+    "look_at": [
+     -104.6988,
+     -194.1606,
+     0.589
+    ],
+    "lens_mm": 48.275,
+    "fstop": 5.6,
+    "focus_distance_m": 63.1698
+   },
+   {
+    "t": 106.0,
+    "beat": "5_lap",
+    "world": [
+     -157.4776,
+     -211.2907,
+     4.8482
+    ],
+    "look_at": [
+     -99.0639,
+     -189.6983,
+     0.6322
+    ],
+    "lens_mm": 46.797,
+    "fstop": 5.6,
+    "focus_distance_m": 62.4193
+   },
+   {
+    "t": 106.08333,
+    "beat": "5_lap",
+    "world": [
+     -152.1166,
+     -211.4374,
+     4.8641
+    ],
+    "look_at": [
+     -95.3511,
+     -186.5831,
+     0.6585
+    ],
+    "lens_mm": 45.994,
+    "fstop": 5.6,
+    "focus_distance_m": 62.1108
+   },
+   {
+    "t": 106.16667,
+    "beat": "5_lap",
+    "world": [
+     -146.7019,
+     -211.5436,
+     4.876
+    ],
+    "look_at": [
+     -91.5817,
+     -183.4203,
+     0.6829
+    ],
+    "lens_mm": 45.398,
+    "fstop": 5.6,
+    "focus_distance_m": 62.022
+   },
+   {
+    "t": 106.25,
+    "beat": "5_lap",
+    "world": [
+     -141.2264,
+     -211.6026,
+     4.8827
+    ],
+    "look_at": [
+     -87.7583,
+     -180.212,
+     0.7052
+    ],
+    "lens_mm": 45.059,
+    "fstop": 5.6,
+    "focus_distance_m": 62.1422
+   },
+   {
+    "t": 106.375,
+    "beat": "5_lap",
+    "world": [
+     -132.8847,
+     -211.2061,
+     4.883
+    ],
+    "look_at": [
+     -81.925,
+     -175.3173,
+     0.7344
+    ],
+    "lens_mm": 44.952,
+    "fstop": 5.6,
+    "focus_distance_m": 62.4668
+   },
+   {
+    "t": 106.58333,
+    "beat": "5_lap",
+    "world": [
+     -118.6477,
+     -206.2617,
+     4.8714
+    ],
+    "look_at": [
+     -71.9524,
+     -166.9493,
+     0.7665
+    ],
+    "lens_mm": 44.391,
+    "fstop": 5.6,
+    "focus_distance_m": 61.1781
+   },
+   {
+    "t": 106.91667,
+    "beat": "5_lap",
+    "world": [
+     -95.2219,
+     -189.6937,
+     4.8231
+    ],
+    "look_at": [
+     -55.3888,
+     -153.0508,
+     0.7766
+    ],
+    "lens_mm": 42.692,
+    "fstop": 5.6,
+    "focus_distance_m": 54.2749
+   },
+   {
+    "t": 107.25,
+    "beat": "5_lap",
+    "world": [
+     -71.3673,
+     -167.7303,
+     4.7361
+    ],
+    "look_at": [
+     -38.1402,
+     -138.5775,
+     0.7589
+    ],
+    "lens_mm": 40.892,
+    "fstop": 5.6,
+    "focus_distance_m": 44.3818
+   },
+   {
+    "t": 107.58333,
+    "beat": "5_lap",
+    "world": [
+     -47.5032,
+     -146.3823,
+     4.6076
+    ],
+    "look_at": [
+     -20.2718,
+     -123.5841,
+     0.75
+    ],
+    "lens_mm": 40.002,
+    "fstop": 5.6,
+    "focus_distance_m": 35.7238
+   },
+   {
+    "t": 107.91667,
+    "beat": "5_lap",
+    "world": [
+     -23.6621,
+     -126.8011,
+     4.4337
+    ],
+    "look_at": [
+     -1.841,
+     -108.1188,
+     0.7461
+    ],
+    "lens_mm": 38.957,
+    "fstop": 5.6,
+    "focus_distance_m": 28.9618
+   },
+   {
+    "t": 108.25,
+    "beat": "5_lap",
+    "world": [
+     0.3667,
+     -105.9073,
+     4.216
+    ],
+    "look_at": [
+     17.1009,
+     -92.2247,
+     0.7366
+    ],
+    "lens_mm": 36.428,
+    "fstop": 5.6,
+    "focus_distance_m": 21.8941
+   },
+   {
+    "t": 108.58333,
+    "beat": "5_lap",
+    "world": [
+     24.4191,
+     -84.6599,
+     3.9611
+    ],
+    "look_at": [
+     36.5079,
+     -75.9403,
+     0.7264
+    ],
+    "lens_mm": 33.704,
+    "fstop": 5.6,
+    "focus_distance_m": 15.2524
+   },
+   {
+    "t": 108.79167,
+    "beat": "5_lap",
+    "world": [
+     39.3903,
+     -71.6318,
+     3.7858
+    ],
+    "look_at": [
+     48.8551,
+     -65.5798,
+     0.7218
+    ],
+    "lens_mm": 32.479,
+    "fstop": 5.6,
+    "focus_distance_m": 11.6446
+   },
+   {
+    "t": 108.95833,
+    "beat": "5_lap",
+    "world": [
+     51.3004,
+     -61.542,
+     3.6379
+    ],
+    "look_at": [
+     58.8457,
+     -57.1967,
+     0.7201
+    ],
+    "lens_mm": 32.021,
+    "fstop": 5.6,
+    "focus_distance_m": 9.183
+   },
+   {
+    "t": 109.125,
+    "beat": "5_lap",
+    "world": [
+     63.1661,
+     -51.7829,
+     3.475
+    ],
+    "look_at": [
+     68.9318,
+     -48.7334,
+     0.7267
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 7.0779
+   },
+   {
+    "t": 109.25,
+    "beat": "5_lap",
+    "world": [
+     72.0687,
+     -44.558,
+     3.3376
+    ],
+    "look_at": [
+     76.5565,
+     -42.3355,
+     0.7426
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 5.6404
+   },
+   {
+    "t": 109.33333,
+    "beat": "5_lap",
+    "world": [
+     77.9896,
+     -39.7762,
+     3.2456
+    ],
+    "look_at": [
+     81.6673,
+     -38.047,
+     0.755
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 4.7664
+   },
+   {
+    "t": 109.41667,
+    "beat": "5_lap",
+    "world": [
+     83.8884,
+     -35.018,
+     3.158
+    ],
+    "look_at": [
+     86.7997,
+     -33.7404,
+     0.7666
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 3.9783
+   },
+   {
+    "t": 109.5,
+    "beat": "5_lap",
+    "world": [
+     89.7555,
+     -30.2798,
+     3.0786
+    ],
+    "look_at": [
+     91.9531,
+     -29.4163,
+     0.7756
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 3.2984
+   },
+   {
+    "t": 109.58333,
+    "beat": "5_lap",
+    "world": [
+     95.5819,
+     -25.5579,
+     3.0116
+    ],
+    "look_at": [
+     97.1271,
+     -25.0747,
+     0.7799
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 2.7571
+   },
+   {
+    "t": 109.66667,
+    "beat": "5_lap",
+    "world": [
+     101.3579,
+     -20.8574,
+     2.9595
+    ],
+    "look_at": [
+     102.3213,
+     -20.7163,
+     0.781
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 2.3861
+   },
+   {
+    "t": 109.75,
+    "beat": "5_lap",
+    "world": [
+     107.087,
+     -16.1891,
+     2.9193
+    ],
+    "look_at": [
+     107.5351,
+     -16.3414,
+     0.7846
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 2.1865
+   },
+   {
+    "t": 109.83333,
+    "beat": "5_lap",
+    "world": [
+     112.7845,
+     -11.5429,
+     2.8871
+    ],
+    "look_at": [
+     112.7683,
+     -11.9502,
+     0.7895
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 2.1369
+   },
+   {
+    "t": 109.91667,
+    "beat": "5_lap",
+    "world": [
+     118.4656,
+     -6.9081,
+     2.8591
+    ],
+    "look_at": [
+     118.0202,
+     -7.5434,
+     0.7945
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 2.2056
+   },
+   {
+    "t": 110.0,
+    "beat": "5_lap",
+    "world": [
+     124.1456,
+     -2.274,
+     2.8314
+    ],
+    "look_at": [
+     123.2905,
+     -3.1211,
+     0.7984
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 2.3625
+   },
+   {
+    "t": 110.04167,
+    "beat": "5_lap",
+    "world": [
+     126.9901,
+     0.0461,
+     2.8164
+    ],
+    "look_at": [
+     125.9325,
+     -0.9042,
+     0.7996
+    ],
+    "lens_mm": 32.0,
+    "fstop": 5.6,
+    "focus_distance_m": 2.4676
+   }
+  ]
+ },
+ "aim": {
+  "why": "the continuity gate measured jumps, not aim. this block states, per beat, WHAT the camera must be pointed at, so the aim gate in anim/build_camera_rig.py has a subject to measure against.",
+  "1_assembly": {
+   "subject": "the exploded parts field: the nearest of the 15 cluster volumes in docs/explode_plan.json, measured to the EDGE of its bounding sphere, moved from its exploded position to its seated one on the seat frames in world/beat1_anim_anim.json",
+   "bound_deg": 30.0,
+   "authored_by": "not this file \u2014 beat 1's keys come from tools/build_beatsheet.py",
+   "status": "R2-029 FIXED. Beat 1 now carries 20 keys: the 15 presentations plus a four-key CLOSE-OUT over frames 591-754 that swings around the nose instead of through the car, shooting the NOSE/FW/RW seats and the simultaneous four-corner landing at 696. Two separate defects were in there: the 163-frame two-key gap (48.88 deg off the field at frame 669, glass wall in the picture at 648) AND keys authored against an older docs/explode_plan.json, which put FD 18.3 deg and NOSE 33.9 deg OUTSIDE the frame at their own presentations. Both are gated now by tools/build_beatsheet.py, which fails the pre-fix sheet."
+  },
+  "1_assembly_rejected_model": {
+   "subject": "the single cluster the nearest key nominates",
+   "worst_deg": 118.95,
+   "why_rejected": "beat 1 is a weave THROUGH the field; between two presentations the lens is on the parts in between. This model called 273 frames a miss that the picture shows are not. Recorded so nobody re-derives it and sends someone to fix a camera that is working."
+  },
+  "2_launch": {
+   "subject": "car",
+   "z_off": 0.55,
+   "bound_deg": 20.0
+  },
+  "3_breach": {
+   "subject": "car",
+   "z_off": 0.65,
+   "bound_deg": 24.0
+  },
+  "4_transit": {
+   "subject": "car",
+   "z_off": 0.8,
+   "bound_deg": 14.0
+  },
+  "5_lap": {
+   "subject": "car",
+   "z_off": 0.8,
+   "bound_deg": 22.0
+  },
+  "6_ending": {
+   "subject": "car until t=+4.0, then the breached facade",
+   "fixed_point": [
+    15.0,
+    0.0,
+    3.1
+   ],
+   "car_until_t": 4.0,
+   "point_from_t": 6.0,
+   "z_off": 0.8,
+   "bound_deg": 32.0,
+   "why": "the closing wide's declared content is the circuit with the breached showroom in it; wound_enters_frame_t = 6.0"
+  },
+  "frame_margin": 0.92
+ },
+ "time_map": {
+  "note": "film frame -> world time. beat 3's ramp offsets the two clocks permanently; anything sampling the telemetry per frame must walk this. Implementation: anim/filmtime.py",
+  "launch_film_t": 34.0718,
+  "glass_world_t": 1.92815,
+  "ramps": [
+   {
+    "beat": "3_breach",
+    "frames": [
+     865,
+     1056
+    ],
+    "n": 192,
+    "declared_world_s": 1.6,
+    "achieved_world_s": 1.6000000000000003,
+    "solved_floor": 0.15371900826446283,
+    "ease_in_frames": 6,
+    "ease_out_frames": 15,
+    "declared_floor": 0.153719
+   }
+  ]
+ },
+ "beat1_2_seam": {
+  "authored_by": "tools/author_beats2_5.py",
+  "defect": "R2-064",
+  "why": "beat 1's last key (t=31.4, frame 754) and beat 2's first (t=33.041667, frame 793) had 39 frames of nothing between them. Blender's AUTO_CLAMPED handle at 793 was computed from a 39-frame neighbour and a 2-frame one and overshot to 11.3447 m/s through 98.49 m/s^2. These keys are that hole, filled off the same spline beat 2 is emitted from. They are NOT in beat2.camera_keys on purpose: the four seam invariants are properties of those two keys and any tool that finds them by list position must keep finding the same pair.",
+  "frames": [
+   755,
+   792
+  ],
+  "loaded_by": "anim/build_camera_rig.py load_keys()",
+  "camera_keys": [
+   {
+    "t": 31.45833,
+    "beat": "1_2_seam",
+    "world": [
+     6.757,
+     -4.4241,
+     1.8838
+    ],
+    "look_at": [
+     0.1497,
+     0.0,
+     0.7497
+    ],
+    "lens_mm": 40.0,
+    "fstop": 3.2,
+    "focus_distance_m": 8.0321
+   },
+   {
+    "t": 31.5,
+    "beat": "1_2_seam",
+    "world": [
+     6.7182,
+     -4.4492,
+     1.868
+    ],
+    "look_at": [
+     0.1487,
+     0.0,
+     0.7488
+    ],
+    "lens_mm": 40.0,
+    "fstop": 3.2,
+    "focus_distance_m": 8.0129
+   },
+   {
+    "t": 31.58333,
+    "beat": "1_2_seam",
+    "world": [
+     6.6522,
+     -4.5026,
+     1.8371
+    ],
+    "look_at": [
+     0.1452,
+     0.0,
+     0.7455
+    ],
+    "lens_mm": 39.999,
+    "fstop": 3.2,
+    "focus_distance_m": 7.9879
+   },
+   {
+    "t": 31.70833,
+    "beat": "1_2_seam",
+    "world": [
+     6.5764,
+     -4.5886,
+     1.7926
+    ],
+    "look_at": [
+     0.136,
+     0.0,
+     0.7371
+    ],
+    "lens_mm": 39.996,
+    "fstop": 3.2,
+    "focus_distance_m": 7.9779
+   },
+   {
+    "t": 31.875,
+    "beat": "1_2_seam",
+    "world": [
+     6.5036,
+     -4.7106,
+     1.7355
+    ],
+    "look_at": [
+     0.1182,
+     0.0,
+     0.7206
+    ],
+    "lens_mm": 39.99,
+    "fstop": 3.199,
+    "focus_distance_m": 7.9996
+   },
+   {
+    "t": 32.08333,
+    "beat": "1_2_seam",
+    "world": [
+     6.426,
+     -4.8666,
+     1.6651
+    ],
+    "look_at": [
+     0.0897,
+     0.0,
+     0.6944
+    ],
+    "lens_mm": 39.981,
+    "fstop": 3.199,
+    "focus_distance_m": 8.0482
+   },
+   {
+    "t": 32.375,
+    "beat": "1_2_seam",
+    "world": [
+     6.2624,
+     -5.0707,
+     1.5623
+    ],
+    "look_at": [
+     0.046,
+     0.0,
+     0.6541
+    ],
+    "lens_mm": 39.968,
+    "fstop": 3.197,
+    "focus_distance_m": 8.0735
+   },
+   {
+    "t": 32.58333,
+    "beat": "1_2_seam",
+    "world": [
+     6.0455,
+     -5.1906,
+     1.4813
+    ],
+    "look_at": [
+     0.0175,
+     0.0,
+     0.6279
+    ],
+    "lens_mm": 39.959,
+    "fstop": 3.197,
+    "focus_distance_m": 8.0004
+   },
+   {
+    "t": 32.75,
+    "beat": "1_2_seam",
+    "world": [
+     5.7776,
+     -5.262,
+     1.4093
+    ],
+    "look_at": [
+     -0.0003,
+     0.0,
+     0.6114
+    ],
+    "lens_mm": 39.953,
+    "fstop": 3.196,
+    "focus_distance_m": 7.8555
+   },
+   {
+    "t": 32.875,
+    "beat": "1_2_seam",
+    "world": [
+     5.5067,
+     -5.2974,
+     1.3499
+    ],
+    "look_at": [
+     -0.0095,
+     0.0,
+     0.603
+    ],
+    "lens_mm": 39.95,
+    "fstop": 3.196,
+    "focus_distance_m": 7.6843
+   },
+   {
+    "t": 32.95833,
+    "beat": "1_2_seam",
+    "world": [
+     5.2873,
+     -5.311,
+     1.3074
+    ],
+    "look_at": [
+     -0.013,
+     0.0,
+     0.5997
+    ],
+    "lens_mm": 39.949,
+    "fstop": 3.196,
+    "focus_distance_m": 7.5367
+   },
+   {
+    "t": 33.0,
+    "beat": "1_2_seam",
+    "world": [
+     5.165,
+     -5.3145,
+     1.2851
+    ],
+    "look_at": [
+     -0.014,
+     0.0,
+     0.5988
+    ],
+    "lens_mm": 39.949,
+    "fstop": 3.196,
+    "focus_distance_m": 7.4523
+   }
+  ]
+ }
+}

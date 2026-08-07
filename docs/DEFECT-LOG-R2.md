@@ -31431,3 +31431,82 @@ genuinely missing object leaves its siblings behind, and when the whole family
 is missing under one spelling and present under another, the spelling is the
 bug. That is worth more than this instance: it is a cheap first question for any
 "the object isn't there" finding.
+
+## R2-1099 — R2-1084 IS REFUTED: nothing regressed. The fix was written to a file the pipeline does not read, and sat there for ten hours
+
+I logged the beat-1 camera failure as a **regression** — a sheet edited at 05:03
+undoing a fix that passed at 04:15. **Every part of that is wrong.**
+
+**`docs/beat_sheet.json`'s mtime is 03:48 and has not moved since — BEFORE the
+04:15 PASS, not after.** The file edited at 05:03 is `anim/build_camera_rig.py`
+(commit `21777cd`), whose only change is beat 6's aim-keying stride. **Nothing
+was written at 05:03 and nothing was reintroduced.**
+
+**The trail I recommended returns nothing, and that is the finding.**
+`git log -p -- docs/beat_sheet.json` is empty because **the sheet is
+gitignored** (`.gitignore:37`).
+
+**Root cause: the fix exists and was never promoted.** The shipped sheet differs
+from `docs/R2829_beat_sheet_CANDIDATE.json` in five places, all beat 1, four
+derived. The real one is a single camera key at **t = 17.375** whose own note
+describes the failure: *"14 frames (f420-433) carry a subject outside a frame a
+37 mm lens would have held."* That is **R2-837, part of the client's re-frame.**
+`tools/build_beatsheet.py` already contains it — it was emitted at **04:46**
+with `B1_SHEET_OUT` pointing at the **candidate**, and **the promotion run was
+never made.** The 04:15 PASS was correct; it was simply about a file the
+pipeline does not read.
+
+**Fixed by re-running the generator with no override**, not by hand-editing, so
+the client's notes are carried by construction — payoff 11.29 s and the 0.850
+framing both verified present. **All six beats PASS; beat 1 goes 1.155 →
+0.480.** Re-measured across all 2,978 frames rather than assumed: beats 2-6
+**0.000000000 m** identical, **the f792/793 seam exactly 0 m on both frames**,
+f2715-2978 untouched, runtime unchanged.
+
+**And I have now removed the ignore.** Four *candidate* sheets are tracked and
+the shipping one was not — **the versioned artefact was the draft.** That
+inversion is not a curiosity, it is the mechanism: a file nobody can diff is a
+file nobody notices is stale, and it cost ten hours.
+
+## R2-1100 — the two-verdict log had TWO causes, and the second is that the gate runs IN-PROCESS
+
+`main()` printed `CAMERA_RIG_FAIL` and **fell off the end** — the known
+exit-0 defect. But that alone does not explain the log, and the second cause is
+worse: **`build_verify_scene.py` loads the rig by `importlib` and calls `main()`
+in-process.** So a *returning* failure let the caller carry on and print its own
+pass underneath. **The two verdicts were not a formatting problem; they were two
+programs sharing one interpreter, where the failure of one is invisible to the
+other.**
+
+The rig now adopts `tools/gate_exit.py` — which it could not before, because
+both of its verdict tokens mapped to CRASH — and **exits non-zero on FAIL while
+still *returning* on pass**, so success does not unwind an in-process caller.
+
+**Plus `gate_exit.scan()`, which reads EVERY verdict line.** The selftest had
+been reading `said[-1]`. *The tool that checks for unread verdicts was itself
+reading only the last one.*
+
+**Proven in both directions**, which is what makes it a guard rather than a
+hope: the failing sheet now **exits 1 where it exited 0**; the fixed sheet exits
+0; **a chain control reproducing `build_verify_scene`'s exact call shape aborts
+before the caller's verdict** on the failing sheet and completes on the fixed
+one; and the scanner returns FAIL on a real two-verdict log that the old reader
+calls PASS. **62 controls pass**, 51 of them pre-existing and unchanged.
+
+## R2-1101 — the beat-1 PASS everyone trusted was a SATURATED metric, and the re-pace did not break it — it made it measurable
+
+**Do not quote the pre-03:48 beat-1 PASS without this caveat.** It measured 791
+frames and every one read **exactly 0.00**, because the gate is a **min over 15
+clusters clamped at zero.**
+
+So the client's re-pace did not break beat 1. **It made beat 1 legible to its
+own gate for the first time** — and the failure that appeared was not new
+damage, it was the first honest reading of damage the instrument had been
+unable to express.
+
+**A metric pinned at its floor is not a passing metric; it is an absent one**,
+and it looks identical to success in every report. This is the same family as a
+control that passes vacuously and a guard that cannot fire — but nastier,
+because a saturated gate produces a *number*, and a number is what people trust.
+
+Cost of the whole investigation: **$0**, entirely local CPU.

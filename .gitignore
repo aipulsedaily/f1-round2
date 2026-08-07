@@ -34,7 +34,11 @@ __pycache__/
 docs/screen_presence*.json
 docs/screen_presence*_objects.json
 docs/*_points.npz
-docs/beat_sheet.json
+# R2-1099: `docs/beat_sheet.json` was ignored here, and that is the structural
+# reason a beat-1 camera fix sat unpromoted for ten hours while FOUR *candidate*
+# sheets sat tracked beside it. It is 157 KB, not "large generated data", and it
+# is not merely an output — it is the input `build_camera_rig` and
+# `build_car_anim` read. The versioned artefact must be the one that ships.
 docs/collision_report.json
 docs/placement*.json
 docs/depth_probe.json
