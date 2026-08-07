@@ -36675,3 +36675,78 @@ one of them be the explanation.**
 Cost $1.05-1.27, CPU-only throughout, five cancels all on own job ids, no
 `pkill`, no restart, and **broker 2 read once and left alone** with another
 agent's work at depth 6 unharmed.
+
+## R2-1154 — THE REFUSAL WAS BUILT AND ITS FIRST RUN REFUSED ITS OWN AUTHOR'S HANDOVER
+
+`K.assert_wired` / `K.unwired`, in `itemkit` beside the scene-purity guards. It
+refuses a built node whose **declared** inputs are not linked, and **names the
+value that was silently standing in** - because *"Interface unlinked"* and
+*"Interface silently 0.0"* read completely differently to whoever judges the
+result. **47 checks under Blender, 0 failed**, including a negative control that
+**builds a real dead channel** and confirms the refusal fires.
+
+**Its first run refused this block's own handover:**
+`Specular IOR Level = 0.3199999928474426, NOT LINKED`.
+
+**And the graft was right** - the substrate's specular genuinely *is* a constant
+at `build_surface.py:2897`. **The declaration was wrong.** The design principle
+the author drew from that is the good one:
+
+> **The guard cannot tell "constant on purpose" from "forgot to link" in a built
+> node. Nobody can, which is the entire point** - so it refuses and makes the
+> author say which.
+
+**Ninth instrument finding in this block, and the first caught before it cost
+anything.** Compare the eighth: an unlinked `Interface` that produced a
+confident, wrong, client-facing verdict.
+
+**The correct shape is worth recording**: **constant 0.32 in, varying out.** The
+deposit *adds* a specular channel the substrate never had - **which is exactly
+why an unlinked `Interface` was invisible and fatal at the same time.**
+
+Handover verified at N=1000: **13 checks, `>> STAGE RESULT: OK (0 failures)`**,
+run against `build_surface`'s real kit **without editing it**. `Traffic Passes`
+reads back **1000.0000 off the built socket.**
+
+## R2-1155 — "WHEN AN ARGUMENT HAS BEEN CORRECTED TWICE AND IS STILL ON THE SAME AXIS, THE NEXT MOVE IS AN INSTRUMENT, NOT A THIRD ARGUMENT"
+
+The most transferable thing produced on this project, in the words of the agent
+that earned it.
+
+Three answers to one complaint, **each a real improvement, none of them the
+explanation**:
+
+```
+"too weak"        it is -18.82 %.  Strong.
+"no edge"         0.324 vs 0.319 - and the concrete's own is 4.272.
+                  NEITHER has an edge and neither CAN.
+"no coherence"    worth 4.4x, real, and not what was missing.
+```
+
+**The actual answer was optical thickness**, and it came from none of those three
+lines - **it came from reading the saturation curves and seeing that at N=60 the
+interface term is 99.7 % saturated while coverage is 18.6 %.**
+
+> **From the inside, a chain like that feels exactly like converging. It isn't.**
+> Corrections 1 -> 2 -> 3 were three increasingly careful statements about the
+> same cross-section, and **a correction inherits the axis of the thing it
+> corrects.** What broke the chain was not better reasoning - it was **an
+> instrument change that made a quantity visible none of the three answers had a
+> name for.**
+
+**Two corollaries the author paid for and stated plainly:**
+
+- **Every one of those answers was defensible when given, and two were reported
+  upward.** *A confident wrong answer and a confident right one come out of the
+  same process and feel identical.*
+- **The correction that worked was CHEAPER than the ones that did not.** N=300
+  and N=1000 cost **about a dollar**; three rounds of reasoning cost **most of a
+  day.**
+
+**This is the through-line of the entire session.** The road's texture was
+authored outside the resolvable band. The camera's problem was acceleration, not
+speed. The carbon weave was 0.87 px. The ground-cover predicate discarded
+altitude. **Six times today the quantity being optimised was one step away from
+the quantity being perceived** - and in every case the thing that broke the
+deadlock was a measurement nobody had taken, not a better argument about the
+measurements already in hand.
