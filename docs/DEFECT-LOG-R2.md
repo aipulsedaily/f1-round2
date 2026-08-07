@@ -25171,3 +25171,376 @@ situation had been recoverable, and its cancel - reasonable against a box
 reading `instance=None` - was not what lost the replacement; the race was. And
 the retry drain means its first submission was **closer to exhausting itself
 than the status line suggested.**
+
+## R2-840h — THE BREACH REFUSED, AND THE REFUSAL COUNT WENT 9 -> 10 BECAUSE THE SHOWROOM GREW A CEILING
+
+`sim/apply_breach.py` refused film17 on `glazing_pocket_clear`. Two separate
+things were going on and only one of them was mine.
+
+**First, the refusal itself is expected and `--force` is the canonical
+invocation.** `sim/land_breach.sh` says so in as many words — *"`--force` is
+still right; read `R5_intruders_over_the_wound_after` in the apply report, not
+the preflight's headline count."* R2-271 records the history: the check refuses
+on geometry the applier does not own, it has refused on every apply since film9,
+and the acceptance criterion is measured after the build, not before it. **The
+chain omitting `--force` was an authoring error in the chain, not a defect in the
+scene.**
+
+**Second, and the part worth measuring: the count was 9 for film16 and 10 for
+film17.** Forcing past an unexplained extra intruder is exactly what that note
+warns against, so the tenth was identified before anything was written.
+`--preflight-only` (which writes no scene) gives the full population:
+
+```
+GW_Front_Mull_14, GW_Front_Transom_0/1/2   the SOUTH wall's frame
+GW_Right_Transom_0/1/2                     round 1's east frame, what eastframe.py cuts
+WallLine_SideFin_0/1                       the two light fins
+R2C_PerimeterReveal                        <- not in film16's nine
+```
+
+`R2C_PerimeterReveal` is the showroom ceiling's perimeter shadow-gap backing
+(`world/items/showroom_ceiling.py`, R2-517). It is a box from z 6.030 to
+`Z_DECK + DECK_T` = **6.198**, and the glazing pocket tops out at **6.1120** — so
+it clips the top **82 mm** of the pocket where the ceiling meets the wall head,
+around the whole room perimeter, which is why it registers on the east wall at
+x ~ 14.95. That is **six metres above the wound**.
+
+**And it is new because the ceiling is new, not because anything broke:**
+
+```
+world/showroom_ceiling.blend   built 08-04 18:33
+render/film16.blend            built 08-04 16:26   <- two hours EARLIER
+```
+
+film16's build log contains no ceiling line at all; film17's reads
+`>> appended R2_SHOWROOM_CEILING (21 objects, 73996 polys)`. **film17 is the
+first film in this project with a ceiling in the showroom.** The tenth intruder
+is a feature arriving, in the same class as the south wall's frame and the light
+fins: real, correctly detected, and not this module's to move.
+
+*Generalises to:* **a count that changes is a question, not a verdict.** 9 -> 10
+looked like a regression and was a new asset; the only way to tell was to name
+the object. `--preflight-only` exists precisely so that can be asked without
+writing anything.
+
+## R2-840i — THE A/B IS CONFOUNDED: `BEFORE` HAS NO CEILING AND `AFTER` DOES
+
+Stated on its own because it is the one finding in this block that changes how
+the deliverable should be READ, and a reviewer who does not know it will
+misattribute.
+
+`watch/BEFORE_beat1_33s.mp4` comes from `film16_breach`, built 08-04 16:26.
+`world/showroom_ceiling.blend` was built 08-04 18:33. **The BEFORE clip was
+rendered in a showroom with no ceiling**, and film17 is the first film in this
+project that has one — 21 objects, 73,996 polys, appended by
+`tools/build_film_scene.py`, which now refuses to build without it.
+
+**Beat 1 is the interior beat, so this is not a neutral addition.** It is a large
+bounce surface directly above the subject, in a shot graded at a fixed exposure
+of -3.628. Ambient level, fill on the upper surfaces of the 616 exploded parts,
+and the character of the room's indirect light are all now inside the difference
+between the two clips, and **none of them are R2-829 or R2-842.**
+
+**Nothing is being done about it, deliberately.** The ceiling is correct and the
+film should have it; rendering film17 without one to obtain a cleaner comparison
+would mean shipping a worse scene to protect a measurement, which is the wrong
+way round. What is required is that the confound is declared, so that:
+
+* differences in FRAMING, PACING and FOCUS may be attributed to the re-author;
+* differences in BRIGHTNESS, FILL and AMBIENT may not.
+
+*Generalises to:* **an A/B built from two dates is an A/B over every change
+between those dates.** The clips are eleven days and an unknown number of
+landings apart. The honest form of the claim is not "this is the re-framing" but
+"this is the re-framing plus everything else that landed", and the only way to
+narrow it is to name what else landed. The ceiling was found by accident, while
+diagnosing a breach refusal — which means the right question for the next
+comparison is what ELSE differs that nobody tripped over.
+
+## R2-840j — AND THE CEILING REALLY IS IN THE WOUND. THE POST-BUILD GATE CAUGHT WHAT MY REASONING MISSED
+
+R2-840h argued `R2C_PerimeterReveal` was benign because it sits six metres above
+where the car goes through. **That argument was wrong, and the gate said so:**
+
+```
+R5 intruders OVER THE WOUND, after   FAIL   [['R2C_PerimeterReveal', 0, 15, 8, 3]]
+```
+
+The error was in reading "the wound" as the car's path. It is not. `apply_breach`
+defines it as **bays 4 and 5's whole clear opening**, y -2.1625..2.1625, full
+height — the aperture, not the trajectory — and `_tris_hit_box` finds **3
+triangles** of the reveal crossing it. Height was never the question; the reveal
+enters the opening at the head and that is inside the box.
+
+**This is why the check is a triangle test and not an AABB or a vertex test**
+(R2-125): the reveal's vertices are metres away around the perimeter, and only
+its faces cross. The identical failure mode the check was built for.
+
+**Everything else about the apply is correct**, and identical to film16:
+
+```
+built 3845 objects, 278864 tris, 5806793 keys      film16: 3845 / 278864 / 5806793
+east frame census   PASS   39 of 39 pieces
+east wall census    PASS   all 10 bays have a GP_b* pane, none hidden at frame 1
+R5 elsewhere        9      byte-identical to film16's accepted nine
+```
+
+So the entire delta between this apply and the shipped one is **one object, three
+triangles**.
+
+**What it is not.** It is not a bar across the aperture. The thing this check was
+protecting against was `GW_Right_Transom_0/1/2` — three unbroken 21.9 m transoms
+that would have survived the car flying through them. The reveal is ceiling trim
+at the head of the opening, in the top ~1.3 % of its height. **But "smaller than
+the defect the check was built for" is not the same as "not a defect", and that
+judgement is not the chain runner's to make.**
+
+**What it means for the beat-1 proxy, stated so the decision is easy.** Beat 1 is
+frames 1-792; the breach is 865-1056. Through the whole proxy the east wall's
+glass is intact and unbroken, which is exactly what the east wall census PASSes
+on. The failing criterion is a property of the aperture in beat 3 and the proxy
+does not reach it.
+
+**The proxy was NOT submitted.** A gate failed, and the instruction for this
+chain is to stop and report rather than route around it — twice now that has been
+right. `render/film17_breach.blend` is complete on disk (7,979,667,219 bytes) and
+is renderable the moment someone owning the ceiling or the breach says the three
+triangles are acceptable, or trims them.
+
+## R2-840k — THE FIX: THE PERIMETER REVEAL WAS INSIDE THE GLAZING POCKET ON BOTH GLAZED WALLS
+
+**A change to `world/items/showroom_ceiling.py`, which is somebody else's committed
+and verified module.** Written up in full so its author can see exactly what moved
+and disagree with it.
+
+### What was wrong
+
+The perimeter reveal backs the shadow gap at the wall head. It was one box per
+wall, all four with the same underside:
+
+```python
+a.box(x0, x1, y0, y1, 6.030, Z_DECK + DECK_T)
+```
+
+On the two SOLID walls that is right and nothing is behind it. On the two GLAZED
+walls the curtain wall's **glazing pocket** is behind it — the 24 mm channel the
+panes sit in, x 14.9455..14.9695, topping out at z **6.1120**. A backing plate
+reaching 6.030 sits **82 mm inside that channel**: ceiling trim occupying the slot
+the glass lives in. An overlap, not a design.
+
+### Why nobody saw it
+
+The reveal's own vertices are metres away around the perimeter and only its
+**faces** cross the pocket, so a vertex test or a bounding-box test reads clear.
+It took `apply_breach`'s triangle test — R2-125, built for precisely this after
+round 1's east mullions passed a vertex-only sweep of 29,387 meshes — to find 3
+faces inside the breach aperture's clear opening.
+
+### The change
+
+```python
+Z_REVEAL_BOT        = 6.030    # solid walls, unchanged
+Z_REVEAL_BOT_GLAZED = 6.115    # 3.0 mm clear of the pocket head, 6.1120
+```
+
+and the four strips now carry their own underside, N and W unchanged, S and E
+lifted. **Both glazed walls, not just the east one.** The south wall carries the
+identical overlap and escaped notice only because the breach does not open there;
+fixing one and leaving the other would be fixing the symptom.
+
+### Measured after, on the 7 MB library rather than the 7.5 GB film
+
+```
+faces in the POCKET : 3      faces in the WOUND (bays 4-5) : 0
+STAGE RESULT: REVEAL_CLEAR_OF_WOUND
+```
+
+The 3 remaining pocket faces are the NORTH strip's `x = +15` corners at y ~ +11 —
+a solid wall, 10.9 m from the aperture, in the same accepted "elsewhere" bucket as
+the south wall's frame and the light fins. **The wound is clear, which is the
+criterion.**
+
+`CEILING_SELFTEST_CLEAN` after the edit; the library rebuilds to the same
+**21 objects / 73,996 polys**, so the topology is untouched and only two strips'
+undersides moved.
+
+### One methodological note, because the first measurement of this was wrong
+
+The first version of `work/r2840/verify_reveal.py` ignored the pocket's **y**
+bound and reported `REVEAL_STILL_IN_POCKET`, because it was catching the north
+strip's `x = +15` corners — unchanged, and nowhere near the aperture. **A box test
+that drops an axis is not a box test.** The corrected script tests all three and
+reports the pocket and the wound separately, which is also the distinction the
+applier itself draws.
+
+## R2-915 — THE ACCEPTANCE CRITERION IS SATISFIED BY THE BAKE THE EYE REJECTS AND VIOLATED BY THE ONE IT ACCEPTS
+
+R2-700, in words: *"nothing may come to rest on top of the car."* Measured
+literally, at the margin the sim actually uses:
+
+```
+breach_film_R2281_REBAKE.npz  f967-f977   <- the bake the eye ACCEPTS
+   MUL05_S00     0.0000 m from  airbox    at f975.8   car-local z 0.990
+   TRN_z0_b05    0.0000 m from  tyre_RL   at f967.8   car-local z 0.099
+   TRN_z0_b04    0.0065 m from  tyre_RR
+   bodies in CONTACT with the car: 2
+>> STAGE RESULT: RIDECONTACT_R2281_REBAKE CONTACT (closest 0.0000 m)
+
+breach_film_R2387.npz         f967-f977   <- the bake the eye REJECTS
+   bodies in CONTACT with the car: 0      closest 0.2870 m
+>> STAGE RESULT: RIDECONTACT_R2387 NO_CONTACT (closest 0.2870 m)
+```
+
+**A mullion segment is lying on the airbox at zero separation in the bake R2-700
+called "reads as an accident — accept", and nothing is within 287 mm of the car
+in the bake it called "reads as broken — reject".** R2-384's headline — *"161
+film frames on the car's airbox"* — is true of R2281 and false of the production
+table it was written to condemn.
+
+So the criterion, as a sentence about contact, does not order these bakes; it
+orders them **backwards**. It has to be restated, and the restatement is the
+only part of this that is a judgement rather than a measurement:
+
+> **Debris may lie on the car. What it may not do is fly between the lens and
+> the car, long and straight, at the car's own speed.** The defect is a
+> depth-order and screen-extent property of the silhouette, not a contact
+> property of the bodywork.
+
+That is what `RIDESILHOUETTE_*` gates, and it reproduces every verdict R2-700
+made by eye, including `VACUOUS` for R6 — where the chain search returns **148
+bodies still joined at 20 mm**, which is not a chain but an intact wall, and is
+the correct signature of a bake that nothing came off.
+
+---
+
+## R2-916 — `--rear-wing aerofoil` IS THE FIX, AND R2-707 WAS RIGHT THAT ITS STATED MECHANISM IS FALSE
+
+Both are true at once and the combination is the interesting part.
+
+R2-707 refuted the tray: at 240 Hz the member never comes within 60 mm of the
+solid wing. R2-911 strengthens that — in the solid bake the closest any
+structural body gets to `wing_r` is **287 mm**, and the collision margin is
+0.15 mm rather than the 40 mm the refutation was argued against. **The
+mainplane's 58.6 % thickness is not holding anything up, and never was.**
+
+And the aerofoil cell fixes the defect anyway:
+
+| | R2387 / R2701S (solid) | **R2701A (aerofoil)** |
+|---|---:|---:|
+| frames with the chain between lens and car, f900–1051 | **16** | **0** |
+| chain screen extent, peak window | 1,893 px | **1,470 px** |
+| depth relative to the car's nearest surface | **+0.23 m in front** | **−1.04 m behind** |
+| chain car-local z | 1.27 … 2.70 | **0.28 … 0.88** (below `CAR_TOP_Z`) |
+| closest approach to the car | 287 mm | **4.1 mm** — genuinely alongside |
+| nearest parts | `wing_r`, `rep_l` (nothing near) | `tyre_RR`, `cover`, `rep_l` |
+| `ridepose` "across" | 0.41 – 0.81 (transverse) | **0.28** (pointing where the car is going) |
+
+The aerofoil cell lands on the accepted side of **both** silhouette statistics,
+with a larger margin than R2281 has, and it puts the chain *below the deck line
+and alongside the rear tyre* — which is R2-700's "travelling alongside, tumbling
+or trailing is fine and wanted", arrived at from a different direction.
+
+**R2-702's P30, P34 and P36 all resolve, and P31 does not.** The tray does
+release (16 foreground frames → 0). The "across" statistic falls from 0.41–0.81
+to 0.28, exactly as P34 predicted, "because what makes a bar lie transversely is
+being stopped square-on by a full-width leading face". P36's slot does not open:
+the chain ends up at z 0.28–0.88, under the mainplane band, not wedged in it.
+P31 fails — `ridepose` still returns FAIL on the aerofoil cell at ratio 0.067 —
+and R2-914 is the reason: the own-motion ratio is reading a 10.9 kg stick's
+inertia at a 6.5× slow-motion clock, which no change to the collider can move.
+
+**So the recommendation is to adopt `--rear-wing aerofoil`, on evidence that has
+nothing to do with the argument that produced it.** A lever chosen for a reason
+that turned out to be false still moved the thing it was aimed at, and that is
+worth saying out loud rather than quietly re-justifying.
+
+### What this recommendation does NOT rest on, said before anyone asks
+
+* **One seed — and THERE IS NO SEED TO VARY.** R2-700 asks any A/B on this beat
+  for more than one. `build_breach_sim.py` has **no `--seed` argument**: the only
+  `seed` in the file is `1000*bay + s["id"]`, the deterministic Wallner ripple on
+  a shard's mesh, which is geometry rather than a realisation. **The multi-seed
+  requirement is not currently satisfiable, and nobody has said so.** The nearest
+  honest substitute is `--substeps` (default 8) or `--solver-iter` (default 24):
+  changing either re-integrates the same physics down a different numerical path,
+  which is exactly the role a seed plays for a chaotic degree of freedom, and
+  changes no declared parameter. **A pair of cells at `--substeps 12`, aerofoil
+  and solid, is the check that closes this**, and if the 16-frame foreground
+  count survives it the result is no longer one realisation's.
+  **Cost: R2-704 prices this pair at ~2.5 instance-hours; the 5090 is currently
+  torn down (`rq status`: `gpu down, instance=None, $0.4654/hr`), so it is a
+  fresh rental at ≈ $1.20 plus spin-up. Not queued here** — the GPU being down
+  makes it a rental decision rather than a slot on a running box, and nothing in
+  this block was authorised to spend.
+* **No pixels.** R2-700's three verdicts were made on renders. There is no
+  render of the aerofoil cell. Every figure above is geometry through
+  `sim/out/oner_camera_track.json`, which is verified current below — it is the
+  right instrument for depth order and screen extent and it is *not* a
+  substitute for seeing it.
+* **A 1920 still at f0972 from the aerofoil table** needs `apply_breach.py`
+  against `film16`/`film17` (7.5 GB) plus one frame — the apply is the expensive
+  half and it is hours, not dollars. Worth doing on the next world rebuild,
+  where the scene is open anyway (`docs/NEXT-REBUILD.md`), not on its own.
+
+---
+
+## R2-917 — THE CAMERA TRACK IS STILL CURRENT, RE-CHECKED AGAINST `film17` WHICH WAS BUILT TODAY
+
+R2-706 verified `sim/out/oner_camera_track.json` against `film16` on 4 August.
+`render/film17_path.json` was written **today at 05:20**, and
+`render/film_path_R2581B_ramp_RETUNED_REBASED.json` at 05:00 — a beat-3 *ramp*
+candidate, which is exactly the file that could have invalidated every pixel in
+this block. It does not:
+
+| | max Δposition | max Δquaternion | max Δlens |
+|---|---:|---:|---:|
+| `film16` vs `film17`, beats 1–2 f1–864 | 9.234 m | 1.654 | 23.00 mm |
+| `film16` vs `film17`, **beat 3 f865–1056** | **0.000e+00** | 1.0e−06 | **0.000e+00** |
+| **sim track** vs `film17`, **judged f940–1060** | **5.0e−06 m** | 8.8e−07 | 5.0e−05 mm |
+| **sim track** vs `film17`, **peak f967–977** | **4.9e−06 m** | 8.8e−07 | 4.4e−05 mm |
+| **sim track** vs the R2581B ramp candidate, **peak** | **4.9e−06 m** | 6.4e−07 | 4.4e−05 mm |
+
+All of the movement is beats 1–2, which is the re-pacing work. **5 µm at 3 m is
+0.006 px at 4K.** The 1,893 px, the +0.23 m and the 16-frame count are all
+measured through a camera that is bit-identical to the film being built right
+now, and the ramp candidate would not move them either.
+
+---
+
+## R2-918 — WHAT IS NOT SETTLED, LISTED SO IT IS NOT REDISCOVERED AS AN OVERSIGHT
+
+* **Glass is not measured.** `ridecontact` covers the 152 structural bodies and
+  refuses to guess at 3,796 shard hulls, whose geometry is not reconstructible
+  from a declaration file. Nothing in R2-911 changes if a shard is between the
+  chain and the car — the chain is still 287 mm off the bodywork and still in
+  front of the lens — but "the chain is resting on a raft of glass" is a
+  hypothesis this block cannot kill, and it would need the sim scene rather
+  than the table.
+* **The 16-frame count is one realisation's, and the harness cannot give a
+  second one without a change.** See R2-916. This is a gap in the *tooling*, not
+  in this block's diligence: R2-700 wrote the requirement, R2-703 quoted it,
+  R2-777's `--seed` belongs to `sim/debris_demo.py` and not to the breach bake,
+  and no entry has noticed that the bake has no seed to vary.
+* **`ridepose`'s own-motion gate is not withdrawn**, but R2-914 shows what it is
+  measuring. It should be read beside `RIDESILHOUETTE`, not instead of it, and
+  a bake can now fail one and pass the other — R2701A does exactly that, and
+  that disagreement is information rather than a bug.
+* **`Car.identity_ok()` still watches the blend's SIZE** (R2-705). Untouched
+  here; this block opened no blend.
+* **~100 of the ~200,000 separations in a full run do not converge to 1e-6.**
+  They are counted and printed, never rounded to zero, and none of them is at a
+  reported minimum. The reported minima are all certified.
+
+
+## FILES
+
+```
+sim/ridecontact.py                   NEW.  numpy only, no Blender.
+                                     --selftest                8 controls
+                                     --table ... --substep     exact separation
+                                     --silhouette              the depth-order gate
+docs/STAGING-R2-911-to-R2-940.md     this file
+```
+
+Nothing in `sim/out/` was written or overwritten. `sim/out/breach_film.npz`
+md5 is untouched — no stage of `land_breach.sh` was run.
