@@ -25132,3 +25132,42 @@ car-local z from 1.27-2.70 down to 0.28-0.88, below `CAR_TOP_Z`.
 on the proxy's 16-gon tyre rings, and did - claiming `tyre_RL` contact at f973
 when the truth is **0.947 m**, one frame from the frame the whole defect is
 argued from. Only demanding a **dual certificate** from the solver caught it.
+
+## R2-722 — A DECISION READ OUTSIDE THE LOCK AND EXECUTED INSIDE IT IS A DECISION ABOUT A DIFFERENT OBJECT
+
+Found while chasing what looked like a vast.ai control-plane fault. The fault
+was real - `start_instance` refused three times - but chasing it surfaced two
+defects that were doing the actual damage.
+
+**1. `maybe_idle_down` destroyed a healthy box six seconds after it came up.**
+It read `instance_id` **outside** `Fleet.lock` and acted **inside** it. So a
+stale *"hibernation expired"* decision, formed about the **dead** instance,
+executed against the **freshly deployed replacement**. Instance 47048579 was
+destroyed 6 s after deployment. *"That is what actually kept killing my job."*
+Fixed with an `expect=<instance_id>` guard.
+
+The general shape: **the lock protected the action and not the premise.** Every
+individual step is correct - read an id, take the lock, act - and the composition
+is wrong, because the thing the decision was *about* can be replaced between the
+read and the act. A guard that re-asserts the premise inside the lock is the
+only version that holds.
+
+**2. Exec jobs spent retry attempts on fleet faults.** `Fleet.ensure_ready`
+raises `vastctl.NotReachable`, a `VastError` - which **is not a `RemoteError`**,
+so it missed every refund branch and hit `db.fail`. A job **burned 2 of 3
+attempts on a control-plane fault without running a line of its own code.**
+Exec now re-types fleet faults as `FleetUnavailable`, matching what the render
+path already did.
+
+**That is the fourth instance of a resource or infrastructure condition wearing
+the costume of a verdict about the work** - after `WorkerBusy` burning a budget
+inside one frame, a wrong path accusing the data of corruption, and an OOM kill
+reported as three failed builds. The render path had already been taught this;
+**the exec path had not, because they raise different exception families for the
+same event.**
+
+**Two corrections the agent volunteered against its own earlier report:** the
+situation had been recoverable, and its cancel - reasonable against a box
+reading `instance=None` - was not what lost the replacement; the race was. And
+the retry drain means its first submission was **closer to exhausting itself
+than the status line suggested.**
