@@ -487,3 +487,197 @@ rendered at `out2/seq/r2851b6` and `out2/seq/r2851_4k_B_candidate`.
 whole finding was that the geometry was right and the picture was not, and the
 only thing that found it was watching all 264 frames and the stills at 1:1. A
 rung-1 frame cannot tell you whether a car reads at 343 m; the 4K still can.
+
+### Pre-registered, so it cannot be rationalised after the fact
+
+Written before a single frame of this arm exists. Five ways this can fail, and
+what each looks like:
+
+1. **The car reads as broken down, not as a lap-down.** A car stopped on the
+   racing line is, in every other context, a retirement. The defence is that the
+   audience watches it brake continuously for four seconds first, which a
+   failure does not do — but that is an argument, not a measurement, and the only
+   test is whether the last frame looks like an ending or an incident. **Watch
+   f2820-2936 for whether the deceleration reads as a driver or as a failure.**
+2. **The last 1.75 s is dead.** Nothing moves in frames 2936-2978 but the lens.
+   If it reads as a zoom into a photograph, R2-852's criticism has been moved
+   rather than answered, and the answer is R2-949's fallback: do not stop, end
+   at ~208 px still rolling at ~10 m/s and keep the pan alive. That costs 22 px
+   and is already costed.
+3. **No horizon anywhere in the closing 5 s** (R2-949 item 3). If the frame
+   reads as a plan rather than a view, the lens is not the lever — the hold's
+   140 m altitude is, and that is somebody else's key.
+4. **3.60 g looks violent at 24 fps.** 109.7 px of on-screen travel per frame at
+   f2715 falling to 5.98 px by f2820 is a very fast collapse. If it snaps rather
+   than eases, lower `K_AERO` — it costs distance, and R2-942's table says the
+   whole pit straight is within 5 % of the target anyway.
+5. **The car is occluded.** No ray-cast was run on the new resting position; the
+   264 frames answer it directly and more cheaply than a sweep would. R2-651's
+   `BR_FenceMesh_L03` finding was retracted in R2-852, and the fence re-measures
+   6.76 m OUTSIDE the surface, so nothing is expected — but nothing was proved.
+
+If two or more of these land, the arrival has not fixed the ending either, and
+that is what this file will say.
+
+---
+
+# R2-951 .. R2-965 — THE AUDIO REBUILD AGAINST THE LAP-DOWN
+
+Appended by the audio agent. Owner of `audio/`, `tools/audio_ending_ab.py` and
+these entries only.
+
+---
+
+## R2-951 — the shipped `audio/out/master.wav` is not reproducible from this tree, so it cannot be the A-side
+
+The brief asks for the closing 11 s to be rebuilt while frames 1-2714 stay
+bit-identical to "the current master". The current master is
+`audio/out/master.wav`, written 2026-08-02 14:29. Three of its inputs have moved
+since:
+
+| input | what happened | when |
+|---|---|---|
+| `world/camera_rig_path.json` | 710 of 2,978 frames moved, worst 9.206 m at f1; the changed frames are f1-716 (beats 1-2), contiguous but for six single-frame gaps | uncommitted, mtime 2026-08-03 21:06 |
+| `docs/beat_sheet.json` | rewritten | commit 2e13c12, 2026-08-07 04:57 |
+| `docs/circuit_spec.json` | rewritten | same commit |
+
+The camera rig IS the listener (`audio/scene.py:CameraPath`) and the beat sheet
+IS the film clock (`audio/clock.py:Clock`). A re-render of this tree cannot
+reproduce the shipped WAV anywhere in beats 1-2 no matter what the ending does,
+so a bit-comparison against it would have measured R2-731..760's camera move and
+reported it as an audio regression.
+
+**The A-side is therefore a control rendered from THIS tree** with the lap-down
+switched off at its own A/B switch:
+
+    F1_LAPDOWN=0 .venv/bin/python -m audio.master --out audio/out/ab/master_A_nolapdown.wav
+
+which is the pre-R2-943 constant-speed extrapolation and nothing else
+(`anim/carpath.py:LAPDOWN_ENABLED`). The shipped file is kept at
+`audio/out/ab/master_SHIPPED_aug2.wav` for reference only.
+
+---
+
+## R2-952 — the audio's car and the picture's car are now one object to 8.0e-14 m
+
+R2-943's `audio/scene.py` edit built its own `LapDown` from
+`vend = v_world[-1]` = 89.766125 m/s — the Savitzky-Golay derivative of the
+position track — while `anim/carpath.Car` builds its from the CSV's
+`speed_ms[-1]` = 89.767080. Two tables, two seeds 0.955 mm/s apart, `t_brake`
+4.9e-07 s apart, and the audio's car 2.349 mm from the picture's at f2936.
+
+**Changed: the audio now reads the picture's seed.** R2-026's rule is "follow the
+car the AUDIENCE sees", and past `t_end` there is no independent position track
+to differentiate — the car's position IS `LapDown`'s distance along the
+centreline. So the same rule that makes the engine follow `v_world` ON the
+telemetry makes it follow the lap-down's own v PAST it. Measured on the picture's
+own frame convention (`world_of_frame[f]`, which is what
+`anim/build_car_anim.py` keys), f2650-2978:
+
+    worst |position| audio.sample vs carpath.Car.state    8.039e-14 m
+    t_brake                                               identical to the last bit
+
+Cost, stated: `speed` steps by 0.955 mm/s at `t_end` — 1.1e-5 relative, i.e.
+1.8e-4 cents of engine pitch and 1.4e-4 dB of tyre level, under a 90 ms
+driveline lag. The `F1_LAPDOWN=0` control keeps the pre-R2-943 `v[-1]` of the
+chosen speed source, so the A-side is untouched.
+
+A FRAME-CONVENTION TRAP, recorded because it has now caught one agent:
+`CameraPath.frame_t` puts frame f at film t = (f-1)/24 (the START of its display
+interval) while `build_car_anim` keys frame f at `world_of_frame[f]` (the END).
+The two are one whole frame apart. A position check will not see it; a SPEED
+check will, and it is the difference between reading 166.9 km/h and 193.5 km/h
+at f2760.
+
+---
+
+## R2-953 — R2-943's edit put a step in `accel_long` at `t_end`, and my first fix for it was wrong
+
+`out["accel_long"][past] = -aa` is a step, not a continuation. The CSV's last row
+is `accel_long_ms2 = +1.5073` (the car is flat out) and the lap-down's flat-out
+segment is a CONSTANT SPEED, so `-aa` is exactly 0.000 there:
+`accel_long` went `+1.5073 -> 0.0000` between two adjacent samples at world
+t = 72.583333.
+
+That number is not decoration. `engine.throttle_from_spec` inverts it directly:
+
+    v = 89.77:  a_drag = 0.00092 v^2 = 7.412   a_pow = min(800/v, ...) = 8.912
+    accel_long = +1.5073 -> thr = 8.919/8.912 = 1.001 -> clipped to 1.00
+    accel_long =  0.0000 -> thr = 7.412/8.912 = 0.832
+
+so the combustion gate `(0.35 + 0.65*load)` stepped 1.000 -> 0.918 in one sample:
+a 0.74 dB discontinuity 46 ms before the beat-5/beat-6 seam, and a claim that the
+driver lifted BEFORE the line, which is the opposite of what R2-943 says the shot
+is.
+
+**FIX 1, WRONG.** I first blended the CSV's last acceleration out over
+`LAPDOWN_ONSET_S` (0.30 s) from `t_brake`. It removed the step and it was wrong:
+it left `accel_long` at **+0.796 m/s^2 at f2715**, 23 ms after the driver had
+lifted, while the `speed` field returned by the SAME call was already falling.
+Two fields of one sample disagreeing about which way the car is going is a worse
+defect than the step it replaced. Caught by a peer measuring f2715 directly
+rather than trusting the continuity scan I had run — the scan was true and
+answered a different question.
+
+**FIX 2, SHIPPED.** The handover runs over the FLAT-OUT SEGMENT itself — `t_end`
+to `t_brake`, 46.2 ms, the 4.15 m the telemetry stops short of the line — so past
+`t_brake` accel_long is exactly `-aa`, which is exactly `-carpath.Car.decel(t)`:
+
+    frame   world      v (km/h)   accel_long   -car.decel(t)
+    2714   72.61153     323.2       +0.509        -0.000     (flat out, 4.15 m short)
+    2715   72.65320     323.1       -0.685        -0.685
+    2716   72.69487     322.8       -4.708        -4.708
+    2720   72.86153     311.6      -31.872       -31.872
+    2760   74.52820     166.9      -16.374       -16.374
+    2820   77.02820      59.8       -9.248        -9.248
+    2880   79.52820      12.4       -2.142        -2.142
+    2906   80.61153       5.7       -1.417        -1.417
+    2936   81.86153       0.0       +0.000        -0.000
+
+    largest change in accel_long per 0.1 ms sample, 72.40-73.30 s : 0.0185 m/s^2
+    samples with accel_long > 0 past t_brake                      : none
+
+The speed column reproduces the lead's brief digit for digit. Guarded by
+`if self._lapdown is not None` so the control keeps the pre-R2-943 held value.
+
+NOTE FOR THE PICTURE, not audio's to fix: `carrig.body_pitch` past `t_end`
+returns `-car.decel(t)` = 0 through the same flat-out segment while the last
+KEYED pitch comes from ax = +1.5073. A 0.08 deg step. Invisible; stated for
+completeness.
+
+---
+
+## R2-954 — the car stops at f2936 and the engine's injectors were cut: a stall, not an idle
+
+With the car stopped, `gear_and_rpm` correctly holds the crank at
+`RPM_IDLE = 4300` (`rpm = max(rpm_wheel, hold)`), but `throttle_from_spec`
+returned `thr = 2.1e-05`, so `fuel = clip(thr/0.06) = 3.5e-04` and the injectors
+were shut. The last 1.75 s of the film — the last sound in it — was a V6 being
+MOTORED at 12.8 % of its combustion gate.
+
+A category error, not a tuning error. `throttle_from_spec` inverts a ROAD-LOAD
+model: the throttle needed to produce a given road acceleration THROUGH A CLOSED
+CLUTCH. Below the speed at which first gear pulls idle there is no closed clutch
+and the model has nothing to say. That speed is derived, not chosen:
+
+    v_clutch = RPM_IDLE / (r1 * FD * 60) * 2*pi*R
+             = 4300 / (2.9400 * 6.4471 * 60) * 2.2619 = 8.55 m/s
+
+and `gear_and_rpm` already computes exactly this, as `lock = rpm_wheel / rpm`.
+
+**Fixed** in `audio/engine.py`: `thr = maximum(thr, IDLE_THROTTLE * (1 - lock))`,
+`IDLE_THROTTLE = 0.08` — the figure the PRE-LAUNCH idle already used, now named
+once instead of written twice.
+
+**A bit-exact no-op before the ending, measured rather than assumed.** Scanned at
+1 kHz over the whole world span (-35 .. +85 s), the floor raises `thr` at exactly
+zero samples before `t_end`; the first sample it touches is world t = 78.061 s,
+5.478 s past the end of the telemetry, which is the moment the decelerating car
+drops through 8.55 m/s. It cannot bite on the lap: the lap's minimum speed is
+7.80 m/s (the hairpin, where `lock` does fall to 0.0996), but the driver is on
+the throttle there and the road-load model's own minimum `thr` wherever
+`lock < 1` is 0.301 — 3.8x the largest possible floor. `np.maximum` returns its
+first argument bit-for-bit when it wins, so those samples are untouched, not
+merely unchanged to a tolerance.
+
+---
