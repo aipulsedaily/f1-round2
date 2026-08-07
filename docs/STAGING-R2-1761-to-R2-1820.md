@@ -4,7 +4,24 @@ Numbers to be assigned by the log's owner. **`docs/DEFECT-LOG-R2.md` not edited.
 
 Six long-open items, closed by measurement wherever measurement would do it.
 The brief said a clean sweep of six fixes would be the least likely outcome and
-would be distrusted. It was right.
+would be distrusted. It was right — **five items produced eleven separate
+verdicts and only four of them are FIXED**:
+
+```
+#78   stale pad                FIXED         #90   paint over void       ALREADY CLOSED
+#78   unreachable fallbacks    CONFIRMED     #90   floating paint        DECLINED (handed over)
+#78   the private car box      FIXED         #90   the glass mouth sink  REFUTED
+#97   the stamp                ALREADY CLOSED   #100  the DOF camera     ALREADY CLOSED + REFUTED
+#97   report-vs-report         FIXED         #100  the 11-deg camera     REFUTED
+#115  the index race           FIXED
+#120  hospitality_deck         STILL RUNNING -- not closed, see the note at the end
+```
+
+**Six instrument failures were caught, five of them in instruments written
+today**, and in three cases the broken instrument had already produced a
+confident number: *78.101 m² of floating paint*, an amend guard that could not
+see `--amend`, and a differ that reported NON_REPRODUCIBLE for a change it had
+silently discarded.
 
 ---
 
@@ -615,3 +632,35 @@ only **17** can defocus anything by a whole 4K pixel. If that A/B is commissione
 it must be staged in **beat 1**, where one key reaches 158.92 px — not past 90 m.
 
 **Cost: no GPU, no render, no Blender.** CPU arithmetic and two existing PNGs.
+
+---
+
+## R2-17xx — #120: `hospitality_deck` — NOT CLOSED, still measuring at the time of writing
+
+Recorded as open rather than guessed at. The investigation has been running 3.3 h
+and has not returned a verdict; the box reached **0 GB available** twice with
+**five Blender processes and none of them holding the shared `flock`**, and one
+other item waited ~40 minutes behind an 8-deep lock queue.
+
+**Do not read the absence of a verdict as a null result.** The specific thing to
+resolve, and the reason it was worth a whole agent:
+
+> `docs/DEFECT-LOG-R2.md:9615` records `hospitality_deck` with **6 `CTX_*`
+> foreign-prefix objects**, and the item describes **6 slab pairs** on
+> self-intersecting geometry. **If those two sixes are the same six, the item is
+> misdescribed** and the answer is REFUTED rather than a geometry repair.
+
+Whoever picks this up: the detector must be validated on two synthetic controls
+before a single number from it is believed — a clean closed box reporting
+**0** intersecting face pairs, and a deliberately self-intersecting solid
+reporting a **predicted non-zero**. A detector that reports 0 on everything is
+indistinguishable from a clean model, and on a self-intersecting solid the
+inside/outside predicate is genuinely undefined, so `sim/slabcheck.py` returning
+*anything* there is a number without a meaning.
+
+### The operational note this item paid for
+
+**The shared `flock` only works if everyone takes it.** Several agents ran Blender
+outside it today. The box holds one 8 GB Blender process, not two, and the
+failure mode is not a crash — it is a forty-minute stall that looks exactly like
+an agent thinking.
