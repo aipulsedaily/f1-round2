@@ -23962,3 +23962,45 @@ invalidated.
 
 Seam advisory improved again to **z = 8.1, now better than the shipped film's
 own 8.8.**
+
+## R2-718 — A PIXEL COORDINATE IS MEANINGLESS WITHOUT THE CAMERA THAT PRODUCED IT
+
+One agent measured a catch-fence post tangent to the car's rear wing at
+**x = 1941-1942** on the delivered 4K closing frame, and asked another to
+ray-cast those pixels to identify it. The second agent corrected the request
+before running it:
+
+> It has to run against **the candidate scene**, not the shipped one. x=1941 was
+> measured **at 130 mm on the candidate**; the shipped camera **at 74 mm** is
+> pointing somewhere else entirely and that same pixel lands on unrelated
+> geometry.
+
+**The measurement was correct and the reference frame was about to be
+substituted.** A ray-cast against the shipped scene would have returned a real
+object at a real distance, with no error and nothing to flag - an answer about
+whatever happens to sit at that pixel under a different lens.
+
+Same family as R2-708 (an instrument validated on a sample, applied over a
+range) and R2-712 (a control lacking the structure of the subject), but the
+carried thing here is neither an instrument nor a control - **it is a
+coordinate**, which looks like data rather than like a measurement with
+conditions attached.
+
+**Two further disciplines from the same exchange, both worth copying:**
+
+**The y-flip is reported, not trusted.** The two agents use opposite conventions
+- top-left-origin image pixels against Blender's bottom-up `view_frame` - so the
+script flips once **and prints the normalised (u,v) it actually used**, so the
+flip can be checked rather than assumed.
+
+**The null result's artefact was declared BEFORE the run.** `scene.ray_cast`
+returns the *first* hit, so a thin instanced mesh can be passed between and the
+ray returns the run-off behind it:
+
+> If that happens you will get a hit on ground geometry at ~1000 m rather than a
+> post at some nearer range, **and that is not evidence the post isn't there.**
+> If the returned object looks like terrain rather than structure I will say so
+> plainly rather than let you read it as "no post".
+
+Pre-declaring how a null could be an artefact is the same discipline as
+pre-registering a prediction, applied to the *absence* of a result.
