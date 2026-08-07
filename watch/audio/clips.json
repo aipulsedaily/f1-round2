@@ -1,0 +1,74 @@
+[
+ {
+  "file": "01_opening_BEFORE_defect.wav",
+  "title": "Frame 1 as it shipped (pre-fix master, 2 Aug)",
+  "listen_for": "A hard BANG in the first hundredth of a second, before the showroom tone starts. That is the tail of a car at 323 km/h wrapped onto frame 1 by a circular buffer. It should not be there at all.",
+  "film_frames": "1-96",
+  "seconds": 4.0,
+  "peak": 0.8505
+ },
+ {
+  "file": "02_opening_AFTER_fixed.wav",
+  "title": "Frame 1 now",
+  "listen_for": "The same four seconds with nothing at the top: an empty showroom that starts from silence. If you hear any click or thump at the very start, the fix did not hold.",
+  "film_frames": "1-96",
+  "seconds": 4.0,
+  "peak": 0.1547
+ },
+ {
+  "file": "03_opening_AB_one_press.wav",
+  "title": "Both of the above, back to back, one press of play",
+  "listen_for": "Bang, one second of silence, then no bang. If the two halves sound the same, something is wrong -- they are 24 dB apart on frame 1.",
+  "film_frames": "1-96 twice",
+  "seconds": 9.0,
+  "peak": 0.8505
+ },
+ {
+  "file": "04_launch_seam_f792_793.wav",
+  "title": "The launch, across the beat 1 -> 2 boundary at 33.000 s (f792 | f793)",
+  "listen_for": "A join, 1.5 s in. Listen for a click, a jump in level, or the room changing abruptly. It should sound like one continuous take.",
+  "film_frames": "756-852",
+  "seconds": 4.0,
+  "peak": 0.8766
+ },
+ {
+  "file": "05_breach_f865.wav",
+  "title": "The breach \u2014 the car reaches the glass at 36.000 s (f865)",
+  "listen_for": "The film's loudest event, and its largest legitimate spectral jump. Listen for distortion or clipping on the glass rather than for a join: this one is SUPPOSED to be violent.",
+  "film_frames": "840-984",
+  "seconds": 6.0,
+  "peak": 0.8804
+ },
+ {
+  "file": "06_ending_seam_f2715.wav",
+  "title": "The lift into the ending, beat 5 -> 6 at 113.100 s (f2714 | f2715)",
+  "listen_for": "The injectors cut here. A 0.74 dB step at the lift, 28 ms before this join, was removed; listen for any remaining bump or gear-change glitch right as the engine goes off-throttle.",
+  "film_frames": "2688-2784",
+  "seconds": 4.0,
+  "peak": 0.7113
+ },
+ {
+  "file": "07_ending_A_no_lapdown.wav",
+  "title": "Ending A \u2014 no lap-down",
+  "listen_for": "The car does not slow: the lap simply ends. Compare against B and pick one. This is a creative choice, not a defect hunt.",
+  "film_frames": "2690-2978",
+  "seconds": 12.042,
+  "peak": 0.7071
+ },
+ {
+  "file": "08_ending_B_lapdown.wav",
+  "title": "Ending B \u2014 with the lap-down",
+  "listen_for": "Seven downshifts at a 0.48 s cadence, then the car stops and idles. Listen for whether the downshifts sound mechanical or sequenced, and whether the stop lands.",
+  "film_frames": "2690-2978",
+  "seconds": 12.042,
+  "peak": 0.7113
+ },
+ {
+  "file": "09_final_idle_last2s.wav",
+  "title": "The last two seconds \u2014 the stopped car",
+  "listen_for": "An engine at idle has a pulse you can count (215 Hz firing line: three firings per rev at a 4,300 rpm idle). A MOTORED engine \u2014 turning with the injectors cut \u2014 is a dead whoosh with no beat. This was a motored engine until R2-954; confirm it now idles.",
+  "film_frames": "2923-2978",
+  "seconds": 2.283,
+  "peak": 0.1768
+ }
+]

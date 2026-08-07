@@ -296,6 +296,235 @@ def level_gate(x, sr):
     }
 
 
+# =============================================================== edge gate ====
+def _frame_crest_profile(mono, peak_per_frame, sr, spf, ref_s):
+    """Per-frame peak referenced to the LOUDER of the two adjacent `ref_s` windows."""
+    c = np.concatenate([[0.0], np.cumsum(mono.astype(np.float64) ** 2)])
+    n = mono.shape[0]
+    ref = int(ref_s * sr)
+
+    def _rms(a, b):
+        a, b = max(int(a), 0), min(int(b), n)
+        if b <= a:
+            return 1e-12
+        return float(np.sqrt(max((c[b] - c[a]) / (b - a), 1e-24)))
+
+    nf = peak_per_frame.shape[0]
+    out = np.empty(nf)
+    for i in range(nf):
+        a0, b0 = i * spf, (i + 1) * spf
+        r = max(_rms(b0, b0 + ref), _rms(a0 - ref, a0), 1e-12)
+        out[i] = 20.0 * np.log10(max(peak_per_frame[i], 1e-12) / r)
+    return out
+
+
+def edge_gate(x, sr, label="", ref_s=1.0, headroom_db=3.0):
+    """DOES THE FILM'S FIRST FRAME, AND ITS LAST, BELONG TO THE FILM?
+
+    THIS IS THE GATE THE PROJECT DID NOT HAVE, and R2-960 is why it exists. A
+    circular `np.roll` used as a delay wrapped the last 11.3 ms of a 2.4 s reverb
+    tail -- the tail of a car at 323 km/h -- onto the first 11.3 ms of a film
+    that opens on an empty showroom. It sat in EVERY master this project
+    produced, and every gate passed it:
+
+      * `seam_gate` walks `sheet["beats"][1:]`, so it visits beat BOUNDARIES.
+        Frame 1 is not a boundary between two beats, it is the outer EDGE of the
+        first one, and the last frame is the outer edge of the last. The two
+        places the film touches silence were the two places nothing looked.
+      * `level_gate` is global: an 0.8505 sample peak is under 1.0, the true peak
+        still made -1.10 dBTP, the integrated loudness still made -14 LUFS, and
+        one frame in 2,978 cannot move any of them. Its `silent_1s_windows` test
+        asks whether a window is TOO QUIET; nothing asked whether the opening was
+        too LOUD for what surrounds it.
+
+    TWO INDEPENDENT STATISTICS, both of which must pass, at BOTH edges.
+
+    1. `crest_db` -- the peak inside the edge frame, referenced to the RMS of the
+       adjacent `ref_s` of programme, judged against THE FILM'S OWN interior
+       frames. The film is its own control: the same number is computed for all
+       2,976 interior frames and the edge must not exceed their 99.9th percentile
+       by more than `headroom_db`. This is `seam_gate`'s idiom -- a local
+       reference, because the film's own loudest transient is the breach and a
+       global threshold would call the breach a defect.
+
+    2. `onset_step_db` -- |x[0]| for the head and |x[-1]| for the tail, against
+       the same adjacent RMS. Outside the file is digital silence, so these two
+       samples ARE the step across the film's outer boundary. A master that is
+       topped and tailed cannot begin louder than the second it begins with, so
+       the threshold is 0 dB + `headroom_db`. This statistic shares no arithmetic
+       with the first and catches the same defect independently.
+
+    THE THRESHOLDS ARE NOT TUNED TO THE TWO MASTERS. Measured:
+
+        statistic 1   pre-fix frame 1  +31.62 dB   interior p99.9  +19.27 dB
+                      post-fix frame 1  +8.53 dB   interior p99.9  +18.11 dB
+        statistic 2   pre-fix          +23.45 dB   post-fix        -12.28 dB
+
+    Any headroom between 0 and +12.3 dB gives the same verdict on statistic 1,
+    and anything between -12.3 and +23.4 dB gives the same verdict on statistic
+    2. The chosen values sit in the middle of gaps of 22 dB and 36 dB. The gate
+    is not measuring a fine distinction; it is measuring the difference between
+    programme and a splice.
+
+    Every number above is what `tools/audio_edge_gate.py` prints for those two
+    files; they are quoted here so the docstring can be checked against the tool
+    rather than believed. R2-953 and R2-954 both shipped correct fixes with wrong
+    numbers in the prose, and that is a cheap mistake to keep making.
+
+    SCOPE: THIS GATES MASTERS, AND IT IS USEFUL ON CUTS FOR A DIFFERENT REASON.
+    Run on an extract, statistic 2 reports the EXTRACT's in-point, not the film's.
+    That is not a false positive, it is a second job worth having: measured on
+    `audio/out/ab/ending_A_nolapdown.wav` and `ending_B_lapdown.wav` -- the two
+    files cut for the human listening pass -- the in-point is a hard cut at 0.542
+    with a +9.67 dB step, because they were extracted without a fade. A listener
+    would hear that as a click on the clip's first frame and could easily charge
+    it to the film. The copies in `watch/audio/` are faded 5 ms and score -225 dB.
+    A gate that stops the listening pass from manufacturing the very artefact it
+    is convened to look for is earning its place twice.
+
+    WHAT THIS CANNOT PROVE. Statistic 2 asserts the master is topped and tailed,
+    which is true of this film by construction -- it opens on a silent showroom
+    and ends on a stopped car -- but a film that legitimately hard-cut to loud
+    material on frame 1 would fail it, correctly for a master and incorrectly for
+    a reel. Statistic 1 carries no such assumption. Neither statistic can see a
+    defect that is quieter than the film's own transients; for that, listen --
+    which is R2-1090, and is why `watch/` exists.
+    """
+    x = np.asarray(x, dtype=np.float64)
+    if x.ndim == 1:
+        x = x[:, None]
+    n = x.shape[0]
+    spf = int(round(sr / FPS))
+    mono = x.mean(axis=1)
+    absmax = np.abs(x).max(axis=1)
+    nf = n // spf
+    pk = absmax[:nf * spf].reshape(nf, spf).max(axis=1)
+
+    # THE FILM IS ITS OWN REFERENCE, SO IT MUST HAVE ENOUGH OF ITSELF TO BE ONE.
+    # Below a handful of frames there are no interior frames to take a percentile
+    # over and the statistic is undefined. It fails LOUDLY rather than raising or,
+    # worse, passing: a gate that cannot judge must not report that it did. The
+    # master is 2,978 frames and the shortest clip in watch/ is 54, so this is a
+    # guard against a wrong file being handed to the tool, not a real limit.
+    MIN_FRAMES = 8
+    if nf < MIN_FRAMES:
+        return {
+            "label": label, "frames": int(nf), "APPLICABLE": False, "PASS": False,
+            "reason": (f"{nf} frames is too short to be its own reference; "
+                       f"edge_gate needs at least {MIN_FRAMES}"),
+        }
+
+    crest = _frame_crest_profile(mono, pk, sr, spf, ref_s)
+    interior = crest[1:-1]
+    p999 = float(np.percentile(interior, 99.9))
+    limit = p999 + headroom_db
+
+    ref = int(ref_s * sr)
+    head_rms = float(np.sqrt(max((mono[spf:spf + ref] ** 2).mean(), 1e-24)))
+    tail_rms = float(np.sqrt(max((mono[-spf - ref:-spf] ** 2).mean(), 1e-24)))
+    step_head = 20.0 * np.log10(max(float(absmax[0]), 1e-12) / max(head_rms, 1e-12))
+    step_tail = 20.0 * np.log10(max(float(absmax[-1]), 1e-12) / max(tail_rms, 1e-12))
+
+    edges = {
+        "first": {
+            "frame": 1, "crest_db": float(crest[0]),
+            "peak": float(pk[0]),
+            "peak_at_sample": int(absmax[:spf].argmax()),
+            "peak_at_ms": float(absmax[:spf].argmax() / sr * 1000.0),
+            "ref_rms": head_rms,
+            "boundary_sample_abs": float(absmax[0]),
+            "onset_step_db": float(step_head),
+            "PASS_crest": bool(crest[0] <= limit),
+            "PASS_step": bool(step_head <= headroom_db),
+        },
+        "last": {
+            "frame": int(nf), "crest_db": float(crest[-1]),
+            "peak": float(pk[-1]),
+            "peak_at_sample": int(n - spf + absmax[-spf:].argmax()),
+            "peak_at_ms": float(absmax[-spf:].argmax() / sr * 1000.0),
+            "ref_rms": tail_rms,
+            "boundary_sample_abs": float(absmax[-1]),
+            "onset_step_db": float(step_tail),
+            "PASS_crest": bool(crest[-1] <= limit),
+            "PASS_step": bool(step_tail <= headroom_db),
+        },
+    }
+    ok = all(e["PASS_crest"] and e["PASS_step"] for e in edges.values())
+    return {
+        "label": label, "APPLICABLE": True,
+        "statistic": ("edge-frame peak vs adjacent-1s RMS, against the film's own "
+                      "interior p99.9 + headroom; and the outer boundary sample "
+                      "vs the same RMS"),
+        "frames": int(nf),
+        "interior_crest_p99_9_db": p999,
+        "interior_crest_max_db": float(interior.max()),
+        "interior_crest_max_frame": int(interior.argmax()) + 2,
+        "interior_crest_median_db": float(np.median(interior)),
+        "crest_limit_db": float(limit),
+        "step_limit_db": float(headroom_db),
+        "headroom_db": float(headroom_db),
+        "edges": edges,
+        "PASS": bool(ok),
+    }
+
+
+def control_edge(x, sr):
+    """Artefacts that are bad at the film's EDGES, in the ways the edges go bad.
+
+    WHAT THE FIRST TWO CONTROLS MUST INJECT, AND WHY IT IS NOT `np.roll(master)`.
+    The obvious control -- circularly roll the finished master by the same
+    0.0113 s the showroom decorrelation used -- DOES NOT FAIL THIS GATE, and that
+    is correct, not a hole. R2-960's roll was applied to an INTERMEDIATE buffer,
+    the showroom's 2.4 s reverb tail, whose last samples are the decay of a car
+    at 323 km/h. The FINISHED film ends on a car that has stopped: its last
+    11.3 ms peak 0.111, so wrapping them onto the head raises frame 1 to +15.0 dB
+    crest, under the +21.1 dB limit. Measured, not assumed.
+
+    The defect is therefore not "a wrap" but "LOUD MATERIAL ARRIVING AT A QUIET
+    EDGE", and a faithful control has to inject what actually wrapped. These take
+    the film's own loudest 11.3 ms -- the nearest thing the master contains to the
+    tail of a 323 km/h car -- and place it at each edge through the SAME 0.35 mix
+    coefficient `master.py` applied to the delayed tail. No gain is tuned to hit
+    a target number.
+
+    Validated against the real thing as well as the constructed one:
+    `audio/out/ab/master_SHIPPED_aug2.wav`, the actual pre-fix artefact, scores
+    +31.62 dB crest and a +23.45 dB onset step and FAILS.
+    """
+    d = int(0.0113 * sr)
+    mono = np.abs(np.asarray(x, dtype=np.float64)).max(axis=1)
+    # the loudest 11.3 ms the film contains, by windowed energy
+    k = np.convolve(mono ** 2, np.ones(d), mode="valid")
+    j = int(k.argmax())
+    loud = np.asarray(x, dtype=np.float64)[j:j + d] * 0.35   # master.py's own coefficient
+
+    y = np.asarray(x, dtype=np.float64).copy()
+    y[:d] += loud
+    a = edge_gate(y, sr, "CONTROL: R2-960's signature -- the film's loudest 11.3 ms "
+                         "arriving on frame 1 through the mix's own 0.35 coefficient")
+
+    z = np.asarray(x, dtype=np.float64).copy()
+    z[-d:] += loud
+    b = edge_gate(z, sr, "CONTROL: the same energy arriving on the LAST 11.3 ms "
+                         "(proves the gate looks at BOTH edges)")
+
+    w = np.asarray(x, dtype=np.float64).copy()
+    w[0] = 0.33204                                     # the pre-fix first sample, measured
+    c = edge_gate(w, sr, "CONTROL: a single -9.6 dBFS sample at index 0, the step the "
+                         "shipped master actually opened with")
+
+    v = np.asarray(x, dtype=np.float64).copy()         # a quiet edge tick: the limit
+    v[0] = 10.0 ** (-40.0 / 20.0)
+    d4 = edge_gate(v, sr, "CONTROL: a -40 dBFS sample at index 0 (below the gate's "
+                          "sensitivity, stated)")
+
+    e = edge_gate(np.roll(np.asarray(x, dtype=np.float64), d, axis=0), sr,
+                  "CONTROL, STATED NEGATIVE: circularly rolling the FINISHED master "
+                  "does NOT fail -- this film ends quiet; the defect was in the "
+                  "reverb-tail buffer, not the master")
+    return a, b, c, d4, e
+
+
 def ffmpeg_ebur128(path):
     """Independent second opinion on loudness and true peak."""
     try:
@@ -558,6 +787,24 @@ def main():
     print(">> levels:", json.dumps(V["levels"], indent=1))
     print(">> ffmpeg:", V["levels_ffmpeg_ebur128"])
 
+    # ------------------------------------------------------------------ edges --
+    # THE TWO FRAMES NO OTHER GATE VISITS. The seam gate walks beat boundaries;
+    # frame 1 and frame 2978 are edges, not boundaries. See `edge_gate`.
+    V["edges"] = edge_gate(x, sr, "master")
+    ectl = control_edge(x, sr)
+    V["edge_controls"] = list(ectl)
+    # the first three controls MUST fail; the fourth states the sensitivity limit.
+    V["edges"]["CONTROLS_FAIL_AS_EXPECTED"] = bool(
+        (not ectl[0]["PASS"]) and (not ectl[1]["PASS"]) and (not ectl[2]["PASS"]))
+    _ef, _el = V["edges"]["edges"]["first"], V["edges"]["edges"]["last"]
+    print(f">> edges: frame 1 crest {_ef['crest_db']:+.2f} dB step "
+          f"{_ef['onset_step_db']:+.2f} dB | last frame crest {_el['crest_db']:+.2f} dB "
+          f"step {_el['onset_step_db']:+.2f} dB | limits crest "
+          f"{V['edges']['crest_limit_db']:+.2f} step {V['edges']['step_limit_db']:+.2f} "
+          f"PASS={V['edges']['PASS']}")
+    for c in ectl:
+        print(f"   control {c['label'][:60]}: PASS={c['PASS']}")
+
     # ------------------------------------------------------------------ seam --
     V["seam"] = seam_gate(x, sr, sheet, "master")
     ctl = control_seam(x, sr, sheet)
@@ -720,7 +967,7 @@ def main():
                         "line, car at 313.2 km/h", nfft=4096, fmax=8000)
         _ = rep
 
-    passes = {k: V[k].get("PASS") for k in ("levels", "seam", "external_assets",
+    passes = {k: V[k].get("PASS") for k in ("levels", "edges", "seam", "external_assets",
                                             "pitch", "doppler") if isinstance(V.get(k), dict)}
     V["ALL_PASS"] = all(bool(v) for v in passes.values())
     V["gate_summary"] = passes

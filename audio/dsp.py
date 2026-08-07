@@ -377,6 +377,36 @@ def program_gain(x, sr, target_rms=0.10, attack_s=4.0, release_s=8.0,
     g_db = 20.0 * np.log10(target_rms / np.maximum(rms, 1e-7))
     g_db = np.clip(g_db, -max_cut_db, max_boost_db)
     # smooth the (already slow) gain once more so there is no block edge at all
+    #
+    # THIS `filtfilt` IS THE ONE PLACE THE FILM'S END REACHES ITS FIRST SAMPLE,
+    # AND IT IS NAMED HERE SO THE CLAIM CAN BE EXACT (R2-1186). `sosfiltfilt`
+    # runs the filter forwards and then backwards, so g_db[0] is a function of
+    # g_db[-1]. Measured on film-length buffers by bursting the last 0.2 s:
+    #
+    #     |dg| at sample 0     5.3e-13 dB on one bench, 2.6e-09 dB on another
+    #     |dg| > 0.1 dB        from ~0.7 s before the burst
+    #     |dg| > 1e-6 dB       from ~6 s before the burst
+    #
+    # The near-field numbers are the INTENDED behaviour of a 4 s/8 s mastering
+    # gain and are described above. The far-field number is the honest one: at
+    # sample 0 the dependence is under 1e-8 dB, roughly ten orders of magnitude
+    # below a 24-bit LSB and more than 200 dB below the +31.2 dB frame-1 defect
+    # that motivated the sweep. It is not zero, so "the film does not depend on
+    # its ending" is false as stated; it is bounded, so "the film's dependence on
+    # its ending is unmeasurable at 24 bits" is true. The second sentence is the
+    # one this project can defend, and R2-1089's prefix-identity claim should be
+    # read against it.
+    #
+    # Two look-aheads above are the same SHAPE as the R2-957 sites that were
+    # fixed, and are LEFT AS THEY ARE deliberately: `acc = e[:sr].mean()` seeds
+    # the envelope from the first second, and `m = e[a0:b0].mean()` reads the
+    # 85 ms block (blk 8192 at 96 kHz) it is about to write. Both are local, both
+    # sit inside a gain that is explicitly a MIX decision rather than a source,
+    # and changing either would move the master. Causalising them is a one-line
+    # change (`e[0]`, `e[a0]`) if the class is ever to be closed rather than
+    # bounded -- but that is a deliberate re-mix needing a re-render and a fresh
+    # listening pass, not a quiet edit made while the client is being asked to
+    # approve the current one.
     g_db = _sig.sosfiltfilt(_sig.butter(2, 0.5, btype="lowpass", fs=sr, output="sos"), g_db)
     return (x * 10.0 ** (g_db / 20.0)).astype(np.float32), g_db
 

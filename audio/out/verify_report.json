@@ -26,6 +26,249 @@
   "loudness_range_lu": 14.0,
   "true_peak_dbfs": -1.1
  },
+ "edges": {
+  "label": "master",
+  "APPLICABLE": true,
+  "statistic": "edge-frame peak vs adjacent-1s RMS, against the film's own interior p99.9 + headroom; and the outer boundary sample vs the same RMS",
+  "frames": 2978,
+  "interior_crest_p99_9_db": 18.114612656422995,
+  "interior_crest_max_db": 20.207202296878577,
+  "interior_crest_max_frame": 2272,
+  "interior_crest_median_db": 9.539350297876576,
+  "crest_limit_db": 21.114612656422995,
+  "step_limit_db": 3.0,
+  "headroom_db": 3.0,
+  "edges": {
+   "first": {
+    "frame": 1,
+    "crest_db": 8.527988270816023,
+    "peak": 0.05098676681518555,
+    "peak_at_sample": 1947,
+    "peak_at_ms": 40.5625,
+    "ref_rms": 0.019101085990213203,
+    "boundary_sample_abs": 0.004643917083740234,
+    "onset_step_db": -12.283472056524253,
+    "PASS_crest": true,
+    "PASS_step": true
+   },
+   "last": {
+    "frame": 2978,
+    "crest_db": 10.988832624883164,
+    "peak": 0.11133480072021484,
+    "peak_at_sample": 5954617,
+    "peak_at_ms": 12.854166666666666,
+    "ref_rms": 0.03141877910221021,
+    "boundary_sample_abs": 0.041396141052246094,
+    "onset_step_db": 2.3954110647231657,
+    "PASS_crest": true,
+    "PASS_step": true
+   }
+  },
+  "PASS": true,
+  "CONTROLS_FAIL_AS_EXPECTED": true
+ },
+ "edge_controls": [
+  {
+   "label": "CONTROL: R2-960's signature -- the film's loudest 11.3 ms arriving on frame 1 through the mix's own 0.35 coefficient",
+   "APPLICABLE": true,
+   "statistic": "edge-frame peak vs adjacent-1s RMS, against the film's own interior p99.9 + headroom; and the outer boundary sample vs the same RMS",
+   "frames": 2978,
+   "interior_crest_p99_9_db": 18.114612656422945,
+   "interior_crest_max_db": 20.207202296878577,
+   "interior_crest_max_frame": 2272,
+   "interior_crest_median_db": 9.507670959624061,
+   "crest_limit_db": 21.114612656422945,
+   "step_limit_db": 3.0,
+   "headroom_db": 3.0,
+   "edges": {
+    "first": {
+     "frame": 1,
+     "crest_db": 23.60047888480791,
+     "peak": 0.2891225755214691,
+     "peak_at_sample": 198,
+     "peak_at_ms": 4.125,
+     "ref_rms": 0.019101085990213203,
+     "boundary_sample_abs": 0.1949047803878784,
+     "onset_step_db": 20.175288627597684,
+     "PASS_crest": false,
+     "PASS_step": false
+    },
+    "last": {
+     "frame": 2978,
+     "crest_db": 10.988832624883164,
+     "peak": 0.11133480072021484,
+     "peak_at_sample": 5954617,
+     "peak_at_ms": 12.854166666666666,
+     "ref_rms": 0.03141877910221021,
+     "boundary_sample_abs": 0.041396141052246094,
+     "onset_step_db": 2.3954110647231657,
+     "PASS_crest": true,
+     "PASS_step": true
+    }
+   },
+   "PASS": false
+  },
+  {
+   "label": "CONTROL: the same energy arriving on the LAST 11.3 ms (proves the gate looks at BOTH edges)",
+   "APPLICABLE": true,
+   "statistic": "edge-frame peak vs adjacent-1s RMS, against the film's own interior p99.9 + headroom; and the outer boundary sample vs the same RMS",
+   "frames": 2978,
+   "interior_crest_p99_9_db": 18.114612656422995,
+   "interior_crest_max_db": 20.207202296878577,
+   "interior_crest_max_frame": 2272,
+   "interior_crest_median_db": 9.510456964716997,
+   "crest_limit_db": 21.114612656422995,
+   "step_limit_db": 3.0,
+   "headroom_db": 3.0,
+   "edges": {
+    "first": {
+     "frame": 1,
+     "crest_db": 8.527988270816023,
+     "peak": 0.05098676681518555,
+     "peak_at_sample": 1947,
+     "peak_at_ms": 40.5625,
+     "ref_rms": 0.019101085990213203,
+     "boundary_sample_abs": 0.004643917083740234,
+     "onset_step_db": -12.283472056524253,
+     "PASS_crest": true,
+     "PASS_step": true
+    },
+    "last": {
+     "frame": 2978,
+     "crest_db": 21.64033222231451,
+     "peak": 0.37949487566947937,
+     "peak_at_sample": 5955630,
+     "peak_at_ms": 33.958333333333336,
+     "ref_rms": 0.03141877910221021,
+     "boundary_sample_abs": 0.15129188895225523,
+     "onset_step_db": 13.652526808868839,
+     "PASS_crest": false,
+     "PASS_step": false
+    }
+   },
+   "PASS": false
+  },
+  {
+   "label": "CONTROL: a single -9.6 dBFS sample at index 0, the step the shipped master actually opened with",
+   "APPLICABLE": true,
+   "statistic": "edge-frame peak vs adjacent-1s RMS, against the film's own interior p99.9 + headroom; and the outer boundary sample vs the same RMS",
+   "frames": 2978,
+   "interior_crest_p99_9_db": 18.114612656422995,
+   "interior_crest_max_db": 20.207202296878577,
+   "interior_crest_max_frame": 2272,
+   "interior_crest_median_db": 9.539350297876576,
+   "crest_limit_db": 21.114612656422995,
+   "step_limit_db": 3.0,
+   "headroom_db": 3.0,
+   "edges": {
+    "first": {
+     "frame": 1,
+     "crest_db": 24.80264690944606,
+     "peak": 0.33204,
+     "peak_at_sample": 0,
+     "peak_at_ms": 0.0,
+     "ref_rms": 0.019101085990213203,
+     "boundary_sample_abs": 0.33204,
+     "onset_step_db": 24.80264690944606,
+     "PASS_crest": false,
+     "PASS_step": false
+    },
+    "last": {
+     "frame": 2978,
+     "crest_db": 10.988832624883164,
+     "peak": 0.11133480072021484,
+     "peak_at_sample": 5954617,
+     "peak_at_ms": 12.854166666666666,
+     "ref_rms": 0.03141877910221021,
+     "boundary_sample_abs": 0.041396141052246094,
+     "onset_step_db": 2.3954110647231657,
+     "PASS_crest": true,
+     "PASS_step": true
+    }
+   },
+   "PASS": false
+  },
+  {
+   "label": "CONTROL: a -40 dBFS sample at index 0 (below the gate's sensitivity, stated)",
+   "APPLICABLE": true,
+   "statistic": "edge-frame peak vs adjacent-1s RMS, against the film's own interior p99.9 + headroom; and the outer boundary sample vs the same RMS",
+   "frames": 2978,
+   "interior_crest_p99_9_db": 18.114612656422995,
+   "interior_crest_max_db": 20.207202296878577,
+   "interior_crest_max_frame": 2272,
+   "interior_crest_median_db": 9.539350297876572,
+   "crest_limit_db": 21.114612656422995,
+   "step_limit_db": 3.0,
+   "headroom_db": 3.0,
+   "edges": {
+    "first": {
+     "frame": 1,
+     "crest_db": 8.527988270816023,
+     "peak": 0.05098676681518555,
+     "peak_at_sample": 1947,
+     "peak_at_ms": 40.5625,
+     "ref_rms": 0.019101085990213203,
+     "boundary_sample_abs": 0.01,
+     "onset_step_db": -5.621161194325475,
+     "PASS_crest": true,
+     "PASS_step": true
+    },
+    "last": {
+     "frame": 2978,
+     "crest_db": 10.988832624883164,
+     "peak": 0.11133480072021484,
+     "peak_at_sample": 5954617,
+     "peak_at_ms": 12.854166666666666,
+     "ref_rms": 0.03141877910221021,
+     "boundary_sample_abs": 0.041396141052246094,
+     "onset_step_db": 2.3954110647231657,
+     "PASS_crest": true,
+     "PASS_step": true
+    }
+   },
+   "PASS": true
+  },
+  {
+   "label": "CONTROL, STATED NEGATIVE: circularly rolling the FINISHED master does NOT fail -- this film ends quiet; the defect was in the reverb-tail buffer, not the master",
+   "APPLICABLE": true,
+   "statistic": "edge-frame peak vs adjacent-1s RMS, against the film's own interior p99.9 + headroom; and the outer boundary sample vs the same RMS",
+   "frames": 2978,
+   "interior_crest_p99_9_db": 18.406426110533427,
+   "interior_crest_max_db": 20.008653825033598,
+   "interior_crest_max_frame": 2272,
+   "interior_crest_median_db": 9.552467255430365,
+   "crest_limit_db": 21.406426110533427,
+   "step_limit_db": 3.0,
+   "headroom_db": 3.0,
+   "edges": {
+    "first": {
+     "frame": 1,
+     "crest_db": 15.000625668904771,
+     "peak": 0.10864949226379395,
+     "peak_at_sample": 383,
+     "peak_at_ms": 7.979166666666667,
+     "ref_rms": 0.019319523810974085,
+     "boundary_sample_abs": 0.016119956970214844,
+     "onset_step_db": -1.5726507900445983,
+     "PASS_crest": true,
+     "PASS_step": true
+    },
+    "last": {
+     "frame": 2978,
+     "crest_db": 12.821328892320011,
+     "peak": 0.1377791166305542,
+     "peak_at_sample": 5954265,
+     "peak_at_ms": 5.520833333333333,
+     "ref_rms": 0.03148596086508095,
+     "boundary_sample_abs": 0.018355131149291992,
+     "onset_step_db": -4.68718918771807,
+     "PASS_crest": true,
+     "PASS_step": true
+    }
+   },
+   "PASS": true
+  }
+ ],
  "seam": {
   "label": "master",
   "statistic": "|3rd difference| at the boundary sample, percentile against the local +/-0.5 s",
@@ -497,10 +740,10 @@
   "PASS": true,
   "CONTROL_FAILS_AS_EXPECTED": true
  },
- "spectrogram": "audio/out/master_spectrogram.png",
  "ALL_PASS": true,
  "gate_summary": {
   "levels": true,
+  "edges": true,
   "seam": true,
   "external_assets": true,
   "pitch": true,

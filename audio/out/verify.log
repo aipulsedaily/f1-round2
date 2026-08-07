@@ -1,58 +1,64 @@
 >> audio/out/master.wav: 5956000 samples, 124.0833 s, 2978.00 frames
 >> levels: {
- "integrated_lufs": -14.021779428679862,
- "true_peak_dbtp": -1.1048835964424633,
- "sample_peak": 0.8802245855331421,
- "sample_peak_dbfs": -1.1081301066847797,
+ "integrated_lufs": -14.019460989461997,
+ "true_peak_dbtp": -1.0972656922657427,
+ "sample_peak": 0.8804222345352173,
+ "sample_peak_dbfs": -1.106179962673224,
  "clipped_samples": 0,
  "dc_offset": [
-  2.49566931585244e-05,
-  2.4626040754901072e-05
+  -4.596894883404969e-06,
+  -4.341093084009963e-06
  ],
- "short_term_lufs_min": -29.14329463881864,
- "short_term_lufs_max": -8.852761926829784,
- "short_term_range_db": 20.29053271198886,
+ "short_term_lufs_min": -29.331890097890902,
+ "short_term_lufs_max": -8.941752492478741,
+ "short_term_range_db": 20.39013760541216,
  "silent_1s_windows_below_-80dB": 0,
- "channel_correlation": 0.8013363772391865,
+ "channel_correlation": 0.7981577177388536,
  "PASS": true
 }
->> ffmpeg: {'integrated_lufs': -14.0, 'loudness_range_lu': 14.5, 'true_peak_dbfs': -1.1}
->> seam: worst d3 local percentile 88.487 PASS=True
-   control CONTROL: 977-sample splice at beat 4: d3 p99.996 PASS=False
-   control CONTROL: 3 dB level step at beat 4: d3 p99.925 PASS=False
-   control CONTROL: 40 ms crossfade to elsewhere at beat 4: d3 p97.413 PASS=True
-   control CONTROL: 0.5 dB level step at beat 4 (below the gate's sensitivity, stated): d3 p88.487 PASS=True
+>> ffmpeg: {'integrated_lufs': -14.0, 'loudness_range_lu': 14.0, 'true_peak_dbfs': -1.1}
+>> edges: frame 1 crest +8.53 dB step -12.28 dB | last frame crest +10.99 dB step +2.40 dB | limits crest +21.11 step +3.00 PASS=True
+   control CONTROL: R2-960's signature -- the film's loudest 11.3 ms ar: PASS=False
+   control CONTROL: the same energy arriving on the LAST 11.3 ms (prove: PASS=False
+   control CONTROL: a single -9.6 dBFS sample at index 0, the step the : PASS=False
+   control CONTROL: a -40 dBFS sample at index 0 (below the gate's sens: PASS=True
+   control CONTROL, STATED NEGATIVE: circularly rolling the FINISHED ma: PASS=True
+>> seam: worst d3 local percentile 80.567 PASS=True
+   control CONTROL: 977-sample splice at beat 4: d3 p99.994 PASS=False
+   control CONTROL: 3 dB level step at beat 4: d3 p99.954 PASS=False
+   control CONTROL: 40 ms crossfade to elsewhere at beat 4: d3 p96.460 PASS=True
+   control CONTROL: 0.5 dB level step at beat 4 (below the gate's sensitivity, stated): d3 p89.456 PASS=True
 >> external assets: 0 render-path hits, 0 package hits; controls {'sf_read': 1, 'librosa': 3, 'download': 3}
 >> kerb control: {'kerb_fraction_on_control_track': 1.0, 'CONTROL_TRIGGERS_AS_EXPECTED': True}
 >> pitch: {
  "method": "f0 measured from the DRY world-clock engine every 0.25 s of world time and compared with rpm/60*3, where rpm is the gearbox solution from the telemetry's v_world. Measured on the dry voice because 'the engine pitch tracks the telemetry' is a claim about the SOURCE; what the ears hear is that times the Doppler ratio, which the doppler gate tests separately.",
  "firing": {
   "n_windows": 221,
-  "corr_measured_f0_vs_predicted_f0": 0.9983001276800387,
-  "corr_measured_f0_vs_v_world": 0.4068741993084641,
-  "median_abs_error_cents": 0.9787987484962505,
-  "p95_abs_error_cents": 13.211356984769784,
-  "within_50_cents_fraction": 0.9909502262443439
+  "corr_measured_f0_vs_predicted_f0": 0.9975411507829847,
+  "corr_measured_f0_vs_v_world": 0.4086363840617019,
+  "median_abs_error_cents": 1.2884211991115897,
+  "p95_abs_error_cents": 14.102194499759657,
+  "within_50_cents_fraction": 0.9864253393665159
  },
  "overrun": {
   "n_windows": 66,
-  "corr_measured_f0_vs_predicted_f0": -0.34102470971433085,
-  "corr_measured_f0_vs_v_world": -0.13177431713460966,
-  "median_abs_error_cents": 6.488379951828579,
-  "p95_abs_error_cents": 2781.316325344647,
-  "within_50_cents_fraction": 0.5606060606060606
+  "corr_measured_f0_vs_predicted_f0": -0.31562801861284434,
+  "corr_measured_f0_vs_v_world": -0.05199752690910729,
+  "median_abs_error_cents": 7.082733875716236,
+  "p95_abs_error_cents": 2769.049504543353,
+  "within_50_cents_fraction": 0.5757575757575758
  },
  "all": {
   "n_windows": 287,
-  "corr_measured_f0_vs_predicted_f0": 0.24545654599466274,
-  "corr_measured_f0_vs_v_world": 0.2610349919357018,
-  "median_abs_error_cents": 1.2249233312670365,
-  "p95_abs_error_cents": 2411.6922554541707,
+  "corr_measured_f0_vs_predicted_f0": 0.25897439742659595,
+  "corr_measured_f0_vs_v_world": 0.2890832336635267,
+  "median_abs_error_cents": 1.5347950786131697,
+  "p95_abs_error_cents": 2390.396373880033,
   "within_50_cents_fraction": 0.89198606271777
  },
  "overrun_note": "with the injectors cut there is no combustion and therefore no firing fundamental to find; the tracker reports the pumping and turbo content instead. The overrun rows are listed, not hidden, and they are NOT part of the pass criterion.",
  "CONTROL_tracker_on_known_chirp_max_err_cents": 4.818573074656553,
- "CONTROL_constant_speed_corr_vs_v_world": 0.09934539278318795,
+ "CONTROL_constant_speed_corr_vs_v_world": 0.0939622920601648,
  "PASS": true,
  "CONTROL_FAILS_AS_EXPECTED": true
 }
@@ -77,19 +83,19 @@
  "ratio_max_from_retarded_solve": 1.291060266370992,
  "ratio_min_from_retarded_solve": 0.8469341414769064,
  "predicted_sweep_semitones_from_retarded_solve": 7.298815840445373,
- "measured_sweep_semitones_in_master": 11.06186340296572,
- "measured_ratio_span_semitones_in_master": 12.778808454428413,
- "measured_ratio_max": 1.2896765012550513,
- "measured_ratio_min": 0.6164725344000587,
- "corr_measured_ratio_vs_predicted_ratio": 0.8366881245263068,
- "corr_on_tracked_windows": 0.9980029824760634,
- "tracked_windows": 78,
+ "measured_sweep_semitones_in_master": 11.37127750411795,
+ "measured_ratio_span_semitones_in_master": 8.093326809318368,
+ "measured_ratio_max": 1.288751222142106,
+ "measured_ratio_min": 0.8074976100301996,
+ "corr_measured_ratio_vs_predicted_ratio": 0.9176306597314824,
+ "corr_on_tracked_windows": 0.9967211079023198,
+ "tracked_windows": 80,
  "tracker_failure_windows": 5,
- "tracker_failure_fraction": 0.06024096385542166,
+ "tracker_failure_fraction": 0.05882352941176472,
  "tracker_failure_definition_cents": 200.0,
- "median_abs_error_vs_prediction_cents": 5.1170825663044255,
- "p90_abs_error_vs_prediction_cents": 30.27170264504397,
- "usable_windows": 83,
+ "median_abs_error_vs_prediction_cents": 5.209144864515906,
+ "p90_abs_error_vs_prediction_cents": 59.69211038492525,
+ "usable_windows": 85,
  "window_film_t_s": [
   91.62291666666667,
   95.82291666666643
@@ -97,16 +103,16 @@
  "emission_lead_at_window_start_s": 0.6605297723025387,
  "emission_lead_at_closest_approach_s": 0.08049860003623621,
  "windows_on_throttle": 63,
- "windows_on_overrun": 20,
- "windows_measured_on_engine_comb": 59,
+ "windows_on_overrun": 22,
+ "windows_measured_on_engine_comb": 61,
  "windows_measured_on_tyre_scrub_comb": 24,
  "max_lateral_g_in_window": 4.510670898434509,
- "CONTROL_estimator_on_wrong_f_emit_median_ratio": 0.8460711273862295,
- "CONTROL_permuted_windows_corr": -0.17184762985008012,
+ "CONTROL_estimator_on_wrong_f_emit_median_ratio": 0.846084416589151,
+ "CONTROL_permuted_windows_corr": -0.11442704965238504,
  "CONTROL_null_static_source_and_static_ears_semitones": 2.519277112229843e-10,
  "listener_motion_only_sweep_semitones": 3.076089296262526,
  "PASS": true,
  "CONTROL_FAILS_AS_EXPECTED": true
 }
->> gates: {"levels": true, "seam": true, "external_assets": true, "pitch": true, "doppler": true}
+>> gates: {"levels": true, "edges": true, "seam": true, "external_assets": true, "pitch": true, "doppler": true}
 >> STAGE RESULT: AUDIO_VERIFY_OK
