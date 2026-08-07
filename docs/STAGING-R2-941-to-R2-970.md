@@ -189,6 +189,54 @@ default.*
 
 ---
 
+## R2-943b — the car stops past the pits, and no braking rate can change that
+
+**MEASURED** by taking `world/build_architecture.py`'s own declared pit-building
+box through `WC.circuit_to_world` and projecting it into the built closing frame.
+
+The circuit frame is aligned with the pit straight — track s **is** circuit x,
+and the centreline sits at circuit y = 0 — which makes the architecture's
+declared numbers directly comparable:
+
+```
+pit building   PB_X0, PB_X1 = -245.0, 75.0      i.e. from 235 m BEFORE the
+               PB_Y0, PB_Y1 =   23.5, 40.5           line to 75 m AFTER it,
+                                                      23.5-40.5 m to one side
+car comes to rest                s = 226.5 m     i.e. 151 m past its east end
+```
+
+Projected into the 130 mm closing frame, with the camera aiming at the car:
+
+| car rests at | dist | car px | start/finish line | pit building |
+|---:|---:|---:|---|---|
+| s=100 | 320.2 m | 246.7 | ndc x −2.25, out | **3 corners IN frame** |
+| s=150 | 323.5 m | 244.2 | out | none |
+| s=200 | 334.3 m | 236.3 | out | none |
+| **s=226.5** | **342.7 m** | **230.6** | ndc x −5.73, out | none |
+| s=250 | 351.9 m | 224.5 | out | none |
+
+**Only s=100 puts any architecture in the closing frame, and s=100 is not
+reachable.** Stopping in 100 m from 89.767 m/s is 4.03 g *mean*, which the aero
+profile delivers at about 8 g peak. Even a genuine limit stop — 5.34 g peak, the
+hardest profile in my grid search — covers 161.6 m and still finishes 87 m past
+the building. **The car crosses the line at 323 km/h and physically cannot stop
+inside the 75 m of pit building that remains in front of it.**
+
+So the closing frame is *determined*: a 95 m-wide stretch of the pit straight
+past the pit exit, with the car at its centre, and no architecture and no
+start/finish line in it. That is not a choice I made and it is not one available
+to be made differently.
+
+**Whether that is good is a separate question and I am not going to pretend the
+arithmetic answers it.** The case for it is R2-855's own statement of what the
+ending is for — *"the car, alone, still running"* — and that the shipped ending's
+failure was partly clutter: a 65 px wound in a truck park. A clean frame of the
+car alone on the circuit is the opposite failure mode from the one we have. The
+case against is that *"the film ends where the lap began"* is then true in the
+world and invisible in the frame. **R2-950 has to settle it by looking.**
+
+---
+
 ## R2-944 — the rig rebuilt: beats 1-5 bit-identical, and the seam step is the same object in all three arms
 
 Built with `anim/build_camera_rig.py` from `docs/R2851_beat_sheet_CANDIDATE.json`
