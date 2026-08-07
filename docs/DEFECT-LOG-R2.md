@@ -27192,3 +27192,994 @@ margin on the film's final render was being spent on a machine doing nothing.**
 Storage bills on rented instances survive the thing that made them look
 finished. "Exited" reads as terminal and is not; the meter that stopped is the
 GPU's.
+
+## R2-1001 — the 8.04 s "one third size" defect is real as a NUMBER and false as a PICTURE. At 4K the car is a fully resolved F1 car at the span's worst frame
+
+**MEASURED ON FRAMES.** `out2/seq/b5verdict_4k`, 6 frames, 3840x2160, 512
+samples, `film17_breach.blend`, camera `ONER`. **$0.173, measured** — 1,412
+GPU-seconds at $0.4403/hr, 235 s/frame.
+
+The brief handed to this task was that beat 5 very likely repeats the ending's
+defect — *"visible and 'a subject' are different things"* — for 8.04 s. It does
+not. **The premise is refuted for the size claim**, and the instrument that
+raised it is measuring the one property that turned out not to discriminate.
+
+The four frames that carry the verdict, viewed at 1:1 on the 4K frame:
+
+| frame | shot scale | distance | car width | what is actually in the crop |
+|---|---:|---:|---:|---|
+| f2035 | 4.24 % | 110.5 m | 163 px | rear wing, halo, **the driver's gold visor**, front wing, four tyres, cast shadow |
+| f2100 | **2.97 %** | 169.4 m | 114 px | rear wing with legible endplate band, airbox, helmet, blue livery break, sidepods |
+| f2160 | 4.84 % | **187.1 m** (span maximum) | 186 px | side-on through a corner, **brake discs glowing**, wing, halo, driver |
+| f2225 | 4.70 % | 135.3 m | 180 px | small but whole, under the bridge |
+
+f2100 is within 0.01 points of the span's minimum (2.96 % at f2097) and f2160 is
+within 0.1 m of its maximum distance (187.2 m at f2161). At the span's *smallest*
+subject and at its *furthest* the car is unambiguously an F1 car. It is not "a
+grey-blue smudge."
+
+**Why it differs from the ending at the same pixel size, measured not asserted.**
+The ending reads 4.15 % and this span reads 4.22 %; R2-582 already put those two
+numbers side by side. Pixel size was never the discriminator. Contrast is:
+
+| | closing wide (per the ending's diagnosis) | f2035-2227 (measured here) |
+|---|---|---|
+| polarity | car **brighter** than surround | car **darker** than surround |
+| luminance separation | a specular glint | **-46 % to -59 %** against the asphalt |
+| colour break | 0.14 blue-minus-red | +0.020 to +0.064 blue-minus-red |
+| range | ~1000 m | 110-187 m |
+| aerial perspective | heavy; helmet sub-pixel | light |
+| surround | featureless pale run-off | kerbs, white lines, cast shadow for scale |
+
+A car at half the luminance of a pale asphalt background, with a cast shadow
+roughly doubling its footprint, is a hard silhouette at 114 px. A car slightly
+brighter than a pale run-off at 1000 m through haze is not, at 159 px. **The two
+frames have the same subtense and opposite legibility.**
+
+**The instrument's own corollary does not survive the pixels either.**
+`tools/lap_shotscale.py --selftest` prints, unprompted:
+
+> "COROLLARY, and it is uncomfortable: the control's 3.00 % is not far below the
+>  4.22 % the f2035-f2227 stretch actually measures. At that size the car is
+>  barely bigger on screen than if it had never left the showroom."
+
+That is true as subtense and false as a claim about the picture. The control is
+the car left parked on the dais ~1 km behind the camera, which at 3.00 % would be
+a haze-flattened blob; the real car at 4.22 % is the f2100 crop above, with a
+readable rear-wing endplate. **Equal subtense, opposite legibility** — the same
+point the closing wide makes from the other direction. The instrument is sound
+(all four of its controls pass, agreement p95 0.64 %); what is wrong is treating
+its one number as a verdict.
+
+Method note, offered so it can be re-run: the luminance and colour numbers above
+are the darkest quartile of the projected car box against an annulus 4x its size,
+per frame, on `out2/seq/r2full`. `f2185` and `f2190` are the two frames where
+that measurement *inverts* (-3.0 % and +6.4 %, colour break negative) — which is
+not a measurement artefact but R2-1002.
+
+## R2-1002 — the "no subject" defect in beat 5 is real, lasts 0.50 s, and is not about size. f2181-2191 has no car in the frame at all
+
+**MEASURED ON FRAMES**, and it confirms R2-664 at 4K rather than re-deriving it.
+
+f2185 and f2190 at 3840x2160 are photographs of `ARCH_PontPlongee` — a wall of
+motion-blurred concrete abutment and steel plate girder. **There is no car
+anywhere in either frame.** f2190 is the cleaner example: the whole frame is
+girder, parapet, kerb and grass.
+
+*This* is the ending's defect, exactly: a handsome, correctly-hazed shot of
+circuit architecture with no subject in it. It is 11 frames by raycast
+(`render/r2651/occlusion.json`, `occ_frac_front >= 0.999`), 12 counting f2180's
+fence frame, **0.46-0.50 s**.
+
+The correction this makes to the brief's framing: the defect inside those eight
+seconds is **not** the 8.04 s of small car. It is half a second of no car. The
+metric that found the eight seconds is blind to it — `tools/lap_shotscale.py`
+declares in its own docstring that "occlusion is not modelled: a car behind a
+barrier still measures full size" — and at f2185/f2190 it reports 4.66 % and
+4.91 %, its most confident readings of the whole span, for two frames containing
+no car.
+
+## R2-1003 — four levers measured before one was chosen: aim, lens and "no event" refuted; distance available but not needed
+
+The ending's lesson was that the obvious lever was wrong three times running, so
+each candidate lever was measured before one was picked. Three did not survive
+contact with a measurement. The fourth survived and turned out not to be needed,
+which is a different thing and is recorded as such.
+
+**Aim — refuted.** The car is at screen centre for the entire span:
+|screen x| < 0.01, |screen y| < 0.02 in normalised frame units, every frame from
+f2025 to f2240. There is nothing to gain by re-aiming; the camera is already
+looking straight at it.
+
+**Lens — refuted, and already refuted once.** The span already runs
+**69.2-85.0 mm**, the longest glass in the film. Tripling the subject needs
+~210-255 mm. R2-591 has already built and rebased the retune
+(`render/film_path_R2581B_ramp_RETUNED_REBASED.json`, peak focal 142.5 mm,
+median 4.41 % -> 6.11 %); R2-737 established it **cannot change which frames are
+blocked**, because a sightline is focal-independent, and that it puts *more*
+concrete on screen. A lens change cannot touch R2-1002 and R2-1001 says the size
+did not need touching.
+
+**"The shot has no event" — refuted by measurement.** The hypothesis was that
+8 seconds of a centred, receding, long-lens subject is dead screen time. Mean
+absolute frame-to-frame image change over the span is **0.97x the beat-5
+median** — the **45th percentile**, dead average. The span is normally kinetic.
+The quietest stretch of beat 5 is f1826-1876 at 2.60 %, half the span's rate, and
+nobody has flagged it.
+
+**Distance — a live lever, and the shipped 187 m is a CHOICE, not a constraint.**
+This entry originally claimed the distance was forced. **That claim was wrong and
+is retracted here rather than quietly deleted.** The arithmetic:
+
+The camera runs 97 m -> 187 m ahead of the car between f2015 and f2160 because it
+is travelling to the doppler station, and the beat sheet's anchors give the
+reason: *"170 m of deceleration is what a hover costs"*, *"45, 33, 22, 8, 1.5 m/s,
+five anchors, because arriving at a hover in one is a 6 g stop."* The obvious
+inference is that a closer camera cannot make the station. **Measured, it can.**
+
+From a +40 m lead at f2112, the run to the station is **428.2 m in 6.08 s**,
+ending at rest. Cruise-then-brake, against `author_beats2_5.py`'s own envelope
+(v <= 137.8 m/s, |a| <= 95.9 m/s^2 = 9.78 g):
+
+| cruise speed | brake needed | |
+|---:|---:|---|
+| 88.3 m/s (the shipped path's own peak in this stretch) | 35.8 m/s^2 = **3.65 g** | within envelope, and *below* the shipped path's 5.01 g peak |
+| 101.9 m/s (beat 5's peak camera speed anywhere) | ~27 m/s^2 = 2.8 g | within envelope |
+| 137.8 m/s (the ceiling) | 23.2 m/s^2 = 2.36 g | within envelope |
+
+At a 40 m lead cruising 88.3 m/s against a car doing ~78 m/s the lead grows to
+roughly 86 m before the brake closes it — **peak distance ~86 m instead of
+187 m**, which is about 9 % of frame width instead of 4.2 %. The lever is real
+and it is affordable.
+
+**So why is nothing here spending it?** Because R2-1001 says it does not need
+spending. The picture at 187 m is a legible F1 car; buying 2.2x the subtense buys
+nothing the frame was missing, and it would rewrite ~250 frames of authored
+camera to do it. The correct statement is that the shipped 187 m lead is a
+*defensible authorial choice* and R2-422's account of it as a hard cost of the
+doppler station is **overstated**. Anyone who later decides beat 5 does want a
+closer pass now has the budget for it in this table, and does not have to
+re-derive that it is possible.
+
+## R2-1004 — the fix: R2-738's bridge thread, rebased onto the live path and with wider ramps, closes the blackout for LESS camera acceleration than the shipped path
+
+`tools/r2971_pont_camera_rebase.py` (new), output
+`render/film_path_R2971_PONT_B5_REBASED.json`. **CANDIDATE — not merged.**
+
+R2-738 had already found the answer and it had been sitting unlanded, blocked on
+one thing: *"21 m of deviation over ~60 frames is a picture question needing eyes
+on rendered frames."* R2-1001/1002 are those eyes. Two defects in the R2-738
+package had to be fixed before it could ship.
+
+**Defect 1 — stale base, the R2-737 trap again.**
+`tools/r2731_pont_camera_apply.py --out` writes a whole-film path rebuilt from
+the beat sheet. Measured against the live `world/camera_rig_path.json`:
+**2,472 of 2,978 frames differ, worst 9.866 m at f545**, all of it in beat 1.
+Adopting that file would revert beat 1's camera by 9.9 m to buy a 12-frame fix in
+beat 5 — precisely what R2-737 caught in the lens retune. The cure is
+`tools/r2731_lens_retune_rebase.py`'s: **carry the OFFSET across, never the
+file.** The offset is a pure function of frame index and rebases exactly; the aim
+is not, so it is re-derived, and the selftest's first control is that with the
+offset forced to zero the re-derived aim reproduces the live quaternion.
+
+**Defect 2 — R2-738 as authored spends 95 % of the camera acceleration budget.**
+
+| | blocked frames | peak abs a | vs the 95.9 m/s^2 craft limit |
+|---|---:|---:|---|
+| shipped | **11** (f2181-2191) | 49.1 m/s^2 (5.01 g) | 51 % |
+| R2-738 as authored | **0** | **91.2 m/s^2 (9.29 g)** | **95 %** |
+| **R2-1004 (this)** | **0** | **47.7 m/s^2 (4.86 g)** | **50 %** |
+| R2-1004, wider still | 0 | 43.9 m/s^2 (4.48 g) | 46 % |
+
+R2-738 noted "acceleration triples locally" and left it. Measured, it is 1.86x,
+it peaks at **f2193**, and **the whole spike is in the lateral OUT ramp**, which
+R2-738 runs over 22 frames. Widening it to 32 frames (f2178->2210) and starting
+both in-ramps 12 frames earlier (f2133) leaves the displacement and therefore the
+occlusion result untouched — the plateau of zero blocked frames is 6 m x 5 m wide
+— and brings the peak **below the shipped path's own**. The fix now costs nothing
+in the camera envelope instead of nearly exhausting it.
+
+The displacement itself is unchanged from R2-738: **du +20.0 m inboard, dz -7.5 m**,
+interior to the measured zero-blocked plateau (du 18..24 x dz -6..-11). The camera
+goes from 5.1 m *above* the soffit and 29 m outboard — flying over a bridge it was
+specified to go under — to threading the clear opening, which is what
+`docs/circuit_spec.md` §10 said all along: *"threads under it at ~5 m altitude."*
+Camera altitude at the pass drops 16.7 m -> 9.2 m (f2168), 13.4 m -> 5.9 m (f2192).
+
+**Occlusion re-measured** with `tools/r2731_pont_full_sightline.py`, whose
+`--selftest` reproduces two independent raycasts at two stations
+(s=2410 -> f2181-2191, s=2460 -> f2196-2227) from the same code:
+**11 blocked frames -> 0.**
+
+Not a size fix, and not sold as one: shot scale over the edit window rises
+4.75 % -> 5.29 % (+11 %) and the f2035-2227 median moves 4.24 % -> 4.27 %. The
+subject was already legible (R2-1001); what changes is that for half a second it
+now exists.
+
+## R2-1005 — seams: both beat-5 boundaries are bit-identical, and the edit is smoother than what it replaces
+
+**Before**, on `out2/seq/r2full` at 720p, mean absolute pixel difference across
+the seam, against the interior frame-to-frame baseline on either side — a seam is
+only a defect if it exceeds the motion that surrounds it:
+
+| | mean | p99.9 | max |
+|---|---:|---:|---:|
+| f1189\|1190 (interior control, beat 4) | 4.669 % | 59.22 % | 81.57 % |
+| **f1190\|1191 — BEAT 4/5 SEAM** | **4.983 %** | 59.61 % | 82.75 % |
+| f1191\|1192 (interior control, beat 5) | 5.415 % | 58.43 % | 83.14 % |
+
+The seam sits **inside** its own interior bracket. Clean, and it was clean before
+this task touched anything.
+
+**After.** The candidate's support is exactly **f2131-2224**, asserted frame by
+frame, so:
+
+| frame | dp | dq | |
+|---|---:|---:|---|
+| f1190, f1191 | 0.0e+00 m | 0.0e+00 | **bit-identical** |
+| f2714, f2715 | 0.0e+00 m | 0.0e+00 | **bit-identical** |
+
+The f2714/2715 seam and its 1.33 % interpolation measurement are untouched and
+were never approached — the edit ends 490 frames short of it.
+
+**The edit's own ends** are the only new seams, and they are C2 by smootherstep
+construction. The test that matters is not the offset's derivatives but the
+camera's actual per-frame translation, since that is what a seam would show up
+in:
+
+| | per-frame translation, f2120-2240 | worst frame-to-frame CHANGE |
+|---|---|---:|
+| shipped | 0.9564 - 3.6799 m | 85.28 mm |
+| candidate | 0.9564 - 3.6707 m | **82.74 mm** |
+
+The candidate's worst discontinuity is **smaller** than the shipped path's.
+
+**Quaternion normalisation.** The base path's stored quaternions are 6-decimal
+(R2-103), so they are unit only to **8.21e-07** — worst at f1550, and 7.10e-07
+inside this window. The 94 quaternions this candidate writes are freshly computed
+and unit to **1.11e-16**. The output is therefore *cleaner* than its input inside
+the window and bit-identical to it outside; any downstream check must use
+R2-103's rounding floor, not an exact-unit assert, or it will fail on frames
+nobody touched.
+
+**Quaternion continuity**, because Blender lerps quaternion F-curves
+component-wise and past 2pi between keys the rotation runs backwards: over
+f2127-2228 the candidate has **0 hemisphere flips against the live path's 0**,
+and its largest single-frame rotation step is 1.19 deg (live 0.91 deg). The
+selftest fails if the candidate introduces a flip the live path does not have.
+
+## R2-1006 — what is NOT closed, and what it would cost
+
+**Measured, and it is a real cost: the camera's margin against the car's own
+corridor.** R2-738 flagged that its candidate halves the closest the car ever
+comes to a camera *position*, 21.43 m -> 9.40 m. This variant, holding inboard
+longer, takes it to **8.97 m** — camera at f2183 against where the car will be at
+f2238, **55 frames (2.29 s) later**. It is not a proximity in time and not a
+collision: the *simultaneous* camera-to-car distance over the window is unchanged
+at a 137.3 m minimum. But 8.97 m of standoff from the racing line is the price of
+threading the opening, and it should be seen before it is accepted, not after.
+The camera's lowest point drops from z 10.02 m to **z 5.78 m** at f2195 — which
+is the ~5 m altitude `circuit_spec.md` §10 specified for this pass in the first
+place.
+
+**Not run: `tools/placement_gate.py` and the triangle-level clearance gate.**
+R2-740 measured R2-738 as authored at minimum **2.506 m at f2194** against the
+1.20 m camera sphere (shipped 3.881 m). This candidate uses the same
+displacement but holds it inboard *longer* and starts it 12 frames *earlier*, so
+it is displaced over more frames and its clearance must be re-measured, not
+inherited. **This is the last open gate before merge.**
+
+**Not run: the rig rebuild and `world/camera_rig_continuity.json`.** R2-738 named
+this and it is still true.
+
+**Not done: the B-side render.** The picture proof of the *fix* (as opposed to
+the defect) needs the candidate keyed onto `ONER` and 6 frames rendered.
+**Cost: 6 frames x 3840x2160 x 512 samples ~= $0.17**, plus one `rq exec` to key
+the camera and save a candidate blend. Not submitted: `rq exec` was at 12/12
+slots with two other agents' jobs (`r2943` rekeying f2715-2978, `r2851ab`), and
+an 8 GB blend save into that contention is not worth $0.17 of insurance without
+the clearance gate result first.
+
+**Not merged into `docs/beat_sheet.json`, deliberately**, on R2-591's rule:
+*"other agents have live candidate sheets in that file, and two agents writing
+one sheet is how a one-shot film acquires a seam."* `r2943` is live in
+`film17_breach.blend` right now. The merge is 12 beat-5 camera keys, or one
+`--path` swap at rig-build time; it belongs to the main thread.
+
+## R2-1007 — a per-frame cost datapoint for whoever is costing the 4K master
+
+Incidental, but it is a real measurement at the shipping spec and the master's
+affordability is live. These 6 frames averaged **235 s/frame** at 3840x2160 /
+512 samples / `film17_breach.blend`, against `m4k_probe`'s **196 s/frame** on
+`film16_breach.blend`. At 235 s the full 2,978-frame master is **194 GPU-h =
+~$85.5** at $0.4403/hr, against the $71.40 currently assumed.
+
+**Do not treat that as a re-forecast.** Two confounds, both plausible and neither
+separated here: these frames were rendered on a card with 12/12 exec slots busy
+serving two other agents, which inflates wall time; and beat-5 aerials are not a
+representative sample of the film. What is solid is that 235 s/frame was observed
+on the current blend under current farm conditions, and it is 20 % above the
+figure the master estimate rests on. Worth one clean, unloaded frame to separate
+the two before anyone budgets against either number.
+
+## R2-1008 — two corrections to the brief this task was given
+
+1. **"1,247 contiguous frames" is not what is on disk.** `out2/seq/r2full` holds
+   1,247 frames covering f793-2978, but only **f793-1281 are contiguous** (489
+   frames); from f1286 the sequence is **1-in-5**. Beat 5 f1191-2714 is covered
+   at 39 frames over the f2035-2227 span, not 193. Adequate for composition,
+   which is what it was used for; not adequate for anything per-frame.
+
+2. **The run is longer than 8.04 s and this was already known.** R2-582 measured
+   the true continuous sub-10 % run as **f2012-f2256, 245 frames, 10.21 s**,
+   median 4.41 % — *"the longest continuous run under 10 % of frame width
+   anywhere in beats 2-6, including beat 6 itself."* f2035-2227 is R2-581's
+   narrower window. Both are now superseded as a *defect* by R2-1001 anyway; what
+   survives is R2-1002, which is 0.50 s inside it.
+
+
+### Files touched
+
+| file | |
+|---|---|
+| `tools/r2971_pont_camera_rebase.py` | **new.** Rebases R2-738's offset onto the live path, widens the ramps, 8 controls incl. a null that must reproduce the base |
+| `render/film_path_R2971_PONT_B5_REBASED.json` | **new, candidate.** Live path + the offset over f2131-2224. Not wired to anything |
+| `work/r2971/cam_candidate_path.json` | scratch: `r2731_pont_camera_apply.py`'s own output, kept only to document the 9.866 m stale-base delta |
+| `docs/STAGING-R2-1001-to-R2-1030.md` | this file |
+| `out2/seq/b5verdict_4k` | 6 frames, 4K, **$0.173 measured** |
+| `tools/r2731_camera_clearance.py` | **modified, additively** — gained a path-selection option so the gate can be pointed at a candidate other than R2-738's. Existing default behaviour unchanged |
+
+This task modified **nothing** in `docs/beat_sheet.json`, `docs/DEFECT-LOG-R2.md`,
+`anim/`, `audio/`, `world/`, `telemetry/`, or any `render/film*.blend`, and
+committed nothing. Other agents' edits are live in the same working tree
+(`audio/scene.py`, `world/camera_rig_path.json`, `world/build_*.py` and others
+show as modified and are **not** this task's) — anyone staging these changes must
+use path-scoped `git add`, never `-A`.
+
+One consequence of that, worth stating rather than discovering at merge:
+`world/camera_rig_path.json` is currently dirty in someone else's hands. This
+candidate was rebased onto `render/film17_path.json`, which is clean and which
+was verified **identical to `world/camera_rig_path.json` over the whole of beat 5
+to 0.00e+00 m**. `tools/r2971_pont_camera_rebase.py` takes `--base`, so at merge
+time it should simply be re-run against whatever path is live rather than the
+output file being adopted as-is.
+
+## R2-1031 — the surface is not untextured; its detail is authored in octaves the film's camera cannot resolve, and the relief law says so in numbers
+
+The complaint ("reads as untextured, no asphalt detail, no rubbered-in racing
+line") is **true at the delivered frame and false about the material**. The
+material has 20 procedural layers and 617 lines of shader. What it does not have
+is anything in the octave band this film photographs the road at.
+
+Four independent lines, none of which is "I looked at the graph".
+
+### (a) what distance does the camera actually see the road at — measured
+
+`render/r2651/track_scale.json`, 1 888 frames in which the road covers ≥ 2 % of
+the delivered frame, **weighted by how much of the frame it covers**:
+
+| | p5 | p25 | p50 | p75 | p95 |
+|---|---:|---:|---:|---:|---:|
+| distance to surface | 16.2 m | 59.1 m | **125.9 m** | 486.9 m | 1017.7 m |
+| mm of surface per 4K pixel | 3.82 | 10.82 | **20.75** | 108.10 | 282.96 |
+
+92.6 % of the film's road pixels are beat 5. A feature reads between roughly
+2 px and 30 px, so **the film's own readable band on this surface is 40 mm to
+2 m** — and at p25 it is 22 mm to 320 mm.
+
+### (b) the layer census against that band — arithmetic, from the source
+
+Wavelengths quoted as `itemkit.bump_relief_report` reads them
+(`NOISE_WAVELENGTH_FACTOR` 1.60 / scale, `VORONOI_WAVELENGTH_FACTOR` 2.17 /
+scale). *Reading `1.0/scale` instead — the obvious thing — makes every Voronoi
+layer 2.17× too fine, and an earlier census in this module's own comments did
+exactly that.*
+
+| where | layers |
+|---|---|
+| ≥ 2.9 m | macro2 222 m, cover 76 m, macro 53 m, snake 29 m, patch 29 m, pour 21 m, dust 7.3 m, flush 4.7 m |
+| **40 mm – 2 m** | **`mott` 1.03 m — carrying a 0.22 tint. That is the whole list.** |
+| ≤ 103 mm | pluck 103, warp 67, agg0 66, agg 39, aggb 19, agg2 9.2, grain 3.7, micro 1.0, bead 0.9 |
+
+Eight layers above the readable band, nine below it, **one inside it**. The gap
+runs 103 mm → 1.03 m, which at p50 is **5 px to 50 px** — the centre of
+legibility.
+
+### (c) the delivered frames, at 4K, at 1:1 — and the atmosphere ruled out
+
+R2-655 rendered four film-pose frames at 3840×2160 / 512 and wrote *"these are
+the before, and no change should be made until they have been looked at at
+1:1."* They had not been. They now have.
+
+* **`before_f2225.png`** (21.0 mm/px) — the road is a **dead smooth cream
+  ribbon**. The kerb reads, the paint reads, the asphalt has nothing.
+* **`before_f1547.png`** (11.8 mm/px, the sharpest look at the surface in the
+  whole film) — a **uniform sandpaper stipple**: every chip the same size, the
+  same brightness, evenly spaced over the entire frame, with no structure at any
+  larger scale. This is the "one tiling noise over 5 km" failure, at chip scale.
+
+**The R2-652 escape hatch is closed by its own control.** That finding correctly
+sent the last asphalt complaint to the camera department, so the same
+possibility had to be excluded before touching the material.
+`tools/r21031_octave_contrast.py` (new; five controls, two of which it must
+fail) on **f2225, one frame, same depth, same haze**:
+
+| patch | 4 px | 8 px | 16 px | 32 px |
+|---|---:|---:|---:|---:|
+| kerb stripes — **atmosphere control** | 0.0175 | 0.0206 | 0.0336 | **0.0545** |
+| asphalt (see the correction below) | 0.0109 | 0.0118 | 0.0163 | **0.0191** |
+| flat test-harness ground | 0.0023 | 0.0005 | 0.0003 | 0.0001 |
+| sky — **null control** | 0.0018 | 0.0004 | 0.0002 | 0.0001 |
+
+Contrast **survives** the haze at that range: the kerb carries **2.9×** the
+road's at both the 335 mm and 670 mm bands. The road is smooth because the
+material is smooth.
+
+### two corrections to the above, found by checking what the pixels actually were
+
+Both are mine, both were in the first draft of this note, and both are the same
+mistake — **naming a patch by what it looks like instead of by what it is.**
+
+1. I recorded the fourth row as *"the runoff terrain measures as flat as the
+   sky — a worse defect, belongs to `build_terrain`."* **It is not terrain.** A
+   raycast of the camera says that patch is **100 % `TEST_Ground` /
+   `TEST_GroundMat`**, the test harness's own flat grey card. `build_terrain` is
+   not in this blend at all. There is no terrain finding here and the sentence
+   is withdrawn.
+2. The asphalt row above is **62 % asphalt, 26 % test ground, 11 % kerb**. The
+   number is contaminated and is superseded by the pure-asphalt measurement in
+   R2-1036.
+
+Every patch quoted from here on is verified by raycast against the built scene,
+and the rects are chosen by `tools/r21031_asphalt_mask.py`'s largest-all-asphalt-rectangle
+rather than by eye. f1547, f1226 and f2000's original patches came back
+93–100 % asphalt, so the diagnosis itself stands; f2225's did not.
+
+### (d) the relief law — and this is the part that names the mechanism
+
+`itemkit.relief_budget` on the **shipped** bump stack, at the film's own
+12.471° sun, conservative `height_pp = 1.0`:
+
+| stage | λ | amp | slope | m | vs `isotropic_macro` 0.35–0.95 |
+|---|---:|---:|---:|---:|---|
+| micro | 0.62 mm | 0.147 mm | 36.5° | **5.374** | **HIGH** |
+| grain | 2.33 mm | 0.754 mm | 45.5° | **6.453** | **HIGH** |
+| h_meso | 17.86 mm | 5.500 mm | 44.1° | **6.289** | **HIGH** |
+| mott | 645 mm | 1.400 mm | 0.4° | **0.062** | **LOW** |
+
+**The three layers the film cannot resolve run 4×–18× OVER the accepted
+modulation. The one layer in the octave it can resolve runs 6×–26× UNDER it.**
+
+This is the 122-stage dead bump stack again in a form no node-count check could
+ever see: **nothing is disconnected — every stage is wired, every socket fed by
+name — and the relief is still doing nothing, because all of it is spent where
+the camera is not.** A 44° mean slope at 18 mm is not aggregate, it is
+sandpaper, and sandpaper is exactly what f1547 shows. The source comment above
+those stages says they are *"deliberately weak … keep them quiet"*; they were at
+m = 5.4.
+
+**Recorded as the general result:** a bump stack can fail exactly as completely
+by misallocation as by disconnection, and only a *physical* audit distinguishes
+the two. A wiring check passes both.
+
+---
+
+## R2-1032 — what was built, and the rule that decides where relief is allowed to be the answer
+
+### the missing octaves, as five different structures
+
+Five draws of one noise at five scales is "one tree spammed a hundred times"
+moved into texture space, so these are five different *kinds* of thing, chosen
+because a dense-graded wearing course really carries them there:
+
+| layer | λ | px @ p50 | what it is |
+|---|---:|---:|---|
+| `nest` | 0.150 m | 7.2 | aggregate clustering — stone-on-stone contact zones, mortar-rich ground between. Turns an even stipple into grouped stones. |
+| `seg2` | 0.300 m | 14.5 | the paver's auger starving and flooding the mat: chip-rich pale patches, mortar-rich warm ones |
+| `pick` | 0.400 m | 19.3 | rubber pick-up mottle — rubber does not lay evenly |
+| `screed` | 0.444 m | 21.4 | the screed's transverse corrugation. **The only thing in the material that runs across the road**, so it breaks the longitudinal grain of the streaks, the lane joints and the band at once |
+| `craze` | 0.658 m | 31.7 | fatigue cracking as a **cell network** — distinct from `snake`, which is the 29 m sealant line laid over it later |
+| `ravel` | 0.986 m | 47.5 | fretting: mortar stripped, coarse stone standing proud, paler and rougher |
+
+`ravel` and `screed` are gated on `offline` (distance from the driven corridor in
+units of the corridor's own width) because that is physically where they survive
+— inside the corridor the tyres knead the mortar back and polish the ripple flat.
+`craze` is gated on `rubber`, which is the telemetry's own load field.
+
+### the mechanism, which is not relief
+
+**These layers survive distance by modulating the amplitude of the aggregate, not
+by having relief of their own.** At 21 mm/px an 18 mm chip is sub-pixel, so the
+pixel receives the chip field's local *mean*; if the chip field's amplitude
+varies at 0.3 m, the delivered pixel varies at 0.3 m. That is `amp_field`, and it
+is a texture-of-texture — which is also **why it survives AgX where a flat albedo
+step does not.** R2-654's measured 1.9 : 1 display ceiling is a ceiling on
+*levels*.
+
+### the rule the law forced
+
+`relief_amplitude_for` says reaching `isotropic_macro` at 1.03 m needs **13.7 mm**
+peak-to-peak, and at 0.45 m needs 17.6 mm. **A road that waved 14 mm every metre
+would be unraceable.** So the budget carries two kinds of stage:
+
+* **`"m"`** — aimed at a radiance modulation, gated inside its band **both ways**;
+* **`"mm"`** — bounded by the object, gated against a physical amplitude, with the
+  modulation it delivers *reported* rather than targeted.
+
+The two kinds **agree wherever both apply**, and that is worth more than either.
+Every band-aimed stage came out at an amplitude a real wearing course has —
+0.05 mm of grain, 1.16 mm of chip proud of the mortar, 2.9 mm of stone nest,
+4.2 mm of segregation, 9.1 mm of sawn joint — **without any of those numbers
+being chosen**. Law and object diverge only above 0.6 m, which is exactly where
+the `"mm"` stages begin.
+
+### the budget, read back off the built graph
+
+Not off the plan. `_RELIEF_PLAN` and `relief_amplitude_for` are the same function
+evaluated twice and comparing them is an algebraic identity — itemkit's own
+`emitted_wavelength_m` docstring says precisely that about the check that let
+R2-058 live for as long as it did.
+
+```
+=== asphalt relief budget, read back off the built graph ===
+  Bump       fine         lam     3.72 mm  amp  0.0524 mm  m  0.4000  isotropic_micro        ok
+  Bump.001   aggregate    lam    38.75 mm  amp  1.1645 mm  m  0.8500  isotropic_macro        ok
+  Bump.002   hard         lam   103.33 mm  amp  9.0538 mm  m  2.4000  hard_feature           ok
+  Bump.003   nest         lam   149.66 mm  amp  2.9025 mm  m  0.5500  isotropic_macro        ok
+  Bump.004   seg2         lam   300.19 mm  amp  4.2306 mm  m  0.4000  isotropic_macro        ok
+  Bump.005   craze        lam   657.58 mm  amp -3.0000 mm  m -0.1296  physical 1.0-15.0 mm   ok
+  Bump.006   waviness     lam  1032.26 mm  amp  4.0000 mm  m  0.1101  physical 0.5-8.0 mm    ok
+>> STAGE RESULT: asphalt_relief_budget PASS  (7 stages, 0 out of band)
+```
+
+Seven stages spanning 3.7 mm to 1.03 m instead of four clustered at ≤ 18 mm and
+one orphan at 645 mm.
+
+### two structural changes the budget forced
+
+* **The 0.6 mm stage is gone, and not because it was too strong.** Below the ray
+  footprint a normal perturbation is not geometry, it is a BRDF: Cycles samples
+  it at random inside the pixel and the denoiser turns the variance into swirls.
+  Sub-footprint texture's physically correct home is **roughness**, and that is
+  where it went. 0.6 mm is under the footprint at every station in this film bar
+  the closest, where it was generating m = 5.4.
+* **Hard features got their own stage.** A sawn joint, a saw kerf, a planer lip
+  and a pluck socket are *edges* — `hard_feature`, 1.50–6.00 — and riding them on
+  the aggregate's amplitude meant either the stone was sandpaper or the joints
+  were invisible. They are now budgeted at **the width of the cut**, not the
+  spacing of the cuts.
+
+---
+
+## R2-1033 — `relief_gate()`: the audit reads the graph, and it fired three times before it passed
+
+New, runs on every `build()`. It fails on a stage whose Height is unlinked (the
+dead stack), on a stage whose Height is driven by another Bump (height and normal
+chain crossed — the R2-038 shape), and on a stage outside its band **on either
+side**.
+
+It also fails **UNPLANNED**: any stage whose read-back wavelength matches no plan
+entry. That clause is the load-bearing one and it caught all three real defects:
+
+1. **The aggregate stage was being audited at 18.8 m.** `bump_relief_report`
+   walks back from Height depth-first, *last input first*, and stops at the first
+   texture it meets. Every modulation on `h_meso` (rubber, flush, runnel, ravel,
+   crazing) has a texture behind it, so the walk reached `craze_cover`'s 18.8 m
+   coverage noise and reported the 38.8 mm aggregate stage at **m = 0.0018 — a
+   470× error, in the direction that makes a HIGH stage look dead.**
+2. The same on the crazing stage.
+3. The screed stage reads **1.6 m** rather than its true 0.44 m, because its
+   coordinate is built in a `CombineXYZ` from two Math nodes and `_vector_gain`
+   cannot see the 3.60 — itemkit's own documented trap, from the other side. It
+   is audited at `seg2`'s 0.30 m, which is the branch the walk enters, and that
+   is **stated in the source rather than left to be discovered.**
+
+The fix is that every audited Height puts its own texture in argument 1. That is
+a coupling to another module's traversal order and is **not defensible on its
+own**; what makes it safe is that the UNPLANNED clause turns a change in that
+traversal into a loud failure instead of a silent audit of the wrong octave.
+
+---
+
+## R2-1034 — the "patches in the land" mechanism was live in the asphalt too
+
+The milled repairs ramped the Voronoi cell distance `0.42 → 0.30` on a 13.3 m
+cell — a **1.6 m wide feather all the way round**. What that renders as is a soft
+pale cloud, which is the client's rejected "patches in the land" arriving here by
+the same mechanism, in a different module. The pale blobs on `before_f2000.png`
+are these.
+
+A planer leaves a cut you can put a straightedge against. Two changes: the
+boundary is warped at 1.4 m so it is not a smooth Voronoi arc (a planer works in
+passes and leaves a stepped outline), and the feather is **0.13 m** with a sealed
+40 mm lip round it — the same treatment the sawn patches already had and the
+milled ones did not.
+
+**A repair has an edge, and that is the whole difference between a repair and a
+stain.**
+
+---
+
+## R2-1035 — the racing line still disagrees with the telemetry by 4.885 m, and now something will say so
+
+R2-651 measured this, routed it to the telemetry owner, and there it stopped —
+with nothing anywhere that would notice a regression *or a fix*. Re-measured
+today by an independent path (`world_contract.project` over `telemetry.csv`,
+1 524 lap samples):
+
+| | |
+|---|---:|
+| car's `\|u\|` from the centreline, p50 | **0.0026 m** |
+| painted band's `\|u\|`, p50 | 4.883 m |
+| **disagreement, p50** | **4.885 m** |
+| disagreement, p90 | 6.446 m |
+| disagreement, max | 7.144 m |
+| bar (0.55 × min spread = the narrowest heart) | 0.830 m |
+
+`telemetry.csv` is unchanged since 2026-08-02, so R2-651's finding stands
+verbatim: the car drives the geometric centreline for the entire lap while the
+rubber sweeps side to side five metres away.
+
+**Deliberately not fixed here, and that is the same decision R2-651 recorded.**
+Moving the rubber onto `u ≈ 0` paints a straight band down the middle of every
+corner, which no circuit has; re-solving the telemetry moves picture against
+sound in a film with no cuts. Both repairs belong to other owners. What this
+module can honestly do is **refuse to be silent about it**, which is
+`racing_line_telemetry_gate()` — it prints a `>> STAGE RESULT:` line on every
+build and currently FAILs.
+
+Worth restating from R2-662, because it is what makes this urgent rather than
+academic: the **one** condition in which the band is legible at all is the camera
+inside 20 m of the surface, which is the onboard and chase material — precisely
+the frames in which the audience can also see where the tyres are.
+
+`_load_telemetry` now carries `x`/`y`. The usage fields only ever read the
+accelerations, which is exactly how the band could be five metres from the tyres
+that laid it with nothing noticing.
+
+
+## Instruments added
+
+| tool | measures | a control it MUST fail |
+|---|---|---|
+| `tools/r21031_octave_contrast.py` | band-limited rms contrast per octave of a delivered frame, in delivered pixels | a linear ramp must return < 1e-4 — a crowned road under a low sun *is* a gradient in `u`, and this is R2-654's false positive in a different instrument; heavy blur must kill the fine octaves |
+| `world/build_surface.relief_gate()` | every `ShaderNodeBump` in the built graph, through itemkit's law | a stage whose wavelength matches no plan entry; a dead Height; a crossed Height/Normal |
+| `world/build_surface.racing_line_telemetry_gate()` | painted band vs driven line | — (a measurement with a stated bar) |
+
+**The octave instrument failed its own controls first** and was fixed before it
+was pointed at anything: band labelling was one octave out (a 16 px sinusoid
+reported in the 8 px band) and a linear ramp returned 1.6e-3 of pure boundary
+artefact from `mode="edge"` padding folding the ramp back on itself.
+
+
+---
+
+## R2-1036 — the A/B, at 4K, at 1:1, at matched camera and matched exposure
+
+Four film poses re-rendered from `world/surface_test_filmpose.blend` at
+3840×2160 / 512 through the same grade. **$0.0488 of GPU** (broker spend
+$26.4084 → $26.4572; 175 s of 5090 across four frames).
+
+**The pair is verifiably comparable.** The sky is untouched by this change, so
+it is the control: before vs after sky mean agrees to **1e-6** on all four
+frames. Same camera, same lens, same aperture, same exposure.
+
+Measured on **raycast-verified 100 % asphalt rects**, rms contrast per octave:
+
+| frame | mm/px | grazing (along/across) | 46-90 mm band | 180-370 mm | 700 mm-1.6 m |
+|---|---:|---:|---:|---:|---:|
+| **f2000** | 11.5 | 1.7 : 1 | **2.70× / 2.11×** | 1.45× | 1.26× |
+| **f1226** (the wide) | 51.5 | 40 : 1 | 1.22× / **1.65×** | **1.90×** | **1.58×** |
+| **f1547** (closest look) | 11.8 | 17 : 1 | 0.96× / 1.05× | 1.10× | 1.03× |
+| **f2225** | 21.0 | 32 : 1 | 1.90× / 1.52× | 1.13× | 0.97× |
+
+**And the frames, which are the arbiter** (`docs/peep/r21031/AB_*.png`, before
+left, after right, 1:1):
+
+* **f2000 — transformative.** Before: a flat cream plane carrying two hairlines
+  and four soft pale amorphous blobs. After: a surface with aggregate and mortar
+  structure, chip-rich and binder-rich patches, joints that read as sealed cuts
+  with a dark line and a lighter shoulder — and **the amorphous blobs are gone**,
+  because they were R2-1034's 1.6 m feather.
+* **f1226 — clear.** Before: flat grey with one hairline. After: legible surface
+  grain, mottling, and a joint with a real profile.
+* **f1547 — better, and the metric understates it.** The contrast did not rise;
+  it **moved**. The 46 mm band fell 0.96× and the 90-370 mm bands rose — which is
+  exactly the trade that was bought: the sandpaper stipple broken down, the meso
+  structure put in. Side by side, the uniform even speckle is replaced by patchy
+  chip-rich and mortar-rich ground with a crack line running through it. **A
+  single scalar would have called this "no change"; the crop pair does not.**
+* **f2225 — genuinely little change, and the reason is not the material.**
+
+### f2225, stated against myself
+
+That road patch sits at **0.8617 display mean — 27× the linear level of mid
+grey.** Measured off `render/r2651/agx.json`, this film's own transfer:
+
+| road patch at | display / stop |
+|---|---:|
+| f1547 0.3188 | 0.1251 |
+| f1226 0.3771 | 0.1393 |
+| f2000 0.5656 | 0.1399 |
+| **f2225 0.8617** | **0.0682 — 55 % of the others** |
+
+The material's gain *is* there (1.90×, 1.52× in the fine bands) but it arrives on
+a surface with **half the tonal headroom left**, at a 32 : 1 grazing
+foreshortening. Whether that surface should be that bright is an exposure and
+lighting question. **That is R2-652's finding, and this time it is correctly
+applied — to one frame out of four, after the other three were shown to move.**
+It is not a defence of the material, because the material did move here too; it
+is the reason the movement does not show.
+
+---
+
+## R2-1037 — the mesh is bit-identical, checked rather than argued
+
+The brief asks whether this breaks the module's bit-identical rebuild under
+contract 1.2.0. **It does not**, and that is measured by building the module
+twice in `--factory-startup` Blender — once from `git show HEAD:` and once from
+the working tree — and hashing every mesh's vertex coordinates and loop indices:
+
+```
+HEAD          MESH_SHA256 27a25aaafe4d…fb570  objects=59  tris=2721445
+working tree  MESH_SHA256 27a25aaafe4d…fb570  objects=59  tris=2721445
+```
+
+Identical. (2 721 445 − 12 for `--factory-startup`'s default Cube =
+**2 721 433**, the contract's own figure, which is a free cross-check that the
+hash is looking at the right geometry.)
+
+This was checked rather than reasoned about, even though the reasoning is easy —
+only `_mat_asphalt`, `_load_telemetry`'s return dict and two new gates were
+touched, and none is on the geometry path. Reasoning is what R2-605 calls
+"agreement with a document", and it is not verification.
+
+
+## Still open, not mine
+
+* **The racing line / telemetry disagreement** — R2-1035. Owner is task #19.
+  `racing_line_telemetry_gate()` now FAILs loudly on every build.
+* **f2225's road at 0.86 display** — R2-1036. Owner is lighting/exposure, not the
+  surface. Flagged, not textured around.
+
+## R2-949b — the A/B is across two film builds, and f2715 is a free control for it
+
+**Recorded before the frames exist, because it is the kind of confound that is
+invisible once a verdict has been formed.**
+
+| arm | film build | when |
+|---|---|---|
+| `r2851b6`, `r2851_4k_B_candidate` | `film16_R2851.blend` | 2026-08-04 16:26 |
+| `r2943b6`, `r2943_4k` (mine) | `film17_breach.blend` | 2026-08-07 06:09 |
+
+So the difference between the arms is **the car's motion plus 62 hours of film
+construction.** R2-917 checked the *camera* across the same two builds and found
+the delta confined to beats 1-2 — but a camera check says nothing about what the
+car is made of, and at least one item in the gap bears directly on the question
+being asked. `NEXT-REBUILD.md` lists a car-paint change worth **albedo 0.0121 ->
+0.0372** and three-quarter diffuse **7.32 % -> 19.96 %**. A car that reads better
+at 343 m may be reading better because it returns three times the light.
+
+**The control is free and exact: frame 2715.** The driver lifts BETWEEN f2714 and
+f2715 (R2-941), so at f2715 the car has lost **35 microns** and the camera's
+position, rotation and lens are all `0.000e+00` different between the arms.
+
+> **Any pixel difference at f2715 is the film build. None of it is the ending.**
+
+Both 720p sequences contain f2715. Diffing them measures the confound directly
+instead of arguing about it, and whatever it shows must be discounted from every
+later frame before any improvement is credited to the arrival.
+
+That control was not designed. It falls out of where the start/finish line
+happens to sit relative to a beat boundary, which is the same accident that makes
+the whole change possible. **Noting it because the honest version of R2-950 needs
+it and the flattering version does not.**
+
+---
+
+## R2-949c — exec starvation: an 8 GB open cannot run while any render queue is non-empty
+
+**MEASURED** on broker 8761 by the render agent, and recorded here because it is
+structural, it is currently costing two agents about seven hours each, and one of
+them is not us.
+
+```
+ExecMemoryShort: opening film17_breach.blend (7.98 GB) needs about 43.9 GB
+free and the box has 6.3 GB — the render worker is holding a scene of its own.
+```
+
+An 8 GB blend needs ~44 GB of the box's 48.9 GB, so **no `rq exec` job can be
+admitted while the render worker holds a scene.** The re-key has been in an
+admit-and-bounce cycle for ninety minutes without its child ever starting —
+`exec_sec` is null and there is no `>> STAGE RESULT:` line to judge, which is
+exactly why the rule is to judge only on that line.
+
+**The broker has no starvation guard for this.** Any agent feeding the render
+queue indefinitely blocks all 8 GB exec work indefinitely, regardless of
+priority, because the block is a memory admission test rather than a queue
+ordering. R2-860's object-ID raycast has been starved by the same mechanism
+since 07:39 and sits *ahead* of us at prio 40.
+
+**Nothing was done about it, deliberately.** Cancelling, re-prioritising or
+raising our own priority would take the window from a job we were explicitly told
+to let land. The queue's arrivals have stopped — 6 frames queued in the last two
+hours against 167 drained — so it will clear on its own. **Flagged for whoever
+owns the broker; the fix is not ours to deploy** (`~/vast-render` has ten
+uncommitted files and two changes that have never run in production).
+
+---
+
+## R2-960 — the shipped film opens with a click, and it is the END of the film wrapped onto the start
+
+With every source proved bit-identical before `t_end` (R2-955..958), the two
+finished masters still differed over frames 1-2714 by 8.02e-01 — and a best-fit
+broadband gain of +0.0200 dB did not reduce it. A gain difference cannot do that,
+so something structural was still crossing from the ending to the front.
+
+Locating it by frame:
+
+    worst frame over the whole film      FRAME 1,  |delta| 0.8021
+    all other frames 1..2714             |delta| ~1e-3 .. 4e-3  (the 0.02 dB gain)
+
+Frame 1. Not frame 2713, not the seam — the FIRST FRAME. And the cause is in the
+shipped master too:
+
+| master | peak inside frame 1 | at | programme RMS, frames 2-24 |
+|---|---|---|---|
+| shipped 2026-08-02 | **0.8505** (-1.4 dBFS) | sample 29, t = 0.60 ms | 0.0233 (-32.7 dBFS) |
+| A, lap-down off | 0.8504 | sample 29 | 0.0217 |
+| B, lap-down on | 0.1163 | sample 106 | 0.0222 |
+
+**A 32 dB transient on the first frame of a film that opens on a silent
+showroom.** It has been in every master this project has produced, no gate looks
+at frame 1 (`seam_gate` only visits beat BOUNDARIES: frames 793, 865, 1057, 1191,
+2715), and it is plainly visible as a bright vertical stripe at t = 0 in
+`audio/out/master_spectrogram.png` once you know to look.
+
+    audio/master.py:392
+        interior = np.stack([tail * 0.75 + np.roll(tail, d1) * 0.35,
+                             np.roll(tail, d2) * 0.75 + tail * 0.30], axis=1)
+
+`np.roll` is CIRCULAR. Used as a stereo decorrelation delay on the showroom's
+2.4 s FDN tail, it wraps the LAST d samples of the tail onto the FIRST d. The
+burst is exactly `d2 = int(0.0113 * sr) = 1,085` samples long — 11.3 ms — which
+is the tell: it is not a filter startup, it is a wrap, and its length is the
+delay constant.
+
+And that is why the ending reached frame 1. In A the film ends with a car at
+323 km/h exciting the room; in B it ends with a car stopped 490 m outside it. The
+tail's last 11.3 ms is 17 dB quieter in B, so B's frame 1 is 17 dB quieter — the
+two renders disagreed about the FIRST FRAME because they disagreed about the
+last.
+
+**Fixed:** `dsp.delay(x, n)`, a shift with a silent head.
+`np.roll(x, n)[i] == x[i-n]` for every `i >= n`, so the replacement is identical
+everywhere except the first `n` samples, which is precisely the wrapped-in
+material. Applied at all four sites that used a roll as a delay:
+`master.py` (showroom tail x2, room tone), `layers.wind_at_camera`,
+`layers.outdoor_bed`. `verify.py`'s two rolls are deliberate — they BUILD the
+splice and jump-cut positive controls — and are left alone.
+
+---
+
+## R2-1038 — THE DEAD BUMP STACK, THIRD FORM: everything wired, everything fed by name, and every octave outside the band the camera can see
+
+The complaint was *"the circuit surface reads as untextured."* **It has twenty
+procedural layers.** Nothing is disconnected; every socket is fed by name; the
+socket guard passes. And it reads as untextured because **its detail was
+authored in octaves the film's camera cannot resolve.**
+
+Weighted by how much of each frame the road actually covers, across 1,888
+frames, the film samples the road at **10.8 / 20.8 / 108 mm per 4K pixel**
+(p25/p50/p75) - a readable band of **40 mm to 2 m**. The census against that
+band:
+
+```
+eight layers ABOVE the band
+nine layers  BELOW the band
+one layer    INSIDE it   -- `mott`, 1.03 m, carrying a 0.22 tint
+```
+
+A gap from 103 mm to 1.03 m, which is 5-50 px at p50. **The material spent
+nineteen twentieths of its effort where the camera was not looking.**
+
+The relief law convicted it numerically: the three sub-pixel stages ran
+**m = 5.4 / 6.5 / 6.3** against an accepted 0.35-0.95, and the single resolvable
+stage ran **m = 0.062**. That is **4-18x over where the camera cannot see, and
+6-26x under where it can.** A 44 deg mean slope at 18 mm is sandpaper - which is
+precisely what f1547 shows at 1:1.
+
+**This is R2-086's dead bump stack in a form no wiring check can ever see.** The
+first form was sockets feeding nothing. The second was a version bump that
+didn't propagate. This third form is fully connected, fully fed, and
+**mis-scaled** - and the only instrument that can catch it is one that knows
+what the camera can resolve. **A relief budget is meaningless without a
+pixel footprint.**
+
+Rebuilt to 7 stages spanning 3.7 mm - 1.03 m, all in band, all derived from
+`relief_amplitude_for` rather than typed. The 0.6 mm stage moved to
+**roughness**, where sub-footprint texture physically belongs.
+
+**The atmosphere was ruled out, not assumed.** R2-652 had correctly sent the
+previous asphalt complaint to the camera department, so this time the kerb at
+the same depth in the same frame served as a control: it carried **2.9x the
+road's octave contrast.** Contrast survives the haze. The road was smooth
+because the material was smooth.
+
+## R2-1039 — the client's "patches in the land" was also live in the asphalt, as a 1.6 m feather
+
+The client's note on the ending was *"we just zoom out so you see all the
+patches in the land."* That was read as a terrain complaint and answered as one.
+
+**The same mechanism was in the road.** Milled repairs carried a **1.6 m soft
+feather** - a gradient wide enough to read as a stain rather than as an edge.
+Real road repair has a sealed lip. Now **0.13 m with one.**
+
+**A client's word for a defect is a description of what it looks like, not of
+where it lives.** "Patches" named a visual signature that two unrelated systems
+were both producing; fixing the one that was pointed at would have left the
+other shipping.
+
+## R2-1040 — reading `1.0/scale` puts every Voronoi 2.17x off, and a census in the module's own comments did exactly that
+
+itemkit's wavelength factors are **1.60/scale for noise and 2.17/scale for
+Voronoi.** An earlier layer census, written into the module's comments as
+documentation, used `1.0/scale` throughout - so **every Voronoi layer it listed
+was placed 2.17x from where it actually sits.**
+
+This is R2-075's frequency API defeated by a reader rather than a caller. The
+API exists so callers state `wavelength_m` and get it; **a human reading the
+same graph by hand has no such protection**, and their wrong numbers then live
+in the file as apparent fact. Documentation derived by hand from data the code
+computes correctly is a second, unversioned implementation.
+
+## R2-1041 — a scalar would have called the closest frame "no change"; the crop pair did not
+
+At f1547, the closest the camera ever comes to the road, the octave-contrast
+gains read **0.96x / 1.05x / 1.10x** - one of them *below* 1.0. By any scalar
+gate that frame did not improve.
+
+**It is the most improved frame in the set.** The contrast did not increase, it
+**moved** - out of the sub-pixel octaves where it was rendering as sandpaper and
+into the resolvable ones where it renders as structure. Same energy, different
+place, entirely different image.
+
+**A ratio of aggregates cannot see a redistribution.** This is why the standing
+rule on this project is that the rendered crop decides and the metric only
+argues - and it is the fourth time in two days that the frame has overruled a
+number.
+
+## R2-1042 — f2225 did not improve because there is no headroom left to show it, and that is an exposure defect
+
+Of four verified frames, three moved decisively (up to **2.70x**) and f2225
+barely moved. The material changed there too. **The road at f2225 sits at 0.8617
+display - 27x mid grey - where AgX delivers only 55% of the slope it gives the
+other three.**
+
+**The texture is being graded away, not missing.** Stated against the agent's
+own result rather than textured around, which is the correct handling: the fix
+for a blown highlight is not more contrast underneath it.
+
+Opened as an exposure question. It sits with **R2-084** (`C.SKY_IRRADIANCE`
+0.123 stops low) and with the standing constraint that **the final grade must
+not crush saturation or lift blacks** - the closing car's legibility rests on a
+0.14 blue-minus-red colour break, not luminance. **Three separate findings now
+point at the tone curve; none of them is a texture problem.**
+
+## R2-1043 — the racing line still disagrees with the telemetry by 4.885 m, and now something would notice if that changed
+
+`racing_line_telemetry_gate()` measures p50 **4.885 m** against a 0.830 m bar.
+`telemetry.csv` is unchanged since 08-02, so **R2-651 stands verbatim** and this
+is not a new defect.
+
+What changed is that **the gate now FAILs loudly on every build.** Previously
+nothing would have noticed a regression - and, more to the point, **nothing
+would have noticed a fix.** A known-broken invariant with no live check is
+indistinguishable from a fixed one.
+
+Bit-identity survived the rebuild: built twice in factory-startup Blender and
+once from `git show HEAD:`, hashing every mesh's vertices and loops -
+**identical SHA256, 2,721,433 tris**, the contract's own figure recovered as a
+free cross-check.
+
+Cost: **$0.0488**, 175 s of 5090.
