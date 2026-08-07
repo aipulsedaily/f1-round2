@@ -37028,3 +37028,98 @@ negative control firing at **0.3400 m**. A mutation run - `CAR_BODY_TOP_M`
 1.332 -> 1.232, **which must go red** - has been queued on the lock 15 minutes.
 **A guard that has not been shown to fail is a guard nobody should trust**, and
 that is the check most worth waiting for.
+
+## R2-1164 — film18 WAS NOT THE REBUILD, and a warning explicitly marked "NOT a refusal" is why
+
+Audited **in the artefact** by link-load, not inferred from source. `film18` has
+the paint, ceiling, driver and shards - and is **missing the fines, the beat-4
+annexe, the asphalt relief, the beat-6 re-key and the lap-down.**
+
+**Two of those were invisible from its own log**, which prints:
+
+```
+WORLD STALENESS: assembly10.blend predates 4 of its own generator module(s)
+```
+
+**and moves on, because that warning is explicitly "NOT a refusal."**
+
+**The film build appends onto a prebuilt world it never rebuilds.** So **landed
+world changes structurally could not reach a frame, while every gate passed.**
+
+**That is the day's defect family at its most expensive.** `pkill -f` matching
+everything present, `rq cancel` sweeping three owners, an exec taking a GPU in
+use, "queue politely" as an honour system - **and now a staleness detector that
+detects, announces, and permits.** Every one is a warning where a mechanism was
+needed. **A warning that cannot stop the build is a comment.**
+
+## R2-1165 — assembly11 and film19 are BUILT, and the evidence is a diff rather than a claim
+
+**`assembly11`** - 7.12 GB, 2,118 s, all six modules OK, promoted in
+`SHIPPING.md`. The a10→a11 summary diff **proves each change arrived**:
+
+```
+surface       +94 shader nodes with IDENTICAL geometry (2,721,433 tris)
+              — the exact figure the manifest cites for the relief re-budget
+architecture  -596 base tris  — the annexe storey
+sward layer   new
+```
+
+**`film19.blend`** - **7.55 GB, 31,675 objects, sky rebind asserted.**
+
+**Four things done the hard, correct way:**
+
+- **The beat-6 re-key folded into the GENERATORS, not the sheet** - *"the sheet
+  is generated, so a hand-edit there survives until the next regeneration."*
+  And it **verified the generator reproduced the shipped sheet with 0 diffs
+  first**, then folded, then confirmed only beat 6 moved. **That is the
+  reproduce-before-you-replace discipline, applied to a file rather than a
+  measurement.**
+- **Beat-5 folded as an offset in `author_beats2_5.py`, never the path file.**
+  Blocked frames **12 → 0** across all four bands, peak |a| **47.66 against the
+  shipped 49.12 m/s².**
+- **The car was rebuilt rather than reused.** The lap-down is baked at
+  `build_car_anim` time, so reusing the R2829 car - **four hours older than
+  `carpath.py`** - would have **dropped it silently.** Verified twice: against a
+  `lapdown=False` arm (759.2964 m gap, residual 3e-05 m) and A/B against the
+  pre-lap-down car (**bit-identical through f2714, diverging at f2715**).
+- **The audio stale-camera bug fixed at the ROOT** (`audio/scene.py`, not the one
+  call site): the listener was on `camera_rig_path.json`, **9.866 m off over 749
+  frames of beat 1.**
+
+**And `docs/LIVE-CAMERA.md` re-declared to `film19_path.json` - film18 never
+declared at all, and 43 tools read that file.**
+
+## R2-1166 — THREE CORRECTIONS TO MY OWN BRIEFING, INCLUDING A MANIFEST LINE THAT WOULD HAVE REVERTED THE CLIENT'S FIX
+
+**1. The manifest's driver line is stale, and following it would have caused a
+regression.** `docs/NEXT-REBUILD.md` says promote `_BOTH.blend`. **That would
+have landed the cockpit surface AND REVERTED THE BEAT-1 RE-PACE** - its sidecar
+records the driver appearing at f580, the shipped value before the client's
+"way too slow" fix moved it to f400. **The agent composed `cockpit_surface.py`
+onto the correctly-paced car instead** - the path that staging doc itself
+recommended, which my manifest had flattened into "promote the blend."
+
+**A manifest entry that names an artefact rather than an operation ages into a
+regression**, because the artefact freezes everything that was true when it was
+built.
+
+**2. `slabcheck` is NOT a blocker.** It **exits 0, selftest 0 failed**, closed at
+R2-1121. I carried it as a hard gate into three separate briefs and told the
+client twice it was the last thing standing before the master. **It was already
+closed and I never re-ran it.**
+
+**3. "Beats 1-5 bit-identical through f2715" is off by one** - the boundary is
+**f2714**. I have quoted f2715 repeatedly.
+
+**All three are the same error in different clothes: I trusted my own document
+over the tree.** That is the fifth form of source-versus-artefact today and the
+one closest to home - the others were agents reading a socket default, a chain
+script, a stale ledger, and an uncommitted working tree. **This one was reading
+my own summary.**
+
+**Still outstanding, stated rather than buried:** breach frost is deliberately
+off; the audio re-master must run **after** this camera declaration and another
+workstream is mid-edit in `master.py`/`dsp.py`/`engine.py`; the beat-5
+sheet→bezier→built-path hop is **inferred, not measured** (bounded at 0.259 m
+against a 6 m plateau) and is now checkable on film19's rig; and **no master has
+been rendered and no cost committed.**
