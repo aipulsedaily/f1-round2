@@ -59,7 +59,53 @@ for _p in (os.path.join(R2, "world"), os.path.join(R2, "world", "items"),
         sys.path.insert(0, _p)
 
 FIT_FRAME = 1200          # any frame after the beat-1 explode has landed
-EXPLODE_LANDED = 500      # measured: cockpit interior is home by here
+
+# R2-840.  EXPLODE_LANDED WAS A TYPED NUMBER AND IT WAS A MEASUREMENT OF A
+# SCHEDULE THAT NO LONGER EXISTS.
+#
+# It read `EXPLODE_LANDED = 500  # measured: cockpit interior is home by here`,
+# and it was measured correctly: under the seat schedule of the day the steering
+# wheel seated at frame 498, so 500 was right. R2-831 moved the seat schedule
+# 0.42/0.50 -> 0.30/0.38 and the cockpit is now home at frame 396 — but the
+# constant does not know that, so it refuses every legal appearance frame and
+# permits only illegal ones. The two gates in `main()` then have NO intersection:
+# the driver may not appear before 500, and under the re-paced camera there is no
+# frame after 500 where he is off screen.
+#
+# A number that was measured once is a number that goes stale silently. This is
+# the same correction R2-836 made to the part/camera desync check: derive it from
+# the artefact that defines it, and fail loudly if that artefact is missing rather
+# than falling back on a remembered value.
+COCKPIT_CLUSTERS = ("CI", "SW", "halo_assembly")
+
+
+def explode_landed_frame(anim_path):
+    """Frame by which the cockpit the driver sits in has finished assembling.
+
+    DERIVED from the part animation's own sidecar — the file
+    `anim/build_beat1_anim.py` writes when it builds the blend — so it follows
+    any re-pacing automatically. Returns (frame, detail) or raises.
+
+    The three clusters are the ones the figure is IN: the cockpit internals he
+    sits in, the steering wheel he holds, and the halo that arcs over his head.
+    `last_land` rather than `seat_frame` because a cluster's parts are staggered
+    and the last one is the one that would be seen arriving around him.
+    """
+    if not os.path.exists(anim_path):
+        raise SystemExit(
+            "place_driver: cannot derive the cockpit-landed frame — %s does not "
+            "exist. It is written by anim/build_beat1_anim.py alongside the "
+            "blend. Refusing to fall back on a typed constant, because a stale "
+            "one is exactly what R2-840 was." % anim_path)
+    cl = (json.load(open(anim_path)) or {}).get("clusters") or {}
+    missing = [c for c in COCKPIT_CLUSTERS if c not in cl]
+    if missing:
+        raise SystemExit(
+            "place_driver: %s has no entry for %s, so the cockpit-landed frame "
+            "cannot be derived" % (anim_path, ", ".join(missing)))
+    per = {c: int(cl[c].get("last_land", cl[c]["seat_frame"]))
+           for c in COCKPIT_CLUSTERS}
+    return max(per.values()), per
 
 
 def log(m):
@@ -136,7 +182,7 @@ def measure_car(frame=FIT_FRAME):
 #  2.  solve the H-point                                                        #
 # --------------------------------------------------------------------------- #
 
-def solve_hpoint(m, DF):
+def solve_hpoint(m, DF, hip_raise=0.0):
     """-> (H, wheel_c_rel, lean_deg, report).  All CAR_ROOT-local.
 
     x  from the wheel: the module's own `WHEEL_C.x` measured back from the car's
@@ -150,7 +196,7 @@ def solve_hpoint(m, DF):
     root_z = 0.340        # CAR_ROOT's rest height in world/car_anim.blend
     H = np.array([m["wheel_centre"][0] - DF.WHEEL_C[0],
                   0.0,
-                  rec[2] - root_z])
+                  rec[2] - root_z + float(hip_raise)])
 
     crown = H[2] + DF.PACKAGE["hip_to_helmet_crown_m"]
     rim = float(m["CI_seal"][1][2])
@@ -186,6 +232,7 @@ def solve_hpoint(m, DF):
         fail.append("ankle x %.4f is outside the pedal box %.4f..%.4f"
                     % (ankle_x, ped_x_lo, ped_x_hi))
     rep["fit_failures"] = fail
+    rep["hip_raise_m"] = float(hip_raise)
 
     wheel_rel = m["wheel_centre"] - H
     return H, wheel_rel, m["wheel_lean_deg"], rep
@@ -464,9 +511,32 @@ def main():
                          "measured off-screen run AFTER the cockpit interior "
                          "has landed, or this refuses: the driver may not pop "
                          "into an occupied frame.")
+    ap.add_argument("--campath", default=os.path.join(R2, "render/film14_path.json"),
+                    help="R2-840.  The per-frame camera path the APPEARANCE "
+                         "frame is gated against. The default is retained only "
+                         "so existing callers keep working and is WARNED about; "
+                         "pass the path of the film actually being built.")
+    ap.add_argument("--anim", default=os.path.join(R2, "world/beat1_anim_anim.json"),
+                    help="R2-840.  The beat-1 part-animation sidecar the "
+                         "cockpit-landed frame is DERIVED from. Must be the one "
+                         "belonging to the blend being placed into, or the gate "
+                         "is measuring a different assembly.")
     ap.add_argument("--allow-fit-failure", action="store_true",
                     help="downgrade the mesh checks to warnings and save anyway "
                          "-- for diagnosing a failure, never for shipping")
+    ap.add_argument("--hip-raise", type=float, default=0.0,
+                    help="R2-401.  Lift the H-point this many metres above the "
+                         "module's own recommendation.  The wheel is measured "
+                         "off the car and `wheel_rel` is taken RELATIVE to the "
+                         "H-point, so the module re-solves the arms down to the "
+                         "car's own grips rather than the gloves floating off "
+                         "them -- a rigid translation of the built figure would "
+                         "not.  Default 0.0 == unchanged.")
+    ap.add_argument("--fit-warn-only", action="store_true",
+                    help="R2-401.  Print the four fit checks and continue "
+                         "instead of refusing.  For the A/B that answers "
+                         "whether a raise is worth having; the resulting blend "
+                         "is an EXPERIMENT and --out must say so.")
     ap.add_argument("--crown-correction", action="store_true", default=True,
                     help="after building, translate the figure so the MEASURED "
                          "helmet crown lands where the fit predicted")
@@ -493,8 +563,19 @@ def main():
     log("  cockpit rim z          %.4f   halo apex z %.4f"
         % (m["CI_seal"][1][2], m["halo_assembly_HoopTube"][1][2]))
 
-    H, wheel_rel, lean, rep = solve_hpoint(m, DF)
-    log("SOLVED H-point (CAR_ROOT-local) %s" % np.round(H, 4).tolist())
+    if a.hip_raise and not a.fit_warn_only:
+        log("NOTE --hip-raise %.4f m without --fit-warn-only: the four fit "
+            "checks still bind and will refuse if the raise breaks one."
+            % a.hip_raise)
+    if a.fit_warn_only and os.path.basename(a.out).find("EXPERIMENT") < 0:
+        print("STAGE RESULT: FAIL -- --fit-warn-only writes an unvetted "
+              "placement; --out must contain 'EXPERIMENT' so nothing "
+              "downstream picks it up by accident. Got %r" % a.out)
+        return 1
+
+    H, wheel_rel, lean, rep = solve_hpoint(m, DF, hip_raise=a.hip_raise)
+    log("SOLVED H-point (CAR_ROOT-local) %s  (hip raise %+.4f m)"
+        % (np.round(H, 4).tolist(), a.hip_raise))
     for k in ("crown_above_rim_m", "crown_below_halo_apex_m",
               "hip_below_seat_pan_m"):
         log("  %-26s %+.4f m" % (k, rep[k]))
@@ -504,9 +585,13 @@ def main():
     if rep["fit_failures"]:
         for f in rep["fit_failures"]:
             log("  FIT FAILURE: %s" % f)
-        print("STAGE RESULT: FAIL -- fit rejected")
-        return 1
-    log("  fit accepted on all four checks")
+        if not a.fit_warn_only:
+            print("STAGE RESULT: FAIL -- fit rejected")
+            return 1
+        log("  --fit-warn-only: %d failure(s) DOWNGRADED TO WARNINGS. This "
+            "blend is an experiment." % len(rep["fit_failures"]))
+    else:
+        log("  fit accepted on all four checks")
 
     # --- re-solve the driver onto the car's REAL wheel ---------------------
     old_c, old_t = DF.WHEEL_C.copy(), DF.WHEEL_TILT_DEG
@@ -680,7 +765,24 @@ def main():
 
     # --- when he appears --------------------------------------------------
     win = list(range(a.appear - 8, a.appear + 9))
-    on = figure_offscreen(H, os.path.join(R2, "render/film14_path.json"),
+    # R2-840.  GATE AGAINST THE CAMERA THAT IS BEING BUILT, NOT A REMEMBERED ONE.
+    #
+    # This was hardcoded to `render/film14_path.json`. By the time it mattered
+    # that was two camera generations old, so its PASS was not evidence about the
+    # film: measured over this tool's own +-8 window at the default appear frame,
+    # the figure is on screen 0 of 17 frames under film14 and film16 and 17 of 17
+    # under the re-paced camera. The gate was passing on a film nobody was making.
+    campath = os.path.abspath(a.campath)
+    if not os.path.exists(campath):
+        print("STAGE RESULT: FAIL -- --campath %s does not exist; the "
+              "appearance cannot be gated against a camera that is not there"
+              % campath)
+        return 1
+    log("APPEARANCE gated against camera path %s" % campath)
+    if os.path.basename(campath) in ("film14_path.json", "film15_path.json"):
+        log("!! WARNING: that is a superseded camera. A PASS here is not "
+            "evidence about the film being built -- pass --campath for it.")
+    on = figure_offscreen(H, campath,
                           os.path.join(R2, "world/car_anim_car.json"), win)
     log("APPEARANCE frame %d; figure on screen at %d of the %d frames %d..%d"
         % (a.appear, len(on), len(win), win[0], win[-1]))
@@ -688,9 +790,14 @@ def main():
         print("STAGE RESULT: FAIL -- the driver would pop into an occupied "
               "frame; he is on screen at %s" % on[:12])
         return 1
-    if a.appear <= EXPLODE_LANDED:
+    landed, landed_per = explode_landed_frame(os.path.abspath(a.anim))
+    log("cockpit landed f%d, DERIVED from %s: %s"
+        % (landed, os.path.basename(a.anim),
+           ", ".join("%s f%d" % (k, v) for k, v in sorted(landed_per.items(),
+                                                          key=lambda kv: kv[1]))))
+    if a.appear <= landed:
         print("STAGE RESULT: FAIL -- appear frame %d is before the cockpit "
-              "interior lands (%d)" % (a.appear, EXPLODE_LANDED))
+              "interior lands (%d)" % (a.appear, landed))
         return 1
     key_appearance([o for o in d.objs if not o.name.startswith("DRV_Boot")],
                    a.appear)   # NOT the empty (share_action), NOT the boots

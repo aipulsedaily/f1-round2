@@ -832,3 +832,177 @@ is safe; 400 is the maximum-margin choice.
 is one argument in the rebuild chain. Handed to the agent running that chain, with
 the instruction to re-gate against `film17_path.json` rather than `film14`, and to
 trust the tool over these numbers if the two disagree.
+
+---
+
+# R2-840 — THE REBUILD CHAIN (appended by the agent running it, not by the blocks above)
+
+Everything under this heading is written by the chain runner. It authors no
+camera, no timing and no lens; where it records a number, that number was
+measured, and where it declines to act, it says so rather than acting quietly.
+
+## R2-840 — `--appear 400` IS CORRECT AND `place_driver.py` WILL REFUSE IT
+
+The block above recommends `--appear 400`. **It is right, and it cannot currently
+be run**, because `tools/place_driver.py` refuses it eighty lines before
+`figure_offscreen()` is ever consulted:
+
+```python
+EXPLODE_LANDED = 500      # measured: cockpit interior is home by here   (:62)
+
+if a.appear <= EXPLODE_LANDED:                                          # (:719)
+    print("STAGE RESULT: FAIL -- appear frame %d is before the cockpit "
+          "interior lands (%d)" % (a.appear, EXPLODE_LANDED))
+    return 1
+```
+
+400 <= 500. The run fails on a constant, not on a picture.
+
+**The constant is stale, and stale in the shape R2-835 already named.** It is a
+measurement of a seat schedule that R2-831 moved by roughly eight seconds. From
+`world/R2829_beat1_anim_anim.json`, the clusters the driver actually occupies:
+
+| cluster | seat | last land |
+|---|---:|---:|
+| CI (the cockpit interior itself) | 338 | **346** |
+| SW | 363 | 371 |
+| halo_assembly (closes over him) | 388 | **396** |
+
+Everything the driver sits in is home by f346 and the halo closes at f396, so
+f400 is legal *in the picture* with four frames to spare. `EXPLODE_LANDED = 500`
+survived only because its input never moved — which is exactly the argument
+R2-835 makes for deleting the `CORNER_FL lands on frame 591` assertion. **A gate
+that forbids the fix is not protecting the shot.**
+
+## R2-840a — MEASURED HERE, WITH THE TOOL'S OWN PROJECTION, AND IT AGREES
+
+`figure_offscreen()` touches no `bpy` — only numpy, json and math — so
+`work/r2840/appear_probe.py` lifts its body **verbatim** from
+`place_driver.py:239-285` and re-points it at a camera path of choice. Copied
+rather than imported because `place_driver` imports `bpy` at module scope.
+
+**The shipped gate is not evidence about this film.** The default `--appear 580`,
+over the tool's own +-8 window, H-point `[0.198, 0.000, 0.180]`:
+
+```
+film14  (what the gate actually checks)   on screen at  0 of 17 frames
+film16  (the shipped film)                on screen at  0 of 17 frames
+R2829   (the camera actually built)       on screen at 17 of 17 frames
+```
+
+**Seventeen of seventeen.** The driver would materialise in frame, in the middle
+of the payoff orbit. Under both earlier cameras the same H-point is off screen on
+every frame of the window — which is why this has never fired, and why the gate's
+PASS would have been reported as a pass.
+
+Scanning f300-784 for frames whose whole +-8 window is clear:
+
+```
+f300-332   33 frames, 1.38 s
+f382-416   35 frames, 1.46 s
+frames that are ALSO > EXPLODE_LANDED = 500:   NONE
+```
+
+The block above found f396-427 with a driver-sized box; this finds f382-416 with
+the tool's 12-point hull. **Both contain f400**, from two different subject models,
+which is the agreement worth having. And the last line is the finding: **the two
+constraints do not intersect.** No `--appear` satisfies both, so this cannot be
+resolved by choosing a different frame. One of them has to change.
+
+## R2-840b — NOT CHANGED HERE, AND WHY THAT IS THE POINT
+
+`EXPLODE_LANDED` is a beat-1 measurement inside a shared tool. Relaxing another
+agent's safety gate so that one's own pipeline proceeds is the move that should
+never be silent, and a chain runner is the worst-placed party to make it. It is
+recorded, not landed.
+
+**If it is landed, derive it rather than retype it** — the same correction R2-836
+made for the desync check. `max(last_land)` over the clusters the driver occupies
+(CI, SW, halo_assembly) reads **f396** off the sheet's own seat schedule, which
+makes f400 legal today and makes the gate follow any future re-pacing instead of
+forbidding it. Retyping `396` works this week and re-rots the moment the schedule
+moves again.
+
+**The 720p proxy is NOT submitted while this is open.** Rendering it would spend
+real money to produce an AFTER clip carrying a centre-frame driver pop that the
+BEFORE clip does not have, contaminating the exact A/B the render exists to make.
+
+## R2-840c — THE DRIVER BLEND IS FOUR STEPS, NOT ONE
+
+Recorded because the chain reads as one line and is not, and skipping the tail of
+it renders an unpainted car.
+
+```
+world/beat1_anim.blend        0 R2CP_/R2IMP_ node markers
+world/car_anim.blend        376
+```
+
+So `world/car_paint.py --save` and `tools/imperfections.py` land **after**
+`anim/build_car_anim.py`, per R2-521/R2-531, and the shipped `car_anim_driver.blend`
+is `build_car_anim -> place_driver -> car_paint -> imperfections`. Also note
+`place_driver.py`'s docstring USE line is wrong: it shows `blender -b
+--factory-startup -P tools/place_driver.py`, but the script operates on the
+**currently open** blend and never opens one, so the car must be named on the
+command line.
+
+## R2-840d — THE FOCUS POST-PASS TARGETS THE FILM BLEND, NOT THE RIG
+
+`tools/build_film_scene.py` calls `build_camera_rig.main()` internally, so focus
+written to `world/R2829_camera_rig.blend` is overwritten by the film build.
+R2-791's pass therefore runs on `render/film17.blend` after it. The depth grid is
+still measured on the 291 MB rig blend, per R2-805 — legitimate only because both
+cameras come from the same builder and the same sheet, which
+`work/r2840/campath_identity.py` checks rather than assumes.
+
+`SOLVE.load_field()` hardcodes `world/beat1_anim_anim.json` — the **stale**
+schedule (corners f696, not f513). It does not reach a focus value: `_interp_keys`
+clamps at both ends, so one measured frame in the grid densifies subject depth
+across all 792 and the geometric field stays a fallback that is never taken. Worth
+knowing before someone reads the path and assumes the worst.
+
+### R2-840a — landed: `EXPLODE_LANDED` is derived, and the appearance is gated against the film being built
+
+Two typed values in `tools/place_driver.py` had gone stale, and together they made
+the tool unsatisfiable: **the driver may not appear before frame 500, and under the
+re-paced camera there is no frame after 500 where he is off screen.** The chain
+agent found this, measured it, and correctly refused to relax another block's
+safety gate to get its own pipeline moving. It is landed here instead, because
+both values are beat-1 measurements and it is this block that invalidated them.
+
+**1. `EXPLODE_LANDED = 500` is now derived** from the part animation's own sidecar
+— the file `anim/build_beat1_anim.py` writes beside the blend — over the three
+clusters the figure is actually IN: the cockpit internals he sits in, the wheel he
+holds, and the halo that arcs over his head. `last_land`, not `seat_frame`,
+because a cluster's parts are staggered and the last one is the one that would be
+seen arriving around him.
+
+```
+world/beat1_anim_anim.json          CI 473  SW 506  halo 539   -> f539
+world/R2829_beat1_anim_anim.json    CI 346  SW 371  halo 396   -> f396
+```
+
+Missing sidecar now RAISES rather than falling back on a remembered number, which
+is the R2-836 correction applied to a second place.
+
+**Note this broadens the gate**, and deliberately. The old constant's own comment
+said "cockpit interior is home by here", and 500 was right for CI alone (473) —
+but the wheel lands at 506 and the halo at 539, so a driver appearing at 501 would
+have had the steering wheel fly into his hands. **The shipped film was never
+exposed to that** because it used `--appear 580`, and 580 > 539, so the stricter
+derived gate does not retro-break it:
+
+```
+shipped --appear 580  vs derived old-schedule f539   PASS
+new     --appear 400  vs derived new-schedule f396   PASS
+```
+
+**2. The appearance is gated against `--campath`**, not a hardcoded
+`render/film14_path.json`. Over this tool's own +-8 window at the default appear
+frame, the chain agent measured the figure on screen **0 of 17 frames under film14
+and film16, and 17 of 17 under the camera actually built** — the gate was passing
+on a film nobody was making. The stale default is retained so existing callers
+keep working, and it now prints a warning naming itself as superseded.
+
+Landed on top of another agent's uncommitted R2-401 work in the same file
+(`--hip-raise` / `--fit-warn-only`), in disjoint regions, and left uncommitted
+work untouched.
