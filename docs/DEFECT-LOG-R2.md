@@ -31047,3 +31047,54 @@ built.
 `audio/out/ab/ending_A_nolapdown.wav` and `ending_B_lapdown.wav` are cut
 precisely so a person can decide. **That is the one open item on the ending no
 further work here will settle.**
+
+## R2-1091 — R2-1052 IS WRONG: the focus fix used the film's own camera. I read a grep and called it a code path
+
+I told the client their beat-1 focus note was **void** — that the fix had been
+derived from a camera the film does not have, and that the proxy render carried
+it. **That is false, and it was refuted by the agent I told it to.**
+
+**What I did:** grepped `tools/r2791_beat1_focus.py` for `film16_path`, found it
+at **line 574** and **line 621**, and concluded the tool reads the stale
+lineage. **I never checked what those lines are inside.**
+
+```
+line 574   inside  def chk(name, cond, detail="")   <- a helper nested in selftest()
+line 621   inside  def main()                       <- the standalone CLI's default
+apply_focus        reads no path json at all
+```
+
+**`apply_focus` is the function that wrote the keys, and it calls neither.** It
+builds `cams` from the opened blend, and the run log names it: *"read 792 frames
+of camera ONER from render/film17.blend."* `campath_identity` then proved that
+rig **bit-identical to film17's ONER — `dp/dq/dlens = 0.000e+00` over 792
+frames.** This is precisely the property R2-796 was built for: *"re-run it and
+the focus is re-derived from the camera that actually exists."*
+
+**What IS stale is the two-sided control** (R2-800), which reads film16's path
+and the shipped sheet and therefore reports **SKIP rather than PASS** — already
+recorded in R2-806a.
+
+**So the honest statement is much narrower than the one I made:**
+
+> Focus **was applied** against the film's own camera, per-frame, from measured
+> depth, with position, rotation and lens provably untouched. Its **validating
+> control has not been re-run** on this generation.
+
+**The lesson is one this project has now learned four times in a day and I keep
+paying for.** A grep tells you a *string* is in a file. It does not tell you
+whether the line executes, which function owns it, or whether that function is
+ever called on the path in question. **R2-1044 was the same shape** — I counted
+43 readers of a stale camera path by grep and had to correct the live-reader
+count twice. **The fix is four lines of Python that map each hit to its
+enclosing `def`**, and I ran it only after being contradicted.
+
+**And the contradiction is the point.** I gave that agent a caveat to carry, and
+it came back with *"this is the third instruction I've checked that doesn't
+survive contact, and you asked me to keep checking."* **It was right all three
+times.** An instruction from the main thread is a claim like any other, and the
+agents that treat it as one have been the most useful part of this project.
+
+**Client-facing consequence: the beat-1 proxy answers all three notes**, not
+two. Focus is *lower confidence* than pacing and framing because its control
+reports SKIP — but that is a statement about the control, not about the fix.
