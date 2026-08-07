@@ -36039,3 +36039,48 @@ log tells you what was intended; only the frame tells you what is in shot.**
 reflects the exploded car strongly enough to read as a ghosted second car.**
 Nobody was looking for that, and it is in the first frame of the clip the client
 is about to watch.
+
+## R2-1133 — THE ENGINE IS REBUILT AS PHYSICS: harmonic-to-noise 3.2 -> 23.7 dB, and the master moved 0.9 dB
+
+The client said *"sounds like a hair blower."* The synthesis is now a physical
+model rather than shaped noise:
+
+- **exhaust as a digital waveguide** - six per-cylinder quarter-wave primaries
+  into a shared collector and tailpipe, **mode series complete to Nyquist**
+- **combustion excitation is a load-shaped blowdown**, not a raised cosine
+- **turbo rebuilt on audible shaft orders and real blade-passing**, with the
+  shaft carrying a **firing-rate torque ripple**
+- **overrun rings the pipes** instead of being carried by a noise band
+
+**Dry-engine HNR above 2.6 kHz: 3.2 -> 23.7 dB.** The engine bus's internal
+harmonic-to-broadband is **22.3 dB.**
+
+**And the master gained 0.9 dB.**
+
+**That gap is the finding.** A 20 dB improvement at the source moved the
+delivered mix by less than a decibel, **because the source was never the only
+thing in the way.** Wind and tyres sit on top of it and account for **87 % of
+the broadband floor**; wind alone is the loudest bus in the film over the flying
+lap, **4.7 dB above the car**, with no tonal content anywhere.
+
+**Fixing the loudest defect first is not the same as fixing the audible one
+first** - and here it was still the right order, because the measurement had
+already proved the old engine was the *binding* constraint: with it in place,
+deleting every other bus reached only +6.9 dB, since **20 % of the engine's own
+HF energy was its own broadband floor.** **The source had to change before the
+mix could matter.** Now it does.
+
+**The measurement is also saying where NOT to spend the next change.** Crowd,
+fence, room and both reflection buses are provably irrelevant - **removing all
+five buys +0.12 dB.** Five buses, one tenth of a decibel: without that number,
+all five would have been plausible suspects.
+
+**The remedy is one constant per bus** (`TARGET_LUFS_S`), which the table's own
+docstring already establishes as **a mix decision rather than a physics claim** -
+and it is being **sized against a real mix experiment rather than guessed**, by
+re-rendering the rebuilt engine bus, summing it against the unchanged beds, and
+sweeping the trim before committing to one more full render.
+
+Still owed: all seven gates re-run (six existing plus the new harmonic gate),
+the watch clips re-cut around **the worst six seconds in the film, chosen by
+measurement**, and `watch/audio/INDEX.md` rewritten.
