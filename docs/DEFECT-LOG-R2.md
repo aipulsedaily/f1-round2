@@ -36750,3 +36750,43 @@ altitude. **Six times today the quantity being optimised was one step away from
 the quantity being perceived** - and in every case the thing that broke the
 deadlock was a measurement nobody had taken, not a better argument about the
 measurements already in hand.
+
+## R2-1156 — CLIENT, ON f2760: "anything 5 feet away from the main road and buildings have blank grass no detail nothing" — measured, and the cliff is 3.8x
+
+```
+region                            fine-detail sd (32 px tiles, 8-bit levels)
+grass beside the pit building              2.84
+LEFT infield                               6.38
+verge beside the track                    10.73     <- 3.8x the grass
+treeline / scrub band                      9.68
+pit buildings (reference)                 14.84
+```
+
+**The ground carries 19 % of the detail the architecture does, and 26 % of what
+the verge five metres away does.** The client's "5 feet" is close to literal:
+there is a thin band of scrub hugging the track and **essentially nothing
+beyond it.**
+
+**That is the signature of PATH-RELATIVE placement** - vegetation exists near the
+track because it is placed relative to the track, and falls off a cliff rather
+than a gradient. It is the same root as R2-1149's two distance bugs
+(`GRASS_HERO_D` measuring to the camera *path*, and `CameraPath.dist` discarding
+altitude), seen from the client's side rather than the code's.
+
+**Three things must be said honestly about this frame.**
+
+1. **f2760 PREDATES the ground fix.** The `dist3` predicate and the 264,890
+   sward drifts landed in `world/build_terrain.py` **after** these stills were
+   rendered. The client is looking at the old state.
+2. **But the fix was verified at f2811, not here.** f2811 is the high aerial
+   over the infield; **f2760 is a different vantage with large near-field grass
+   beside built structures.** **A fix verified at one frame is not verified at
+   another** - which is the lesson this project has paid for more than any
+   other, most recently when a beat was judged by its final frame.
+3. **So this is not "already fixed" until measured here.** The sward drifts
+   raise screen cover 4 % -> 72 % and should cover it, and *should* is not a
+   measurement.
+
+**The client found this by watching a still nobody had re-examined**, in a
+region no metric was pointed at. **Every quality defect on this film has come
+from the same place.**
