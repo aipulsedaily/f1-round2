@@ -50,6 +50,27 @@ def white(n, seed):
     return np.random.default_rng(seed).standard_normal(n).astype(np.float32)
 
 
+def delay(x, n):
+    """Shift `x` later by `n` samples, filling the head with silence.
+
+    A DELAY, NOT `np.roll` (R2-960). `np.roll` is CIRCULAR: it wraps the end of
+    the signal onto its beginning. Used for the showroom's stereo decorrelation
+    in `master.py` it put the last 11.3 ms of the 2.4 s reverb tail -- the tail
+    of a car at 323 km/h -- onto the FIRST 11.3 ms of a film that opens on a
+    silent showroom. Measured on the shipped master: a 0.8505 peak (-1.4 dBFS)
+    inside frame 1, against a programme RMS of 0.0217 (-33 dBFS) over the
+    following second. A 32 dB transient on the first frame of the film.
+
+    `np.roll(x, n)[i] == x[i-n]` for every i >= n, so this differs from the roll
+    ONLY in the first `n` samples, which is exactly the wrapped-in material.
+    """
+    if n <= 0:
+        return np.asarray(x)
+    y = np.zeros_like(np.asarray(x))
+    y[n:] = np.asarray(x)[:-n]
+    return y
+
+
 def brown(n, seed, corner=20.0, sr=96000):
     """-6 dB/oct noise, DC-blocked. Integrating white noise directly random-walks
     away from zero over 12 M samples; a one-pole integrator with a leak at
@@ -113,12 +134,22 @@ def tv_onepole_lp(x, fc, sr):
     n = x.shape[0]
     fc = np.clip(np.broadcast_to(np.asarray(fc, dtype=np.float64), (n,)),
                  20.0, sr * 0.45)
+    #
+    # THE COEFFICIENT IS TAKEN AT THE BLOCK'S FIRST SAMPLE, NOT AVERAGED OVER THE
+    # BLOCK (R2-957). `fc[a0:b0].mean()` reads 512 samples AHEAD of where it is
+    # applied, so the filter's output before an event depended on the event: a
+    # change confined to the last 11 s of the film moved samples up to 5.3 ms
+    # (at 96 kHz) BEFORE it. The magnitude was 1.2e-06 on the tyre bus, i.e.
+    # nothing, and it is still a value read from the future. `fc[a0]` is the
+    # cutoff at the instant the block starts being filtered; the docstring's own
+    # justification -- the block is far shorter than any audible change in the
+    # coefficient -- applies unchanged, and it is causal.
     blk = 512
     out = np.empty(n, dtype=np.float64)
     zi = np.zeros(1)
     for a0 in range(0, n, blk):
         b0 = min(a0 + blk, n)
-        c = float(np.exp(-2.0 * np.pi * fc[a0:b0].mean() / sr))
+        c = float(np.exp(-2.0 * np.pi * fc[a0] / sr))
         y, zi = _sig.lfilter([1.0 - c], [1.0, -c], x[a0:b0], zi=zi)
         out[a0:b0] = y
     return out.astype(np.float32)

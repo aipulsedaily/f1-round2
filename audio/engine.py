@@ -88,6 +88,7 @@ RPM_IDLE = 4300.0
 RPM_MAX = 15000.0
 RPM_SHIFT_UP = 14400.0
 RPM_LAUNCH_HOLD = 10800.0
+IDLE_THROTTLE = 0.08         # the throttle that holds an idle with no road load
 LAUNCH_DECAY_S = 1.20        # clutch take-up: how fast the hold bleeds to idle
 DRIVELINE_TAU_S = 0.090      # see scene.py: also what filters R2-026's seam
 
@@ -218,11 +219,45 @@ def synth(t_world, v, accel_long, slip, wheel_w, spec, sr,
     rng = np.random.default_rng(seed)
     rpm, gear, lock = gear_and_rpm(v, slip, wheel_w, sr, t_world, ignition_t, idle_until_t)
     thr, brake = throttle_from_spec(v, accel_long, spec)
+    # AN ENGINE THAT IS RUNNING IS BEING FUELLED (R2-954).
+    #
+    # `throttle_from_spec` inverts a ROAD-LOAD model: the throttle needed to
+    # produce a given acceleration THROUGH A CLOSED CLUTCH. Below the speed at
+    # which first gear pulls idle -- RPM_IDLE / (r1 * FD * 60) * 2*pi*R =
+    # 8.55 m/s -- there is no closed clutch and the model has nothing to say.
+    # `gear_and_rpm` already knows that: it holds the crank at RPM_IDLE and
+    # reports `lock`, the fraction of engine speed the gearbox is actually
+    # supplying.
+    #
+    # Without this the car that stops on the pit straight at f2936 sits at
+    # 4,300 rpm with `thr` = 2e-5, so `fuel` = 3e-4 and the injectors are CUT:
+    # the last sound in the film was a motored engine at 12.8 % of its
+    # combustion gate, which is a stall, not an idle. The floor is the same
+    # 0.08 the pre-launch idle already uses, faded in with the clutch, and it
+    # is a `maximum` so it is a bit-exact no-op wherever the road-load model
+    # has an answer -- measured over the whole film, it is inactive until world
+    # t = 78.06 s, which is 5.5 s past the end of the telemetry.
+    thr = np.maximum(thr, IDLE_THROTTLE * (1.0 - lock))
     running = (t_world >= ignition_t)
-    thr = np.where(t_world < idle_until_t, 0.08, thr) * running
+    thr = np.where(t_world < idle_until_t, IDLE_THROTTLE, thr) * running
     brake = brake * running
 
     # --- shift events -----------------------------------------------------
+    # EVERY EVENT DRAWS FROM ITS OWN STREAM, KEYED ON ITS OWN SAMPLE INDEX
+    # (R2-958). One shared `rng` walked through the upshifts, then the
+    # downshifts, then the overrun pops, so the pops' stream position was a
+    # function of HOW MANY SHIFTS THE FILM CONTAINED. The lap-down adds seven
+    # downshifts in the last 11 s; those seven draws re-seeded every pop in the
+    # film, and the first overrun of the lap -- world t 10.809, 61.8 s BEFORE
+    # the end of the telemetry -- came out different. That was the last leak of
+    # the ending into the film, and it was the one a block-boundary argument
+    # could never have explained: it is 61 seconds early, not 21 milliseconds.
+    #
+    # Keying on `int(i)` also makes the stream independent of event ORDER, so
+    # neither a new event nor a re-ordered one can perturb an existing one.
+    def _ev_rng(kind, i):
+        return np.random.default_rng([seed, kind, int(i)])
+
     dg = np.diff(gear.astype(np.int16), prepend=gear[0])
     up = np.flatnonzero(dg > 0)
     dn = np.flatnonzero(dg < 0)
@@ -238,7 +273,7 @@ def synth(t_world, v, accel_long, slip, wheel_w, spec, sr,
         cut[a:b] *= 1.0 - 0.62 * np.sin(w) ** 2       # seamless box: not a full cut
         ncr = min(int(0.014 * sr), b - a)
         env = np.exp(-np.linspace(0.0, 9.0, ncr))
-        crack[b - ncr:b] += (rng.standard_normal(ncr) * env * 0.40).astype(np.float32)
+        crack[b - ncr:b] += (_ev_rng(1, i).standard_normal(ncr) * env * 0.40).astype(np.float32)
     n_bl = int(0.13 * sr)
     for i in dn:
         a, b = int(i), min(int(i) + n_bl, n)
@@ -248,7 +283,7 @@ def synth(t_world, v, accel_long, slip, wheel_w, spec, sr,
         blip[a:b] += 900.0 * np.sin(w) ** 2           # rev-match blip, rpm
         ncr = min(int(0.05 * sr), b - a)
         env = np.exp(-np.linspace(0.0, 5.0, ncr))
-        crack[a:a + ncr] += (rng.standard_normal(ncr) * env * 0.5).astype(np.float32)
+        crack[a:a + ncr] += (_ev_rng(2, i).standard_normal(ncr) * env * 0.5).astype(np.float32)
     rpm_eff = np.clip(rpm + blip, 0.0, RPM_MAX)
 
     # --- crank phase ------------------------------------------------------
@@ -256,9 +291,36 @@ def synth(t_world, v, accel_long, slip, wheel_w, spec, sr,
     ph_crank = dsp.integrate_phase(f_crank, sr)
     # cycle-to-cycle combustion irregularity: no crankshaft holds a frequency
     # exactly, and perfectly flat partials are the clearest tell of a synth.
+    #
+    # THE JITTER IS 0.4 % OF THE INSTANTANEOUS CRANK SPEED, NOT 0.4 % OF THE
+    # FILM'S MEAN CRANK SPEED (R2-956). It was written as
+    #
+    #     ph += 0.004 * cumsum(jit) * (2*pi/sr) * f_crank.mean()
+    #
+    # and `f_crank.mean()` is a reduction over the WHOLE WORLD GRID. That one
+    # scalar made every sample of the engine a function of every other sample of
+    # the engine: changing only the last 11 s of the film changed the crank phase
+    # from sample 42 onward. Measured on a 20 s bench where only the second half
+    # of the speed track was altered:
+    #
+    #     rpm over the first half            bit-identical
+    #     engine signal over the first half  first difference at sample 42 of
+    #                                        960,000; delta RMS 0.0287 against a
+    #                                        signal RMS of 0.0489, i.e. -4.6 dB
+    #
+    # It is inaudible -- same rpm, same gears, same pipes, a differently seeded
+    # wander -- and it is still a defect, because it means the film before a
+    # change cannot be shown to survive the change, and R2-943 is exactly such a
+    # change.
+    #
+    # The replacement is a prefix sum and therefore causal, and it is the more
+    # physical statement of the two: cycle-to-cycle variation is a fraction of
+    # the speed the crank is turning AT THAT MOMENT, so it is small at a 4,300 rpm
+    # idle and large at 14,400 rpm, where the old form applied the film's average
+    # to both.
     jit = dsp.lp(dsp.white(n, seed + 1), 7.0, sr, 2)
     jit = jit / max(float(np.abs(jit).max()), 1e-9)
-    ph_crank = ph_crank + 0.004 * np.cumsum(jit) * (2.0 * np.pi / sr) * f_crank.mean()
+    ph_crank = ph_crank + 0.004 * np.cumsum(jit * f_crank) * (2.0 * np.pi / sr)
 
     # --- combustion pulse trains, per bank --------------------------------
     # 720-degree cycle: bank A at 0/240/480, bank B at 120/360/600.
@@ -302,13 +364,14 @@ def synth(t_world, v, accel_long, slip, wheel_w, spec, sr,
     pops = np.zeros(n, dtype=np.float64)
     idx = np.flatnonzero(np.diff((over > 0.5).astype(np.int8)) > 0)
     for i in idx:
-        for k in range(rng.integers(4, 11)):
-            a = int(i) + int(rng.uniform(0.02, 0.55) * sr)
+        r = _ev_rng(3, i)
+        for k in range(r.integers(4, 11)):
+            a = int(i) + int(r.uniform(0.02, 0.55) * sr)
             if a + 2000 >= n:
                 continue
-            L = int(rng.uniform(0.004, 0.020) * sr)
+            L = int(r.uniform(0.004, 0.020) * sr)
             env = np.exp(-np.linspace(0.0, 7.0, L))
-            pops[a:a + L] += rng.standard_normal(L) * env * rng.uniform(0.25, 1.0)
+            pops[a:a + L] += r.standard_normal(L) * env * r.uniform(0.25, 1.0)
     pops = _sig.sosfilt(dsp.sos_band(180.0, 3500.0, sr, 4), pops) * 0.9
 
     # --- turbocharger -----------------------------------------------------
@@ -318,11 +381,22 @@ def synth(t_world, v, accel_long, slip, wheel_w, spec, sr,
     sh = np.empty(n)
     a_up = float(np.exp(-1.0 / (0.240 * sr)))
     a_dn = float(np.exp(-1.0 / (0.900 * sr)))
+    # DEMAND IS READ AT THE BLOCK'S FIRST SAMPLE, NOT AVERAGED OVER THE BLOCK
+    # (R2-957). `demand[a0:b0].mean()` reads 2,048 samples ahead of where the
+    # resulting shaft speed is written, which put a 21.3 ms (at 96 kHz) backward
+    # window on every change: with R2-956's jitter leak closed, this was the
+    # ENTIRE remaining dependence of the film on its own ending -- the first
+    # differing sample on a 20 s bench sat exactly on the block boundary
+    # straddling the change, 765 samples early, at a magnitude of 0.0087 on a
+    # signal of RMS 0.049. `demand` is a smooth function of rpm through a 90 ms
+    # driveline lag and a 240/900 ms turbo inertia, so its value at the block's
+    # start and its mean over 21 ms differ by far less than the quantisation the
+    # block structure already imposes.
     blk = 2048
     acc = 0.0
     for a0 in range(0, n, blk):
         b0 = min(a0 + blk, n)
-        m = float(demand[a0:b0].mean())
+        m = float(demand[a0])
         c = a_up if m > acc else a_dn
         acc = m + (acc - m) * (c ** (b0 - a0))
         sh[a0:b0] = acc

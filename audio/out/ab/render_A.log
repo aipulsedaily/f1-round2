@@ -1,0 +1,23 @@
+[    3.3s] world grid 11520001 samples, -35.0..85.0 s world
+[    8.6s] surfaces classified
+[   36.4s] engine: 31 upshifts, 24 downshifts, 14351 rpm max
+[   46.5s] tyres
+[   49.4s] glass pane: 351 modes, f11 = 7.48 Hz
+[   54.4s] assembly: 616 part impacts
+[   59.0s] breach: 995 shard contacts in 3.15 s of world time
+[   71.9s] warped world -> film
+[  133.9s] engine propagated
+[  248.6s] tyres propagated
+[ 1019.7s] breach propagated
+[ 1111.6s] garage reflection
+[ 1208.2s] showroom reflection
+[ 1281.0s] showroom acoustic
+[ 1291.3s] wind + bed
+[ 1410.9s] crowd
+[ 1482.3s] fence
+[ 1488.2s] pre-mix: peak 7.396, -13.88 LUFS, short-term range 36.1 dB
+[ 1490.0s] program gain
+[ 1543.2s] internal: -14.05 LUFS, tp -1.15 dBTP
+[ 1551.6s] WROTE audio/out/ab/master_A_nolapdown.wav  124.083 s  -14.03 LUFS  -1.10 dBTP
+>> report audio/out/ab/report_A_nolapdown.json
+>> STAGE RESULT: AUDIO_MASTER_OK -14.03 LUFS -1.10 dBTP

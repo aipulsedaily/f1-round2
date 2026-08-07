@@ -166,7 +166,7 @@ def wind_at_camera(tau, cam_speed, inside, sr, seed=4242):
     mono = _sig.sosfilt(_sig.butter(2, 25.0, btype="highpass", fs=sr, output="sos"), mono)
     # two ears see slightly different turbulence: decorrelate, do not just copy
     d = int(0.0009 * sr)
-    stereo = np.stack([mono, np.roll(mono, d) * 0.94 + mono * 0.06], axis=1)
+    stereo = np.stack([mono, dsp.delay(mono, d) * 0.94 + mono * 0.06], axis=1)
     return stereo.astype(np.float32), {"peak_camera_airspeed_ms": float(v.max())}
 
 
@@ -247,7 +247,7 @@ def outdoor_bed(n, sr, height, seed=311):
     bed = trees * (0.010 + 0.016 * h) + plant * 0.022 * (1.0 - 0.6 * h) + lo * 0.012
     bed = _sig.sosfilt(_sig.butter(2, 22.0, btype="highpass", fs=sr, output="sos"), bed)
     d = int(0.0031 * sr)
-    return np.stack([bed, np.roll(bed, d)], axis=1).astype(np.float32)
+    return np.stack([bed, dsp.delay(bed, d)], axis=1).astype(np.float32)
 
 
 def crowd(n, sr, excitement, seed=5150):

@@ -1,0 +1,15 @@
+  speed       before t_end: bit-identical=True (worst 0.000e+00)   after: 89.77
+  accel_long  before t_end: bit-identical=True (worst 0.000e+00)   after: 36.78
+  accel_lat   before t_end: bit-identical=True (worst 0.000e+00)   after: 0
+  slip        before t_end: bit-identical=True (worst 0.000e+00)   after: 0
+  wheel_w     before t_end: bit-identical=True (worst 0.000e+00)   after: 249.3
+  heading     before t_end: bit-identical=True (worst 0.000e+00)   after: 4.189
+  s_m         before t_end: bit-identical=True (worst 0.000e+00)   after: 883.9
+  track_s     before t_end: bit-identical=True (worst 0.000e+00)   after: 883.9
+  eng         before t_end: bit-identical=False (worst 1.102e-01)   after: 0.4478
+  rpm         before t_end: bit-identical=True (worst 0.000e+00)   after: 8595
+  gear        before t_end: bit-identical=True (worst 0.000e+00)   after: 7
+  tyre        before t_end: bit-identical=True (worst 0.000e+00)   after: 7.172
+  pos         before t_end: bit-identical=True (worst 0.000e+00)   after: 625.9
+>> ALL_BIT_IDENTICAL_BEFORE_T_END = False
+>> /home/zany/f1-round2/audio/out/ab/prefix_identity.json

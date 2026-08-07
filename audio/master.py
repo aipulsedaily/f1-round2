@@ -388,11 +388,15 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     rep["room"] = room_info
     del excite
     # interior: a diffuse field, so it arrives at both ears, decorrelated
+    # `dsp.delay`, NOT `np.roll` -- see R2-960. The circular roll wrapped the
+    # last 11.3 ms of the showroom's own reverb tail onto the film's first
+    # 11.3 ms, and in the shipped master that was the tail of a car at 323 km/h
+    # landing on an empty showroom as a 0.8505 peak inside frame 1.
     d1, d2 = int(0.0071 * sr), int(0.0113 * sr)
-    interior = np.stack([tail * 0.75 + np.roll(tail, d1) * 0.35,
-                         np.roll(tail, d2) * 0.75 + tail * 0.30], axis=1)
+    interior = np.stack([tail * 0.75 + dsp.delay(tail, d1) * 0.35,
+                         dsp.delay(tail, d2) * 0.75 + tail * 0.30], axis=1)
     tone = layers.room_tone(n, sr)
-    interior += np.stack([tone, np.roll(tone, 137)], axis=1)
+    interior += np.stack([tone, dsp.delay(tone, 137)], axis=1)
     add(interior * inside[:, None], "room")
     del interior
     # exterior: the tail radiates out through the 9.6 x 5.6 m aperture

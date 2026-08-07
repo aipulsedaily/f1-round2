@@ -164,6 +164,39 @@ class Telemetry:
             import carpath
             self._cl = np.array(carpath.centreline_table(spec, 1.0))
             self._lap = float(spec["headline"]["length_m"])
+            # THE LAP-DOWN (R2-943). The audio must walk the same table the
+            # camera rig and the car's keys walk, or the engine will be at
+            # 323 km/h under a car that has stopped. `t_brake` is derived the
+            # same way `carpath.Car` derives it: the line crossing, not the
+            # end of the CSV.
+            #
+            # WHICH v_end SEEDS IT (R2-955). Not `v_world[-1]`. R2-026's rule is
+            # "follow the car the AUDIENCE sees", and past the end of the CSV the
+            # car the audience sees is not differentiated from a position track --
+            # its position IS `LapDown`'s distance along the centreline, and
+            # `anim/carpath.Car` seeds that table from the CSV's `speed_ms[-1]`.
+            # Seeding a second table from `v_world[-1]` instead put the audio's
+            # car 2.349 mm from the picture's at f2936 for no gain. The same rule
+            # that makes the engine follow `v_world` ON the telemetry makes it
+            # follow the lap-down's own v PAST it, because there the lap-down is
+            # what the picture is drawn from.
+            #
+            # Cost, stated: the two seeds differ by 0.955 mm/s, so `speed` steps
+            # by that much at `t_end` -- 1.1e-5 relative, i.e. 1.8e-4 cents of
+            # engine pitch and 1.4e-4 dB of tyre level, under a 90 ms driveline
+            # lag. The A-side (`F1_LAPDOWN=0`) is untouched: with no lap-down,
+            # `_extrap` still uses the `vend` `sample()` passes it, which is the
+            # pre-R2-943 `v_world[-1]`.
+            self._carpath = carpath
+            self._lapdown = None
+            self.v_extrap = float(self.v_world[-1])
+            if carpath.LAPDOWN_ENABLED:
+                self.v_extrap = float(self.col["speed_ms"][-1])
+            s_to_line = self._lap - ((float(self.col["s_m"][-1])
+                                      - SF_TELEMETRY_S) % self._lap)
+            self.t_brake = self.t_end + s_to_line / self.v_extrap
+            if carpath.LAPDOWN_ENABLED:
+                self._lapdown = carpath.LapDown(self.v_extrap)
 
     # ------------------------------------------------------------- sampling --
     def sample(self, wt, speed_source="v_world"):
@@ -195,17 +228,75 @@ class Telemetry:
 
         past = wt > self.t_end
         if past.any() and self._cl is not None:
-            vend = float(v[-1])
-            s = float(c["s_m"][-1]) + vend * (wt[past] - self.t_end)
+            # ONE seed for the whole continuation -- see R2-955 in __init__. With
+            # the lap-down off this is the pre-R2-943 `v[-1]` of the chosen
+            # speed source, exactly.
+            vend = self.v_extrap if self._lapdown is not None else float(v[-1])
+            wp = wt[past]
+            d, vv, aa = self._extrap(wp, vend)
+            s = float(c["s_m"][-1]) + d
             ts = (s - SF_TELEMETRY_S) % self._lap
             px, py, pz, hh = self._cl_at(ts)
             out["x"][past], out["y"][past], out["z"][past] = px, py, pz
             out["heading"][past] = hh
-            out["speed"][past] = vend
+            out["speed"][past] = vv
+            # LONGITUDINAL ACCELERATION ACROSS THE LIFT (R2-953).
+            # `-aa` alone puts a STEP at t_end: the CSV's last row is
+            # +1.5073 m/s^2 (the car is flat out) and the lap-down's flat-out
+            # segment is a CONSTANT SPEED, so accel_long jumped 1.5073 -> 0.000
+            # in one sample. `engine.throttle_from_spec` reads accel_long
+            # directly, so that step is a 0.74 dB one-sample step on the
+            # combustion gate 46 ms before the beat-5/beat-6 seam -- a click, and
+            # a claim that the driver lifted before the line.
+            #
+            # The handover is made over THE FLAT-OUT SEGMENT ITSELF -- t_end to
+            # t_brake, 46.2 ms, the 4.15 m the telemetry stops short of the line
+            # -- and not over the lap-down's 0.30 s onset. Both remove the step;
+            # only this one keeps `accel_long` equal to d(speed)/dt once the
+            # driver has lifted. Blending over the onset instead left
+            # accel_long at +0.796 m/s^2 at f2715, 23 ms AFTER the lift, while
+            # the speed track the same call returns was already falling: two
+            # fields of one sample disagreeing about which way the car is going.
+            # Past t_brake this is exactly `-aa`.
+            if self._lapdown is not None:
+                a_flat = float(c["accel_long_ms2"][-1])
+                s_on = np.clip((wp - self.t_end)
+                               / max(self.t_brake - self.t_end, 1e-9), 0.0, 1.0)
+                s_on = s_on * s_on * (3.0 - 2.0 * s_on)
+                out["accel_long"][past] = a_flat * (1.0 - s_on) - aa
             out["s_m"][past] = s
+            # rolling contact: scale the last wheel rate by the speed ratio
+            # rather than dividing by a wheel radius this file does not own.
+            out["wheel_w"][past] = float(self.wheel_w[-1]) * (vv / vend)
         out["pos"] = np.stack([out["x"], out["y"], out["z"]], axis=1)
         out["track_s"] = out["s_m"] - SF_TELEMETRY_S
         return out
+
+    def _extrap(self, wt, vend):
+        """(distance since t_end, speed, deceleration) past the telemetry.
+
+        Vectorised twin of `anim/carpath.Car._extrap`, reading the SAME
+        `carpath.LapDown` table, so the audio's car and the picture's car are one
+        object. Verified against it frame by frame in `verify.py`.
+        """
+        dt = wt - self.t_end
+        if self._lapdown is None:
+            return vend * dt, np.full_like(dt, vend), np.zeros_like(dt)
+        d = vend * dt
+        vv = np.full_like(dt, vend)
+        aa = np.zeros_like(dt)
+        m = wt > self.t_brake
+        if m.any():
+            ld = self._lapdown
+            d0 = vend * (self.t_brake - self.t_end)
+            u = np.clip((wt[m] - self.t_brake) / ld.dt, 0.0, len(ld.d) - 1.0001)
+            i = u.astype(np.int64)
+            f = u - i
+            D = np.asarray(ld.d); V = np.asarray(ld.v); A = np.asarray(ld.a)
+            d[m] = d0 + D[i] + (D[i + 1] - D[i]) * f
+            vv[m] = V[i] + (V[i + 1] - V[i]) * f
+            aa[m] = A[i] + (A[i + 1] - A[i]) * f
+        return d, vv, aa
 
     def _cl_at(self, ts):
         S, CX, CY, CZ, H = self._cl.T

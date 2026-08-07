@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-08-07T10:25:42Z",
+ "generated_utc": "2026-08-07T09:59:47Z",
  "sr_internal": 96000,
  "sr_out": 48000,
  "bit_depth": 24,
@@ -80,11 +80,11 @@
   "peak_speed_ms": 101.94569283123813,
   "mean_speed_ms": 35.234070121460796,
   "min_camera_car_m": 1.9957299754025797,
-  "max_camera_car_m": 342.8629516556513,
+  "max_camera_car_m": 1000.1466979432674,
   "ear_separation_m": 0.175
  },
  "racing_line": {
-  "max_abs_lateral_offset_m": 0.011299424629095417,
+  "max_abs_lateral_offset_m": 0.01155504347359168,
   "note": "the telemetry drives the CENTRELINE: the maximum lateral offset anywhere on the lap is 10 mm, so there is no racing line to cross a kerb with. Kerb and gravel layers are implemented and positive-control tested, and they correctly never trigger on this telemetry. Fabricating kerb strikes the picture will not show would be a desync defect, not a feature."
  },
  "breach_sim": {
@@ -110,7 +110,7 @@
   "gear_min": 0,
   "gear_max": 7,
   "upshifts": 31,
-  "downshifts": 31,
+  "downshifts": 24,
   "final_drive": 6.4471,
   "gear_ratios": [
    2.94,
@@ -131,8 +131,8 @@
   ],
   "collector_half_wave_hz": 298.5174821569808,
   "turbo_shaft_rpm_max": 121358.171875,
-  "overrun_fraction": 0.1384466893709471,
-  "throttle_mean": 0.49099430028230384,
+  "overrun_fraction": 0.0965067624560102,
+  "throttle_mean": 0.6271269986349395,
   "clutch_lock_at_t0": 0.029089356289559474
  },
  "tyres": {
@@ -150,19 +150,19 @@
    "apron": 0.01921711303293705,
    "access_road": 0.025933342054486275,
    "asphalt": 0.36163613200187683,
-   "paint": 2.854202284652274e-05,
+   "paint": 2.8540256607811898e-05,
    "kerb": 0.0,
    "gravel": 0.0
   },
   "surface_time_fraction_while_moving": {
-   "dais": 0.3872795104980469,
-   "ramp": 0.004202164243906736,
-   "showroom_floor": 0.010616100393235683,
-   "glass_debris": 0.015573973767459393,
-   "apron": 0.028315704315900803,
-   "access_road": 0.03821181878447533,
-   "asphalt": 0.4891544580459595,
-   "paint": 4.205561344861053e-05,
+   "dais": 0.3710629343986511,
+   "ramp": 0.00402620667591691,
+   "showroom_floor": 0.01017157081514597,
+   "glass_debris": 0.014921844005584717,
+   "apron": 0.027130039408802986,
+   "access_road": 0.03661177679896355,
+   "asphalt": 0.5105450749397278,
+   "paint": 4.029212141176686e-05,
    "kerb": 0.0,
    "gravel": 0.0
   }
@@ -222,7 +222,7 @@
     0.7660444431189887,
     0.0
    ],
-   "active_fraction_of_film": 0.06385132639355272
+   "active_fraction_of_film": 0.06247431161853593
   },
   {
    "surface": "showroom facade x=+15",
@@ -277,19 +277,19 @@
  "propagation": {
   "engine": {
    "min_range_m": 1.8822673559188843,
-   "max_range_m": 342.1997985839844,
+   "max_range_m": 805.5414428710938,
    "arrival_monotonic_min_dt_s": 0.0008067730862819644,
    "max_itd_us": 565.2449951171875
   },
   "tyres": {
    "min_range_m": 1.9525763988494873,
-   "max_range_m": 342.7950744628906,
+   "max_range_m": 806.6700439453125,
    "arrival_monotonic_min_dt_s": 0.0008076435112798208,
    "max_itd_us": 511.409423828125
   },
   "assembly": {
    "min_range_m": 1.994938850402832,
-   "max_range_m": 342.9399719238281,
+   "max_range_m": 806.8514404296875,
    "arrival_monotonic_min_dt_s": 0.0008077794721259579,
    "max_itd_us": 491.0752258300781
   },
@@ -361,7 +361,7 @@
   },
   "fence": {
    "min_range_m": 4.406111240386963,
-   "max_range_m": 349.81890869140625,
+   "max_range_m": 806.6828002929688,
    "arrival_monotonic_min_dt_s": 0.0008187510765651496,
    "max_itd_us": 523.51708984375
   }
@@ -374,9 +374,9 @@
    "raw_peak": 0.054225195199251175
   },
   "tyres": {
-   "measured_max_short_term_lufs": -10.418375113236582,
+   "measured_max_short_term_lufs": -10.418375113236662,
    "target_lufs": -19.0,
-   "trim_db": -8.581624886763418,
+   "trim_db": -8.581624886763338,
    "raw_peak": 1.3961663246154785
   },
   "assembly": {
@@ -440,15 +440,15 @@
    "raw_peak": 0.015325339511036873
   },
   "crowd": {
-   "measured_max_short_term_lufs": -18.200027777971012,
+   "measured_max_short_term_lufs": -18.357279156455885,
    "target_lufs": -27.0,
-   "trim_db": -8.799972222028988,
+   "trim_db": -8.642720843544115,
    "raw_peak": 0.5932210087776184
   },
   "fence": {
-   "measured_max_short_term_lufs": -66.6186550191758,
+   "measured_max_short_term_lufs": -66.6186550191729,
    "target_lufs": -31.0,
-   "trim_db": 35.618655019175804,
+   "trim_db": 35.618655019172905,
    "raw_peak": 0.0022293750662356615
   }
  },
@@ -469,16 +469,16 @@
   "fence": -31.0
  },
  "mix_pre": {
-  "peak": 7.396327972412109,
-  "integrated_lufs": -13.882250861780982,
-  "short_term_lufs_p05": -43.200443641813614,
-  "short_term_lufs_p95": -6.975462426408898,
-  "short_term_range_db": 36.22498121540472
+  "peak": 7.396238803863525,
+  "integrated_lufs": -13.880258420825735,
+  "short_term_lufs_p05": -43.106627995888466,
+  "short_term_lufs_p95": -6.975409005219403,
+  "short_term_range_db": 36.13121899066906
  },
  "program_gain": {
-  "min_db": -3.1015296373578405,
-  "max_db": 7.119392696607903,
-  "range_db": 10.220922333965744,
+  "min_db": -3.1015249445336988,
+  "max_db": 7.119379823776584,
+  "range_db": 10.220904768310284,
   "attack_s": 6.0,
   "release_s": 12.0,
   "max_boost_db": 7.0,
@@ -487,22 +487,22 @@
  },
  "limiter": {
   "ceiling_dbtp": -1.15,
-  "max_gain_reduction_db": -0.05424609523366089,
+  "max_gain_reduction_db": -0.10391154951345394,
   "loudness_iterations_lufs": [
-   -16.14443950135486,
-   -17.260779643567908,
-   -15.442172418018144,
-   -14.665362374194446,
-   -14.357120976091528,
-   -14.175571601039024,
-   -14.090744740608491,
-   -14.052495465261629
+   -16.142709934720386,
+   -17.258607026836405,
+   -15.444534872585093,
+   -14.657543718112988,
+   -14.3496012792643,
+   -14.180022287028693,
+   -14.100513264165956,
+   -14.048918806995944
   ]
  },
  "mix_internal": {
-  "integrated_lufs": -14.031332736609945,
+  "integrated_lufs": -14.048918806995944,
   "peak": 0.8759738206863403,
-  "true_peak_dbtp": -1.1499996703658963
+  "true_peak_dbtp": -1.1499997555950772
  },
  "master": {
   "samples": 5956000,
@@ -511,50 +511,50 @@
   "sample_rate": 48000,
   "bit_depth": 24,
   "channels": 2,
-  "integrated_lufs": -14.01946098987365,
+  "integrated_lufs": -14.03306727812296,
   "target_lufs": -14.0,
-  "true_peak_dbtp": -1.0972658160110682,
-  "sample_peak": 0.8804222897748055,
-  "sample_peak_dbfs": -1.1061794177018078,
-  "dc_offset_l": -4.537542482353526e-06,
-  "dc_offset_r": -4.2817158830287315e-06,
-  "short_term_lufs_min": -29.33189008995181,
-  "short_term_lufs_max": -8.941752494033473,
-  "short_term_range_db": 20.390137595918336,
+  "true_peak_dbtp": -1.0973092954737353,
+  "sample_peak": 0.8804222997325444,
+  "sample_peak_dbfs": -1.1061793194627907,
+  "dc_offset_l": -4.6440841128639915e-06,
+  "dc_offset_r": -4.399699589859202e-06,
+  "short_term_lufs_min": -29.297222512357127,
+  "short_term_lufs_max": -8.951689989849521,
+  "short_term_range_db": 20.345532522507604,
   "clipped_samples": 0,
   "silent_1s_windows": 0,
   "limiter_gr_db": [
-   -0.05424609523366089,
+   -0.10391154951345394,
    0.0,
    0.0
   ],
   "loudness_iterations_48k_lufs": [
-   -14.01946098987365
+   -14.03306727812296
   ]
  },
- "output_wav": "audio/out/ab/master_B_lapdown.wav",
- "wall_clock_s": 1321.2670571804047,
+ "output_wav": "audio/out/ab/master_A_nolapdown.wav",
+ "wall_clock_s": 1551.570140361786,
  "log": [
-  "[    3.5s] world grid 11520001 samples, -35.0..85.0 s world",
-  "[    8.5s] surfaces classified",
-  "[   35.3s] engine: 31 upshifts, 31 downshifts, 14351 rpm max",
-  "[   46.1s] tyres",
-  "[   49.0s] glass pane: 351 modes, f11 = 7.48 Hz",
-  "[   53.9s] assembly: 616 part impacts",
-  "[   58.4s] breach: 995 shard contacts in 3.15 s of world time",
-  "[   71.1s] warped world -> film",
-  "[  127.9s] engine propagated",
-  "[  185.1s] tyres propagated",
-  "[  813.3s] breach propagated",
-  "[  903.6s] garage reflection",
-  "[  993.4s] showroom reflection",
-  "[ 1059.6s] showroom acoustic",
-  "[ 1068.9s] wind + bed",
-  "[ 1182.5s] crowd",
-  "[ 1250.5s] fence",
-  "[ 1256.0s] pre-mix: peak 7.396, -13.88 LUFS, short-term range 36.2 dB",
-  "[ 1257.8s] program gain",
-  "[ 1313.3s] internal: -14.03 LUFS, tp -1.15 dBTP",
-  "[ 1321.3s] WROTE audio/out/ab/master_B_lapdown.wav  124.083 s  -14.02 LUFS  -1.10 dBTP"
+  "[    3.3s] world grid 11520001 samples, -35.0..85.0 s world",
+  "[    8.6s] surfaces classified",
+  "[   36.4s] engine: 31 upshifts, 24 downshifts, 14351 rpm max",
+  "[   46.5s] tyres",
+  "[   49.4s] glass pane: 351 modes, f11 = 7.48 Hz",
+  "[   54.4s] assembly: 616 part impacts",
+  "[   59.0s] breach: 995 shard contacts in 3.15 s of world time",
+  "[   71.9s] warped world -> film",
+  "[  133.9s] engine propagated",
+  "[  248.6s] tyres propagated",
+  "[ 1019.7s] breach propagated",
+  "[ 1111.6s] garage reflection",
+  "[ 1208.2s] showroom reflection",
+  "[ 1281.0s] showroom acoustic",
+  "[ 1291.3s] wind + bed",
+  "[ 1410.9s] crowd",
+  "[ 1482.3s] fence",
+  "[ 1488.2s] pre-mix: peak 7.396, -13.88 LUFS, short-term range 36.1 dB",
+  "[ 1490.0s] program gain",
+  "[ 1543.2s] internal: -14.05 LUFS, tp -1.15 dBTP",
+  "[ 1551.6s] WROTE audio/out/ab/master_A_nolapdown.wav  124.083 s  -14.03 LUFS  -1.10 dBTP"
  ]
 }

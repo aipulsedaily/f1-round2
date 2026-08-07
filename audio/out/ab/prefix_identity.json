@@ -1,0 +1,114 @@
+{
+ "sr": 48000,
+ "t_end_world_s": 72.583333,
+ "world_samples_before_t_end": 5164000,
+ "tracks": {
+  "speed": {
+   "bit_identical_before_t_end": true,
+   "worst_abs_delta_before_t_end": 0.0,
+   "worst_abs_delta_after_t_end": 89.76612504340504,
+   "first_differing_index": 5164000,
+   "first_differing_world_t": 72.58333333333333,
+   "first_differing_s_before_t_end": -3.3333333249174757e-07,
+   "worst_before_t_end_at_world_t": null
+  },
+  "accel_long": {
+   "bit_identical_before_t_end": true,
+   "worst_abs_delta_before_t_end": 0.0,
+   "worst_abs_delta_after_t_end": 36.78061872077563,
+   "first_differing_index": 5164000,
+   "first_differing_world_t": 72.58333333333333,
+   "first_differing_s_before_t_end": -3.3333333249174757e-07,
+   "worst_before_t_end_at_world_t": null
+  },
+  "accel_lat": {
+   "bit_identical_before_t_end": true,
+   "worst_abs_delta_before_t_end": 0.0,
+   "worst_abs_delta_after_t_end": 0.0
+  },
+  "slip": {
+   "bit_identical_before_t_end": true,
+   "worst_abs_delta_before_t_end": 0.0,
+   "worst_abs_delta_after_t_end": 0.0
+  },
+  "wheel_w": {
+   "bit_identical_before_t_end": true,
+   "worst_abs_delta_before_t_end": 0.0,
+   "worst_abs_delta_after_t_end": 249.26414822639438,
+   "first_differing_index": 5166220,
+   "first_differing_world_t": 72.62958333333333,
+   "first_differing_s_before_t_end": -0.04625033333333306,
+   "worst_before_t_end_at_world_t": null
+  },
+  "heading": {
+   "bit_identical_before_t_end": true,
+   "worst_abs_delta_before_t_end": 0.0,
+   "worst_abs_delta_after_t_end": 4.1887902047863905,
+   "first_differing_index": 5299900,
+   "first_differing_world_t": 75.41458333333334,
+   "first_differing_s_before_t_end": -2.831250333333344,
+   "worst_before_t_end_at_world_t": null
+  },
+  "s_m": {
+   "bit_identical_before_t_end": true,
+   "worst_abs_delta_before_t_end": 0.0,
+   "worst_abs_delta_after_t_end": 883.9231284191201,
+   "first_differing_index": 5164000,
+   "first_differing_world_t": 72.58333333333333,
+   "first_differing_s_before_t_end": -3.3333333249174757e-07,
+   "worst_before_t_end_at_world_t": null
+  },
+  "track_s": {
+   "bit_identical_before_t_end": true,
+   "worst_abs_delta_before_t_end": 0.0,
+   "worst_abs_delta_after_t_end": 883.9231284191201,
+   "first_differing_index": 5164000,
+   "first_differing_world_t": 72.58333333333333,
+   "first_differing_s_before_t_end": -3.3333333249174757e-07,
+   "worst_before_t_end_at_world_t": null
+  },
+  "eng": {
+   "bit_identical_before_t_end": true,
+   "worst_abs_delta_before_t_end": 0.0,
+   "worst_abs_delta_after_t_end": 0.40873043052852154,
+   "first_differing_index": 5164009,
+   "first_differing_world_t": 72.58352083333334,
+   "first_differing_s_before_t_end": -0.00018783333334226882,
+   "worst_before_t_end_at_world_t": null
+  },
+  "rpm": {
+   "bit_identical_before_t_end": true,
+   "worst_abs_delta_before_t_end": 0.0,
+   "worst_abs_delta_after_t_end": 8595.110028793817,
+   "first_differing_index": 5164000,
+   "first_differing_world_t": 72.58333333333333,
+   "first_differing_s_before_t_end": -3.3333333249174757e-07,
+   "worst_before_t_end_at_world_t": null
+  },
+  "gear": {
+   "bit_identical_before_t_end": true,
+   "worst_abs_delta_before_t_end": 0.0,
+   "worst_abs_delta_after_t_end": 7.0,
+   "first_differing_index": 5181166,
+   "first_differing_world_t": 72.94095833333333,
+   "first_differing_s_before_t_end": -0.35762533333333124,
+   "worst_before_t_end_at_world_t": null
+  },
+  "tyre": {
+   "bit_identical_before_t_end": true,
+   "worst_abs_delta_before_t_end": 0.0,
+   "worst_abs_delta_after_t_end": 7.1717687994241714,
+   "first_differing_index": 5164002,
+   "first_differing_world_t": 72.583375,
+   "first_differing_s_before_t_end": -4.200000000764703e-05,
+   "worst_before_t_end_at_world_t": null
+  },
+  "pos": {
+   "bit_identical_before_t_end": true,
+   "worst_abs_delta_before_t_end": 0.0,
+   "worst_abs_delta_after_t_end": 625.8898984742557
+  }
+ },
+ "ALL_BIT_IDENTICAL_BEFORE_T_END": true,
+ "note": "A = F1_LAPDOWN=0 (the pre-R2-943 constant-speed extrapolation), B = F1_LAPDOWN=1 (the lap-down). Compared with ==, not with a tolerance. This is the claim the finished masters cannot make, because master.py's bus trims, -14 LUFS normalisation and limiter are all functions of the whole film including its ending."
+}
