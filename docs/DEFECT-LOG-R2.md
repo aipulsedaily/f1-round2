@@ -33404,3 +33404,38 @@ Two things I am NOT claiming: that the mid-beat needs fixing (a pull-back may
 legitimately pass through a wide), and anything about the trees, whose apparent
 repetition I did not measure and which the variety instrument already bounds at
 311 sources and a 2.0 % top share.
+
+## R2-1110 — the beat-sheet fix VERIFIED independently, by running the gate rather than reading the report
+
+Ran `anim/build_camera_rig.py` myself against the now-tracked
+`docs/beat_sheet.json`, on a scratch output, in a fresh Blender:
+
+```
+1_assembly   worst  7.74 deg at f166   (bound 30.0)   frame-offset 0.480   PASS
+2_launch     worst 16.89 deg at f817   (bound 20.0)   frame-offset 0.588   PASS
+3_breach     worst  7.79 deg at f974   (bound 24.0)   frame-offset 0.223   PASS
+4_transit    worst 10.25 deg at f1060  (bound 14.0)   frame-offset 0.321   PASS
+5_lap        worst  1.30 deg at f1582  (bound 22.0)   frame-offset 0.055   PASS
+6_ending     worst  0.04 deg at f2722  (bound 32.0)   frame-offset 0.002   PASS
+
+>> STAGE RESULT: CAMERA_RIG_CONTINUOUS_AND_AIMED     exit 0
+```
+
+**Beat 1's frame-offset is 0.480, exactly the figure reported, against the 1.155
+that failed.** Every beat sits inside its bound; the worst aim anywhere in the
+film is **16.887 deg at f817**, against a 20.0 bound.
+
+**This is the first run of the rig from a sheet that is under version control**,
+and it took two attempts for a reason worth noting: my first invocation omitted
+`--sheet` and `--telemetry`, and **Blender exited 2 with an argparse usage
+message and no `>> STAGE RESULT:` line at all.** That is the correct behaviour
+and it is the cheap half of the exit-code discipline — **a stage that prints no
+verdict has not passed, and the absence of a verdict is itself the verdict.**
+The expensive half is R2-1100's case, where a verdict *was* printed and a later
+one buried it.
+
+**Verifying by running rather than by reading is the whole point.** The report I
+was checking came from an agent that had already refuted my premise once; it was
+right, and it is still right — but *"the agent said all six pass"* and *"all six
+pass"* are different claims, and only one of them survives the agent being
+wrong.
