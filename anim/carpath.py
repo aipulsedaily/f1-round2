@@ -156,7 +156,9 @@ class Car:
         self.t_brake = self.t_end + s_to_line / self.v[-1]
         if lapdown is None:
             lapdown = LapDown(self.v[-1]) if LAPDOWN_ENABLED else None
-        self.lapdown = lapdown
+        # Normalised so a caller passing `lapdown=False` to mean "off" gets the
+        # constant-speed arm rather than an AttributeError 264 frames later.
+        self.lapdown = lapdown or None
 
     def _lerp(self, arr, t):
         i = bisect.bisect_left(self.t, t)
