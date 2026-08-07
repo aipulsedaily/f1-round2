@@ -33491,3 +33491,93 @@ is evidenced.
 This is the same discipline that saved the ending: the camera candidate fixed
 the geometry and did not fix the ending, and saying so cost one pass and
 prevented shipping a wrong answer.
+
+## R2-1113 — THE N-PUSHES OBJECTION IS DEAD: eight scene pushes cost $0.47 and 10 minutes, not hours
+
+`multi-gpu.md` called one shared filesystem *"the single strongest argument for
+one 8-GPU box over eight 1-GPU instances, which would pay 8x every push."* **It
+was the last thing standing between us and the fleet, and it is measured wrong.**
+
+Four concurrent **7,980 MB** pushes: **191.5 / 242.6 / 389.8 / 439.9 s**,
+**60.6 MB/s aggregate** against a ~27 MB/s uplink at ~11 MB/s on the wire. **They
+did not serialise.**
+
+**And the local box was not the limit** - each host's scene rate tracks the rate
+that same host took the Blender bundle at, **in identical rank order**, so the
+spread is *host ingest*, not our pipe. That is the check that turns "it was fast"
+into "we know why it was fast."
+
+```
+mean 463 s of paid non-render time per card
+$0.059 each   ->   $0.47 for eight
+0.6 % of an ~$82 master, 10.4 min against a 20.4 h render
+```
+
+**Also wrong: the 2.29x compression figure.** This blend does **5.43x at
+zstd -10.**
+
+**The lesson is about the shape of the objection, not the number.** It was
+plausible, it was written down by someone competent, and it had never been
+measured - and it survived precisely because it was *load-bearing for the
+conclusion someone already preferred.* An argument that supports the incumbent
+gets audited least.
+
+## R2-1114 — four identical cards, identical work, a 1.9x SPREAD: equal blocks leave the fleet waiting on its slowest member
+
+Nobody asked for this and it is the most operationally important thing in the
+report. The four rented 5090s are running **229-432 s/frame on identical work.**
+
+**So a fleet that hands every card an equal share finishes when its *slowest*
+card finishes**, and the fast cards sit idle. Eight equal blocks against a 1.9x
+spread wastes a large fraction of what the fleet was bought for - and **the
+speedup would still look like a success**, because total wall-clock would drop.
+
+Fixed before it could bite: `--weights` on `plan`/`submit`, and `fleetctl
+record` fills `farm/hostrates.json` from the first frame per host, so a measured
+second pass sizes blocks by hardware.
+
+**This is the same finding as R2-1094 from the other side.** That one said the
+host lottery costs +/-45 % and sticker price is nearly worthless. **This one says
+the lottery does not stop at procurement - it continues inside the fleet, every
+hour, and scheduling has to answer it.**
+
+## R2-1115 — `BEGIN DEFERRED` was not a valid control: it is safe by being useless
+
+Cross-process claim safety was proven with **8 real processes on one queue, 0
+double-claims**, and a `NOTX` control that **double-claimed 206-231 jobs** -
+one job going to three pids - **so the test can demonstrably see the failure it
+is testing for.**
+
+**But the first intended control failed to be one.** `BEGIN DEFERRED` never
+double-claimed - and it never claimed much of anything, **throwing away 69-76 %
+of attempts to `SQLITE_BUSY`.**
+
+**A configuration that avoids the defect by doing almost no work is not a
+negative control; it is a different program.** It would have reported PASS,
+looked like evidence, and proven nothing about the locking discipline under
+load. The `NOTX` arm - genuinely unsafe, genuinely productive - is the one that
+makes the result mean something.
+
+**The multi-GPU guard was confirmed live**, not just in assertion:
+`device=OPTIX [NVIDIA GeForce RTX 5090] (1 of 1 OPTIX device(s) on this
+instance)` on a rented card. That is the $512 row made unreachable.
+
+## R2-1116 — timestamped: the market moved 7-14 %, and supply is thinner than eight
+
+Four exclusive cards rented **15:03-15:05 UTC** at API `dph_total`:
+
+```
+$0.4237  $0.4356  $0.4741  $0.4889     mean $0.4556
+```
+
+Against the $0.4488 / $0.3999 the earlier comparison was built on - **up 7-14 %**,
+which is what the client had already noticed from the outside.
+
+**Supply at that moment: 22-23 offers passed the filter, but only 7 were
+exclusive single-GPU**, plus the 4 already held = **11 machines.** Eight is
+reachable **with three to spare, which is not comfortable margin** - and the
+agent said so rather than reporting the eight as secured.
+
+`farm/procure.py` hard-rejects `gpu_frac < 0.99` **and** `num_gpus > 1`; **7 of
+23 offers survived.** The R2-382 quarter-share trap and the $512 wide-box trap
+are both now filtered at source rather than watched for.
