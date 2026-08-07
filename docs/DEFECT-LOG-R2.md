@@ -28520,3 +28520,628 @@ replaced - **a document that silently changes its mind teaches nobody anything.*
 Still open and now correctly labelled: **f1114-1116**, the car wholly hidden
 behind the pit building, and the harder of the two cases - the occluder is a
 near-field wall **9.3 m from the lens**, not a bridge at 26-55 m.
+
+## R2-1010 — ADJACENT: `docs/RESUME-HERE.md` tells the next reader to make a change that was made, measured, and reverted
+
+`docs/RESUME-HERE.md:86` still says:
+
+> "``PONT_S 2410 -> 2460`` closes the beat-5 blackout."
+
+**It does the opposite.** R2-732 landed that move, re-measured it against the
+assembled world, and reverted it: 2410 gives 12 wholly-blocked frames, 2460 gives
+**25**. The recommending instrument (`tools/r2651_pont_sightline.py`) models the
+bridge as four horizontal bands with **no abutments or wing walls**, and each
+abutment is a 12.8 m tall, 5.2 m deep concrete block. Source today is
+`world/build_architecture.py:5739`, `PONT_S = 2410.0` — correctly reverted.
+
+`RESUME-HERE.md` is *the* pick-it-up document; it is what someone reads first
+after a break. A stale instruction there costs a reverted change being redone and
+a day finding out why it got worse. **Not edited from this file** — it is the
+main thread's document and two agents writing one file is the failure this
+project keeps logging — but it should be corrected by whoever owns it.
+
+## R2-1011 — ADJACENT: `lap_shotscale.py` is the instrument that raised #125 and it is blind to the defect that was actually there
+
+Not a complaint about the tool, which passes four controls including two that
+would catch a detector latching onto scenery. It is a gap in what it *reports*.
+
+Its docstring is honest — *"occlusion is not modelled: a car behind a barrier
+still measures full size"* — but the consequence is sharp: at **f2185 it reports
+4.66 % and at f2190 4.91 %**, among its most confident readings of the whole
+span, **for two frames containing no car at all**. Anyone reading the per-frame
+dump sees the subject at its healthiest exactly where it has vanished.
+
+The fix is cheap and does not require re-measuring anything: the blocked sets
+already exist in `render/r2651/occlusion.json`, so the tool could mark those
+frames `--` or `OCCLUDED` instead of a number, and its beat summary could report
+them separately. A metric that reads the same whether the car is there or not is
+the failure this project has hit most often, and this is one more instance of it
+— found only because a rendered frame was looked at.
+
+## R2-1012 — ADJACENT: the R2-591 lens retune is a live unlanded candidate whose rationale this task just weakened
+
+`render/film_path_R2581B_ramp_RETUNED_REBASED.json` exists, is rebased onto the
+live path, and was verified by R2-917. It was built to raise this span's shot
+scale 4.41 % -> 6.11 %. **R2-1001 says the size was not the defect**, so the case
+for spending a 142.5 mm peak focal and a re-check of DOF and the sheet's stale
+22-degree aim bound is now materially weaker than when it was authored.
+
+Somebody should **decide** it — land it or retire it — rather than leave it
+sitting. An unlanded candidate is not free: R2-737 caught the previous one being
+built on a superseded base, and this block nearly repeated that same mistake with
+the R2-738 file (R2-1004, Defect 1). Two live candidates for one span is how the
+third agent picks the wrong one.
+
+## R2-1013 — two corrections to the brief this task was given
+
+1. **"1,247 contiguous frames" is not what is on disk.** `out2/seq/r2full` holds
+   1,247 frames covering f793-2978, but only **f793-1281 are contiguous** (489
+   frames); from f1286 the sequence is **1-in-5**. Beat 5 f1191-2714 is covered
+   at 39 frames over the f2035-2227 span, not 193. Adequate for composition,
+   which is what it was used for; not adequate for anything per-frame.
+
+2. **The run is longer than 8.04 s and this was already known.** R2-582 measured
+   the true continuous sub-10 % run as **f2012-f2256, 245 frames, 10.21 s**,
+   median 4.41 % — *"the longest continuous run under 10 % of frame width
+   anywhere in beats 2-6, including beat 6 itself."* f2035-2227 is R2-581's
+   narrower window. Both are now superseded as a *defect* by R2-1001 anyway; what
+   survives is R2-1002, which is 0.50 s inside it.
+
+
+### Files touched
+
+| file | |
+|---|---|
+| `tools/r2971_pont_camera_rebase.py` | **new.** Rebases R2-738's offset onto the live path, widens the ramps, 8 controls incl. a null that must reproduce the base |
+| `render/film_path_R2971_PONT_B5_REBASED.json` | **new, candidate.** Live path + the offset over f2131-2224. Not wired to anything |
+| `work/r2971/cam_candidate_path.json` | scratch: `r2731_pont_camera_apply.py`'s own output, kept only to document the 9.866 m stale-base delta |
+| `docs/STAGING-R2-1001-to-R2-1030.md` | this file |
+| `out2/seq/b5verdict_4k` | 6 frames, 4K, **$0.173 measured** |
+| `tools/r2731_camera_clearance.py` | **modified, additively** — gained a path-selection option so the gate can be pointed at a candidate other than R2-738's. Existing default behaviour unchanged |
+
+This task modified **nothing** in `docs/beat_sheet.json`, `docs/DEFECT-LOG-R2.md`,
+`anim/`, `audio/`, `world/`, `telemetry/`, or any `render/film*.blend`, and
+committed nothing. Other agents' edits are live in the same working tree
+(`audio/scene.py`, `world/camera_rig_path.json`, `world/build_*.py` and others
+show as modified and are **not** this task's) — anyone staging these changes must
+use path-scoped `git add`, never `-A`.
+
+One consequence of that, worth stating rather than discovering at merge:
+`world/camera_rig_path.json` is currently dirty in someone else's hands. This
+candidate was rebased onto `render/film17_path.json`, which is clean and which
+was verified **identical to `world/camera_rig_path.json` over the whole of beat 5
+to 0.00e+00 m**. `tools/r2971_pont_camera_rebase.py` takes `--base`, so at merge
+time it should simply be re-run against whatever path is live rather than the
+output file being adopted as-is.
+
+## R2-1091 — THE BLAST RADIUS OF THE STALE CAMERA IS SMALL, AND IT IS ALL IN BEAT 1
+
+R2-1007 logged that `world/camera_rig_path.json` is byte-identical to
+`render/film16_path.json` while `render/film17_path.json` is the film's camera.
+This is the audit of what that broke.
+
+**Headline: 43 readers, 4 affected. The exposure is real but narrow, and it is
+concentrated in exactly the beat that is under active work right now.**
+
+### The divergence, re-measured (do not reuse R2-1007's figures unqualified)
+
+R2-1007's "768 frames differ, worst 9.866 m at f545, identical from f781" is
+right about position and wrong by omission about everything else.
+
+| quantity | frames differing | worst | p50 over the span | p90 |
+| --- | --- | --- | --- | --- |
+| position | 768 (f2–f780) | **9.866 m** @ f545 | 2.83 m | 8.20 m |
+| **focal length** | **681 (f2–f753)** | **23.0 mm** @ f223 (58 → 35 mm) | **6.05 mm** | **22.7 mm** |
+| orientation | — | **103.3 deg** @ f527 | 13.7 deg | 81.4 deg |
+
+**The lens divergence was not in R2-1007 and is the more damaging of the two**
+for anything that measures framing, projection, mm-per-pixel or depth of field.
+A 58 mm-vs-35 mm disagreement is a different shot, not a nudge.
+
+"Identical from f781 onward" is very nearly true and worth stating precisely:
+from f781 position and lens are **bit-identical**; 1,048 frames carry a residual
+orientation difference of at most **0.180 deg**, which is consistent with the
+6-decimal quaternion rounding in the file format and is not a real difference.
+
+**The two curves converge to exactly zero at f754**, which is beat 1's last
+camera key. Beat 2 onward was never re-authored. That single fact is why the
+blast radius is small: nothing measured at f≥793 can be touched by this.
+
+### The ranking
+
+**AFFECTED — 4 readers. Findings in doubt.**
+
+| # | reader | what changes | severity |
+| --- | --- | --- | --- |
+| 1 | `tools/r2791_beat1_focus.py` | see R2-1092 | **critical, live** |
+| 2 | `audio/scene.py` → `audio/master.py` | see R2-1093 | **high, ships** |
+| 3 | `tools/r2366_surface_visibility.py` | **R2-369** in doubt | medium |
+| 4 | `tools/r2731_lens_retune_rebase.py` | see R2-1095 | medium |
+
+`r2366_surface_visibility.py` walks all 2,978 frames with `--step 1` and derives
+`cover_px` and `mm_px` from pose *and* lens. **R2-369 ("the showroom roof is
+visible on 151 frames, all in beat 6; never near-field in beat 1") is a positive
+claim about beat 1 built entirely on the stale beat-1 poses**, and a 9.87 m /
+23 mm swing can change whether that slab top enters frame at all. It must be
+re-run on the live path before it stands. R2-366's frame-scale ladder is a
+weaker case: its endpoints (f945, f2978) are outside the window and survive, but
+the argument that selected them swept beat 1, so *"f945 is the finest view of
+this paving anywhere in the take"* is unproven.
+
+**PARTIAL — 3 readers. Stale rows on disk, published conclusions survive.**
+
+`tools/r2581_nearfield_sweep.py`, `tools/r2651_band_sweep.py` and
+`tools/r2651_track_scale.py` each write beat-1 rows from the stale camera —
+26.2 % of emitted rows — but every figure any defect quotes from them is beat 4/5.
+`render/r2581/nearfield.json`, `render/r2651/band_sweep.json` and
+`render/r2651/track_scale.json` carry junk beat-1 rows and should be regenerated;
+nothing rests on them.
+
+**UNAFFECTED — the remaining 36.** They evaluate at single frames outside the
+window (f2575, f2978, f2000, f945), or over hardcoded beat-4/5/6 ranges
+(f1191–2714, f1057–2978), or explicitly exclude beat 1, or read only the frame
+count. `tools/r2651_dof_dump.py` never opens the file at all — it only names it
+in its docstring.
+
+### Cost
+
+**$0.** Every measurement in R2-1091 through R2-1096 is pure geometry on the
+local CPU. No Blender, no GPU, nothing queued.
+
+---
+
+## R2-1092 — THE BEAT-1 FOCUS FIX IS BEING ADJUDICATED ON A CAMERA THE FILM DOES NOT HAVE
+
+**This is the one that matters and it is live right now.**
+
+`tools/r2791_beat1_focus.py` was reported to me as the one tool reading the live
+path. **It is not.** It defaults to `render/film16_path.json` (line 621) and
+hardcodes it again at line 574 for frames 1–792 — the stale lineage, over
+exactly the divergent span. The only reader of `film17_path.json` in the tree is
+`tools/r2971_pont_camera_rebase.py`.
+
+Solved both ways over all 792 beat-1 frames:
+
+| | stale (film16) vs live (film17) |
+| --- | --- |
+| frames focusing on a **different part of the car** | **482 of 792 — 60.9 %** |
+| focus-distance error | p50 **1.171 m**, p90 5.302 m, max **5.752 m** |
+| focus-distance error, relative | p50 **35.6 %**, max 93 % |
+| lens error | p50 5.68 mm, max **23.0 mm** |
+| frames where the stale focus falls **outside the live subject's near–far span** | **369 of 792 — 46.6 %** |
+
+Worst frames are not marginal — they are a different shot:
+
+```
+f589  stale: CORNER_FL     focus 1.483 m  lens 58.0
+      live:  halo_assembly focus 7.235 m  lens 36.1
+f606  stale: CORNER_FL     focus 1.553 m  lens 54.7
+      live:  CI            focus 7.304 m  lens 36.5
+```
+
+**On nearly half of beat 1 the shipped focus decision would put the subject
+outside its own depth of field.** Any pacing or focus verdict taken from this
+tool's current output is void.
+
+### The tool's own guard fires, and the stage still says OK
+
+`r2791_beat1_focus.py --selftest` prints:
+
+```
+solver AGREES at the stations   SKIP  path file and sheet are different
+generations (mean station offset 4.612 m)
+...
+STAGE RESULT OK r2791_focus_selftest
+```
+
+The `same_gen` control **detected this staleness and was overruled by its own
+stage line.** A SKIP on the single control that would have caught the wrong
+camera, followed by `OK`, is the "guard that cannot fire" shape with an extra
+step: it fired, and nothing was wired to it.
+
+**And the live path does not fix it.** Re-pointed at `film17_path.json` the same
+control reports **2.597 m** of mean station offset and still SKIPs. film17 is
+closer to the current beat sheet than film16, but neither matches: **the sheet
+has been re-authored since film17 was built.** The rig needs rebuilding from the
+current sheet before this control can be read at all.
+
+**FOR THE BEAT-1 OWNERS — REPORTED, NOT CHANGED** (I hold none of `anim/`,
+`beat_sheet.json` or the beat-1 proxy):
+
+1. Re-point `r2791_beat1_focus.py` off `film16_path.json` — both line 621 and
+   the hardcoded line 574 — onto `live_campath.load()`.
+2. Rebuild the rig from the current sheet, or the `same_gen` control stays dark.
+3. Make `same_gen`'s SKIP fail the stage, or delete the control. A control that
+   skips into `OK` is worse than none.
+
+---
+
+## R2-1093 — THE 9.866 m REACHES THE MIX
+
+Yes. `audio/master.py:117` constructs `CameraPath()` with no argument, which
+defaults to the stale file (`audio/scene.py:325`). The camera is the **listener**:
+its position sets 1/r attenuation and propagation delay, its velocity sets
+Doppler, and its orientation sets the binaural pan (`EAR_HALF` on the camera's
+local +X, so roll is audible).
+
+Beat 1's audible content is the **assembly layer**, rendered positionally at the
+car through the propagator (`master.py:300`, `prop.source_track(car_ctrl["pos"])`).
+Measured against the real telemetry source track over f1–792:
+
+| | error, stale vs live listener |
+| --- | --- |
+| 1/r level | p50 **2.19 dB**, p90 6.68 dB, max **11.69 dB** |
+| binaural azimuth | p50 **13.8 deg**, p90 89.7 deg, max **178.1 deg** |
+| frames where the source is panned to the **wrong ear** | **318 of 792 — 40.2 %** |
+| propagation delay | max **16.5 ms** |
+| Doppler | max 17.3 cents (minor) |
+
+Level and Doppler are defensible-to-marginal. **The pan is not: on 40 % of beat 1
+the assembly is on the wrong side of the listener's head**, and a 178-degree
+azimuth error is a fully reversed image.
+
+Beats 2–6 are untouched — the glass pane, impact and shard sources are static and
+all beat-2+, and the camera is bit-identical from f781.
+
+**FOR THE AUDIO OWNER — REPORTED, NOT CHANGED** (another agent holds
+`audio/scene.py`'s closing 11 s): the one-line fix is `scene.py:325` to
+`live_campath.declared_campath()`. The closing 11 s is beat 6 and cannot be
+affected by this; the fix is confined to the default path and does not touch it.
+**The mix needs re-rendering for beat 1 after that.**
+
+---
+
+## R2-1094 — WHAT SURVIVES, MEASURED RATHER THAN ASSUMED
+
+The expectation that the asphalt work survives was correct. It is now measured.
+
+**`world/build_surface.py` — SURVIVES, exactly.** Two independent reasons:
+
+1. `_film_pose_defs` (line 4387) reads the stale file, but `FILM_POSE_FRAMES =
+   (1547, 2225, 2000, 1226)` — **all four are outside f2–780**, so the four film-pose
+   cameras are bit-identical either way.
+2. The readable band at `build_surface.py:1819` was re-derived end to end.
+   `tools/r2651_track_scale.py` was re-run against `film17_path.json` (pure
+   geometry, `STAGE RESULT: R2651_TRACK_SCALE_OK`) and the weighted percentiles
+   recomputed:
+
+   | camera | n frames ≥2 % cover | p25 | p50 | p75 |
+   | --- | --- | --- | --- | --- |
+   | stale (film16) | 1,888 | 10.8 | 20.8 | 108.1 |
+   | **live (film17)** | **1,887** | **10.8** | **20.8** | **108.1** |
+
+   Unchanged to every published digit. The reason is quantified, not lucky:
+   of the 1,888 qualifying frames only **3 fall inside the divergent range,
+   carrying 0.01 % of the cover weight**. On the live camera it is 2. The road
+   genuinely does not feature in beat 1.
+
+   **The 40 mm – 2 m readable band, the eleven-layer census and everything
+   R2-1031 concluded from them stand.**
+
+**`tools/seam_gate.py` — SURVIVES, exactly.** Its window is f738–832, which does
+straddle the boundary, but the two curves have already converged there: **max
+0.171 m of position and 0.313 mm of lens inside the whole window**, against
+`TOL_ARTEFACT_M = 1e-3` on the two pinned keys, which sit at f754 and f793 where
+the divergence is 0.000000 m. Run both ways the gate emits **identical output to
+four decimals** — same 1.407× worst bulge at f815–817, same 39.66 m/s² at f817,
+same 4.91 %/frame rotation at f806, `SEAM_OK` both times.
+
+The f792/793 seam is safe **because f754 is where beat 1's last key is**, and
+both files share it exactly.
+
+---
+
+## R2-1095 — A TOOL THAT NAMES THE STALE FILE `LIVE` AND CERTIFIES IT
+
+`tools/r2731_lens_retune_rebase.py:49` — `LIVE = "world/camera_rig_path.json"`.
+
+Its selftest then asserts, and passes:
+
+```
+chk("beat 1 is bit-identical to the live path",
+    all(o[f]["p"] == live[f]["p"] and o[f]["lens"] == live[f]["lens"]
+        for f in range(1, 793)))
+```
+
+This is **true of the variable and false of the film**. The rebased path it emits
+carries the stale beat-1 camera, and its own control certifies that as correct
+over exactly f1–792. Its header's *"differs from the live path by 8.863 m of
+position"* is film14 measured against the stale file, not against the film's
+camera.
+
+If that rebased path is ever applied it would **re-inject the stale beat-1
+camera into the film** with a green selftest attached. It has not been applied
+as far as I can see; it should not be, until `LIVE` points at
+`live_campath.declared_campath()`.
+
+This is the same shape as the finding R2-1007 already made about
+`r2731_pont_camera_apply.py`: a correct tool, a wrong input, a plausible wrong
+conclusion. Expect it wherever a variable is named for a fact instead of reading
+one.
+
+---
+
+## R2-1096 — THE DETECTION ALREADY EXISTED. NOTHING WAS WIRED TO IT.
+
+`tools/horizon_gate.py` has `_stale_default_warning()`, and it works. Run today
+on the default path it prints:
+
+```
+STALE DEFAULT: render/film17_path.json -- the newest assembled film scene --
+holds a DIFFERENT camera from world/camera_rig_path.json, which is what was
+just judged. Rendered frames come from the scene. Re-assemble it, or pass
+--path render/film17_path.json to judge what will actually be rendered.
+```
+
+…and then:
+
+```
+-> PASS
+>> STAGE RESULT: HORIZON_LEVEL
+```
+
+**The tree has been printing an accurate description of R2-1007 on every
+horizon_gate run for three days.** It is a `print()` at line 698 that touches
+neither the verdict nor the exit code. horizon_gate's own result is genuinely
+unaffected (it excludes beat 1, and emits identical output both ways), so the
+one tool that could see the problem was also the one tool with no stake in it.
+
+This is the sharpest instance yet of the project's most-logged defect family,
+and it inverts the usual diagnosis: **the instrument was not broken. It fired,
+correctly, in prose, into a log nobody was gating on.**
+
+`tools/input_stamp.py` is the companion failure, and it is worse because
+preventing this is its stated purpose:
+
+- `default_inputs()` hardcodes `"camera_path": "world/camera_rig_path.json"` —
+  the literal-default pattern **its own docstring (lines 52–64) diagnoses for
+  the `world` role and fixes there** via `shipping_world.declared_shipping_path()`,
+  which raises rather than defaulting. The camera never got the same treatment.
+- It is a **recorder, not a comparator**. It hashes what it is handed. It has no
+  concept of which file is live, so a faithful sha256 of the wrong file is a
+  clean stamp.
+- `declared_version()` returns `frames=2978` for the stale file and `frames=2978`
+  for the live one — and `None` for `film17_path.json`, because the check is
+  `path.endswith("camera_rig_path.json")`. **The human-readable label reads the
+  same stale or fresh, and is blank for the correct file.**
+
+---
+
+## R2-1097 — ROOT CAUSE: THE PATH FILE'S NAME IS A SIDE EFFECT OF AN ARGUMENT
+
+Not a checked-in copy, and not a rename that left an orphan by accident. The
+artefact has **no owner by construction**.
+
+`anim/build_camera_rig.py:1585`:
+
+```python
+base = os.path.splitext(out)[0]
+json.dump({"frames": total_frames, "path": path}, open(base + "_path.json", "w"))
+```
+
+The path file is named after `--out`. There is no canonical output name, so
+`world/camera_rig_path.json` exists **only** when the rig is built standalone
+with `--out world/camera_rig.blend`. That last happened in
+`render/world/assembly/r2/v125/build_film16.sh:53`, **2026-08-04 15:49** — the
+exact mtime of the stale file. There is no v126 script.
+
+Since then the pipeline moved to `tools/build_film_scene.py`, which calls
+`build_camera_rig.main()` with its own `--out render/filmNN.blend`
+(**already documented as R2-840e**), producing `render/film17_path.json`.
+Separately `work/r2840/chain2.sh` built `--out world/R2829_camera_rig.blend`,
+producing `world/R2829_camera_rig_path.json` — **byte-identical to
+`film17_path.json`**, so a correct copy has been sitting in `world/` since
+Aug 7 04:49 under a defect-prefixed name while the canonical-looking file next
+to it stayed three days stale.
+
+So: **a build step that stopped running, because the rig's output name follows an
+argument and the pipeline's argument moved.** Nothing rewrote
+`world/camera_rig_path.json` because nothing was ever responsible for it.
+
+**FOR THE RIG OWNER — REPORTED, NOT CHANGED** (`anim/` is held by another agent).
+The fix is *not* to have `build_camera_rig.py` also write a canonical copy —
+that manufactures a second copy of a fact, which is the defect
+`shipping_world.py` exists to kill. The fix is:
+
+1. **Delete `world/camera_rig_path.json`.** It is an orphan with no writer. It
+   cannot be maintained; it can only go stale again. Do this *after* the readers
+   are migrated, or 43 tools crash at once.
+2. Have `build_camera_rig.py` **print the absolute path it wrote** as a
+   `>> STAGE RESULT` line, so a build log records which artefact this run owns.
+3. Route every reader through `tools/live_campath.load()` (R2-1098).
+
+---
+
+## R2-1098 — `tools/live_campath.py`: THE WRONG CAMERA IS UNAVAILABLE, NOT MERELY DETECTABLE
+
+A stamp that 43 callers must remember to check will be forgotten by the 44th, so
+this offers no stamp to check. It offers the camera, and **`load()` takes no path
+argument.** There is no parameter through which the wrong file can be supplied.
+
+- `docs/LIVE-CAMERA.md` is the single declaration, modelled exactly on
+  `render/world/assembly/r2/SHIPPING.md` and parsed by exactly one module,
+  modelled on `tools/shipping_world.py`.
+- **Two keys, not one.** The declaration pins the filename *and* the sha256.
+  Both are checked on every load, so **a rebuild that changes the bytes without
+  updating the declaration raises in every reader** rather than being adopted
+  silently. That is the failure mode that will actually recur.
+- `KNOWN_STALE` recognises the R2-1007 file **by content**, so renaming it does
+  not launder it, and the error names the defect and the divergence.
+- A genuine A/B must call `load_explicit(path, why=...)` with non-empty prose.
+  Every deliberate non-live read is then `grep`-able and prints itself at run time.
+- stdlib only, no `bpy` — the same constraint `shipping_world` carries, so tools
+  under the plain interpreter and tools inside Blender can share one parser
+  instead of one of them keeping a copy.
+
+### Proof that it fails — `python3 tools/live_campath.py --selftest`
+
+```
+>> SELFTEST live_campath
+  resolves the declared live camera                        ok    render/film17_path.json
+  loads it                                                 ok    2978 frames
+  byframe keys by frame number                             ok    f1..f2978
+  MUST FAIL: the real stale world/camera_rig_path.json     ok    raised, says 'KNOWN-STALE'
+    ...and it is recognised by CONTENT, not by filename    ok    sha d9c8f5c54ccd1ad8
+  MUST FAIL: the same bytes under an innocent filename     ok    raised, says 'KNOWN-STALE'
+  MUST FAIL: declared sha256 disagrees with the file       ok    raised, says 'changed on disk'
+  MUST FAIL: a declaration that pins no sha256             ok    raised, says 'pins no sha256'
+  MUST FAIL: an undeclared camera                          ok    raised, says 'undeclared camera'
+  MUST FAIL: no declaration file at all                    ok    raised, says 'does not exist'
+  MUST FAIL: load_explicit with an empty why               ok    raised, says 'must state its reason'
+  load_explicit with a reason returns the file             ok    2978 frames
+
+STAGE RESULT: LIVE_CAMPATH_OK live_campath_selftest
+```
+
+**The first negative control feeds it `world/camera_rig_path.json` itself — the
+actual file that caused R2-1007, on disk, as it is now** — not a synthetic
+stand-in. The guard is not vacuous: it refuses the real offender, refuses it
+under a disguised filename, and refuses an undeclared rebuild.
+
+**Stated limit, so nobody over-trusts it:** `KNOWN_STALE` is a denylist and only
+catches files already named in it. It is the belt. The braces — and the load-
+bearing mechanism — are that `load()` has no path parameter and that the
+declaration's sha256 is verified on every call.
+
+### Migration owed
+
+`live_campath.py` is in place and proven; **no reader has been migrated yet.**
+43 call sites across files held by several agents is not a change to make while
+a beat-1 proxy is in flight and 13 files are modified elsewhere. Priority order:
+
+1. `tools/r2791_beat1_focus.py` (R2-1092) — beat-1 owner, live
+2. `audio/scene.py:325` (R2-1093) — audio owner, ships
+3. `tools/r2366_surface_visibility.py` — then re-run and re-judge **R2-369**
+4. `tools/r2731_lens_retune_rebase.py:49` — before it is ever applied
+5. `tools/input_stamp.py:66` — `default_inputs()`, and teach `declared_version()`
+   to report a sha prefix instead of `frames=2978`
+6. `tools/horizon_gate.py` — make `_stale_default_warning()` set the exit code
+7. the remaining 36, which are unaffected and can migrate at leisure
+
+Nothing was copied over `world/camera_rig_path.json`. That would fix today and
+guarantee the repeat, and it would silently change the input of 43 tools while
+other agents are mid-run.
+
+## R2-1051 — THE INSTRUMENTS WERE NOT BROKEN. THEY FIRED, IN PROSE, INTO LOGS NOTHING GATED ON
+
+I framed the stale-camera audit as this project's commonest defect: broken
+instruments. **The audit inverted it, and the inversion is the more useful
+finding.**
+
+**`horizon_gate.py` has been printing an accurate description of this defect on
+every single run for three days.** It names both files. It tells the reader to
+re-assemble. It is a `print()` at line 698 that **touches neither the verdict nor
+the exit code.**
+
+And `r2791`'s own `same_gen` control **detected the staleness** - a 4.612 m
+offset - **SKIPped**, and the stage then printed `OK`.
+
+> The instruments weren't broken. They fired, in prose, into logs nothing gated
+> on.
+
+**A detection that does not reach an exit code is a rumour.** Three days of
+correct diagnosis, printed to stdout, read by nobody, changing nothing. This is
+worse than a broken gate in one specific way: a broken gate can be found by
+testing it, whereas a gate that *works* and whose output is ignored **passes
+every test you could write for it.** And `SKIP` is the specific poison - it
+reads as "not applicable" when it meant "I cannot answer because the input is
+wrong."
+
+## R2-1052 — the beat-1 focus fix was computed against the wrong camera, and it is in flight
+
+**Correction to my own brief.** I told the audit that
+`tools/r2791_beat1_focus.py` reads `film17_path.json` **"correctly"** and must
+not be harmonised onto the stale file. **It reads the stale one.** It defaults to
+`render/film16_path.json` (line 621) and hardcodes it again at line 574 for
+frames 1-792. **`film16` is the stale lineage.** The only reader of
+`film17_path.json` in the whole tree is `tools/r2971_pont_camera_rebase.py`.
+
+So the position is the reverse of what I stated to the client: **the beat-1
+focus fix under adjudication was derived from a camera the film does not have**,
+and the 792-frame proxy render currently in flight carries it.
+
+**What survives and what does not.** The client gave three beat-1 notes. Pacing
+and framing were **beat-sheet** changes and are unaffected - the proxy still
+answers those. **The focus verdict from that render is not trustworthy**, because
+focus was tracked per frame against the wrong camera. The render is worth having
+and worth watching; one of its three answers is void.
+
+**Not cancelled.** It is hours in, ~$3.37, and answers two of three notes.
+Cancelling to re-derive one of them costs more than it saves.
+
+**And R2-1007's divergence was itself incomplete.** Position was right - 768
+frames, 9.866 m at f545 - but it omitted **focal length: 681 frames differ,
+worst 23.0 mm, 58 mm against 35 mm at f223**, p90 22.7 mm. **That is the more
+damaging half for anything measuring framing or depth of field**, which is
+precisely what the focus fix measures. Orientation is clean: 1,048 frames at
+<=0.180 deg, which is quaternion rounding.
+
+## R2-1053 — 43 readers, 4 affected: the calibrated answer, and one of them is the mix
+
+**The exposure is small and I want it stated plainly rather than dramatically.**
+The two curves **converge to exactly zero at f754** - beat 1's last camera key -
+and beat 2 onward was never re-authored, so **nothing measured at f>=793 can be
+touched.** Of 43 readers, 36 evaluate at f2575/f2978/f2000/f945 or over
+hardcoded beat-4/5/6 ranges, and 3 more write junk beat-1 rows but publish only
+beat-4/5 figures.
+
+**Affected: 4.** `r2791_beat1_focus.py` (critical), `audio/scene.py` (high),
+`r2366_surface_visibility.py` (**R2-369 now in doubt** - it is the one positive
+claim *about* beat 1 in the set), `r2731_lens_retune_rebase.py`.
+
+**The audio one is a real shipping defect, not a measurement error.**
+`master.py:117` builds `CameraPath()` with no argument, and beat 1's assembly
+layer is positional. Level error p50 **2.19 dB**, max **11.69 dB** - and the
+decisive figure, **binaural azimuth max 178.1 deg, with the source panned to the
+WRONG EAR on 318 of 792 frames.** Beats 2-6 untouched.
+
+**Both files I named as load-bearing survive, measured rather than assumed.**
+`build_surface.py`'s four film poses are all >=f1226; re-run against film17 the
+weighted percentiles are **10.8 / 20.8 / 108.1 - unchanged to every published
+digit**, with only 3 of 1,888 qualifying frames in the divergent range carrying
+0.01% of the cover weight. `seam_gate.py`'s f738-832 window straddles the
+boundary but the curves have already converged: max divergence 0.171 m,
+**identical output to four decimals both ways.**
+
+## R2-1054 — the artefact's name is a side effect of an argument, so nothing owns it
+
+Not a checked-in copy and not a rename. `build_camera_rig.py:1585` names its
+output `splitext(--out)[0] + "_path.json"`. **`world/camera_rig_path.json`
+therefore exists only when the rig runs standalone with
+`--out world/camera_rig.blend`** - last done in `v125/build_film16.sh` at
+**Aug 4 15:49, the stale file's exact mtime.** The pipeline then moved to
+`build_film_scene.py`, which passes its own `--out`, so the old artefact stopped
+being written and **no build step is responsible for it.**
+
+Meanwhile `world/R2829_camera_rig_path.json` has been byte-identical to film17
+since Aug 7 04:49 - **the correct file has been sitting beside the stale one all
+along, under a defect-prefixed name nobody would think to load.**
+
+**The guard: `tools/live_campath.py` + `docs/LIVE-CAMERA.md`**, modelled on the
+`shipping_world.py`/`SHIPPING.md` pair this project already uses for the world
+and had never applied to the camera. **`load()` takes no path argument** - the
+wrong file is not detectable, it is **unreachable**. The declaration pins
+filename *and* sha256, both checked on every load, so an undeclared rebuild
+fails every reader at once.
+
+**Seven negative controls fire**, including the real
+`world/camera_rig_path.json` as it currently sits on disk, and the same bytes
+under a disguised filename. Stated limit, in the author's words: `KNOWN_STALE`
+is a denylist and only the belt - **the braces are the missing parameter and the
+hash check.**
+
+**No readers migrated.** 43 call sites across files several agents hold, with a
+proxy render in flight, is not a change to make unannounced; the priority order
+is staged instead. **Nothing was copied over the stale file.** Cost: **$0** - all
+of it local CPU geometry.
+
+## R2-1055 — film17's rig is itself stale against the beat sheet
+
+Re-pointed at `film17_path.json`, `r2791`'s `same_gen` control **still SKIPs, at
+2.597 m.** The beat sheet has been **re-authored since film17 was built.**
+
+So "use the live path" is not the end of it: **the live path is itself behind the
+document that defines it.** The rig needs rebuilding from the current sheet
+before that control can be read at all - and until then, `same_gen` cannot
+distinguish "the rig is stale" from "the rig is fine", because it SKIPs either
+way.
