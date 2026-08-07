@@ -30420,3 +30420,215 @@ and nothing about paint, ceiling or road surface can be concluded from them.
 **Provenance is not one question, it is one question per claim.** The same frame
 is current evidence for one thing and stale evidence for another, and "is this
 render up to date" has no answer until you say up to date *for what*.
+
+## R2-840m — THE DRIVER APPEARANCE IS CLEAN ON PIXELS, NOT JUST ON THE GATE
+
+`place_driver`'s gate said the figure is off screen on all 17 frames of its
+window. That is a projection of a 12-point hull, so it is a claim about a model.
+Checked against the rendered frames instead — adjacent-frame RMSE across the
+appearance, where `DRV_*` become visible AT f400:
+
+```
+baseline adjacent-frame RMSE, f300-361      0.070 .. 0.167
+
+f396->f397  0.1040
+f397->f398  0.1015
+f398->f399  0.1005
+f399->f400  0.0840   <-- the driver becomes visible on this step
+f400->f401  0.0887
+f401->f402  0.0996
+```
+
+**The appearance frame is the SMALLEST step in its own window** and sits well
+inside the baseline. A figure materialising in shot would spike; this dips,
+because the step is dominated by camera motion and the driver contributes
+nothing. R2-840's defect is closed on the picture.
+
+Worth stating why this check is not redundant with the gate: the gate and the
+render share no code. The gate projects a 12-point hull through a camera path
+JSON; this measures what Cycles actually drew. **An agreeing independent
+instrument is the only thing that upgrades a model's claim into a fact** — and
+the original defect existed precisely because a gate agreed with itself against
+the wrong camera for two generations.
+
+Method is the ladder's own (`docs/RENDER-LADDER.md`): *"diff adjacent frames to
+surface temporal defects a human eye smooths over."*
+
+## R2-961 — the brief's bit-identity, delivered: the residual is two mix-bus scalars, and both are named
+
+With R2-956..960 fixed, A (lap-down off) and B (lap-down on) rendered from the
+same tree:
+
+    frames 1-2714   worst |A - B|   5.800e-03   (-44.7 dBFS)
+                    median          1.641e-03
+                    frame 1         3.234e-04
+    frames 2715-2978 worst          3.384e-01   at frame 2732
+
+That residual is not a leak. It is **exactly two whole-film gain-staging
+scalars**, and `master_report.json` states both:
+
+1. **One bus trim moved.** Thirteen of the fourteen buses are identical to
+   1e-9 dB. The fourteenth is `crowd`: A -8.6427 dB, B -8.8000 dB, delta
+   -0.1573 dB. `master.py` sets each trim from the bus's PEAK 3-SECOND
+   short-term loudness, and in B the car crosses the line 50 m from the second
+   grandstand (excitement 0.915) and then decelerates beside it instead of
+   vanishing at 323 km/h, so the crowd bus's loudest three seconds now lie IN
+   the ending. The bus is therefore 0.157 dB quieter across all 2,978 frames.
+2. **One master gain moved.** The -14 LUFS normalisation lands on a slightly
+   different integrated loudness: A -14.033, B -14.019 LUFS, a +0.0255 dB
+   best-fit difference over frames 1-2714.
+
+0.157 dB on a bus targeted at -27 LUFS, plus 0.026 dB overall. Both are MIX
+decisions that `TARGET_LUFS_S` exists to make, both are reported, and neither is
+a rebuilt beat. **The claim that CAN be made exactly is made exactly, at the
+source**, by `tools/audio_prefix_identity.py`: every world-clock track — speed,
+accel_long, accel_lat, slip, wheel_w, heading, s_m, track_s, pos, rpm, gear, the
+dry engine and the dry tyre bed — is bit-identical, `==`, for all 72.583 s of
+world time before the lift.
+
+FOR THE RECORD, because R2-951 makes the shipped file a red herring: the same
+comparison of the SHIPPED 2026-08-02 master against a fresh A-side of this tree
+gives worst |delta| 1.378 and a -2.83 dB best-fit gain, first differing frame 1.
+It is a different film. Comparing against it would have measured R2-731..760's
+camera move, not the ending.
+
+---
+
+## R2-962 — what the ending actually does, measured at the ear
+
+Not the synthesiser's intent — the finished 48 kHz master, A against B.
+
+**1. The tone stops.** The firing fundamental that has run for the whole flying
+lap sits at ~550 Hz at the line (12,876 rpm in 8th, times a 0.861 recession
+Doppler). In the control it runs unbroken to the last frame, drifting slowly
+down: a held tone that only gets quieter. In B it **terminates at film t 113.6**,
+half a second after the lift, and does not come back for six seconds. On the
+brakes the throttle is shut, `fuel = clip(thr/0.06)` goes to zero and the
+injectors cut, so there is no combustion and no firing tone — only pumping,
+unburnt-charge pops and compressor surge, which are broadband. Measured across
+frames 2715-2800: the 300-700 Hz band is **-2.37 dB** against the control while
+every other band is within 0.6 dB. Visible in
+`audio/out/ab/brake/ending_spectrograms.png` as the 550 Hz line simply ending.
+
+Stopping a tone that has been running for seventy seconds is the loudest thing
+that can happen to it. That is the deceleration, and it is the largest single
+change in the closing beat.
+
+**2. Seven downshifts.** `engine.synth` reports 24 downshifts in the control and
+**31** in the lap-down: 8th -> 1st at world t 72.941, 73.390, 73.872, 74.373,
+74.879, 75.373, 75.843, a 0.48 s cadence. Gear is chosen by the same rule as the
+whole film (the lowest gear under the 14,400 rpm shift point), so this is the
+gearbox solving the new speed track and not an ending-shaped special case.
+
+**3. The idle comes back, and it is a real line.** Below 8.55 m/s the clutch
+opens (R2-954), the throttle floors at idle and the injectors relight. Measured
+on the last 1.75 s (frames 2937-2978), B minus A, 4 Hz smoothing:
+
+        216.0 Hz   +9.06 dB      <- RPM_IDLE/60*3 = 215.0 Hz, the firing fundamental
+        430   Hz   +2.95 dB         2nd harmonic
+        645   Hz   +1.94 dB         3rd
+        860   Hz   +3.07 dB         4th
+        mean over 150-400 Hz  -0.62 dB   (i.e. the lift is a LINE, not a level change)
+
+**4. The Doppler goes to zero, and it is not faded to zero — it arrives there.**
+From the retarded-time solve on the shipped geometry, the received/emitted ratio
+runs 0.861 at the line (the car receding from a climbing camera, 2.6 semitones
+down) and reaches **|ratio - 1| < 4.2e-05 over the last 1.75 s** — 0.0007 of a
+semitone. The 216.0 Hz line is measured at 216.0 Hz because both the car and the
+camera have stopped, not because anything was switched off.
+
+---
+
+## R2-963 — the brake is acknowledged through the powertrain, and no brake layer was added
+
+DECISION, with the reasons in the order they actually weighed.
+
+**It is not a limit stop.** `carpath.py`'s own header says so: peak 3.60 g, and
+"an F1 car can do 5-6 g there, so this is a firm lap-down brake and not a limit
+stop". The lap the film has already shown pulls **4.89 g laterally** — more than
+this brake pulls longitudinally. A sub-limit brake on slicks does not lock, does
+not slide and does not squeal, so there is no stick-slip event to render. The
+existing lateral scrub layer, which triggers above 1.6 g, is the model's own
+statement of where tyre noise starts being a discrete sound, and a straight-line
+brake at 3.60 g does not produce one.
+
+**A brake-disc layer would have been an invented number.** Everything in
+`audio/` derives its level from something the project already declares: pipe
+lengths, plate moduli, a vehicle model, an ISO 9613-1 curve. There is no
+acoustic source term for carbon brakes anywhere in `circuit_spec.json`, so a disc
+layer's level would have been chosen by me and then defended by ear. That is the
+one thing this package has never done.
+
+**And the geometry says it would not have survived the mix.** Through the heavy
+braking the car is 96-241 m away and the camera is inside its own 40-60 m/s
+airstream, with `wind` the second-loudest bus in the film at -18 LUFS. Measured
+frame by frame over 2715-2800, the level difference between "braking" and "flat
+out" is already under 0.5 dB in five of six octave bands. A synthesized disc
+would have gone under a wind bed.
+
+**WHAT WAS RULED OUT BY THE BRIEF, stated so it is not mistaken for a
+preference.** A longitudinal tyre-slip layer is the one addition that could be
+derived honestly, as the twin of the existing lateral `scrub`. It cannot be added
+in this block: the telemetry's own braking zones reach **-36.76 m/s^2 = -3.75 g**,
+which is HARDER than the lap-down's 3.60 g, so any threshold low enough to fire
+on the ending fires on the lap and changes the film before f2714. It is left for
+a block that is allowed to re-render beats 1-5.
+
+---
+
+## R2-964 — the last 1.75 s: a distant idle under open air, not silence and not a tail
+
+The car is stationary from f2936. The camera is stationary too, 140 m up and
+**342.9 m** away, `insideness` = 0.000. What is left:
+
+    total programme, frames 2937-2978      -27.66 dBFS RMS
+    silent 1 s windows below -80 dBFS      0        (level_gate requires 0)
+    B minus A, 120-300 Hz                  +0.94 dB
+    B minus A, every other octave          +0.05 .. +0.10 dB
+
+So the last 1.75 s is the open-air bed and the distant grandstand babble, with an
+idling V6 just showing through them as a 216.0 Hz line 9 dB over the bed. That is
+what 342.9 m of air does to an idling engine, and the mix says so rather than
+deciding it.
+
+REJECTED: **silence.** A stopped F1 car is not silent, and 1.75 s of digital
+silence at the end of a 124 s film reads as a dropout, not as an ending —
+`level_gate` would fail it outright.
+
+REJECTED: **a reverb tail.** There is no room. The showroom is 490 m behind the
+car, the camera is 140 m up in the open, and `layers.insideness` returns 0.000 at
+f2978. A tail would have been the one thing in this package invented for effect.
+
+KEPT, and it was not designed — it fell out of the geometry: the car crosses the
+line **50 m** from the second grandstand, whose excitement peaks at 0.915 and
+then decays over the 0.8 s crowd lag as the car brakes away from it. The film's
+last audible gesture other than the idle is a grandstand subsiding.
+
+---
+
+## R2-965 — gates, and what shipped
+
+`.venv/bin/python -m audio.verify --wav audio/out/master.wav`
+
+| gate | result |
+|---|---|
+| levels | PASS — -14.02 LUFS, -1.10 dBTP, 0 clipped, **0 silent 1 s windows**, short-term range 20.39 dB |
+| seam | PASS — worst d3 local percentile **80.57** (threshold 99.9); the beat-6 boundary at f2715 is **76.10**, down from 87.70 in the shipped master, which is R2-953's continuous `accel_long` showing up on the one gate that looks at that frame |
+| seam controls | both the 977-sample splice and the 3 dB step correctly FAIL |
+| external_assets | PASS — 0 render-path hits, 0 package hits |
+| pitch | PASS — corr 0.99754, 98.64 % within 50 cents |
+| doppler | PASS — null control 2.5e-10 semitones |
+| ffmpeg ebur128 (independent) | -14.0 LUFS, -1.1 dBTP true peak |
+
+Shipped: `audio/out/master.wav` (= `audio/out/ab/master_B_lapdown.wav`),
+`audio/out/master_report.json`, `audio/out/verify_report.json`.
+
+**ONE DEFECT FOUND AND NOT FIXED, because fixing it changes beats 1-5.**
+`engine.synth`'s downshift is documented as "a throttle blip that pulls the revs
+UP to match the lower gear", and the implementation adds 900 rpm to `rpm_eff` but
+never opens `thr`. So `fuel` stays at zero through the blip and the revs rise
+with the injectors still cut: a rev-match with no combustion behind it. It
+affects all 31 downshifts, 24 of which are before f2714. Left for the next block,
+with the ending's seven as the reason it is worth doing.
+
+---

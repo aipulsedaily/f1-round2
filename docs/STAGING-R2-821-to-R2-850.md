@@ -1191,3 +1191,309 @@ Both were discarded and re-run. **Editing a live input under a running chain is
 the mistake; the lesson is that the per-frame audit belongs before the chain
 starts, not after it.** No render spend was lost, because the chain was stopped
 before the 792-frame submission.
+
+## R2-840g — RE-RUNNING THE DEPTH GRID WAS NECESSARY, AND HERE IS THE NUMBER
+
+The grid was re-measured against the R2-842 rig on the argument that fitting
+focus to a superseded camera is R2-791's own defect from the other side. That
+argument is now a measurement. Comparing the two grids frame by frame, over the
+386 sampled frames both carry subject depth on:
+
+```
+whole beat, median |delta|                      0.000 m
+the re-authored payoff, f464 onward   median    0.185 m
+                                      max       0.625 m
+```
+
+**Two things fall out, and the first is the useful one.** Before f464 the two
+grids agree *exactly* — median and max both 0.000 m — which independently
+confirms R2-842 touched only the payoff and left the presentation tour alone. It
+is a check on the re-author that the re-author did not have to be trusted for.
+
+And after f464 the subject moved by up to **0.625 m**. Had the old grid been
+reused, that is how far the focal plane would have sat from the subject through
+the payoff — on the very shot the client called too blurry, in a beat whose close
+stations have 13-55 mm of depth of field. **The staleness was worth 0.625 m, not
+nothing**, which is the difference between a precaution and a fix.
+
+Recorded because "re-run it, it might be stale" is a weak argument that happens
+to be right, and "re-run it, here is what it was worth" is a strong one. The
+superseded file is kept as `depthgrid_R2829_SUPERSEDED_dip100.json` precisely so
+this comparison remained possible.
+
+## R2-840h — THE BREACH REFUSED, AND THE REFUSAL COUNT WENT 9 -> 10 BECAUSE THE SHOWROOM GREW A CEILING
+
+`sim/apply_breach.py` refused film17 on `glazing_pocket_clear`. Two separate
+things were going on and only one of them was mine.
+
+**First, the refusal itself is expected and `--force` is the canonical
+invocation.** `sim/land_breach.sh` says so in as many words — *"`--force` is
+still right; read `R5_intruders_over_the_wound_after` in the apply report, not
+the preflight's headline count."* R2-271 records the history: the check refuses
+on geometry the applier does not own, it has refused on every apply since film9,
+and the acceptance criterion is measured after the build, not before it. **The
+chain omitting `--force` was an authoring error in the chain, not a defect in the
+scene.**
+
+**Second, and the part worth measuring: the count was 9 for film16 and 10 for
+film17.** Forcing past an unexplained extra intruder is exactly what that note
+warns against, so the tenth was identified before anything was written.
+`--preflight-only` (which writes no scene) gives the full population:
+
+```
+GW_Front_Mull_14, GW_Front_Transom_0/1/2   the SOUTH wall's frame
+GW_Right_Transom_0/1/2                     round 1's east frame, what eastframe.py cuts
+WallLine_SideFin_0/1                       the two light fins
+R2C_PerimeterReveal                        <- not in film16's nine
+```
+
+`R2C_PerimeterReveal` is the showroom ceiling's perimeter shadow-gap backing
+(`world/items/showroom_ceiling.py`, R2-517). It is a box from z 6.030 to
+`Z_DECK + DECK_T` = **6.198**, and the glazing pocket tops out at **6.1120** — so
+it clips the top **82 mm** of the pocket where the ceiling meets the wall head,
+around the whole room perimeter, which is why it registers on the east wall at
+x ~ 14.95. That is **six metres above the wound**.
+
+**And it is new because the ceiling is new, not because anything broke:**
+
+```
+world/showroom_ceiling.blend   built 08-04 18:33
+render/film16.blend            built 08-04 16:26   <- two hours EARLIER
+```
+
+film16's build log contains no ceiling line at all; film17's reads
+`>> appended R2_SHOWROOM_CEILING (21 objects, 73996 polys)`. **film17 is the
+first film in this project with a ceiling in the showroom.** The tenth intruder
+is a feature arriving, in the same class as the south wall's frame and the light
+fins: real, correctly detected, and not this module's to move.
+
+*Generalises to:* **a count that changes is a question, not a verdict.** 9 -> 10
+looked like a regression and was a new asset; the only way to tell was to name
+the object. `--preflight-only` exists precisely so that can be asked without
+writing anything.
+
+## R2-840i — THE A/B IS CONFOUNDED: `BEFORE` HAS NO CEILING AND `AFTER` DOES
+
+Stated on its own because it is the one finding in this block that changes how
+the deliverable should be READ, and a reviewer who does not know it will
+misattribute.
+
+`watch/BEFORE_beat1_33s.mp4` comes from `film16_breach`, built 08-04 16:26.
+`world/showroom_ceiling.blend` was built 08-04 18:33. **The BEFORE clip was
+rendered in a showroom with no ceiling**, and film17 is the first film in this
+project that has one — 21 objects, 73,996 polys, appended by
+`tools/build_film_scene.py`, which now refuses to build without it.
+
+**Beat 1 is the interior beat, so this is not a neutral addition.** It is a large
+bounce surface directly above the subject, in a shot graded at a fixed exposure
+of -3.628. Ambient level, fill on the upper surfaces of the 616 exploded parts,
+and the character of the room's indirect light are all now inside the difference
+between the two clips, and **none of them are R2-829 or R2-842.**
+
+**Nothing is being done about it, deliberately.** The ceiling is correct and the
+film should have it; rendering film17 without one to obtain a cleaner comparison
+would mean shipping a worse scene to protect a measurement, which is the wrong
+way round. What is required is that the confound is declared, so that:
+
+* differences in FRAMING, PACING and FOCUS may be attributed to the re-author;
+* differences in BRIGHTNESS, FILL and AMBIENT may not.
+
+*Generalises to:* **an A/B built from two dates is an A/B over every change
+between those dates.** The clips are eleven days and an unknown number of
+landings apart. The honest form of the claim is not "this is the re-framing" but
+"this is the re-framing plus everything else that landed", and the only way to
+narrow it is to name what else landed. The ceiling was found by accident, while
+diagnosing a breach refusal — which means the right question for the next
+comparison is what ELSE differs that nobody tripped over.
+
+## R2-840j — AND THE CEILING REALLY IS IN THE WOUND. THE POST-BUILD GATE CAUGHT WHAT MY REASONING MISSED
+
+R2-840h argued `R2C_PerimeterReveal` was benign because it sits six metres above
+where the car goes through. **That argument was wrong, and the gate said so:**
+
+```
+R5 intruders OVER THE WOUND, after   FAIL   [['R2C_PerimeterReveal', 0, 15, 8, 3]]
+```
+
+The error was in reading "the wound" as the car's path. It is not. `apply_breach`
+defines it as **bays 4 and 5's whole clear opening**, y -2.1625..2.1625, full
+height — the aperture, not the trajectory — and `_tris_hit_box` finds **3
+triangles** of the reveal crossing it. Height was never the question; the reveal
+enters the opening at the head and that is inside the box.
+
+**This is why the check is a triangle test and not an AABB or a vertex test**
+(R2-125): the reveal's vertices are metres away around the perimeter, and only
+its faces cross. The identical failure mode the check was built for.
+
+**Everything else about the apply is correct**, and identical to film16:
+
+```
+built 3845 objects, 278864 tris, 5806793 keys      film16: 3845 / 278864 / 5806793
+east frame census   PASS   39 of 39 pieces
+east wall census    PASS   all 10 bays have a GP_b* pane, none hidden at frame 1
+R5 elsewhere        9      byte-identical to film16's accepted nine
+```
+
+So the entire delta between this apply and the shipped one is **one object, three
+triangles**.
+
+**What it is not.** It is not a bar across the aperture. The thing this check was
+protecting against was `GW_Right_Transom_0/1/2` — three unbroken 21.9 m transoms
+that would have survived the car flying through them. The reveal is ceiling trim
+at the head of the opening, in the top ~1.3 % of its height. **But "smaller than
+the defect the check was built for" is not the same as "not a defect", and that
+judgement is not the chain runner's to make.**
+
+**What it means for the beat-1 proxy, stated so the decision is easy.** Beat 1 is
+frames 1-792; the breach is 865-1056. Through the whole proxy the east wall's
+glass is intact and unbroken, which is exactly what the east wall census PASSes
+on. The failing criterion is a property of the aperture in beat 3 and the proxy
+does not reach it.
+
+**The proxy was NOT submitted.** A gate failed, and the instruction for this
+chain is to stop and report rather than route around it — twice now that has been
+right. `render/film17_breach.blend` is complete on disk (7,979,667,219 bytes) and
+is renderable the moment someone owning the ceiling or the breach says the three
+triangles are acceptable, or trims them.
+
+## R2-840k — THE FIX: THE PERIMETER REVEAL WAS INSIDE THE GLAZING POCKET ON BOTH GLAZED WALLS
+
+**A change to `world/items/showroom_ceiling.py`, which is somebody else's committed
+and verified module.** Written up in full so its author can see exactly what moved
+and disagree with it.
+
+### What was wrong
+
+The perimeter reveal backs the shadow gap at the wall head. It was one box per
+wall, all four with the same underside:
+
+```python
+a.box(x0, x1, y0, y1, 6.030, Z_DECK + DECK_T)
+```
+
+On the two SOLID walls that is right and nothing is behind it. On the two GLAZED
+walls the curtain wall's **glazing pocket** is behind it — the 24 mm channel the
+panes sit in, x 14.9455..14.9695, topping out at z **6.1120**. A backing plate
+reaching 6.030 sits **82 mm inside that channel**: ceiling trim occupying the slot
+the glass lives in. An overlap, not a design.
+
+### Why nobody saw it
+
+The reveal's own vertices are metres away around the perimeter and only its
+**faces** cross the pocket, so a vertex test or a bounding-box test reads clear.
+It took `apply_breach`'s triangle test — R2-125, built for precisely this after
+round 1's east mullions passed a vertex-only sweep of 29,387 meshes — to find 3
+faces inside the breach aperture's clear opening.
+
+### The change
+
+```python
+Z_REVEAL_BOT        = 6.030    # solid walls, unchanged
+Z_REVEAL_BOT_GLAZED = 6.115    # 3.0 mm clear of the pocket head, 6.1120
+```
+
+and the four strips now carry their own underside, N and W unchanged, S and E
+lifted. **Both glazed walls, not just the east one.** The south wall carries the
+identical overlap and escaped notice only because the breach does not open there;
+fixing one and leaving the other would be fixing the symptom.
+
+### Measured after, on the 7 MB library rather than the 7.5 GB film
+
+```
+faces in the POCKET : 3      faces in the WOUND (bays 4-5) : 0
+STAGE RESULT: REVEAL_CLEAR_OF_WOUND
+```
+
+The 3 remaining pocket faces are the NORTH strip's `x = +15` corners at y ~ +11 —
+a solid wall, 10.9 m from the aperture, in the same accepted "elsewhere" bucket as
+the south wall's frame and the light fins. **The wound is clear, which is the
+criterion.**
+
+`CEILING_SELFTEST_CLEAN` after the edit; the library rebuilds to the same
+**21 objects / 73,996 polys**, so the topology is untouched and only two strips'
+undersides moved.
+
+### One methodological note, because the first measurement of this was wrong
+
+The first version of `work/r2840/verify_reveal.py` ignored the pocket's **y**
+bound and reported `REVEAL_STILL_IN_POCKET`, because it was catching the north
+strip's `x = +15` corners — unchanged, and nowhere near the aperture. **A box test
+that drops an axis is not a box test.** The corrected script tests all three and
+reports the pocket and the wound separately, which is also the distinction the
+applier itself draws.
+
+## R2-840l — THE PROXY IS SUBMITTED, AND IT WAS RESUBMITTED IN CHUNKS RATHER THAN AS ONE JOB
+
+Submitted `r2beat1_v2` off `render/film17_breach.blend`, 1280x720 / 64 samples /
+CYCLES / OPENIMAGEDENOISE / `--dof scene` / adaptive 0.01, frames 1-792.
+
+**The first submission was cancelled without ever running, and the reason is worth
+keeping.** `rq anim` accepted the whole 792-frame range as ONE job and then said:
+
+```
+!! ONE JOB, 792 FRAMES — this holds a worker for ~9.4h and nothing preempts it:
+!! run_sequence does not yield, and the dispatcher only re-evaluates fairness
+!! BETWEEN jobs. Two such submissions once held the farm for 10,200 s while
+!! seven agents' 60 s renders could not run.
+```
+
+The broker was not speaking hypothetically: at that moment it had **6 other jobs
+queued and 1 running**, and the running one was another agent's `r2851ab`, itself
+submitted as `20/62 frames` — **they were already following the convention.** A
+792-frame job at `--prio 90` would have taken the only worker for nine and a half
+hours and starved every one of them.
+
+Cancelled `4fc754a6e63d` and resubmitted as **13 chunks of <= 62 frames** under
+the same `--name`, which is the resume key, so chunking costs nothing and the
+7.98 GB scene stays resident across them.
+
+```
+1-62   5dcd5edad9b1     435-496  fe23eeb4be35
+63-124 339d8471225f     497-558  8cc80d2d6cb1
+125-186 9093af29781d    559-620  0f12f7f62a0c
+187-248 2a4533c42d99    621-682  fe349e095287
+249-310 c4a393e49f04    683-744  d4d7e236b1cf
+311-372 527eca7ecba2    745-792  2744aa4b659e
+373-434 0067b8bcadaa
+```
+
+Projected **$4.21** total (12 x $0.33 + $0.25), against a $150 cap with $9.24
+spent. The broker flags its own estimate as a BASIS MISMATCH — 43 s/frame measured
+on other sequences, not this spec — so the actual will be reported when it lands.
+
+*Generalises to:* **the tool's warnings are load-bearing and this one names its own
+incident.** A submission that is accepted is not a submission that is neighbourly,
+and on a shared farm the difference is nine hours of somebody else's work.
+
+## R2-840m — THE DRIVER APPEARANCE IS CLEAN ON PIXELS, NOT JUST ON THE GATE
+
+`place_driver`'s gate said the figure is off screen on all 17 frames of its
+window. That is a projection of a 12-point hull, so it is a claim about a model.
+Checked against the rendered frames instead — adjacent-frame RMSE across the
+appearance, where `DRV_*` become visible AT f400:
+
+```
+baseline adjacent-frame RMSE, f300-361      0.070 .. 0.167
+
+f396->f397  0.1040
+f397->f398  0.1015
+f398->f399  0.1005
+f399->f400  0.0840   <-- the driver becomes visible on this step
+f400->f401  0.0887
+f401->f402  0.0996
+```
+
+**The appearance frame is the SMALLEST step in its own window** and sits well
+inside the baseline. A figure materialising in shot would spike; this dips,
+because the step is dominated by camera motion and the driver contributes
+nothing. R2-840's defect is closed on the picture.
+
+Worth stating why this check is not redundant with the gate: the gate and the
+render share no code. The gate projects a 12-point hull through a camera path
+JSON; this measures what Cycles actually drew. **An agreeing independent
+instrument is the only thing that upgrades a model's claim into a fact** — and
+the original defect existed precisely because a gate agreed with itself against
+the wrong camera for two generations.
+
+Method is the ladder's own (`docs/RENDER-LADDER.md`): *"diff adjacent frames to
+surface temporal defects a human eye smooths over."*

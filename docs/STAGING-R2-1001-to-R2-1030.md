@@ -397,10 +397,49 @@ the defect) needs the candidate keyed onto `ONER` and 6 frames rendered.
 **Cost: 6 frames x 3840x2160 x 512 samples ~= $0.17**, plus one `rq exec` to key
 the camera and save a candidate blend.
 
-**Not submitted, and the reason is contention rather than money.** `rq exec` has
-been at **12/12 slots for over an hour**, held by `r2943` (rekeying f2715-2978)
-and `r2851ab`; a third build that saves an 8 GB blend into that is a real risk of
-`StaleBundle` and of disturbing two agents mid-flight, for $0.17 of insurance.
+**Submitted and queued** as exec `2f6270108eb9` (agent `beat5cand`, prio 90,
+1 slot) plus two A-side frames f2175/f2200 at $0.06 so the comparison has real
+pairs. **It is blocked, and the reason is a farm constraint worth writing down
+because it applies to every rekey-then-render job on this box, not just this
+one.**
+
+Two things had to be discovered the hard way:
+
+**1. The broker cannot leave a modified blend on the worker.** `rq exec` writes
+to `tmp/`, and *"a `.blend` written into `tmp/` is deleted when the child exits"*;
+the only way out is `--output`, which fetches the file back. **Linked scenes --
+the obvious way to avoid moving 8 GB -- are refused at submit**, and rightly: an
+unresolved library renders empty and reports `done` (R2-351). So the route is
+8 GB **down** (~14 min at 8.5 MB/s) and 8 GB back **up** (~30 min at the 4-5 MB/s
+uplink) for six frames. `r2943` pays exactly this toll; it is the sanctioned
+pattern, not a mistake.
+
+**2. An 8 GB exec and an 8 GB render cannot share the box.** The exec server
+refused to start, and refused *well*:
+
+> `ExecMemoryShort: opening film17_breach.blend (7.98 GB) needs about 43.9 GB
+> free and the box has 6.0 GB -- the render worker is holding a scene of its own.
+> Waiting rather than being OOM-killed at 'Read blend', which would spend this
+> job's whole retry budget in ninety seconds and report it as a failed build.
+> [worker busy, attempt refunded]`
+
+That is the correct behaviour and the message is a model of its kind -- it names
+the resource, the holder, the counterfactual failure, and the fact that the
+attempt was refunded. **But the consequence is that a film-scale exec serialises
+behind the render queue**, and the queue currently holds **874 frames** of other
+agents' work (`r1ladder` 606 at prio 90, `r2943` 268 at prio 100) against this
+job's 0. At ~35 s/frame that is ~8.5 h before the worker is reliably idle,
+though the job should find a window whenever the worker swaps between
+`film17_breach.blend` and `film17_R2943.blend`.
+
+**Left queued rather than escalated.** It costs nothing while it waits, attempts
+are refunded, and it occupies 1 of 12 exec slots with 5 free. Raising its
+priority would push it in front of two agents' batches to buy a taste check.
+
+**What this means for anyone planning similar work:** budget a film-scale rekey
+at ~45 min of transfer *plus* a wait for the render queue to drain, not at the
+$0.17 of pixels it produces. The pixels are the cheap part by two orders of
+magnitude.
 
 **This is now the only thing between this candidate and shippable.** Every
 measurable axis has been checked and passes — occlusion 12 -> 0, acceleration
@@ -463,7 +502,142 @@ on the current blend under current farm conditions, and it is 20 % above the
 figure the master estimate rests on. Worth one clean, unloaded frame to separate
 the two before anyone budgets against either number.
 
-## R2-1009 — two corrections to the brief this task was given
+## R2-1009 — RETRACTED IN PART: beat 4's blackout was closed six hours before I reported it as unowned. I read a superseded ledger
+
+**I reported f1114-1116 as an unowned no-subject defect. It is neither unowned
+nor a defect any more, and the error was mine: I read
+`render/r2651/occlusion.json` without checking whether it was still the
+authority. It is not.**
+
+| ledger | written | beat 4 wholly hidden | beat 5 wholly hidden |
+|---|---|---|---|
+| `render/r2651/occlusion.json` | Aug 04 19:53 | **f1114, f1115, f1116** | 12 |
+| `render/r2731/occ_final_sabt.json` | Aug 07 04:11 | **(none)** | 12 |
+| `render/r2731/occ_final_dressing.json` | Aug 07 04:52 | **(none)** | 12 |
+| `render/r2731/occ_final_items.json` | Aug 07 05:05 | **(none)** | 12 |
+
+**R2-731 closed beat 4** by making the pit building's west end an annexe --
+`world/build_architecture.py:3589-3593`, `PB_ANNEXE_X = -218.0`,
+`PB_Z_ANNEXE = 9.40` -- under the heading its own source carries:
+*"R2-731 / R2-666. THE WEST END IS AN ANNEXE, AND THAT IS THE BEAT-4 FIX."*
+The commit is `2e13c12 "R2-731..760: ... and beat 4 is closed"`.
+
+Verified four ways, all on unchanged defaults before anything was touched:
+
+* `tools/r2731_pit_sightline.py --selftest` passes 15 controls, and two of them
+  say it directly: *"pre-R2-731: f1114-1116 fully blocked"* PASS **and**
+  *"shipped: f1105-1135 all clear, partials included"* PASS. The instrument
+  reproduces the defect in the old geometry and clears it in the new.
+* The same tool on shipped constants: **0 blocked of 31 frames**, f1105-1135,
+  every frame `0/58` sample points.
+* Three post-fix raycast ledgers against the built world, above.
+* Source is dated **Aug 07 04:11**; `film17.blend` **06:06** and
+  `film17_breach.blend` **06:09** were built after it.
+
+**So the correct filmwide figure is 12 frames, not 15, and they are all in
+beat 5.** The two-entry ledger has one entry.
+
+**Why my 720p evidence agreed with me and was still wrong.** `out2/seq/r2full`
+was rendered Aug 3-5, before the fix, and f1114-1117 in it do show a blackout --
+correctly, for the geometry of that day. A render is evidence about the build it
+came from and nothing else, and I treated it as evidence about the film. The
+frames are worth looking at once for what the defect used to be: the car would
+have been **420 px at 4K, 11.1 % of frame width, dead centre**, and there is
+nothing car-shaped anywhere in f1114-1117 -- a 141-px subject at 720p is not
+something the rung can miss.
+
+**The one gap left, stated rather than papered over.** Every check above is
+geometric or raycast; **there is no rendered frame of f1114-1116 from
+`film17_breach.blend`.** Source-landed-but-not-in-the-film is a failure this
+project has had before. One 4K frame at f1115 would close it for **$0.029**.
+Not queued -- see R2-1006 on the budget.
+
+### The consequence that is not mine to fix, and is urgent
+
+`tools/lap_shotscale.py`'s new occlusion column was built while this was being
+checked, and its reported figures are **exactly the stale ones**: *"filmwide
+there are exactly 15 frames where the car is in-frustum and wholly hidden: your
+f2180-2191, plus f1114-1116"*, and *"excluding hidden frames, beat 4's median
+falls, 9.45 % -> 9.15 %"*.
+
+If that column reads `render/r2651/occlusion.json`, **the instrument now has a
+closed defect baked into it permanently.** It will mark three good frames
+`OCCLUDED` for the rest of the project, and the 9.15 % adjustment subtracts
+frames that are no longer hidden -- so it reports beat 4 as *worse* than it is,
+in an instrument built specifically to stop a metric being confidently wrong in
+the flattering direction. Same failure, opposite sign.
+
+**The fix is one path.** The current authority is
+`render/r2731/occ_final_items.json` (Aug 07 05:05, the fullest of the three --
+sabt, then dressing, then items). Beat 5's 12 frames are identical in all four
+ledgers, so only beat 4 changes: **15 -> 12 frames, and beat 4's median stays
+9.45 %.** Worth a control that the ledger is not older than
+`world/build_architecture.py`, since that is the check that would have caught
+both of us.
+
+**A correction to something reported earlier in this block.** The R2-664 summary
+that reached this task listed `BR_FenceMesh_L03` blocking **f2976-2978, the
+film's last three frames**. Read from the source, those rows carry
+**`in_frame: false`** — and so do f2970-2975. That is not an occlusion; it is the
+car being outside the camera frustum entirely, measured against a car path that
+**`r2943` is actively rewriting** (its whole subject is where the car is for
+f2715-2978). So it is *owned*, it is not a hidden-behind-a-fence defect, and it
+should not be re-raised as one. Whoever reads the occlusion ledger next must
+filter on `in_frame` before counting rows; the two conditions look identical in a
+summary and are not the same defect.
+
+## R2-1010 — ADJACENT: `docs/RESUME-HERE.md` tells the next reader to make a change that was made, measured, and reverted
+
+`docs/RESUME-HERE.md:86` still says:
+
+> "``PONT_S 2410 -> 2460`` closes the beat-5 blackout."
+
+**It does the opposite.** R2-732 landed that move, re-measured it against the
+assembled world, and reverted it: 2410 gives 12 wholly-blocked frames, 2460 gives
+**25**. The recommending instrument (`tools/r2651_pont_sightline.py`) models the
+bridge as four horizontal bands with **no abutments or wing walls**, and each
+abutment is a 12.8 m tall, 5.2 m deep concrete block. Source today is
+`world/build_architecture.py:5739`, `PONT_S = 2410.0` — correctly reverted.
+
+`RESUME-HERE.md` is *the* pick-it-up document; it is what someone reads first
+after a break. A stale instruction there costs a reverted change being redone and
+a day finding out why it got worse. **Not edited from this file** — it is the
+main thread's document and two agents writing one file is the failure this
+project keeps logging — but it should be corrected by whoever owns it.
+
+## R2-1011 — ADJACENT: `lap_shotscale.py` is the instrument that raised #125 and it is blind to the defect that was actually there
+
+Not a complaint about the tool, which passes four controls including two that
+would catch a detector latching onto scenery. It is a gap in what it *reports*.
+
+Its docstring is honest — *"occlusion is not modelled: a car behind a barrier
+still measures full size"* — but the consequence is sharp: at **f2185 it reports
+4.66 % and at f2190 4.91 %**, among its most confident readings of the whole
+span, **for two frames containing no car at all**. Anyone reading the per-frame
+dump sees the subject at its healthiest exactly where it has vanished.
+
+The fix is cheap and does not require re-measuring anything: the blocked sets
+already exist in `render/r2651/occlusion.json`, so the tool could mark those
+frames `--` or `OCCLUDED` instead of a number, and its beat summary could report
+them separately. A metric that reads the same whether the car is there or not is
+the failure this project has hit most often, and this is one more instance of it
+— found only because a rendered frame was looked at.
+
+## R2-1012 — ADJACENT: the R2-591 lens retune is a live unlanded candidate whose rationale this task just weakened
+
+`render/film_path_R2581B_ramp_RETUNED_REBASED.json` exists, is rebased onto the
+live path, and was verified by R2-917. It was built to raise this span's shot
+scale 4.41 % -> 6.11 %. **R2-1001 says the size was not the defect**, so the case
+for spending a 142.5 mm peak focal and a re-check of DOF and the sheet's stale
+22-degree aim bound is now materially weaker than when it was authored.
+
+Somebody should **decide** it — land it or retire it — rather than leave it
+sitting. An unlanded candidate is not free: R2-737 caught the previous one being
+built on a superseded base, and this block nearly repeated that same mistake with
+the R2-738 file (R2-1004, Defect 1). Two live candidates for one span is how the
+third agent picks the wrong one.
+
+## R2-1013 — two corrections to the brief this task was given
 
 1. **"1,247 contiguous frames" is not what is on disk.** `out2/seq/r2full` holds
    1,247 frames covering f793-2978, but only **f793-1281 are contiguous** (489
