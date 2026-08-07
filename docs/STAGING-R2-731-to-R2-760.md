@@ -933,7 +933,50 @@ never existed.
 > to its own reporting unless it is made to.
 
 The subagent is still running. Its result, when it arrives, will be reported as
-its own and marked as such.
+its own and marked as such. **If it never returns, that is what will be said** —
+an absent result is a result, and reconstructing what it would have found is the
+same error twice.
+
+### The second correction, and why it is the more instructive one
+
+R2-736's pass 2 said the terrain cast failed to finish 250 frames *"against 13 s
+for the same 250 frames without terrain"*. **13.3 s is the whole 1,922-frame
+architecture pass; those 250 frames took 3.7 s.** Corrected in place.
+
+The claim got **stronger** — the terrain slowdown is worse than stated, not
+better. It was still written from memory rather than from the log, and it was
+corrected for a reason worth stating as a general one:
+
+> **A figure that quietly improves is exactly the kind that never gets checked
+> twice.** Everything this log records so far is about numbers that flatter a
+> CONCLUSION. This is a number that flattered the EVIDENCE, and those are more
+> dangerous, because the incentive to re-check runs the wrong way. A wrong number
+> that weakens your case gets found by whoever is arguing with you. A wrong
+> number that strengthens it gets quoted.
+
+The same shape covers R2-739's first half: the two tool hazards I attributed to
+a subagent were both real, and being right is precisely what made the false
+provenance survive two reports without anyone pulling on it.
+
+### And one claim I made that was simply wrong
+
+I reported, twice, that `rq exec` is CPU-only and therefore *"cannot hand a
+modified blend to the render path"*, and used it to justify holding a job. **It
+can, in three legs, and two other agents had already walked them:** `rq exec
+--scene <cached hash>` opens the film from the instance's content-addressed cache
+at zero transfer, saves the modified blend, which is fetched and re-uploaded
+under a new scene name for `rq render` / `rq anim`. The ending agent re-keyed
+`film16_breach` into `film16_R2851.blend` this way and has been rendering from it
+for hours.
+
+It never reached this document, so there is nothing to retract here — but the
+reasoning was wrong in a specific way worth naming: **I inferred an impossibility
+from a tool's one-line description instead of reading its interface or asking
+whether anyone had done it.** The real constraint is different and useful:
+opening an 8 GB blend under exec wants ~43.8 GB free against the exec server's
+20 GB floor, so it **serialises behind any 4K render holding a scene warm**. That
+is a queue, not a wall — and the right reason to defer the candidate frames is
+the queue, not an impossibility I invented.
 
 ### What survives, re-derived and attributed correctly
 
