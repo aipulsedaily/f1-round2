@@ -36084,3 +36084,67 @@ sweeping the trim before committing to one more full render.
 Still owed: all seven gates re-run (six existing plus the new harmonic gate),
 the watch clips re-cut around **the worst six seconds in the film, chosen by
 measurement**, and `watch/audio/INDEX.md` rewritten.
+
+## R2-1134 — THE FLEET IS PROVEN ON A REAL RENDER: 3.60x steady state, exactly-once verified, torn down to zero
+
+48 frames of `film17_R2943.blend` at **3840x2160 / 512 spp** across four
+separate exclusive 5090s, 15:03-16:09 UTC.
+
+```
+exactly-once   48 present, 0 missing, 0 duplicated, 48 distinct hashes
+               48/48 sha256 matching what each broker recorded AT FETCH TIME
+speedup        3.31x on 4 cards (83% of theoretical) INCLUDING deploys + pushes
+steady state   3.60x (90%) — the asymptote a 2,978-frame master sees
+cost           $2.0019, off the API, against a $1.12-2.50 plan
+teardown       0 fleet instances alive, verified against the API, re-checked
+```
+
+**The hash check is the one that makes "exactly once" mean something**: not that
+48 files exist, but that each matches **the hash its own broker recorded at fetch
+time**, independently, before anyone counted.
+
+**And the teardown was verified twice** - the failure mode that costs real money
+is a partial teardown stranding a card at $0.45/hr, and this project has already
+found an "exited" instance still billing for storage.
+
+## R2-1135 — TWO OF MY NUMBERS WERE WRONG, and both were wrong in the direction that flattered the plan
+
+**1. "The host lottery costs +/-45 %."** It does not - **for exclusive 1x 5090s
+it is 1.21x.** The +/-45 % figure came from **including an 8-GPU box's per-GPU
+rate alongside two 1x hosts.** That is an architecture difference wearing a
+host-variance costume, and **I quoted it to the client as a property of the
+market.**
+
+**2. "Buy a good host, not a cheap one."** Measured on cards held
+*simultaneously*, **the fastest card is 5 % DEARER per frame** than the
+slowest-but-cheapest: price **1.15x**, speed **1.21x**, compounding to **1.32x
+in $/frame** the other way. **Speed and price track each other closely enough
+that the simple heuristic is wrong**, and only a paired measurement on
+concurrently-held cards could show it.
+
+**Both errors made the story cleaner than the data.** A 45 % lottery makes
+procurement sound decisive; a 1.21x spread makes it nearly a coin flip. **The
+tidier number is the one to distrust.**
+
+## R2-1136 — the dispatch thread cannot saturate at any N, and the real limit is the market
+
+**Serial broker work: median 10.30 s/frame = 4.1 % busy** - and **it is
+per-process, so it does not sum across brokers.** My whole 14.1 s-serial
+analysis, and `multi-gpu.md`'s parallel-collect blocker, belong to the
+**one-broker-N-workers** design. **For N brokers there is no such ceiling.**
+
+**The binding constraint is supply: 7 exclusive 1x offers + 4 held = 11
+machines**, sampled twice. **`bad_machines` bans persist 24 h**, so a bad day
+condemning three leaves **exactly eight with zero slack.**
+
+**So the number to change is the block sizing, not the width.** The 10 % gap to
+theoretical is **entirely the slowest card** - `mean/slowest = 89.6 %` predicts
+the measured 90 % exactly. Recommendation: **rent eight, measure one frame each
+(~$0.16), re-split by measured rate.**
+
+**And `BEGIN DEFERRED` is confirmed as a non-control from a second direction**:
+safe, but discarding **67-76 %** of attempts to `SQLITE_BUSY`. The real control
+is **no transaction at all**, which handed one job to three processes. The
+multi-GPU guard refuses an unannounced wide box against **13 assertions on
+`ast`-extracted shipping source**, and was seen live logging `1 of 1 OPTIX
+device(s)`.
