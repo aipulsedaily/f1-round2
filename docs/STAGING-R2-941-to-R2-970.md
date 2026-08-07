@@ -368,6 +368,23 @@ not have seen either problem.
 > function that is correct over a whole domain is not automatically correct over
 > a slice of it.** `pose_series` is right; calling it on a window is wrong.
 
+### The car_anim gate's central claim, checked directly on the new motion
+
+    >> STAGE RESULT: ROLLING_CONTACT_OK
+
+| over all 2,977 intervals | |
+|---|---:|
+| worst \|d(spin)·r − d(chord)\| | **1.350e-12 m** |
+| worst backwards wheel step | **0.000e+00 rad** |
+| beat-6 speed monotone non-increasing | **True** |
+| beat-6 brake dive, peak | **1.6000 deg** nose-down — the telemetry's own declared ceiling, i.e. the term clips |
+| brake dive at rest | 0.0000 deg |
+| beat-6 steer, peak | 0.0000 deg — the pit straight is straight |
+
+Rolling contact is exact by construction rather than to a tolerance, because the
+wheels are built from the same chord series the positions are, which is what
+`pose_series` exists to guarantee.
+
 ---
 
 ## R2-948 — my own instrument was wrong twice, in opposite directions, in one hour
@@ -423,7 +440,31 @@ tables above.
 2. **R2-853's "the hold breathes" is spent.** That entry earned 2.89 deg of pan
    across f2906-2978 because the camera was still tracking a moving car. Tracking
    a stopped car is 0 deg. The hold is a hold again.
-3. **The wound is still gone.** R2-857 costed the loss of beat 3's callback
+3. **The closing frames contain no sky and no horizon at any lens.** Registered
+   BEFORE watching, so it cannot be rationalised afterwards. The camera holds
+   140 m up and 313 m out, so the car sits **24.10 deg below horizontal**, and
+   the frame's half-vertical angle only reaches that at about **22.6 mm** — where
+   the car is 40 px. Every lens that makes the car legible puts the horizon out
+   of frame:
+
+   | lens | car px | frame width at the car | horizon |
+   |---:|---:|---:|---|
+   | 45 mm | 79.8 | 274.3 m | 11.42 deg above frame |
+   | 74 mm (shipped) | 131.2 | 166.8 m | 16.31 deg above frame |
+   | 85 mm (R2-856's suggestion) | 150.7 | 145.2 m | 17.31 deg above frame |
+   | **130 mm (candidate)** | **230.4** | **94.9 m** | 19.65 deg above frame |
+   | 160 mm | 283.6 | 77.1 m | 20.48 deg above frame |
+
+   R2-856 flagged that *"a closing frame with no horizon in it is part of why
+   both read as a plan rather than a view"*, and its proposed remedy — ~85 mm
+   with the car in the lower third — **is not available at this camera
+   position**; it was costed against a car 1 km away at an 8.4 deg depression,
+   and the depression is now 24.1 deg. This is a property of the declared hold,
+   not of the lap-down: sky leaves the frame around f2830 in this arm and does
+   not come back. It is the strongest argument for revisiting the hold's
+   altitude, and it is not this task's to move.
+
+4. **The wound is still gone.** R2-857 costed the loss of beat 3's callback
    honestly and this change does not recover it — it makes it further out of
    reach, because the camera now ends framed tight on a car 343 m away. If the
    ending is ever to have both, it is a different camera, not a different car.
