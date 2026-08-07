@@ -16,6 +16,26 @@ rendered before it is superseded by construction. Written 2026-08-07.
 | **Beat-6 ending re-key** | `film16_breach` -> re-keyed candidate | aim worst 0.11 deg at f2977 against a 26.0 bound; lens f2978 73.997 -> 129.993 mm |
 | **Breach frost + fines** | `sim/apply_breach.py --debris --fracture-faces`, both **off by default** | pending probe |
 
+## THE PROBE BLENDS ARE THROWAWAY — DO NOT MERGE THEM
+
+Two agents are independently producing 8 GB derivatives of the ship candidate:
+
+```
+film16_debris.blend   from film16_breach — fines + frosted fracture faces
+film16_R2851.blend    from film16_breach — beat-6 re-key, lens and aim
+```
+
+**Neither is a merge candidate and neither should be promoted.** Both are
+*probe artefacts* whose purpose is to measure one change in isolation. The
+underlying changes are both expressed in SOURCE — `apply_breach.py --debris
+--fracture-faces` and the beat-6 camera sheet — and **the rebuild runs the
+source, in order, once.** There is no 8 GB three-way merge to do, and anyone
+attempting one is reconciling two throwaways.
+
+The rule generalises: **a derivative blend is evidence, not an artefact.**
+Nothing on the ship path is ever produced by editing a film scene; it is
+produced by running the build.
+
 ## Order matters
 
 1. **Re-bind the sky after any camera rig rebuild.** `build_camera_rig` deletes
