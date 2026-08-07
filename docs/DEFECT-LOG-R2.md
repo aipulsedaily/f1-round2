@@ -20405,3 +20405,2346 @@ Incidental, and it revises a standing project assumption: the same agent
 measured **4K at 194 s/frame**, against the ~510 s this project had carried from
 an older F/P decomposition. Master-render estimates drawn on the old figure are
 roughly 2.6x too high.
+
+## R2-731 — the three occlusions: two closed in source, one is not a defect
+
+**Scope.** The occlusion block handed over three items out of R2-651…R2-666:
+the bridge blackout (f2180-2191), the beat-4 pit-building blackout (f1114-1116),
+and `BR_FenceMesh_L03` over the film's last three frames. The previous agent's
+raycast work was taken as given and not re-derived; `render/r2651/occlusion.json`
+is its output and every number below is measured against that baseline.
+
+### The baseline, restated from the raycast rather than from prose
+
+`render/r2651/occlusion.json`, 1,922 frames over beats 4/5/6, built from
+`surface + barriers + architecture + terrain`. Rows with `occ_frac_front == 1.0`:
+
+```
+f1114-1116   ARCH_PitBuilding_Shell    9.3-12.4 m   solid    in_frame TRUE
+f2180        ARCH_PontPlongee          26.4 m       fence    in_frame TRUE
+f2181-2191   ARCH_PontPlongee          30-55 m      solid    in_frame TRUE
+f2976-2978   BR_FenceMesh_L03          982-985 m    fence    in_frame FALSE   <--
+```
+
+That last column is the whole of finding 3 and it is dealt with below.
+
+---
+
+## R2-732 — THE BRIDGE MOVE IS REJECTED. `PONT_S = 2460` makes the blackout TWICE AS BAD, and no station closes it
+
+**The brief's instruction was "`PONT_S = 2410 -> 2460` was tested against all of
+beat 5 and closes it. Land it." It was landed, re-verified, and reverted.**
+
+### What the raycast says, on the same instrument that found the defect
+
+`tools/r2651_occlusion_sweep.py`, `--mods surface,barriers,architecture`,
+beats 4/5/6, both runs built from source on this box:
+
+```
+PONT_S      fully-blocked frames (occ_frac_front = 1.0, in_frame)   occluder distance
+2410        f2180 fence + f2181-2191 solid          12              26 - 55 m
+2460        f2196, f2203-2230 solid                 25              32 - 66 m
+```
+
+`render/r2651/occlusion.json` (2410) and
+`render/r2731/occ_STALE_s2460_firstannexe.json` (2460). f2180-2193 do clear
+exactly as predicted. A new, longer, closer blackout opens 15 frames later.
+
+### Why R2-660's sweep said zero, and it is a known shape
+
+`tools/r2651_pont_sightline.py` reconstructs this bridge as **four horizontal
+bands** — girders, deck slab, parapet, mesh screen — spanning u = −15…+15 from
+the soffit up. Its own docstring says so. `build_architecture.build_bridges`
+also emits, on **each** side:
+
+```
+abutment        x ±4.2   |u| 12.8 .. 18.0   z (zr − 6.0) .. soffit
+precast pad     x ±5.0   |u| 12.0 .. 19.0   z (zr − 6.0) .. (ground + 0.10)
+5 wing walls                out to |u| 26.6  z (zr − 4.0) .. soffit − 1.1k
+```
+
+The abutment alone is a **12.8 m tall, 5.2 m deep block of concrete**. A
+sightline that passes outboard of the span and *below* the deck is stopped dead
+by it, and the four-band model cannot see that at all. At 2410 the sweep crosses
+|u| = 13…20 at z ≈ 9-10 m — over the abutment tops. At 2460 it crosses the same
+lateral band lower, and goes through them.
+
+> This is R2-664's own v1 failure in a new costume: **a model that omits the
+> thing that actually blocks returns a confident zero.** R2-664 recorded that
+> lesson about the road being in the corridor and then the recommendation it
+> carried forward was made on a model with no abutments.
+
+### The replacement instrument, and why it may be trusted
+
+`tools/r2731_pont_full_sightline.py` models every box `build_bridges` emits and
+samples the car with `r2651_occlusion_sweep.py`'s own 58 points. `--selftest`
+reproduces **both** raycasts exactly:
+
+```
+s = 2410   raycast f2181-2191 (11)   model f2181-2191 (11)   PASS
+s = 2460   raycast f2196-2227 (25)   model f2196-2227 (25)   PASS
+```
+
+The second is the load-bearing one: it reproduces a defect it did not predict,
+at a station someone else chose, from the same code.
+
+*(Its first draft did not, and the reason is worth keeping: it sampled the car
+on an 18-point grid lifted by the 0.34 m ride height that
+`r2651_occlusion_sweep.py` **records and does not use** — `RIDE_H = 0.340 #
+recorded, not used: the box is the hull`. A cheap prediction that samples the
+subject differently from the authority it predicts is not comparable to it. With
+the sweep's own 58 points it agrees to the frame at two stations.)*
+
+### No station clears it, over the whole of beat 5
+
+`--sweep`, frames 1191-2714, every station 2000-3200:
+
+```
+station  2000 2100 2200 2300 2400 2500 2600 2700 2800 2900 3000 3100 3200
+blocked     4    5    5    8   10   20   62   14    8    4    0    0    0
+```
+
+and at 10 m resolution through the authored neighbourhood, 2300-2700, the
+minimum is **8 frames at 2300** against 11 at 2410. The zeros at 3000+ are 600 m
+away, on the pit approach where La Passerelle already stands; they are not a
+station for *this* bridge.
+
+### It is geometry, not an unlucky search
+
+The sightline sweeps from **high and outboard** to **low and central**: it must
+end at the car, on the road, at u ≈ 0 and z ≈ 1 m. Any slab spanning the track
+therefore has its solid band crossed on every pass. To miss it a frame's ray
+would have to be above the parapet at |u| = 12.8 *and* below the soffit for the
+rest — but the abutment tops out at the soffit over |u| = 12.8…18, so the ray
+must be *above* the soffit there and *below* it a moment later. That window is
+~1.3 m of ray height, and the ray descends ~0.25 m per frame, so it can hold for
+a handful of frames and never for the whole pass.
+
+**Station is not a lever for this defect.** Neither, on its own, is height.
+
+### The measured menu, for whoever owns the circuit's design
+
+All at s = 2410 unless stated, fully-blocked frames, full-geometry model:
+
+| change | blocked | note |
+|---|---:|---|
+| **shipped** | **11** solid + 1 fence | f2180-2191 |
+| concrete parapet → kerb + full-height mesh screen | **8** | moves nothing; the 1.10 m upstand stops being concrete, the solid band goes 2.72 → 1.87 m, and the frames it gives back become *seen through mesh* rather than blacked out |
+| soffit 6.80 → 9.80 | **4** | a 3 m raise; changes what the structure is |
+| both | **4** | the raise dominates |
+| s = 2650, soffit 8.80 | **1** | a 240 m move **and** a 2 m raise |
+| s = 2700, soffit ≥ 9.80 | **0** | a 290 m move and a 3 m raise |
+
+**Nothing on this list was landed.** The first row is what ships. The second is
+cheap, moves no geometry, and is arguably the more standard detail for a circuit
+overbridge — but it is a visible change to the circuit's signature structure and
+it does not close the defect, so it is a proposal and not a change. The last two
+close it and would delete the beat the bridge exists for: `circuit_spec.md` §10
+puts it "**145 m before the doppler hover station**… so the car bursts out from
+under a bridge straight into the doppler pass", and at 2700 there is no bridge
+before the hover at all.
+
+**The one lever not on this list is the camera**, and R2-660 already said so:
+*"Only a change to the camera path could move it."* That is now the whole of the
+remaining option space, and it is not this task's to spend.
+
+### What WAS landed on the bridge, and it is worth keeping either way
+
+`build_dressing.bridge_banner_sites()` read:
+
+```python
+hdg  = math.radians(295.4)
+ox, oy = -617.56, 94.75
+soff = 3.913 + 6.80
+```
+
+Those three are `WC.centreline(2410)` and `WC.elevation_c(2410)` to the
+millimetre — verified, not assumed:
+
+```
+WC.centreline(2410)  -> (-617.563, 94.750), heading 295.400 deg
+WC.elevation_c(2410) =  3.9129
+```
+
+a hand-taken snapshot of `PONT_S`, in a second module, with no link back.
+R2-664 wrote the consequence down in advance: *"any placement move must carry
+the banners with it; they are not part of build_architecture's bridge and will
+not follow PONT_S on their own."* During the hour `PONT_S` was 2460 that was
+demonstrated, not argued: with the literals in place the banners stayed at 2410,
+and after the change they moved to `(-597.489, 52.474, 11.260)` and
+`(-594.744, 46.693, 11.260)`, centred on `centreline(2460)`.
+
+`PONT_S` is now module-level in `build_architecture.py` and
+`bridge_banner_sites()` evaluates the contract at it. Measured back at 2410 in
+Blender: the banners land at `(-618.936, 97.641, 11.413)` and
+`(-616.191, 91.860, 11.413)` — **the shipped positions to 4 mm**, the residual
+being the decimals the literal dropped. Nothing in the film moves; the copy is
+gone.
+
+The import is deliberately **not** guarded. A `try/except` fallback here would
+mean the module silently keeps building at a station the bridge no longer
+occupies, which is the failure this exists to prevent.
+
+### Files touched and then reverted, listed so the revert can be audited
+
+`world/build_architecture.py` (`PONT_S`), `docs/circuit_spec.json`
+(`plunge_bridge_design.s` + an `s_note` recording the finding),
+`tools/circuit/emit.py` (the generator that writes it), `docs/circuit_spec.md`
+(four prose statements), `world/items/pont_girder.py` (`S_STATION` and its
+derived figures), `world/items/pont_deck_slab.py` (a comment). All are back at
+2410 with the reason recorded in place; the `s_note` and the `PONT_S` comment
+block are the only net additions.
+
+### One thing carried forward, not fixed here
+
+`world/items/pont_girder.py` reads `SOFFIT_Z = 6.800` as an **absolute world z**
+while `build_architecture` builds the soffit at `elevation_c(PONT_S) + 6.80`,
+i.e. **relative to the road**. That predates this work; the item is on HOLD
+(`LOCAL_FRAME` / `SUPERSEDE_WELDED` in `world/items/PLACEMENT.json`) so nothing
+in the film is built from it, and the two conventions only diverge if the
+station moves. **Whoever unblocks that row has to reconcile them.**
+`world/items/pont_deck_slab.py` (gate `ITEM_REJECTED`, also on HOLD) still
+carries `s = 2410` prose; its `S_STATION` re-exports `pont_girder`'s and follows.
+
+---
+
+## R2-733 — THE PIT BUILDING. The whole beat-4 blackout is 0.7 m of roof overhang, a 1.10 m parapet and 0.7 m of stair-core overrun
+
+**Landed.** R2-666 named `ARCH_PitBuilding_Shell`. That object is 320 m long and
+some thousands of boxes, so the name was not yet something anyone could fix.
+
+### The instrument: `tools/r2731_pit_sightline.py`
+
+Reconstructs the shell from `build_architecture.py`'s own module constants and
+intersects the camera-to-car segment box by box — the same technique
+`r2651_pont_sightline.py` used on the bridge, and for the same reason: no world
+load, no farm, one second, on a box that cannot open a film-sized blend.
+
+**It is a cheap prediction, not a replacement.** Its controls are stated as
+such: with the pre-R2-731 geometry it must reproduce f1114-1116 fully blocked
+and f1113/1117/1118 partial (which is R2-666's own `occ_frac_front` to within a
+sample), and must clear f1100 and f1130. All pass, plus four slab-test controls
+including "a box behind the far end of the segment does not occlude" — the depth
+test that is the entire point.
+
+### What the defect actually is
+
+Over f1113-1118 the camera crosses the pit complex diagonally at z = 15.7 →
+16.2 m and the sightline to a car 42 m away clips the **south-west corner of the
+roof**. It never penetrates more than 8.8 m into a 320 m building and never
+deeper than y = 25.13 into a 17 m-deep plan.
+
+Per box — the minimum ray height over each box's own footprint, against that
+box's top:
+
+```
+box              top      ray ceiling    verdict
+parapet_front   12.00        10.49       BLOCKS by 1.51 m
+roof_deck       10.96        10.49       BLOCKS by 0.47 m
+core_W          12.70        12.16       BLOCKS by 0.54 m
+upper_wall      10.90        11.28       clear
+L1_spandrel     10.40        11.34       clear
+ff_slab          6.40        10.10       clear
+canopy_fascia    6.46        10.00       clear
+flank_W         10.90        13.65       clear
+```
+
+**The building's enclosure is entirely innocent.** Walls, glazing, floor slabs
+and the pit-lane canopy are already clear. What blocks is 0.7 m of roof
+oversailing past the façade line, a 1.10 m parapet standing on that oversail,
+and 0.7 m of stair-core overrun.
+
+### The fix: the west end is an annexe
+
+West of `PB_ANNEXE_X` the building keeps its plan **exactly** and loses one
+level of roof: the deck drops to the L1 glazing head (10.40), stops **on** the
+façade line at y = 21.10 instead of oversailing to 20.40, and carries a 0.18 m
+eaves fascia in place of the 1.10 m parapet. The W stair core, which marks the
+joint, rises 1.00 m above the annexe roof (top 11.40) rather than above the main
+one (12.70).
+
+**Nothing is stood back from the track.** The footprint, the canopy, the garage
+frontage, the piers, the doors and the glazed hospitality band are untouched, so
+the near-field geometry that sells the speed still passes the lens at exactly
+the same distance. What comes off is height, at one corner, over a stretch that
+is 8 % of the frontage.
+
+### Why the step is at −218.0, measured rather than chosen
+
+With the annexe roof at 10.40, the sweep over f1105-1135 is clean — **0 fully
+blocked and 0 partially occluded** — for every step station from −235.0
+eastward, and stays clean at −234, −233, −232, −230, −228, −224 and −218. That
+is a **17 m plateau, not a knife edge**, which is the standard R2-660 set for
+the bridge. −218.0 is the bay-1/bay-2 joint, the only structural line inside the
+plateau, so the roof steps where the building steps.
+
+The roof height is doing real work and the station alone is not enough: at
+10.90 instead of 10.40, the same sweep still leaves 3 partial frames at
+`frac 0.389` at every step station tested.
+
+Re-run over the whole of beat 4 (f1057-1190) with the shipped constants:
+**0 of 134 frames occluded at all.**
+
+### Files changed — all in `world/build_architecture.py`
+
+* `PB_ANNEXE_X`, `PB_Z_ANNEXE`, `PB_ANNEXE_EAVE_Y`, `PB_ANNEXE_FASCIA`,
+  `PB_ANNEXE_CORE_UP` declared next to the other `PB_*` constants
+* roof deck, standing seams and sheet laps split at the step
+* the L1-head band (`PB_Z_L1` → `PB_Z_RF`) built only east of the step; the
+  annexe's deck bears directly on the glazing head
+* a step face — the main block's west gable — standing on the annexe roof
+* front parapet east of the step only; an eaves fascia west of it
+* `_core()` caps a core that stands wholly on the annexe: **a core rises above
+  its own roof**
+* `_roof_plant()` takes the deck it stands on; the main-roof stretches now start
+  at the step, and the annexe gets its own run **on its own seed** so the main
+  roof's plant layout is bit-identical to before this change
+
+`rear_wall` and `flank_W` already run to `PB_Z_RF` and therefore stand 0.50 m
+proud of the annexe deck — that is the upstand on the rear and west sides, and
+no new box is needed for it.
+
+---
+
+## R2-734 — THE LAST THREE FRAMES ARE NOT A DEFECT. The car is not in the shot, and the raycast's own row says so
+
+**Declined, with the measurement.**
+
+R2-666 reported `BR_FenceMesh_L03` covering the car completely on f2976-2978.
+The `occ_frac_front = 1.000` is real. **The same rows carry
+`in_frame: false` and `in_frame_n: 0`, and `cx = 6.03, 5.98, 5.92`** — the car
+projects six screen widths to the right of frame.
+
+It is out of frame for the whole tail of beat 6, not just the last three frames
+(f2900 is already at `cx = 3.588`).
+
+**Checked independently of the tool, because a tool agreeing with itself is not
+evidence.** Reprojecting from `world/camera_rig_path.json` and
+`world/car_anim_measured.json` by hand — camera quaternion, 36 mm sensor, the
+keyed focal:
+
+```
+frame   lens    dist      angle off the camera axis    half-HFOV
+f2714   24.00     85.0 m           0.52 deg            36.87 deg   <- on axis
+f2850   18.81    540.7 m          77.76 deg            43.74 deg
+f2900   38.97    730.9 m          70.82 deg            24.79 deg
+f2950   62.30    912.0 m          70.34 deg            16.11 deg
+f2978   74.00   1000.1 m          69.26 deg            13.67 deg
+```
+
+At f2978 the car is **69.26° off axis inside a 13.67° half-angle**. The
+hand-computed screen x is 5.917 against the sweep's 5.919 — two independent
+projections, three decimals apart.
+
+**So there is nothing between the lens and the subject, because the subject is
+not in the picture.** The camera has come to rest on its 140 m hold
+(`HOLD_W = (594.19, 16.05, 140.0)`) at 74 mm and the car has left frame. An
+`occ_frac` computed along a ray fired 69° outside the frustum is a number about
+a line, not about a shot.
+
+**The sweep already knew.** `summarise()` gates on
+`hot = r["in_frame"] and r[key] >= thr` — its own summary would not have raised
+these frames. The finding came from reading the per-frame array past the guard
+the tool puts there.
+
+> The general shape, which is this project's most repeated failure and is worth
+> restating: **a metric computed on a row whose precondition is false is not a
+> weak result, it is not a result.** `in_frame` is on the same row as
+> `occ_frac_front`, one field away.
+
+**One thing this does NOT excuse.** R2-709 reasoned about the closing wide as if
+the car were in it — *"the closing wide puts the car at ~1,000 m, where the whole
+car subtends roughly 16 px at 4K and a helmet is comfortably sub-pixel — so zero
+may be geometry rather than defect"* — and used that to keep `DRV_ = 0 px` open
+rather than closing it. The car is not at 16 px in the closing wide; it is at 0
+px, because it is not in the frame. **`DRV_` reading zero on f2978 is fully
+explained without any statement about the driver**, and R2-709's instruction to
+re-measure at a frame where the driver is known to read (e.g. f800) is the right
+one and is now the *only* thing that can settle it.
+
+---
+
+## R2-735 — the L03 intrusion: three placement reports, two answers, and the newest one is the stale one
+
+The other half of R2-666's cross-reference. Independent of R2-734, because
+"is this fence on the racing surface" is a real question whatever the closing
+frame does.
+
+| file | mtime | L03 row |
+|---|---|---|
+| `docs/placement_report.json` | Jul 29 00:53 | 7.6054 m |
+| `docs/placement_depth.json` | Jul 29 00:48 | 7.1054 m at s = 926.3 |
+| `docs/placement_report_r2.json` | Jul 29 03:27 | **absent** — 2 violations, both `ARCH_*` edge-family |
+| `docs/placement_report_cam34.json` | **Aug 2 01:01** | 7.6054 m |
+| `docs/placement_after_46.json` | Aug 2 06:49 | **absent** — total 0 |
+
+`placement_report_cam34.json` is the newest file that still reports it, and its
+L03 rows are **byte-identical** to the July 29 pre-fix run, `at_world` included.
+That is a stale reading carried forward, not a fresh measurement.
+
+**The cause was fixed and it is possible to check that from source without
+building anything.** R2-036 found `barrier_offset` stepping 51.99 m in one metre
+— a `1e6` sentinel surviving a 41-sample box filter — and shipped the fix in
+`world_contract` 1.1.0. On the shipped 1.2.1:
+
+```
+   s    half_width   barrier_offset(-1)
+ 900       7.173          41.642
+ 925       7.381          41.915
+ 926       7.385          41.921
+ 950       7.500          42.135
+```
+
+The barrier line on the L side through the whole L03 stretch is at ~42 m against
+a 7.4 m half-width. There is no mechanism left by which the fence is on the road.
+
+**Re-measured on built geometry** — `tools/r2731_fence_l03_audit.py`, which
+builds `barriers` only (no architecture, no dressing, no farm) and applies
+R2-017's corrected definition, `intrusion = half_width(s) − |u|` per vertex,
+with an on-road and an off-road synthetic control and an `su_to_world` /
+`world_su` round-trip check.
+
+RESULT_PLACEHOLDER_L03
+
+---
+
+## R2-736 — re-verification against the assembled world
+
+RESULT_PLACEHOLDER_RAYCAST
+
+## R2-761 — THE DEBRIS IS ABSENT BY CONSTRUCTION, AND THE MASS THAT IS MISSING IS 14.398 kg, EXACTLY, AND THE PROJECT HAS BEEN PRINTING IT FOR WEEKS
+
+R2-129 traced the absence correctly and stopped one step short of the number.
+`sim/debris.ledger()` builds every shard twice — once as the pane's own cell,
+once as `shardmesh.prism` actually meshes it — and differences the signed
+volumes. Over all 3,796 non-intact shards:
+
+```
+the pane's own glass, cell area x 11.5 mm      2,255.308 kg
+after shardmesh.KERF_M (0.4 mm inset)          2,240.909 kg
+after the 0.6 mm arris chamfer as well         2,239.923 kg
+
+    KERF     14.399 kg      CHAMFER  0.986 kg      TOTAL DELETED  15.385 kg
+                                                   = 0.682 % of the wall
+```
+
+**`mass_after_kerf_kg` is 2,240.909 kg. The figure this project quotes for the
+glass being driven through the wall is 2,240.9 kg.** They agree to four
+figures, and nobody put it there on purpose: the headline mass has always been
+the *post-kerf* mass. The pane's actual mass is 2,255.3 kg. The 14.4 kg
+difference is not rounding, not an estimate anyone made, and not a modelling
+approximation — it is `shardmesh.KERF_M`, and it is the glass that exists in the
+wall and exists in no rendered object.
+
+`shardmesh.py` already anticipated this in its own words, justifying the inset
+as *"the crack takes material with it, which is also what a real crack does: the
+fracture surface is not a plane of zero thickness, it sheds dust"*. **That
+sentence was written and never kept.** The debris pass is it being kept.
+
+**And the ceiling must not be spent as a budget.** 0.4 mm was chosen to stop
+Bullet exploding (the first full-wall bake without it reached 120.7 m/s and lost
+the wall before the car arrived). A real crack in soda-lime glass has a kerf of
+*microns*. Using 14.4 kg as a dust mass would over-state the physical fines by
+two to three orders of magnitude. It is a ceiling; the budget is derived
+elsewhere (R2-763) and comes to 13.5 % of it.
+
+---
+
+## R2-762 — A DEBRIS **CLOUD** SHOULD NOT BE BUILT, AND THE REASON IS ARITHMETIC RATHER THAN TASTE
+
+The brief invited a well-defended decline of part of the ask, and this is it:
+**the "cloud" in "breach debris cloud" is the wrong object.** What should be
+built — and has been — is a *field of fine glass* plus a *declared optical
+burst*. Three independent arguments, none of them about taste:
+
+**(a) Laminated glass does not shed a cloud. That is what the interlayer is
+for.** A 5 / 1.5 PVB / 5 laminate struck at speed crazes, tears and hinges;
+the fragments stay bonded to the PVB and travel as slabs. The shipped plan
+already encodes this (`fracture._finish` laminates 15 % of shards) and the
+delivered frames show it: R2-700's "continuous sheet" is not purely a defect,
+it is partly what laminated glass *does*.
+
+**(b) The mass is not there.** The total free-fines budget derivable from the
+contact is **2.073 kg out of 2,255.3 kg — one part in 1,088**. Even the
+physical maximum — `f_spall = 1.0`, every gram of the crushable outer ply inside
+the contact footprint leaving as free debris — is 10.04 kg, and that is still
+only 65 % of the kerf ceiling. A cloud a viewer can point at needs an order of
+magnitude more mass than this wall contains in a form that can leave it.
+
+**(c) The project's own calibration rule forbids it.** *"If a viewer can point
+at the dirt effect, it is too strong."* A debris cloud at this beat would be
+exactly a pointable effect, and R2-546's own complaint about the existing ground
+debris — *"pepper, not glass"* — is the failure mode a badly-scaled particle
+pass reproduces at ten times the cost.
+
+**What replaces it.** Individually resolvable flakes, frosted on every face, at
+the density and size distribution the physics gives, catching the 12.47 deg sun
+and smearing into 100-200 px streaks at this beat's shutter. Nothing to point
+at; a frame that is alive instead of one that is clean.
+
+---
+
+## R2-763 — THE BUDGET IS DERIVED FROM THE CONTACT, AND ONE NUMBER IN IT IS A JUDGEMENT, NAMED AND BRACKETED
+
+`fracture.Impact.energy` is a stretched exponential whose exponent `q = 1.7` was
+chosen, in `fracture.py`'s own words, so the crushed zone has *"a flat top the
+width of the contact, which is what a comminuted zone is"*. `E_CRUSH = 0.90` is
+the edge of that flat top — a **reading** of an existing parameter, not a new
+one. Measured on the shipped plan:
+
+```
+crushed footprint (energy >= 0.90)        0.7246 m2   of 78.445 m2 fractured
+outer ply (5 mm) inside that footprint    9.057 kg
+f_spall = 0.12                            1.087 kg    crush spall
+chamfer (the arris, deleted by the mesher)0.986 kg    arris spall
+                                          --------
+                            free fines    2.073 kg    = 13.5 % of the ceiling
+```
+
+**`F_SPALL = 0.12` is the only judgement in the module.** It is alone, named,
+sweepable without a rebuild (`--f-spall`), and bracketed by two independent
+estimates that do not depend on it:
+
+* a **fracture-surface roughness model** — a 3 um layer detaching from both
+  faces of 540 m of crack through 11.5 mm — gives **93 g**, all sub-50 um;
+* a **contact-volume model** with every crushed grain going free gives
+  **9.06 kg**.
+
+0.12 sits between them. If it is wrong it is wrong by a factor, not a decade.
+
+`sim/debris.py --selftest` gates the ceiling with a negative control that
+fires (`f_spall = 2.0` → 19.10 kg > 15.38 kg ceiling → refused).
+
+---
+
+## R2-764 — R2-700'S SIZE-DISTRIBUTION HYPOTHESIS IS CONFIRMED FROM THE OTHER END, AND THE FIX IS THE SAME FIX
+
+R2-700 saw glass read as a continuous sheet on ten times fewer shards
+(249 vs 2,580) and concluded the variable is the **shard size distribution**,
+which neither count nor mass captures. Measured on `sim/out/fracture_wall.npz`:
+
+```
+ size band        shards    mass kg    % of glass mass
+   0- 10 mm           61       0.15      0.01 %
+  10- 15 mm          637       3.01      0.13 %
+  15- 25 mm        1,358      15.74      0.70 %
+  25- 40 mm          391      10.55      0.47 %
+  40- 80 mm          220      20.53      0.91 %
+  80-160 mm          268     120.83      5.36 %
+ 160-400 mm          790   1,690.67     74.96 %
+ 400+   mm           71     393.85     17.46 %
+```
+
+**92.4 % of the mass is in pieces 160 mm and larger; 1.3 % is under 40 mm.**
+That much is a *correct* model of laminated glass and should not be "fixed".
+
+The part that is not correct is finer than that. **Inside the crushed zone the
+pieces are near-monodisperse**: p10 11.8 mm, p90 28.7 mm — a 2.4x spread over
+2,458 shards. A Schuhmann fit to that population gives **b = 3.68** against a
+physical 0.8-1.2 for brittle comminution. b = 3.68 is not a statement about
+glass; it is the signature of a recursive mosaic that splits until each cell is
+under a local target area, which necessarily clusters cells just under the
+target. **The generator has no lower tail to extrapolate**, which is why the
+debris budget had to come from mass conservation and not from continuing the
+model's own fit — an approach I tried first and abandoned when the fit said
+0.9 % of the crushed mass lies below 8 mm, which is the algorithm talking.
+
+So the missing variable is **three decades of lower tail**, from the model's
+8 mm floor down to the resolution limit, and the debris pass *is* that tail.
+**One fix, both defects.**
+
+---
+
+## R2-765 — WHAT WAS BUILT, IN NUMBERS
+
+`sim/debris.py --build` writes `sim/out/breach_debris.npz` (14.5 MB). It does
+**not** touch `sim/out/breach_film.npz`, does not re-bake, and does not move one
+vertex of the shard field: the fines ride on top of the shipped table.
+
+```
+emission sites (bonded cracks, from the plan's own adjacency)   12,756
+sites drawn (55 % crush-weighted, 45 % crack-length-weighted)    4,200
+puffs emitted                                                   16,753
+chips emitted                                                  671,564    1.347 kg
+   chip size p05 / p50 / p95                          2.15 / 2.81 / 5.16 mm
+chips BUILT after the pixel grade                              260,000    0.905 kg
+puffs BUILT                                                     11,416
+f-curve keys                                                 2,815,043
+   against the shards' 5,806,793 -- the fines add 48 %, not a doubling
+tris                                                          ~3.1 M
+   against the breach's existing 278,864
+```
+
+**The one puff that flies past the lens.** Exactly **1 puff (14 chips) comes
+within 0.10 m of the camera, 3 puffs (110 chips) within 0.30 m, and all of them
+at f902-906** — the frames the camera is going through the wall. That is a real
+and desirable shot element, not an artefact, and its scarcity is what makes it
+one: 19 puffs inside 0.50 m, 125 inside 1.00 m. Worth having measured, because
+a field that put hundreds of chips inside the near focus limit would render as
+defocus mush and nothing in the mass ledger would have said so.
+
+The 1.347 kg emitted is 65 % of the 2.073 kg budget; the remaining 35 % lies
+below the per-site size floor and is **declared, not built** (R2-766).
+
+**Every chip is its own solid.** `debrismesh.chip(seed, d)` is a generator, not
+a library: the seed is `hash(puff, index)` and two of the 260,000 flakes share a
+shape only if two 64-bit seeds collide. There is no chip asset, no chip
+collection, and nothing instanced. The project's red line — *"one tree spammed
+100 times"* — is met by construction rather than by assertion, and
+`debrismesh.selftest()` carries the positive and negative controls for it.
+
+**A chip is not a small shard**, and that is geometric rather than decorative.
+A shard keeps both polished faces of the laminate and is 11.5 mm thick; a chip's
+free surfaces are the two *crack* faces, millimetres apart, so it is a platy,
+wedge-shaped flake (thickness 0.10-0.28 of its realised plan extent, measured
+p50 0.186 / p95 0.289 by the selftest's rotation-invariant control) and every one
+of its faces is a fracture surface.
+
+---
+
+## R2-766 — THE GRADE IS STATED IN PIXELS, AND AT RUNG 1 THIS FIELD IS BELOW THE RESOLUTION OF THE FRAMES
+
+Grading uses `sim/out/oner_camera_track.json` — the per-frame camera, position,
+lens and facing, which R2-706 confirms is current — and **not** the beat sheet's
+coarse polyline that `apply_breach` grades hero shards with. A chip's score is
+its plan size over its own distance to the camera *at its own frames*, with the
+camera's focal length *at that frame* (beat 3 runs 28.4 mm → 21.0 mm across the
+transit). A chip behind the camera scores zero.
+
+```
+                                            at 4K        at rung-1 720p
+chip on-screen size  p50                    3.21 px          1.07 px
+                     p95                    5.52 px          1.84 px
+                     max                  193.59 px         64.5  px
+```
+
+(the 193 px maximum is the single puff that passes 67 mm from the lens at f906;
+the p50/p95 are the field.)
+
+**SAID PLAINLY, AS THE BRIEF REQUIRED: THIS FIELD CANNOT BE ADJUDICATED AT
+RUNG 1.** Half of it is under one pixel at 720p. Anyone who looks at a 720p
+ladder frame and reports "the debris looks fine" or "I cannot see it" has
+measured the resolution, not the field. This is the same wall R2-710 hit on the
+slab un-break (483 mm ≈ 40 px at 720p) and it is the same answer: the question
+belongs to a higher rung.
+
+The camera's closest approach to the wound *centre* is **1.022 m at f903**,
+giving 2,191 px/m at 4K — so one pixel is 0.457 mm there. The 5th percentile of
+built chips' own closest approach is **1.41 m**.
+
+**What the grade drops, and why that is right.** Below ~1.5 mm a chip cannot
+read as a *shape* at any point in this beat; it can only read as extinction. So
+it is not built, and `debris.powder_report()` weighs what that costs:
+
+```
+powder (50 um .. 1.5 mm) from the crush spall     0.272 kg   7.1e8 particles
+total extinction cross-section                    6.05 m2
+    tau at birth, over the crushed footprint      8.35     opaque, a few frames
+    tau after 0.3 s, over the aperture            0.23     a veil
+    tau after 1.0 s, over 25 m of apron           0.04     nothing
+```
+
+That is R2-546's *"no dust burst at the breach"* quantified: the burst is real,
+it is briefly opaque, **and it is optical depth, not geometry** — as particles
+it is 7 x 10^8 sub-pixel solids. Building it means a Cycles volume the camera
+flies through at f899-908. **That is a render-cost decision for the coordinator
+and it is deliberately not taken as a side effect of a geometry pass.** The
+numbers to take it with are above.
+
+---
+
+## R2-767 — THE ONE APPROXIMATION, STATED BEFORE ANYBODY FINDS IT
+
+A kilogram of millimetre glass is three quarters of a million flakes; they
+cannot each be an animated Blender object. Chips are carried in **puffs**: one
+spall site in one size bin, 8-40 chips inside a 50 mm ball, keyed as one rigid
+body with its own ballistic-plus-quadratic-drag path and its own spin.
+
+**Binning by size is not a convenience.** Drag on a flake goes as 1/d
+(`debris.drag_k`, derived from the Cauchy projected area of a tumbling convex
+body), so a 6 mm chip coasts 3.41 m and a 1 mm chip coasts 0.57 m. A puff of
+mixed sizes would have to disperse and a rigid one could not. Binned, every chip
+in a puff shares its trajectory to within a few per cent.
+
+**The cost, said out loud:** chips inside a puff do not tumble independently.
+At this beat's shutter — 0.0032 s of world time at the ramp's 15.4 % — a chip's
+own spin is smeared out *within* the frame anyway, and the puff spin supplies the
+between-frame change. A field where every chip tumbled on its own would twinkle
+slightly more. That trade bought a 23x reduction in animated objects.
+
+**A consequence worth having: fine glass stops.** With k ~ 1/d, the whole field
+loses most of its relative velocity within one to three metres. The fines leave
+with the shards, stall in the air at the wall, and fall — they do not travel to
+the apron with the car. That is what a trailing burst looks like and it is a
+prediction of the drag law, not a look that was arranged.
+
+---
+
+## R2-768 — THE MATERIAL IS THE HALF OF THIS THAT DECIDES WHETHER IT READS
+
+`BREACH_Glass` — the material all 3,796 shards carry — is a Principled BSDF with
+**roughness 0.02, transmission 1.0** and no texture nodes at all. That is a
+polished float face. It is right for the pane and it is wrong for every square
+millimetre of a chip, and re-using it for the fines would have produced 260,000
+invisible lenses.
+
+`BREACH_Fines` (built by `apply_breach.fines_material`, procedural, no image
+texture) instead says:
+
+* **Every face of a chip is a fracture surface.** Past the mirror radius — tens
+  of microns at these stress levels — a glass crack goes through mist into
+  hackle, rough at 1-20 um. A chip is frosted on all six faces. Roughness is
+  driven 0.10-0.42 by two Object-space noises (a 3.8 mm one that varies *within*
+  a puff and along a single chip, and a 3.5-scale one so the wound is not
+  uniformly gritty).
+* **A 0.4 mm flake frosted on both faces does not transmit an image, it
+  scatters**, so transmission weight is 0.38-0.70 and *tied to* the roughness by
+  one node rather than being an independent knob. This is why broken glass grit
+  reads white in sunlight and a window pane does not.
+* **A perfectly smooth chip has a delta-function highlight.** At any instant
+  three chips in the field would be pointing at the sun and the other 259,997
+  would be black. A frosted chip glints over a wide lobe, so the field sparkles
+  continuously. The look follows from the physics rather than being arranged on
+  top of it.
+
+**STILL OPEN, AND NOT MINE TO CLOSE ON THIS TASK:** the *shards'* thickness band
+is a fracture surface too, and it is currently polished at roughness 0.02.
+`ledger()` weighs 12.66 kg of kerf on far-field cracks whose correct rendering is
+exactly that — a frosted 11.5 mm band, no geometry, no cost. R2-546's
+*"no thickness reads, no edge refraction — they look like intersecting quads"*
+is that defect, and it is a bigger contributor to the sheet-reading of R2-700
+than the fines are. Logged rather than done, because silently re-shading 3,796
+shipped shards under a debris task is how a scene stops being comparable to its
+own history.
+
+---
+
+## R2-769 — INTEGRATION: OFF BY DEFAULT, AND WHY
+
+`apply_breach.py --debris sim/out/breach_debris.npz` adds a `BREACH_Fines`
+collection. **Without the flag the applier is unchanged**, which is deliberate:
+every apply this project has run produced 3,845 objects and 278,864 tris, and a
+pass that silently multiplied both would make every historical comparison a lie
+about a different scene. `stats["fines"]["skipped"]` is what a reader checks.
+
+With the flag: +11,551 objects, +3.1 M tris, +~2.2 M keys. The fines are keyed
+LINEAR and are put through the **same** `prove_curves` evaluation gate the
+shards and the frame go through — the applier refuses if they are not linear by
+evaluation — and they hide before their birth frame on the same discipline as
+the R2-098 bay swap, with CONSTANT extrapolation after their last key so the
+wound keeps its fallen glass through beats 4, 5 and 6 at no further cost.
+
+Every module carries controls that fire:
+
+```
+sim/debrismesh.py --selftest   8 checks   (closed solid; centroid origin; two
+                                          seeds are not one chip; the same seed
+                                          IS; d^3 scale-freedom; the measured
+                                          shape factor; platyness on 400 chips)
+sim/debris.py     --selftest  13 checks   (size law vs its closed form; the
+                                          b = 3 negative control; drag 1/d; the
+                                          no-drag parabola; the closed-form
+                                          quadratic-drag solution; landing; the
+                                          ledger identity; the ceiling, with a
+                                          negative control that fires)
+```
+
+`apply_breach.py --selftest` — the east-wall census and its 22 positive and
+negative controls, which this block did not write and could have broken — still
+**PASSES, 0 failed**, after the `--debris` edit. And `verify_breach.py
+--swap-scene` is unaffected by construction: it looks up `GP_b*` and `GS_b*` by
+name, so `DB_p*` is invisible to it. The fines add a collection; they do not
+enter any existing invariant.
+
+**Two of the fines' own controls caught real bugs in this block, both of which
+would have shipped silently:** the position update in `fly()` was second-order and drifted
+1.7 mm over 0.4 s (3.7 px at this beat's closest approach), and
+`debrismesh.chip` scaled thickness by the *nominal* d rather than the realised
+plan extent, producing chips that were not flakes. Two other control failures
+were the *control's* fault and are noted in the source where they were fixed.
+
+---
+
+## R2-770 — THE DEMONSTRATION, AND WHAT IT CANNOT SHOW
+
+*(see the render section below — filled in when the frames land)*
+
+---
+
+## R2-771 — A DEFECT THIS BLOCK CREATED AND CAUGHT: BLENDER LERPS QUATERNION F-CURVES COMPONENT-WISE, AND PAST 2*pi THAT RUNS THE ROTATION BACKWARDS
+
+Logged because it is a trap any future keyed-rotation pass on this project walks
+into, and because it would have been invisible in every check that exists.
+
+Blender interpolates the four `rotation_quaternion` F-curves **independently**
+and normalises on evaluation. Over a small angle that is indistinguishable from
+slerp — measured here at **1.5e-4 rad across a 0.337 rad key gap**. Over a large
+one it is not merely inaccurate: past 2*pi of rotation between two keys the
+shortest quaternion arc reverses, and the object renders **spinning slowly the
+wrong way**.
+
+The first version of `debris.integrate()` put 26 log-spaced keys over a 1.10 s
+flight. A puff spinning at 14 rad/s turns 5.6 rad in the last interval; one more
+step and the sign flips. Tumble is most of what makes a field of flakes read as
+glass rather than as grit, so this would have quietly cost the pass its point,
+and **`apply_breach.prove_curves` would still have passed it** — that gate proves
+the curves are LINEAR by evaluation, which they were. Linear was the problem.
+
+Fixed three ways: key times are now the union of the translation schedule and a
+rotation schedule bounded at 0.30 rad per interval; quaternions are carried into
+one hemisphere; and **the spin stops when the puff lands**, which is physically
+obvious and also removes the only regime where the bound cannot be met (after
+the speed ramp exits, one film frame is 0.0417 world seconds and 14 rad/s turns
+0.58 rad in a single frame — finer than which no keying can go).
+
+**Two of the controls written for it were themselves wrong first, and that is
+the part worth reading.**
+
+* The lerp-vs-slerp check compared **absolute** angles extracted with
+  `atan2(|v|, |w|)`, which folds into `[0, pi]`. A puff that turns 15 rad has
+  keys well past that, so it reported a 0.128 rad error that was entirely its
+  own wrapping. The quantity that matters is the **relative** rotation between
+  two keys, which is always small.
+* The negative control fired a 5.6 rad gap and expected a failure. 5.6 rad is
+  **fine**; the cliff is at 2*pi. And it extracted an unsigned angle, which
+  cannot express a reversal at all. It now uses 7.0 rad and a signed angle, and
+  reads **-2.783 rad where the truth is +3.500**.
+* A third control ran three test puffs from `z = 0`, so all three landed on
+  frame one, never spun, and it passed with "worst gap 0.000 rad over three
+  spin rates". **A control that cannot fail is not one.**
+
+Same family as R2-708 ("an instrument validated on a sample is not validated
+over a range"), and the same lesson: the control has to be checked against a
+known failure before its PASS means anything.
+
+---
+
+## R2-772 — A LAZY `np.load` CLOSED OVER BY AN ACCESSOR IS A DECOMPRESSION PER CALL, AND `sim/resample.py` HAS THE SAME SHAPE
+
+`np.load` on a `.npz` returns a lazy `NpzFile`: every `z["key_frame"]`
+subscript decompresses that whole member again. `debris.load()`'s first
+revision returned
+
+```python
+keys_of=lambda j: (z["key_frame"][off[j]:off[j+1]], ...)
+```
+
+which is a full decompression of a 14 MB array **per puff**, three times over,
+for 11,551 puffs. Caught by reading rather than by timing, because the failure
+mode is "the applier is slow", which on a box at load average 15 is
+indistinguishable from the applier being slow.
+
+**`sim/resample.py:read_film` already does it right** — it binds
+`kf, kl, kq = z["key_frame"].astype(int), z["key_loc"], z["key_quat"]` as
+locals before defining `keys_of`, so the accessor slices materialised arrays.
+I wrote a near-copy of that function and dropped the one line that makes it
+correct. Checked and corrected on my side only; `resample.py` is untouched and
+needs nothing.
+
+---
+
+## R2-773 — OBJECT-SPACE TEXTURE COORDINATES ARE PER-OBJECT, SO A COARSE NOISE ON THEM IS A CONSTANT
+
+Caught by reading, before a render. `BREACH_Fines` wanted two scales of
+variation: a fine one that varies *within* a puff and along one chip, and a
+coarse one so that some spall sites shed cleaner flakes than others.
+
+The fine one is a Noise on `Texture Coordinate > Object` at scale 260 —
+3.8 mm features across a 50 mm puff, which is correct and does what it says.
+The coarse one was written the same way at scale 3.5. **That does nothing.**
+Object space is per-object: every one of the 11,551 puffs' chips lives inside
+the same 50 mm ball about *its own* origin, so a 0.29 m noise samples the same
+patch of the same field for all of them and evaluates to very nearly one number.
+Eleven thousand objects would have shared one roughness offset and the "not
+uniformly gritty" claim would have been false while looking implemented.
+
+Replaced with `Object Info > Random`, which is a genuine per-object draw. Worth
+recording because the failure is invisible in a node graph screenshot, invisible
+in a single-object test, and looks exactly like working code.
+
+Note the same trap applies to the shards' material if anyone adds per-shard
+variation to `BREACH_Glass`: 3,796 objects, same 22 mm scale, same Object space.
+
+---
+
+## R2-774 — WHAT IS **NOT** BUILT, LISTED SO IT IS NOT REDISCOVERED AS AN OVERSIGHT
+
+1. **The powder burst as a volume.** 0.272 kg, sub-1.5 mm, `tau` 8.35 at birth
+   falling to 0.04 within a second (R2-766). Real, briefly opaque, and the
+   single most visible thing R2-546 asked for. It is optical depth, not
+   geometry. Deliberately left to the coordinator with its numbers, because a
+   Cycles volume the camera flies through at f899-908 is a render-cost decision
+   and not a side effect of a geometry pass.
+2. **The shards' frosted thickness band** (R2-768). Bigger contributor to the
+   sheet-reading than the fines; zero geometry; not mine to change under this
+   task.
+3. **Secondary comminution.** A shard that hits the floor, a mullion or the car
+   at 15-25 m/s sheds fines a second time. The baked table has those impacts and
+   this pass ignores them: every chip in it is born at the crack, at release.
+   The fines that should skitter off the apron behind the car are therefore
+   missing, and R2-546's *"no secondary debris skittering"* is only half
+   answered.
+4. **Per-chip tumble.** Chips tumble with their puff (R2-767).
+5. **Any interaction with the car.** The fines are ballistic; they do not know
+   the car is there, are not deflected by it, and do not ride its wake. At
+   0.9 kg over a 26 m2 aperture this is the right approximation and it is still
+   an approximation.
+6. **The other 35 % of the emitted budget** and everything below the per-site
+   size floor: declared in `mass_emitted_frac_of_budget` and in the grade, not
+   built.
+
+## R2-791 — THE BRIEFED MEASUREMENT WAS TAKEN FROM THE WRONG BLEND
+
+Stated first because three of the numbers I was given do not describe the film,
+and one of them would have sent me to fix a camera that no longer exists.
+
+The table I was briefed with — *"f1 lens 35.000, focus 4.859, f/2.80, subject at
+5.37 m"* and seven more rows — is **`render/film14.blend`**, not
+`render/film16_breach.blend`. It reproduces byte for byte out of
+`work/b1dof/dump.json`, which was written on 2026-08-04 04:07 by
+`tools/beat1_dof_dump.py` **against film14**, and whose own header says so.
+
+The camera moved after that. Comparing that dump against `render/film16_path.json`:
+
+| frame | film14 dump position | film16 position | same? |
+|---|---|---|:--:|
+| f1 | `[0.760, 0.000, 5.661]` 35 mm | `[-0.841, -8.863, 3.757]` 18 mm | **no** |
+| f300 | `[-3.345, 1.466, 3.950]` | `[-0.871, 2.470, 3.664]` | **no** |
+| f400 | `[-0.654, 0.295, 2.237]` | `[-3.772, 1.144, 1.884]` | **no** |
+| f500 | `[-2.412, 0.561, 2.231]` | `[-3.170, -1.368, 1.452]` | **no** |
+| f700 | `[6.969, -0.271, 2.314]` | `[6.968, -0.271, 2.314]` | yes |
+| f792 | `[5.165, -5.314, 1.285]` | `[5.165, -5.314, 1.285]` | yes |
+
+That is the R2-451/R2-464 re-aim: the presentation tour was re-stationed and the
+protected close-out was not. The f1 camera in the shipping film is the
+18 mm **establishing** key at f/4.0 focused 9.0 m — a key that does not exist in
+the briefed table at all.
+
+**The brief's headline, "focus is short of the subject on every sampled frame by
+up to 3.05 m", is therefore a statement about a superseded camera.** The defect
+is real and is worse than that, but for a different reason, and the rest of this
+block re-derives it from the shipping sheet rather than repairing the old number.
+
+`work/b1dof/dump.json` should be regarded as stale. It is not deleted here
+because other blocks cite it, but anything reading it is reading film14.
+
+## R2-792 — WHAT IS ACTUALLY WRONG: THE FOCUS IS KEYED, AND KEYED ONLY, AT 23 STATIONS
+
+`docs/beat_sheet.json` carries 23 beat-1 camera keys. Each sets
+`focus_distance_m` to that station's **standoff** — the distance from the lens to
+the cluster it presents — and `anim/build_camera_rig.py:1145` keys it *at that
+frame and nowhere else*:
+
+```python
+if k.get("focus_distance_m"):
+    cam_data.dof.focus_distance = float(k["focus_distance_m"])
+    cam_data.dof.keyframe_insert("focus_distance", frame=f)
+```
+
+Between two stations Blender interpolates the two standoffs. **The interpolated
+number is the distance to nothing**: the camera has moved, the parts have moved,
+and a Bezier from 1.88 m to 2.08 m knows about neither. The tour spends roughly
+570 of its 621 frames between stations.
+
+The keys themselves are RIGHT. R2-795's solver, which computes the distance to
+the beat's declared subject from the camera's own forward axis and never reads
+the sheet's focus numbers, **agrees with the shipped value at the stations to a
+mean of 0.102 m over 18 of them**. That agreement is the finding: the author's
+intent was correct and the interpolation lost it.
+
+## R2-793 — THE APERTURE RULE IS NOT MERELY UNCONTROLLED, IT IS BACKWARDS
+
+`tools/build_beatsheet.py:1040`:
+
+```python
+"fstop": 2.2 if g["radius"] < 0.8 else 2.8,
+```
+
+A **smaller** cluster gets a **wider** aperture. But a small cluster is presented
+from close up, and depth of field collapses with the square of subject distance,
+so the rule opens the iris exactly where the depth is already thinnest. Measured
+at the shipped keys, at the film's own 2 px / 4K sharpness budget:
+
+| station | lens | f/ | focus | **total depth of field** | cluster depth |
+|---|---:|---:|---:|---:|---:|
+| SW | 58 mm | 2.20 | 0.750 m | **0.013 m** | 0.345 m |
+| NOSE | 58 mm | 2.20 | 1.378 m | **0.045 m** | 0.840 m |
+| CI | 58 mm | 2.20 | 1.481 m | **0.052 m** | 0.694 m |
+| CORNER_FR | 58 mm | 2.20 | 1.503 m | **0.053 m** | 1.123 m |
+| RW | 58 mm | 2.20 | 1.530 m | **0.055 m** | 1.411 m |
+| MB | 35 mm | 2.80 | 4.859 m | 2.099 m | 2.364 m |
+
+**Thirteen millimetres of depth of field on an assembly 345 mm deep.** Eight of
+the seventeen presentation stations ship with under 60 mm. That is the client's
+"f-stop 1": not a shallow look, an unfocusable one. The four widest stations are
+fine, which is why f49 (MB) reads acceptably at 4K and f150 and f258 do not.
+
+## R2-794 — `fstop_required` IN THE SHIPPED SHEET IS PARTLY AN ARTEFACT, AND MUST NOT BE THE DESIGN TARGET
+
+`beat_sheet.json`'s `presentation_framing` reports the f-number that would hold
+each cluster whole. It reads f/37.95 for CORNER_RL and **f/99.67 for CORNER_RR** —
+two stations whose geometry is near-identical (range 1.53 m both, depth 1.386 vs
+1.378 m). A 2.6x disagreement between two nearly identical stations is not a
+property of the stations.
+
+The cause is the one the pacing agent independently flagged in
+`beat1_true_extent.py`: **the projection drops bounding-box corners that fall
+behind the camera plane.** `build_beatsheet.py` takes `z_worst = min(zs)` over
+all eight corners, and where the camera is close enough that a corner is 0.15 m
+off the lens, `n_req = f²|z−s| / (c(s−f)z)` divides by that 0.15 and explodes.
+The number is being set by a corner of an axis-aligned box drawn round an
+exploded cluster — mostly empty air — that the audience never sees.
+
+So the f/37–f/100 figures are **directionally right and quantitatively unusable**.
+They correctly say "these stations cannot be held", which is the framing defect
+the other agent is fixing; they must not be used to choose an aperture. R2-797
+targets the on-screen, in-front-of-the-lens subject instead.
+
+## R2-795 — THE FIX FOR FOCUS: TRACK THE BEAT'S OWN DECLARED SUBJECT, PER FRAME
+
+`tools/r2791_beat1_focus.py`. Focus is no longer a number in the sheet; it is
+
+    focus_distance(f) = | camera(f) − subject(f) |
+
+where `subject(f)` is **the model `build_camera_rig.Subject.nearest_field()`
+already uses for the AIM GATE** — the nearest of the 15 cluster volumes to the
+camera's forward axis, each at the position the seat schedule puts it at that
+frame, measured to the edge of its bounding sphere.
+
+That model is not my invention and it is already gate-validated on this beat. Its
+own docstring records why the obvious alternative was rejected: nominating one
+cluster per key and calling the rest a miss "failed beat 1 at 114 deg with the
+subject off-screen on 197 of 792 frames", against median 0.00 deg and worst
+9.84 deg for the field model, because "beat 1 is a WEAVE through a field of
+parts; between two presentations the camera is looking at the parts in between,
+which is the film."
+
+**This is the same reason the pacing agent gives for why beat 1 has no whole car
+between f37 and f656.** The subject is a cluster, and which cluster it is has to
+be asked of the camera, not of a schedule.
+
+## R2-796 — WHY THIS SURVIVES THE RE-PACING, WHICH IS THE POINT
+
+The solved curve **contains no frame numbers**. It is a function of the camera's
+own evaluated transform and the parts' own seat schedule, both read at build
+time. Consequences, stated as commitments the other agent can rely on:
+
+* **Re-time the tour** — the camera reaches each station at a different frame;
+  the solver samples the new transform and the focus follows.
+* **Pull the corner stations back** (the fix in flight) — the standoff changes,
+  the solved distance changes with it, and the aperture bound in R2-797
+  *automatically relaxes*, because a station that is further away needs less.
+* **Move the seat schedule** so the car completes at t ≈ 20.8 s instead of 29.0 s —
+  the field model reads `world/beat1_anim_anim.json`, so the parts are where the
+  schedule puts them.
+
+The one thing required is that `anim/build_camera_rig.py` is re-run, which a
+re-pacing has to do anyway. **A curve baked to frame numbers would have to be
+re-authored by hand after every one of the above; this one is re-derived.**
+
+A per-frame `focus_object` empty and a raycasting driver were both considered and
+rejected: `focus_object` is a single pointer on camera data with no per-beat
+form, so setting it would silently re-govern beats 2–6, and a driver that
+raycasts returns 0.0 — i.e. the entire beat at minimum focus — if script
+auto-execution is off on the render box. Neither failure mode is acceptable in a
+distributed render.
+
+## R2-797 — THE APERTURE I CHOSE, AND THE TWO MEASUREMENTS THAT BOUND IT
+
+**I picked f/8 as the working stop for the presentation tour, easing to the
+shipped f/2.6–3.2 across the close-out — and the iris is deliberately NOT flat.**
+
+It is bounded from both sides, and both bounds are measured:
+
+**From below, by the subject.** The aperture must hold `DEPTH_FRAC_TARGET = 0.80`
+of the subject's own depth inside the 2 px budget. Across the tour this demands
+more than f/8 nearly everywhere, so this bound is usually slack against the
+ceiling — which is the honest way of saying the close stations are unfixable by
+aperture and need the standoff the other agent is changing.
+
+**From above, by the background.** Stopping down to hold the subject also drags
+the room forward, and a showroom whose far wall is as sharp as the part *is* the
+CAD render the brief forbids. So N is capped at the largest value that still
+leaves the background at least `SEPARATION_PX = 6.0` px of blur at 4K.
+
+Six pixels is three times what this film calls sharp, and it is not invented: it
+is **the background softness the shipped MB station already has** (35 mm, f/2.8,
+4.859 m, room at ~15 m → 6.5 px), and MB is not among the frames complained
+about. It is adopted as the floor because it is the least separation this film
+has been observed to get away with.
+
+This bound is why the iris varies, and the variation is the whole argument:
+
+| station | lens | focus | bg | f/2.8 | f/5.6 | **f/8** | f/16 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| SW close | 58 | 0.750 | 12 m | 173.6 px | 86.8 | **60.8** | 30.4 |
+| CORNER_RL | 58 | 1.531 | 12 m | 75.9 px | 38.0 | **26.6** | 13.3 |
+| SP | 35 | 2.489 | 12 m | 15.1 px | 7.5 | **5.3** | 2.6 |
+| MB | 35 | 4.859 | 15 m | 6.5 px | 3.3 | **2.3** | 1.1 |
+| close-out CAR | 40 | 8.300 | 30 m | 5.3 px | 2.7 | **1.9** | 0.9 |
+
+At the 58 mm stations even f/16 leaves the wall 13–30 px soft, so the bound never
+bites and the ceiling does. **At MB the same f/8 puts the wall at 2.3 px — inside
+the film's own definition of sharp** — and the bound drags the iris back open to
+about f/3. A single house stop cannot be right at both ends of that, which is why
+this beat does not get one.
+
+**Why not f/16**, beyond the brief saying so: it would buy the close stations
+0.09–0.41 m of depth against f/8's 0.05–0.20 m — real, but they need 0.35–1.4 m,
+so it does not reach either — while pulling the wides to 1–3 px and flattening
+them. It trades a defect that aperture cannot fix for one it would create.
+
+**Exposure is not a consideration.** Cycles' `aperture_fstop` governs lens blur
+only; it is not a light-transmission model, so a 1.5-stop iris ramp across the
+beat costs nothing in brightness and cannot betray the single take. R2-799's A/B
+tests this implicitly — the two arms share a grade and a light rig.
+
+## R2-798 — THE A/B IS STRUCTURALLY INCAPABLE OF MOVING THE CAMERA
+
+`tools/r2791_ab_build.py` builds `render/r2791_dof_ab.blend` (292 MB) from
+`world/beat1_anim.blend` — the vehicle `tools/beat1_ab_build.py` established for
+this class of question, and for its reasons: same room, same 616 exploded parts,
+same part animation, same 23 practicals, at 292 MB against the film's 7.97 GB on
+an 11 GB machine.
+
+Both cameras are keyed **from the same per-frame transform, out of the same
+`render/film16_path.json`, by the same loop**. `assert_transforms_identical()`
+then re-samples both through Blender's own evaluation and requires agreement:
+
+```
+>> transforms identical? worst position 0.000e+00 m, quaternion 0.000e+00, lens 0.000e+00 mm over 17 frames
+>> focus differs on 13 of 17 sampled frames, worst 1.236 m
+>> grade holds -3.628 (AgX / None) at every probed frame
+```
+
+Zero, not "small". If this file ever moves a camera the build fails rather than
+producing a comparison that attributes a framing difference to focus.
+
+The SHIP arm is keyed from `beat_sheet.json`'s own 23 beat-1 keys at their own
+frames and interpolated by Blender — which is not an approximation of the film,
+it is the same 23 numbers through the same interpolator that
+`build_camera_rig.insert()` uses.
+
+Its limit, stated rather than discovered: through the glass this scene carries
+`R2_ProceduralSky`, not the film's sky. Beat 1's subject is inside the room and
+both arms share the scene, so no verdict rests on it — **but a frame from here is
+not a frame of the film and must not be quoted as one.**
+
+## R2-799 — WHAT THE CURVES DO, IN NUMBERS
+
+Over the tour, f1–f621 (the close-out f622–792 is handed back to the sheet
+untouched, ramped over 30 frames so the join is C1).
+
+**The metric that matters is not focus error, it is how much of the subject the
+audience actually gets sharp.** For every sampled tour frame, the rays that land
+on an assembly part inside the central 50 % of frame are scored against the
+film's own 2 px / 4K budget with the actual lens, focus and f-stop of that arm:
+
+| fraction of the on-screen subject inside the 2 px budget | shipped | solved |
+|---|---:|---:|
+| median frame | **0.9 %** | **45.0 %** |
+| mean | 21.0 % | 45.5 % |
+| **frames with essentially nothing sharp (< 5 %)** | **174 / 292** | **86 / 292** |
+
+**On 174 of 292 sampled tour frames the shipping film has under 5 % of its own
+subject in focus.** That is the client's note, quantified. It is halved.
+
+It is not taken to zero, and it cannot be: the residual 86 frames are the close
+58 mm stations where the depth of field is 13–55 mm and no photographable
+aperture reaches (R2-793, R2-803). Those need the standoff, which is the other
+agent's fix.
+
+Supporting figures, same 292 frames:
+
+| | shipped | solved |
+|---|---:|---:|
+| depth of field, median frame | 0.158 m | 0.586 m (×3.71) |
+| focus error vs measured subject depth, median | 0.455 m | **0.227 m** |
+| f-stop, median | f/2.39 | f/6.65 (range f/2.58–8.00) |
+
+**Continuity.** The raw track steps whenever the subject the axis is on changes.
+It is Hann-smoothed over ±11 frames — symmetric, so it introduces no lag, because
+a lagging focus is a focus that trails its subject, which is the defect being
+fixed. Measured on the curve as Blender EVALUATES it, not on the keys:
+
+* largest per-frame change **under 0.33 m**, spread across consecutive frames —
+  racks, not snaps;
+* second difference p99 0.032 m, max 0.036 m — no spikes, so C1 holds in practice
+  and not merely C0.
+
+The smoothing width is a measured trade-off and R2-801's module records the
+sweep: rack 9 gives 54.8 % median sharpness at 0.440 m/frame, rack 21 gives
+33.1 % at 0.150 m/frame. All are C1, so the continuity constraint does not choose
+between them; 11 was chosen because the note being answered is about blur.
+
+## R2-800 — THE CONTROL, AND IT IS TWO-SIDED ON PURPOSE
+
+`tools/r2791_beat1_focus.py --selftest`. The project's own warning is that an
+instrument validated on a sample is not validated over a range, and that a
+sharpness metric measuring edge energy reads *detail*, not *focus*. This metric
+is geometric — a circle of confusion computed from measured depth — so it cannot
+be fooled by content, but it can be fooled by a wrong subject model, and that is
+what the control is for.
+
+A one-sided *"the solver disagrees with what shipped"* would be passed by any
+curve at all, including a wrong one; it proves only that the solver is not the
+identity. So both directions are required:
+
+* **at a station** the shipped number is the standoff, which *is* the distance to
+  the presented cluster, so the solver must **agree** — it does, mean 0.102 m
+  over 18 stations. Were this to fail, the subject model is wrong and everything
+  downstream of it is wrong.
+* **between stations** the shipped curve is a Bezier between two standoffs and the
+  solver is tracking the subject, so they must **diverge** — and the divergence
+  is the defect.
+
+Only both together support the claim actually being made, which is not "the
+shipped curve is wrong" but "the author's intent was right and the interpolation
+lost it".
+
+Also checked: `quat_fwd` unit and correct on identity; the film's own DOF numbers
+reproduced at two stations (SW 0.013 m, MB 2.099 m); `n_for` inverts `coc_px`;
+`hann_smooth` preserves a constant exactly and is symmetric about a step
+(0.450/0.550) so it cannot introduce lag.
+
+## R2-801 — INSTRUMENTS ADDED
+
+| file | what it is |
+|---|---|
+| `tools/r2791_beat1_focus.py` | the solver; importable by the rig builder, standalone for analysis, `--selftest` |
+| `tools/r2791_focus_dump.py` | per-frame DOF **and the raw f-curves** off a shipping blend — the per-frame sample cannot tell a KEY from an INTERPOLATION and that difference is the whole question |
+| `tools/r2791_depth_grid.py` | 64×36 raycast depth grid per frame: what the lens actually sees, immune to R2-794's behind-camera artefact because a ray only travels forwards |
+| `tools/r2791_ab_build.py` | the two-camera A/B, with the transform-identity assertion |
+
+## R2-802 — RENDER SPEND
+
+Instance 47040457 at $0.4627/hr. 4K/64-sample frames measured at **~59 s each**,
+so single frames are ~$0.008 and the proxy-versus-master question does not arise
+at this scale. Recorded because the earlier estimate in this block was 390 s per
+4K frame — 6.6× too pessimistic — and it drove a plan to render the A/B at 720p
+that was not necessary.
+
+## R2-803 — OPEN, AND NOT MINE
+
+* **The close 58 mm stations cannot be held by any aperture** — they need
+  f/24–f/100 and the reachable ceiling is f/8. This is the framing defect
+  (R2-317: all fifteen framing-fit checks already fail, up to 2.32× frame
+  height) and the other agent is fixing it by pulling the stations back. My
+  aperture bound relaxes automatically when they do; **no change to this block
+  is required after their fix, only a re-run.**
+* `work/b1dof/dump.json` is stale (R2-791) and other blocks cite it.
+* `beat_sheet.json`'s `fstop_required` is partly artefact (R2-794) and is quoted
+  in at least one other document.
+
+## R2-804 — VERIFICATION, ON FRAMES
+
+3840×2160, 64 samples, AgX / look None / exposure −3.628, both arms from
+`render/r2791_dof_ab.blend`, in `work/r2791/ab2/`.
+
+**On resolution.** I was told 720p might not be enough to judge sharpness. It is
+enough for *this* note and not for the general question, and the distinction is
+worth keeping: circle of confusion scales with resolution, so blur as a FRACTION
+OF FRAME WIDTH is resolution-independent and the gross defocus the client
+objected to reads identically at 720p — which is exactly why they could object to
+it from a 720p clip. What 720p cannot adjudicate is whether the subject is
+*critically* sharp at the 2 px / 4K budget, because 2 px at 4K is 0.67 px at
+720p. Since 4K frames measured at ~59 s each on this card (R2-802), the question
+was moot and everything below is 4K.
+
+**f258, the SW station — the frame that most deserves the client's note.**
+
+* SHIP: the steering-wheel face is on the plane and reads. **Nothing else in the
+  frame does.** The tyre behind it is a formless dark blob with no tread, no rim
+  and no brake gear; the glass wall is an undifferentiated blue wash; the dais is
+  featureless white. One object floating in cream.
+* FIX: the tyre resolves — tread blocks, rim spokes, brake duct, the red sidewall
+  band. The glass wall resolves into mullions and panels. The dais takes surface
+  texture and the floor markings appear. The wheel face is marginally softer than
+  SHIP's and remains entirely legible.
+
+That single pair is the note answered: the frame goes from one sharp object in a
+cream field to a car part standing in a showroom.
+
+**f49, the MB station — the control that the fix must NOT flatten.** This is the
+widest, best-behaved station, already acceptable in the shipping film, and the
+one where over-stopping would show as a CAD render. FIX resolves the two
+background wheels (spokes, brake components, sidewall bands) and the far wall's
+panel grid, while **the "MERIDIAN 3600 mm WHEELBASE" floor lettering and the far
+background stay soft.** Depth still falls off. This is the R2-797 background bound
+doing what it was put there to do — at MB it holds the iris near f/3 rather than
+letting it go to f/8.
+
+**Motion blur is a separate and untouched defect.** In both arms of f258 the
+steering wheel carries heavy directional streaking, and f150 carries it across
+the whole frame. That is shutter and camera speed, it belongs to the pacing
+agent, and no part of this block changes it. **A reviewer looking at these frames
+should not read the remaining smear as focus.**
+
+**f150, a transit frame — the largest measured focus error in the beat, 3.71 m,
+and the one that isolates FOCUS from aperture.** The shipping curve is at 2.041 m
+here; the lens is actually pointed at material 5.754 m away. Nothing whatever in
+the shipping frame is sharp — not the wheel, not the stanchion, not the floor
+line, not the wall.
+
+* FIX: the plane lands on the wheel and suspension at ~5.7 m. The tyre's red
+  sidewall band, the rim and the brake structure resolve; the suspension links
+  read as metal with defined edges; the rope stanchion gains a hard edge and a
+  defined base disc; the floor line and its reflection tighten.
+* The near dais surface across the bottom stays soft, correctly — it is close and
+  outside the plane.
+
+This is the half of the fix that aperture cannot produce. At f258 the improvement
+could be attributed to stopping down; here the shipped frame has no sharp
+content anywhere, so a readable wheel can only have come from moving the plane.
+
+**Honest limit on this frame:** f150 remains a soft *image* overall, because it
+carries heavy motion blur across the stanchion, the wall markings and the
+suspension. Focus is fixed; the smear is not, and is not mine.
+
+All six FIX frames (f49, f150, f258, f371, f464, f592) rendered and held in
+`work/r2791/ab2/`.
+
+## R2-806 — THE RE-FRAMING LANDED MID-BLOCK AND IT FLIPS THE SIGN OF THE APERTURE FIX
+
+`docs/beat_sheet.json` was re-authored at 03:48 while this block was in progress:
+**23 beat-1 camera keys became 19**, the four corner stations collapsed into one
+`CORNER_GROUP` at t = 19.33 s, and the close-out became six `CAR` keys as the seat
+schedule moved earlier. This is the framing fix the other agent described.
+
+**It works, on my measurement.** Stations with under 0.20 m of depth of field at
+their own shipped aperture:
+
+| | old sheet | new sheet |
+|---|---:|---:|
+| stations under 0.20 m of DOF | **8 of 17** | **3 of 19** |
+| the four corners | 0.053–0.055 m each | one station, **5.472 m** |
+
+The corner stations are no longer unfixable. R2-803's open item is closed by
+their work, not mine.
+
+**And it creates the mirror defect, which is mine.** Pulling back moves the
+subject toward the background, so at the *same* shipped f/2.8 the room comes
+forward. Background circle of confusion at 12 m, new sheet, shipped apertures:
+
+| station | old | **new** |
+|---|---:|---:|
+| MB | 6.5 px | **2.8 px** |
+| CORNER_GROUP (was CORNER_RL) | 75.9 px | **2.3 px** |
+| the six CAR keys | — | **2.0–2.2 px** |
+
+**This film calls 2 px sharp.** Eight of nineteen stations now put the showroom
+inside that, which is the CAD-render look the brief forbids arriving by the other
+door. So under the new framing **the aperture correction changes sign across the
+beat**: still stopping down at the three remaining 58 mm close stations, now
+opening *up* at the wides to keep the room off the subject's plane.
+
+`N_MIN` was therefore lowered from f/2.8 to f/2.0. The original floor encoded
+"nothing in a beat complained about as too blurry should ever open wider than it
+shipped", which was true of the framing this work started against and is false of
+the one that landed. The background bound now acts in both directions.
+
+**Nothing else in this block needs changing** — that is the property R2-796 was
+built for. The solver reads the camera and the parts, not the sheet's numbers.
+
+## R2-807 — WHAT IS AND IS NOT VERIFIED, GIVEN THE TIMING
+
+Stated plainly so nobody over-reads R2-804.
+
+* The **A/B frames in `work/r2791/ab2/` are against the camera that SHIPPED**
+  (`render/film16_path.json`, the film16 tour). They are a valid, controlled test
+  of the focus and aperture change on that camera, and R2-798's zero-difference
+  transform guarantee holds for them.
+* They are **not** a test of the new sheet. No rig has been built from the 19-key
+  sheet yet, so no per-frame camera path for it exists.
+* The correct next step is mechanical and is the workflow this was designed for:
+  build the rig from the new sheet, run `tools/r2791_depth_grid.py` on it, then
+  `tools/r2791_apply_focus.py --grid …`. **No re-authoring.**
+* The numbers in R2-799 (0.9 % → 45.0 % of the subject sharp; 174 → 86 dead
+  frames) are measurements of the OLD framing. Under the new framing the shipped
+  arm will start from a better place and the headroom will be smaller. Quoting
+  them against the new sheet would overstate this block's contribution.
+
+## R2-805 — FOR THE AGENT RE-PACING THIS BEAT
+
+* Run `tools/r2791_apply_focus.py` **after** your rig build. It reads the camera
+  you authored and writes only `dof.focus_distance` and `dof.aperture_fstop`; it
+  snapshots location, rotation and lens before the pass and fails the run if any
+  of them moved. Verified clean: `position 0.000e+00 m, rotation 0.000e+00, lens
+  0.000e+00 mm` over 42 frames.
+* Give it `--grid` from `tools/r2791_depth_grid.py` run on your rig. Without a
+  grid it falls back to the geometric field model, which R2-798a shows is worth
+  only a quarter of the fix.
+* **Pulling the corner stations back helps me automatically.** The aperture bound
+  relaxes as standoff grows; nothing in this block needs re-authoring after your
+  change, only re-running.
+* `CLOSEOUT_F = 622` is where I hand back to the sheet. If your re-pacing moves
+  the close-out, pass `--closeout` rather than letting it drift.
+
+## R2-821 — the client's three notes are TWO defects, and framing is not the cause of the pacing one
+
+The coordinator asked whether "way too slow" and "way too zoomed in" are one fact
+seen twice. **They are not.** They have different causes, in different files, and
+fixing either one alone leaves the other note standing.
+
+**They are distinct, and here is the proof.** The frames in which the whole car
+fits the frame are, on the shipping path, exactly three runs:
+
+```
+f1-36      36 frames   1.50 s   t  0.0- 1.5 s    the establishing opening
+f177-184    8 frames   0.33 s   t  7.3- 7.6 s
+f657-792  136 frames   5.67 s   t 27.3-33.0 s    the close-out
+```
+
+Between f37 and f656 the car is **exploded across 616 parts**. There is no whole
+car to fit, at any focal length, from any distance. Widening every station to
+infinity would still show an unfinished car until the corners land. The seat
+schedule is computed in `tools/build_beatsheet.py:1064-1073` and baked into
+`world/beat1_anim.blend`; it knows nothing about the camera.
+
+Conversely, moving the seat schedule earlier without widening would complete the
+car at t≈19 s in front of a camera 1.50 m from a wheel assembly at 2.32× frame
+overflow — the audience would not be able to see that it had finished.
+
+**So: framing is the root of "too zoomed in". It is not the root of "too slow".
+It is, however, what PAYS FOR the fix to "too slow" — see R2-828.**
+
+---
+
+## R2-822 — the car does not read whole at t = 26.3 s. It reads at t = 29.0 s, and the payoff is 4.0 s, not 5.71 s
+
+R2-430 puts the first whole-car frame at **f631 / t = 26.3 s**. R2-464 puts it at
+**f657 / t = 27.4 s**. The two have never been reconciled. **Both are early.**
+
+Contact sheets of f619-f705 and f682-f703 off the delivered 720p ladder:
+
+```
+f619   fragment; front wing unpainted, body cut off              does not read
+f631   body reads as a car — BUT ALL FOUR WHEELS ARE ABSENT      R2-430's claim
+f643   wheels arriving, car cropped at frame right
+f657   wheels present but visibly detached and floating          R2-464's claim
+f669   near-whole; front-left wheel still separate
+f682   wheels clearly apart, suspension links extended
+f691   wheels closing, still gapped and smeared
+f697   COMPLETE CAR — all four wheels attached, full context
+f700   whole, settled
+```
+
+R2-430 and R2-464 are both measuring **the moment the car's BODY reads**, with
+the corners still in flight. The complete car — which is what the shot is of —
+arrives at **f696-697, t ≈ 29.0 s**.
+
+**Corroborated three independent ways:**
+
+1. **Pixels** (above): wheels attach between f691 and f697.
+2. **The beat sheet's own arithmetic.** `seat_t[corner] = seat_start + 11·per`
+   = `33.0·0.42 + 11·(33.0·0.50/12)` = **28.985 s = f696**, exactly.
+3. **Frame-to-frame image change** (below, R2-823): the 1-second rolling mean
+   drops below 8.0 for the first time at **f683** and never returns.
+
+**Consequence: the sustained readable stretch is f697-792 = 96 frames = 4.0 s of
+a 33.0 s beat — 12 %.** Not 5.71 s. The problem is ~1.7 s worse than briefed,
+and the wait is 29.0 s, not 26.3 s.
+
+---
+
+## R2-823 — beat 1's energy curve is INVERTED: 4.14× more on-screen change where nothing reads than where the subject does
+
+This is the mechanism behind "way too slow I feel", and it is not "the camera
+moves slowly". Mean absolute frame-to-frame luminance change, all 792 delivered
+frames at 160×90:
+
+```
+segment                      t              n     mean    median
+establishing wide          0.0- 2.5 s      60    13.16     13.34
+unreadable tour            2.5-26.3 s     571    20.27     19.83
+car resolves              26.3-29.0 s      65    14.59     10.79
+readable payoff           29.0-33.0 s      95     4.89      4.60
+```
+
+**Ratio, tour to payoff: 4.14×.** Cumulative on-screen change over the 4.0 s
+payoff is **465**; over an equivalent 4.0 s window at t=6-10 s it is **1950**.
+
+> **The beat spends its energy where there is nothing to see, and goes still the
+> moment there is something to see.**
+
+The viewer gets 26 s of rapid motion through unparseable close-ups, then a
+near-static hold on the one image they were waiting for. Both halves read as
+slow, for opposite reasons. This is why "too slow" is not answered by moving the
+camera faster — the tour is already the fastest part of the beat.
+
+Corroborates R2-321 from the opposite direction: R2-321 measured 1.5 px median
+smear in the protected region against 54.7 px over the tour (a factor of 36) and
+called it "the region where the camera stops moving". It is the same fact —
+R2-321 read it as a virtue of the close-out, and it is also a pacing defect.
+
+---
+
+## R2-824 — the root cause of "too slow" is two constants, and SHORTENING beat 1 makes the payoff SHORTER
+
+`tools/build_beatsheet.py:1064-1065`:
+
+```python
+seat_start = dur * 0.42
+seat_span  = dur * 0.50
+```
+
+`0.42 + 0.50 = 0.92`. **Assembly completes at 92 % of beat 1 by construction, for
+any value of `dur`.** The payoff is the remaining 8 % — 2.6 s of nominal budget,
+4.0 s as delivered.
+
+**This settles the duration question, and the answer is: do not change the
+duration.**
+
+| beat 1 `dur` | assembly completes | payoff |
+|---:|---:|---:|
+| 24.0 s | 22.08 s | **1.92 s** |
+| 33.0 s (ship) | 28.99 s | **4.01 s** |
+| 40.0 s | 36.80 s | 3.20 s |
+
+Shortening beat 1 to 24 s — the intuitive response to "too slow" — **more than
+halves the payoff**, because everything is expressed as a fraction of `dur`. It
+would also cost an audio-master rebuild for a strictly worse result.
+
+Independently predicted by **R2-455**: the feasibility constraint is
+`cum_cost(k)/total_cost <= deadline(k)/span`, both sides ratios, so absolute tour
+cost cancels — *"a runtime increase cannot buy relief from a constraint expressed
+as a fraction of the runtime."* The converse holds too: a runtime **decrease**
+buys no relief either.
+
+**Recommendation: beat 1 stays 33.0 s / 792 frames. The film stays 124.0833 s.
+The audio master does not need rebuilding.** The fix is entirely inside the two
+fractions above and the standoff law, and it is duration-neutral.
+
+---
+
+## R2-825 — the four corners cost 9.2 s (28 % of the beat) to present four near-identical assemblies that all seat at the same instant
+
+From the live gate run (`python3 tools/build_beatsheet.py --check docs/beat_sheet.json`):
+
+```
+RW          presented t 15.42 s
+CORNER_RL   presented t 19.29 s   1.53 m   58 mm   2.15 x frame height
+CORNER_RR   presented t 21.62 s   1.53 m   58 mm   2.12 x
+CORNER_FR   presented t 23.08 s   1.50 m   58 mm   2.01 x
+CORNER_FL   presented t 24.62 s   1.50 m   58 mm   2.32 x
+all four seat simultaneously at t 28.985 s
+```
+
+From RW's presentation to CORNER_FL's is **9.20 s — 28 % of beat 1** — spent
+presenting four assemblies that `docs/explode_plan.json` itself declares a
+`simultaneous_group`, so they impose no order on each other. `CORNER_RL` and
+`CORNER_RR` are both 745,562 tris; `CORNER_FR` and `CORNER_FL` are both 690,930.
+**The audience is shown the same object four times, each overflowing the frame
+by 2.0-2.3×, none of them readable.** This also sits against the project's
+no-repeated-assets red line.
+
+This is the single largest recoverable block of time in the beat.
+
+---
+
+## R2-826 — instrument notes, both load-bearing
+
+**(a) `tools/lap_shotscale.py` does not measure beat 1.** Run on the shipping
+path it prints:
+
+```
+1_assembly    792    --    --    --   (car exploded; not measured)
+```
+
+`--selftest` passes all four controls (`SELFTEST_OK`), so the tool is sound — it
+simply declares no authority over beat 1, by design, because it projects the
+car's *assembled* box. **Any beat-1 shot-scale figure attributed to
+`lap_shotscale.py` did not come from it.** For beat 1 the instrument is
+`tools/beat1_true_extent.py`.
+
+**(b) `tools/beat1_true_extent.py` is unreliable on 24 % of beat 1**, and this
+has not been recorded before. Its `extent()` drops bounding-box corners that fall
+behind the camera and computes the hull from whatever remains. On beat 1:
+
+```
+frames with a bbox corner behind the camera   190 of 792  (24.0 %)
+```
+
+Those readings are spurious in **both** directions — f357 reads 29.9 % (an
+apparently wide frame that is actually the camera sitting inside the car's
+footprint) and f385 reads 65795 %. Neither is meaningful. Statistics quoted over
+all 792 frames inherit this.
+
+**On the 602 frames where the projection is fully in front of the camera:**
+
+```
+median car width   213.2 % of frame width
+p90                603.6 %
+frames that FIT    193
+```
+
+`f1 = 35.0 %` — confirming the establishing opening is correct and is the beat's
+widest shot. The coordinator's cited 191.7 % / 559.4 % are in the same family and
+slightly conservative; the direction of the client's note is confirmed, not
+challenged.
+
+> **That 24 % is itself the finding.** For a quarter of beat 1 the camera is close
+> enough that part of the assembled car's bounding box falls *behind the camera
+> plane*. That is a more vivid statement of "too zoomed in" than any percentile.
+
+---
+
+## R2-827 — ID correction: the cluster-overflow defect is R2-317, not R2-116
+
+R2-116 (`DEFECT-LOG-R2.md:4456`) is `spectator_seated` / `ITEM_UNMEASURABLE` — a
+crowd-item gate defect, unrelated to beat 1. The overflow defect is **R2-317**
+(`DEFECT-LOG-R2.md:8373`), *"every one of the fifteen presentations overflows its
+own frame, 1.06× to 2.59×"*, still open per `STAGING-R2-451-to-R2-470.md:999`.
+The range **1.07×-2.40× does not appear in the log** and should not be carried
+forward.
+
+Live re-measurement today (the gate's own FRAMING block) gives per-cluster
+overflow of **1.11× to 2.32×** on the current camera, 15 of 15 failing.
+
+---
+
+## R2-828 — the proposed fix, and why the framing change is what pays for the timing change
+
+Three changes, coupled. None of them touches duration.
+
+**1. Make the standoff law lens-aware** (`tools/build_beatsheet.py:612`):
+
+```python
+standoff = max(radius * 1.55 + 0.42, 0.75)     # fixes SOLID ANGLE, lens-blind
+```
+
+The gate already prints the required distance for every cluster ("it would fit
+at X m"). Worst cases: `RW` 1.53 → 4.10 m, `CORNER_FL` 1.50 → 4.10 m,
+`FD` 3.25 → 6.37 m, `MB` 4.86 → 7.52 m.
+
+**2. Present the four corners as ONE group** from a single pulled-back vantage
+(R2-825). They seat simultaneously and impose no order on each other.
+
+**3. Move the seat schedule earlier** (`:1064-1065`), e.g.
+`seat_start = dur*0.30`, `seat_span = dur*0.36` → corners seat at **t ≈ 20.8 s
+(f499)**, giving a **12.2 s** legible payoff instead of 4.0 s.
+
+**Why (1) and (2) pay for (3).** Pulling stations back reduces `move_seconds()`
+in both its terms — the pan term `_pan_s()` is directly proportional to the
+bearing swept, and from farther out the bearing between adjacent clusters
+shrinks. Consolidating the corners recovers ~6.7 s of the 9.2 s in R2-825.
+Together they cut the tour's time cost enough to let the whole tour finish by
+t ≈ 18.7 s, which is what the earlier seat schedule requires (deadline =
+seat − 2.05 s, `:1245-1247`).
+
+**And it pays into the other two open notes at the same time**, exactly as R2-321
+predicted (*"the framing fix is the only one of the three that pays into all
+three"*): pulling back cuts parallax smear, and it collapses the f-stop the
+corners need from **f/37-f/100 to something reachable** — which is the other
+agent's defect, not mine, but it means our two candidates must be judged
+together and not separately.
+
+### What this changes that is currently pinned
+
+| pin | where | status |
+|---|---|---|
+| `CORNER_FL` must land on frame 591 | `:1021` assert | **must be relaxed** — derived from the dead 1.76 s uniform slot |
+| f591-792 "PROTECTED" | `tools/campath_diff.py` windows | encodes the CURRENT structure; it is the material being moved |
+| `BEAT1_CLOSEOUT` t=25.90/27.30/28.60/29.90 | `:728-745` | move earlier with the schedule |
+| establishing opening, 18 mm, −10.00°, 2.0 s lead | `:910-916` + asserts | **DO NOT TOUCH** |
+| beat 1→2 seam key at t=31.40 s | `:1088` | **DO NOT TOUCH** |
+| `world/beat1_anim.blend` | 291 MB | **must be regenerated** — `:1059-1063` warns a seat change silently desyncs parts from camera |
+
+### Cost
+
+Nothing queued. Stated in advance:
+
+- **720p proxy re-render of beat 1, 792 frames** — the ladder measured
+  **43.3 s/frame mean, 9.5 GPU-hours** total on the 5090. At vast 5090 rates that
+  is roughly **$4-7**. This is the right verification spend and it is what I
+  recommend.
+- **4K master of beat 1, 792 frames** — approximately **6-8× the proxy**, call it
+  **55-75 GPU-hours, $25-45** against a $73.33 balance. **Not to be spent until a
+  proxy has been watched and the framing/focus candidates have been seen
+  together.**
+
+### Blocked on a decision
+
+Change (2) alters the tour order, which the coordination brief requires be
+reported rather than landed unilaterally. Changes (1) and (3) are mechanical once
+(2) is agreed. Nothing has been written to `docs/beat_sheet.json`,
+`world/`, or `render/`.
+
+
+# IMPLEMENTATION — R2-829 to R2-838
+
+Landed by the agent that inherited R2-821..R2-828. Everything below is measured
+on this tree, not carried over. Candidate artefacts, so that nothing under
+`docs/`, `world/` or `render/` that another agent is reading has moved:
+
+```
+docs/R2829_beat_sheet_CANDIDATE.json     the sheet
+world/R2829_beat1_anim.blend             the 616-part assembly, REBUILT
+world/R2829_beat1_anim_anim.json         its sidecar (new seat frames)
+world/R2829_camera_rig.blend             the rig
+world/R2829_camera_rig_path.json         the per-frame path
+```
+
+`docs/beat_sheet.json`, `world/beat1_anim.blend`, `world/camera_rig*.blend` and
+everything in `render/` are **untouched**.
+
+---
+
+## R2-829 — the standoff law is lens-aware, and all fifteen presentations now fit
+
+`tools/build_beatsheet.py`. The law was `standoff = max(radius*1.55 + 0.42, 0.75)`
+— a function of the subject alone, which fixes the subtended angle at ~80 deg and
+then takes the picture through whatever lens `lens_for()` returns. An 80 deg
+subject through a 58 mm lens is two and a half times wider than the frame, so the
+overflow was the arithmetic working exactly as written.
+
+The replacement states what is actually wanted and solves for it:
+
+```
+max(extent_h / SENSOR_H, extent_w / SENSOR_W) == FILL_TARGET   (0.85)
+```
+
+on the eight bounding-box corners projected through the real lens from the real
+direction — the FRAMING gate's own measurement, so the placer is now scored by
+the instrument that judges it. It is a fixed point (`s <- s * fill / FILL_TARGET`),
+iterated on the true projection, and **solved jointly with the direction** because
+the R2-451 elevation clamp depends on the standoff and the standoff depends on the
+direction. Non-convergence raises rather than shipping an unsolved station.
+
+**Result: R2-317 is closed. 15 of 15 fitting, every one at exactly 0.850.**
+
+```
+cluster          lens   old standoff   new standoff        was      now
+MB                35        4.86 m         7.04 m       1.31 x    0.85 x
+BB                35        1.81           2.25         1.19      0.85
+CI                58        1.48           2.60         1.64      0.85
+halo_assembly     35        1.88           2.32         1.11      0.85
+FW                35        2.08           2.58         1.14      0.85
+NOSE              58        1.38           2.31         1.51      0.85
+SW                58        0.75           1.08         1.24      0.85
+SP                35        2.49           3.18         1.19      0.85
+EC                35        2.51           3.21         1.13      0.85
+FD                35        3.25           4.80         1.67      0.85
+RW                58        1.53           3.80         2.28      0.85
+the four corners  58     1.50-1.53      ONE station     2.01-2.32  0.85
+```
+
+**And it collapses the aperture the corners need, which is the other agent's
+defect.** `fstop_required` at the group's station is **f/2.24**, against f/37-f/100
+for the four individual corner presentations. RW goes f/38.5 -> f/10.9. The worst
+remaining is SW at f/24.0, which is a 0.13 x 0.28 x 0.23 m object at 1.08 m.
+
+### A correction to R2-828's own instrument
+
+R2-828 quoted the gate's `standoff_for_fill_m` — "it would fit at 4.10 m" — as the
+required distances. Those are **4-8 % high**. `s_fit = nd * extent / FILL_TARGET`
+extrapolates linearly from the current distance, and extent does not fall exactly
+as 1/d: the perspective term does not scale, so a box measured from close in
+predicts a farther standoff than it actually needs. The fixed point on the true
+projection gives RW 3.80 m where the linear estimate said 4.10, and MB 7.04 where
+it said 7.52. The gate's figure is a good seed and not an answer.
+
+---
+
+## R2-830 — the four corners are one station, and it is also a whole-car frame
+
+The union of the four exploded boxes is a real 5.26 x 4.42 x 0.72 m subject, 170
+parts, 2,872,984 tris. It goes through the same R2-829 solve as everything else
+and the FRAMING gate measures it identically — a new subject is declared and then
+checked, not exempted. Its direction is the normalised mean of the four measured
+presentation normals, so it is still measured rather than generated.
+
+It is built **in memory only** and deliberately not written to
+`docs/explode_plan.json`: `anim/build_beat1_anim.py` iterates `clusters` and
+dereferences `parts`, so a synthetic cluster there would animate a 166-part
+duplicate of four clusters that are already animated.
+
+**Station: [-6.904, 0.366, 4.266], 7.578 m, 35 mm, 25 deg depression.**
+
+**The unplanned result, and it is the best thing in this change.** The four
+corners' seated positions are the four corners of the car, so a frame containing
+the exploded group contains the assembled car. Measured from that exact station:
+
+```
+exploded corner group   0.850 of frame
+ASSEMBLED CAR           0.831 of frame width
+```
+
+The beat's climax and its establishing payoff are now **the same shot**. The
+camera arrives at a wide that holds the whole car, and the car assembles inside
+it. R2-822's complaint — that the first whole-car frame arrives at t = 29.0 s —
+is answered at **t = 19.33 s**, which is before the last part has even landed.
+
+The 9.20 s of four near-identical presentations is gone, and with it the
+no-repeated-assets breach.
+
+---
+
+## R2-831 — the seat schedule, and why 0.30 / 0.36 is not flyable
+
+`seat_start = dur*0.42`, `seat_span = dur*0.50`, summing to 0.92, so assembly
+completed at 92 % of the beat by construction. Now `0.30 / 0.38`.
+
+**The approved plan said 0.30 / 0.36 -> corners at t = 20.79 s. That schedule does
+not exist.** The plan's cost model expected the pulled-back stations to make the
+tour cheaper, because from farther out the bearing between adjacent clusters
+shrinks and the pan term falls. That half is right. The half that was not modelled
+is that `move_seconds = max(dwell, transit, pan)` and pulling the stations back
+moves them APART, so transit rises and becomes the binding term.
+
+**Measured, as minimum flyable tour time — this is the solved number the brief
+asked for, replacing the predecessor's estimate of ~6.7 s recovery and t ~ 18.7 s:**
+
+```
+shipped 15-node tour, lens-blind stations     18.91 s
+the SAME tour with lens-aware stations        21.19 s     framing costs 2.28 s
+the 12-node grouped tour, lens-aware          17.29 s     grouping saves 3.90 s
+                                                          net 1.62 s FASTER
+```
+
+The recovery is **3.90 s, not 6.7 s**. And the target was never reachable: a
+17.29 s tour starting at 2.00 s cannot present the corners before 19.29 s, and
+they may not seat until 2.05 s after that (1.55 s flight + 0.5 s margin). **The
+floor is 21.34 s.** Even the shipped lens-blind geometry could not have seated
+them before 22.96 s. 20.79 s was not taken away by the framing fix; it was never
+on the table.
+
+A 21 x 20 grid over (start, span), each cell a full Held-Karp solve against that
+cell's own deadlines:
+
+```
+0.30 / 0.36    NO visiting order exists, at any speed the beat allows
+0.28 / 0.40    corners t 21.340 s    the earliest feasible point on the grid
+0.30 / 0.38    corners t 21.395 s    <- SHIPPED
+0.42 / 0.50    corners t 28.985 s    what shipped before
+```
+
+The frontier is flat — every feasible pair has `start + 11*span/12` ~ 0.647 — so
+**0.30 is kept exactly as briefed and the span alone absorbs the deviation.** One
+number changed instead of two.
+
+**Payoff: 4.01 s -> 11.29 s. 2.81x, against the 3.05x the plan hoped for.**
+Corners seat f513, last part settled f521, beat ends f792.
+
+---
+
+## R2-832 — the solver compared a tour-relative cost against a beat-relative deadline
+
+`solve_visit_order` filtered on `cum_cost * scale <= deadline`. `cum_cost` is
+measured from the start of the tour; the deadline is measured from the start of
+the beat; and the establishing lead-in is 2.0 s of difference between those two
+origins. **This is why the shipped sheet presents FD at 14.54 s against a 13.20 s
+deadline while the solver believed it was inside it** — visible as
+`<-- PRESENTED AFTER IT HAS FLOWN` on every run of the shipped tree.
+
+Two changes. `t0` is now passed and added. And the feasibility test is the
+**minimum-time schedule** rather than a guessed scale factor: a move cannot be
+flown faster than `move_seconds`, so if the cumulative `move_seconds` to a cluster
+already exceeds its deadline, no allocation of any span can rescue it. The old
+loop guessed a scale, filtered against it, then re-derived the scale from the
+filtered answer — it converged on self-consistency, not on feasibility.
+
+The span is then **chosen rather than assumed**: `t_k = lead + span * cum_k/total`
+inverts to one upper bound on the span per cluster, and the largest span every
+cluster tolerates is taken, so the beat is as unhurried as its deadlines allow.
+Solved: **17.345 s, bound by CORNER_GROUP, ratio 0.997.**
+
+Every cluster is now presented before its deadline, with no arrow on any row.
+
+---
+
+## R2-833 — the close-out is derived, and it is now the payoff rather than a transition
+
+The four hand-placed close-out keys were anchored to landing frames 630 / 663 /
+696, all of which R2-831 moves by ~8 s. Keeping them would have pointed the camera
+at four events that no longer happen there — R2-029 reintroduced by arithmetic
+instead of by omission. The close-out is now derived from the corner group's
+solved station and the pinned seam key and moves whenever they do.
+
+**And the job changed.** Making the payoff 2.8x longer without moving the camera
+would have made the client's note worse, not better: R2-823 measured the payoff at
+4.89 mean frame-to-frame change against 20.27 across the tour, and the complaint
+was never that the camera was slow. It was that the camera went STILL exactly when
+there was finally something to look at. So the payoff is **shot**: one continuous
+orbit, azimuth 177 deg -> 327 deg the short way, behind the car and down its right
+flank to the front-right three-quarter, radius 6.9 -> 8.1 m, descending 4.27 ->
+1.90 m, lens 35 -> 40 mm so the car holds a constant size while the vantage
+changes completely.
+
+Interpolated in **cylindrical** coordinates, not Cartesian: a straight line
+between two stations on opposite sides of a car goes through the car (R2-029); an
+arc in azimuth cannot. Clearance never falls below 4.84 m against a 0.30 m floor.
+
+The final orbit key **is** the seam key object itself rather than a copy of its
+numbers, so there is only one place the seam is written down.
+
+---
+
+## R2-834 — focus is not owned here and the keys say so
+
+The orbit keys carry `focus_distance_m` = the geometric range to the aim point and
+`fstop` ramped onto the seam key's own 3.2. **These are not focus decisions; they
+are the absence of one**, present only so the key is well-formed and the rig can
+build it. The focus agent owns them. R2-829 has already moved the ground under
+that work in their favour — see the f/37-f/100 -> f/2.24 collapse in R2-829.
+
+---
+
+## R2-835 — the `CORNER_FL lands on frame 591` assertion is removed, and must not come back
+
+```python
+assert int(round(times[corners[-1]] * 24)) == int(round(corner_last_t * 24))
+```
+
+`corner_last_t = dur*0.80 - dur*0.80/15` — the 15th of fifteen equal 1.76 s slots.
+**That slot scheme no longer exists.** R2-062 replaced the uniform slot with a
+cost-proportional allocation and the constant survived only because it happened to
+remain reproducible; R2-830 removes CORNER_FL's individual presentation entirely,
+so there is nothing left for the assertion to be about.
+
+**Recorded here so it is not restored as a safety check.** It reads like one —
+"the best material in the film must come out unchanged" — but it is not a property
+of the picture, it is the arithmetic of a dead uniform slot. Any legitimate change
+to the seat schedule, the tour or the standoff law moves that frame, and an
+assertion forbidding it would forbid the fix rather than protect the shot. What
+protects the shot is the FRAMING gate and the campath gate, which measure pictures.
+
+---
+
+## R2-836 — the part/camera desync is now a printed check, not a comment
+
+The seat schedule was computed inside `build_beat1` while the presentation
+DEADLINES derived from it were read out of `world/beat1_anim_anim.json` — the
+sidecar of the last build of a 291 MB blend. Two sources for one fact, and the
+sheet trusted the stale one. `seat_schedule()` is now the single source, and
+`main()` compares it against the blend's sidecar and says so, loudly:
+
+```
+>> !! PART/CAMERA DESYNC: world/beat1_anim.blend was built from a DIFFERENT
+   seat schedule than this sheet declares — 15 of 15 clusters disagree
+   CORNER_FL  blend f696 (29.00 s)  sheet f513 (21.39 s)  -7.61 s
+   REBUILD REQUIRED
+```
+
+After rebuilding: `>> part/camera sync: world/R2829_beat1_anim.blend agrees with
+this sheet's seat schedule on all 15 clusters`.
+
+**Also R2-836: the sky/camera bind is now gated in `tools/build_film_scene.py`.**
+`build_camera_rig` deletes every camera and builds a fresh ONER;
+`build_sky.bind_camera()` points two SCRIPTED cloud-parallax drivers at a camera
+BY ID. If the sky ever predates the rig those targets go to None and build_sky's
+own docstring says the decks then "sit at world XY (0,0) and behave as a skybox" —
+no error, no crash, just a different sky, and a different sky is different LIGHT
+even for an interior beat, because the showroom has a glass curtain wall and two
+specular walls.
+
+**Verified empirically rather than assumed, and the ordering on this path is
+already correct:** `assembly10.blend` carries **0 worlds and 0 cameras**, so
+`world_before is None` always fires and `build_sky` runs AFTER the rig, binding to
+the new ONER. Both `world/camera_rig.blend` and `world/R2829_camera_rig.blend`
+were probed directly: **no node-tree drivers at all at the rig stage**, so there
+was nothing to dangle. The check is added anyway, because "it has always fired
+that way" is not a guarantee and this failure is invisible downstream.
+
+---
+
+## R2-837 — the one aim excursion in the beat was a LENS defect, not an aim defect
+
+The first built rig came back `CAMERA_RIG_FAIL`: `1_assembly: subject reaches
+1.155 of the half-frame at frame 431`. Measured every frame of beat 1 against the
+nearest cluster's bounding-sphere edge — the aim gate's own `ang / half_v`:
+
+```
+f420-433    14 frames over the 0.92 margin, peaking 1.155 @f431
+everywhere else in the 792 frames    inside the margin
+```
+
+**One excursion in the beat, and the row identifies the cause:**
+
+```
+f431   lens 46.8 mm   half-frame 12.22 deg   nearest edge 14.12 deg
+```
+
+The camera is not pointed at nothing. RW's edge is 14.12 deg off axis and the
+frame is 12.22 deg tall, so the subject is 1.9 deg outside a picture **a 37 mm
+lens would have contained**. The hop leaves RW (58 mm) for the group (35 mm) and
+the rig ramps the lens linearly across 65 frames, so the turn finishes long before
+the widening does.
+
+So the answer is not the old bridge — a key that points the camera at something
+else — it is a key that finishes the widening **before** the turn needs it, which
+is also what the shot wants: you widen as you pull back, so the car grows into the
+frame instead of snapping wide at the end. One derived key at 28 % of the hop,
+36.5 mm.
+
+**Result: worst frame-offset 1.155 -> 0.598, and all six beats PASS.**
+
+### The retired bridges
+
+`BEAT1_BRIDGES` is no longer emitted, and is kept in source with its reasoning.
+It covered a 110 deg pan between two stations 1.53 m from their subjects, halfway
+through which the lens pointed at bare floor. Both of its premises are gone:
+R2-829 pulls those stations to 3.80 m and 7.58 m, from where every station looks
+inward at the same car, and R2-830 deletes CORNER_RL's individual presentation, so
+the pan it covered does not occur. **It was not removed on that argument alone —
+the rebuilt path was measured frame by frame and has exactly one excursion, which
+is R2-837's and is elsewhere.**
+
+---
+
+## R2-838 — the orbit eased out onto a seam that beat 2 leaves at 1.29 m/s
+
+The payoff orbit used a smoothstep, `u*u*(3-2u)`, whose derivative is zero at both
+ends. That is the right curve for a move that stops, and this move does not stop —
+it hands over to beat 2. The per-frame campath gate caught it precisely:
+
+```
+[WARN] C2_path_kink: frame 754: camera speed changes 0.0439 m/frame in one
+frame, z=56.4 against a local median of 0.00086 (0.2 -> 1.2 m/s). An eased
+curve does not do this; a keyframe with a linear handle does.
+```
+
+Frame 754 is the beat 1/2 seam. **A C0-continuous seam is not enough for this
+film: a velocity step is a cut that does not look like one in a still.** The
+easing is now a cubic with the boundary conditions the shot actually has — e(0)=0,
+e'(0)=0 (the camera has been nearly still at the group station while the car
+assembled), e(1)=1, e'(1)=0.80 (matching beat 2's departure instead of fighting
+it). Final segment 0.78 m/s -> 1.74 m/s.
+
+
+## Gates, and what the rest of the film did
+
+**`campath_diff.py`, self-null printed first as required:**
+
+```
+SELF-NULL  camera_rig_path.json vs itself
+   raw stored q  (the R2-103 trap)   dq 0.204607 deg      <- the floor
+   re-normalised q                   dq 0.000003 deg
+```
+
+**Beats 2-6 are byte-identical AND frame-identical:**
+
+```
+beats 2-6   f793-2978   frames 2186   dp 0.0000 m   dq 0.000 deg   dlens 0 mm
+```
+
+and every non-`beat1` block of the sheet (`aim`, `beat1_2_seam`, `beat2`..`beat6`,
+`beats`, `doppler`, `speed_ramps`, `time_map`, `total_s`, ...) compares IDENTICAL.
+**Both pinned keys survived exactly**: the establishing opening (t=0.0,
+[-0.8409, -8.8633, 3.7566], 18 mm, -10.00 deg) and the beat 1/2 seam key (t=31.40,
+[6.8, -4.4, 1.9], 40 mm) are byte-for-byte unchanged.
+
+`campath_diff`'s `PROTECTED f648-792` window reports large deltas. That window
+encodes the OLD structure and is the material being moved; it is not a failure.
+
+**Beat 1 as built:**
+
+```
+tour       MB -> CI -> halo -> BB -> FD -> EC -> SP -> SW -> NOSE -> FW -> RW -> CORNER_GROUP
+span       17.345 s solved, ratio 0.997, bound by CORNER_GROUP
+framing    12 of 12 fit; 15 of 15 clusters at 0.850         (was 15 of 15 FAILING)
+clearance  worst 1.093 m to the car box                     (was 0.352 m)
+pan        worst 8.39 % of frame width per frame, limit 12  (was 9.4 %)
+speed      max 3.8 m/s per-frame, peak limit 4.0            (2 pre-flight
+                                                             UNRESOLVEDs both
+                                                             resolved by the
+                                                             per-frame gate)
+aim        worst 9.20 deg, offset 0.598, margin 0.92        (was FAIL at 1.155)
+```
+
+## R2-851 — the closing wide contains a 91.5 deg/s whip pan, and the film's law forbids one
+
+**MEASURED** on `world/camera_rig_path.json`, the shipped rig.
+
+`sheet["aim"]["6_ending"]` hands the subject off from the car to a fixed point —
+the breached facade at `[15, 0, 3.1]` — over `car_until_t 4.0 → point_from_t 6.0`.
+At the moment of the hand-off those two subjects are **82 deg apart** in bearing
+from the camera, so the aim does not ease between them, it *travels* between them:
+
+| | shipped | this candidate |
+|---|---:|---:|
+| peak pan, beat 6 | **91.5 deg/s** at f2832 | 11.0 deg/s at f2810 |
+| mean pan, beat 6 | 10.94 deg/s | 3.77 deg/s |
+| worst rotation smear @4K, 180 deg shutter | **84.8 px** at f2832 | 36.5 px at f2976 |
+
+f2814–f2858 is 44 frames — 1.83 s — of ~95 deg of yaw. At the 18.8–19.5 mm lens
+the beat is carrying there, that is 84.8 px of uniform smear across the whole 4K
+frame. On the 720p encode the client watched it is visible as a mush: the frame
+at f2835 has no readable edge anywhere in it.
+
+**The continuity gate does not see this and cannot.** `rot_limit_deg` is **45.0
+degrees per frame** — 1,080 deg/s — so a whip would have to be twelve times
+worse before the gate noticed. The gate's own report calls beat 6 the *best*
+beat in the film: `aim_per_beat["6_ending"].ang` is **0.054 deg**, because the
+camera is pointed at its declared subject to a twentieth of a degree the entire
+time. It is aimed perfectly at the wrong thing, and both facts are true at once.
+
+> The brief's law is *"Zero cuts. Zero crossfades. **Zero hidden whip-pan
+> cheats.**"* This whip is not hiding a cut, so it does not violate the letter.
+> It is still the one gesture the law names by name, and it is in the last beat.
+
+**Recommend a rate bound on the beat sheet**, not just the per-frame step: pan
+rate has no gate anywhere in this film, exactly as R2-113 found lens rate had
+none (`campath_gate` computes `dlens` and never uses it). A sensible bound is
+the smear it produces, since that is the thing that damages the picture:
+`rate_deg_s * (shutter/fps) * (3840 / hfov_deg)` under ~40 px at 4K.
+
+---
+
+## R2-852 — the film's subject leaves the film 5.5 s before the film ends
+
+**MEASURED** by projecting `anim/carpath.Car` through the shipped rig, per frame.
+
+| frame | car distance | car width @4K | screen x (of 3840) | |
+|---:|---:|---:|---:|---|
+| f2714 | 85 m | 200.0 px | 1920 | centred, the seam |
+| f2790 | 300 m | 50.0 px | 1920 | centred |
+| f2810 | 381 m | 38.5 px | 1920 | centred |
+| f2830 | 464 m | 31.3 px | **3436** | at the right edge |
+| f2860 | 580 m | 24.7 px | 5385 | **off frame** |
+| f2978 | 1000 m | (45.8 px) | 11641 | off frame, 84 deg away |
+
+The car exits frame at roughly **f2845** and never returns. **133 frames — 5.5 s
+— of the film's ending have no car in them.** The film's last three frames were
+independently found to have the car hidden behind `BR_FenceMesh_L03`; that is
+true but it is downstream of this. The car is not occluded at f2978, it is
+*84 degrees outside the field of view*.
+
+R2-113 established the constraint honestly and it still holds: the car and the
+wound are ~1 km apart at f2978 and no single frame can hold both. **What R2-113
+did not weigh is that choosing the wound costs the film its subject for the last
+quarter of the beat**, and the subject is the thing the audience has been asked
+to care about for 113 seconds. That trade was never stated as a trade.
+
+Note also: the shipped hold is **0.0022 m of movement and 0.00 deg of pan over
+72 frames** — R2-113's own words, *"it is not a held frame, it is a still"* —
+and its remedy was a lens push on a frozen camera. A lens push on a locked-off
+frame is what a still photograph being zoomed looks like. **That is precisely
+what "we just zoom out" is describing**, and the client is describing the last
+gesture of the film accurately.
+
+---
+
+## R2-853 — CANDIDATE: lens and aim only. Every camera position byte-identical.
+
+`docs/R2851_beat_sheet_CANDIDATE.json`, built to
+`work/r2851/camrig_R2851.blend` + `_path.json`.
+
+    >> STAGE RESULT: CAMERA_RIG_CONTINUOUS_AND_AIMED
+
+Two edits and nothing else:
+
+| `beat6.keys[].t` | −3.0 | −1.0 | 0.0 | 2.0 | 4.0 | 6.0 | 8.0 | 11.0 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| lens shipped | 32 | 28 | 24 | 21 | 19.5 | 18.75 | 40 | 74 |
+| lens candidate | 32 | 28 | 24 | 21 | **22** | **30** | **55** | **130** |
+
+and `aim["6_ending"]` becomes the car for the whole beat (`car_until_t` and
+`point_from_t` both 11.0, so `fixed_point` stays declared and the
+`undeclared()` validator is still satisfied).
+
+**Every `world[]` and every `speed` is unchanged, so the position path is not a
+new curve — it is the same curve.** Verified frame by frame against
+`world/camera_rig_path.json`:
+
+* **f1–f2714, worst position delta `0.000e+00` m, quaternion `0.000e+00`, lens
+  `0.000e+00` mm.** The candidate is bit-identical to the shipped film up to and
+  including the seam frame.
+* **The f2714/2715 seam is arithmetically the same object in both:** 2.5454 m
+  and 0.1063 deg in the shipped rig, 2.5454 m and 0.1063 deg in the candidate.
+  The 1.33 % / ±0.72 MAD pixel measurement of that seam is not at risk, because
+  no input to it moved.
+* f2715–f2978 worst position delta **2.26e-3 m** — the Hermite resample's own
+  float noise, not a change.
+* `worst position jump 4.247 m at f1209` and `worst rotation step 12.957 deg at
+  f2634` — both identical to the shipped rig, i.e. beat 6 does not become the
+  film's worst case in either metric.
+
+What it buys, on the path (**not yet on frames**):
+
+* peak pan **91.5 → 11.0 deg/s**, smear **84.8 → 36.5 px**. The whip is gone —
+  not smoothed, *gone*, because the camera is now following something that
+  genuinely moves through that arc instead of jumping to a point 82 deg away.
+* the car is in frame on **every frame of the beat**, and it never drops below
+  **35 px** at 4K.
+* the last 3 s stops being a still: **2.89 deg of pan** across f2906–2978 where
+  the shipped hold has 0.00, and the car **grows from 45.8 px to 78.5 px** as
+  the lens lengthens. The hold now has a reason to be a hold.
+* the wide still happens, and earlier, where it is a landscape rather than a
+  plan: f2763–f2811 at 21–22 mm and 62–99 m altitude, ~483 m across frame.
+
+**What it gives up, stated plainly:** the breached facade. It is no longer in
+the last frame at all. See R2-855.
+
+---
+
+## R2-854 — the "patches in the land" are a 155 m Voronoi partition, and the lens crops them but does not fix them
+
+Mechanism established by forensics on `world/build_terrain.py` (findings are
+that agent's; recorded here because they decide what the closing wide is allowed
+to look at). **Do not merge this as a terrain fix — it belongs to #127's thread
+and to whoever owns `build_terrain`.**
+
+`field_pattern()` (`build_terrain.py:1140-1163`) is a Voronoi partition on a
+**155 m lattice** warped by only ±46 m, so its cells are convex polygons with
+**straight edges**. One `fid` per cell drives *both* colour terms:
+
+* `ter_field` → `pal[floor(fid*3)]`, a **three-entry palette**, mixed in at a
+  hard **0.55** constant (`build_terrain.py:2818`) — `pal[2]` = `(0.290, 0.215,
+  0.093)` is the tan/khaki region;
+* `ter_dry` → `0.15 + 0.85*fid`, swinging the other 45 % between albedo 0.051
+  and 0.127 — **1.3 stops**.
+
+Because they share `fid` they **add instead of decorrelating**, and the
+transition occupies exactly one 2.5 m vertex cell. Meanwhile the ground shader's
+colour spectrum has **nothing at all between 0.385 m and 7.7 m**, and nothing
+unconditional between 0.385 m and 19 m. At the shipped closing wide's ~339 mm/px
+everything at or below 0.4 m is sub-pixel, so **the only structure that survives
+into the frame is 19 m and coarser** — which is to say, the patches, and nothing
+else. Grass geometry is culled to zero beyond 700 m of the camera path, so most
+of that frame is bare shaded mesh.
+
+**What the candidate's lens does about it, arithmetically:**
+
+| | shipped | candidate |
+|---|---:|---:|
+| widest lens in the beat | 18.75 mm | 22 mm |
+| widest frame span | ~1,143 m | ~483 m |
+| 155 m field cells across the widest frame | ~7 | ~3 |
+| final-frame span | ~595 m | ~277 m |
+| 155 m field cells in the final frame | ~4 | **~1.8** |
+| final-frame ground sampling | ~74 mm/px | ~72 mm/px |
+
+So the lens **removes most of the patch boundaries from the frame** — that is a
+real and cheap answer to the literal complaint. It does **not** make the ground
+good, and it makes one thing worse: at 72 mm/px the missing 0.4–19 m detail band
+lands at 5–260 px, so the smoothness is now *more* legible per pixel even though
+the blotching is less legible per frame. See R2-856, which measures this instead
+of predicting it, and which contradicts the prediction I made first.
+
+---
+
+## R2-856 — how much of each closing frame is bare, grass-less mesh — MEASURED
+
+Method: ray-cast a 96×54 grid through the frustum of the actual built path onto
+z=0, then evaluate `build_terrain.py`'s own two scatter conditions at each hit —
+`D < 430 m` from the centreline (line 3808) and `smoothstep(700, 260, dcam)`
+against the camera path (line 3812). "Bare" means the ground is in frame and
+carries **no grass geometry at all**, only the shader.
+
+| | sky | grass | **bare mesh** | ground range |
+|---|---:|---:|---:|---|
+| **f2860, the widest moment of the pull-back** | | | | |
+| shipped, 18.75 mm | 31.5 % | 42.0 % | **58.0 %** | 198 – 5,221 m |
+| candidate, 30 mm | 20.4 % | 77.5 % | **22.5 %** | 250 – 4,657 m |
+| **f2978, the last frame** | | | | |
+| shipped, 74 mm | 0.0 % | 62.3 % | **37.7 %** | 392 – 1,463 m |
+| candidate, 130 mm | 0.0 % | 54.4 % | **45.6 %** | 644 – 2,122 m |
+
+**At the moment the client is describing** — the widest point of the pull-back —
+**58 % of the shipped frame is ground with no plant geometry on it whatsoever**,
+sampled at ~339 mm/px by a shader whose finest surviving colour term is 19 m.
+That is the patchwork, and it is now a number. The candidate cuts it to 22.5 %,
+because a 30 mm lens aimed at the car is looking at circuit, and the circuit is
+inside the scatter radius.
+
+**But the candidate's last frame is worse on this metric, not better** — 45.6 %
+bare against 37.7 %. My earlier prediction in R2-854 that T1 would be inside the
+grass radius was right about T1 and wrong about the frame: a 130 mm lens at 8.4°
+depression reaches from 644 m to **2,122 m**, and the far half of that is past
+`dcam < 700`. The long lens buys patch-boundary cropping and pays for it in
+bare ground. Recorded rather than smoothed over.
+
+**Lens sweep at f2978, same viewpoint** (the camera is static from f2906, so
+only the lens differs):
+
+| lens | car px @4K | sky | bare | horizon in frame |
+|---:|---:|---:|---:|:--:|
+| 70 mm | 43.5 | 6.3 % | 42.2 % | **yes** |
+| 85 mm | 52.4 | 0.0 % | 47.5 % | no |
+| 100 mm | 61.4 | 0.0 % | 47.1 % | no |
+| **130 mm (candidate)** | **79.5** | 0.0 % | 45.6 % | no |
+| 160 mm | 97.7 | 0.0 % | 44.4 % | no |
+
+Two things fall out. **`bare` is flat at 44–48 % across 85–160 mm** — going
+longer does not buy back ground quality, so 130 mm is not costing anything a
+shorter lens would save. And **the horizon leaves frame between 70 and 85 mm.**
+The shipped final frame is also 0 % sky; a closing frame with no horizon in it
+is part of why both read as a plan rather than a view, and it is worth deciding
+deliberately rather than inheriting.
+
+The refinement this points at, **not** in the candidate and untested: ~85 mm
+with the car framed in the **lower third** rather than centred, which puts the
+horizon back across the top with the car still at ~52 px. `sheet["aim"]` has a
+`z_off` but it is a constant over the whole beat and the car is 85 m away at
+f2715 and 1,000 m away at f2978, so a fixed offset cannot do it — it would need
+a declared framing offset that scales with subject range. f2937 in the candidate
+is the same viewpoint at ~84 mm and is being rendered at 4K, so this can be
+judged on pixels before anyone writes that parameter.
+
+**Minimum terrain work this shot still needs, in priority order** (all
+procedural, all inside existing files, none of it mine to land):
+
+1. **Decorrelate `ter_dry` from `fid` and feather the cell boundary using
+   `fdist`** — which is already computed and already used for hedges. ~6 lines.
+   Kills the straight-edged patches outright.
+2. **Fill the 0.4–60 m hole in `mat_ground`'s colour ladder** and the matching
+   normal gap between `bump1` (0.385 m) and `bump2` (7.69 m). `ter_dist` is
+   already created as an Attribute node at `build_terrain.py:2785` **and linked
+   to nothing** — the crossfade hook exists.
+3. **`SKY_STRATA=1`.** Structured low haze is written, tested and documented in
+   `build_sky.py:944-966` and is off by default. It is the one-line fix for the
+   featureless brown horizon band, which occupies ~15 % of the shipped closing
+   frames.
+4. Treeline: the beat-6 treeline is **16 unique L2 meshes repeated 150–256×
+   each** (birch L2 is 4,089 instances from 16 meshes). That is 1.5–2.5× past
+   this project's own "one tree spammed 100 times" red line, and it is only
+   visible from altitude — i.e. only in this beat.
+
+**Verdict on the ordering question:** the terrain work does *not* block the
+camera change, and the camera change should go first. The reason is not cost, it
+is that a beautifully textured version of the shipped ending is still an ending
+with no subject in it. Fixing the ground makes the shipped wide *not ugly*; it
+cannot make it *about* anything. Conversely the candidate reduces the ground's
+share of the frame, which buys the terrain thread time without buying it an
+excuse.
+
+---
+
+## R2-855 — what the ending is for, and the alternative that was rejected
+
+The shipped ending's declared content is *"the circuit with the breached
+showroom in it"*, and its last gesture is a push from 40 mm to 74 mm that brings
+the wound from 37 px to 65 px. R2-113 did honest work to make that read and its
+measurements are sound. **It still does not land, and the reason is not
+resolution.**
+
+At 65 px in a 3840 px frame the wound is 1.7 % of frame width, sitting in a
+field of transporters, containers, light masts and paving of equal contrast,
+and the audience last saw that building **80 seconds earlier, from inside, at a
+completely different scale**. It asks a viewer to recognise a grey shed and then
+read a hole in it, with no isolation, no contrast cue and no lead-in. The client
+watched exactly this and reported seeing patches of land — which is what you see
+when the intended subject does not resolve as a subject.
+
+**The candidate's answer to "what is being revealed that is worth the last four
+seconds":** the car, alone, still running, getting further away and *sharper* as
+the lens lengthens on it. The film ends on the thing it is about, leaving under
+its own power. The pull-back still happens and still reveals the circuit — it
+just stops climbing into a plan view and stops turning its back on the car.
+
+**The alternative, recorded so nobody re-derives it:** keep the wound and fix
+its legibility instead — isolate it with light, or push further than 130 mm on
+it, or move the hold position. Rejected for the beat because (a) the whip
+survives it, since the 82 deg hand-off is what buys the wound at all; (b) it
+still costs the last 5.5 s of the film its subject; and (c) the frame around the
+wound is a truck park, and no lens fixes that.
+
+**A third option that was NOT rejected and is not mine:** the car does not have
+to still be at 300 km/h at f2978. `anim/carpath.Car` extrapolates past the end
+of telemetry *"along the circuit's own centreline at its final speed"*
+(`carpath.py:28-33`), which is a deliberate choice and a defensible one. A car
+that decelerates on its lap-down would let the camera stay much closer to it and
+would make a far tighter ending possible. That is a change to the car, not the
+camera, and it should be decided by whoever owns the car — but the closing wide
+is the only beat it would affect.
