@@ -607,6 +607,23 @@ what each looks like:
 If two or more of these land, the arrival has not fixed the ending either, and
 that is what this file will say.
 
+### The grade was not touched, and the constraint that protected it still holds
+
+Nothing in R2-941..R2-950 changes the view transform, the look or the exposure.
+The re-key script asserts **3840×2160 / AgX / look None / exposure −3.628** and
+refuses to save if any of them drifted; its own output line reports what it saw.
+
+**The standing constraint — no crushing saturation, no lifting blacks — is not
+discharged by this change and must not be treated as if it were.** R2-862
+measured the car at 1 km as *brighter* than its surround with a **0.14
+blue-minus-red** colour break doing the work, and warned that a routine grade
+pass would destroy the only thing making it findable. At 231 px the car is
+resolved rather than inferred, so it no longer *depends* on that break — but
+every other distant read in the film still does, the lap is 63.5 s of distant
+car, and a grade is one pass over the whole duration by the brief's own law.
+**The constraint outlives this task, and this task is not evidence for relaxing
+it.**
+
 ---
 
 # R2-951 .. R2-965 — THE AUDIO REBUILD AGAINST THE LAP-DOWN
