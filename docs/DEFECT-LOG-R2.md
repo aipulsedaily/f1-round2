@@ -37224,3 +37224,80 @@ reads `sward: 264890 drifts` - R2-1661's figure to the unit - so it read
 R2-1821**, and the film built from assembly11 will still show the client's blank
 field. The agent **checked rather than assumed**, and held its own build rather
 than compete for an 11 GB box. Cost: **$0.10.**
+
+## R2-1170 — THE STALENESS GUARD COMPARED SAVE TIME, NOT READ TIME, and was structurally blind to an edit landing DURING a build
+
+```
+assembly11.blend   SAVED  22:40:16
+build_terrain.py          22:25:31   <- OLDER than the save, therefore "fresh"
+                                        but READ at ~22:06, 19 min BEFORE it changed
+```
+
+**A save-time comparison cannot see a source edit that lands mid-build.** The
+generator was read at 22:06, edited at 22:25, and the blend saved at 22:40 - so
+the file is *older than the artefact* and passes every mtime test, while the
+artefact contains the *pre-edit* behaviour.
+
+**The guard did fire on assembly11 - but only by luck, on an unrelated module.**
+Without that coincidence, `film20` would have been built on a stale world with
+the guard reporting `none`.
+
+**Two changes, and the second one is the interesting argument.**
+
+1. **`assemble.py` now records a content fingerprint at READ time** - sha256 of
+   every generator, written to the sidecar **and stamped into the scene**, so
+   **the answer cannot be separated from the world it describes.**
+2. **`build_film_scene.py` now REFUSES.** Its own docstring had argued against
+   refusing: *"a guard that must be routinely overridden teaches people to
+   override guards."* **That argument is correct — about mtime**, which fires
+   when a file is merely re-saved. **Comparing content removes the false
+   positives, and removing the false positives is what makes refusal
+   affordable.**
+
+> **The objection to a refusal was an objection to its false-positive rate. Fix
+> the precision and the objection dissolves.**
+
+Tested against the shipped function: **assembly10 REFUSE (5 modules), assembly11
+REFUSE (1).** `--world-override REASON` remains, and logs the reason.
+
+`assembly12` now runs with a **before/after input-hash guard** reporting
+`ASSEMBLY12_UNSOUND` if its own sources move under it - **the exact defect that
+produced assembly11.**
+
+## R2-1171 — `build_nearband.py` IS THE FILM18 SHAPE AGAIN, ONE DAY LATER: ~1,400 lines that cannot reach a frame
+
+**`world/build_nearband.py`** - untracked, 23:05, **~1,400 lines with a `build()`
+entry point**, addressing **R2-1156**, which is **the client's own "blank grass
+5 feet from the road" complaint, one term further along.**
+
+**`assemble.py`'s `MODS` list does not include it and nothing imports it.**
+
+**Landed, apparently complete, and structurally unable to reach a frame.** That
+is **exactly the film18 shape**, found and named a day earlier - and it recurred
+while the fix for the first instance was still being written.
+
+**The build agent declined to wire it in on its own initiative**, judging an
+unreviewed module on the ship path the larger risk. **Correct.** It needs one
+decision from its author: **ready, and before or after `terrain`?**
+
+## R2-1172 — the breach preflight FAILS ON EVERY CORRECT FILM, because it measures the scene before the applier clears it
+
+`glazing_pocket_clear` lists **`GW_Right_Transom_0/1/2`** as intruders - **three
+round-1 solids this same applier deletes and replaces.**
+
+**The preflight runs before the deletion.** So it **fails on every correctly
+built film**, and `film18` only got through **with `--force`.**
+
+**A gate that fails on every correct input is not a gate; it is a toll.** And its
+cost is worse than nuisance - it trains the pipeline to pass `--force`, which
+then suppresses **every other check that flag guards.**
+
+Replaced with a real one: the **post-build census** -
+`R5_intruders_over_the_wound_after` empty, east frame and wall PASS - is now
+**asserted regardless of `--force`**, and `--force` is passed at the call site
+with that reasoning written down.
+
+**`film19` is superseded and its verification bar never ran**, so the bar remains
+unproven against the new sheet, car and world. **`film20` is its first real
+test.** Breach frost, the audio re-master and the beat-5 built-path hop remain
+open. **No master rendered, no cost committed.**
