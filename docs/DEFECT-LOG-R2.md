@@ -24750,3 +24750,104 @@ the *current* shipped sheet:
 and the old beat 1. Beat 1 does not affect f2715–2978, and f2978 is unchanged,
 so it remains valid for judging the *gesture* and the 4K stills; it does not
 carry the R2-859 wobble fix. Not worth re-queueing on its own.
+
+## R2-739 — the candidate camera flies where the car later drives, and two hazards the farm run found in tools nobody was auditing
+
+### The camera is 9.40 m from a place the car later occupies
+
+R2-738's clearance figures are same-frame: how close the camera passes to
+geometry at the instant it passes. The car is a moving thing and the camera is
+150-190 m ahead of it, so the interesting question is different — **the camera is
+flying through places the car will drive through 50 frames later.** Checked
+against every car frame out to f2500, not just the same one:
+
+```
+                closest the car EVER gets to a camera POSITION
+as built            21.43 m     camera f2137, car f2196
+candidate            9.40 m     camera f2181, car f2236
+```
+
+Same-frame separation is barely touched — 186.2 m -> 174.6 m at the crossing,
+and identical at both ends of the window.
+
+**This is not a collision and nothing here is near one**: at f2181 the camera is
+at u = −8.57, outside the 7.0 m half-width, and by the time the car reaches that
+station 55 frames later the camera is 400 m up the road. But the margin against
+the car's own corridor drops by more than half, and a low inboard camera pass is
+exactly the kind of thing that gets re-authored later without anyone re-checking
+it. It belongs on the record beside the 2.716 m.
+
+### `--budget` on the occlusion sweep does not bound what it says it bounds
+
+Found by the farm run, which had to express the sweep as a single job under
+`worker/exec_server.py`'s `MAX_TIMEOUT_S = 3600`.
+
+`tools/r2651_occlusion_sweep.py` checks `time.time() - T0 > a.budget` **only at
+the top of the module-build loop**. Once a cast pass starts, nothing stops it:
+1,922 frames against a terrain BVH will run past any budget it was given and the
+harness kills the child before the declared output is written. **The run returns
+nothing for its money, having reported nothing wrong.**
+
+That is why the local terrain pass had to be killed by hand rather than stopping
+itself, and it is a real limitation of the instrument this whole block depends
+on. The workaround in use is striding the frame set; the fix is a budget check
+inside `cast_pass`, and it is not made here because that file is the authority
+every number in this document rests on and it is not being edited mid-flight.
+
+### `build_items` reports success while placing nothing
+
+Also found by the farm run, while resolving the bundle.
+
+`build_items.check_row()` treats a missing `source_blend` as fatal **for that
+row**, but `build()` does not raise. So a sweep run without the four item blends
+present would place **zero items**, still list `items` in `meta.modules_built`,
+and still print `>> STAGE RESULT: OCC_OK`.
+
+**A clean bill of health on the exact module class the run exists to measure,
+from a run that measured none of it.** This project has a name for that shape —
+R2-018, "two gates reported a PASS while measuring nothing" — and it is the
+reason the farm bundle carries **2.41 GB of item blends against 7.8 MB of code**
+rather than the code alone.
+
+> Both of these were found by someone reading the source to build a bundle, not
+> by anyone testing the tools. The bundle rule from R2-665 — *name the files a
+> script actually reads* — turns out to be an audit of what the script does, and
+> it caught two things that a directory-shaped `--include` would have hidden
+> behind a green result.
+
+## R2-719 — "NAME THE FILES A SCRIPT ACTUALLY READS" TURNS OUT TO BE AN AUDIT OF WHAT THE SCRIPT DOES
+
+R2-665's bundle rule was adopted for a narrow reason: a directory-shaped
+`--include` draws from files eight agents are editing, so its digest moves
+between submit and dispatch and the job dies to `StaleBundle`. Naming the files
+individually fixes that.
+
+**It has an emergent property nobody designed.** Building a bundle by naming
+what a script *actually reads* forces someone to read the script - and in one
+sitting that surfaced two defects a directory-shaped include would have hidden
+behind a green result:
+
+**1. `build_items` reports success while placing nothing.** `check_row()` treats
+a missing `source_blend` as fatal *for that row*, but `build()` **does not
+raise**. A sweep run without the four item blends places **zero items**, still
+lists `items` in `modules_built`, and still prints `OCC_OK` - **a clean bill of
+health on the exact module class the run exists to measure, from a run that
+measured none of it.** R2-018's shape exactly. It is why the bundle carries
+**2.41 GB of item blends against 7.8 MB of code.**
+
+**2. `--budget` does not bound what it says it bounds.** It is checked only at
+the top of the module-build loop; **once a cast pass starts, nothing stops it.**
+Against `exec_server.py`'s `MAX_TIMEOUT_S = 3600` that means a long run is
+killed **before its output is written** - it returns nothing for its money,
+having reported nothing wrong. It is also why a local terrain pass had to be
+killed by hand rather than stopping itself.
+
+**Neither was patched, deliberately:** that file is the authority every number
+in the block rests on, and it was mid-flight. Correct call - fix after the run,
+not under it.
+
+**The bundle list was also corrected in both directions** by the same reading:
+`world/film_exposure.py` is a module-scope import in `build_terrain.py` and had
+been missed (terrain would have failed outright), while `world/car_paint.py` is
+imported by nothing on that path. **A rule that makes you enumerate a script's
+real inputs is a rule that makes you find out what its real inputs are.**
