@@ -414,3 +414,63 @@ and could share a frame with the circuit meaningfully.
 spatialised audio — engine, doppler, the camera-as-listener — needs a rebuild
 over the last 11 s. It is not the camera's to make. Flagged for whoever owns the
 car, as the single highest-leverage change available to this ending.
+
+---
+
+## R2-858 — the aim gate and the in-frame test made to meet, on the same numbers
+
+An aim-error bound and an in-frame test are **not the same claim**, and this
+project has twice been caught by two instruments that agreed in spirit and
+measured different things. So they are reconciled here explicitly, on the
+occlusion sweep's own reprojection, in its own units.
+
+**screen-x in FRAME-WIDTH units** — 0.0 is the left edge, 0.5 the centre, 1.0 the
+right edge — for the SHIPPED camera at f2978:
+
+| source | screen-x |
+|---|---:|
+| occlusion sweep | 5.919 |
+| its hand-reprojection | 5.917 |
+| this file, rectilinear | **5.9194** |
+
+**Agreement to 0.0004 frame-widths = 1.6 px at 4K.**
+
+### My own instrument was wrong, and the way it was wrong is the lesson
+
+An earlier revision of this file printed **6.064** for the same quantity. That
+used an **angular (equidistant) mapping**, `x = f_px * atan2(loc_x, fw)`, and a
+perspective camera is **rectilinear**: `ndc_x = (loc_x / fw) / tan(hfov/2)`. At
+69 deg off-axis the two diverge badly. **Withdrawn.**
+
+What makes it instructive is *which* number survived the error. The off-axis
+angle came out at 69.27 deg against the sweep's 69.26 and looked like
+independent confirmation — **but an angle is projection-independent, so it could
+not have disagreed.** The agreeing number carried no information about the thing
+that was broken, and the screen coordinate that did carry it was 2.5 % out. Two
+instruments agreeing on a quantity neither of them projects is the failure mode
+this section exists to prevent, reproduced by the author of the section.
+
+### Both tests, both arms, over the whole beat
+
+| frame | shipped screen-x | | candidate screen-x | |
+|---:|---:|---|---:|---|
+| f2810 | 0.5000 | in frame | 0.5000 | in frame |
+| f2833 | **1.0097** | **OUT** | 0.5001 | in frame |
+| f2900 | 3.5887 | OUT | 0.5000 | in frame |
+| f2969 | 6.2287 | OUT | 0.4969 | in frame |
+| f2977 | 5.9775 | OUT | **0.5071** | in frame |
+| f2978 | 5.9194 | OUT | 0.5000 | in frame |
+
+* **shipped: 146 of 264 frames out of frame**, one unbroken run f2833–2978,
+  worst `|ndc|` 11.457 at f2969.
+* **candidate: 0 of 264 frames out of frame**, worst `|ndc|` **0.014** at f2977 —
+  the car is within **0.7 % of frame centre for all 264 frames**.
+
+**The two instruments' worst cases land on the same frame, f2977**: the aim gate
+reads 0.1109 deg against a 26.0 bound, the in-frame test reads screen-x 0.5071.
+They are measuring different things and they now agree about which frame is
+hardest, which is the cross-check that was missing.
+
+> The film's ending contains its subject. **This is a claim about geometry, not
+> about the picture** — whether the car is *legible* at 1,000 m through 130 mm of
+> haze is a separate question and only the 4K stills can answer it.
