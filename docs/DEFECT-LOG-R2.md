@@ -30812,3 +30812,238 @@ the right instrument. **This entry exists so that verdict is made against the
 client's actual words rather than against the metric that replaced them** - the
 ending was measured for *subject size* through four passes because that is what
 was measurable, while the sentence that started it named the *ground*.
+
+## R2-840n — R2-842's CROP FIX, CONFIRMED ON THE DELIVERED FRAME
+
+f580 is the frame R2-842 measured at **fill 1.046** — the worst of the 32
+(f565-596) where the payoff orbit cropped the car. In the delivered 720p frame
+the whole car sits inside the frame with clear margin on all four sides.
+
+The prediction was made from a per-frame projection and the render is an
+independent instrument; they agree. Also visible in the same frame: the driver's
+helmet in the cockpit, correctly seated. He becomes visible at f400 OFF SCREEN
+(R2-840m) and is legitimately in shot by f580 — the fix was to stop him
+MATERIALISING in view, never to hide him, and both halves of that now have a
+picture behind them.
+
+## R2-986 — WATCHED. All 264 frames at 720p and four stills at 4K, 1:1.
+
+### THE VERDICT
+
+**The film now ends on a subject. It does not end on an arrival.**
+
+The last frame is an image of a car — not a tighter crop of the same aerial with
+a bigger dot in it. That question, the one I was sent to answer, is answered
+**yes**, and not marginally. R2-862's finding has been fixed.
+
+What has *not* been delivered is the thing R2-943 was built to deliver and named
+itself after. **The car's arrival at rest is invisible.** The film's last gesture
+is still a zoom, and the event at the centre of it cannot be seen to happen.
+
+Both halves of that are load-bearing and I will not collapse them into a single
+grade.
+
+### Why the first half is a yes
+
+At 1:1 the closing car resolves into parts — rear wing, front wing, four
+separated wheels, cockpit, halo, helmet, engine cover, floor edge — and carries
+**5.16×** the internal contrast of the tarmac it stands on, against **0.90×** for
+the arm R2-862 called a smudge and **7.50×** for a frame that is unarguably a
+subject. It supplies the local black point of its own neighbourhood. A large,
+hard cast shadow from the 12.47 deg sun welds it to the road. The frame around it
+is a dressed racing circuit — kerbs, barriers, hoardings, catch fencing, run-off
+— **with a grandstand full of individuated spectators in it** (R2-984).
+
+A car at rest on the racing surface, in front of a crowd, inside the furniture of
+a circuit, does not read as a breakdown. It reads as a car that has finished. The
+worry that framed this whole review — that the picture would be a car stopped in
+an empty field — is simply not what is on screen.
+
+**And the car reads far earlier and far smaller than anyone predicted.** At f2811,
+its smallest point in the entire beat at **45.7 px**, it is still legibly a
+racing car. R2-862's ladder — 176.7 px for "a car" — is wrong by roughly 4× at
+the bottom, because it was calibrated at 1 km through haze that had already cost
+the frame half its dynamic range. The car is legible in every one of the 264
+frames. It is never a dot.
+
+### Why the second half is a no, and this is the finding
+
+The whole architecture of R2-943 is that the film ends **where the lap began,
+with the car arriving.** I measured whether the arrival happens on screen.
+
+Per-frame difference in a 90×60 box locked to the car, where the radial zoom
+contributes nothing:
+
+| phase | | car-box d |
+|---|---|---:|
+| f2715-2760 | hard braking, 89.8 → 46 m/s | 0.01614 |
+| f2761-2820 | braking, 46 → 17 m/s | 0.01359 |
+| f2821-2880 | crawl, 17 → 3.4 m/s | 0.00875 |
+| f2881-2935 | creep, 3.4 → 0 | 0.00722 |
+| **f2936-2978** | **at rest** | **0.00583** |
+
+A smooth monotone decay with **no event anywhere in it.** Around the stop:
+
+```
+f2926..f2946:  .0072 .0069 .0068 .0070 .0067 .0065 .0065 .0063 .0062 .0069
+               .0064 .0063 .0065 .0063 .0058 .0062 .0060 .0058 .0063 .0062 .0059
+                               ^ f2936, the car reaches rest
+window sd = 0.00038      |d(2936) - median| = 0.00002
+```
+
+**The frame at which the film's subject comes to rest differs from its neighbours
+by five per cent of one standard deviation.** My F6 falsifier was *"if I cannot
+say within ~10 frames when the car stopped"*. I cannot say within a hundred. I
+checked it visually as well, stepping f2916-2976: the car does one thing across
+those 61 frames — **it gets bigger.** Nothing marks the stop.
+
+The car does not arrive. It asymptotes. And the reason is structural rather than
+a tuning error:
+
+* **Every mechanical cue of braking is below 2 px** (R2-980). Brake dive peaks at
+  **2.0 px of nose movement** at f2730 and is *exactly zero* for the whole period
+  in which the car is finally big enough to see. The wheels are 6.5-29 px, so
+  their spin-down is unresolvable. R2-947's rolling contact is exact to 1.35e-12 m
+  and invisible.
+* **The only visible cue is the background streaming past**, and R2-943's own
+  profile collapses that 18× inside the first 105 frames.
+* **So the deceleration is over, as a visible event, by about f2820** — 6.6 s
+  before the film ends. My F7 stands in that form: the arrival happens in the
+  middle of the beat, and the last 2.6 s is magnification.
+
+The lens push is not *dead* — it moves the frame edges 15-41 px/frame and eases
+out to 0.245 %/frame at f2974 (R2-977), and the whole-frame difference actually
+**rises** through f2915-2945 as the push accelerates. That is the awkward shape:
+**the camera's gesture peaks exactly as the subject's gesture ends.** R2-852's
+charge — *"a lens push on a locked-off frame is what a still photograph being
+zoomed looks like"* — is not fully answered. It is answered only to the extent
+that there is now something worth zooming into.
+
+### The client's sentence
+
+*"We just zoom out so you see all the patches in the land."* Watched end to end,
+the beat reads as **rise → reveal → converge**, not as retreat. My F4 was wrong
+and R2-976 records why: the shipped ending widens for **6.0 s to 87.7 deg**; this
+one widens for **2.0 s to 81.2 deg** and then tightens for **9.0 s to 15.8 deg**.
+The gesture is inverted. That is a real answer to what the client said, and the
+credit belongs to R2-853, not to the lap-down.
+
+**The patches, however, are still there.** Through f2763-2901 the flat olive and
+khaki fields with their straight tonal seams are visible, most obviously in the
+lower-right foreground and mid-left. They are no longer the *subject* of the
+frame — the circuit is — but F5 is only partly cleared, and R2-854's Voronoi
+partition is untouched and still owns that defect.
+
+### What is worse than the arm it replaces
+
+**No horizon and no sky for the last 6.3 seconds.** The horizon leaves frame at
+**f2826** in this arm, against **f2894** in the camera-only candidate and
+**f2920** in the shipped film — nearly three times as long a stretch of pure
+ground as the film the client rejected. The closing optical axis is **24.0 deg
+below horizontal**, the steepest of the three. R2-949 item 3 registered this
+honestly but did not state the comparison: **on this axis the lap-down is the
+worst of the three arms**, and it is the reason the closing frames read as a plan
+of a place rather than a view of one.
+
+### The composition nobody has looked at
+
+The car is pinned to **x = 1919.9-1920.1 px of 3840** — a range of 0.2 px — for
+all 264 frames, with 22.9 px of vertical drift (R2-979). Every line converges on
+the exact centre and stays there while a symmetric zoom magnifies about that same
+point. The aim gate's beat-6 bound is 26.0 deg and the beat uses **0.029** of it.
+R2-949 dismissed *"the car in the lower third"* as unavailable at this camera
+position; the lens half of that is true, the framing half is not. **There are 26
+degrees of unused aim budget and no gate in this film measures composition.**
+
+### Verdict, stated so it can be acted on
+
+1. **The ending is fixed in the respect it was broken.** R2-862's defect —
+   a closing frame with no subject in it — is gone. This is strictly and
+   substantially better than both arms on disk, and the improvement is real
+   rather than an artefact of a different film build (R2-982).
+2. **It is not fixed in the respect R2-943 claimed.** The film ends *on* the car;
+   it does not end *on the car arriving*. The arrival is real in the world,
+   correct in the physics, and invisible in the picture.
+3. **If one more change is made to this beat, it should be the one that makes the
+   stop visible**, not another lens or another braking profile. R2-950's own
+   fallback — end at ~208 px still rolling — would trade a subject that has
+   stopped invisibly for a subject that is still moving, and on this evidence
+   that is the better trade, because motion is the only cue that survives at this
+   scale. Second best is the unused aim budget: 26 degrees of it, and a car
+   currently nailed to the centre pixel.
+4. **The horizon is now the strongest remaining argument against the hold's
+   140 m altitude**, and it belongs to whoever owns that key.
+
+**Nothing here is a reason not to ship this over what is on disk.** It is a
+reason not to call the ending finished.
+
+## R2-1088 — `np.roll` IS CIRCULAR: a 323 km/h reverb tail was wrapped onto FRAME 1 of every master this project has ever produced
+
+Found while rebuilding eleven seconds at the **end** of the film.
+
+`np.roll` was used as a delay on the showroom's **2.4 s reverb tail**. It does
+not delay - it **wraps**. So the tail of a car at 323 km/h was folded onto the
+opening of a film that begins on a silent showroom:
+
+```
+peak 0.8505 against a 0.0233 programme RMS   =   +31.3 dB
+                                        in the FIRST FRAME
+```
+
+**No gate looks at frame 1.** The seam gate visits beat boundaries, and frame 1
+is not a boundary - it is the edge. Now **+7.2 dB**, an ordinary crest factor.
+
+**It was found only because work at the end forced an audit of what reaches the
+beginning.** A circular buffer has no privileged position: energy pushed off one
+end arrives at the other, so *any* late change can damage the opening, and
+nothing in the pipeline was watching the place it lands.
+
+**Three more whole-film leaks were carrying the ending backwards** into the other
+113 seconds: a `mean()` over the entire crank signal that moved **sample 42**;
+two block filters reading **21 ms ahead** into frame 2713; and a single RNG that
+let the lap-down's seven new downshifts **re-seed every overrun pop in the film,
+61.8 s early.**
+
+**And my own three edits to `scene.py` were correct but incomplete**, in ways
+that only a rebuild would expose: the audio seeded its deceleration table from a
+different speed than the picture (now agreeing to **8.0e-14 m**), my
+`accel_long` handover left a **0.74 dB step 46 ms before the seam**, and the
+stopped car's throttle came out at **2.1e-05** - so **the last 1.75 s of the film
+was a motored engine, not an idle.**
+
+## R2-1089 — a demanded bit-identity was NOT met, and accepting that was correct
+
+I demanded bit-identity before the lift. It holds **exactly at the source**, but
+the **master** differs by **5.8e-03**, traced to two named scalars: the crowd bus
+trim moving **0.157 dB** and the -14 LUFS normalisation moving **0.026 dB**.
+
+**That is not a leak. It is the brief's own law working.** One mix, one pass,
+whole duration - a global trim is *supposed* to respond to new content in the
+ending, and **freezing it to protect a bit-comparison would have been the
+defect.** Both are an order of magnitude under the just-noticeable difference.
+
+**A test that would have to be broken to pass is the wrong test**, and the right
+response is to name the scalars and bound them, not to weaken the mix.
+
+**An unexpected cross-check fell out of it.** The crowd trim moved *because the
+car now stops beside a grandstand*. R2-943b predicted the closing frame would
+contain **no architecture**; the 4K still shows **a grandstand corner with
+spectators**. Two systems sharing no code agreed about what sits at track
+s = 226.5 m, and **both disagreed with me.**
+
+## R2-1090 — NOBODY HAS LISTENED TO THIS FILM, and no agent here can
+
+The ending was briefed *judge it by watching*. Its picture half was. **Its audio
+half has been judged by spectrogram and band measurement only** - the rebuilding
+agent stated plainly that it did not literally listen, and neither have I,
+**and no agent on this project can.**
+
+That is not a gap in diligence; it is a gap in capability, and the honest thing
+is to name it rather than let 31 dB of measurement stand in for a hearing. **The
+`np.roll` defect is the proof of the gap**: +31.3 dB in frame 1 would have been
+obvious to anyone who pressed play, and it survived every gate this project
+built.
+
+`audio/out/ab/ending_A_nolapdown.wav` and `ending_B_lapdown.wav` are cut
+precisely so a person can decide. **That is the one open item on the ending no
+further work here will settle.**

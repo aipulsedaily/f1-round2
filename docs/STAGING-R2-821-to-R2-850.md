@@ -1497,3 +1497,16 @@ the wrong camera for two generations.
 
 Method is the ladder's own (`docs/RENDER-LADDER.md`): *"diff adjacent frames to
 surface temporal defects a human eye smooths over."*
+
+## R2-840n — R2-842's CROP FIX, CONFIRMED ON THE DELIVERED FRAME
+
+f580 is the frame R2-842 measured at **fill 1.046** — the worst of the 32
+(f565-596) where the payoff orbit cropped the car. In the delivered 720p frame
+the whole car sits inside the frame with clear margin on all four sides.
+
+The prediction was made from a per-frame projection and the render is an
+independent instrument; they agree. Also visible in the same frame: the driver's
+helmet in the cockpit, correctly seated. He becomes visible at f400 OFF SCREEN
+(R2-840m) and is legitimately in shot by f580 — the fix was to stop him
+MATERIALISING in view, never to hide him, and both halves of that now have a
+picture behind them.

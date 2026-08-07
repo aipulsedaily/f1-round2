@@ -204,3 +204,292 @@ would cut 625 frames mid-pass.
 - **Do not auto-migrate on price.** An automatic re-rent that chases $/hr is
   what walks into `gpu_frac 0.125` at 3 a.m. Any migration must re-assert
   `gpu_frac >= 0.99` and be taken deliberately, at a boundary.
+
+## R2-978 — THE CHEAP CARD IS 9 % SLOWER, AND THE SAVING IS $2, NOT $15
+
+R2-973 costed the master on the assumption that a cheaper exclusive 5090 renders
+at the same rate. **It does not.** Measured, not inferred:
+
+```
+job fc737127a232  m4k_probe   instance 47039886  $0.4444/hr  32c  61.6 GB  Florida
+job 71fc8fd87ccf  m4k_cheap2  instance 47065580  $0.3888/hr  32c  63.4 GB  South Africa
+```
+
+Same nine frames, same `.blend`, same `spec_hash` **`1983dced5cacabb6`** — which
+folds in the scene's content digest `1e8d5440c349fe51`, so this is not "the same
+settings", it is provably the same render of the same file. Same
+`worker/server.py` (unchanged since 2026-08-04 06:50), so `render_sec` means the
+same thing on both sides: pure `bpy.ops.render.render()`, no transfer, no load.
+
+| frame | anchor s | probe s | ratio |
+|---|---|---|---|
+| 30 | 151.0 | 166.8 | 1.105 |
+| 400 | 182.6 | 199.6 | 1.093 |
+| 760 | 151.7 | 167.4 | 1.103 |
+| 830 | 158.1 | 173.7 | 1.098 |
+| 950 | 216.0 | 234.4 | 1.085 |
+| 1120 | 230.5 | 250.5 | 1.087 |
+| 1500 | 270.9 | 292.7 | 1.080 |
+| 2300 | 210.5 | 228.6 | 1.086 |
+| 2850 | 197.1 | 214.2 | 1.087 |
+| **mean** | **196.48** | **214.19** | **1.0902** |
+
+**The spread is 1.080 to 1.105.** Nine paired frames spanning all six beats and
+a 1.8x range of per-frame cost, and the ratio moves by 2.5 %. This is the
+tightest measurement in the project's record, and it says the same thing every
+time: **the cheaper card is 9.0 % slower.**
+
+### The saving, after the slowdown eats it
+
+Cost per frame is rate x time, so a 12.4 % cheaper card that is 9.0 % slower is
+**2.2 % cheaper per frame**, not 12.4 %.
+
+```
+                     all-in $/hr   s/frame   master h   master $
+anchor 47039886         0.4488      186.7      155.0      $70.06
+probe  47065580         0.3999      203.1      168.6      $67.95
+                                                          ------
+                                                saving     $2.11
+```
+
+`$/hr` is `dph_total` from the **API**, which already includes the disk. Master
+figures are at `adaptive_threshold 0.02` and include per-frame overhead, cold
+starts at the 12 h `MAX_INSTANCE_HOURS` wall, and scene re-pushes — see R2-980
+for the derivation.
+
+**Credit at teardown: $68.10.** So the master is **$1.96 short on the current
+card and $0.15 clear on the cheap one** — and broker 2 still has 12 queued
+`film17_breach` jobs to pay for out of the same balance. R2-973's "$4.3
+headroom" does not exist at any price on this board.
+
+### The pixels are the same; the bytes are not
+
+Every frame passed the blank gate, and `lum_mean`, `lum_sd`, `lum_min`,
+`lum_max` and `lum_levels` agree between the two hosts **to full printed
+precision** on 7 of 9 frames and to 1e-6 on the other two. The PNGs are
+nonetheless not bit-identical (frame 30: 7,765,101 B vs 7,767,322 B, different
+sha256) — different driver (580.173.02 vs 590.48.01) and a different OIDN build
+denoise the same samples marginally differently.
+
+**That is a batch-seam risk, and `spec_hash` cannot see it.** `spec_hash` folds
+in the scene and the settings, not the host, so a resume that changes machines
+mid-sequence is invisible to every gate the farm has. At this magnitude it is
+far below what a delivery codec carries — the same footing the
+`adaptive_threshold 0.02` decision stands on — but the master will span 13-14
+rentals whichever card it runs on, and **"same picture" here is a measurement,
+not a guarantee that holds for an arbitrary pair of hosts.**
+
+## R2-979 — THE $0.3356 TIER IS A 32 GB DESKTOP AND IT CANNOT OPEN THE SCENE
+
+**The first probe failed, and the failure is worth more than the $0.10 it cost.**
+
+`vastctl.MIN_CPU_CORES_EFFECTIVE = 32` was never only a CPU term. Checked
+against the live market 2026-08-07, adding `cpu_ram>=50` to the 32-core
+exclusive query **drops zero offers**: every >=32-core 5090 on sale carries
+60-126 GB. Drop the floor to 8 and the hardware class changes underneath you.
+Every single $0.3356/hr offer in that tier is one SKU:
+
+```
+Ryzen 7 7800X3D, 8C/16T, 30.5 GB RAM, South Korea    (5 offers, all identical)
+```
+
+**30.5 GB cannot open this film.** `config.EXEC_SCENE_MEM_FACTOR` already
+carries the measurement — 22 GB resident for a 4.17 GB blend, **5.3x** — and
+`film16_breach.blend` is 7.97 GB, so it needs about **42 GB**. The exec path has
+refused this box on those grounds twice already (`ExecMemoryShort`); the render
+worker has no such gate.
+
+Measured on instance 47064284 (offer 39904635, $0.3356/hr, 30.5 GB): the worker
+loaded the scene and reported ready in 308 s, the render started, and then
+
+```
+ping    205 ms, 0 % loss          TCP to :41032   connects instantly
+ssh     "Connection timed out during banner exchange"  x4
+frame   9 minutes, no progress, on a frame the 61.6 GB anchor renders in 151 s
+```
+
+**The box did not fail. It went catatonic.** And every probe the broker has —
+heartbeat, progress, disk measurement — rides the same ssh that is being
+starved, so a thrashing host is indistinguishable from a network fault. The log
+for those nine minutes reads as a transport incident. It was a memory incident.
+
+> This is the failure the CPU floor was accidentally preventing, and R2-973
+> removed the guard without noticing it was one. **Every word of R2-973 about
+> CPU is still true. It was answering the wrong question.**
+
+### The fix, committed
+
+`vastctl/vastctl.py` (path-scoped; the ~10 uncommitted files from other agents
+were not touched), commit `15e2e00`:
+
+```python
+MIN_CPU_RAM_GB = float(os.environ.get("VASTRENDER_MIN_RAM_GB") or 50.0)
+...
+f"cpu_ram>={min_ram_gb:g} "
+```
+
+**Default 50, not 0.** It is behaviour-preserving where the old floor already
+applied — nothing at >=32 cores is excluded by it — and it is what makes
+lowering `MIN_CPU` safe rather than a trap. A guard that only exists when
+someone remembers to set it is the guard that was not there.
+
+**Units, because this one is silent:** the vast.ai query language takes
+`cpu_ram` in **GB**; the offer dict returns it in **MB**. `cpu_ram>=50000`
+matches nothing at all and reads as "no capacity" rather than as a malformed
+query.
+
+**Not deployed.** Both live brokers keep their in-memory copy until they are
+restarted, and neither should be restarted mid-queue.
+
+### What the market actually offers once RAM is asked for
+
+```
+cpu_ram>=50, exclusive, all other production terms unchanged
+  42731684   $0.3888   32c   61.9 GB   rel 0.994   <- rented and measured
+  38694854   $0.4014   12c   62.6 GB   rel 0.998
+  38797209   $0.4547   24c   62.2 GB   rel 0.988
+```
+
+Cheapest viable is **$0.3888**, not $0.3356. The 26 % discount in R2-973 is
+really **12.4 %**, and 9.0 % of that is spent on being slower.
+
+## R2-980 — 219.3 s/frame IS A COLD START DIVIDED BY NINE
+
+R2-971 corrected 196.5 to 219.3 and called the difference an under-count. **Both
+numbers are real measurements of the same job and neither is the master's
+rate.** From the broker's own log, job `fc737127a232`:
+
+```
+03:15:31  job admitted, offer rented
+03:16:34  instance reachable                    62 s
+03:18:16  worker serving the scene             102 s   -> 165 s ONE-TIME
+03:18:16 .. 03:48:25   nine frames            1809 s
+03:48:25  job finishes;  render_sec = 1973.9 s
+```
+
+`Broker.run_sequence` sets a sequence job's `render_sec` to `time.time() -
+started` — **wall clock for the whole pass, rental and deploy included.** So:
+
+| | s/frame | what it is |
+|---|---|---|
+| 196.5 | sum of the nine `frames.render_sec` / 9 | Cycles only |
+| **201.0** | 1809 / 9 | **per-frame steady state — what 2,978 frames pay** |
+| 219.3 | 1973.9 / 9 | the same, plus a one-time 165 s cold start **/ 9** |
+
+The recurring per-frame overhead is **4.52 s** — confirmed frame by frame from
+the log timestamps, which give +2.0, +4.4, +4.3, +4.9, +5.0, +4.5, +5.1, +4.5,
++5.9 s against the reported render times.
+
+**R2-971 then added that overhead again.** Its `172.2 h` is
+`2978 x 219.3 x 0.927` plus 3.2 h of per-frame overhead plus 0.8 h of cold
+starts — but 219.3 already contains both, and it amortises the cold start over
+**9** frames instead of 2,978. It also applies the `0.927` adaptive factor to
+the overhead and cold-start portions, which do not scale with sample count.
+
+```
+                                        R2-971      re-derived
+master h @ adaptive 0.02                 172.2         155.0
+master $ on the current card             $76.5        $70.06
+```
+
+**11 % high.** Derivation, all from measured parts:
+
+```
+2978 x (196.48 x 0.927 + 4.52) = 555,814 s = 154.4 h
+13 rentals x 165 s cold start  =    2,145 s =   0.6 h
+                                             -------
+                                               155.0 h  = 6.5 days
+```
+
+13 rentals because `vastctl.MAX_INSTANCE_HOURS = 12.0` retires every box at 12 h
+regardless of what it is doing. Each rental re-pushes the 7.97 GB scene: ~104 GB
+up and ~22 GB down across the master, **$0.49** at $3.91/TB — not the $0.10 in
+R2-973, which counted one push.
+
+## R2-981 — INSTANCE 47049525 IS NOT DEAD STORAGE, AND THE $3.9 IS NOT THERE
+
+R2-974 recommended reclaiming broker 1's exited instance for ~$3.9 over the
+master's duration. **Verified before acting, and the premise does not hold.
+Not reclaimed.** Three independent reasons, in ascending order of finality:
+
+**1. It destroys itself after 60 minutes, and always has.** `HIBERNATE_SEC`
+defaults to 3600 and broker 1 does not override it. It says so on every stop:
+
+```
+08:45:32  instance 47049525 stopped after 9.0 min running (~$0.535 gpu).
+          disk keeps billing ~$0.037/hr; destroying in 60 min
+```
+
+and the mechanism demonstrably fires — `46819442` stopped 06:06:31 and was
+destroyed at 07:06:38, "hibernation expired, confirmed gone". A stopped
+instance on this broker has a **one-hour** lifetime, not a 7.2-day one. The
+maximum exposure is one window: **$0.022.**
+
+**2. It is not idle.** It was woken by other agents' exec jobs at **07:31:29,
+08:35:47 and 09:35:12** — three times in three hours, each time inside its own
+60-minute window, which is *why* it survived to be observed as "exited". At the
+time of writing it has been **running for 40 minutes**, staging
+`film17_breach.blend` for job `9707a546f554`. Destroying it would have cut an
+8 GB transfer out from under another agent.
+
+**3. The storage rate in the log is wrong anyway, in the safe direction.**
+`fleet.py` prints `config.DISK_GB * 0.0004667`, a hard-coded constant equal to
+$0.3407/GB/month. The API reports this host at `storage_cost = 0.20` and
+`storage_total_cost = 0.02222/hr`. **The broker over-states stopped-disk cost by
+1.7x**, and it uses a constant where the offer carries the real per-host figure
+(which ranges $0.133-$0.333/GB/month across today's market). Not fixed here —
+`fleet.py` is one of the ~10 files other agents are mid-flight on.
+
+**What was checked before deciding, and what could not be:** the queue was
+empty (`depth=0`) and had served zero renders; `rq status` reported `cache
+0.00G in 1 scene(s)`, so there is no warm cache to lose; the only exec outputs
+on record (`c066603f71e3`) were already fetched to
+`out/exec/c066603f71e3/occ_pilot.json`; the two failed/canceled exec jobs
+produced none. The one thing that **cannot** be checked is the disk of a
+*stopped* container — there is no ssh into it — so "nothing on its disk is
+needed" rests on those records rather than on an inspection. Given that the
+instance destroys itself hourly, that gap never had to be closed.
+
+## R2-982 — WHAT THIS PROBE DOES NOT SETTLE, SAID PLAINLY
+
+`RENDER-LADDER.md` has been wrong about the master three times, in both
+directions, always because a rate measured on one scene was extrapolated across
+2,978 frames. **This entry is the fourth candidate and it should be read as
+one.**
+
+What is strong here: the comparison is **paired, n=9, same `spec_hash`, same
+worker build, spanning frames 30-2850**, and the ratio holds to within 2.5 %
+across a 1.8x range of per-frame cost. As a statement about *these two hosts*,
+1.0902 is about as solid as this project gets.
+
+What it does **not** establish:
+
+- **It is 9 frames out of 2,978 — 0.3 %.** The anchor's own beat coverage is
+  the same nine frames. Two measurements drawn from the same nine-frame sample
+  are not independent evidence about the other 2,969.
+- **It is one host per price point.** The 1.0902 is a property of 47039886
+  against 47065580. **Host-to-host variance across the 13-14 rentals a master
+  needs is completely unmeasured**, and it is now the dominant risk — larger
+  than the $2.11 the card choice is worth.
+- **Both measurements are of a scene that no longer ships.** The anchor and this
+  probe both render `film16_breach.blend`. Broker 2 has been serving
+  **`film17_breach.blend`** (7.98 GB, rebuilt today 06:09) since this morning.
+  A rate measured on the previous revision of the film is exactly the error this
+  document keeps logging, one revision closer in.
+- **The `0.927` adaptive factor is n=1**, one frame pair on a contended card.
+- **The 165 s cold start is n=2**, and the second probe's deploy took 456 s
+  because local `zstd -10` was competing with broker 2's twelve exec builds.
+  Cold-start cost is a function of what else the workstation is doing.
+
+**What would actually settle it:** one contiguous beat — 200-300 frames — at
+full delivery spec, from the `.blend` that will ship, on the card the master
+will run on, read off `frames.render_sec` rather than off a job total. That is
+11-17 h and **$5-7**, roughly 10 % of the master. Against a single-attempt
+7-day render with under $1 of headroom either way, that is not an expensive
+rehearsal; it is the only measurement that has ever been asked for here and
+never taken.
+
+**And the headroom is the real finding.** At $68.10 credit the master costs
+$70.06 on the card we are on and $67.95 on the cheapest viable alternative.
+**There is no card on this market that makes a 512-spp 4K master comfortable.**
+The gap does not close on the card. It closes on credit, or it does not close.
