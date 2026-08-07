@@ -36203,3 +36203,79 @@ renders ~40 % of the flying lap as a hollow timber deck rather than asphalt. It
 is real and it is in `audio/` - but **the dais voice is DARKER than asphalt, so
 fixing it now would add broadband energy in exactly the band just cleared.** A
 true fix that spends the budget of the fix under review belongs to the next pass.
+
+## R2-1139 — THE TYRE MARK IS NOT TOO FAINT, IT IS TOO SOFT: an edge that gradual reads as mottle at any amplitude
+
+The client said the marks were *"not noticable enough."* On a matched substrate
+under a matched camera the apron mark measures **-18.79 %** - **a strong mark.**
+
+**Its lateral gradient is 0.243 %/mm**: a **640 mm feathered wash** laid on
+concrete whose own bay hash already swings **+/-14.5 %.**
+
+> **An edge that soft reads as mottle at any amplitude.**
+
+**The fix was never going to be "make it darker."** It is the third instance
+today of the same shape: the milled road repairs had a **1.6 m feather** and read
+as stains rather than repairs, and the terrain's field patches are large flat
+regions with hard boundaries. **Amplitude was never the variable; spatial
+frequency was.**
+
+**And the agent's own first number was an instrument artefact** - a
+trend-deviation estimator smoothing over a **0.9 m window largely absorbs a
+640 mm feature**, which is how a strong mark measured as -5.73 %. **Wrong
+instrument for the feature size**, and it said so rather than reconciling the
+two figures.
+
+## R2-1140 — a single launch pass lays 10.6 nm of rubber and makes the concrete BRIGHTER
+
+Derived rather than assumed: one launch transfers **~10.6 nm of rubber over
+0.34 % coverage.** That changes no albedo. **The whole effect is gloss** - and
+glossier concrete under a bright sky at 30 deg is **brighter**: the physically
+derived pass measures **+1.66 %, not a darkening.**
+
+**So no visible pigment on that apron is derivable from this car's single pass** -
+which means **the existing -18.79 % paint was never a physics claim either.**
+
+**That reframes the request as an art decision and names it honestly**, rather
+than smuggling it in as physics: `Traffic Passes`, with **N=60 (a used pit exit)
+giving -4.21 % with a real edge.**
+
+**DECIDED: N=60.** The film opens on a working pit lane, not a delivery bay, and
+the client's own note is that the marks must read. **A used apron is the honest
+subject; one car's first launch is not.**
+
+**And what the module actually wins on is not tone at all**: **4.4x the existing
+gradient at N=1, 6.6x at N=60**, plus two channels the existing paint does not
+touch - **specular +31.4 %** against 0.0000, and **relief -15.2 % height sd**
+against 0.0 %, with rubber correctly **filling** the aggregate rather than
+sitting on it.
+
+## R2-1141 — EVERY `detail=6`/`detail=8` NOISE IN THE REPO IS EMITTING OCTAVES BELOW THE RESOLVABLE FLOOR, and paying for them
+
+Found while sizing a tyre mark; it escapes that task entirely.
+
+A **120 mm** noise at the house default **also emits 1.88 mm and 0.94 mm
+octaves** - unreachable at any resolution this film is graded at, **and most of
+the CPU cost.** One 4K concrete frame **would not finish in ten minutes** with
+house defaults.
+
+**This is worse than the circuit surface's "nine layers below the band"**, and
+worse in a specific way: there, nine *authored* layers sat below the floor.
+**Here every noise node cascades further below it automatically**, so the waste
+compounds with detail depth and nobody chose it.
+
+`detail_for(lambda)` fixes it and **should be lifted somewhere shared** - this is
+a property of the house defaults, not of one module.
+
+**Two self-corrections recorded rather than quietly fixed:** the areal ratio is
+**1/460, not 1/140** - its own 30 % factor was dropped and **two sentences in the
+same note disagreed by 3.3x**. And `work/r2_1211_rubber_tracks.json`
+**contradicts itself**: the 256-point resample **fades the last 12.3 mm to zero**
+while the note says the mark terminates hard at 2.7 %, so **anyone consuming the
+resample loses the exact feature that makes it distinguishing.** The module uses
+the per-frame arrays.
+
+**And a field probe caught the first version laying rubber on ground the car had
+not reached yet** - the same beat-1 time-gating defect already flagged for the
+deck, appearing independently on two more surfaces. **A defect found once in a
+family is worth testing for across the family.**
