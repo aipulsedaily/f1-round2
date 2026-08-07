@@ -36522,3 +36522,79 @@ six-deep process chain at the middle, and now an exec claiming a GPU another
 process is using. **Every one is an operation whose default scope is "whatever
 is there" rather than "what is mine", and every one was met with a warning
 rather than a mechanism.**
+
+## R2-1149 — `CameraPath.dist` THREW AWAY ALTITUDE, so the ground under the crane bought hero clumps and the infield the lens was pointed at bought the cheapest tier
+
+The ground-cover tiering measured distance **in 2-D**. For beats 1-5 that is
+free - the lens sits **2-6 m up**, so horizontal distance and true distance agree.
+
+**Beat 6 climbs to 140 m.**
+
+```
+ground directly under the crane   measured 0.0 m from the lens  -> HERO clumps
+the infield the 22 mm lens is aimed at   scored 200-600 m       -> cheapest tier
+```
+
+**Half the hero ground outboard of the platform edge - 0.0493 -> 0.0252 km² -
+was a phantom disc under a camera looking somewhere else.**
+
+**A 2-D predicate in a 3-D problem is invisible for as long as one axis stays
+small**, and this one stayed small for five beats out of six. It is the same
+family as `GRASS_HERO_D` measuring to the camera *path* rather than the camera:
+**two independent distance bugs, both harmless until the one shot that leaves
+the ground.**
+
+**And R2-1128's palette diagnosis was a third of it.** The infield carries meadow
+clumps at **0.28/m² - 4 % ground cover.** The other **96 % was the shader**, and
+out there the shader was a three-value colour map on **155 m fields.** Nobody
+saw it for five beats because the lens never looks at the infield.
+
+**The fix changed ONE predicate** - `dist3`, true 3-D, drives ground-cover
+tiering while `dist` still drives trees, shrubs, weeds and grit. In the author's
+words: **"changing one predicate is a fix, changing five is a different
+experiment."**
+
+## R2-1150 — the ground fix, verified on the frame: 4 % ground cover becomes 72 %, and the hard field boundary is gone
+
+**Looked at `render/r2_1661/peep_f2811_field.png` myself.** The BEFORE carries a
+**hard-edged tan/green boundary running across the lower third - a polygonal
+field cell traceable by eye.** The AFTER has continuous cover and no boundary.
+**That is the client's "patches in the land", removed.**
+
+```
+edge_p99          -37.5 %      texture  +40.4 %   (one field boundary, no trees)
+whole infield     texture      +33.1 %
+control f2978     everything within +/-3 %
+beats 1-5         t5_verge patch CV 55.473 -> 55.465, visually identical
+cost              +0.32 % of terrain's triangle budget      render spend $1.06
+```
+
+**A new mid-scale tier - "sward drifts"** - 264,890 of them, **72 % mean screen
+cover against 4 %.** The unit is a *drift* rather than a clump because verge
+density over 8.39 km² is **160 M instances**, and making the placeable unit
+bigger drops the count with the square of the pitch. **And the mechanism is
+shadow**: the sun sits at 12.47 deg, so **35 % plan cover becomes 72 % screen
+cover.**
+
+Field colour went from **3 values to 1,123 distinct crop luminances**, largest
+jump **0.080 -> 0.0001**, with the difference moved into hue rather than
+luminance. **And `detail_for` deleted six octaves emitting down to 0.029 mm
+against a 1.32 mm floor** - the same house-default waste found on the tyre marks,
+now paying for itself twice.
+
+**Two honest caveats it refused to dress up.** **Wide-box variance and edge
+metrics did not move**, because `edge_p99` over the whole infield is measuring
+**tree shadows** - 121 against 27.8 on the boundary box - and variance cannot
+distinguish the field steps deleted from the organic 38 m drift deliberately
+added. **Three metrics, two contaminated, before one worked. The frame decided;
+the metric argued.** And this is **terrain-only, not the delivered picture** -
+film-level confirmation needs the assembly rebuilt.
+
+**Follow-up it surfaced: `edge_p99` now says tree shadows are the largest
+hard-edged feature in the infield by 4x** - and the tree tier still reads the
+horizontal metric.
+
+**Three bugs caught before they reached a render**: a scale reference that would
+have blown drifts up 1.86x, tiers that would have laid visible density rings at
+200 m and 520 m, and populating drifts off their drawn area rather than the
+ground they own - a **2.1x density error** toward a solid dark mat.
