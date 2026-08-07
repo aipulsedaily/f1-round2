@@ -30356,3 +30356,67 @@ decision waits on a render nobody has scheduled - and because it is worth
 knowing that the picture is **not obviously broken**, which is not what the
 failing gate on its own would suggest. **A gate that fails is a question, not a
 verdict.**
+
+## R2-1081 — the instrument I built to stop a flattering blind spot shipped, for one commit, with a PESSIMISTIC one
+
+`lap_shotscale.py`'s new occlusion column pointed at
+`render/r2651/occlusion.json` - **Aug 04 19:53**, which lists **f1114-1116** as
+hidden behind the pit building. **R2-731 closed that on Aug 07 04:11** by making
+the building's west end an annexe, and `film17_breach.blend` was built at
+**06:09, after it.**
+
+So the fix marked **three good frames `OCCLUDED`** and subtracted them from beat
+4's summary, reporting **9.15%** where the live answer is **9.45%**. I built that
+column specifically to stop a metric being confidently wrong in the flattering
+direction, and shipped it confidently wrong in the **pessimistic** one. **Same
+failure, opposite sign, one commit apart.**
+
+**Four independent instruments already said so and I consulted none of them:**
+`r2731_pit_sightline.py --selftest` passes fifteen controls of which two are
+*"pre-R2-731: f1114-1116 fully blocked"* and *"shipped: f1105-1135 all clear"*;
+shipped constants give **0 blocked of 31 frames**; and **three** post-fix
+ledgers (Aug 07 04:11 / 04:52 / 05:05) list no beat-4 frame at all.
+
+**The root cause is that an occlusion result is a statement about a world that
+no longer exists, and nothing in the file records which world.** There is no
+provenance field - only an mtime. So the guard is now
+`ledger_is_stale()`: **the ledger must be newer than
+`world/build_architecture.py`, the geometry it describes.** Crude, and it is the
+difference between a live figure and a retracted one.
+
+**Three controls, and the second is the interesting one:**
+`occlusion/not_stale` compares mtimes; `occlusion/positive` now asserts
+**exactly 12 frames, all beat 5's bridge**; and **`occlusion/supersession`
+asserts the Aug-04 ledger STILL lists f1114-1116 while the live one does not.**
+That last one fails if R2-731 is ever reverted *or* if someone overwrites the
+old file - **it holds the difference between two files as the thing under test,
+rather than either file's contents.**
+
+**And the 720p evidence agreed with me and was still wrong.** The agent that
+caught this had watched `r2full` frames showing the blackout - rendered Aug 3-5,
+*before* the fix. In its own words: **"a render is evidence about the build it
+came from, and I treated it as evidence about the film."**
+
+## R2-1082 — R2-1080's breach read survives, and the reason is a date I had not checked
+
+Applying R2-1081's own lesson to my own work an hour earlier: **which build were
+those f866/f900/f1000 frames from?**
+
+```
+sim/out/breach_film.npz        Aug 04 11:40   the bake carrying bond 4000 -> 100
+out2/seq/r2full/*_000901.png   Aug 04 20:01   the frame I judged
+```
+
+**The frame postdates the bake by eight hours, so the un-break fix IS in it**
+and R2-1080's judgement holds on the axis it was making a claim about.
+
+**But it predates roughly ten other source changes**, every one listed in
+`NEXT-REBUILD.md` as landed-in-source-and-in-no-film-blend: car paint v5 and
+imperfections, the showroom ceiling, the driver and seat, the asphalt relief
+re-budget, the beat-1 re-pace and re-frame, the beat-6 re-key and lap-down.
+**So the frames are a valid read of the breach and are NOT the finished film**,
+and nothing about paint, ceiling or road surface can be concluded from them.
+
+**Provenance is not one question, it is one question per claim.** The same frame
+is current evidence for one thing and stale evidence for another, and "is this
+render up to date" has no answer until you say up to date *for what*.

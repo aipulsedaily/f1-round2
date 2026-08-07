@@ -290,12 +290,31 @@ def selftest(path, car, world_t):
     print(f"  {'PASS' if good else 'FAIL'}  occlusion/ledger  loaded "
           f"{len(occ)} in-frame rows")
 
+    good = not ledger_is_stale()
+    ok &= good
+    print(f"  {'PASS' if good else 'FAIL'}  occlusion/not_stale  the ledger is "
+          f"newer than {OCCLUSION_DESCRIBES}, the geometry it describes")
+
+    # R2-1081: this used to assert 15 frames including f1114-1116.  R2-731
+    # closed the beat-4 blackout before the shipping film was built, so the
+    # live answer is 12 and all of them are beat 5's bridge.
     hidden = sorted(f for f, v in occ.items() if v >= OCC_HIDDEN)
-    good = hidden == [1114, 1115, 1116] + list(range(2180, 2192))
+    good = hidden == list(range(2180, 2192))
     ok &= good
     print(f"  {'PASS' if good else 'FAIL'}  occlusion/positive  the car is "
-          f"in frame and wholly hidden on exactly {len(hidden)} frames "
-          f"({hidden[:3]}... ), the pit building and the bridge")
+          f"in frame and wholly hidden on exactly {len(hidden)} frames, "
+          f"all of them beat 5's bridge — beat 4 was closed by R2-731")
+
+    # The superseded ledger must still parse, and must still disagree.  If it
+    # ever stops disagreeing, either R2-731 has been reverted or someone has
+    # overwritten the old file, and both are worth a failure.
+    old = load_occlusion(os.path.join(R2, "render/r2651/occlusion.json"))
+    stale_hidden = sorted(f for f, v in old.items() if v >= OCC_HIDDEN)
+    good = stale_hidden[:3] == [1114, 1115, 1116]
+    ok &= good
+    print(f"  {'PASS' if good else 'FAIL'}  occlusion/supersession  the Aug-04 "
+          f"ledger still lists f1114-1116; the live one does not. The "
+          f"difference IS R2-731, and reading the wrong file costs 3 frames")
 
     good = all(occ.get(f, 0.0) < OCC_HIDDEN for f in (2160, 2175, 2200, 2225))
     ok &= good
@@ -329,8 +348,37 @@ def selftest(path, car, world_t):
 #: It is ADDITIVE: `frac_w` still prints in the same column with the same value,
 #: because other agents are measuring with this tool right now and silently
 #: changing an instrument mid-flight is the failure this project keeps logging.
-OCCLUSION_LEDGER = "render/r2651/occlusion.json"
+#: R2-1081.  The FIRST version of this pointed at `render/r2651/occlusion.json`
+#: (Aug 04 19:53), which lists f1114-1116 as hidden behind the pit building.
+#: **R2-731 closed that on Aug 07 04:11** by making the building's west end an
+#: annexe, and `film17_breach.blend` was built at 06:09, after it.  So the
+#: instrument built to stop a metric being confidently wrong in the flattering
+#: direction shipped, for one commit, being confidently wrong in the
+#: PESSIMISTIC direction -- marking three good frames OCCLUDED and reporting
+#: beat 4 as worse than it is.  Same failure, opposite sign.
+#:
+#: The ledger must be newer than the geometry it describes, and
+#: `ledger_is_stale()` is the check that would have caught it.
+OCCLUSION_LEDGER = "render/r2731/occ_final_items.json"
+OCCLUSION_DESCRIBES = "world/build_architecture.py"
 OCC_HIDDEN = 0.99      # front-occluded fraction at which "the car" is not visible
+
+
+def ledger_is_stale(ledger=None, source=None):
+    """Is the occlusion ledger older than the geometry it claims to describe?
+
+    An occlusion result is a statement about a world that existed when the
+    raycast ran.  Nothing in the file records which world that was, so mtime is
+    the only handle -- crude, but it is the difference between a live figure and
+    a retracted one, and both this instrument and the agent that caught it were
+    fooled by exactly this.
+    """
+    l = ledger or os.path.join(R2, OCCLUSION_LEDGER)
+    s = source or os.path.join(R2, OCCLUSION_DESCRIBES)
+    try:
+        return os.path.getmtime(l) < os.path.getmtime(s)
+    except OSError:
+        return True
 
 
 def load_occlusion(p):
