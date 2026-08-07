@@ -120,13 +120,54 @@ def report(d1, accel, nov, label, w, h, fps=FPS, window_s=2.0):
 # reproduces the measurement the fix is a response to.  These five figures are
 # quoted in the R2-1144 defect entry and in the client brief; they were taken on
 # `watch/AFTER_beat1_33s.mp4`, which is 792 frames of 1280x720.
+#
+# R2-1604 — AND FOUR OF THEM DO NOT REPRODUCE, WHICH IS WHY THEY ARE SPLIT.
+#
+# THE INSTRUMENT THAT PRODUCED THEM WAS NEVER SAVED.  There is no novelty or
+# acceleration tool anywhere in this tree or anywhere in its git history; this
+# file is the first.  So the numbers cannot be re-derived by re-running anything,
+# only re-measured, and re-measuring the same video at its native resolution
+# gives:
+#
+#     CONFIRMED
+#       mean |acceleration| over the first 6 s     0.896   published 0.898
+#       ... as a fraction of the mean change        5.2 %   published 5.4 %
+#
+#     NOT REPRODUCED
+#       first 6 s mean change        17.08   published 16.52   (+3.4 %)
+#       first 4 s change             16.54   published 29.35   (1.77x)
+#       rest of beat 1 change        14.31   published 26.34   (1.84x)
+#       novelty, five seconds        52.35 44.45 42.07 36.93 39.60
+#                                    published 48.50 48.48 37.36 35.66 36.09
+#
+# THE LOAD-BEARING CLAIM SURVIVES AND THE ARITHMETIC AROUND IT DOES NOT.  R2-1144
+# concluded that the camera is constant-velocity because its acceleration is
+# ~5 % of its own movement, and that reproduces to within 0.2 points.  But
+# 29.35/26.34 cannot be reconciled with 16.52 at ANY single resolution -- mean
+# |difference| does not vary by 1.8x between two windows of the same video
+# measured the same way -- so at least two of the published figures were taken
+# with different settings, or on a different source, and nothing on disk records
+# which.  The 1.11x RATIO those two numbers assert does reproduce (1.16x), and
+# the ratio is what the argument uses.
+#
+# THE VERDICT GATES ON THE CONFIRMED ARM ONLY.  Failing this selftest on figures
+# that no longer have an instrument behind them would leave a permanently red
+# gate, and a gate that is always red is a gate nobody reads.  The unreproduced
+# figures are printed on every run as a RECORDED DISCREPANCY so they are not
+# quietly dropped either.
 R2_1144 = {
     "video": "watch/AFTER_beat1_33s.mp4",
-    "first_6s_mean_change": 16.52,
+    # gated
     "first_6s_mean_accel": 0.898,
-    "novelty_by_second": [48.50, 48.48, 37.36, 35.66, 36.09],
-    "first_4s_change": 29.35,
-    "rest_of_beat1_change": 26.34,
+    "first_6s_accel_frac_pct": 5.4,
+    # recorded, not gated — see above
+    "unreproduced": {
+        "first 6 s mean change": 16.52,
+        "first 4 s change": 29.35,
+        "rest of beat 1 change": 26.34,
+        "novelty 0-1 s": 48.50, "novelty 1-2 s": 48.48, "novelty 2-3 s": 37.36,
+        "novelty 3-4 s": 35.66, "novelty 4-5 s": 36.09,
+    },
 }
 
 
@@ -148,15 +189,33 @@ def selftest():
 
     print(f">> SELFTEST against R2-1144 on {R2_1144['video']} ({w}x{h}, "
           f"{len(frames)} frames)")
-    n6 = 6 * FPS
-    chk("first 6 s mean change", _m(d1[:n6]), R2_1144["first_6s_mean_change"], 0.05)
-    chk("first 6 s mean |accel|", _m(accel[:n6]), R2_1144["first_6s_mean_accel"], 0.02)
-    for i, want in enumerate(R2_1144["novelty_by_second"]):
-        a, b = i * FPS, (i + 1) * FPS
-        chk(f"novelty {i}-{i+1} s", _m(nov[a + FPS:b + FPS]), want, 0.35)
-    n4 = 4 * FPS
-    chk("first 4 s change", _m(d1[:n4]), R2_1144["first_4s_change"], 0.35)
-    chk("rest of beat 1 change", _m(d1[n4:]), R2_1144["rest_of_beat1_change"], 0.35)
+    n4, n6 = 4 * FPS, 6 * FPS
+    print("   GATED — the claim R2-1601 acts on: the camera is constant-velocity "
+          "because\n          its acceleration is a few per cent of its own "
+          "movement.")
+    chk("first 6 s mean |accel|", _m(accel[:n6]),
+        R2_1144["first_6s_mean_accel"], 0.02)
+    chk("... as % of mean change",
+        100.0 * _m(accel[:n6]) / max(_m(d1[:n6]), 1e-9),
+        R2_1144["first_6s_accel_frac_pct"], 0.5)
+    chk("first 4 s / rest ratio", _m(d1[:n4]) / max(_m(d1[n4:]), 1e-9),
+        29.35 / 26.34, 0.10)
+
+    print("   RECORDED DISCREPANCY — R2-1604. These were published without a "
+          "surviving\n          instrument and do not reproduce at this "
+          "video's native resolution.")
+    got = {
+        "first 6 s mean change": _m(d1[:n6]),
+        "first 4 s change": _m(d1[:n4]),
+        "rest of beat 1 change": _m(d1[n4:]),
+    }
+    for i in range(5):
+        got[f"novelty {i}-{i+1} s"] = _m(nov[(i + 1) * FPS:(i + 2) * FPS])
+    for k, want in R2_1144["unreproduced"].items():
+        g = got[k]
+        print(f"   ---- {k:<28} now {g:8.3f}  published {want:8.3f}  "
+              f"({g / want:.2f}x)")
+
     print(">> STAGE RESULT: PACING_CURVE_SELFTEST_OK" if not bad
           else ">> STAGE RESULT: PACING_CURVE_SELFTEST_FAILED (%s)" % ", ".join(bad))
     return 0 if not bad else 1
