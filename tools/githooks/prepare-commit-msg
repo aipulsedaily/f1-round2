@@ -1,0 +1,22 @@
+#!/bin/sh
+# R2 gitguard -- R2-234.  `git add` takes a path; `--amend` takes whatever
+# HEAD happens to be, and in a tree with concurrent agents that is not
+# necessarily yours.  An amend on this project has already rewritten another
+# agent's commit message.  Write a correcting commit instead.
+if [ "$R2_GITGUARD" = "off" ]; then exit 0; fi
+if [ "$2" = "commit" ] && [ -n "$3" ]; then
+    if [ "$R2_AMEND_OK" = "1" ]; then
+        echo "R2 GITGUARD: --amend allowed by R2_AMEND_OK=1 on $3" >&2
+        exit 0
+    fi
+    echo "" >&2
+    echo "R2 GITGUARD REFUSED: git commit --amend  (R2-234)" >&2
+    echo "  target commit: $3" >&2
+    echo "  HEAD is shared.  Between your commit and your amend another" >&2
+    echo "  agent's commit can land and become HEAD -- that has already" >&2
+    echo "  happened once here, rewriting their message with yours." >&2
+    echo "  Write a correcting commit instead, or git notes add." >&2
+    echo ">> STAGE RESULT: FAIL (1 violations)" >&2
+    exit 1
+fi
+exit 0

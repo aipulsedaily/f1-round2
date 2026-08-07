@@ -1,0 +1,13 @@
+#!/bin/sh
+# R2 gitguard -- defect #115.  Installed by tools/gitguard.py install.
+# Fails OPEN on any internal error: a guard that bricks six agents' commits
+# is worse than the defect it guards.
+if [ "$R2_GITGUARD" = "off" ]; then
+    mkdir -p "$(git rev-parse --git-dir)/r2-guard"
+    echo "$(date -Is) BYPASS by R2_AGENT=${R2_AGENT:-<unset>}" \
+        >> "$(git rev-parse --git-dir)/r2-guard/bypass.log"
+    echo "R2 GITGUARD BYPASSED (R2_GITGUARD=off) -- logged." >&2
+    exit 0
+fi
+python3 "$(git rev-parse --show-toplevel)/tools/gitguard.py" check || exit 1
+exit 0
