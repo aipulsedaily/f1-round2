@@ -3412,8 +3412,10 @@ def build_apex_board(mb, s, side, bi, k):
 # numbers, so a banner sits ON the girder / truss face rather than floating.
 #   La Passerelle    : circuit frame, x = -450, deck width 4.0, y -24..+28,
 #                      soffit 7.50, truss depth 3.05
-#   Le Pont de la P. : world, origin (-617.56, 94.75), heading 295.4 deg,
-#                      deck 6.0 wide, half-span 15.0, soffit z = 3.913 + 6.80,
+#   Le Pont de la P. : world frame, origin/heading/road level EVALUATED from
+#                      `world_contract` at `build_architecture.PONT_S` (R2-731;
+#                      it was three copied literals and R2-664 said what that
+#                      costs), deck 6.0 wide, half-span 15.0, soffit +6.80,
 #                      plate girders 1.35 m deep
 
 def build_bridge_banner(mb, ctr, facing, W, H, bi, k, mat=M_PRINT, tilt=0.0):
@@ -3451,9 +3453,31 @@ def bridge_banner_sites():
                     (float(fx[0] - wx[0]), float(fy[0] - wy[0])), 44.0, 1.60,
                     "passerelle"))
     # --- Le Pont de la Plongee: world frame -------------------------------
-    hdg = math.radians(295.4)
-    ox, oy = -617.56, 94.75
-    soff = 3.913 + 6.80
+    #
+    # R2-731 / R2-664.  DERIVED FROM THE BRIDGE'S OWN STATION, NOT COPIED.
+    #
+    # This used to read `hdg = math.radians(295.4)`, `ox, oy = -617.56, 94.75`,
+    # `soff = 3.913 + 6.80` — three literals which are exactly
+    # `WC.centreline(2410)` and `WC.elevation_c(2410)` + 6.80, i.e. a snapshot
+    # of `build_architecture.PONT_S` taken by hand.  R2-664's occupancy proxy
+    # found these banners in the beat-5 sightline corridor out to f2196, four
+    # frames past the bridge's own window, and wrote down the consequence:
+    # "any placement move must carry the banners with it; they are not part of
+    # build_architecture's bridge and WILL NOT FOLLOW PONT_S on their own."
+    # R2-660 then moved PONT_S 2410 -> 2460.  A copied literal would have left
+    # four banners hanging in mid air 50 m short of the bridge, on the same
+    # faces R2-256 already records a collision on.
+    #
+    # The import is deliberately NOT guarded.  A fallback here would mean this
+    # module silently keeps building at a station the bridge no longer occupies,
+    # which is the exact failure the block above describes; if
+    # `build_architecture` cannot be imported, the banners must not be built at
+    # all.
+    import build_architecture as ARCH                            # noqa: E402
+    px_, py_, _pz, phdg, _pk = C.centreline(ARCH.PONT_S)
+    hdg = float(phdg)
+    ox, oy = float(px_), float(py_)
+    soff = float(C.elevation_c(ARCH.PONT_S)) + 6.80
     for sx in (-1, 1):
         lx = sx * (3.0 + 0.20)
         ly = 0.0

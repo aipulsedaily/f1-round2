@@ -229,6 +229,11 @@ if __name__ == "__main__":
                                                   ">=36 m; see sightline block"),
             gantry_design=dict(x=0.0, legs_y=[-11.0, 11.0], soffit_z=9.0, depth_m=2.2),
             footbridge_design=dict(x=-450.0, soffit_z=7.5, depth_m=4.0, span_y=[-24.0, 28.0]),
+            # R2-731: s stays at 2410.0.  R2-660's 2460 was applied and then
+            # re-verified by raycast against the built world: it gives 25
+            # fully-blocked frames instead of 12, because the tool that chose
+            # it models the deck and not the abutments.  No station over
+            # 2300-2700 clears the pass.  docs/STAGING-R2-731-to-R2-760.md.
             plunge_bridge_design=dict(s=2410.0, soffit_z=6.8, span_m=30.0, deck_width_m=6.0)),
         transit=dict(
             legs=[dict(name="launch inside showroom", from_world=[0.0, 0.0, 0.0],

@@ -835,6 +835,184 @@ def mat_generic(name, base, rough, metallic=0.0, bump_scale=60.0, bump_str=0.10,
     return m
 
 
+# ---------------------------------------------------------------------------
+# R2-366.  THE PAVING RELIEF LADDER.
+#
+# WHAT WAS WRONG, MEASURED RATHER THAN ASSERTED.  All three paving materials
+# carried exactly ONE relief stage: a bump driven by the fine aggregate noise at
+# 18.8 mm (slabs) / 29.1 mm (paddock).  Fed through `itemkit`'s law with the
+# height swing MEASURED by `tools/r2366_swing.py` rather than assumed, those
+# stages are correctly banded -- m 0.471 / 0.764 / 0.507 against
+# `isotropic_macro` (0.35 .. 0.95).  The relief that exists is right.
+#
+# THE DEFECT IS THAT IT IS THE ONLY OCTAVE, AND IT IS SUB-PIXEL WHERE IT MATTERS.
+# `tools/r2366_surface_visibility.py` walks all 2,978 camera poses: the paving
+# runs from 5.3 mm per delivered pixel at the beat-3 breach to 339 mm per pixel
+# at the closing wide, a 64x span.  At the closing frame an 18.8 mm feature is
+# 0.055 px.  So the frame the film ENDS on sees NO relief at all, and the only
+# signal left at a scale it can resolve is the per-cell white-noise albedo hash
+# -- a flat tone per cell with a hard step at the cell boundary and no normal
+# change across it.  That is precisely the "subtly different flat grey
+# rectangles" read, and R2-060 is the reason it must not be answered with more
+# albedo: after a band-pass a sharp albedo STEP and a lip-and-shadow leave the
+# same signature, so albedo variation is not relief and cannot stand in for it.
+#
+# THE REPAIR is octaves, not amplitude.  Four stages spanning 25.8 mm to 5.33 m,
+# so something is resolved at every distance the take visits:
+#
+#       stage        lam        at 5.3 mm/px   at 339 mm/px   at 80 mm/px
+#                               (beat 3)       (closing,      (closing,
+#                                               along-view)    across-view)
+#       aggregate     25.8 mm       5 px/cyc      0.1            0.3
+#       float        228.6 mm      43            0.7            2.9
+#       screed         1.39 m     263            4.1           17.4
+#       settle         5.33 m    1006           15.7           66.7
+#
+# EVERY AMPLITUDE IS DERIVED, NOT CHOSEN.  `m_target` is picked inside
+# `RELIEF_BANDS['isotropic_macro']`, rolling off gently with wavelength because
+# fine texture is genuinely sharper than large form, and the millimetres come
+# from `itemkit.relief_amplitude_for(m, lam)`.  BOUND BOTH WAYS: the four
+# stages are independent fields so their slopes add in quadrature, and the
+# combined m is 0.895 -- inside the same 0.95 ceiling, not merely each stage
+# individually.  `tools/r2366_relief_audit.py` prints all of it.
+#
+# THE HEIGHT SIGNAL IS NORMALISED SO THE AUDIT READS TRUE.  A raw Noise Fac does
+# not swing 0..1; measured, these swing 0.278 .. 0.340 over their 1st..99th
+# percentile.  `bump_relief_report` defaults `height_pp = 1.0` because that is
+# the CONSERVATIVE reading for an audit -- but authoring against it would put
+# every amplitude out by the swing.  So each stage puts a Map Range between the
+# noise and the bump, mapping its MEASURED p1..p99 onto 0..1, and then
+# `Distance` IS the peak-to-peak metres and the default audit is correct without
+# anyone having to know this table.  The clamp flattens 2 % of the area by
+# construction; sizing to the full range instead would under-drive everything
+# that actually has area.
+#
+# Provenance: `tools/r2366_swing.py` -> `work/r2366/swing.json`. Re-run it if
+# any scale, detail or roughness below changes -- the percentiles are properties
+# of THOSE numbers and stop being measurements if the texture moves.
+#
+#: How much of the per-cell albedo hash survives. See `_batch_tone`.
+BATCH_TONE_KEEP = 0.30
+
+#: THE DELIBERATE CONTROL FOR R2-366, AND WHY IT IS IN THE SOURCE RATHER THAN IN
+#: GIT. The A/B for this change was first built with `git show HEAD:` as the
+#: BEFORE arm, and the geometry fingerprint came back with `ARCH_PitWall` moved
+#: by 7,268 vertices. It was not this change: ANOTHER AGENT HAD UNCOMMITTED
+#: R2-331/R2-334 WORK IN THIS SAME FILE, so "HEAD" and "the working copy minus
+#: my change" were two different things and the A/B was carrying someone else's
+#: edit as a confound. With four agents live, the committed tree is not a safe
+#: baseline for a working-copy change.
+#:
+#: Setting this True rebuilds the three paving materials exactly as they shipped
+#: -- ONE bump on the fine aggregate, and the uncompressed per-cell ramp -- from
+#: the SAME working copy, so the two arms differ in this change and in nothing
+#: else. Keep it. `assembly6` is retained on the same argument: a control that
+#: has to be reconstructed is a control that will eventually be reconstructed
+#: wrongly.
+PAVING_RELIEF_LEGACY = bool(os.environ.get("R2366_LEGACY_PAVING"))
+
+#   (label, scale, detail, roughness, p1, p99, amp_m, m_target)
+PAVING_RELIEF = (
+    ("aggregate", 62.00, 8.0, 0.62, 0.361313, 0.639198, 0.000510, 0.56),
+    ("float", 7.00, 6.0, 0.55, 0.346352, 0.653912, 0.003625, 0.45),
+    ("screed", 1.15, 5.0, 0.52, 0.339743, 0.661019, 0.018626, 0.38),
+    # 0.36 rather than 0.35: at the band FLOOR exactly, floating point puts the
+    # audit a hair under and it reports LOW. Sitting on a bound is not being
+    # inside it.
+    ("settle", 0.30, 4.0, 0.48, 0.330228, 0.670065, 0.067634, 0.36),
+)
+
+
+def _paving_relief(nt, oc, tag, scale_mul=1.0, shift=(0.0, 0.0, 0.0),
+                   x0=-1250, y0=-1100):
+    """The four-octave bump ladder. Returns the final `Normal` output socket.
+
+    NOT A SHARED ASSET. `scale_mul` and `shift` are per-material, so the apron,
+    the forecourt slabs and the paddock do not sample the same field at the same
+    place -- the no-repeated-assets law applies to a procedural field exactly as
+    it applies to a mesh, and three identical fields on three adjacent surfaces
+    would tile across the boundaries between them.
+
+    Chained through each bump's `Normal` input, which is the supported way to
+    layer bump and which `bump_relief_report` walks correctly: it reads each
+    stage's OWN driving texture and refuses to follow the `Normal` socket, so
+    the four stages audit as four stages rather than four copies of the first.
+    """
+    mp = _nd(nt, 'ShaderNodeMapping', (x0 - 180, y0))
+    nt.links.new(oc, mp.inputs['Vector'])
+    _set(mp, 'Location', shift)
+    prev = None
+    for i, (label, scale, detail, rough, p1, p99, amp_m, _m) in \
+            enumerate(PAVING_RELIEF):
+        y = y0 - i * 260
+        nz = _noise(nt, (x0, y), scale * scale_mul, detail, rough,
+                    vec=mp.outputs['Vector'])
+        nz.label = "%s_%s" % (tag, label)
+        # p1..p99 -> 0..1, so `Distance` below is peak-to-peak METRES
+        mr = _nd(nt, 'ShaderNodeMapRange', (x0 + 200, y))
+        mr.clamp = True
+        _set(mr, 'From Min', p1)
+        _set(mr, 'From Max', p99)
+        _set(mr, 'To Min', 0.0)
+        _set(mr, 'To Max', 1.0)
+        nt.links.new(nz.outputs['Fac'], mr.inputs['Value'])
+        bmp = _nd(nt, 'ShaderNodeBump', (x0 + 420, y))
+        bmp.label = "%s_%s" % (tag, label)
+        _set(bmp, 'Strength', 1.0)
+        # THE AMPLITUDE FOLLOWS THE WAVELENGTH, OR THE DECORRELATION SILENTLY
+        # RE-BANDS THE SURFACE. `scale_mul` divides the wavelength, and
+        # `relief_amplitude_for` is linear in wavelength, so holding `amp_m`
+        # fixed while retuning the scale changes m by exactly `scale_mul`.
+        # Caught by `tools/r2366_relief_audit.py` on the first build of this
+        # ladder: A_ForecourtSlab (mul 1.37) came out at a quadrature m of 1.225,
+        # HIGH, and A_ConcApron (mul 0.79) had two stages LOW — from a change
+        # that was only ever meant to stop three surfaces sharing one field.
+        _set(bmp, 'Distance', amp_m / scale_mul)
+        nt.links.new(mr.outputs['Result'], bmp.inputs['Height'])
+        if prev is not None:
+            nt.links.new(prev, bmp.inputs['Normal'])
+        prev = bmp.outputs['Normal']
+    return prev
+
+
+def _legacy_bump(nt, height_sock, distance, strength, x=-120, y=-520):
+    """The single shipped bump stage, for the R2-366 control arm.
+
+    Reproduced here rather than left to git so the control is a property of this
+    file. `distance` / `strength` are the shipped literals: 0.008 / `bump` for
+    `mat_slab`, 0.010 / 0.22 for `mat_paving`.
+    """
+    bmp = _nd(nt, 'ShaderNodeBump', (x, y))
+    _set(bmp, 'Strength', strength)
+    _set(bmp, 'Distance', distance)
+    nt.links.new(height_sock, bmp.inputs['Height'])
+    return bmp.outputs['Normal']
+
+
+def _batch_tone(stops, keep):
+    """Pull a per-cell tone ramp toward its own mean, keeping `keep` of it.
+
+    `keep = 1.0` returns the ramp unchanged, which is what the R2-366 control
+    arm passes.
+
+    THE HASH IS DEMOTED, NOT DELETED. Adjacent concrete bays really are poured
+    from different batches and really do differ, so the per-cell step is a true
+    thing about the subject; what was wrong was its SIZE relative to everything
+    else. The apron ramp spans +-15 % of luminance and the paddock +-20 %, at a
+    5 m cell -- 15 px at the closing frame, where the relief that ought to be
+    competing with it is 0.055 px. Compressing the ramp and adding the octaves
+    above changes which signal dominates. A real batch-to-batch difference in
+    a cast concrete apron is a few per cent, not twenty.
+    """
+    n = float(len(stops))
+    mean = [sum(c[i] for _, c in stops) / n for i in range(3)]
+    out = []
+    for pos, c in stops:
+        out.append((pos, tuple(mean[i] + (c[i] - mean[i]) * keep
+                               for i in range(3)) + (1.0,)))
+    return out
+
+
 def mat_paving():
     """Cast-in-situ concrete bays.  A white-noise hash on floor(p/bay) gives a
     per-bay constant tone/roughness step that lines up with the modelled joints,
@@ -851,11 +1029,13 @@ def mat_paving():
     wn = _nd(nt, 'ShaderNodeTexWhiteNoise', (-920, 300))
     wn.noise_dimensions = '3D'
     nt.links.new(fl.outputs[0], wn.inputs['Vector'])
-    bayramp = _ramp(nt, (-740, 300), [(0.0, srgb('#77746d')),
-                                      (0.34, srgb('#948f85')),
-                                      (0.62, srgb('#6f6d67')),
-                                      (0.85, srgb('#a6a29a')),
-                                      (1.0, srgb('#837f78'))])
+    # R2-366: the 5 m cell is 15 px at the closing wide and this ramp spanned
+    # +-20 % of luminance, which made it the ONLY thing the frame could resolve.
+    bayramp = _ramp(nt, (-740, 300), _batch_tone(
+        [(0.0, srgb('#77746d')), (0.34, srgb('#948f85')),
+         (0.62, srgb('#6f6d67')), (0.85, srgb('#a6a29a')),
+         (1.0, srgb('#837f78'))],
+        1.0 if PAVING_RELIEF_LEGACY else BATCH_TONE_KEEP))
     nt.links.new(wn.outputs['Value'], bayramp.inputs['Fac'])
     # aggregate + mottle
     agg = _noise(nt, (-1250, -60), 55.0, 10.0, 0.72, vec=oc)
@@ -895,11 +1075,14 @@ def mat_paving():
     rr = _math(nt, (-330, -520), 'MULTIPLY_ADD', agg.outputs['Fac'], 0.22, 0.55,
                clamp=True)
     nt.links.new(rr.outputs[0], b.inputs['Roughness'])
-    bmp = _nd(nt, 'ShaderNodeBump', (-120, -520))
-    _set(bmp, 'Strength', 0.22)
-    _set(bmp, 'Distance', 0.01)
-    nt.links.new(agg.outputs['Fac'], bmp.inputs['Height'])
-    nt.links.new(bmp.outputs['Normal'], b.inputs['Normal'])
+    # R2-366.  Was ONE bump on the 29 mm aggregate -- correctly banded (m 0.507
+    # on the measured swing) but 0.086 px at the closing wide, so the frame the
+    # film ends on saw no relief whatsoever.  Four octaves now, 25.8 mm .. 5.33 m.
+    nt.links.new(
+        _legacy_bump(nt, agg.outputs['Fac'], 0.010, 0.22) if PAVING_RELIEF_LEGACY
+        else _paving_relief(nt, oc, "concslab", scale_mul=1.00,
+                            shift=(0.0, 0.0, 0.0)),
+        b.inputs['Normal'])
     MATS["A_ConcSlab"] = m
     return m
 
@@ -1116,10 +1299,18 @@ def build_materials():
                 mottle_scale=5.0, mottle_amt=0.3)
 
 
-def mat_slab(name, cell, stops, rough=0.55, bump=0.22):
-    """Second paving family (forecourt sawn slabs) - same hash trick, own grid."""
+def mat_slab(name, cell, stops, rough=0.55, bump=0.22, relief_mul=1.0,
+             relief_shift=(0.0, 0.0, 0.0)):
+    """Second paving family (forecourt sawn slabs) - same hash trick, own grid.
+
+    R2-366 added `relief_mul` / `relief_shift`: both callers share this factory,
+    and without them the apron and the forecourt slabs would carry a bit-identical
+    relief field that tiles straight across the joint between the two objects.
+    """
     m, nt, b = _newmat(name)
     oc = _objcoord(nt)
+    stops = _batch_tone(stops, 1.0 if PAVING_RELIEF_LEGACY
+                       else BATCH_TONE_KEEP)
     sc = _nd(nt, 'ShaderNodeVectorMath', (-1250, 300))
     sc.operation = 'DIVIDE'
     nt.links.new(oc, sc.inputs[0])
@@ -1153,23 +1344,38 @@ def mat_slab(name, cell, stops, rough=0.55, bump=0.22):
     nt.links.new(c2.outputs[2], b.inputs['Base Color'])
     rr = _math(nt, (-330, -520), 'MULTIPLY_ADD', agg.outputs['Fac'], 0.18, rough)
     nt.links.new(rr.outputs[0], b.inputs['Roughness'])
-    bmp = _nd(nt, 'ShaderNodeBump', (-120, -520))
-    _set(bmp, 'Strength', bump)
-    _set(bmp, 'Distance', 0.008)
-    nt.links.new(agg.outputs['Fac'], bmp.inputs['Height'])
-    nt.links.new(bmp.outputs['Normal'], b.inputs['Normal'])
+    # R2-366.  `bump` is retained in the signature because two call sites pass
+    # it positionally, but the single 18.8 mm stage it drove is superseded by the
+    # four-octave ladder: it was in-band (m 0.471 / 0.764) and 0.055 px at the
+    # closing wide, i.e. correct and invisible at the same time.
+    nt.links.new(
+        _legacy_bump(nt, agg.outputs['Fac'], 0.008, bump) if PAVING_RELIEF_LEGACY
+        else _paving_relief(nt, oc, name.replace("A_", "").lower(),
+                            scale_mul=relief_mul, shift=relief_shift),
+        b.inputs['Normal'])
     MATS[name] = m
     return m
 
 
 def build_materials_extra():
+    # R2-366.  `relief_mul` / `relief_shift` are per-material ON PURPOSE. These
+    # three concrete families meet each other along real joints in the closing
+    # frame -- forecourt to apron at the pavilion, apron to paddock at the pit
+    # exit -- and one shared procedural field would run straight through those
+    # joints as a single continuous texture, which is the no-repeated-assets
+    # failure in its procedural form. The multipliers are non-integer and
+    # mutually irrational-ish so the ladders do not re-phase against each other,
+    # and the shifts are large enough to be well outside the longest octave
+    # (5.33 m). `tools/r2366_field_variety.py` measures that they are distinct.
     mat_slab("A_ForecourtSlab", (1.5, 1.0),
              [(0.0, srgb('#b6b2a8')), (0.4, srgb('#c2beb3')),
-              (0.75, srgb('#aca79c')), (1.0, srgb('#c8c4ba'))], 0.42, 0.16)
+              (0.75, srgb('#aca79c')), (1.0, srgb('#c8c4ba'))], 0.42, 0.16,
+             relief_mul=1.37, relief_shift=(211.0, -97.0, 0.0))
     mat_slab("A_ConcApron", (5.0, 5.0),
              [(0.0, srgb('#7b7871')), (0.32, srgb('#8f8b83')),
               (0.62, srgb('#726f69')), (0.86, srgb('#9a968d')),
-              (1.0, srgb('#84817a'))], 0.58, 0.26)
+              (1.0, srgb('#84817a'))], 0.58, 0.26,
+             relief_mul=0.79, relief_shift=(-583.0, 404.0, 0.0))
     # THE SEALANT IN THE SAWN JOINTS  (defect #48).  Hot-poured bitumen sealant:
     # dark, but NOT black — 0.055 albedo, which is a real polymer-modified sealant
     # and about a third of the concrete beside it.  It is what a joint is supposed
@@ -3324,6 +3530,94 @@ PB_Z_PT = 12.00               # parapet top  (spec: roof z = +12.0)
 CANOPY_Y = 19.80              # cantilever edge over the pit lane
 L1_FACE_Y = 21.20
 
+# --------------------------------------------------------------------------- #
+# R2-731 / R2-666.  THE WEST END IS AN ANNEXE, AND THAT IS THE BEAT-4 FIX.      #
+# --------------------------------------------------------------------------- #
+#
+# R2-666's raycast found the car WHOLLY hidden behind `ARCH_PitBuilding_Shell`
+# on f1114-1116, six frames affected (f1113-1118), occluder 8.8-14.0 m from the
+# lens.  The raycast names the object; this building is 320 m long and some
+# thousands of boxes, so that is not yet something you can fix.
+# `tools/r2731_pit_sightline.py` reconstructs the shell from these constants and
+# intersects the camera-to-car segment box by box.  It reproduces the defect
+# (f1114-1116 fully blocked, f1113/1117/1118 partial — the raycast's own
+# occ_frac_front to within a sample) and clears f1100 and f1130 as controls.
+#
+# WHAT IT IS.  Over f1113-1118 the camera crosses the pit complex diagonally at
+# z = 15.7 -> 16.2 m, and the sightline to a car 42 m away on the track clips the
+# SOUTH-WEST CORNER of the roof.  It never penetrates more than 8.8 m into a
+# 320 m building and never deeper than y = 25.13 into a 17 m-deep plan.  Per box,
+# the top of the box against the lowest the sightline gets over that box's own
+# footprint:
+#
+#     box               top     ceiling
+#     parapet_front    12.00      9.70    BLOCKS by 2.30 m
+#     core_W           12.70     11.42    BLOCKS by 1.28
+#     roof_deck        10.96      9.70    BLOCKS by 1.26
+#     roof_seam_0..7   11.02   9.71-10.84 BLOCKS
+#     roof_lap_0       10.96     10.57    BLOCKS by 0.39
+#     upper_wall       10.90     10.54    BLOCKS by 0.36
+#     L1_spandrel      10.40     10.60    clear by 0.20
+#     canopy_fascia     6.46     10.00    clear
+#     ff_slab           6.40     10.10    clear
+#     flank_W          10.90     13.42    clear
+#
+# **Everything at or below the L1 glazing head is already clear and everything
+# above it is not.**  The garage frontage, the pit-lane canopy, the piers, the
+# doors and the glazed band are innocent; what blocks is the roof and what stands
+# on it.
+#
+# WHAT THIS DOES.  West of `PB_ANNEXE_X` the building keeps its plan exactly and
+# loses a level: its glazed band is a normal 3.0 m storey instead of a 4.0 m
+# hospitality volume, its roof deck sits on that head, stops ON the façade line
+# instead of oversailing it by 0.70 m, and carries a 0.18 m eaves fascia in place
+# of a 1.10 m parapet; the W core, which marks the joint, rises above the annexe
+# roof rather than above the main one.  NOTHING IS STOOD BACK FROM THE TRACK —
+# footprint, canopy, frontage and pit lane are untouched, so the near-field
+# geometry that sells the speed still passes the lens at the same distance.  What
+# comes off is height, at one corner, over 8 % of a 320 m frontage.
+#
+# WHY THE STEP IS AT -218.0.  Measured, not chosen: the sweep over f1105-1135 is
+# clean — 0 fully blocked AND 0 partially occluded — for every step station from
+# -235.0 eastward, and stays clean at -234, -233, -232, -230, -228, -224 and -218.
+# A 17 m plateau, not a knife edge, which is the standard R2-660 set for the
+# bridge and then did not meet.  -218.0 is the bay-1/bay-2 joint, the only
+# structural line inside the plateau, so the roof steps where the building steps.
+# The step's station alone is not enough: with the annexe roof left at the main
+# block's 10.90 the same sweep still leaves 3 partial frames at frac 0.389 at
+# every station tested.  The LEVEL is doing the work.
+PB_ANNEXE_X = -218.0          # design x of the step: the bay-1 / bay-2 joint
+PB_Z_ANNEXE = 9.40            # the annexe's glazing head AND its roof deck
+PB_ANNEXE_EAVE_Y = 21.10      # eaves stop on the façade line: no oversail
+PB_ANNEXE_FASCIA = 0.18       # an eaves upstand, where the main block has 1.10
+PB_ANNEXE_CORE_UP = 1.00      # the W core over the annexe roof -> top 10.40
+#
+# WHY 9.40 AND NOT 10.40, WHICH IS WHERE THE FIRST DRAFT PUT IT.
+#
+# The first draft set the annexe deck ON the main block's L1 glazing head
+# (10.40), which is the obvious level and clears the blackout.  It was measured
+# again after `r2731_pit_sightline.py` was corrected to sample the car exactly
+# as `r2651_occlusion_sweep.py` does — 58 points on the hull and the measured
+# wheels, at the box's own z, NOT lifted by the ride height the sweep records
+# but does not use.  The un-lifted car sits 0.34 m lower, the sightline with it,
+# and the margins collapsed:
+#
+#     annexe eaves fascia   10.58   against a ceiling of 10.54   -> BLOCKED
+#     annexe roof deck      10.46   against a ceiling of 10.54   ->  0.08 m
+#     W core (top 11.40)            against a ceiling of 11.42   ->  0.02 m
+#
+# 0.02 m is not a clearance, it is a coin toss that happened to land.  The
+# sightline skims this corner at 10.5-10.6 m and no roof there can sit much
+# above 10.4 at all, so the level itself had to come down.  At 9.40 the annexe
+# is a NORMAL 3.0 m storey over its first floor where the main block is a 4.0 m
+# hospitality volume — a real distinction between the two, not a chopped-off
+# end — and every margin is at least 0.96 m:
+#
+#     annexe roof deck       9.46   ceiling 10.54   ->  1.08 m
+#     annexe eaves fascia    9.58   ceiling 10.54   ->  0.96 m
+#     annexe glazing head    9.40   ceiling 10.60   ->  1.20 m
+#     W core (top 10.40)            ceiling 11.42   ->  1.02 m
+
 
 def garage_specs(rng):
     """One dict per garage bay.  Everything a later builder needs to make that
@@ -3648,6 +3942,12 @@ def _core(mb, rng, xa, xb, tag):
     circulation - three of them, each detailed differently."""
     y0, y1 = 21.9, PB_Y1
     top = PB_Z_PT + (0.7 if tag != 'E' else 1.9)
+    if xb <= PB_ANNEXE_X:
+        # R2-731.  A core rises above ITS OWN roof.  The W core stands on the
+        # annexe, so 11.40, not 12.70 -- and 12.70 is 0.54 m into the beat-4
+        # sightline (the ray clears 12.16 over this core's footprint) while
+        # 11.40 has 0.76 m to spare.
+        top = PB_Z_ANNEXE + PB_ANNEXE_CORE_UP
     mb.box((xa, y0, 0.0), (xb, y1, top), "A_ConcPrecast", (0.90, 0.90, 0.89, 1))
     # glazed stair slot on the pit-lane face
     mb.box((xa + 0.5, y0 - 0.06, 0.9), (xb - 0.5, y0 + 0.02, top - 1.4),
@@ -3681,10 +3981,15 @@ def _core(mb, rng, xa, xb, tag):
                "A_ConcPrecast", (0.88, 0.88, 0.87, 1))
 
 
-def _roof_plant(mb, rng, x0, x1):
+def _roof_plant(mb, rng, x0, x1, z=None):
     """Rooftop plant.  Every unit is drawn from a family with its own size,
-    orientation, fin count and stain, and the density varies along the roof."""
-    z = PB_Z_RF
+    orientation, fin count and stain, and the density varies along the roof.
+
+    `z` is the deck it stands on; it defaults to the main roof.  R2-731 gave the
+    western stretch its own lower deck, and plant floating 0.50 m over it would
+    be the classic consequence of a level changing under something keyed to a
+    constant."""
+    z = PB_Z_RF if z is None else z
     x = x0 + 2.0
     while x < x1 - 3.0:
         r = rng.random()
@@ -3855,9 +4160,15 @@ def build_pit_building(colls, rng, garages, summary):
     # ---- ground slab, rear wall, flank walls -------------------------------
     shell.box((PB_X0, PB_Y0, -0.45), (PB_X1, PB_Y1, 0.012), "A_ConcPrecast",
               (0.82, 0.82, 0.81, 1))
-    shell.box((PB_X0, PB_Y1 - 0.35, 0.0), (PB_X1, PB_Y1, PB_Z_RF),
+    # R2-731: the rear and west walls stop at the roof they enclose, and run
+    # 0.90 m proud of it as that roof's upstand -- 10.90 over the main block,
+    # 10.30 over the annexe.
+    shell.box((PB_ANNEXE_X, PB_Y1 - 0.35, 0.0), (PB_X1, PB_Y1, PB_Z_RF),
               "A_ConcPrecast", (0.93, 0.93, 0.92, 1))
-    shell.box((PB_X0, PB_Y0, 0.0), (PB_X0 + 0.35, PB_Y1, PB_Z_RF),
+    shell.box((PB_X0, PB_Y1 - 0.35, 0.0),
+              (PB_ANNEXE_X, PB_Y1, PB_Z_ANNEXE + 0.90),
+              "A_ConcPrecast", (0.93, 0.93, 0.92, 1))
+    shell.box((PB_X0, PB_Y0, 0.0), (PB_X0 + 0.35, PB_Y1, PB_Z_ANNEXE + 0.90),
               "A_ConcPrecast", (0.93, 0.93, 0.92, 1))
     shell.box((PB_X1 - 0.35, PB_Y0, 0.0), (PB_X1, PB_Y1, PB_Z_RF),
               "A_ConcPrecast", (0.93, 0.93, 0.92, 1))
@@ -3867,40 +4178,71 @@ def build_pit_building(colls, rng, garages, summary):
     shell.box((PB_X0, CANOPY_Y - 0.16, PB_Z_GF - 0.55), (PB_X1, CANOPY_Y,
               PB_Z_GF + 0.06), "A_Alu", (0.72, 0.73, 0.74, 1))   # fascia
     # ---- level 1: glazed hospitality band ----------------------------------
-    shell.box((PB_X0, L1_FACE_Y, PB_Z_GF), (PB_X1, L1_FACE_Y + 0.12, PB_Z_L1),
-              "A_Spandrel", (1, 1, 1, 1))
+    # R2-731: 4.00 m floor-to-head over the main block, 3.00 m over the annexe.
+    shell.box((PB_ANNEXE_X, L1_FACE_Y, PB_Z_GF),
+              (PB_X1, L1_FACE_Y + 0.12, PB_Z_L1), "A_Spandrel", (1, 1, 1, 1))
+    shell.box((PB_X0, L1_FACE_Y, PB_Z_GF),
+              (PB_ANNEXE_X, L1_FACE_Y + 0.12, PB_Z_ANNEXE), "A_Spandrel",
+              (1, 1, 1, 1))
     x = PB_X0 + 0.4
     mull = 0
     while x < PB_X1 - 0.4:
         w = 2.1 + 0.55 * ((mull * 7) % 5) / 5.0        # mullion pitch wanders
+        zh = PB_Z_L1 if x >= PB_ANNEXE_X else PB_Z_ANNEXE
         det.box((x, L1_FACE_Y - 0.05, PB_Z_GF + 0.10),
-                (x + 0.10, L1_FACE_Y + 0.14, PB_Z_L1 - 0.10), "A_Alu",
+                (x + 0.10, L1_FACE_Y + 0.14, zh - 0.10), "A_Alu",
                 (0.75, 0.75, 0.75, 1))
         det.box((x + 0.10, L1_FACE_Y + 0.02, PB_Z_GF + 0.55),
-                (x + w, L1_FACE_Y + 0.06, PB_Z_L1 - 0.45), "A_Glass",
+                (x + w, L1_FACE_Y + 0.06, zh - 0.45), "A_Glass",
                 (1, 1, 1, 1))
         det.box((x + 0.10, L1_FACE_Y + 0.0, PB_Z_GF + 0.10),
                 (x + w, L1_FACE_Y + 0.09, PB_Z_GF + 0.55), "A_Spandrel",
                 (1, 1, 1, 1))
         x += w
         mull += 1
-    shell.box((PB_X0, L1_FACE_Y - 0.10, PB_Z_L1), (PB_X1, PB_Y1, PB_Z_RF),
+    # The band between the glazing head and the roof deck.  The annexe has no
+    # such band: its roof deck bears directly on the L1 head (R2-731).
+    shell.box((PB_ANNEXE_X, L1_FACE_Y - 0.10, PB_Z_L1), (PB_X1, PB_Y1, PB_Z_RF),
               "A_ConcPrecast", (0.95, 0.95, 0.94, 1))
+    # the step face: the main block's west gable, standing on the annexe roof
+    shell.box((PB_ANNEXE_X, PB_ANNEXE_EAVE_Y, PB_Z_ANNEXE),
+              (PB_ANNEXE_X + 0.35, PB_Y1, PB_Z_PT), "A_ConcPrecast",
+              (0.93, 0.93, 0.92, 1))
     # ---- roof deck + parapet ----------------------------------------------
-    shell.box((PB_X0, CANOPY_Y + 0.6, PB_Z_RF), (PB_X1, PB_Y1, PB_Z_RF + 0.06),
-              "A_RoofSeam", (1, 1, 1, 1))
+    shell.box((PB_ANNEXE_X, CANOPY_Y + 0.6, PB_Z_RF),
+              (PB_X1, PB_Y1, PB_Z_RF + 0.06), "A_RoofSeam", (1, 1, 1, 1))
+    shell.box((PB_X0, PB_ANNEXE_EAVE_Y, PB_Z_ANNEXE),
+              (PB_ANNEXE_X, PB_Y1, PB_Z_ANNEXE + 0.06), "A_RoofSeam",
+              (1, 1, 1, 1))
     for k in range(int((PB_X1 - PB_X0) / 0.60) + 1):     # standing seams
         sx = PB_X0 + k * 0.60
-        shell.box((sx - 0.022, CANOPY_Y + 0.6, PB_Z_RF + 0.06),
-                  (sx + 0.022, PB_Y1, PB_Z_RF + 0.115), "A_RoofSeam",
-                  (0.86, 0.86, 0.87, 1))
+        if sx >= PB_ANNEXE_X:
+            shell.box((sx - 0.022, CANOPY_Y + 0.6, PB_Z_RF + 0.06),
+                      (sx + 0.022, PB_Y1, PB_Z_RF + 0.115), "A_RoofSeam",
+                      (0.86, 0.86, 0.87, 1))
+        else:
+            shell.box((sx - 0.022, PB_ANNEXE_EAVE_Y, PB_Z_ANNEXE + 0.06),
+                      (sx + 0.022, PB_Y1, PB_Z_ANNEXE + 0.115), "A_RoofSeam",
+                      (0.86, 0.86, 0.87, 1))
     for k in range(4):                                   # sheet laps
         ly = CANOPY_Y + 1.4 + k * 5.0
-        shell.box((PB_X0, ly - 0.04, PB_Z_RF + 0.060), (PB_X1, ly + 0.04,
+        shell.box((PB_ANNEXE_X, ly - 0.04, PB_Z_RF + 0.060), (PB_X1, ly + 0.04,
                   PB_Z_RF + 0.064), "A_RoofSeam", (0.74, 0.74, 0.75, 1))
-    shell.box((PB_X0, CANOPY_Y + 0.6, PB_Z_RF), (PB_X1, CANOPY_Y + 0.85, PB_Z_PT),
-              "A_Alu", (0.78, 0.79, 0.80, 1))
-    shell.box((PB_X0, PB_Y1 - 0.25, PB_Z_RF), (PB_X1, PB_Y1, PB_Z_PT),
+        if ly - 0.04 >= PB_ANNEXE_EAVE_Y:
+            shell.box((PB_X0, ly - 0.04, PB_Z_ANNEXE + 0.060),
+                      (PB_ANNEXE_X, ly + 0.04, PB_Z_ANNEXE + 0.064),
+                      "A_RoofSeam", (0.74, 0.74, 0.75, 1))
+    # the front parapet is the MAIN block's.  R2-731: at 10.90-12.00 over
+    # y 20.40-20.65 it is the deepest single occluder in beat 4, and west of the
+    # step the annexe carries a 0.18 m eaves fascia on the façade line instead.
+    shell.box((PB_ANNEXE_X, CANOPY_Y + 0.6, PB_Z_RF),
+              (PB_X1, CANOPY_Y + 0.85, PB_Z_PT), "A_Alu", (0.78, 0.79, 0.80, 1))
+    shell.box((PB_X0, PB_ANNEXE_EAVE_Y, PB_Z_ANNEXE),
+              (PB_ANNEXE_X, PB_ANNEXE_EAVE_Y + 0.16,
+               PB_Z_ANNEXE + PB_ANNEXE_FASCIA), "A_Alu", (0.78, 0.79, 0.80, 1))
+    # rear parapet.  The annexe needs none: `rear_wall` and `flank_W` are built
+    # to PB_Z_ANNEXE + 0.90 above, which IS its upstand on those two sides.
+    shell.box((PB_ANNEXE_X, PB_Y1 - 0.25, PB_Z_RF), (PB_X1, PB_Y1, PB_Z_PT),
               "A_Alu", (0.78, 0.79, 0.80, 1))
     # ---- cores -------------------------------------------------------------
     corexs = []
@@ -3968,7 +4310,14 @@ def build_pit_building(colls, rng, garages, summary):
     # ---- roof plant, per stretch between cores -----------------------------
     for a, b in ((corexs[0][1], corexs[1][0]), (corexs[1][1], corexs[2][0]),
                  (corexs[2][1], corexs[3][0])):
-        _roof_plant(det, rng, a, b)
+        _roof_plant(det, rng, max(a, PB_ANNEXE_X), b)
+    # R2-731.  The annexe roof gets its own plant, on its own deck and its own
+    # seed so the main roof's layout is bit-identical to before this change.
+    # Its first unit lands at x = -237 and the family's own y range starts at
+    # 24.35; the beat-4 sightline is at y = 20.30 by the time it reaches x=-237,
+    # so this run is nowhere near it.
+    _roof_plant(det, random.Random(20731), PB_X0 + CORE_W[0], PB_ANNEXE_X,
+                z=PB_Z_ANNEXE)
     o1 = shell.build(colls['ARCH_PitBuilding'], bevel=0.020)
     o2 = det.build(colls['ARCH_PitBuilding'], bevel=0.006)
     summary['garages'] = len(garages)
@@ -4324,12 +4673,42 @@ def build_pit_wall(colls, rng, summary):
         px += w
         bi += 1
     # ---- five pit-wall stands, no two alike --------------------------------
+    #
+    # R2-331.  These five are welded into ARCH_PitWall's single mesh, alongside
+    # the terminal nose, the 357 m wall run, the return walls and ~40 ad panels.
+    # `world/items/timing_stand.py` builds ten hero stands, ITEM_ACCEPTED, 10 of
+    # 10 declared, resolved through `world_contract` at build time -- and
+    # MEASURED (work/r2331/own_timing_stand.json) they stand in the same volume
+    # as these: 4,300 of ARCH_PitWall's 24,664 vertices fall inside the ten
+    # units' boxes and 748 inside the 50 %-shrunk cores, against 4 and 0 for the
+    # same ten units measured against ARCH_Gantry, a class object they do not
+    # claim.  So this is one feature built twice, and `build_items` runs last
+    # and cannot unweld five stands from a wall.
+    #
+    # THIS is the only moment the removal is possible.  The registry decides,
+    # not this file: the switch fires only while an item in state PLACE declares
+    # it, so the world never loses its stands to an item that is not going in.
+    #
+    # Asked PER STAND, not once for the feature.  R2-334: a whole-feature skip
+    # took out all five, and four of them had a hero stand 1.9-8.6 m away while
+    # the fifth had none within 64.6 m -- the item's ten span world x 158-321
+    # and that stand is at x 367.  `gr` is seeded per stand (9000 + si * 37), so
+    # skipping one does not perturb the others and the kept ones come out
+    # bit-identical to an un-superseded build.  That is checkable, and it is
+    # checked: work/r2331/verify_removal.py.
+    import build_items as _BI
     picks = [1, 3, 6, 9, 12]
+    stands_skipped = 0
     for si, ti in enumerate(picks):
         team, c1, c2 = TEAMS[ti]
         gr = random.Random(9000 + si * 37)
         x0 = -196.0 + si * 62.0 + gr.uniform(-6, 6)
         L = gr.uniform(7.0, 10.5)
+        _wc = M_C2W @ Vector((x0 + 0.5 * L, 12.9, 0.0))
+        if _BI.class_feature_owned_at("architecture.pit_wall_stands",
+                                      _wc.x, _wc.y):
+            stands_skipped += 1
+            continue
         tiers = gr.randint(1, 2)
         col = jitter_col(srgb(c1), gr, 0.01, 0.08)
         for t in range(tiers):
@@ -4395,7 +4774,8 @@ def build_pit_wall(colls, rng, summary):
             sx = x0 + gr.uniform(0.5, L - 0.5)
             mb.cyl((sx, 15.8, 0.30), (sx, 16.3, 0.30), 0.30, "A_SteelPaint",
                    srgb('#3c4045'), n=14)
-    summary['pit_wall_stands'] = len(picks)
+    summary['pit_wall_stands'] = len(picks) - stands_skipped
+    summary['pit_wall_stands_superseded'] = stands_skipped
     return [mb.build(colls['ARCH_PitWall'], bevel=0.008)]
 
 
@@ -5343,6 +5723,54 @@ def build_paddock(colls, rng, summary):
 # --------------------------------------------------------------------------- #
 #  9. BRIDGES  —  La Passerelle (circuit x=-450) and Le Pont de la Plongee      #
 # --------------------------------------------------------------------------- #
+#
+# R2-731.  `PONT_S` IS MODULE-LEVEL BECAUSE IT HAS A SECOND READER.
+#
+# It used to be a local inside `build_bridges`, and `build_dressing`'s family-5
+# fascia banner carried its own copy of the SAME station, spelled out as world
+# coordinates: `ox, oy = -617.56, 94.75`, `hdg = 295.4`, `soff = 3.913 + 6.80`.
+# Those are exactly `WC.centreline(2410)` and `WC.elevation_c(2410)` — a copy,
+# not a derivation, and R2-664 measured what a copy costs: the proxy sweep put
+# `DR_BridgeBanners` in the sightline corridor out to f2196, four frames past
+# the bridge's own window, and recorded that the banners "will not follow
+# PONT_S on their own".  They do now: `bridge_banner_sites()` imports this name
+# and evaluates the contract at it.  There is one station and both modules read
+# it.
+PONT_S = 2410.0
+#
+# R2-731.  THIS DID NOT MOVE, AND THE REASON IS MEASURED.
+#
+# R2-660 recommended `PONT_S = 2410 -> 2460` to close the twelve-frame blackout
+# at f2180-2191, on a sweep that reported ZERO blocked frames at every 10 m step
+# from 2460 to 2610.  It was applied, and then re-verified against the assembled
+# world with the same depth-tested raycast that found the defect:
+#
+#     2410 (shipped)   f2181-2191 solid + f2180 fence   12 frames
+#     2460             f2196, f2203-2230                25 frames
+#
+# **The recommended move makes it twice as bad**, and the occluder at 2460 sits
+# 32-66 m from the lens, not 26-55 — it is the ABUTMENT, not the deck.
+#
+# `tools/r2651_pont_sightline.py`, which chose 2460, models this bridge as four
+# horizontal bands from the soffit up.  That is the superstructure.  It has no
+# abutments and no wing walls, and each abutment is a 12.8 m tall, 5.2 m deep
+# block of concrete at |u| = 12.8-18.0 with wing walls stepping out to 26.6.  A
+# sightline passing outboard of the span and BELOW the deck is stopped dead by
+# it and the four-band model cannot see that at all — the same shape as R2-664's
+# own v1, which reported the road as the occluder because the road was in the
+# corridor.
+#
+# `tools/r2731_pont_full_sightline.py` models every box `build_bridges` emits
+# and reproduces BOTH raycasts exactly (2181-2191 at 2410; 2196-2227 at 2460).
+# On that instrument **no station clears it**: over 2300-2700 in 10 m steps the
+# minimum is 8 fully-blocked frames, at 2300, against 11 solid at 2410.
+#
+# It is not a search that got unlucky, it is geometry.  The sightline sweeps from
+# high-and-outboard to low-and-central as the car closes on the bridge — it must
+# end under the deck, on the road, at u ~ 0 — so it crosses the deck's solid band
+# somewhere on every pass.  A slab spanning the track is always crossed.  Station
+# is not a lever for this defect; see `docs/STAGING-R2-731-to-R2-760.md` for the
+# options that are, and for why none of them was taken unilaterally.
 def build_bridges(colls, rng, summary):
     mb = MB("ARCH_LaPasserelle")
     X = -450.0
@@ -5476,13 +5904,13 @@ def build_bridges(colls, rng, summary):
     # Do not put lettering back on this face.  Ask build_dressing for a banner.
     o1 = mb.build(colls['ARCH_Bridges'], bevel=0.010)
 
-    # ---- Le Pont de la Plongee, s = 2410, soffit 6.80 above the road -------
-    # Built in a local frame on the centreline at s = 2410, +y toward the LEFT of
+    # ---- Le Pont de la Plongee, s = PONT_S, soffit 6.80 above the road -----
+    # Built in a local frame on the centreline at PONT_S, +y toward the LEFT of
     # travel.  The road level is C.elevation_c(2410), not a number copied out of
     # the PVI table; the abutment tops follow C.ground_z at their own lateral,
     # which on this side of the circuit is 0.35-0.55 m below the centreline
     # because the -1.6 % runoff platform has been falling for 15 m.
-    PONT_S = 2410.0
+    # PONT_S is module-level (see the block above §9): build_dressing reads it.
     mb = MB("ARCH_PontPlongee")
     px_, py_, _pz, phdg, _pk = WC.centreline(PONT_S)
     hdg = math.degrees(phdg)

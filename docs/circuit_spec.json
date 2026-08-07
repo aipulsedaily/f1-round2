@@ -2085,6 +2085,7 @@
   },
   "plunge_bridge_design": {
    "s": 2410.0,
+   "s_note": "R2-731: UNCHANGED, and that is a finding. R2-660 recommended 2410 -> 2460 to close a 12-frame occlusion of the car at f2180-2191. Applied and re-verified against the assembled world by depth-tested raycast, 2460 gives 25 fully-blocked frames (f2196, f2203-2230) instead of 12 -- the occluder there is the abutment, which the tool that recommended 2460 does not model. No station over 2300-2700 clears it (minimum 8 frames, at 2300). See docs/STAGING-R2-731-to-R2-760.md.",
    "soffit_z": 6.8,
    "span_m": 30.0,
    "deck_width_m": 6.0

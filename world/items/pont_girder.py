@@ -48,7 +48,7 @@ WHERE THIS THING IS, AND WHAT THE CAMERA DOES TO IT
     lens passes under it at roughly a metre off the racing surface.
 
     ONE THING TO FLAG, AND ONE THING I GOT WRONG ABOUT IT UNTIL I MEASURED.
-    ground_z(2410, 0) = 3.935, so a structural soffit at 6.800 leaves 2.865 m
+    ground_z(2410, 0) = 3.932, so a structural soffit at 6.800 leaves 2.868 m
     of headroom over the racing surface (2.841 m measured on the built mesh,
     because the bottom-flange splice cover plate hangs below the flange).  For
     a bridge over a circuit that is LOW -- it is a number for whoever owns
@@ -62,8 +62,8 @@ WHERE THIS THING IS, AND WHAT THE CAMERA DOES TO IT
     reason is worth writing down because it is a gate limitation and not a
     pass this item earned: the road-corridor keep-out is a band in ABSOLUTE
     world z, `zlo = -0.5, zhi = ROAD_CLEAR_H = 4.50`, so at s = 2410 -- where
-    the racing surface is 3.935 m up -- the ceiling of the protected volume
-    sits 0.565 m above the tarmac and cannot see a bridge over it at all.
+    the racing surface is 3.932 m up -- the ceiling of the protected volume
+    sits 0.568 m above the tarmac and cannot see a bridge over it at all.
     On the pit straight, where z = 0.000, the same constant means what it
     says.  Nothing here is allow-listed and nothing was tuned.
 
@@ -130,7 +130,7 @@ THE BRIDGE FRAME — the convention every dependant must use
                 and the camera arrive from -y, so girder A is the fascia the
                 lens sees first.
             +Z  WORLD z.  Not a local z.  z = 0.000 is the racing surface at
-                the start/finish line, and ground_z(2410, 0) = 3.935.
+                the start/finish line, and ground_z(2410, 0) = 3.932.
 
 THE DATUM PLANE — read these, never assume them
         SOFFIT_Z          6.800  the underside of the bottom flanges AT THE
@@ -457,6 +457,13 @@ def _smoothstep(t):
 # simply-supported composite span carrying a 6 m service deck, two parapets
 # and two fascia banners.
 
+# R2-731.  Stays at 2410.0: the bridge did not move.  If it ever does, this
+# constant and `build_architecture.PONT_S` have to move together -- this item
+# is on HOLD (LOCAL_FRAME / SUPERSEDE_WELDED in world/items/PLACEMENT.json) so
+# nothing in the film is built from it today, and S_STATION only enters the
+# PUBLISHED transform `pont_to_world`, never the local geometry, but a stale
+# copy here would put the girders 50 m from the bridge they are the girders of
+# on the day the row is unblocked.
 S_STATION = 2410.0
 SOFFIT_Z = 6.800                 # circuit_spec.  WORLD z.  Lowest bridge point.
 GIRDER_DEPTH = 1.350             # manifest
@@ -2161,7 +2168,7 @@ def purge():
 def pont_to_world():
     """PUBLIC.  (R 3x3, t 3) taking bridge-local -> world.
 
-    The bridge crosses the circuit square at s = 2410.  Local +Y is the racing
+    The bridge crosses the circuit square at s = S_STATION.  Local +Y is the racing
     direction there and local +X is to the RIGHT of it, which makes the triple
     right-handed with world +Z; both are read from world_contract rather than
     hard-coded, so if the centreline ever moves this follows it.
@@ -2866,7 +2873,7 @@ def dump_interface(B, path=None):
         "frame": {
             "note": "bridge-local: +X ALONG THE SPAN (x=-15 is contract u=+15, "
                     "LEFT of the racing direction; x=+15 is u=-15); +Y is the "
-                    "RACING DIRECTION at s=2410; +Z is WORLD z.",
+                    "RACING DIRECTION at s=%.1f; +Z is WORLD z." % S_STATION,
             "station_s": S_STATION,
             "R_local_to_world": [[float(v) for v in row] for row in R],
             "t_local_to_world": [float(v) for v in t],
@@ -2914,20 +2921,21 @@ def dump_interface(B, path=None):
             "track_headroom_m": float(SOFFIT_Z - C.ground_z(S_STATION, 0.0)),
             "headroom_flag": (
                 "SOFFIT_Z 6.800 leaves %.3f m over the racing surface at "
-                "s=2410 (ground_z = %.3f).  That is LOW for a bridge over a "
+                "s=%.1f (ground_z = %.3f).  That is LOW for a bridge over a "
                 "circuit and is flagged for whoever owns circuit_spec; it is "
                 "not something this item may fix by moving a bridge the whole "
                 "camera corridor was derived from."
                 % (float(SOFFIT_Z - C.ground_z(S_STATION, 0.0)),
-                   float(C.ground_z(S_STATION, 0.0)))),
+                   float(S_STATION), float(C.ground_z(S_STATION, 0.0)))),
             "placement_gate_measured": (
                 "MEASURED, not assumed: tools/placement_gate.py returns "
                 "PLACEMENT_CLEAN on world/items/pont_girder_test.blend.  Note "
                 "WHY, because it is a gate limitation rather than a pass this "
                 "item earned: the road-corridor keep-out is a band in ABSOLUTE "
-                "world z (zlo -0.5, zhi ROAD_CLEAR_H 4.50), and at s=2410 the "
-                "racing surface is at z=3.935, so the protected volume ends "
-                "0.565 m above the tarmac and cannot see anything bridging it. "
+                "world z (zlo -0.5, zhi ROAD_CLEAR_H 4.50), and at this "
+                "station the racing surface is well above z=0, so the "
+                "protected volume ends under a metre over the tarmac and "
+                "cannot see anything bridging it. "
                 "Nothing is allow-listed."),
         },
         "girders": {},
