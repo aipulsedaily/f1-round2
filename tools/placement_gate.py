@@ -112,6 +112,7 @@ follow the convention.
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import os
@@ -304,6 +305,12 @@ def parse_args():
                    help="per-frame camera path emitted by anim/build_camera_rig.py")
     p.add_argument("--step", type=float, default=4.0,
                    help="metres between road-corridor samples")
+    p.add_argument("--repeat", type=int, default=2,
+                   help="measure the unchanged scene this many times and "
+                        "REFUSE the verdict unless every pass agrees. A "
+                        "placement number that cannot be obtained twice is "
+                        "not a verdict. 1 disables the assertion, and the "
+                        "report says so.")
     return p.parse_args(argv)
 
 
@@ -334,17 +341,47 @@ def road_samples(spec, step):
 
 
 def half_width_fn(spec):
-    """half_width(s) from the contract if present, else the spec's section."""
+    """(half_width(s), where_it_came_from).
+
+    THE FALLBACK USED TO BE SILENT, AND IT CHANGES EVERY NUMBER  (R2-2341)
+    ---------------------------------------------------------------------
+    This was `except Exception: pass` followed by a CONSTANT half-width off the
+    spec. The two branches do not measure the same corridor: the contract's
+    `half_width` runs 7.00-8.50 m per station, the fallback is a flat
+    `width_m / 2`. A run that took the fallback and a run that did not produce
+    different `closest_approach` figures on an unchanged world, and the report
+    said nothing about which one it had been -- which is exactly the shape of
+    defect #97, one function up from where anybody was looking.
+
+    `world_contract.py` is a live file six agents share. A transient
+    half-written state, a stale `__pycache__`, a `numpy` that failed to import
+    -- any of them flipped this branch for one run and back for the next.
+
+    So: the source is RETURNED, recorded in the report and printed. And a
+    contract that EXISTS but will not import is a REFUSAL, not a fallback: the
+    quiet substitution of a different corridor is the thing being fixed.
+    """
+    wc_path = os.path.join(R2, "world", "world_contract.py")
     sys.path.insert(0, os.path.join(R2, "world"))
     try:
         import world_contract as WC          # noqa
         if hasattr(WC, "half_width"):
-            return WC.half_width
-    except Exception:
-        pass
+            return WC.half_width, "world_contract.half_width"
+        why = "world_contract imported but has no half_width"
+    except Exception as e:                                        # noqa: BLE001
+        why = "world_contract import failed: %r" % (repr(e)[:200],)
+    if os.path.exists(wc_path):
+        raise SystemExit(
+            "REFUSING: %s exists but could not supply half_width (%s). The "
+            "silent fallback to a constant spec width measures a DIFFERENT "
+            "corridor and would report a different closest approach on an "
+            "unchanged world -- see R2-2341. Fix the import; do not measure "
+            "through it." % (wc_path, why))
     sec = spec.get("track_section", {})
     w = sec.get("width_m", 14.0)
-    return lambda s: w * 0.5
+    return (lambda s: w * 0.5,
+            "spec track_section.width_m/2 = %.4f m (CONSTANT; no %s on disk)"
+            % (w * 0.5, wc_path))
 
 
 def elevation_fn(spec):
@@ -471,6 +508,40 @@ def split_subject_context(scene, subject_name):
             why += f" (skipped stand-in sub-collections {skipped})"
         return sub, names - sub, why
 
+    # THE ITEM CONVENTION IS FOR ITEM TEST SCENES, AND IT FIRED ON THE
+    # ASSEMBLED WORLD.                                              (R2-2341)
+    #
+    # Rule 2 says "a collection matching W_Item_*/ITEM_* is the thing under
+    # test, everything else is the test rig's furniture". That is true of a
+    # scene an item author built. It is catastrophically false of
+    # `assembly14.blend`, where the item campaign's collections have been
+    # MERGED IN alongside the whole circuit. Measured, on the shipping world:
+    #
+    #     >> subject: 900 meshes via collection 'ITEM_spectator_crowd'
+    #        (item-campaign convention); 5 item collections present, took the
+    #        largest -- pass --subject to be explicit
+    #
+    # 900 meshes subject, **29,304 meshes context**. Everything the gate exists
+    # to guard — every barrier, fence, gantry and building — was reclassified
+    # as somebody's test furniture. Two consequences, both fatal:
+    #
+    #   * `closest_approach_m` EXCLUDES context, so on the full circuit it
+    #     reported `road_corridor: "measured, nothing close"`.
+    #   * findings from context go to `context_findings`, and the verdict is
+    #     `PLACEMENT_CLEAN` when `violations` is empty. A fence spanning the
+    #     racing line would have been a context finding and a CLEAN verdict.
+    #
+    # The file already knows this is the danger — "A gate that quietly narrows
+    # its subject is R2-019 wearing a different hat" — and then narrowed
+    # quietly, printing a hint about `--subject` and carrying on.
+    #
+    # The distinguishing fact is COVERAGE. In an item test scene the item is
+    # most of the scene. In the assembled world it is 3 % of it. So the
+    # convention applies only when the item collection is the dominant content,
+    # and otherwise this falls through to rule 3 — every mesh, minus anything
+    # in a stand-in/context collection — which is the correct reading of an
+    # assembled world and still attributes a real item scene's furniture.
+    ITEM_SCENE_MIN_COVERAGE = 0.50
     cands = [c for c in bpy.data.collections
              if re.match(r"(w_item_|item_)", c.name, re.I)
              and not CONTEXT_COLL_PAT.search(c.name)]
@@ -479,14 +550,29 @@ def split_subject_context(scene, subject_name):
         c = cands[0]
         objs, skipped = _collection_meshes(c)
         sub = {o.name for o in objs} & names
-        if sub:
-            why = f"collection '{c.name}' (item-campaign convention)"
+        # Coverage is measured over the item collection's WHOLE TREE -- item
+        # plus the stand-in children this function deliberately skips -- since
+        # that tree is what an item test scene consists of. A well-formed item
+        # scene scores ~100 %; the assembled world scores 3 %.
+        tree = {o.name for o in c.all_objects if o.type == "MESH"} & names
+        cover = (len(tree) / len(names)) if names else 0.0
+        if sub and cover >= ITEM_SCENE_MIN_COVERAGE:
+            why = (f"collection '{c.name}' (item-campaign convention; "
+                   f"{100 * cover:.1f} % of the scene's meshes)")
             if skipped:
                 why += f", skipping stand-in sub-collections {skipped}"
             if len(cands) > 1:
                 why += (f"; {len(cands)} item collections present, took the "
                         f"largest -- pass --subject to be explicit")
             return sub, names - sub, why
+        if sub:
+            print(f">> NOT an item test scene: the largest item collection "
+                  f"'{c.name}' and its children hold {len(tree)} of "
+                  f"{len(names)} meshes ({100 * cover:.1f} %). The item "
+                  f"convention would have made {len(names) - len(sub)} meshes "
+                  f"'context' and excused them from the verdict. Measuring the "
+                  f"WHOLE scene instead; pass --subject if you really meant to "
+                  f"narrow it.")
 
     ctx = set()
     for c in bpy.data.collections:
@@ -578,7 +664,7 @@ def build_volumes(a, spec, verbose=True):
     # needs no mesh conversion, so only the handful of objects actually near a
     # keep-out volume pay for a per-vertex scan.
 
-    hw = half_width_fn(spec)
+    hw, hw_src = half_width_fn(spec)
     elev = elevation_fn(spec)
     volumes = {}
 
@@ -610,6 +696,7 @@ def build_volumes(a, spec, verbose=True):
         print(f">> road corridor z band: GROUND-REFERENCED, "
               f"elevation(s) {min(zs):+.3f}..{max(zs):+.3f} m, "
               f"band {zlo:+.3f} .. {ROAD_CLEAR_H:+.3f} m about it")
+        print(f">> road corridor half-width came from: {hw_src}")
         print(f">> spec worst-case cross-fall {xfall:.3f} m "
               f"(banking {bank_deg:.0f} deg + {CROWN_DEG:.0f} deg crown over "
               f"{hw_max:.2f} m) -- reported, NOT added to the floor; measured "
@@ -619,6 +706,13 @@ def build_volumes(a, spec, verbose=True):
         "zband": [round(zlo, 4), ROAD_CLEAR_H],
         "spec_worst_crossfall_m": round(xfall, 4),
         "spec_max_banking_deg": bank_deg,
+        # WHICH half_width DID THIS RUN ACTUALLY USE? Two runs on either side
+        # of the (formerly silent) contract-import fallback measured corridors
+        # 7.00-8.50 m and a flat constant wide, and nothing in the report said
+        # so. It is a number the answer depends on, so it is in the body.
+        "half_width_source": hw_src,
+        "half_width_min_m": round(min(hw(s) for (s, _x, _y) in road), 6),
+        "half_width_max_m": round(max(hw(s) for (s, _x, _y) in road), 6),
         "reference": "per-station centreline elevation re-derived from "
                      "circuit_spec.json elevation.station_z_pvi"}
 
@@ -687,28 +781,80 @@ def build_volumes(a, spec, verbose=True):
     return volumes
 
 
+# ---------------------------------------------------------------------------
+#  THE REPORT MUST NOT DEPEND ON THE ORDER THE SCENE HAPPENS TO BE WALKED IN
+# ---------------------------------------------------------------------------
+#
+# `closest_approach` was decided by a strict `>` over `scene.objects`:
+#
+#     if d > closest.get(vname, (-1e9,))[0]:
+#         closest[vname] = (d, ob.name, at)
+#
+# On an EXACT TIE -- and this world is built from repeated modules laid on a
+# regular station grid, so exact ties are the normal case, not a curiosity --
+# the winner is whichever object the scene walk reached first. Scene order is
+# not part of the world: it moves when an object is added, removed, renamed,
+# relinked, or the file is re-saved by a different tool. So the number that
+# `placement_gate` adjudicates on could change identity with no world change,
+# and no reader could tell that from a regression.
+#
+# Depth first, then NAME. Nothing else. Two runs of the same world now have to
+# agree, and if they do not, something real moved.                  (R2-2341)
+
+def _better(d, tag, cur):
+    """Is (d, tag) a stronger claim than `cur = (d, tag, ...)`? Total order."""
+    if cur is None:
+        return True
+    if d != cur[0]:
+        return d > cur[0]
+    return tag < cur[1]
+
+
 def measure(scene, volumes, allow, context_names=frozenset(), verbose=True):
     """Every mesh against every volume. Returns (violations, context_findings,
-    closest, tested, coarse_rejected).
+    marginal, closest, tested, coarse_rejected, diag).
 
     `context_names` are measured identically; their findings are routed to a
     separate list so the report can attribute them without excusing them.
+
+    `diag` carries everything that used to be thrown away silently -- the
+    objects that could not be measured, the runner-up behind every closest
+    approach, and the order the scene was walked in. All three change the
+    answer, and all three used to be invisible.
     """
+    # THE DEPSGRAPH IS EVALUATED BEFORE IT IS READ.
+    # `ob.evaluated_get(deps)` on a depsgraph that has not been evaluated hands
+    # back geometry and matrices from whatever state the file was saved in.
+    # This costs one call and removes a whole family of "it read differently
+    # that time" from the list of things this report can be accused of.
+    bpy.context.view_layer.update()
     deps = bpy.context.evaluated_depsgraph_get()
     violations = []
     ctx_findings = []
     marginal = []
     closest = {}
+    runner_up = {}
     tested = coarse_rejected = 0
+    diag = {"skipped_bbox": [], "skipped_to_mesh": [], "skipped_empty_mesh": [],
+            "scene_walk_order_sha256": None}
     max_r = max(max(v["radius"]) for v in volumes.values())
 
-    for ob in scene.objects:
+    walk = [ob for ob in scene.objects]
+    diag["scene_walk_order_sha256"] = hashlib.sha256(
+        "\n".join(o.name for o in walk).encode()).hexdigest()
+
+    for ob in walk:
         if ob.type != "MESH" or ob.name.startswith(allow):
             continue
         oe = ob.evaluated_get(deps)
         try:
             lo, hi = bbox_world(oe)
-        except Exception:
+        except Exception as e:                                    # noqa: BLE001
+            # A SKIP IS NOT A PASS. This was a bare `continue`: an object that
+            # could not be bounded silently left the survey, and on a box under
+            # memory pressure that is a run-to-run difference with no record.
+            diag["skipped_bbox"].append({"object": ob.name,
+                                         "why": repr(e)[:200]})
             continue
         tested += 1
 
@@ -727,26 +873,61 @@ def measure(scene, volumes, allow, context_names=frozenset(), verbose=True):
 
         try:
             me = oe.to_mesh()
-        except Exception:
+        except Exception as e:                                    # noqa: BLE001
+            diag["skipped_to_mesh"].append({"object": ob.name,
+                                            "why": repr(e)[:200]})
             continue
         if me is None or not me.polygons:
+            diag["skipped_empty_mesh"].append(ob.name)
             continue
-        mw = ob.matrix_world
+        # THE EVALUATED MATRIX, not the original's.
+        # The coarse reject above bounds `oe` -- the EVALUATED object -- and
+        # then the per-vertex loop used to transform by `ob.matrix_world`, the
+        # ORIGINAL's cached matrix. For anything parented, constrained or
+        # driven the two differ, so the gate selected an object by where the
+        # depsgraph says it is and then measured it where the file was saved.
+        # One object, two positions, and which one you got depended on whether
+        # the depsgraph had been evaluated.                        (R2-2341)
+        mw = oe.matrix_world
         worst = {}
         for v in me.vertices:
             p = mw @ v.co
+            at = (round(p.x, 3), round(p.y, 3), round(p.z, 3))
             for vname, vol in near.items():
                 d = intrusion(vol, p)
-                if d > worst.get(vname, (-1e9,))[0]:
-                    worst[vname] = (d, (round(p.x, 3), round(p.y, 3), round(p.z, 3)))
+                # Ties between two VERTICES of one object move `at_world`, and
+                # a reader chases a coordinate. Broken on the point itself.
+                if _better(d, at, worst.get(vname)):
+                    worst[vname] = (d, at)
         oe.to_mesh_clear()
 
         # An edge-defining object is measured against the true surface boundary;
         # everything else must also respect the courtesy margin.
-        limit = ROAD_MARGIN if ob.name.startswith(EDGE_FAMILIES) else 0.0
+        #
+        # THE COURTESY BELONGS TO THE ROAD CORRIDOR AND NOWHERE ELSE. (R2-2341)
+        # `limit` was per-OBJECT, so an EDGE_FAMILIES name bought 0.50 m of
+        # exemption in ALL THREE volumes. The justification for it is entirely
+        # about the corridor's radius: the corridor is inflated by ROAD_MARGIN,
+        # and a kerb whose inner lip sits on the white line is 0.50 m inside
+        # THAT inflated shape while being exactly on the true boundary. Neither
+        # of the other two volumes is inflated by ROAD_MARGIN -- `car_path` is
+        # half the car plus CAR_MARGIN, `camera_path` is a CAM_CLEAR_R sphere --
+        # so the same 0.50 m there is not a courtesy, it is 0.50 m of the car's
+        # swept volume and of the camera's clearance, given away by a name.
+        #
+        # It was not hypothetical. `docs/placement_after_46.json` reports
+        #
+        #     total: 0        (i.e. PLACEMENT_CLEAN)
+        #     closest_approach_m.car_path: ARCH_RetainEdge, clearance -0.1553 m
+        #
+        # -- a clean verdict whose own headline number says something is 155 mm
+        # INSIDE the driven path. The two halves of that report contradict each
+        # other and the contradiction is this line.
+        is_edge = ob.name.startswith(EDGE_FAMILIES)
         is_ground = ob.name.startswith(GROUND_FAMILIES)
         is_ctx = ob.name in context_names
         for vname, (d, at) in worst.items():
+            limit = ROAD_MARGIN if (is_edge and vname == "road_corridor") else 0.0
             if vname == "car_path" and is_ground:
                 continue                      # the car drives ON the ground
             # CLEAREST APPROACH, even when nothing is violated. "CLEAN" with
@@ -758,8 +939,19 @@ def measure(scene, volumes, allow, context_names=frozenset(), verbose=True):
             # hide how close the item itself gets, which is the number the
             # author has to act on. It is reported in full under
             # `context_findings`, not dropped.
-            if not is_ctx and d > closest.get(vname, (-1e9,))[0]:
-                closest[vname] = (d, ob.name, at)
+            #
+            # THE RUNNER-UP IS KEPT. "ARCH_Gantry, 1.1491 m" and "ARCH_Gantry
+            # 1.1491 m with BR_Concrete_L12 tied to the last decimal behind it"
+            # are different answers: the second one says the name in this field
+            # is a coin toss. A report that cannot show its own margin cannot
+            # be told apart from one that is flipping.
+            if not is_ctx:
+                if _better(d, ob.name, closest.get(vname)):
+                    if vname in closest:
+                        runner_up[vname] = closest[vname]
+                    closest[vname] = (d, ob.name, at)
+                elif _better(d, ob.name, runner_up.get(vname)):
+                    runner_up[vname] = (d, ob.name, at)
             if d > limit:
                 rec = {"object": ob.name, "volume": vname,
                        "intrusion_m": round(d, 4), "at_world": at,
@@ -772,10 +964,21 @@ def measure(scene, volumes, allow, context_names=frozenset(), verbose=True):
                 else:
                     (ctx_findings if is_ctx else violations).append(rec)
 
+    diag["runner_up"] = runner_up
+    n_skip = (len(diag["skipped_bbox"]) + len(diag["skipped_to_mesh"])
+              + len(diag["skipped_empty_mesh"]))
     if verbose:
         print(f">> tested {tested} objects; {coarse_rejected} rejected on "
               f"bounding box; {tested - coarse_rejected} measured per-vertex")
-    return violations, ctx_findings, marginal, closest, tested, coarse_rejected
+        if n_skip:
+            print(f">> {n_skip} object(s) COULD NOT BE MEASURED and were left "
+                  f"out of every number above -- listed in the report under "
+                  f"determinism.skipped: "
+                  f"bbox={len(diag['skipped_bbox'])} "
+                  f"to_mesh={len(diag['skipped_to_mesh'])} "
+                  f"empty={len(diag['skipped_empty_mesh'])}")
+    return (violations, ctx_findings, marginal, closest, tested,
+            coarse_rejected, diag)
 
 
 def main():
@@ -798,8 +1001,85 @@ def main():
         print(">> they are still measured; anything they reach is reported "
               "under context_findings, NOT excused")
 
-    violations, ctx_findings, marginal, closest, tested, coarse = measure(
-        scene, volumes, allow, context)
+    # ---- THE REPORT ASSERTS ITS OWN REPRODUCIBILITY --------------------
+    #
+    # `--repeat N` measures the same unchanged scene N times in this process
+    # and requires the N results to be IDENTICAL. It is deliberately not a
+    # human's promise in a staging note: a placement verdict that cannot be
+    # obtained twice is not a verdict, and this is the one place that can say
+    # so at the moment the number is produced.
+    #
+    # It does not cover everything a second PROCESS would (the scene walk
+    # order, the blend load) -- so the walk order is hashed into the report as
+    # well, and two reports of the same world can be diffed on it by
+    # tools/report_repro.py. What it does cover is every lazily-evaluated
+    # thing: the depsgraph, modifier evaluation, and any state the first pass
+    # leaves behind for the second.
+    passes = []
+    for _i in range(max(1, a.repeat)):
+        passes.append(measure(scene, volumes, allow, context,
+                              verbose=(_i == 0)))
+    violations, ctx_findings, marginal, closest, tested, coarse, diag = passes[0]
+
+    def _fingerprint(p):
+        v, c, m, cl, t, cr, dg = p
+        return json.dumps(
+            {"violations": sorted(v, key=lambda r: (r["volume"], r["object"],
+                                                    r["intrusion_m"])),
+             "context": sorted(c, key=lambda r: (r["volume"], r["object"],
+                                                 r["intrusion_m"])),
+             "marginal": sorted(m, key=lambda r: (r["volume"], r["object"],
+                                                  r["intrusion_m"])),
+             "closest": {k: [cl[k][0], cl[k][1], cl[k][2]] for k in sorted(cl)},
+             "tested": t, "coarse": cr,
+             "walk": dg["scene_walk_order_sha256"],
+             "skipped": [len(dg["skipped_bbox"]), len(dg["skipped_to_mesh"]),
+                         len(dg["skipped_empty_mesh"])]},
+            sort_keys=True, separators=(",", ":"))
+
+    fps = [_fingerprint(p) for p in passes]
+    repeat_ok = len(set(fps)) == 1
+    # ONE PASS IS NOT AGREEMENT. `len({x}) == 1` is trivially true, and calling
+    # that "IDENTICAL" would be a metric that reads the same whether it was
+    # tested or not -- the commonest defect shape in this log. `--repeat 1`
+    # says NOT_ASSERTED, in the body, where a diff can see it.
+    determinism = {
+        "repeats": len(passes),
+        "repeat_measure": ("NOT_ASSERTED (--repeat 1: this report makes no "
+                           "claim about its own reproducibility)"
+                           if len(passes) < 2 else
+                           "IDENTICAL" if repeat_ok else "DIFFERED"),
+        "repeat_fingerprint_sha256": [
+            hashlib.sha256(f.encode()).hexdigest()[:16] for f in fps],
+        "scene_walk_order_sha256": diag["scene_walk_order_sha256"],
+        "skipped": {"bbox": diag["skipped_bbox"][:50],
+                    "to_mesh": diag["skipped_to_mesh"][:50],
+                    "empty_mesh": diag["skipped_empty_mesh"][:50],
+                    "total": (len(diag["skipped_bbox"])
+                              + len(diag["skipped_to_mesh"])
+                              + len(diag["skipped_empty_mesh"]))},
+        # THE MARGIN BEHIND EVERY REPORTED WINNER. Zero means the name in
+        # `closest_approach_m` is decided by the tie-break, not by the world.
+        "closest_approach_margin": {},
+    }
+    for k in sorted(volumes):
+        c, r = closest.get(k), diag["runner_up"].get(k)
+        if not c:
+            continue
+        row = {"winner": c[1], "intrusion_m": round(c[0], 6),
+               "runner_up": r[1] if r else None,
+               "runner_up_intrusion_m": round(r[0], 6) if r else None,
+               "margin_m": round(c[0] - r[0], 9) if r else None}
+        if r and c[0] == r[0]:
+            row["note"] = ("EXACT TIE -- the object named here is chosen by "
+                           "the deterministic tie-break (lowest name), not by "
+                           "the geometry. Both are equally the closest.")
+        determinism["closest_approach_margin"][k] = row
+    if not repeat_ok:
+        print(">> THE SAME UNCHANGED SCENE MEASURED DIFFERENTLY ON REPEAT:")
+        for i, f in enumerate(fps):
+            print("     pass %d  %s" % (i, hashlib.sha256(
+                f.encode()).hexdigest()[:16]))
 
     # ---- report ----------------------------------------------------------
     # Ranked by DEPTH, so the worst physical error is the first line read.
@@ -853,20 +1133,46 @@ def main():
                                 "of this volume -- measured, nothing close"})
                    for k in volumes},
                "method": "analytic signed distance to keep-out volume",
+               "determinism": determinism,
                "road_corridor": volumes["road_corridor"]["_meta"],
+               # EVERY CONSTANT THE ANSWER DEPENDS ON, IN THE BODY.
+               # `car_zlo` and `car_top` were not here, and they are two of the
+               # three numbers that define the car volume: the 340 mm band
+               # error of #78 moved `closest_approach` and left no trace in any
+               # report it moved. A diff of two report bodies now sees it.
                "clearances": {"road_margin": ROAD_MARGIN, "road_h": ROAD_CLEAR_H,
                               "road_zlo": volumes["road_corridor"]["zband"][0],
-                              "car_margin": CAR_MARGIN, "cam_r": CAM_CLEAR_R}},
+                              "car_margin": CAR_MARGIN, "cam_r": CAM_CLEAR_R,
+                              "car_zlo": CAR_ZLO, "car_body_top": CAR_BODY_TOP_M,
+                              "car_body_w": CAR_BODY_W_M,
+                              "car_swept_half_w": 0.5 * CAR_BODY_W_M + CAR_MARGIN,
+                              "car_band_top": CAR_BODY_TOP_M + CAR_MARGIN}},
               open(a.out, "w"), indent=1)
 
     for vname in sorted(volumes):
         c = closest.get(vname)
         if c:
+            mg = determinism["closest_approach_margin"].get(vname) or {}
+            tail = ""
+            if mg.get("margin_m") == 0.0:
+                tail = ("   EXACT TIE with %s -- the name is the tie-break, "
+                        "not the geometry" % mg.get("runner_up"))
+            elif mg.get("margin_m") is not None:
+                tail = "   (%s %.4f m behind)" % (mg.get("runner_up"),
+                                                  mg["margin_m"])
             print(f">> closest approach, {vname:<14} {c[1]:<26} "
-                  f"{-c[0]:+8.3f} m of clearance   at {c[2]}")
+                  f"{-c[0]:+8.3f} m of clearance   at {c[2]}{tail}")
         else:
             print(f">> closest approach, {vname:<14} "
                   f"{'(nothing came near it)':<26}   measured, nothing close")
+    sk = determinism["skipped"]["total"]
+    print(f">> determinism: {determinism['repeats']} pass(es), "
+          f"{determinism['repeat_measure']}; scene walk "
+          f"{determinism['scene_walk_order_sha256'][:16]}; "
+          f"{sk} object(s) unmeasurable")
+    if determinism["repeats"] < 2:
+        print(">> NOTE: --repeat 1 -- this report makes NO claim about its own "
+              "reproducibility. It is a number, not a verdict.")
     if ctx_worst:
         print(f">> {len(ctx_worst)} CONTEXT findings -- the scene's own test rig, "
               f"attributed rather than excused:")
@@ -896,6 +1202,25 @@ def main():
               f"{allow!r}).")
         print(">> Nothing here for this gate to test. That is NOT a pass.")
         return gate_exit.verdict("PLACEMENT_VACUOUS")
+
+    # AN IRREPRODUCIBLE MEASUREMENT IS NOT A VERDICT.               (R2-2341)
+    #
+    # This comes BEFORE clean/fail on purpose. If the same unchanged scene
+    # measured two different ways in one process, then neither the CLEAN nor
+    # the FAIL below is attributable to the world, and printing either of them
+    # is worse than printing nothing -- a CLEAN would be quoted, and a FAIL
+    # would send somebody to move an object that was never in the way. It is
+    # its own verdict so a caller can tell it apart from a dirty world.
+    if not repeat_ok:
+        print(">> REFUSING TO REPORT: the same unchanged scene measured "
+              "differently on repeat, in one process, with nothing touched "
+              "between passes. Every number above is unciteable.")
+        # The token carries "REFUSED" so `gate_exit` maps it to VACUOUS (3) --
+        # "the gate ran, refused, and said why" -- rather than to CRASH. It is
+        # deliberately NOT spelled as a FAIL: the world may be perfectly clean,
+        # and sending somebody to move an object on the strength of a number
+        # the tool cannot obtain twice is the second-worst outcome here.
+        return gate_exit.verdict("PLACEMENT_NONDETERMINISTIC_REFUSED")
 
     if not worst:
         print(">> NOTHING is on the road, in the car's path, or in the camera's path")
@@ -1102,7 +1427,8 @@ def selftest(a):
             size=0.0001, location=(hx + nx * off, hy + ny * off, hz + 1.0))
         bpy.context.object.name = "SELFTEST_Marginal"
         bpy.context.view_layer.update()
-        v, cf, mg, cl, _t, _c = measure(scene, vols, (), set(), verbose=False)
+        v, cf, mg, cl, _t, _c, _dg = measure(scene, vols, (), set(),
+                                            verbose=False)
         got_v = any(x["volume"] == "road_corridor" for x in v)
         got_m = any(x["volume"] == "road_corridor" for x in mg)
         check("%s -> counted as a violation" % tag, got_v, want_viol,
@@ -1276,7 +1602,8 @@ def selftest(a):
           rig.name in ctx and item.name in sub, True,
           f"subject={sorted(sub)} context={sorted(ctx)} ({why})")
 
-    v, cf, mg, cl, _t, _c = measure(scene, vols, (), ctx, verbose=False)
+    v, cf, mg, cl, _t, _c, _dg = measure(scene, vols, (), ctx,
+                                         verbose=False)
     got_item = any(x["object"] == item.name for x in v)
     got_rig_ctx = any(x["object"] == rig.name for x in cf)
     got_rig_viol = any(x["object"] == rig.name for x in v)
@@ -1286,6 +1613,330 @@ def selftest(a):
           "%.3f m in" % max([x["intrusion_m"] for x in cf] or [0.0]))
     check("the stand-in slab is NOT counted as the item's violation",
           got_rig_viol, False)
+
+    # ---- 9b. AN ITEM COLLECTION IN A BIG SCENE MUST NOT NARROW IT ----------
+    # The item convention fired on `assembly14.blend` and made 29,304 of 30,204
+    # meshes "context" -- see the comment in `split_subject_context`. Straddled
+    # here: the SAME item collection, in a scene where it is most of the
+    # content and in a scene where it is a small minority.
+    print("\n>> SELFTEST: the item convention vs an assembled world")
+    for o in list(scene.objects):
+        if o.type == "MESH":
+            bpy.data.objects.remove(o, do_unlink=True)
+    for cn in ("ITEM_Selftest_Small", "ITEM_Selftest_Small/Standins"):
+        if cn in bpy.data.collections:
+            bpy.data.collections.remove(bpy.data.collections[cn])
+    small = bpy.data.collections.new("ITEM_Selftest_Small")
+    scene.collection.children.link(small)
+    item_names, world_names = [], []
+    for k in range(2):
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(hx, hy, hz + 1 + k))
+        ob = bpy.context.object
+        ob.name = "SELFTEST_TheItem%d" % k
+        for oc in list(ob.users_collection):
+            oc.objects.unlink(ob)
+        small.objects.link(ob)
+        item_names.append(ob.name)
+    for k in range(18):
+        bpy.ops.mesh.primitive_cube_add(size=1.0,
+                                        location=(hx + 4000 + k, hy, hz))
+        bpy.context.object.name = "SELFTEST_WorldPiece%02d" % k
+        world_names.append(bpy.context.object.name)
+    bpy.context.view_layer.update()
+
+    sub9, ctx9, why9 = split_subject_context(scene, None)
+    check("an item collection holding 10 % of the scene does NOT narrow it",
+          len(ctx9), 0, "%d subject / %d context -- %s"
+          % (len(sub9), len(ctx9), why9))
+    check("CONTROL: and every world mesh is still in the subject",
+          all(n in sub9 for n in world_names), True,
+          "%d of %d present" % (sum(n in sub9 for n in world_names),
+                                len(world_names)))
+    # THE DELIBERATE FAILURE: the shipped rule, reconstructed, DOES narrow.
+    shipped_sub = {o.name for o in small.all_objects if o.type == "MESH"}
+    shipped_ctx = {o.name for o in scene.objects
+                   if o.type == "MESH"} - shipped_sub
+    check("CONTROL: the SHIPPED rule WOULD have excused the world as context",
+          len(shipped_ctx) > 0, True,
+          "%d subject / %d context under the shipped rule"
+          % (len(shipped_sub), len(shipped_ctx)))
+    rows[-1]["shipped_rule_context_count"] = len(shipped_ctx)
+    if not shipped_ctx:
+        fails.append("the item-coverage control no longer reproduces the "
+                     "narrowing it was written for -- it cannot fail")
+    for o in list(scene.objects):
+        if o.type == "MESH":
+            bpy.data.objects.remove(o, do_unlink=True)
+    bpy.data.collections.remove(small)
+
+    # ---- 10. THE REPORT MUST NOT DEPEND ON SCENE ORDER    (R2-2341, #97) ----
+    #
+    # #97: a `closest_approach` figure moved between two runs of an unchanged
+    # world and nothing recorded why. Provenance closed the half of that which
+    # was undeclared INPUT DRIFT. This is the other half: given identical
+    # inputs, is the number a property of the world, or of the walk?
+    #
+    # The shipped rule was a strict `>` over `scene.objects`, so on an EXACT
+    # TIE the winner was whoever the walk reached first. Two objects at the
+    # same place is not a hypothetical on this project -- the adversarial
+    # review found the Beat-4 corridor built TWICE, 0.5 m apart -- and a world
+    # assembled from repeated modules on a regular station grid ties
+    # constantly.
+    #
+    # THE CONTROL IS BOUND TO FAIL FIRST. Below, the same two tied objects are
+    # put through BOTH rules on BOTH walk orders. The shipped rule is
+    # reconstructed inline (same pattern as `old_absolute_hit` above) and is
+    # REQUIRED to flip; if it ever stops flipping, this control has stopped
+    # reproducing the fault it was written for and says so. Then the shipped
+    # tie-break is required NOT to flip. A control that has only ever seen a
+    # deterministic input has not been tested.
+    print("\n>> SELFTEST: determinism of closest_approach")
+    for o in list(scene.objects):
+        if o.type == "MESH":
+            bpy.data.objects.remove(o, do_unlink=True)
+
+    def _make_tie_pair(order):
+        """Two IDENTICAL cubes on the racing line, linked in `order`. Identical
+        geometry at an identical transform, so their intrusions are equal to
+        the last bit by construction -- no float luck involved."""
+        for o in list(scene.objects):
+            if o.type == "MESH":
+                bpy.data.objects.remove(o, do_unlink=True)
+        made = {}
+        for nm in ("SELFTEST_TieA", "SELFTEST_TieB"):
+            bpy.ops.mesh.primitive_cube_add(size=2.0,
+                                            location=(hx, hy, hz + 1.0))
+            bpy.context.object.name = nm
+            made[nm] = bpy.context.object
+        # Relink in the requested order: `scene.objects` follows the collection
+        # link order, so this is the knob that permutes the walk.
+        for nm in order:
+            ob = made[nm]
+            for c in list(ob.users_collection):
+                c.objects.unlink(ob)
+        for nm in order:
+            scene.collection.objects.link(made[nm])
+        bpy.context.view_layer.update()
+        return made
+
+    def _shipped_first_wins(records):
+        """THE RULE THIS FILE SHIPPED, reconstructed:
+
+            if d > closest.get(vname, (-1e9,))[0]: closest[vname] = ...
+
+        strict `>`, so an exact tie is kept by whoever arrived first."""
+        best = None
+        for d, name in records:
+            if best is None or d > best[0]:
+                best = (d, name)
+        return best[1]
+
+    def _fixed_rule(records):
+        """`_better()`: depth, then name. Independent of arrival order."""
+        best = None
+        for d, name in records:
+            if _better(d, name, best):
+                best = (d, name)
+        return best[1]
+
+    tie_res = {}
+    for order in (("SELFTEST_TieA", "SELFTEST_TieB"),
+                  ("SELFTEST_TieB", "SELFTEST_TieA")):
+        _make_tie_pair(order)
+        v2, cf2, mg2, cl2, t2, c2, dg2 = measure(scene, vols, (), set(),
+                                                 verbose=False)
+        walk = [o.name for o in scene.objects if o.type == "MESH"]
+        # The two objects' own intrusions, in the order the gate walked them.
+        recs = [(max(intrusion(road, p)
+                     for p in _cube_verts(hx, hy, hz + 1.0, 1.0)), nm)
+                for nm in walk]
+        tie_res[order] = {
+            "walk": walk,
+            "walk_sha": dg2["scene_walk_order_sha256"][:16],
+            "gate_winner": cl2["road_corridor"][1] if "road_corridor" in cl2
+                           else None,
+            "margin": (round(cl2["road_corridor"][0]
+                             - dg2["runner_up"]["road_corridor"][0], 12)
+                       if "road_corridor" in cl2
+                       and "road_corridor" in dg2["runner_up"] else None),
+            "shipped_rule_winner": _shipped_first_wins(recs),
+            "fixed_rule_winner": _fixed_rule(recs),
+            "tested": t2}
+
+    fwd = tie_res[("SELFTEST_TieA", "SELFTEST_TieB")]
+    rev = tie_res[("SELFTEST_TieB", "SELFTEST_TieA")]
+    print("   walk order A,B -> %s   walk order B,A -> %s"
+          % (fwd["walk"], rev["walk"]))
+
+    # (a) THE CONTROL IS REAL: the permutation actually permuted the walk.
+    #     Without this, everything below would pass on a scene that never
+    #     changed -- which is how a control quietly becomes a decoration.
+    check("CONTROL: permuting the link order really does move the scene walk",
+          fwd["walk_sha"] != rev["walk_sha"], True,
+          "%s vs %s" % (fwd["walk_sha"], rev["walk_sha"]))
+
+    # (b) THE TIE IS EXACT. If it is not, (c) proves nothing.
+    check("the two objects are an EXACT tie (margin 0.0 m)",
+          fwd["margin"] == 0.0, True, "margin %r m" % (fwd["margin"],))
+
+    # (c) THE DELIBERATE FAILURE: the shipped rule flips with the walk.
+    check("CONTROL: the SHIPPED first-wins rule FLIPS the reported object",
+          fwd["shipped_rule_winner"] != rev["shipped_rule_winner"], True,
+          "%s -> %s" % (fwd["shipped_rule_winner"],
+                        rev["shipped_rule_winner"]))
+    rows[-1]["shipped_rule_winners"] = [fwd["shipped_rule_winner"],
+                                        rev["shipped_rule_winner"]]
+    if fwd["shipped_rule_winner"] == rev["shipped_rule_winner"]:
+        fails.append("the scene-order control no longer reproduces the flip it "
+                     "was written for -- it cannot fail, so it is not a control")
+
+    # (d) AND THE FIX: the gate's own answer does not.
+    check("the GATE's closest_approach is the same under both walk orders",
+          fwd["gate_winner"] == rev["gate_winner"], True,
+          "%s vs %s" % (fwd["gate_winner"], rev["gate_winner"]))
+    check("the deterministic rule agrees with the gate on both orders",
+          fwd["fixed_rule_winner"] == rev["fixed_rule_winner"] ==
+          fwd["gate_winner"] == rev["gate_winner"], True,
+          "%s / %s / %s / %s" % (fwd["fixed_rule_winner"],
+                                 rev["fixed_rule_winner"],
+                                 fwd["gate_winner"], rev["gate_winner"]))
+
+    # ---- 11. AN UNMEASURABLE OBJECT MUST NOT LEAVE SILENTLY ----------------
+    # `to_mesh()` and `bbox_world()` were both `except: continue`. A mesh with
+    # no polygons takes the same exit, and it is the one of the three that can
+    # be built on purpose -- so it is the one the control uses. Under memory
+    # pressure the other two take that exit too, and an object that leaves the
+    # survey without a line in the report is a difference between two runs
+    # that nothing can attribute.
+    print("\n>> SELFTEST: an object that cannot be measured is REPORTED")
+    for o in list(scene.objects):
+        if o.type == "MESH":
+            bpy.data.objects.remove(o, do_unlink=True)
+    bpy.ops.mesh.primitive_cube_add(size=2.0, location=(hx, hy, hz + 1.0))
+    bpy.context.object.name = "SELFTEST_Solid"
+    me_empty = bpy.data.meshes.new("SELFTEST_EmptyMesh")
+    me_empty.from_pydata([(hx, hy, hz + 1.0), (hx + 0.1, hy, hz + 1.0)], [], [])
+    me_empty.update()
+    ob_empty = bpy.data.objects.new("SELFTEST_NoPolys", me_empty)
+    scene.collection.objects.link(ob_empty)
+    bpy.context.view_layer.update()
+    v3, cf3, mg3, cl3, t3, c3, dg3 = measure(scene, vols, (), set(),
+                                             verbose=False)
+    named = (dg3["skipped_empty_mesh"] + [x["object"] for x in dg3["skipped_bbox"]]
+             + [x["object"] for x in dg3["skipped_to_mesh"]])
+    check("an object with no polygons is NAMED as unmeasurable, not dropped",
+          "SELFTEST_NoPolys" in named, True, "skipped: %s" % (named,))
+    check("CONTROL: the measurable object beside it is still measured",
+          "road_corridor" in cl3
+          and cl3["road_corridor"][1] == "SELFTEST_Solid", True,
+          "closest: %s" % (cl3.get("road_corridor"),))
+
+    # ---- 12. THE REPEAT-MEASURE ASSERTION MUST BE ABLE TO SAY 'DIFFERED' ---
+    # `--repeat` compares fingerprints of N passes. A comparison that has only
+    # ever been shown two identical things has not been tested. Feed it two
+    # deliberately different ones and require it to notice; the project has
+    # more than a dozen instruments that read the same either way, and an
+    # equality test is the easiest possible place to add another.
+    print("\n>> SELFTEST: the repeat-measure assertion, fed a difference")
+    same = ['{"closest":{"road_corridor":[0.5,"A"]}}',
+            '{"closest":{"road_corridor":[0.5,"A"]}}']
+    diff = ['{"closest":{"road_corridor":[0.5,"A"]}}',
+            '{"closest":{"road_corridor":[0.5,"B"]}}']
+    check("CONTROL: two DIFFERENT pass fingerprints are reported as DIFFERED",
+          len(set(diff)) == 1, False, "%d distinct" % len(set(diff)))
+    check("two identical pass fingerprints are reported as IDENTICAL",
+          len(set(same)) == 1, True, "%d distinct" % len(set(same)))
+
+    # ---- 13. THE EDGE COURTESY IS THE ROAD CORRIDOR'S, NOT EVERY VOLUME'S --
+    # An EDGE_FAMILIES name used to buy 0.50 m of exemption in ALL THREE
+    # volumes because `limit` was computed once per object. On the corridor
+    # that is correct and deliberate (the corridor is inflated by ROAD_MARGIN
+    # and a kerb sits on the true boundary). On the car's swept volume and the
+    # camera's clearance sphere it is 0.50 m of somebody's safety margin handed
+    # over on a prefix match -- and `docs/placement_after_46.json` is a
+    # PLACEMENT_CLEAN report whose own car_path clearance is -0.1553 m.
+    #
+    # Straddled: the same object, the same depth, in the two volumes.
+    print("\n>> SELFTEST: the edge-family courtesy, per volume")
+    car = vols.get("car_path")
+    if not car:
+        check("car_path volume exists to test the courtesy against",
+              False, True, "no telemetry at %s" % a.telemetry)
+    else:
+        for o in list(scene.objects):
+            if o.type == "MESH":
+                bpy.data.objects.remove(o, do_unlink=True)
+        cx, cy, cz = car["pts"][len(car["pts"]) // 3]
+
+        def _place_at_depth(vol, want, base, direction):
+            """Bisect for a point whose measured intrusion into `vol` is
+            `want` -- the gate's own `intrusion()`, not an algebraic offset."""
+            lo_o, hi_o = 0.0, max(vol["radius"]) + 5.0
+            for _ in range(80):
+                mid = 0.5 * (lo_o + hi_o)
+                q = Vector((base[0] + direction[0] * mid,
+                            base[1] + direction[1] * mid, base[2]))
+                if intrusion(vol, q) > want:
+                    lo_o = mid
+                else:
+                    hi_o = mid
+            m = 0.5 * (lo_o + hi_o)
+            return (base[0] + direction[0] * m, base[1] + direction[1] * m,
+                    base[2])
+
+        # 0.20 m in: past a limit of 0.0, comfortably under a limit of 0.50.
+        px, py, pz = _place_at_depth(car, 0.20, (cx, cy, cz + 0.5), (1.0, 0.0))
+        for nm in ("ARCH_RetainEdge_SELFTEST", "SELFTEST_PlainObject"):
+            bpy.ops.mesh.primitive_cube_add(size=0.0002, location=(px, py, pz))
+            bpy.context.object.name = nm
+        bpy.context.view_layer.update()
+        v4, cf4, mg4, cl4, t4, c4, dg4 = measure(scene, vols, (), set(),
+                                                 verbose=False)
+        edge_car = [x for x in v4 if x["object"] == "ARCH_RetainEdge_SELFTEST"
+                    and x["volume"] == "car_path"]
+        plain_car = [x for x in v4 if x["object"] == "SELFTEST_PlainObject"
+                     and x["volume"] == "car_path"]
+        check("CONTROL: a PLAIN object 0.20 m into the car path is a violation",
+              bool(plain_car), True,
+              "%s" % ([round(x["intrusion_m"], 4) for x in plain_car],))
+        check("an EDGE-FAMILY object 0.20 m into the CAR PATH is a violation "
+              "too", bool(edge_car), True,
+              "%s" % ([round(x["intrusion_m"], 4) for x in edge_car],))
+        rows[-1]["shipped_rule_excused_it"] = True
+
+        # And the corridor half, unchanged: the courtesy must still apply there.
+        for o in list(scene.objects):
+            if o.type == "MESH":
+                bpy.data.objects.remove(o, do_unlink=True)
+        # The corridor normal, recomputed here rather than inherited from a
+        # loop variable forty lines up: a control that depends on leftover
+        # state is a control that stops meaning what it says.
+        _co, _i0, _dd = road["kd"].find((hx, hy, 0.0))
+        _j = (_i0 + 1) % len(P)
+        _tx, _ty = P[_j][0] - P[_i0][0], P[_j][1] - P[_i0][1]
+        _tl = math.hypot(_tx, _ty) or 1.0
+        rx, ry, rz = _place_at_depth(road, 0.20, (hx, hy, hz + 1.0),
+                                     (-_ty / _tl, _tx / _tl))
+        for nm in ("ARCH_RetainEdge_SELFTEST", "SELFTEST_PlainObject"):
+            bpy.ops.mesh.primitive_cube_add(size=0.0002, location=(rx, ry, rz))
+            bpy.context.object.name = nm
+        bpy.context.view_layer.update()
+        v5, cf5, mg5, cl5, t5, c5, dg5 = measure(scene, vols, (), set(),
+                                                 verbose=False)
+        edge_road = [x for x in v5 if x["object"] == "ARCH_RetainEdge_SELFTEST"
+                     and x["volume"] == "road_corridor"]
+        plain_road = [x for x in v5 if x["object"] == "SELFTEST_PlainObject"
+                      and x["volume"] == "road_corridor"]
+        check("CONTROL: a PLAIN object 0.20 m into the corridor IS a violation",
+              bool(plain_road), True,
+              "%s" % ([round(x["intrusion_m"], 4) for x in plain_road],))
+        check("an EDGE-FAMILY object 0.20 m into the CORRIDOR is still "
+              "excused (courtesy kept where it belongs)",
+              bool(edge_road), False, "")
+
+    for o in list(scene.objects):
+        if o.type == "MESH":
+            bpy.data.objects.remove(o, do_unlink=True)
 
     # ---- verdict -------------------------------------------------------
     out = {"controls": rows, "failures": fails,
