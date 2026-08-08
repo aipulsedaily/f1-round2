@@ -37555,3 +37555,73 @@ was re-run today and reproduced the 2026-08-04 line **byte-identically.**
 fixed" from "someone is fixing it right now"** - the exact discrimination that
 was missed when an uncommitted working-tree edit was taken for prior art
 (R2-1160).
+
+## R2-1179 — "A CONTROL SET PROVES ONLY THE DISCRIMINATIONS IT EXERCISES"
+
+The #120 investigator retracted three things about its own work, and the third
+is the most useful sentence produced on this project.
+
+**It claimed 116,867 self-intersecting face pairs. It tested that rather than
+conceding it** - and fed its own detector **two sub-parts sitting EXACTLY
+FLUSH, zero penetration.** **The detector called them self-intersecting.** So the
+number is **contaminated by flush contact, on geometry BUILT from flush-stacked
+solids.**
+
+> **My controls could not catch it, and that is the lesson. K1/K2/K3 all use
+> PENETRATING boxes. None fed it CONTACT. A control set proves only the
+> discriminations it exercises; mine tested crossing-vs-no-crossing and never
+> contact-vs-penetration — the whole question here.**
+
+**Every control passed. Every control was irrelevant.** This project has spent
+two days finding guards that could not fire; **this is a guard that fires
+perfectly on a distinction nobody needed.** `tools/selfintersect_audit.py` now
+carries the flush case as a **deliberately failing control**, so it **refuses to
+report any artefact number** until someone resolves it.
+
+**The other two retractions:**
+
+- **"6 slab pairs is not any measured quantity" was wrong** - it is exactly what
+  the tool prints today. It had cited **504 from a 2026-08-03 entry against a
+  run whose current value is 6.** In its own words: *"answering a question about
+  today with a five-day-old number, in the same session where I built an
+  instrument whose entire purpose is stopping that."* **#97 is about stale
+  readings carried forward, and it carried one forward in the entry beside it.**
+- **Its mechanism was invented.** It claimed within-piece crossings *are* the
+  no-answer case. **Parity is mod-2 - there is an answer and it is wrong.** It
+  never checked whether the abstention branch had anything to do with its
+  geometric story.
+
+**And the fixes are correcting commits, not amends** - `bae69b3` stands in
+history carrying its wrong mechanism. **That is the remedy R2-234 asked for and
+what its own guard enforces.** A corrected record that hides the correction
+teaches nothing.
+
+## R2-1180 — 4.5 HOURS SPENT REBUILDING ITS OWN SUBAGENT'S WORK, WORSE
+
+**The "other session" was its own #120 subagent.** It commissioned the work,
+waited **4.5 hours** through a box that **twice hit 0 GB**, sent **two check-ins
+that bounced**, concluded the agent was dead, and **rebuilt its work worse.**
+
+**The subagent had the answer the whole time and had asked twice for someone to
+stop.**
+
+**I am part of this failure.** I relayed the peer's *"do not start #120"* as
+though it came from an unrelated session - **it was this agent's own child**,
+and neither of us could see that from the message. **On a box where a dozen
+agents share one checkout and messaging is best-effort, "another session" and
+"my own subagent" are indistinguishable from the outside.**
+
+**Two findings worth more than the verdict itself:**
+
+**The item is not in the film.** Verified independently: **`state: HOLD`,
+`ITEM_REJECTED`, and `SHIPPING.md` mentions it zero times.** **The whole item was
+a question about geometry that is not in the shipped world** - 4.5 hours, two
+agents, and a retraction, over an object no frame contains. **Checking whether
+the subject ships is the cheapest question available and nobody asked it.**
+
+**A second frame-dependent instrument in two days.** `sheet_facing` **welds in
+WORLD space**, so **the same deck at the origin segments differently from 300 m
+out.** With #90's `matrix_world` identity that is **two frame failures, both
+producing plausible numbers** - and it is the same family as `CameraPath.dist`
+discarding altitude and `GRASS_HERO_D` measuring to the path. **Four instruments
+this week whose answer depends on where the thing happens to be.**
