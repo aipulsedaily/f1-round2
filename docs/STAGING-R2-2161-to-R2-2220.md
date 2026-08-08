@@ -655,6 +655,53 @@ whose provenance is already fragile was to leave it byte-identical at
 
 ---
 
+## R2-2175 — The instrument behind the surviving claim, validated against an independent implementation
+
+Everything this block still asserts rests on one number: **the car moves 0.0077
+frame widths per second in beat 5.** That comes from `tools/camera_tempo.py`,
+which projects the car into the frame with hand-rolled quaternion maths — written
+by me, checked by nobody, and used to overturn two other instruments. **After two
+retractions in one session, that is not a thing to leave unvalidated.**
+
+`anim/build_camera_rig.py` computes the same projection independently: inside
+Blender, using `Quaternion.inverted() @ d` and the scene's own render aspect,
+against `0.5 * sensor_w / lens`. Two implementations, no shared code, no shared
+process.
+
+**First attempt: two of five matched.** The failures were not in the maths — they
+were **different subjects**. The rig aims at the car's reference point *plus a
+per-beat `z_off`* declared in the sheet (0.55 / 0.65 / 0.80 / 0.80), and beat 6
+hands over to a fixed point. I was projecting the raw car origin. Aligning the
+subject definitions:
+
+| beat | rig | `camera_tempo` | delta |
+|---|---|---|---|
+| `2_launch` | 0.588 | **0.588** | +0.000 |
+| `4_transit` | 0.321 | **0.321** | −0.000 |
+| **`5_lap`** | **0.754** | **0.754** | **−0.000** |
+| `3_breach` | 0.223 | 0.251 | +0.028 |
+
+**Three of four agree to three decimal places, including beat 5.** The projection
+that produced the composition finding is the same projection the aim gate uses to
+pass or fail the film.
+
+**Beat 3's 0.028 is unexplained and I am not going to invent a reason for it.**
+It is the beat whose world time collapses to 15.4 % over six frames — the
+steepest ramp in the film, where the rig and I index the time map at slightly
+different places — but I have not proven that and it is stated as a loose end
+rather than a footnote. It does not touch beat 5.
+
+**What this validates and what it does not.** It validates the geometry: the car
+lands where the instrument says it lands. **It does not validate against pixels** —
+no frame of the current camera covering beat 5 has been rendered yet.
+`watch/seq1` and `seq2` cannot substitute; they are the superseded pre-R2-831
+camera, which is exactly the trap `watch/INDEX.md` was written to close. The
+whole-film proxy now rendering will supply the first real pixel check, and until
+it does, **"the subject is pinned to the centre of frame" is a geometric claim,
+not a photographic one.**
+
+---
+
 ## R2-2172 — A threshold and the quantity it judges are ONE instrument
 
 Generalised, because this is the eighth broken-instrument finding on this project
