@@ -1281,3 +1281,40 @@ other agents' processes with other agents' work on them; `fleetctl down`/`up` on
 the fleet is the owner's call, and `rq status` showed fleet08 renting a card at
 17:58 while I was writing this.
 
+
+## R2-3024 — NEAR MISS: the process tree and the scratchpad are SHARED between agents
+
+Cleaning up my own stale poll loops, I listed the children of the `claude`
+process (pid 2690886) intending to kill them by PID. **Two of them were not
+mine.**
+
+```
+PID 2830931  alive 49:34   bash .../scratchpad/r2941/chain2.sh
+                           -> r2970-control, r2970-px-after2, r2970-macro-before,
+                              r2970-var-before, r2970-macro-after, ...
+                              a SEVEN-STAGE buildlock chain, 46 minutes in
+PID 2879170  alive 02:55   until [ -f $SP/ship_step.json ] ...
+PID 2879465  alive 02:24   grep -E "grass library:|TOTAL|^VEG |CHAIN2 DONE|..."
+```
+
+**Every agent in this session is a child of the same process and writes to the
+same scratchpad directory** — `/tmp/claude-0/…/262f2abe-…/scratchpad/` is
+session-scoped, not agent-scoped. So:
+
+* **"it is a child of my claude PID" is NOT an ownership test.** A PID sweep of
+  my own children would have killed another agent's 46-minute seven-stage build
+  chain mid-flight — the exact incident class already in the brief ("a blanket
+  cancel once took four jobs from three owners").
+* **The scratchpad is a shared namespace.** `scratchpad/inspect.py`, written by
+  another agent, shadowed the standard library's `inspect` and crashed my
+  transport A/B on import (`ModuleNotFoundError: No module named 'bpy'` from
+  inside `dataclasses`). Fixed by running from a private subdirectory —
+  `scratchpad/r23001/` — which is what any agent writing an importable `.py`
+  there should do.
+
+**The only safe stop mechanism is the task ID**, because that is the one handle
+scoped to the agent that created it. Six stale waiters of mine were stopped that
+way (`b79artu6z`, `bl4k889g3`, `bkvt7l1wf`, `bh7fhgo89`, and two the harness
+reaped itself). **Nothing belonging to another agent was touched, and the check
+that established that is in this section rather than in my head.**
+
