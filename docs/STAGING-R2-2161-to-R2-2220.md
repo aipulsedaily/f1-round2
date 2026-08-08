@@ -279,52 +279,71 @@ Three further limits, stated so nobody has to rediscover them:
 
 ---
 
-## R2-2168 — "only your beats moved" needed a noise floor, and finding one found a bug in the rig
+## R2-2168 — RETRACTED IN FULL. The rig is bit-exact deterministic; the "0.2 degree noise floor" was my own arithmetic
 
-The brief requires confirming that only my beats moved. Diffing the two built
-paths appeared to say otherwise: **rotation differed on 2,157 frames, 377 of them
-in beat 1**, which my change cannot reach. Before explaining that, I checked
-whether the rig gives the same answer twice.
+**I published, one commit ago, that `anim/build_camera_rig.py` is
+nondeterministic at ~0.2 degrees, on 48.1 % of frames. That is false and the
+retraction is the finding.**
 
-**It does not.** Two runs of `anim/build_camera_rig.py` on the **identical**
-`docs/beat_sheet.json`, same inputs, same binary:
+Confirming "only my beats moved" appeared to show rotation differing on 2,157
+frames, 377 of them in beat 1, which my change cannot reach. I ran the rig twice
+on the identical sheet, measured ~0.19 deg between the two runs, and concluded
+the rig was the culprit. **I did not look at the numbers themselves.** When I
+finally did:
 
-| | result |
-|---|---|
-| frames whose rotation differs | **1,432 of 2,978 — 48.1 %** |
-| p90 / p99 / worst | **0.139 / 0.180 / 0.210 deg** |
-| max position difference | **exactly 0** |
-| max lens difference | **exactly 0** |
+```
+f2598  q_run1 = [0.687841, 0.585976, -0.277797, -0.326089]
+       q_run2 = [0.687841, 0.585976, -0.277797, -0.326089]
+```
 
-**The rig's rotation channel is reproducible only to about 0.2 degrees.**
-Position and lens are bit-exact, so this is not general float drift — it is
-specific to how the rotation is built or baked. It is widespread rather than
-concentrated (48 % of frames, no outliers), which points at a numerical or
-ordering effect rather than a quaternion sign flip, which would show as a few
-enormous deltas instead of a thousand small ones.
+**Identical. Every component, every frame.** Two runs of the rig on the same
+sheet are bit-identical on **2,978 of 2,978 frames** in position, rotation and
+lens. The rig is deterministic and there is no defect in it.
 
-**This settles the confinement question outright.** My change against the noise
-floor, per beat:
+**The bug was in my comparison.** I measured the angle between two rotations as
+`2·acos(|q₁·q₂|)`. The path file stores quaternions **rounded to six decimals**,
+so a stored quaternion is not exactly unit-norm — `|q|²` lands a few times 10⁻⁷
+away from 1. `acos` has an **unbounded derivative at 1**, so 5×10⁻⁷ of norm error
+becomes ~0.0017 rad, and doubling it gives the ~0.19 deg I reported as a noise
+floor. **It was the same number for every beat because it is a property of the
+rounding, not of the film** — which should have been the tell, and I read it as
+corroboration instead.
 
-| beat | noise floor (A vs A) | my change (A vs candidate) | verdict |
-|---|---|---|---|
-| `1_assembly` | 0.1905 | **0.1905** | identical to noise |
-| `2_launch` | 0.1830 | **0.1830** | identical to noise |
-| `3_breach` | 0.1911 | **0.1911** | identical to noise |
-| `4_transit` | 0.1917 | **0.1917** | identical to noise |
-| **`5_lap`** | 0.2099 | **12.0447** | **57x the floor — real** |
-| `6_ending` | 0.1758 | **0.1627** | **below the floor** |
+Recomputed with a stable formula — normalise both quaternions, then
+`2·atan2(‖q₁−q₂‖, ‖q₁+q₂‖)`:
 
-Beats 1-4 match the noise floor **to four decimal places**, which is what you
-would expect if my change contributes nothing there and the same numerical
-wobble reappears. **Beat 6 comes in below its own noise floor** — the strongest
-available statement that contested territory was not touched.
+| beat | frames bit-identical | max rotation change |
+|---|---|---|
+| `1_assembly` | **792 / 792** | 0.00000 deg |
+| `2_launch` | **72 / 72** | 0.00000 deg |
+| `3_breach` | **192 / 192** | 0.00000 deg |
+| `4_transit` | 109 / 135 | **0.00512 deg** |
+| **`5_lap`** | 0 / 1524 | **6.02244 deg** |
+| `6_ending` | 0 / 263 | **0.00015 deg** |
 
-**The nondeterminism is a pre-existing defect and it is not mine to fix here**,
-but it should be known: any A/B on this project that compares built camera
-rotation is reading noise below ~0.21 deg, and `worst_rotation_step_deg` in
-`*_continuity.json` inherits it. It is logged here rather than in
-`docs/DEFECT-LOG-R2.md`, which I was told not to edit.
+And position, which was measured with a formula that was never unstable:
+
+| beat | frames whose position moved | max |
+|---|---|---|
+| all beats except `5_lap` | **0** | **exactly 0** |
+| `5_lap` | 1,374 | 0.264 m (lens 1.407 mm) |
+
+**The corrected result is stronger than the one it replaces.** Beats 1, 2 and 3
+are *bit-identical* — not "within noise", identical. Beat 4 has 26 frames
+differing by at most **0.00512 deg**, which is the shared beats-2-to-5 spline
+adjusting its tangents near the boundary, and is 2,000x smaller than the 10.25
+deg aim error already sitting in that beat. **Beat 6 differs by 0.00015 deg** —
+one unit in the last stored decimal, i.e. the contested territory is untouched to
+the precision the file can express.
+
+**Two corrections to numbers published earlier in this document**, both caused by
+the same formula: beat 5's max rotation change is **6.02244 deg, not 12.0447**,
+and there is no "57x the noise floor" because there is no noise floor.
+
+I flagged another agent's instrument for misusing a derivative, and then shipped a
+numerical-stability error of my own into a commit. **The check that caught it was
+looking at the raw values instead of the summary statistic** — which is the same
+check that would have caught the 85-second run three days ago.
 
 ---
 
