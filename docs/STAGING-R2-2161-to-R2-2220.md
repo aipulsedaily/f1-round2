@@ -414,7 +414,129 @@ test needs both halves audited, and I audited one.
 
 ---
 
-## R2-2166 — PROMOTION IS HELD, and by what
+## R2-2171 — THE FOURTH RELOCATION, AND IT IS THE LAST ONE: the flat-run census is saturated, and beat 5 was the right target all along
+
+I was told to fix beat 1's 35.67 s run at f73-928. **I did not, and this section
+is why.** Before writing generator code I tested whether the lever would work,
+and testing it exposed the census itself.
+
+### The threshold sits at the 99th percentile of the film's own data
+
+The jerk-ratio curve across all 2,978 frames:
+
+| derivative | median | p90 | p99 | **max** | threshold | where the threshold sits |
+|---|---|---|---|---|---|---|
+| `A` (1 frame) | 0.024 | 0.078 | 0.098 | **0.112** | 0.10 | **99th percentile** |
+| `D` (0.5 s), scale-matched | 0.236 | 0.582 | 1.241 | 1.694 | 0.87 | **97th percentile** |
+
+**`FLAT_JERK_RATIO = 0.10` is above 99 % of the values it is applied to, and only
+12 % below the maximum the film ever reaches.** A threshold placed there does not
+measure flatness — it declares the film flat and then reports where the few
+excursions happen to fall. That is why 96.8 % and 95.1 % agree: **both are
+saturated**, and the "runs" are the gaps between rare spikes rather than
+stretches of genuine sameness.
+
+### It is not reachable by any camera worth shipping
+
+Synthetic aim modulation over f73-928, camera path untouched, measured not
+assumed:
+
+| intervention | `A/S` over the run | verdict |
+|---|---|---|
+| shipped | 6.93 % | flat |
+| smooth 6 deg sine, 4 s period | 6.72 % | **worse** |
+| 6 deg burst every 3 s | 7.95 % | flat |
+| 12 deg burst every 3 s | 9.51 % | flat |
+| **20 deg burst every 3 s** | **11.71 %** | **clears 10 %** |
+
+**The only thing that clears the floor is a camera that snaps 20 degrees every
+three seconds for thirty-five seconds.** That is not a pacing fix, it is a fault.
+And the film-wide census barely moves for it: 95.1 % -> 94.7 % flat.
+
+### Ranked by the metric's continuous value, beat 5 is the flattest beat in the film
+
+Drop the saturated threshold and read the jerk ratio itself. **Both derivatives
+agree on the ranking**, which the run census does not:
+
+| beat | median jerk ratio (`D`) | rank |
+|---|---|---|
+| **`5_lap`** | **0.1946** | **flattest** |
+| `1_assembly` | 0.2713 | 2nd |
+| `3_breach` | 0.2910 | 3rd |
+| `6_ending` | 0.4123 | 4th |
+| `4_transit` | 0.4487 | 5th |
+| `2_launch` | 0.5309 | liveliest |
+
+**Beat 5 — the beat this block already fixed — is the flattest beat in the film
+on the only version of this metric that discriminates.** Beat 1's "largest flat
+run" was the fourth artefact in a row, and it was produced the same way as the
+first three: by reading a threshold instead of a distribution.
+
+### And the fix moved it, in the only place it touched
+
+| beat | before | after | change |
+|---|---|---|---|
+| `1_assembly`, `2_launch`, `3_breach`, `4_transit`, `6_ending` | — | — | **+0.0 %** |
+| `5_lap` | 0.1946 | 0.2136 | **+9.8 %** |
+
+Five beats bit-identical, one improved — the same confinement R2-2169 measured
+in the rotation channel, now visible in the pacing channel.
+
+### The answer to the question I was asked
+
+*"If the answer is that it moves to beat 5 and beat 5 is now the worst, say so —
+that would mean the film is uniformly slow rather than locally slow."*
+
+**It is that answer.** The beats span 0.195 to 0.531 — a **2.7x spread with no
+outlier**. There is no 35-second villain. The film is uniformly slow, beat 5 is
+the slowest part of it, and beat 5 remains the flattest even after a 9.8 %
+improvement. **The next work on pacing belongs in beat 5, not beat 1**, and it
+should be judged on the composition channel and a viewing rather than on a run
+census that cannot fail.
+
+### What beat 1 would actually need, and why it is not mine to do
+
+Beat 1's tour is speed-equalised by construction (R2-062's `_allocate`), and the
+span is already **100.3 % of its own minimum flyable time with 0.059 s of slack
+across eleven moves**. There is nothing to redistribute. Re-tempoing it means
+widening the seat schedule, which moves the assembly and requires rebuilding
+`world/beat1_anim.blend` — and **`world/` is explicitly outside this block's
+scope**. The two levers that are in scope, `BEAT1_ESTABLISH_HOLD_S` and
+`BEAT1_ORBIT_TEMPO_AMP`, act on the lead-in and the payoff orbit, not on the
+25 seconds of tour in the middle of the run I was pointed at.
+
+**`tools/build_beatsheet.py` and `docs/beat_sheet.json` were never touched by
+this block.** No fork, no unpromoted edit, no lease taken from the agent
+currently promoting the sheet.
+
+---
+
+## R2-2172 — A threshold and the quantity it judges are ONE instrument
+
+Generalised, because this is the eighth broken-instrument finding on this project
+and the first where the break was in the **calibration** rather than the
+measurement:
+
+> **A threshold and the quantity it judges are a single instrument. Changing
+> either one alone silently rescales the verdict, and neither half announces it.**
+
+The three failures in this document are all one shape:
+
+1. **The file changed the quantity and kept the threshold.** `campath_pacing`
+   computes `D` over 0.5 s, documents that `A` over 1 frame is unusable, and
+   passes `A` to a threshold calibrated for `A`. Self-consistent by accident.
+2. **I changed the quantity and kept the threshold.** I passed `D` to that same
+   threshold and reported 7.1 % flat. `D` runs 8.72x larger, so I had rescaled
+   the verdict by 8.72x and called it a correction.
+3. **The threshold was never calibrated against a distribution at all.** It was
+   set at "twice the number attached to a complaint" — a defensible anchor — and
+   nobody then checked where that lands in the data. It lands at the 99th
+   percentile, which makes the census unfalsifiable.
+
+**The check that would have caught all three is the same one: print the
+distribution of the quantity next to the threshold before believing any verdict
+built on it.** A threshold at the 99th percentile and a threshold at the median
+are different instruments wearing the same number.
 
 Two things stood between this block and a shipped sheet, both of them other
 people's work, and neither was forced.
