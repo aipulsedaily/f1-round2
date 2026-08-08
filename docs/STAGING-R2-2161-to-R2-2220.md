@@ -175,6 +175,89 @@ R2-2163 is available to beat 6's owner and needs no camera move to use.
 
 ---
 
+### What it measures, after
+
+| beat | car's motion across frame, BEFORE | AFTER | change |
+|---|---|---|---|
+| `1_assembly` | 0.1236 | 0.1236 | — |
+| `2_launch` | 0.1907 | 0.1907 | — |
+| `3_breach` | 0.0456 | 0.0456 | — |
+| `4_transit` | 0.0057 | 0.0057 | — |
+| **`5_lap`** | **0.0077** | **0.1489 widths/s** | **19.3x** |
+| `6_ending` | 0.0007 | 0.0007 | — |
+
+Beat 5 goes from **16x less** composition change than beat 1 to **1.2x more**.
+Over the worst 20 s window — f1959-2439, the helicopter arc through T10 and the
+doppler pass — it is **0.0042 -> 0.1917 widths/s, 45.6x**. The aim gate reads
+beat 5 at **12.02 deg against a 22.0 bound** and framing **0.754 against the 0.92
+margin**: the fix uses about half the headroom available to it.
+
+### AND HERE IS WHAT THIS FIX DOES NOT DO — measured, not hedged
+
+**It does not change how much the picture moves. It changes what the picture is
+of.** Run through `campath_pacing`'s validated image-motion channel `S` over
+beat 5:
+
+| | mean `S` | `D/S` (0.5 s) | novelty |
+|---|---|---|---|
+| BEFORE | 0.12211 | 30.5 % | 0.590 |
+| AFTER | 0.11804 | 29.3 % | 0.592 |
+
+**Whole-frame optical flow is flat to within 3 %, and slightly DOWN.** That is
+the honest consequence of not moving the camera: the background streaks exactly
+as it did. The claim this block makes is narrow and it is the only one the
+measurement supports — **the subject now travels across the frame instead of
+being pinned to its centre.** Whether that is what converts "I get sleepy" into
+attention is a question for a viewing, not for this instrument, and the A/B is
+cut so it can be lost.
+
+Three further limits, stated so nobody has to rediscover them:
+
+* **Beats 3 and 4 are untouched.** Beat 4's aim gate has only 3.75 deg of
+  headroom (10.25 against a 14.0 bound), which is not enough for a framing move
+  worth making. Beat 3 has 16 deg spare and is the obvious next candidate.
+* **No acceleration or direction change was added to the camera itself.** The
+  brief asked for all three levers; this delivers composition change only. The
+  positional envelope is byte-identical on purpose, because that is what made the
+  change cheap enough to trust in one pass.
+* **`speed_key` is still off for beat 5**, and R2-087's measured refusal to
+  enable it globally still stands *for this camera* — it found "nothing on the
+  other side of it" because the camera's speed does not vary. That reasoning is
+  conditional on a camera that does not change speed. **Any future pass that adds
+  speed variation to beat 5 must re-open R2-087, because the emitter is
+  bearing-driven and would be structurally blind to the change.** This pass adds
+  no speed variation, so it does not need it: the emitter picked up the extra
+  aim movement on its own and went 434 -> 436 keys.
+
+---
+
+## R2-2166 — PROMOTION IS HELD, and by what
+
+Two things stood between this block and a shipped sheet, both of them other
+people's work, and neither was forced.
+
+1. **A film build was live.** `render/film23.blend` began building at 05:38 via
+   `tools/build_film_scene.py`, which runs the camera rig against
+   `docs/beat_sheet.json`. Writing the sheet during that build would have put a
+   half-applied camera into a 10 GB artefact. **`docs/beat_sheet.json` is
+   byte-identical to its state at the start of this session** — verified by
+   md5 (`17fd6e3d64d3e1ace3fca27b379cad1a`), not by intention.
+2. **`tools/author_beats2_5.py` is leased by `inflight-2026-08-07`**, 7.7 h old,
+   and the git guard refused the commit. It was refused correctly and **the lease
+   was not stolen.** That file already carried another agent's uncommitted work
+   when this block started; the framing change is additive on top of it, and the
+   0-diff reproduction was run WITH their changes in place, so their work is
+   intact and reflected in the shipped sheet.
+
+The generator change therefore sits in the working tree, committed nowhere,
+while `tools/camera_tempo.py`, `watch/INDEX.md` and this note are in `b3f811a`.
+**That is the desync this project has been bitten by before and it is named here
+rather than left to be discovered.** It closes with one lease release and one
+regeneration; a follow-up agent is holding the sequence and will not overwrite
+the sheet if anything other than the `beat5` block has moved underneath it.
+
+---
+
 ## R2-2165 — `watch/` now says which of it is true
 
 `watch/INDEX.md` is new. Two artefacts in that folder have already been judged as
