@@ -637,8 +637,8 @@ it must be staged in **beat 1**, where one key reaches 158.92 px — not past 90
 
 ## R2-17xx — #120: REFUTED — and this entry is a RETRACTION of my own first answer
 
-**VERDICT: REFUTED. The verdict, the mechanism and the proof are another
-session's work, not mine.** I answered #120 after it had already been answered,
+**VERDICT: REFUTED. The verdict, the mechanism and the proof belong to the agent
+I had commissioned for this item — not to me.** I answered #120 after it had already been answered,
 got the right verdict word by the wrong route, and reported a number my own
 instrument could not support. Recorded in full because the failure is more useful
 than the answer.
@@ -722,7 +722,44 @@ is between-piece assembly contact**; they put it better and more generally —
 survives every check pointed at it. Carry that into #78, #90, #97 and #100:
 **confirm the mechanism, not just the symptom.**
 
+### Two things their final report added, and one is decisive
+
+**The item is not in the shipped world at all.** Verified independently in
+`world/items/PLACEMENT.json`:
+
+```
+state                          HOLD
+gate_result_at_registry_time   ITEM_REJECTED
+blockers                       GATE_NOT_ACCEPTED, SUPERSEDE_WELDED
+```
+
+and `render/world/assembly/r2/SHIPPING.md` mentions `hospitality` **zero** times.
+**So the whole item was a question about geometry that is not in the film** — and
+self-intersection is not a rendering defect in any case, because Cycles does not
+care. Repairing it would have meant booleaning 15.7 M triangles and destroying
+the per-solid `hd_id` / `hd_wear` / `hd_grime` attributes the materials read, to
+fix something invisible in a world that does not contain it.
+
+**And a second frame-dependence bug, one day after #90's.** Their first
+measurement appended a single deck via `libraries.load` and got 18 pairs on one
+deck against the tool's 6 across five. `sheet_facing` welds with
+`np.round(Pw, 6)` in **world** space, so *the same deck measured at the origin
+segments into different facets from the same deck 300 m out*, and the greedy
+pairing then pairs different partners. They discarded the run.
+
+> That is the **second** frame-dependent instrument failure in two items — #90's
+> `matrix_world` reading identity on link-loaded objects, and now a world-space
+> weld tolerance. Both produced plausible numbers. **On this project, any
+> measurement that touches world coordinates should state which frame it welded
+> or projected in, before its number is read.**
+
 ### Housekeeping
+
+**And it was my own subagent.** I commissioned #120, waited 4.5 h through a box
+that twice hit 0 GB, sent two check-ins that bounced, concluded it was dead, and
+rebuilt its work worse. It had the answer the whole time and had asked twice for
+somebody to stop duplicating it. **The coordination failure is mine, and it is
+the more expensive half of this entry.**
 
 `tools/winding_audit.py` is **theirs** and I have not touched it — the UNDECIDED
 line now reports the reason the parity arm recorded, with three new hand-counted
