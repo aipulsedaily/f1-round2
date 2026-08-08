@@ -37625,3 +37625,80 @@ out.** With #90's `matrix_world` identity that is **two frame failures, both
 producing plausible numbers** - and it is the same family as `CameraPath.dist`
 discarding altitude and `GRASS_HERO_D` measuring to the path. **Four instruments
 this week whose answer depends on where the thing happens to be.**
+
+## R2-1181 — "OVERALL" WAS THE FINDING: 96.7 % of the film is flat, and the largest run is 85 UNBROKEN SECONDS
+
+I sampled the opening because the client said *"4 seconds in."* **The opening is
+the smaller half.**
+
+**64.5 % of this film has never been rendered** - beats 2-5 have no continuous
+proxy - **so no pixel measurement could ever have answered "overall."** A
+whole-film instrument was built instead and validated against the delivered
+beat-1 proxy at **Spearman 0.834.**
+
+```
+96.7 % of the film is flat
+largest run: ONE UNBROKEN 85 SECONDS  (f938-2978, t 39 s -> last frame)
+             crossing beats 3, 4, 5 and 6
+             SEVEN TIMES the 12.1 s opening I sampled
+```
+
+**I asked to be told if the flatness was somewhere I had not looked. It is.**
+
+## R2-1182 — THE CHORD CANCELS: a minimax allocator GUARANTEES the uniformity it was added to fix
+
+Proven from the code rather than observed from the output. For any
+transit-bound move, **`move_seconds` is proportional to chord** and `_allocate`
+hands it **`dt` proportional to cost** - so **`speed = chord/dt` and the chord
+cancels.**
+
+**Six tour hops spanning 0.48 m to 8.41 m all fly at 2.59-2.69 m/s.**
+
+**And the cause is a fix.** R2-062 added minimax allocation to kill a 7.82 m/s
+dash - **and minimax guarantees no variation.** It solved a spike by making
+variation impossible. **The same defect sits in the other generator, stacked six
+deep**, including **`speed_key` disabled for beat 5**, which leaves the key
+emitter **structurally blind to speed change** - **a precondition for any beat-5
+pass, not an optimisation.**
+
+## R2-1183 — R2-1144's NUMBERS ARE NOT REPRODUCIBLE, and the client may have judged a camera we already replaced
+
+**Three pushbacks I asked for and got.**
+
+**1. The fix makes the first second carry LESS motion** - 14.46 → 6.10 levels -
+**against a note that said "too slow."** It rests entirely on my thesis that
+**magnitude was never the variable.** The thesis has support - the shipped first
+4 s already carried **1.11× more change** and was still where they fell asleep -
+but **one viewing decides it**, and it is written down so it cannot be quietly
+lost.
+
+**2. This is 0.6 s of gesture in a 124 s film.** The effect decays from **2.78×
+at one second to 1.10× at six.** **It does not touch the 85-second stretch and
+must not be sold as if it does.**
+
+**3. My own numbers do not reproduce.** **No novelty instrument ever existed in
+the tree or in git** - the one a subagent "found" was **a file it had written
+five minutes earlier.** My load-bearing claim survives (**accel 0.896 = 5.2 %
+against my 5.4 %**), but **29.35 / 26.34 cannot be reconciled with 16.52 at any
+resolution.** I reported those to the client as measurements.
+
+**And the one that may matter most: `watch/PART2_opening_53s.mp4` is the
+pre-R2-831 camera.** **If the client formed their impression from the clip named
+"opening", they watched a camera we had already replaced.** That is the second
+time today a stale artefact in `watch/` has been the thing under judgement - the
+audio clips were 2.5 hours behind their master.
+
+> **Anything left in `watch/` is a claim about the current film, whether or not
+> it was meant as one.**
+
+Delivered: `watch/AFTER_opening_18s.mp4` against `BEFORE_opening_18s.mp4`,
+**accel/change 5.64 % → 15.67 %, a 2.78×** over the first second, with the hold
+reading **0.05 levels - render noise only**, so the picture is **genuinely
+still**, which it has never been in this film. `render/film18_path.json` is
+**bit-identical to the gated rig by sha256**, so there is **no gap between the
+gate and the delivery** - and it checked for the two-verdict trap explicitly:
+exactly one STAGE RESULT line, no FAIL lines. Cost **$2.90**.
+
+**`docs/LIVE-CAMERA.md` was NOT re-declared** - `film17_path.json` is stale
+against the sheet and re-pointing it touches the beat-6 workstream. **Correctly
+left as a decision rather than taken.**
