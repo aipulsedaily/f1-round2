@@ -16,9 +16,22 @@ still true.** It is written by dates that can be checked, not by memory.
 
 | file | cut | shows |
 |---|---|---|
+| `AFTER_beat5_doppler_4s.mp4` | 08-08 08:20 | **R2-2161, the beat-5 framing fix.** f2340-2439 (t 97.5-101.6 s), 100 frames, 1280x720, 24 fps. The doppler pass. The car is placed **off-centre and travels across the frame**; beat 5's frame-offset is **0.754** against a 0.92 bound. Built from `render/r22161_after.blend`, whose camera path is bit-identical to the gated rig `7fc6d688…`. |
+| `BEFORE_beat5_doppler_4s.mp4` | 08-08 08:17 | its matched BEFORE, same 100 frames, same resolution, same 64 samples, same DOF. The shipped camera, which pins the car near **frame centre** the whole way — frame-offset **0.055**. From `render/film22.blend`, camera path `363e4e88…`, the sha `docs/LIVE-CAMERA.md` declares. |
 | `AFTER_opening_18s.mp4` | 08-08 01:36 | the opening tempo pass (R2-1606). The most recent camera deliverable. |
 | `BEFORE_opening_18s.mp4` | 08-07 17:52 | its matched BEFORE. Correctly named. |
 | `audio/` | 08-08 03:14 | re-cut from the master; `audio/INDEX.md` explains the earlier staleness and states it is fixed. |
+
+**What the beat-5 pair does and does not claim.** It claims the **subject now moves across the frame**. It does **not** claim the picture moves faster — the camera's path is nearly unchanged (max positional delta 0.264 m over the whole film, exactly zero outside beat 5), so whole-frame optical flow is essentially the same. Read it for *where the car sits and how it travels*, not for speed. The camera also moves and re-lenses very slightly as well as re-aiming (position ≤0.264 m at f2584, lens ≤1.41 mm at f2244, aim ≤12.045 deg at f2273, all inside f1195-f2677) — that is part of the change, not a regression.
+
+**These two arms were checked for contamination rather than assumed clean.** `world/showroom_lighting.py` changed at 05:33 on 08-08, after `film22.blend` was built, and it adds a lamp (23 -> 24). Control frames were rendered on both arms at frames where the two cameras are **bit-identical**, and measured against a noise floor taken from the same frame rendered twice on different physical 5090s (max 2-6 levels, 0.0000% of pixels over 8 levels):
+
+| control | where | max channel delta | pixels >8 levels | mean luminance delta |
+|---|---|---|---|---|
+| f526 | showroom, beats 1-3 | 116 | 2.857% | +0.744 |
+| f2950 | circuit, beat 6 | 40 | 0.164% | +0.0064 |
+
+f526 is the **positive** control and it fires loudly — the extra lamp is real and the method has power to see it. f2950 is the **negative** control: the residual on the circuit is **117x smaller in mean luminance** than in the showroom and amounts to 0.007% of the mean level. So the lighting change is confined to the showroom and the beat-5 A/B is a camera comparison, as intended. Frames inside f1195-f2677 cannot serve as controls because the camera differs there by construction; f2950 is the nearest frame where it does not.
 
 ## SUPERSEDED — do not judge the current film by these
 
