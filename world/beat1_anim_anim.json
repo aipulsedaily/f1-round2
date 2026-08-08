@@ -3,93 +3,93 @@
  "clusters": {
   "BB": {
    "parts": 10,
-   "seat_frame": 399,
-   "first_land": 399,
-   "last_land": 407
+   "seat_frame": 288,
+   "first_land": 288,
+   "last_land": 296
   },
   "CORNER_FL": {
    "parts": 41,
-   "seat_frame": 696,
-   "first_land": 696,
-   "last_land": 704
+   "seat_frame": 513,
+   "first_land": 513,
+   "last_land": 521
   },
   "CORNER_FR": {
    "parts": 41,
-   "seat_frame": 696,
-   "first_land": 696,
-   "last_land": 704
+   "seat_frame": 513,
+   "first_land": 513,
+   "last_land": 521
   },
   "CORNER_RL": {
    "parts": 44,
-   "seat_frame": 696,
-   "first_land": 696,
-   "last_land": 704
+   "seat_frame": 513,
+   "first_land": 513,
+   "last_land": 521
   },
   "CORNER_RR": {
    "parts": 44,
-   "seat_frame": 696,
-   "first_land": 696,
-   "last_land": 704
+   "seat_frame": 513,
+   "first_land": 513,
+   "last_land": 521
   },
   "CI": {
    "parts": 15,
-   "seat_frame": 465,
-   "first_land": 465,
-   "last_land": 473
+   "seat_frame": 338,
+   "first_land": 338,
+   "last_land": 346
   },
   "EC": {
    "parts": 13,
-   "seat_frame": 432,
-   "first_land": 432,
-   "last_land": 440
+   "seat_frame": 313,
+   "first_land": 313,
+   "last_land": 321
   },
   "FD": {
    "parts": 10,
-   "seat_frame": 366,
-   "first_land": 366,
-   "last_land": 374
+   "seat_frame": 263,
+   "first_land": 263,
+   "last_land": 271
   },
   "FW": {
    "parts": 120,
-   "seat_frame": 630,
-   "first_land": 630,
-   "last_land": 638
+   "seat_frame": 463,
+   "first_land": 463,
+   "last_land": 471
   },
   "halo_assembly": {
    "parts": 53,
-   "seat_frame": 531,
-   "first_land": 531,
-   "last_land": 539
+   "seat_frame": 388,
+   "first_land": 388,
+   "last_land": 396
   },
   "MB": {
    "parts": 17,
-   "seat_frame": 333,
-   "first_land": 333,
-   "last_land": 341
+   "seat_frame": 238,
+   "first_land": 238,
+   "last_land": 246
   },
   "NOSE": {
    "parts": 33,
-   "seat_frame": 597,
-   "first_land": 597,
-   "last_land": 605
+   "seat_frame": 438,
+   "first_land": 438,
+   "last_land": 446
   },
   "RW": {
    "parts": 97,
-   "seat_frame": 663,
-   "first_land": 663,
-   "last_land": 671
+   "seat_frame": 488,
+   "first_land": 488,
+   "last_land": 496
   },
   "SP": {
    "parts": 13,
-   "seat_frame": 564,
-   "first_land": 564,
-   "last_land": 572
+   "seat_frame": 413,
+   "first_land": 413,
+   "last_land": 421
   },
   "SW": {
    "parts": 65,
-   "seat_frame": 498,
-   "first_land": 498,
-   "last_land": 506
+   "seat_frame": 363,
+   "first_land": 363,
+   "last_land": 371
   }
  },
  "frame_start": 1,
@@ -97,5 +97,7 @@
  "fps": 24,
  "settle_frames": 3,
  "flight_s": 1.55,
- "blend": "world/beat1_anim.blend"
+ "blend": "world/beat1_anim.blend",
+ "promoted_from": "world/R2829_beat1_anim.blend",
+ "promoted_by": "r2-3301-caranim"
 }
