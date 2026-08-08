@@ -655,6 +655,59 @@ whose provenance is already fragile was to leave it byte-identical at
 
 ---
 
+## R2-2176 — HALF the hazard is closed. The other half is named, and it is not mine to close
+
+**Status update to R2-2174, which said the sheet was "correct on exactly one
+machine". That is now half true, and leaving the old wording to be read as
+current would be this project's own recurring failure.**
+
+The lease on `tools/author_beats2_5.py` was legitimately retired, so the artefact
+and its generator landed in **one commit, `3ec8b6a`**. Verified before and after:
+
+```
+                       worktree   HEAD(before)   HEAD(after)
+frame_u                      47              0            47
+frame_v                      47              0            47
+_frame_offset_world           2              0             2
+sheet sha256  d8825d84...  unchanged, and now committed
+```
+
+**Beat 5 can no longer be silently reverted by a checkout.**
+
+### That commit contains another agent's work, on purpose
+
+`tools/author_beats2_5.py` was **already dirty when this block started**. The
+commit therefore carries the `PONT_*` beat-5 bridge-thread block — `PONT_S`,
+`PONT_DU`, `PONT_DZ`, `pont_offset`, `_smoother`, `_win`, the `world_contract`
+import — **which is not mine**. It is included because the shipped sheet is
+derived from it: the 0-diff reproduction at the top of this block was run *with*
+that code in place. Committing the sheet without it would have recreated the
+exact divergence the commit exists to close. Attributed in the commit message so
+it is not mistaken for mine.
+
+### And the instruction, followed exactly, was necessary but not sufficient
+
+Two chain files are still dirty and are **other agents' in-flight work**:
+
+```
+     DIRTY  tools/build_beatsheet.py    R2-1701/R2-85x beat-6 closing lens
+     DIRTY  docs/circuit_spec.json      an input to every beat
+>> STAGE RESULT: SHEET_UNCOMMITTED_GENERATOR
+```
+
+`tools/build_beatsheet.py`'s dirty hunk is `CLOSING_LENS_HOLD_START_MM/END_MM`,
+and the sheet's `beat6` block genuinely depends on it. **So a fresh clone still
+regenerates a different beat 6, silently, with every gate green** — the same
+defect as before, relocated from beat 5 to beat 6.
+
+**The remedy is the one that worked here**: the same legitimate lease retirement,
+or their owners' own commits. It cannot be done by sweeping two more agents' work
+into a commit of mine, and `tools/sheet_reproduces.py` will keep returning
+`SHEET_UNCOMMITTED_GENERATOR` until it is done — which is the point of having
+built it rather than written another warning.
+
+---
+
 ## R2-2175 — The instrument behind the surviving claim, validated against an independent implementation
 
 Everything this block still asserts rests on one number: **the car moves 0.0077
