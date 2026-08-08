@@ -63,6 +63,7 @@ BEAT_JSON = os.path.join(ROOT, "docs", "beat_sheet.json")
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
 import world_contract as C          # THE datum, the widths, the corridor, the light
+import itemkit as K                 # relief_amplitude_for / detail_for -- the laws
 
 COLL      = "WORLD_TERRAIN"
 PFX       = "TER_"          # every datablock we own starts with this
@@ -1261,27 +1262,91 @@ def ground_attributes(x, y, z, at):
 
     # crop / pasture colour per field, hedgerow darkening at the boundary
     hedge = smoothstep(9.0, 1.5, fdist) * smoothstep(150.0, 340.0, D)
-    dry = np.clip(0.15 + 0.85 * fid, 0, 1)
 
-    col = np.zeros((len(x), 3))
-    # three pasture/crop families chosen per field id
-    fam = np.floor(fid * 3.0).astype(int)
-    pal = np.array([[0.118, 0.170, 0.052],     # deep pasture
-                    [0.235, 0.243, 0.083],     # hay meadow
-                    [0.290, 0.215, 0.093]])    # cut/stubble
-    col[:] = pal[np.clip(fam, 0, 2)]
-    jitter = (hash_field(fid) - 0.5) * 0.10
-    col *= (1.0 + jitter)[:, None]
+    # ---- THE FIELD COLOUR ------------------------------------------------  R2-1661
+    #
+    # WHAT WAS WRONG WITH IT.  Three things compounded, and all three were
+    # quantisation:
+    #
+    #   1. `fam = floor(fid * 3)` picked ONE OF THREE colours per field.  A field is
+    #      155 m across (see `field_pattern`); at beat 6's 99 m and 22 mm that is a
+    #      third of the frame in one flat value, and there were only three values in
+    #      the world.
+    #   2. Those three were 0.150 / 0.230 / 0.222 in luminance -- a 53 % step between
+    #      neighbours, measured at 20-25 CV p5-p95 over half the frame.
+    #   3. `dry` was ALSO 0.15 + 0.85 * fid, so one random number drove both the
+    #      family and the hay/straw mix and the two reinforced each other.  One
+    #      number, one boundary, two coincident steps.
+    #
+    # WHAT IT IS NOW.  The palette is a CLOSED LOOP walked continuously by `fid`, so
+    # every field takes its own colour off a 1-D manifold and there is no
+    # quantisation left to make a blotch.  The loop is compressed to 0.168 / 0.211 /
+    # 0.206 in luminance -- a 26 % step, half what it was -- with the family
+    # difference carried in HUE, because fields genuinely do differ and hue is how a
+    # boundary reads as a boundary instead of as a brightness patch.  `dry` comes off
+    # an independent hash.  And two unquantised tints at 190 m and 64 m multiply the
+    # whole thing and DO NOT respect the field partition, which is what stops the eye
+    # locking onto it.
+    #
+    # NOT A GRADE FIX, AND IT COULD NOT HAVE BEEN ONE.  Under the closing haze
+    # asphalt and field measure 0.367/0.333/0.246 against 0.380/0.354/0.263; anything
+    # applied downstream to separate those takes the car's 0.14 blue-minus-red break
+    # with it, and that colour break is the whole reason the car is legible at 63 px.
+    # This is upstream of the grade, on the ground's own albedo, and touches nothing
+    # else in the frame.
+    fdry = hash_field(fid, 3119)                      # INDEPENDENT of the family
+    dry = np.clip(0.12 + 0.80 * fdry, 0, 1)
+
+    pal = np.array([[0.108, 0.196, 0.062],     # deep pasture     lum 0.168
+                    [0.216, 0.222, 0.088],     # hay meadow       lum 0.211
+                    [0.268, 0.198, 0.100]])    # cut / stubble    lum 0.206
+    fc = fid * 3.0
+    i0 = np.floor(fc).astype(int) % 3
+    w = (fc - np.floor(fc))[:, None]
+    col = pal[i0] * (1.0 - w) + pal[(i0 + 1) % 3] * w
+    # per-field value and warmth jitter, so two fields that land near each other on
+    # the loop are still not the same colour
+    col = col * (1.0 + (hash_field(fid, 971) - 0.5) * 0.19)[:, None]
+    warm = (hash_field(fid, 4441) - 0.5) * 0.13
+    col = col * np.stack([1.0 + warm, 1.0 + 0.15 * warm, 1.0 - 0.9 * warm], 1)
+    # drainage and subsoil at 190 m and 64 m, CROSSING the hedges.  Farmland's
+    # strongest large-scale tone variation is the soil under it, and soil does not
+    # stop at a field boundary.  This is the term that turns a partition back into a
+    # landscape.
+    soilv = (0.5 + 0.5 * fbm(x / 190.0, y / 190.0, 3, seed=1661)) * 0.30 \
+        + (0.5 + 0.5 * fbm(x / 64.0, y / 64.0, 3, seed=1662)) * 0.16
+    col = np.clip(col * (0.79 + soilv)[:, None], 0.0, 1.0)
+
+    # ---- the crop's own grain -------------------------------------------------
+    # A per-field row direction and a headland band, handed to `mat_ground` so that
+    # the swathes, the tramlines and the worked margin are drawn per shading point
+    # rather than per vertex: the ground grid is 2.5 m and a tramline is 1.7 m wide,
+    # so this pattern cannot live in a vertex attribute.  Interpolating (cos, sin)
+    # across a boundary shortens the vector, which fades the grain out exactly where
+    # the hedge is, which is where it should fade.
+    # THE VECTOR CARRIES THE SPACING AS WELL AS THE DIRECTION, and it is free.
+    # Storing k * (cos, sin) instead of the unit vector scales the rotated coordinate
+    # by k, so ONE per-field number moves the swathe period off 5.2 m and the tramline
+    # period off 21 m together and in proportion -- exactly as a different machine on
+    # a different farm would.  Without it every field in the world is worked at the
+    # same spacing and only the angle changes, which is a pattern and not a landscape.
+    # Packed at 0.35 rather than 0.5 because |k| reaches 1.35 and the channel is 0..1.
+    fang = hash_field(fid, 7717) * 2.0 * np.pi
+    krow = 0.75 + 0.60 * hash_field(fid, 5231)      # swathes 3.9-6.9 m, trams 16-28 m
+    head = smoothstep(34.0, 6.0, fdist)
+    crop = np.stack([np.cos(fang) * krow * 0.35 + 0.5,
+                     np.sin(fang) * krow * 0.35 + 0.5, head], 1)
 
     return dict(ter_wet=wet.astype(np.float64), ter_wear=wear, ter_cover=cover,
                 ter_mown=mown, ter_hedge=hedge, ter_dry=dry, ter_field=col,
+                ter_crop=crop,
                 ter_dist=np.clip(D / 400.0, 0, 1), ter_plateau=plateau,
                 ter_rock=rock, ter_moss=moss, ter_scuff=np.clip(scf, 0, 1),
                 ter_slope=np.clip(slope, 0, 1.2))
 
 
-def hash_field(fid):
-    v = np.sin(fid * 127.1) * 43758.5453
+def hash_field(fid, k=0):
+    v = np.sin(fid * 127.1 + k * 0.0173) * (43758.5453 + k)
     return v - np.floor(v)
 
 
@@ -1994,13 +2059,186 @@ WEEDS = {
 
 WEED_ORDER = list(WEEDS.keys())
 
+# ====================================================================================
+# THE GROUND-COVER TIER'S A/B HARNESS                                        R2-2970
+# ====================================================================================
+# `TERRAIN_R2970_BEFORE=1` reverts the three amplitude changes this pass SHIPPED to
+# the ground-cover tier -- no seed head on fescue or tussock, a 9-spoke panicle,
+# smooth-shaded grit -- so the before/after measurement in
+# `tools/r2970_groundcover_px.py` is the same code, the same seed and the same
+# generators differing in exactly one thing.
+#
+# It deliberately does NOT cover the two changes this pass built and then WITHDREW
+# (the thistle leaf lobe and the 8-sided weed stem, R2-2973/R2-2974): those are
+# gone from both arms, because a switch that can restore geometry the measurement
+# rejected is a quality dial, and this is a measurement switch.
+#
+# It is the same device as `TERRAIN_LEGACY_GRASS` above and it is a MEASUREMENT
+# SWITCH, NEVER A QUALITY DIAL.  Nothing in the production path reads it.
+R2970_BEFORE = os.environ.get("TERRAIN_R2970_BEFORE", "0") == "1"
 
-def _ribbon(acc, base, d0, L, W, segs, mat, rng, droop=0.5, curve=0.35, pid=None):
+# --- constants the pixel gate imports instead of retyping ---------------------------
+# `tools/r2970_groundcover_px.py` converts every one of these into pixels at the
+# MEASURED sharp resolution of the object that carries it.  They live here, at
+# module scope, for the reason the project states in one line: constants are
+# imported, never retyped.  Seven copies of the car's bounding box already exist.
+WEED_STEM_R     = (0.016, 0.006)   # stem radius at base / tip, as a fraction of h
+
+# SIDES ON THE STEM TUBE.  RAISED TO 8, THEN WITHDRAWN.            R2-2973, vetoed
+#
+# The quantity that decides this is the POLYGONAL SILHOUETTE ERROR -- how far an
+# n-gon's edge falls inside the circle it stands for, (d/2)(1 - cos(pi/n)) -- not
+# the facet width, because what gives a low-poly tube away first is that its
+# outline changes width as it spins.  Against R2-2945's `VEG_weed_thistle` at
+# 347.9 px/m, four sides came out at 0.76 px typical and 2.12 px at the base of
+# the tallest plant, i.e. a visible artefact, and it was raised to eight.
+#
+# R2-2949 THEN WITHDREW THAT RESOLUTION.  With a minimum sharp-sample floor --
+# the control that pass did not apply -- `VEG_weed_thistle` falls from 347.88 to
+# **141.41 px/m at >=10 samples** and 85.73 at >=25, because its peak was set by
+# fewer than ten of its 6,821 points.  (Grass and grit hold at 425.82 to a >=10
+# floor with 25 spatially-spread setters and zero shell contamination, which is
+# why the grass and grit work in this block stands and this does not.)
+#
+# At the corrected 141.41 px/m, 1 px is 7.07 mm and the four-sided stem is:
+#
+#     n = 4    0.31 px typical   0.86 px at the thick end   -- ALREADY SUB-PIXEL
+#     n = 8    0.08 px           0.22 px
+#
+# So four sides was never an artefact and eight bought 0.6 px of nothing, at
+# four quads per stem segment.  Reverted.  The mechanism and its gate stay --
+# `stem_round` is what produced this number and is the only UPPER-BOUND gate in
+# `tools/r2970_groundcover_px.py`.
+#
+# It is also NOT thinned to life size (a real 0.9 m spear thistle stem is
+# 8-12 mm, so this is ~2.5x thick).  That is an accuracy call with no reference
+# in hand and it is declined rather than guessed at.
+WEED_STEM_SIDES = 4
+
+# WHICH WEEDS ARE PINNATIFID, AND HOW DEEPLY                              R2-2974
+#
+# A spear thistle and a ragwort do not have smooth-edged leaves: they are cut
+# most of the way to the midrib in a repeating lobe.  `_ribbon` drew a smooth
+# sine taper for every weed in the world, so the single most characteristic
+# feature of the two commonest verge weeds was absent from the mesh.
+#
+# IT IS HERE BECAUSE IT CLEARS THE LINE, AND ONLY BECAUSE OF THAT.  Measured at
+# VEG_weed_thistle's 347.9 px/m (1 px = 2.87 mm):
+#
+#     leaf length        h * lsz * 1.55 = 0.10-0.60 m       35-210 px
+#     leaf half width    0.5 * lw * L   = 9.5-57 mm        3.3-20  px
+#     lobe DEPTH         `depth` of that half width        1.5-14  px
+#     lobe PITCH         L / (2 * lobes)                    3-26   px
+#
+# The shallow end of that is marginal and the middle of it is not.  Contrast
+# `DECLINED` in the gate: a 0.3 mm blade serration is 0.13 px and a thistle
+# SPINE is 0.2 px thick, and neither is built, because a feature under a pixel
+# is waste however botanically correct it is.
+#
+# `segs` has to rise with the lobe count or the lobe cannot be drawn: a ribbon
+# needs at least two stations per lobe to have a waist and a shoulder, so
+# `_ribbon` raises its own segment count to 3 per lobe when lobes are asked for.
+#
+# THIS TABLE IS EMPTY, AND IT HELD TWO SPECIES.                   R2-2974, vetoed
+#
+# Both were built with the mechanism below, both were MEASURED on the built mesh
+# by `tools/r2970_groundcover_px.py`, and both came back under the pixel line.
+#
+#   ragwort   built, measured 0.57 px RMS, removed.  VEG_weed_ragwort is seen at
+#             233.3 px/m (1 px = 4.29 mm) and its leaf half width is 1.5-8.2 px
+#             (typical 3.5), so a 0.55 cut is 1.9 px peak and 0.57 px RMS.
+#             Reaching 1 px RMS needs depth ~0.95 -- a leaf cut 95 % to the
+#             midrib, which is not a ragwort, it is a comb.
+#   thistle   built, measured 1.95 px RMS at R2-2945's 347.9 px/m -- and then
+#             R2-2949 withdrew that resolution.  With a minimum sharp-sample
+#             floor `VEG_weed_thistle` is 141.41 px/m at >=10 samples and 85.73
+#             at >=25, so the same built margin is **0.79 px** and **0.48 px**.
+#             Removed, at 3.75x the leaf quads (segs 4 -> 15) for nothing.
+#
+# Both are botanically correct, both are cheap, and both are declined, because
+# the rule is not "build what is real", it is "build what survives to a pixel".
+# The mechanism stays: `_ribbon`'s `lobe` and the `leaf_margin` gate are what
+# produced these two numbers, and they are what will decide the next candidate.
+LOBED_WEEDS = {}
+
+# THE PANICLE.  One grass seed head: `PANICLE_N` branches off the culm tip, each
+# `PANICLE_LEN_M` long and `PANICLE_RAD_M` thick, carrying `PANICLE_SPIKE`
+# spikelets along its length.
+#
+# IT WAS NINE STRAIGHT SPOKES.                                             R2-2972
+# Nine tubes radiating from one point is a spider, not a head, and the shape
+# PATTERN 4 names -- "the mechanism is in the code and its amplitude is 3-5x too
+# small to survive to pixels" -- is exactly this: a real Festuca or Dactylis
+# panicle carries 25-150 spikelets on whorled branches.  Every part of it clears
+# the line at the grass tier's measured 425.8 px/m (1 px = 2.35 mm):
+#
+#     branch length   20-60 mm    8.5-25.5 px
+#     branch/spikelet 2.4-3.2 mm  1.0-1.4  px
+#     whole head      40-120 mm    17-51   px
+#
+# so it is built.
+#
+# AND IT IS BUILT OUT OF FLAT STRIPS, WHICH IS WHY IT IS AFFORDABLE.  The old
+# nine spokes were 3-sided TUBES: 15 triangles each to model the roundness of
+# something 1.0-1.4 px thick.  Three facets on a 1.2 px cylinder are 0.4 px
+# apiece -- the cross-section is entirely below the line, so every one of those
+# triangles was spent on a shape nobody can sample.  A tapered flat strip is 4
+# triangles and is indistinguishable at 1.2 px.  Measured per head:
+#
+#     old   1 culm tube +  9 tube branches                     150 tris
+#     new   1 culm tube + 24 strip branches + 48 strip spikelets ~207 tris
+#
+# -- 2.7x the branches and 5x the spikelets for 1.4x the triangles.  That ratio
+# is the whole reason this change is affordable: `work/r2500/build_assembly10.log`
+# puts 1,821,790 HERO clumps in the world at 3,171 polys each, which is roughly
+# 10.9 G of the world's 15.1 G instanced triangles.  Hero grass is the single
+# largest triangle consumer in the film, so a 6x panicle built out of tubes would
+# have taken the world to ~39 G and would have been a render-time decision
+# disguised as a detail decision.
+PANICLE_N      = (9, 9) if R2970_BEFORE else (18, 30)
+PANICLE_SPIKE  = (0, 0) if R2970_BEFORE else (1, 3)
+PANICLE_LEN_M  = (0.020, 0.060)
+# half width at base / mid / tip.  Full width 2.4 / 3.2 / 1.2 mm = 1.0 / 1.4 /
+# 0.5 px at the grass tier's measured 425.8 px/m.
+PANICLE_RAD_M  = (0.0012, 0.0016, 0.0006)
+SEED_HEAD_FRAC = 0.35
+
+
+def _hair(acc, pts, ws, mat, grad=1.0):
+    """A tapered FLAT strip along `pts`, half-widths `ws`.  2 tris per segment.
+
+    The panicle's branches and spikelets are 1.0-1.4 px thick, so their
+    cross-section is below the pixel line and a tube's extra triangles buy
+    nothing.  Cf. `_sward_leaf`, which makes the same argument for a drift leaf
+    at 40 m, and `_blade`, which makes the OPPOSITE argument at 4.6 m where the
+    keel is the read.  The three of them are the same law at three distances.
+    """
+    pts = np.asarray(pts, float); ws = np.asarray(ws, float)
+    k = len(pts)
+    t, _, _ = _frames(pts)
+    side = _norm(np.cross(t, np.array([WIND_DIR[0], WIND_DIR[1], 0.0])
+                          + np.array([0.03, 0.02, 0.9])))
+    V = np.concatenate([pts + side * ws[:, None], pts - side * ws[:, None]], 0)
+    i = np.arange(k - 1)
+    Q = np.stack([i, i + 1, k + i + 1, k + i], -1)
+    acc.add(V, quads=Q, mat=mat, grad=np.full(2 * k, grad))
+
+
+def _ribbon(acc, base, d0, L, W, segs, mat, rng, droop=0.5, curve=0.35, pid=None,
+            lobe=None):
     """One arching, tapering leaf blade, built as a real ribbon.
 
     A flat quad on a frame is what `place_leaves` does and it is right for a tree at
     30 m; a dock leaf 1.2 m from the lens has to actually curve.
+
+    `lobe` is an entry of `LOBED_WEEDS`.  It modulates the half-width profile so
+    the margin is cut back toward the midrib `lobes` times a side, which is what
+    makes a thistle leaf a thistle leaf.  It is a change to the SILHOUETTE, i.e.
+    geometry, and not to a normal map: at 3-14 px of lobe depth a shader cannot
+    put the notch there because the notch is where the leaf stops being.
     """
+    if lobe:
+        segs = max(segs, 3 * int(lobe["lobes"]))
     d = _norm(np.asarray(d0, float))
     wd = np.array([WIND_DIR[0], WIND_DIR[1], 0.0])
     pts = [np.asarray(base, float)]
@@ -2013,6 +2251,14 @@ def _ribbon(acc, base, d0, L, W, segs, mat, rng, droop=0.5, curve=0.35, pid=None
     side = _norm(np.cross(t[0], wd + np.array([0.04, 0.03, 0.92])))
     f = np.linspace(0.0, 1.0, len(pts))
     w = W * np.sin(np.pi * np.clip(f, 0.02, 0.99) ** 0.62) + W * 0.06
+    if lobe:
+        # cut the margin back toward the midrib `lobes` times.  The sinus never
+        # closes completely (0.10 floor) because a leaf that reaches zero width
+        # is two leaves, and the lobes get shallower toward the tip, which is
+        # what pinnatifid actually means.
+        ph = rng.uniform(0, 2 * math.pi)
+        cut = 0.5 - 0.5 * np.cos(2 * math.pi * lobe["lobes"] * f + ph)
+        w = w * np.maximum(0.10, 1.0 - lobe["depth"] * cut * (1.0 - 0.45 * f))
     V = np.concatenate([pts + side * w[:, None], pts - side * w[:, None]], 0)
     k = len(pts)
     i = np.arange(k - 1)
@@ -2083,7 +2329,8 @@ def gen_weed(key, rng):
         base = np.array([0.0, 0.0, 0.0]) + np.array(
             [math.cos(a), math.sin(a), 0.0]) * h * rng.uniform(0.0, 0.05)
         _ribbon(acc, base, d, L, L * sp["lw"] * 0.5, 4, 1, rng,
-                droop=sp["droop"] * rng.uniform(0.7, 1.4))
+                droop=sp["droop"] * rng.uniform(0.7, 1.4),
+                lobe=LOBED_WEEDS.get(key))
     ns = int(rng.integers(sp["stems"][0], sp["stems"][1] + 1))
     for i in range(ns):
         a = rng.uniform(0, 2 * math.pi)
@@ -2099,14 +2346,16 @@ def gen_weed(key, rng):
                        + np.array([0, 0, -0.05 * (j / k)]))
             pts.append(pts[-1] + dd * (L / k))
         pts = np.array(pts)
-        tube(acc, pts, np.linspace(h * 0.016, h * 0.006, k + 1), 4, 0)
+        tube(acc, pts, np.linspace(h * WEED_STEM_R[0], h * WEED_STEM_R[1], k + 1),
+             WEED_STEM_SIDES, 0)
         # a few cauline leaves up the stem
         if key in ("nettle", "ragwort", "thistle"):
             for j in range(1, k):
                 for sgn in (1, -1):
                     e = _norm(np.cross(dd, UP + np.array([0.02, 0.01, 0.0]))) * sgn
                     _ribbon(acc, pts[j], _norm(e * 1.3 + UP * 0.5),
-                            L * rng.uniform(0.14, 0.26), L * 0.045, 3, 1, rng, droop=0.5)
+                            L * rng.uniform(0.14, 0.26), L * 0.045, 3, 1, rng, droop=0.5,
+                            lobe=LOBED_WEEDS.get(key))
         _weed_head(acc, rng, sp, pts[-1], _norm(dd), h)
     mats = [VPFX + "weedstem_" + key, VPFX + "leaf_weed_" + key,
             VPFX + "flower_" + key]
@@ -2121,8 +2370,61 @@ STONES = {                     # size range, flatness, angularity, subdivisions
 }
 
 
-def gen_stone(key, rng, matname=None):
-    """One unique stone: an icosphere pushed around by fBm and bedding planes."""
+# CLEAVAGE PLANES ON A GRIT CHIP.                                          R2-2975
+#
+# The grit fraction is the highest-resolution class in the whole world outside the
+# forecourt paving: `sp_objects.json` measures VEG_grit_chip / _stone / _clod at
+# 425.8 px/m over 999-1012 SHARP FRAMES -- more than any other object in the film.
+# 1 px is 2.35 mm there, so a 12-38 mm chip is 5.1-16.2 px, a 35-95 mm stone is
+# 14.9-40.4 px, and the 80-face icosphere they are built from has facets of
+# 1.4-10.9 px.  Every one of those facets is above the pixel line.
+#
+# AND `shade_smooth()` DELETED ALL OF THEM.  Not scaled them down by 3-5x: set the
+# amplitude to exactly zero while leaving the geometry in the file, so a code
+# review, a triangle count and the material_depth check all pass and the pixels
+# show a smooth pebble.  That is `docs/WAVE1-PEEP-SYNTHESIS.md` PATTERN 4 in its
+# limiting case, and it is why `facet` exists.
+#
+# Two changes, both geometry, neither a material:
+#   * `facet=True` shades the piece FLAT, so a facet edge is a hard shading break.
+#     At a 12.47 deg sun a hard break is the entire read of a stone; a smooth
+#     normal makes a 16 px flint chip a 16 px ball bearing.
+#   * cleavage planes.  A flint chip is not a lumpy sphere, it is a conchoidal
+#     fracture: a few genuinely flat faces meeting at sharp arrises.  Each plane
+#     clamps the vertices outside it back onto it.
+#
+# THE SECOND ONE IS THE SMALLER OF THE TWO AND ITS SIZE WAS MEASURED, NOT
+# ASSUMED.  Over 30 pieces, the fraction of shared edges that are coplanar to
+# within 5 deg -- i.e. that lie inside one genuinely flat face:
+#
+#     no cleavage                              0.139
+#     off 0.55-0.92, 2-5 planes                0.156   (volume kept 0.93)
+#     off 0.45-0.78, 3-6 planes                0.203   (volume kept 0.82)
+#     off 0.38-0.70, 4-7 planes                0.244   (volume kept 0.68)
+#
+# so the honest statement is that cleavage buys ~45 % more truly flat facet at a
+# fifth of the volume, and it cannot buy more than that on a 42-vertex icosphere
+# because a cap that holds only three or four vertices cannot contain a whole
+# triangle.  `shade_flat` is the mechanism; this is shaping.  The middle row is
+# taken.  (Volume is not size: `gn_kind` normalises by height and rescales to
+# GRIT_KINDS' range, so a leaner piece is a leaner piece, not a smaller one.)
+#
+# The `ridged` field that was supposed to be doing all of this never could: it is
+# sampled at 42 vertices 0.55 units apart at a base frequency of 5.3 over 3
+# octaves, so it is aliased by 3-12x, and its amplitude of +-0.033 R is +-0.27 px
+# on a 38 mm chip -- under the line even if it had been sampled properly.  It is
+# left alone; it was never the mechanism.
+GRIT_CLEAVE_N   = (3, 6)         # flat fracture faces per piece
+GRIT_CLEAVE_OFF = (0.45, 0.78)   # plane offset as a fraction of the piece radius
+
+
+def gen_stone(key, rng, matname=None, facet=False):
+    """One unique stone: an icosphere pushed around by fBm and bedding planes.
+
+    `facet` -- the grit fraction.  Cleaves the piece on 2-5 flat planes and shades
+    it FLAT.  See GRIT_CLEAVE_N.  Field stone (cobble, boulder) keeps the smooth
+    rounded form it ships with, because a river-worn cobble genuinely is rounded.
+    """
     sp = STONES[key]
     V, F = _ico(sp["sub"])
     n = len(V)
@@ -2136,6 +2438,16 @@ def gen_stone(key, rng, matname=None):
     d = fbm(P[:, 0] * 2.1 + seed, P[:, 1] * 2.1 - seed, 4, seed=seed % 9973)
     d2 = ridged(P[:, 0] * 5.3, P[:, 1] * 5.3 + 3.0, 3, seed=(seed + 17) % 9973)
     P *= (1.0 + amp * d + sp["ang"] * 0.22 * (d2 - 0.5))[:, None]
+    if facet and not R2970_BEFORE:
+        rad = float(np.linalg.norm(P, axis=1).max())
+        for _ in range(int(rng.integers(GRIT_CLEAVE_N[0], GRIT_CLEAVE_N[1] + 1))):
+            nrm = rng.normal(0, 1, 3)
+            nrm /= max(float(np.linalg.norm(nrm)), 1e-9)
+            off = rad * rng.uniform(*GRIT_CLEAVE_OFF)
+            s = P @ nrm
+            out = s > off
+            if out.any():
+                P[out] -= np.outer(s[out] - off, nrm)
     P = P @ np.asarray(R, float).T
     P[:, 2] -= P[:, 2].min()
     h = float(P[:, 2].max())
@@ -2144,8 +2456,21 @@ def gen_stone(key, rng, matname=None):
     me = new_mesh_arrays(VPFX + "stone_%s_%04d" % (key, rng.integers(0, 1 << 20) % 9999),
                          P, F, None)
     me.materials.append(bpy.data.materials[matname or (VPFX + "stone")])
-    me.shade_smooth()
+    if facet and not R2970_BEFORE:
+        me.shade_flat()
+    else:
+        me.shade_smooth()
     return me, h
+
+
+def gen_grit_piece(rng, matname):
+    """ONE grit piece, built the one way the whole project builds them.
+
+    `build_library`, `macro_probe` and `tools/r2970_groundcover_px.py` all come
+    through here, so the gate cannot measure a piece that differs from the one
+    the film renders -- which is how a measurement quietly stops being evidence.
+    """
+    return gen_stone("pebble", rng, matname=matname, facet=True)
 
 
 # --- grass ---------------------------------------------------------------------------
@@ -2198,19 +2523,52 @@ def gen_stone(key, rng, matname=None):
 # exactly one thing.  It is a measurement switch, never a quality dial.
 LEGACY_GRASS = os.environ.get("TERRAIN_LEGACY_GRASS", "0") == "1"
 
-GRASS_HERO_D = 48.0        # hero clumps within this of the camera path; far clumps
-                           # beyond it.  At 60 m a 4 mm blade is 0.24 px and no
-                           # geometry can help; what matters there is the clump
-                           # silhouette, which the far mesh has.
+VERGE_TAIL_T = 0.28        # R2-1829: the outer fraction of the verge band's own draw
+                           # over which it crossfades to zero instead of ending. 0.28
+                           # of a 50 m band on the pit straight is f = 28..42 m, and
+                           # the sward drifts are at full weight from f = 34, so the
+                           # handoff happens where the receiving layer is already
+                           # carrying the ground. Sized against the sward's own ramp,
+                           # not chosen.  See `verge_band`'s `tdraw`.
 
+BUILT_STANDOFF_M = 3.0     # metres of clear ground outside architecture's declared
+                           # paving before ground cover reaches full weight.  Sized by
+                           # the widest placeable unit's half-extent (a tier-A sward
+                           # drift, 1.67 m), not chosen.  See `habitat`.
+
+GRASS_HERO_D = 48.0        # hero clumps within this of the LENS (CameraPath.dist3,
+                           # true 3-D); far clumps beyond it.  At 60 m a 4 mm blade is
+                           # 0.24 px and no geometry can help; what matters there is
+                           # the clump silhouette, which the far mesh has -- and
+                           # beyond that again it is the sward drifts (section 6b),
+                           # because a silhouette on 4 % ground cover is still 96 %
+                           # flat colour.
+
+# THE TWO KINDS THAT CARRY THE MOST SHARP FRAMES CARRIED NO SEED HEAD.     R2-2971
+#
+# `work/w2_0/retier_a10/sp_objects.json` measures VEG_grass_tussock_H at 407.3 px/m
+# over 845 sharp frames and VEG_grass_fescue_H at 425.8 px/m over 845 -- more sharp
+# frames than any other vegetation in the film -- and both shipped `seed=0.0`.  In
+# the rough (the frame this tier was re-derived from, f2316, where the sward fills
+# the bottom 35 % of the plate) `build_grass`'s own habitat weights make TUSSOCK the
+# dominant kind at w = 0.65, so the commonest grass in the sharpest ground cover in
+# the film had no panicle at all in a shot whose thistles are in flower.
+#
+# A panicle is 17-51 px tall with 1.0-1.4 px branches at this resolution (see
+# PANICLE_N).  It is the single largest piece of grass structure above the pixel
+# line that was not being built.  Fescue gets a small share because the fescue
+# weight peaks on the MOWN verge where most culms really are cut; tussock, which
+# is the unmanaged rough, gets a real one.
 GRASS_PROF = dict(
     # h        blade length              w  HALF-width at the base (m)
     # lean     multiplier on WIND_LEAN   seed  fraction that gets a panicle
     # spread   clump radius (m)          keel  fold depth as a multiple of w
     # tiller   (min, max) blades per tiller
-    fescue=dict(h=(0.14, 0.30), w=(0.0017, 0.0033), lean=(0.75, 1.15), seed=0.0,
+    fescue=dict(h=(0.14, 0.30), w=(0.0017, 0.0033), lean=(0.75, 1.15),
+                seed=0.0 if R2970_BEFORE else 0.15,
                 spread=0.21, keel=0.85, tiller=(3, 6), under=0.34, twist=1.10),
-    tussock=dict(h=(0.30, 0.62), w=(0.0024, 0.0046), lean=(0.60, 1.05), seed=0.0,
+    tussock=dict(h=(0.30, 0.62), w=(0.0024, 0.0046), lean=(0.60, 1.05),
+                 seed=0.0 if R2970_BEFORE else 0.45,
                  spread=0.27, keel=0.95, tiller=(4, 8), under=0.30, twist=1.40),
     meadow=dict(h=(0.35, 0.78), w=(0.0015, 0.0029), lean=(0.85, 1.25), seed=0.55,
                 spread=0.33, keel=0.75, tiller=(2, 5), under=0.26, twist=1.60),
@@ -2329,7 +2687,7 @@ def gen_grass(rng, kind="fescue", blades=26, segs=3, lod=0):
 
 
 def _seed_heads(acc, rng, blades, prof, hmax):
-    n = max(1, int(blades * prof["seed"] * 0.35))
+    n = max(1, int(blades * prof["seed"] * SEED_HEAD_FRAC))
     for i in range(n):
         a = rng.uniform(0, 2 * math.pi)
         r = prof["spread"] * 0.7 * math.sqrt(rng.random())
@@ -2343,16 +2701,393 @@ def _seed_heads(acc, rng, blades, prof, hmax):
             pts.append(pts[-1] + d * (L / 3))
         pts = np.array(pts)
         tube(acc, pts, np.array([0.0022, 0.0018, 0.0014, 0.0010]), 3, 0)
-        # panicle
+        # THE PANICLE.  Branches off the culm tip, spikelets along each branch.
+        # See PANICLE_N: nine straight spokes off a single point was the whole
+        # head, and it is 3-5x under the amplitude the measured 425.8 px/m can
+        # resolve.  Every branch and every spikelet here clears the pixel line.
         top = pts[-1]
-        m = 9
+        m = int(rng.integers(PANICLE_N[0], PANICLE_N[1] + 1))
         ang = rng.random(m) * 2 * math.pi
-        pl = rng.uniform(0.02, 0.06, m)
-        tip = top + np.stack([np.cos(ang) * pl * 0.5, np.sin(ang) * pl * 0.5,
-                              -pl * rng.uniform(0.3, 1.0, m)], 1)
+        pl = rng.uniform(PANICLE_LEN_M[0], PANICLE_LEN_M[1], m)
+        # branches leave the culm in whorls up the top ~35 % of it, not all from
+        # one node: a panicle is a raceme of racemes and the vertical spread is
+        # what stops it reading as a starburst.
+        wh = np.zeros(m) if R2970_BEFORE else rng.random(m) ** 0.7 * (0.35 * L)
+        base = top - _norm(pts[-1] - pts[-2])[None, :] * wh[:, None]
+        tip = base + np.stack([np.cos(ang) * pl * 0.5, np.sin(ang) * pl * 0.5,
+                               -pl * rng.uniform(0.3, 1.0, m)], 1)
+        R = np.asarray(PANICLE_RAD_M, float)
         for j in range(m):
-            tube(acc, np.array([top, (top + tip[j]) / 2, tip[j]]),
-                 np.array([0.0012, 0.0016, 0.0006]), 3, 0, gmin=1.0, gmax=1.0)
+            b, e = base[j], tip[j]
+            if R2970_BEFORE:
+                tube(acc, np.array([b, (b + e) / 2, e]), R, 3, 0, gmin=1.0, gmax=1.0)
+            else:
+                # the branch droops: the mid station sags below the chord, which
+                # is 1-2 px of sag over an 8.5-25.5 px branch and is what stops a
+                # panicle reading as a starburst
+                mid = (b + e) / 2 + np.array([0, 0, -0.18 * pl[j]])
+                _hair(acc, np.array([b, mid, e]), R, 0)
+            ns = int(rng.integers(PANICLE_SPIKE[0], PANICLE_SPIKE[1] + 1))
+            for s in range(ns):
+                f = (s + 1.0) / (ns + 1.0)
+                p0 = b + (e - b) * f
+                sl = pl[j] * rng.uniform(0.28, 0.55)
+                p1 = p0 + np.array([math.cos(ang[j] + rng.normal(0, 0.9)) * sl * 0.5,
+                                    math.sin(ang[j] + rng.normal(0, 0.9)) * sl * 0.5,
+                                    -sl * rng.uniform(0.2, 0.8)])
+                _hair(acc, np.array([p0, p1]), R[:2] * 0.85, 0)
+
+
+# ==================================================================================
+# 6b.  THE MID-SCALE GROUND COVER — "sward drifts"           R2-1661
+# ==================================================================================
+#
+# WHY THIS TIER EXISTS.  Until now the ground had exactly two states and nothing in
+# between them:
+#
+#   hero clumps   190-330 channelled blades in tillers, ~4 600 triangles, placed at
+#                 ~19 per square metre — but ONLY in the verge band, and the verge
+#                 band is drawn along the track.
+#   flat colour   everything else.  The infield carries `meadow` clumps on a 1.35 m
+#                 jittered grid at ~50 % acceptance, which is 0.28 clumps per square
+#                 metre.  At a clump radius of 0.2-0.3 m that is FOUR PER CENT ground
+#                 cover.  The other ninety-six per cent is the ground shader, and the
+#                 ground shader out there is a per-field flat colour.
+#
+# Nobody noticed for five beats because the lens never looks at the infield: beats
+# 1-5 keep the camera 2-6 m off the deck, where the verge band fills the bottom of
+# the frame and the trees fill the top.  Beat 6 climbs to 99-140 m and points a 22 mm
+# lens across it, and four per cent cover over a flat colour map is exactly what "we
+# just zoom out so you see all the patches in the land" describes.
+#
+# WHAT COVERAGE ACTUALLY COSTS, AND WHY THE UNIT IS A DRIFT AND NOT A CLUMP.
+# Getting the infield to verge density would be 19 clumps/m^2 over 8.4 km^2 — 160
+# million instances.  That is not a budget, it is a hang, and it is the same shape of
+# argument that made a hero tree tier unbuildable elsewhere in this project.  The
+# way out is to make the PLACEABLE UNIT bigger: one drift carries the tufts that
+# would otherwise have been twenty separate clumps, so the instance count falls by
+# the square of the pitch while the covered area does not move.  Measured against the
+# real camera path: 261 k drifts and 117 M instanced triangles, against terrain's
+# existing 13.88 G — 0.85 %.
+#
+# AND THE UNIT IS SIZED BY WHAT THE LENS CAN RESOLVE, NOT BY WHAT GRASS IS.
+# The four 4K frames of this ending that exist put the ground at 2.5 cm per pixel
+# (f2978, 130 mm, 345 m) and 9.2 cm per pixel (f2811, 22 mm, 259 m), falling to ~36
+# cm at a kilometre.  A 4 mm fescue blade is a quarter of a pixel at the BEST of
+# those, so a blade out here is not a shape, it is a coverage fraction — the same
+# argument the far grass tier already makes for keeping its wide blade.  A drift's
+# leaves are therefore 1-6 cm across depending on tier, which is a coarse rough
+# sward (cocksfoot, Yorkshire fog, soft rush, dock) and not a mown lawn, because
+# a coarse rough sward is what unmanaged infield actually is.
+#
+# THE MECHANISM IS SHADOW, NOT SILHOUETTE.  The sun ships at 12.47 deg elevation, so
+# everything vertical throws a shadow 4.5 times its own height.  A 0.4 m tuft lays
+# down 1.8 m of shadow; a 1.0 m rush spike lays down 4.5 m.  Screen cover from an
+# oblique view is
+#
+#     1 - exp( -lambda * (4 r^2 + 2 r h cot(elevation)) )
+#
+# and at f2811's 22.6 deg axis, lambda = 1.6/m^2 of r = 0.22 m, h = 0.38 m tufts is
+# 61 % — from 35 % PLAN cover, because an oblique view of vertical things is mostly
+# their sides.  That is why this works at 400 triangles per drift and would not work
+# as a flat texture.
+#
+# WHAT IT IS NOT.  It is not a fix for the field colour, which is R2-1661 part 3
+# below, and it is not a substitute for the hero band: inside `GRASS_HERO_D` the real
+# clumps still own the ground and the drift density ramps to zero under them.
+
+SWARD_Q = float(os.environ.get("TERRAIN_SWARD", "1.0"))   # density dial, never design
+
+# R2-1824: how far inboard of the LAST tier's d1 its uncompensated outward fade starts.
+# An internal crossfade can be short because the next tier fills in behind it; this one
+# fades into nothing, so it is deliberately much longer than the 24 m used at the joins.
+# 190 m puts the fade over dcam3 860..1076 m, which at f2760's ~36 cm per pixel out
+# there is ~600 px of screen rather than the 15 px a 50 m fade would have given.
+SWARD_TAIL_M = 190.0
+
+# tag  d0     d1     pitch  tuft/m2 blades segs  r(m)          h(m)        w half (m)
+#                                                                          tall/m2 tall h
+#
+# `lam` AND `tall` ARE GROUND DENSITIES, PER SQUARE METRE OF WORLD, and the drift is
+# populated off `pitch ** 2` and not off its own drawn area.  This is not the same
+# number and getting it wrong is a 2.1x error in the direction that is hardest to
+# see.  A drift is drawn over 1.45 x its pitch (the anti-tiling rule above), so 2.1
+# drift centres lie within reach of any ground point, and each contributes
+# n_tuft / (1.45 pitch)^2 tufts per square metre:
+#
+#     ground density = 2.1 * n_tuft / (2.1 * pitch^2) = n_tuft / pitch^2
+#
+# -- the overlap cancels exactly.  Populating off the drawn area instead would put
+# 2.1 * lam on the ground, and tier B would have come out at 88 % screen cover: a
+# solid dark mat, which is the flat wash again in the other direction.  So `lam` is
+# solved from the screen-cover law in the block comment, backwards, for a MEAN of
+# ~72 % after the ~0.72 mean thinning the density masks apply:
+#
+#     lam = 1.27 / (0.72 * (4 r^2 + 2 r h cot e))      e = the tier's view elevation
+#
+# tier A is seen at ~30 deg (it is the bottom of the frame), C at ~8 deg (it is out
+# near the horizon, where an oblique view does most of the covering for free -- which
+# is why the cheapest tier needs the fewest tufts and not the most).
+SWARD_TIERS = (
+    dict(tag="A", d0=30.0,   d1=200.0,  pitch=2.30, lam=5.65, blades=(4, 7), segs=3,
+         r=(0.13, 0.24), h=(0.10, 0.45), w=(0.0050, 0.0120),
+         tall=0.100, th=(0.50, 0.95)),
+    dict(tag="B", d0=200.0,  d1=520.0,  pitch=3.60, lam=2.80, blades=(3, 6), segs=2,
+         r=(0.17, 0.31), h=(0.14, 0.55), w=(0.0080, 0.0180),
+         tall=0.075, th=(0.60, 1.10)),
+    dict(tag="C", d0=520.0,  d1=1050.0, pitch=6.00, lam=0.65, blades=(3, 5), segs=2,
+         r=(0.24, 0.46), h=(0.20, 0.70), w=(0.0140, 0.0300),
+         tall=0.055, th=(0.80, 1.40)),
+)
+
+
+def _sward_leaf(acc, rng, base, L, w, lean, segs, wdir, pid, tilt=0.0):
+    """One coarse leaf: a tapered FLAT ribbon.  2 * segs triangles, no keel.
+
+    The keel exists on a hero blade because at 2.4 m the two halves of a channelled
+    blade shade differently and that light/dark pair is most of the read.  At 40 m
+    and beyond the whole blade is under a pixel wide, so the keel doubles the
+    triangle count to modulate something nobody can sample.  Flat, here, on purpose.
+    """
+    az = wdir * math.sin(lean) + np.array([rng.normal(0, 0.30), rng.normal(0, 0.30),
+                                           0.0])
+    d = _norm(UP * math.cos(lean + tilt) + az * (1.0 + 2.2 * tilt))
+    pts = [base]
+    ws = [w]
+    for j in range(segs):
+        fj = (j + 1) / segs
+        d = _norm(d + wdir * (0.60 * lean * fj) + np.array([0, 0, -0.34 * fj * fj]))
+        pts.append(pts[-1] + d * (L / segs))
+        ws.append(w * max(0.06, 1.0 - 0.92 * fj ** 1.5))
+    pts = np.array(pts); ws = np.array(ws)
+    k = len(pts)
+    t, _, _ = _frames(pts)
+    side = _norm(np.cross(t, wdir + np.array([0.03, 0.02, 0.9])))
+    V = np.concatenate([pts + side * ws[:, None], pts - side * ws[:, None]], 0)
+    i = np.arange(k - 1)
+    Q = np.stack([i, i + 1, k + i + 1, k + i], -1)
+    G = np.linspace(0.0, 1.0, k)
+    acc.add(V, quads=Q, mat=0, attr=np.full(2 * k, pid), grad=np.tile(G, 2))
+
+
+def gen_sward(rng, tier, kind="meadow", pitch=None):
+    """One sward drift: a square metre-scale patch of rough ground cover.
+
+    Authored at TRUE WORLD SIZE over `pitch` metres square and returned with its own
+    height, so `gn_kind` normalises and rescales it back to (almost) the size it was
+    drawn at.  Every drift in the library is generated independently — there is no
+    template being rotated, which is the named failure on this project.
+    """
+    T = tier
+    pitch = T["pitch"] if pitch is None else pitch
+    # DRAWN OVER 1.45 x THE PITCH IT IS PLACED AT.  A patch drawn at exactly the
+    # placement pitch tiles, and a tiling ground cover seen from 100 m up is a grid,
+    # which is a worse artefact than the wash it replaces.  Drawing wide and placing
+    # close makes neighbours overlap by ~2.1x in area, so no seam survives.
+    half = pitch * 1.45 * 0.5
+    # THE GROUND EACH DRIFT OWNS, not the area it is drawn over.  See SWARD_TIERS.
+    own = pitch * pitch
+    acc = Accum()
+    wdir = np.array([WIND_DIR[0], WIND_DIR[1], 0.0])
+    hmax = 1e-3
+
+    n_tuft = max(3, int(round(T["lam"] * own * rng.uniform(0.82, 1.20))))
+    # crowns on a relaxed jitter, not a pure uniform: real tufts sit in drifts with
+    # bare ground between them, and a uniform scatter reads as a texture
+    dx = rng.random(n_tuft) * 2 - 1
+    dy = rng.random(n_tuft) * 2 - 1
+    cl = 0.5 + 0.5 * np.sin(dx * 3.1 + rng.random() * 6.3) * np.sin(dy * 2.7
+                                                                   + rng.random() * 6.3)
+    keepc = rng.random(n_tuft) < (0.45 + 0.75 * cl)
+    dx, dy = dx[keepc], dy[keepc]
+    for i in range(len(dx)):
+        crown = np.array([dx[i] * half, dy[i] * half, 0.0])
+        rr = rng.uniform(*T["r"])
+        L = rng.uniform(*T["h"])
+        nb = int(rng.integers(T["blades"][0], T["blades"][1] + 1))
+        fan = rng.uniform(0, 2 * math.pi)
+        tid = rng.random()
+        hmax = max(hmax, L)
+        for j in range(nb):
+            th = fan + 2 * math.pi * j / nb + rng.normal(0, 0.42)
+            r0 = rng.uniform(0.0, 0.16) * rr
+            b = crown + np.array([math.cos(th) * r0, math.sin(th) * r0, 0.0])
+            # lean is set so the leaf tip lands near the tuft radius: that is what
+            # makes the footprint the `r` the coverage arithmetic was done with
+            lean = math.atan2(rr * rng.uniform(0.55, 1.25), max(L, 1e-3))
+            lean = min(lean, 1.30) * WIND_LEAN * 0.55 + 0.55 * lean
+            _sward_leaf(acc, rng, b, L, rng.uniform(*T["w"]), lean, T["segs"], wdir,
+                        tid * 0.55 + rng.random() * 0.45)
+
+    # PROSTRATE LITTER.  A few near-flat leaves lying in the sward.  2 triangles each
+    # and they buy plan cover the erect tufts cannot, but they are kept to a minority
+    # because a horizontal ribbon under a 12.47 deg sun is a painted patch: it holds
+    # no shadow and no silhouette, and a field of them would be the flat wash again
+    # in a different colour.
+    n_lit = max(1, int(round(T["lam"] * own * 0.34)))
+    for i in range(n_lit):
+        b = np.array([rng.uniform(-half, half), rng.uniform(-half, half), 0.006])
+        _sward_leaf(acc, rng, b, rng.uniform(*T["h"]) * rng.uniform(0.55, 1.05),
+                    rng.uniform(*T["w"]) * 1.5, rng.uniform(1.02, 1.36), T["segs"],
+                    wdir, rng.random(), tilt=rng.uniform(0.10, 0.34))
+
+    # SPIKES.  Rush, dock and seeding grass standing clear of the sward.  Sparse and
+    # cheap, and worth their triangles entirely for their shadows: at 12.47 deg a
+    # 1.0 m spike lays 4.5 m of shadow across the ground, and 0.07 spikes per square
+    # metre is the fine dark stipple that reads as farmland from the air.
+    n_tall = max(0, int(round(T["tall"] * own * rng.uniform(0.6, 1.5))))
+    for i in range(n_tall):
+        b = np.array([rng.uniform(-half, half), rng.uniform(-half, half), 0.0])
+        L = rng.uniform(*T["th"])
+        hmax = max(hmax, L)
+        pid = rng.random()
+        for j in range(2):
+            _sward_leaf(acc, rng, b, L * rng.uniform(0.82, 1.0),
+                        rng.uniform(*T["w"]) * 0.75,
+                        WIND_LEAN * rng.uniform(0.55, 1.05) + 0.12 * j,
+                        max(2, T["segs"]), wdir, pid)
+
+    me = acc.finish(VPFX + "sward_%s_%s_%03d" % (kind, T["tag"],
+                                                 rng.integers(0, 999999) % 9999),
+                    [VPFX + "grass_" + kind])
+    # THE SECOND RETURN IS THE PLAN HALF-EXTENT, NOT THE PLANT HEIGHT, and that is not
+    # cosmetic.  `gn_kind` normalises every library mesh by this number and then
+    # rescales the lot by one target, so whatever is returned here becomes the thing
+    # every drift is made equal in.  Returning the tallest plant would have done
+    # exactly that to the tallest plant: a drift that happened to draw no rush spike
+    # tops out at 0.70 m against a library mean of 1.30 and would have been scaled up
+    # 1.86x -- a 9 m drift on a 6 m pitch, its leaves 1.86x the width the resolvable-
+    # floor arithmetic chose, and the variation driven by a dice roll about spikes.
+    # `half` is a per-tier constant, so the normalise-and-rescale is exactly 1.0 and
+    # the drift lands at the size it was drawn at.
+    return me, half
+
+
+def build_sward(gr, gz, cam, coll, rng, q, ras):
+    """The mid-scale ground cover, tiered by TRUE DISTANCE TO THE LENS.
+
+    `habitat`'s `dcam3` and not `dcam`: see `CameraPath`.  On a horizontal metric the
+    ground under beat 6's 140 m crane scores zero and buys the densest tier for
+    itself, while the several hundred metres of infield the wide lens is pointed at
+    score 200-600 and buy the cheapest.  That is the wrong way round, and it is the
+    only place in the film where the two metrics disagree, because beats 1-5 keep the
+    lens 2-6 m above the ground it is looking at.
+    """
+    stats = {}
+    tot = 0
+    itris = 0
+    nlib = max(4, int(round(13 * (0.4 + 0.6 * q))))
+    kinds = list(GRASS.keys())
+    X0, X1, Y0, Y1 = -1520.0, 1440.0, -1120.0, 1840.0
+
+    for T in SWARD_TIERS:
+        lib = {}
+        for kd in kinds:
+            lib[kd] = [gen_sward(np.random.default_rng(int(rng.integers(1 << 31))),
+                                 T, kd) for _ in range(nlib)]
+        mt = int(np.mean([_mesh_tris(m) for m, _ in lib[kinds[0]]]))
+        log("  sward %s library: %d x %d drifts, %d tris each (mean)"
+            % (T["tag"], len(kinds), nlib, mt))
+
+        # THE TIERS CROSSFADE, THEY DO NOT BUTT.  A hard cut at 200 m and 520 m would
+        # lay two concentric density rings across the exact frame this is being built
+        # for -- a new artefact in place of the old one.  Each tier fades out over
+        # [d1 - 24, d1 + 26] and the next fades in over the same interval, and a
+        # smoothstep plus its own complement sums to one, so the cover is continuous
+        # across the join even though the drift that carries it changes.
+        lo, hi = T["d0"] - 24.0, T["d1"] + 26.0
+        sx, sy, sr = jitter_grid(X0, X1, Y0, Y1, T["pitch"], 8100 + ord(T["tag"]))
+        r0 = ras.sample(sx, sy)
+        band = (r0["dcam3"] >= lo) & (r0["dcam3"] < hi)
+        band &= r0["f"] > 12.0
+        sx, sy, sr = sx[band], sy[band], sr[band]
+        if not len(sx):
+            continue
+        h = habitat(gr, gz, cam, sx, sy, ras)
+
+        # DENSITY.  Everything here thins the cover; nothing raises it above 1, so a
+        # drift is never asked to be denser than it was drawn.
+        dens = np.ones(len(sx))
+        dens *= smoothstep(lo, T["d0"] + 26.0, h["dcam3"])   # under the hero band the
+        #                                            real clumps own the ground
+        if T is not SWARD_TIERS[-1]:
+            dens *= smoothstep(hi, T["d1"] - 24.0, h["dcam3"])   # ... and the next
+        #                                            tier owns it beyond d1
+        else:
+            # THE LAST TIER HAS NOBODY TO HAND TO, AND THAT IS WHY IT WAS CUT  R2-1824
+            #
+            # The line above is a crossfade: tier N fades out over [d1-24, d1+26] while
+            # tier N+1 fades in over the same interval, and a smoothstep plus its own
+            # complement sums to one, so the cover never dips. The guard exists because
+            # the last tier has no successor -- but the consequence was that tier C kept
+            # FULL density right up to `band`'s `dcam3 < d1 + 26` and then stopped dead.
+            # MEASURED at f2760: 0.586 cover to 0.000 across zero metres at 1076 m.
+            #
+            # That is precisely the artefact this whole section was written to avoid,
+            # sitting at the one radius the crossfade could not reach. Beyond it there
+            # is no layer at all, so the fade here is UNCOMPENSATED and has to be longer
+            # than a handoff: `SWARD_TAIL_M` dissolves the layer into the far field
+            # instead of ending it.
+            #
+            # STRICTLY A SOFTENING. It only ever multiplies density DOWN, so it cannot
+            # add a drift, cannot cost a triangle, and cannot move any tier boundary
+            # inboard of it -- tiers A and B are untouched by construction.
+            dens *= smoothstep(hi, T["d1"] - SWARD_TAIL_M, h["dcam3"])
+        dens *= smoothstep(12.0, 34.0, h["f"])          # the verge band owns the rim
+        dens *= (1.0 - h["paved"])          # R2-1821: architecture's DECLARED concrete,
+        #                        not the drawn paddock district.  1.0 and not 0.90 --
+        #                        on concrete the answer is none, and outside the 3 m
+        #                        standoff the answer is all of it.
+        dens *= (1.0 - 0.72 * h["wood"])                # a wood floor is ferns, not sward
+        dens *= (1.0 - 0.55 * smoothstep(0.18, 0.46, h["slope"]))
+        # patchiness at 38 m and 9 m, so the infield has bare ground in it and does
+        # not become a second flat wash
+        dens *= np.clip(0.50 + 0.62 * (0.5 + 0.5 * fbm(sx / 38.0, sy / 38.0, 3,
+                                                       seed=811)), 0, 1)
+        dens *= np.clip(0.62 + 0.50 * (0.5 + 0.5 * fbm(sx / 9.0, sy / 9.0, 2,
+                                                       seed=813)), 0, 1)
+        take = np.where(sr < np.clip(dens, 0, 1) * SWARD_Q * (0.55 + 0.45 * q))[0]
+        take = take[outside_corridor(sx[take], sy[take], 2.0)]
+        if not len(take):
+            continue
+        hs = {k: v[take] for k, v in h.items()}
+        P = np.stack([sx[take], sy[take], gz(sx[take], sy[take]) - 0.045], 1)
+
+        # kind by habitat, on the same weights `build_grass` uses, so the drifts and
+        # the clumps they sit between are the same vegetation
+        mown = smoothstep(34.0, 2.0, hs["f"])
+        dry = smoothstep(3.5, 9.0, hs["z"]) + smoothstep(0.12, 0.34, hs["slope"]) * 0.5
+        wet = smoothstep(-1.0, -3.4, hs["z"])
+        W = np.stack([0.10 + 0.55 * mown,
+                      0.40 + 0.40 * (1 - mown),
+                      0.22 + 0.62 * (1 - mown) * (1 - wet),
+                      0.06 + 0.72 * np.clip(dry, 0, 1),
+                      0.02 + 0.80 * wet * (1 - mown)], 1)
+        W = np.clip(W, 1e-4, None); W /= W.sum(1, keepdims=True)
+        ki = (rng.random(len(take))[:, None] > np.cumsum(W, 1)).sum(1) \
+            .clip(0, len(kinds) - 1)
+
+        for j, kd in enumerate(kinds):
+            m = ki == j
+            if not m.any():
+                continue
+            # every drift in a tier was authored to the same plan half-extent, so
+            # `gn_kind`'s normalise-and-rescale is the identity and the +-9 % is the
+            # only size variation there is
+            th = lib[kd][0][1] * (1.0 + rng.normal(0, 0.09, int(m.sum())))
+            got = gn_kind("sward_%s_%s" % (kd, T["tag"]), lib[kd], P[m], th, rng,
+                          coll, lean=0.55, wide=0.07)
+            tot += got
+            itris += int(m.sum()) * mt
+        log("  sward %s: %d drifts placed (pitch %.2f m, d %.0f-%.0f m)"
+            % (T["tag"], len(take), T["pitch"], T["d0"], T["d1"]))
+        stats["sward_" + T["tag"]] = int(len(take))
+
+    log("  sward: %d drifts, %d instanced tris" % (tot, itris))
+    stats["sward_drifts"] = int(tot)
+    stats["sward_library"] = len(SWARD_TIERS) * len(kinds) * nlib
+    stats["instanced_tris"] = itris
+    return stats
 
 
 # ==================================================================================
@@ -2784,20 +3519,44 @@ def mat_ground():
     a_mown = t.attr("ter_mown"); a_hedge = t.attr("ter_hedge"); a_dry = t.attr("ter_dry")
     a_fld = t.attr("ter_field"); a_dist = t.attr("ter_dist")
     a_rock = t.attr("ter_rock"); a_moss = t.attr("ter_moss"); a_scuff = t.attr("ter_scuff")
+    a_crop = t.attr("ter_crop")
 
     # slope from the true shading normal: steep ground shows soil and scree
     sep = t.n("ShaderNodeSeparateXYZ")
     t.link(geo, "Normal", sep, 0)
     slope = t.ramp((sep, 2), [(0.62, (1, 1, 1)), (0.94, (0, 0, 0))])
 
-    # five noise scales: 6 cm, 40 cm, a metre, ten metres, a hundred.  The two finest
-    # exist because the camera passes within 2 m of this surface on the verge and at
-    # 4K a 2.6-scale noise is a 40 cm blob.
-    n_grain = t.noise(34.0, 10.0, 0.68, vec=(co, "Object"), dist=0.25)
-    n_clod = t.noise(7.5, 12.0, 0.62, vec=(co, "Object"), dist=0.55)
-    n_fine = t.noise(2.6, 12.0, 0.62, vec=(co, "Object"), dist=0.4)
-    n_mid = t.noise(0.13, 9.0, 0.58, vec=(co, "Object"))
-    n_big = t.noise(0.016, 6.0, 0.55, vec=(co, "Object"))
+    # ---- THE OCTAVE LADDER ------------------------------------------------ R2-1661
+    #
+    # It used to be five noises at 3 cm, 13 cm, 38 cm, 7.7 m and 62 m, and the last of
+    # those only tinted GA_GRN against GA_GRN2 -- a +-20 % swing on a term that then
+    # had 55 % of a flat per-field colour mixed OVER it.  So between 40 cm and 8 m
+    # there was nothing, between 8 m and 62 m there was nothing, and the only strong
+    # signal anywhere in the 10-200 m band was the field partition itself.  That is
+    # the arithmetic behind "patches": at 99 m up on a 22 mm lens the 10-200 m band IS
+    # the picture, and the only thing in it was a three-value colour map.  Two octaves
+    # are added to fill it, and neither of them knows where a field boundary is.
+    #
+    # AND THE DETAIL IS SIZED, NOT TYPED.  `n_grain` at 3 cm carried `detail = 10`,
+    # which emits down to 0.029 mm against a 1.32 mm floor at the closest the lens
+    # ever gets to this surface (2.4 m, 34 mm, 4K) -- six octaves nobody can sample,
+    # on the shader that covers every square metre of ground in the film.  `detail_for`
+    # states the floor instead of assuming it.  The two new mid-scale noises are
+    # floored deliberately COARSE: their job is the 10-200 m band and everything below
+    # a third of a metre is already carried by the three fine noises above them, so
+    # buying octaves down to a centimetre out there would be paying twice.
+    d_fine = dict(distance_m=2.4, lens_mm=34.0)          # the verge fly-by, 4K
+    n_grain = t.noise(34.0, K.detail_for(0.030, **d_fine), 0.68,
+                      vec=(co, "Object"), dist=0.25)
+    n_clod = t.noise(7.5, K.detail_for(0.133, **d_fine), 0.62,
+                     vec=(co, "Object"), dist=0.55)
+    n_fine = t.noise(2.6, K.detail_for(0.385, **d_fine), 0.62,
+                     vec=(co, "Object"), dist=0.4)
+    n_mid = t.noise(0.13, K.detail_for(7.7, floor_mm=120.0), 0.58, vec=(co, "Object"))
+    n_m2 = t.noise(0.045, K.detail_for(22.0, floor_mm=340.0), 0.55,
+                   vec=(co, "Object"), dist=0.30)
+    n_big = t.noise(0.016, K.detail_for(62.0, floor_mm=1400.0), 0.55, vec=(co, "Object"))
+    n_m4 = t.noise(0.0072, K.detail_for(139.0, floor_mm=4000.0), 0.50, vec=(co, "Object"))
 
     # stones: a voronoi cell field, so a scree slope is made of individual stones
     # rather than of brown noise
@@ -2812,12 +3571,83 @@ def mat_ground():
     # only the bigger cells read as stones; the rest is the grit between them
     stone_mask = t.ramp((vore, 0), [(0.02, (0, 0, 0)), (0.09, (1, 1, 1))])
 
+    # ---- THE CROP GRAIN --------------------------------------------------- R2-1661
+    #
+    # `ter_crop` carries, per vertex, the field's own row direction packed as
+    # (cos/2 + 1/2, sin/2 + 1/2) and its headland band in z.  Rotating the object
+    # coordinates into that frame here -- rather than baking the pattern into a vertex
+    # attribute -- is not a preference: the ground grid is 2.5 m and a sprayer
+    # wheeling is 1.7 m wide, so the pattern is finer than the mesh that would have to
+    # carry it.
+    #
+    # WHAT THIS IS FOR.  Reducing the step between fields (in `ground_attributes`)
+    # stops the boundaries reading as blotches, but on its own it leaves 155 m of
+    # smooth colour on either side of every hedge, and smooth is the other half of the
+    # complaint.  Real farmland from 100 m up is not smooth: it carries the marks of
+    # being WORKED -- cutting swathes at ~5 m, tramlines every 21 m, and a headland
+    # round the margin driven across the rows.  Those are the features that say
+    # "agriculture" at exactly the 2-20 m scale this beat resolves at (9.2 cm per
+    # pixel at f2811's axis, 2.5 cm at f2978's), and they cost shader maths and no
+    # geometry at all.
+    cxy = t.n("ShaderNodeSeparateXYZ")
+    t.link(co, "Object", cxy, 0)
+    crop = t.n("ShaderNodeSeparateXYZ")
+    t.link(a_crop, 1, crop, 0)
+    # unpack k * (cos, sin) from the 0..1 channels: (v - 0.5) / 0.35
+    ccos = t.math("MULTIPLY_ADD", (crop, 0), 2.857143)
+    t.set(ccos, 2, -1.428571)
+    csin = t.math("MULTIPLY_ADD", (crop, 1), 2.857143)
+    t.set(csin, 2, -1.428571)
+    rowu = t.math("ADD", (t.math("MULTIPLY", (cxy, 0), (ccos, 0)), 0),
+                  (t.math("MULTIPLY", (cxy, 1), (csin, 0)), 0))
+    rowv = t.math("SUBTRACT", (t.math("MULTIPLY", (cxy, 1), (ccos, 0)), 0),
+                  (t.math("MULTIPLY", (cxy, 0), (csin, 0)), 0))
+    # the headland is worked ACROSS the rows, so the two axes swap in that band
+    dvu = t.math("SUBTRACT", (rowv, 0), (rowu, 0))
+    swu = t.math("MULTIPLY_ADD", (dvu, 0), (crop, 2))      # rowu + head * (rowv - rowu)
+    t.link(rowu, 0, swu, 2)
+    # CUTTING SWATHES, 5.2 m.  A mown or cut field carries the lay of the last pass.
+    sw = t.math("SINE", (t.math("MULTIPLY", (swu, 0), 1.2083), 0))     # 2pi / 5.2
+    # AMPLITUDE BY HOW ARABLE THE FIELD IS.  Permanent pasture does not carry cutting
+    # swathes; hay and stubble do, and they are the `ter_dry` end of the palette.  A
+    # uniform amplitude over every field in the world reads as corduroy laid on the
+    # landscape rather than as a crop that was cut.
+    swamp = t.math("MULTIPLY_ADD", (a_dry, 2), 0.054)
+    t.set(swamp, 2, 0.018)                                 # 1.8 % pasture, 7.2 % hay
+    swt = t.math("MULTIPLY_ADD", (sw, 0), (swamp, 0))
+    t.set(swt, 2, 1.0)
+    # TRAMLINES, 21 m apart and 1.7 m wide, and only on the arable end of the palette
+    # (`ter_dry`) and only outside the headland, because that is where a sprayer
+    # actually leaves them.
+    trq = t.math("FRACT", (t.math("MULTIPLY", (rowv, 0), 0.047619), 0))    # 1 / 21
+    trd = t.math("ABSOLUTE", (t.math("SUBTRACT", (trq, 0), 0.5), 0))
+    tram = t.ramp((trd, 0), [(0.0405, (1, 1, 1)), (0.0570, (0, 0, 0))])
+    trm = t.math("MULTIPLY", (tram, 0), (a_dry, 2))
+    trm = t.math("MULTIPLY", (trm, 0),
+                 (t.math("SUBTRACT", 1.0, (crop, 2)), 0))
+
     # pasture colour: field crop tint, modulated by the big noise
     past = t.mix((n_big, 0), GA_GRN, GA_GRN2)
     past2 = t.mix((a_dry, 2), (past, 2), GA_DRYG)
-    fld = t.mix(0.55, (past2, 2), (a_fld, 0))
+    # 0.42, not 0.55.  The flat per-field colour is still the dominant term out in the
+    # fields -- it should be, a field IS a colour -- but it no longer overwhelms the
+    # procedural pasture underneath it, which is the only part of this that varies
+    # continuously.
+    fld = t.mix(0.42, (past2, 2), (a_fld, 0))
+    # THE MISSING BAND: 22 m and 139 m, multiplicative, crossing every hedge.
+    tone2 = t.n("ShaderNodeMapRange")
+    t.link(n_m2, 0, tone2, 0)
+    t.set(tone2, "To Min", 0.855); t.set(tone2, "To Max", 1.145)
+    tone4 = t.n("ShaderNodeMapRange")
+    t.link(n_m4, 0, tone4, 0)
+    t.set(tone4, "To Min", 0.830); t.set(tone4, "To Max", 1.170)
+    fld2 = t.mix(1.0, (fld, 2), (tone2, 0), blend="MULTIPLY")
+    fld3 = t.mix(1.0, (fld2, 2), (tone4, 0), blend="MULTIPLY")
+    fld4 = t.mix(1.0, (fld3, 2), (swt, 0), blend="MULTIPLY")
     # far fields take their crop colour, near verges stay mown green
-    turf = t.mix((a_mown, 2), (fld, 2), (past, 2))
+    turf = t.mix((a_mown, 2), (fld4, 2), (past, 2))
+    # the wheelings themselves: bruised crop over bared soil
+    turf = t.mix((t.math("MULTIPLY", (trm, 0), 0.62), 0), (turf, 2), GA_DUST)
     # a fine green/straw mottle at blade scale, so mown turf is not flat
     turf2 = t.mix((t.math("MULTIPLY", (n_grain, 0), 0.22), 0), (turf, 2), GA_DRYG)
 
@@ -3049,6 +3879,29 @@ class CameraPath:
 
     Beats 1-3 are inside the showroom, beat 4 crosses the apron, beat 5 is the lap
     (the camera is never more than ~30 m off the centreline), beat 6 is the crane-out.
+
+    TWO METRICS, AND THE DIFFERENCE BETWEEN THEM IS THE WHOLE OF R2-1661.
+    ----------------------------------------------------------------------
+    `dist` is the HORIZONTAL distance to the nearest camera station.  It throws the
+    z away, which costs nothing for beats 1-5 because the lens is 2-6 m above the
+    ground it is looking at: a clump 47 m out horizontally is 47.4 m out in three
+    dimensions and lands on the same side of every threshold.
+
+    Beat 6 is the one place in the film where the camera LEAVES the ground.  It
+    climbs to 140 m, and at that point a horizontal metric says the ground directly
+    beneath the crane is zero metres from the lens.  So `dist` opens a phantom hero
+    disc under the aerial -- 48 m of hero grass spent on ground 140 m away and mostly
+    out of frame -- while the several hundred metres of infield the wide lens is
+    actually pointed at score 200-600 m and fall to the far tier, which is a sparse
+    scatter over flat colour.  That is what "we just zoom out so you see all the
+    patches in the land" is: not a colour bug, a COVERING bug, and the covering rule
+    was reading the wrong distance.
+
+    `dist3` is the true three-dimensional distance to the nearest camera station and
+    is the metric every ground-cover tier is now budgeted against.  `dist` is kept
+    because the tree, shrub, weed and grit tiers are calibrated against it and are
+    not in scope here -- changing one predicate is the fix; changing five is a
+    different experiment.
     """
 
     def __init__(self, cir, beats):
@@ -3068,6 +3921,18 @@ class CameraPath:
             out[a:b] = np.sqrt((dx * dx + dy * dy).min(axis=1))
         return out
 
+    def dist3(self, x, y, z, chunk=8000):
+        """True 3-D distance to the nearest camera station.  >= `dist`, always."""
+        z = np.broadcast_to(np.asarray(z, float), np.shape(x))
+        out = np.empty(len(x))
+        for a in range(0, len(x), chunk):
+            b = min(len(x), a + chunk)
+            dx = x[a:b, None] - self.P[None, :, 0]
+            dy = y[a:b, None] - self.P[None, :, 1]
+            dz = z[a:b, None] - self.P[None, :, 2]
+            out[a:b] = np.sqrt((dx * dx + dy * dy + dz * dz).min(axis=1))
+        return out
+
 
 class Raster:
     """A field evaluated once on a coarse lattice and sampled bilinearly thereafter.
@@ -3078,9 +3943,9 @@ class Raster:
     metres wide -- but the ONE decision that has to be exact, "is this point inside the
     road corridor", is re-tested exactly on the survivors (see `outside_corridor`)."""
 
-    FIELDS = ("D", "f", "dcam")
+    FIELDS = ("D", "f", "dcam", "dcam3")
 
-    def __init__(self, gr, cam, x0, x1, y0, y1, step=14.0):
+    def __init__(self, gr, cam, x0, x1, y0, y1, step=14.0, gz=None):
         self.xs = np.arange(x0, x1 + step, step)
         self.ys = np.arange(y0, y1 + step, step)
         GX, GY = np.meshgrid(self.xs, self.ys, indexing="ij")
@@ -3090,6 +3955,12 @@ class Raster:
         self.D = Dc.reshape(sh)
         self.f = np.minimum(f, 1e4).reshape(sh)     # metres OUTBOARD OF THE RIM
         self.dcam = cam.dist(fx, fy).reshape(sh)
+        # `dcam3` needs a ground height, and the lattice is 46 k points, so it takes
+        # the GridZ the build already made off the BUILT mesh when there is one and
+        # falls back to Ground.height (another corridor_fz sweep) only for callers
+        # that have no grid yet.
+        gzv = gz(fx, fy) if gz is not None else gr.height(fx, fy)
+        self.dcam3 = cam.dist3(fx, fy, gzv).reshape(sh)
 
     def sample(self, x, y):
         i = np.clip(((x - self.xs[0]) / (self.xs[1] - self.xs[0])).astype(int), 0, len(self.xs) - 2)
@@ -3126,15 +3997,61 @@ def habitat(gr, gz, cam, x, y, ras=None):
     if ras is None:
         f, zrim, s, u, lim, D = corridor_fz(x, y)
         dcam = cam.dist(x, y)
+        dcam3 = cam.dist3(x, y, gz(x, y))
     else:
         r = ras.sample(x, y)
-        D, f, dcam = r["D"], r["f"], r["dcam"]
+        D, f, dcam, dcam3 = r["D"], r["f"], r["dcam"], r["dcam3"]
         s = np.zeros_like(D); u = D
     z, slope = gz(x, y, want_slope=True)
     cx, cy = world_to_circuit(x, y)
     plateau = window(cx, -620.0, 300.0, 110.0) * window(cy, -120.0, 140.0, 85.0)
     built = np.maximum(window(cx, -490.0, 140.0, 26.0) * window(cy, -70.0, 120.0, 26.0),
                        window(x, -172.0, 172.0, 26.0) * window(y, -172.0, 172.0, 26.0))
+    # ---- `paved`: WHERE THE ARCHITECTURE ACTUALLY IS ------------------  R2-1821
+    #
+    # `built` above is a DISTRICT drawn by hand: circuit x -490..140, y -70..120,
+    # feathered 26 m, plus a 344 m box round the showroom.  16.50 ha.  The contract
+    # declares the paving itself -- 6.66 ha -- and §11 says in terms that the two are
+    # meant to be the same region "stated once so the extents cannot drift".
+    #
+    # THEY HAD DRIFTED, AND THE MEASUREMENT IS NOT CLOSE.  Sampled over the drawn box:
+    # 31.9 % of it is actually paved, 20.7 % is inside the road corridor, and 47.7 %
+    # -- 7.98 ha -- is OPEN GROUND THIS MODULE OWNS.  Worse, the whole SOUTHERN half,
+    # circuit y -70..0, 4.83 ha, is 0.0 % paved: there is not one square metre of
+    # architecture in it.  It is the field beside the pit building, and it is the
+    # region the client described as "blank grass no detail nothing".
+    #
+    # WHAT THAT COSTS, MEASURED ON f2760's OWN FRUSTUM.  46.7 % of the ground in that
+    # frame is inside the drawn box.  Ground-cover density inside it is 0.049 against
+    # 0.472 outside -- a 9.7x step -- and because the box is a rectangle in circuit
+    # space its feathered edge lays that step across open farmland as a STRAIGHT LINE
+    # answering to nothing in the picture.  R2-1661 caught tiers that would have laid
+    # density rings at 200 m and 520 m; this is the same artefact drawn by the mask
+    # instead of by the tiers, and R2-1661's new sward layer inherited it verbatim.
+    #
+    # AND THIS MODULE ALREADY TREATS THE CONTRACT AS AUTHORITATIVE FOR THE SAME
+    # QUESTION.  `cut_field` cuts the ground MESH against `C.platform_field` -- whose
+    # outside-corridor area agrees with build_architecture's own reported `paving_m2`
+    # to 0.3 % -- so terrain builds no ground on the declared platform at all.  It was
+    # cutting its ground to the footprint and then refusing to PLANT on the district.
+    # A plant standing where `platform_field > 0` therefore always has ground under it,
+    # which is the property the old box could not offer and the reason this is the
+    # right field rather than merely a smaller one.
+    #
+    # THE STANDOFF IS SIZED BY THE PLACEABLE UNIT, NOT CHOSEN.  A tier-A sward drift is
+    # drawn over 1.45 x its 2.30 m pitch, so its half-extent is 1.67 m; 3.0 m of
+    # standoff keeps every leaf of a full-weight drift off architecture's concrete
+    # while leaving the grass meeting the pavement, which is where grass meets pavement
+    # on a real circuit.  A hard edge AT a kerb is correct; the defect was a soft edge
+    # 300 m away from one.
+    #
+    # SCOPE, and it is deliberately the same scope R2-1149 used for `dist3`: `paved`
+    # drives the THREE GROUND-COVER TIERS -- the verge band, the meadow and the sward
+    # drifts.  Trees, shrubs, ferns, weeds, grit and the park species mix still read
+    # `built`, because a tree keep-out around a paddock genuinely IS a district and
+    # those tiers are calibrated against this box.  Changing one predicate is a fix.
+    paved = smoothstep(BUILT_STANDOFF_M, 0.0,
+                       np.asarray(C.platform_field(x, y), float))
     ez = (window(cx, -340.0, 160.0, 90.0) * window(cy, 180.0, 420.0, 90.0))
     ez = np.maximum(ez, window(cx, -1010.0, -860.0, 80.0) * window(cy, 150.0, 560.0, 80.0))
     ez = np.maximum(ez, window(cx, -120.0, 260.0, 90.0) * window(cy, -340.0, -62.0, 90.0))
@@ -3145,7 +4062,7 @@ def habitat(gr, gz, cam, x, y, ras=None):
     wood *= (1.0 - 0.88 * plateau) * (1.0 - 0.94 * built) * (1.0 - 0.80 * ez)
     wood = np.clip(wood * (0.70 + 0.90 * smoothstep(0.03, 0.22, slope)), 0, 1)
     return dict(s=s, u=u, D=D, f=f, z=z, slope=slope, plateau=plateau,
-                built=built, ez=ez, dcam=dcam, wood=wood,
+                built=built, paved=paved, ez=ez, dcam=dcam, dcam3=dcam3, wood=wood,
                 fid=fid, fdist=fdist, cx=cx, cy=cy)
 
 
@@ -3241,9 +4158,8 @@ def build_library(rng, counts):
     for gkey, gmat in (("clod", VPFX + "clod"), ("gritstone", VPFX + "gritstone")):
         cs = []
         for i in range(max(14, counts[5] * 2)):
-            me, h = gen_stone("pebble",
-                              np.random.default_rng(int(rng.integers(1 << 31))),
-                              matname=gmat)
+            me, h = gen_grit_piece(np.random.default_rng(int(rng.integers(1 << 31))),
+                                   gmat)
             me.name = VPFX + "%s_%02d" % (gkey, i)
             cs.append((me, h))
         lib[(gkey, 0)] = cs
@@ -3418,7 +4334,7 @@ def build(quality=None):
     # ---- candidate field ---------------------------------------------------------
     log("scatter: rasterising track and camera-path fields")
     X0, X1, Y0, Y1 = -1520.0, 1440.0, -1120.0, 1840.0
-    ras = Raster(gr, cam, X0 - 40, X1 + 40, Y0 - 40, Y1 + 40, 14.0)
+    ras = Raster(gr, cam, X0 - 40, X1 + 40, Y0 - 40, Y1 + 40, 14.0, gz=gz)
     cx_, cy_, cr_ = jitter_grid(X0, X1, Y0, Y1, 5.6, 991)
     keepc = ras.sample(cx_, cy_)["D"] < 1150.0
     cx_, cy_, cr_ = cx_[keepc], cy_[keepc], cr_[keepc]
@@ -3563,6 +4479,12 @@ def build(quality=None):
     gstats["instanced_tris"] = gstats.get("instanced_tris", 0) + stats.get("instanced_tris", 0)
     stats.update(gstats)
 
+    # -- SWARD DRIFTS: the mid-scale cover between the hero band and flat colour ----
+    log("sward drifts (the tier between a hero clump and a painted field)")
+    sstats = build_sward(gr, gz, cam, c_grass, rng, q, ras)
+    stats["instanced_tris"] = stats.get("instanced_tris", 0) + sstats.pop("instanced_tris", 0)
+    stats.update(sstats)
+
     # -- WEEDS AND STONES -------------------------------------------------------------
     log("weeds and stones")
     wstats = build_weeds_and_stones(cir, gr, gz, cam, c_weeds, lib, rng, q, ras)
@@ -3659,6 +4581,30 @@ def verge_band(cir, rng, side, per_m, out_extra=42.0, swin=None, bias=True):
     # keeps the verge dense and puts a real mown shoulder behind the barrier line.
     r = rng.random(n)
     t = np.where(rng.random(n) < 0.62, r ** 1.8, r) if bias else r
+    # FRACTION OF THE WAY TO THIS SAMPLE'S OWN OUTER EDGE -- but only where that edge
+    # is the DESIGNED rim.  Returned so a caller can crossfade the band out instead of
+    # cutting it (R2-1829).
+    #
+    # It is `t` and NOT `f`, because `outer` is capped to 0.75 R on the inside of a
+    # bend: the designed rim sits at f = 42 m on a straight and at much less through
+    # T4, so a taper written against `f` would fade the wrong ground at every hairpin.
+    #
+    # AND IT IS ZEROED WHERE THE FOLD CAP BINDS, which the first version was not, and
+    # that was a real hole rather than a nicety.  MEASURED over the whole lap: 26.6 %
+    # of the band lands in the taper zone, and 3.8 % of THOSE are inside the road
+    # corridor at a median f of **-14.3 m** -- fourteen metres INBOARD of the rim,
+    # clustered at s 919-1225 and s 2603-2756, which is T4 and its neighbours.  There
+    # the cap truncates the band deep inside the corridor, and the sward drifts cannot
+    # take the handoff because their own gate is `f > 12`.  Fading there removes grass
+    # and hands to nothing: a bare strip on the inside of the hairpin, which is the
+    # exact defect this whole workstream exists to remove.
+    #
+    # A crossfade is only legitimate where there is a layer on the other side to
+    # receive it.  Where the band was cut short by a numerical guard rather than
+    # reaching its rim, there is no other side, so it keeps its hard edge -- and that
+    # edge is inside the corridor where the road programme owns the ground anyway.
+    capped = outer < (lim + out_extra) - 1e-6
+    tdraw = np.where(capped, 0.0, t)
     # ALL the randomness lives in (station, lateral), so the band tests below see the
     # FINAL lateral offset.  The old version drew u, tested the bands and then added
     # gaussian jitter in x and y, which walked clumps back into the gravel.
@@ -3708,6 +4654,16 @@ def verge_band(cir, rng, side, per_m, out_extra=42.0, swin=None, bias=True):
     j = np.where(~bad)[0]
     return dict(s=s2[j], u=u2[j], lat=lat2[j], x=x[j], y=y[j], inside=inside[j],
                 f=np.abs(u2[j]) - lim2[j],
+                # ... and zeroed once more, on the REPROJECTED result.  `capped` catches
+                # the fold cap at a hairpin; it does not catch a sample drawn near its
+                # own rim on one branch that `C.project` lands inside ANOTHER branch's
+                # corridor -- "a clump drawn 50 m off the esses can be 20 m off the
+                # doppler straight", as the test below already says about gravel.
+                # MEASURED: 23,354 of 2,130,639 in-corridor samples, median f -11.0 m,
+                # still being tapered after the cap fix.  `inside` is exactly `f <= 0`,
+                # and the sward's own gate is `f > 12`, so tapering any of them hands to
+                # nothing.  THE TAPER APPLIES ONLY OUTBOARD OF THE RIM.
+                tdraw=np.where(inside[j], 0.0, tdraw[idx][j]),
                 side=sd[j],
                 scuff=np.where(u2[j] >= 0.0, scuff(s2[j], +1), scuff(s2[j], -1)),
                 gravel_edge=(wa + wg)[j],
@@ -3736,9 +4692,10 @@ def build_grass(cir, gr, gz, cam, coll, rng, q, ras, swin=None, meadow=True,
     nlib = max(4, int(round(11 * (0.4 + 0.6 * q)))) if nlib is None else int(nlib)
     # TWO LIBRARIES, ONE PER LOD.  Hero clumps carry channelled blades in tillers at
     # 6 segments and 190-330 blades; far clumps are the old flat 3-segment ribbon at
-    # 54-98.  The split is `GRASS_HERO_D` metres of the CAMERA PATH -- not of the
-    # centreline -- because that is the only distance that decides whether a blade is
-    # ever more than a quarter of a pixel.  Blades per clump cost nothing at render
+    # 54-98.  The split is `GRASS_HERO_D` metres of the LENS -- `CameraPath.dist3`,
+    # the true 3-D distance to the nearest camera station, not the centreline and not
+    # the horizontal projection of the path -- because that is the only distance that
+    # decides whether a blade is ever more than a quarter of a pixel.  Blades per clump cost nothing at render
     # time (one resident mesh, millions of instances); what costs is BVH traversal per
     # instance, so it is spent where the lens is.
     libs = {}
@@ -3783,16 +4740,48 @@ def build_grass(cir, gr, gz, cam, coll, rng, q, ras, swin=None, meadow=True,
     dens = np.clip(0.35 + 0.65 * patch, 0, 1) * (1.0 - 0.55 * B["scuff"])
     # scuffed right at the kerb -- but only where cars actually go, and never by half
     dens *= 1.0 - (0.15 + 0.40 * B["scuff"]) * smoothstep(2.2, 0.0, B["lat"])
-    # THE BUILT PAD MUST NOT STERILISE THE VERGE.  `built` is the paddock / pit /
-    # showroom platform, circuit x -490..+140, y -70..+120 — which contains the WHOLE
-    # pit straight, both its verges included.  Testing it here removed every clump from
-    # the s = 3115..250 south verge, where `C.runoff_widths` says there are 8.5 m of
-    # grass between the painted verge and the barrier at circuit y = -19; the frame came
-    # back as bare olive ground (`before/pit_verge_nograss.png`).  Inside the corridor
-    # the pad is irrelevant — terrain builds no ground there at all — so the test only
-    # applies outside it.
+    # ---- THE BAND'S OUTER RIM IS A CROSSFADE, NOT A CUT --------------  R2-1829
+    #
+    # `out_extra = 42` put a hard edge at 42 m outboard of the corridor rim: verge
+    # clumps at full density on the inside of it, none at all on the outside, and the
+    # sward drifts alone beyond. MEASURED on the R2-1821 render at f2760, fine-detail
+    # sd across that line: 4.5 -> 2.6 in one 32 px tile.
+    #
+    # IT IS AN OLD EDGE THAT R2-1821 MADE VISIBLE. Before the district fix both sides
+    # of it were bare (1.0 against 1.4) and there was nothing to see; restoring the
+    # verge on the near side is what turned it into a band. It was found by looking at
+    # a 1:1 crop, not by any metric in that pass.
+    #
+    # THE FIX IS THE ONE R2-1661 ALREADY USED ON THE TIER JOINS: crossfade instead of
+    # butt. The sward drifts are at FULL weight from f = 34 (`smoothstep(12, 34, f)`),
+    # which is inboard of the rim at 42, so the band can hand off to a layer that is
+    # already carrying the ground. Nothing is left uncovered by this -- the assertion
+    # in `tools/r2_1829_edges.py` is that no bin across the handoff falls below what
+    # the ground BEYOND the rim already reads, and that is what "no blank spots" means
+    # here: the bulge is removed, not a hole opened.
+    dens *= smoothstep(1.0, 1.0 - VERGE_TAIL_T, B["tdraw"])
+    # THE BUILT PAD MUST NOT STERILISE THE VERGE.  This test used `built`, the paddock
+    # DISTRICT — circuit x -490..+140, y -70..+120 — which contains the WHOLE pit
+    # straight, both its verges included.  Testing it here removed every clump from the
+    # s = 3115..250 south verge, where `C.runoff_widths` says there are 8.5 m of grass
+    # between the painted verge and the barrier at circuit y = -19; the frame came back
+    # as bare olive ground (`before/pit_verge_nograss.png`).
+    #
+    # THAT WAS PATCHED WITH `| B["inside"]` AND THE PATCH WAS THE WRONG SHAPE.  It saved
+    # the strip INSIDE the corridor and left everything outboard of the rim deleted, so
+    # the band from the rim out to `platform_edge + 42` — the whole grass shoulder of
+    # the pit straight, on BOTH sides — still had not one clump in it.  Measured on
+    # f2760: 9.5 % of the ground in frame lies at f = 0..12 m, 77 % of that is inside
+    # the district, and it carries NO verge clump (this test), NO sward drift (the tier
+    # starts at f = 12) and NO meadow (it starts at f = 18).  Three tiers, three
+    # different reasons, one strip of ground, and it is the strip the client called
+    # "5 feet away from the main road and buildings".
+    #
+    # `paved` is the contract's declared concrete instead of the drawn district, so the
+    # garages and the paddock still get no verge band — correctly, they are buildings —
+    # and the grass shoulder gets one.  R2-1821.
     keep = (rng.random(len(Pxy)) < dens) & (hg["wood"] < 0.62) \
-        & ((hg["built"] < 0.35) | B["inside"])
+        & ((hg["paved"] < 0.35) | B["inside"])
     Pv = Pxy[keep]
     hv = {k: v[keep] for k, v in hg.items()}
     Bv = {k: v[keep] for k, v in B.items()}
@@ -3808,7 +4797,7 @@ def build_grass(cir, gr, gz, cam, coll, rng, q, ras, swin=None, meadow=True,
         mx, my, mr = mx[km], my[km], mr[km]
         hm = habitat(gr, gz, cam, mx, my, ras)
         dens = (0.34 + 0.5 * fbm(mx / 26.0, my / 26.0, 3, seed=91))
-        dens *= (1.0 - 0.55 * hm["wood"]) * (1.0 - 0.92 * hm["built"])
+        dens *= (1.0 - 0.55 * hm["wood"]) * (1.0 - hm["paved"])      # R2-1821
         dens *= smoothstep(18.0, 55.0, hm["f"])   # the band above owns everything nearer
         dens *= smoothstep(700.0, 260.0, hm["dcam"])
         mi = np.where(mr < dens * 0.85 * q)[0]
@@ -3845,7 +4834,13 @@ def build_grass(cir, gr, gz, cam, coll, rng, q, ras, swin=None, meadow=True,
     base *= 0.55 + 0.75 * (0.5 + 0.5 * fbm(P[:, 0] / 7.0, P[:, 1] / 7.0, 2, seed=131))
     # ... and BROADER where mown, independently of height (see gn_kind)
     spread = 1.0 + 0.75 * mown
-    hero = H["dcam"] < GRASS_HERO_D
+    # THE PREDICATE, R2-1661.  `dcam3`, not `dcam`: the horizontal metric says the
+    # ground under beat 6's 140 m crane is zero metres from the lens and buys it hero
+    # clumps, and measured over the real path that phantom disc is HALF the hero
+    # ground outside the verge band (0.0493 km2 on the horizontal metric against
+    # 0.0252 km2 on the true one).  Beats 1-5 keep the lens 2-6 m up, so a clump 47 m
+    # out horizontally is 47.4 m out in three dimensions and does not change tier.
+    hero = H["dcam3"] < GRASS_HERO_D
     tot = 0
     nhero = 0
     itris = 0
@@ -3863,7 +4858,7 @@ def build_grass(cir, gr, gz, cam, coll, rng, q, ras, swin=None, meadow=True,
             if tag == "H":
                 nhero += got
             itris += int(m.sum()) * _mesh_tris(lb[k][0][0])
-    log("  grass: %d clumps, %d of them hero (< %.0f m of the camera path)"
+    log("  grass: %d clumps, %d of them hero (< %.0f m of the lens, 3-D)"
         % (tot, nhero, GRASS_HERO_D))
     return dict(grass_clumps=int(tot), grass_hero_clumps=int(nhero),
                 grass_library=len(kinds) * nlib,
@@ -4098,6 +5093,41 @@ _VIEWS_WORLD = {
     # buried the camera ten metres underground (the frame came back black with the sky
     # upside down at the bottom -- that is what a camera inside the terrain looks like).
     "grass":       ((-318.0, 268.0, 0.45),      (-286.0, 330.0, 1.1),    50.0, True),
+    # ---- BEAT 6, THE ENDING, AT THE POSE THAT ACTUALLY RENDERED THE 4K STILLS -----
+    # R2-1129: two beat-6 cameras exist.  `world/camera_rig_path.json` is sha256-clean
+    # and selftest-green and is NOT the camera that made
+    # `~/vast-render/out/seq/r2943_4k/*.png`; those came from
+    # `work/r2941/film17_R2943_path.json` via the blend's own baked camera, and they
+    # are the only 4K frames of the ending that exist.  A ground A/B judged against
+    # them has to be shot from the same place with the same lens, so these four are
+    # lifted straight out of the R2943 path (position, forward vector x 300 m, lens).
+    #
+    #                    cm per delivered pixel at the frame's ground axis
+    # b6_2760  60 m up, 21 mm   6.5   the climb
+    # b6_2811  99 m up, 22 mm   9.2   THE WORST CASE.  Widest ground coverage of the
+    #                                 beat (420 m of world across the frame), and the
+    #                                 frame the client is describing.
+    # b6_2937 140 m up, 84 mm   3.8
+    # b6_2978 140 m up, 130 mm  2.5   THE CONTROL.  Ground 294-417 m out at 2-3 cm per
+    #                                 pixel, hero grass on the near bank, and it looks
+    #                                 right.  If this frame gets worse, the fix is wrong.
+    # ---- DIAGNOSTIC, NOT A FILM FRAME -------------------------------------  R2-1824
+    # The sward layer's outer radius is at `dcam3` ~ 1050 m, and `dcam3` is distance to
+    # the nearest CAMERA PATH station -- the path wraps the whole 3675 m lap, so that
+    # radius is the far farmland OUTSIDE the circuit, behind the treeline, in every
+    # delivered view. MEASURED over ten of them: the best (`esses`) puts 0.84 % of its
+    # frame inside the fade band and `b6_2978` puts 0.00 %. **No frame in this film can
+    # show this fix.** That is a reason to state it, not a reason to skip the check, so
+    # this view is sited on the one patch of open, unwooded, near-level ground inside
+    # the band -- world (-1260, 1020), found by histogramming the band itself -- and
+    # looks along it from 1418 m out, which is beyond the band's own outer edge so the
+    # camera does not drag the radius with it. Adding a VIEW cannot perturb placement:
+    # `CameraPath` is built from the circuit and the beat keys, never from `VIEWS`.
+    "sward_rim":   ((-1440.51, 1426.72, 63.13),  (-1260.00, 1020.00, 4.60), 50.0),
+    "b6_2760":     ((420.07, 88.51, 60.28),     (431.43, 370.11, -42.53), 21.02),
+    "b6_2811":     ((514.49, 61.05, 99.23),     (472.92, 334.95, -15.86), 22.00),
+    "b6_2937":     ((594.19, 16.05, 140.00),    (514.26, 278.25, 18.09),  84.13),
+    "b6_2978":     ((594.19, 16.05, 140.00),    (514.26, 278.25, 18.09),  129.99),
 }
 
 # ---- LIGHTING FOR TEST RENDERS ONLY -------------------------------------------------
@@ -4536,8 +5566,8 @@ def macro_probe(view="doppler", half=140.0, q=1.0, grit=True):
 
     X0 = min(pos[0], look[0]) - 260.0; X1 = max(pos[0], look[0]) + 260.0
     Y0 = min(pos[1], look[1]) - 260.0; Y1 = max(pos[1], look[1]) + 260.0
-    ras = Raster(gr, cam, X0, X1, Y0, Y1, 14.0)
     gz = _probe_gz(gr, X0, X1, Y0, Y1, 5.0)
+    ras = Raster(gr, cam, X0, X1, Y0, Y1, 14.0, gz=gz)
     log("  raster + height grid %.1f s" % (time.time() - t0))
 
     nlib = max(3, int(round(9 * q)))
@@ -4555,8 +5585,8 @@ def macro_probe(view="doppler", half=140.0, q=1.0, grit=True):
             for _ in range(max(4, nlib // 2))]
     for gkey, gmat in (("clod", VPFX + "clod"), ("gritstone", VPFX + "gritstone")):
         lib[(gkey, 0)] = [
-            gen_stone("pebble", np.random.default_rng(int(rng.integers(1 << 31))),
-                      matname=gmat) for _ in range(max(10, nlib))]
+            gen_grit_piece(np.random.default_rng(int(rng.integers(1 << 31))), gmat)
+            for _ in range(max(10, nlib))]
     stats.update(build_weeds_and_stones(cir, gr, gz, cam, c_weeds, lib, rng, q, ras,
                                         swin=swin, field=False))
     if grit:
