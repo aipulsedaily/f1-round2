@@ -33,6 +33,39 @@ they were counted.
 | 4 | **the car is in the last 91 frames** | `car_anim.blend` was 3 days behind the camera; beat 6 was wholly off frame for 3.79 s including f2978 |
 | 5 | `rig_preflight` OK on the film | it had never once executed — invoked with `python3` when it needs `bpy`, and piped into `tail` |
 | 6 | `MIN_CPU_RAM_GB` raised above the scene's **50.6 GiB resident** | the filter's floor was 50.0 and would rent a card the render dies on; the cgroup OOM takes the worker |
+| 7 | **START THE MASTER ON BROKERS LAUNCHED AFTER 18:05 TODAY** | see below — the RAM fix exists on disk and is NOT in force in any running broker |
+
+> ### GATE 7: THE RAM FIX IS ON DISK AND NOT IN FORCE
+>
+> `MIN_CPU_RAM_GB` is read **at import time** and bound as a default argument,
+> so every broker started before the edit still holds **50.0**:
+>
+> ```
+> vastctl.py modified   18:05:03 today
+> ladderbroker  started Tue Aug 4 20:20:55     fleet03  started 05:31:20
+> renderbroker  started Sat Aug 8 04:10:27     fleet08  started 05:31:35
+> ```
+>
+> **All of them predate the edit.** `fleetctl up` on a fresh fleet picks the new
+> floor up by construction; **reusing the brokers running since 05:31 does not,
+> and it fails SILENTLY with a confident rent line.** That is the whole defect
+> family this project has spent a week on, wearing operations clothes: the fix
+> is real, the file is correct, and the process in memory is the old one.
+>
+> **Do not reuse a long-running broker for the master. Stand up a fresh fleet.**
+>
+> The floor is **72 GiB**, chosen by survey rather than taste: the exclusive
+> 5090 market is bimodal and **nothing at all is on sale between 63 and 125
+> GiB**, so 64 -> 8 offers, 72 -> 7, 96 -> 6. Any floor above ~64 buys the same
+> tier, and 72 is the cheapest way to ask for it. 64 would have kept one 62.7
+> GiB box in the set.
+>
+> **Three unit traps it absorbs, all measured:** vast.ai's `cpu_ram` query term
+> is in **GB** while the offer dict answers in **MB**, so a 64 "GB" floor admits
+> a **62.7 GiB** box — which was the cheapest offer on the market today. And
+> **advertised RAM is not the container's cap**: an offer selling 61.9 GiB
+> reported `memory.max` of 59.4 GiB, 96% of what was sold. So the query only
+> narrows; a separate check **decides, in GiB, on the returned dict.**
 
 ## COST — measured on 13 real frames at delivery spec
 
@@ -52,11 +85,19 @@ Rendered from `film23_breach.blend` at 3840x2160 / 512 spp / ONER / adaptive
 Plus **13.5 s/frame** of non-render overhead — fetch, verify, dispatch,
 measured, against ~2 s in the runbook — = 11.1 GPU-h. **Total 245.5 GPU-h.**
 
-| cards | wall clock | total |
-|---:|---|---:|
-| 1 | 10.4 days | $100.33 |
-| **3** | **3.5 days** | **$111.14** |
-| 5 | 2.1 days | $118.66 |
+Re-priced **at the enforced 72 GiB floor**, which removed the two ~60 GiB boxes
+from the pool and therefore costs slightly more per GPU-hour:
+
+| cards | $/GPU-hr | wall clock | total |
+|---:|---:|---|---:|
+| 1 | 0.4276 | 10.4 days | $107.23 |
+| **3** | **0.4501** | **3.5 days** | **$112.88** |
+| 5 | 0.4661 | 2.1 days | $117.36 |
+| 8 | 0.5251 | 1.3 days | $132.09 |
+
+**Eight cards is the purchasable ceiling** — only seven to eight offers on the
+whole market clear the floor. The pre-floor figures were $100.33 / $111.14 /
+$118.66; the floor costs **$1.74** at three cards and is not negotiable.
 
 Cold starts priced at the **903.6 s deploy measured today**, not the 10 min
 `cost_estimate` assumes, counted as `N x ceil(hours/12)` — 21 at three cards.
