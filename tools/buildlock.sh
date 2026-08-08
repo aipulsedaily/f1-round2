@@ -79,11 +79,37 @@ swap_free_mb() { awk '/SwapFree/{print int($2/1024)}' /proc/meminfo; }
 
 # Reap queue entries whose process is gone.  Without this one killed agent
 # would hold the head of the line forever.
+# R2-3066d: ALSO DROP TICKETS THAT DO NOT MATCH THE CURRENT SCHEMA.
+#
+# This file was rewritten twice in three minutes (89e038d 17:37:13, f2d24d8
+# 17:40:20) and an agent registered in the window between them.  v1 wrote
+# `<stamp>-<pid>.q`; v2 prefixed a priority, `<prio>-<stamp>-<pid>.q`.  The
+# queue is ordered by `ls | sort`, and '-' (0x2D) sorts BEFORE '7' (0x37) --
+# so every new ticket sorted ahead of the old-format one PERMANENTLY.  That
+# agent was the oldest live waiter and would have stayed at the back of the
+# queue forever, while its own status line truthfully reported "0 waiters
+# ahead of me" -- true when printed, false the moment the format changed
+# under it.
+#
+# So schema drift in a sort key is not cosmetic: it silently inverts the
+# ordering it is supposed to define.  A malformed ticket is dropped here, and
+# the wait loop below re-registers its own ticket if it finds it gone, so a
+# waiter caught by drift heals instead of starving.
+#
+# (The related hazard has no fix here: bash reads a script incrementally, so a
+# process running the old file while it is rewritten underneath executes a
+# mixture.  Do not rewrite this file while builds are queued on it.)
 reap_q() {
-    local f pid
+    local f pid base
     for f in "$QDIR"/*.q; do
         [ -e "$f" ] || continue
-        pid="$(basename "$f" .q)"; pid="${pid##*-}"
+        base="$(basename "$f" .q)"
+        case "$base" in
+            [01]-*-*) ;;                       # current schema
+            *) echo "  buildlock: dropping malformed ticket '$base' (schema drift)"
+               rm -f "$f"; continue ;;
+        esac
+        pid="${base##*-}"
         [ -d "/proc/$pid" ] || rm -f "$f"
     done
 }
@@ -139,6 +165,13 @@ exec 9>"$LOCK"
 announced=0
 while :; do
     reap_q
+    # Self-heal: if reap_q dropped my ticket for schema drift, or anything else
+    # removed it, re-register under the CURRENT schema rather than spinning
+    # forever against a head I can never equal.
+    if [ ! -e "$TICKET" ]; then
+        TICKET="$QDIR/$PRIO-$(date -u +%s%N)-$$.q"
+        echo "$NAME pid=$$" > "$TICKET"
+    fi
     # Oldest live waiter wins.  Names sort lexically by the nanosecond stamp.
     head="$(ls "$QDIR"/*.q 2>/dev/null | sort | head -1)"
     if flock -n 9; then
