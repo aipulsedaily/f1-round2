@@ -92,8 +92,8 @@ reap_q() {
 if [ "$SMALL" = 1 ]; then
     A=$(avail_mb)
     if [ "$A" -lt "$SMALL_MIN_MB" ]; then
-        echo "small lane has ${A} MB available (< ${SMALL_MIN_MB}); taking the BIG lane instead"
-        SMALL=0
+        echo "small lane has ${A} MB available (< ${SMALL_MIN_MB}); taking the BIG lane WITH PRIORITY"
+        SMALL=0; WAS_SMALL=1
     else
         got=0
         for slot in $(seq 1 $SMALL_SLOTS); do
@@ -106,13 +106,32 @@ if [ "$SMALL" = 1 ]; then
             echo ">> STAGE RESULT: BUILDLOCK RELEASED  $NAME rc=$rc  (small lane, available $(avail_mb) MB)"
             exit $rc
         fi
-        echo "both small slots busy -- falling through to the big lane queue"
-        SMALL=0
+        echo "both small slots busy -- big lane queue, WITH PRIORITY"
+        SMALL=0; WAS_SMALL=1
     fi
 fi
 
 # ------------------------------------------------------------------ big lane
-TICKET="$QDIR/$(date -u +%s%N)-$$.q"
+#
+# R2-3066c: SHORT JOBS GET QUEUE PRIORITY, WHICH IS THE REAL FIX.
+#
+# Lowering SMALL_MIN_MB was the wrong lever and I moved it twice before seeing
+# that.  Measured under nine live agents, MemAvailable OSCILLATES between 844
+# and 1487 MB, so no fixed floor is both safe and useful: above ~1000 the lane
+# is dead whenever a big build is resident, and below it we start a second
+# build into 844 MB -- where the OOM killer takes THE BIGGEST PROCESS, i.e.
+# somebody's 10 GB film append, not the 400 MB job that caused it.  The lane
+# would kill the thing it was protecting.
+#
+# So a small job that cannot get the small lane does NOT go to the back of the
+# big queue.  It goes to the FRONT, by sorting its ticket under a "0-" prefix.
+# It adds no memory pressure -- it still runs alone -- and it clears in a
+# fraction of the time a film append takes, so the big jobs it passes lose
+# very little.  That inverts the starvation without adding a single byte of
+# concurrent footprint.
+PRIO=1
+[ "${WAS_SMALL:-0}" = 1 ] && PRIO=0
+TICKET="$QDIR/$PRIO-$(date -u +%s%N)-$$.q"
 echo "$NAME pid=$$" > "$TICKET"
 trap 'rm -f "$TICKET"' EXIT
 
