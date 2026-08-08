@@ -1,5 +1,11 @@
 # STAGING R2-2161 .. R2-2220
 
+> **⚠ READ R2-2170 BEFORE THIS SECTION.** The heading below and its "7.1 % flat"
+> figure are **RETRACTED**. The instrument bug described here is real, but the
+> conclusion I drew from it was wrong in the same way the bug is, and the
+> corrected map is in R2-2170. The section is left standing, uncorrected, because
+> a retraction that edits away the claim it retracts is not a retraction.
+
 ## R2-2161 — THE 85-SECOND FLAT RUN DOES NOT EXIST. It is one argument passed to one function.
 
 I was sent to fix "one unbroken 85 seconds, f938 to f2978, crossing beats 3, 4,
@@ -344,6 +350,67 @@ I flagged another agent's instrument for misusing a derivative, and then shipped
 numerical-stability error of my own into a commit. **The check that caught it was
 looking at the raw values instead of the summary statistic** — which is the same
 check that would have caught the 85-second run three days ago.
+
+---
+
+## R2-2170 — RETRACTING MY OWN "7.1 % FLAT". I made the same class of error I accused the file of, and the corrected map moves the defect to beat 1
+
+**The film is about 95 % flat by this instrument. The brief's headline percentage
+was approximately right and my correction of it was wrong.**
+
+R2-2161 said: the file computes a 0.5 s derivative `D`, its docstring says to use
+it, line 513 passes the 1-frame `A`, and feeding `D` instead takes the census
+from 96.8 % flat to 7.1 %. **The first three clauses are true. The fourth is my
+own error.**
+
+`FLAT_JERK_RATIO = 0.10` is not a free parameter. Lines 444-455 calibrate it
+**against `A`**: *"On the delivered beat 1 the pixel instrument reads 5.2 % over
+the first six seconds, and the client falls asleep in it. 10 % is the working
+floor: it is twice the number attached to a complaint."* `D` is a change measured
+over twelve times the interval, and it is **8.72x larger than `A` across this
+film** (5.05x in the very window the threshold was calibrated on). **I fed a
+quantity to a threshold calibrated for a different quantity** — which is exactly
+the crime I charged line 513 with, committed in the opposite direction.
+
+Scale-matched, so that `D` is judged against `0.10 × 8.72 = 0.87`:
+
+| census | % flat | runs | largest run |
+|---|---|---|---|
+| `A` @ 0.10 — as shipped | 96.8 % | 4 | **85.04 s**, f938-2978 |
+| `D` @ 0.10 — **my retracted claim** | 7.1 % | 3 | 3.12 s |
+| **`D` @ 0.87 — scale-matched** | **95.1 %** | **5** | **35.67 s, f73-928** |
+
+**What survives, what does not.** The film really is overwhelmingly flat by this
+instrument — 96.8 % and 95.1 % agree, and that number is robust to which
+derivative you use. **What does not survive is the shape and the location.** The
+single unbroken 85 s crossing beats 3-6 is an artefact of the 1-frame derivative;
+measured correctly the film's flat time is **five separate runs**:
+
+| run | length | frames | beats |
+|---|---|---|---|
+| 1 | **35.67 s** | f73-928 | **`1_assembly` + `2_launch` + `3_breach`** |
+| 2 | 32.42 s | f946-1723 | `3_breach` + `4_transit` + `5_lap` |
+| 3 | 25.25 s | f1737-2342 | `5_lap` |
+| 4 | 15.21 s | f2363-2727 | `5_lap` + `6_ending` |
+| 5 | 9.46 s | f2752-2978 | `6_ending` |
+
+**The largest flat run in this film is 35.7 seconds and it starts at frame 73 —
+three seconds in.** The client said they get sleepy four seconds in. Two other
+instruments, derived independently, land in the same place: `camera_tempo`'s
+longest flat run is f487-737 and its longest composition lock is f462-793, both
+inside beat 1.
+
+**Consequence for this block's fix, stated against my own interest.** Beat 5 is
+not the worst stretch; beat 1 is. Beat 5 does carry **57.7 s of flat time across
+runs 2 and 3**, so the framing work in R2-2163 lands on genuinely flat territory
+and the composition measurement behind it (0.0077 widths/s, which no threshold
+choice affects) is untouched by any of this. **But this block did not fix the
+film's worst stretch, and the brief's instinct that beat 1 was already handled is
+not supported** — R2-1606 addressed roughly the first second of a 35.7 s run.
+
+**Why I got it wrong.** I checked whether the derivative was the one the file
+mandated. I did not check whether the threshold was calibrated for it. A ratio
+test needs both halves audited, and I audited one.
 
 ---
 
