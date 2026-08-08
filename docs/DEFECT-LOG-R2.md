@@ -37858,3 +37858,39 @@ sound world.** film19 was built on stale assembly11 and its breach failed on the
 **film21 is the first candidate and it is queued, not proven.** The verification
 bar **has never run to completion on any of them.** No master rendered, no cost
 committed.
+
+## R2-1189 — THE HANDOFF CHECK PASSED, PREDICTED IN ADVANCE AND MATCHED TO THE UNIT
+
+The terrain author said assembly13 would be the one to verify and **named the
+number to check it by before it existed**: tier C must come back **below
+65,100**. It did, and **every other count matches its own arm to the unit**:
+
+```
+                    arm C          assembly13
+verge clumps       2,681,485       2,681,485    identical
+  ... IN CORRIDOR  1,386,383       1,386,383    identical  <- the taper stops at the rim
+sward A              116,924         116,924    identical
+sward B               93,538          93,538    identical
+sward C               56,063          56,063    identical  (was 65,100 uncut)
+```
+
+**`assembly13.blend` is the first film-level artefact carrying R2-1821 +
+R2-1829 + R2-1824** - the district-mask fix that answers the client's *"blank
+grass 5 feet from the road"*, the verge taper, and the tier-C fade.
+
+**A predicted number matching to the unit is worth more than a passing gate**,
+because a gate can pass for reasons nobody enumerated. **This one could only
+match if the build read exactly the source state the author was measuring** -
+and `grass_in_corridor` holding at 1,386,383 simultaneously proves **the two
+corridor holes stayed closed** through a full world rebuild.
+
+**And it stayed out of the rebuild agent's lane** - *"I only read its log."*
+Two agents, one artefact, one shared count, no collision.
+
+Cost across both passes: **$0.374.**
+
+**The rule that came out of the round is now in the source rather than only in
+this log:** *a crossfade is only legitimate where there is a layer on the other
+side to receive it* - earned from a single count that should have read 0.0 % and
+read 1.1 %, which turned out to be **two separate holes**, the second caught by
+**an assertion written for the first.**
