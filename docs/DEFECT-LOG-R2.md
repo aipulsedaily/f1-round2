@@ -37782,3 +37782,79 @@ verge 3,022,130 / sward C **65,100 uncut**, identical to arm B. **A thirteenth
 assembly is needed, and tier C is the number to check it by - it must come back
 LOWER (56,063) or the fixes were not picked up.** Cost **$0.374** across both
 passes.
+
+## R2-1187 — TWO INDEPENDENT GUARDS MET IN THE MIDDLE, and neither was sufficient alone
+
+`assembly12` was refused **from the input side by its own guard**:
+
+```
+>> STAGE RESULT: ASSEMBLY12_UNSOUND
+   (its own inputs changed under it; the artefact may carry a mixture of two
+    source states -- rebuild)
+```
+
+**At the same moment it was refused from the output side** by a count the
+terrain author supplied — sward C at **65,100 uncut**, identical to the pre-fix
+arm.
+
+> **Neither is sufficient alone. The input guard cannot say whether a fix
+> reached the geometry; the output number cannot say whether the build read one
+> source state or two.**
+
+**And assembly12 was both things at once** — it carried R2-1821
+(`sward_drifts` 264,890 → 275,562) and **not** the verge taper or the tier-C
+fade. **That is what "a mixture" means**, and it is exactly the state a
+single-ended check cannot describe.
+
+**`assembly13` now runs with the output number as a gate written into the build
+script**, not as a note to check afterwards:
+
+```
+sward_C            want 56063     (was 65,100; MUST fall)
+grass_in_corridor  want 1386383   (1,370,543 = the holes are back)
+```
+
+**And the film chain behind it is gated on `FIXES_PRESENT`, not `BUILT`** —
+*"a world that builds cleanly without the fixes must not become a film."* That
+sentence is the whole of the film18 defect, stated as a rule.
+
+**`build_nearband` wired so the ORDER IS ENFORCED RATHER THAN DOCUMENTED**:
+`capture_terrain` wraps the five constructors **inside terrain's own build**, so
+the near band is placed against **the same `GridZ` the woodland was.** Two
+refusals guard it — MODS order at parse time, and **an incomplete capture raises
+rather than building against objects terrain never made.**
+
+## R2-1188 — "I BUILT AN INSTRUMENT THAT REPORTS EMPTINESS AS SUCCESS ON THE WAY TO FIXING ONE"
+
+The first `assembly13` attempt printed:
+
+```
+source fingerprint taken over 0 module(s)
+```
+
+The world directory had been re-derived from `__file__` at the wrong depth, so
+**the fingerprint covered nothing while reporting success.** Caught one minute
+in from its own log; it now reads **10 modules.**
+
+**The agent's own words, and they are the entry:**
+
+> **I built an instrument that reports emptiness as success on the way to fixing
+> one. assembly13 would have carried a guard that was decorative, and nothing
+> downstream would have noticed.**
+
+**A zero-length scan is the purest form of this project's commonest defect.**
+Today alone: a bay list hardcoded so a bay was never measured; a metric reading
+791 frames as exactly 0.00; a control safe only because it discarded 70 % of its
+work; a render arm with a channel unplugged; a control set that tested the wrong
+discrimination entirely. **Every one produced a confident number about nothing.**
+
+**And it is the same shape as the guard it was written to replace** — the
+staleness warning that detected, announced, and permitted. **The replacement's
+failure mode was to cover zero files and pass.**
+
+**Still outstanding and stated plainly:** **no film has yet been built on a
+sound world.** film19 was built on stale assembly11 and its breach failed on the
+`glazing_pocket_clear` preflight defect; film20 was cancelled with assembly12.
+**film21 is the first candidate and it is queued, not proven.** The verification
+bar **has never run to completion on any of them.** No master rendered, no cost
+committed.
