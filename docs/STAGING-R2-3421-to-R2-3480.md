@@ -317,6 +317,86 @@ vegetation. **A high reading on a flat gravel apron is a fact about gravel.**
 
 ---
 
+### 4b. THE RENDER LADDER — top share 9 % → 20 % → 100 % changes nothing an eye can see, and the control that proves the eye can see
+
+The image-domain controls above are made of pixels. This one goes through the
+**real pipeline**: `tools/r2_3421_variety_control.py` builds a `macro_probe`
+window of verge from `build_terrain`'s own `build_grass`/`gn_kind`, with `nlib`
+forced to the shipping **11** (read out of `assembly14_build.json`, not the
+probe's own 9), at **f2319's camera** — lens 69.95 mm, eye 3.26 m, axis 2.99°
+down, optical axis meeting the ground at 62.4 m — and renders a **960×540 crop
+of a 3840×2160 frame**, so the px/m is the master's, not the proxy's.
+
+`tools/instance_variety.py` on the probe: **183,158 instances, 134 sources, top
+share 3.0 %** — already over the 2.00 % ceiling before anything is done to it.
+
+Then `inst_idx` is rewritten in place. **Positions, heights, lean, lighting,
+camera and seed are identical across every rung**; the only thing that changes is
+how many distinct meshes the picks land on.
+
+| rung | fescue-hero top share | what it is |
+|---|---:|---|
+| `ship` | **9.09 %** | as built, 11 hero meshes |
+| `top20` | **20.19 %** | the top source forced to a fifth |
+| `top100` | **100 %** | **one mesh**, the literal named failure |
+| `allgrass100` | **100 %**, all 5 kinds × 2 tiers | the whole ground cover on 10 meshes |
+| `stamp` | 100 % **and no randomisation** | yaw, mirror and anisotropic scale removed |
+
+`work/r23421/ladder_all.png` stacks all five.
+
+**`ship`, `top20`, `top100` and `allgrass100` are indistinguishable.** Collapsing
+the near-field verge from eleven meshes to one — from 9 % to 100 % top share, at
+4K scale, with *no motion blur at all*, which is far harsher than the delivery —
+produces no repetition an eye can find. The clumps interpenetrate so completely
+at the shipping density that what the frame shows is **blades, not clumps**, and
+clump identity is not a visible quantity.
+
+**`stamp` is instantly, obviously wrong.** With the per-instance yaw and mirror
+gone, the whole sward combs into one direction and reads as a brushed mat rather
+than a meadow. **That is the control on the control, and it fired**: the eye
+*can* see uniformity in this crop, so "`ship` looks like `top100`" is a real
+observation and not a failure to look.
+
+Which settles what `top_share` is actually measuring here:
+
+> **What defeats repetition in this world's ground cover is `gn_kind`'s
+> per-instance randomisation — a continuous uniform yaw, a 50 % x-mirror and
+> independent x/y/z scale jitter — not the size of the library. `top_share`
+> cannot see randomisation at all. It is not a mis-set threshold; it is the
+> wrong quantity.**
+
+`tools/r2_3421_frame_repetition.py` on the five rungs agrees, and in doing so
+exposes its own limit:
+
+| rung | NCC max | NCC ≥ 0.96 | period |
+|---|---:|---:|---:|
+| `ship` | 0.886 | **0.000 %** | 0.042 |
+| `top20` | 0.888 | **0.000 %** | 0.040 |
+| `top100` | 0.880 | **0.000 %** | 0.039 |
+| `allgrass100` | 0.854 | **0.000 %** | 0.051 |
+| `stamp` | 0.894 | **0.000 %** | **0.114** |
+
+**Even at a 100 % top share the duplicate arm finds nothing** — no two 24 px
+windows of a sward built from one mesh are the same picture, because the
+per-instance transform means they are not the same picture. That is the ladder's
+result stated in the instrument's own units.
+
+**And the instrument would have MISSED the one rung that is actually wrong.**
+`stamp` moves the period arm 2.2–2.9x — 0.114 against 0.039–0.051 — but
+`PERIOD_FAIL` is 0.30, so it passes. The failure in `stamp` is a *directional*
+uniformity, every clump combed the same way, and an off-centre autocorrelation
+peak is not the statistic for that. So: **the eye caught `stamp` and the numbers
+did not.** The visual comparison is the load-bearing evidence in §4b; the
+numbers corroborate the flat part of the ladder and are not sufficient on their
+own. A third arm — orientation-histogram concentration — would catch it, and is
+not built here.
+
+Cost: five CPU renders of ~4.5 minutes each, **$0**, on the box, not the 5090.
+48 samples with denoising — adequate for a *relative* comparison between five
+frames that differ in one attribute, and not offered as a quality frame.
+
+---
+
 ### 5b. There are THREE variety rules in this project and they disagree
 
 Found while checking what the near-band tier does. `tools/item_gate.py` already
@@ -370,6 +450,11 @@ also the wrong question.**
   trees. **The 32x-even worry is not a rationalisation — it is a correct
   observation about a statistic that was never measuring the rule.** Answering
   it either way would have been answering the wrong question.
+* **And the ladder shows the quantity has no perceptual content at all here**
+  (§4b): the same verge at 9 %, 20 %, 100 % and "the whole ground cover on ten
+  meshes" is the same picture, while removing the per-instance yaw — which
+  `top_share` cannot see — is instantly wrong. A ceiling on `top_share` was
+  never going to catch the thing it is afraid of, at any value.
 * **The ceiling should not be "recalibrated" — it should be replaced.** A
   2.00 % (or 2.10 %, or 0.064 %) line on `top_share` cannot detect the named
   failure at any setting, because of R2-3424 and R2-3425. Recalibrating it
@@ -405,6 +490,11 @@ also the wrong question.**
 | `tools/r2_3421_instance_variety_control.py` | the six-object proof that the gate counts zero trees |
 | `tools/r2_3421_frame_repetition.py` | duplicate + period arms on the delivered frames, with the ladder |
 | `tools/r2_3421_variety_control.py` | the render ladder: ship / top20 / top100 / allgrass100 / stamp at held placement |
+| `work/r23421/ladder_all.png` | **the five rungs stacked — the picture the verdict rests on** |
+| `work/r23421/control_bands.png` | the delivered band and three positive image-domain controls |
+| `work/r23421/pairs_ship_vs_tile20_vs_lattice.png` | the strongest matched pairs found in each band |
+| `work/r23421/frames_treepeaks.png` | f2340 and f2225, the largest/sharpest treelines |
+| `work/r23421/probe.blend` | the 30 MB verge probe the ladder is rendered from |
 | `work/r23421/` | every measurement, log and control band |
 
 **$0 spent.** No render was commissioned; credit is untouched at $73.72.
