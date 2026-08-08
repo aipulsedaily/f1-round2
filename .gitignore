@@ -98,3 +98,31 @@ render/world/assembly/r2/v1??/*
 # Telemetry is generated from the spec, but it IS the single source of truth for
 # motion AND audio and it has been wrong in ways that took a day to find. Track it.
 !telemetry/telemetry.csv
+
+# THE BAR'S OWN INSTRUMENTS WERE UNTRACKED.  R2-2821.
+#
+# `work/` is blanket-ignored above, and the two probes the film bar reads every
+# one of its numbers from live in it:
+#
+#     work/lighting/measure_film_scene.py    the delivery format, the grade,
+#                                            the lamp load, the frame range
+#     work/r2100/measure_film_extra.py       the levelling identity, the camera
+#
+# So `git log` on either is empty, and the reason five of the bar's lines were
+# decorative for four film generations -- `measure_film_scene.py` not emitting
+# `resolution_x` -- is a change nobody could have bisected, reviewed or
+# reverted.  That is the SAME failure this file's header is about (1,655 lines
+# destroyed with no history) and the same one the `render/world/assembly/r2/`
+# block above was written to close, one directory over.
+#
+# Git cannot re-include a file whose parent DIRECTORY is excluded, so every
+# level is opened one at a time and immediately re-closed.  Nothing else in
+# `work/` -- gigabytes of blends, logs and scratch -- becomes visible.
+!work/
+work/*
+!work/lighting/
+work/lighting/*
+!work/lighting/measure_film_scene.py
+!work/r2100/
+work/r2100/*
+!work/r2100/measure_film_extra.py
