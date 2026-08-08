@@ -198,10 +198,9 @@ both would have produced a confident wrong answer.**
    correlate at ~0.75, so at 0.90 the shipping band and the spammed band overlap.
    The threshold is now **0.96**, which is where the two populations part.
 
-Calibration on f2319's own band — every control built out of the **same pixels**,
-so grade, blur, grain and contrast are held and the only new thing is repetition:
-
-All of it on **f2319's** band — the verge at its sharpest.
+Calibration on **f2319's** band — the verge at its sharpest — with every control
+built out of the **same pixels**, so grade, blur, grain and contrast are held and
+the only new thing is repetition:
 
 | band | NCC ≥ 0.90 | ≥ 0.96 | ≥ 0.98 | period peak |
 |---|---:|---:|---:|---:|
@@ -250,7 +249,7 @@ Swept over eight frames of beat 5 with the same fixed band, the delivery does
 | f2365 | **2,848** | **26.4 %** | **0.318** | **gravel run-off, near-featureless** |
 
 Looked at, not assumed. **f2365's band is not vegetation at all** — it is the
-smooth gravel-and-asphalt run-off at T-whatever, which is why only 2,848 of
+smooth gravel-and-asphalt run-off, which is why only 2,848 of
 9,165 patches clear the variance floor: the ones that do are faint smooth
 gradients and shutter streaks, and near-flat gradients correlate with each other
 trivially. **f2400's band contains the red-and-white kerb**, which is periodic
