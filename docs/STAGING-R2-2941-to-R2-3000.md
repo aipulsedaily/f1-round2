@@ -253,3 +253,75 @@ python3 tools/r2941_veg_framing_control.py
 python3 tools/r2941_veg_framing.py --model segment --exclude-pavilion \
         --out work/r2941/veg_framing_outdoor.json
 ```
+
+---
+
+## R2-2947 — the film17 → film19 camera drift is NOT confined to beat 1, and 23 % of the world's screen-presence measurements sit inside it
+
+R2-2945 above listed as unsettled that `work/w2_0/retier_a10/sp_objects.json`
+was measured against `film17_path.json`, superseded by film19 on 2026-08-07
+(R2-1701), and that the divergence was *"documented as confined to beat 1"*.
+**It is not, and closing that caveat produced a worse finding than the caveat.**
+
+`render/film17_path.json` vs `render/film19_path.json`, all 2,978 frames:
+
+| quantity | worst | where |
+|---|---:|---|
+| frames differing at all | **846 of 2,978 (28.4 %)** | spans from f2 to f2978 |
+| position | **21.399 m** | f2177 |
+| focal length | **55.996 mm** | f2978 |
+| orientation | **78.753 deg** | f2857 |
+
+The divergent spans are not one block. The three largest are **f2716–f2978 (263
+frames — the entire ending), f2134–f2253 (120 frames), and f465–f753**.
+
+`docs/LIVE-CAMERA.md` records of the *earlier* film16→film17 drift: *"From f781
+onward the two files are bit-identical… so nothing outside beat 1 can be
+affected by this class of drift."* That sentence is true of the pair it
+describes. **It is false of the pair that is live now**, and the class of drift
+has plainly been generalised from it — the caveat in `WAVE2-RANKING.md` §2 and
+the one I wrote in R2-2945 both inherited the belief without testing it.
+
+**Consequence: 521 of 2,261 objects (23.0 %) have their peak sharp frame inside
+a divergent frame.** Every quantity derived from `sp_objects.json` — including
+`work/w2_0/wave2_ranking.json`, all 435 rows, and the tier counts HERO 72 / MID
+58 / BULK 305 — is therefore measured on a camera the film does not have, for
+close to a quarter of the world.
+
+### What this does NOT touch, checked rather than assumed
+
+Every object R2-2945's build decision rests on has its peak sharp frame in a
+**non-divergent** frame, verified individually:
+
+| object | sharp frame | pos Δ | lens Δ | angle Δ |
+|---|---:|---:|---:|---:|
+| `VEG_grass_fescue_H` | 2316 | 0.000 m | 0.000 mm | 0.00° |
+| `VEG_grit_chip` | 2316 | 0.000 m | 0.000 mm | 0.00° |
+| `VEG_weed_thistle` | 2318 | 0.000 m | 0.000 mm | 0.00° |
+| `VEG_tree_oak0` | 1727 | 0.000 m | 0.000 mm | 0.09° |
+| `VEG_avenue` | 821 | 0.000 m | 0.000 mm | 0.00° |
+| `ARCH_Paving_Forecourt` | 282 | 0.000 m | 0.000 mm | 0.17° |
+| `TER_Ground` | 122 | 0.000 m | 0.000 mm | 0.00° |
+| `SURF_Track` | 2620 | 0.000 m | 0.000 mm | 0.00° |
+
+**So the sharp-resolution inversion in R2-2945 stands on frames where the two
+cameras are bit-identical**, and the ground-cover build order does not depend on
+the re-measurement below. The caveat is closed for the decision it was attached
+to, and left open for the ranking as a whole.
+
+### Proposed defect-log entry (NOT written to `DEFECT-LOG-R2.md` — for the owner to merge)
+
+> **R2-XXXX — "confined to beat 1" was inherited from a different pair of
+> cameras, and the live pair diverges over the whole film.** `film17` → `film19`
+> differ in 846 of 2,978 frames, worst 21.399 m of position (f2177), 55.996 mm
+> of focal length (f2978) and 78.753° of orientation (f2857), with the largest
+> single divergent span being the last 263 frames. 23.0 % of world objects
+> (521/2,261) have their peak sharp frame inside that divergence, so
+> `sp_objects.json`, `docs/screen_presence.json` and `work/w2_0/wave2_ranking.json`
+> are stale for close to a quarter of the world. **Not fixed** — the re-measure
+> needs a ~10 GB Blender load. Named here so the next reader does not quote the
+> ranking as current. The specific rows R2-2945 relies on were individually
+> checked and are on bit-identical frames.
+
+Reproduce: `render/film17_path.json` and `render/film19_path.json` are both in
+the tree; the comparison is a dozen lines of numpy over `p`, `q` and `lens`.
