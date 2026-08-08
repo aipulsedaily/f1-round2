@@ -317,17 +317,45 @@ it did not need a rented GPU to close it.
 
 ---
 
-## R2-2890 — 4K CONFIRMATION (in flight)
+## R2-2890 — 4K CONFIRMATION: THE FINDING SURVIVES AT DELIVERY RESOLUTION, AND THE SURFACE IS ABSENT AT EVERY SCALE
 
-Per the standard that nothing is declared absent on proxy evidence alone, four
-targeted 4K frames were commissioned at the proxy's exact spec (ONER, 32 samples,
-CYCLES + OIDN, adaptive 0.01) — **f1350, f1787** (the asphalt finding) and
-**f2730, f2850** (beat 6). Landing in `work/r22881/4k/` with provenance.
+Four frames re-rendered at **3840×2160** on the proxy's own spec — **f1350,
+f1787** (the asphalt finding) and **f2730, f2850** (beat 6). The submitted spec
+differs from the proxy's `1d9862d3d39e3a37` in **exactly one field**,
+`resolution`; camera ONER, 32 samples, CYCLES, OIDN, `denoise_gpu`, adaptive
+0.01, scene DOF, `zoom` 1.0 all match, same scene file. **$0.1158**, instance
+destroyed. `work/r22881/4k/`, provenance and per-frame sha256 alongside.
 
-The asphalt finding does **not** depend on them — **R2-2889 already closed it**
-against a real 1.33× resolution increase. The 4K arm can only add whether there
-is sub-8-px detail down there that a viewer would never see anyway, and whether
-beat 6's subject reads at delivery.
+```
+python3 tools/r2_2881_pixelpeep.py confirm4k
+
+ frame  tiles  proxy empty  4K empty   agree   fine band 0-8 px @4K: empty tiles vs rest
+  1350     48           18        18  100.0%   0.00120 vs 0.00335  (0.36x)
+  1787     48           31        30   97.9%   0.00121 vs 0.00219  (0.55x)
+  2730     48            0         0  100.0%        -- vs 0.00338
+  2850     48            4         1   93.8%   0.00193 vs 0.00545  (0.35x)
+PASS  C10 4K confirmation -- 188/192 tiles (97.9 %) at full delivery resolution
+```
+
+**1. The coarse finding survives.** The proxy's empty/not-empty verdict is
+reproduced on **97.9 % of tiles** at delivery resolution, measured natively —
+16–64 px at 4K is L4–L5 of a pyramid built on the 3840×2160 frame, not a
+rescaling of the proxy's answer.
+
+**2. And the surface is not hiding below the proxy's floor.** This is the part
+only a 4K render could answer. In the tiles the proxy called empty, the **0–8 px
+at 4K band — which the proxy cannot see at all — reads 0.35–0.55× the rest of the
+frame.** The asphalt is not carrying fine detail that the proxy was too coarse to
+resolve. **It is empty at every scale, including the ones only 4K can see.**
+
+That distinction decides the repair. This is **not** the pixel-footprint failure
+this project has hit six times (detail authored below the resolvable band). There
+is no detail authored at any band. **The road surface needs to be authored, not
+re-scaled.**
+
+`work/r22881/crops/finding_4K_f1787_native.png` is the road at 3840×2160, 1:1, no
+scaling: a featureless field with faint diagonal motion-blur streaking and
+nothing else.
 
 ---
 

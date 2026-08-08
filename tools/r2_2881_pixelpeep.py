@@ -170,15 +170,15 @@ def pyramid(lum, nlev=NLEV):
     band) so that a band and a tile grid can be intersected without a
     half-pixel argument about which tile a coarse coefficient belongs to.
     """
-    out = []
+    H, W = lum.shape                     # NOT the proxy constants: `confirm4k`
+    out = []                             # runs this on native 3840x2160 too
     g = lum
     for k in range(nlev):
         gb = _blur(g)
-        lap = g - gb
-        e = np.abs(lap)
+        e = np.abs(g - gb)
         for _ in range(k):                     # back up to full res
             e = np.repeat(np.repeat(e, 2, 0), 2, 1)
-        out.append(e[:PROXY_H, :PROXY_W])
+        out.append(e[:H, :W])
         g = gb[::2, ::2]
     return out
 
@@ -1229,6 +1229,75 @@ def crossres():
     return ok
 
 
+FOURK = os.path.join(OUT, "4k/r22881_4k_%06d.png")
+
+
+def confirm4k(frames=(1350, 1787, 2730, 2850)):
+    """C10: THE FINDING, RE-TAKEN AT DELIVERY RESOLUTION.
+
+    The proxy is a finder. This closes the loop on the specific frames it found,
+    at 3840x2160, on the proxy's own spec (ONER, 32 samples, CYCLES + OIDN,
+    adaptive 0.01) with resolution the only variable.
+
+    Two questions, and they are different questions:
+
+      1. DOES THE COARSE FINDING SURVIVE? The same physical band -- 16-64 px at
+         4K -- is levels L4..L5 of a pyramid built on the native 4K frame, and
+         L2..L3 of one built on the proxy. If a tile the proxy called empty is
+         not empty at 4K, the proxy was wrong and the finding falls.
+
+      2. IS THERE DETAIL DOWN WHERE THE PROXY IS BLIND? 0-8 px at 4K is L0..L1
+         natively and is BELOW the proxy's floor entirely. If the "empty"
+         asphalt turns out to carry its detail only there, the surface is not
+         missing -- it is authored under the resolvable band, which is the
+         pixel-footprint failure this project has hit six times, and it is a
+         different repair from "there is nothing there".
+    """
+    from PIL import Image
+    if not os.path.exists(FOURK % frames[0]):
+        print("!! no 4K frames on disk yet")
+        print(">> STAGE RESULT: CONFIRM4K_SKIPPED")
+        return
+    d = np.load(os.path.join(OUT, "scan.npz"))
+    idx = {int(f): i for i, f in enumerate(d["f"])}
+    pcoarse = d["tile_band"][:, COARSE_FROM:COARSE_TO, :, :].mean(axis=1)
+    psky = sky_mask(d["tile_mean"])
+    G = Gates()
+
+    TW4, TH4, M4 = TW * UPSCALE, TH * UPSCALE, TILE_MARGIN * UPSCALE
+    agree = tot = 0
+    print(f"  {'frame':>6} {'tiles':>6} {'proxy empty':>12} {'4K empty':>9} "
+          f"{'agree':>7}   fine band 0-8 px @4K, empty tiles vs the rest")
+    for f in frames:
+        a = np.asarray(Image.open(FOURK % f).convert("RGB"), np.float32) / 255.
+        lum = lum_of(a)
+        lev = pyramid(lum, 6)
+        # tile means at 4K, same 12-proxy-px erosion scaled up
+        def tm(x):
+            b = x.reshape(TY, TH4, TX, TW4)[:, M4:TH4 - M4, :, M4:TW4 - M4]
+            return b.mean(axis=(1, 3))
+        c4 = np.stack([tm(l) for l in lev])
+        coarse4 = c4[4:6].mean(axis=0)        # 16-64 px at 4K, natively
+        fine4 = c4[0:2].mean(axis=0)          # 0-8 px at 4K -- proxy is blind
+        i = idx[f]
+        pe = (pcoarse[i] < G.TILE_COARSE) & ~psky[i]
+        fe = coarse4 < G.TILE_COARSE
+        ag = int((pe == fe).sum())
+        agree += ag
+        tot += pe.size
+        fin_e = float(fine4[pe].mean()) if pe.any() else float("nan")
+        fin_o = float(fine4[~pe].mean())
+        print(f"  {f:6d} {pe.size:6d} {int(pe.sum()):12d} {int(fe.sum()):9d} "
+              f"{ag/pe.size*100:6.1f}%   {fin_e:.5f} vs {fin_o:.5f}  "
+              f"({fin_e/fin_o:.2f}x)")
+    ok = agree / tot >= 0.90
+    print(f"  {'PASS' if ok else 'FAIL'}  C10 4K confirmation   the proxy's "
+          f"empty/not-empty verdict is reproduced on {agree}/{tot} tiles "
+          f"({agree/tot*100:.1f} %) at full delivery resolution.")
+    print(f">> STAGE RESULT: {'CONFIRM4K_OK' if ok else 'CONFIRM4K_FAILED'}")
+    return ok
+
+
 def px_at(size_m, dist_m, lens_mm, res_x=DELIVERY_W):
     """The pixel-footprint law, in one line, at DELIVERY resolution."""
     return size_m / dist_m * (lens_mm / 36.0) * res_x
@@ -1254,6 +1323,7 @@ def main():
     p.add_argument("--frame", type=int, default=1900)
 
     sub.add_parser("crossres")
+    sub.add_parser("confirm4k")
 
     p = sub.add_parser("crops")
     p.add_argument("--what", default="all")
@@ -1277,6 +1347,8 @@ def main():
         selftest(a.frame)
     elif a.cmd == "crossres":
         crossres()
+    elif a.cmd == "confirm4k":
+        confirm4k()
     elif a.cmd == "crops":
         cmd_crops(a)
 
