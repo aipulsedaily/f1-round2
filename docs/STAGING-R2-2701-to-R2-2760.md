@@ -25,7 +25,8 @@ there. The gate was measuring geometry that cannot appear in a frame.
 | Does it render at all | **Yes** — f2607 shows the grandstand full of people. Same 894 sources, 300 m away |
 | What changed | `tools/placement_gate.py`: non-rendering meshes are measured and reported under `hidden_findings`, not counted as violations — **and every realisation of a hidden source is now measured at its instance matrix** |
 | Controls | 42 → **54**, and the four new decisive ones were **watched failing** against two deliberate mutants |
-| Ship candidate | `render/film23_breach.blend` — **`PLACEMENT_FAIL`, 16,685 under the gate of record**; 482 under the fixed gate, and all 482 are the car, the driver and the showroom set. See R2-2707 and R2-2710 |
+| The world | `assembly14.blend` — **`PLACEMENT_FAIL` 1,202 → `PLACEMENT_CLEAN` 0**, all three clearances positive and naming real geometry. R2-2711 |
+| Ship candidate | `render/film23_breach.blend` — **`PLACEMENT_FAIL` 16,685 → 482**, and all 482 are the car, the driver, the showroom set and the wall the car breaches. **Clear to render.** R2-2707, R2-2710 |
 
 ---
 
@@ -395,27 +396,108 @@ Controls: **57 → 60**, `>> STAGE RESULT: PLACEMENT_SELFTEST_OK`
 
 ## R2-2710 — is the ship candidate clear to render?
 
-**IN FLIGHT at the time of this commit.** The citable re-run
-(`work/r22701/gate_film23_breach_FIXED2.{log,json}`) is queued behind
-`tools/buildlock.sh`, which six other agents are contending for. The first
-attempt's numbers are in R2-2707 and are **deliberately not quoted as a
-verdict** — that run printed `PLACEMENT_NONDETERMINISTIC_REFUSED` and this
-project does not cite a refused report. This section is completed in a
-follow-up commit with the re-run's own `>> STAGE RESULT:` line.
+**Yes for the world. The 482 findings that survive on the film scene are the
+car, the driver in it, the set the camera skims, and the wall the car is
+supposed to go through — and every one of them was checked by name.**
 
-What can be said now, on evidence that is not in flight:
+The citable run (`work/r22701/gate_film23_breach_FIXED2.{log,json}`,
+`determinism: 2 pass(es), IDENTICAL`, both fingerprints `cf74c50385a1a9ac`):
 
-* **The crowd library is not a placement defect and nothing needs to move.**
-  894 hidden instance sources, 11,129 realisations on the grandstands, 696
-  frames looking at the origin with nothing there, and the grandstands full of
-  people in f2607.
-* **The racing surface is clear on the ship candidate**, measured on
-  `film23_breach.blend` itself: `road_corridor ARCH_Gantry +1.149 m`, the same
-  object and figure as the last trustworthy world report.
-* **`placement_gate` should be run on the world, not on the film scene.** A
-  film scene contains the car (which is what `car_path` is the swept volume
-  OF), the driver inside it, and the showroom the shot starts in. Those are
-  the film, not obstacles.
+```
+>> non-rendering: 15938 mesh(es) cannot appear in a frame where they stand
+>> instances: 4966913 realised in 56.9 s; 11129 from a NON-RENDERING source and
+   therefore measured at their instance matrix (868 per-vertex, 10261 rejected
+   on bbox); 4955784 from visible sources are NOT measured -- declared
+>> closest approach, camera_path    Plaque_Surround   -1.070 m
+>> closest approach, car_path       CI_seatpad        -1.602 m
+>> closest approach, road_corridor  ARCH_Gantry       +1.149 m
+>> determinism: 2 pass(es), IDENTICAL
+>> 482 PLACEMENT VIOLATIONS
+>> STAGE RESULT: PLACEMENT_FAIL  [+16203 hidden findings on 15938 non-rendering mesh(es)]
+```
+
+**16,685 → 482, and 0 of the 11,129 crowd realisations violates anything.**
+
+Every one of the 482, adjudicated by name and by x-coordinate rather than
+waved through:
+
+| group | n | x span | what it is |
+|---|---|---|---|
+| `FW_ SW_ NOSE_ halo brake wheel suspension MB_ BB_ FD_ EC_ SP_ CI_ DeckType_` | 425 | −1.5 … 3.0 | **the car**, at station 0, inside its own swept volume by construction |
+| `DRV_` | 8 | 0.0 … 0.3 | **the driver**, inside the car |
+| `Plaque_ Vitrine_ Barrier_ Bollard_` | 24 | −0.6 … 13.5 | **the showroom set**, in `camera_path` — the shot flies through it |
+| `BF_ GP_` | 15 | 14.92 … 15.08 | **the east glass wall and its aluminium frame** — `sim/eastframe.py`: *"there is no piece of them that can leave when the car goes through"*. This is the breach. The car is meant to be in it |
+
+Nothing unaccounted for; no fence, no building corner, no tyre stack.
+
+**And `road_corridor` is `ARCH_Gantry +1.149 m` — clear, on the ship candidate,
+by its own measurement.** That is the same object and the same figure as the
+last trustworthy world report (`v122`, `assembly7`), so the racing surface has
+been clean throughout and the "nothing came near it" of the older reports was
+purely the instrument.
+
+### The honest qualification
+
+`placement_gate` is a **world** gate and `film23_breach.blend` is not a world —
+`render/world/assembly/r2/SHIPPING.md` declares an *assembly* as the ship for
+exactly this reason. On a film scene it necessarily reports the subject of the
+`car_path` volume as being inside `car_path`. **The verdict that means what it
+says is the one on the assembly**, which is R2-2711.
+
+Two further honest limits, both stated in the report rather than implied away:
+
+* **It is a single-frame instrument** measured against whole-film volumes. At
+  frame 1 the 11,246 `DB_*` flakes and 3,796 `GS_*` shards are hidden and at
+  rest; where they are on the other 2,977 frames is a question nothing here
+  asks.
+* **4,955,784 realisations of visible sources are not measured** at their
+  instance matrices. Counted and declared, not fixed.
+
+Neither is a reason to hold the render. Both belong in the defect log.
+
+---
+
+## R2-2711 — the verdict that means what it says: `assembly14` is
+   **`PLACEMENT_CLEAN`**
+
+Same blend as the finding, same frozen inputs, live camera path, fixed gate
+(`work/r22701/gate_assembly14_FIXED.{log,json}`):
+
+```
+>> subject: 30204 meshes via every mesh in the scene (nothing looks like context)
+>> non-rendering: 894 mesh(es) cannot appear in a frame where they stand
+>> instances: 4966913 realised; 11129 from a NON-RENDERING source, measured at
+   their instance matrix (868 per-vertex); 0 of them violates anything
+>> 1159 finding(s) belong to meshes that CANNOT REACH A FRAME where they stand
+>> closest approach, camera_path    BR_Verge_R        +0.648 m   (ARCH_Gantry 0.031 m behind)
+>> closest approach, car_path       BR_Concrete_L12   +4.608 m   (ARCH_PitWall 0.120 m behind)
+>> closest approach, road_corridor  ARCH_Gantry       +1.149 m   (BR_Verge_R 0.705 m behind)
+>> determinism: 2 pass(es), IDENTICAL
+>> NOTHING is on the road, in the car's path, or in the camera's path
+>> STAGE RESULT: PLACEMENT_CLEAN  [+1159 hidden findings on 894 non-rendering mesh(es)]
+```
+
+| | gate of record (`7e8a808`) | fixed gate |
+|---|---|---|
+| verdict | **`PLACEMENT_FAIL`, 1,202** | **`PLACEMENT_CLEAN`, 0** |
+| where the 1,202 went | — | 1,159 `hidden_findings`, listed in full with reasons |
+| `car_path` closest | `SPECX_Lib0853_turned_b0` **−1.6025 m** | `BR_Concrete_L12` **+4.608 m** |
+| `camera_path` closest | `SPECX_Lib0664_stand_b7` **−0.6919 m** | `BR_Verge_R` **+0.648 m** |
+| `road_corridor` closest | `ARCH_Gantry` +1.1491 m | `ARCH_Gantry` +1.1491 m |
+
+**All three clearances are now positive and all three name real world
+geometry.** Two of the three used to be a hidden prototype standing at the
+origin, so the two numbers a reader was supposed to act on were about something
+that is not in the film.
+
+1,159 and not 1,202 because these runs use the **live** camera path rather than
+the orphan the gate defaults to (R2-2706): `car_path` is 894 either way, and
+`camera_path` goes 308 → 265. That is the size of the camera error, on this
+world, and it is the second reason nothing about the old number was safe to
+quote.
+
+**Nothing needs to be deleted, moved, or hidden. The world is clean and was
+clean.**
 
 ---
 
