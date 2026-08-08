@@ -325,3 +325,351 @@ to, and left open for the ranking as a whole.
 
 Reproduce: `render/film17_path.json` and `render/film19_path.json` are both in
 the tree; the comparison is a dozen lines of numpy over `p`, `q` and `lens`.
+
+---
+
+## R2-2948 — the size of the inversion, and one precision note on the instrument
+
+**How much of the planned wave 2 the sharp-resolution ranking removes.**
+`work/w2_0/wave2_ranking.json`, ranked by its own score:
+
+| | terrain-owned vegetation |
+|---|---:|
+| of the top **20** modules | **17** |
+| of the top **44** — the "80 % of the picture" line | **21** |
+
+So the inversion in R2-2945 is not a re-ordering of one item. **Nearly half the
+44 modules the campaign proposed to build for 80 % of the picture belong to the
+class that resolves at 22.7–80.9 px/m**, and 17 of the first 20 do.
+
+For scale on the campaign's other headline: the manifest flags **343 of 435
+items as heroes**; the tiering against the live camera and shipping world says
+**HERO 72, MID 58, BULK 305**. The task brief's "343 → 91" is the older form of
+the same collapse; the current number is 72, and **every time this has been
+measured rather than modelled it has got smaller.** The sharp-resolution
+measurement is the same effect applied one level deeper.
+
+**Precision note, stated rather than buried.** `sp_objects.json` reports
+`peak_unocc_sharp_px_per_m` (occlusion-aware) but `sharp_frame` is taken from
+`sharp_ppm`, the occlusion-*unaware* series
+(`tools/screen_presence.py:416-420`). For the objects tabulated in R2-2945 the
+two coincide, but the frame numbers quoted — and used in R2-2947's divergence
+check — are strictly the peak *sharp* frame, not the peak *unoccluded-sharp*
+frame. Also, "sharp" means **smear ≤ 6 px** (`SMEAR_SHARP_PX`, the gate's own
+hero resolve threshold), not zero smear. Both of these make the reported
+resolution an **upper bound**, which is the safe direction for the conclusion
+drawn from it: trees are, if anything, worse than 22.7 px/m.
+
+
+---
+
+## R2-2950..R2-2959 — the variety guard's weak path, closed (R2-1381)
+
+**`per_instance_variation` exists for one sentence of the user's — "i dont want
+repeat stuff aka one tree spammed 100 times" — and until this commit an item
+that emitted PLAIN OBJECTS could satisfy it with two meshes.**
+`docs/WAVE2-RANKING.md` §5 named the hole and left it open, directly under a
+ranking whose top eleven items are all trees at up to 4,500 instances. It is
+closed here, in the order this project insists on: **the false accept was built
+and watched to PASS the guard as shipped before a line of the fix was written.**
+
+Files: `tools/item_gate.py` (the fix), `tools/r2_1381_variety_control.py` (the
+four controls and the residual probe, in Blender, no render),
+`tools/r2_1381_rescore.py` (the re-score of the shipped verdicts, pure python).
+Evidence logs: `tmp/r2_1381_prefix.log`, `tmp/r2_1381_postfix.log`,
+`tmp/r2_1381_rescore.log`. No `gate.json` was edited and no GPU was used.
+
+### R2-2950 — the false accept, watched passing the guard as shipped
+
+The control harness loads the gate under test from a git revision
+(`--gate git:cea0e57`), so "the guard as shipped" is not a story about a file
+that no longer exists — the run is repeatable today and in a year. Built:
+
+> **4,500 plain objects, drawn round-robin from TWO source meshes, each with a
+> random uniform scale U(0.85, 1.15) in the object matrix.** Two trees, 4,500
+> times, at slightly different sizes. Nothing else.
+
+```
+>> gate under test: git cea0e57 (186066 bytes)
+>> variation_verdict present: False
+>>   declared 4500, objects measured 4500, gn_instanced=False
+>>   cv_size 0.11691  distinct_topologies 2
+>>   OLD rule -> True
+>> STAGE RESULT: R2-1381 PRE-FIX RUN ... C1 (false accept passes the shipped rule) = True
+```
+
+`cv_size 0.11691 >= 0.03` and `distinct_topologies 2 >= 2`. **The guard whose
+entire purpose is that failure returned `per_instance_variation: true` on it.**
+The margin was not narrow: the size CV cleared its floor by 3.9×, and the
+topology floor is clearable by ANY two meshes at ANY population.
+
+### R2-2951 — the rule that replaced it
+
+The plain-object path is now held to the realized-instance path's own law, on
+the same numbers, using the same fingerprint:
+
+| | as shipped | now |
+|---|---|---|
+| shape identity | `len(set(triangle_count))` | `_shape_signature` — the SAME function the realized path uses |
+| count required | **2**, at any population | `need_distinct_shapes(n) = min(n, max(8, min(40, √n)))` |
+| commonest shape | *not measured* | `<= top_share_limit(n) = max(0.25, 1/n)` |
+| size CV | `>= 0.03` | `>= 0.03` (kept) |
+| topologies | `>= 2` | `>= 2` (kept) |
+
+Three things about this that are deliberate:
+
+1. **No second shape hasher.** `_shape_signature` was already there for
+   geometry-nodes sources; `instance_variation` now runs it over each object's
+   evaluated mesh, which costs nothing because that mesh is already in hand for
+   the bounding box. `need_distinct_shapes` and `top_share_limit` are now the
+   ONE definition both paths call — the realized path stopped carrying its own
+   copy of `max(8, min(40, sqrt(n)))` and its own literal `0.25`.
+2. **The signature is taken in LOCAL space**, exactly as it is for a
+   geometry-nodes source. A per-object scale in the matrix is a transform, not
+   a shape. If world scale counted, the false accept above would produce 4,500
+   "shapes" and pass again.
+3. **`min(n, ...)` and `max(0.25, 1/n)` are not relaxations.** A population of
+   seven objects asked for eight distinct shapes is being asked for something
+   no population of seven can contain, and a population of three asked for a
+   25 % ceiling likewise. Those are arithmetically impossible requirements, not
+   strict ones, and they would fail `pont_girder` (7 objects, 7 different
+   bodies, ACCEPTED) for being small. Checked, not assumed: every
+   realized-instance population on disk is 10 or larger, where both are exact
+   no-ops — `tools/r2_1381_rescore.py` puts all seven shipped `real` blocks back
+   through the shared functions and reports **0 strong-path verdicts moved**.
+
+The decision also moved out of `main()` into `variation_verdict()`, so the rule
+can be exercised without a 40-minute gate run. That is why the controls below
+exist at all.
+
+### R2-2952 — the same false accept, refused
+
+Identical geometry, identical seed, new guard:
+
+```
+>>   cv_size 0.11691  distinct_topologies 2
+>>   distinct_shapes 2  top_shape_share 0.5  (required 40, limit 0.25)
+>>   distinct_source_meshes 2  distinct_shapes_scale_invariant 2
+>>   OLD rule -> True      NEW rule -> False
+```
+
+**2 shapes against 40 required, and the commonest shape is 50 % of the
+population against a 25 % ceiling.** It fails on both halves, not on a
+tie-break.
+
+### R2-2953 — the positive controls: this is not a guard that rejects everything
+
+The mirror failure costs a rebuild of every item in the film, so it is watched
+too, in both size regimes:
+
+| control | item | measured | verdict |
+|---|---|---|---:|
+| **C3** | 4,500 objects from **40 genuinely different bodies** | cv 0.23438, 40 topologies, **40 shapes**, commonest **2.51 %** (need 40, limit 25 %) | **PASS** |
+| **C4** | **7 objects, 7 different bodies** (the `pont_girder` shape), declared 4 | cv 0.18526, 7 topologies, **7 shapes**, commonest **14.29 %** (need 7, limit 25 %) | **PASS** |
+
+C3 is exactly what the strong path demands at 4,500 instances — forty sources —
+and it passes with the count met exactly and the share 10× inside the limit. So
+the honest build of the tree tier that the ranking calls for is buildable
+through this guard; the two-variant version is not.
+
+```
+>> STAGE RESULT: R2-1381 CONTROLS ALL PASS (C1_false_accept_passes_OLD=True,
+   C2_false_accept_fails_NEW=True, C3_varied_passes_NEW=True,
+   C4_small_varied_passes_NEW=True)
+```
+
+### R2-2954 — the residual, measured rather than asserted
+
+One route through the new rule remains, and it is named with a number rather
+than a caveat. **D1 (a probe, not a control): 450 objects, TWO bodies, with the
+per-copy scale baked into the VERTEX DATA instead of the object matrix.**
+
+```
+>>   distinct_shapes 298  top_shape_share 0.0111  (required 21, limit 0.25)
+>>   distinct_source_meshes 450  distinct_shapes_scale_invariant 3
+>>   NEW rule -> True
+```
+
+Those really are 298 different meshes, so the rule passes it by the letter, and
+it is two trees at 450 sizes by the eye. `_shape_signature` quantises the
+bounding box in centimetres, so a scaled copy is a new shape to it.
+`instance_variation` now also reports `distinct_shapes_scale_invariant` — the
+same signatures with each one's longest side divided out — and **298 shapes
+collapse to 3 families**. The gate prints a `** RECORDED, NOT FAILED **` line
+whenever that count falls below half the shape count.
+
+It is recorded rather than gated on purpose: it cannot distinguish this failure
+from a legitimate library whose bodies share a topology and an aspect ratio
+(jittered copies of one generator differ by millimetres, under the
+quantisation), so gating on it would manufacture the mirror failure R2-2953
+exists to prevent. **A reviewer reading `distinct_shapes 4500,
+distinct_shapes_scale_invariant 2` in a tree item's report now has the number
+that says "look again".**
+
+### R2-2955 — re-scoring the 33 shipped verdicts, without re-rendering
+
+`tools/r2_1381_rescore.py` reads every `render/items/*/gate.json` and re-decides
+`per_instance_variation` from what those reports already contain. It writes
+nothing. **Nineteen items took the plain-object path with more than one declared
+instance** — the count `WAVE2-RANKING.md` §5 gives, confirmed.
+
+What the record can and cannot settle:
+
+* `distinct_shapes >= distinct_topologies` whenever a differing triangle count
+  brings a differing vertex or polygon count with it, which is the ordinary
+  case. So a recorded `distinct_topologies` that already clears the new
+  requirement settles the COUNT half.
+* **The commonest-shape share was never recorded on this path** — the old rule
+  had no use for it — and it cannot be bounded from a distinct count. 90
+  topologies over 3,236 objects is equally consistent with an even spread and
+  with 2,500 objects sharing one. So the SHARE half is **unproven**, and
+  unproven is not a pass (R2-019).
+
+```
+>> STAGE RESULT: R2-1381 RESCORE 19 weak-path items, 0 FAIL, 13 UNPROVEN,
+   6 PASS; 5 ACCEPTED verdicts affected
+>> strong-path verdicts moved by the shared thresholds: 0
+```
+
+**No shipped item is shown to be a false accept.** Five ACCEPTED items lose
+their proof and need a re-gate — which is a CPU gate run, not a render:
+
+| item | declared | objects | topologies | shapes needed | status now |
+|---|---:|---:|---:|---:|---|
+| `armco_post` | 3,641 | 3,236 | 90 | 40 | UNPROVEN — count clears, share never measured |
+| `catch_fence_post` | 690 | 676 | 142 | 26 | UNPROVEN — count clears, share never measured |
+| `crew_figure` | 120 | 120 | 60 | 10 | UNPROVEN — count clears, share never measured |
+| `heras_fence_panel` | 900 | 771 | 258 | 27 | UNPROVEN — count clears, share never measured |
+| `pit_wall_unit` | 125 | 119 | 22 | 10 | UNPROVEN — count clears, share never measured |
+
+Two ACCEPTED weak-path items survive with a proof rather than a presumption,
+because every one of their objects has its own triangle count, which fixes the
+share at 1/n: **`pont_girder`** (7 objects, 7 topologies, need 7, share 0.143)
+and **`timing_stand`** (10 objects, 10 topologies, need 8, share 0.100).
+`pont_girder` is the case that made `min(n, ...)` necessary: without it the item
+would have flipped to a rejection for having only seven objects.
+
+The other eight weak-path items in the same UNPROVEN state are already
+ITEM_REJECTED for other reasons (`armco_w_beam`, `grandstand_riser_unit`,
+`gravel_bed_surface`, `kerb_precast_unit`, `marshal_post_column`,
+`paddock_personnel_figure`, `showroom_facade_panel`, `tyre_blanket`), and four
+more are provably fine (`crew_fireproof_overall`, `hospitality_deck`,
+`marshal_post_deck`, `team_truck_trailer`).
+
+### R2-2956 — a second, narrower exemption, found and NOT taken
+
+`variation_verdict` still returns `True` unconditionally when
+`instances_declared <= 1`, **however many objects the item actually emits**. On
+disk that exempts seven items whose declaration disagrees with their own object
+count, including one by a factor of 459:
+
+| item | declared | objects found | result |
+|---|---:|---:|---|
+| `access_road_slab` | 1 | **459** | ITEM_REJECTED |
+| `pont_deck_slab` | 1 | 13 | ITEM_REJECTED |
+| `driver_figure` | 1 | 10 | ITEM_REJECTED |
+| `terrain_ground` | 1 | 10 | **ITEM_ACCEPTED** |
+| `dais_delivery_ramp` | 1 | 6 | ITEM_REJECTED |
+| `asphalt_wearing_course` | 1 | 5 | ITEM_REJECTED |
+| `gantry_truss` | 1 | 3 | **ITEM_ACCEPTED** |
+
+A population is being exempted by a MANIFEST DECLARATION rather than by a
+measurement, which is the same species of defect as the one above. It is left
+alone deliberately: 459 slabs of road surface are not "459 copies of a tree",
+the correct threshold depends on what a declaration of 1 is supposed to mean
+for a surface built in tiles, and closing it blind would flip items whose
+manifests are merely mislabelled. **Named here so it is not rediscovered as a
+surprise.**
+
+Also found, unrelated to R2-1381: **`render/items/spectator_crowd/gate.json`
+carries `"item": "spectator_seated"`.** Any tool keying on that field merges the
+two crowd items into one row — which is the likeliest reason this campaign keeps
+saying "32 item gate reports" when there are **33** on disk (and four item
+directories — `human_bench`, `tyre_deposit`, `_relief`, `_winding` — with no
+`gate.json` at all).
+
+### R2-2957 — the fix is machine-detectable, because prose in a staging document is not
+
+`tools/mark_gate_version_stale.py` is this project's existing answer to "a pass
+awarded by a weaker instrument", and it finds stale reports by COUNTING checks.
+**It cannot see a check that was strengthened rather than added**: all 33 reports
+on disk say `8 checks`, and nineteen of them hold a `per_instance_variation`
+decided on two triangle counts. So the gate now writes its variation law into
+the report's own `thresholds` block:
+
+```json
+"variation_shape_law": "R2-1381: distinct SHAPES via _shape_signature on BOTH
+   the realized-instance and the plain-object path; min(n, max(8, min(40,
+   sqrt(n)))) required, commonest <= max(0.25, 1/n)",
+"variation_cv_size_floor": 0.03
+```
+
+**A report without that key was written by the pre-R2-1381 gate, whatever its
+check count says.** The five items in R2-2955 are then findable by a tool rather
+than by remembering this document. (The provenance stamp already records
+`item_gate.py`'s sha256, which is the same fact expressed in a form nobody can
+read; both are now present.)
+
+### R2-2958 — the same hole is still open ONE LEVEL UP, in the film-wide instrument
+
+`tools/r2_1881_variety_control.py` — which predates this work — manufactures six
+populations whose true answer is known and requires `tools/instance_variety.py`
+to say so. Its sixth arm, `plainspam`, is **2,000 plain-object copies of one
+mesh**, and its docstring says what happens: `instance_variety.py` iterates
+`depsgraph.object_instances` and `continue`s on `not inst.is_instance`
+(`tools/instance_variety.py:68`), so a module emitting plain objects contributes
+**zero** to every number it reports. That tool produced `docs/instance_variety.json`
+— 4,688,475 instances, 310 sources, top share 1.99 % — **the film-wide answer to
+the user's red line.**
+
+R2-1381 closes the per-item gate. It does not touch that. **A tier built out of
+plain objects is still invisible to the film-wide variety number, where it reads
+as `INSTANCE_VARIETY_VACUOUS` — an instrument complaint — rather than as the red
+line being crossed.** `r2_1881_variety_control.py`'s docstring still points at
+`tools/item_gate.py:~2986` as the twin of that hole; that half is now historical,
+and the half in its own subject is not. Not fixed here, and not a line of code
+away from being fixed: the honest version walks the plain objects too and has to
+decide what "a source" means when there is no instancer to group by.
+
+### Reproduce
+
+```
+bash tools/buildlock.sh r2-1381-PREFIX  /opt/blender-5.2.0-linux-x64/blender \
+  -b -noaudio --factory-startup --python tools/r2_1381_variety_control.py -- \
+  --n 4500 --sources 40 --gate git:cea0e57        # C1 must print True
+bash tools/buildlock.sh r2-1381-POSTFIX /opt/blender-5.2.0-linux-x64/blender \
+  -b -noaudio --factory-startup --python tools/r2_1381_variety_control.py -- \
+  --n 4500 --sources 40                           # CONTROLS ALL PASS
+python3 tools/r2_1381_rescore.py                  # no Blender, no render
+```
+
+### Proposed defect-log entry (NOT written to `DEFECT-LOG-R2.md` — for the owner to merge)
+
+> **R2-1381 — CLOSED. The variety guard's plain-object path graded 4,500 copies
+> of two meshes as a pass.** `item_gate.per_instance_variation` held
+> geometry-nodes instances to 8–40 distinct sources, the same number of distinct
+> shapes and a 25 % commonest-share ceiling, but asked an item emitting plain
+> objects only for `cv_size >= 0.03` and `distinct_topologies >= 2`. Watched
+> failing before it was fixed: 4,500 plain objects from 2 source meshes at
+> random uniform scale measured `cv_size 0.11691`, `distinct_topologies 2`, and
+> the guard as shipped (`cea0e57`) returned **true**. The plain-object path now
+> fingerprints each object's evaluated mesh with `_shape_signature` — the same
+> function the realized path uses — and applies the same
+> `need_distinct_shapes(n)` and `top_share_limit(n)`, both now shared rather
+> than duplicated; the false accept measures **2 shapes against 40 required and
+> a 50 % commonest share against 25 %** and is refused. Positive controls pass
+> (4,500 objects from 40 bodies; 7 objects from 7 bodies). Re-scoring the 33
+> shipped reports: **no false accept shipped**, 0 strong-path verdicts move, and
+> **5 ACCEPTED items (`armco_post`, `catch_fence_post`, `crew_figure`,
+> `heras_fence_panel`, `pit_wall_unit`) become UNPROVEN** because the
+> commonest-shape share was never recorded on that path — they need a re-gate,
+> not a re-render. Residual, recorded not gated: variation baked into vertex
+> data rather than the object matrix still reads as distinct shapes; the report
+> now carries `distinct_shapes_scale_invariant` (298 shapes → 3 families in the
+> probe) so a reviewer can see it. Related and NOT fixed: `declared <= 1` still
+> exempts a population entirely, which covers 7 items on disk, one of them 459
+> objects. **Still open one level up:** `tools/instance_variety.py` skips
+> non-instances entirely (`:68`), so plain-object populations contribute zero
+> to `docs/instance_variety.json`, the film-wide variety number — the arm
+> `tools/r2_1881_variety_control.py --arm plainspam` exists to show exactly
+> that and it is unaffected by this fix.
