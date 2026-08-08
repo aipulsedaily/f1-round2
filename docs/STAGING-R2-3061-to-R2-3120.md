@@ -157,6 +157,41 @@ about:
 **The material has never been looked at, in a test frame or in a gate, under
 anything within thirty times the shutter of the frames it is being judged on.**
 
+### STATE THIS IN THE GENERAL FORM, BECAUSE IT IS NOT ABOUT ASPHALT
+
+This project keeps a family of defects called *"an instrument that reads the
+same whether the thing is there or not"* — `NEXT-REBUILD.md` says it now has
+more than a dozen members. **This is a new and different kind, and it needs its
+own name:**
+
+> **A TEST BED THAT DOES NOT RESEMBLE THE DELIVERY.**
+>
+> Every instrument here worked. `relief_gate` passed, `bump_relief_report`
+> audited the right wavelengths, the octave-contrast probe measured real
+> contrast, the four film-pose frames were chosen off a real per-frame table and
+> rendered at real delivery resolution. **Nothing was vacuous and nothing was
+> broken.** They were simply all run on frames where the ground drags **5.4 to
+> 69.7 px** across the open shutter, and the film delivers this surface on
+> frames where it drags **213 to 245 px**. The surface was never once evaluated
+> under the motion it actually experiences.
+
+The reason it evaded everything is that the test frames were selected *by
+sharpness* — `FILM_POSE_FRAMES` picked the frames where the surface is most
+readable, which is the natural thing to do when the question is "does the
+aggregate exist" and the exactly wrong thing to do when the question is "does
+the audience see it".
+
+**It generalises to every surface in this film that has been judged on a still,
+and most of them have been.** Anything tuned on `surface_test_*.blend`,
+`macro_audit.py` (which sets `use_motion_blur = False` explicitly, and says why
+— *"a still audit; blur would mask softness"*), `idpass_probe.py` or
+`driver_containment.py` has the same exposure. The right correction is not to
+stop using stills — a still is the correct bed for "is it authored" — but to
+require that any surface finding also be taken **once** at the delivered
+shutter, on a frame chosen from the DEFECT end of `track_scale.json`'s `mb`
+column rather than the sharp end. That is what `r2_3061_nearfield_scene.py`
+does, and it costs one extra camera in the same blend.
+
 Independently confirmed. A separate ray probe written for this task puts f1787's
 tile-centre smear at 205-232 px at 4K and its sampling at 3.35-4.05 mm/px;
 `track_scale.json` — a different instrument, written by a different agent for a
@@ -245,6 +280,35 @@ is stashed or checked out — six other agents are live in this repository and a
   key, so the live arm's sub-frame velocity across the open shutter would be the
   ease curve's rather than the delivered path's — the rig would reproduce a
   streak, but not the film's.
+
+---
+
+## R2-3064b — A COLD START IS 82 % OF A SMALL JOB'S BILL, AND THE SECOND ONE IS FREE
+
+Measured while costing this A/B, and it is worth more than this A/B.
+
+The R2-2881 4K arm cost **$0.1158**, of which **518 s of cold start** and only
+259 s of rendering — its own PROVENANCE says so: *"real driver of the cost was
+the 518 s cold start, not the 259 s of rendering."* `docs/operations.md:1339`
+puts a healthy cold start at **502 s**. So on any job short of an hour, the
+rental is mostly paying to boot.
+
+**Two jobs do not have to pay it twice, and no flag is needed.**
+`docs/operations.md:36`: `IDLE_GRACE` is *"seconds of idle before the instance
+is stopped"* — the instance is stopped on **idleness**, never on job completion.
+`rq`'s own `cmd_anim` docstring: *"Submit a frame range as one job… the scene
+must be uploaded once and stay resident for the whole shot."* So submitting the
+second job **while the first is still running** means the queue never goes idle,
+the timer never starts, and the second job inherits a warm instance. The only
+cost is one scene switch, governed by
+`max(SCENE_STARVE_SEC, SCENE_SWITCH_PAYBACK × reload_cost)`, and at ~58 MB per
+blend that is seconds.
+
+**This roughly halves a two-job A/B and it applies to the 4K master**, which is
+a dozen-plus rentals. It is recorded here rather than in the broker's own docs
+because vast-render is another agent's ground on this project; **somebody who
+owns `/home/zany/vast-render/docs/operations.md` should fold it in there**,
+beside the cold-start row it is derived from.
 
 ---
 
