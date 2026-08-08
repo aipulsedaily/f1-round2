@@ -37386,3 +37386,41 @@ Its own checks caught three real defects in development: a size-class bug
 putting a **1.5 m boulder in a 0.62 m clump**, parts scaled by **declared rather
 than measured** extents, and hedge segments normalised uniformly - **which would
 have divided their length by their height.**
+
+## R2-1175 — the near-band module reports ITS OWN GATE FAILING, and that is why the rest of it is credible
+
+Delivered: **`world/build_nearband.py`, 2,327 lines**, `build()` entry with
+`--full` / `--terrain-only` / `--measure` / `--selftest`, a design doc carrying
+its measured evidence, a **4-patch handover spec deliberately NOT applied**, and
+`nearband.blend` at 2.18 GB.
+
+```
+10,267 instances / 36,583 woody stems   =  1.45 % of terrain's triangle budget
+mean woody cover D 0-52 m   0.0008 -> 0.1065    133x
+zero-cover bins under 160 m      3 -> 0
+total cover from 50 m outward   ~0.17-0.23 against a 0.170 far field
+shadow amplification             3.733x
+selftest                         62/62 with SIXTEEN negative controls firing
+external variety guard           4,902,372 instances, INSTANCE_VARIETY_CLEAN
+```
+
+**Sixteen negative controls firing is the number to notice.** This project's
+commonest defect across 850 entries is a guard that cannot fail; a suite that
+demonstrates sixteen distinct ways of failing has earned its passes.
+
+**And it reports its own gate at `ok=0`.** The 40-52 m cover step is flagged
+**by the module's own instrument** - *"I attempted a fix and it did not move the
+ratio"* - rather than being tuned away or reframed. **Three things left open and
+documented rather than papered over:** that step, **the absence of any rendered
+frame**, and **the 25x planting ratio inside R2-1821's `built` keep-out
+district, which is that author's call and not its own.**
+
+**`world/build_terrain.py` was never modified** - verified by md5
+`01c5c684d65b3c47610562747f5897fa`, **unchanged across the whole build and
+recorded as part of the evidence**, so the terrain author's concurrent pass is
+provably uncontaminated. **Nothing staged, nothing committed.**
+
+**A module that ships with its own failing gate named, its disputed decision
+referred to the person who owns it, and the file it might have raced on hashed
+as untouched, is a module you can reason about.** The three open items are worth
+more than a clean report would have been.
