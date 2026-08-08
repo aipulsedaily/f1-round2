@@ -19,7 +19,31 @@ rendered before it is superseded by construction. Written 2026-08-07.
 | **Breach fines** | `world/breach_fines.blend` (101.9 MB library) landed by **`apply_breach.py --fines-lib`** — NOT a `build_film_scene` append | round-trip EXACT: 11,246 of 11,246 objects, 2,844,012 of 2,844,012 keys, worst world-position error **1.70e-06 m = 0.0037 px**, **0** visibility mismatches across f866/880/900/930/1200/2978 |
 | **Asphalt relief re-budget** | `world/build_surface.py` — 7 stages spanning 3.7 mm–1.03 m, all inside the camera's readable band, all from `relief_amplitude_for`; the 0.6 mm stage moved to roughness; six meso structures via `amp_field` | octave contrast **2.70× at f2000**, 1.90× on the wide; bit-identity survives (identical SHA256, 2,721,433 tris). Milled-repair feather **1.6 m → 0.13 m** with a sealed lip — the client's "patches in the land", second instance |
 | **Audio beat-1 camera** | `audio/master.py:117` builds `CameraPath()` with **no argument** and gets the stale rig. Beat 1's assembly layer is positional. | level error p50 **2.19 dB**, max 11.69; binaural azimuth max **178.1°** — the source is panned to the **wrong ear on 318 of 792 frames**. Beats 2–6 untouched |
-| **Beat-5 bridge blackout** | `render/film_path_R2971_PONT_B5_REBASED.json` — **staged, not merged**, and needs folding into the sheet like the beat-6 re-key | occlusion **12 → 0** across all four bridge bands; acceleration 47.7 m/s² *below* the shipped 49.1; clearance 2.391 m against a 1.20 m sphere; boundaries bit-identical |
+| **Beat-5 bridge blackout** | **IN SOURCE, R2-1701** — `tools/author_beats2_5.py` `pont_offset()`, applied inside `emit_keys`' sampler, and `docs/beat_sheet.json` is regenerated with it. **Nothing to fold in; the rebuild picks it up by running the source.** `render/film_path_R2971_PONT_B5_REBASED.json` is evidence, not an artefact — **do not merge it or any other `film_path_*.json`** | occlusion **12 → 0** across all four bridge bands; acceleration 47.7 m/s² *below* the shipped 49.1; clearance 2.391 m against a 1.20 m sphere; boundaries bit-identical. Re-measured from source: identical, and the film's worst authored camera acceleration drops 61.94 m/s² at f2194 → 53.75 at f2560 |
+| **Beat-5 framing re-pace** (promoted 2026-08-08 06:15) | `docs/beat_sheet.json` sha256 `d8825d84…` (was `7be83550…`). Diff vs snapshot is **`['beat5']` and nothing else** — `total_frames` 2978, `total_s` 124.1, `fps` 24, `time_map` and `beat6` bit-identical. **One continuous take, runtime untouched.** Regeneration is deterministic: `promo.json` came out byte-identical to the gated candidate | Post-promotion aim gate: **1 `STAGE RESULT` line, 0 FAIL lines**, `CAMERA_RIG_CONTINUOUS_AND_AIMED`, all six beats PASS, worst 12.02° at f2273 vs a 22.0 bound. The promoted rig's `_path.json` is bit-identical to the gated candidate's (`7fc6d688…`) — **the gate that passed is the gate on what is on disk** |
+
+> **CORRECTION — "alters ONLY the camera's aim, never its position" is WRONG, and it
+> was my sentence.** Measured on the two gated rig paths, at the rendered-frame level
+> the beat-5 promotion moves:
+>
+> ```
+> position   0.264 m    at f2584
+> lens       1.41 mm    at f2244
+> aim       12.045 deg  at f2273      all confined to f1195-f2677
+> ```
+>
+> **Cause, and it is not a bug:** `beat5.camera_keys` goes 317 → 319 and most keys' `t`
+> values shift by up to ~1/24 s, so the *interpolated* position between keys moves while
+> every aggregate — speed max, accel max, clearance min, seam pin — reads unchanged.
+> **That is precisely why no aggregate could see it.** Another instrument that reads the
+> same whether the thing is there or not; the family now has more than a dozen members.
+>
+> **Two consequences for whoever rebuilds:** (1) an A/B of this change shows a camera that
+> *moves* slightly as well as aims differently — **do not report that 0.264 m as a
+> regression**; (2) any confinement measurement that treats beat 5 as positionally frozen
+> will flag it. Beats 1-3 were **bit-identical** and beat 6 moved **0.00015°**; those are
+> the real baselines. This also falsifies **R2-853**'s "every camera position
+> byte-identical" for the *promoted* sheet — that claim was true of an earlier candidate.
 
 **Why `apply_breach` and not `build_film_scene`:** the applier **already opens
 the film once**, so the append lands inside a pass that was happening anyway -
