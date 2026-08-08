@@ -26,6 +26,15 @@
 render/*
 work/
 sim/tmp/
+# R2-2233: `tmp/` was untracked AND unignored, and `gitguard.py seed-inflight`
+# claims the whole dirty set -- so 160 of the 304 paths in the 2026-08-07 seed,
+# 53% of it, were scratch files. Every one of them was a future false refusal
+# aimed at whoever next touched that name. 86 entries, 733 MB, ZERO tracked
+# files, so ignoring it loses nothing and shrinks the next seed to a fifth.
+# The lesson is not about tmp/: a lock that claims "everything dirty" inherits
+# the tree's untidiness as policy, and the guard had no way to tell scratch
+# from somebody's unfinished work.
+tmp/
 __pycache__/
 *.pyc
 .venv/
