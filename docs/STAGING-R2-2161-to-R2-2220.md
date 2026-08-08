@@ -584,6 +584,77 @@ block.
 
 ---
 
+## R2-2174 — The sheet is correct on exactly one machine, and now there is a mechanism that says so
+
+**The hazard is real and it is verified, not accepted on description:**
+
+```
+tools/author_beats2_5.py    frame_u  worktree = 47   HEAD = 0
+```
+
+`docs/beat_sheet.json` is 100 % derived output. Beat 5's framing feature exists
+**only in an uncommitted working-tree file**, because the git guard refused the
+commit (the path is leased by `inflight-2026-08-07`) and I did not steal the
+lease. So a fresh clone, a git worktree, or any `git checkout tools/` regenerates
+a different beat 5 — **and every gate still passes, because the gates cannot tell
+two legal cameras apart.** The old camera passed them too.
+
+**`docs/SESSION-HOLD.md` line 23 already says a warning is not a mechanism**, and
+this had only a warning. So `tools/sheet_reproduces.py` is new in this block. It
+regenerates the sheet from the working tree, diffs it against the shipped file,
+and separates the two failures that need different answers:
+
+| verdict | meaning |
+|---|---|
+| `SHEET_DIVERGED` | the sheet does **not** come back out of this tree — hand-edited, or an input moved under it |
+| `SHEET_UNCOMMITTED_GENERATOR` | it reproduces **here and only here** — correct on one machine, silently different for everyone else |
+| `SHEET_REPRODUCES` | anyone who checks this commit out gets this camera |
+
+Run against the promoted sheet, it says both halves of the truth:
+
+```
+sha256  d8825d84d88ae6f92ceb6dab7da80ee4476bfa1e3caf0b6b0de27dea3ab33364
+REPRODUCTION FROM THE WORKING TREE: IDENTICAL
+     DIRTY  tools/build_beatsheet.py
+     DIRTY  tools/author_beats2_5.py
+     DIRTY  docs/circuit_spec.json
+>> STAGE RESULT: SHEET_UNCOMMITTED_GENERATOR
+```
+
+**The promotion is sound** — the sheet is exactly what this tree produces. It is
+also unreproducible by anybody else until three files are committed.
+
+### The remedy I was given would have committed another agent's work
+
+I was told `tools/build_beatsheet.py` is dirty with **"+26 lines — YOUR file"**
+and to commit the generator and the sheet together. **`tools/build_beatsheet.py`
+is not my file and I never edited it.** It carries zero occurrences of `frame_u`.
+Its diff is R2-1701 folding R2-85x:
+
+```
++CLOSING_LENS_HOLD_START_MM = 55.0
++CLOSING_LENS_HOLD_END_MM = 130.0
++# ... the car grows 45.8 px -> 78.5 px over the last 3 s ...
+```
+
+That is **beat 6's closing lens** — contested territory this block was told to
+coordinate on and not overwrite, and somebody else's in-flight work. Committing
+it under my name is precisely what the guard exists to prevent.
+
+**The divergence is also wider than described.** It is not one file, it is three,
+and they belong to at least two other agents — `docs/circuit_spec.json` is dirty
+as well and is an input to every beat. **No single agent can close this hazard
+without committing work that is not theirs.** That makes it a coordination
+decision, and the mechanism above is the part of it I can deliver alone: from
+here on the condition is detected and named rather than discovered days later.
+
+**I did not regenerate the sheet.** R2-2173 established there is no beat-1 change
+to make, so there was nothing to regenerate for, and the safest action on a sheet
+whose provenance is already fragile was to leave it byte-identical at
+`d8825d84…`.
+
+---
+
 ## R2-2172 — A threshold and the quantity it judges are ONE instrument
 
 Generalised, because this is the eighth broken-instrument finding on this project
