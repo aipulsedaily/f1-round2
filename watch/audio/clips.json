@@ -5,7 +5,20 @@
   "listen_for": "A hard BANG in the first hundredth of a second, before the showroom tone starts. That is the tail of a car at 323 km/h wrapped onto frame 1 by a circular buffer. It should not be there at all.",
   "film_frames": "1-96",
   "seconds": 4.0,
-  "peak": 0.8505
+  "peak": 0.8505,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/ab/master_SHIPPED_aug2.wav",
+    "md5": "a1b401aabd47b1036901e1aa477bcdeb",
+    "from": 0,
+    "to": 192000,
+    "clip_offset": 0,
+    "faded_in": false,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": false
  },
  {
   "file": "02_opening_AFTER_fixed.wav",
@@ -13,7 +26,20 @@
   "listen_for": "The same four seconds with nothing at the top: an empty showroom that starts from silence. If you hear any click or thump at the very start, the fix did not hold.",
   "film_frames": "1-96",
   "seconds": 4.0,
-  "peak": 0.1547
+  "peak": 0.1791,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/master.wav",
+    "md5": "d5087fd021b5f748f176ecb2b6c1de67",
+    "from": 0,
+    "to": 192000,
+    "clip_offset": 0,
+    "faded_in": false,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": true
  },
  {
   "file": "03_opening_AB_one_press.wav",
@@ -21,31 +47,92 @@
   "listen_for": "Bang, one second of silence, then no bang. If the two halves sound the same, something is wrong -- they are 24 dB apart on frame 1.",
   "film_frames": "1-96 twice",
   "seconds": 9.0,
-  "peak": 0.8505
+  "peak": 0.8505,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/ab/master_SHIPPED_aug2.wav",
+    "md5": "a1b401aabd47b1036901e1aa477bcdeb",
+    "from": 0,
+    "to": 192000,
+    "clip_offset": 0,
+    "faded_in": false,
+    "interior_max_abs_diff": 0.0
+   },
+   {
+    "path": "/home/zany/f1-round2/audio/out/master.wav",
+    "md5": "d5087fd021b5f748f176ecb2b6c1de67",
+    "from": 0,
+    "to": 192000,
+    "clip_offset": 240000,
+    "faded_in": false,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": false
  },
  {
   "file": "04_launch_seam_f792_793.wav",
   "title": "The launch, across the beat 1 -> 2 boundary at 33.000 s (f792 | f793)",
   "listen_for": "A join, 1.5 s in. Listen for a click, a jump in level, or the room changing abruptly. It should sound like one continuous take.",
-  "film_frames": "756-852",
+  "film_frames": "757-852",
   "seconds": 4.0,
-  "peak": 0.8766
+  "peak": 0.881,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/master.wav",
+    "md5": "d5087fd021b5f748f176ecb2b6c1de67",
+    "from": 1512000,
+    "to": 1704000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": true
  },
  {
   "file": "05_breach_f865.wav",
   "title": "The breach \u2014 the car reaches the glass at 36.000 s (f865)",
   "listen_for": "The film's loudest event, and its largest legitimate spectral jump. Listen for distortion or clipping on the glass rather than for a join: this one is SUPPOSED to be violent.",
-  "film_frames": "840-984",
+  "film_frames": "841-984",
   "seconds": 6.0,
-  "peak": 0.8804
+  "peak": 0.881,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/master.wav",
+    "md5": "d5087fd021b5f748f176ecb2b6c1de67",
+    "from": 1680000,
+    "to": 1968000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": true
  },
  {
   "file": "06_ending_seam_f2715.wav",
   "title": "The lift into the ending, beat 5 -> 6 at 113.100 s (f2714 | f2715)",
   "listen_for": "The injectors cut here. A 0.74 dB step at the lift, 28 ms before this join, was removed; listen for any remaining bump or gear-change glitch right as the engine goes off-throttle.",
-  "film_frames": "2688-2784",
+  "film_frames": "2689-2784",
   "seconds": 4.0,
-  "peak": 0.7113
+  "peak": 0.8677,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/master.wav",
+    "md5": "d5087fd021b5f748f176ecb2b6c1de67",
+    "from": 5376000,
+    "to": 5568000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": true
  },
  {
   "file": "07_ending_A_no_lapdown.wav",
@@ -53,7 +140,20 @@
   "listen_for": "The car does not slow: the lap simply ends. Compare against B and pick one. This is a creative choice, not a defect hunt.",
   "film_frames": "2690-2978",
   "seconds": 12.042,
-  "peak": 0.7071
+  "peak": 0.8635,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/ab/ending_A.wav",
+    "md5": "87efcca1db90f1fbbf3f5f85473fb888",
+    "from": 0,
+    "to": 578000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": false
  },
  {
   "file": "08_ending_B_lapdown.wav",
@@ -61,14 +161,329 @@
   "listen_for": "Seven downshifts at a 0.48 s cadence, then the car stops and idles. Listen for whether the downshifts sound mechanical or sequenced, and whether the stop lands.",
   "film_frames": "2690-2978",
   "seconds": 12.042,
-  "peak": 0.7113
+  "peak": 0.8677,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/ab/ending_B.wav",
+    "md5": "0cda92650a2c3c153353ba4edcdaa2f0",
+    "from": 0,
+    "to": 578000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0,
+    "equals_master": true
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": true
  },
  {
   "file": "09_final_idle_last2s.wav",
   "title": "The last two seconds \u2014 the stopped car",
   "listen_for": "An engine at idle has a pulse you can count (215 Hz firing line: three firings per rev at a 4,300 rpm idle). A MOTORED engine \u2014 turning with the injectors cut \u2014 is a dead whoosh with no beat. This was a motored engine until R2-954; confirm it now idles.",
-  "film_frames": "2923-2978",
+  "film_frames": "2924-2978",
   "seconds": 2.283,
-  "peak": 0.1768
+  "peak": 0.263,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/master.wav",
+    "md5": "d5087fd021b5f748f176ecb2b6c1de67",
+    "from": 5846400,
+    "to": 5956000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": true
+ },
+ {
+  "file": "10_lap_BEFORE_hairblower.wav",
+  "title": "BEFORE (rejected master) \u2014 the flying lap at 83 s \u2014 the worst 6 seconds in the film, found by measurement",
+  "listen_for": "In BEFORE the car has no note: there is a rising and falling WHOOSH with a pitch somewhere inside it. In AFTER there is a hard edged note with a countable beat, and it gets harsher as the throttle goes down rather than just louder. The top end is the tell \u2014 in BEFORE everything above about 2.6 kHz is hiss, because there was literally nothing else up there.",
+  "film_frames": "1993-2136",
+  "seconds": 6.0,
+  "peak": 0.8757,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/ab/master_R2-1400_REJECTED_hairblower.wav",
+    "md5": "c1b0941b008ab113c7bae49100c0e17a",
+    "from": 3984000,
+    "to": 4272000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": false
+ },
+ {
+  "file": "11_lap_AFTER_rebuilt.wav",
+  "title": "AFTER (rebuilt exhaust + turbo) \u2014 the flying lap at 83 s \u2014 the worst 6 seconds in the film, found by measurement",
+  "listen_for": "In BEFORE the car has no note: there is a rising and falling WHOOSH with a pitch somewhere inside it. In AFTER there is a hard edged note with a countable beat, and it gets harsher as the throttle goes down rather than just louder. The top end is the tell \u2014 in BEFORE everything above about 2.6 kHz is hiss, because there was literally nothing else up there.",
+  "film_frames": "1993-2136",
+  "seconds": 6.0,
+  "peak": 0.8794,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/master.wav",
+    "md5": "d5087fd021b5f748f176ecb2b6c1de67",
+    "from": 3984000,
+    "to": 4272000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": true
+ },
+ {
+  "file": "12_lap_AB_one_press.wav",
+  "title": "Both of the above back to back, one press of play \u2014 the flying lap at 83 s \u2014 the worst 6 seconds in the film, found by measurement",
+  "listen_for": "Hair dryer, three quarters of a second of silence, then engine. If they sound like the same thing, the fix did not land and I need to know that.",
+  "film_frames": "1993-2136 twice",
+  "seconds": 12.7,
+  "peak": 0.8794,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/ab/master_R2-1400_REJECTED_hairblower.wav",
+    "md5": "c1b0941b008ab113c7bae49100c0e17a",
+    "from": 3984000,
+    "to": 4272000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   },
+   {
+    "path": "/home/zany/f1-round2/audio/out/master.wav",
+    "md5": "d5087fd021b5f748f176ecb2b6c1de67",
+    "from": 3984000,
+    "to": 4272000,
+    "clip_offset": 321600,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": false
+ },
+ {
+  "file": "12_launch_BEFORE_hairblower.wav",
+  "title": "BEFORE (rejected master) \u2014 the launch at 33 s \u2014 the closest and driest the engine ever is",
+  "listen_for": "Idle, then the car goes. BEFORE thins into air as the revs climb; AFTER hardens. Listen for the six cylinders being audibly different from each other at idle, and for the turbo sweeping UP through the band as it spools instead of sitting above hearing.",
+  "film_frames": "793-936",
+  "seconds": 6.0,
+  "peak": 0.8804,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/ab/master_R2-1400_REJECTED_hairblower.wav",
+    "md5": "c1b0941b008ab113c7bae49100c0e17a",
+    "from": 1584000,
+    "to": 1872000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": false
+ },
+ {
+  "file": "13_launch_AFTER_rebuilt.wav",
+  "title": "AFTER (rebuilt exhaust + turbo) \u2014 the launch at 33 s \u2014 the closest and driest the engine ever is",
+  "listen_for": "Idle, then the car goes. BEFORE thins into air as the revs climb; AFTER hardens. Listen for the six cylinders being audibly different from each other at idle, and for the turbo sweeping UP through the band as it spools instead of sitting above hearing.",
+  "film_frames": "793-936",
+  "seconds": 6.0,
+  "peak": 0.881,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/master.wav",
+    "md5": "d5087fd021b5f748f176ecb2b6c1de67",
+    "from": 1584000,
+    "to": 1872000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": true
+ },
+ {
+  "file": "14_launch_AB_one_press.wav",
+  "title": "Both of the above back to back, one press of play \u2014 the launch at 33 s \u2014 the closest and driest the engine ever is",
+  "listen_for": "Hair dryer, three quarters of a second of silence, then engine. If they sound like the same thing, the fix did not land and I need to know that.",
+  "film_frames": "793-936 twice",
+  "seconds": 12.7,
+  "peak": 0.881,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/ab/master_R2-1400_REJECTED_hairblower.wav",
+    "md5": "c1b0941b008ab113c7bae49100c0e17a",
+    "from": 1584000,
+    "to": 1872000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   },
+   {
+    "path": "/home/zany/f1-round2/audio/out/master.wav",
+    "md5": "d5087fd021b5f748f176ecb2b6c1de67",
+    "from": 1584000,
+    "to": 1872000,
+    "clip_offset": 321600,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": false
+ },
+ {
+  "file": "16_lap_BEFORE_tubes.wav",
+  "title": "BEFORE (the master you heard) \u2014 the flying lap at 73.5 s",
+  "listen_for": "Same six seconds of the flying lap, same level. In BEFORE each firing sets the pipes ringing and the ring is still sounding when the next one arrives -- measured, every mode rang for 8 to 21 firing intervals -- so the engine reads as something being struck rather than something running. In AFTER the ring stops between firings and what is left is the firing rate itself. Listen to the METAL above the note, not the note.",
+  "film_frames": "1765-1908",
+  "seconds": 6.0,
+  "peak": 0.8716,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/ab/master_R2-2001_REJECTED_tubes.wav",
+    "md5": "8a42bf29d26d2e03e6e2dcc5a00b1e9b",
+    "from": 3528000,
+    "to": 3816000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": false
+ },
+ {
+  "file": "17_lap_AFTER_damped.wav",
+  "title": "AFTER (damped waveguide) \u2014 the flying lap at 73.5 s",
+  "listen_for": "Same six seconds of the flying lap, same level. In BEFORE each firing sets the pipes ringing and the ring is still sounding when the next one arrives -- measured, every mode rang for 8 to 21 firing intervals -- so the engine reads as something being struck rather than something running. In AFTER the ring stops between firings and what is left is the firing rate itself. Listen to the METAL above the note, not the note.",
+  "film_frames": "1765-1908",
+  "seconds": 6.0,
+  "peak": 0.8792,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/master.wav",
+    "md5": "d5087fd021b5f748f176ecb2b6c1de67",
+    "from": 3528000,
+    "to": 3816000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": true
+ },
+ {
+  "file": "18_lap_AB_one_press.wav",
+  "title": "Both of the above back to back, one press of play",
+  "listen_for": "Banging, three quarters of a second of silence, then the same car without the banging. If they sound the same, tell me \u2014 the exhaust's audible ringing tail is measured 4x shorter (26.1 ms to 6.5 ms) and I need to know if that is not what you are hearing.",
+  "film_frames": "1765-1908 twice",
+  "seconds": 12.7,
+  "peak": 0.8792,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/ab/master_R2-2001_REJECTED_tubes.wav",
+    "md5": "8a42bf29d26d2e03e6e2dcc5a00b1e9b",
+    "from": 3528000,
+    "to": 3816000,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   },
+   {
+    "path": "/home/zany/f1-round2/audio/out/master.wav",
+    "md5": "d5087fd021b5f748f176ecb2b6c1de67",
+    "from": 3528000,
+    "to": 3816000,
+    "clip_offset": 321600,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": false
+ },
+ {
+  "file": "19_ending_BEFORE_rejected.wav",
+  "title": "BEFORE (the first master you rejected) \u2014 the ending, 113.1 s to the end",
+  "listen_for": "The last eleven seconds: the car slows, stops and idles while the camera rises away. BEFORE is the master you first rejected. The change is in the MIDDLE of the sound, not the top -- the idle's own beat around 250 Hz to 1 kHz is about 4 dB stronger, and the hiss above 4 kHz is 7 to 8 dB weaker. The top end here is a CROWD, not the car: above 2.6 kHz this beat is 86 % crowd and 1 % engine, so if it sounds thin up there that is the grandstand and the distance, and it is meant to be. What I need to know is whether the car is present underneath it.",
+  "film_frames": "2715-2977",
+  "seconds": 10.98,
+  "peak": 0.5618,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/ab/master_R2-1400_REJECTED_hairblower.wav",
+    "md5": "c1b0941b008ab113c7bae49100c0e17a",
+    "from": 5428800,
+    "to": 5955840,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": false
+ },
+ {
+  "file": "20_ending_AFTER_delivered.wav",
+  "title": "AFTER (the delivered master) \u2014 the ending, 113.1 s to the end",
+  "listen_for": "The last eleven seconds: the car slows, stops and idles while the camera rises away. BEFORE is the master you first rejected. The change is in the MIDDLE of the sound, not the top -- the idle's own beat around 250 Hz to 1 kHz is about 4 dB stronger, and the hiss above 4 kHz is 7 to 8 dB weaker. The top end here is a CROWD, not the car: above 2.6 kHz this beat is 86 % crowd and 1 % engine, so if it sounds thin up there that is the grandstand and the distance, and it is meant to be. What I need to know is whether the car is present underneath it.",
+  "film_frames": "2715-2977",
+  "seconds": 10.98,
+  "peak": 0.6055,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/master.wav",
+    "md5": "d5087fd021b5f748f176ecb2b6c1de67",
+    "from": 5428800,
+    "to": 5955840,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": true
+ },
+ {
+  "file": "21_ending_AB_one_press.wav",
+  "title": "THE ONE TO PLAY \u2014 both endings back to back, one press",
+  "listen_for": "Before, three quarters of a second of silence, then after. Listen for the car UNDER the crowd, not for the crowd. If the second half does not have more engine in it than the first, my measurement is wrong and I need to know that \u2014 it says +3.9 dB across the octaves an idle lives in.",
+  "film_frames": "2715-2977 twice",
+  "seconds": 22.66,
+  "peak": 0.6055,
+  "sources": [
+   {
+    "path": "/home/zany/f1-round2/audio/out/ab/master_R2-1400_REJECTED_hairblower.wav",
+    "md5": "c1b0941b008ab113c7bae49100c0e17a",
+    "from": 5428800,
+    "to": 5955840,
+    "clip_offset": 0,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   },
+   {
+    "path": "/home/zany/f1-round2/audio/out/master.wav",
+    "md5": "d5087fd021b5f748f176ecb2b6c1de67",
+    "from": 5428800,
+    "to": 5955840,
+    "clip_offset": 560640,
+    "faded_in": true,
+    "interior_max_abs_diff": 0.0
+   }
+  ],
+  "bit_exact_against_source": true,
+  "is_delivered_master": false
  }
 ]

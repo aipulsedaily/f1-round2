@@ -373,14 +373,23 @@ def edge_gate(x, sr, label="", ref_s=1.0, headroom_db=3.0):
 
     SCOPE: THIS GATES MASTERS, AND IT IS USEFUL ON CUTS FOR A DIFFERENT REASON.
     Run on an extract, statistic 2 reports the EXTRACT's in-point, not the film's.
-    That is not a false positive, it is a second job worth having: measured on
-    `audio/out/ab/ending_A_nolapdown.wav` and `ending_B_lapdown.wav` -- the two
-    files cut for the human listening pass -- the in-point is a hard cut at 0.542
-    with a +9.67 dB step, because they were extracted without a fade. A listener
-    would hear that as a click on the clip's first frame and could easily charge
-    it to the film. The copies in `watch/audio/` are faded 5 ms and score -225 dB.
-    A gate that stops the listening pass from manufacturing the very artefact it
-    is convened to look for is earning its place twice.
+    That is not a false positive, it is a second job worth having: the ending
+    extracts cut for the human listening pass were hard cuts at their in-point,
+    because they were extracted without a fade. A listener would hear that as a
+    click on the clip's first frame and could easily charge it to the film. The
+    copies in `watch/audio/` are faded 5 ms and score -212 dB or better. A gate
+    that stops the listening pass from manufacturing the very artefact it is
+    convened to look for is earning its place twice.
+
+    THE NUMBERS THAT USED TO BE IN THIS PARAGRAPH DID NOT REPRODUCE (R2-2225).
+    It cited `audio/out/ab/ending_A_nolapdown.wav` and `ending_B_lapdown.wav` at
+    "a hard cut at 0.542 with a +9.67 dB step". Those files still exist, under
+    `audio/out/ab/brake/`, orphaned since 7 Aug 10:50 and read by no code path;
+    re-measured now they open at 0.258 / +5.08 dB and 0.259 / +5.13 dB. The
+    defect was real and is fixed -- the point of the paragraph stands -- but
+    quoting a specific number for a file nothing writes is exactly the "numbers
+    in the prose" failure the paragraph above this one warns about, committed by
+    the docstring that warns about it. Live tools name live files.
 
     WHAT THIS CANNOT PROVE. Statistic 2 asserts the master is topped and tailed,
     which is true of this film by construction -- it opens on a silent showroom
@@ -518,10 +527,37 @@ def control_edge(x, sr):
     d4 = edge_gate(v, sr, "CONTROL: a -40 dBFS sample at index 0 (below the gate's "
                           "sensitivity, stated)")
 
+    # THIS CONTROL FLIPPED, AND THE GATE IS NOT WHAT CHANGED (R2-2007).
+    #
+    # It used to be a stated negative: "rolling the finished master does NOT fail,
+    # because this film ends quiet." That was measured, and it was true of the
+    # master it was measured on -- `master_R2-1400_REJECTED_hairblower.wav` still
+    # scores +15.00 dB crest and a -1.57 dB step here, exactly the numbers the old
+    # docstring quoted, and still passes.
+    #
+    # What changed is the FILM. R2-954 replaced the ending's motored coast with a
+    # running idle, and an idling engine is both louder and impulsive where a
+    # dying coast was neither. The premise "this film ends quiet" is simply no
+    # longer a fact about this film, so wrapping its last 11.3 ms onto frame 1
+    # now really does put audible material on the first frame -- which is the
+    # defect this gate exists to catch. Failing it is the gate WORKING.
+    #
+    # Measured across every master on disk, onset step of the rolled copy:
+    #     master_SHIPPED_aug2                 -6.63 dB   (fails on crest instead)
+    #     master_R2-1400_REJECTED_hairblower  -1.57 dB   PASS  <- the old premise
+    #     master_B_lapdown (rejected #2)      +5.63 dB   FAIL  <- already flipped
+    #     current master                      +3.96 dB   FAIL
+    # It had ALREADY flipped on the master the client was given, and nobody saw
+    # it because the suite never reached its own aggregation (R2-2006).
+    #
+    # So this is now a MUST-FAIL, and it is content-dependent by nature: if the
+    # ending is ever made quiet again, this control will start passing and should
+    # be re-stated rather than forced.
     e = edge_gate(np.roll(np.asarray(x, dtype=np.float64), d, axis=0), sr,
-                  "CONTROL, STATED NEGATIVE: circularly rolling the FINISHED master "
-                  "does NOT fail -- this film ends quiet; the defect was in the "
-                  "reverb-tail buffer, not the master")
+                  "CONTROL: circularly rolling the FINISHED master wraps its own "
+                  "ending onto frame 1. Since R2-954 this film ends on a running "
+                  "idle rather than a motored coast, so that IS audible material "
+                  "on frame 1 and it MUST fail")
     return a, b, c, d4, e
 
 
@@ -703,6 +739,635 @@ def control_kerb(spec):
     f = classify(spec, pos, s, off, 20.0)
     return {"kerb_fraction_on_control_track": float((f["kerb"] > 0.5).mean()),
             "CONTROL_TRIGGERS_AS_EXPECTED": bool((f["kerb"] > 0.5).mean() > 0.8)}
+
+
+# ============================================ harmonic-to-noise (R2-1401) =====
+# THE GATE THAT SHOULD HAVE EXISTED FIRST.
+#
+# Every gate in this file passed a master the client described, in full, as
+# "audio is shit sounds like a hair blower". They were all correct: the levels
+# were legal, the seams were clean, the pitch tracked the telemetry to 1.3 cents
+# and the Doppler solved. Not one of them asked whether the sound was an ENGINE
+# rather than a fan, because that question is about the RATIO of line spectrum to
+# broadband -- and nothing measured it.
+#
+# A hair dryer is broadband noise shaped by a resonant cavity. An engine is a
+# line spectrum locked to a firing frequency. The difference is one number, and
+# these thresholds are where it goes.
+# THE THRESHOLDS ARE SET FROM BOTH MASTERS, MEASURED THE SAME WAY. Over the
+# flying lap, above 2.6 kHz: the rejected master reads -0.73 dB, this metric's
+# reading on PURE NOISE is -1.97 dB, and the rebuilt film reads about +6.7 dB.
+# The artefact the client rejected therefore sat 1.2 dB above a literal noise
+# generator. 3.0 dB is placed between them with margin on both sides.
+#
+# THE ABOVE-2.6 kHz NUMBER IS THE DISCRIMINATING ONE AND THE BROADBAND NUMBER IS
+# NOT, WHICH IS WORTH STATING PLAINLY. Across the whole band the two masters read
+# 3.49 dB and 3.89 dB -- barely separable -- because below 2.6 kHz the mix is
+# legitimately full of low-frequency bed content doing real work (wind buffet,
+# tyre cavity, the outdoor bed's weight). Gating hard on the broadband figure
+# would be gating on how much air the film has in it. The broadband threshold is
+# a floor against total collapse; it is not the test.
+HNR_MIN_DB = 2.0            # a floor, over the beats the engine drives
+HNR_HF_MIN_DB = 3.0         # THE test: above 2.6 kHz, where the defect lived
+
+# ============ R2-2221: THIS GATE SCORED THREE BEATS OF SIX, AND ON A MEDIAN ====
+# TWO DEFECTS, ONE STRUCTURAL AND ONE STATISTICAL, AND THE SECOND IS NOT THE ONE
+# IT LOOKS LIKE.
+#
+# (1) COVERAGE. `driven = ["2_launch", "4_transit", "5_lap"]` meant the breach and
+#     the ending were computed, printed into `per_beat`, and then not gated. The
+#     client spent 63 % of their listening time on exactly those two beats. A gate
+#     that scores half the film is not a gate on the film.
+#
+# (2) THE MEDIAN. A per-beat median says nothing whatever about the other half of
+#     the beat: 33.1 % of the flying lap sat below this gate's own 3.0 dB and it
+#     passed regardless.
+#
+# THE REPLACEMENT IS THE FRACTION BELOW THRESHOLD, WHICH IS THE PERCENTILE FLOOR
+# READ FROM THE OTHER END, AND IT IS THE END THAT CAN ACTUALLY BE GATED. Both
+# forms say the same thing -- "no more than F of this beat may sit below T" -- but
+# only one of them is decidable here, and that was measured rather than assumed:
+#
+#   * A PERCENTILE OF THE VALUE IS NOT ESTIMABLE ON A SHORT BEAT. Beat 2 is 3.0 s,
+#     which is 120 analysis windows at a 25 ms hop, and those windows overlap. A
+#     block bootstrap (200 ms blocks, 3000 resamples) puts the standard error of
+#     its 5th percentile at 2.69 dB and of its 20th at 1.51 dB. A floor placed on
+#     a number with a 2.7 dB error bar is not a floor. The separation available
+#     between this master and the one the client rejected, at those percentiles,
+#     is 0.58 and 1.42 dB -- smaller than the error bar on either.
+#   * THE FRACTION SEPARATES FAR BETTER, because the hair dryer's failure is that
+#     ALMOST EVERY window is noise-like, not that its median is low. Over the
+#     flying lap above 2.6 kHz: this master 0.331 of windows below 3.0 dB, the
+#     rejected master 0.911. Over the transit, 0.379 against 0.964. Its error is
+#     binomial on the effective sample count, so a short beat gets an honest error
+#     bar instead of a percentile estimated from six windows.
+#
+# Measured margins, in standard errors, of this master against its limit: worst
+# 3.52 (transit HF), best 29.5 (lap broadband). The value-percentile form could
+# not reach 3 sigma anywhere below its median.
+#
+# WHAT FRACTION IS PERMITTED, AND WHY THAT ONE. One rule, applied to every beat
+# and every limb and stated once: the limit is the midpoint between what THIS
+# master reads and what the adversary reads, rounded to the nearest 0.05.
+#   * On the above-2.6 kHz limb, THE TEST, the adversary is the tightest of the
+#     octave-matched hair dryer and the two masters the client rejected as one.
+#     That limb exists to catch a hair blower, so it is set against a hair blower.
+#   * On the broadband limb, THE FLOOR, the adversary is the octave-matched hair
+#     dryer alone. The rejected masters are not broadband failures and were never
+#     claimed to be (see the note above: 3.49 against 3.89 dB, barely separable),
+#     so setting the floor against them produces a limit tighter than the film
+#     itself -- measured, it lands at 0.05 with a 0.00-sigma margin. A floor is
+#     not the test and must not be set as though it were.
+#
+# THE LAP'S BOTTOM THIRD IS NOT A DEFECT, AND THAT WAS CHECKED RATHER THAN
+# ASSUMED. Correlation between a window's above-2.6 kHz ratio and its own level,
+# over the flying lap: +0.252. The low-scoring windows are the QUIET windows --
+# the car far away, pointing away, between passes. Restricting the lap to the
+# windows within 6 dB of its own 95th-percentile level (63.0 % of them) moves the
+# median from 5.84 to 8.03 dB. A film whose subject drives away from the camera
+# for part of a lap is required to have quiet windows; requiring 3 dB of
+# harmonic-to-noise inside them is requiring the car to be somewhere it is not.
+# That is why the permitted fraction is 0.60 on the lap and not 0.05.
+HNR_NOISE_FLOOR_DB = -1.0
+# One decibel above what this metric reads on something with no line spectrum at
+# all. Measured, per beat, on white noise wearing the master's own octave balance:
+# -1.95 to -2.10 dB above 2.6 kHz across all six beats, and on flat white noise
+# -1.98 to -2.01. It is the threshold for the beats the engine does not drive,
+# where 3.0 dB would be asking an empty showroom to sound like an engine.
+
+# THE APPLICABILITY TEST, AND WHY A GATE NEEDS ONE (R2-2221).
+# Extending this gate to all six beats immediately raises the question the old
+# `driven` list was silently answering: is this measurement MEANINGFUL in this
+# beat? Two ways it can fail to be, both measured from the audio, neither
+# declared by hand:
+#
+#   POWER -- can the metric tell this beat from a hair dryer at all? Measured as
+#   the difference in the gated statistic itself between the film and the
+#   octave-matched hair-dryer control. Below 0.20 there is nothing to gate.
+#
+#   AUDIBILITY -- would a change in the scored band be heard? The above-2.6 kHz
+#   limb scores a band; if that band carries almost none of the beat's energy,
+#   its harmonic-to-noise ratio is a ratio measured on nothing.
+#
+# These two numbers are what the old `driven` list was hiding, and they do not
+# agree with it. Assembly and the ending, both excluded before, are measurable on
+# both limbs and are gated here. The breach, also excluded before, fails BOTH
+# tests -- and fails them by two orders of magnitude, not marginally. See
+# `harmonic_gate` for the numbers and what covers the breach instead.
+HNR_POWER_MIN = 0.20        # fraction, film against the hair-dryer control
+HNR_HF_SHARE_MIN = 0.002    # of a beat's energy, above 2.6 kHz
+
+# (threshold dB, fraction of the beat permitted below it), per beat, per limb.
+# Produced by the one rule above; every endpoint and every margin is in the
+# staging note for R2-2221 and reproduced by `tools/audio_hnr_evidence.py`.
+BEAT_HNR_LIMITS = {
+    "1_assembly": {"hf": (HNR_NOISE_FLOOR_DB, 0.85), "bb": (HNR_NOISE_FLOOR_DB, 0.30)},
+    "2_launch":   {"hf": (HNR_HF_MIN_DB,      0.40), "bb": (HNR_MIN_DB,          0.50)},
+    "3_breach":   {"hf": (HNR_NOISE_FLOOR_DB, 0.65), "bb": (HNR_NOISE_FLOOR_DB, 0.55)},
+    "4_transit":  {"hf": (HNR_HF_MIN_DB,      0.65), "bb": (HNR_MIN_DB,          0.55)},
+    "5_lap":      {"hf": (HNR_HF_MIN_DB,      0.60), "bb": (HNR_MIN_DB,          0.60)},
+    "6_ending":   {"hf": (HNR_NOISE_FLOOR_DB, 0.65), "bb": (HNR_NOISE_FLOOR_DB, 0.30)},
+}
+# The beats whose threshold is the engine test rather than the noise floor. This
+# list is no longer the gate's coverage -- every beat is gated -- it only chooses
+# which of the two thresholds a beat is held to.
+HNR_ENGINE_BEATS = ("2_launch", "4_transit", "5_lap")
+
+# THE ONE DECLARED HOLE, AND EVERY NUMBER BEHIND IT.
+# `3_breach` is the only beat this metric cannot measure, and it fails both
+# applicability tests independently, each by about two orders of magnitude:
+#
+#   AUDIBILITY. The band above 2.6 kHz carries 0.020 % of the breach's energy --
+#   -47.7 dBFS, which is 31.5 dB below the flying lap's own RMS and 37 dB below
+#   the breach's. The next darkest beat in the film is the assembly at 1.02 %, so
+#   the breach is fifty times below anything else and the 0.20 % limit sits in a
+#   two-order-of-magnitude gap where no choice of it changes the answer. The
+#   +0.09 dB that this beat scores above 2.6 kHz is a ratio computed on one part
+#   in five thousand of what anybody hears.
+#
+#   POWER. On the broadband limb, where the breach's energy actually is, this
+#   metric scores the film 0.044 BELOW an octave-matched hair dryer -- the wrong
+#   sign. That is not a bug: the breach is 995 shard contacts and a laminated
+#   pane, and a median-filtered spectral floor cannot find a line spectrum in 995
+#   randomly-timed inharmonic rings because there is not one there. Breaking
+#   glass is broadband on purpose.
+#
+# WHAT COVERS THE BREACH INSTEAD, since "this gate cannot see it" is not the same
+# as "nothing does": `level_gate` for distortion and clipping (it is the film's
+# loudest event, -10.4 dBFS RMS), `seam_gate` at both its boundaries (it is also
+# the film's largest legitimate spectral jump, which is why the seam gate scores
+# a local percentile rather than an absolute step), and `edge_gate` on the master
+# that contains it.
+#
+# THIS IS A DECLARATION, NOT A SKIP. If any OTHER beat ever becomes unmeasurable
+# on both limbs it lands in `undeclared_unmeasurable` and the gate FAILS. And the
+# declaration cannot rot in the beat's favour: the two numbers above are
+# recomputed from the audio every run, so if a future edit puts high frequency
+# back into the breach, its share rises past 0.20 %, the limb becomes applicable
+# on its own, and the breach starts being gated with no edit to this file.
+HNR_DECLARED_UNMEASURABLE = ("3_breach",)
+
+
+def _hairdryer_like(x, sr, seed=1401):
+    """White noise wearing `x`'s own octave balance: the adversary, in one place.
+
+    This exact construction was already the strongest of `control_harmonic`'s
+    three controls -- it has the film's tonal balance and no line spectrum
+    anywhere, so anything it scores well on is being scored on brightness or
+    level rather than on harmonicity. R2-2221 promotes it from a control to the
+    reference the gate's own applicability and limits are measured against, so
+    that "can this metric see anything here" is a number from this run rather
+    than a judgement made once and written into a list.
+    """
+    rng = np.random.default_rng(seed)
+    nz = rng.standard_normal(x.shape[0])
+    out = np.zeros_like(nz)
+    edges = [31.25 * 2.0 ** k for k in range(10)]
+    for lo, hi in zip(edges[:-1], edges[1:]):
+        if hi >= sr * 0.49:
+            break
+        sos = _sig.butter(4, [lo, min(hi, sr * 0.45)], btype="bandpass",
+                          fs=sr, output="sos")
+        bx = _sig.sosfilt(sos, x)
+        bn = _sig.sosfilt(sos, nz)
+        out += bn * (np.sqrt(np.mean(bx ** 2))
+                     / max(np.sqrt(np.mean(bn ** 2)), 1e-12))
+    return out
+
+
+# ---------------------------------------------------------------- waveguide ---
+# WHY THIS GATE EXISTS (R2-2004). Every gate above passed a master the client described as
+# "a wind machine with someone banging on tubes", and the harmonic gate passed it
+# most emphatically of all -- HNR above 2.6 kHz went 3.2 -> 23.7 dB in the
+# rebuild that CAUSED the banging. That is not a bug in the harmonic gate. HNR
+# asks "is this tonal rather than noisy", and a struck tube is extremely tonal.
+# It scores well. Nothing we owned asked the other question: does the tone STOP
+# between firing events, or does it ring on into the next one.
+#
+# So this gate measures decay, not spectrum, and it does it on the synthesiser's
+# own constants rather than on the rendered wav -- the exhaust's mode structure is
+# fully determined by PRIMARY_L_CYL, the loop gains and the damping corners, so
+# solving it directly is exact, instant, and cannot be masked by the wind bed
+# sitting on top of it in the mix.
+#
+# The measurement. Each pipe is y[n] = x[n] -/+ g*LP(y[n-D]), whose denominator
+# is the polynomial (1 - c z^-1) -/+ g(1-c) z^-D. Its roots ARE the modes: the
+# angle of each root gives the mode frequency, the magnitude gives its decay, and
+# T60 = 60 / (-20 log10 |z|) samples. Compare that against the interval between
+# firing events, 20/rpm seconds for a V6 (three firings per revolution).
+#
+# The threshold, and why it is not 1.0. At 11,000 rpm a V6 fires every 1.82 ms
+# while one primary's acoustic round trip is 1.91 ms, so a real engine ALWAYS has
+# a previous pulse still in the pipe and a ratio below 1 is not physically
+# available. What separates an engine from a struck tube is the DEPTH of that
+# overlap. Measured on the two masters the client rejected, the median mode rang
+# for 7.5 firing intervals and the worst for 20.7; at 8.0 the gate would have
+# failed both. The rebuilt values sit at 3.0 median / 6.9 worst.
+WAVEGUIDE_RPM = 11000.0      # representative of the flying lap: rpm_at_vmax is 13,143
+WAVEGUIDE_MEDIAN_MAX = 5.0   # median mode T60, in firing intervals
+WAVEGUIDE_WORST_MAX = 9.0    # the longest-ringing mode below 9 kHz
+WAVEGUIDE_HARMONIC_MAX_PCT = 4.0   # see below
+
+
+def pipe_modes(length_m, loop_gain, damp_hz, c_gas, sr, invert):
+    """Exact mode frequencies and T60 of one `dsp.comb_pipe`, by root-solving.
+
+    Not an impulse-response estimate. A Schroeder decay on a band-filtered
+    impulse response measures the ANALYSIS FILTER's ringing as much as the
+    pipe's -- at 125 Hz a third-octave Butterworth has a T60 of 179 ms on its
+    own, which is longer than anything the pipe does. Root-solving has no such
+    floor and no such ambiguity.
+    """
+    D = max(int(round(2.0 * length_m / c_gas * sr)), 4)
+    c = float(np.exp(-2.0 * np.pi * min(damp_hz, sr * 0.45) / sr))
+    s = -1.0 if invert else 1.0
+    a = np.zeros(D + 1)
+    a[0], a[1] = 1.0, -c
+    a[D] -= s * loop_gain * (1.0 - c)
+    r = np.roots(a)
+    f = np.angle(r) / (2.0 * np.pi) * sr
+    keep = (f > 1.0) & (np.abs(r) < 1.0)
+    f, mag = f[keep], np.abs(r[keep])
+    t60 = 60.0 / np.maximum(-20.0 * np.log10(np.maximum(mag, 1e-12)), 1e-12) / sr
+    o = np.argsort(f)
+    return f[o], t60[o]
+
+
+def waveguide_gate(sr=96000):
+    """Does the exhaust get DRIVEN by the firing series, or STRUCK by it?"""
+    from audio import engine as _E
+    fire = 20.0 / WAVEGUIDE_RPM                     # V6: three firings per rev
+    out = {"rpm": WAVEGUIDE_RPM, "firing_interval_s": fire, "elements": []}
+    worst_ratio, medians = 0.0, []
+    worst_harm = 0.0
+    elems = [("primary_cyl%d" % i, L, _E.PIPE_LOOP_GAIN, _E.PIPE_DAMP_HZ, True)
+             for i, L in enumerate(_E.PRIMARY_L_CYL)]
+    elems += [("collector", _E.COLLECTOR_L, _E.COLLECTOR_LOOP_GAIN,
+               _E.COLLECTOR_DAMP_HZ, False),
+              ("tailpipe", _E.TAILPIPE_L, _E.PIPE_LOOP_GAIN * 0.8,
+               _E.PIPE_DAMP_HZ, False)]
+    for name, L, g, dh, inv in elems:
+        f, t = pipe_modes(L, g, dh, _E.C_EXHAUST, sr, inv)
+        sel = f < 9000.0
+        if sel.sum() < 3:
+            continue
+        f, t = f[sel], t[sel]
+        ratio = t / fire
+        # Harmonicity: an in-loop lowpass is dispersive, so damping the ring
+        # harder detunes the upper modes and turns the pipe INTO a bell. Whatever
+        # a future edit does to shorten the ring, it may not do it this way.
+        n = np.arange(1, len(f) + 1) * (2 if inv else 1) - (1 if inv else 0)
+        harm_pct = float(np.abs(f - f[0] * n).max() / (f[0] * n.max()) * 100.0)
+        medians.append(float(np.median(ratio)))
+        worst_ratio = max(worst_ratio, float(ratio.max()))
+        worst_harm = max(worst_harm, harm_pct)
+        out["elements"].append({
+            "name": name, "length_m": float(L), "loop_gain": float(g),
+            "f0_hz": float(f[0]), "modes_below_9k": int(len(f)),
+            "t60_at_f0_ms": float(t[0] * 1e3),
+            "q_at_f0": float(np.pi * f[0] * t[0] / 6.91),
+            "median_ring_through": float(np.median(ratio)),
+            "worst_ring_through": float(ratio.max()),
+            "max_harmonic_error_pct": harm_pct,
+        })
+    out["median_ring_through"] = float(np.max(medians)) if medians else float("inf")
+    out["worst_ring_through"] = worst_ratio
+    out["max_harmonic_error_pct"] = worst_harm
+    out["threshold_median"] = WAVEGUIDE_MEDIAN_MAX
+    out["threshold_worst"] = WAVEGUIDE_WORST_MAX
+    out["threshold_harmonic_pct"] = WAVEGUIDE_HARMONIC_MAX_PCT
+    out["PASS"] = bool(out["median_ring_through"] <= WAVEGUIDE_MEDIAN_MAX
+                       and worst_ratio <= WAVEGUIDE_WORST_MAX
+                       and worst_harm <= WAVEGUIDE_HARMONIC_MAX_PCT)
+    return out
+
+
+def control_waveguide(sr=96000):
+    """Positive controls: the gate must FAIL the values that produced the
+    complaint, and must FAIL the tempting wrong fix.
+
+    [0] the shipped 0.70/0.62 -- what the client called banging on tubes.
+    [1] 0.85: a nearly lossless pipe, worse still.
+    [2] a 3rd-order in-loop lowpass at 1200 Hz with the delay compensated back to
+        pitch. It shortens the ring beautifully (T60 at 3 kHz 18.5 -> 2.8 ms) and
+        it is the WRONG ANSWER: it stretches the mode series 20.5 % off the odd
+        c/4L harmonics, which is 323 cents, which is a tubular bell. If the
+        harmonicity limb of this gate ever gets deleted, this control passes.
+    [3] STATED NEGATIVE: the values actually shipped must PASS.
+    """
+    from audio import engine as _E
+    fire = 20.0 / WAVEGUIDE_RPM
+    L = _E.PRIMARY_L_CYL[0]
+    out = []
+    for label, g, dh, order in [
+            ("R2-1401 shipped: loop_gain 0.70, damp 3200 (the rejected master)",
+             0.70, 3200.0, 1),
+            ("near-lossless pipe: loop_gain 0.85", 0.85, 3200.0, 1),
+            ("3rd-order in-loop lowpass at 1200 Hz (short ring, INHARMONIC)",
+             0.44, 1200.0, 3),
+            ("STATED NEGATIVE: the shipped values", _E.PIPE_LOOP_GAIN,
+             _E.PIPE_DAMP_HZ, 1)]:
+        if order == 1:
+            f, t = pipe_modes(L, g, dh, _E.C_EXHAUST, sr, True)
+        else:
+            c = float(np.exp(-2.0 * np.pi * dh / sr))
+            f0 = _E.C_EXHAUST / (4.0 * L)
+            w = 2.0 * np.pi * f0 / sr
+            pd = -np.angle(((1 - c) / (1 - c * np.exp(-1j * w))) ** order) / w
+            D = max(int(round(2.0 * L / _E.C_EXHAUST * sr - pd)), 4)
+            num, den = np.array([1.0]), np.array([1.0])
+            for _ in range(order):
+                num = np.convolve(num, [1.0 - c])
+                den = np.convolve(den, [1.0, -c])
+            a = np.zeros(max(len(den), D + len(num)))
+            a[:len(den)] = den
+            a[D:D + len(num)] += g * num
+            r = np.roots(a)
+            f = np.angle(r) / (2.0 * np.pi) * sr
+            k = (f > 1.0) & (np.abs(r) < 1.0)
+            f, mag = f[k], np.abs(r[k])
+            t = 60.0 / np.maximum(-20.0 * np.log10(np.maximum(mag, 1e-12)),
+                                  1e-12) / sr
+            o = np.argsort(f)
+            f, t = f[o], t[o]
+        sel = f < 9000.0
+        f, t = f[sel], t[sel]
+        ratio = t / fire
+        n = np.arange(1, len(f) + 1) * 2 - 1
+        harm = float(np.abs(f - f[0] * n).max() / (f[0] * n.max()) * 100.0)
+        out.append({
+            "label": label,
+            "median_ring_through": float(np.median(ratio)),
+            "worst_ring_through": float(ratio.max()),
+            "max_harmonic_error_pct": harm,
+            "PASS": bool(np.median(ratio) <= WAVEGUIDE_MEDIAN_MAX
+                         and ratio.max() <= WAVEGUIDE_WORST_MAX
+                         and harm <= WAVEGUIDE_HARMONIC_MAX_PCT),
+        })
+    return out
+
+
+# 43 ms, NOT 93 ms. The source is a car whose pitch moves under both rpm and
+# Doppler: at the doppler station the ratio spans 1.29 to 0.81 over 7 s, so inside
+# a 93 ms window an 8 kHz partial sweeps ~48 Hz -- four analysis bins -- and
+# smears itself into the very noise floor it is being compared against. Measured
+# on the rebuilt engine bus alone over the lap, above 2.6 kHz:
+#     21 ms   4.52 dB   (too short: 46 Hz bins cannot resolve the series at all)
+#     43 ms  14.35 dB
+#     93 ms  10.38 dB
+#    186 ms   5.84 dB
+# 43 ms is long enough to resolve a 600 Hz firing series (23 Hz bins) and short
+# enough that the lines stay put inside it. THE REJECTED MASTER WAS RE-MEASURED AT
+# THE SAME WINDOW BEFORE THE THRESHOLDS ABOVE WERE CHOSEN, so the comparison is
+# like for like and the window was not picked to flatter the fix.
+def hnr_profile(x, sr, win_s=0.043, hop_s=0.025, fmin=60.0, fmax=16000.0,
+                hf_from=2600.0):
+    """Tonal-to-broadband ratio in dB, per window, with NO f0 estimate.
+
+    Taking a running median of the power spectrum over a 1/3-octave-wide span
+    gives the BROADBAND floor: a median is insensitive to the sparse narrow peaks
+    a harmonic series puts in a spectrum, and tracks the noise underneath them.
+    Energy above that floor is therefore the line spectrum, and the floor's own
+    energy is the noise. Their ratio is the measurement.
+
+    Why not track f0 and sum its harmonics: by the time the signal reaches the
+    master it has been through a moving Doppler shift, two facade reflections and
+    a 2.4 s room tail, so the lines are neither stationary nor exactly harmonic.
+    The median floor does not care -- it finds structure wherever the structure
+    is, which is what "does this sound like an engine" actually asks.
+    """
+    from scipy.ndimage import median_filter
+    n = 1 << int(np.ceil(np.log2(win_s * sr)))
+    hop = int(hop_s * sr)
+    w = np.hanning(n)
+    f = np.fft.rfftfreq(n, 1.0 / sr)
+    band = (f >= fmin) & (f <= fmax)
+    hb = band & (f >= hf_from)
+    med = max(int(round(0.26 * 1000.0 / (sr / n))), 5)
+    med += 1 - med % 2
+    starts = np.arange(0, x.shape[0] - n, hop)
+    hnr = np.empty(starts.shape[0])
+    hnr_hf = np.empty(starts.shape[0])
+    for i, a0 in enumerate(starts):
+        P = np.abs(np.fft.rfft(x[a0:a0 + n] * w)) ** 2
+        floor = median_filter(P, size=med, mode="nearest")
+        tonal = np.maximum(P - floor, 0.0)
+        hnr[i] = 10.0 * np.log10(max(tonal[band].sum(), 1e-30)
+                                 / max(floor[band].sum(), 1e-30))
+        hnr_hf[i] = 10.0 * np.log10(max(tonal[hb].sum(), 1e-30)
+                                    / max(floor[hb].sum(), 1e-30))
+    return starts / sr, hnr, hnr_hf
+
+
+def harmonic_gate(x, sr, sheet, label="", power_ref=None, applicability=None):
+    """Is the film's dominant voice a line spectrum or a noise band?
+
+    EVERY BEAT IS SCORED AND EVERY MEASURABLE BEAT IS GATED (R2-2221). The old
+    docstring said beat 1 is an empty showroom, beat 3 a breaking window and
+    beat 6 a distant idle, that none of them is supposed to be harmonic, and that
+    scoring them would measure the wrong thing. Two thirds of that was wrong, and
+    the wrong two thirds were the two beats the client spent most of their
+    listening time on.
+
+    The assembly and the ending ARE measurable -- against an octave-matched hair
+    dryer they separate by 0.245 and 0.661 in the gated statistic -- they are
+    simply not ENGINE beats, so they are held to a floor one decibel above a
+    noise generator instead of to the engine's 3.0 dB. Only the breach is
+    genuinely unmeasurable, and it is declared, with both of its numbers, at
+    `HNR_DECLARED_UNMEASURABLE`.
+
+    Which threshold a beat is held to is `HNR_ENGINE_BEATS`; that tuple is no
+    longer the gate's coverage.
+
+    MONO-SAFE, AND IT WAS NOT (R2-2006). `hnr_profile` windows with a 1-D Hann,
+    so a stereo argument raised `operands could not be broadcast (4096,2)
+    (4096,)`. `main()` passes the master, which is stereo, so **this gate threw
+    every time the suite ran it** -- and because the throw happened after the
+    six gates before it had already printed, the run looked healthy right up to
+    the point it died, and `verify_report.json` was simply never rewritten.
+    That is why the report on disk carries six gates and no `harmonic`: the
+    gate written to catch the hair dryer had never once run inside the suite.
+    It was only ever exercised standalone, on mono, which is why nobody saw it.
+    `control_harmonic` reduces its own control files to mono explicitly, so the
+    requirement was known -- it was just never applied to the master itself.
+    """
+    x = np.asarray(x)
+    if x.ndim > 1:
+        x = x.mean(axis=1)
+    t, h, hf = hnr_profile(x, sr)
+    if power_ref is None:
+        # the octave-matched hair dryer, built from THIS signal, is the adversary
+        # every applicability and limit number in this gate is measured against.
+        power_ref = _hairdryer_like(x, sr)
+    tr, hr, hfr = hnr_profile(power_ref, sr)
+    sos_hi = _sig.butter(6, 2600.0, btype="highpass", fs=sr, output="sos")
+    x_hf = _sig.sosfilt(sos_hi, x)
+
+    per_beat, fails, not_applicable = {}, [], []
+    for b in sheet["beats"]:
+        name = b["name"]
+        m = (t >= b["start_s"]) & (t < b["start_s"] + b["duration_s"])
+        mr = (tr >= b["start_s"]) & (tr < b["start_s"] + b["duration_s"])
+        if not m.any():
+            continue
+        s0 = int(round(b["start_s"] * sr))
+        s1 = int(round((b["start_s"] + b["duration_s"]) * sr))
+        e_all = float(np.mean(x[s0:s1] ** 2))
+        share = float(np.mean(x_hf[s0:s1] ** 2) / max(e_all, 1e-30))
+        lim = BEAT_HNR_LIMITS.get(name)
+        rec = {"hnr_db": float(np.median(h[m])),
+               "hnr_above_2k6_db": float(np.median(hf[m])),
+               "windows": int(m.sum()),
+               "engine_driven": name in HNR_ENGINE_BEATS,
+               "energy_share_above_2k6": share,
+               "band_level_above_2k6_dbfs":
+                   float(10.0 * np.log10(max(np.mean(x_hf[s0:s1] ** 2), 1e-30))),
+               "limbs": {}}
+        for limb, prof, prof_ref in (("hf", hf, hfr), ("bb", h, hr)):
+            thr, permitted = lim[limb]
+            frac = float((prof[m] < thr).mean())
+            frac_ref = float((prof_ref[mr] < thr).mean()) if mr.any() else 1.0
+            power = frac_ref - frac
+            why = None
+            if power < HNR_POWER_MIN:
+                why = ("no power: this metric scores the beat %+.3f against an "
+                       "octave-matched hair dryer on this limb, so there is "
+                       "nothing here to gate" % power)
+            elif limb == "hf" and share < HNR_HF_SHARE_MIN:
+                why = ("not audible: the band above 2.6 kHz carries %.4f%% of "
+                       "this beat's energy (limit %.2f%%), so its harmonic-to-"
+                       "noise ratio is a ratio measured on nothing"
+                       % (100.0 * share, 100.0 * HNR_HF_SHARE_MIN))
+            ok = why is None
+            # APPLICABILITY IS A PROPERTY OF THE FILM, NOT OF THE SIGNAL UNDER
+            # TEST, and conflating the two is a hole big enough to drive the
+            # whole gate through (R2-2221). Both applicability tests compare the
+            # signal against a hair dryer -- so when the signal IS a hair dryer,
+            # every limb reads zero power, every limb goes NOT APPLICABLE, and
+            # the control passes by having nothing left to fail. Measured on the
+            # first build of this gate: control (2) PASS=True with no failures,
+            # and the master the client rejected failed only one beat of three
+            # because the other two had "no power" against a copy of the defect
+            # they contain. A control is scored against the FILM's applicability,
+            # which `main` computes once from the master and hands down.
+            if applicability is not None:
+                ok = bool(applicability.get(name, {}).get(limb, False))
+                if not ok and why is None:
+                    why = ("not applicable on the master, and applicability is "
+                           "the master's property, not this signal's")
+            rec["limbs"][limb] = {
+                "threshold_db": thr,
+                "fraction_below": frac,
+                "fraction_permitted_below": permitted,
+                "fraction_below_on_hairdryer_control": frac_ref,
+                "power_vs_hairdryer": power,
+                "APPLICABLE": ok,
+                "not_applicable_because": why,
+                "PASS": bool(frac <= permitted) if ok else None,
+            }
+            if ok and frac > permitted:
+                fails.append("%s.%s %.3f > %.2f below %.1f dB"
+                             % (name, limb, frac, permitted, thr))
+            if not ok:
+                not_applicable.append("%s.%s: %s" % (name, limb, why))
+        per_beat[name] = rec
+
+    # A beat with no applicable limb is a hole, and it must be a DECLARED hole.
+    # `3_breach` is the only one and it is declared below; anything else that
+    # becomes unmeasurable fails the gate rather than falling quietly out of it.
+    uncovered = [n for n, r in per_beat.items()
+                 if not any(l["APPLICABLE"] for l in r["limbs"].values())]
+    undeclared = [n for n in uncovered if n not in HNR_DECLARED_UNMEASURABLE]
+    eng = [per_beat[k] for k in HNR_ENGINE_BEATS if k in per_beat]
+    return {
+        "label": label,
+        "method": ("median-filtered spectral floor; tonal energy above the floor "
+                   "against the floor's own energy, 60 Hz - 16 kHz, and again "
+                   "restricted to above 2.6 kHz. GATED ON THE FRACTION OF EACH "
+                   "BEAT BELOW ITS THRESHOLD, not on the beat's median, and on "
+                   "every beat rather than on the three the engine drives."),
+        "per_beat": per_beat,
+        "beats_scored": sorted(per_beat),
+        "beats_gated": sorted(n for n in per_beat if n not in uncovered),
+        "beats_unmeasurable": sorted(uncovered),
+        "declared_unmeasurable": sorted(HNR_DECLARED_UNMEASURABLE),
+        "undeclared_unmeasurable": sorted(undeclared),
+        "not_applicable": sorted(not_applicable),
+        "failures": sorted(fails),
+        "applicability": {n: {k: v["APPLICABLE"] for k, v in r["limbs"].items()}
+                          for n, r in per_beat.items()},
+        "applicability_source": "this signal" if applicability is None else "the master",
+        "engine_driven_beats": list(HNR_ENGINE_BEATS),
+        # kept so the numbers in every earlier report stay comparable
+        "worst_engine_beat_hnr_db": float(min(g["hnr_db"] for g in eng)),
+        "worst_engine_beat_hnr_above_2k6_db":
+            float(min(g["hnr_above_2k6_db"] for g in eng)),
+        "threshold_hnr_db": HNR_MIN_DB,
+        "threshold_hnr_above_2k6_db": HNR_HF_MIN_DB,
+        "PASS": bool(not fails and not undeclared),
+    }
+
+
+def control_harmonic(x, sr, sheet, applicability=None):
+    """Positive controls: things that ARE hair dryers must fail this gate.
+
+    1. The shipped R2-1400 master itself, if it is still on disk. This is the
+       strongest control available -- the artefact the client actually rejected,
+       scored by the gate written to catch it. Skipped, and said so, if absent.
+    2. A synthesised hair dryer: white noise through the SAME octave-band
+       envelope as the master, so it has the film's exact tonal balance and no
+       line spectrum at all. If the gate were secretly measuring brightness or
+       level rather than harmonicity, this would pass.
+    3. STATED NEGATIVE: the master with its top four octaves replaced by noise of
+       the same band energy. This is the R2-1401 defect reconstructed on top of a
+       fixed master, and it must fail on the HF threshold while still passing the
+       broadband one -- which is what makes those two thresholds separate numbers.
+
+    THE CONTROLS ARE SCORED AGAINST THE MASTER'S OWN APPLICABILITY (R2-2221).
+    Every call below is handed the SAME `power_ref` the real gate used -- the
+    hair dryer built from the master. If each control were allowed to build its
+    own reference, control (2) would be measured against a copy of itself, every
+    limb would read zero power, every limb would go NOT APPLICABLE, and a literal
+    hair dryer would pass this gate by having nothing left to fail. A control
+    must be held to the film's thresholds, not to its own.
+    """
+    # Same stereo trap as `harmonic_gate` (R2-2006), one step further in: controls
+    # 2 and 3 BUILD their signal out of `x`, so a stereo master produced a stereo
+    # band-split added to mono noise. Reduce once, here, and every control below
+    # is built from the same mono the gate itself scores.
+    x = np.asarray(x)
+    if x.ndim > 1:
+        x = x.mean(axis=1)
+    ref = _hairdryer_like(x, sr)
+    out = []
+    # kept deliberately: this exact file is the artefact the client rejected, and
+    # it is the only control here that was not constructed to fail.
+    old = os.path.join(ROOT, "audio", "out", "ab",
+                       "master_R2-1400_REJECTED_hairblower.wav")
+    if os.path.exists(old):
+        y, ysr = sf.read(old, dtype="float64")
+        if y.ndim > 1:
+            y = y.mean(axis=1)
+        out.append(harmonic_gate(y, ysr, sheet, power_ref=ref, applicability=applicability,
+                                 label="CONTROL: the R2-1400 master the client "
+                                       "rejected as a hair blower"))
+
+    # (2) noise with the master's own octave balance
+    out.append(harmonic_gate(ref, sr, sheet, power_ref=ref, applicability=applicability,
+                             label="CONTROL: white noise wearing the master's own "
+                                   "octave balance -- a literal hair dryer"))
+
+    # (3) the R2-1401 defect rebuilt on top of whatever `x` is
+    rng = np.random.default_rng(1402)
+    sos_hi = _sig.butter(4, 2600.0, btype="highpass", fs=sr, output="sos")
+    sos_lo = _sig.butter(4, 2600.0, btype="lowpass", fs=sr, output="sos")
+    hi = _sig.sosfilt(sos_hi, x)
+    nz2 = _sig.sosfilt(sos_hi, rng.standard_normal(x.shape[0]))
+    nz2 *= np.sqrt(np.mean(hi ** 2)) / max(np.sqrt(np.mean(nz2 ** 2)), 1e-12)
+    out.append(harmonic_gate(_sig.sosfilt(sos_lo, x) + nz2, sr, sheet, power_ref=ref, applicability=applicability,
+                             label="CONTROL, STATED NEGATIVE: the master's top four "
+                                   "octaves replaced by noise of equal band energy"))
+    return out
 
 
 # ================================================================== plots =====
@@ -967,8 +1632,61 @@ def main():
                         "line, car at 313.2 km/h", nfft=4096, fmax=8000)
         _ = rep
 
+    # ------------------------------------------------------------ harmonic ----
+    V["harmonic"] = harmonic_gate(x, sr, sheet, label=os.path.basename(a.wav))
+    hctl = control_harmonic(x, sr, sheet,
+                            applicability=V["harmonic"]["applicability"])
+    V["harmonic_controls"] = hctl
+    V["harmonic"]["CONTROL_FAILS_AS_EXPECTED"] = bool(all(not c["PASS"] for c in hctl))
+    print(">> harmonic:", json.dumps(
+        {k: V["harmonic"][k] for k in
+         ("beats_scored", "beats_gated", "beats_unmeasurable",
+          "declared_unmeasurable", "undeclared_unmeasurable", "failures",
+          "PASS", "CONTROL_FAILS_AS_EXPECTED")}, indent=1))
+    print("   %-12s %5s %8s | %-28s | %-28s"
+          % ("beat", "wins", "HF share", "above 2.6 kHz", "broadband"))
+    for name, r in V["harmonic"]["per_beat"].items():
+        cells = []
+        for limb in ("hf", "bb"):
+            L = r["limbs"][limb]
+            cells.append("n/a %+.3f power" % L["power_vs_hairdryer"]
+                         if not L["APPLICABLE"] else
+                         "%.3f of %.2f below %+.1f dB %s"
+                         % (L["fraction_below"], L["fraction_permitted_below"],
+                            L["threshold_db"], "ok" if L["PASS"] else "FAIL"))
+        print("   %-12s %5d %7.3f%% | %-28s | %-28s"
+              % (name, r["windows"], 100.0 * r["energy_share_above_2k6"], *cells))
+    for w in V["harmonic"]["not_applicable"]:
+        print("   NOT APPLICABLE %s" % w)
+    for c in hctl:
+        print(f"   control {c['label'][:64]}: HNR {c['worst_engine_beat_hnr_db']:5.1f} "
+              f"/ HF {c['worst_engine_beat_hnr_above_2k6_db']:5.1f} PASS={c['PASS']} "
+              f"{'; '.join(c['failures'][:3])}")
+
+    # ----------------------------------------------------------- waveguide ----
+    V["waveguide"] = waveguide_gate()
+    wctl = control_waveguide()
+    V["waveguide_controls"] = wctl
+    # [0..2] must FAIL, [3] -- the shipped values -- must PASS
+    V["waveguide"]["CONTROL_FAILS_AS_EXPECTED"] = bool(
+        all(not c["PASS"] for c in wctl[:3]) and wctl[3]["PASS"])
+    print(">> waveguide:", json.dumps(
+        {k: V["waveguide"][k] for k in
+         ("rpm", "median_ring_through", "worst_ring_through",
+          "max_harmonic_error_pct", "threshold_median", "threshold_worst",
+          "threshold_harmonic_pct", "PASS", "CONTROL_FAILS_AS_EXPECTED")}, indent=1))
+    for e in V["waveguide"]["elements"]:
+        print(f"   {e['name']:14s} f0 {e['f0_hz']:6.1f} Hz  Q {e['q_at_f0']:5.2f}  "
+              f"T60 {e['t60_at_f0_ms']:6.2f} ms  ring-through med "
+              f"{e['median_ring_through']:5.2f}x worst {e['worst_ring_through']:5.2f}x")
+    for c in wctl:
+        print(f"   control {c['label'][:62]:62s}: med {c['median_ring_through']:6.2f}x "
+              f"worst {c['worst_ring_through']:6.2f}x harm {c['max_harmonic_error_pct']:5.2f}% "
+              f"PASS={c['PASS']}")
+
     passes = {k: V[k].get("PASS") for k in ("levels", "edges", "seam", "external_assets",
-                                            "pitch", "doppler") if isinstance(V.get(k), dict)}
+                                            "pitch", "doppler", "harmonic", "waveguide")
+              if isinstance(V.get(k), dict)}
     V["ALL_PASS"] = all(bool(v) for v in passes.values())
     V["gate_summary"] = passes
     with open(os.path.join(a.out, "verify_report.json"), "w") as fh:

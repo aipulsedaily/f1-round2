@@ -32,6 +32,7 @@ THE SIGNAL FLOW, top to bottom
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import time
@@ -76,11 +77,115 @@ TARGET_LUFS_S = {
     "reflect_showroom": -25.0,
     "room": -23.0,            # the showroom's own tail, heard from inside
     "aperture": -27.0,        # that tail radiating out through the hole
-    "wind": -18.0,
+    # R2-1402: WIND WAS THE LOUDEST BUS IN THE FILM, AND IT IS PURE NOISE.
+    # Measured over the flying lap by re-rendering every bus separately, wind
+    # delivered -22.48 dBFS against the engine's -27.22 -- THE AIR AT THE LENS
+    # WAS 4.7 dB LOUDER THAN THE CAR. `layers.wind_at_camera` is brown-noise
+    # buffet plus a pink-noise edge band and has no tonal element anywhere, so
+    # there is nothing in it to hear but air. In a film whose subject is a car
+    # that is wrong on its own terms, before any masking argument is made.
+    "wind": -23.0,            # was -18.0
     "bed": -31.0,
     "crowd": -27.0,
     "fence": -31.0,
 }
+
+# ===================== MIX EQ, DECLARED RATHER THAN HIDDEN (R2-1402) ==========
+# Per-bus high shelf, applied AFTER the bus is trimmed to its target: (dB, corner
+# Hz). Nothing else in the mix is EQ'd, and this table exists so that the three
+# buses which are EQ'd say so out loud.
+#
+# WHY IT IS HERE AND NOT INSIDE `layers.py`. This is a MIX decision and putting
+# it in the layer would disguise it as physics. The wind's ~9 dB/octave rolloff
+# (pink noise through a one-pole) sits inside the physical range for aerodynamic
+# edge noise and is NOT being called a modelling error. What is being said is
+# narrower and is a mixing statement: wind, tyre roar and the outdoor bed exist to
+# carry SPEED, WEIGHT and SPACE, all three of which live below about 2 kHz, and
+# their content above that contributes almost nothing to their purpose while
+# sitting exactly where the engine's harmonic signature lives.
+#
+# The measurement that forced it: with the R2-1401 engine rebuilt, the engine bus
+# ALONE reads +14.35 dB harmonic-to-noise above 2.6 kHz over the flying lap and
+# the full mix read +0.71 dB. Thirteen and a half dB of the rebuild was being
+# thrown away by three noise beds. This table recovers 6.0 dB of it, and it is
+# deliberately not more: the beds are still audible, still doing their job, and
+# the film's octave balance over the lap comes out BRIGHTER in the 500 Hz - 4 kHz
+# region (+2.6 to +3.6 dB relative) and only 1.9 dB darker in the top octave,
+# because the engine's own harmonics now occupy the space the noise was in.
+BUS_HF_SHELF = {
+    "wind": (-12.0, 2000.0),
+    "tyres": (-12.0, 2000.0),
+    "bed": (-12.0, 2000.0),
+}
+
+
+def hf_shelf(x, db, fc, sr):
+    """High shelf via a ZERO-PHASE complementary split, so lo + hi == x exactly.
+
+    The obvious form -- `x - highpass(x) * (1 - g)` with a causal filter -- is
+    wrong and was measured to be wrong: a causal high-pass is not the complement
+    of anything, so subtracting it comb-filters instead of shelving. Sweeping the
+    depth of that version moved the flying lap's harmonic-to-noise ratio by
+    0.04 dB, which is what a comb does. Built the same way `dsp.split_bands` is,
+    for the same reason.
+    """
+    sos = _sig.butter(4, fc, btype="lowpass", fs=sr, output="sos")
+    lo = _sig.sosfiltfilt(sos, np.asarray(x, dtype=np.float64), axis=0)
+    return (lo + (x - lo) * (10.0 ** (db / 20.0))).astype(np.float32)
+
+
+def _archive_if_superseded(out_wav):
+    """NEVER DESTROY A MASTER SOMEBODY MIGHT HAVE BEEN PLAYED (R2-2227).
+
+    `master_B_lapdown.wav` -- the exact artefact the client heard and rejected as
+    "a wind machine with someone banging on tubes" -- was overwritten by the next
+    render of the same chain, and `*.wav` is gitignored, so there was no other
+    copy anywhere. The A-variant of the same render had to stand in for it, at a
+    measured -0.0064 dB, and the A/B the client was shown could no longer be
+    reproduced from the file they were shown.
+
+    The standing instruction after that was "rename rejected masters out of the
+    pipeline's namespace the moment they are rejected". THAT IS A HABIT, AND A
+    HABIT IS NOT A MECHANISM -- the same file was lost by a shell script that ran
+    unattended, at which point nobody was there to rename anything. So the render
+    does it: any existing file at the output path whose bytes differ from what is
+    about to be written is moved aside first, with the time it was written, and
+    the new name is recorded in the report. A render that reproduces its input
+    byte for byte -- the normal case, and the one this file's own determinism
+    guarantees -- archives nothing.
+
+    35 MB per superseded master against losing the only copy of an artefact a
+    client has already formed an opinion about is not a close trade.
+    """
+    if not os.path.exists(out_wav):
+        return None
+    old = _md5(out_wav)
+    if old == _md5(out_wav + ".new"):
+        os.remove(out_wav + ".new")
+        print("[archive] %s reproduced byte for byte, nothing superseded"
+              % os.path.basename(out_wav), flush=True)
+        return None
+    stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime(os.path.getmtime(out_wav)))
+    base, ext = os.path.splitext(out_wav)
+    dst = "%s_SUPERSEDED_%s_%s%s" % (base, stamp, old[:8], ext)
+    n = 1
+    while os.path.exists(dst):
+        dst = "%s_SUPERSEDED_%s_%s_%d%s" % (base, stamp, old[:8], n, ext)
+        n += 1
+    os.rename(out_wav, dst)
+    print("[archive] %s -> %s (md5 %s)" % (os.path.basename(out_wav),
+                                           os.path.basename(dst), old), flush=True)
+    return dst
+
+
+def _md5(path):
+    if not os.path.exists(path):
+        return None
+    h = hashlib.md5()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def _rz(deg):
@@ -99,7 +204,7 @@ def design_to_world(spec, pts):
 
 
 def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
-          quick=None):
+          quick=None, stems_dir=None):
     t_start = time.time()
     rep = {"generated_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
            "sr_internal": sr, "sr_out": SR_OUT, "bit_depth": 24,
@@ -273,6 +378,24 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     master = np.zeros((n, 2), dtype=np.float32)
     bus_log = {}
 
+    # R2-2221: OPTIONAL STEM DUMP, AND WHY IT IS EXACTLY HERE.
+    # The wind diagnosis that fixed the flying lap ("wind delivered -22.48 dBFS
+    # against the engine's -27.22") was made by re-rendering every bus separately
+    # -- sixteen full renders of a 27-minute build. This writes the same sixteen
+    # signals out of ONE render, at the exact point they enter the sum: after the
+    # LUFS-S trim and after the declared HF shelf, before the program gain and the
+    # limiter. That is the signal whose share of the mix a masking argument is
+    # actually about.
+    #
+    # IT CANNOT MOVE THE MASTER. It consumes no RNG, mutates nothing, and runs
+    # only when `stems_dir` is passed; `--stems` is off by default and the
+    # delivered master is rendered without it. Verified by hash: see the staging
+    # note. Written at the internal rate, float32, because the analysis that reads
+    # them measures a spectral floor above 2.6 kHz and must not inherit a
+    # resampler's own noise or a 24-bit dither's.
+    if stems_dir:
+        os.makedirs(stems_dir, exist_ok=True)
+
     def add(stereo, name):
         """Measure the bus, trim it to its declared target, sum it, log both."""
         key = name if name in TARGET_LUFS_S else name.rstrip("0123456789")
@@ -280,10 +403,22 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
         meas = dsp.max_short_term_lufs(stereo, sr)
         g_db = target - meas if np.isfinite(meas) else -200.0
         g_db = float(np.clip(g_db, -80.0, 80.0))
-        master[:] += (stereo * (10.0 ** (g_db / 20.0))).astype(np.float32)
+        trimmed = (stereo * (10.0 ** (g_db / 20.0))).astype(np.float32)
+        # the shelf is applied AFTER the trim, so the declared LUFS-S target still
+        # describes the bus that was measured and the shelf depth is exactly the
+        # depth that lands in the mix
+        shelf = BUS_HF_SHELF.get(key)
+        if shelf is not None:
+            trimmed = hf_shelf(trimmed, shelf[0], shelf[1], sr)
+        master[:] += trimmed
         bus_log[name] = {"measured_max_short_term_lufs": meas,
                          "target_lufs": target, "trim_db": g_db,
-                         "raw_peak": float(np.abs(stereo).max())}
+                         "raw_peak": float(np.abs(stereo).max()),
+                         "hf_shelf_db_hz": list(shelf) if shelf else None}
+        if stems_dir:
+            sf.write(os.path.join(stems_dir, "%s.wav" % name), trimmed, sr,
+                     subtype="FLOAT")
+        del trimmed
         return g_db
 
     # exhaust directivity: an F1 exhaust points backwards
@@ -534,6 +669,29 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
         out, gr3 = dsp.soft_limit(out, ceiling=10.0 ** (-1.10 / 20.0), sr=SR_OUT)
     L48, st48, st48t = dsp.loudness_lufs(out, SR_OUT)
 
+    # THE FILM ENDED ON A HARD TRUNCATION (R2-2007).
+    #
+    # `out = out[:want]` above cuts the master to exactly 2,978 frames and
+    # nothing puts it down. The film ends on a running idle, so the final sample
+    # landed wherever in the firing cycle the cut happened to fall: measured at
+    # 0.1217 (-18.3 dBFS) on the master the client was given, which is +8.02 dB
+    # above the last second's RMS and a click on any DAC. This is the exact
+    # mirror of R2-960's +31 dB bang on frame 1 -- same defect, other end of the
+    # film -- and `edge_gate` has been failing it on the LAST frame all along.
+    # Nobody saw it because the verify suite died on the harmonic gate before it
+    # could aggregate or write a report (R2-2006).
+    #
+    # 12 ms of raised cosine, applied after the loudness iteration so nothing
+    # downstream can scale the endpoint back off zero. At 24 fps that is 0.29 of
+    # one frame, and against a 215 Hz idle (4.65 ms period) it is 2.6 cycles --
+    # short enough that it is a clean stop rather than an audible fade, long
+    # enough that there is no step. The duration is unchanged: 2,978 frames.
+    _tail = int(round(0.012 * SR_OUT))
+    if out.shape[0] > _tail:
+        _w = 0.5 * (1.0 + np.cos(np.pi * np.arange(_tail) / (_tail - 1)))
+        out[-_tail:] *= _w[:, None]
+    rep["tail_fade_ms"] = float(_tail / SR_OUT * 1e3)
+
     rep["master"] = {
         "samples": int(out.shape[0]),
         "duration_s": float(out.shape[0] / SR_OUT),
@@ -554,7 +712,13 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     }
 
     os.makedirs(os.path.dirname(out_wav), exist_ok=True)
-    sf.write(out_wav, out, SR_OUT, subtype="PCM_24")
+    # write beside, compare, then either archive the old one or discover this
+    # render reproduced it exactly -- see `_archive_if_superseded`
+    sf.write(out_wav + ".new", out, SR_OUT, subtype="PCM_24")
+    rep["superseded_archived_to"] = _archive_if_superseded(out_wav)
+    if os.path.exists(out_wav + ".new"):
+        os.replace(out_wav + ".new", out_wav)
+    rep["output_md5"] = _md5(out_wav)
     rep["output_wav"] = out_wav
     rep["wall_clock_s"] = time.time() - t_start
     rep["log"] = log
@@ -583,8 +747,13 @@ def main():
     ap.add_argument("--report", default=os.path.join(ROOT, "audio", "out", "master_report.json"))
     ap.add_argument("--sr", type=int, default=96000)
     ap.add_argument("--speed-source", default="v_world", choices=["v_world", "speed_ms"])
+    ap.add_argument("--stems", default=None,
+                    help="also write each trimmed bus, as it enters the sum, to "
+                         "this directory. DIAGNOSTIC ONLY -- the delivered master "
+                         "is rendered without it and is bit-identical either way.")
     a = ap.parse_args()
-    rep = build(a.out, sr=a.sr, report_path=a.report, speed_source=a.speed_source)
+    rep = build(a.out, sr=a.sr, report_path=a.report, speed_source=a.speed_source,
+                stems_dir=a.stems)
     print(">> STAGE RESULT: AUDIO_MASTER_OK "
           f"{rep['master']['integrated_lufs']:.2f} LUFS "
           f"{rep['master']['true_peak_dbtp']:.2f} dBTP")
