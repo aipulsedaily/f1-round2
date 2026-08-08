@@ -437,3 +437,110 @@ binding constraint and the remaining work is a camera-department question, not a
 material one.**
 
 **Status: both arms building; renders not yet submitted.**
+
+---
+
+## R2-3066 — THE A/B, MEASURED. THE AUTHORED OCTAVE DID NOT WORK, AND IT IS REVERTED
+
+12 frames, 3840x2160, 32 samples + OIDN, one warm instance, **$0.0957**, instance
+torn down and `gpu down` confirmed. Judged with `tools/r2_3061_judge.py`, which
+imports the pixel-peep instrument and uses its pyramid, its 12-proxy-px erosion
+and its `TILE_COARSE = 0.0020` unchanged.
+
+```
+              coarse 16-64 px @4K, median over the ASPHALT tiles
+  frame  arm     tiles    BEFORE     AFTER     change
+   1350  live      30    0.00093   0.00090    -3.2 %
+   1787  live      48    0.00105   0.00103    -1.9 %
+   2622  live      47    0.00070   0.00070     0.0 %
+   4350  still     30    0.00233   0.00229    -1.7 %
+   4787  still     48    0.00257   0.00254    -1.2 %
+   5622  still     47    0.00265   0.00260    -1.9 %
+
+  the finding's own tile, f1787 (3,1)
+     BEFORE   live 0.00101   still 0.00231
+     AFTER    live 0.00098   still 0.00229
+```
+
+**THE PREDICTION IS FALSIFIED, AND IT WAS WRITTEN DOWN FIRST.** R2-3065 predicted
+the still arm would gain **1.5x to 3x** and f1787 (3,1) live would go
+0.00085 -> 0.0011-0.0018. The still arm delivered **0.99x** and the tile moved
+**-3 %**. Not a shortfall at the low end of a range — no gain at all.
+
+**It is not the blend, and that was ruled out first.** `r2_3061_film_material.py`
+on the two rendered blends: BEFORE 1129 nodes / 6 textures in 40-250 mm / 21
+labels; AFTER **1180 nodes / 8 textures in band / 25 labels**, with 128.2 mm and
+84.7 mm present and reaching `Base Color` and `Roughness`. The AFTER blend
+carries the new material. The two blends' camera motion is bit-identical
+(1.412668 / 1.126481 / 1.693008 m live, 0.000000 m still, both arms), so the
+material is the only variable.
+
+**What the layers actually did**, from differencing the two 4K stills directly:
+
+```
+  f4787 still   mean 0.2280 -> 0.2245     a UNIFORM DARKENING of -1.5 %
+                diff rms 0.00397, of which 0.00353 is the mean shift
+                => spatial contrast added ~0.0018 rms, ACROSS ALL SCALES
+```
+
+So the three layers are live and doing something, but what they mostly did was
+move the DC level down, and the spatial contrast they added — spread over every
+scale, not concentrated in 16-64 px — is comparable to the coarse band it was
+meant to multiply by three.
+
+**The arithmetic failed in a specific, findable way.** R2-3065 sized `nest_tone`
+at +-7.5 % on the assumption that `nest_t` spans 0..1. It is a **SMOOTH_F1**
+Voronoi distance field at smoothness 0.55 — smooth, narrow-range, and with a
+mean well below 0.5. A field with mean ~0.3 pushed through a 0.938..1.088 grey
+multiply has an expected multiplier of ~0.983, i.e. **a 1.7 % darkening**, which
+is what was measured (-1.5 %). The mean shift is therefore not a side effect; it
+is the whole signature of a weight derived from a distribution that was never
+measured. **I sized three layers off an assumed field statistic and rendered
+before checking it.**
+
+### THE RESULT THAT DID COME OUT, AND IT IS THE SHUTTER
+
+The still-vs-live control worked perfectly and is the first direct measurement of
+the shutter's share on identical geometry:
+
+```
+   f1350   still 0.00233   live 0.00093    the shutter removes 2.51x
+   f1787   still 0.00257   live 0.00105    the shutter removes 2.45x
+   f2622   still 0.00265   live 0.00070    the shutter removes 3.79x
+
+   and in the FINE band, 0-8 px @4K, on the same frames:
+   f1787   still 0.01217   live 0.00151    the shutter removes 8.1x
+```
+
+`work/r23061/crop_f1787.png` shows it without arithmetic: the **still** panels are
+covered in aggregate, the **live** panels are smooth. The material is not blank.
+**At the film's own shutter the audience cannot see what is there.**
+
+And the second half of the finding survives too: even with the camera stopped,
+the coarse band is **0.0026 against a 0.0020 emptiness threshold**. The surface
+is genuinely coarse-poor at this sampling — R2-3062's population result stands —
+but the fix authored for it did not move it.
+
+### DISPOSITION: REVERTED
+
+`world/build_surface.py` is restored to `9b5d6fb26e33…`, the blob at `76a685b`,
+byte-for-byte. **An additive change that adds no measurable contrast and darkens
+the surface 1.5 % is not neutral, and it should not ride into a 2,978-frame
+master on the strength of the argument that produced it.** The instruments, the
+rig and the measurements stay; only the shader change goes.
+
+**For whoever picks this up — do these in this order, and do not skip 1:**
+
+1. **Measure the three fields' actual distributions before weighting anything.**
+   Mean and standard deviation of `nest_t`, `scab`, `scab_rim` and `chatter` as
+   the graph evaluates them. Every weight in R2-3065 was derived from an assumed
+   0..1 uniform and every one of them was wrong.
+2. **Centre any grey multiply on the field's measured mean**, not on 0.5, or the
+   layer is a brightness change wearing a contrast change's clothes.
+3. **Budget against the still arm**, which is where the material's own gain is
+   readable. The live arm is the audience's view and divides by 2.5-3.8.
+4. **Ask whether albedo is the right channel at all.** 0.0018 rms of added
+   spatial contrast on a 0.22 mean is 0.8 %, and it did not concentrate in the
+   band. The still panels say this surface's energy is overwhelmingly at 0-8 px;
+   moving energy UP in scale may need the aggregate's own cell size to change,
+   not another field multiplied over it.
