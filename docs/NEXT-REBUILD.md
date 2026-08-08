@@ -47,32 +47,24 @@ rendered before it is superseded by construction. Written 2026-08-07.
 > **A rebuild off the source as it stood on 2026-08-08 06:00 would have shipped
 > the same defect and looked like a fix.**
 >
-> R2-3065 authors the octave the re-budget did not reach — 45-160 mm, in albedo
-> and roughness — in `world/build_surface.py`. **That IS a real "landed in
-> source, in no film blend" item and the rebuild does need to pick it up.** See
-> `docs/STAGING-R2-3061-to-R2-3120.md`.
+> **R2-3065 AUTHORED AN OCTAVE FOR THIS AND IT DID NOT WORK. IT IS REVERTED.**
+> `world/build_surface.py` is back at `9b5d6fb26e33…` byte-for-byte and **the
+> rebuild has nothing to pick up from R2-3061.** Measured at 4K on the film's own
+> poses, before/after, one warm instance, $0.0957: predicted a 1.5-3x gain,
+> delivered **0.99x**, plus a 1.5 % uniform darkening. An additive change that
+> adds no measurable contrast and darkens the surface is not neutral and must not
+> ride into a 2,978-frame master. Details and the recipe for a second attempt are
+> in `docs/STAGING-R2-3061-to-R2-3120.md` R2-3066.
 >
-> **AND IT IS UNPROVEN BY RENDER. SAY SO OUT LOUD RATHER THAN INHERITING IT.**
-> The A/B rig (`world/r23061_nf_{before,after}.blend`, one camera, three film
-> poses × shutter-open / camera-stopped) was built but never rendered: the shared
-> build lock was held by a legitimately-working 9 GB assembly probe for the whole
-> window. What exists instead of a measurement is a **prediction, written into
-> the staging doc before any frame was rendered** — still arm 1.5-3×, live arm
-> about half of that, f1787 tile (3,1) 0.00085 native → 0.0011-0.0018. That is a
-> hypothesis on record, not a result, and the difference matters:
->
-> * the change is **additive only** — 4 tags added, none removed, no existing
->   wavelength moved, 1129 → 1180 nodes — so it cannot break what it does not
->   touch, which is what makes shipping it unproven tolerable at all
-> * **the first frames the rebuild renders settle it for free.** Run
->   `tools/r2_3061_judge.py` on any 4K frame in 1685-1688 / 1784-1787 / 2622 and
->   compare against the recorded before: 0.00069 proxy / 0.00085 native on tile
->   (3,1) at f1787, against a 0.0020 emptiness threshold and 0.00853 on the same
->   frame's verge
-> * **if it lands below the predicted range the weights are too low, not the
->   approach wrong.** They were set from arithmetic (`sqrt(7.5² + 7.5² + 3.8²) /
->   7.5 = 1.5×` on albedo alone) and go up the same way. Do not re-derive the
->   design from a single disappointing number.
+> **What IS established and does bear on the rebuild:** the asphalt's blankness is
+> two-thirds a SHUTTER problem, not a material one. Measured on identical
+> geometry, camera stopped vs the film's own 180-degree shutter, the shutter
+> removes **2.45-3.79x** of the 16-64 px band and **8.1x** of the 0-8 px band.
+> `work/r23061/crop_f1787.png` shows it at 1:1 without arithmetic: camera stopped,
+> the road is covered in aggregate; shutter open, it is smooth. **The surface is
+> not blank — at this shutter the audience cannot see what is there.** Anything
+> aimed at this defect that does not change the shutter, the camera speed or the
+> shot scale is fighting for the remaining third.
 
 > **CORRECTION — "alters ONLY the camera's aim, never its position" is WRONG, and it
 > was my sentence.** Measured on the two gated rig paths, at the rendered-frame level
