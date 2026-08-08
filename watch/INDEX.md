@@ -48,7 +48,40 @@ f526 is the **positive** control and it fires loudly — the extra lamp is real 
 | file | cut | question it answers |
 |---|---|---|
 | `R2851_ending_CANDIDATE.mp4` / `R2851_ending_SHIPPED_A.mp4` | 08-07 07:25 | an ending A/B. Both arms predate the lap-down. |
-| `R2943_ending_LAPDOWN.mp4` | 08-07 14:12 | the lap-down ending. Beat 6 is under active work; check with its owner before treating this as final. |
+| `R2943_ending_LAPDOWN.mp4` | 08-07 14:12 | the lap-down ending. Beat 6 is under active work; check with its owner before treating this as final. **See the warning directly below — do not judge the ending on this file.** |
+
+> ### DO NOT JUDGE THE ENDING ON ANY FILE ABOVE (R2-3181, found 2026-08-08)
+>
+> **Every clip in this folder that shows beat 6 was rendered from a film whose
+> car is three days older than its camera, and in which THE CAR IS ABSENT FROM
+> THE FRAME FOR THE LAST 3.79 SECONDS — including the final frame.**
+>
+> ```
+> world/car_anim.blend        built 2026-08-04 19:51
+> R2-943 lap-down landed      anim/carpath.py   2026-08-07 08:40
+> render/film22.blend         built 2026-08-08 04:51
+> render/film23_breach.blend  built 2026-08-08 07:09
+> ```
+>
+> `tools/build_film_scene.py` **appends** the `CAR` collection and does not
+> re-key it, so both films carry a car authored before the lap-down while their
+> camera paths carry it. **The camera tracks a car that is not in the scene** —
+> 375.7 px @4K apart at f2760.
+>
+> On the delivered pixels: beat 6's car is **31.0 px @4K p50**, **95.8 % of
+> frames under 60 px**, and **wholly off frame for the last 91 frames**.
+> `work/r2-3181/beat6_tail.png` shows f2880/2900/2940/2978 — empty track in all
+> four.
+>
+> **A rebuild of `car_anim.blend` from current source takes beat 6 to 81 px p50
+> and 0 frames off frame.** That rebuild is in progress. Until it lands and a
+> new ending clip is cut, **the ending has not been seen** — anything watched
+> here is a measurement of a stale artefact, not of the film.
+>
+> This was found by repairing an instrument, not by looking. `lap_shotscale.py`
+> kept its own telemetry reader which **clamped** past the end of the data, so
+> it had been reporting beat 6's car up to 230.7 m from where it actually is.
+> The defect and the blindness to it arrived together.
 
 ## LINKS
 
