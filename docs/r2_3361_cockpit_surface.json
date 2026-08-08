@@ -1,0 +1,492 @@
+{
+ "version": 1,
+ "frame": 2635,
+ "px_per_m": 1416.4,
+ "sharp_keep_deg": 60.0,
+ "in": "/home/zany/f1-round2/world/car_anim_driver_R2_3361.blend",
+ "out": "/home/zany/f1-round2/world/R2_3361_car_anim_driver_CS.blend",
+ "materials": {
+  "CarbonMatte": {
+   "pitch_before_mm": 1.6534698176788385,
+   "pitch_after_mm": 5.0,
+   "px_before": 2.341974649760307,
+   "px_after": 7.082000000000001,
+   "mapping_scale_before": [
+    190.0,
+    190.0,
+    190.0
+   ],
+   "mapping_scale_after": 62.83185307179586,
+   "bump_amp_before_mm": 0.04750000166008246,
+   "bump_amp_after_mm": 0.0563523462113736,
+   "mod_before_at_old_pitch": 0.812860238268498,
+   "mod_before_at_new_pitch": 0.26978035858122157,
+   "mod_after": 0.32,
+   "fade_before": [
+    0.1,
+    0.42
+   ],
+   "fade_after": [
+    0.045,
+    0.2
+   ],
+   "imp_sockets": [
+    "Base Color",
+    "Normal",
+    "Roughness"
+   ],
+   "coat_normal_from": "R2IMP_014"
+  },
+  "SuedeGrip": {
+   "removed_round1_nodes": [
+    "Texture Coordinate",
+    "Noise Texture",
+    "Bump"
+   ],
+   "nodes_built": 43,
+   "nap_across_mm": 2.2,
+   "nap_along_mm": 11.0,
+   "mottle_mm": 3.8,
+   "sweep_mm": 24.0,
+   "px_nap_across": 3.11608,
+   "px_nap_along": 15.580400000000001,
+   "px_mottle": 5.38232,
+   "px_sweep": 33.9936,
+   "px_round1_only_feature": 1.6187428571428573,
+   "albedo_lo": [
+    0.00935,
+    0.00935,
+    0.010450000000000001
+   ],
+   "albedo_hi": [
+    0.024650000000000002,
+    0.024650000000000002,
+    0.027549999999999998
+   ],
+   "albedo_pp_stops": 1.3985493764902748,
+   "rough_lo": 0.78,
+   "rough_hi": 0.925,
+   "sheen_across": 0.1,
+   "sheen_along": 0.035,
+   "bump_amp_mm": 0.02712290404875254,
+   "bump_mod_pp": 0.35,
+   "bump_amp_before_mm": 0.08399999999999999,
+   "mod_before": 2.0346401610897917,
+   "imp_sockets": [
+    "Base Color",
+    "Normal",
+    "Roughness",
+    "Sheen Weight",
+    "Specular IOR Level"
+   ]
+  },
+  "CarbonFibre": {
+   "pitch_before_mm": 1.6534698176788385,
+   "pitch_after_mm": 5.0,
+   "px_before": 0.8700558180626049,
+   "px_after": 2.6310000000000002,
+   "px_per_m": 526.2,
+   "mapping_scale_before": [
+    190.0,
+    190.0,
+    190.0
+   ],
+   "mapping_scale_after": 62.83185307179586,
+   "bump_amp_mm": 0.04750000166008246,
+   "bump_amp_changed": false,
+   "mod_before": 0.812860238268498,
+   "mod_after": 0.26978035858122157,
+   "relief_band": [
+    0.12,
+    0.45
+   ],
+   "imp_sockets": [
+    "Base Color",
+    "Coat Normal",
+    "Coat Roughness",
+    "Coat Weight",
+    "Roughness"
+   ]
+  }
+ },
+ "sharp": {
+  "before": {
+   "CI_column": {
+    "total": 3816,
+    "sharp": 998,
+    "sharp_false_band": 364,
+    "sharp_keep": 634,
+    "sharp_up": 614,
+    "sharp_up_false_band": 210,
+    "sharp_up_keep": 404,
+    "sharp_boundary": 0
+   },
+   "CI_dash": {
+    "total": 4366,
+    "sharp": 1873,
+    "sharp_false_band": 1024,
+    "sharp_keep": 849,
+    "sharp_up": 698,
+    "sharp_up_false_band": 380,
+    "sharp_up_keep": 318,
+    "sharp_boundary": 0
+   },
+   "CI_fixings": {
+    "total": 64104,
+    "sharp": 19062,
+    "sharp_false_band": 7580,
+    "sharp_keep": 11482,
+    "sharp_up": 11127,
+    "sharp_up_false_band": 4842,
+    "sharp_up_keep": 6285,
+    "sharp_boundary": 0
+   },
+   "CI_footwell": {
+    "total": 10776,
+    "sharp": 1330,
+    "sharp_false_band": 678,
+    "sharp_keep": 652,
+    "sharp_up": 678,
+    "sharp_up_false_band": 314,
+    "sharp_up_keep": 364,
+    "sharp_boundary": 0
+   },
+   "CI_harness_hw": {
+    "total": 13656,
+    "sharp": 4556,
+    "sharp_false_band": 2888,
+    "sharp_keep": 1668,
+    "sharp_up": 2211,
+    "sharp_up_false_band": 1379,
+    "sharp_up_keep": 832,
+    "sharp_boundary": 0
+   },
+   "CI_harness_web": {
+    "total": 120676,
+    "sharp": 6811,
+    "sharp_false_band": 4141,
+    "sharp_keep": 2670,
+    "sharp_up": 3724,
+    "sharp_up_false_band": 2049,
+    "sharp_up_keep": 1675,
+    "sharp_boundary": 0
+   },
+   "CI_headrest": {
+    "total": 26636,
+    "sharp": 6278,
+    "sharp_false_band": 2663,
+    "sharp_keep": 3615,
+    "sharp_up": 2644,
+    "sharp_up_false_band": 1082,
+    "sharp_up_keep": 1562,
+    "sharp_boundary": 0
+   },
+   "CI_liner": {
+    "total": 23634,
+    "sharp": 1377,
+    "sharp_false_band": 649,
+    "sharp_keep": 728,
+    "sharp_up": 488,
+    "sharp_up_false_band": 390,
+    "sharp_up_keep": 98,
+    "sharp_boundary": 0
+   },
+   "CI_lines": {
+    "total": 16996,
+    "sharp": 4163,
+    "sharp_false_band": 3569,
+    "sharp_keep": 594,
+    "sharp_up": 2075,
+    "sharp_up_false_band": 1783,
+    "sharp_up_keep": 292,
+    "sharp_boundary": 0
+   },
+   "CI_pedals": {
+    "total": 13032,
+    "sharp": 3119,
+    "sharp_false_band": 1645,
+    "sharp_keep": 1474,
+    "sharp_up": 1400,
+    "sharp_up_false_band": 761,
+    "sharp_up_keep": 639,
+    "sharp_boundary": 0
+   },
+   "CI_seal": {
+    "total": 10052,
+    "sharp": 134,
+    "sharp_false_band": 52,
+    "sharp_keep": 82,
+    "sharp_up": 52,
+    "sharp_up_false_band": 22,
+    "sharp_up_keep": 30,
+    "sharp_boundary": 0
+   },
+   "CI_seat": {
+    "total": 32085,
+    "sharp": 3423,
+    "sharp_false_band": 1052,
+    "sharp_keep": 2371,
+    "sharp_up": 2013,
+    "sharp_up_false_band": 636,
+    "sharp_up_keep": 1377,
+    "sharp_boundary": 0
+   },
+   "CI_seatpad": {
+    "total": 58906,
+    "sharp": 1132,
+    "sharp_false_band": 536,
+    "sharp_keep": 596,
+    "sharp_up": 670,
+    "sharp_up_false_band": 430,
+    "sharp_up_keep": 240,
+    "sharp_boundary": 0
+   },
+   "CI_sidehead": {
+    "total": 5796,
+    "sharp": 918,
+    "sharp_false_band": 708,
+    "sharp_keep": 210,
+    "sharp_up": 422,
+    "sharp_up_false_band": 358,
+    "sharp_up_keep": 64,
+    "sharp_boundary": 0
+   },
+   "CI_sip": {
+    "total": 19080,
+    "sharp": 2188,
+    "sharp_false_band": 1552,
+    "sharp_keep": 636,
+    "sharp_up": 1052,
+    "sharp_up_false_band": 862,
+    "sharp_up_keep": 190,
+    "sharp_boundary": 0
+   }
+  },
+  "after": {
+   "CI_column": {
+    "total": 3816,
+    "sharp": 634,
+    "sharp_false_band": 0,
+    "sharp_keep": 634,
+    "sharp_up": 404,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 404,
+    "sharp_boundary": 0
+   },
+   "CI_dash": {
+    "total": 4366,
+    "sharp": 849,
+    "sharp_false_band": 0,
+    "sharp_keep": 849,
+    "sharp_up": 318,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 318,
+    "sharp_boundary": 0
+   },
+   "CI_fixings": {
+    "total": 64104,
+    "sharp": 11482,
+    "sharp_false_band": 0,
+    "sharp_keep": 11482,
+    "sharp_up": 6285,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 6285,
+    "sharp_boundary": 0
+   },
+   "CI_footwell": {
+    "total": 10776,
+    "sharp": 652,
+    "sharp_false_band": 0,
+    "sharp_keep": 652,
+    "sharp_up": 364,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 364,
+    "sharp_boundary": 0
+   },
+   "CI_harness_hw": {
+    "total": 13656,
+    "sharp": 1668,
+    "sharp_false_band": 0,
+    "sharp_keep": 1668,
+    "sharp_up": 832,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 832,
+    "sharp_boundary": 0
+   },
+   "CI_harness_web": {
+    "total": 120676,
+    "sharp": 2670,
+    "sharp_false_band": 0,
+    "sharp_keep": 2670,
+    "sharp_up": 1675,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 1675,
+    "sharp_boundary": 0
+   },
+   "CI_headrest": {
+    "total": 26636,
+    "sharp": 3615,
+    "sharp_false_band": 0,
+    "sharp_keep": 3615,
+    "sharp_up": 1562,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 1562,
+    "sharp_boundary": 0
+   },
+   "CI_liner": {
+    "total": 23634,
+    "sharp": 728,
+    "sharp_false_band": 0,
+    "sharp_keep": 728,
+    "sharp_up": 98,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 98,
+    "sharp_boundary": 0
+   },
+   "CI_lines": {
+    "total": 16996,
+    "sharp": 594,
+    "sharp_false_band": 0,
+    "sharp_keep": 594,
+    "sharp_up": 292,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 292,
+    "sharp_boundary": 0
+   },
+   "CI_pedals": {
+    "total": 13032,
+    "sharp": 1474,
+    "sharp_false_band": 0,
+    "sharp_keep": 1474,
+    "sharp_up": 639,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 639,
+    "sharp_boundary": 0
+   },
+   "CI_seal": {
+    "total": 10052,
+    "sharp": 82,
+    "sharp_false_band": 0,
+    "sharp_keep": 82,
+    "sharp_up": 30,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 30,
+    "sharp_boundary": 0
+   },
+   "CI_seat": {
+    "total": 32085,
+    "sharp": 2371,
+    "sharp_false_band": 0,
+    "sharp_keep": 2371,
+    "sharp_up": 1377,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 1377,
+    "sharp_boundary": 0
+   },
+   "CI_seatpad": {
+    "total": 58906,
+    "sharp": 596,
+    "sharp_false_band": 0,
+    "sharp_keep": 596,
+    "sharp_up": 240,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 240,
+    "sharp_boundary": 0
+   },
+   "CI_sidehead": {
+    "total": 5796,
+    "sharp": 210,
+    "sharp_false_band": 0,
+    "sharp_keep": 210,
+    "sharp_up": 64,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 64,
+    "sharp_boundary": 0
+   },
+   "CI_sip": {
+    "total": 19080,
+    "sharp": 636,
+    "sharp_false_band": 0,
+    "sharp_keep": 636,
+    "sharp_up": 190,
+    "sharp_up_false_band": 0,
+    "sharp_up_keep": 190,
+    "sharp_boundary": 0
+   }
+  },
+  "before_total": {
+   "sharp": 57362,
+   "sharp_false_band": 29101,
+   "sharp_keep": 28261,
+   "sharp_up": 29868,
+   "sharp_up_false_band": 15498,
+   "sharp_up_keep": 14370
+  },
+  "after_total": {
+   "sharp": 28261,
+   "sharp_false_band": 0,
+   "sharp_keep": 28261,
+   "sharp_up": 14370,
+   "sharp_up_false_band": 0,
+   "sharp_up_keep": 14370
+  },
+  "cleared": 29101
+ },
+ "relief_budget": [
+  {
+   "name": "weave BEFORE (old pitch)",
+   "wavelength_m": 0.0016534698176788386,
+   "amp_mm": 0.04750000166008246,
+   "slope_deg": 5.156973272897016,
+   "m": 0.812860238268498,
+   "verdict": "HIGH"
+  },
+  {
+   "name": "weave AFTER",
+   "wavelength_m": 0.005,
+   "amp_mm": 0.0563523462113736,
+   "slope_deg": 2.027837332789888,
+   "m": 0.32,
+   "verdict": "ok"
+  },
+  {
+   "name": "suede BEFORE",
+   "wavelength_m": 0.001142857142857143,
+   "amp_mm": 0.08399999999999999,
+   "slope_deg": 13.002114312593118,
+   "m": 2.034640161089791,
+   "verdict": "HIGH"
+  },
+  {
+   "name": "suede AFTER",
+   "wavelength_m": 0.0022,
+   "amp_mm": 0.02712290404875254,
+   "slope_deg": 2.2180380285589707,
+   "m": 0.35,
+   "verdict": "ok"
+  },
+  {
+   "name": "bodywork weave BEFORE (old pitch)",
+   "wavelength_m": 0.0016534698176788386,
+   "amp_mm": 0.04750000166008246,
+   "slope_deg": 5.156973272897016,
+   "m": 0.812860238268498,
+   "verdict": "HIGH"
+  },
+  {
+   "name": "bodywork weave AFTER",
+   "wavelength_m": 0.005,
+   "amp_mm": 0.04750000166008246,
+   "slope_deg": 1.7094926137567328,
+   "m": 0.26978035858122157,
+   "verdict": "ok"
+  }
+ ],
+ "static": {
+  "verts_before": "706b166fff7e09279db74efe5ff824e83607ae191382aba85bf7b7f7aad7c09a",
+  "verts_after": "706b166fff7e09279db74efe5ff824e83607ae191382aba85bf7b7f7aad7c09a",
+  "anim_before": "824ce7bd20d7c2686e1e756c257a724c12b2e74e031390327de865a20ea2d3a8",
+  "anim_after": "824ce7bd20d7c2686e1e756c257a724c12b2e74e031390327de865a20ea2d3a8",
+  "unchanged": true
+ }
+}

@@ -100,6 +100,38 @@ FPS = 24
 FILM23 = dict(watts=46866.886, stamps=24,
               strip_size_y=0.10, strip_radiance=47.4569)
 
+#: film24's OWN prediction.  R2-3361.
+#:
+#: `FILM23` IS FILM23'S PREDICTION AND JUDGING FILM24 BY IT WOULD BE MOVING THE
+#: GOALPOSTS, even though -- as it happens -- the two agree to the last digit.
+#: The point of the number is not its novelty, it is that it was computed from
+#: arithmetic BEFORE the artefact existed and could not have been read off it.
+#: This one was printed at 2026-08-08T18:59:12Z into
+#: `work/r23361/PREDICTION_film24_20260808T185912Z.log`, which predates
+#: `render/film24_breach.blend`, and the chain behind it is:
+#:
+#:     R2-1146 strip source 50.0 W / luma(COLD) 0.931576 = 53.6725 W
+#:     levelled by 2**LIFT_STOPS = 2**3.628                = 12.363369
+#:       -> 53.6725 x 12.363369                            =    663.573 W
+#:     46203.313 (the pre-strip interior load) + 663.573    =  46866.886 W
+#:     n_lamp_stamps 23 -> 24
+#:     radiance 53.6725 / (3.60 x 0.10 x pi)               =     47.4569
+#:
+#: THEY AGREE BECAUSE THE PREDICTION IS A FUNCTION OF THE SHOWROOM, NOT OF THE
+#: CAR, and film24 differs from film23 only in the car's keys and the camera.
+#: `world/showroom_lighting.py::SHELL` is what levels a lamp, and the car
+#: carries no lamp inside it -- checked on both blends rather than assumed
+#: (`work/r23361/lampcheck.log`).  If a future film ever adds one, the
+#: 46203.313 baseline literal inside `world/showroom_strip.py` is wrong and
+#: this dict must be re-derived, not copied.
+FILM24 = dict(watts=46866.886, stamps=24,
+              strip_size_y=0.10, strip_radiance=47.4569)
+
+#: Per-film predictions, selected by `--want`.  Adding a film here is how a new
+#: generation declares what it expects; editing an existing entry is how the
+#: record of what an OLD generation was judged against gets destroyed.
+WANTS = {"film23": FILM23, "film24": FILM24}
+
 #: The `>>` IS OPTIONAL, AND THAT IS A FINDING, NOT A CONVENIENCE.  R2-2821.
 #: `gate_exit._VERDICT_RE` requires `>>`, and every verify script greps
 #: `^>> STAGE RESULT`.  But `work/r2100/measure_film_extra.py` and
@@ -615,11 +647,19 @@ def main():
                     help="judge recorded measurements only; do not execute "
                          "rig_preflight or slabcheck")
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--want", default="film23", choices=sorted(WANTS),
+                    help="WHICH FILM'S PREDICTION to judge against. It "
+                         "defaults to film23 so no existing caller changes "
+                         "meaning; a new film must name its own, because "
+                         "re-using an older film's prediction is moving the "
+                         "goalposts in the direction that flatters.")
     a = ap.parse_args()
     if a.selftest:
         return selftest()
+    want = WANTS[a.want]
+    print(">> judged against the %s prediction: %s" % (a.want, want))
     b = judge(os.path.join(R2, a.work), a.name, rig=a.rig or None,
-              run_live=not a.no_live, socket=a.socket,
+              want=want, run_live=not a.no_live, socket=a.socket,
               film=a.film or None)
     return b.summary("FILM_BAR")
 

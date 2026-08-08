@@ -131,6 +131,16 @@ RIDE_H = 0.340                      # recorded, not used: the box is the hull
 # count as occluding it.
 EPS_M = 0.10
 
+def _sha16(p):
+    """First 16 hex of the sha256, or 'MISSING'.  Used to stamp the ledger's
+    inputs so its provenance is readable off the artefact rather than inferred."""
+    import hashlib
+    try:
+        return hashlib.sha256(open(p, "rb").read()).hexdigest()[:16]
+    except OSError:
+        return "MISSING"
+
+
 BEATS = [("1_assembly", 1, 792), ("2_launch", 793, 864), ("3_breach", 865, 1056),
          ("4_transit", 1057, 1190), ("5_lap", 1191, 2714), ("6_ending", 2715, 2978)]
 
@@ -880,6 +890,17 @@ def main():
                          "returns everything the modules it finished can say")
     ap.add_argument("--budget", type=float, default=3200.0)
     ap.add_argument("--load", default=None, help="a prebuilt world .blend")
+    # R2-3361.  Both of these were hardcoded literals inside main().  They
+    # default to the old literals so every existing caller is unchanged, and
+    # whatever is passed is stamped into the ledger's meta block.
+    ap.add_argument("--camera", default="world/camera_rig_path.json",
+                    help="the camera path json, repo-relative. THE DEFAULT IS "
+                         "THE R2-1007 ORPHAN (== render/film16_path.json) and "
+                         "a ledger built from it is not about any delivered "
+                         "film; pass the film's own render/film*_path.json.")
+    ap.add_argument("--car", default="world/car_anim_measured.json",
+                    help="the sample_car_blend.py dump the car pose is read "
+                         "from, repo-relative.")
     a = ap.parse_args(argv)
 
     print(">> r2651_occlusion_sweep  blender %s" % bpy.app.version_string)
@@ -907,9 +928,49 @@ def main():
     want = sorted(set(want))
     log("frames: %d (%d..%d)" % (len(want), want[0], want[-1]))
 
-    path = json.load(open(os.path.join(ROOT, "world", "camera_rig_path.json")))["path"]
+    # R2-3361.  THE CAMERA WAS A HARDCODED LITERAL AND IT WAS THE WRONG FILE.
+    #
+    # This read `world/camera_rig_path.json` unconditionally, and stamped that
+    # string into meta at the bottom of this function whether or not it was what
+    # had been read.  `docs/LIVE-CAMERA.md` calls that file what it is: an
+    # ORPHAN of a retired build script, byte-identical to `render/film16_path.json`
+    # (sha256 d9c8f5c54ccd1ad8), while the live declaration is `363e4e88b30207ad`
+    # -- the bytes `render/film19_path.json` and `render/film23_path.json` share.
+    #
+    # LIVE-CAMERA.md also says "from f781 onward the two files are bit-identical
+    # in position and lens".  THAT WAS TRUE AGAINST film17 AND IS NOW FALSE, and
+    # the two places it is false are the two places this ledger is read:
+    #
+    #   beat 5, f2134-2253 (120 frames)  camera position up to 21.40 m apart,
+    #       mean 8.53 m.  THAT RUN CONTAINS f2180-2191 -- the twelve
+    #       ARCH_PontPlongee frames that are this ledger's entire published
+    #       finding.  The orphan sits 7-8 m HIGHER through the bridge window,
+    #       and whether a deck occludes a car is a function of eye height under
+    #       a soffit.
+    #   beat 6, 241 of 264 frames differ in focal length and 251 of 264 aim more
+    #       than 1 deg apart; at f2978 the orphan is on 74.0 mm and the film is
+    #       on 130.0 mm, 75.3 deg away.  That is the R2-943 lap-down showing up
+    #       on the CAMERA side: film19+ re-aims the ending at the car's new
+    #       trajectory and the orphan is still aiming where the old car streaked.
+    #
+    # So a re-run against the literal would have refreshed the CAR and left a
+    # 21 m camera error standing in the exact frames the re-run was for.  The
+    # argument defaults to the old literal so no existing caller changes
+    # meaning, and the path actually read is stamped into meta below.
+    campath = os.path.join(ROOT, a.camera)
+    if not os.path.exists(campath):
+        raise SystemExit(">> STAGE RESULT: OCC_REFUSED (no camera path %s)"
+                         % campath)
+    log("camera: %s (%s)" % (a.camera, _sha16(campath)))
+    if a.camera == "world/camera_rig_path.json":
+        log("!! WARNING: that is the R2-1007 ORPHAN (== render/film16_path.json). "
+            "A result from it is not about any delivered film. Pass --camera "
+            "with the film's own path.")
+    path = json.load(open(campath))["path"]
     cam_by_f = {int(e["f"]): e for e in path}
-    car_raw = json.load(open(os.path.join(ROOT, "world", "car_anim_measured.json")))
+    carpath_json = os.path.join(ROOT, a.car)
+    log("car pose: %s (%s)" % (a.car, _sha16(carpath_json)))
+    car_raw = json.load(open(carpath_json))
     car_by_f = {int(e["f"]): e for e in car_raw["frames"]}
     missing = [f for f in want if f not in cam_by_f or f not in car_by_f]
     if missing:
@@ -1027,8 +1088,14 @@ def write(out, want, results, built, passes, census, contract, a):
         "modules_requested": a.mods,
         "passes": passes,
         "world_contract": contract,
-        "car_pose": "world/car_anim_measured.json (measured off car_anim.blend)",
-        "camera": "world/camera_rig_path.json",
+        # R2-3361: STAMP WHAT WAS READ, not what the default is.  Both of these
+        # were literals, so meta described this tool's intentions rather than
+        # its inputs -- and a ledger whose provenance is a wish is exactly how
+        # the orphan camera survived unnoticed for four days.
+        "car_pose": a.car,
+        "car_pose_sha16": _sha16(os.path.join(ROOT, a.car)),
+        "camera": a.camera,
+        "camera_sha16": _sha16(os.path.join(ROOT, a.camera)),
         "car_box": [CAR_LEN, CAR_W, CAR_BOT_Z, CAR_TOP_Z],
         "ride_height_m": RIDE_H,
         "samples_per_frame": 58,
