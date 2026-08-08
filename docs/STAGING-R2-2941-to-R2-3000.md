@@ -677,3 +677,496 @@ about this one.
 > to `docs/instance_variety.json`, the film-wide variety number — the arm
 > `tools/r2_1881_variety_control.py --arm plainspam` exists to show exactly
 > that and it is unaffected by this fix.
+
+---
+
+## R2-2990..R2-2999 — forecourt paving: the 0.95 mm/px headline is one voxel of a slab buried under the showroom floor, and the item is filmed at 4.49 mm/px
+
+### The two numbers that disagreed, and neither survived
+
+R2-2945 ranks `ARCH_Paving_Forecourt` **first in the film** on
+`peak_unocc_sharp_px_per_m`: **1049.4475 px/m — 0.95 mm/px — 410 sharp frames**,
+quoted against `min_depth_m = 3.79 m`. Its module reads **ITEM_ACCEPTED** in
+`render/items/forecourt_paving_bay/gate.json` at `filmed_at_m = 1.7`,
+`lens_mm = 35`, `onscreen_px_4k = 2160` — **2196.1 px/m, 0.4554 mm/px** — with
+`framing_source: "item_manifest.json"`.
+
+The module was BUILT to the second. Its docstring opens with a twelve-row pixel
+table headed *"px_per_m = (3840 * 35 / 36) / 1.7 = 2196.1 px/m -> 1 px =
+0.4554 mm"*, and `PX_PER_M` / `MM_PER_PX` / `lod_pitch()` are all derived from
+`NEAREST_CAMERA_M = 1.7`.
+
+**Measured against the live camera, the item is filmed at 222.78 px/m —
+4.4887 mm/px — at f910, 10.055 m on a 21.000 mm lens.** The gate over-framed it
+by **9.86x linear and 97.2x in area**, which sits almost exactly on
+`WAVE2-RANKING.md` §7 step 1's measured median of 8.83x.
+
+And "3.79 m at 1049.4 px/m" was never one measurement: 3.79 m is `min_depth_m`
+over all visible frames and 1049.4475 px/m is at f282, where the depth is
+**5.8952 m on a 58.000 mm lens**. Two frames, quoted as one framing — the same
+composition error the manifest makes.
+
+### The instrument and its calibration
+
+`tools/r2990_forecourt_framing.py`. Camera through `tools/live_campath.py`
+(no path is named for a live read; `--selftest` asserts the only `film*_path.json`
+literal in the file is the calibration control's). Projection constants
+`RES_X`, `RES_Y`, `SENSOR_MM`, `SMEAR_SHARP_PX`, `OCC_RES`, `OCC_TOL_M` and the
+quaternion convention are IMPORTED from `tools/screen_presence.py`; bay geometry
+(`CELL_W`, `CELL_H`, `SETOUT_X`, `RIBBON_KEEPOUT`) is imported from the item
+module; `R1_SHELL` is parsed out of `world/build_architecture.py`'s AST because
+that module is contended and imports `bpy`. Nothing is retyped.
+
+**Calibration, run first and deliberately uncorrected:** configured exactly as
+`screen_presence.py` was — whole object, voxel z as stored, no sample floor — on
+the camera `sp_objects.json` was measured against, it returns
+**1049.4475 px/m at f282, 1.64e-8 relative error, and 410 sharp frames against
+the published `frames_sharp: 410`.** Every correction below is therefore a
+change of subject or of camera, not a change of instrument.
+
+### R2-2947's f282 claim is confirmed — and its 0.17 deg was a comparator artifact
+
+At f282 `film17` and `film19` are **byte-identical in `p`, `q` and `lens`**,
+checked on the raw JSON with no instrument in between. So B (swap to the live
+camera) moves nothing: 1049.4475 px/m at f282 either way.
+
+R2-2947 reports **0.17 deg** of orientation difference at that frame.
+`screen_presence.camera_track` builds R straight from a quaternion the path files
+round to six decimals, so |q|^2 = 0.999999 and R is off orthonormal by ~1e-6;
+`acos((tr-1)/2)` is ill-conditioned at tr=3 and turns that into an apparent
+0.17 deg. Orthonormalising and using `2 asin(||Ra-Rb||_F / 2sqrt2)` returns
+**exactly 0.0**. The identity arm — a path compared against ITSELF, which must
+report zero frames differing — is what caught it. With the fixed comparator the
+whole-film figures reproduce R2-2947 exactly where they should: worst
+**21.399 m at f2177**, **55.996 mm at f2978**, **78.753 deg at f2857**; 845
+frames differ in position or lens and **2,477 of 2,978 differ in any of p/q/lens**
+(R2-2947's 846 is the position-or-lens count).
+
+### The ablation: what each correction is worth
+
+| step | px/m | mm/px | frame | depth | lens | samples |
+|---|---:|---:|---:|---:|---:|---:|
+| A. `sp_objects` reproduced (calibration) | **1049.447** | 0.953 | 282 | 5.895 m | 58.000 | **1** |
+| B. + the live camera | 1049.447 | 0.953 | 282 | 5.895 m | 58.000 | 1 |
+| C. + only the item's OWN geometry | 275.457 | 3.630 | 104 | 13.553 m | 35.000 | 242 |
+| D. + voxel centre -> the bay plane | 389.249 | 2.569 | 74 | 14.999 m | 54.734 | 3 |
+| E. + >= 25 sharp unoccluded samples | 271.551 | 3.683 | 104 | 13.748 m | 35.000 | 243 |
+| **F. + camera OUTSIDE the pavilion, >= 10** | **222.783** | **4.489** | **910** | **10.055 m** | **21.000** | 10 |
+| F. + camera outside, >= 25 | 158.065 | 6.327 | 1011 | 19.378 m | 28.716 | 31 |
+| F. + camera outside, >= 50 | 155.257 | 6.441 | 1013 | 19.975 m | 29.074 | 56 |
+
+**C is the finding.** `ARCH_Paving_Forecourt` is not only the paving bays. The
+item module's own docstring, section *"WHAT THE ASSEMBLY MUST DELETE"*, says it
+replaces THE BAY FACES AND ONLY THE BAY FACES and that the assembly must KEEP
+the object's sub-base prism and *"its formation slab under the pavilion
+(R1_FORMATION_Z), which this module does not build."* Same Blender object, same
+row in `sp_objects.json`.
+
+**The single cloud point that sets the published 1049.4475 px/m is at
+(3.5, -3.5, -0.5)** — inside `R1_SHELL = (-15.250, 15.000, -11.250, 11.250)` and
+on the voxel layer that holds `build_architecture`'s closed formation slab at
+-0.36..-0.100, under a showroom floor whose top is 0.000. It is 1 of 2,448
+points; 3 of 2,448 are in frustum at f282 and 1 is sharp. Masking to the item's
+own geometry — bay layer, outside the shell, outside the access ribbon: 1,712 of
+2,448 points kept, 736 dropped off the bay layer, 152 inside the pavilion, 12 in
+the ribbon — moves the answer by **73.75 %.** This is R2-1362 / R2-2941's
+"measuring their host", one level in: not a shared host, but a shared OBJECT.
+
+**F is the frame refusing to agree with the arithmetic.** The winners at every
+step up to E have the camera INSIDE the pavilion (f1–f903, 903 of 2,978 frames).
+`work/r22161_proxy/r22161_proxy_000282.png` is a showroom interior;
+`*_000104.png` is a dark showroom floor with suspension parts hanging over it
+and a concrete wall behind. Neither contains any forecourt paving. The occlusion
+model is a quarter-res depth buffer rasterised from a 1 m point cloud and
+`screen_presence.py` says in terms that `ever_unoccluded = True` is not proof — a
+cloud at 1 m cannot express a wall. This is `r2941_veg_framing.py`'s reading 2
+exactly (a peak at f147 that was a wheel macro indoors), and the same coarse
+proxy is adopted here, after the image refuted the alternative and not before.
+`work/r22161_proxy/r22161_proxy_000910.png` **does** show large paved bays with
+a legible joint grid.
+
+### The pixel footprint, stated BEFORE anything was changed — and nothing was changed
+
+`tools/r2990_forecourt_pixels.py`, every dimension imported from the module.
+Sun elevation 12.47061 deg read out of the relief audit's own record; shadow
+amplifier 4.5217. Grazing factor at f910 is **|n.v| = 0.2071 (11.95 deg above
+the pavement)**, so in-plane sizes along the view lose 79 % — the shadow column
+is given as a range from face-on to fully grazing.
+
+| feature | mm | px @ GATE (0.4554 mm/px) | **px @ FILM (4.4887 mm/px)** | shadow px, face-on .. grazing | verdict at the film framing |
+|---|---:|---:|---:|---|---|
+| joint slot, nominal width | 12.00 | 26.35 | **2.67** | — | resolves |
+| joint slot, narrowest | 7.00 | 15.37 | **1.56** | — | 1-2 px, marginal |
+| joint slot, widest | 24.00 | 52.71 | **5.35** | — | resolves |
+| joint depth, deepest (washed out) | 30.00 | 65.88 | **6.68** | 30.22 .. 6.26 | resolves |
+| joint depth, shallowest (fresh sand) | 5.00 | 10.98 | **1.11** | 5.04 .. 1.04 | 1-2 px, marginal |
+| cast arris chamfer (formed edge) | 5.00 | 10.98 | **1.11** | 5.04 .. 1.04 | 1-2 px, marginal |
+| sawn arris break (cut edge) | 0.60 | 1.32 | **0.13** | 0.60 .. 0.13 | SUB-PIXEL |
+| mould line down the flag face | 22.00 | 48.31 | **4.90** | 22.16 .. 4.59 | resolves |
+| arris chip | 2.00 | 4.39 | **0.45** | 2.01 .. 0.42 | SUB-PIXEL |
+| chipping zone in from the edge | 16.00 | 35.14 | **3.56** | — | resolves |
+| saw-blade score on a sawn face (BUMP) | 0.25 | 0.55 | **0.06** | — | SUB-PIXEL |
+| sawn gap where a flag was cut in | 3.00 | 6.59 | **0.67** | — | SUB-PIXEL |
+| blast finish: aggregate cell, max | 4.60 | 10.10 | **1.02** | — | 1-2 px, marginal |
+| blast finish: aggregate proud, max | 1.00 | 2.20 | **0.22** | 1.01 .. 0.21 | SUB-PIXEL |
+| agg finish: aggregate cell, max | 7.60 | 16.69 | **1.69** | — | 1-2 px, marginal |
+| agg finish: aggregate proud, max | 2.05 | 4.50 | **0.46** | 2.06 .. 0.43 | SUB-PIXEL |
+| coarse stone, the 14 mm one the docstring names | 14.00 | 30.75 | **3.12** | — | resolves |
+| sub-mm matrix pitting (BUMP) | 0.15 | 0.33 | **0.03** | 0.15 .. 0.03 | SUB-PIXEL |
+| matrix erosion | 0.80 | 1.76 | **0.18** | 0.81 .. 0.17 | SUB-PIXEL |
+| flag-to-flag lip, target | 3.00 | 6.59 | **0.67** | 3.02 .. 0.63 | SUB-PIXEL |
+| flag warp across the diagonal | 2.40 | 5.27 | **0.54** | 2.42 .. 0.50 | SUB-PIXEL |
+| flag rock on a short bed | 2.10 | 4.61 | **0.47** | 2.12 .. 0.44 | SUB-PIXEL |
+| bed level scatter (1 sd) | 1.60 | 3.51 | **0.36** | 1.61 .. 0.33 | SUB-PIXEL |
+| settlement basin depth | 5.50 | 12.08 | **1.23** | 5.54 .. 1.15 | 1-2 px, marginal |
+| jointing grit relief, max | 3.10 | 6.81 | **0.69** | 3.12 .. 0.65 | SUB-PIXEL |
+| jointing grit grain, max | 2.20 | 4.83 | **0.49** | — | SUB-PIXEL |
+| bitumen overband width | 55.00 | 120.78 | **12.25** | — | resolves |
+| bitumen overband proud | 3.00 | 6.59 | **0.67** | 3.02 .. 0.63 | SUB-PIXEL |
+| grout collar width | 55.00 | 120.78 | **12.25** | — | resolves |
+| MESH PITCH near band (d <= 2.6 m) | 0.85 | 1.87 | **0.19** | — | MESH FLOOR |
+| MESH PITCH band 3 (d <= 7.0 m) | 3.40 | 7.47 | **0.76** | — | MESH FLOOR |
+| MESH PITCH far band (d > 7.0 m) | 6.80 | 14.93 | **1.51** | — | MESH FLOOR |
+| MESH PITCH library flags | 9.00 | 19.77 | **2.00** | — | MESH FLOOR |
+
+
+**24 of 43 non-mesh features are sub-pixel at the framing the film uses. At the
+framing the gate accepted, 2 were** — and those two are the two the module
+deliberately left to a bump map. The item's whole lippage/warp/rock/chip/
+aggregate vocabulary — the thing that makes it precast flags rather than a scored
+plane — lands between 0.13 and 0.78 px. The mesh is cut at a 0.85 mm near-band
+pitch, **0.19 px**, and carries **22,945,780 triangles** whose median edge is
+**0.23 px** at the measured framing (2.29 px at the gate's).
+
+Not everything dies: the 12 mm joint slot is 2.67 px, its 30 mm washed-out depth
+6.68 px, the 22 mm mould line 4.90 px, the 55 mm bitumen overband 12.25 px, the
+14 mm coarse stone 3.12 px, and the 16 mm chipping zone 3.56 px. **The bay
+module and the joint pattern survive; the surface finish does not.** The
+manifest's own note for this item — *"Bay module and joint pattern must survive a
+1.7 m lens - a single unbroken slab reads as lino"* — turns out to name the half
+that is still true at 10 m.
+
+### The relief stack IS alive, and it is alive below the resolvable floor
+
+`render/items/_relief/forecourt_paving_bay.json`, written 2026-08-03 20:36
+against the 12:26 witness blend, so it is not one of the 28 stale ones:
+**4 materials with bump, 5 stages, 0 height-unlinked, 0 undeterminable,
+0 height-driven-by-a-bump, m_min 0.037, m_median 3.014, m_max 3.7355.** Nothing
+in it is dead.
+
+**The number that proves it is rendered, not declared.** `gate.json`'s two-light
+block: the band that MOVED when the sun crossed to its other candidate side is
+**4.2417 % contrast against the strictest brightness-matched smooth control's
+0.0224 % — x189.28**, with the fine band at x151.48. That is a measurement of
+the BUILT field in an image, and it is unambiguous.
+
+**The `WAVE2-RANKING.md` §5a tangent trap does NOT bite here, measured rather
+than assumed.** Only `FCP_Flag_blast` carries two stages, and they are chained
+Normal-to-Normal. Superposing by tangent: 24.397 deg + 0.235 deg of slope give
+24.592 deg, **m 3.7634 against a largest declared stage of 3.7355** — 0.03 of
+overshoot, not `tree_oak`'s 6.375 from two in-band networks.
+
+**What does bite is scale.** At 4.4887 mm/px:
+
+| stage | driver | lam | m | lam in px | |
+|---|---|---:|---:|---:|---|
+| `FCP_Flag_blast` / Bump | Noise | 1.067 mm | 3.735 | **0.24** | below 2 px Nyquist |
+| `FCP_Flag_blast` / Bump.001 | Wave | 89.760 mm | 0.037 | 20.00 | |
+| `FCP_JointFill` / Bump | Noise | 1.778 mm | 3.014 | **0.40** | below 2 px Nyquist |
+| `FCP_Overband` / Bump | Noise | 4.706 mm | 3.067 | **1.05** | below 2 px Nyquist |
+| `FCP_Reinstatement` / Bump | Noise | 1.455 mm | 2.269 | **0.32** | below 2 px Nyquist |
+
+**Four of the five audited stages carry m 2.27–3.74 at a wavelength under two
+pixels.** `itemkit.OCTAVE_FLOOR_PX = 2.0` and `OCTAVE_FLOOR_MM = 2.38`; three of
+the four are under 2.38 mm outright. At the gate's 0.4554 mm/px they were 2.34,
+3.90, 10.34 and 3.19 px — all legal. **The framing is the only thing that made
+them legal.**
+
+Three further gaps, each a measurement rather than a reading of the report:
+
+1. **The module never invokes the relief law at all.** `grep -n itemkit
+   world/items/forecourt_paving_bay.py` returns nothing across 3,836 lines. No
+   `relief_budget`, no `relief_amplitude_for`, no `detail_for`. Bump `Strength`
+   and `Distance` are typed literals, and the module's private `_MB.noise(co,
+   scale, detail=6.0, ...)` takes a raw `Scale` — the exact API `itemkit.noise()`
+   exists to replace *("makes the caller state a wavelength instead of a
+   Scale")* — with the house `detail=6.0` default the octave law names as the
+   thing nobody chooses. The 1.067 mm pit noise runs `detail=5.0`, so it also
+   emits octaves down to **0.033 mm**.
+2. **Half the item's bump stages have never been audited.** The module builds 10:
+   `_flag_material` x 3 families x 2, plus joint, overband, reinstatement and
+   `FCP_Colonist`. The audit found 5, because it runs on `witness.blend`, which
+   contains ONE object. `FCP_Flag_agg`'s two stages are numerically identical to
+   blast's (m 3.7355 / 0.0370); `FCP_Flag_hone`'s bump1 is at Strength 0.12
+   instead of 0.55, i.e. amp 0.0336 mm, slope 5.652 deg, **m 0.8906** — a third
+   band again, never reported anywhere.
+3. **The geometry half of the audit covered 6,390 of 22,945,780 triangles —
+   0.0278 % of the item**, one object, `FCP_Joint_01231`, banded 4–12 mm at
+   rms dihedral 2.383 deg, m 0.376. The layer that caught the human figures'
+   fold field at m 2.32 after the shader was corrected has effectively not been
+   run on this item.
+
+### The re-gate
+
+**Command** (`--out` and `--witness-dir` deliberately under `work/`, so the
+published `render/items/forecourt_paving_bay/gate.json` and its witness PNGs are
+not overwritten):
+
+```bash
+bash tools/buildlock.sh r2990-regate-forecourt \
+  /opt/blender-5.2.0-linux-x64/blender -b -noaudio \
+  world/items/forecourt_paving_bay_test.blend --factory-startup \
+  -P tools/item_gate.py -- --item forecourt_paving_bay \
+  --out work/r2990/gate/gate_measured_framing.json \
+  --witness-dir work/r2990/gate_witness \
+  --samples 512 --always-render \
+  --filmed-distance-m 16.7577 --onscreen-px-4k 595.3
+```
+
+**Verdict: `ITEM_UNMEASURABLE`, exit 3 (VACUOUS in `tools/gate_exit.py`'s
+scheme). Not ACCEPTED, and not REJECTED.**
+
+```
+>> item forecourt_paving_bay  hero=True  filmed at 16.7577 m on a 35 mm lens
+>> 450 objects, 22945780 triangles, 7 materials
+>> edges  p10    0.85 mm =     0.19 px   (limit 6.0 px -- this is the check)
+>>        med    1.04 mm =     0.23 px   (advisory)
+>> relief wiring: 54 node tree(s) read from the BLEND, 0 miswired, 0 relief
+   output(s) feeding a computation
+>> 223 px/m at the filmed distance = 4.489 mm per pixel.
+   Band radii: r1=4.5mm, r2=9.0mm, r4=18.0mm, r8=35.9mm, r16=71.8mm
+>> triangles: 22945780 total, 38545 per onscreen pixel
+>>   subject 544 px, sphere 115817 px, plane 43691 px
+>> REFUSING TO REPORT A VERDICT: the witness frame is unusable, so every
+   render-based check was forfeited and nothing was measured about this module
+>> STAGE RESULT: ITEM_UNMEASURABLE
+```
+
+`unmeasurable: ["only 544 subject pixels (need 12000) -- the subject does not
+fill enough of the witness frame to measure"]`. The witness subject is the
+typical instance, `FCP_Joint_01231`; at 16.76 m it is 544 px of an 8.3 M-pixel
+frame, so **`surface_microstructure`, `relief_reads_as_lip_and_shade` and
+`silhouette_departs_from_analytic` are all `null` — forfeited, not passed.**
+
+**So the ACCEPTED verdict is a verdict about 0.4554 mm/px and nothing else.**
+At the framing the film uses, the gate's three render-based checks — including
+the relief check, the one 21 of 28 wave-1 items failed — cannot be taken at all.
+The item is not shown to be bad; it is shown to be **unmeasured at its own
+framing**, which under this project's own rule (R2-018/R2-019, "an unproven pass
+is not a pass") is the one thing that must not read as an acceptance.
+
+The checks that do not need the render all still pass at the new framing:
+`no_external_assets`, `material_depth`, `relief_wiring_reaches_the_shader`
+(new since the 2026-08-03 run: 54 node trees read from the blend, 0 miswired),
+`geometry_resolves_at_distance` — 0.19 px against a 6.0 px LIMIT, which the check
+reads as comfortably fine because it is a ceiling on coarseness with no floor —
+and `per_instance_variation` (4,009 realized from 385 sources / 169 shapes,
+commonest 2.9 %). The gate also repeats its own 2026-08-03 warning that
+*"the source meshes are largely COPIES of each other: 385 datablocks carrying
+only 169 shapes."*
+
+**Cost: $0.0264** on the 5090 broker — two 4K/512-sample frames, 2.946 s and
+2.944 s of GPU each, the rest instance spin-up. Well under the $5 I was told to
+ask before exceeding.
+
+**One side effect, owned and undone.** `--witness-dir` redirects the PNGs and
+the spec but NOT the staged blend: `item_gate.stage_witness` writes
+`render/gate_witness/<item>/witness.blend` from the manifest, so the re-gate
+overwrote the published 2026-08-03 witness blends (the ones
+`render/items/_relief/forecourt_paving_bay.json` names). Blender's own `.blend1`
+backups held the originals; both are **restored byte-for-byte**
+(sha256 `9ef1e31a…` / `64971343…`, 4,628,503 / 4,628,505 bytes, mtime 2026-08-03
+12:26) and my 16.7577 m staging is kept at
+`work/r2990/gate_witness/blends_16.7577m/`. The published PNGs and
+`witness_spec.json` were never touched. **This is a real trap for anyone
+following `WAVE2-RANKING.md` §7 step 1 and re-gating 32 items at measured
+framing: `--out` and `--witness-dir` do not make the run read-only.**
+
+
+**The R2-1367 lens trap applies, and hard.** `item_gate.py` honours
+`--filmed-distance-m` (line 3081) and reads `lens = rec["lens_at_closest_mm"]`
+(line 3088) with no override; there is still no `--lens-mm`. The film's lens at
+f910 is **21.000 mm**, the manifest's is 35. Handing the gate the true depth
+10.0546 m would stage the witness at **371.3 px/m against the film's 222.78 —
+66.7 % too large**, far worse than R2-1367's original 9.4 %. So the gate is
+handed **16.7577 m, which is a 35 mm-EQUIVALENT and not a position**, derived as
+`(3840 * 35 / 36) / 222.783`. `--onscreen-px-4k 595.3` is the measured screen
+diagonal of one 1.5 x 1.0 m flag at f910, projected corner by corner; the naive
+unforeshortened figure the manifest's formula would give is 273.4 px.
+
+At the SAME frame the trap would have been invisible in step E: at f104 the
+film's lens is 35.000 mm exactly, so distance and 35 mm-equivalent coincide at
+13.7482 m. The trap only became visible because the subject mask moved the
+answer to a frame with a different lens.
+
+### Every control, and the failure each one was watched to produce
+
+No arm below is quoted from a pass. Each one was damaged and watched to
+produce the failure named beside it.
+
+**1. `--selftest`, 16 arms on `r2990_forecourt_framing.py`, 12 on
+`r2990_forecourt_pixels.py`.** The negative arms and what they caught:
+
+| arm | the failure watched |
+|---|---|
+| a point behind the camera | rejected at depth -10.000 |
+| 3.7 m off axis on a 50 mm lens at 10 m | rejected at px 3893.3 of 3840 — **and 3.5 m accepted at px 3786.7**, so the arm is not "reject everything" |
+| pinhole vs radial | 4.000 vs 5.000 on the same point: 25 % |
+| a grazing flag | 382.4 px against the closed form's 385.8 and face-on's 673.0 — **the first threshold I wrote (0.55x) FAILED at 0.568 and was replaced by the closed form rather than loosened** |
+| **IDENTITY: a path against itself** | **FAILED on first run — 1,087 frames "differ", worst 2.958e-06 deg.** That is what exposed the `acos((tr-1)/2)` conditioning, and therefore that R2-2947's 0.17 deg is an artifact |
+| the subject mask MUST REJECT (3.5,-3.5,-0.5) | rejected — inside `R1_SHELL`, formation-slab layer |
+| the subject mask MUST KEEP the east forecourt | kept, so it is not "reject everything" |
+| plane snap MUST MOVE the points | by 0.500 m |
+| the pixel table MUST FIRE on 0.25 mm and 0.15 mm | both flagged SUB-PIXEL |
+| the pixel table MUST NOT FIRE on the 12 mm joint | not flagged |
+| vacuity BOTH ways | at 1e-6 mm/px nothing is sub-pixel; at 1e6 mm/px all 43 are |
+| **the table is WIRED to the module** | `FCP.CHAMFER_W_M` damaged to 0.011 in memory -> the table reports 11.000 mm; damage removed -> 5.000 mm. Without this the whole file could be a transcription and read identically |
+| the only `film*_path.json` literal is the control's | asserted by regex over the tool's own source |
+
+**2. A runtime assertion, not a selftest.** Occlusion can only remove points, so
+a frame's occluded-sharp peak is bounded by its sharp peak with occlusion
+ignored. The tool REFUSES if the winner does not exceed the weakest shortlisted
+frame's occlusion-free peak, rather than returning the best of an arbitrary 240.
+
+**3. `tools/r2990_forecourt_framing_control.py` — six damage modes, two
+configurations, and it FAILED TWICE AND FOUND A REAL BUG IN MY OWN TOOL.**
+
+Run 1: **four of six arms read `moved 0.00 %` — radial, no_frustum, no_smear,
+no_occ.** Cause: pass 2 (the occlusion pass) re-derived the winning frame's
+px/m with its own undamaged arithmetic, so the damage switches altered only the
+shortlist ORDER and the same frame won anyway. Four checks that changed nothing —
+this project's most-logged defect shape, committed by the file written to catch
+it. Fixed by extracting one `frame_metrics()` used by both passes.
+
+Run 2: radial, no_smear, no_subject_mask and no_plane_snap fire on the headline;
+no_frustum and no_occ still read 0.00 %.
+
+Run 3, widened to every published quantity and to the configuration the ANSWER
+uses:
+
+```
+== sp (as published) ==
+  baseline        1049.4475 px/m at f282   1 pts, 410 sharp frames  REPRODUCES
+  radial          ok  ppm 1049.4475->1007.5394
+  no_frustum      ok  frames_sharp 410->569, peak_any_ppm 1060.95->170471.94
+  no_smear        ok  ppm 1049.4475->1060.9536, f282->f275, frames_sharp 410->1391
+  no_occ          FAIL  VACUOUS -- not one published quantity moves
+  no_subject_mask ok  ppm 1049.4475->275.4566, f282->f104, pts 1->242
+  no_plane_snap   ok  ppm 1049.4475->1085.8599
+== answer (masked, snapped, outdoors) ==
+  baseline         222.7832 px/m at f910   10 pts
+  radial          ok  ppm 222.7832->193.6777
+  no_frustum      ok  frames_sharp 191->244, peak_any_ppm 441.30->172580.86
+  no_smear        ok  ppm 222.7832->307.7222, f910->f930
+  no_occ          FAIL  VACUOUS -- not one published quantity moves
+>> STAGE RESULT: R2990_CONTROL_FAIL  vacuous arm(s): sp / no_occ, answer / no_occ
+```
+
+`no_frustum`'s `peak_any_ppm 1060.95 -> 170,471.94` is R2-1362's trap made
+visible: without a frustum test the object scores off a point essentially at the
+lens, 160x its real best.
+
+**`no_occ` is STILL VACUOUS, and I am not silencing it, because the vacuity IS
+the finding.** The occlusion buffer removes not one point of this object in
+either configuration. `sp_objects.json` says the same thing about itself:
+`points_ever_unoccluded == points` (2,448 of 2,448) and `peak_sharp_px_per_m ==
+peak_unocc_sharp_px_per_m` **bit for bit**. And it generalises:
+
+| across all 2,261 objects in `sp_objects.json` | count | share |
+|---|---:|---:|
+| `points_ever_unoccluded == points` | 2,093 | **92.6 %** |
+| `peak_sharp_px_per_m == peak_unocc_sharp_px_per_m` bitwise | **1,992** | **88.1 %** |
+| `peak_px_per_m == peak_unocc_px_per_m` bitwise | 2,159 | 95.5 % |
+
+**For 88.1 % of the world the `unocc` in `peak_unocc_sharp_px_per_m` — the field
+R2-2945 re-ranked wave 2 on — contributes nothing.** It is
+`peak_sharp_px_per_m` wearing a prefix. That is precisely why the buffer said
+"unoccluded" while proxy frames 282 and 104 show the paving behind a wall, and
+it is why the pavilion exclusion had to be added by hand.
+
+**4. The FRAME as a control, which is the one that overruled the arithmetic.**
+Readings B through E were falsified by looking at the free proxy renders — 282 is
+a showroom interior, 104 is a showroom floor — and F was corroborated the same
+way at 910. No paid render was involved in any of it.
+
+
+### Files
+
+| path | what |
+|---|---|
+| `tools/r2990_forecourt_framing.py` | the derivation; `--selftest` 24 arms, 9 negative |
+| `tools/r2990_forecourt_framing_control.py` | damages it six ways in two configurations and watches the arms fire |
+| `tools/r2990_forecourt_pixels.py` | the pixel-footprint table; `--selftest` 13 arms |
+| `work/r2990/framing.json` | the ablation, the calibration and the camera A/B |
+| `work/r2990/pixels.json` | the per-feature table at both framings |
+| `work/r2990/control.json` | every damage arm and what it moved |
+
+Reproduce:
+
+```bash
+python3 tools/r2990_forecourt_framing.py --selftest
+python3 tools/r2990_forecourt_framing.py --calibrate --out work/r2990/framing.json
+python3 tools/r2990_forecourt_framing_control.py
+python3 tools/r2990_forecourt_pixels.py --graze 0.2071 --out work/r2990/pixels.json
+```
+
+### Proposed defect-log entries (NOT written to `DEFECT-LOG-R2.md` — for the owner to merge)
+
+> **R2-XXXX — the film's highest-resolution surface was a buried slab.**
+> `sp_objects.json`'s rank-1 `peak_unocc_sharp_px_per_m` for
+> `ARCH_Paving_Forecourt`, 1049.4475 px/m at f282, is set by ONE of 2,448 cloud
+> points, at (3.5, -3.5, -0.5) — inside `R1_SHELL`, on the layer of
+> `build_architecture`'s closed formation slab at -0.36..-0.100, under an opaque
+> showroom floor, in a frame where the camera is inside the pavilion. Restricted
+> to geometry `forecourt_paving_bay` actually builds and to frames where the lens
+> is outdoors, the item is filmed at **222.783 px/m, 4.4887 mm/px, f910,
+> 10.055 m on a 21 mm lens** — the manifest's accepted framing over-frames by
+> **9.86x linear / 97.2x in area**. Any `sp_objects.json` row whose object is
+> shared between an item and geometry the item does not own has this defect;
+> nothing in the pipeline tests for it.
+
+> **R2-XXXX — R2-2947's "0.17 deg at f282" is a comparator artifact, not a
+> drift.** `film17` and `film19` are byte-identical in `p`, `q` and `lens` at
+> f282. `screen_presence.camera_track` does not normalise the quaternion, the
+> path files round it to six decimals, and `acos((tr-1)/2)` at tr=3 turns a 1e-6
+> scale error into 0.17 deg. Use `2 asin(||Ra-Rb||_F / 2sqrt2)` after
+> orthonormalising; it returns exactly 0.0 and a self-comparison then reports
+> zero frames differing. The whole-film worst cases (21.399 m at f2177,
+> 55.996 mm at f2978, 78.753 deg at f2857) are unaffected and reproduce exactly.
+
+> **R2-XXXX — `forecourt_paving_bay` never invokes the relief law, and half its
+> relief stages have never been audited.** Zero references to `itemkit` in 3,836
+> lines; bump `Strength`/`Distance` are typed literals and the module's private
+> `_MB.noise()` takes a raw `Scale` with the house `detail=6.0`. The module
+> builds 10 bump stages; `relief_audit` reports 5, because it runs on a witness
+> blend containing one object — which is also why the geometry half of the audit
+> covered **0.0278 % of the item's triangles**. Four of the five audited stages
+> carry m 2.27–3.74 at wavelengths of 0.24–1.05 px at the measured framing, all
+> below `itemkit.OCTAVE_FLOOR_PX = 2.0`; they were legal only at the manifest's
+> 0.4554 mm/px. The `WAVE2-RANKING.md` §5a tangent superposition was checked and
+> does NOT bite here (3.7634 built vs 3.7355 largest declared).
+
+> **R2-XXXX — `peak_unocc_sharp_px_per_m` is not occlusion-aware for 88 % of the
+> world.** In `work/w2_0/retier_a10/sp_objects.json`, `peak_sharp_px_per_m` and
+> `peak_unocc_sharp_px_per_m` are **bit-identical for 1,992 of 2,261 objects
+> (88.1 %)**, and `points_ever_unoccluded == points` for 2,093 (92.6 %). The
+> occlusion model is a quarter-res depth buffer rasterised from a 1 m point
+> cloud, which cannot express a wall; `screen_presence.py` says so and calls
+> `ever_unoccluded = True` unproven. Consequence: R2-2945's re-ranking of wave 2
+> is, for most of the world, a ranking on `peak_sharp_px_per_m` with a prefix.
+> On `ARCH_Paving_Forecourt` it passes paving that is behind the pavilion shell,
+> in frames where the camera is inside it. Found because a damage arm that
+> removed the occlusion buffer entirely moved not one published quantity, in
+> either configuration — the control is left FAILING rather than silenced.
+
+> **R2-XXXX — re-gating at measured framing overwrites the published witness
+> blend even with `--out` and `--witness-dir` redirected.**
+> `item_gate.stage_witness` writes `render/gate_witness/<item>/witness.blend`
+> and `_flip.blend` from the manifest path regardless of `--witness-dir`, which
+> only redirects the PNGs and the spec. A re-gate of `forecourt_paving_bay` at
+> `--filmed-distance-m 16.7577` replaced the 2026-08-03 blends that
+> `render/items/_relief/forecourt_paving_bay.json` describes. Recovered here
+> from Blender's `.blend1` backups and verified byte-identical, but
+> `WAVE2-RANKING.md` §7 step 1 asks for this to be done to 32 items, and the
+> `.blend1` backup only survives ONE overwrite. Either honour `--witness-dir`
+> for the blend too, or add `--stage-only`-style isolation.
