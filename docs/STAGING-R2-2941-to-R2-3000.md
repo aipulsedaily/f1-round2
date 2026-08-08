@@ -1638,3 +1638,466 @@ Not done, and named:
 | `work/r2970/px_before.json`, `px_after.json`, `control.json` | the measurements |
 | `work/r2970/variety_shipping.json` | assembly14's variety, first measurement |
 | `work/r2970/variety_macro_{before,after}.json` | the before/after that does not move |
+
+---
+
+## R2-2960..R2-2969 — task #90: the three unlogged defects at the pit exit and the glass mouth
+
+**#1 CLOSED (confirmed on the ship for the first time) · #2 LIVE ON THE SHIP,
+and the 139 mm is the SLAB, not the paint · #3 REFUTED, third confirmation.**
+
+Everything below is measured on **`assembly14.blend`** — 9.58 GB, 31,068
+objects, contract 1.2.1 — resolved through `tools/shipping_world.py`, and on
+**`render/film23_breach.blend`** (47,131 objects). Every number the prior pass
+(R2-17xx) reported was taken on `assembly8` or `assembly10`, neither of which is
+the ship.
+
+### The instrument, and why it is not the prior pass's
+
+`ARCH_Markings` is 3,081 faces of **150 mm-wide line marking** spread over a
+580 × 74.5 m paddock and a 375 m pit lane. A world grid fine enough to resolve a
+150 mm stripe over that footprint is tens of millions of samples; a grid coarse
+enough to run reports a stripe as a coin toss. **So the paint is sampled on its
+OWN faces**, area-true, at a 12.5 mm pitch — **5,124,195 samples** — and the cost
+is proportional to the paint rather than to the world. The substrate is a single
+world-space BVH over all five `ARCH_Paving_*` objects, built from
+**`matrix_basis`**, never from the scene.
+
+`matrix_world` reads **IDENTITY for every one of them on the ship** — printed and
+checked. `ARCH_Paving_ApronPlatform` and `ARCH_Paving_Forecourt` are WORLD-frame
+(`matrix=Matrix.Identity(4)`); `ARCH_Markings`, `ARCH_RoadMarkings`,
+`ARCH_Paving_PitLane`, `_Garages`, `_Paddock` are CIRCUIT-frame (`M_C2W`). The
+prior pass's 78.101 m² headline was this bug; the guard that catches it accepted
+the correct frame at **1.0000** and refused the wrong one at **0.0000**.
+
+### R2-2960 — the artefact control, run first
+
+The same binary, over `assembly8` — **the world R2-132 itself measured** — and
+over the ship:
+
+```
+                              assembly8 (R2-132's world)     assembly14 (SHIP)
+ARCH_Markings                 7,166 verts @ 1 distinct z     7,166 verts @ 1 distinct z
+paint area                          795.891 m2                   795.891 m2
+paint over VOID                      10.534 m2                     0.031 m2
+float > 20 mm                        19.301 m2                    23.797 m2
+float > 50 mm                        11.320 m2                    15.302 m2
+float > 100 mm                        0.468 m2                     0.422 m2
+float > 200 mm                        0.468 m2                     0.000 m2
+WORST GAP                            370.02 mm                    146.68 mm
+```
+
+**370.02 mm against R2-132's published 367.9 mm — 0.58 %.** The instrument
+reproduces the number it is arguing about, on the world that produced it,
+without being told it. That is the control that makes the ship column mean
+something.
+
+### R2-2961 — #1 "paint over void — 7.10 m²" — CLOSED, first confirmation on the ship
+
+**10.534 m² → 0.031 m²**, whole world, by `54dd6b8`. R2-132's 7.10 m² was its own
+sub-window (`s 3360–3500 × u 10–42`) on `assembly8`; over the whole world the
+same defect is 10.534 m², and on the ship it is **0.031 m²** — three hundredths
+of a square metre of paint with no paving under it, at the instrument's own
+quantisation floor.
+
+### R2-2962 — #2 "paint floating up to 367.9 mm" — LIVE ON THE SHIP
+
+**23.797 m² above 20 mm, 15.302 m² above 50 mm, 0.422 m² above 100 mm, worst
+146.68 mm** — at `s = 3447.68, u = 12.87`, which is `PIT_WALL_S0 = 3447.7092`,
+the declared apron/pit-lane boundary, to 3 cm.
+
+The premise reproduces exactly on the ship: `ARCH_Markings` is **7,166 vertices
+at one distinct z = MARK_Z = 0.0075** (`world/build_architecture.py:1485`,
+helpers `:2449`, `:2474`, `:2506`). At the worst point,
+
+```
+paint      +0.00750     = exactly MARK_Z above the declared datum
+declared   +0.00000     world_ground_z, owner build_architecture:paving
+substrate  -0.13918     the built ARCH_Paving_ApronPlatform
+```
+
+**Fixing #1 is what made #2 visible**, and that is now measured on both worlds
+rather than argued: the area of finished apron bay sitting more than 20 mm below
+its own declared datum goes **0.62 m² on `assembly8` → 42.81 m² on the ship, a
+69× increase**, because `54dd6b8` released the outboard cut and laid 540 m² of
+new slab on exactly the ground where the two datums disagree.
+
+### R2-2963 — B: which side of the 139 mm is wrong. **The slab.**
+
+Isolated to the **finished bay surface** — the top face within one bay tolerance
+of `ground_z`, which separates it from the sealed joint at −5 mm, the bedding at
+−35 mm and the formation at −300 mm, all of which live inside the same object
+and all of which a downward ray will otherwise take:
+
+```
+                                            assembly8        assembly14 (SHIP)
+finished apron bay                          5,839.9 m2         6,382.2 m2
+   (the build's own apron_platform_m2)                         6,421.2 m2  -> 99.4 %
+finished bay  -  DECLARED datum    min      -130.89 mm         -125.84 mm
+                                   median      0.00 mm            0.00 mm
+finished bay  -  ground_z          min         -9.80 mm           -9.09 mm
+                                   median      0.00 mm            0.00 mm
+below declared by > 20 / 50 / 100 mm      0.62/0.50/0.31 m2   42.81/27.75/9.19 m2
+```
+
+**At the worst point on the ship — `s 3445.27, u 12.43`:**
+
+```
+built slab   -0.12584
+ground_z     -0.12585      <- agree to 0.01 mm
+declared     +0.00000      <- 125.84 mm away
+```
+
+**The slab tracks `ground_z` to a hundredth of a millimetre and sits 125.84 mm
+below its own declared datum.** Median offset from `ground_z`: **0.00 mm**.
+Median offset from the declared datum: also 0.00 mm — because over most of the
+apron the two agree; they diverge only in one 44.2 m run.
+
+**And the module itself says which one is right.** `build_apron_platform` lays
+its bay vertices at `WC.su_to_world(SS, UU)`'s z
+(`build_architecture.py:2127-2129`), and `su_to_world`'s z **is** `C.ground_z` —
+`max |difference| = 0.000e+00` over 88,620 samples (`world_contract.py:557`).
+**Every other paving field in the same module lays FLAT at the declared plane**:
+`_paving_region` at `Z_BAY + jitter`, where `Z_BAY = 0.000` is commented *"the
+declared plane, exactly"* (`:1483`, `:1612`); the paddock deck at `APRON_Z + dz`
+(`:5294`); the forecourt bays flat (`:2295`). The paint at `MARK_Z` agrees with
+all of them.
+
+**`ARCH_Paving_ApronPlatform` is the only surface in `build_architecture` that
+does not sit on the datum the module publishes.** The paint is correct. The slab
+is not.
+
+**And the two slabs were then measured across the seam they share.** The `apron`
+and `pit_lane` rectangles abut at circuit x = `_PIT_NOSE_X` = `PIT_WALL_X0 −
+TERM_L`, i.e. `PIT_WALL_S0 = 3447.7092`. One metre of station apart, on the same
+lateral line, on the ship:
+
+```
+    s        u    APRON slab   PIT-LANE bays    PAINT    declared   ground_z
+ 3447.21   13.51    -0.1115         ----          --     +0.0000    -0.1116
+ 3448.21   13.50       --         +0.0015         --     +0.0000    -0.1112
+ 3447.21   12.76    -0.1221         ----       +0.0075   +0.0000    -0.1222
+```
+
+**Two paving objects from the same module, abutting at the contract's own
+boundary, on two different datums, stepping 113.0 mm across one metre.** West of
+the seam the apron slab is on `ground_z` (−0.1115 against −0.1116). East of it
+the pit-lane bays are flat at **+0.0015** — the declared plane plus 1.5 mm of
+stain and jitter — while `ground_z` there is −0.1112. Over the whole seam sweep:
+
+```
+apron slab  -  ground_z    -7.28 .. +3.07 mm     median -0.00 mm
+apron slab  -  DECLARED  -122.16 .. -1.91 mm
+pit-lane    -  ground_z    -0.04 .. +116.82 mm
+pit-lane    -  DECLARED    -62.00 .. +1.49 mm    (the -62.00 is SUB_FORM_DZ,
+                                                  the formation under the drain
+                                                  and duct corridors, not a bay)
+paint       -  DECLARED   +7.4921 .. +7.5073 mm  against MARK_Z = 7.5000 mm
+paint over the APRON slab           54.03 .. 129.66 mm
+```
+
+**The paint is exactly `MARK_Z` proud of the declared datum to within 7.3 µm —
+the instrument's own float32 floor. It is right for the pit-lane bays, six
+millimetres proud of them, and it is the apron slab that moved.**
+
+**THE TRAP, measured rather than inherited.** `sit_c`/`sit_w` return
+`world_ground_z` — the DECLARED height (`:206-216`). At the worst floating point
+`sit_w` returns **exactly the declared 0.000**, so *"make the paint follow
+`sit_c`"* is a no-op: the paint is **already** exactly `MARK_Z` proud of `sit_c`.
+The fix is on the slab, and it is `sit_w` the slab should be calling.
+
+### R2-2964 — the root cause is one number, and it is in the contract
+
+`ground_z`'s apron tie gives up the runoff platform's outward fall and lands on
+`APRON_Z` over **`APRON_TIE_M = 8.0 m`** of lateral run outboard of `verge_edge`.
+At the pit exit there is not 8 m to do it in:
+
+```
+   s      platform_edge - verge_edge   tie weight   ground_z at the handover
+ 3432.5            8.40 m               1.0000            0.0000
+ 3437.5            4.96 m               0.6763           -0.0649
+ 3442.5            2.56 m               0.2411           -0.1211
+ 3447.5            1.76 m               0.1235           -0.1259
+ 3477.5            1.75 m               0.0326           -0.1435
+```
+
+The tie never completes, and `world_ground_z`'s priority-4 branch — `z[ap] =
+APRON_Z` over a **hard rectangle** (`world_contract.py:2979`) — teleports to
+0.000 at the handover. **Across `platform_edge` the contract disagrees with
+itself by up to 143.92 mm, at 89 of 569 stations (15.6 %), confined to one
+44.2 m run, `s 3435.15–3479.40`.** Inboard the owner is
+`build_barriers:runoff platform`; outboard it is `build_architecture:paving`.
+
+**The contract's own selftest has never sampled it.** *"apron is exactly APRON_Z
+beyond the tie"* restricts itself to `apron_zone == 1` at u = 30.0. *"the tie is
+a gutter, not a step"* samples **s = 3300.0 only**, where the run is 28.8 m; at
+s = 3460 the same profile lands at −77.1 mm and still measures 2.02 % against a
+6.00 % bound. *"the apron's far edge ramps longitudinally, no step"* bounds the
+**slope** and never the value: at u = 30.0 over s 3150–3480 the profile spans
+0.0000 → **−0.4630 m** and passes at 7.32 mm per 0.5 m against a 10 mm bound.
+`world_contract.py:3790-3799` records that a value bound on the blend band was
+added, failed at 209 mm, and was **removed**. It has been unbounded since.
+
+### R2-2965 — NOT FIXED HERE, and why: neither single-sided fix is free
+
+* **Move the slab onto `world_ground_z`** (i.e. onto `sit_w`, which the module
+  already has): correct against the paint and against every other paving field,
+  but it opens a step of up to **126.2 mm** against `build_barriers`' runoff
+  platform at `platform_edge`, because that neighbour is on `ground_z`.
+* **Shorten the tie to the run available**: requires **6.18–6.56 %** cross-grade
+  over the last ~2.5 m of station — **breaking the contract's own 6.00 %
+  "gutter, not a step" bound.**
+
+The honest fix is a `world_contract` change plus a world rebuild. **The brief
+forbids rebuilding the world and forbids touching `sim/`, so this stops at the
+diagnosis.** Nothing in the repository was modified by this item.
+
+### R2-2966 — #3 "the glass mouth's 100 mm sink" — REFUTED, on the ship and on the ship candidate film
+
+The −100 mm is **`R1_FORMATION_Z = -0.100`** (`build_architecture.py:161`) — the
+closed formation slab this module casts under round-1's pavilion floor, *"40 mm
+clear of that floor's soffit, 100 mm clear of its finished level"* (`:2309`). It
+is the top surface in the **assembly** only because the assembly has no round-1
+`Floor` in it: `tools/build_film_scene.py` appends SHOWROOM onto the prebuilt
+world.
+
+Read out of `render/film23_breach.blend` — the ship candidate — by selective
+append of two datablocks:
+
+```
+Floor             z -0.0600 .. +0.0000     x -15.0000 .. +15.0000
+Turntable_Deck    z +0.1180 .. +0.3400
+```
+
+`Floor`'s top is **exactly 0.0000**. `Turntable_Deck` at **+0.3400** is the
+positive control that proves the reader reads meshes rather than a constant, and
+the two differ by 0.3400 m, which is the damaged arm for "it returns one number
+for everything".
+
+And it cannot regress silently: `tools/build_film_scene.py:504-516` **hard
+refuses** to build a film unless `Floor`'s top is z = 0.000 — *"the breach sim
+baked 3,796 shard resting transforms against that plane; a floor 20 mm low
+leaves every one of them hovering"* — alongside the same refusals for
+`Turntable_Deck` at 0.340 and `GW_Right_Glass_00` at `ACCESS_GLASS_X`.
+
+**Recommend this be recorded REFUTED-CONFIRMED and not re-opened.** Three passes,
+four blends, same answer.
+
+### R2-2967 — every control, and the failure each was observed to produce
+
+A control that has only ever passed is not evidence. Each of these was built with
+a deliberately damaged arm and **the damaged arm was observed to fire**; three of
+them fired on the real run and changed the answer.
+
+| control | healthy arm | damaged arm — **observed** |
+|---|---|---|
+| **C9 frame guard** (contract-anchored) | 1.0000 of apron-slab verts land in the contract's apron window | wrong matrix → **0.0000**, footprint 82 × 296 m instead of 249 × 194 m |
+| **C5 paint flatness** | 7,166 verts, 1 distinct z | one vert moved 1 mm → **2 distinct z** |
+| **C4 ray reader** | plate built at 0.3400 reads 0.3400 | off-plate sample → **None** |
+| **C6 empty substrate** | — | an empty world measures **0.000000 m²** of slab |
+| **P-C3 paint lift** | float >100 mm = 0.423 m² | paint lifted 100 mm → **787.896 m²** |
+| **A-C3 datum injection** | +100.000 mm reads +100.0023 mm | first run **FAILED at a 1e-6 tolerance**: read 99.9947 mm. Diagnosed — Blender stores vertices as float32; the instrument's real z floor is **2.3 µm**. Tolerance corrected, floor now printed. |
+| **C2b sub-cell feature** | — | a 40 mm feature: **0 hits at 400 mm pitch**, 2 at 25 mm |
+| **C2a convergence** | 0.1 → 0.025 m: 1.470 → 1.500 m² (2 %) | first run **FAILED**: 0.4 m pitch reported **0.000 m²** for a 1.5 m² feature. Correct behaviour, wrong pass criterion — 400 mm cannot resolve it, and that is the finding. |
+| **P-C2 paint convergence** | 795.891 m² at 12.5 mm vs 798.243 m² at 50 mm (**0.29 %**); float>20 mm 23.797 vs 23.617 m² | — |
+| **C-ARTEFACT (area)** | finished bay 6,382.2 m² vs the build's own 6,421.2 m² (**99.4 %**) | first run **FAILED at 0.897×**. Diagnosed: a 5 mm bay window rejects bays that chord a curving `ground_z` in the tie band, and the naive ray takes the formation at −0.30 where no bay is laid. Both fixed by separating finished bay from sub-surface. |
+| **A-ART artefact** | 370.02 mm on `assembly8` vs R2-132's published **367.9 mm** | ship differs: paint-over-void **10.534 → 0.031 m²** |
+| **F1/F-C1 film reader** | Turntable_Deck +0.3400, Floor 0.0000 | the two differ by 0.3400 m, so neither is a constant |
+| **S-C1 seam datum** | pit-lane bays read +0.0015 against a 10 mm bound | the same slab lifted 100 mm reads **+37.99..+101.49 mm** and fails |
+| **S0 append guard** | all three named objects present | added *because* the first seam run died without it |
+| **V0 ship guard** | refuses to measure a blend that is not the declared ship | — |
+
+**AND THE "$? IS NOT EVIDENCE" TRAP FIRED ON MY OWN INSTRUMENT.** The first seam
+run printed its `[load]` line, then `Blender quit`, then
+`BUILDLOCK RELEASED ... rc=0`. **Exit code 0, no result, no traceback in the
+log.** It had taken every object in `bpy.data` — which after `--factory-startup`
+includes the default `Camera`, `Cube` and `Light` — and died on
+`Camera.data.vertices`. Caught only by reading for `>> STAGE RESULT:` lines and
+finding none. Fixed with an explicit type-and-name filter and an S0 guard that
+refuses rather than proceeds.
+
+**Two further control failures, both diagnosed to the instrument and not to the
+world:**
+
+* **S3 FAILED** — `pit-lane − declared` reaches **−62.00 mm**. That is
+  `SUB_FORM_DZ = 0.062`, the formation under the pit lane's drain and duct
+  corridors, which the sweep's u ≈ 12.8 columns land in. Excluding the trench,
+  every pit-lane bay reads +0.0015 m. The check needed a corridor mask, not a
+  different answer.
+* **S5 FAILED** — `paint − declared` = 7.4921..7.5073 mm against `MARK_Z`
+  = 7.5000 mm, at a 1e-6 m tolerance. **±7.3 µm — float32 vertex storage again**,
+  the same floor A-C3 measured at 2.3 µm. The claim it was testing is true.
+
+**Three further instrument faults, reported because they are the kind that ships
+a wrong number:**
+
+* **F3 FAILED** — `GW_Right_Glass_00` is **not in `film23_breach.blend`**; it
+  reads `nan..nan`. That is correct: `build_film_scene` takes round-1's east
+  glass out and the breach replaces it with shards. The check was written for a
+  pre-breach film. It incidentally confirms the glass is gone from the ship
+  candidate.
+* **P1 FAILED** — the frame census included `Camera` and `Light` from the
+  factory-startup scene. Every `ARCH_*` object read WORLD or CIRCUIT; nothing
+  measured used the default-scene objects.
+* **`apron_platform_m2` in every `assembly*_build.json` is an area in `(s, u)`,
+  not in world metres.** The Jacobian over this apron is 1.0000 so the two
+  coincide here — but the identity is an accident of a straight pit straight, not
+  a property of the quantity.
+
+### R2-2968 — does it reach a frame?
+
+Against `render/film23_path.json` (2,978 frames), the affected strip falls
+inside the frame rectangle in **353 frames (11.9 %)**, in 9 runs between frames
+861 and 2615, closest range **25.1 m at frame 1113**. At frame 1113 the free
+960 × 540 proxy `work/r22161_proxy/r22161_proxy_001113.png` shows it in the
+**defocused foreground**, blurred past joint-scale detail — so the free proxies
+confirm nothing either way, and no GPU render was made to find out.
+
+### R2-2969 — what was not done, and one operational note
+
+**The one arm not completed** is the whole-world void test: `assembly14` opened
+entire, so a ray can report "nothing under this point *including* terrain,
+barriers and surface", rather than "nothing under it among architecture's own
+paving". It spent **43 minutes reading the 9.58 GB blend** under swap without
+reaching its first measurement, while holding the shared lock against 20 other
+waiters, and **I killed my own job** rather than let it keep the queue. R2-132
+established that terrain is cut out of the declared platform here, and the
+lighter instrument answered the same question at a 20× finer sampling pitch, so
+the conclusion does not rest on it — but it is named here rather than quietly
+dropped.
+
+Six Blender runs, all under `tools/buildlock.sh`. The lock was continuously held
+by other agents' 10 GB film jobs for most of this item; queue depth peaked at 22
+waiters and one holder ran 55 minutes. Nothing in the repository was modified.
+
+---
+
+## Proposed DEFECT-LOG entries (text only — `docs/DEFECT-LOG-R2.md` is merged by the user)
+
+### PROPOSED — "paint over void — 7.10 m²" (R2-132) — CLOSED, confirmed on the ship
+
+**CLOSED by `54dd6b8`, and this is the first confirmation on a world that
+carries the fix.** Every previous number was `assembly8` or `assembly10`; the
+ship is `assembly14.blend`, resolved through `tools/shipping_world.py`,
+contract 1.2.1.
+
+Paint sampled on its own faces at 12.5 mm — 5,124,195 samples — against a
+world-space BVH of all five `ARCH_Paving_*` objects built from `matrix_basis`:
+
+```
+paint over void      assembly8  10.534 m2   ->   assembly14 (SHIP)  0.031 m2
+```
+
+R2-132's 7.10 m² was its own sub-window `s 3360–3500 × u 10–42`; over the whole
+world the same defect measures 10.534 m². The instrument's artefact control is
+that it independently reproduces R2-132's 367.9 mm maximum float on `assembly8`
+at **370.02 mm** (0.58 %).
+
+### PROPOSED — "paint floating up to 367.9 mm above its substrate" (R2-132) — STILL LIVE ON THE SHIP, and the paint is not the side that is wrong
+
+**LIVE on `assembly14.blend`: 23.797 m² above 20 mm, 15.302 m² above 50 mm,
+0.422 m² above 100 mm, worst 146.68 mm** at `s = 3447.68, u = 12.87` —
+`PIT_WALL_S0 = 3447.7092`, the declared apron/pit-lane boundary, to 3 cm. The
+premise reproduces exactly: `ARCH_Markings` is **7,166 vertices at one distinct
+z = MARK_Z = 0.0075** (`build_architecture.py:1485`, helpers `:2449`, `:2474`,
+`:2506`).
+
+**WHICH SIDE IS WRONG: THE SLAB.** Isolated to the finished bay surface — which
+separates it from the sealed joint at −5 mm, the bedding at −35 mm and the
+formation at −300 mm, all inside the same object:
+
+```
+worst point, s 3445.27 u 12.43        built slab  -0.12584
+                                      ground_z    -0.12585   <- agree to 0.01 mm
+                                      declared    +0.00000   <- 125.84 mm away
+finished bay - ground_z        median   0.00 mm,  min  -9.09 mm
+finished bay - DECLARED datum  median   0.00 mm,  min -125.84 mm
+below the declared datum by >20/>50/>100 mm:  42.81 / 27.75 / 9.19 m2
+```
+
+`build_apron_platform` lays its bays at `WC.su_to_world(SS, UU)`'s z
+(`build_architecture.py:2127-2129`), and `su_to_world`'s z **is** `C.ground_z` —
+`max |difference| = 0.000e+00` over 88,620 samples (`world_contract.py:557`).
+**Every other paving field in the same module lays flat at the declared plane**:
+`_paving_region` at `Z_BAY + jitter`, `Z_BAY = 0.000` commented *"the declared
+plane, exactly"* (`:1483`, `:1612`); the paddock deck at `APRON_Z + dz`
+(`:5294`); the forecourt bays flat (`:2295`). The paint agrees with all of them.
+`ARCH_Paving_ApronPlatform` is the only surface in the module that does not sit
+on the datum the module publishes.
+
+**Measured across the seam the two slabs share** — the `apron`/`pit_lane`
+rectangle boundary at `PIT_WALL_S0 = 3447.7092` — one metre of station apart:
+
+```
+    s        u    APRON slab   PIT-LANE bays    declared   ground_z
+ 3447.21   13.51    -0.1115         ----         +0.0000    -0.1116
+ 3448.21   13.50       --         +0.0015        +0.0000    -0.1112
+```
+
+**113.0 mm of step between two paving objects from the same module.** Over the
+sweep: `apron − ground_z` = −7.28..+3.07 mm (median −0.00); `apron − declared` =
+−122.16..−1.91 mm; `pit-lane − ground_z` = −0.04..+116.82 mm; `pit-lane −
+declared` = +1.49 mm on every bay. `paint − declared` = **7.4921..7.5073 mm**
+against `MARK_Z = 7.5000 mm` — exact to the instrument's float32 floor. The paint
+is six millimetres proud of the pit-lane bays, which is right; it is the apron
+slab that moved.
+
+**THE TRAP, measured:** `sit_c`/`sit_w` return `world_ground_z`, the DECLARED
+height (`:206-216`). At the worst point that is exactly 0.000 and the paint is
+already exactly `MARK_Z` proud of it, so *"make the paint follow `sit_c`"*
+changes nothing. It is the slab that should be calling `sit_w`.
+
+**FIXING #1 IS WHAT MADE #2 VISIBLE**, measured on both worlds by one binary:
+finished apron bay more than 20 mm below its declared datum goes **0.62 m²
+(`assembly8`) → 42.81 m² (ship), 69×**, because `54dd6b8` released the outboard
+cut and laid ~540 m² of new slab on exactly the ground where the two datums
+disagree.
+
+**ROOT CAUSE, one number.** `ground_z`'s apron tie needs `APRON_TIE_M = 8.0 m` of
+lateral run outboard of `verge_edge`; at the pit exit `platform_edge −
+verge_edge` collapses from 8.40 m to **1.75 m**, the tie weight falls to 0.0326,
+and `world_ground_z`'s priority-4 branch (`z[ap] = APRON_Z` over a hard
+rectangle, `world_contract.py:2979`) teleports to 0.000 at the handover. **The
+contract disagrees with itself by up to 143.92 mm across `platform_edge`, at 89
+of 569 stations (15.6 %), over one 44.2 m run, s 3435.15–3479.40.**
+
+**The contract's own selftest has never sampled it**: *"apron is exactly APRON_Z
+beyond the tie"* restricts to `apron_zone == 1`; *"the tie is a gutter, not a
+step"* samples s = 3300.0 only, where the run is 28.8 m; *"the apron's far edge
+ramps longitudinally, no step"* bounds the slope and never the value — at
+u = 30.0 the profile spans 0.0000 → **−0.4630 m** and passes.
+`world_contract.py:3790-3799` records that a value bound on the blend band was
+added, failed at 209 mm, and was removed.
+
+**NOT CLOSED, deliberately.** Raising the slab to the declared datum opens a step
+of up to **126.2 mm** against `build_barriers`' runoff platform at
+`platform_edge`. Shortening the tie to the run available needs **6.18–6.56 %**
+cross-grade — breaking the contract's own 6.00 % bound. The honest fix is a
+`world_contract` change plus a world rebuild.
+
+**SCREEN PRESENCE:** inside the frame rectangle in **353 of 2,978 frames**,
+closest 25.1 m at frame 1113, where the free proxy shows it in the defocused
+foreground.
+
+### PROPOSED — "the glass mouth's 100 mm sink" — REFUTED, third confirmation, now on the ship and the ship candidate film
+
+**NOT A DEFECT.** The −100 mm is `R1_FORMATION_Z = -0.100`
+(`build_architecture.py:161`), the closed formation slab cast under round-1's
+pavilion floor, *"40 mm clear of that floor's soffit, 100 mm clear of its
+finished level"* (`:2309`). It is the top surface in the **assembly** only
+because the assembly has no round-1 `Floor` in it — `tools/build_film_scene.py`
+appends SHOWROOM onto the prebuilt world.
+
+On `render/film23_breach.blend`, the ship candidate:
+
+```
+Floor            z -0.0600 .. +0.0000
+Turntable_Deck   z +0.1180 .. +0.3400      <- positive control, a DIFFERENT known height
+```
+
+`Floor`'s top is exactly **0.0000**, and `tools/build_film_scene.py:504-516`
+**hard refuses** to build a film otherwise — *"the breach sim baked 3,796 shard
+resting transforms against that plane."*
+
+**Record REFUTED-CONFIRMED and do not re-open.** Three passes, four blends, same
+answer.
