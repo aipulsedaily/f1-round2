@@ -1063,3 +1063,42 @@ one.** The shortfall is **$26 to $37** against the $74.01 now on the account,
 and I would ask for **$120** so the master is not one slow host away from
 stopping.
 
+
+## R2-3020 — controls observed, and the state left behind
+
+Four instruments were used here that could have passed vacuously. Each was
+watched doing its job:
+
+| control | observed |
+|---|---|
+| `rq budget --set` as a spend ceiling | set to `spent + $5.00` **before** the job was submitted, and printed `remaining $4.9984`; restored to $150 on both brokers at 17:47 |
+| `tools/buildlock.sh` | took the lock, **queued my build behind eleven others for 22 minutes**, ran it, released it, printed `BUILDLOCK RELEASED ... rc=0` |
+| the exec idle-timer clause | `16:46:39 idle 301s by the render queue, but 12 exec job(s) are in flight — NOT stopping the instance` |
+| the broker's idle-down | `17:56:49 idle 300s — stopping instance (disk kept)` / `17:56:50 instance 47189253 stopped after 128.3 min running (~$0.789 gpu)` |
+
+And one that **failed loudly and cost nothing**, which is the point: the first
+26 `rq exec` submissions died on `argument --arg: expected one argument`
+because `--arg --item` is read as a flag. Twenty-six refusals, zero jobs
+created, zero dollars. Fixed with `--arg=--item` and resubmitted.
+
+### State left behind
+
+```
+instance 47189253   STOPPED at 17:56:50 (GPU meter off), disk billing $0.037/hr
+                    broker destroys it automatically at 21:56 unless used
+                    -> film23_breach.blend stays staged, so a master started
+                       on this card in the next 4 h skips a 13.6 min push
+brokers             untouched: none started, none stopped, none restarted
+caps                renderbroker $150.00, ladderbroker $150.00 — as found
+jobs                every job created here is mine; the 26 exec jobs were
+                    cancelled by me after all 26 returned ResourceWait
+lease               docs/STAGING-R2-3001-to-R2-3060.md, held by r2-3001-throughput
+```
+
+**Nothing in `vast-render` was committed.** Its index already holds another
+agent's staged work (`broker/app.py`, `broker/execservice.py`,
+`worker/exec_server.py` and five more, 3,635 insertions). The four changes this
+task recommends — `MIN_CPU_RAM_GB`, `prio`, `geolocation`, `push_parallel` —
+are described precisely enough to apply, and are left for whoever owns that
+branch.
+
