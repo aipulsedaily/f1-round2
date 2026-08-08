@@ -175,6 +175,32 @@ R2-2163 is available to beat 6's owner and needs no camera move to use.
 
 ---
 
+### The abstraction was checked against the built path, and my first reading of it was wrong
+
+An authoring unit is worth nothing if the frame does not end up where the anchor
+asked. So all 38 anchors were compared against **where the car actually lands in
+the rig's own built path**:
+
+* **Horizontal: worst deviation 0.084 half-frames, typically 0.01.** The car goes
+  where it is put.
+* **Vertical: a systematic −0.06 to −0.15 offset**, which on first look I
+  annotated as the subject-size clamp firing. **That was wrong.** It is the
+  pre-existing `z_off` — every anchor aims 0.55–0.80 m *above* the car's
+  reference point, so the reference point sits that far low in frame. Predicting
+  the term as `−(z_off/D)·lens/(0.5·sensor_h)` and subtracting it leaves
+  residuals **under 0.02 half-frames** on 33 of 38 anchors.
+
+The remaining outliers are real and understood: at t=109.60 the camera is
+directly over the car at close range, where `z_off` subtends −0.76 half-frames
+and the small-angle prediction above stops being valid; at t=76.00 and t=55.70
+the subject-size clamp genuinely fires. **Those are the clamp doing its job, not
+the resolver missing.**
+
+Worth stating because it nearly went in the other direction: the first version of
+this check printed "clamped by subject size" against 20 anchors on a threshold I
+had picked, and that annotation was an artefact of the threshold rather than a
+property of the run. The z_off decomposition is what distinguishes them.
+
 ### What it measures, after
 
 | beat | car's motion across frame, BEFORE | AFTER | change |
