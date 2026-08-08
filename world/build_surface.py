@@ -4276,15 +4276,41 @@ def _test_glass_marks(scene):
 
 
 def _car_box(scene, station, name="TEST_CarBox"):
-    """A box the exact size of the measured car (5.698 x 2.005 x 0.992, ride 0.340)
-    sitting on the racing line, so scale can be read in every frame."""
+    """A box the exact size of the measured car, sitting on the racing line, so
+    scale can be read in every frame.
+
+    THE FOUR NUMBERS ARE THE CONTRACT'S, NOT THIS FILE'S.          (R2-2521)
+    ---------------------------------------------------------------------
+    They were `L, W, Hh, ride = 5.698, 2.005, 0.992, 0.340` -- a retyped copy of
+    `C.CAR_BODY_LEN_M / CAR_BODY_W_M / CAR_BODY_H_M / CAR_RIDE_HEIGHT_M`, 4 150
+    lines below line 139 of this same file, where `CAR_WIDTH = C.CAR_BODY_W_M`
+    already does it correctly and says "RULE 1 ... the placement gate, the transit
+    keep-out and this module all have to mean the same car".  One of the two
+    obeyed the rule; the other retyped the same four numbers underneath it.
+
+    This is the copy that has already cost this project a measured 340 mm.  The
+    placement gate kept the same four numbers privately, `0.992` drifted into the
+    slot meaning the box's TOP when it is the box's THICKNESS, and the gate went
+    blind to a 340 mm slice directly over the driven line (R2-071 item 78).  A
+    scale reference that is silently the wrong size teaches the eye a wrong size,
+    which is the same failure one instrument along.
+
+    INERT, AND MEASURED RATHER THAN ASSUMED.  All four literals were bit-identical
+    to the contract's values -- compared as IEEE-754 doubles, not printed decimals,
+    because 0.340 and 0.34 are the same double but 0.1+0.2 and 0.3 are not.  The
+    vertex arithmetic below is unchanged and its inputs are the same bits, so every
+    TEST_CarBox this function has ever built is reproduced coordinate-for-coordinate.
+    What changes is that the next time the car is re-measured, this box moves with
+    it instead of staying where it was typed.
+    """
     ob = bpy.data.objects.get(name)
     if ob:
         bpy.data.objects.remove(ob, do_unlink=True)
     u = float(racing_line_offset(station))
     cx, cy, cz = su_to_world(station, u)
     _x, _y, _z, h, _k = centreline(station)
-    L, W, Hh, ride = 5.698, 2.005, 0.992, 0.340
+    L, W, Hh, ride = (C.CAR_BODY_LEN_M, C.CAR_BODY_W_M,
+                      C.CAR_BODY_H_M, C.CAR_RIDE_HEIGHT_M)
     pts = []
     for sx in (-L * .5, L * .5):
         for sy in (-W * .5, W * .5):
