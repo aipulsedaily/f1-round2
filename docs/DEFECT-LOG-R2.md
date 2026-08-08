@@ -38071,3 +38071,87 @@ save.**
 `apply_breach` on **`KeyError: BREACH_Fines` after 1,234 s of fines work.**
 **Unrelated to both fixes and to both proof frames** - correctly not coupled in -
 **but the ship candidate needs it.**
+
+## R2-1196 — THE BREACH AND THE ENDING ARE NOT DEFECTIVE: the metric was wrong for both, for TWO DIFFERENT REASONS
+
+**Seventh time today the second instance of a symptom had a different cause.**
+
+**The breach fails both applicability tests by two orders of magnitude.** Above
+2.6 kHz it carries **0.0183 % of its own energy** - **−47.7 dBFS, 31.5 dB below
+the flying lap**, against 1.02 % for the next-darkest beat. **The +0.09 dB is a
+ratio computed on one part in five thousand of what anyone hears.** And
+broadband, the metric scores the film **0.044 BELOW an octave-matched hair
+dryer** - **negative discrimination**, because **995 shard contacts have no line
+spectrum to find.**
+
+**The ending is a crowd.** Above 2.6 kHz it is **86.12 % crowd and 0.93 %
+engine** — 91.50 % crowd over the deceleration. **The gate was measuring a
+grandstand, and measuring it correctly.** The engine bus alone reads **+15.73 dB**
+there against **+17.03 dB** over the lap. For contrast the lap is **91.33 %
+engine** in that band: **where the fix was aimed, the engine owns the band.**
+
+**And the argument that needs no stems at all:**
+
+```
+across four masters spanning TWO complete engine rebuilds
+  flying lap   moved  7.40 dB
+  launch              6.79
+  transit             4.51
+  ending              0.27 dB
+```
+
+> **A number that does not respond to two engine rebuilds is not measuring the
+> engine.**
+
+**And the ending DID improve — in octaves nobody was scoring:** **+3.9 dB across
+250 Hz–1 kHz**, where an idle lives, and **−7 to −8 dB above 4 kHz.** **The
+gate's limb sits entirely inside the part that got quieter.**
+
+**No mix change was made, and reaching for the wind lever again would have been
+wrong**: the ending's wind is **0.72 % of that band and 1.1 dB BELOW the
+engine.** *The same symptom, the same instrument, and a different cause for the
+third time in one workstream.*
+
+## R2-1197 — I AUTHORISED A PERCENTILE FLOOR AND THE MEASUREMENT SAID NO
+
+I approved replacing the per-beat median with a percentile floor. **It does not
+work here and the agent proved it rather than complying**: beat 2 is **3.0 s**,
+its **p5 is six windows with a ±2.69 dB error bar against 0.58 dB of
+separation**, and **nothing below p40 reached 3σ.**
+
+**The fraction below threshold — the same statement from the other end —
+separates 0.331 against 0.911 on the lap and is decidable.** Limits set by one
+stated rule (midpoint to the adversary, 0.05 rounding); **worst margin 3.5σ,
+best 30.2σ.** The lap is permitted 0.60 **because its low third is its QUIET
+third** - correlation with level **+0.252**, and restricting to loud windows
+moves the median **5.84 → 8.03 dB.**
+
+**Scored 6 of 6, gated 5 of 6.** The breach is **declared with both numbers**,
+and **any OTHER beat that goes unmeasurable now FAILS.** **The declaration
+self-heals** — if HF returns to the breach, the limb becomes applicable **with no
+code edit.** Both hair-dryer masters fail on all three engine beats; all three
+controls fail; the tubes master passes, correctly, because **`waveguide` catches
+it.**
+
+**And a defect it found in its own work:** the first build **computed
+applicability from the signal under test**, so **a literal hair dryer passed with
+zero failures.** **Applicability is a property of the film, not of the candidate**
+- fixed and written up.
+
+**Provenance is now proved rather than asserted:** **21/21 clips bit-exact
+against their declared source, 10 proved to be the delivered master** — including
+clip 08, whose route was previously assumed. **Clip 07 is an honest exception and
+now says so.** Worst opening step across 19 non-demo clips **−12.47 dB**.
+
+**Three stale claims corrected, including two I relayed**: the "+0.00 dB worst
+opening step" and "+19.58 dB" figures **do not reproduce** (real: −12.47 and
++23.45), `edge_gate`'s docstring cited **orphaned files** now measuring
++5.08/+5.13, and four `film_frames` strings were **off by one.**
+
+**And the rename hazard is a mechanism now, not a habit**: `build()` archives any
+differing master as `*_SUPERSEDED_<mtime>_<md5>.wav` before replacing it, because
+`master_B_lapdown.wav` was lost to an unattended script.
+
+**If the client still says the ending is wrong, the number is
+`TARGET_LUFS_S["crowd"] = -27.0`**, which owns 86 % of that band — **not the
+engine and not the wind. A mix decision with a name.**
