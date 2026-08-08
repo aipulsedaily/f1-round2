@@ -37424,3 +37424,80 @@ provably uncontaminated. **Nothing staged, nothing committed.**
 referred to the person who owns it, and the file it might have raced on hashed
 as untouched, is a module you can reason about.** The three open items are worth
 more than a clean report would have been.
+
+## R2-1176 — RUNOFF EDGE, NOT A RING: the verdict was made falsifiable BEFORE any pixel was looked at
+
+**$0.129 of the $1.20 authorised.** Four 4K frames. And the method is the part
+worth keeping.
+
+**Both competing predictions were projected into the frame in advance**: iso-`f`
+= 8 m outboard of the rim (the author's account) against iso-`D` = 46 m from the
+centreline (the defect). `platform_edge` runs **12.25–70.67 m** round the lap, so
+these are **genuinely different curves** - **f2760 separates them by up to 371
+px.**
+
+> **At both corners the iso-`f` curve swings wide around the runoff apron and
+> iso-`D` cuts across it — and the vegetation boundary follows the apron**,
+> tracing its outer edge around the bend including the apex curvature. The
+> iso-`D` line crosses the same scrub band diagonally with no change on either
+> side.
+
+**A constant-`D` ring cannot bend around a runoff apron. This boundary does.**
+
+**The module ships on that evidence.**
+
+**Three pieces of discipline in one pass:**
+
+- **Parity was proved before spending.** `R2_1881_ARMS_MATCHED` on all ten
+  fields, **and then again per-job at the broker** - *"a different claim from
+  what the blend asserts."*
+- **It declined to build a separate BEFORE arm, and that was right.**
+  `build_terrain.py` moved between the two builds, so **a rebuilt BEFORE would
+  have differed in the terrain module too and both arms would have logged
+  clean.** Both arms came from one file; the drop is **10,267 realized
+  instances, exactly `nb_instances` from the module's own stats.**
+- **Its own control on that drop wrongly reported FAIL**, because it had written
+  `drop > 100000` - **a magic number where a cross-check was available.**
+  Self-caught and reported.
+
+**And the supporting measurement was published WITH its weakness.** Two-way
+binning agrees - **5.92x across `f` at fixed `D` against 1.72x across `D` at
+fixed `f`** - but *"that mean is dominated by one sparse bin, on medians it is
+2.00x vs 1.81x, and it does not carry the verdict alone."* **Notably the
+one-way version of the same test returned RING, confounded three ways.** A test
+that gives the wrong answer when you drop a control is a test whose control you
+now know matters.
+
+**A correction it struck rather than left citable:** it had reported `_VIEWS_WORLD`'s
+beat-6 cameras as 9.51–70.79 deg off the film. **True at 22:40, false by 23:21** -
+`LIVE-CAMERA.md` was re-declared to `film19_path.json` and beat 6 is now
+bit-identical to the R2943 path (**worst 0.0002 deg**). **The camera moved onto
+the entries, not the reverse.**
+
+## R2-1177 — the near band is no longer blank, and it is not yet "filled" — my judgement, on the frame
+
+Watched `render/r2_1881/AB_f2760_change_0.png` at 1:1.
+
+**Real and visible.** The AFTER carries scrub across the mid-ground and down to
+the road edge where the BEFORE is bare grass. **9.93 % of the frame changed,
+fine-detail sd +31.0 % at the largest-change box, anisotropy ~1.0 in both arms -
+so it is geometry, not smear.**
+
+**And the agent's two caveats are both correct, and it flagged them rather than
+letting the number stand alone:**
+
+1. **The far field beyond ~40 m is still bare in the same frame** - the woodland
+   gate's territory, not this module's.
+2. **The new scrub reads as pale, twiggy, sparse bushes in this light.** *"No
+   longer blank, but whether it reads as 'detail' is a judgement no metric here
+   makes."*
+
+**That judgement is mine and I will make it plainly: it is better and it is not
+finished.** The client said *"fill the WHOLE map with trees and detail no blank
+green spots period."* This clears **blank**. It does not yet reach **filled** -
+the bushes are thin and pale against the grass, and the large mid-left expanse
+reads much the same in both arms.
+
+**The module should ship** - it is a strict improvement, measured, with its own
+open gate named. **And the next question is density and species weight in the
+0-40 m band, not whether the band is populated at all.**
