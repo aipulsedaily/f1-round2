@@ -37702,3 +37702,83 @@ exactly one STAGE RESULT line, no FAIL lines. Cost **$2.90**.
 **`docs/LIVE-CAMERA.md` was NOT re-declared** - `film17_path.json` is stale
 against the sheet and re-pointing it touches the beat-6 workstream. **Correctly
 left as a decision rather than taken.**
+
+## R2-1184 — THE 42 m "CLIFF" WAS A BULGE: 340,645 clumps DELETED and every region went up or flat
+
+`verge_band` now returns `tdraw` and `build_grass` crossfades on it. **On
+`tdraw` and not `f`**, because `outer` is capped to 0.75 R on the inside of a
+bend - **a taper written against `f` would fade the wrong ground at every
+hairpin.**
+
+```
+rendered, across the rim   B  ... 5.5 6.3 4.9 4.9 4.5 | 2.6 2.8 2.8 3.2 ...
+                           C  ... 4.3 4.6 4.4 4.4 3.7 | 3.4 3.0 3.0 3.9 ...
+single-tile step   -42.2 %  ->  -8.1 %
+```
+
+**And the profile showed the shape was never a cliff.** The band's outer half was
+**laying a second layer on a sward already at full weight** - model TOTAL **1.45
+at f=34, crashing to 0.67.** **A bulge, not a shortfall.**
+
+**So the fix DELETES 340,645 clumps and every measured region goes UP or flat**:
+the client's strip 5.12 → 5.30, verge 5.35 → 5.40, infield +1.9 %. **Removing
+material improved cover everywhere**, because the step was an excess on one side
+rather than a deficit on the other.
+
+## R2-1185 — R2-1824 fixed, MEASURED AS UNOBSERVABLE, and kept anyway with the reason stated
+
+Tier C now dissolves over 190 m instead of cutting dead at 1076 m. **Tier A and
+B identical to the unit, the 200 m and 520 m joins still sum to one, nothing on
+concrete.**
+
+**But it measured ten delivered views FIRST**: the best puts **0.84 % of its
+frame inside the fade band; `b6_2978` puts 0.00 %.** `dcam3` is distance from the
+camera *path*, which wraps the whole lap, **so that radius is farmland behind the
+treeline in every shot.** It then **sited a diagnostic view on the band itself
+and rendered it**: whole-frame **0.656 → 0.654**, mean |dL| **0.00041.**
+
+> **Correct, free, and nothing to see. Kept on the argument that a latent hard
+> edge is cheaper to remove now than to find later - not on evidence, because
+> there is none.**
+
+**Measuring whether a fix is visible before shipping it, and saying "no" out
+loud, is rarer than fixing it.**
+
+## R2-1186 — THE TAPER WAS WRONG TWICE, AND THE ASSERTION THAT CAUGHT THE SECOND WAS WRITTEN FOR THE FIRST
+
+Arm C's first build reported in-corridor verge clumps at **-1.1 %** - **a count
+the taper has no business touching.** Chasing that number found **two** holes,
+**neither on the pit straight where every assertion was looking**:
+
+- **the fold cap** truncates the band **inside** the corridor at T4 - median `f`
+  **-14.3 m**, clustered s 919-1225 and s 2603-2756 - where sward's `f > 12`
+  gate means **nothing receives the handoff**;
+- **reprojection** - **23,354 samples** drawn near their own rim that
+  `C.project` lands inside a **neighbouring branch's** corridor.
+
+**The assertion that caught the second was written for the first.** A guard
+aimed at one mechanism found another it was never designed for - **which is what
+a guard written against an invariant rather than a symptom buys you.**
+
+> **A crossfade is only legitimate where there is a layer on the other side to
+> receive it.**
+
+Now proven on the artefact: `NOTHING inside the corridor is tapered, WHOLE LAP:
+0 of 2,130,639`, and **`grass_in_corridor` 1,386,383 = 1,386,383, identical to
+the unit** (the buggy build read 1,370,543).
+
+**And it declined to own a number that was not its.** `t5_verge`'s +11 % bare
+fraction is **not the taper**: ray-marching that camera shows **the tapered band
+is 0.13 % of the frame - a sixteen-row sliver at far left. A change confined to
+0.13 % cannot move a whole-frame metric by 11 %.** It is R2-1830's redraw, the
+same as the previous pass's -17 %.
+
+> **Both times the answer came from asking WHERE the change could physically be,
+> not from arguing about the number.**
+
+**Handoff, with a falsifiable check attached:** **`assembly12` carries R2-1821
+and NOT these two fixes** - verified from its own log rather than from timing:
+verge 3,022,130 / sward C **65,100 uncut**, identical to arm B. **A thirteenth
+assembly is needed, and tier C is the number to check it by - it must come back
+LOWER (56,063) or the fixes were not picked up.** Cost **$0.374** across both
+passes.
