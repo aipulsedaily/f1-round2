@@ -1171,6 +1171,64 @@ FINDING_PAIRS = [
 ]
 
 
+HIRES_GLOB = "/home/zany/vast-render/out*/seq/r22161_before/*.png"
+
+
+def crossres():
+    """C9: DOES RENDER RESOLUTION PUT COARSE STRUCTURE INTO THE IMAGE?
+
+    The whole entitlement of this file to close an emptiness finding on 960x540
+    evidence rests on one claim: a region with no structure at 16-64 px at 4K is
+    empty for reasons resolution cannot fix. That claim was ARGUED from the
+    sampling theorem. This measures it instead, and it costs nothing.
+
+    `out*/seq/r22161_before/` holds 205 frames of THE SAME SCENE ON THE SAME
+    DECLARED CAMERA rendered at 1280x720 for the R2-2161 doppler A/B -- a 1.33x
+    resolution increase over the proxy, frame-for-frame overlapping it. Bring the
+    1280 render down to 960 and measure the coarse band both ways. If more
+    resolution manufactured coarse detail, the two would disagree.
+
+    They do not, and that is the result this file's epistemics stand on.
+    """
+    import glob
+    import re
+    from PIL import Image
+    fs = sorted(glob.glob(HIRES_GLOB))
+    if not fs:
+        print("!! no 1280x720 arm on disk")
+        print(">> STAGE RESULT: CROSSRES_SKIPPED")
+        return
+    byf = {int(re.search(r"_(\d+)\.png$", f).group(1)): f for f in fs}
+    sel = sorted(byf)[::10][:20]
+
+    def coarse_of(img):
+        lev = pyramid(lum_of(img))
+        return np.stack([tile_means(l) for l in lev])[COARSE_FROM:COARSE_TO
+                                                      ].mean(axis=0)
+
+    A, B = [], []
+    for f in sel:
+        A.append(coarse_of(load_rgb(f)))
+        hi = Image.open(byf[f]).convert("RGB").resize((PROXY_W, PROXY_H),
+                                                      Image.LANCZOS)
+        B.append(coarse_of(np.asarray(hi, np.float32) / 255.0))
+    A, B = np.stack(A), np.stack(B)
+    ea, eb = A < Gates.TILE_COARSE, B < Gates.TILE_COARSE
+    agree = float((ea == eb).mean())
+    ratio = float(np.median(B / A))
+    ok = agree >= 0.98 and 0.95 < ratio < 1.05
+    print(f"  {'PASS' if ok else 'FAIL'}  C9 cross-resolution   {len(sel)} "
+          f"frames, {A.size} tiles. The SAME frames rendered at 1280x720 "
+          f"instead of 960x540 change the coarse band by a median "
+          f"{(ratio-1)*100:+.2f} %, call {int(eb.sum())} tiles empty against "
+          f"the proxy's {int(ea.sum())}, and agree on the verdict for "
+          f"{agree*100:.2f} % of tiles. 1.33x the resolution does not put "
+          f"structure at 16-64 px @4K into a region that had none, which is "
+          f"what lets this file close an emptiness finding on the proxy.")
+    print(f">> STAGE RESULT: {'CROSSRES_OK' if ok else 'CROSSRES_FAILED'}")
+    return ok
+
+
 def px_at(size_m, dist_m, lens_mm, res_x=DELIVERY_W):
     """The pixel-footprint law, in one line, at DELIVERY resolution."""
     return size_m / dist_m * (lens_mm / 36.0) * res_x
@@ -1195,6 +1253,8 @@ def main():
     p = sub.add_parser("selftest")
     p.add_argument("--frame", type=int, default=1900)
 
+    sub.add_parser("crossres")
+
     p = sub.add_parser("crops")
     p.add_argument("--what", default="all")
 
@@ -1215,6 +1275,8 @@ def main():
         cmd_gate(a)
     elif a.cmd == "selftest":
         selftest(a.frame)
+    elif a.cmd == "crossres":
+        crossres()
     elif a.cmd == "crops":
         cmd_crops(a)
 

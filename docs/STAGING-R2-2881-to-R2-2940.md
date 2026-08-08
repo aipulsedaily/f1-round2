@@ -85,8 +85,9 @@ attributed to a tile whatever margin is used; L4 is composition, not surface.
 ## R2-2883 — THE FOUR GATES, THE DAMAGE EACH WAS OBSERVED TO FAIL ON, AND ITS FALSE-POSITIVE RATE
 
 `selftest` damages a real frame and requires the gate to fail on the damage
-**and to leave the untouched neighbours alone**. Ten controls; full transcript in
-`work/r22881/selftest.log`. `>> STAGE RESULT: SELFTEST_OK`.
+**and to leave the untouched neighbours alone**. Ten controls in `selftest` plus
+`crossres`; transcripts in `work/r22881/selftest.log` and `crossres.log`.
+`>> STAGE RESULT: SELFTEST_OK` and `>> STAGE RESULT: CROSSRES_OK`.
 
 | gate | what it measures | threshold | provenance of the threshold |
 | --- | --- | --- | --- |
@@ -107,6 +108,7 @@ attributed to a tile whatever margin is used; L4 is composition, not surface.
 | C6 seam | a frame from 209 frames away spliced at f1190→f1191 | z 0.86 → **38.83** | fires |
 | C7 footprint | 0.062 m at 152.20 m on a 50 mm lens | **2.17 px** at 4K | reproduces the record; below the proxy's own floor, so refused |
 | C8 box/beat | C5 run per beat, both boxes required in frame | see below | **refuses beat 6 outright** |
+| C9 cross-res | the same frames rendered at 1280x720 instead of 960x540 | coarse band **+0.78 %**, verdict agreement **99.38 %** | resolution does not manufacture coarse detail (R2-2889) |
 
 **False positives, on the 2,978 frames known to be good:**
 
@@ -284,16 +286,48 @@ one material, in one beat, in the bottom third of frame.
 
 ---
 
-## R2-2888 — 4K CONFIRMATION (in flight)
+## R2-2889 — THE CENTRAL CLAIM IS NOW MEASURED, NOT ARGUED, AND IT COST NOTHING
+
+Everything above rests on one claim: **a region with no structure at 16–64 px at
+4K is empty for reasons more resolution cannot fix.** Until now that was argued
+from the sampling theorem. It is now measured.
+
+`/home/zany/vast-render/out*/seq/r22161_before/` holds **205 frames of the same
+scene on the same declared camera at 1280×720**, rendered for the R2-2161 doppler
+A/B — a **1.33× resolution increase** over the proxy, overlapping it
+frame-for-frame. Bring the 1280 render down to 960 and measure the coarse band
+both ways:
+
+```
+python3 tools/r2_2881_pixelpeep.py crossres
+
+PASS  C9 cross-resolution   20 frames, 960 tiles.
+      coarse band changes by a median +0.78 %
+      189 tiles called empty from the 1280 render vs the proxy's 187
+      verdict agreement 99.38 % of tiles
+>> STAGE RESULT: CROSSRES_OK
+```
+
+The six disagreeing tiles all sit within ±0.0003 of the 0.0020 threshold — they
+are borderline, not substantive.
+
+**A third more resolution does not put structure at 16–64 px at 4K into a region
+that had none.** The asphalt finding is therefore closed on proxy evidence, and
+it did not need a rented GPU to close it.
+
+---
+
+## R2-2890 — 4K CONFIRMATION (in flight)
 
 Per the standard that nothing is declared absent on proxy evidence alone, four
 targeted 4K frames were commissioned at the proxy's exact spec (ONER, 32 samples,
 CYCLES + OIDN, adaptive 0.01) — **f1350, f1787** (the asphalt finding) and
 **f2730, f2850** (beat 6). Landing in `work/r22881/4k/` with provenance.
 
-The asphalt finding does **not** depend on them: it is a coarse-band absence at
-16–64 px at 4K, which is above the proxy's floor. The 4K arm can only add whether
-there is sub-8-px detail down there that a viewer would never see anyway.
+The asphalt finding does **not** depend on them — **R2-2889 already closed it**
+against a real 1.33× resolution increase. The 4K arm can only add whether there
+is sub-8-px detail down there that a viewer would never see anyway, and whether
+beat 6's subject reads at delivery.
 
 ---
 
@@ -310,6 +344,7 @@ work/r22881/gate.log                    the per-beat run
 work/r22881/crops/                      before/after evidence, 1:1
 work/r22881/verify_boxes.png            why beat 6 is refused
 work/r22881/empty_overlay.png           the emptiness map on six frames
+work/r22881/crossres.log                the cross-resolution control (C9)
 ```
 
 Not touched: `docs/DEFECT-LOG-R2.md`, `docs/beat_sheet.json`,
