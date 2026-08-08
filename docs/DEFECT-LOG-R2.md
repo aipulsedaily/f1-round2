@@ -37992,3 +37992,82 @@ at 96 kHz, master unchanged at 124.0833 s / −14.00 LUFS / −1.10 dBTP. **18
 clips, every "after" clip bit-exact against the delivered master**, and the
 standing **+9.67 dB extract defect is not reintroduced** - worst opening step
 across the 16 non-demo clips is **+0.00 dB.**
+
+## R2-1193 — BOTH CLIENT FIXES ARE IN A BUILT FILM AND PROVEN THERE, and the carbon A/B is the complaint answered
+
+**Verified the defects were still real IN THE ARTEFACT before touching source** -
+`film21.blend`, 10 GB, link-mode, no GPU: `CarbonFibre` **and its `.001` twin**
+at 68 nodes, **zero `R2CP_*`**, all three `Mapping.Scale` at **190.0**; `TDP_*`
+groups **none**; `Traffic Passes` sockets **0**.
+
+```
+                          film21          film22
+CarbonFibre + .001 Scale   190.0          62.8319   24 checks, 0 failures
+twill at the payoff        0.87 px        2.63 px   (1.6535 mm -> 5.000 mm)
+Traffic Passes             absent         1000.0000, 248 Front X keys
+```
+
+**`assembly14` passed 7/7**, including **assembly13's two numbers unregressed**
+and the surface **bit-identical at 2,721,433 tris**. **`film22` has the same
+32,045 objects and numerically identical focus keys as `film21`, so the A/B
+camera is matched by construction** rather than by assertion.
+
+**Looked at `render/r22041/AB_f599_endplate.png` myself.** The BEFORE endplate is
+**flat grey-blue plastic**; the AFTER carries **legible carbon twill** across the
+whole panel with the fasteners and red edge intact. **That is the client's
+*"extraordinarily better"* note answered on the pixels** - and the BEFORE crop
+*is* the complaint: *"the front wing is a plain white bent sheet."*
+
+**`f1030`: two unbroken tyre tracks where there was bare concrete, −12.08 % mean
+luminance across 87,381 px.** Pure black **0.0000 % on both arms at f599**; f661
+carries **61 crushed px BEFORE the change** (pre-existing in film21) and the
+change adds **7, +0.0001 pp** - **reported rather than rounded away.** Cost
+**$0.30.**
+
+## R2-1194 — THE HANDOVER'S VERIFIER HAD THE SAME BLIND SPOT AS THE THING IT VERIFIED
+
+**The rubber handover's channel list omits `Interface` - and so does its own
+13-check verifier, which returned `OK (0 failures)`.**
+
+**That is precisely the channel R2-1226 shipped unlinked**, producing a
+confident *"the fix does not work"* verdict **that reached the client.**
+**Applying the handover as written would have reproduced the exact defect it was
+written after.**
+
+> **A verifier derived from the same document as the change inherits the
+> document's omissions.**
+
+Wired from the **reference implementation** instead - `TDP.mat_concrete()`,
+**which the handover itself names as authoritative over its prose** - and
+asserted with `K.assert_wired` on both nodes. **When a spec and its reference
+implementation disagree, the spec is the thing that drifted.**
+
+**And a bonus proof arrived from a check that was wrong in the safe direction:**
+the film carries **exactly two `TDP_*` groups**, not four, because the deck and
+floor apply groups **end with zero users and are dropped.** That is **direct
+evidence N=1000 did not leak to the showroom surfaces** - a stronger negative
+than any assertion, obtained by a mis-prediction.
+
+**The carbon fixer was chosen for provenance, not convenience:**
+`tools/cockpit_surface.py::fix_carbon_fibre`, **the only carbon fixer proven to
+be in the ship path** (`build_car_cs.sh` -> the car `build_film_scene --car`
+consumes). **And the function RAISES if leaving the constant alone ever lands out
+of band** - round 1's 0.0475 mm bump reads **m=0.813 pp at the old pitch and
+0.270 pp at 5.0 mm** - so the reason is asserted in code rather than remembered.
+
+## R2-1195 — THE LAMP HALF IS BLOCKED BY THE DEFECT CLASS THIS TASK EXISTED TO CLOSE
+
+`build_three_point` is **upstream of a baked artefact round 2 never
+regenerates**, and **the shipped lamp energies already disagree with that
+source.** **So editing it has no path to a frame** - which is the film18 shape
+again, found while closing two other instances of it.
+
+Landing it needs `tools/build_film_scene.py` (**another agent's live lease** -
+the path was dropped rather than the lease released) plus a decision on the
+invariant at `build_film_scene.py:481` that **refuses a 24th lamp before every
+save.**
+
+**And `film21_breach.blend` does not exist**: `run_rebuild21` died in
+`apply_breach` on **`KeyError: BREACH_Fines` after 1,234 s of fines work.**
+**Unrelated to both fixes and to both proof frames** - correctly not coupled in -
+**but the ship candidate needs it.**
