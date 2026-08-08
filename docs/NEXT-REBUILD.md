@@ -51,6 +51,28 @@ rendered before it is superseded by construction. Written 2026-08-07.
 > and roughness — in `world/build_surface.py`. **That IS a real "landed in
 > source, in no film blend" item and the rebuild does need to pick it up.** See
 > `docs/STAGING-R2-3061-to-R2-3120.md`.
+>
+> **AND IT IS UNPROVEN BY RENDER. SAY SO OUT LOUD RATHER THAN INHERITING IT.**
+> The A/B rig (`world/r23061_nf_{before,after}.blend`, one camera, three film
+> poses × shutter-open / camera-stopped) was built but never rendered: the shared
+> build lock was held by a legitimately-working 9 GB assembly probe for the whole
+> window. What exists instead of a measurement is a **prediction, written into
+> the staging doc before any frame was rendered** — still arm 1.5-3×, live arm
+> about half of that, f1787 tile (3,1) 0.00085 native → 0.0011-0.0018. That is a
+> hypothesis on record, not a result, and the difference matters:
+>
+> * the change is **additive only** — 4 tags added, none removed, no existing
+>   wavelength moved, 1129 → 1180 nodes — so it cannot break what it does not
+>   touch, which is what makes shipping it unproven tolerable at all
+> * **the first frames the rebuild renders settle it for free.** Run
+>   `tools/r2_3061_judge.py` on any 4K frame in 1685-1688 / 1784-1787 / 2622 and
+>   compare against the recorded before: 0.00069 proxy / 0.00085 native on tile
+>   (3,1) at f1787, against a 0.0020 emptiness threshold and 0.00853 on the same
+>   frame's verge
+> * **if it lands below the predicted range the weights are too low, not the
+>   approach wrong.** They were set from arithmetic (`sqrt(7.5² + 7.5² + 3.8²) /
+>   7.5 = 1.5×` on albedo alone) and go up the same way. Do not re-derive the
+>   design from a single disappointing number.
 
 > **CORRECTION — "alters ONLY the camera's aim, never its position" is WRONG, and it
 > was my sentence.** Measured on the two gated rig paths, at the rendered-frame level
