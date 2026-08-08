@@ -73,6 +73,27 @@ stops out in grade, exactly as R2-1078 described, and the bar has been
 reporting that check as part of its verdict for four film generations without
 it running once.
 
+### And the positive control: it PASSES on a correct rig
+
+A guard that refuses everything is not a control either. Run against
+`render/film23_breach.blend`, whose lighting rig **is** the film's:
+
+```
+$ /opt/blender-5.2.0-linux-x64/blender -b render/film23_breach.blend \
+      --factory-startup -noaudio -P tools/rig_preflight.py
+>> RIG   /home/zany/f1-round2/render/film23_breach.blend
+>> SUN   rig (0.517854, -0.827767, 0.215939)
+>> SUN   film (0.517854, -0.827767, 0.215939)
+>> GRADE rig -3.6280 / AgX / look None   film -3.628 / AgX / look None
+>> STAGE RESULT: RIG_PREFLIGHT_OK
+
+TRUE EXIT = 0
+```
+
+Zero findings, exit 0, sun agreeing to six decimal places — from the same
+binary, the same tool and the same run of the script that returned three
+findings and exit 1 on the rig one minute earlier. **Both verdicts watched.**
+
 ---
 
 ## R2-2822 — the guard also died on its own documented command line
@@ -172,8 +193,16 @@ whether the script can act on it:
 | 36 | rig_preflight | **NO** — never executed (R2-2821) |
 | 37 | slabcheck "MUST exit 0" | **NO** — `\| tail -3`, `$?` is `tail`'s, consumed by nobody |
 
-**41 assertions. 24 counted. 17 silent.** Six of the 24 are conditionally
-silent on top of that.
+**37 assertions. 24 counted. 13 silent.** Six of the 24 (rows 9–14) are
+conditionally silent on top of that: they sit behind `if k in m`, so if
+`measure_film_scene` ever fails, `m` is `{}` and they disappear without a
+trace while the bar can still print PASS.
+
+`tools/film_bar.py` expresses the same 37 as **40 rows** — `rig_preflight`
+splits into an `rc` row and a printed-verdict row, because Blender exits 0 on
+an uncaught exception and neither one alone is evidence, and two rows are new
+cross-reads that make the two probes agree about the same open blend rather
+than letting the bar pick a favourite silently.
 
 Item 35 is the worst of them. The bar's own header says:
 
@@ -232,16 +261,41 @@ the file `build_film_scene.py` itself reads. Nothing derivable is retyped.
 ## R2-2825 — THE SHIP CANDIDATE'S VERDICT CHANGES FROM PASS TO FAIL
 
 `film23_breach` was recorded at `>> STAGE RESULT: VERIFY23_BAR_PASS`, "24
-checks, 0 failures". Judged against the same recorded artefacts with the silent
-checks counting:
+checks, 0 failures". Re-measured with the repaired `measure_film_scene.py` and
+judged with the silent checks counting:
 
 ```
-  38 checks claimed | 26 OK | 3 FAIL | 9 UNMEASURABLE
->> STAGE RESULT: FILM_BAR_FAIL
+=== the delivery format, the oner, the clip ===
+  resolution_x                 want 3840        got 3840        OK
+  resolution_y                 want 2160        got 2160        OK
+  resolution_pct               want 100         got 100         OK
+  camera                       want ONER        got ONER        OK
+  clip_start                   want 0.05        got 0.05        OK
+  clip_end                     want 200000.0    got 200000.0    OK
+
+=== the stages that produced those numbers ===
+  measure_strip ran   want STRIP_MEASURED    got 2 verdicts: ['STRIP_MEASURED', 'STRIP_ABSENT (probe raised SystemExit(0))']   FAIL
+  film materials      want FILM_MATERIALS_OK got 2 verdicts: ['FILM_MATERIALS_FAIL (1 failures)', 'FILM_MATERIALS_FAIL (instrument raised SystemExit(1))']  FAIL
+
+=== the controls that have to actually execute ===
+  rig_preflight rc        want rc=0             got rc=1                FAIL
+  rig_preflight verdict   want RIG_PREFLIGHT_OK got RIG_PREFLIGHT_FAIL  FAIL
+  slabcheck rc            want rc=0             got rc=0                OK
+  socket audit (film)                    want rc=0  got <not run: pass --socket>  UNMEASURABLE
+  socket audit (film10 must still FAIL)  want rc=1  got <not run: pass --socket>  UNMEASURABLE
+
+  40 checks claimed | 34 OK | 4 FAIL | 2 UNMEASURABLE
+>> STAGE RESULT: FILM_BAR_FAIL          (exit 1)
 ```
 
-Three of those are not the delivery-format keys. They are new, and they are
-about the artefacts the reported PASS was read off:
+**The five keys that were decorative for four generations turn out to be
+correct.** 3840×2160 at 100%, ONER, 0.05/200000 — every one of them passes now
+that it is measured. The film's delivery format was never the problem; the
+problem is that the bar could not have told you either way, and said PASS.
+
+The four FAILs are not the delivery format. Two are `rig_preflight` finally
+firing (§R2-2821), and two are about the artefacts the reported PASS was read
+off:
 
 **1. `measure_strip` printed TWO verdicts on the live film23 log.**
 
@@ -278,7 +332,17 @@ $ grep -qa ">> STAGE RESULT: FILM_MATERIALS_OK" work/r22101/materials_film23_bre
   ^^ carbon/rubber DID NOT PASS -> BARRC=1
 ```
 
-**3. `measure_film_extra` prints a BARE `STAGE RESULT:` with no `>>`.**
+**3. `rig_preflight` FAILs on the comparison rig** — §R2-2821. Two rows, `rc=1`
+and `RIG_PREFLIGHT_FAIL`. This one is a judgement call for the coordinator:
+`world/surface_test_filmpose.blend` is a *comparison* rig, not the film, and
+the film's own lighting passes the same check cleanly. But the bar's own line
+says a rig may not disagree with the film about the film's grade, the rig has
+been wrong by 139.61° since R2-1078 said so, and it has produced two confident
+wrong verdicts that were relayed to the client. **If that line is to stay in
+the bar, the rig has to be rebuilt or retired.** What is not available any more
+is the third option the bar has been taking: printing it and moving on.
+
+**4. `measure_film_extra` prints a BARE `STAGE RESULT:` with no `>>`.**
 
 So does `sim/slabcheck.py`. Every reader in this project — every verify script's
 `grep -aE "^>> STAGE RESULT"`, and `gate_exit._VERDICT_RE` itself — requires the
