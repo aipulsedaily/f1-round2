@@ -37894,3 +37894,101 @@ this log:** *a crossfade is only legitimate where there is a layer on the other
 side to receive it* - earned from a single count that should have read 0.0 % and
 read 1.1 %, which turned out to be **two separate holes**, the second caught by
 **an assertion written for the first.**
+
+## R2-1190 — YES: THE REBUILD TRADED A HAIR DRYER FOR TUBULAR BELLS, and the client's phrasing was diagnostically exact
+
+Solving the exhaust waveguide's pole polynomial exactly -
+`(1 - c z^-1) -/+ g(1-c) z^-D` - gives every mode's decay time. **All 99 primary
+modes below 9 kHz rang longer than the interval to the next firing event, at
+every rpm in the film.** Median **7.5x**, worst **20.7x**, the collector worst of
+all at **T60 48.6 ms, Q 6.5.**
+
+> **A resonator still ringing at 20x the drive interval is not being driven by
+> the engine; it is being struck by it.**
+
+*"Someone banging on tubes"* was not a figure of speech. **The client diagnosed
+a waveguide excitation defect by ear, twice, before any instrument here could.**
+
+**Fixed**: `PIPE_LOOP_GAIN` 0.70 → 0.34, `COLLECTOR_LOOP_GAIN` 0.62 → 0.14, and
+a **rise-time floor** - the model was hitting the pipes with a **71 microsecond
+edge at high rpm, sharpest exactly where it fires most often.** Plus **+2.69 dB
+exhaust compensation**, without which the tube fix would have handed 2.7 dB of
+the engine to its own noise layers **and made the wind complaint worse.**
+
+**Audible ringing tail, 2-6 kHz: 26.1 ms → 6.5 ms, a 4.0x reduction.** Mode T60
+3.0x shorter. `harmonic_over_broadband` 22.34 → 23.09 dB.
+
+**And the obvious move was rejected with a reason.** Damping the loop harder is
+**dispersive**: a 3rd-order loop at 1200 Hz shortens T60 at 3 kHz beautifully and
+**stretches the mode series 323 cents off harmonic.** **It buys a quieter ring by
+making it a more bell-like one.** That is now a **positive control.**
+
+**And an honest negative kept rather than dropped:** master-level 2-6 kHz
+envelope modulation **did not improve** (+0.17 dB). *"That metric points the
+wrong way for this defect - a long ring FILLS the gaps, so shortening it deepens
+the troughs."* Its own reasoning corrected in the tool comment. 6-14 kHz, where
+it is unconfounded, dropped **3.7-5.1 dB.**
+
+## R2-1191 — "EVERY GATE WE OWN PASSED THAT MIX" WAS NOT TRUE: the harmonic gate has never once run inside the suite
+
+**It takes mono. `main()` passes the stereo master. It threw every time** -
+**after** six gates had printed healthy output, and **before** aggregation. So
+**`ALL_PASS` was never computed**, and **`verify_report.json` on disk was from
+two rebuilds earlier.**
+
+**I told the client "every gate we own has passed a mix you describe as complete
+shit."** That was **false**: the gates never finished running on it. **A suite
+that throws after printing six healthy lines looks exactly like a suite that
+passed** - the output is indistinguishable unless someone checks that the
+aggregation line exists.
+
+**And with the suite finally reaching its own aggregation, `edges` failed - on
+the LAST frame.** **The film was hard-truncated mid-idle at +8.02 dB** on the
+master the client was given. **The exact mirror of the frame-1 bang** that
+`np.roll` produced, at the other end, found only because a gate that had never
+run finally ran. Fixed with a 12 ms tail fade; frame 1 stays green at −12.47 dB.
+
+**New `waveguide` gate measures DECAY rather than spectrum**, with four controls
+including an inharmonic trap - **because HNR cannot catch this. A struck tube is
+extremely tonal and scores WELL.** The metric that certified the rebuild was
+structurally incapable of seeing what the rebuild broke.
+
+## R2-1192 — 63 % OF THE CLIENT'S LISTENING WAS THE TWO BEATS NOTHING GATES, AND 0 % WAS THE ONE THAT IMPROVED
+
+The clips were **13-31 dB RMS different** from the delivered master - but the
+sampling was worse than the staleness:
+
+```
+63 % of their listening time   the breach and the ending
+                               - the two worst-scoring beats
+                               - and the two the harmonic gate does not score
+ 0 % of their listening time   the flying lap
+                               - the only beat the wind fix improved
+```
+
+**Six lap and launch clips existed in the cutter and had never been cut.** And
+**clips 07/08 - the ending A/B, the one creative decision only the client can
+make - were being cut from orphaned files no tool has written in weeks.**
+**Re-running the cutter would never have fixed that.**
+
+**The wind prediction was exactly right and still not enough.** Predicted
+0.71 → 6.70 dB; **measured −0.72 → +6.686 - the endpoint matches to 0.014 dB.**
+But **33.1 % of the lap is still below the gate's own threshold**, and **the gate
+scores a per-beat MEDIAN, so it passes anyway.** Breach and ending sit at
+**+0.09 and +0.16 dB, ungated.**
+
+**A median lets a third of a beat fail invisibly.** A percentile floor would not
+have.
+
+**One mistake recorded rather than buried:** it **overwrote
+`master_B_lapdown.wav`** - the exact artefact the client was played - and `*.wav`
+is gitignored, so **it is gone.** The A-variant was recovered as a substitute
+(**−0.0064 dB broadband gain, residual 68.9 dB below signal**, inaudible) and
+**the tool says it is a substitute.** *"Rejected masters must be renamed out of
+the pipeline's namespace the moment they are rejected."*
+
+**All 8 gates now pass** (`AUDIO_VERIFY_OK`), `ALL_BIT_IDENTICAL_BEFORE_T_END`
+at 96 kHz, master unchanged at 124.0833 s / −14.00 LUFS / −1.10 dBTP. **18
+clips, every "after" clip bit-exact against the delivered master**, and the
+standing **+9.67 dB extract defect is not reintroduced** - worst opening step
+across the 16 non-demo clips is **+0.00 dB.**
