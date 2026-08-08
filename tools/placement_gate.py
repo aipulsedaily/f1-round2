@@ -118,6 +118,7 @@ import math
 import os
 import re
 import sys
+import time
 
 import bpy
 from mathutils import Vector
@@ -447,6 +448,169 @@ def crossfall_allowance(spec, half_width_max):
              for c in spec.get("corners", [])]
     bank = max(banks) if banks else 0.0
     return math.tan(math.radians(bank + CROWN_DEG)) * half_width_max, bank
+
+
+# ---------------------------------------------------------------------------
+#  WHAT CAN ACTUALLY REACH A FRAME                                   (R2-2701)
+# ---------------------------------------------------------------------------
+#
+# THE CASE THIS WAS WRITTEN FOR, AND WHY IT IS NOT AN ALLOW-LIST.
+#
+# `assembly14.blend` reported 1,202 violations, and every one of them was a
+# `SPECX_Lib*` spectator-library prototype standing at the world origin, which
+# is where telemetry station 0 is -- so the car's swept box and the camera's
+# clearance sphere both pass straight through them. 894 in `car_path` at up to
+# 1.6025 m, the full swept half-width, i.e. dead centre.
+#
+# Established before anything was changed, because "delete them" and "stop
+# counting them" are opposite conclusions:
+#
+#   * They are the INSTANCE SOURCES of the crowd. Each of the six
+#     `SPECX_Crowd_*` fields carries a GeometryNodes modifier whose
+#     `CollectionInfo` node points at `ITEM_spectator_crowd_Library` with
+#     Separate Children on, and picks a source per point by the `hk_src`
+#     attribute. Deleting them deletes the crowd.
+#   * All 894 carry `hide_render = True`, set by
+#     `spectator_crowd.build_library(yard=None)`, which
+#     `spectator_crowd_world.build_world` takes and then RE-READS, raising if
+#     any source came back visible. They are the only 894 hidden meshes among
+#     the scene's 30,204.
+#   * The depsgraph realises 11,129 instances of them, at world
+#     x[32.4, 495.6] y[-138.7, 256.1] z[2.6, 10.7] -- on the six grandstands,
+#     which is where the crowd belongs and 30 m up from where the car drives.
+#   * And the frame evidence, which settles it: `work/r22161_proxy/` is the
+#     whole film rendered from `film22.blend`, which `build_film_scene` built
+#     from this very `assembly14.blend`. The world origin is inside the 4K
+#     frustum on 696 of the 2,978 frames and comes within 2.5 m of the camera,
+#     where a 1.75 m figure would be 2,589 px tall on a 2,160-px frame. The
+#     dais is empty in every one of them.
+#
+# So the geometry is right and the INSTRUMENT was wrong: it measured objects
+# that cannot appear in a rendered frame. The gate's three volumes are all
+# about the film -- "a car would hit it", "the shot is dead" -- and there is no
+# physics here; a mesh that never renders cannot be hit or clipped.
+#
+# THE OBVIOUS OBJECTION, AND THE ANSWER TO IT. `hide_render` is one boolean,
+# and a gate that goes quiet on one boolean is a gate anybody can switch off by
+# hiding the fence they left on the racing line. Three things answer that, and
+# all three are mechanisms rather than promises:
+#
+#   1. NOTHING IS SILENCED. Hidden objects are measured identically and their
+#      findings are reported in full under `hidden_findings`, with the reason
+#      they were classed hidden, exactly as `context_findings` already does.
+#      The verdict line prints the count. A fence hidden on the racing line
+#      appears in the report with its depth and its name.
+#   2. THE HOLE THIS OPENS IS CLOSED IN THE SAME CHANGE. "Hidden source,
+#      instanced somewhere visible" is precisely what the crowd library IS, so
+#      it is the one thing that must not go unmeasured. `measure()` now walks
+#      `depsgraph.object_instances` and measures every realisation of a hidden
+#      source at its instance matrix, as a first-class violation. Hiding a
+#      fence and instancing it onto the road now fires TWICE as loudly, from
+#      the instance rather than from the source.
+#   3. IT IS WATCHED FAILING. `--selftest` builds all four cases -- visible on
+#      the road, hidden on the road, hidden-and-instanced-onto-the-road, hidden
+#      and instanced well clear -- and requires the first, third to fire and
+#      the second, fourth to be silent.
+#
+# WHAT IS STILL NOT MEASURED, NAMED WITH ITS SIZE. Instances whose source is
+# VISIBLE are not measured at their instance matrices -- only the source object
+# is, where it stands. On `assembly14` that is ~4.96 M realisations, nearly all
+# of it `VEG_*` scatter. That blind spot predates this change and is not
+# widened by it; the report now counts it and says so in `instances`, so the
+# gate declares its own coverage instead of implying total coverage.
+
+def render_hidden_map(scene, deps=None):
+    """{object name: why it cannot render} for every mesh in `scene`.
+
+    Three ways an object is absent from a render, all of which this gate used
+    to walk straight past:
+
+      * `object.hide_render`
+      * any collection ABOVE it (not just its direct parents) with
+        `collection.hide_render`
+      * a view-layer `layer_collection.exclude`, which removes the object from
+        the depsgraph entirely -- the gate would be measuring a matrix nothing
+        evaluates
+
+    `hide_viewport` is deliberately NOT in this list. It hides an object from
+    the 3D view and renders it anyway; treating it as hidden would be a real
+    silencer.
+
+    READ OFF THE EVALUATED OBJECT, NOT THE STORED BOOLEAN, when a depsgraph is
+    given. `hide_render` is an ANIMATABLE property and this project animates
+    it: `sim/apply_breach.py` keys `hide_render` 1 -> 0 on all 11,246 `DB_*`
+    debris flakes so that "a flake does not exist before the crack that freed
+    it opens", and the shards do the same. The value saved on the original
+    datablock is whichever frame last flushed, so reading it is reading a
+    different frame than the one every other number in this report is measured
+    at. The evaluated copy carries the animation at THIS frame, which is the
+    frame the volumes are compared against.
+
+    Which makes the scope of this whole gate explicit, and it is worth stating
+    plainly: IT IS A SINGLE-FRAME INSTRUMENT measured against whole-film
+    volumes. Where an animated object goes on the other 2,977 frames is a
+    question nothing here asks.
+    """
+    hidden_colls = {}
+
+    def walk(coll, inherited):
+        why = inherited or ("collection.hide_render:%s" % coll.name
+                            if coll.hide_render else None)
+        if why:
+            hidden_colls[coll.name] = why
+        for ch in coll.children:
+            walk(ch, why)
+
+    walk(scene.collection, None)
+
+    # EXCLUDED IN *EVERY* RENDERING VIEW LAYER, NOT IN ONE OF THEM. A scene
+    # can carry several view layers and a render composites all the ones with
+    # `use` set, so a collection switched off in one and on in another still
+    # reaches the frame. Taking the union here instead of the intersection
+    # would be the silencer this whole section exists to avoid.
+    used = [vl for vl in scene.view_layers if vl.use]
+    per_layer = []
+    for vl in used:
+        seen = {}
+
+        def walk_lc(lc, inherited, seen=seen):
+            why = inherited or ("view_layer.exclude:%s" % lc.collection.name
+                                if lc.exclude else None)
+            if why:
+                seen[lc.collection.name] = why
+            for ch in lc.children:
+                walk_lc(ch, why, seen)
+
+        walk_lc(vl.layer_collection, None)
+        per_layer.append(seen)
+    excluded = {}
+    if per_layer:
+        common = set(per_layer[0])
+        for s in per_layer[1:]:
+            common &= set(s)
+        excluded = {k: per_layer[0][k] for k in common}
+
+    out = {}
+    for ob in scene.objects:
+        if ob.type != "MESH":
+            continue
+        hr = ob.hide_render
+        src = "object.hide_render"
+        if deps is not None:
+            try:
+                hr = ob.evaluated_get(deps).hide_render
+                src = "object.hide_render(evaluated)"
+            except Exception:                                     # noqa: BLE001
+                pass
+        if hr:
+            out[ob.name] = src
+            continue
+        for c in ob.users_collection:
+            why = hidden_colls.get(c.name) or excluded.get(c.name)
+            if why:
+                out[ob.name] = why
+                break
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -810,12 +974,64 @@ def _better(d, tag, cur):
     return tag < cur[1]
 
 
-def measure(scene, volumes, allow, context_names=frozenset(), verbose=True):
+def report_fingerprint(p):
+    """The bytes two passes of `measure()` must agree on, exactly.
+
+    Hoisted out of `main()` (R2-2701) so `--selftest` can assert on the same
+    function the verdict uses. A reproducibility rule that lives in a closure
+    is a rule no control can reach.
+    """
+    v, c, m, cl, t, cr, dg = p
+    return json.dumps(
+            {"violations": sorted(v, key=lambda r: (r["volume"], r["object"],
+                                                    r["intrusion_m"])),
+             "context": sorted(c, key=lambda r: (r["volume"], r["object"],
+                                                 r["intrusion_m"])),
+             "marginal": sorted(m, key=lambda r: (r["volume"], r["object"],
+                                                  r["intrusion_m"])),
+             "closest": {k: [cl[k][0], cl[k][1], cl[k][2]] for k in sorted(cl)},
+             "tested": t, "coarse": cr,
+             "walk": dg["scene_walk_order_sha256"],
+             "skipped": [len(dg["skipped_bbox"]), len(dg["skipped_to_mesh"]),
+                         len(dg["skipped_empty_mesh"])],
+             # THE NEW BUCKETS ARE IN THE FINGERPRINT TOO.  A finding that can
+             # move between runs without changing the fingerprint is a finding
+             # `--repeat` cannot see, and `hidden_findings` is where 1,202 of
+             # them now live.                                       (R2-2701)
+             "hidden": sorted(dg["hidden_findings"],
+                              key=lambda r: (r["volume"], r["object"],
+                                             r["intrusion_m"])),
+             "hidden_closest": {k: [dg["hidden_closest"][k][0],
+                                    dg["hidden_closest"][k][1],
+                                    dg["hidden_closest"][k][2]]
+                                for k in sorted(dg["hidden_closest"])},
+             # ...MINUS `walk_secs`, WHICH IS A CLOCK AND NOT A MEASUREMENT.
+             # This was watched failing: the first run of the instance pass on
+             # `film23_breach.blend` returned
+             # `PLACEMENT_NONDETERMINISTIC_REFUSED` because pass 1 walked
+             # 4,966,913 instances in 51.5 s and pass 2 did not, to one decimal
+             # place. The determinism guard was right and the fingerprint was
+             # wrong: a wall-clock reading is not part of the answer, and
+             # leaving it in would have made every report of every big world
+             # unciteable for a reason with nothing to do with the world.
+             "instances": {k: v for k, v in dg["instances"].items()
+                           if k != "walk_secs"}},
+            sort_keys=True, separators=(",", ":"))
+
+
+def measure(scene, volumes, allow, context_names=frozenset(), verbose=True,
+            hidden_names=None):
     """Every mesh against every volume. Returns (violations, context_findings,
     marginal, closest, tested, coarse_rejected, diag).
 
     `context_names` are measured identically; their findings are routed to a
     separate list so the report can attribute them without excusing them.
+
+    `hidden_names` is `{name: why}` from `render_hidden_map` -- objects that
+    cannot reach a frame where they stand. Same treatment: measured
+    identically, routed to `diag["hidden_findings"]`, never dropped. Their
+    REALISATIONS are measured too, in the instance pass below, which is what
+    stops `hide_render` from being a way to put geometry on the road.
 
     `diag` carries everything that used to be thrown away silently -- the
     objects that could not be measured, the runner-up behind every closest
@@ -835,8 +1051,11 @@ def measure(scene, volumes, allow, context_names=frozenset(), verbose=True):
     closest = {}
     runner_up = {}
     tested = coarse_rejected = 0
+    hidden_names = hidden_names or {}
+    hidden_findings = []
     diag = {"skipped_bbox": [], "skipped_to_mesh": [], "skipped_empty_mesh": [],
-            "scene_walk_order_sha256": None}
+            "scene_walk_order_sha256": None, "hidden_findings": hidden_findings,
+            "hidden_closest": {}, "instances": {}}
     max_r = max(max(v["radius"]) for v in volumes.values())
 
     walk = [ob for ob in scene.objects]
@@ -926,6 +1145,7 @@ def measure(scene, volumes, allow, context_names=frozenset(), verbose=True):
         is_edge = ob.name.startswith(EDGE_FAMILIES)
         is_ground = ob.name.startswith(GROUND_FAMILIES)
         is_ctx = ob.name in context_names
+        why_hidden = hidden_names.get(ob.name)
         for vname, (d, at) in worst.items():
             limit = ROAD_MARGIN if (is_edge and vname == "road_corridor") else 0.0
             if vname == "car_path" and is_ground:
@@ -945,18 +1165,32 @@ def measure(scene, volumes, allow, context_names=frozenset(), verbose=True):
             # are different answers: the second one says the name in this field
             # is a coin toss. A report that cannot show its own margin cannot
             # be told apart from one that is flipping.
-            if not is_ctx:
+            #
+            # A NON-RENDERING OBJECT IS EXCLUDED FROM THIS FIGURE FOR THE SAME
+            # REASON, AND IT MATTERED: on `assembly14` the crowd library owned
+            # `car_path` at -1.6025 m and `camera_path` at -0.6919 m, so the
+            # two numbers a reader acts on were both about geometry that is not
+            # in the film. Its own closest approach is kept, separately, in
+            # `hidden_closest`.                                     (R2-2701)
+            if not is_ctx and not why_hidden:
                 if _better(d, ob.name, closest.get(vname)):
                     if vname in closest:
                         runner_up[vname] = closest[vname]
                     closest[vname] = (d, ob.name, at)
                 elif _better(d, ob.name, runner_up.get(vname)):
                     runner_up[vname] = (d, ob.name, at)
+            if why_hidden and _better(d, ob.name,
+                                      diag["hidden_closest"].get(vname)):
+                diag["hidden_closest"][vname] = (d, ob.name, at)
             if d > limit:
                 rec = {"object": ob.name, "volume": vname,
                        "intrusion_m": round(d, 4), "at_world": at,
                        "edge_family": limit > 0.0}
-                if d <= limit + REPORT_TOL_M:
+                if why_hidden:
+                    rec["hidden_because"] = why_hidden
+                    rec["also_context"] = bool(is_ctx)
+                    hidden_findings.append(rec)
+                elif d <= limit + REPORT_TOL_M:
                     # Past the limit, but by less than this instrument can
                     # tell apart from zero. Listed, never silently dropped.
                     rec["past_limit_mm"] = round((d - limit) * 1000.0, 3)
@@ -964,12 +1198,142 @@ def measure(scene, volumes, allow, context_names=frozenset(), verbose=True):
                 else:
                     (ctx_findings if is_ctx else violations).append(rec)
 
+    # ---- WHERE A HIDDEN SOURCE ACTUALLY LANDS -------------------- (R2-2701)
+    #
+    # The pass above stops counting objects that cannot render where they
+    # stand. That is only honest if the places they DO render are measured, and
+    # for the crowd library those two places are 300 m apart: 894 sources at
+    # the origin, 11,129 realisations on the grandstands.
+    #
+    # So every realisation of a hidden source is measured here, at its instance
+    # matrix, and reported as a first-class violation naming both the
+    # instancer and the source. `hide_render` therefore cannot move geometry
+    # out of this gate's reach -- it can only move WHERE the gate looks for it.
+    #
+    # Instances of VISIBLE sources are counted and declared, not measured. That
+    # is a real gap and it is stated as one rather than implied away: see the
+    # section head above. It predates this change (the gate has always walked
+    # `scene.objects`), and closing it means measuring ~5 M realisations of
+    # scatter vegetation, which is its own task with its own adjudication.
+    #
+    # The walk runs even when nothing is hidden, because the COUNT is the
+    # declaration. A coverage figure that is only produced when it is
+    # non-trivial is a coverage figure nobody can compare across worlds.
+    inst_total = inst_hidden = inst_measured = inst_coarse_rejected = 0
+    src_verts = {}
+    _t_inst = time.time()
+    if not hidden_names:
+        # Nothing is hidden, so nothing can be instanced FROM something hidden.
+        # The count is still produced -- it is the coverage declaration -- but
+        # without resolving 5 M source objects to ask a question whose answer
+        # is already known.
+        inst_total = sum(1 for di in deps.object_instances if di.is_instance)
+    else:
+        for di in deps.object_instances:
+            if not di.is_instance:
+                continue
+            inst_total += 1
+            src = di.object
+            if src is None or src.type != "MESH":
+                continue
+            oname = src.original.name if src.original else src.name
+            if oname not in hidden_names:
+                continue
+            inst_hidden += 1
+            mw = di.matrix_world
+            bb = src.bound_box
+            lo = Vector((1e18, 1e18, 1e18))
+            hi = Vector((-1e18, -1e18, -1e18))
+            for c in bb:
+                p = mw @ Vector(c)
+                for i in range(3):
+                    lo[i] = min(lo[i], p[i])
+                    hi[i] = max(hi[i], p[i])
+            centre = (lo + hi) * 0.5
+            reach = (hi - lo).length * 0.5 + max_r
+            near = {vn: vol for vn, vol in volumes.items()
+                    if vol["kd"].find_range((centre.x, centre.y, 0.0), reach)}
+            if not near:
+                inst_coarse_rejected += 1
+                continue
+            inst_measured += 1
+            vs = src_verts.get(oname)
+            if vs is None:
+                me = None
+                try:
+                    me = src.to_mesh()
+                    vs = [v.co.copy() for v in me.vertices]
+                except Exception as e:                            # noqa: BLE001
+                    diag["skipped_to_mesh"].append(
+                        {"object": "instance-source " + oname,
+                         "why": repr(e)[:200]})
+                    vs = []
+                finally:
+                    if me is not None:
+                        src.to_mesh_clear()
+                # Cached only while the population that reaches a volume stays
+                # small. 894 sources at 13 k verts each is ~35 M vectors, which
+                # this box does not have; an unbounded cache would trade a
+                # measurement for an OOM kill.
+                if len(src_verts) < 64:
+                    src_verts[oname] = vs
+            parent = di.parent.name if di.parent else "?"
+            label = "%s[%s]" % (parent, oname)
+            iworst = {}
+            for co in vs:
+                p = mw @ co
+                at = (round(p.x, 3), round(p.y, 3), round(p.z, 3))
+                for vn, vol in near.items():
+                    d = intrusion(vol, p)
+                    if _better(d, at, iworst.get(vn)):
+                        iworst[vn] = (d, at)
+            is_ground = parent.startswith(GROUND_FAMILIES)
+            for vn, (d, at) in iworst.items():
+                if vn == "car_path" and is_ground:
+                    continue
+                if _better(d, label, closest.get(vn)):
+                    if vn in closest:
+                        runner_up[vn] = closest[vn]
+                    closest[vn] = (d, label, at)
+                elif _better(d, label, runner_up.get(vn)):
+                    runner_up[vn] = (d, label, at)
+                if d > 0.0:
+                    violations.append(
+                        {"object": label, "volume": vn,
+                         "intrusion_m": round(d, 4), "at_world": at,
+                         "edge_family": False, "instance_of": oname,
+                         "instanced_by": parent,
+                         "source_hidden_because": hidden_names[oname]})
+    diag["instances"] = {
+        "realised_total": inst_total,
+        "of_hidden_sources": inst_hidden,
+        "hidden_measured_per_vertex": inst_measured,
+        "hidden_coarse_rejected": inst_coarse_rejected,
+        "of_visible_sources_NOT_MEASURED": inst_total - inst_hidden,
+        "walk_secs": round(time.time() - _t_inst, 1),
+        "note": ("realisations of a hidden source are measured at their "
+                 "instance matrix and counted as violations; realisations of "
+                 "a VISIBLE source are not measured -- the source object is, "
+                 "where it stands. Declared, not implied."),
+    }
+
     diag["runner_up"] = runner_up
     n_skip = (len(diag["skipped_bbox"]) + len(diag["skipped_to_mesh"])
               + len(diag["skipped_empty_mesh"]))
     if verbose:
         print(f">> tested {tested} objects; {coarse_rejected} rejected on "
               f"bounding box; {tested - coarse_rejected} measured per-vertex")
+        print(f">> instances: {inst_total} realised in "
+              f"{diag['instances']['walk_secs']:.1f} s; {inst_hidden} of them "
+              f"from a NON-RENDERING source and therefore measured at their "
+              f"instance matrix ({inst_measured} per-vertex, "
+              f"{inst_coarse_rejected} rejected on bounding box); "
+              f"{inst_total - inst_hidden} from visible sources are NOT "
+              f"measured -- declared, see report.instances")
+        if hidden_findings:
+            print(f">> {len(hidden_findings)} finding(s) belong to meshes that "
+                  f"CANNOT REACH A FRAME where they stand -- measured, "
+                  f"reported under hidden_findings, not counted as violations")
         if n_skip:
             print(f">> {n_skip} object(s) COULD NOT BE MEASURED and were left "
                   f"out of every number above -- listed in the report under "
@@ -1001,6 +1365,21 @@ def main():
         print(">> they are still measured; anything they reach is reported "
               "under context_findings, NOT excused")
 
+    bpy.context.view_layer.update()
+    hidden = render_hidden_map(scene, bpy.context.evaluated_depsgraph_get())
+    if hidden:
+        by_why = {}
+        for n, w in hidden.items():
+            by_why.setdefault(w.split(":")[0], []).append(n)
+        print(f">> non-rendering: {len(hidden)} mesh(es) cannot appear in a "
+              f"frame where they stand -- "
+              + ", ".join(f"{k}={len(v)}" for k, v in sorted(by_why.items())))
+        print(f"   e.g. {sorted(hidden)[:6]}"
+              f"{' ...' if len(hidden) > 6 else ''}")
+        print(">> they are still measured, and every REALISATION of them is "
+              "measured where it lands; findings at their own location go to "
+              "hidden_findings, NOT excused")
+
     # ---- THE REPORT ASSERTS ITS OWN REPRODUCIBILITY --------------------
     #
     # `--repeat N` measures the same unchanged scene N times in this process
@@ -1018,26 +1397,10 @@ def main():
     passes = []
     for _i in range(max(1, a.repeat)):
         passes.append(measure(scene, volumes, allow, context,
-                              verbose=(_i == 0)))
+                              verbose=(_i == 0), hidden_names=hidden))
     violations, ctx_findings, marginal, closest, tested, coarse, diag = passes[0]
 
-    def _fingerprint(p):
-        v, c, m, cl, t, cr, dg = p
-        return json.dumps(
-            {"violations": sorted(v, key=lambda r: (r["volume"], r["object"],
-                                                    r["intrusion_m"])),
-             "context": sorted(c, key=lambda r: (r["volume"], r["object"],
-                                                 r["intrusion_m"])),
-             "marginal": sorted(m, key=lambda r: (r["volume"], r["object"],
-                                                  r["intrusion_m"])),
-             "closest": {k: [cl[k][0], cl[k][1], cl[k][2]] for k in sorted(cl)},
-             "tested": t, "coarse": cr,
-             "walk": dg["scene_walk_order_sha256"],
-             "skipped": [len(dg["skipped_bbox"]), len(dg["skipped_to_mesh"]),
-                         len(dg["skipped_empty_mesh"])]},
-            sort_keys=True, separators=(",", ":"))
-
-    fps = [_fingerprint(p) for p in passes]
+    fps = [report_fingerprint(p) for p in passes]
     repeat_ok = len(set(fps)) == 1
     # ONE PASS IS NOT AGREEMENT. `len({x}) == 1` is trivially true, and calling
     # that "IDENTICAL" would be a metric that reads the same whether it was
@@ -1086,6 +1449,11 @@ def main():
     worst = sorted(violations, key=lambda v: -v["intrusion_m"])
     ctx_worst = sorted(ctx_findings, key=lambda v: -v["intrusion_m"])
     marg = sorted(marginal, key=lambda v: -v["intrusion_m"])
+    hidden_worst = sorted(diag["hidden_findings"],
+                          key=lambda v: -v["intrusion_m"])
+    hidden_by_reason = {}
+    for _n, _w in hidden.items():
+        hidden_by_reason[_w] = hidden_by_reason.get(_w, 0) + 1
 
     # ---- WHAT THIS REPORT MEASURED -------------------------------------
     # A placement report once changed on an UNCHANGED blend: `ARCH_RetainEdge
@@ -1114,6 +1482,21 @@ def main():
                "violations": worst, "total": len(worst),
                "context_findings": ctx_worst,
                "context_total": len(ctx_worst),
+               # MEASURED, REPORTED, NOT COUNTED -- and the reason is in every
+               # row. This is the bucket that has to be READ, not skimmed: if
+               # something is in here that ought to render, the world is
+               # wrong; if something is in here that ought not, the gate is.
+               "hidden_findings": hidden_worst,
+               "hidden_total": len(hidden_worst),
+               "hidden_meshes": {"total": len(hidden),
+                                 "by_reason": hidden_by_reason,
+                                 "names": sorted(hidden)[:200]},
+               "hidden_closest_approach_m": {
+                   k: {"object": diag["hidden_closest"][k][1],
+                       "clearance_m": round(-diag["hidden_closest"][k][0], 4),
+                       "at_world": diag["hidden_closest"][k][2]}
+                   for k in sorted(diag["hidden_closest"])},
+               "instances": diag["instances"],
                "within_instrument_tolerance": marg,
                "within_instrument_tolerance_total": len(marg),
                "instrument_tolerance_m": REPORT_TOL_M,
@@ -1179,6 +1562,17 @@ def main():
         for v in ctx_worst[:12]:
             print(f"     [context] {v['volume']:<15} {v['object']:<28} "
                   f"{v['intrusion_m']:>8.3f} m in")
+    if hidden_worst:
+        print(f">> {len(hidden_worst)} HIDDEN findings -- meshes that cannot "
+              f"reach a frame where they stand, measured and attributed "
+              f"rather than excused. THEY ARE NOT IN THE VERDICT:")
+        for v in hidden_worst[:12]:
+            print(f"     [hidden]  {v['volume']:<15} {v['object']:<28} "
+                  f"{v['intrusion_m']:>8.3f} m in   ({v['hidden_because']})")
+        for vn in sorted(diag["hidden_closest"]):
+            d, nm, at = diag["hidden_closest"][vn]
+            print(f"     [hidden]  closest {vn:<14} {nm:<28} "
+                  f"{-d:+8.3f} m of clearance")
     if marg:
         print(f">> {len(marg)} past the limit by less than the "
               f"{REPORT_TOL_M * 1000:.0f} mm this method can resolve "
@@ -1188,6 +1582,10 @@ def main():
             print(f"     [within tol] {v['volume']:<15} {v['object']:<28} "
                   f"{v['past_limit_mm']:>8.3f} mm past the limit")
     ctx_tag = (f"  [+{len(ctx_worst)} context findings]" if ctx_worst else "")
+    if hidden_worst:
+        ctx_tag += (f"  [+{len(hidden_worst)} hidden findings on "
+                    f"{len({v['object'] for v in hidden_worst})} "
+                    f"non-rendering mesh(es)]")
 
     # A GATE THAT MEASURED NOTHING HAS NOT PASSED.
     #
@@ -1668,6 +2066,241 @@ def selftest(a):
         if o.type == "MESH":
             bpy.data.objects.remove(o, do_unlink=True)
     bpy.data.collections.remove(small)
+
+    # ---- 9c. WHAT CAN REACH A FRAME, AND THE HOLE THAT ANSWER OPENS --------
+    #                                                              (R2-2701)
+    # Four objects, one place -- the racing line at the high point -- and the
+    # four verdicts have to be different for the right four reasons:
+    #
+    #   A  visible, on the road                    -> VIOLATION
+    #   B  hide_render, on the road                -> hidden_finding, silent in
+    #                                                 the verdict
+    #   C  hide_render, on the road, and INSTANCED -> VIOLATION, from the
+    #      onto the same place                        instance
+    #   D  hide_render at the origin, instanced    -> silent everywhere: this
+    #      3 km away                                  is the crowd library, and
+    #                                                 it is the case the whole
+    #                                                 change exists to permit
+    #
+    # B alone would be a gate anybody can switch off with one boolean. C is
+    # the control that says they cannot, and it is watched FIRING. D is the
+    # control that says the fix is not merely "silence everything hidden" --
+    # it has to be watched SILENT or A and C prove nothing about the crowd.
+    print("\n>> SELFTEST: non-rendering geometry, and the hole that opens")
+    for o in list(scene.objects):
+        if o.type == "MESH":
+            bpy.data.objects.remove(o, do_unlink=True)
+    for cn in ("SELFTEST_Lib",):
+        if cn in bpy.data.collections:
+            bpy.data.collections.remove(bpy.data.collections[cn])
+
+    def _cube(name, loc, hide=False):
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=loc)
+        ob = bpy.context.object
+        ob.name = name
+        ob.hide_render = hide
+        return ob
+
+    on_road = (hx, hy, hz + 1.0)
+    far = (hx + 5000.0, hy + 5000.0, hz)
+    a_vis = _cube("SELFTEST_VIS_onroad", on_road, hide=False)
+    b_hid = _cube("SELFTEST_HID_onroad", on_road, hide=True)
+    # C and D share one hidden SOURCE in a library collection, exactly like
+    # SPECX_Lib*: one is instanced onto the road, the other well clear of it.
+    libc = bpy.data.collections.new("SELFTEST_Lib")
+    scene.collection.children.link(libc)
+    c_src = _cube("SELFTEST_HID_source", far, hide=True)
+    for oc in list(c_src.users_collection):
+        oc.objects.unlink(c_src)
+    libc.objects.link(c_src)
+
+    def _scatter(name, pts):
+        me = bpy.data.meshes.new(name)
+        me.from_pydata([tuple(p) for p in pts], [], [])
+        me.update()
+        ob = bpy.data.objects.new(name, me)
+        scene.collection.objects.link(ob)
+        ng = bpy.data.node_groups.new(name + "_GN", "GeometryNodeTree")
+        ng.interface.new_socket("Geometry", in_out="INPUT",
+                                socket_type="NodeSocketGeometry")
+        ng.interface.new_socket("Geometry", in_out="OUTPUT",
+                                socket_type="NodeSocketGeometry")
+        gi = ng.nodes.new("NodeGroupInput")
+        go = ng.nodes.new("NodeGroupOutput")
+        ci = ng.nodes.new("GeometryNodeCollectionInfo")
+        ci.inputs["Collection"].default_value = libc
+        ci.inputs["Separate Children"].default_value = True
+        ci.inputs["Reset Children"].default_value = True
+        iop = ng.nodes.new("GeometryNodeInstanceOnPoints")
+        ng.links.new(gi.outputs[0], iop.inputs["Points"])
+        ng.links.new(ci.outputs["Instances"], iop.inputs["Instance"])
+        ng.links.new(iop.outputs["Instances"], go.inputs[0])
+        ob.modifiers.new("scatter", "NODES").node_group = ng
+        return ob
+
+    c_fld = _scatter("SELFTEST_FIELD_onroad", [on_road])
+    d_fld = _scatter("SELFTEST_FIELD_clear", [(hx + 3000.0, hy + 3000.0, hz)])
+    bpy.context.view_layer.update()
+
+    bpy.context.view_layer.update()
+    hid9 = render_hidden_map(scene, bpy.context.evaluated_depsgraph_get())
+    check("hide_render is read as 'cannot reach a frame'",
+          sorted(n for n in hid9 if n.startswith("SELFTEST_")),
+          sorted([b_hid.name, c_src.name]),
+          "found %s" % sorted(hid9))
+    check("CONTROL: a VISIBLE mesh is not classed non-rendering",
+          a_vis.name in hid9, False)
+
+    v9, _c9, _m9, cl9, _t9, _cr9, dg9 = measure(scene, vols, (), frozenset(),
+                                                verbose=False,
+                                                hidden_names=hid9)
+    vnames = {x["object"] for x in v9}
+    hnames = {x["object"] for x in dg9["hidden_findings"]}
+    check("A  visible cube on the racing line is a VIOLATION",
+          a_vis.name in vnames, True)
+    check("B  the SAME cube hidden is NOT a violation",
+          b_hid.name in vnames, False)
+    check("B  ...and is REPORTED under hidden_findings, with its reason",
+          b_hid.name in hnames, True,
+          "%s" % [x.get("hidden_because")
+                  for x in dg9["hidden_findings"]
+                  if x["object"] == b_hid.name])
+    inst_hits = {x["object"] for x in v9 if x.get("instance_of")}
+    check("C  a hidden source INSTANCED onto the road IS a violation",
+          any(x.startswith(c_fld.name) for x in inst_hits), True,
+          "instance violations: %s" % sorted(inst_hits))
+    check("D  the same hidden source instanced CLEAR of the road is silent",
+          any(x.startswith(d_fld.name) for x in inst_hits), False)
+    check("D  ...and the hidden source at its own location is not a violation",
+          c_src.name in vnames, False)
+    check("CONTROL: the instance pass actually ran",
+          dg9["instances"]["of_hidden_sources"] >= 2, True,
+          "realised=%d of_hidden=%d measured=%d"
+          % (dg9["instances"]["realised_total"],
+             dg9["instances"]["of_hidden_sources"],
+             dg9["instances"]["hidden_measured_per_vertex"]))
+    # THE SILENCER CONTROL. If `hide_render` bought silence outright, the
+    # closest-approach figure would be owned by the hidden cube and a reader
+    # would be told the road is clear at 1 m when it is not. It has to be
+    # owned by the VISIBLE cube or the instance -- never by B.
+    check("closest_approach on road_corridor is NOT owned by the hidden cube",
+          (cl9.get("road_corridor") or (0, ""))[1] == b_hid.name, False,
+          "owner=%s" % ((cl9.get("road_corridor") or (0, None))[1],))
+    # AND THE COUNTERFACTUAL: with the visible cube and the instancer removed,
+    # the hidden cube is the ONLY thing on the road, and the gate must still
+    # say so in `hidden_findings` while returning no violation. A rule that
+    # cannot be observed producing an empty violation list on a dirty road has
+    # not been observed at all.
+    for ob in (a_vis, c_fld, d_fld):
+        bpy.data.objects.remove(ob, do_unlink=True)
+    bpy.context.view_layer.update()
+    hid9b = render_hidden_map(scene, bpy.context.evaluated_depsgraph_get())
+    v9b, _c, _m, _cl, t9b, _cr, dg9b = measure(scene, vols, (), frozenset(),
+                                               verbose=False,
+                                               hidden_names=hid9b)
+    check("COUNTERFACTUAL: hidden cube alone on the road -> 0 violations",
+          len(v9b), 0, "measured %d object(s)" % t9b)
+    check("COUNTERFACTUAL: ...and it is still in hidden_findings",
+          any(x["object"] == b_hid.name for x in dg9b["hidden_findings"]),
+          True, "%d hidden finding(s)" % len(dg9b["hidden_findings"]))
+
+    # ---- 9d. `hide_render` IS ANIMATED IN THIS PROJECT ----------- (R2-2701)
+    #
+    # `sim/apply_breach.py` keys `hide_render` 1 -> 0 on every one of the
+    # 11,246 `DB_*` debris flakes, and the shards do the same, so the STORED
+    # boolean is whichever frame last flushed and is not the frame the rest of
+    # the report is measured at. Both directions are controlled here: reading
+    # only the stored value would fail the first of these, and treating
+    # anything animated as hidden would fail the second -- which is the case
+    # that matters, because it is the one that silences.
+    print("\n>> SELFTEST: hide_render is animated, so it is read at the frame")
+    for o in list(scene.objects):
+        if o.type == "MESH":
+            bpy.data.objects.remove(o, do_unlink=True)
+    anim_hid = _cube("SELFTEST_ANIM_hidden_now", on_road, hide=False)
+    anim_vis = _cube("SELFTEST_ANIM_visible_now", on_road, hide=True)
+    scene.frame_set(7)
+    for ob, at7 in ((anim_hid, True), (anim_vis, False)):
+        ob.hide_render = not at7          # the STORED value is the wrong one
+        ob.keyframe_insert("hide_render", frame=1)
+        ob.hide_render = at7
+        ob.keyframe_insert("hide_render", frame=7)
+        for fc in ob.animation_data.action.layers[0].strips[0].channelbag(
+                ob.animation_data.action_slot).fcurves:
+            for kp in fc.keyframe_points:
+                kp.interpolation = "CONSTANT"
+        ob.hide_render = not at7          # leave the stored value stale
+    bpy.context.view_layer.update()
+    hid9c = render_hidden_map(scene, bpy.context.evaluated_depsgraph_get())
+    check("animated hidden AT THIS FRAME is read as non-rendering",
+          anim_hid.name in hid9c, True,
+          "stored=%s" % anim_hid.hide_render)
+    check("animated VISIBLE at this frame is NOT silenced by a stale flag",
+          anim_vis.name in hid9c, False,
+          "stored=%s" % anim_vis.hide_render)
+    # THE CONTROL THAT SAYS THIS IS READ AT THE FRAME AND NOT FROM A CONSTANT:
+    # step back to frame 1, where the two keys are the other way round, and
+    # require the two classifications to SWAP. Anything that reads a fixed
+    # boolean -- stored or evaluated -- gives the same answer twice and fails
+    # here.
+    #
+    # Note what is NOT claimed: after `view_layer.update()` Blender flushes the
+    # evaluated value of an animated property back onto the original, so on
+    # this synthetic case the stored boolean happens to agree. That was
+    # measured, not assumed -- the first version of this control asserted the
+    # stored read got both backwards and was WATCHED FAILING because it does
+    # not. The evaluated read is kept because it does not depend on that flush
+    # having happened, and because it is the same object every other number in
+    # `measure()` comes from.
+    scene.frame_set(1)
+    bpy.context.view_layer.update()
+    hid9d = render_hidden_map(scene, bpy.context.evaluated_depsgraph_get())
+    check("CONTROL: at frame 1 the two swap -- it is read AT the frame",
+          (anim_hid.name in hid9d, anim_vis.name in hid9d), (False, True),
+          "f7 said %s, f1 says %s"
+          % (sorted(n for n in hid9c if n.startswith("SELFTEST_ANIM")),
+             sorted(n for n in hid9d if n.startswith("SELFTEST_ANIM"))))
+    for o in list(scene.objects):
+        if o.type == "MESH":
+            bpy.data.objects.remove(o, do_unlink=True)
+
+    # ---- 9e. A CLOCK IS NOT A MEASUREMENT ------------------------ (R2-2701)
+    #
+    # WATCHED FAILING FOR REAL, not in a control: the first run of the instance
+    # pass on `render/film23_breach.blend` returned
+    # `>> STAGE RESULT: PLACEMENT_NONDETERMINISTIC_REFUSED`, because
+    # `instances.walk_secs` -- the wall-clock time to walk 4,966,913 instances
+    # -- was inside the reproducibility fingerprint, and 51.5 s is not 51.4 s.
+    # The guard was right; the fingerprint was wrong. That is a whole class:
+    # anything a report prints for a human's benefit that is not a property of
+    # the world will make every big report unciteable if it leaks in here.
+    print("\n>> SELFTEST: the reproducibility fingerprint holds no clocks")
+    for o in list(scene.objects):
+        if o.type == "MESH":
+            bpy.data.objects.remove(o, do_unlink=True)
+    _cube("SELFTEST_FP_onroad", on_road, hide=False)
+    _cube("SELFTEST_FP_hidden", on_road, hide=True)
+    bpy.context.view_layer.update()
+    hidfp = render_hidden_map(scene, bpy.context.evaluated_depsgraph_get())
+    pa = measure(scene, vols, (), frozenset(), verbose=False,
+                 hidden_names=hidfp)
+    pb = measure(scene, vols, (), frozenset(), verbose=False,
+                 hidden_names=hidfp)
+    check("two passes of an unchanged scene fingerprint IDENTICALLY",
+          report_fingerprint(pa) == report_fingerprint(pb), True)
+    check("CONTROL: walk_secs IS reported to the reader...",
+          "walk_secs" in pa[6]["instances"], True,
+          "%.1f s" % pa[6]["instances"]["walk_secs"])
+    check("CONTROL: ...and is NOT in the fingerprint the verdict rests on",
+          "walk_secs" in report_fingerprint(pa), False)
+    for o in list(scene.objects):
+        if o.type == "MESH":
+            bpy.data.objects.remove(o, do_unlink=True)
+    for o in list(scene.objects):
+        if o.type == "MESH":
+            bpy.data.objects.remove(o, do_unlink=True)
+    if "SELFTEST_Lib" in bpy.data.collections:
+        bpy.data.collections.remove(bpy.data.collections["SELFTEST_Lib"])
 
     # ---- 10. THE REPORT MUST NOT DEPEND ON SCENE ORDER    (R2-2341, #97) ----
     #
