@@ -50,6 +50,10 @@ import sys
 R2 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if R2 not in sys.path:
     sys.path.insert(0, R2)
+if os.path.join(R2, "tools") not in sys.path:
+    sys.path.insert(0, os.path.join(R2, "tools"))
+
+import gate_exit                                                 # noqa: E402
 
 #: from `world/world_contract.py` SUN_DIR and `world/film_exposure.py`
 #: FILM_EXPOSURE.  Imported at run time, not typed -- a preflight that carries
@@ -215,16 +219,56 @@ def selftest():
     return 1 if fails else 0
 
 
+def _argv():
+    """THIS TOOL'S ARGUMENTS, WHICH ARE NOT BLENDER'S FLAGS.  R2-2821.
+
+    The very first usage line in this file's docstring is
+
+        blender -b world/surface_test_filmpose.blend -P tools/rig_preflight.py
+
+    and until R2-2821 that command line KILLED IT.  There is no `--`, so the
+    old fallback -- "every argv entry that is not a .py" -- handed argparse
+
+        -b world/surface_test_filmpose.blend --factory-startup -noaudio -P
+
+    argparse called that a usage error and exited 2 BEFORE `evaluate()` was
+    reached, so the run produced no `>> STAGE RESULT:` line at all.  A caller
+    grepping for the verdict saw nothing; a caller reading `$?` saw 2, which is
+    CRASH, not FAIL.  The guard could not fire even once it was being invoked
+    correctly.
+
+    Inside Blender with no `--`, this tool takes NO arguments.  That is the
+    only reading of `sys.argv` that is safe, because everything before the `--`
+    belongs to Blender by definition.
+    """
+    if "--" in sys.argv:
+        return sys.argv[sys.argv.index("--") + 1:]
+    if "bpy" in sys.modules or \
+            os.path.basename(sys.argv[0]).lower().startswith("blender"):
+        return []
+    return [a for a in sys.argv[1:] if not a.endswith(".py")]
+
+
 def main():
-    argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else \
-        [a for a in sys.argv[1:] if not a.endswith(".py")]
-    ap = argparse.ArgumentParser()
+    argv = _argv()
+    ap = argparse.ArgumentParser(prog="rig_preflight")
     ap.add_argument("--selftest", action="store_true")
     ap.add_argument("--json", default="")
-    a = ap.parse_args(argv)
+    # argparse exits 2 on a usage error and prints NOTHING this project can
+    # read.  That is how the guard spent its whole life invisible: exit 2, no
+    # `>> STAGE RESULT:` line, and a caller that greps for the verdict sees
+    # silence.  `return`, not `sys.exit`, inside this `except`: R2-2108's two
+    # instruments both printed a second verdict because `sys.exit` raises
+    # `SystemExit` and their `except BaseException` caught it.
+    try:
+        a = ap.parse_args(argv)
+    except SystemExit:
+        print(">> STAGE RESULT: RIG_PREFLIGHT_CRASH (unusable arguments %r)"
+              % (argv,))
+        return gate_exit.CRASH
 
     if a.selftest:
-        sys.exit(selftest())
+        return selftest()
 
     sun_f, exp_f = film_constants()
     rig = read_rig()
@@ -244,9 +288,13 @@ def main():
     if a.json:
         with open(a.json, "w") as fh:
             json.dump(dict(rig=rig, failures=bad), fh, indent=1, default=float)
-    print(">> STAGE RESULT: RIG_PREFLIGHT %s" % ("FAIL" if bad else "OK"))
-    sys.exit(1 if bad else 0)
+    # ONE string produces both the printed verdict and the exit code, so the
+    # two cannot disagree -- `gate_exit`'s whole reason for existing.  The
+    # token is `RIG_PREFLIGHT_OK`, with an underscore: `gate_exit.code_for`
+    # matches on the substrings `_OK` / `PASS` / `FAIL`, and the old
+    # space-separated "RIG_PREFLIGHT OK" mapped to CRASH.
+    return gate_exit.verdict("RIG_PREFLIGHT_%s" % ("FAIL" if bad else "OK"))
 
 
 if __name__ == "__main__":
-    main()
+    gate_exit.guard(main, tool="RIG_PREFLIGHT")
