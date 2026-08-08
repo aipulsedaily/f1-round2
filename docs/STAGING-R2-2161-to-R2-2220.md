@@ -511,6 +511,79 @@ currently promoting the sheet.
 
 ---
 
+## R2-2173 — EVERY in-scope beat-1 lever, measured to exhaustion. There is no beat-1 fix that does not go through `world/`
+
+R2-2171 asserted that beat 1's levers were closed. **An assertion is not a
+measurement, so here is the measurement.** All four levers, tested against the
+promoted sheet.
+
+### 1. The orbit tempo is already at its ceiling
+
+`BEAT1_ORBIT_TEMPO_AMP` is env-overridable precisely so it can be swept. Swept:
+
+| amplitude | verdict | worst peak speed (limit 4.00 m/s) |
+|---|---|---|
+| **0.040 — shipped** | **`BEATSHEET_OK`** | 4.31 (tolerated: inside the instrument's own resolution) |
+| 0.055 | `BEATSHEET_VIOLATION` | 4.59 |
+| 0.070 | `BEATSHEET_VIOLATION` | 4.86 |
+| 0.090 | `BEATSHEET_VIOLATION` | 5.22 |
+| 0.120 | `BEATSHEET_VIOLATION` | 5.74 |
+
+The comment claiming 0.040 is "the largest that `beat1_flight_check` still
+passes" was written two passes ago and **it is still true**. The next step up
+fails. This lever is spent.
+
+### 2. The tour has 0.052 s of slack across twelve presentations
+
+Not from a comment — from the run itself:
+
+```
+>> beat 1 SPAN SOLVED: 17.345 s for 12 presentations, bound by CORNER_GROUP
+   (ratio 0.997; 1.000 = every move sits exactly on its own limit)
+```
+
+**17.345 s at 99.7 % of the point where every move is exactly on its limit.**
+Slack across the whole tour is ~0.05 s. There is no time to redistribute, so
+there is no rhythm to build out of redistribution. This is R2-062's minimax
+doing exactly what it was built to do.
+
+### 3. The establishing hold moves less than a second of a 33-second beat
+
+| hold | verdict |
+|---|---|
+| 0.300 s | `BEATSHEET_OK` |
+| **0.625 s — shipped** | `BEATSHEET_OK` |
+| 0.900 s | `BEATSHEET_OK` |
+| 1.400 s | `BEATSHEET_VIOLATION` |
+
+There is room here — and **it is the wrong direction**. Lengthening the hold
+makes the opening *more* static, which is the complaint. Shortening it removes a
+beat rather than adding a rhythm. Either way it touches under a second of the
+35.67 s stretch I was pointed at.
+
+### 4. Aim modulation needs a 20-degree snap every three seconds
+
+Measured in R2-2171 and not repeated here: 6 deg bursts reach 7.95 %, 12 deg
+reach 9.51 %, and only 20 deg bursts clear the 10 % floor. That is a fault, not a
+camera.
+
+### The conclusion, stated as a scope boundary rather than an opinion
+
+**Beat 1's tempo lives in the seat schedule.** The tour's span is solved from when
+each cluster stops being where its station says it is, which comes from
+`world/beat1_anim_anim.json` and the assembly it was built from. Widening it
+moves the assembly and requires rebuilding `world/beat1_anim.blend`.
+**`world/` is explicitly outside this block's scope, and the runtime is
+load-bearing so the span cannot simply be lengthened either.**
+
+So the honest position is: **beat 1 cannot be re-tempoed by me, and the reason is
+structural rather than a lack of effort.** It needs either a world rebuild or a
+decision to spend runtime — both of which are the coordinator's call, not mine.
+`tools/build_beatsheet.py` and `docs/beat_sheet.json` remain untouched by this
+block.
+
+---
+
 ## R2-2172 — A threshold and the quantity it judges are ONE instrument
 
 Generalised, because this is the eighth broken-instrument finding on this project
