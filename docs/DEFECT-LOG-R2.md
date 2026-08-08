@@ -37301,3 +37301,88 @@ with that reasoning written down.
 unproven against the new sheet, car and world. **`film20` is its first real
 test.** Breach frost, the audio re-master and the beat-5 built-path hop remain
 open. **No master rendered, no cost committed.**
+
+## R2-1173 — THE NEAR-BAND TIER IS REAL: 4.9 M instances, 823 sources, 2.0 % top share — and the module's own check could not have proved it
+
+```
+tools/instance_variety.py on the built blend
+  TOTAL 4,902,372 realized instances · 823 sources · top share 2.0 %
+  >> INSTANCE_VARIETY_CLEAN
+```
+
+**Non-zero is the entire point.** That tool returns **`VACUOUS` on a
+plain-object tier**, so a zero would have meant **both guards were blind**
+rather than that the tier was clean. The layer is genuinely GN-instanced.
+
+**And the sentence that matters most:**
+
+> **The module's own `nearband_instance_diversity ok=1` did not close this and
+> could not have — an internal diversity check is not the guard with the hole.**
+
+**A module cannot certify itself against the rule it might be breaking.** The
+client's red line is *"one tree spammed a hundred times"*, and the instrument
+that adjudicates it is the world-level one, not the module's opinion of itself.
+
+**Cost, and a second refutation of the impossibility claim:** **233.8 M
+instanced tris = 1.45 % of terrain's 16.16 G.** And **terrain 33.5 M +
+near-band 20.0 M = 53.5 M base-library triangles now build on this 11 GB box** -
+against the **35 M two separate builds called impossible.**
+
+**Shadow transfers to the woody layer**: plan cover **0.0889 → 0.3318**, a
+**3.733× amplification** at the 12.47° sun. **R2-1150's mechanism is not
+sward-specific** - low sun is doing most of the work in every ground layer.
+
+## R2-1174 — "THAT IS AN ARGUMENT, AND ARGUMENTS DON'T DECIDE HERE": a $1.20 frame instead of a third opinion
+
+One item stayed open - a cover step at **40–52 m** - and the case that it is
+*legitimate* is strong:
+
+```
+from 50 m outward the TOTAL is flat
+0.232 0.201 0.194 0.194 0.165 0.190 0.178 0.189 0.186 0.173 0.175
+against a far field of 0.170
+
+near-band falls 570 → 0 per ha while woodland rises 15 → 146,
+AND THE SUM DOES NOT MOVE
+```
+
+Mean cover in D 0–52 m went **0.0008 → 0.1065, a 133× change**, zero-cover bins
+**3 → 0**, and the 150 m gate edge *improved*. The residual step is
+`smoothstep(2, 14, f)` where **`f` is metres outboard of the rim** - so **it
+tracks the fence line, not a radius**, and the rim varies **12–88 m** around the
+circuit. **A ring is a circle at constant radius; an edge following a rim that
+varies by 76 m is the runoff boundary**, which a real circuit has and which
+*should* be visible. And `max_step` was **1.769 before the module** against 1.839
+after - **pre-existing.**
+
+**All of that is an argument, and the agent declined to let it decide.** It
+bought **one frame at ≤ $1.20** with a single question: *does the 40–52 m
+transition read as a ring, or as the runoff edge?*
+
+**That is R2-1155 applied by someone who read it.** *When an argument has been
+corrected twice and is still on the same axis, the next move is an instrument,
+not a third argument.* **The author had tried to remove the step, failed, and
+reported the failure rather than moving the threshold** - which is the behaviour
+that makes the argument worth listening to at all.
+
+**Recommendation accepted: hold the wire-in until the crop lands.** If it reads
+as the runoff edge, it goes in after `terrain`. **If it reads as a ring, it does
+not ship.**
+
+**Order settled and it is not a preference:** `build_nearband` **captures**
+`CameraPath`, `GridZ`, `Ground`, `Raster` and `build_library` from terrain
+through a context manager that restores them. **It cannot precede what it
+reads.**
+
+**And the `built` district dispute was REFERRED rather than resolved.** The tier
+places **45.2 instances/ha inside that district against woodland's 1.8/ha - 25×**
+- against R2-1821's deliberate keep-out. Its case is that this is **amenity
+planting off the declared paving edge, not woodland.** The author holding that
+file rules on it. Crucially: **all no-cliff evidence is computed over
+`built < 0.30`, so the dispute cannot contaminate it.** **Insulating a result
+from an unresolved dispute is what lets both proceed in parallel.**
+
+Its own checks caught three real defects in development: a size-class bug
+putting a **1.5 m boulder in a 0.62 m clump**, parts scaled by **declared rather
+than measured** extents, and hedge segments normalised uniformly - **which would
+have divided their length by their height.**
