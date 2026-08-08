@@ -217,6 +217,52 @@ something that exists.
 
 ---
 
+## R2-1606 — DELIVERED, AND MEASURED ON THE PICTURES
+
+`watch/AFTER_opening_18s.mp4` (f1-432, 1280x720, 24 fps, same codec/profile/
+colour tagging as `AFTER_beat1_33s.mp4`) against the matched
+`watch/BEFORE_opening_18s.mp4`.
+
+**The render carries the camera that was gated.** `render/film18_path.json` is
+**bit-identical** to `work/r21601/rig_AFTER_path.json` —
+sha256 `0b53bcc2…6640c` on both. The film that was rendered is the film that was
+measured; there is no gap between the gate and the delivery.
+
+Pixel-domain, `tools/pacing_curve.py` on the two delivered clips:
+
+| window | change BEFORE -> AFTER | accel/change BEFORE -> AFTER | |
+|---|---|---|---|
+| first 1 s | 14.46 -> **6.10** | 5.64 % -> **15.67 %** | **2.78x** |
+| first 2 s | 15.38 -> 12.78 | 3.88 % -> 6.00 % | 1.55x |
+| first 4 s | 16.54 -> 15.26 | 3.56 % -> 4.28 % | 1.20x |
+| first 6 s | 17.08 -> 16.23 | 5.25 % -> 5.78 % | 1.10x |
+
+Per half-second, the gesture itself:
+
+```
+   t=0.0   change 11.20 -> 0.05     accel/change 12.73% -> 39.91%   the HOLD
+   t=0.5   change 17.46 -> 11.64    accel/change  1.76% -> 14.91%   the LAUNCH
+   t=1.0+  unchanged to within 0.05 levels
+```
+
+**0.05 levels over the first half-second is render sampling noise and nothing
+else** — the picture is genuinely still, which it has never been in this film.
+
+### THE BET THIS MAKES, STATED SO IT CAN BE LOST
+
+The first second now carries **less** image motion, not more: 14.46 -> 6.10
+levels, a 58 % reduction. Against a client note that says *"too slow"*, that is
+the opposite of the obvious move, and it is done deliberately on R2-1144's own
+thesis — **magnitude was never the variable, its derivative is** — which the
+opening's own numbers support (the shipped first 4 s already carried 1.11x MORE
+change than the rest of beat 1 and was still the part they fell asleep in).
+
+If that thesis is wrong, this change makes the opening worse, and the clip is the
+experiment that says which. **It is falsifiable by one viewing**, which is the
+point. The effect also decays with the window — 2.78x over one second, 1.10x over
+six — because it is 0.6 s of authored gesture in a 124 s film. It is not a fix
+for the 85 s stretch and must not be reported as one.
+
 ## R2-1605 — THE SAME DEFECT LIVES IN THE OTHER GENERATOR, AND IT IS WORSE THERE
 
 Beat 5 was scoped but **not changed**. What the scope found is that R2-1602 is
