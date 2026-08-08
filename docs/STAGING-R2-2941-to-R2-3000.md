@@ -1339,12 +1339,17 @@ hold at 22.7–35.7 px/m by two independent methods. The corrected ratio is
 
 ## R2-2970..R2-2989 — the ground-cover tier, built to the measured 2.35 mm band
 
-Wave 2's build order was re-derived onto **measured sharp resolution**
-(R2-2945). This block does the work that ranking points at. It is **not a new
-item module**: the grass, grit and weeds already exist in `world/build_terrain.py`.
-It is the other half of `docs/WAVE1-PEEP-SYNTHESIS.md` PATTERN 4 — *"the
-mechanism is in the code and its amplitude is 3–5× too small to survive to
-pixels… invisible to any check that inspects the code rather than the image."*
+Wave 2's build order was re-derived onto **measured sharp resolution** (R2-2945,
+as corrected by R2-2949/2949a). This block does the work that ranking points at.
+It is **not a new item module**: the grass, grit and weeds already exist in
+`world/build_terrain.py`. It is the other half of `docs/WAVE1-PEEP-SYNTHESIS.md`
+PATTERN 4 — *"the mechanism is in the code and its amplitude is 3–5× too small
+to survive to pixels… invisible to any check that inspects the code rather than
+the image."*
+
+**Five changes were built. Three shipped. One was vetoed by this block's own
+gate, and two were vetoed by R2-2949's sample-floor control.** The three that
+shipped are all on the one class whose resolution survived that control.
 
 ### 0. The two SYSTEMIC findings, re-tested before anything was judged
 
@@ -1355,10 +1360,11 @@ film.** R−B by luminance band on `r22161_proxy_002316.png`, linear:
 |---|---:|---:|---:|---:|---:|---:|
 | R−B | **+0.052** | +0.098 | +0.118 | **+0.140** | +0.134 | +0.084 |
 
-Positive in every band and *rising* toward the highlights — the signature of a
-warm direct sun, the exact opposite of the wave-1 signature. It is still open
-for item test scenes, and **that is why nothing in this pass is an appearance
-judgement**: every number below is geometric, measured off the mesh.
+Positive in every band and *rising* toward the highlights — a warm direct sun,
+the exact opposite of the wave-1 signature. It is still open for item test
+scenes, and **that is why nothing in this pass is an appearance judgement**:
+every number below is geometric, measured off the mesh, and no item test scene
+was rendered or looked at.
 
 **SYSTEMIC 2 (uniform softness) does not reproduce on the peak sharp frame.**
 Laplacian-pyramid band contrast as % of region mean (L0 = 4–8 px at 4K):
@@ -1375,108 +1381,100 @@ wave-1 statistic was *absolute* mean |Laplacian| on a near-clipped sky against
 mid-grey steel and was confounded by level. On the hazed frames the margin
 narrows to 1.6–2.0×, so the concern is real out there and closed here.
 
-### 1. The pixel footprint of every feature, before anything was changed
+### 1. The pixel footprint of every feature, stated before anything changed
 
 Scale is read, never retyped, from `work/w2_0/retier_a10/sp_objects.json`
-(2,978 frames, occlusion, flat 180° shutter). A library mesh is **not** what
-lands on the ground: `gn_kind` normalises to unit height and `build_grass`
-rescales by `base = U(0.72,1.45)·(1−0.32·mown)·(0.55+0.75·fbm01)` and widens XY
-by `spread = 1+0.75·mown`. That distribution is **sampled from those same
-expressions**, and every px figure below is low / **typical** / high over it.
-The verdict is taken at the typical: gating on the smallest clump in the world
-makes every gate permanently MARGINAL, i.e. unfailable.
+(2,978 frames, flat 180° shutter), **with R2-2949's sample-floor corrections
+applied on top and the file's own figure kept beside them.** A library mesh is
+not what lands on the ground: `gn_kind` normalises to unit height and
+`build_grass` rescales by `base = U(0.72,1.45)·(1−0.32·mown)·(0.55+0.75·fbm01)`
+and widens XY by `spread = 1+0.75·mown`. That distribution is **sampled from
+those same expressions**, and every px figure is low / **typical** / high over
+it. The verdict is at the typical: gating on the smallest clump in the world
+makes every gate permanently MARGINAL, i.e. unfailable — and the control proves
+it, because `blade_thin` moves the typical through 1 px and never moves the low.
 
 `tools/r2970_groundcover_px.py`, `work/r2970/px_before.json`.
 
-**VEG_grass_\*_H — 425.8 px/m (tussock 407.3, reed 305.4), 1 px = 2.35 mm, 4.58 m, 832–850 sharp frames**
+**VEG_grass_\*_H — 425.82 px/m (tussock 407.3, reed 305.4), 1 px = 2.35 mm, 832–850 sharp frames, peak at f2316**
 
 | feature | mm | px (lo/typ/hi) | verdict |
 |---|---|---|---|
 | blade full width, **measured on the mesh** | 3.0–6.6 | 1.13 / **1.58–2.58** / 4.69 | ABOVE — already right, untouched |
-| blade keel half-span, measured | 1.5–3.3 | 0.56 / **0.79–1.74** / 2.34 | at the limit **by physics** — see §3 |
+| blade keel half-span, measured | 1.5–3.3 | 0.56 / **0.79–1.74** / 2.34 | at the limit **by physics** — §3 |
 | blade length | 100–780 | 43 / 130 / 380 | ABOVE |
-| clump spread / tiller crown scatter | 210–330 / 22–66 | 80 / 100 / 130 · 9 / 21 / 28 | ABOVE |
+| clump spread · tiller crown scatter | 210–330 · 22–66 | 80/100/130 · 9/21/28 | ABOVE |
 | blade tip width (0.05 w) | 0.17–0.33 | 0.10 / **0.16** / 0.33 | the far end of a taper, not a feature |
 | **seed-head spikelet, fescue + tussock** | 2.4–3.2 | 1.04 / **1.46–1.53** / 2.06 | **MISSING** |
 | **seed-head panicle branch, fescue + tussock** | 20–60 | 6.6 / **18.3–19.1** / 51 | **MISSING** |
 
-**VEG_grit_chip / _stone / _clod — 425.8 px/m, 999–1012 sharp frames, the most sharp frames of any object in the film**
+**VEG_grit_chip / _stone / _clod — 425.82 px/m, 999–1012 sharp frames, more sharp frames than any other object in the film**
 
 | feature | mm | px (lo/typ/hi) | verdict |
 |---|---|---|---|
 | piece size | 12–38 / 35–95 / 20–70 | 5.1–16.2 / 14.9–40.4 / 8.5–29.8 | ABOVE |
 | **facet edge, measured on the mesh** | 3.5–28 | 1.51 / **2.68–7.24** / 11.93 | **MISSING** — `smooth_frac = 1.0` |
 
-**VEG_weed_thistle — 347.9 px/m, 1 px = 2.87 mm, 6.01 m, 813 sharp frames**
+**VEG_weed_thistle — 347.88 px/m as published, corrected to 141.41 px/m at a ≥10 sample floor (85.73 at ≥25), 6,821 points**
 
-| feature | mm | px (lo/typ/hi) | verdict |
+| feature | mm | px at 141.41 (lo/typ/hi) | verdict |
 |---|---|---|---|
-| plant height / leaf length / leaf width | 450–1300 / 98–605 / 19–115 | 157–452 / 34–210 / 6.5–40 | ABOVE |
-| **leaf margin relief (pinnatifid lobe)** | — | — | **NOT BUILT** (`_ribbon` is a smooth sine taper) |
-| stem diameter | 5.4–41.6 | 1.9 / **5.2** / 14.5 | ABOVE |
-| **stem silhouette error at 4 sides** | 1.6–12.2 | 0.28 / 0.76 / **2.12** | **ARTEFACT** |
+| plant height / leaf length / leaf width | 450–1300 / 98–605 / 19–115 | 64–184 / 14–86 / 2.6–16.2 | ABOVE |
+| leaf margin relief (pinnatifid lobe) | — | built, **0.79 px RMS** | **BELOW — withdrawn** |
+| stem diameter | 5.4–41.6 | 0.76 / **2.12** / 5.88 | ABOVE |
+| stem silhouette error at 4 sides | 1.6–6.1 | 0.11 / **0.31** / 0.86 | **SUB-PIXEL — not an artefact** |
 
-### 2. What changed, and why
+### 2. What shipped, and why
 
-Four changes, all geometry, none a material. `TERRAIN_R2970_BEFORE=1` reverts
-all four so the A/B is the same code, the same seed and the same generators
-differing in exactly one thing — the device `TERRAIN_LEGACY_GRASS` already
-established in this file.
+`TERRAIN_R2970_BEFORE=1` reverts all three, so the A/B is the same code, the
+same seed and the same generators differing in exactly one thing — the device
+`TERRAIN_LEGACY_GRASS` already established in this file. It deliberately does
+**not** cover the two withdrawn changes: a switch that can restore geometry the
+measurement rejected is a quality dial, and this is a measurement switch.
 
 **R2-2971 — fescue and tussock get a seed head.** `seed` was `0.0` on the two
-kinds with the most sharp frames in the film. In the rough — the frame this
-tier was re-derived from — `build_grass`'s own habitat weights make **tussock
-the dominant kind at w = 0.65**, so the commonest grass in the sharpest ground
-cover in the film had no panicle at all, in a shot whose thistles are in
-flower. `fescue 0.0 → 0.15` (its weight peaks on the *mown* verge, where most
-culms really are cut), `tussock 0.0 → 0.45`.
+kinds with the most sharp frames in the film. In the rough — the frame this tier
+was re-derived from — `build_grass`'s own habitat weights make **tussock the
+dominant kind at w = 0.65**, so the commonest grass in the sharpest ground cover
+in the film had no panicle at all, in a shot whose thistles are in flower.
+`fescue 0.0 → 0.15` (its weight peaks on the *mown* verge, where most culms
+really are cut), `tussock 0.0 → 0.45`.
 
-**R2-2972 — the panicle goes from nine spokes to 18–30 branches × 1–3 spikelets,
+**R2-2972 — the panicle goes from 9 spokes to 18–30 branches × 1–3 spikelets,
 and gets CHEAPER.** The old nine were 3-sided *tubes*: 15 triangles apiece to
 model the roundness of something 1.0–1.4 px thick, i.e. three facets of 0.4 px.
 The cross-section was entirely below the line, so every one of those triangles
-bought a shape nobody can sample. Rebuilt as tapered flat strips (`_hair`,
-4 tris) the head goes from 150 tris to ~207 for **2.7× the branches and 5× the
-spikelets**. That ratio is why this was affordable at all:
+bought a shape nobody can sample. Rebuilt as tapered flat strips (`_hair`, 4
+tris) the head goes 150 → ~207 tris for **2.7× the branches and 5× the
+spikelets**. That ratio is the only reason this was affordable:
 `work/r2500/build_assembly10.log` puts **1,821,790 hero clumps at 3,171 polys
 each — roughly 10.9 G of the world's 15.1 G instanced triangles**, so hero grass
 is the largest triangle consumer in the film and a 6× panicle built out of tubes
 would have taken the world to ~39 G. **Measured cost of the whole pass: the hero
 clump goes 2,914 → 3,320 polys, +13.9 %** (`--macro doppler --half 60`, same
-seed, before and after).
-
-**R2-2974 — the thistle leaf becomes pinnatifid.** `_ribbon` gains a `lobe`
-term that cuts the half-width back toward the midrib five times a side, and
-raises its own station count to 3 per lobe (a lobe needs a waist and a shoulder
-or it is not there). Measured on the built mesh against a least-squares cubic
-taper — the WAVE1 trouser-taper test — the margin goes from unmeasurable to
-**1.95 px RMS over 70 leaves at 15 stations each**.
+seed, both arms).
 
 **R2-2975 — the grit stops being smooth-shaded, and gets cleavage planes.**
-`shade_smooth()` did not scale the facets down by 3–5×; it set their amplitude
-to **exactly zero** while leaving all 80 of them in the file, so a code review,
-a triangle count and the gate's `material_depth` node count all pass and the
-pixels show a ball bearing. PATTERN 4 in its limiting case. `facet=True` shades
-flat; 3–6 cleavage planes clamp the vertices outside them back on. Field stone
-(cobble, boulder) is untouched — a river-worn cobble genuinely is rounded.
-The cleavage size was measured, not asserted: coplanar edge fraction
-**0.030 → 0.159** (chip) and **0.049 → 0.184** (clod). The `ridged` field that
-was supposed to be doing this never could — 42 vertices 0.55 units apart against
-a base frequency of 5.3 over 3 octaves is aliased 3–12×, and its ±0.033 R is
-±0.27 px on a 38 mm chip. It is left alone; it was never the mechanism.
+`shade_smooth()` did not scale the facets down by 3–5×; it set their amplitude to
+**exactly zero** while leaving all 80 of them in the file, so a code review, a
+triangle count and the gate's `material_depth` node count all pass and the pixels
+show a ball bearing. PATTERN 4 in its limiting case, on the class with the most
+sharp frames in the film. `facet=True` shades flat; 3–6 cleavage planes clamp the
+vertices outside them back on. Field stone (cobble, boulder) is untouched — a
+river-worn cobble genuinely is rounded. The cleavage size was measured before it
+was chosen: coplanar edge fraction over 30 pieces **0.139 → 0.156 / 0.203 /
+0.244** at three plane settings for **0.93 / 0.82 / 0.68** of the volume, and the
+middle row was taken; on the shipping mesh it measures **0.030 → 0.159** (chip)
+and **0.049 → 0.184** (clod). The `ridged` field that was supposed to be doing
+this never could — 42 vertices 0.55 units apart against a base frequency of 5.3
+over 3 octaves is aliased 3–12×, and its ±0.033 R is ±0.27 px on a 38 mm chip.
+It is left alone; it was never the mechanism.
 
-**R2-2973 — weed stems go 4 → 8 sides.** Gated on the *polygonal silhouette
-error*, `(d/2)(1−cos(π/n))` — the thing that gives a low-poly tube away first is
-that its outline changes width as it spins. On the thistle stem: n=4 → 0.76 px
-typical and **2.12 px at the thick end**; n=6 → 0.35 / 0.97; n=8 → 0.20 / 0.55.
-Eight makes the *whole* range sub-pixel. This gate is an **upper bound** — the
-only inverted one here, because the quantity is an artefact, not a feature.
-
-### 3. What was declined, and the arithmetic that declined it
+### 3. What was built and then removed, and the arithmetic that removed it
 
 A repeating feature is declined against **2 px of pitch**, not 1 px of
 amplitude: a wave sampled under twice per period does not come out small, it
-comes out *aliased*. That distinction is what a 0.87 px carbon weave needed.
+comes out *aliased*.
 
 | declined | class | mm | px (typ) | line |
 |---|---|---|---:|---:|
@@ -1484,38 +1482,67 @@ comes out *aliased*. That distinction is what a 0.87 px carbon weave needed.
 | blade margin serration PITCH | fescue_H | 0.10–0.30 | 0.07 | 2.0 |
 | ligule at the node | fescue_H | 1.0–3.0 | 0.74 | 1.0 |
 | grit chip surface pitting | grit_chip | 0.3–1.2 | 0.26 | 2.0 |
-| thistle leaf spine THICKNESS | thistle | 0.5–1.0 | 0.25 | 1.0 |
-| thistle involucre bract WIDTH | thistle | 2.0–3.0 | 0.85 | 1.0 |
+| thistle leaf spine THICKNESS | thistle | 0.5–1.0 | 0.10 | 1.0 |
+| thistle involucre bract WIDTH | thistle | 2.0–3.0 | 0.35 | 1.0 |
 | plantain leaf rib PITCH | plantain | 1.0–2.0 | 0.21 | 2.0 |
 | nettle leaf serration PITCH | nettle | 1.6–8.7 | 0.97 | 2.0 |
-| **ragwort leaf lobe RMS** | ragwort | 1.5–3.9 | **0.56** | 1.0 |
+| **ragwort leaf lobe RMS** | ragwort | — | **0.56** | 1.0 |
+| **thistle leaf lobe RMS** | thistle | — | **0.79** | 1.0 |
+| **thistle 8-sided stem** | thistle | — | **0.22** gained | 1.0 |
 
-**The last one was built, measured, and removed again.** Ragwort is
-botanically *more* deeply cut than a thistle. It was implemented with the same
-mechanism; the gate measured the built margin at **0.57 px RMS** and failed it,
-because `VEG_weed_ragwort` is seen at 233.3 px/m and its leaf half-width is
-1.5–8.2 px (typical 3.5), so a 0.55 cut is 1.9 px peak and 0.57 px RMS.
-Reaching 1 px RMS needs `depth ≈ 0.95` — a leaf cut 95 % to the midrib, which
-is a comb. The thistle's identical mechanism measures 1.95 px and stays.
+The last three were **implemented, measured on the built mesh, and removed
+again.**
 
-Two things are **declined without being resolution calls**, and are on the
-record rather than guessed at:
+- **Ragwort lobe — vetoed by this block's own gate.** Ragwort is botanically the
+  textbook pinnatifid leaf. Built with the same mechanism, it measured **0.57 px
+  RMS** and failed: `VEG_weed_ragwort` is seen at 233.3 px/m and its leaf half
+  width is 1.5–8.2 px (typical 3.5), so a 0.55 cut is 1.9 px peak and 0.57 px
+  RMS. 1 px RMS needs `depth ≈ 0.95` — a comb, not a ragwort.
+- **Thistle lobe — vetoed by R2-2949.** It measured **1.95 px RMS**, comfortably
+  above the line at R2-2945's 347.88 px/m, and shipped for one measurement cycle.
+  R2-2949's sample floor then moved the class to **141.41 px/m at ≥10 samples**
+  (85.73 at ≥25), because the thistle's peak was set by fewer than ten of its
+  6,821 points. The same built margin is **0.79 px** and **0.48 px**. Removed, at
+  3.75× the leaf quads (segs 4 → 15) for nothing.
+- **8-sided weed stem — vetoed by the same correction.** Gated on the *polygonal
+  silhouette error* `(d/2)(1−cos(π/n))` — what gives a low-poly tube away first
+  is that its outline changes width as it spins. At 347.88 px/m four sides was
+  0.76 px typical and **2.12 px** at the thick end, an artefact. At 141.41 px/m
+  it is 0.31 px and **0.86 px** — already sub-pixel. Eight sides bought 0.6 px of
+  nothing at four quads per stem segment. Reverted to four.
 
-- **The blade keel is at the resolution limit and cannot be raised.** The lit
-  half of the channelled blade's light/dark pair is 0.79–1.74 px. Widening it
-  means widening the blade, and the blade is already at life size (1–3 mm for
-  fescue) after a previous pass deliberately narrowed it to stop the clump
-  closing into a mat. The keel sits where it does because a fescue blade is that
-  wide, not because anything is wrong.
+Two further things are declined **without being resolution calls**, on the record
+rather than guessed at:
+
+- **The blade keel is at the resolution limit and cannot be raised.** The lit half
+  of the channelled blade's light/dark pair is 0.79–1.74 px. Widening it means
+  widening the blade, and the blade is already at life size (1–3 mm for fescue)
+  after a previous pass deliberately narrowed it to stop the clump closing into a
+  mat. It sits where it does because a fescue blade is that wide.
 - **The weed stem is ~2.5× too thick** (a real 0.9 m spear thistle stem is
-  8–12 mm, this builds 29 mm). It is above the pixel line either way, so it is
-  an accuracy call with no reference in hand; the side count was fixed and the
-  radius was not.
+  8–12 mm; this builds 29 mm). Above the pixel line either way, so it is an
+  accuracy call with no reference in hand.
 
-### 4. The variety red line — measured on the shipping world for the first time
+### 4. Three classes are NOT GATED, and that is the finding
 
-R2-2946 flagged that the floor is policed against two records that disagree
-(310 vs 311) and that neither was taken against `assembly14`. It is now taken.
+R2-2949 says the untested rows "should be treated as unverified until re-run with
+a floor." Having corrected the thistle, this block initially left
+`VEG_weed_dock`, `_nettle` and `_ragwort` on the raw field — **and the healthy
+control run failed `stem_round` on all three**, on the strength of 230–260 px/m
+figures produced by exactly the method just falsified for their nearest
+neighbour. The gate caught its own author.
+
+The rule now: the two objects that **survived** the floor carry 164,884 and
+247,106 points; the one that **collapsed 2.5×** carries 6,821. Any class under
+15,000 points whose figure has not been independently re-run is **measured,
+printed as UNVERIFIED, and not gated**. `VEG_weed_dock` (8,035),
+`VEG_weed_nettle` (7,027) and `VEG_weed_ragwort` (5,574) are in that state and
+need the floor run on them before anything is built for them.
+
+### 5. The variety red line — measured on the shipping world for the first time
+
+R2-2946 flagged that the floor is policed against two records that disagree and
+that neither was taken against `assembly14`. It is now taken.
 `tools/instance_variety.py` on `tools/shipping_world.py`'s answer:
 
 | record | sources | instances | top source | top share |
@@ -1526,13 +1553,12 @@ R2-2946 flagged that the floor is policed against two records that disagree
 
 Both records are superseded and both were low by a factor of five: the shipping
 world carries **1,569 distinct source meshes**, not 311. **And the commonest
-source is 2.03 %, which is already over the quoted 2.0 % ceiling** — before any
-change in this block, and in the same class this block touches. That is a
-finding for the campaign, not a consequence of this work.
+source is 2.03 %, already over the quoted 2.0 % ceiling** — before any change in
+this block, and in the same class this block touches. That is a finding for the
+campaign to rule on, not a consequence of this work.
 
 **This pass does not move it.** Measured on a `--macro doppler --half 60` probe
-built through the same `build_grass`/`build_grit`/`gn_kind` path, same seed,
-before and after:
+built through the same `build_grass`/`build_grit`/`gn_kind` path, same seed:
 
 | | instances | sources | top source | top share | gini |
 |---|---:|---:|---|---:|---:|
@@ -1543,7 +1569,7 @@ Bit-identical. Every change here alters mesh *content*; none alters the library
 size, the instance count or the pick distribution — which is the safe direction
 the campaign asked for.
 
-### 5. Every control, and the failure watched
+### 6. Every control, and the failure watched
 
 `tools/r2970_groundcover_px_control.py`, `work/r2970/control.json`. Each damage
 must fail the gate it is aimed at **and no other**, and the gate set is checked
@@ -1554,509 +1580,61 @@ the vacuous pass this project has caught over a dozen times.
 |---|---|---|
 | `blade_thin` — halve every `GRASS_PROF` half-width | `blade_width` | **FAIL** on all 5 kinds, 0.58–0.92 px, BELOW-BUT-BUILT |
 | `grit_smooth` — put `shade_smooth()` back, geometry untouched | `grit_facet` | **FAIL** on all 3, 1.48–7.13 px, MISSING |
-| `leaf_unlobed` — neuter `_ribbon`'s lobe, **leave the declaration** | `leaf_margin` | **FAIL**, UNMEASURABLE |
+| `declared_not_built` — declare thistle lobed AND neuter `_ribbon` | `leaf_margin` | **FAIL**, UNMEASURABLE |
 | `no_panicle` — `seed = 0.0` on every kind | `seed_head` | **FAIL** on all 5, MISSING |
-| `square_stem` — stems back to 4 sides | `stem_round` | **FAIL** on all 4 resolved stems, up to 2.12 px, ARTEFACT |
+| `triangular_stem` — stems to 3 sides | `stem_round` | **FAIL**, 1.47 px, ARTEFACT |
 | empty library | the tool's refusal branch | **0 meshes, 0 gates → REFUSES**, not "clean" |
 
-`leaf_unlobed` damages the *mechanism* and not the *declaration* on purpose:
-emptying `LOBED_WEEDS` would make the gate disappear instead of fail.
+`declared_not_built` is the interesting one. `LOBED_WEEDS` now ships **empty** —
+both candidates measured under the line — so `leaf_margin` has nothing live to
+guard, which is exactly when a gate rots. The damage therefore *declares* thistle
+pinnatifid **and** neuters `_ribbon`'s handling of it, so the gate must **appear
+and fail**. Declaring without neutering builds the lobe and passes; neutering
+without declaring deletes the gate instead of failing it. It takes both, and that
+is PATTERN 4 reproduced on purpose.
 
-Three faults in the instrument were found by watching it, and fixed:
+**Four faults in the instrument were found by watching it, and fixed:**
 
-1. It measured the blade width on the shipping clump, where after R2-2972 the
+1. It measured blade width on the shipping clump, where after R2-2972 the
    **panicle contributes more quads than the blades do** — reed's "blade width"
    moved 2.37 → 1.41 px on a change that does not touch a blade. It now measures
    a second clump with the panicle suppressed.
-2. `leaf_margin_rms` fitted a 4-parameter cubic to 5 stations, which is exact
-   and would have returned ~0 residual for *any* profile including a lobed one.
-   Under 8 stations it now refuses.
+2. `leaf_margin_rms` fitted a 4-parameter cubic to 5 stations, which is exact and
+   would have returned ~0 residual for *any* profile including a lobed one. Under
+   8 stations it now refuses.
 3. The `stem_facet` gate had the **wrong sense** — it required the facet to be
    *larger* than a pixel, i.e. it rewarded coarse tubes. Replaced by the
-   silhouette-error upper bound.
+   silhouette-error upper bound, the only inverted gate here.
+4. It charged WASTE against a plantain's 0.58 px stem diameter — not optional
+   detail somebody added below the line, but how thick a plantain's stem is.
+   WASTE is now charged only against gated, optional detail.
 
-### 6. Verdict, cost, and what is not done
+### 7. Verdict, cost, and what is not done
 
-`>> STAGE RESULT: GROUNDCOVER_PX_FAIL [9 gates]` before → **`GROUNDCOVER_PX_CLEAN`,
-18 gates, 0 failing** after. `>> STAGE RESULT: GROUNDCOVER_CONTROL_OK`.
+`>> STAGE RESULT: GROUNDCOVER_PX_FAIL [5 gates]` before →
+**`GROUNDCOVER_PX_CLEAN`, 14 gates, 0 failing** after.
+`>> STAGE RESULT: GROUNDCOVER_CONTROL_OK` — 5 damages, each firing exactly its
+own gate, plus the vacuity refusal.
 **$0 spent — no render was commissioned; the 2,978 free proxy frames answered
-every appearance question asked.** Cost is +13.9 % on the hero clump.
+every appearance question asked.** Cost: **+13.9 %** on the hero clump.
 
-Not done, and named: the world has **not** been rebuilt, so `assembly14` still
-carries the pre-R2970 ground cover; the shipping-world variety figure above is
-the *before*. `world/build_terrain.py` is **held by the stale
-`inflight-2026-08-07` seed lease** (17.8 h) and this block's author does not
-retire leases it does not own — the edits are in the worktree, uncommitted, and
-need the seed retiring by whoever owns it.
+Not done, and named:
+
+- **The world has not been rebuilt**, so `assembly14` still carries the
+  pre-R2970 ground cover and the shipping-world variety figure above is the
+  *before*.
+- **`world/build_terrain.py` is uncommitted.** It is held by the stale
+  `inflight-2026-08-07` seed lease (17.8 h), and this block's author does not
+  retire leases it does not own. The edits are in the worktree and need that seed
+  retiring by whoever owns it.
+- **The sample floor has not been run on dock, nettle, ragwort, yarrow or
+  plantain** (§4), so nothing should be built for them yet.
 
 | path | what |
 |---|---|
-| `tools/r2970_groundcover_px.py` | the pixel-footprint gate (18 gates) |
+| `tools/r2970_groundcover_px.py` | the pixel-footprint gate (14 gates + 3 unverified) |
 | `tools/r2970_groundcover_px_control.py` | 5 damages + the vacuity refusal |
-| `world/build_terrain.py` | R2-2971..R2-2975 (**uncommitted — lease clash**) |
-| `work/r2970/px_before.json`, `px_after.json`, `control.json` | measurements |
+| `world/build_terrain.py` | R2-2971/2972/2975 shipped, R2-2973/2974 withdrawn (**uncommitted — lease clash**) |
+| `work/r2970/px_before.json`, `px_after.json`, `control.json` | the measurements |
 | `work/r2970/variety_shipping.json` | assembly14's variety, first measurement |
 | `work/r2970/variety_macro_{before,after}.json` | the before/after that does not move |
-
----
-
-## R2-2960..R2-2969 — task #90: the three unlogged defects at the pit exit and the glass mouth
-
-**#1 CLOSED (confirmed on the ship for the first time) · #2 LIVE ON THE SHIP,
-and the 139 mm is the SLAB, not the paint · #3 REFUTED, third confirmation.**
-
-Everything below is measured on **`assembly14.blend`** — 9.58 GB, 31,068
-objects, contract 1.2.1 — resolved through `tools/shipping_world.py`, and on
-**`render/film23_breach.blend`** (47,131 objects). Every number the prior pass
-(R2-17xx) reported was taken on `assembly8` or `assembly10`, neither of which is
-the ship.
-
-### The instrument, and why it is not the prior pass's
-
-`ARCH_Markings` is 3,081 faces of **150 mm-wide line marking** spread over a
-580 × 74.5 m paddock and a 375 m pit lane. A world grid fine enough to resolve a
-150 mm stripe over that footprint is tens of millions of samples; a grid coarse
-enough to run reports a stripe as a coin toss. **So the paint is sampled on its
-OWN faces**, area-true, at a 12.5 mm pitch — **5,124,195 samples** — and the cost
-is proportional to the paint rather than to the world. The substrate is a single
-world-space BVH over all five `ARCH_Paving_*` objects, built from
-**`matrix_basis`**, never from the scene.
-
-`matrix_world` reads **IDENTITY for every one of them on the ship** — printed and
-checked. `ARCH_Paving_ApronPlatform` and `ARCH_Paving_Forecourt` are WORLD-frame
-(`matrix=Matrix.Identity(4)`); `ARCH_Markings`, `ARCH_RoadMarkings`,
-`ARCH_Paving_PitLane`, `_Garages`, `_Paddock` are CIRCUIT-frame (`M_C2W`). The
-prior pass's 78.101 m² headline was this bug; the guard that catches it accepted
-the correct frame at **1.0000** and refused the wrong one at **0.0000**.
-
-### R2-2960 — the artefact control, run first
-
-The same binary, over `assembly8` — **the world R2-132 itself measured** — and
-over the ship:
-
-```
-                              assembly8 (R2-132's world)     assembly14 (SHIP)
-ARCH_Markings                 7,166 verts @ 1 distinct z     7,166 verts @ 1 distinct z
-paint area                          795.891 m2                   795.891 m2
-paint over VOID                      10.534 m2                     0.031 m2
-float > 20 mm                        19.301 m2                    23.797 m2
-float > 50 mm                        11.320 m2                    15.302 m2
-float > 100 mm                        0.468 m2                     0.422 m2
-float > 200 mm                        0.468 m2                     0.000 m2
-WORST GAP                            370.02 mm                    146.68 mm
-```
-
-**370.02 mm against R2-132's published 367.9 mm — 0.58 %.** The instrument
-reproduces the number it is arguing about, on the world that produced it,
-without being told it. That is the control that makes the ship column mean
-something.
-
-### R2-2961 — #1 "paint over void — 7.10 m²" — CLOSED, first confirmation on the ship
-
-**10.534 m² → 0.031 m²**, whole world, by `54dd6b8`. R2-132's 7.10 m² was its own
-sub-window (`s 3360–3500 × u 10–42`) on `assembly8`; over the whole world the
-same defect is 10.534 m², and on the ship it is **0.031 m²** — three hundredths
-of a square metre of paint with no paving under it, at the instrument's own
-quantisation floor.
-
-### R2-2962 — #2 "paint floating up to 367.9 mm" — LIVE ON THE SHIP
-
-**23.797 m² above 20 mm, 15.302 m² above 50 mm, 0.422 m² above 100 mm, worst
-146.68 mm** — at `s = 3447.68, u = 12.87`, which is `PIT_WALL_S0 = 3447.7092`,
-the declared apron/pit-lane boundary, to 3 cm.
-
-The premise reproduces exactly on the ship: `ARCH_Markings` is **7,166 vertices
-at one distinct z = MARK_Z = 0.0075** (`world/build_architecture.py:1485`,
-helpers `:2449`, `:2474`, `:2506`). At the worst point,
-
-```
-paint      +0.00750     = exactly MARK_Z above the declared datum
-declared   +0.00000     world_ground_z, owner build_architecture:paving
-substrate  -0.13918     the built ARCH_Paving_ApronPlatform
-```
-
-**Fixing #1 is what made #2 visible**, and that is now measured on both worlds
-rather than argued: the area of finished apron bay sitting more than 20 mm below
-its own declared datum goes **0.62 m² on `assembly8` → 42.81 m² on the ship, a
-69× increase**, because `54dd6b8` released the outboard cut and laid 540 m² of
-new slab on exactly the ground where the two datums disagree.
-
-### R2-2963 — B: which side of the 139 mm is wrong. **The slab.**
-
-Isolated to the **finished bay surface** — the top face within one bay tolerance
-of `ground_z`, which separates it from the sealed joint at −5 mm, the bedding at
-−35 mm and the formation at −300 mm, all of which live inside the same object
-and all of which a downward ray will otherwise take:
-
-```
-                                            assembly8        assembly14 (SHIP)
-finished apron bay                          5,839.9 m2         6,382.2 m2
-   (the build's own apron_platform_m2)                         6,421.2 m2  -> 99.4 %
-finished bay  -  DECLARED datum    min      -130.89 mm         -125.84 mm
-                                   median      0.00 mm            0.00 mm
-finished bay  -  ground_z          min         -9.80 mm           -9.09 mm
-                                   median      0.00 mm            0.00 mm
-below declared by > 20 / 50 / 100 mm      0.62/0.50/0.31 m2   42.81/27.75/9.19 m2
-```
-
-**At the worst point on the ship — `s 3445.27, u 12.43`:**
-
-```
-built slab   -0.12584
-ground_z     -0.12585      <- agree to 0.01 mm
-declared     +0.00000      <- 125.84 mm away
-```
-
-**The slab tracks `ground_z` to a hundredth of a millimetre and sits 125.84 mm
-below its own declared datum.** Median offset from `ground_z`: **0.00 mm**.
-Median offset from the declared datum: also 0.00 mm — because over most of the
-apron the two agree; they diverge only in one 44.2 m run.
-
-**And the module itself says which one is right.** `build_apron_platform` lays
-its bay vertices at `WC.su_to_world(SS, UU)`'s z
-(`build_architecture.py:2127-2129`), and `su_to_world`'s z **is** `C.ground_z` —
-`max |difference| = 0.000e+00` over 88,620 samples (`world_contract.py:557`).
-**Every other paving field in the same module lays FLAT at the declared plane**:
-`_paving_region` at `Z_BAY + jitter`, where `Z_BAY = 0.000` is commented *"the
-declared plane, exactly"* (`:1483`, `:1612`); the paddock deck at `APRON_Z + dz`
-(`:5294`); the forecourt bays flat (`:2295`). The paint at `MARK_Z` agrees with
-all of them.
-
-**`ARCH_Paving_ApronPlatform` is the only surface in `build_architecture` that
-does not sit on the datum the module publishes.** The paint is correct. The slab
-is not.
-
-**And the two slabs were then measured across the seam they share.** The `apron`
-and `pit_lane` rectangles abut at circuit x = `_PIT_NOSE_X` = `PIT_WALL_X0 −
-TERM_L`, i.e. `PIT_WALL_S0 = 3447.7092`. One metre of station apart, on the same
-lateral line, on the ship:
-
-```
-    s        u    APRON slab   PIT-LANE bays    PAINT    declared   ground_z
- 3447.21   13.51    -0.1115         ----          --     +0.0000    -0.1116
- 3448.21   13.50       --         +0.0015         --     +0.0000    -0.1112
- 3447.21   12.76    -0.1221         ----       +0.0075   +0.0000    -0.1222
-```
-
-**Two paving objects from the same module, abutting at the contract's own
-boundary, on two different datums, stepping 113.0 mm across one metre.** West of
-the seam the apron slab is on `ground_z` (−0.1115 against −0.1116). East of it
-the pit-lane bays are flat at **+0.0015** — the declared plane plus 1.5 mm of
-stain and jitter — while `ground_z` there is −0.1112. Over the whole seam sweep:
-
-```
-apron slab  -  ground_z    -7.28 .. +3.07 mm     median -0.00 mm
-apron slab  -  DECLARED  -122.16 .. -1.91 mm
-pit-lane    -  ground_z    -0.04 .. +116.82 mm
-pit-lane    -  DECLARED    -62.00 .. +1.49 mm    (the -62.00 is SUB_FORM_DZ,
-                                                  the formation under the drain
-                                                  and duct corridors, not a bay)
-paint       -  DECLARED   +7.4921 .. +7.5073 mm  against MARK_Z = 7.5000 mm
-paint over the APRON slab           54.03 .. 129.66 mm
-```
-
-**The paint is exactly `MARK_Z` proud of the declared datum to within 7.3 µm —
-the instrument's own float32 floor. It is right for the pit-lane bays, six
-millimetres proud of them, and it is the apron slab that moved.**
-
-**THE TRAP, measured rather than inherited.** `sit_c`/`sit_w` return
-`world_ground_z` — the DECLARED height (`:206-216`). At the worst floating point
-`sit_w` returns **exactly the declared 0.000**, so *"make the paint follow
-`sit_c`"* is a no-op: the paint is **already** exactly `MARK_Z` proud of `sit_c`.
-The fix is on the slab, and it is `sit_w` the slab should be calling.
-
-### R2-2964 — the root cause is one number, and it is in the contract
-
-`ground_z`'s apron tie gives up the runoff platform's outward fall and lands on
-`APRON_Z` over **`APRON_TIE_M = 8.0 m`** of lateral run outboard of `verge_edge`.
-At the pit exit there is not 8 m to do it in:
-
-```
-   s      platform_edge - verge_edge   tie weight   ground_z at the handover
- 3432.5            8.40 m               1.0000            0.0000
- 3437.5            4.96 m               0.6763           -0.0649
- 3442.5            2.56 m               0.2411           -0.1211
- 3447.5            1.76 m               0.1235           -0.1259
- 3477.5            1.75 m               0.0326           -0.1435
-```
-
-The tie never completes, and `world_ground_z`'s priority-4 branch — `z[ap] =
-APRON_Z` over a **hard rectangle** (`world_contract.py:2979`) — teleports to
-0.000 at the handover. **Across `platform_edge` the contract disagrees with
-itself by up to 143.92 mm, at 89 of 569 stations (15.6 %), confined to one
-44.2 m run, `s 3435.15–3479.40`.** Inboard the owner is
-`build_barriers:runoff platform`; outboard it is `build_architecture:paving`.
-
-**The contract's own selftest has never sampled it.** *"apron is exactly APRON_Z
-beyond the tie"* restricts itself to `apron_zone == 1` at u = 30.0. *"the tie is
-a gutter, not a step"* samples **s = 3300.0 only**, where the run is 28.8 m; at
-s = 3460 the same profile lands at −77.1 mm and still measures 2.02 % against a
-6.00 % bound. *"the apron's far edge ramps longitudinally, no step"* bounds the
-**slope** and never the value: at u = 30.0 over s 3150–3480 the profile spans
-0.0000 → **−0.4630 m** and passes at 7.32 mm per 0.5 m against a 10 mm bound.
-`world_contract.py:3790-3799` records that a value bound on the blend band was
-added, failed at 209 mm, and was **removed**. It has been unbounded since.
-
-### R2-2965 — NOT FIXED HERE, and why: neither single-sided fix is free
-
-* **Move the slab onto `world_ground_z`** (i.e. onto `sit_w`, which the module
-  already has): correct against the paint and against every other paving field,
-  but it opens a step of up to **126.2 mm** against `build_barriers`' runoff
-  platform at `platform_edge`, because that neighbour is on `ground_z`.
-* **Shorten the tie to the run available**: requires **6.18–6.56 %** cross-grade
-  over the last ~2.5 m of station — **breaking the contract's own 6.00 %
-  "gutter, not a step" bound.**
-
-The honest fix is a `world_contract` change plus a world rebuild. **The brief
-forbids rebuilding the world and forbids touching `sim/`, so this stops at the
-diagnosis.** Nothing in the repository was modified by this item.
-
-### R2-2966 — #3 "the glass mouth's 100 mm sink" — REFUTED, on the ship and on the ship candidate film
-
-The −100 mm is **`R1_FORMATION_Z = -0.100`** (`build_architecture.py:161`) — the
-closed formation slab this module casts under round-1's pavilion floor, *"40 mm
-clear of that floor's soffit, 100 mm clear of its finished level"* (`:2309`). It
-is the top surface in the **assembly** only because the assembly has no round-1
-`Floor` in it: `tools/build_film_scene.py` appends SHOWROOM onto the prebuilt
-world.
-
-Read out of `render/film23_breach.blend` — the ship candidate — by selective
-append of two datablocks:
-
-```
-Floor             z -0.0600 .. +0.0000     x -15.0000 .. +15.0000
-Turntable_Deck    z +0.1180 .. +0.3400
-```
-
-`Floor`'s top is **exactly 0.0000**. `Turntable_Deck` at **+0.3400** is the
-positive control that proves the reader reads meshes rather than a constant, and
-the two differ by 0.3400 m, which is the damaged arm for "it returns one number
-for everything".
-
-And it cannot regress silently: `tools/build_film_scene.py:504-516` **hard
-refuses** to build a film unless `Floor`'s top is z = 0.000 — *"the breach sim
-baked 3,796 shard resting transforms against that plane; a floor 20 mm low
-leaves every one of them hovering"* — alongside the same refusals for
-`Turntable_Deck` at 0.340 and `GW_Right_Glass_00` at `ACCESS_GLASS_X`.
-
-**Recommend this be recorded REFUTED-CONFIRMED and not re-opened.** Three passes,
-four blends, same answer.
-
-### R2-2967 — every control, and the failure each was observed to produce
-
-A control that has only ever passed is not evidence. Each of these was built with
-a deliberately damaged arm and **the damaged arm was observed to fire**; three of
-them fired on the real run and changed the answer.
-
-| control | healthy arm | damaged arm — **observed** |
-|---|---|---|
-| **C9 frame guard** (contract-anchored) | 1.0000 of apron-slab verts land in the contract's apron window | wrong matrix → **0.0000**, footprint 82 × 296 m instead of 249 × 194 m |
-| **C5 paint flatness** | 7,166 verts, 1 distinct z | one vert moved 1 mm → **2 distinct z** |
-| **C4 ray reader** | plate built at 0.3400 reads 0.3400 | off-plate sample → **None** |
-| **C6 empty substrate** | — | an empty world measures **0.000000 m²** of slab |
-| **P-C3 paint lift** | float >100 mm = 0.423 m² | paint lifted 100 mm → **787.896 m²** |
-| **A-C3 datum injection** | +100.000 mm reads +100.0023 mm | first run **FAILED at a 1e-6 tolerance**: read 99.9947 mm. Diagnosed — Blender stores vertices as float32; the instrument's real z floor is **2.3 µm**. Tolerance corrected, floor now printed. |
-| **C2b sub-cell feature** | — | a 40 mm feature: **0 hits at 400 mm pitch**, 2 at 25 mm |
-| **C2a convergence** | 0.1 → 0.025 m: 1.470 → 1.500 m² (2 %) | first run **FAILED**: 0.4 m pitch reported **0.000 m²** for a 1.5 m² feature. Correct behaviour, wrong pass criterion — 400 mm cannot resolve it, and that is the finding. |
-| **P-C2 paint convergence** | 795.891 m² at 12.5 mm vs 798.243 m² at 50 mm (**0.29 %**); float>20 mm 23.797 vs 23.617 m² | — |
-| **C-ARTEFACT (area)** | finished bay 6,382.2 m² vs the build's own 6,421.2 m² (**99.4 %**) | first run **FAILED at 0.897×**. Diagnosed: a 5 mm bay window rejects bays that chord a curving `ground_z` in the tie band, and the naive ray takes the formation at −0.30 where no bay is laid. Both fixed by separating finished bay from sub-surface. |
-| **A-ART artefact** | 370.02 mm on `assembly8` vs R2-132's published **367.9 mm** | ship differs: paint-over-void **10.534 → 0.031 m²** |
-| **F1/F-C1 film reader** | Turntable_Deck +0.3400, Floor 0.0000 | the two differ by 0.3400 m, so neither is a constant |
-| **S-C1 seam datum** | pit-lane bays read +0.0015 against a 10 mm bound | the same slab lifted 100 mm reads **+37.99..+101.49 mm** and fails |
-| **S0 append guard** | all three named objects present | added *because* the first seam run died without it |
-| **V0 ship guard** | refuses to measure a blend that is not the declared ship | — |
-
-**AND THE "$? IS NOT EVIDENCE" TRAP FIRED ON MY OWN INSTRUMENT.** The first seam
-run printed its `[load]` line, then `Blender quit`, then
-`BUILDLOCK RELEASED ... rc=0`. **Exit code 0, no result, no traceback in the
-log.** It had taken every object in `bpy.data` — which after `--factory-startup`
-includes the default `Camera`, `Cube` and `Light` — and died on
-`Camera.data.vertices`. Caught only by reading for `>> STAGE RESULT:` lines and
-finding none. Fixed with an explicit type-and-name filter and an S0 guard that
-refuses rather than proceeds.
-
-**Two further control failures, both diagnosed to the instrument and not to the
-world:**
-
-* **S3 FAILED** — `pit-lane − declared` reaches **−62.00 mm**. That is
-  `SUB_FORM_DZ = 0.062`, the formation under the pit lane's drain and duct
-  corridors, which the sweep's u ≈ 12.8 columns land in. Excluding the trench,
-  every pit-lane bay reads +0.0015 m. The check needed a corridor mask, not a
-  different answer.
-* **S5 FAILED** — `paint − declared` = 7.4921..7.5073 mm against `MARK_Z`
-  = 7.5000 mm, at a 1e-6 m tolerance. **±7.3 µm — float32 vertex storage again**,
-  the same floor A-C3 measured at 2.3 µm. The claim it was testing is true.
-
-**Three further instrument faults, reported because they are the kind that ships
-a wrong number:**
-
-* **F3 FAILED** — `GW_Right_Glass_00` is **not in `film23_breach.blend`**; it
-  reads `nan..nan`. That is correct: `build_film_scene` takes round-1's east
-  glass out and the breach replaces it with shards. The check was written for a
-  pre-breach film. It incidentally confirms the glass is gone from the ship
-  candidate.
-* **P1 FAILED** — the frame census included `Camera` and `Light` from the
-  factory-startup scene. Every `ARCH_*` object read WORLD or CIRCUIT; nothing
-  measured used the default-scene objects.
-* **`apron_platform_m2` in every `assembly*_build.json` is an area in `(s, u)`,
-  not in world metres.** The Jacobian over this apron is 1.0000 so the two
-  coincide here — but the identity is an accident of a straight pit straight, not
-  a property of the quantity.
-
-### R2-2968 — does it reach a frame?
-
-Against `render/film23_path.json` (2,978 frames), the affected strip falls
-inside the frame rectangle in **353 frames (11.9 %)**, in 9 runs between frames
-861 and 2615, closest range **25.1 m at frame 1113**. At frame 1113 the free
-960 × 540 proxy `work/r22161_proxy/r22161_proxy_001113.png` shows it in the
-**defocused foreground**, blurred past joint-scale detail — so the free proxies
-confirm nothing either way, and no GPU render was made to find out.
-
-### R2-2969 — what was not done, and one operational note
-
-**The one arm not completed** is the whole-world void test: `assembly14` opened
-entire, so a ray can report "nothing under this point *including* terrain,
-barriers and surface", rather than "nothing under it among architecture's own
-paving". It spent **43 minutes reading the 9.58 GB blend** under swap without
-reaching its first measurement, while holding the shared lock against 20 other
-waiters, and **I killed my own job** rather than let it keep the queue. R2-132
-established that terrain is cut out of the declared platform here, and the
-lighter instrument answered the same question at a 20× finer sampling pitch, so
-the conclusion does not rest on it — but it is named here rather than quietly
-dropped.
-
-Six Blender runs, all under `tools/buildlock.sh`. The lock was continuously held
-by other agents' 10 GB film jobs for most of this item; queue depth peaked at 22
-waiters and one holder ran 55 minutes. Nothing in the repository was modified.
-
----
-
-## Proposed DEFECT-LOG entries (text only — `docs/DEFECT-LOG-R2.md` is merged by the user)
-
-### PROPOSED — "paint over void — 7.10 m²" (R2-132) — CLOSED, confirmed on the ship
-
-**CLOSED by `54dd6b8`, and this is the first confirmation on a world that
-carries the fix.** Every previous number was `assembly8` or `assembly10`; the
-ship is `assembly14.blend`, resolved through `tools/shipping_world.py`,
-contract 1.2.1.
-
-Paint sampled on its own faces at 12.5 mm — 5,124,195 samples — against a
-world-space BVH of all five `ARCH_Paving_*` objects built from `matrix_basis`:
-
-```
-paint over void      assembly8  10.534 m2   ->   assembly14 (SHIP)  0.031 m2
-```
-
-R2-132's 7.10 m² was its own sub-window `s 3360–3500 × u 10–42`; over the whole
-world the same defect measures 10.534 m². The instrument's artefact control is
-that it independently reproduces R2-132's 367.9 mm maximum float on `assembly8`
-at **370.02 mm** (0.58 %).
-
-### PROPOSED — "paint floating up to 367.9 mm above its substrate" (R2-132) — STILL LIVE ON THE SHIP, and the paint is not the side that is wrong
-
-**LIVE on `assembly14.blend`: 23.797 m² above 20 mm, 15.302 m² above 50 mm,
-0.422 m² above 100 mm, worst 146.68 mm** at `s = 3447.68, u = 12.87` —
-`PIT_WALL_S0 = 3447.7092`, the declared apron/pit-lane boundary, to 3 cm. The
-premise reproduces exactly: `ARCH_Markings` is **7,166 vertices at one distinct
-z = MARK_Z = 0.0075** (`build_architecture.py:1485`, helpers `:2449`, `:2474`,
-`:2506`).
-
-**WHICH SIDE IS WRONG: THE SLAB.** Isolated to the finished bay surface — which
-separates it from the sealed joint at −5 mm, the bedding at −35 mm and the
-formation at −300 mm, all inside the same object:
-
-```
-worst point, s 3445.27 u 12.43        built slab  -0.12584
-                                      ground_z    -0.12585   <- agree to 0.01 mm
-                                      declared    +0.00000   <- 125.84 mm away
-finished bay - ground_z        median   0.00 mm,  min  -9.09 mm
-finished bay - DECLARED datum  median   0.00 mm,  min -125.84 mm
-below the declared datum by >20/>50/>100 mm:  42.81 / 27.75 / 9.19 m2
-```
-
-`build_apron_platform` lays its bays at `WC.su_to_world(SS, UU)`'s z
-(`build_architecture.py:2127-2129`), and `su_to_world`'s z **is** `C.ground_z` —
-`max |difference| = 0.000e+00` over 88,620 samples (`world_contract.py:557`).
-**Every other paving field in the same module lays flat at the declared plane**:
-`_paving_region` at `Z_BAY + jitter`, `Z_BAY = 0.000` commented *"the declared
-plane, exactly"* (`:1483`, `:1612`); the paddock deck at `APRON_Z + dz`
-(`:5294`); the forecourt bays flat (`:2295`). The paint agrees with all of them.
-`ARCH_Paving_ApronPlatform` is the only surface in the module that does not sit
-on the datum the module publishes.
-
-**Measured across the seam the two slabs share** — the `apron`/`pit_lane`
-rectangle boundary at `PIT_WALL_S0 = 3447.7092` — one metre of station apart:
-
-```
-    s        u    APRON slab   PIT-LANE bays    declared   ground_z
- 3447.21   13.51    -0.1115         ----         +0.0000    -0.1116
- 3448.21   13.50       --         +0.0015        +0.0000    -0.1112
-```
-
-**113.0 mm of step between two paving objects from the same module.** Over the
-sweep: `apron − ground_z` = −7.28..+3.07 mm (median −0.00); `apron − declared` =
-−122.16..−1.91 mm; `pit-lane − ground_z` = −0.04..+116.82 mm; `pit-lane −
-declared` = +1.49 mm on every bay. `paint − declared` = **7.4921..7.5073 mm**
-against `MARK_Z = 7.5000 mm` — exact to the instrument's float32 floor. The paint
-is six millimetres proud of the pit-lane bays, which is right; it is the apron
-slab that moved.
-
-**THE TRAP, measured:** `sit_c`/`sit_w` return `world_ground_z`, the DECLARED
-height (`:206-216`). At the worst point that is exactly 0.000 and the paint is
-already exactly `MARK_Z` proud of it, so *"make the paint follow `sit_c`"*
-changes nothing. It is the slab that should be calling `sit_w`.
-
-**FIXING #1 IS WHAT MADE #2 VISIBLE**, measured on both worlds by one binary:
-finished apron bay more than 20 mm below its declared datum goes **0.62 m²
-(`assembly8`) → 42.81 m² (ship), 69×**, because `54dd6b8` released the outboard
-cut and laid ~540 m² of new slab on exactly the ground where the two datums
-disagree.
-
-**ROOT CAUSE, one number.** `ground_z`'s apron tie needs `APRON_TIE_M = 8.0 m` of
-lateral run outboard of `verge_edge`; at the pit exit `platform_edge −
-verge_edge` collapses from 8.40 m to **1.75 m**, the tie weight falls to 0.0326,
-and `world_ground_z`'s priority-4 branch (`z[ap] = APRON_Z` over a hard
-rectangle, `world_contract.py:2979`) teleports to 0.000 at the handover. **The
-contract disagrees with itself by up to 143.92 mm across `platform_edge`, at 89
-of 569 stations (15.6 %), over one 44.2 m run, s 3435.15–3479.40.**
-
-**The contract's own selftest has never sampled it**: *"apron is exactly APRON_Z
-beyond the tie"* restricts to `apron_zone == 1`; *"the tie is a gutter, not a
-step"* samples s = 3300.0 only, where the run is 28.8 m; *"the apron's far edge
-ramps longitudinally, no step"* bounds the slope and never the value — at
-u = 30.0 the profile spans 0.0000 → **−0.4630 m** and passes.
-`world_contract.py:3790-3799` records that a value bound on the blend band was
-added, failed at 209 mm, and was removed.
-
-**NOT CLOSED, deliberately.** Raising the slab to the declared datum opens a step
-of up to **126.2 mm** against `build_barriers`' runoff platform at
-`platform_edge`. Shortening the tie to the run available needs **6.18–6.56 %**
-cross-grade — breaking the contract's own 6.00 % bound. The honest fix is a
-`world_contract` change plus a world rebuild.
-
-**SCREEN PRESENCE:** inside the frame rectangle in **353 of 2,978 frames**,
-closest 25.1 m at frame 1113, where the free proxy shows it in the defocused
-foreground.
-
-### PROPOSED — "the glass mouth's 100 mm sink" — REFUTED, third confirmation, now on the ship and the ship candidate film
-
-**NOT A DEFECT.** The −100 mm is `R1_FORMATION_Z = -0.100`
-(`build_architecture.py:161`), the closed formation slab cast under round-1's
-pavilion floor, *"40 mm clear of that floor's soffit, 100 mm clear of its
-finished level"* (`:2309`). It is the top surface in the **assembly** only
-because the assembly has no round-1 `Floor` in it — `tools/build_film_scene.py`
-appends SHOWROOM onto the prebuilt world.
-
-On `render/film23_breach.blend`, the ship candidate:
-
-```
-Floor            z -0.0600 .. +0.0000
-Turntable_Deck   z +0.1180 .. +0.3400      <- positive control, a DIFFERENT known height
-```
-
-`Floor`'s top is exactly **0.0000**, and `tools/build_film_scene.py:504-516`
-**hard refuses** to build a film otherwise — *"the breach sim baked 3,796 shard
-resting transforms against that plane."*
-
-**Record REFUTED-CONFIRMED and do not re-open.** Three passes, four blends, same
-answer.

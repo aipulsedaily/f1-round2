@@ -95,9 +95,19 @@ def d_grit_smooth():
     return undo
 
 
-def d_leaf_unlobed():
-    """`LOBED_WEEDS` still declares thistle and ragwort pinnatifid; `_ribbon`
-    stops honouring it.  Declared and not built."""
+def d_declared_not_built():
+    """PATTERN 4 REPRODUCED ON PURPOSE: the species DECLARES itself pinnatifid
+    and the mesh is not.
+
+    `LOBED_WEEDS` ships empty -- both candidates were measured under the pixel
+    line and withdrawn (R2-2974) -- so the `leaf_margin` gate has nothing live to
+    guard.  That is exactly when a gate rots.  This damage declares thistle
+    lobed AND neuters `_ribbon`'s handling of it, so the gate must APPEAR and
+    FAIL.  Declaring without neutering would build the lobe and pass; neutering
+    without declaring would delete the gate rather than fail it, which is the
+    vacuous pass this file exists to prevent.  It takes both."""
+    old_tab = dict(BT.LOBED_WEEDS)
+    BT.LOBED_WEEDS["thistle"] = dict(lobes=5, depth=0.62)
     orig = BT._ribbon
 
     def patched(*a, **kw):
@@ -107,6 +117,8 @@ def d_leaf_unlobed():
 
     def undo():
         BT._ribbon = orig
+        BT.LOBED_WEEDS.clear()
+        BT.LOBED_WEEDS.update(old_tab)
     return undo
 
 
@@ -122,10 +134,15 @@ def d_no_panicle():
     return undo
 
 
-def d_square_stem():
-    """Weed stems back to a 4-sided tube."""
+def d_triangular_stem():
+    """Weed stems down to a 3-sided tube.
+
+    Four is what ships, and at `VEG_weed_thistle`'s CORRECTED 141.41 px/m four
+    is already sub-pixel (0.86 px at the thick end) -- which is why R2-2973's
+    raise to eight was withdrawn.  Three is 1.47 px and must fail, so the
+    upper-bound gate is still exercised against geometry it has to reject."""
     old = BT.WEED_STEM_SIDES
-    BT.WEED_STEM_SIDES = 4
+    BT.WEED_STEM_SIDES = 3
 
     def undo():
         BT.WEED_STEM_SIDES = old
@@ -133,13 +150,13 @@ def d_square_stem():
 
 
 DAMAGES = [
-    # name             fn              gate(s) that MUST fail
-    ("healthy",        d_none,         set()),
-    ("blade_thin",     d_blade_thin,   {"blade_width"}),
-    ("grit_smooth",    d_grit_smooth,  {"grit_facet"}),
-    ("leaf_unlobed",   d_leaf_unlobed, {"leaf_margin"}),
-    ("no_panicle",     d_no_panicle,   {"seed_head"}),
-    ("square_stem",    d_square_stem,  {"stem_round"}),
+    # name                  fn                    gate(s) that MUST fail
+    ("healthy",             d_none,               set()),
+    ("blade_thin",          d_blade_thin,         {"blade_width"}),
+    ("grit_smooth",         d_grit_smooth,        {"grit_facet"}),
+    ("declared_not_built",  d_declared_not_built, {"leaf_margin"}),
+    ("no_panicle",          d_no_panicle,         {"seed_head"}),
+    ("triangular_stem",     d_triangular_stem,    {"stem_round"}),
 ]
 
 

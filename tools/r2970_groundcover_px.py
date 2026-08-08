@@ -110,14 +110,69 @@ PX_LINE = 1.0          # the resolve threshold, in pixels.  The campaign's law.
 NYQUIST_LINE = 2.0
 
 
+# THE SAMPLE-FLOOR CORRECTION.                                       R2-2949/2949a
+#
+# `peak_unocc_sharp_px_per_m` is a PEAK, and a peak over a point cloud can be set
+# by one point.  R2-2949 re-ran the field with a MINIMUM SHARP-SAMPLE FLOOR --
+# the control that pass did not apply -- and three of its four headline rows did
+# not survive it.  The two that matter here:
+#
+#     VEG_grass_fescue_H   425.82  ->  425.82 at >=10,  396.91 at >=25   SURVIVES
+#     VEG_grit_chip        425.82  ->  425.82 at >=10,  396.91 at >=25   SURVIVES
+#     VEG_weed_thistle     347.88  ->  141.41 at >=10,   85.73 at >=25   WITHDRAWN
+#
+# Grass and grit hold because their peak is set by 25 points spread over
+# 5.0 x 12.0 m, all outdoors, all at z 0.5-1.5 m, 570 m from the pavilion, in
+# f2316 -- a frame `work/r22161_proxy/r22161_proxy_002316.png` shows as sharp
+# foreground sward.  The thistle has 6,821 points against grass's 164,884 and
+# its peak was set by fewer than ten of them.
+#
+# This table is applied ON TOP of the file, at the >=10 floor, and the file's own
+# figure is kept alongside so the correction is visible rather than laundered.
+# It is the difference between a change that ships and one that does not: at
+# 141.41 px/m the thistle's built leaf lobe is 0.79 px and its 4-sided stem is
+# already sub-pixel, so both of this block's weed changes were withdrawn.
+#
+# ALSO CORRECTED: `min_depth_m` is the minimum over ALL visible frames, not the
+# depth at the peak-sharp frame, so "425.8 px/m at 4.58 m" pairs two different
+# frames.  Grass is 425.82 px/m at f2316, depth 17.40 m.  Nothing here computes
+# with depth; it is reported, and it is reported as unknown rather than wrong.
+SAMPLE_FLOOR = 10
+CORRECTED_PX_PER_M = {
+    "VEG_weed_thistle": 141.41,
+}
+
+# AND EVERYTHING ELSE THE FLOOR HAS NOT BEEN RUN ON IS UNVERIFIED, NOT TRUSTED.
+#
+# This rule was put here because the gate CAUGHT ME.  Having corrected the
+# thistle, I left `VEG_weed_dock`, `_nettle` and `_ragwort` on the raw field --
+# and the healthy control run promptly failed `stem_round` on all three, on the
+# strength of 230-260 px/m figures produced by exactly the method that had just
+# been falsified for their nearest neighbour.  R2-2949 says so in terms: the
+# untested rows "should be treated as unverified until re-run with a floor."
+#
+# The discriminator is how many points the peak could have been set by.  The two
+# objects that SURVIVED the floor carry 164,884 and 247,106 points; the one that
+# COLLAPSED 2.5x carries 6,821.  So an object under `VERIFIED_MIN_POINTS` whose
+# figure has not been independently re-run is reported and NOT gated -- because
+# gating on a number this project has already shown to be a single-sample
+# artefact is how a measurement stops being evidence.
+VERIFIED_MIN_POINTS = 15000
+
+
 def sharp_table(path=SP_OBJECTS):
     """object name -> measured peak unoccluded sharp px/m over the whole film."""
     d = json.load(open(path))
     out = {}
     for o in d["objects"]:
+        raw = float(o["peak_unocc_sharp_px_per_m"])
         out[o["object"]] = dict(
-            px_per_m=float(o["peak_unocc_sharp_px_per_m"]),
-            min_depth_m=float(o["min_depth_m"]),
+            px_per_m=CORRECTED_PX_PER_M.get(o["object"], raw),
+            raw_px_per_m=raw,
+            corrected=o["object"] in CORRECTED_PX_PER_M,
+            points=int(o["points"]),
+            verified=(o["object"] in CORRECTED_PX_PER_M
+                      or int(o["points"]) >= VERIFIED_MIN_POINTS),
             frames_sharp=int(o["frames_sharp"]),
             frames_visible=int(o["frames_visible"]))
     return out, d
@@ -369,8 +424,15 @@ DECLINED = [
     ("ragwort leaf lobe RMS",        "VEG_weed_ragwort", (1.5, 3.9), PX_LINE,
      "BUILT, MEASURED AT 0.57 px RMS BY THIS FILE, AND REMOVED AGAIN.  The leaf "
      "half width is 1.5-8.2 px (typical 3.5), so even a 0.55 cut is 1.9 px peak "
-     "and 0.57 px RMS; 1 px RMS would need a 0.95 cut, which is a comb.  The "
-     "thistle's identical mechanism measures 1.18 px and stays"),
+     "and 0.57 px RMS; 1 px RMS would need a 0.95 cut, which is a comb"),
+    ("thistle leaf lobe RMS",        "VEG_weed_thistle", (5.6, 5.6), PX_LINE,
+     "BUILT, MEASURED AT 1.95 px RMS -- and then R2-2949's sample floor moved "
+     "the class from 347.88 to 141.41 px/m and the same margin became 0.79 px "
+     "(0.48 at a >=25 floor).  Removed, at 3.75x the leaf quads for nothing"),
+    ("thistle 8-sided stem",         "VEG_weed_thistle", (1.58, 1.58), PX_LINE,
+     "the SILHOUETTE ERROR 8 sides would have removed.  At the corrected "
+     "141.41 px/m the 4-sided stem is already 0.86 px at its thick end, so "
+     "eight sides bought 0.6 px of nothing at 4 quads per stem segment"),
 ]
 
 
@@ -541,6 +603,15 @@ def measure(libs, sharp):
     # TYPICAL.  Rows that only have a min/max size range get the geometric mean
     # as their typical, which is the right centre for a quantity spanning an
     # order of magnitude.
+    # SUPPRESS THE GATE ON ANY CLASS WHOSE RESOLUTION IS UNVERIFIED.  The row is
+    # still measured and still printed -- with UNVERIFIED on it, so it reads as a
+    # gap in the evidence rather than as a pass.
+    for r in rows:
+        s = sharp.get(r["cls"])
+        if s and not s["verified"] and r.get("gate"):
+            r["gate"] = None
+            r["unverified"] = True
+
     for r in rows:
         mm = list(r["mm"])
         if len(mm) == 2:
@@ -548,6 +619,9 @@ def measure(libs, sharp):
         r["mm"] = tuple(mm)
         r["px"] = tuple(px(r["cls"], v) for v in mm)
         mid = r["px"][r.get("at", 1)]
+        if r.get("unverified"):
+            r["verdict"] = "UNVERIFIED"
+            continue
         if r.get("upper"):
             # an UPPER-BOUND row inverts the law: the quantity is an artefact,
             # so it must stay UNDER the line rather than clear it.
@@ -596,6 +670,13 @@ def gates(rows):
 def report(rows, gts, sp_meta):
     print("\nMEASURED SHARP RESOLUTION (work/w2_0/retier_a10/sp_objects.json, "
           "%d frames, %s shutter)" % (sp_meta["frames"], sp_meta["shutter_mode"]))
+    if CORRECTED_PX_PER_M:
+        print("   sample-floor corrections applied (>=%d sharp samples, "
+              "R2-2949/2949a):" % SAMPLE_FLOOR)
+        for k, v in sorted(CORRECTED_PX_PER_M.items()):
+            print("     %-24s file says %.2f px/m, corrected to %.2f px/m"
+                  % (k, [o["peak_unocc_sharp_px_per_m"] for o in sp_meta["objects"]
+                         if o["object"] == k][0], v))
     print("   px columns are low / TYPICAL / high over the world's own scale "
           "distribution; the verdict is taken at the TYPICAL.\n")
     print("%-24s %-36s %-22s %-21s  %s"
@@ -655,6 +736,13 @@ def main():
     # line, it is how thick a plantain's stem is, and the plant cannot be built
     # without one.  Charging it as waste would bury the one row that IS waste.
     waste = [r for r in rows if r["verdict"] == "BELOW-BUT-BUILT" and r.get("gate")]
+    unver = sorted({r["cls"] for r in rows if r.get("unverified")})
+    if unver:
+        print("\n%d class(es) NOT GATED because their sharp resolution has not "
+              "been re-run under a >=%d sample floor (R2-2949); they carry under "
+              "%d points and their nearest neighbour collapsed 2.5x under that "
+              "control:\n   %s" % (len(unver), SAMPLE_FLOOR, VERIFIED_MIN_POINTS,
+                                   ", ".join(unver)))
     print("\n%d gate(s), %d failing; %d MISSING feature(s) above the pixel line; "
           "%d built below it" % (len(gts), len(bad), len(miss), len(waste)))
     for r in miss:
