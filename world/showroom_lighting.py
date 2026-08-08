@@ -319,6 +319,25 @@ def apply(scene=None, stops=None, verbose=True):
     stops = LIFT_STOPS if stops is None else float(stops)
     k = 2.0 ** stops
 
+    # ---- THE ONE PRACTICAL ROUND 2 AUTHORS -------------------------------- #
+    # R2-2101.  The second half of R2-1146's prescription is a narrow strip
+    # source, and it is added HERE rather than in round 1's `build_three_point`
+    # because round 2 never runs round 1's lighting stage: the lamps arrive as
+    # baked datablocks inside the car blend.  Editing the upstream author has no
+    # path to a frame -- the film18 shape.
+    #
+    # It goes BEFORE `classify()` so the strip is picked up by the same
+    # geometric test, stamped with the same `_sl_base` and levelled by the same
+    # multiplier as the 23 it joins.  A lamp added after this call would render
+    # 3.628 stops under the rig it is supposed to be part of.
+    #
+    # `ensure` is idempotent, it never edits an existing lamp, and it does
+    # nothing at all unless the four lamps it is designed to sit beside are
+    # measurably present -- so calling `apply` on a probe scene with no showroom
+    # in it still adds nothing.  See world/showroom_strip.py.
+    import showroom_strip as ST
+    strip = ST.ensure(scene, verbose=verbose)
+
     plan = classify(scene)
     moved_lamps, moved_mats = [], []
 
@@ -346,6 +365,7 @@ def apply(scene=None, stops=None, verbose=True):
     scene[SCENE_MARK] = stops
     man = {"stops": stops, "multiplier": round(k, 6),
            "film_exposure": FX.FILM_EXPOSURE,
+           "strip": strip,
            "lamps_scaled": moved_lamps, "materials_scaled": moved_mats,
            "lamps_left_alone": plan["lamps_skipped"],
            "materials_left_alone": plan["materials_skipped"],
@@ -404,6 +424,39 @@ def assert_levelled(scene=None, stops=None):
     never levelled" is a refusal at build time and not a 2.5 %-black frame
     discovered in a 2,978-frame render.  Checks the mark AND the watts, because
     a mark can be copied and a watt cannot.
+
+    WHAT THIS PROTECTS, AND WHAT IT DELIBERATELY DOES NOT.  R2-2101.
+    ---------------------------------------------------------------
+    Until now the rig was described everywhere -- `docs/NEXT-REBUILD.md`, three
+    verify scripts, `tools/build_film_scene.py:481` -- by two numbers:
+
+        46,203.313 W interior      23 _sl_base stamps
+
+    and `build_film_scene.py:481` turned the second one into a refusal in so
+    many words: *"the interior load is 46,203.313 W over 23 lamps ... a 24th
+    lamp breaks it."*  **THE COUNT WAS NEVER THE INVARIANT.**  23 was a
+    description of the rig round 1 happened to build, and an assertion that
+    encodes an incidental number refuses every future correct change -- which
+    it then did, to R2-1146's strip source, for 955 defect entries.
+
+    The two things that are actually true of a levelled rig, and stay true
+    whatever anybody adds to it, are:
+
+      1. EVERY interior lamp carries a `_sl_base` stamp.  An unstamped interior
+         lamp is one this module has never touched, so it is sitting 3.628 stops
+         under the rest of the room -- exactly `film9`'s defect, one lamp at a
+         time instead of all of them.
+      2. THE IDENTITY CLOSES.  sum(base) x 2**stops == the watts actually on the
+         datablocks.  A stamp can be copied; this cannot: it re-derives the
+         levelled load from the recorded pre-levelling values and the scene's
+         own mark, so a lamp that was stamped and then edited fails here.
+
+    Neither mentions a count, a total, or a lamp by name, and both would have
+    caught `film9` (no stamps at all, identity 0 != 46,203).  The literal
+    46,203.313 W and the stamp COUNT stay in the film's verification script,
+    where they belong: they are facts about one delivered artefact, checked
+    against a figure a human predicted in advance, and that is a different job
+    from an invariant that gates every save in the pipeline.
     """
     scene = scene or _bpy_scene(scene)
     want = LIFT_STOPS if stops is None else float(stops)
@@ -424,6 +477,44 @@ def assert_levelled(scene=None, stops=None):
         raise SystemExit(
             "REFUSING: the scene is marked as levelled and carries NO interior "
             "lamps. The mark is on a scene with no showroom in it.")
+    # 1. every interior lamp has been through this module
+    if m["n_unstamped_interior_lamps"]:
+        raise SystemExit(
+            "REFUSING: %d of %d interior lamp(s) carry no %r stamp, so this "
+            "module has never touched them and they are sitting %+.3f stops "
+            "under the rest of the room: %s. That is film9's defect one lamp "
+            "at a time. Call showroom_lighting.apply(scene) AFTER every lamp "
+            "is in the scene."
+            % (m["n_unstamped_interior_lamps"], m["n_interior_lamps"],
+               MARK + "energy", FX.FILM_EXPOSURE,
+               ", ".join(m["unstamped_interior_lamps"][:6])))
+    # 2. the identity closes, re-derived from the scene's own recorded bases
+    if m["identity_residual_w"] is None:
+        raise SystemExit(
+            "REFUSING: the levelling identity could not be recomputed from "
+            "this scene's own stamps.")
+    # THE TOLERANCE IS RELATIVE, AND THAT IS NOT A LOOSENING.  `Light.energy`
+    # is a float32; the base is recorded from one and the levelled value is
+    # computed in double and stored back into one, so each lamp carries up to
+    # 1.19e-7 of relative rounding and the sum of 24 of them is bounded by
+    # 1.19e-7 x total ~ 0.006 W at this rig's 46,867 W.  A fixed 1e-3 W bound
+    # PASSED the 5-lamp selftest at 4,698 W (residual 1.2e-4) and would have
+    # REFUSED the real film for arithmetic that is exactly right -- caught in
+    # the selftest before it reached a 10 GB build.  1 ppm is ~8x the float32
+    # bound and still 6,600x tighter than the edited-lamp control, which sits
+    # at 6.6e-2 relative.
+    tol = max(1e-3, 1e-6 * abs(m["identity_base_x_lift"]))
+    if abs(m["identity_residual_w"]) > tol:
+        raise SystemExit(
+            "REFUSING: the levelling identity does not close. %d stamp(s) "
+            "record %.3f W before levelling; x 2**%.3f that is %.3f W, and the "
+            "lamps actually carry %.3f W -- a residual of %+.4f W. A stamp can "
+            "be copied and this cannot: some lamp was stamped and then edited. "
+            "Tolerance was %.6f W (1 ppm, ~8x the float32 rounding of %d lamp "
+            "energies)."
+            % (m["n_lamp_stamps"], m["base_watts_from_stamps"], want,
+               m["identity_base_x_lift"], m["stamped_watts_now"],
+               m["identity_residual_w"], tol, m["n_lamp_stamps"]))
     return m
 
 
@@ -433,13 +524,53 @@ def _bpy_scene(scene):
 
 
 def measure(scene=None):
-    """What the scene currently carries, for a gate to compare against."""
+    """What the scene currently carries, for a gate to compare against.
+
+    R2-2101 added the stamp terms.  They are what `assert_levelled` now judges
+    on, so they have to come from the same reading of the same scene rather
+    than from a second walk somebody else writes -- `work/r2100/
+    measure_film_extra.py` had already had to compute them itself, over
+    `bpy.data.lights` rather than over the INTERIOR lamps, which counts a
+    stamped exterior lamp and misses an unstamped interior one.
+    """
     import bpy
     scene = scene or bpy.context.scene
     plan = classify(scene)
-    return {"scene_mark": scene.get(SCENE_MARK),
+    key = MARK + "energy"
+
+    # distinct light DATABLOCKS, not objects: two objects can share one lamp
+    # and the stamp lives on the datablock, so counting objects would demand
+    # two stamps where one is correct.
+    seen, stamped, unstamped = {}, {}, []
+    for r in plan["lamps"]:
+        ld = bpy.data.lights.get(r["light"])
+        if ld is None or ld.name in seen:
+            continue
+        seen[ld.name] = r["obj"]
+        if key in ld.keys():
+            stamped[ld.name] = (float(ld[key]), float(ld.energy))
+        else:
+            unstamped.append(r["obj"])
+
+    mark = scene.get(SCENE_MARK)
+    lift = None if mark is None else 2.0 ** float(mark)
+    base_sum = round(sum(b for b, _n in stamped.values()), 6)
+    now_sum = round(sum(n for _b, n in stamped.values()), 6)
+    predicted = None if lift is None else round(base_sum * lift, 6)
+
+    return {"scene_mark": mark,
             "interior_lamp_watts": round(sum(r["energy"] for r in plan["lamps"]), 3),
             "n_interior_lamps": len(plan["lamps"]),
+            "n_interior_light_datablocks": len(seen),
+            "n_lamp_stamps": len(stamped),
+            "n_unstamped_interior_lamps": len(unstamped),
+            "unstamped_interior_lamps": sorted(unstamped),
+            "base_watts_from_stamps": base_sum,
+            "stamped_watts_now": now_sum,
+            "lift_multiplier": None if lift is None else round(lift, 9),
+            "identity_base_x_lift": predicted,
+            "identity_residual_w": (None if predicted is None
+                                    else round(now_sum - predicted, 6)),
             "n_interior_emissive_materials": len(plan["materials"]),
             "interior_emission_strength_sum":
                 round(sum(s["strength"] for m in plan["materials"]
