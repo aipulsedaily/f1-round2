@@ -708,6 +708,71 @@ built it rather than written another warning.
 
 ---
 
+## R2-2177 — The car-box divergence is real, it does not reach beat 1's verdict, and the eighth copy was mine
+
+### Verified, including one axis the report did not mention
+
+`tools/build_beatsheet.py:1954` against `world/world_contract.py`:
+
+| axis | literal | contract | delta | direction |
+|---|---|---|---|---|
+| X length | 5.720 | 5.698 | **+22.0 mm** | **BIGGER — safe** |
+| Y half-width | 1.0000 | 1.0025 | −2.5 mm | smaller — unsafe |
+| Z top | 1.330 | 1.332 | −2.0 mm | smaller — unsafe |
+| Z bottom | 0.340 | 0.340 | 0 | — |
+
+The two unsafe deltas are confirmed. **The box is not uniformly smaller than the
+car** — it is 22 mm too LONG, nine times the largest unsafe error. "Both errors
+make the box smaller" is true of the two axes quoted and not of the box.
+
+### And the provenance line is confirmed hollow
+
+`tools/build_beatsheet.py` contains **no `bpy` import and never opens a blend** —
+every `.blend` string in it is a comment. `measured_on: world/beat1_anim.blend`
+is a transcription whose measurement this code cannot perform or reproduce.
+(That a 947-object dump happened once somewhere is plausible; that this file
+performed it is false.)
+
+### It does not reach beat 1's verdict, measured per-frame off the built path
+
+| box | worst clearance in f1-792 | verdict |
+|---|---|---|
+| as shipped | 1.0736 m at f273 | PASS |
+| **correct dims** | **1.0716 m at f273** | **PASS** |
+
+**The divergence costs 2.0 mm — 0.19 % of the margin — and beat 1 sits at 3.6x
+the 0.30 m floor.** There is no optimism here to cash in. That is a real answer
+to "re-check before you sign off", and the answer is that the check was never
+close.
+
+### The eighth copy was in my own file
+
+`tools/camera_tempo.py` shipped `CAR_LEN_M = 5.63`. The contract says **5.698**.
+**I hand-typed a private copy of the car's length, wrong by 68 mm — 27x the
+divergence I was sent to check — while writing the instrument used to audit
+everybody else's copies.** It now imports `WC.CAR_BODY_LEN_M`.
+
+Impact, re-measured: it fed only the angular-size and loom channels. `med size`
+moves ~1.2 % (beat 5: 0.154 → 0.156); **`med move` is unchanged to four decimals
+on every beat**, so the composition finding — 0.0077 → 0.1489 widths/s — never
+depended on it. Being the person auditing the drift is no protection against
+causing it.
+
+### Two premises corrected
+
+**I am not regenerating the sheet and not re-pacing beat 1.** R2-2173 closed beat
+1 on all four in-scope levers; there is no re-pace to sign off, and the clearance
+question above was answered anyway because it is cheap and the answer is
+load-bearing for whoever does take beat 1 on.
+
+**`tools/build_beatsheet.py` is not mine to edit.** It is dirty with R2-1701's
+beat-6 closing-lens work. I did not convert its box to an import, because the
+instruction was conditional on the file being mine and it is not — and because
+that file is one of the two still blocking full sheet reproducibility (R2-2176).
+Whoever commits it should do both in one pass.
+
+---
+
 ## R2-2175 — The instrument behind the surviving claim, validated against an independent implementation
 
 Everything this block still asserts rests on one number: **the car moves 0.0077

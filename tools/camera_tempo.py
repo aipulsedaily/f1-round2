@@ -217,7 +217,18 @@ def cam_basis(q):
     return right, up, fwd
 
 
-CAR_LEN_M = 5.63       # the shipped car's overall length, for angular size
+# THE CAR'S LENGTH IS IMPORTED, NOT TYPED.  R2-2177.
+#
+# This file shipped `CAR_LEN_M = 5.63` -- a hand-typed private copy, wrong by
+# 68 mm against the contract's 5.698, and the EIGHTH copy of the car's
+# dimensions found in this codebase.  I wrote it while measuring other people's
+# divergent copies, which is the whole argument for importing: a constant you
+# re-type is a constant that will drift, and being the person auditing the drift
+# is no protection at all.
+sys.path.insert(0, os.path.join(R2, "world"))
+import world_contract as WC                                        # noqa: E402
+
+CAR_LEN_M = WC.CAR_BODY_LEN_M          # 5.698, from the one authority
 
 
 def measure_subject(path_json, sheet, telemetry, spec_path):
