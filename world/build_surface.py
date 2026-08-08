@@ -1929,6 +1929,136 @@ def _mat_asphalt():
     craze = g.math("MULTIPLY", craze, g.mr(rubber, 0.45, 1.20, 0.20, 1.0))
     g.tag("craze", craze)
 
+    # ---- THE 45-160 mm OCTAVE  (R2-3061) ---------------------------------------
+    # R2-1031 IS IN THE DELIVERED FILM AND IT WORKED, AT THE SCALE IT AIMED AT.
+    # `tools/r2_3061_film_material.py` pulls `M_Surf_Asphalt` straight out of
+    # `render/film22.blend` and `render/film23_breach.blend`: all eight of the
+    # re-budget's tagged nodes are present and the 38-texture wavelength census
+    # is identical to a fresh build of this file.  Joining the pixel-peep's own
+    # per-tile numbers (`work/r22881/scan.npz`, 2 978 x 48 tiles) to a ray probe
+    # that says WHAT each tile is on, with the subject excluded and the shutter
+    # held under 40 px, the delivered 16-64 px band comes out as:
+    #
+    #     world band     ASPHALT        KERB      RUNOFF/TERRAIN   (band / tile mean)
+    #     120-250 mm      0.005        0.014          0.021
+    #     250-500 mm      0.014        0.024          0.030
+    #     500-1000 mm     0.023        0.023          0.036
+    #     1000-2000 mm    0.035        0.025          0.035
+    #     2000 mm+        0.057          .            0.028
+    #
+    # Above a metre this surface equals or beats everything around it.  Below
+    # 250 mm it delivers a QUARTER of what its neighbours do, and the deficit
+    # grows monotonically as the scale gets finer.  Tile means are 0.45/0.35/0.33
+    # against terrain's 0.39/0.39/0.33 in those same rows, so this is not the
+    # dark-surface artefact it would otherwise be mistaken for.
+    #
+    # WHY THAT BAND AND NOT ANOTHER.  R2-1031 derived "40 mm to 2 m" from a
+    # road-coverage-weighted MEDIAN of 20.8 mm per 4K pixel and placed its six
+    # meso structures at 0.15-1.0 m.  That is right for the median frame.  The
+    # frames the client is complaining about are not median frames -- f1787 is
+    # 3.80 mm/px, f2622 4.22, f1350 5.18 (`render/r2651/track_scale.json`) -- and
+    # at 3.80 mm/px the delivered 16-64 px window is 61-243 mm of road.  Nobody
+    # re-derived the target band for the near field, so the octave below the
+    # meso stages was never asked for.
+    #
+    # WHAT IS IN THE OCTAVE, STATED CAREFULLY, BECAUSE THE OBVIOUS VERSION OF
+    # THIS SENTENCE IS FALSE.  The census says there are textures at 90.9, 69.0,
+    # 47.6 and 41.7 mm, and a graph walk back from the Principled BSDF says all
+    # four DO reach `Base Color` -- so "this octave has no albedo" is wrong and
+    # was written here before it was checked.  What is true is the ROUTE:
+    #
+    #   69.0 mm  `nest`    -> `amp_field` -> `chip_hi`.  It reaches colour only
+    #                        by scaling the amplitude of an 18 mm chip field.
+    #   47.6 mm  `pluck`   -> a direct tonal term, but over ~1.7 % of cells
+    #   90.9 mm  `streak2` -> only the rubbered band's WIDTH, and longitudinal
+    #   41.7 mm  `warp`    -> a coordinate warp; it carries no contrast at all
+    #
+    # So between `seg2` at 188 mm and `pluck` at 48 mm there is no DIRECT tonal
+    # term in this material: everything in the octave arrives as a modulation of
+    # something else's amplitude.  That route was R2-1031's whole design and it
+    # is right where a chip is sub-pixel -- but at 3.80 mm/px an 18 mm chip is
+    # five pixels, the pixel no longer receives the field's local mean, and the
+    # modulation has to compete with the chip-to-chip variance instead of setting
+    # it.  The delivered numbers above are the evidence; this paragraph is the
+    # mechanism they are consistent with, and it is labelled as such.
+    #
+    # ALBEDO AND ROUGHNESS ONLY -- NO NEW BUMP STAGE, ON PURPOSE.  Every bump
+    # stage in this material is budgeted at ONE wavelength so `bump_relief_report`
+    # can audit it, and adding an 85 mm term to a stage budgeted at 300 mm would
+    # make that audit read whichever input the DFS popped first -- the exact
+    # defect the `h_fine` comment two hundred lines below records.  It is also
+    # R2-1031's own argument one octave finer: `relief_amplitude_for` wants real
+    # millimetres of geometry to reach the modulation band at 128 mm, a wearing
+    # course does not have them, and inventing them would be a lie about the
+    # object.  What a wearing course DOES have at this scale is places that are a
+    # different COLOUR and a different ROUGHNESS, which is what goes in below.
+    #
+    # THE SHUTTER DECIDED THE ORIENTATIONS.  A 180-degree shutter on a camera
+    # chasing a car at racing speed drags a fixed ground point 213-245 px at 4K
+    # on these three frames (`track_scale.json`'s own `mb` column; an independent
+    # ray probe agrees to within 12 %).  That is a 220 px box blur ALONG the road,
+    # and measured on the delivered f1787 the surviving structure's axis matches
+    # the predicted smear axis to 0.9 degrees.  Longitudinal structure at 16-64 px
+    # cannot reach the audience on these frames however strongly it is authored --
+    # which is why the three layers here are two isotropic fields and one that
+    # runs ACROSS the road, and why none of them is another streak.
+
+    # (f) NESTS, AS A TONE.  `nest` already exists at 69 mm and already says where
+    #     the stone-on-stone contact zones are; it has only ever been spent on
+    #     `amp_field`.  A nest is not just more aggregate, it is aggregate whose
+    #     binder film has been worn off it -- exposed fracture faces, paler and
+    #     cooler than the mortar-rich ground between the nests, which keeps its
+    #     bitumen sheen.  This is the same field read a second way, not a second
+    #     draw of it, so it cannot disagree with the amplitude field about where
+    #     the stone is.  A separate, WIDER window than `nest`'s: the amplitude
+    #     field wants the cores, the tone wants the whole cell, or the octave
+    #     arrives as sparse dots instead of a texture.
+    nest_t = g.mr(nest_v.outputs["Distance"], 0.05, 0.38, 1.0, 0.0)
+    nest_t = g.math("MULTIPLY", nest_t, g.mr(age, 0.10, 0.80, 0.55, 1.0))
+    g.tag("nest_tone", nest_t)
+
+    # (g) SCABS.  A dense-graded surfacing under 4-5 g of lateral load does not
+    #     only lose single stones -- `pluck`, 48 mm, one cell in sixty.  It loses
+    #     CLUSTERS, leaving a shallow scab 100-200 mm across with a binder-rich
+    #     dark floor and a pale rim of freshly fractured stone.  Hard-edged, which
+    #     is what a band-pass sees, and isotropic, which is what the shutter
+    #     cannot erase.  The rim is built as an annulus from the same distance
+    #     field as the floor, so a scab cannot end up with a rim somewhere else.
+    scab_v = g.voro(g.scale(P, 7.80), 1.0, "F1", 0.86)                   # 0.128 m
+    scab_id = g.sep(scab_v.outputs["Color"])[1]
+    scab_pick = g.mr(scab_id, 0.920, 0.948, 0.0, 1.0)                    # ~5 % of cells
+    scab_d = scab_v.outputs["Distance"]
+    scab = g.math("MULTIPLY", scab_pick, g.mr(scab_d, 0.135, 0.075, 0.0, 1.0))
+    scab_rim = g.math("MULTIPLY", scab_pick,
+                      g.math("MULTIPLY", g.mr(scab_d, 0.115, 0.150, 0.0, 1.0),
+                             g.mr(scab_d, 0.230, 0.185, 0.0, 1.0)))
+    # scabbing is a fatigue failure: it needs load and it needs age, and both are
+    # already measured fields on this surface rather than new inventions.
+    _scab_w = g.math("MULTIPLY", g.mr(age, 0.25, 0.90, 0.15, 1.0),
+                     g.mr(rubber, 0.30, 1.15, 0.30, 1.0))
+    scab = g.math("MULTIPLY", scab, _scab_w)
+    scab_rim = g.math("MULTIPLY", scab_rim, _scab_w)
+    g.tag("scab", scab)
+    g.tag("scab_rim", scab_rim)
+
+    # (h) ROLLER CHATTER, TRANSVERSE, 85 mm.  A vibratory drum working a hot mat
+    #     leaves a fine washboard across the mat at roughly a tenth of a metre --
+    #     an octave finer than the screed plate's 0.44 m ripple and a different
+    #     machine.  It is here for a second reason as well: it is the only thing
+    #     in this material at this scale that runs ACROSS the road, and the
+    #     shutter smears ALONG it, so this is the layer that survives f1787.
+    #     Wavelength is set on `s` and the bar length on `u`, exactly as `screed`
+    #     does it, so `_vector_gain` reads the same axis for both.
+    chat_f, _ = g.noise(g.comb(g.math("MULTIPLY", s, 11.80),
+                               g.math("MULTIPLY", u, 0.28), 0.0),
+                        1.0, detail=2.0, rough=0.45)                     # 85 mm
+    chatter = g.mr(chat_f, 0.30, 0.70, -1.0, 1.0)
+    # the tyres knead it flat where they run, exactly as they do the screed
+    # ripple, and a new mat shows it while a polished old one does not.
+    chatter = g.math("MULTIPLY", chatter, g.mr(offline, 0.0, 1.0, 0.35, 1.0))
+    chatter = g.math("MULTIPLY", chatter, g.mr(age, 0.20, 0.85, 1.0, 0.45))
+    g.tag("chatter", chatter)
+
     # -- resurfacing zones: age from the baked attribute, tint from the macro noise --
     # 0.42 of age swing here made the helicopter frame read as camouflage: at 33 m
     # the noise is exactly the scale of the road's own width.  0.16 keeps the zones
@@ -2086,6 +2216,30 @@ def _mat_asphalt():
     base = g.mixc(g.math("MULTIPLY", craze, 0.70), base, g.rgb(0.0258, 0.0248, 0.0244))
     base = g.vmulc(base, g.grey(g.math("ADD", 1.0,
                                        g.math("MULTIPLY", screed, 0.030))))
+
+    # -- the 45-160 mm octave, in ALBEDO  (R2-3061) ----------------------------------
+    # THE WEIGHTS ARE SET AGAINST THE MEASURED DEFICIT, not chosen.  The delivered
+    # 120-250 mm band is 0.005 of the tile mean against the runoff's 0.021, so the
+    # octave has to gain about 4x.  `seg2` is the only in-band albedo layer this
+    # material had and it is +-7 %, so the three below are sized to add roughly
+    # three more times that, in three different structures rather than one louder
+    # one -- the same rule the meso block above states, applied here.
+    #
+    #   nests    exposed fracture faces, no binder film: paler and very slightly
+    #            cooler, and DENSE, which is what an octave needs to read as a
+    #            texture instead of as dots
+    #   scabs    a plucked cluster: dark binder-rich floor, pale fractured rim,
+    #            hard-edged, ~5 % of cells
+    #   chatter  a tonal ripple only, transverse; its shading comes from nothing
+    #            else, which is deliberate -- see the height section
+    base = g.vmulc(base, g.grey(g.mr(nest_t, 0.0, 1.0, 0.938, 1.088)))
+    base = g.mixc(g.math("MULTIPLY", nest_t, 0.10),
+                  base, g.rgb(0.1090, 0.1062, 0.1030))
+    base = g.mixc(g.math("MULTIPLY", scab, 0.58), base, g.rgb(0.0271, 0.0250, 0.0233))
+    base = g.mixc(g.math("MULTIPLY", scab_rim, 0.44),
+                  base, g.rgb(0.1305, 0.1252, 0.1160))
+    base = g.vmulc(base, g.grey(g.math("ADD", 1.0,
+                                       g.math("MULTIPLY", chatter, 0.038))))
 
     # -- BINDER FLUSHING ("fatty" / bleeding patches) --------------------------------
     # Where the mat was laid rich or the traffic has kneaded it, bitumen rises and
@@ -2462,6 +2616,16 @@ def _mat_asphalt():
     rough = g.math("ADD", rough, g.math("MULTIPLY", ravel, 0.19))
     rough = g.math("ADD", rough, g.math("MULTIPLY", craze, 0.10))
     rough = g.math("ADD", rough, g.math("MULTIPLY", seg2, 0.035))
+    # -- the 45-160 mm octave, in ROUGHNESS  (R2-3061) -------------------------------
+    # The same three fields, each doing the thing its own physics implies rather
+    # than all three being copied onto roughness because they were handy.  A
+    # scab's floor is fresh binder that has never been trafficked, so it is the
+    # SMOOTHEST thing here and its rim, all fracture face, is the roughest -- the
+    # pair reads at a 12.47 deg sun where a single roughness step does not.
+    rough = g.math("ADD", rough, g.math("MULTIPLY", nest_t, 0.055))
+    rough = g.math("SUBTRACT", rough, g.math("MULTIPLY", scab, 0.19))
+    rough = g.math("ADD", rough, g.math("MULTIPLY", scab_rim, 0.14))
+    rough = g.math("ADD", rough, g.math("MULTIPLY", chatter, 0.022))
     rough = g.math("ADD", rough,
                    g.math("MULTIPLY", g.mr(micro_f, 0.15, 0.85, -0.030, 0.030), 1.0))
     rough = g.math("MAXIMUM", g.math("MINIMUM", rough, 0.97), 0.24)
