@@ -122,6 +122,20 @@ G4 seam       0.10 % of 2,978 transitions — three frames, and they are f899-90
 G1's flags are not scattered; they fall in coherent runs (`f300-323`,
 `f2156-2205`), which is what a finding looks like and what noise does not.
 
+### G3's one known false positive, measured rather than hand-waved
+
+The sky exclusion is `lum ≥ 1.30 × the frame's median tile, top third only`. It
+**under-excludes on a washed-out frame**, because when the whole frame is bright
+the sky is no longer 1.3× the median. `f1687` is the clearest case: its top two
+rows are blown-out sun-facing haze and are flagged empty, which they are —
+correctly — but they are *sky*, and sky is allowed to be empty.
+
+Bounded: in beat 5, rows 1–2 carry **2,480 of 15,719** empty tiles, so **at most
+15.8 %** of that beat's flags could be haze mistaken for ground. **The finding
+that matters is unaffected** — it is bottom-weighted, and rows 5–6 carry 64 % of
+the flags, where there is no sky at all. `work/r22881/empty_overlay.png` shows
+both the flags and this failure on six frames.
+
 ### Two threshold mistakes the controls caught, both of which had already passed
 
 1. **`SUBJ_DETAIL` was 0.55 and the C4 damage went straight through it.** A 12 px
