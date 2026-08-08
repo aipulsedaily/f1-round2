@@ -141,8 +141,30 @@ seam pin              frame-793 key reproduces exactly    IDENTICAL
 ```
 
 Only the key count moves, 434 -> 436, because the emitter is bearing-adaptive and
-the bearing now changes more. **Every gate that measures the camera's path sees
-the same path.**
+the bearing now changes more.
+
+**CORRECTION TO MY OWN CLAIM ABOVE — "the camera does not move" is true of the
+AUTHORED path and not quite true of the BUILT one.** `path_point` is untouched
+and every figure the author reports is identical, but the rig fits F-curves
+*through the keys*, and 434 -> 436 keys means slightly different Bezier
+interpolation between them. Measured on the two built paths, per beat:
+
+| beat | max position change | max lens change |
+|---|---|---|
+| `1_assembly`, `2_launch`, `3_breach`, `4_transit`, `6_ending` | **exactly 0** | **exactly 0** |
+| `5_lap` | **0.264 m** (p99 0.190 m) | 1.41 mm |
+
+**Outside beat 5 the built camera is bit-identical.** Inside it, the path shifts
+by up to 0.264 m — and that is the *same effect and the same magnitude* R2-087
+measured when it tested enabling `speed_key` globally (0.234 m, lens 1.12 mm),
+from the same cause: moving keys moves the curve between them.
+
+**The consequence is the one R2-087 weighed and it must not be buried: this
+invalidates any already-rendered frame of beat 5**, which is 1,524 frames and
+about two thirds of the master's render cost. R2-087 declined to pay that for a
+3.2 % improvement in a passing number. This block is paying it for a 19.3x change
+in the channel the client is complaining about, which is a different trade — but
+it is a real cost and it is being spent, not waved away.
 
 ### The plumbing was proved to be a no-op before any framing was authored
 
@@ -254,6 +276,55 @@ Three further limits, stated so nobody has to rediscover them:
   bearing-driven and would be structurally blind to the change.** This pass adds
   no speed variation, so it does not need it: the emitter picked up the extra
   aim movement on its own and went 434 -> 436 keys.
+
+---
+
+## R2-2168 — "only your beats moved" needed a noise floor, and finding one found a bug in the rig
+
+The brief requires confirming that only my beats moved. Diffing the two built
+paths appeared to say otherwise: **rotation differed on 2,157 frames, 377 of them
+in beat 1**, which my change cannot reach. Before explaining that, I checked
+whether the rig gives the same answer twice.
+
+**It does not.** Two runs of `anim/build_camera_rig.py` on the **identical**
+`docs/beat_sheet.json`, same inputs, same binary:
+
+| | result |
+|---|---|
+| frames whose rotation differs | **1,432 of 2,978 — 48.1 %** |
+| p90 / p99 / worst | **0.139 / 0.180 / 0.210 deg** |
+| max position difference | **exactly 0** |
+| max lens difference | **exactly 0** |
+
+**The rig's rotation channel is reproducible only to about 0.2 degrees.**
+Position and lens are bit-exact, so this is not general float drift — it is
+specific to how the rotation is built or baked. It is widespread rather than
+concentrated (48 % of frames, no outliers), which points at a numerical or
+ordering effect rather than a quaternion sign flip, which would show as a few
+enormous deltas instead of a thousand small ones.
+
+**This settles the confinement question outright.** My change against the noise
+floor, per beat:
+
+| beat | noise floor (A vs A) | my change (A vs candidate) | verdict |
+|---|---|---|---|
+| `1_assembly` | 0.1905 | **0.1905** | identical to noise |
+| `2_launch` | 0.1830 | **0.1830** | identical to noise |
+| `3_breach` | 0.1911 | **0.1911** | identical to noise |
+| `4_transit` | 0.1917 | **0.1917** | identical to noise |
+| **`5_lap`** | 0.2099 | **12.0447** | **57x the floor — real** |
+| `6_ending` | 0.1758 | **0.1627** | **below the floor** |
+
+Beats 1-4 match the noise floor **to four decimal places**, which is what you
+would expect if my change contributes nothing there and the same numerical
+wobble reappears. **Beat 6 comes in below its own noise floor** — the strongest
+available statement that contested territory was not touched.
+
+**The nondeterminism is a pre-existing defect and it is not mine to fix here**,
+but it should be known: any A/B on this project that compares built camera
+rotation is reading noise below ~0.21 deg, and `worst_rotation_step_deg` in
+`*_continuity.json` inherits it. It is logged here rather than in
+`docs/DEFECT-LOG-R2.md`, which I was told not to edit.
 
 ---
 
