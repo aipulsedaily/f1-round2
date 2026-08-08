@@ -106,7 +106,18 @@ import filmtime as FT                                              # noqa: E402
 from carpath import (Car, centreline_table, cl_at, lateral_of,     # noqa: E402
                      CAR_HALF_LEN, CAR_HALF_W, CAR_TOP_Z)
 
+# The circuit's own geometry contract — the ONE definition of where the
+# centreline runs and which way its lateral axis points. Beat 5's bridge thread
+# below is written in the bridge's own frame, and that frame has to be the same
+# one `world/build_architecture.py` built the bridge in.
+sys.path.insert(0, os.path.join(R2, "world"))
+import world_contract as WC                                        # noqa: E402
+
 FPS = FT.FPS
+
+# The film is shot on a 36 mm sensor width; the rig and the beat-1 generator
+# both assume it, so framing offsets resolve against the same number they do.
+SENSOR_W_MM = 36.0
 
 # The camera may never be inside the car, measured to the surface of the car's
 # oriented box (5.698 x 2.005 x 0.992 sitting on the road), not to its reference
@@ -115,6 +126,125 @@ FPS = FT.FPS
 # car's roof reaches 0.99 m above, i.e. 1.81 m of clearance, and that key is
 # fixed. Anything the lap does has to live above that number, not below it.
 CAM_CAR_MIN_M = 1.40
+
+# ------------------------------------------------ BEAT 5: THE BRIDGE THREAD --
+# R2-971 / R2-1004.  Le Pont de la Plongee crosses the lap at s = 2410 and the
+# camera used to fly OVER it.  Measured on the built path: at f2174 it crosses
+# the bridge plane at u = -29.27 m and 11.89 m above the road — 5.1 m ABOVE the
+# soffit and 29 m OUTBOARD of the centreline, neither under the bridge nor over
+# the track, while `docs/circuit_spec.md` §10 says this pass "threads under it
+# at ~5 m altitude".  The consequence was measured, not inferred: the car is
+# WHOLLY HIDDEN for f2180-2191.  Twelve frames of a one-shot film with no
+# subject in them.
+#
+# The cure is a WINDOWED DISPLACEMENT of the camera in the bridge's own frame,
+# and deliberately not a re-authored anchor: an anchor pulls the spline for
+# hundreds of frames either side of itself and cannot be held interior to a
+# 94-frame window, which is the property everything below depends on.  Two
+# independent smootherstep windows, one per axis, so the camera comes back
+# outboard BEFORE it is at its lowest instead of flying low over the racing
+# surface.  Smootherstep has zero first and second derivative at both ends, so
+# the correction is C2 in frame and can introduce neither a step nor a kink.
+#
+#     lateral   +20.0 m inboard    f2133 -> 2165  ...  2178 -> 2210
+#     vertical   -7.5 m            f2133 -> 2166  ...  2190 -> 2222
+#
+# WHY THE DISPLACEMENT IS THAT SIZE.  It sits in the middle of a measured
+# plateau of exactly zero blocked frames spanning du 18..24 m x dz -6..-11 m
+# (`tools/r2731_pont_full_sightline.py`, whose --selftest reproduces two
+# independent depth-tested raycasts at two different stations).  It is not a
+# minimum-effort value on the plateau's edge: a plateau 6 m x 5 m wide is what
+# makes the fix survive a tenth of a metre of key-emission error.
+#
+# WHY THE RAMPS ARE THESE WIDTHS — this is the part that was got wrong once and
+# then measured.  R2-738 authored the SAME displacement over a 22-frame lateral
+# OUT ramp (f2178->2200) and it cost 91.2 m/s^2 = 9.29 g: 95 % of this file's
+# own craft limit below, and 1.86x the shipped path's own peak.  The whole spike
+# was in that one ramp, at f2193.  Widening it to 32 frames and starting both
+# in-ramps 12 frames earlier (f2145 -> f2133) leaves the displacement, and
+# therefore the occlusion result, untouched — that is what the width of the
+# plateau buys — and brings the peak to 47.7 m/s^2 = 4.86 g, BELOW the shipped
+# path's own 49.1.  The fix costs nothing in the camera envelope instead of
+# nearly exhausting it.  Wider still was measured at 43.9 m/s^2 and NOT taken:
+# it starts eating the hold at the bottom of the pass, which is the shot.
+#
+# WHY IT IS AN OFFSET AND NOT A PATH.  The support is f2131-2224, interior to
+# beat 5 (f1191-2714) by 940 and 490 frames, so both beat boundaries are
+# bit-identical BY CONSTRUCTION, and beats 2, 3, 4 and the seam bridge emit the
+# keys they always did because this term is exactly zero — not nearly zero —
+# outside its own window.  `render/film_path_R2971_PONT_B5_REBASED.json` is the
+# same displacement baked onto a whole-film path; adopting a file like that
+# wholesale is how beat 1 gets silently reverted by 9.9 m over 2,472 frames to
+# buy twelve frames in beat 5.  That trap has now caught two agents (R2-737,
+# R2-1004 "Defect 1").  Carry the offset, never the file.  Being a pure function
+# of the frame index is exactly what lets it be carried.
+#
+# KEY DENSITY WAS CHECKED AND NOTHING WAS CHANGED FOR IT.  The offset is inside
+# `sample()`, so the adaptive walk sees it in the BEARING and densifies on its
+# own: through the ramps the emitted spacing goes 5-8 frames to 4-8, and beat 5
+# gains exactly one key (316 -> 317).  Reconstructing the offset from the keys
+# actually emitted is worst 0.259 m against the exact curve — and the BUILT path
+# already differs from this file's own spline by 0.128 m over f2120-2240 before
+# this term exists, so the residual is inside the instrument that ships.  A
+# displacement-per-key criterion was swept over seven settings: the best of them
+# buys 0.259 m -> 0.046 m for 21 extra keys through the window, and the milder
+# ones buy almost nothing (0.16-0.23 m).  On a zero-blocked plateau 6 m x 5 m
+# wide that is not worth a new mechanism, and it is the same verdict for the
+# same reason as R2-087's rejection of a global speed criterion further down.
+#
+# AND IT MAKES THE ENVELOPE BETTER, not worse.  Measured on this file's own
+# per-frame spline over all of beats 2-5: the worst camera acceleration anywhere
+# was 61.94 m/s^2 at f2194 — inside this window, and put there by the bridge
+# pass itself — and with the thread in it is 53.75 m/s^2 at f2560.  The frame
+# that used to be the film's worst is no longer in the top of the census.
+#
+# PONT_S is `world/build_architecture.py:5739`, which is module-level there
+# precisely so a station has one reader per module instead of a copy per module.
+# It cannot be imported (that file imports bpy at module level), so it is
+# spelled out here as `tools/r2731_pont_camera_apply.py` and
+# `tools/r2731_pont_camera_candidate.py` already spell it out.  If the bridge
+# ever moves, those four move together.
+PONT_S = 2410.0
+PONT_DU, PONT_U_WIN = 20.0, (2133.0, 2165.0, 2178.0, 2210.0)
+PONT_DZ, PONT_Z_WIN = -7.5, (2133.0, 2166.0, 2190.0, 2222.0)
+PONT_F0, PONT_F1 = 2131, 2224                  # the support, both ends included
+_PONT_LAT = None
+
+
+def _smoother(t):
+    """Smootherstep: zero FIRST and SECOND derivative at both ends."""
+    t = max(0.0, min(1.0, t))
+    return t * t * t * (t * (t * 6 - 15) + 10)
+
+
+def _win(f, w):
+    """1.0 on the plateau, 0.0 outside, smootherstep on the two ramps."""
+    f0, f1, f2, f3 = w
+    if f <= f0 or f >= f3:
+        return 0.0
+    if f < f1:
+        return _smoother((f - f0) / (f1 - f0))
+    if f <= f2:
+        return 1.0
+    return _smoother((f3 - f) / (f3 - f2))
+
+
+def pont_offset(f):
+    """Beat 5's bridge thread — world metres, at film frame `f`.
+
+    EXACTLY zero outside f2131-2224, so every other beat is untouched bit for
+    bit and both beat-5 boundaries are identical without anyone having to
+    assert it afterwards.
+    """
+    global _PONT_LAT
+    if not (PONT_F0 <= f <= PONT_F1):
+        return (0.0, 0.0, 0.0)
+    if _PONT_LAT is None:
+        _x, _y, _z, hdg, _k = WC.centreline(PONT_S)
+        _PONT_LAT = (-math.sin(hdg), math.cos(hdg), 0.0)
+    wu = PONT_DU * _win(f, PONT_U_WIN)
+    return (wu * _PONT_LAT[0], wu * _PONT_LAT[1], PONT_DZ * _win(f, PONT_Z_WIN))
+
 
 # ---------------------------------------------------------------- THE SEAM --
 # R2-064. Beat 1's last key and beat 2's first key are the two ends of a
@@ -227,20 +357,134 @@ def A(t, pos, lens, fstop=4.0, aim=None, note=""):
             "aim": aim or {}, "note": note}
 
 
-def aim_car(lead_s=0.0, along_m=0.0, z_off=0.55, lat_m=0.0):
+def aim_car(lead_s=0.0, along_m=0.0, z_off=0.55, lat_m=0.0,
+            frame_u=0, frame_v=0):
     """Where the lens points, relative to the car, in the CAR's own frame.
 
     `along_m` positive is toward the nose; `lead_s` multiplies the car's current
     speed, which is how an operator leads a fast subject without leading a slow
     one by the same distance. Both show up honestly in the aim gate as a nonzero
     angle to the car's reference point, so they are kept small.
+
+    R2-2161 -- `frame_u` / `frame_v` ARE A DIFFERENT UNIT AND THAT IS THE POINT.
+    ------------------------------------------------------------------------
+    They say WHERE IN THE PICTURE the car sits, in FRAME WIDTHS from centre:
+    +u is right, +v is up, 0.5 is the frame edge.  `lat_m` cannot express that,
+    because beat 5's subject range runs from 1.6 m at the hairpin to 195 m at
+    T10 -- a `lat_m` that reads as a tasteful third of a frame at 100 m swings
+    the car clean out of the picture at 2 m.  A framing offset is an angle, and
+    an angle is metres over distance, so the distance has to be in the unit.
+
+    Resolved at emission against the ACTUAL camera position and the ACTUAL lens
+    at that instant, so the composition an anchor asks for is the composition
+    the frame gets, at any range and any focal length.
+
+    They are the ONLY aim parameters that move the subject in frame without
+    moving the camera, which is why this pass uses them: the whole positional
+    envelope -- speed, acceleration, clearance, collision -- is untouched, and
+    every gate that measures the camera's PATH sees an identical path.
     """
     return {"mode": "car", "lead_s": lead_s, "along_m": along_m,
-            "z_off": z_off, "lat_m": lat_m}
+            "z_off": z_off, "lat_m": lat_m,
+            "frame_u": frame_u, "frame_v": frame_v}
 
 
-def lerp_aim(a0, a1, u, car, wt):
-    """Resolve the aim target at fraction u between two anchors' aim specs."""
+# The largest angle a framing offset is allowed to add to the aim gate's
+# reading.  The gate's per-beat bounds are 14 deg (beat 4) to 26 deg (beat 6)
+# and the framing offset lands on top of whatever aim error is already there,
+# so it is capped rather than trusted.  12 deg leaves beat 5 -- worst 1.30 deg
+# against a 22 deg bound -- more than eight degrees of headroom it never uses.
+FRAME_OFF_MAX_DEG = 12.0
+
+# How close to the frame edge the SUBJECT'S EDGE may come, in half-frames.  The
+# rig's own framing gate fails at 0.92 (`sheet.aim.frame_margin`) measured to
+# the subject POINT for beats 2-6; 0.85 measured to the subject's EDGE is
+# strictly tighter than that, so this cannot be the thing that trips it.
+FRAME_SAFE_EDGE = 0.85
+
+# The car's bounding-sphere radius: half the diagonal of the 5.698 x 2.005 x
+# 0.992 box the collision floor already uses.  It is what turns "put the car at
+# 0.5" into a statement about the PICTURE rather than about a point.
+SUBJ_RADIUS_M = 3.06
+
+RENDER_ASPECT = 2160.0 / 3840.0
+
+
+def _frame_offset_world(cam_pos, target, lens_mm, frame_u, frame_v):
+    """Shift `target` so the subject lands at (frame_u, frame_v) HALF-FRAMES.
+
+    THE UNIT IS THE GATE'S UNIT, deliberately.  `anim/build_camera_rig.py`
+    scores framing as `u = (x/-z) / (0.5*sensor_w/lens)`, i.e. half-frames, and
+    fails the beat at 0.92.  An author who writes 0.45 here is writing the same
+    number the gate will read back, so there is no conversion in which a
+    misunderstanding can hide.  The first draft of this used frame WIDTHS and
+    failed the gate at 0.929 for exactly that reason: the vertical half-frame is
+    0.28 widths, so a "0.16 width" rise was really 0.57 of the way to the top.
+
+    AND THE REQUEST IS CLAMPED BY THE SUBJECT'S OWN ANGULAR SIZE.  A framing
+    offset that is tasteful at 195 m puts the car half out of the picture at
+    26 m, because the car is 24 % of the frame wide there.  So the offset is
+    reduced until the car's EDGE sits inside `FRAME_SAFE_EDGE`.  That is what
+    makes this parameter safe to author across beat 5's 1.6 m -> 195 m range
+    without a per-anchor distance table that would go stale the moment an
+    anchor moved.
+
+    Moving the AIM POINT right pushes the SUBJECT left, so the world shift is
+    the negative of the requested screen position.
+    """
+    if not frame_u and not frame_v:
+        return target
+    d = [target[i] - cam_pos[i] for i in range(3)]
+    D = math.sqrt(sum(c * c for c in d))
+    if D < 1e-6:
+        return target
+    fwd = [c / D for c in d]
+    up_w = (0.0, 0.0, 1.0)
+    # Looking straight down or straight up leaves "right" undefined; fall back
+    # to the world Y axis so the basis stays continuous instead of flipping.
+    if abs(fwd[2]) > 0.999:
+        up_w = (0.0, 1.0, 0.0)
+    right = [fwd[1] * up_w[2] - fwd[2] * up_w[1],
+             fwd[2] * up_w[0] - fwd[0] * up_w[2],
+             fwd[0] * up_w[1] - fwd[1] * up_w[0]]
+    rn = math.sqrt(sum(c * c for c in right)) or 1.0
+    right = [c / rn for c in right]
+    up = [right[1] * fwd[2] - right[2] * fwd[1],
+          right[2] * fwd[0] - right[0] * fwd[2],
+          right[0] * fwd[1] - right[1] * fwd[0]]
+
+    lens = max(lens_mm, 1e-6)
+    half_w = 0.5 * SENSOR_W_MM / lens                    # tan of half h-fov
+    half_h = 0.5 * SENSOR_W_MM * RENDER_ASPECT / lens    # tan of half v-fov
+
+    # the subject's own angular radius, in half-frames, at this range
+    r_u = (SUBJ_RADIUS_M / D) / half_w
+    r_v = (SUBJ_RADIUS_M / D) / half_h
+    lim_u = max(FRAME_SAFE_EDGE - r_u, 0.0)
+    lim_v = max(FRAME_SAFE_EDGE - r_v, 0.0)
+    fu = max(-lim_u, min(lim_u, frame_u))
+    fv = max(-lim_v, min(lim_v, frame_v))
+
+    ox = -fu * half_w * D
+    oy = -fv * half_h * D
+
+    # cap the angle this is allowed to contribute to the aim gate
+    hyp = math.hypot(ox, oy)
+    if hyp > 1e-9:
+        ang = math.degrees(math.atan(hyp / D))
+        if ang > FRAME_OFF_MAX_DEG:
+            sc = math.tan(math.radians(FRAME_OFF_MAX_DEG)) * D / hyp
+            ox, oy = ox * sc, oy * sc
+    return [target[i] + right[i] * ox + up[i] * oy for i in range(3)]
+
+
+def lerp_aim(a0, a1, u, car, wt, cam_pos=None, lens_mm=None):
+    """Resolve the aim target at fraction u between two anchors' aim specs.
+
+    `cam_pos` / `lens_mm` are what let `frame_u` / `frame_v` mean anything; when
+    they are absent the framing offsets are simply not applied, so every caller
+    that does not know where the camera is gets exactly the pre-R2-2161 aim.
+    """
     def target(a):
         if a.get("mode") == "point" and a.get("blend", 1.0) >= 1.0:
             return list(a["p"])
@@ -253,7 +497,10 @@ def lerp_aim(a0, a1, u, car, wt):
              p[2] + a.get("z_off", 0.55)]
         if a.get("mode") == "point":
             b = a.get("blend", 1.0)
-            return [q[i] + (a["p"][i] - q[i]) * b for i in range(3)]
+            q = [q[i] + (a["p"][i] - q[i]) * b for i in range(3)]
+        if cam_pos is not None and lens_mm is not None:
+            q = _frame_offset_world(cam_pos, q, lens_mm,
+                                    a.get("frame_u", 0.0), a.get("frame_v", 0.0))
         return q
     t0, t1 = target(a0), target(a1)
     e = u * u * (3.0 - 2.0 * u)                       # ease, so aim never kinks
@@ -368,6 +615,19 @@ def catmull_rom(anchors, t):
             + h01 * ps[i + 1][c] + h11 * h * tan[i + 1][c] for c in range(3)]
 
 
+def path_point(anchors, f):
+    """The authored camera POSITION at film frame `f`.
+
+    The spline, plus beat 5's bridge thread. ONE definition, called by the key
+    emission below and by the per-frame envelope measurement in `main()`, so
+    the position that gets MEASURED is the position that gets WRITTEN — the
+    alternative is a report about a camera the sheet does not contain.
+    """
+    p = catmull_rom(anchors, f / FPS)
+    d = pont_offset(f)
+    return [p[0] + d[0], p[1] + d[1], p[2] + d[2]]
+
+
 def scalar_at(anchors, t, field):
     ts = [a["t"] for a in anchors]
     i = bisect.bisect_right(ts, t) - 1
@@ -378,13 +638,14 @@ def scalar_at(anchors, t, field):
     return anchors[i][field] + (anchors[i + 1][field] - anchors[i][field]) * e
 
 
-def aim_at(anchors, t, car, wt):
+def aim_at(anchors, t, car, wt, cam_pos=None, lens_mm=None):
     ts = [a["t"] for a in anchors]
     i = bisect.bisect_right(ts, t) - 1
     i = min(max(i, 0), len(anchors) - 2)
     u = (t - ts[i]) / max(ts[i + 1] - ts[i], 1e-9)
     return lerp_aim(anchors[i]["aim"], anchors[i + 1]["aim"],
-                    max(0.0, min(1.0, u)), car, wt)
+                    max(0.0, min(1.0, u)), car, wt,
+                    cam_pos=cam_pos, lens_mm=lens_mm)
 
 
 # ------------------------------------------------------- key emission (adaptive)
@@ -458,8 +719,17 @@ def emit_keys(anchors, f0, f1, world_of_frame, car, beat_name,
     def sample(f):
         t = f / FPS
         wt = world_of_frame[f]
-        pos = catmull_rom(anchors, t)
-        look = aim_at(anchors, t, car, wt)
+        # `path_point`, not `catmull_rom`: the bridge thread is part of where
+        # the camera IS, so it has to be inside the sample the keys are cut
+        # from, inside the bearing the adaptive walk spaces on, and inside the
+        # focus distance that falls out of the pair. Adding it afterwards to
+        # `world` alone — which is what a candidate sheet does — leaves the
+        # focus pull aimed at where the camera used to be.
+        pos = path_point(anchors, f)
+        # the lens at this instant, because a framing offset is an angle and an
+        # angle is only a picture once you know the field of view it sits in
+        look = aim_at(anchors, t, car, wt, cam_pos=pos,
+                      lens_mm=scalar_at(anchors, t, "lens"))
         return pos, look
 
     def bearing(f):
@@ -640,23 +910,23 @@ def build_anchors(car, W):
     b5 = [
         A(49.60, [295.00, 141.00, 5.60], 35, 5.6, aim_car(z_off=0.80),
           "beat 5 opens on the same frame beat 4 closed: one camera, no seam"),
-        A(50.90, tp(50.90, -42, -2.0, 5.0), 35, 5.6, aim_car(z_off=0.75),
+        A(50.90, tp(50.90, -42, -2.0, 5.0), 35, 5.6, aim_car(z_off=0.75, frame_u=0.306, frame_v=-0.148),
           "still 42 m back: the camera matches the car's 85 m/s before it starts "
           "closing, because doing both at once bulges the spline to 111 m/s"),
-        A(52.20, tp(52.20, -30, -6.0, 3.0), 35, 5.6, aim_car(z_off=0.70),
+        A(52.20, tp(52.20, -30, -6.0, 3.0), 35, 5.6, aim_car(z_off=0.70, frame_u=-0.34, frame_v=-0.111),
           "dropping right as the car brakes for T1. The camera does NOT brake "
           "with it — holding ~70 m/s through the braking zone is what closes it "
           "from 30 m back to 2 m back without a speed oscillation"),
-        A(53.10, tp(53.10, -16, -9.0, 2.2), 40, 5.6, aim_car(z_off=0.70),
+        A(53.10, tp(53.10, -16, -9.0, 2.2), 40, 5.6, aim_car(z_off=0.70, frame_u=-0.374, frame_v=0.185),
           "tucked low off the right rear at 197 km/h into T1"),
-        A(54.10, tp(54.10, -2, -15.0, 2.4), 40, 5.6, aim_car(z_off=0.70),
+        A(54.10, tp(54.10, -2, -15.0, 2.4), 40, 5.6, aim_car(z_off=0.70, frame_u=0.408, frame_v=0.111),
           "T1 apex from the outside, on the runoff, level with the kerb line"),
-        A(55.70, tp(55.70, 0, -12.0, 4.5), 35, 5.6, aim_car(z_off=0.80),
+        A(55.70, tp(55.70, 0, -12.0, 4.5), 35, 5.6, aim_car(z_off=0.80, frame_u=0, frame_v=-0.222),
           "T2 Threshold, level with the car and rising"),
-        A(57.20, tp(57.20, 14, -14.0, 7.0), 40, 5.6, aim_car(z_off=0.80),
+        A(57.20, tp(57.20, 14, -14.0, 7.0), 40, 5.6, aim_car(z_off=0.80, frame_u=-0.442, frame_v=-0.074),
           "east chute: the camera overtakes on the outside and starts running "
           "ahead — the only way to be somewhere before a 295 km/h car is"),
-        A(59.00, cp(680, 6.0, 5.0), 40, 5.6, aim_car(z_off=0.80),
+        A(59.00, cp(680, 6.0, 5.0), 40, 5.6, aim_car(z_off=0.80, frame_u=0.34, frame_v=0.148),
           "40 m ahead, crossing to the left of the line, descending"),
         # R2-085. THE '20 m AWAY' IN THIS NOTE WAS NEVER A DISTANCE TO THE CAR.
         # `cp(s, u, h)` is an ABSOLUTE station, so its `u` is an offset from the
@@ -714,59 +984,59 @@ def build_anchors(car, W):
         # centreline z of -0.643, so this anchor sits 3.64 m above the run-off
         # with 14 m of lateral room. The neighbouring anchors at s = 848 and 903
         # already fly u = -20 and -21 and are gated there.
-        A(60.23, cp(773, -20.0, 3.0), 32, 5.6, aim_car(z_off=0.70),
+        A(60.23, cp(773, -20.0, 3.0), 32, 5.6, aim_car(z_off=0.70, frame_u=-0.408, frame_v=0),
           "T3 Long Kink at 295 km/h from the INSIDE of the kink. The closest "
           "the car comes is 20.00 m, which is what this note used to claim and "
           "did not measure — see R2-085. 7.0 % of the frame width per frame at "
           "the pass: the fastest sustained pan of the lap outside the "
           "helicopter arc, and readable"),
-        A(61.60, cp(848, -20.0, 5.0), 40, 5.6, aim_car(z_off=0.70),
+        A(61.60, cp(848, -20.0, 5.0), 40, 5.6, aim_car(z_off=0.70, frame_u=0.272, frame_v=-0.185),
           "the camera has overtaken and is braking with the car. Stopping a "
           "camera from 68 m/s to a standstill takes 200 m, so it is laid out as "
           "four decelerating anchors and not as one; the first draft crammed it "
           "into a single segment and measured 16.8 g"),
-        A(63.00, cp(903, -21.0, 4.6), 50, 5.6, aim_car(z_off=0.70),
+        A(63.00, cp(903, -21.0, 4.6), 50, 5.6, aim_car(z_off=0.70, frame_u=0, frame_v=0.259),
           "the 295->80 km/h braking event comes head-on AT the lens, from 5.6 m up: BR_FenceMesh_L03 has a panel at s = 909.8, u = -14.10, top z = 0.88, and at 3.4 m the camera sphere passed 0.160 m from it"),
-        A(64.40, cp(943, -17.0, 2.8), 40, 5.6, aim_car(z_off=0.60),
+        A(64.40, cp(943, -17.0, 2.8), 40, 5.6, aim_car(z_off=0.60, frame_u=0.374, frame_v=-0.111),
           "down to 1.6 m on the hairpin entry; the car arrives on the brakes"),
-        A(65.67, cp(976, -12.0, 2.4), 28, 5.6, aim_car(z_off=0.55),
+        A(65.67, cp(976, -12.0, 2.4), 28, 5.6, aim_car(z_off=0.55, frame_u=-0.306, frame_v=0.074),
           "T4 LE PIN apex from the OUTSIDE at 2.4 m. Two drafts of this shot were on the inside and the placement gate rejected both: at u = +13 the camera sphere reached 1.181 m into BR_TyreWall_T4, and at u = +10.5 it still reached 1.095 m into BR_FenceMesh_L03 — the same catch fence that is itself 7.606 m INTO the racing line at s = 926 and 1.434 m into the car\'s own swept path. The inside of this hairpin is furniture, and some of the furniture is in the wrong place"),
-        A(67.30, tp(67.30, -18, 4.0, 3.4), 35, 5.6, aim_car(z_off=0.60),
+        A(67.30, tp(67.30, -18, 4.0, 3.4), 35, 5.6, aim_car(z_off=0.60, frame_u=0, frame_v=-0.259),
           "hairpin exit: the camera drops in behind, low, on the surface"),
-        A(70.00, tp(70.00, -26, 0.0, 2.6), 32, 5.6, aim_car(z_off=0.70),
+        A(70.00, tp(70.00, -26, 0.0, 2.6), 32, 5.6, aim_car(z_off=0.70, frame_u=0.34, frame_v=-0.037),
           "climbing S4 with the car"),
-        A(73.01, tp(73.01, -14, -9.0, 4.4), 35, 5.6, aim_car(z_off=0.70),
+        A(73.01, tp(73.01, -14, -9.0, 4.4), 35, 5.6, aim_car(z_off=0.70, frame_u=-0.272, frame_v=0.185),
           "T5 La Rampe, inside, uphill"),
-        A(76.00, cp(1400, 22.0, 26.0), 50, 5.6, aim_car(z_off=0.80),
+        A(76.00, cp(1400, 22.0, 26.0), 50, 5.6, aim_car(z_off=0.80, frame_u=0.442, frame_v=-0.296),
           "rising into the helicopter arc over the infield ridge"),
-        A(78.85, cp(1557, 50.0, 40.0), 55, 5.6, aim_car(z_off=0.80),
+        A(78.85, cp(1557, 50.0, 40.0), 55, 5.6, aim_car(z_off=0.80, frame_u=-0.374, frame_v=-0.296),
           "T6 Weave 1 from 52 m out and 40 m up"),
-        A(80.97, cp(1678, 62.0, 48.0), 60, 5.6, aim_car(z_off=0.80),
+        A(80.97, cp(1678, 62.0, 48.0), 60, 5.6, aim_car(z_off=0.80, frame_u=0.408, frame_v=-0.185),
           "T7 Weave 2: the arc leads the car through the esses"),
-        A(83.21, cp(1824, 52.0, 46.0), 65, 5.6, aim_car(z_off=0.80),
+        A(83.21, cp(1824, 52.0, 46.0), 65, 5.6, aim_car(z_off=0.80, frame_u=-0.34, frame_v=0.222),
           "T8 Crest, the summit. the arc starts to leave the car here"),
-        A(85.31, cp(1995, 34.0, 40.0), 70, 5.6, aim_car(z_off=0.80),
+        A(85.31, cp(1995, 34.0, 40.0), 70, 5.6, aim_car(z_off=0.80, frame_u=0.306, frame_v=-0.259),
           "T9 seen from 105 m ahead: the camera is already running for T10. From "
           "the esses to the station the stations are laid out on a smooth speed "
           "profile (57, 65, 76, 84, 86 m/s) rather than at the corners, because "
           "an anchor list that reads well and accelerates badly is still a bad "
           "camera move"),
-        A(88.00, cp(2215, 2.0, 25.0), 75, 5.6, aim_car(z_off=0.80),
+        A(88.00, cp(2215, 2.0, 25.0), 75, 5.6, aim_car(z_off=0.80, frame_u=-0.408, frame_v=0.111),
           "crossing the track line ahead of the car, descending"),
-        A(90.01, cp(2370, -26.0, 14.0), 80, 5.6, aim_car(z_off=0.80),
+        A(90.01, cp(2370, -26.0, 14.0), 80, 5.6, aim_car(z_off=0.80, frame_u=0.374, frame_v=-0.222),
           "T10 Panorama 1 at 255 km/h, seen from 195 m down the road: the camera "
           "is already on the doppler line and braking for it"),
-        A(91.40, cp(2470, -26.0, 9.5), 85, 5.6, aim_car(z_off=0.80),
+        A(91.40, cp(2470, -26.0, 9.5), 85, 5.6, aim_car(z_off=0.80, frame_u=-0.238, frame_v=0.148),
           "T11 behind us; 170 m of deceleration is what a hover costs"),
-        A(92.40, cp(2515, -26.0, 7.0), 85, 5.6, aim_car(z_off=0.80),
+        A(92.40, cp(2515, -26.0, 7.0), 85, 5.6, aim_car(z_off=0.80, frame_u=0.17, frame_v=-0.111),
           "settling onto the station: 45, 33, 22, 8, 1.5 m/s, five anchors, "
           "because arriving at a hover in one is a 6 g stop"),
-        A(93.10, cp(2538, -26.0, 5.6), 80, 5.6, aim_car(z_off=0.80), "settling"),
-        A(93.60, cp(2549, -26.0, 5.0), 70, 5.6, aim_car(z_off=0.80), "settling"),
-        A(94.10, [-579.60, -46.80, 4.86], 45, 5.6, aim_car(z_off=0.70),
+        A(93.10, cp(2538, -26.0, 5.6), 80, 5.6, aim_car(z_off=0.80, frame_u=-0.102, frame_v=0.074), "settling"),
+        A(93.60, cp(2549, -26.0, 5.0), 70, 5.6, aim_car(z_off=0.80, frame_u=0.068, frame_v=0), "settling"),
+        A(94.10, [-579.60, -46.80, 4.86], 45, 5.6, aim_car(z_off=0.70, frame_u=-0.51, frame_v=0),
           "ARRIVED at the declared doppler station [-578.82, -47.47, 4.802], "
           "26.0 m off the centreline at s = 2555"),
-        A(94.63, [-579.10, -47.20, 4.81], 40, 5.6, aim_car(z_off=0.60),
+        A(94.63, [-579.10, -47.20, 4.81], 40, 5.6, aim_car(z_off=0.60, frame_u=0.51, frame_v=0),
           "THE DOPPLER BEAT: 313 km/h passes 26 m away. The lens goes 85 -> 40 as "
           "the car closes, so the subject stays large while the camera does not "
           "move at all — the reverse of a chase, and the reason the audio's "
@@ -775,26 +1045,26 @@ def build_anchors(car, W):
           "range spans 12.5 deg of a 73.7 deg horizontal field, i.e. 14.6 % of "
           "the picture width, which is not a car ripping past. 40 mm puts it at "
           "24.3 %. Both were rendered and looked at"),
-        A(96.60, [-577.60, -48.60, 4.76], 70, 5.6, aim_car(z_off=0.80),
+        A(96.60, [-577.60, -48.60, 4.76], 70, 5.6, aim_car(z_off=0.80, frame_u=0.476, frame_v=0.111),
           "3.0 s below 3 m/s across the pass — the hover the brief asks for"),
-        A(97.60, [-568.80, -60.80, 5.20], 90, 5.6, aim_car(z_off=0.80),
+        A(97.60, [-568.80, -60.80, 5.20], 90, 5.6, aim_car(z_off=0.80, frame_u=-0.17, frame_v=-0.074),
           "the whip after the car. A hover to 50 m/s is the one move in the film "
           "that costs more than beat 6's 2.03 g; three anchors keep it near 3"),
-        A(98.60, [-543.10, -96.40, 7.20], 120, 5.6, aim_car(z_off=0.80),
+        A(98.60, [-543.10, -96.40, 7.20], 120, 5.6, aim_car(z_off=0.80, frame_u=0.238, frame_v=-0.185),
           "long-lens follow into T12 Plongee's braking zone, 110 m away"),
-        A(100.37, tp(100.37, -105, -6.0, 9.0), 85, 5.6, aim_car(z_off=0.80),
+        A(100.37, tp(100.37, -105, -6.0, 9.0), 85, 5.6, aim_car(z_off=0.80, frame_u=-0.34, frame_v=0.111),
           "T13 Hook: the camera is moving again and closing"),
-        A(102.45, tp(102.45, -80, 4.0, 8.0), 70, 5.6, aim_car(z_off=0.80),
+        A(102.45, tp(102.45, -80, 4.0, 8.0), 70, 5.6, aim_car(z_off=0.80, frame_u=0.306, frame_v=-0.148),
           "T14 Flick"),
-        A(105.19, tp(105.19, -70, 0.0, 6.0), 55, 5.6, aim_car(z_off=0.80),
+        A(105.19, tp(105.19, -70, 0.0, 6.0), 55, 5.6, aim_car(z_off=0.80, frame_u=-0.272, frame_v=0.185),
           "T15 Gate, the last corner, camera closing hard"),
-        A(106.30, tp(106.30, -62, -1.0, 5.4), 45, 5.6, aim_car(z_off=0.80),
+        A(106.30, tp(106.30, -62, -1.0, 5.4), 45, 5.6, aim_car(z_off=0.80, frame_u=0.204, frame_v=-0.222),
           "T15 exit, closing"),
-        A(107.60, tp(107.60, -34, 0.0, 4.6), 40, 5.6, aim_car(z_off=0.75),
+        A(107.60, tp(107.60, -34, 0.0, 4.6), 40, 5.6, aim_car(z_off=0.75, frame_u=-0.17, frame_v=-0.111),
           "onto the pit straight at 300+ km/h, tucking in"),
-        A(109.00, tp(109.00, -8, 1.5, 3.6), 32, 5.6, aim_car(z_off=0.72),
+        A(109.00, tp(109.00, -8, 1.5, 3.6), 32, 5.6, aim_car(z_off=0.72, frame_u=0.102, frame_v=-0.074),
           "the tight onboard-like follow"),
-        A(109.60, tp(109.60, 0, 0.6, 3.0), 32, 5.6, aim_car(z_off=0.78),
+        A(109.60, tp(109.60, 0, 0.6, 3.0), 32, 5.6, aim_car(z_off=0.78, frame_u=0, frame_v=0),
           "directly over the car at 83 m/s"),
         # 2642 / 24, NOT 110.10. Beat 6's key t = -3.0 lands on film 110.1, which
         # is frame 2642.4; the rig keys it at 2642. Ending beat 5's spline at
@@ -818,23 +1088,44 @@ def beat6_aim(sheet, spec):
     `build_camera_rig.py` never keyed a rotation for them either: the frozen
     orientation that the defect report found after frame 754 in fact runs to the
     last frame of the film. The keys are left exactly as they are; what is added
-    is the beat's declared SUBJECT, from which the rig derives rotation:
+    is the beat's declared SUBJECT, from which the rig derives rotation.
 
-        t -3.0 .. +4.0   the car
-        t +4.0 .. +6.0   lerps to the breached facade
-        t +6.0 .. +11.0  the facade at [15, 0, 3.1]
+    R2-1701 (folding R2-85x, previously stranded in
+    `docs/R2851_beat_sheet_CANDIDATE.json`): the subject is THE CAR for the whole
+    of beat 6 —
 
-    which is what the spec already says the shot is — `wound_enters_frame_t` is
-    6.0, and the sight-line gate in the assembly log measures the hold's ray to
-    the wound at 595.4 m and clear.
+        t -3.0 .. +11.0  the car
+
+    and not the hand-off to the facade this function used to declare. The old
+    reading followed the spec's `wound_enters_frame_t = 6.0` literally, but
+    aiming AT the wound from t=+4.0 costs an 82 deg swing in 1.8 s (peak
+    89.7 deg/s) — a whip that smears the whole frame — and it puts the film's
+    subject off screen from f2845, 5.5 s before the last frame. Tracking the car
+    peaks at 9.0 deg/s, a 10x reduction, because the camera is then following
+    something that is genuinely traversing that arc rather than jumping to a
+    point 82 deg away. `fixed_point` is kept so the wound stays declared and the
+    sight-line gate still has something to measure, but with `point_from_t` at
+    the end of the beat it is never reached: the aim is the car throughout.
+
+    `bound_deg` tightens 32.0 -> 26.0 because the closing lens now pushes to
+    130 mm; the bound is a fraction of the frame, and the frame is narrower.
     """
     wound = list(spec["showroom"]["breach_face_centre_world"])
-    return {"subject": "car until t=+4.0, then the breached facade",
+    return {"subject": "the car, for the whole of beat 6",
             "fixed_point": wound,
-            "car_until_t": 4.0, "point_from_t": 6.0,
-            "z_off": 0.80, "bound_deg": 32.0,
-            "why": "the closing wide's declared content is the circuit with the "
-                   "breached showroom in it; wound_enters_frame_t = 6.0"}
+            "car_until_t": 11.0, "point_from_t": 11.0,
+            "z_off": 0.80, "bound_deg": 26.0,
+            "why": "R2-85x. The shipped sheet handed the aim off to the breached "
+                   "facade at t=+4.0. That cost an 82 deg swing in 1.8 s (peak "
+                   "89.7 deg/s, a whip that smears the whole frame) and put the "
+                   "film's subject off-screen from f2845 -- 5.5 s before the "
+                   "last frame. Tracking the car for the whole beat costs "
+                   "9.0 deg/s peak, a 10x reduction, because the camera is "
+                   "following something that is actually moving through that arc "
+                   "instead of jumping to a point 82 deg away.",
+            "superseded": {
+                "subject": "car until t=+4.0, then the breached facade",
+                "car_until_t": 4.0, "point_from_t": 6.0, "bound_deg": 32.0}}
 
 
 # ------------------------------------------------------------------- report --
@@ -972,7 +1263,7 @@ def main():
     if True:
         fa = int(math.ceil(chain[0]["t"] * FPS))
         fb = int(math.floor(chain[-1]["t"] * FPS))
-        pts = {f: catmull_rom(chain, f / FPS) for f in range(fa, fb + 1)}
+        pts = {f: path_point(chain, f) for f in range(fa, fb + 1)}
         for f in range(fa, fb + 1):
             wt = W[max(1, min(N, f))]
             p, hd, _v = car.state(wt)
@@ -1001,6 +1292,34 @@ def main():
           f"({worst_acc / 9.81:.2f} g) at frame {acc_frame}")
     print(f">> camera-to-car BOX     min {worst_near:8.3f} m at frame {near_frame} "
           f"(floor {CAM_CAR_MIN_M} m)")
+
+    # ---- what beat 5's bridge thread costs, reported every run -------------
+    #
+    # The displacement's whole justification is that it is CHEAPER in the camera
+    # envelope than the path it replaces (R2-1004), and a justification nobody
+    # re-measures is a claim. Both profiles are read off this file's own spline,
+    # over R2-740's window, so they are comparable to each other; the built path
+    # smooths them both by roughly the same amount.
+    PW = (2120, 2240)
+
+    def _acc_peak(with_thread):
+        pp = {}
+        for f in range(PW[0] - 4, PW[1] + 5):
+            p = catmull_rom(chain, f / FPS)
+            if with_thread:
+                d = pont_offset(f)
+                p = [p[0] + d[0], p[1] + d[1], p[2] + d[2]]
+            pp[f] = p
+        vs = [math.dist(pp[f], pp[f + 1]) * FPS for f in range(PW[0] - 4, PW[1] + 4)]
+        acc = [abs(vs[i + 1] - vs[i]) * FPS for i in range(len(vs) - 1)]
+        return max(vs), max(acc)
+    _v_off, _a_off = _acc_peak(False)
+    _v_on, _a_on = _acc_peak(True)
+    print(f">> beat-5 bridge thread  f{PONT_F0}-{PONT_F1}, du +{PONT_DU:.1f} m "
+          f"inboard / dz {PONT_DZ:.1f} m: over f{PW[0]}-{PW[1]} peak |a| "
+          f"{_a_off:.1f} -> {_a_on:.1f} m/s^2 "
+          f"({_a_off / 9.81:.2f} -> {_a_on / 9.81:.2f} g), "
+          f"peak v {_v_off:.1f} -> {_v_on:.1f} m/s")
 
     # The envelope is derived from the car, not fitted to the camera. A camera
     # that has to outrun a 84.5 m/s car needs headroom over it, and a camera is
@@ -1069,6 +1388,35 @@ def main():
                                    "lens_mm": x["lens"], "note": x["note"]}
                                   for x in anchors[name]],
                       "camera_keys": ks}
+
+    # Beat 5's keys are the anchors PLUS the bridge thread, and a reader holding
+    # only the anchors cannot reproduce them. This block says so, in the file
+    # the rebuild reads, so nobody re-derives the offset from the difference or
+    # re-applies it on top with `tools/r2731_pont_camera_candidate.py`.
+    sheet["beat5"]["pont_thread"] = {
+        "defect": "R2-971 / R2-1004 — the beat-5 bridge blackout",
+        "why": "the camera crossed Le Pont de la Plongee 5.1 m ABOVE the soffit "
+               "and 29 m outboard, and the car was wholly hidden f2180-2191. "
+               "circuit_spec.md 10 specifies this pass as 'threads under it at "
+               "~5 m altitude'. These keys carry a windowed displacement into "
+               "the clear opening: the ANCHORS ALONE DO NOT REPRODUCE THEM.",
+        "applied_by": "tools/author_beats2_5.py pont_offset(), inside "
+                      "emit_keys' own sampler — not a post-pass on `world`",
+        "station_s": PONT_S,
+        "lateral_m": PONT_DU, "lateral_window": list(PONT_U_WIN),
+        "vertical_m": PONT_DZ, "vertical_window": list(PONT_Z_WIN),
+        "support_frames": [PONT_F0, PONT_F1],
+        "interior_to_beat5_by_frames": [PONT_F0 - 1191, 2714 - PONT_F1],
+        "measured": "occlusion 12 blocked frames -> 0 across all four bridge "
+                    "bands; peak |a| over f2120-2240 below the path it "
+                    "replaces; clearance 2.391 m against placement_gate's "
+                    "1.20 m camera sphere; both beat-5 boundaries identical.",
+        "do_not": "do NOT merge render/film_path_R2971_PONT_B5_REBASED.json or "
+                  "any other film_path_*.json to get this. Those are whole-film "
+                  "paths and adopting one reverts beat 1 by up to 9.9 m over "
+                  "2,472 frames (R2-737, R2-1004 Defect 1). The offset is a "
+                  "pure function of the frame index and rebases exactly.",
+    }
 
     sheet["aim"] = {
         "why": "the continuity gate measured jumps, not aim. this block states, "
