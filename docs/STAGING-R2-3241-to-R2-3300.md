@@ -23,12 +23,31 @@ does not cover.
 Two structural facts do most of the work, and neither was known when the brief
 was written:
 
-1. **Only beat 5 ever reaches the delivered shutter at all.** Beats 1, 2 and 6
-   contain no frame above 131 px of 4K camera streak by either of two
-   independent instruments; the ending peaks at **9.8 px**. The worst of the
-   four `FILM_POSE_FRAMES` is 69.7 px. **For four of the six beats the existing
-   sharp bed is within a factor of two of the worst frame the audience ever
-   receives**, and the defect class cannot bite there.
+1. **Three of the six beats never reach the delivered shutter at all.** Two
+   instruments measured independently — `track_scale.json`'s road-weighted `mb`
+   column, and a fresh per-frame median streak over every visible world point,
+   read off the **delivered** camera so the showroom frames `track_scale` has no
+   rows for are covered. They agree (rho 0.85 on 2,165 shared frames, median
+   ratio 1.00):
+
+   ```
+                    track_scale mb (road-weighted)     all visible points
+                    p50    p99    max    %>=160     p50    p99    max   %>=160
+     1_assembly    19.9  114.6  116.2      0.0%    22.8  122.0  126.9    0.0%
+     2_launch      51.9  130.4  131.0      0.0%    47.9  130.0  130.6    0.0%
+     3_breach      11.8   36.6   46.9      0.0%    11.9  163.6  201.9    1.2%
+     4_transit     28.0  113.3  121.0      0.0%    31.7  199.7  231.3    1.6%
+     5_lap         31.9 1070.3 2391.0     11.0%    32.0  188.2  306.2    2.4%
+     6_ending       6.0   79.9   82.3      0.0%     3.2    9.7    9.8    0.0%
+   ```
+
+   **Beats 1, 2 and 6 contain no frame above 131 px by either instrument**; the
+   ending peaks at **9.8 px**, i.e. it is a still. The worst of the four
+   `FILM_POSE_FRAMES` is 69.7 px, so for those three beats **the existing sharp
+   bed is within a factor of two of the worst frame the audience ever receives**
+   and the defect class cannot bite. Beats 3 and 4 graze the floor on 1–2 % of
+   frames, but only away from the road — their road-weighted `mb` never exceeds
+   121 px. **The surface exposure is beat 5's alone.**
 2. **Within the one exposed beat, the collapse is a property of the road
    surface and not of the shutter.** The kerb sits in the identical frames at
    the identical smear and does not move.
@@ -371,7 +390,7 @@ extra cameras in the same blend, in the same broker job.
 | R2-1124 / R2-1342 cypress & tree tiering | 1.0–1.7x | **no change.** Several trees have ratio exactly 1.0 |
 | R2-366 / R2-375 / R2-378 apron & roof paving at f2978 | **no** | **confirmed defensible.** Beat 6's whole camera peaks at 9.8 px. `ARCH_Paving_Forecourt` measures 1.0x — the one big surface in the film with no exposure at all |
 | R2-242 / R2-406 driver containment at f2632 (2,391 px) | **immune** | containment is geometric. Its *legibility* half ("208 px of gold") is exposed and is **not checked** — see below |
-| R2-014 / R2-015 / R2-011 `macro_audit` car surfaces | beat 1 ≤ 127 px | **no change.** The delivery never reaches the floor in beat 1 |
+| R2-014 / R2-015 / R2-011 `macro_audit` car surfaces | beat 1 ≤ 127 px | **no change.** Beat 1 never reaches the floor by either instrument |
 | R2-1146 CarbonFibre weave at 0.87 px | n/a | untouched. 0.87 px is under the proxy's blind band and under everything else's |
 
 ---
@@ -392,8 +411,10 @@ extra cameras in the same blend, in the same broker job.
    `BR_TecPro_*` and `BR_Transit_NorthWall` returned `TILES_NO_OWNERSHIP` — too
    few cloud points to win a tile vote. Not checked, in either direction.
 4. **Beats 1 and 2 on the ground.** The ray join samples f865–f2955 and has
-   **zero** frames in beat 1 or 2. Their immunity above rests on the streak
-   distribution, not on tile pixels.
+   **zero** frames in beat 1 or 2, and only 6 and 4 in beats 3 and 4. Their
+   immunity above rests on the streak distribution, not on tile pixels — it is
+   an argument that the defect *cannot* reach them, not a measurement that it
+   did not.
 5. **`ARCH_PitBuilding_*` and the grandstands in the near field.** Their owned
    tiles are all beyond 30 m, so the C5 near-field blindness applies to them too.
 6. **The 470 objects and 345 items below the reviewed head.** Ranked, in
