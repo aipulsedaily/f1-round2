@@ -320,55 +320,42 @@ rig can be made** — the same shape as the 2-6 grey level cross-card floor this
 project already respects for Cycles, now measured for the rig build. My beats-2-6
 delta sits *at* that floor, not above it.
 
-I am labelling this a floor rather than proving the mechanism. **The decisive
-control is a SAME-SHEET rebuild** — build `docs/beat_sheet.json` twice and compare
-— because the row above still has a different beat 1 on each side, and beat 1
-feeds the beat-1/2 seam blend. It is queued against a snapshot of the promoted
-sheet (`d8825d84...`, taken before the regeneration so it cannot be invalidated
-by it), and the build lock has been held by other agents' 7-9 GB probes
-throughout.
+### THE CONTROL WAS RUN, AND IT SETTLES IT
 
-**If it returns a beats-2-6 aim delta below 0.18 deg, this section is wrong and
-the leak is mine.** The result lands in a follow-up commit either way; it is
-recorded here as an open control rather than a closed one, because an unrun
-control is not evidence and reporting it as one would be the exact failure this
-document spends four sections on.
+`docs/beat_sheet.json` — one sheet, unchanged, no variables — built **twice**,
+from a snapshot taken before the regeneration so it could not be invalidated by
+it:
 
-**And the full pipeline is idempotent.** Re-running `tools/author_beats2_5.py`
-over my candidate sheet:
+| same sheet, two builds | max position | max lens | **max aim** |
+|---|---|---|---|
+| beat 1 (f1-792) | 0.000000 m | 0.0000 mm | **0.190539 deg** @f736 |
+| beats 2-6 (f793-2978) | 0.000000 m | 0.0000 mm | **0.203411 deg** @f2512 |
 
-```
-diffs after re-running author_beats2_5 on the candidate: 0
-```
+**Two identical inputs produce rotations differing by 0.20 deg, with position and
+lens bit-identical.** `anim/build_camera_rig.py`'s rotation solve is
+nondeterministic across builds at about two tenths of a degree, everywhere in the
+film, and nothing on this project had measured that.
 
-Beat 5 reproduces **bit-identically**. Which also settles the hazard I was warned
-about:
+Against it:
 
-### The `frame_u` hazard is closed, and I verified it rather than inheriting it
+| | beats 2-6 max aim delta |
+|---|---|
+| **the control — same sheet, twice** | **0.203411 deg** |
+| my change | 0.191711 deg |
 
-The brief says HEAD's `tools/author_beats2_5.py` has `frame_u` 0 / `frame_v` 0 /
-`_frame_offset_world` 0 against 47 / 47 / 2 in the working tree, so any
-regeneration resolving from HEAD silently reverts beat 5. **That was true when it
-was written and it is not true now.** Measured before touching anything, and
-again after regenerating:
+**My residual is BELOW the control.** The paragraph stands, and it now stands on
+a run control rather than on an inference from two sheets that differed in beat 1.
 
-| | worktree | HEAD |
-|---|---|---|
-| `frame_u` | 47 | **47** |
-| `frame_v` | 47 | **47** |
-| `_frame_offset_world` | 2 | **2** |
+**So ~0.20 deg is the floor below which no confinement claim on this rig can be
+made at all** — the same discipline this project already applies to Cycles' 2-6
+grey levels across cards, now measured for the rig build. Any future "beats 2-6
+are unchanged" claim quoting a rotation delta under 0.20 deg is quoting noise,
+including mine: what carries my confinement claim is **position exactly zero at
+all 2,978 frames and lens exactly zero outside beat 1**, which are channels this
+control shows to be perfectly reproducible.
 
-`git log` names the commit that closed it: **`3ec8b6a` "R2-2176: the beat-5
-framing generator and the sheet it produces, committed together"**. The sheet on
-disk, the sheet at HEAD and the promoted `d8825d84d88ae6f92ceb6dab7da80ee4476bfa1e3caf0b6b0de27dea3ab33364`
-are the same bytes. **A fresh clone would now reproduce beat 5, and the zero-diff
-pipeline run above is the positive evidence for that rather than the absence of
-evidence against it.**
-
-Note also, as instructed: beat 5's legitimate promotion moved position by 0.264 m
-at f2584 and lens by 1.41 mm. **That is not my regression and I have not counted
-it as one** — my null is measured against the promoted sheet, which already
-contains it.
+I would have preferred to disprove myself; the control says otherwise, and the
+useful output is the floor rather than the verdict.
 
 ---
 
