@@ -242,31 +242,35 @@ def subject_boxes(path_json=None):
 
     sheet = json.load(open(os.path.join(R2, "docs/beat_sheet.json")))
     world_t = ls.build_world_time(sheet, TOTAL)
-    car = ls.Car(os.path.join(R2, "telemetry/telemetry.csv"))
     path = ls.load_path(path_json)
 
-    # THE FILM'S CAR, AND WHY IT IS NOT `lap_shotscale`'s.
+    # THE FILM'S CAR -- ONE READER, AND IT IS THE ONE THE PIXELS HAVE.
     #
     # `telemetry.csv` ends at world t 72.5833 s. The film's world time runs to
     # 83.6115 s. The last 11.03 s -- ALL 264 FRAMES OF BEAT 6 -- are authored,
-    # not measured: `anim/carpath.Car` continues the car along the circuit
-    # centreline and applies the R2-943 lap-down, which is what the delivered
-    # pixels show.
+    # not measured.
     #
-    # `tools/lap_shotscale.Car` keeps its own copy of the telemetry reader and
-    # that copy CLAMPS (`t = max(0, min(t, self.t_end))`). It therefore parks
-    # the car at (326.2, 167.2) for the whole of beat 6 while the film drives it
-    # to (502.9, 315.4) and stops it there -- a divergence rising to 230.7 m,
-    # silently, with no error. Built on the clamped reader this gate reported
-    # the beat-6 subject as 2,349 px OFF THE LEFT OF FRAME at f2978 and "32 % of
-    # the ending under 60 px at 4K"; both were artefacts and both are RETRACTED.
-    # Two copies of the same physics, one of them stale -- and the divergence is
-    # 2.53 m even inside beat 5, at its very end.
-    sys.path.insert(0, os.path.join(R2, "anim"))
-    import carpath
-    filmcar = carpath.Car(os.path.join(R2, "telemetry/telemetry.csv"),
-                          json.load(open(os.path.join(R2,
-                                                      "docs/circuit_spec.json"))))
+    # This used to hold TWO readers: `lap_shotscale.Car` (which clamped, parking
+    # the car at (326.2, 167.2) for all of beat 6, a 230.7 m error that produced
+    # two retracted findings) for pitch and roll, and `carpath.Car` WITH the
+    # R2-943 lap-down for position and heading. R2-3181 fixed the first and
+    # found the second was also wrong for THESE pixels:
+    #
+    #   `world/car_anim.blend` -- the only source of the film's car motion,
+    #   APPENDED by tools/build_film_scene.py -- was built 2026-08-04 19:51.
+    #   The lap-down landed in anim/carpath.py at 2026-08-07 08:35. The
+    #   delivered film therefore has the PRE-lap-down car, which streaks on at
+    #   89.767 m/s. Measured: the constant-speed arm reproduces
+    #   `world/car_anim_measured.json` to 0.000 m on every frame, and drawn on
+    #   the proxy at f2740/f2810 it lands on the car while the lap-down arm
+    #   lands on empty asphalt (work/r2-3181/crop_2740.png, crop_2810.png).
+    #   THAT is the ~368 px residual R2-2886 left open and guessed was the beat
+    #   sheet. It is not the beat sheet: the sheet's `time_map` is
+    #   byte-identical across every snapshot on disk.
+    #
+    # So: one reader, `lap_shotscale.Car(arm="built")`, which is `anim/carrig`
+    # -- the function that KEYS the car -- with the pre-R2-943 extrapolation.
+    car = ls.Car(os.path.join(R2, "telemetry/telemetry.csv"), arm="built")
     cb = sheet["beat1"]["car_box"]
     lo_b, hi_b = cb["lo"], cb["hi"]
     static = [[lo_b[0] if i & 1 else hi_b[0], lo_b[1] if i & 2 else hi_b[1],
@@ -282,13 +286,10 @@ def subject_boxes(path_json=None):
             ctr = [(lo_b[i] + hi_b[i]) / 2.0 for i in range(3)]
         else:
             t = world_t[f]
-            # POSITION AND HEADING COME FROM THE FILM'S OWN CAR, NOT FROM THE
-            # TELEMETRY CSV. See the note on `filmcar` below -- the CSV ends
-            # 11.03 s before the film does.
-            pos, yaw, _v = filmcar.state(t)
-            _p, _y, pit, rol, _vv, _ss = car.at(t)     # pitch/roll only
+            # Position, heading AND attitude from the one reader. See above.
+            pos, yaw, pit, rol, _v, _s = car.at(t)
             corners = ls.obb_corners(pos, yaw, pit, rol)
-            kind = "obb" if t <= filmcar.t_end else "obb_lapdown"
+            kind = "obb" if t <= car.t_end else "obb_extrap_constant_speed"
             ctr = [pos[0], pos[1], pos[2] + ls.CAR_TOP_Z / 2.0]
         rt, up, fwd = ls.basis(k["q"])
         xs, ys, behind = [], [], False
@@ -767,30 +768,42 @@ def selftest(frame):
     import lap_shotscale as ls
     sheet = json.load(open(os.path.join(R2, "docs/beat_sheet.json")))
     wt = ls.build_world_time(sheet, TOTAL)
-    car = ls.Car(os.path.join(R2, "telemetry/telemetry.csv"))
+    car = ls.Car(os.path.join(R2, "telemetry/telemetry.csv"), arm="built")
     ser = ls.series(ls.load_path(PROXY_PATH_JSON), car, wt, lo=1191, hi=TOTAL)
-    # Agreement is required only where the two CAN agree: inside the measured
-    # telemetry. Past its end this file uses the film's own carpath and
-    # `lap_shotscale` clamps, so a NON-zero divergence there is the fix being
-    # live and a zero would mean the fix had silently reverted. Both halves are
-    # asserted.
-    sys.path.insert(0, os.path.join(R2, "anim"))
-    import carpath
-    fcar = carpath.Car(os.path.join(R2, "telemetry/telemetry.csv"),
-                       json.load(open(os.path.join(R2, "docs/circuit_spec.json"))))
-    inb = [f for f in range(1191, 2715)
-           if f in ser and ser[f][0] == ser[f][0] and wt[f] <= fcar.t_end]
+    # R2-3181 RE-SPECIFIED THIS CONTROL.
+    #
+    # It used to require agreement inside the telemetry and DISAGREEMENT past
+    # it, because this file's car and `lap_shotscale`'s were two different
+    # implementations and the disagreement was the clamp. There is now one
+    # reader, so agreement is required EVERYWHERE, all 1,788 frames -- and the
+    # old assertion (`post > 1e-6`) would still have passed on the residual
+    # float noise, i.e. it would have kept saying "the fix is live" about a
+    # divergence that no longer means anything. A control whose subject has
+    # changed has to be re-derived, not re-run.
+    #
+    # The load-bearing choice is now WHICH ARM, so that is what is controlled:
+    # the R2-943 arm must disagree with the built one, in beat 6 and only
+    # there, by a lot. When someone finally rebuilds `world/car_anim.blend`
+    # this fails and says so.
+    inb = [f for f in range(1191, TOTAL + 1)
+           if f in ser and ser[f][0] == ser[f][0]]
     err = max(abs(ser[f][0] - boxes[str(f)]["frac_w"]) for f in inb)
-    post = max(abs(ser[f][0] - boxes[str(f)]["frac_w"])
-               for f in range(2715, 2979)
-               if f in ser and ser[f][0] == ser[f][0])
-    ok &= _report(err < 1e-9 and post > 1e-6, "C0 agreement",
-                  f"inside the telemetry ({len(inb)} frames of beat 5) my box "
-                  f"width and lap_shotscale.series agree to {err:.2e} frame-"
-                  f"widths -- two paths through the same projection. Past the "
-                  f"telemetry they differ by {post:.3e}, which is the clamped "
-                  f"reader being replaced by the film's own carpath and must "
-                  f"NOT be zero.")
+    src = ls.series(ls.load_path(PROXY_PATH_JSON),
+                    ls.Car(os.path.join(R2, "telemetry/telemetry.csv"),
+                           arm="source"), wt, lo=1191, hi=TOTAL)
+    pre_arm = max(abs(src[f][0] - ser[f][0]) for f in range(1191, 2715)
+                  if f in ser and ser[f][0] == ser[f][0])
+    post_arm = max(abs(src[f][0] - ser[f][0]) for f in range(2715, TOTAL + 1)
+                   if f in ser and ser[f][0] == ser[f][0])
+    ok &= _report(err < 1e-9 and pre_arm < 1e-12 and post_arm > 1e-3,
+                  "C0 agreement",
+                  f"my box width and lap_shotscale.series agree to {err:.2e} "
+                  f"frame-widths over all {len(inb)} measurable frames -- two "
+                  f"paths through the same projection, one reader. The R2-943 "
+                  f"arm is identical through f2714 ({pre_arm:.2e}) and differs "
+                  f"by {post_arm:.3e} after it: the delivered film does NOT "
+                  f"have the lap-down, and if that ever stops being true this "
+                  f"control is how you find out.")
 
     # -- C1 EMPTINESS, positive. Flatten ONE tile to its own mean plus the
     #    film's own residual grain, and require exactly that tile to be called

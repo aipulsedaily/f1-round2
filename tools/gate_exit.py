@@ -113,7 +113,14 @@ NAMES = {PASS: "PASS", FAIL: "FAIL", CRASH: "CRASH", VACUOUS: "VACUOUS"}
 # lands on the more specific one.
 # ---------------------------------------------------------------------------
 _VACUOUS_MARKERS = ("VACUOUS", "REFUS", "UNMEASURABLE", "NOT_MEASURED",
-                    "NOTHING_TESTED", "UNDECLARED", "SKIPPED")
+                    "NOTHING_TESTED", "UNDECLARED", "SKIPPED",
+                    # R2-3181: a CONTROL that could not perturb the thing it
+                    # tests. `placement_determinism_control.py` reported FAIL
+                    # for that, which reads as "the gate under test is broken"
+                    # and sends the next reader to debug an innocent gate. "I
+                    # could not test this" is exactly the VACUOUS case this
+                    # module already defines, so it gets that code and not FAIL.
+                    "INAPPLICABLE")
 _FAIL_MARKERS = ("FAIL", "VIOLAT", "REJECT", "SUSPECT", "MISBEHAV", "SPAM",
                  "STRAGGLER", "STILL_MISSING", "OUT_OF_RANGE", "BROKEN",
                  "INTRUSION", "COLLIDE", "NOT_CLEAN", "STALE",

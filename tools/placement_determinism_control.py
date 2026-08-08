@@ -37,6 +37,48 @@ captured and NOT allowed to reach the caller's log, because a run that prints a
 refusal and then a pass has an unread verdict and this project has been burned
 by that. Exactly one `>> STAGE RESULT:` line is printed by this file, at the
 end, and it is this control's own.
+
+"I COULD NOT TEST THIS" IS NOT "THE THING UNDER TEST IS BROKEN"   (R2-3181, #153)
+--------------------------------------------------------------------------------
+The perturbation above was written as::
+
+    for k in sorted(closest):
+        d, name, at = closest[k]
+        closest[k] = (d, name + "_INJECTED", at)
+        break
+
+On a scene where nothing comes near any corridor, `closest` is EMPTY, the loop
+body never runs, and NOTHING IS INJECTED. The gate then measured the same scene
+twice, got the same answer twice — correctly — and this file printed
+
+    FAIL  a deliberately non-deterministic measure() is REFUSED  got=PLACEMENT_CLEAN
+
+which reads as *the determinism assertion failed to refuse*. It did not. There
+was nothing to refuse. `work/r2-2641/determinism_control.log` is that run, and
+the next person to read it debugs `placement_gate.py`, which is innocent.
+
+So the injection now REPORTS WHETHER IT HAPPENED, and this file will not judge
+the gate on a pass it never perturbed:
+
+  * injected  -> the two refusal assertions run, exactly as before, and the
+                 line says WHICH corridor and WHICH object name was altered, so
+                 "it was injected" is evidence and not an assumption.
+  * not injected -> `PLACEMENT_DETERMINISM_CONTROL_INAPPLICABLE` (exit 3,
+                 VACUOUS — not a pass, and not FAIL either), naming the real
+                 reason: this scene has no closest approach on any corridor, so
+                 the field the control exists to perturb does not exist here.
+
+A scene with no near approach is a legitimate scene — `ctl_place_neg.blend` is
+one on purpose — and the right control to run it against is
+`ctl_place_pos.blend`. Both are run and both are in the report.
+
+WHY NOT JUST PERTURB SOMETHING THAT IS ALWAYS THERE
+---------------------------------------------------
+Because the assertion being tested is the one that compares `closest_approach`
+between passes, and that is the part that was missing when #97 happened.
+Perturbing `violations` or `tested` instead would test a different comparison
+and then claim the `closest` one had been observed to fail. A control that
+quietly substitutes an easier subject is the failure this file is named after.
 """
 import argparse
 import contextlib
@@ -89,22 +131,32 @@ def main():
             "--sheet", a.sheet, "--campath", a.campath, "--repeat", "2"]
 
     real_measure = PG.measure
-    state = {"n": 0}
+    state = {"n": 0, "attempts": 0, "applied": None, "empty": 0}
 
     def flaky_measure(*args, **kw):
         """`measure()`, made non-deterministic ON PURPOSE. Pass 0 is the truth;
         pass 1 renames whoever won `closest_approach` on the road corridor.
         Nothing about the scene changes -- only the answer does, which is the
-        whole shape of the defect."""
+        whole shape of the defect.
+
+        The rename is only POSSIBLE if something won a closest approach. When
+        `closest` is empty the perturbation is a no-op, and that fact is
+        recorded rather than left to be mistaken for a gate failure."""
         res = real_measure(*args, **kw)
         state["n"] += 1
         if state["n"] % 2 == 0:
+            state["attempts"] += 1
             violations, ctxf, marg, closest, tested, coarse, diag = res
+            if not closest:
+                # NOT a silent pass-through. #153: this branch used to be the
+                # `for` loop falling straight off its empty iterable.
+                state["empty"] += 1
+                return res
             closest = dict(closest)
-            for k in sorted(closest):
-                d, name, at = closest[k]
-                closest[k] = (d, name + "_INJECTED", at)
-                break
+            k = sorted(closest)[0]
+            d, name, at = closest[k]
+            closest[k] = (d, name + "_INJECTED", at)
+            state["applied"] = (k, name, name + "_INJECTED")
             res = (violations, ctxf, marg, closest, tested, coarse, diag)
         return res
 
@@ -130,11 +182,44 @@ def main():
         if "MEASURED DIFFERENTLY" in line or "REFUSING TO REPORT" in line \
                 or "determinism:" in line:
             print("      [gate said] %s" % line.strip())
+
+    # #153.  BEFORE judging the gate, establish that the gate was actually fed
+    # something to refuse.  A control that could not perturb its subject has
+    # measured nothing, and saying FAIL there indicts an innocent gate.
+    if state["applied"] is None:
+        if state["n"] == 0:
+            why = ("placement_gate.measure() was never called: the gate did "
+                   "not reach the measurement stage on this scene")
+        else:
+            why = ("closest_approach is EMPTY on every corridor -- nothing in "
+                   "this scene comes near the camera path, the car path or the "
+                   "road corridor, so there is no object name to rename")
+        print("")
+        print(">> THE PERTURBATION DID NOT HAPPEN. %s." % why)
+        print(">> measure() ran %d time(s); %d injection attempt(s); %d of "
+              "them found an empty closest_approach."
+              % (state["n"], state["attempts"], state["empty"]))
+        print(">> The gate answered %r. THAT ANSWER IS NOT EVIDENCE ABOUT THE "
+              "GATE: it was never given a non-deterministic input, so it had "
+              "nothing to refuse and nothing to miss." % tok_bad)
+        print(">> This control is INAPPLICABLE to this scene. Run it against a "
+              "scene where something DOES come near a corridor -- "
+              "render/world/assembly/r2/v120/ctl_place_pos.blend is one, and "
+              "ctl_place_neg.blend is deliberately not.")
+        print("")
+        return gate_exit.verdict("PLACEMENT_DETERMINISM_CONTROL_INAPPLICABLE")
+
+    _corridor, _was, _now = state["applied"]
+    print("      [injected] closest_approach[%s]: %r -> %r on pass 2 of 2"
+          % (_corridor, _was, _now))
     check("a deliberately non-deterministic measure() is REFUSED",
           tok_bad, "PLACEMENT_NONDETERMINISTIC_REFUSED",
           "exit code %s" % code_bad)
     check("...and the refusal is NOT spelled as a pass",
           code_bad != gate_exit.PASS, True, "code %s" % code_bad)
+    check("...and the perturbation this verdict is about really was injected",
+          bool(state["applied"]) and state["empty"] == 0, True,
+          "closest_approach[%s] renamed %r -> %r" % state["applied"])
 
     print("\n>> DETERMINISM CONTROL: perturbation removed, same scene, same "
           "arguments -- the gate must now produce a verdict.")
