@@ -4,7 +4,7 @@ Numbers to be assigned by the log's owner. **`docs/DEFECT-LOG-R2.md` not edited.
 
 Six long-open items, closed by measurement wherever measurement would do it.
 The brief said a clean sweep of six fixes would be the least likely outcome and
-would be distrusted. It was right — **five items produced eleven separate
+would be distrusted. It was right — **six items produced thirteen separate
 verdicts and only four of them are FIXED**:
 
 ```
@@ -14,7 +14,7 @@ verdicts and only four of them are FIXED**:
 #97   the stamp                ALREADY CLOSED   #100  the DOF camera     ALREADY CLOSED + REFUTED
 #97   report-vs-report         FIXED         #100  the 11-deg camera     REFUTED
 #115  the index race           FIXED
-#120  hospitality_deck         STILL RUNNING -- not closed, see the note at the end
+#120  hospitality_deck         REFUTED as stated + CONFIRMED as a class, repair DECLINED
 ```
 
 **Six instrument failures were caught, five of them in instruments written
@@ -635,32 +635,110 @@ it must be staged in **beat 1**, where one key reaches 158.92 px — not past 90
 
 ---
 
-## R2-17xx — #120: `hospitality_deck` — NOT CLOSED, still measuring at the time of writing
+## R2-17xx — #120: `hospitality_deck` — REFUTED AS STATED, CONFIRMED AS A CLASS, AND 94.6 % OF THE OBVIOUS NUMBER IS NOT A DEFECT
 
-Recorded as open rather than guessed at. The investigation has been running 3.3 h
-and has not returned a verdict; the box reached **0 GB available** twice with
-**five Blender processes and none of them holding the shared `flock`**, and one
-other item waited ~40 minutes behind an 8-deep lock queue.
+**REFUTED on the stated numbers · CONFIRMED as a defect class · repair DECLINED
+and handed over.** Measured on the artefact
+(`world/items/hospitality_deck_test.blend`, 2.03 GB, 339 mesh objects,
+33,277,388 triangles), no GPU.
 
-**Do not read the absence of a verdict as a null result.** The specific thing to
-resolve, and the reason it was worth a whole agent:
+### "6 slab pairs" is not any measured quantity
 
-> `docs/DEFECT-LOG-R2.md:9615` records `hospitality_deck` with **6 `CTX_*`
-> foreign-prefix objects**, and the item describes **6 slab pairs** on
-> self-intersecting geometry. **If those two sixes are the same six, the item is
-> misdescribed** and the answer is REFUTED rather than a geometry repair.
+Two separate numbers were fused into one claim, and neither survives:
 
-Whoever picks this up: the detector must be validated on two synthetic controls
-before a single number from it is believed — a clean closed box reporting
-**0** intersecting face pairs, and a deliberately self-intersecting solid
-reporting a **predicted non-zero**. A detector that reports 0 on everything is
-indistinguishable from a clean model, and on a self-intersecting solid the
-inside/outside predicate is genuinely undefined, so `sim/slabcheck.py` returning
-*anything* there is a number without a meaning.
+- **`hospitality_deck`'s slab-pair count is 504, with 0 inverted** (R2-180,
+  `docs/DEFECT-LOG-R2.md:4837` — *"Reads 5 objects, 15,693,726 triangles, 504
+  slab pairs, 0 inverted"*). Never 6.
+- **The 6 is a different table entirely.** `:9615` records
+  `FOREIGN_PREFIX_IN_COLLECTION` — `hospitality_deck` (**6 `CTX_*`**) — a naming
+  matter which the log itself says *"`build_items` already refuses"*. And
+  *"slab pair"* is `winding_audit`'s term for a **facet pair** (an up-facing
+  floor under a down-facing lip), not a deck slab.
 
-### The operational note this item paid for
+The module builds **no slab geometry at all**; its only `CTX_` objects are
+`CTX_Apron` and `CTX_Unit_1..5`, declared at line 238 as
+*"context objects: NOT part of this item"*.
 
-**The shared `flock` only works if everyone takes it.** Several agents ran Blender
-outside it today. The box holds one 8 GB Blender process, not two, and the
-failure mode is not a crash — it is a forty-minute stall that looks exactly like
-an agent thinking.
+### The defect class is real, and it is on the item's OWN geometry
+
+Which was the opposite of my read-only hypothesis. I expected the 6 `CTX_*`
+context objects to be the whole story; the artefact says otherwise.
+
+```
+                    tris     pieces    total pairs   WITHIN a piece
+HD_Deck_1_Versant  3282082    5989        590587         25084
+HD_Deck_2_Ardent   3431646    8204        428038          9904
+HD_Deck_3_Zephyr   2044464    2467        281100         32479
+HD_Deck_4_Pallas   4777202    8829        605460         39934
+HD_Deck_5_Halcyon  2158332    5572        265462          9466
+CTX_Apron           104908       1             0             0
+                                        ---------      --------
+                                         2170647        116867
+```
+
+**All five of the item's own `HD_` decks carry within-piece self-intersections.**
+That is exactly the condition the item names: a single shell passing through
+itself has no consistent parity and no consistent winding number, so inside/
+outside has no answer there. **116,867 of them, not 6.**
+
+### 94.6 % OF THE RAW COUNT IS NOT A DEFECT, AND REPORTING IT WOULD HAVE BEEN ONE
+
+The naive whole-object count is **2,170,647 crossing face pairs**. Splitting by
+connected piece collapses it to **116,867 — 94.6 % of it is between-piece
+assembly contact**, which is what assembled geometry *is*: `HD_Deck_*` are
+2–4.8 M-triangle assemblies of boards, composite, anodised and mill aluminium,
+stainless, paint, grit, trim, glass and cable welded into one object, and a cable
+passing through a board is two parts touching.
+
+> **Had the whole-object number been reported it would have been a fabricated
+> defect 18.6x too large**, on geometry that is right — the same false positive
+> `winding_audit._material_between` exists to kill, arrived at from a different
+> direction.
+
+`CTX_Apron` is the artefact's own negative control: **1 piece, 0 crossings.**
+And `CTX_Unit_1..5` each carry **exactly 1** — five instances, five identical
+counts, which reads as one generator defect replicated five times rather than
+five independent faults.
+
+### The controls, and the one that refused its author
+
+```
+K1  clean closed box                        total=0    within=0    pieces=1
+K2  two boxes overlapping, SEPARATE pieces  total=8    within=0    pieces=2
+K3  the SAME two boxes, BRIDGED to one      total=15   within=15   pieces=1
+```
+
+K2 and K3 are **the same geometry with one topological change and opposite
+verdicts**, which is what makes the pair worth having rather than two unrelated
+fixtures.
+
+**K3 failed on its first run and was right to.** It dragged one corner of a cube
+through the opposite face and got **zero** — because in a 12-triangle cube nearly
+every face pair *shares a vertex*, and shared-vertex pairs are excluded (adjacent
+faces always "overlap" at their shared edge; counting those would call every
+closed mesh in existence self-intersecting). **A control too small to contain any
+non-adjacent face pair cannot fire, whatever the geometry does** — and it stopped
+the run rather than letting an unvalidated detector produce a number.
+
+The component finder **asserts its own convergence** rather than assuming it: a
+half-merged labelling would split single pieces into many and report every real
+self-intersection as between-piece contact — i.e. it would fail *towards the
+reassuring answer*.
+
+### Repair DECLINED, with the reason
+
+The fault is in the generator, not in 116,867 individual places, and
+`world/items/hospitality_deck.py` is a 227 KB procedural builder whose output
+cannot be validated without a rebuild — and `assembly11` was building. Repairing
+blind and shipping unmeasured is the R2-380 hazard.
+
+**What it is worth to fix is also genuinely unclear**, and that should be settled
+before anyone spends a rebuild on it: the item is `hero: False` at **102 px on a
+4K frame**, and `winding_audit` already reports **0 inverted** for this module, so
+there is no evidence yet that any of this is visible. What it demonstrably breaks
+is any predicate that assumes a consistent inside — containment, parity,
+boolean/solidify — which is the reason the item was raised.
+
+**Next measurement, before any repair:** whether the 116,867 lie on the *walking
+surface* or inside cavity/trim details that never face the camera. That is a
+per-piece screen-space question, not a rebuild.
