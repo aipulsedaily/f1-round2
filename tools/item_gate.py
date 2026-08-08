@@ -3496,6 +3496,19 @@ def main():
             "silhouette_rms_mm_required": SIL_RMS_MM,
             "silhouette_rms_over_control_required": SIL_OVER_CONTROL,
             "silhouette_min_px_for_5mm": SIL_MIN_PX_FOR_5MM,
+            # R2-1381. A PASS AWARDED BY A WEAKER INSTRUMENT MUST BE
+            # IDENTIFIABLE AS ONE. `mark_gate_version_stale.py` finds stale
+            # reports by COUNTING checks, which cannot see a check that was
+            # strengthened rather than added -- the 33 reports on disk all say
+            # "8 checks" and 19 of them hold a `per_instance_variation` decided
+            # on two triangle counts. A report WITHOUT this key was written by
+            # the pre-R2-1381 gate, whatever its check count says.
+            "variation_shape_law":
+                "R2-1381: distinct SHAPES via _shape_signature on BOTH the "
+                "realized-instance and the plain-object path; "
+                "min(n, max(8, min(40, sqrt(n)))) required, "
+                "commonest <= max(0.25, 1/n)",
+            "variation_cv_size_floor": CV_SIZE_FLOOR,
         },
         "threshold_kinds": {
             "fine_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
@@ -3507,6 +3520,9 @@ def main():
             "silhouette_min_px_for_5mm": "SIZE-DEPENDENT SCOPING TEST, not a bar",
             "detail_limit_px": "SIZE-DEPENDENT (screen px at the filmed distance)",
             "procedural_texture_nodes_required": "size-independent node floor",
+            "variation_shape_law":
+                "POPULATION-SCALED (sqrt of the instance count, floor 8, "
+                "ceiling 40, each capped at the population itself)",
         },
         "measured": {
             "external_image_files": ext_imgs,
