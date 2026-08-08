@@ -9,7 +9,7 @@ Outputs: `work/r22881/` — `scan.npz`, `subject_boxes.json`, `subject_valid.jso
 `findings.json`, `selftest.log`, `gate.log`, `crops/`.
 
 ```
-python3 tools/r2_2881_pixelpeep.py subject | scan | gate | selftest | crops
+python3 tools/r2_2881_pixelpeep.py subject | scan | gate | selftest | crossres | crops
 ```
 
 ---
