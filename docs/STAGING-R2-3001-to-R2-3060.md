@@ -1102,3 +1102,137 @@ task recommends — `MIN_CPU_RAM_GB`, `prio`, `geolocation`, `push_parallel` —
 are described precisely enough to apply, and are left for whoever owns that
 branch.
 
+
+---
+
+## R2-3021 — the RAM floor is IN (`vast-render` `280f49a`)
+
+Landed in `vastctl/vastctl.py`, committed **path-scoped** — `git commit -F ... --
+vastctl/vastctl.py` — because that repo's index holds another agent's 3,635
+staged insertions across eight files. Verified byte-identical before and after:
+`8 files changed, 3635 insertions(+), 45 deletions(-)` both times.
+
+```
+MIN_CPU_RAM_GB          50.0 -> 72.0
+SCENE_WORKING_SET_GIB   50.6      the measurement, as a constant, not as prose
+RAM_HEADROOM            1.25
+```
+
+**Why 72 and not 56 or 64.** The exclusive 5090 market is bimodal and has a hole
+in it. Surveyed today at five floors:
+
+```
+floor  50 GB -> 11 offers    RAM 62.7, 60.5, 124.9, 247.3, 251.5, 125.2 GiB
+floor  64 GB ->  8 offers    RAM 62.7, 124.9, 247.3, 251.5, 125.2, 125.7
+floor  72 GB ->  7 offers    RAM 124.9, 247.3, 251.5, 125.2, 125.7, 251.4
+floor  80 GB ->  7 offers    (identical set)
+floor  96 GB ->  6 offers    (identical set)
+```
+
+**Nothing is on sale between 63 GiB and 125 GiB.** Any floor above ~64 buys the
+same tier, so 72 is simply the cheapest way to ask for it. 64 would keep one
+62.7 GiB box in the set — 12 GiB of headroom on a scene that is still growing,
+with 49 of 435 item modules built.
+
+### The query term is not the check, and the units are why
+
+`build_query` asks `cpu_ram>=72` and **vast.ai reads that as GB while the offer
+dict answers in MB** — 7.4 % apart. A 64 "GB" floor admits a **62.7 GiB** box;
+that was the cheapest offer on the market today. So the query narrows and a new
+`_meets_scene_working_set` **decides, in GiB, on the returned dict**. Same
+belt-and-braces as the existing `_within_bandwidth_ceiling`, for a better
+reason: that one guards a term the API might ignore, this one guards a term the
+API honours *in units we did not mean*.
+
+A third gap the check absorbs: **the advertised figure is not the container's
+cap.** Offer `43255050` sells 61.9 GiB; the container it produced reported
+`memory.max` = **59.4 GiB**, 96 % of what was sold.
+
+### The refusal, observed firing
+
+A shortage now **raises** instead of falling through to the bandwidth error or
+the co-tenancy warning — neither of which is about memory, and both of which are
+confident. It names the floor, the measurement, the rejected offers with their
+real RAM, and the market depth.
+
+**Both controls were run, and control 2 is the load-bearing one — the query
+floor was left LOW at 50 GB on purpose, so the GiB re-check is provably what
+refused:**
+
+```
+CONTROL 1  shipped floor          -> 8 offers, 0 below 63.2 GiB   PASS
+CONTROL 2  working set 400 GiB,
+           query floor 50 GB      -> REFUSED                      PASS
+   | REFUSING TO RENT: no exclusive RTX 5090 offer carries enough RAM ...
+   |   need    400.0 GiB resident x 1.25 headroom = 500.0 GiB per GPU
+   |   measured on instance 47189253 ... 50.6 GiB resident, on a 59.4 GiB
+   |   cgroup cap running at 91 %
+   |   rejected 30 offer(s): 43255050 (61.9 GiB, $0.3592/hr), ...
+   |   NOTE: the exclusive market is bimodal ... nine is not purchasable
+```
+
+It also refuses on the record that it **deliberately contradicts
+`search_offers`' own principle** — *"availability wins over preference"* — which
+is right about exclusivity (a shared card renders, just riskily) and wrong about
+RAM (a box that cannot hold the scene is not a degraded render, it is no
+render).
+
+### `vastctl offers` now shows RAM and geolocation
+
+```
+id         $/hr   rel    net Mbps   RAM GiB  disk$/GB  est 8h   geo                CPU
+46979969   0.428  0.997  7082/14067 137.5    0.1333    $3.46    California, US     EPYC 9655 96-Core
+46937219   0.441  0.981  784/649    124.9    0.2000    $3.89    South Korea, KR    Ryzen 9 7950X
+46307220   0.488  0.995  926/968    247.3    0.2000    $4.00    Estonia, EE        EPYC 7402 24-Core
+...
+RAM floor 63.2 GiB/GPU (50.6 GiB measured resident x 1.25); 8 offer(s) cleared it.
+```
+
+`geolocation` has been in the offer dict all along and nothing read it — the box
+this probe ran on advertised **734 Mbps** and had **254 ms RTT**. The column
+makes the good choice visible: today's cheapest is also Californian.
+
+### The master, re-priced at the enforced floor
+
+| cards | $/GPU-hr | deploys | wall clock | **total** |
+|---:|---:|---:|---|---:|
+| 1 | 0.4276 | 21 | 251 h = 10.4 d | $107.23 |
+| **3** | **0.4501** | 21 | **84 h = 3.5 d** | **$112.88** |
+| 5 | 0.4661 | 25 | 50 h = 2.1 d | $117.36 |
+| 8 | 0.5251 | 24 | 31 h = 1.3 d | $132.09 |
+
+**$112.88 at three cards** — $1.74 more than the $111.14 quoted, because the
+floor removed the two ~60 GiB boxes. **The $120 already quoted to the client
+covers it**, and eight is now the purchasable ceiling: nine cards do not exist
+at a memory this scene can load.
+
+## R2-3022 — DEFECT for the log: the exec memory gate is a constant
+
+`EXEC_MIN_FREE_MEM_GB` (`broker/execremote.py:65`) defaults to **20.0 GB** and
+is a flat constant. It was sized in `exec_server.py`'s own header for *"twelve
+concurrent item builds ... 90 GiB across twelve is 7.5 GiB each"*.
+
+**One item build measures 1.27 GiB RSS** (`kerb_precast_unit`, this box, today).
+So the gate is ~15x what a unit needs, and it cannot see that. With a film scene
+resident there is 5.5 GiB free, and the gate **refuses one 1.3 GiB build on a
+box that could run four**. All 26 units of #67's remote arm died on it:
+
+```
+ResourceWait: waited 603s for 20.0G of free memory and only 5.5G was ever
+available — the container cap is /sys/fs/cgroup/memory.max, not the host's
+`free`. The build was never started
+```
+
+The gate is right to exist — its header says an over-committed exec batch would
+OOM-kill somebody's 4K render, and it would. It is wrong to be a **constant**
+when the per-unit cost is measurable and the available memory is readable. It
+should gate on `slots x measured-unit-RSS`, not on a number chosen for a
+different box and a different scene.
+
+**Not fixed here**: it lives in `broker/execremote.py` and `worker/exec_server.py`,
+and `worker/exec_server.py` is one of the eight files another agent has staged
+(807 insertions). Same reason `--prio 0` is not fixed here — `broker/app.py`
+carries 139 of their staged insertions, so a path-scoped commit of it would
+commit **their** work under my message. Both are one-line changes, both are
+described precisely, and both belong to whoever owns that branch.
+
