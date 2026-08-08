@@ -1260,3 +1260,77 @@ one number to restate is the count: my **846** is the *position-or-lens* count;
 The arm that caught it was an identity control — a path compared against itself,
 which must report zero — and it was watched failing at 1,087 frames before it was
 believed. I did not build that arm; I should have.
+
+---
+
+## R2-2949a — the subject-mask objection: conceded for the forecourt, refuted for grass, with the measurement that settles it
+
+The forecourt author objected that R2-2949's re-test applied the **sample floor
+alone** — the smallest of the three corrections — and would therefore land near
+the right number while still measuring the buried slab and the indoor frames:
+*agreement, not corroboration*. Checked, and the objection is **half right, and
+right about the half that was mine.**
+
+**What my re-test actually applied:** the pavilion exclusion **and** the sample
+floor, but **not** the subject mask. So it was two of three, not one of three —
+and the missing one is exactly the 73.75 % correction.
+
+### Conceded: my 165.48 px/m is not independent corroboration
+
+At its winning frame (f1008, outdoors) the 25 points that set my figure lie at
+**z −0.500..0.500**. The bay faces are the z ≈ 0.5 layer; **z = −0.5 is the
+sub-base prism, which the item module's own docstring says it does not build.**
+So my number is still measuring geometry outside the subject, just not the same
+geometry: the pavilion exclusion removed the indoor peak, and the sub-base
+survived it.
+
+**`ARCH_Paving_Forecourt` carries 152 of 2,448 points (6.209 %) inside
+`R1_SHELL`.** The authoritative figure is the masked one: **222.783 px/m at ≥10**,
+158.065 at ≥25. My 165.48 is withdrawn as corroboration and should not be quoted
+beside it.
+
+### Refuted: the grass and grit rows are not shared-object contaminated
+
+The same check, same code, on the rows that survived:
+
+| object | points | inside `R1_SHELL` | top-25 setters in shell | setter z | setter spread |
+|---|---:|---:|---:|---|---|
+| `VEG_grass_fescue_H` | 164,884 | **1 (0.001 %)** | **0** | 0.500..1.500 | 5.0 × 12.0 m |
+| `VEG_grit_chip` | 247,106 | **0 (0.000 %)** | **0** | 0.500..1.500 | 5.0 × 12.0 m |
+| `ARCH_Paving_Forecourt` | 2,448 | 152 (6.209 %) | 0 | −0.500..0.500 | 1.0 × 3.0 m |
+
+The 425.82 px/m is set by **25 points spread over 5.0 × 12.0 m**, not one voxel;
+all of them **outdoors**; all at **z 0.5–1.5 m**, which is grass standing above
+terrain rather than a slab buried under a floor; and centred at
+**(−570.5, −64.5)** — 570 m from the pavilion, out on the circuit. The frame is
+f2316, which `work/r22161_proxy/r22161_proxy_002316.png` shows as sharp
+foreground sward.
+
+**There is no buried layer inside these objects to contaminate them**, which is
+the structural reason the forecourt failed and grass did not: `ARCH_Paving_Forecourt`
+is one Blender object holding three different things (bay faces, sub-base prism,
+formation slab), and `VEG_grass_fescue_H` is one object holding grass.
+
+### Conceded: the f282 point was inverted
+
+R2-2949 said the byte-identical cameras at f282 *"strengthens the conclusion
+drawn from it."* That is wrong. **f282 belongs to the withdrawn forecourt row,
+so it now supports nothing of mine**, and two identical cameras agreeing on a
+measurement of a buried slab is agreement on the wrong object. The frames my
+build decision actually rests on are **f2316** (grass, verified outdoors in the
+proxy) and **f1727/f1750** (trees). f282 should be struck from the argument.
+
+### Conceded: the 88.1 % was overstated
+
+The correct statement is that `peak_unocc_sharp_px_per_m` is **bit-identical to
+the non-occluded series for 1,992 of 2,261 objects**, i.e. the occlusion model
+returned "unoccluded" for them. `screen_presence.py` states the asymmetry
+itself: **`False` is proof, `True` is not.** It does **not** follow that the
+model is wrong everywhere, and my wording implied that. Any re-run needs the
+sample floor **and** an occlusion model a 1 m cloud can support, or it
+reproduces the same vacuous pass in a new costume.
+
+**Net effect on the build order: none.** Grass and grit hold at 425.82 px/m to a
+≥10 floor with zero shell contamination and 25 spatially-spread setters; trees
+hold at 22.7–35.7 px/m by two independent methods. The corrected ratio is
+11×–19×.
