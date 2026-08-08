@@ -14,7 +14,7 @@ verdicts and only four of them are FIXED**:
 #97   the stamp                ALREADY CLOSED   #100  the DOF camera     ALREADY CLOSED + REFUTED
 #97   report-vs-report         FIXED         #100  the 11-deg camera     REFUTED
 #115  the index race           FIXED
-#120  hospitality_deck         REFUTED as stated + CONFIRMED as a class, repair DECLINED
+#120  hospitality_deck         REFUTED (another session) -- my first answer RETRACTED
 ```
 
 **Six instrument failures were caught, five of them in instruments written
@@ -635,110 +635,104 @@ it must be staged in **beat 1**, where one key reaches 158.92 px — not past 90
 
 ---
 
-## R2-17xx — #120: `hospitality_deck` — REFUTED AS STATED, CONFIRMED AS A CLASS, AND 94.6 % OF THE OBVIOUS NUMBER IS NOT A DEFECT
+## R2-17xx — #120: REFUTED — and this entry is a RETRACTION of my own first answer
 
-**REFUTED on the stated numbers · CONFIRMED as a defect class · repair DECLINED
-and handed over.** Measured on the artefact
-(`world/items/hospitality_deck_test.blend`, 2.03 GB, 339 mesh objects,
-33,277,388 triangles), no GPU.
+**VERDICT: REFUTED. The verdict, the mechanism and the proof are another
+session's work, not mine.** I answered #120 after it had already been answered,
+got the right verdict word by the wrong route, and reported a number my own
+instrument could not support. Recorded in full because the failure is more useful
+than the answer.
 
-### "6 slab pairs" is not any measured quantity
+### Their answer, which is the correct one
 
-Two separate numbers were fused into one claim, and neither survives:
+**The premise's causal clause is false, and the disproof is a law rather than a
+measurement.** `UNDECIDED` fires on exactly one condition — `material_between is
+None` — and `_material_between` never looks for self-intersection at all. **Ray
+parity is a mod-2 invariant**, so two interpenetrating *closed* solids still cross
+a ray an even number of times: a self-intersection makes the answer **wrong**,
+never **absent**. Proved with the tool's own counter — two interpenetrating closed
+boxes give **4 crossings, even**, and call a point that is inside both solids
+**OUTSIDE**. Both decks are **mod-2 closed** (`boundary_used_once: 0`,
+`edges_used_an_ODD_number_of_times: 0`), so no generic ray can cross them oddly.
 
-- **`hospitality_deck`'s slab-pair count is 504, with 0 inverted** (R2-180,
-  `docs/DEFECT-LOG-R2.md:4837` — *"Reads 5 objects, 15,693,726 triangles, 504
-  slab pairs, 0 inverted"*). Never 6.
-- **The 6 is a different table entirely.** `:9615` records
-  `FOREIGN_PREFIX_IN_COLLECTION` — `hospitality_deck` (**6 `CTX_*`**) — a naming
-  matter which the log itself says *"`build_items` already refuses"*. And
-  *"slab pair"* is `winding_audit`'s term for a **facet pair** (an up-facing
-  floor under a down-facing lip), not a deck slab.
+**The sentence in the item was never a measurement.** It is a hardcoded `why_txt`
+literal at `winding_audit.py:891` that fires on *every* abstention whatever caused
+it — and the code's own comment three lines above said something different again.
 
-The module builds **no slab geometry at all**; its only `CTX_` objects are
-`CTX_Apron` and `CTX_Unit_1..5`, declared at line 238 as
-*"context objects: NOT part of this item"*.
+**The real cause is a double-count.** Five of six report **7 crossings**; jitter
+the ray by ≤0.5 mm and **12 of 12 rays count 6**. The barycentric test is
+inclusive on all three coordinates, and the probe — an upper-facet triangle
+centroid — lands exactly on the congruent lower facet's diagonal.
 
-### The defect class is real, and it is on the item's OWN geometry
+**And the two sixes are a coincidence.** The 6 `CTX_*` are dropped by
+`CONTEXT_TOKENS` before the audit runs (`objects_audited: 5`); the 6 slab pairs
+are on `HD_Deck_1_Versant` (4) and `HD_Deck_4_Pallas` (2).
 
-Which was the opposite of my read-only hypothesis. I expected the 6 `CTX_*`
-context objects to be the whole story; the artefact says otherwise.
+> **Had I reconciled those two sixes I would have built a theory on a numerical
+> accident.** I came within one step of it: my working hypothesis for an hour was
+> that they were the same six.
 
-```
-                    tris     pieces    total pairs   WITHIN a piece
-HD_Deck_1_Versant  3282082    5989        590587         25084
-HD_Deck_2_Ardent   3431646    8204        428038          9904
-HD_Deck_3_Zephyr   2044464    2467        281100         32479
-HD_Deck_4_Pallas   4777202    8829        605460         39934
-HD_Deck_5_Halcyon  2158332    5572        265462          9466
-CTX_Apron           104908       1             0             0
-                                        ---------      --------
-                                         2170647        116867
-```
+### What I got wrong, itemised
 
-**All five of the item's own `HD_` decks carry within-piece self-intersections.**
-That is exactly the condition the item names: a single shell passing through
-itself has no consistent parity and no consistent winding number, so inside/
-outside has no answer there. **116,867 of them, not 6.**
+**1. "6 slab pairs is not any measured quantity" — WRONG.** It is exactly what the
+tool prints today. I cited **504** from R2-180 (2026-08-03) against a run whose
+current value is **6**, i.e. I answered a question about today with a number from
+five days ago — having spent this same session building an instrument whose entire
+purpose is to stop people doing that. **#97 is about stale readings carried
+forward, and I carried one forward inside the entry next to it.**
 
-### 94.6 % OF THE RAW COUNT IS NOT A DEFECT, AND REPORTING IT WOULD HAVE BEEN ONE
+**2. My mechanism was wrong.** I claimed within-piece crossings *are* the case
+where inside/outside has no answer. Parity is mod-2; there is an answer and it is
+wrong. I asserted a mechanism from a plausible geometric story and never checked
+whether the tool's abstention branch had anything to do with it. **The symptom was
+real and the mechanism was invented.**
 
-The naive whole-object count is **2,170,647 crossing face pairs**. Splitting by
-connected piece collapses it to **116,867 — 94.6 % of it is between-piece
-assembly contact**, which is what assembled geometry *is*: `HD_Deck_*` are
-2–4.8 M-triangle assemblies of boards, composite, anodised and mill aluminium,
-stainless, paint, grit, trim, glass and cable welded into one object, and a cable
-passing through a board is two parts touching.
+**3. My number was not a self-intersection count.** `BVHTree.overlap` is a
+**broad phase**. Fed two sub-parts sitting exactly flush — **zero penetration,
+nothing wrong at all** — my detector calls them self-intersecting. So
+**116,867 is an upper bound contaminated by flush and grazing contact**, on
+geometry that is *built* from flush-stacked closed solids. It should not be
+cited, and I have added the flush case to `tools/selfintersect_audit.py` as a
+**deliberately failing control**, so the tool now refuses to report an artefact
+number at all.
 
-> **Had the whole-object number been reported it would have been a fabricated
-> defect 18.6x too large**, on geometry that is right — the same false positive
-> `winding_audit._material_between` exists to kill, arrived at from a different
-> direction.
+**My three controls could not catch it, and that is the lesson.** K1 tests that a
+clean mesh reads zero; K2/K3 test that a real crossing is seen and that
+piece-splitting works. **Every one of them uses *penetrating* boxes.** Not one fed
+it *contact*. The control set had a hole exactly where the real geometry lives —
+which is the same shape as a bay list hardcoded so a bay was never measured.
 
-`CTX_Apron` is the artefact's own negative control: **1 piece, 0 crossings.**
-And `CTX_Unit_1..5` each carry **exactly 1** — five instances, five identical
-counts, which reads as one generator defect replicated five times rather than
-five independent faults.
+> **A control set proves only the discriminations it actually exercises.** Mine
+> exercised "crossing vs no crossing" and never "contact vs penetration", and the
+> second is the whole question on a deck of stacked solids.
 
-### The controls, and the one that refused its author
+Their control set had it: **two boards 6e-7 m out of flush → 12 crossings, max
+depth 6e-07 m, 0 deeper than 1e-5 m.** Length cannot separate contact from
+penetration; only depth can.
 
-```
-K1  clean closed box                        total=0    within=0    pieces=1
-K2  two boxes overlapping, SEPARATE pieces  total=8    within=0    pieces=2
-K3  the SAME two boxes, BRIDGED to one      total=15   within=15   pieces=1
-```
+### The one thing of mine that survives, and it was theirs first
 
-K2 and K3 are **the same geometry with one topological change and opposite
-verdicts**, which is what makes the pair worth having rather than two unrelated
-fixtures.
+That the raw whole-object count is meaningless. I measured **94.6 % of 2,170,647
+is between-piece assembly contact**; they put it better and more generally —
 
-**K3 failed on its first run and was right to.** It dragged one corner of a cube
-through the opposite face and got **zero** — because in a 12-triangle cube nearly
-every face pair *shares a vertex*, and shared-vertex pairs are excluded (adjacent
-faces always "overlap" at their shared edge; counting those would call every
-closed mesh in existence self-intersecting). **A control too small to contain any
-non-adjacent face pair cannot fire, whatever the geometry does** — and it stopped
-the run rather than letting an unvalidated detector produce a number.
+> **that is worthless, because it is true of nearly every item built by
+> accumulating closed solids without a boolean.**
 
-The component finder **asserts its own convergence** rather than assuming it: a
-half-merged labelling would split single pieces into many and report every real
-self-intersection as between-piece contact — i.e. it would fail *towards the
-reassuring answer*.
+**A true fact that explains nothing is the most expensive kind**, because it
+survives every check pointed at it. Carry that into #78, #90, #97 and #100:
+**confirm the mechanism, not just the symptom.**
 
-### Repair DECLINED, with the reason
+### Housekeeping
 
-The fault is in the generator, not in 116,867 individual places, and
-`world/items/hospitality_deck.py` is a 227 KB procedural builder whose output
-cannot be validated without a rebuild — and `assembly11` was building. Repairing
-blind and shipping unmeasured is the R2-380 hazard.
+`tools/winding_audit.py` is **theirs** and I have not touched it — the UNDECIDED
+line now reports the reason the parity arm recorded, with three new hand-counted
+controls and the verdict token `SHEET_FACING_UNDECIDED` unchanged so nothing
+downstream re-gates. `world/items/hospitality_deck.py` is clean and needs no
+repair. My earlier commit `bae69b3` stands in history with its wrong mechanism;
+this is a **correcting commit, not an amend** — which is the remedy R2-234 asked
+for and the one my own guard enforces.
 
-**What it is worth to fix is also genuinely unclear**, and that should be settled
-before anyone spends a rebuild on it: the item is `hero: False` at **102 px on a
-4K frame**, and `winding_audit` already reports **0 inverted** for this module, so
-there is no evidence yet that any of this is visible. What it demonstrably breaks
-is any predicate that assumes a consistent inside — containment, parity,
-boolean/solidify — which is the reason the item was raised.
-
-**Next measurement, before any repair:** whether the 116,867 lie on the *walking
-surface* or inside cavity/trim details that never face the camera. That is a
-per-piece screen-space question, not a rebuild.
+**And they reproduced the untouched tool's 2026-08-04 output byte-identically
+today.** That is the discriminator for "already fixed" versus "someone is fixing
+it right now", and it is the second time in one session I have needed it — the
+first was reading an uncommitted working tree as history.

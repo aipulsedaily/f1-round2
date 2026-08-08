@@ -21,6 +21,12 @@ passes through itself has no consistent parity and no consistent winding number.
 Between two pieces, inside/outside is perfectly well defined for each piece
 separately.
 
+KNOWN LIMIT, AND IT IS DISQUALIFYING: this is a BROAD-PHASE detector. Control
+K4 fails deliberately -- two sub-parts sitting exactly flush, with zero
+penetration, are reported as 7 crossings. Numbers from this tool are an upper
+bound contaminated by flush and grazing contact, not self-intersection counts.
+The controls gate the artefact run, so it refuses rather than reporting one.
+
 Judge only on the printed `>> STAGE RESULT:` line.
 """
 import sys
@@ -111,7 +117,36 @@ v, f = cube()
 control("K1 clean closed box", v, f,
         lambda t, w, n: t == 0 and w == 0 and n == 1, "one piece, no crossings")
 
+# K4 IS THE ONE THAT MATTERS AND IT FAILS. Added after the fact, when a peer
+# session's #120 answer showed this tool's numbers were inflated.
+#
+# `BVHTree.overlap` is a BROAD PHASE. It reports every pair whose triangles'
+# bounds meet -- including two sub-parts sitting exactly FLUSH, which is not a
+# self-intersection at all and is how this deck is built: thousands of closed
+# solids accumulated by `acc.solid(...)`, bolts proud of tread pans, tubes
+# socketed into posts, never booleaned. Blender stores coordinates as float32,
+# so faces MEANT to be flush land ~1e-6 m apart while their intersection segment
+# is still tens of centimetres long: length cannot separate contact from
+# penetration, only DEPTH can.
+#
+# This tool has no narrow phase and no depth gate, so it cannot make that
+# distinction, and on this geometry that distinction is the whole question.
+# K1-K3 could not catch it: they test whether a real crossing is seen and
+# whether piece-splitting works, and every one of them uses PENETRATING boxes.
+# The control set had a hole exactly where the real geometry lives.
+#
+# It is left FAILING on purpose. Until a Moller narrow phase and a penetration
+# -depth gate are added, this tool must not report an artefact number, and a
+# failing control is the only honest way to say so. See tools/winding_audit.py,
+# whose `_material_between` solved the same problem from the other direction.
 v1, f1 = cube(0.0)
+vf, ff = cube(0.0)
+vf = [(x, y, z + 1.0) for x, y, z in vf]          # sits EXACTLY on top
+control("K4 two sub-parts FLUSH, ZERO penetration -> must be 0",
+        v1 + vf, f1 + [(a + 8, b + 8, c + 8) for a, b, c in ff],
+        lambda t, w, n: t == 0,
+        "BROAD PHASE ONLY: reports 7. No narrow phase, no depth gate.")
+
 v2, f2 = cube(0.5)
 control("K2 two boxes overlapping, SEPARATE pieces", v1 + v2,
         f1 + [(a + 8, b + 8, c + 8) for a, b, c in f2],
