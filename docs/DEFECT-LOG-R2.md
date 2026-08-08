@@ -37501,3 +37501,57 @@ reads much the same in both arms.
 **The module should ship** - it is a strict improvement, measured, with its own
 open gate named. **And the next question is density and species weight in the
 0-40 m band, not whether the band is populated at all.**
+
+## R2-1178 — #120 REFUTED: the geometry IS self-intersecting, and that fact explains nothing
+
+The premise was *"6 slab pairs sit on self-intersecting geometry where no
+inside/outside answer exists."* **The geometry is self-intersecting -
+522,529 face pairs deeper than 1e-5 m, max depth 0.258 m.** And in the
+investigating agent's own words:
+
+> **that is worthless, because it is true of nearly every item built by
+> accumulating closed solids without a boolean.**
+
+**A true fact that explains nothing is the most expensive kind**, because it
+survives every check you point at it and feels like confirmation.
+
+**The causal claim is false, and the disproof is a LAW rather than a
+measurement.** Both decks are **mod-2 closed** (`boundary_used_once: 0`,
+`edges_used_an_ODD_number_of_times: 0`), and **ray parity is a mod-2
+invariant** - so a self-intersection yields an **even count and a WRONG answer,
+never an abstention.** Demonstrated with the tool's own counter: **two
+interpenetrating closed boxes give 4 crossings, even, and call a point inside
+both solids OUTSIDE.** `PARITY_LAW_PASS`.
+
+**The real cause is a double-count.** Five of six report **7 crossings** with
+2-3 on-edge hits and a coincident-z pair; **jitter the ray by <=0.5 mm and 12 of
+12 rays count 6.** The 7 is **six real crossings plus one counted twice**,
+because **the barycentric test is inclusive on all three coordinates** and the
+probe - an upper-facet triangle centroid - **lands exactly on the congruent
+lower facet's diagonal.**
+
+**And the two sixes were a coincidence.** The 6 `CTX_*` are `CTX_Apron,
+CTX_Unit_1..5`, excluded by name token with `objects_audited: 5`; the 6 slab
+pairs are on `HD_Deck_1_Versant` (4) and `HD_Deck_4_Pallas` (2). **Reconciling
+two numbers that merely match is how a theory gets built on an accident.**
+
+**Controls, all hand-counted before use**: clean closed box -> 0; two crossing
+triangles -> 1; five such pairs -> 5; tetrahedron through a triangle -> 3; boxes
+sharing a face and pulled apart -> 0, 0; interpenetrating boxes -> 12 at 0.31 m;
+**two boards 6e-7 m out of flush (float32 noise) -> 12 crossings but 0 deeper
+than 1e-5 m.** `XDETECT_CONTROLS_PASS`.
+
+**Nothing to repair in the item builder** - `world/items/hospitality_deck.py` is
+untouched and clean. **One file changed**, `tools/winding_audit.py`: the
+UNDECIDED line now **reports the reason the parity arm recorded** rather than
+asserting self-intersection, pinned by three new hand-counted controls - **box
+with no lid -> 3 -> `ODD_CROSSING_COUNT`; closed box -> 4 -> DECIDED; closed box
+driven through another -> 6 -> DECIDED.** All ten pre-existing controls still
+pass and **the verdict token is unchanged, so nothing downstream re-gates.**
+
+**And it was proven NOT already-closed the right way**: the **untouched** tool
+was re-run today and reproduced the 2026-08-04 line **byte-identically.**
+**Reproducing the old output on the old code is how you distinguish "already
+fixed" from "someone is fixing it right now"** - the exact discrimination that
+was missed when an uncommitted working-tree edit was taken for prior art
+(R2-1160).
