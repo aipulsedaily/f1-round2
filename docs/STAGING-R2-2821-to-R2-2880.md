@@ -383,6 +383,30 @@ not edited.
 
 ---
 
+## R2-2827 — both of the bar's instruments were untracked
+
+`git check-ignore -v` on the two probes the bar reads every one of its numbers
+from:
+
+```
+.gitignore:27:work/	work/lighting/measure_film_scene.py
+.gitignore:27:work/	work/r2100/measure_film_extra.py
+```
+
+`git log` on either was empty. So the change that made five bar lines
+decorative for four generations — `measure_film_scene.py` never emitting
+`resolution_x` — was one nobody could bisect, review or revert. That is the
+**same** failure `.gitignore`'s own header is about (1,655 lines destroyed with
+no history and no backup), and the same one the `render/world/assembly/r2/`
+re-inclusion block was written to close, one directory over.
+
+Both are now tracked, with each directory level opened one at a time and
+immediately re-closed. `git status --untracked-files=all work/` reports exactly
+two files; the gigabytes of blends, logs and scratch under `work/` stay
+invisible.
+
+---
+
 ## Lease held, not taken
 
 `render/world/assembly/r2/v127/verify_film23.sh` — the live bar — is held by
