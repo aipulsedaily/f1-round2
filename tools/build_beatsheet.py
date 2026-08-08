@@ -283,8 +283,19 @@ BEAT1_PAN_LIMIT_WIDTHS = 0.12
 # 16. The push is the only motion in the last three seconds, and it leaves the
 # camera path untouched: every seam, the aim gate and the 0.00 m hold stay
 # exactly as measured.
-CLOSING_LENS_HOLD_START_MM = 40.0
-CLOSING_LENS_HOLD_END_MM = 74.0
+# R2-1701, folding R2-85x (previously stranded in
+# docs/R2851_beat_sheet_CANDIDATE.json).  THE RATIONALE ABOVE IS SUPERSEDED IN
+# ITS PREMISE, not in its measurements: the reasoning at 40/74 mm assumed the
+# hold was a FREEZE on the facade, so the only question was which lens made the
+# wound legible.  Beat 6's aim is now the CAR for the whole beat
+# (tools/author_beats2_5.py:beat6_aim), so the hold is not a still -- the camera
+# pans through it and the ground carries parallax.  That changes what the lens
+# is for: it now lengthens ONTO the car, which grows 45.8 px -> 78.5 px over the
+# last 3 s instead of shrinking, and at 1,000 m a 130 mm lens crops the bare
+# terrain out of frame -- the client's "patches in the land" answered by the
+# lens rather than by a terrain rebuild.
+CLOSING_LENS_HOLD_START_MM = 55.0
+CLOSING_LENS_HOLD_END_MM = 130.0
 
 
 def closing_lens_push(beat6):
@@ -318,9 +329,14 @@ def closing_lens_push(beat6):
         "from_mm": CLOSING_LENS_HOLD_START_MM,
         "to_mm": CLOSING_LENS_HOLD_END_MM,
         "over_t": [t0, t1],
-        "why": "R2-113. The circuit reads at 40 mm and the wound does not; the "
-               "wound reads at 74 mm and the circuit is gone. The hold was a "
-               "freeze, so the push is the only motion in the last 3 s.",
+        "why": "R2-85x. The hold is no longer a still: the subject is the car, "
+               "which is still moving, so the camera pans through the hold and "
+               "the frame has parallax on the ground. The push lengthens onto "
+               "the car -- it grows from 45.8 px to 78.5 px over the last 3 s "
+               "instead of shrinking -- and a 130 mm lens at 1,000 m crops the "
+               "bare terrain out of the frame, which is the client's 'patches "
+               "in the land' note answered by the lens rather than by a terrain "
+               "rebuild.",
     }
     return b6
 
@@ -1081,7 +1097,21 @@ def _legalise_station_dir(d, centre, standoff):
 # key sits 2.09 m away 39 frames later at 40.0 -> 39.95 mm.  Moving it would put
 # a discontinuity in a film whose one law is that there are none.  The orbit is
 # built to LAND on it: its final authored key is the seam key's own station.
-BEAT1_CLOSEOUT_KEYS = 6          # ~2 s apart; enough for the bezier to be an arc
+# R2-2761.  THE KEY COUNT IS THE ORBIT'S SAMPLING RATE, AND IT BOUNDS THE FIX.
+#
+# 6 keys is 5 interior ones, at u = 1/6 .. 5/6 over 290 frames.  That is the
+# NYQUIST LIMIT on any framing gesture authored into this move: at 1.5 cycles the
+# sway samples to (0.5, 0, -1.0, 0, 0.5) x AMP -- two keys land on a node and the
+# authored gesture ALIASES into a slower one.  So at 6 keys the orbit can carry
+# exactly ONE sway across 12 seconds, i.e. a six-second half-period, which is
+# slower than the thing being complained about.
+#
+# Raising it is not free and the cost is MEASURED rather than waved at: the
+# positions come from the same parametric curve r(e), a(e), z(e), so more keys
+# means the bezier sits CLOSER to that curve, not on a different one.  The
+# per-frame position change is the old interpolation error and is reported in
+# the staging note.  It is env-overridable so that number can be produced.
+BEAT1_CLOSEOUT_KEYS = int(os.environ.get("B1_CLOSEOUT_KEYS", "6"))
 BEAT1_CLOSEOUT_LENS_END_MM = 40.0     # == the seam key, so the lens is C1 there
 # R2-838/839. The orbit's angular rate at each end, as a multiple of its own mean.
 #
@@ -1125,6 +1155,49 @@ BEAT1_ORBIT_END_RATE = 0.57
 # note that was literally "too zoomed in". The dip is now bounded by that
 # measurement instead of by an estimate.
 BEAT1_ORBIT_RADIUS_DIP_M = 0.35
+
+# R2-2761.  THE LENS DIP, AND WHY IT IS THE ONLY CHANNEL THIS SHOT HAD LEFT.
+#
+# The framing lever below wants to slide the car around the frame, the way beat 5
+# does.  MEASURED on the shipped orbit, the car's own projected box in half-frames
+# (the aim gate's unit, which fails at 0.92):
+#
+#     f465  hu 0.435   f513  hu 0.812   f562  hu 0.897   f610  hu 0.898
+#     f658  hu 0.830   f706  hu 0.640   f755  hu 0.874
+#
+# THE CAR ALREADY REACHES 0.898 WITH THE OFFSET AT ZERO.  Three of the seven keys
+# are past a 0.86 safe edge before anything is asked of them -- which is R2-842's
+# finding restated: the radius dip was cut from 1.00 m to 0.35 m precisely
+# because this shot lives against its fill limit.  So the horizontal framing
+# headroom of the payoff orbit is not 0.75 like beat 5's; it is between -0.04 and
+# +0.05.  There is nothing there.  A near-full-frame subject cannot be slid
+# around the frame, and saying so is more useful than authoring an offset the
+# clamp then eats.
+#
+# What is NOT spent is SCALE.  Over the orbit the radius runs 7.49 -> 7.85 m
+# (+5 %) while the lens runs 35.2 -> 40.0 mm (+14 %), and the two very nearly
+# cancel: the car holds 0.81-0.90 of the half-frame for the whole 11.29 s.  So
+# the picture is constant in position AND constant in size, which is exactly what
+# `camera_tempo` reports -- a 187-degree turntable in which the only thing that
+# moves is the background.
+#
+# The dip widens the lens through mid-arc and lets it back to the seam's 40 mm.
+# It buys three things at once and moves no camera:
+#
+#   * the car CHANGES SIZE in frame, which is the loom channel, which is a thing
+#     a viewer sees;
+#   * the room the car is standing in opens up around it at the moment the shot
+#     is about the car being whole -- that is the payoff, not a compromise;
+#   * hu falls, which is what finally gives the framing lever something to use.
+#
+# `sin(pi*e)**2`, not `sin(pi*e)`: the squared window has zero DERIVATIVE at both
+# ends, so the station's lens and the seam's 40 mm are untouched in VALUE and in
+# RATE.  R2-842's "the lens is C1 there either way" survives this.  A plain sine
+# would leave the seam C0, and a velocity step in any channel is a cut (R2-838).
+#
+# `B1_ORBIT_LENS_DIP` overrides it so the null (dip = 0, the shipped lens ramp)
+# is reproducible from this file exactly and the value can be SWEPT.
+BEAT1_ORBIT_LENS_DIP_MM = float(os.environ.get("B1_ORBIT_LENS_DIP", "7.0"))
 
 # --------------------------------------------------------------------------- #
 #  THE ORBIT'S TEMPO — R2-1601.  12.07 s of one unvarying gesture.              #
@@ -1180,6 +1253,228 @@ def _orbit_ease(u, s0, r, amp=None, cycles=None):
     if amp:
         e += amp * math.sin(math.pi * u) ** 2 * math.sin(2.0 * math.pi * cycles * u)
     return e
+
+
+# --------------------------------------------------------------------------- #
+#  THE PAYOFF ORBIT'S FRAMING — R2-2761 (#147).                                 #
+#  The client falls asleep four seconds in.  This is why, and this is the fix.  #
+# --------------------------------------------------------------------------- #
+#
+# WHAT WAS MEASURED, on a rig rebuilt from the promoted sheet.  `camera_tempo`'s
+# flat census puts the FILM's longest flat run at f484-754, 11.29 s, entirely
+# inside beat 1 -- and f484-754 is the payoff orbit, key for key.  Projecting the
+# car into the frame over those 271 frames:
+#
+#     horizontal offset u   never leaves +-0.026 frame widths (+-0.051 HALF-
+#                           frames) in 11.29 seconds
+#     vertical offset v     a CONSTANT -0.10 widths; it does not move either
+#     subject travel        0.0115 frame widths/s, median
+#
+# The camera swings 187 degrees of azimuth around the car and THE CAR DOES NOT
+# MOVE IN THE PICTURE.  Only the background does.  That is the identical defect
+# R2-2161 found and fixed in beat 5's doppler pass -- subject nailed to frame
+# centre, enormous kinetic numbers, dead still picture -- and it is the shot a
+# client falls asleep in.  Beat 5 went 0.055 -> 0.754 against a 0.92 margin by
+# moving WHERE THE SUBJECT SITS, not by moving faster.  This does the same thing
+# to the orbit, in the same unit, judged by the same gate.
+#
+# THE CAMERA PATH IS NOT TOUCHED, AND THAT IS THE POINT.  Only `look_at` moves.
+# Every key's `world` and `lens_mm` are bit-identical to the pre-R2-2761 sheet,
+# so `beat1_flight_check`'s speed, peak-speed, pan-rate and CLEARANCE figures are
+# unchanged by construction rather than by luck -- a framing fix cannot fly the
+# camera into the car.  What it CAN do is push a part off the edge of frame, and
+# that is measured separately (#29) instead of assumed.
+#
+# THE OFFSET VANISHES AT BOTH ENDS.  `sin(pi*u)` windows it, so the corner-group
+# presentation station (u=0) and THE SEAM (u=1) are untouched to the last
+# decimal.  The seam key is emitted verbatim anyway, but the window means the
+# offset does not have to be trusted not to reach it.
+#
+# THE CYCLE COUNT IS BOUNDED BY THE KEY COUNT, and the bound is enforced below
+# rather than trusted.  The sway is sampled only at the orbit's interior keys, so
+# it is a sampled signal and Nyquist applies to it like any other.  With the
+# original 6 keys -- five interior samples -- CYCLES = 1.5 samples to
+# (0.5, 0, -1.0, 0, 0.5) x AMP: two of the five land exactly on a zero crossing
+# and the authored sway ALIASES into a different, slower one.  Six keys can
+# therefore carry exactly ONE cycle across 12 seconds, a six-second half-period,
+# which is slower than the thing being complained about.  That is why
+# 1.0, AND THE CEILING FOR SIX KEYS IS 1.25 -- the gate below enforces the
+# ceiling; the shipped value is one notch under it because 1.0 is the
+# configuration that was actually built, censused, continuity-gated and
+# #29-measured end to end.  Shipping a neighbouring value that only ever passed
+# the sheet gate would be shipping a number no instrument has seen.
+#
+# MORE KEYS WERE TRIED AND REJECTED ON THE MEASUREMENT, not on principle.  Raising
+# BEAT1_CLOSEOUT_KEYS to 8 buys a faster sway (1.75 cycles, a swing every ~3.4 s)
+# and it was built and censused:
+#
+#     keys 6, cycles 1.25   camera path bit-identical   longest flat run 5.50 s
+#     keys 8, cycles 1.75   camera moves 0.352 m @f496  longest flat run 5.38 s
+#
+# 0.12 s of census for 0.352 m of camera. That trade is refused: at six keys the
+# positions are bit-identical, so the clearance floor and the assembly's framing
+# are untouched BY CONSTRUCTION rather than by re-measurement, and that guarantee
+# is worth more than a tenth of a second the census cannot really resolve.
+#
+# AMP is in HALF-FRAMES, the aim gate's own unit (`sheet.aim.frame_margin`,
+# which fails at 0.92), for the reason R2-2161 gives: an author who writes 0.34
+# here is writing the number the gate reads back, so there is no conversion in
+# which a misunderstanding can hide.  `B1_ORBIT_FRAME` overrides it so the null
+# (amp = 0, the shipped centre-pinned orbit) is reproducible from this file
+# exactly, and so the amplitude can be SWEPT against the gates rather than
+# guessed at -- the same discipline as B1_ORBIT_TEMPO.
+BEAT1_ORBIT_FRAME_AMP = float(os.environ.get("B1_ORBIT_FRAME", "0.34"))
+BEAT1_ORBIT_FRAME_CYCLES = float(os.environ.get("B1_ORBIT_FRAME_CYCLES", "1.0"))
+# The vertical sway is smaller and a quarter-cycle ahead, so the car traces an
+# ARC across the frame rather than sliding along a horizontal line.  It is
+# smaller because the frame is 16:9: the same half-frame number is a much larger
+# real angle vertically, and the car is already sitting 0.10 widths low.
+BEAT1_ORBIT_FRAME_V_RATIO = 0.42
+BEAT1_ORBIT_FRAME_V_PHASE = 0.5 * math.pi
+
+# How close to the frame edge the CAR'S OWN PROJECTED EDGE may come, in
+# half-frames.  The rig's framing gate fails at 0.92 measured to the subject
+# POINT; 0.86 measured to the subject's EDGE is strictly tighter, so this cannot
+# be the thing that trips it.
+BEAT1_FRAME_SAFE_EDGE = 0.86
+# The largest angle the framing offset may add to the aim gate's reading.  Beat
+# 1's bound is 30 deg and its worst reading is 7.74 deg, so 12 deg of framing on
+# top still lands under 20.  Capped rather than trusted.
+BEAT1_FRAME_OFF_MAX_DEG = 12.0
+
+
+def _car_screen_half_extent(cam, look, lens_mm, box_lo, box_hi):
+    """The car box's half-extent in the picture, in HALF-FRAMES, (u, v).
+
+    A BOUNDING SPHERE IS THE WRONG CLAMP AT SEVEN METRES, which is what forced
+    this to exist rather than reuse `author_beats2_5._frame_offset_world`.  That
+    function clamps against `SUBJ_RADIUS_M = 3.06`, half the diagonal of the car
+    box -- correct and cheap across beat 5's 1.6 m -> 195 m range.  At the payoff
+    orbit's 7 m it says the car's angular radius is 0.85 half-frames, i.e. that
+    the car fills the frame in BOTH axes, and clamps every offset to zero.  The
+    car is 5.7 m long and 1.0 m tall: it fills the frame horizontally and takes
+    about a fifth of it vertically.  A sphere cannot express that, so the eight
+    corners of the real box are projected instead and each axis gets its own
+    limit.  The box comes from `world/world_contract.py`, so the clamp and the
+    clearance floor are reading the same car.
+    """
+    d = [look[i] - cam[i] for i in range(3)]
+    D = math.sqrt(sum(c * c for c in d)) or 1e-9
+    fwd = [c / D for c in d]
+    up_w = (0.0, 0.0, 1.0)
+    if abs(fwd[2]) > 0.999:                 # straight up/down: keep a basis
+        up_w = (0.0, 1.0, 0.0)
+    right = [fwd[1] * up_w[2] - fwd[2] * up_w[1],
+             fwd[2] * up_w[0] - fwd[0] * up_w[2],
+             fwd[0] * up_w[1] - fwd[1] * up_w[0]]
+    rn = math.sqrt(sum(c * c for c in right)) or 1.0
+    right = [c / rn for c in right]
+    up = [right[1] * fwd[2] - right[2] * fwd[1],
+          right[2] * fwd[0] - right[0] * fwd[2],
+          right[0] * fwd[1] - right[1] * fwd[0]]
+
+    lens = max(lens_mm, 1e-6)
+    half_w = 0.5 * SENSOR_W_MM / lens                 # tan of half h-fov
+    half_h = 0.5 * SENSOR_H_MM / lens                 # tan of half v-fov
+
+    hu = hv = 0.0
+    for cx in (box_lo[0], box_hi[0]):
+        for cy in (box_lo[1], box_hi[1]):
+            for cz in (box_lo[2], box_hi[2]):
+                w = [cx - cam[0], cy - cam[1], cz - cam[2]]
+                fz = sum(w[i] * fwd[i] for i in range(3))
+                if fz <= 1e-6:            # a corner behind the lens: no clamp
+                    return None, None     # this can be expressed
+                fx = sum(w[i] * right[i] for i in range(3))
+                fy = sum(w[i] * up[i] for i in range(3))
+                hu = max(hu, abs((fx / fz) / half_w))
+                hv = max(hv, abs((fy / fz) / half_h))
+    return hu, hv
+
+
+def _frame_offset_look_at(cam, look, lens_mm, frame_u, frame_v, box_lo, box_hi):
+    """Shift `look` so the CAR lands at (frame_u, frame_v) HALF-FRAMES in shot.
+
+    Moving the AIM POINT right pushes the SUBJECT left, so the world shift is the
+    negative of the requested screen position.  Nothing but the aim point moves:
+    the camera stays exactly where the orbit put it.
+
+    Returns `(look, applied_u, applied_v)` so the caller can record what the
+    clamps actually allowed rather than what was asked for.  Every number in the
+    staging report is the APPLIED one.
+    """
+    if not frame_u and not frame_v:
+        return list(look), 0.0, 0.0
+    d = [look[i] - cam[i] for i in range(3)]
+    D = math.sqrt(sum(c * c for c in d))
+    if D < 1e-6:
+        return list(look), 0.0, 0.0
+    fwd = [c / D for c in d]
+    up_w = (0.0, 0.0, 1.0)
+    if abs(fwd[2]) > 0.999:
+        up_w = (0.0, 1.0, 0.0)
+    right = [fwd[1] * up_w[2] - fwd[2] * up_w[1],
+             fwd[2] * up_w[0] - fwd[0] * up_w[2],
+             fwd[0] * up_w[1] - fwd[1] * up_w[0]]
+    rn = math.sqrt(sum(c * c for c in right)) or 1.0
+    right = [c / rn for c in right]
+    up = [right[1] * fwd[2] - right[2] * fwd[1],
+          right[2] * fwd[0] - right[0] * fwd[2],
+          right[0] * fwd[1] - right[1] * fwd[0]]
+
+    lens = max(lens_mm, 1e-6)
+    half_w = 0.5 * SENSOR_W_MM / lens
+    half_h = 0.5 * SENSOR_H_MM / lens
+
+    hu, hv = _car_screen_half_extent(cam, look, lens_mm, box_lo, box_hi)
+    if hu is None:                       # the box straddles the lens plane
+        return list(look), 0.0, 0.0
+    lim_u = max(BEAT1_FRAME_SAFE_EDGE - hu, 0.0)
+    lim_v = max(BEAT1_FRAME_SAFE_EDGE - hv, 0.0)
+    fu = max(-lim_u, min(lim_u, frame_u))
+    fv = max(-lim_v, min(lim_v, frame_v))
+    if not fu and not fv:
+        return list(look), 0.0, 0.0
+
+    ox = -fu * half_w * D
+    oy = -fv * half_h * D
+    hyp = math.hypot(ox, oy)
+    if hyp > 1e-9:
+        ang = math.degrees(math.atan(hyp / D))
+        if ang > BEAT1_FRAME_OFF_MAX_DEG:
+            sc = math.tan(math.radians(BEAT1_FRAME_OFF_MAX_DEG)) * D / hyp
+            ox, oy, fu, fv = ox * sc, oy * sc, fu * sc, fv * sc
+    return ([look[i] + right[i] * ox + up[i] * oy for i in range(3)], fu, fv)
+
+
+def _orbit_frame_offset(u, amp=None, cycles=None):
+    """The requested (u, v) framing at fraction `u` along the orbit, half-frames.
+
+    Windowed by `sin(pi*u)` so it is exactly zero at the corner-group station and
+    exactly zero at the seam.  `amp = 0` reproduces the pre-R2-2761 orbit.
+    """
+    amp = BEAT1_ORBIT_FRAME_AMP if amp is None else amp
+    cycles = BEAT1_ORBIT_FRAME_CYCLES if cycles is None else cycles
+    if not amp:
+        return 0.0, 0.0
+    # NYQUIST, ENFORCED.  The sway exists only at the interior keys, so it is a
+    # sampled signal.  Below four samples per cycle the authored gesture is not
+    # the gesture that gets built -- it aliases into a slower one and every gate
+    # passes it, because a slower sway is still a legal camera.
+    interior = BEAT1_CLOSEOUT_KEYS - 1
+    if cycles > 0 and interior < 4.0 * cycles:
+        raise SystemExit(
+            ">> R2-2761: the orbit's framing sway asks for %.2f cycles but has "
+            "only %d interior keys to carry it (%.1f samples/cycle, need 4). It "
+            "would ALIAS into a slower sway and every gate would pass it. Raise "
+            "B1_CLOSEOUT_KEYS to %d or lower B1_ORBIT_FRAME_CYCLES to %.2f."
+            % (cycles, interior, interior / cycles,
+               int(math.ceil(4.0 * cycles)) + 1, interior / 4.0))
+    win = math.sin(math.pi * u)
+    fu = amp * win * math.sin(2.0 * math.pi * cycles * u)
+    fv = (amp * BEAT1_ORBIT_FRAME_V_RATIO * win
+          * math.sin(2.0 * math.pi * cycles * u + BEAT1_ORBIT_FRAME_V_PHASE))
+    return fu, fv
 
 
 # --------------------------------------------------------------------------- #
@@ -1353,31 +1648,66 @@ def beat1_closeout(t0, cam0, look0, lens0, seam, onward=None):
         r = r0 + (r1 - r0) * e - BEAT1_ORBIT_RADIUS_DIP_M * math.sin(math.pi * e)
         z = cam0[2] + (seam["world"][2] - cam0[2]) * e
         la = [look0[j] + (seam["look_at"][j] - look0[j]) * e for j in range(3)]
+        la_car = list(la)               # R2-2761: the car, before any framing
         w = [round(r * math.cos(a), 4), round(r * math.sin(a), 4), round(z, 4)]
         # R2-842. The lens ramp is EASE-LATE, not linear: it holds near its wide
         # end through mid-arc -- where the car is most oblique and so widest in
         # frame -- and tightens only as the orbit settles onto the seam. It still
         # lands exactly on the seam's 40 mm, so the lens is C1 there either way.
         lens = lens0 + (BEAT1_CLOSEOUT_LENS_END_MM - lens0) * e * e
+        # R2-2761 mid-arc lens dip. Zero value AND zero derivative at both ends.
+        lens -= BEAT1_ORBIT_LENS_DIP_MM * math.sin(math.pi * e) ** 2
+        # `B1_ORBIT_LENS_DIP` is a sweepable env override, so the value it
+        # produces is checked rather than trusted. Beat 1's own widest declared
+        # lens is the 18 mm establishing frame; anything below that in the PAYOFF
+        # is not a dip, it is a different shot.
+        if lens < 18.0:
+            raise SystemExit(
+                ">> R2-2761: the orbit's lens dip (%.2f mm) takes key %d/%d to "
+                "%.2f mm. Beat 1's widest declared lens is the 18 mm "
+                "establishing frame; a payoff orbit wider than the establishing "
+                "shot is not the move this is."
+                % (BEAT1_ORBIT_LENS_DIP_MM, i, BEAT1_CLOSEOUT_KEYS, lens))
         if i == BEAT1_CLOSEOUT_KEYS:
             # LAND ON THE SEAM EXACTLY — by emitting the seam key ITSELF, not a
             # copy of its numbers. A copy is a second place the seam is written
             # down, and a second place is where the two drift apart.
             keys.append(dict(seam))
             break
+        # R2-2761.  THE FRAMING OFFSET, APPLIED HERE AND NOWHERE ELSE.
+        #
+        # `w` and `lens` are already final and are NOT re-read after this point,
+        # so the camera path and the lens ramp are bit-identical to the orbit
+        # this replaces.  Only `la` moves, and it moves in the picture's own
+        # basis at this key's actual position and actual focal length -- so the
+        # composition an anchor asks for is the composition the frame gets.
+        req_u, req_v = _orbit_frame_offset(u)
+        la, got_u, got_v = _frame_offset_look_at(w, la, lens, req_u, req_v,
+                                                 CAR_BOX_LO, CAR_BOX_HI)
         # FOCUS IS NOT OWNED HERE — R2-834. `focus_distance_m` is set to the
         # geometric range to the aim point and `fstop` is ramped onto the seam
         # key's own 3.2, purely so the key is WELL-FORMED and the rig can build
         # it. Both are the focus agent's to solve; they are not a focus decision,
         # they are the absence of one, and the staging note says so.
+        #
+        # R2-2761 -- AND THE RANGE IS TO THE CAR, NOT TO THE AIM POINT.  Once the
+        # aim point is deliberately off the car, `dist(w, la)` stops being the
+        # distance to the subject: at the orbit's widest offset it is 0.9 m
+        # longer than the range to the car, which on a 36 mm lens at f/3 would
+        # have pulled focus off the thing the shot exists to show.  A framing
+        # change that silently defocuses the subject is not a framing change.
+        # So focus is measured to the UNOFFSET aim point, which is the car.
         keys.append(dict(
             t=round(t0 + (t1 - t0) * u, 4), world=w, look_at=[round(v, 4) for v in la],
             lens_mm=round(lens, 3), focus_target="CAR",
             fstop=round(3.0 + 0.2 * e, 3),
-            focus_distance_m=round(math.dist(w, la), 3),
+            focus_distance_m=round(math.dist(w, la_car), 3),
+            frame_u=round(got_u, 4), frame_v=round(got_v, 4),
+            frame_u_requested=round(req_u, 4), frame_v_requested=round(req_v, 4),
             note="R2-833 payoff orbit %d/%d: the assembled car, %.0f deg of "
-                 "azimuth at %.2f m" % (i, BEAT1_CLOSEOUT_KEYS,
-                                        math.degrees(abs(dax)) * e, r)))
+                 "azimuth at %.2f m; R2-2761 framing (%+.3f, %+.3f) half-frames"
+                 % (i, BEAT1_CLOSEOUT_KEYS,
+                    math.degrees(abs(dax)) * e, r, got_u, got_v)))
     return keys
 
 
@@ -1930,13 +2260,50 @@ def build_beat1(geo, plan, dur, normals=None, deadlines=None, onward=None):
     return order, keys, sched, path_len, budget
 
 
-# The assembled car's own extent, MEASURED on world/beat1_anim.blend at the last
-# frame (947 objects dumped, grouped by module prefix): MB/FW/NOSE/RW/wheel/halo
-# together span these bounds.  Beat 1's camera is the only camera in the film
+# The assembled car's own extent.  Beat 1's camera is the only camera in the film
 # that flies inside the same room as the car while it is being built, so this is
 # where a fly-through gets caught, and it is what R2-029 was.
-CAR_BOX_LO = (-2.70, -1.00, 0.34)
-CAR_BOX_HI = (3.02, 1.00, 1.33)
+#
+# R2-2761.  THIS WAS THE NINTH HAND-TYPED COPY OF THE CAR'S DIMENSIONS AND TWO OF
+# ITS THREE AXES HAD DIVERGED IN THE OPTIMISTIC DIRECTION.  Against
+# `world/world_contract.py`, the authored literals were:
+#
+#     Y half-width   1.0000  vs  1.0025  --  2.5 mm per side SMALLER than the car
+#     Z top          1.330   vs  1.332   --  2.0 mm         SMALLER than the car
+#     X extent       5.720   vs  5.698   -- 22.0 mm         LONGER  (conservative)
+#
+# A box smaller than the car is the dangerous direction: it hands the clearance
+# check optimism nobody declared, and it does it in the one file that decides how
+# close beat 1's camera may fly.  Two of the three copies here were wrong that
+# way.  So Y and Z are now IMPORTED rather than transcribed.
+#
+# X IS NOT IMPORTED, AND THAT IS DELIBERATE.  The contract states the car's
+# LENGTH (5.698 m).  It does not state where the car's origin sits along it, and
+# the split -2.70 / +3.02 is a measurement this file cannot re-derive from the
+# contract without inventing the missing half of it.  So the authored split is
+# kept and ASSERTED to be conservative: at least as long as the contract's car.
+# Importing two axes and inventing the third would be worse than importing two.
+_WC = None
+try:
+    sys.path.insert(0, os.path.join(R2, "world"))
+    import world_contract as _WC                                   # noqa: E402
+except Exception as _e:                                            # noqa: BLE001
+    raise SystemExit(
+        ">> R2-2761: world/world_contract.py did not import (%s). Beat 1's car "
+        "box is the thing that decides how close this camera may fly; it is not "
+        "falling back to a hand-typed copy, which is the defect that made this "
+        "import necessary." % _e)
+
+_CAR_X_LO, _CAR_X_HI = -2.70, 3.02              # authored split; see above
+CAR_BOX_LO = (_CAR_X_LO, -_WC.CAR_BODY_HALF_W_M, _WC.CAR_RIDE_HEIGHT_M)
+CAR_BOX_HI = (_CAR_X_HI, _WC.CAR_BODY_HALF_W_M,
+              _WC.CAR_RIDE_HEIGHT_M + _WC.CAR_BODY_H_M)
+if (_CAR_X_HI - _CAR_X_LO) < _WC.CAR_BODY_LEN_M - 1e-9:
+    raise SystemExit(
+        ">> R2-2761: beat 1's car box is %.4f m long and the contract's car is "
+        "%.4f m. A box SHORTER than the car makes every clearance figure in this "
+        "file optimistic by an amount nobody declared."
+        % (_CAR_X_HI - _CAR_X_LO, _WC.CAR_BODY_LEN_M))
 
 # DERIVED, not chosen.  The camera's near clip is 0.10 m (Blender's default; the
 # rig does not override it for the film camera), so anything closer than that
@@ -2428,10 +2795,24 @@ def main(check=None):
             "max_key_to_key_speed_ms": round(worst_speed[0], 3),
             "max_estimated_peak_speed_ms": round(worst_peak[0], 3),
             "max_estimated_pan_widths_per_frame": round(worst_pan[0], 4),
+            # R2-2761.  `measured_on: world/beat1_anim.blend` used to sit here.
+            # It was a hardcoded string beside hardcoded literals: this file has
+            # no `bpy` import and never opens a blend, so it was a record of a
+            # measurement this code cannot perform or reproduce.  What is true is
+            # stated instead -- where each axis comes from, and which one is an
+            # authored number rather than an imported one.
             "car_box": {"lo": list(CAR_BOX_LO), "hi": list(CAR_BOX_HI),
                         "clearance_floor_m": CAR_CLEAR_M,
                         "speed_limit_ms": SPEED_LIMIT_MS,
-                        "measured_on": "world/beat1_anim.blend"},
+                        "y_z_from": "world/world_contract.py "
+                                    "(CAR_BODY_HALF_W_M, CAR_RIDE_HEIGHT_M, "
+                                    "CAR_BODY_H_M)",
+                        "x_from": "authored in tools/build_beatsheet.py; the "
+                                  "contract states the car's length but not "
+                                  "where its origin sits along it. Asserted at "
+                                  "build time to be no shorter than "
+                                  "CAR_BODY_LEN_M.",
+                        "not_measured_here": "this file never opens a .blend"},
             "weave_spec": {
                 "design_speed_ms": BEAT1_DESIGN_SPEED_MS,
                 "peak_factor": BEAT1_PEAK_FACTOR,

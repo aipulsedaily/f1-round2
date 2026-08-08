@@ -320,10 +320,19 @@ rig can be made** — the same shape as the 2-6 grey level cross-card floor this
 project already respects for Cycles, now measured for the rig build. My beats-2-6
 delta sits *at* that floor, not above it.
 
-I am labelling this a floor rather than proving the mechanism. **A same-sheet
-rebuild control was queued and the build lock was held by other agents for the
-rest of my window; if it comes back below 0.18 deg this paragraph is wrong and
-the leak is mine.** That is the honest state of it.
+I am labelling this a floor rather than proving the mechanism. **The decisive
+control is a SAME-SHEET rebuild** — build `docs/beat_sheet.json` twice and compare
+— because the row above still has a different beat 1 on each side, and beat 1
+feeds the beat-1/2 seam blend. It is queued against a snapshot of the promoted
+sheet (`d8825d84...`, taken before the regeneration so it cannot be invalidated
+by it), and the build lock has been held by other agents' 7-9 GB probes
+throughout.
+
+**If it returns a beats-2-6 aim delta below 0.18 deg, this section is wrong and
+the leak is mine.** The result lands in a follow-up commit either way; it is
+recorded here as an open control rather than a closed one, because an unrun
+control is not evidence and reporting it as one would be the exact failure this
+document spends four sections on.
 
 **And the full pipeline is idempotent.** Re-running `tools/author_beats2_5.py`
 over my candidate sheet:
@@ -485,10 +494,9 @@ silently judging the new camera against the old pacing.
 
 ---
 
-## R2-2769 — WHAT IS COMMITTED, WHAT IS NOT, AND THE LEASE I DID NOT TAKE
+## R2-2769 — THE LEASE I DID NOT TAKE, AND WHY REFUSING IT COST NOTHING
 
-**`docs/beat_sheet.json` is held by a live lease belonging to `r2-2161-pacing`,
-and I did not take it.**
+When I reached for the sheet it was held:
 
 ```
 $ R2_AGENT=r2-2761-beat1 tools/gitguard.py claim docs/beat_sheet.json
@@ -496,59 +504,120 @@ CLASH    docs/beat_sheet.json  held by r2-2161-pacing (agent, via docs/beat_shee
 >> STAGE RESULT: FAIL (0 claimed, 1 clashes)
 ```
 
-The lease is 9.4 h old against a 24 h TTL, so it is LIVE, and `gitguard` is
-explicit that **no named owner is ever retirable, at any age, by any flag**. The
-owning agent's work (R2-2161..R2-2178) is committed and it looks finished — but
-*"it looks finished"* is not a release, and this project's whole method is that a
-claim is not evidence. **A peer cannot grant me permission and neither can my own
-reading of their git log.**
+9.4 h against a 24 h TTL, so LIVE, and `gitguard` is explicit that **no named
+owner is ever retirable, at any age, by any flag**. The owner's work
+(R2-2161..R2-2178) was committed and it *looked* finished — but **"it looks
+finished" is not a release**, and a peer cannot grant permission any more than my
+own reading of their git log can. So I stopped, kept the sheet as a candidate,
+and surfaced it.
 
-The standing instruction is **commit the generator and the sheet together, never
-the artefact alone.** I cannot commit the sheet, so **I have not committed the
-generator either.** Both sit in the working tree, measured:
+**The coordinator had already released that lease** as part of retiring nine
+belonging to finished agents; my information was simply out of date. Re-checked
+and claimed cleanly:
 
-| path | state | lease |
+```
+CLAIMED  docs/beat_sheet.json
+>> STAGE RESULT: OK (1 claimed, 0 clashes)
+```
+
+**Refusing to take it cost nothing**, and that is the point worth recording:
+every number in this document was measured on a candidate sheet that the
+generator reproduces byte-for-byte on demand, so waiting for the real answer was
+free. The regenerated in-place sheet is **byte-identical to the candidate every
+measurement here was taken on** — checked, not assumed:
+
+```
+docs/beat_sheet.json  vs  the measured arm:  IDENTICAL
+sha256  d8825d84...  ->  1abee787a8044f35abd2cf453a8c6526d0a6be54ca287a10804c7457ff9f79bd
+```
+
+And the hazard I was warned about, re-checked on both sides of the regeneration:
+
+| | before regenerating | after regenerating |
 |---|---|---|
-| `tools/build_beatsheet.py` | modified, measured, gates green — **but see below** | mine |
-| `tools/beat1_part_framing.py` | new, selftest green | mine |
-| `docs/STAGING-R2-2761-to-R2-2820.md` | this file | mine |
-| `docs/beat_sheet.json` | **NOT regenerated in place** | **`r2-2161-pacing`** |
+| `frame_u` worktree / HEAD | 47 / 47 | **47 / 47** |
+| `frame_v` worktree / HEAD | 47 / 47 | **47 / 47** |
+| `_frame_offset_world` worktree / HEAD | 2 / 2 | **2 / 2** |
 
-**The promoted sheet on disk is untouched and still hashes to
-`d8825d84d88ae6f92ceb6dab7da80ee4476bfa1e3caf0b6b0de27dea3ab33364`.** The
-regenerated sheet every number here was measured on is a candidate, and the
-generator reproduces it byte-for-byte on demand, so nothing is lost by it not
-being written yet.
+**Beat 5 was not reverted**, and the zero-diff `author_beats2_5` re-run in
+R2-2766 is the positive evidence for that rather than the absence of evidence
+against it.
 
-### A SECOND reason not to commit the generator, and it is the worse one
+### THE GUARD'S THREAT MODEL IS FILE-GRANULAR AND THE HAZARD IS HUNK-GRANULAR
 
 `tools/build_beatsheet.py` **was already dirty when I claimed it**, and the guard
-did not and could not tell me: a lease protects a PATH, and this is two agents'
-work inside one path. Splitting the diff by hunk:
+did not and could not tell me. Splitting the diff by hunk:
 
 ```
-hunks that are mine        12
+hunks that are mine        12   beat 1's re-pace
 hunks that are NOT mine     2   R2-1701's beat-6 closing-lens work
-                                (CLOSING_LENS_HOLD_START/END_MM, and the
-                                 "why" string in closing_lens_push())
+                                (CLOSING_LENS_HOLD_START/END_MM at @@ -286,
+                                 and the "why" string in closing_lens_push())
 ```
 
-**`git add tools/build_beatsheet.py` would sweep another agent's uncommitted
-beat-6 work into my commit.** That is R2-226 and R2-234 exactly — the defect the
-lease mechanism was built to stop — arriving through the one door it does not
-cover. `claim` reported `OK (1 claimed, 0 clashes)` and released `inflight-auto`
-to me, which is the guard working as designed and still not enough here.
+`claim` reported `OK (1 claimed, 0 clashes)` and handed me the path. **That is
+the guard working exactly as designed, and it is not enough**, because a lease
+protects a PATH and this is two agents' work inside one path. `git add` on a
+clean-of-clashes file can still sweep somebody else's uncommitted work — which is
+R2-226 and R2-234 arriving through the one door the mechanism does not cover.
 
-**So the generator is not committed for two independent reasons**, and either one
-alone would be sufficient. The path-level lease is the right mechanism and it has
-a blind spot worth writing down: *a path can be clean of clashes and still be
-carrying somebody else's work.*
+**This is the same shape as the other guard hole found tonight**: committing a
+derived artefact sweeps its generator's uncommitted state in through the output,
+where the index guard cannot look. Stated generally, because both instances are
+the same sentence:
 
-**This needs a human decision:** either `r2-2161-pacing` releases
-`docs/beat_sheet.json`, or the lease is allowed to expire (~14 h from the clash
-above), or the coordinator overrides. **I am surfacing it rather than routing
-around it**, which is the same call R2-2178's agent made when it refused to run a
-peer's denied command.
+> **The guard's threat model is FILE-GRANULAR. The hazard is HUNK-GRANULAR, and
+> it is also GRAPH-GRANULAR — a path can be free of clashes and still be carrying
+> another agent's work, either inside the file or upstream of it.**
+
+`>> STAGE RESULT: OK (0 violations)` is a statement about *paths staged*, not
+about *work authored*. It cannot be read as the latter, and this pass read it as
+the latter once before catching itself.
+
+### AND CARRYING THEM REPAIRS A LIVE REPRODUCIBILITY DEFECT — hazard 1's exact shape, in the other generator
+
+This turned out to be much more than salvage. **HEAD cannot reproduce its own
+beat sheet**, and R2-1701's two uncommitted hunks are the reason. Measured by
+stashing my work, regenerating from HEAD alone, and reading beat 6 back:
+
+```
+HEAD's sheet carries      closing lens 55.0 -> 130.0 mm
+HEAD's generator produces closing lens 40.0 ->  74.0 mm
+->  HEAD CANNOT REPRODUCE ITS OWN SHEET
+```
+
+**The promoted sheet was generated by a dirty working tree**, and the beat-6
+closing lens push in it exists *only* in an uncommitted file. That is the
+identical hazard I was briefed on for beat 5 — *"regenerating anywhere that
+resolves it from HEAD silently reverts it, and every gate still passes green"* —
+sitting unnoticed in `tools/build_beatsheet.py` for beat 6 the entire time. A
+fresh clone, a worktree, or one `git checkout tools/` would have quietly walked
+beat 6's ending lens from 130 mm back to 74 mm, and **no gate would have said a
+word, because both are legal lenses.**
+
+**So committing R2-1701's hunks is not a favour to a departed agent. It closes
+the second instance of the defect this whole block was warned about**, and it is
+the reason the manifest's *"landed in source, in no film blend"* line was true:
+the work was in source, and source was never committed.
+
+Checked after the fact, on the committed pair: the generator regenerates
+`docs/beat_sheet.json` **byte-identically**, and `author_beats2_5.py` re-run over
+it produces **zero diffs**. HEAD reproduces HEAD now.
+
+### What I did about it: carried, with attribution, rather than swept or dropped
+
+The coordinator's ruling is that R2-1701's two hunks are **a wanted manifest
+item** — `docs/NEXT-REBUILD.md` lists *"Beat-6 ending re-key — lens f2978
+73.997 -> 129.993 mm"* under **landed in source, in no film blend**, and
+`closing_lens_push(beat6)` is exactly that. Its author is finished and the work is
+uncommitted, **so the real choice was never "sweep it or leave it" — it was
+"commit it or lose it" to the next stray `git checkout`.**
+
+So it is committed, and **both changes are named in the commit message**: mine as
+beat 1's re-pace, those two hunks as R2-1701's beat-6 closing lens push, inherited
+from a finished agent and carried deliberately. **Attribution in the message is
+what makes this landing rather than stealing**, and it is the only part of this
+that a file-granular guard can never supply.
 
 ### What the next agent should pick up
 

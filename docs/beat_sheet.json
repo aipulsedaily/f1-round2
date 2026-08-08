@@ -547,15 +547,19 @@
      3.8242
     ],
     "look_at": [
-     -0.0087,
-     0.0,
+     0.259,
+     0.2947,
      1.0045
     ],
-    "lens_mm": 35.174,
+    "lens_mm": 33.031,
     "focus_target": "CAR",
     "fstop": 3.037,
     "focus_distance_m": 7.486,
-    "note": "R2-833 payoff orbit 1/6: the assembled car, 39 deg of azimuth at 6.94 m",
+    "frame_u": 0.0976,
+    "frame_v": -0.0,
+    "frame_u_requested": 0.1472,
+    "frame_v_requested": 0.0357,
+    "note": "R2-833 payoff orbit 1/6: the assembled car, 39 deg of azimuth at 6.94 m; R2-2761 framing (+0.098, -0.000) half-frames",
     "beat": "1_assembly",
     "world_time_scale": 1.0
    },
@@ -567,15 +571,19 @@
      3.4018
     ],
     "look_at": [
-     0.0261,
-     0.0,
-     0.9486
+     0.5186,
+     0.0392,
+     1.0961
     ],
-    "lens_mm": 35.667,
+    "lens_mm": 29.849,
     "focus_target": "CAR",
     "fstop": 3.073,
     "focus_distance_m": 7.448,
-    "note": "R2-833 payoff orbit 2/6: the assembled car, 77 deg of azimuth at 7.03 m",
+    "frame_u": 0.1094,
+    "frame_v": -0.0618,
+    "frame_u_requested": 0.255,
+    "frame_v_requested": -0.0618,
+    "note": "R2-833 payoff orbit 2/6: the assembled car, 77 deg of azimuth at 7.03 m; R2-2761 framing (+0.109, -0.062) half-frames",
     "beat": "1_assembly",
     "world_time_scale": 1.0
    },
@@ -587,15 +595,19 @@
      3.0503
     ],
     "look_at": [
-     0.0551,
-     0.0,
-     0.9021
+     0.0181,
+     -0.0992,
+     1.2548
     ],
-    "lens_mm": 36.32,
+    "lens_mm": 29.333,
     "focus_target": "CAR",
     "fstop": 3.103,
     "focus_distance_m": 7.469,
-    "note": "R2-833 payoff orbit 3/6: the assembled car, 108 deg of azimuth at 7.17 m",
+    "frame_u": 0.0,
+    "frame_v": -0.1428,
+    "frame_u_requested": 0.0,
+    "frame_v_requested": -0.1428,
+    "note": "R2-833 payoff orbit 3/6: the assembled car, 108 deg of azimuth at 7.17 m; R2-2761 framing (+0.000, -0.143) half-frames",
     "beat": "1_assembly",
     "world_time_scale": 1.0
    },
@@ -607,15 +619,19 @@
      2.5379
     ],
     "look_at": [
-     0.0974,
-     0.0,
-     0.8344
+     -0.1122,
+     0.4256,
+     0.9151
     ],
-    "lens_mm": 37.667,
+    "lens_mm": 33.737,
     "focus_target": "CAR",
     "fstop": 3.146,
     "focus_distance_m": 7.621,
-    "note": "R2-833 payoff orbit 4/6: the assembled car, 153 deg of azimuth at 7.52 m",
+    "frame_u": -0.1166,
+    "frame_v": -0.0362,
+    "frame_u_requested": -0.255,
+    "frame_v_requested": -0.0618,
+    "note": "R2-833 payoff orbit 4/6: the assembled car, 153 deg of azimuth at 7.52 m; R2-2761 framing (-0.117, -0.036) half-frames",
     "beat": "1_assembly",
     "world_time_scale": 1.0
    },
@@ -627,15 +643,19 @@
      2.1529
     ],
     "look_at": [
-     0.1291,
-     0.0,
-     0.7834
+     0.2424,
+     0.5325,
+     0.7104
     ],
-    "lens_mm": 38.988,
+    "lens_mm": 38.228,
     "focus_target": "CAR",
     "fstop": 3.179,
     "focus_distance_m": 7.851,
-    "note": "R2-833 payoff orbit 5/6: the assembled car, 187 deg of azimuth at 7.86 m",
+    "frame_u": -0.1472,
+    "frame_v": 0.0357,
+    "frame_u_requested": -0.1472,
+    "frame_v_requested": 0.0357,
+    "note": "R2-833 payoff orbit 5/6: the assembled car, 187 deg of azimuth at 7.86 m; R2-2761 framing (-0.147, +0.036) half-frames",
     "beat": "1_assembly",
     "world_time_scale": 1.0
    },
@@ -682,7 +702,7 @@
     "bearing_deg": 0.0,
     "peak_pan_widths_per_frame": 0.0,
     "peak_pan_widths_per_frame_lo": 0.0,
-    "min_clearance_m": 8.229,
+    "min_clearance_m": 8.226,
     "lens_mm": [
      18.0,
      18.0
@@ -706,7 +726,7 @@
     "bearing_deg": 15.61,
     "peak_pan_widths_per_frame": 0.0132,
     "peak_pan_widths_per_frame_lo": 0.0118,
-    "min_clearance_m": 5.864,
+    "min_clearance_m": 5.861,
     "lens_mm": [
      18.0,
      35.0
@@ -730,7 +750,7 @@
     "bearing_deg": 1.36,
     "peak_pan_widths_per_frame": 0.0016,
     "peak_pan_widths_per_frame_lo": 0.0014,
-    "min_clearance_m": 3.359,
+    "min_clearance_m": 3.356,
     "lens_mm": [
      35.0,
      58.0
@@ -754,7 +774,7 @@
     "bearing_deg": 1.93,
     "peak_pan_widths_per_frame": 0.005,
     "peak_pan_widths_per_frame_lo": 0.0045,
-    "min_clearance_m": 3.359,
+    "min_clearance_m": 3.356,
     "lens_mm": [
      58.0,
      35.0
@@ -778,7 +798,7 @@
     "bearing_deg": 1.53,
     "peak_pan_widths_per_frame": 0.0018,
     "peak_pan_widths_per_frame_lo": 0.0016,
-    "min_clearance_m": 1.552,
+    "min_clearance_m": 1.549,
     "lens_mm": [
      35.0,
      35.0
@@ -802,7 +822,7 @@
     "bearing_deg": 118.44,
     "peak_pan_widths_per_frame": 0.0591,
     "peak_pan_widths_per_frame_lo": 0.0528,
-    "min_clearance_m": 1.131,
+    "min_clearance_m": 1.129,
     "lens_mm": [
      35.0,
      35.0
@@ -826,7 +846,7 @@
     "bearing_deg": 45.47,
     "peak_pan_widths_per_frame": 0.0747,
     "peak_pan_widths_per_frame_lo": 0.0668,
-    "min_clearance_m": 2.248,
+    "min_clearance_m": 2.245,
     "lens_mm": [
      35.0,
      35.0
@@ -850,7 +870,7 @@
     "bearing_deg": 11.74,
     "peak_pan_widths_per_frame": 0.0121,
     "peak_pan_widths_per_frame_lo": 0.0109,
-    "min_clearance_m": 2.248,
+    "min_clearance_m": 2.245,
     "lens_mm": [
      35.0,
      35.0
@@ -874,7 +894,7 @@
     "bearing_deg": 58.65,
     "peak_pan_widths_per_frame": 0.0718,
     "peak_pan_widths_per_frame_lo": 0.0643,
-    "min_clearance_m": 1.121,
+    "min_clearance_m": 1.119,
     "lens_mm": [
      35.0,
      58.0
@@ -898,7 +918,7 @@
     "bearing_deg": 29.83,
     "peak_pan_widths_per_frame": 0.0438,
     "peak_pan_widths_per_frame_lo": 0.0392,
-    "min_clearance_m": 1.093,
+    "min_clearance_m": 1.09,
     "lens_mm": [
      58.0,
      58.0
@@ -922,7 +942,7 @@
     "bearing_deg": 47.91,
     "peak_pan_widths_per_frame": 0.0728,
     "peak_pan_widths_per_frame_lo": 0.0652,
-    "min_clearance_m": 1.424,
+    "min_clearance_m": 1.421,
     "lens_mm": [
      58.0,
      35.0
@@ -946,7 +966,7 @@
     "bearing_deg": 3.09,
     "peak_pan_widths_per_frame": 0.0018,
     "peak_pan_widths_per_frame_lo": 0.0016,
-    "min_clearance_m": 1.341,
+    "min_clearance_m": 1.338,
     "lens_mm": [
      35.0,
      58.0
@@ -970,7 +990,7 @@
     "bearing_deg": 43.79,
     "peak_pan_widths_per_frame": 0.1072,
     "peak_pan_widths_per_frame_lo": 0.096,
-    "min_clearance_m": 2.173,
+    "min_clearance_m": 2.17,
     "lens_mm": [
      58.0,
      36.5
@@ -994,7 +1014,7 @@
     "bearing_deg": 63.22,
     "peak_pan_widths_per_frame": 0.0389,
     "peak_pan_widths_per_frame_lo": 0.0348,
-    "min_clearance_m": 2.334,
+    "min_clearance_m": 2.332,
     "lens_mm": [
      36.5,
      35.0
@@ -1015,13 +1035,13 @@
     "speed_ms": 2.319,
     "peak_speed_ms": 3.526,
     "peak_speed_ms_lo": 3.154,
-    "bearing_deg": 35.92,
-    "peak_pan_widths_per_frame": 0.0209,
-    "peak_pan_widths_per_frame_lo": 0.0187,
-    "min_clearance_m": 4.549,
+    "bearing_deg": 32.95,
+    "peak_pan_widths_per_frame": 0.0191,
+    "peak_pan_widths_per_frame_lo": 0.0171,
+    "min_clearance_m": 4.547,
     "lens_mm": [
      35.0,
-     35.174
+     33.031
     ]
    },
    {
@@ -1039,13 +1059,13 @@
     "speed_ms": 2.241,
     "peak_speed_ms": 3.407,
     "peak_speed_ms_lo": 3.048,
-    "bearing_deg": 34.86,
-    "peak_pan_widths_per_frame": 0.0205,
-    "peak_pan_widths_per_frame_lo": 0.0183,
-    "min_clearance_m": 5.034,
+    "bearing_deg": 34.49,
+    "peak_pan_widths_per_frame": 0.019,
+    "peak_pan_widths_per_frame_lo": 0.017,
+    "min_clearance_m": 5.031,
     "lens_mm": [
-     35.174,
-     35.667
+     33.031,
+     29.849
     ]
    },
    {
@@ -1063,13 +1083,13 @@
     "speed_ms": 1.907,
     "peak_speed_ms": 2.899,
     "peak_speed_ms_lo": 2.593,
-    "bearing_deg": 29.53,
-    "peak_pan_widths_per_frame": 0.0176,
-    "peak_pan_widths_per_frame_lo": 0.0158,
-    "min_clearance_m": 5.957,
+    "bearing_deg": 33.8,
+    "peak_pan_widths_per_frame": 0.0171,
+    "peak_pan_widths_per_frame_lo": 0.0153,
+    "min_clearance_m": 5.954,
     "lens_mm": [
-     35.667,
-     36.32
+     29.849,
+     29.333
     ]
    },
    {
@@ -1087,13 +1107,13 @@
     "speed_ms": 2.838,
     "peak_speed_ms": 4.314,
     "peak_speed_ms_lo": 3.86,
-    "bearing_deg": 44.13,
-    "peak_pan_widths_per_frame": 0.0272,
-    "peak_pan_widths_per_frame_lo": 0.0243,
-    "min_clearance_m": 4.262,
+    "bearing_deg": 47.88,
+    "peak_pan_widths_per_frame": 0.0268,
+    "peak_pan_widths_per_frame_lo": 0.024,
+    "min_clearance_m": 4.259,
     "lens_mm": [
-     36.32,
-     37.667
+     29.333,
+     33.737
     ]
    },
    {
@@ -1111,13 +1131,13 @@
     "speed_ms": 2.259,
     "peak_speed_ms": 3.433,
     "peak_speed_ms_lo": 3.072,
-    "bearing_deg": 34.03,
-    "peak_pan_widths_per_frame": 0.0216,
-    "peak_pan_widths_per_frame_lo": 0.0193,
-    "min_clearance_m": 4.314,
+    "bearing_deg": 34.35,
+    "peak_pan_widths_per_frame": 0.0214,
+    "peak_pan_widths_per_frame_lo": 0.0192,
+    "min_clearance_m": 4.313,
     "lens_mm": [
-     37.667,
-     38.988
+     33.737,
+     38.228
     ]
    },
    {
@@ -1135,33 +1155,36 @@
     "speed_ms": 1.553,
     "peak_speed_ms": 2.361,
     "peak_speed_ms_lo": 2.112,
-    "bearing_deg": 22.63,
-    "peak_pan_widths_per_frame": 0.0147,
-    "peak_pan_widths_per_frame_lo": 0.0132,
-    "min_clearance_m": 4.68,
+    "bearing_deg": 18.71,
+    "peak_pan_widths_per_frame": 0.0122,
+    "peak_pan_widths_per_frame_lo": 0.0109,
+    "min_clearance_m": 4.678,
     "lens_mm": [
-     38.988,
+     38.228,
      40.0
     ]
    }
   ],
-  "min_clearance_to_car_m": 1.093,
+  "min_clearance_to_car_m": 1.09,
   "max_key_to_key_speed_ms": 2.838,
   "max_estimated_peak_speed_ms": 4.314,
   "max_estimated_pan_widths_per_frame": 0.1072,
   "car_box": {
    "lo": [
     -2.7,
-    -1.0,
+    -1.0025,
     0.34
    ],
    "hi": [
     3.02,
-    1.0,
-    1.33
+    1.0025,
+    1.332
    ],
    "clearance_floor_m": 0.3,
    "speed_limit_ms": 6.0,
+   "y_z_from": "world/world_contract.py (CAR_BODY_HALF_W_M, CAR_RIDE_HEIGHT_M, CAR_BODY_H_M)",
+   "x_from": "authored in tools/build_beatsheet.py; the contract states the car's length but not where its origin sits along it. Asserted at build time to be no shorter than CAR_BODY_LEN_M.",
+   "not_measured_here": "this file never opens a .blend",
    "measured_on": "world/beat1_anim.blend"
   },
   "weave_spec": {
