@@ -237,6 +237,14 @@ texture statistics, same blur, same contrast, no repeated structure anywhere.
   and no credit is spent.**
 * **Occlusion is not subtracted** anywhere in §3. Several peak frames are beat-1
   frames where the trees are inside the showroom's sightline and invisible.
+* **The point dump is `assembly10`, the variety number is `assembly14`.** For the
+  trees this is exact — `woodland_trees` 24,646 and `hedgerow_trees` 3,299 are
+  identical in both build records. For grass it is 9.6 % low
+  (`grass_hero_clumps` 1,662,591 → 1,821,790), which moves no row that matters.
+  **The near-band tier is new in `assembly14` and is NOT measured here**: 356
+  short trees and 64 amenity trees drawn from **312 base meshes**, i.e. 1.35
+  instances per mesh. It is the most varied population in the world and it is the
+  one closest to the lens, so its absence makes §3 conservative, not optimistic.
 * **`shrub`, `fern`, `weed` and `stone` pools are measured and clean** but their
   heights are class representatives, not per-instance bboxes; only the tree pools
   carry exact per-instance bboxes from the dump.
@@ -248,6 +256,45 @@ texture statistics, same blur, same contrast, no repeated structure anywhere.
   ≥128 px row to the ≥64 px row, i.e. from **0.00** to **0.56**; quadrupling it
   reaches the ≥32 px row at **11.3**. All three are far under the named 100, and
   0.42 m is the largest a fescue clump gets in this build.
+
+---
+
+### 5b. There are THREE variety rules in this project and they disagree
+
+Found while checking what the near-band tier does. `tools/item_gate.py` already
+carries a variety rule of the right *shape* — per population, not per world —
+and it already has a false-accept control that has been observed to fail
+(`tools/r2_1381_variety_control.py`: 4,500 objects from two meshes REFUSED,
+4,500 from forty bodies ACCEPTED):
+
+```
+distinct_sources >= max(8, min(40, sqrt(n)))    and    top_source_share <= 0.25
+```
+
+Applied to the shipping vegetation pools it gives a **third** answer, different
+from both the 40 % in `instance_variety.py` and the 2.00 % the campaign polices:
+
+| pool | n | sources | `item_gate` needs | top share | vs 25 % arm | vs source arm |
+|---|---:|---:|---:|---:|:--|:--|
+| `VEG_grass_fescue_H` | 1,021,524 | 11 | 40 | 9.1 % | pass | **fail** |
+| `VEG_grass_tussock_H` | 317,018 | 11 | 40 | 9.1 % | pass | **fail** |
+| `tree:oak_L2` | 3,924 | 16 | 40 | 6.2 % | pass | **fail** |
+| `VEG_fern` | 7,211 | 9 | 40 | 11.1 % | pass | **fail** |
+| near-band short tree, per (species, LOD) | ~40 | 22 | 8 | 4.5 % | pass | pass |
+
+**Every pool passes the share arm comfortably and most fail the source-count
+arm** — and the source-count arm is the campaign's own named calibration error
+in another costume. `sqrt(1,021,524)` is 1,010; the `min(40, ...)` cap is doing
+all of the work, and 40 was chosen for *items* in the tens-to-thousands, whose
+individual identity is resolved on screen. Fed a million grass clumps whose
+individual identity is never resolved — measured: **zero** sharp co-visible
+copies of any one of them at ≥128 px — it demands 40 hero meshes per grass kind
+and buys nothing an audience can see.
+
+So: three rules, three answers, and none of them is the rule. The near-band tier
+is the one place the project already reasoned this way on purpose — it tops each
+(species, L0) library from 8 up to 22 *because* those trees are the ones nearest
+the lens — and it is the only pool that passes everything.
 
 ---
 
@@ -277,11 +324,18 @@ also the wrong question.**
    emitter, not on `VEG`. Until then its verdicts are about ground cover only
    and should be labelled as such.
 2. **Police `cvrr_sharp` at ≥128 px, not `top_share`.** It is the rule's own
-   sentence in numbers, it is cheap (no Blender, 3 minutes on the point dump),
+   sentence in numbers, it is cheap (no Blender, ~3 minutes on the point dump),
    and it has a control that has been observed to fail.
 3. If a line is wanted now: `cvrr_sharp ≥ 128 px` is **20.7** on the ship
    against a named failure of **100**. Any line between them is defensible;
    none of them blocks this master.
+4. **Do not adopt `item_gate`'s `sqrt(n)` source floor for ground cover** (§5b).
+   It would demand 40 hero meshes per grass kind against the shipping 11, on a
+   cap chosen for populations four orders of magnitude smaller, to fix a
+   repetition that is measurably invisible. That is the same calibration error
+   the campaign is trying to stop making, pointed the other way. **The 25 %
+   share arm, per pool, is the part worth keeping** — every pool in the world
+   passes it, and it is measured against a denominator that means something.
 
 ---
 
