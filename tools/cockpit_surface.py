@@ -29,6 +29,19 @@ WHAT WAS WRONG, MEASURED
     only ever targets `LiveryPaint` (`TARGET_MATERIAL`, line 124), which is
     exactly why `CarbonMatte` never received it.
 
+1b. AND SO WAS `CarbonFibre`, THE LARGEST CARBON AREA ON THE CAR (R2-2041).
+    Same `_weave(scale=190.0)`, same 1.6535 mm, on the front wing, rear wing,
+    barge boards, nose, engine cover, sidepod and halo — but at the BODYWORK's
+    scale, not the seat's: **0.87 px** at f599, the beat-1 payoff frame.  It was
+    the only car material in the delivered blend carrying no round-2 fix at all
+    (68 nodes, zero `R2CP_*`), because `car_paint.py` owns `LiveryPaint` by name
+    and this file owned `CarbonMatte` by name and NOBODY OWNED THE THING BETWEEN
+    THEM.  It is owned here now, by `fix_carbon_fibre`, for the constant it
+    shares — and it is one constant, not `fix_carbon_matte`'s three: see that
+    function's docstring for why the bump is deliberately left alone.  The
+    client's words for the symptom were "the front wing is a plain white bent
+    sheet", and round 1's own docstring predicted them verbatim.
+
 2.  `SuedeGrip` HAD NO COLOUR OR ROUGHNESS TEXTURE AT ALL.  One `TexNoise` at
     Scale 1400 — a 1.143 mm feature, **1.62 px**, fully sub-pixel — feeding only
     a Bump.  Base Color and Roughness were constants.  `imperfections.py` then
@@ -105,7 +118,15 @@ PFX = "R2CS_"
 REC_KEY = "r2cs"
 RESULT = "R2881_COCKPIT_SURFACE"
 
-TARGET_MATERIALS = ("CarbonMatte", "SuedeGrip")
+TARGET_MATERIALS = ("CarbonMatte", "SuedeGrip", "CarbonFibre")
+
+#: px/m on the BODYWORK at f599, the beat-1 payoff frame, MEASURED (R2-1146):
+#: round 1's 1.6535 mm twill spans 0.87 px there, so the scale is
+#: 0.87 / 0.0016535 = 526.2 px/m.  `PX_PER_M` above is the SEAT at f2635 and is
+#: 2.7x finer; reporting `CarbonFibre` at the seat's scale would overstate what
+#: the fix buys by that factor, which is the whole reason this is a second
+#: constant instead of a reuse.
+BODY_PX_PER_M = 526.2
 OBJECT_PREFIX = "CI_"
 #: the six the client is looking at; reported separately from the CI_* sweep
 SEAT_OBJECTS = ("CI_seat", "CI_seatpad", "CI_headrest",
@@ -466,6 +487,135 @@ def fix_carbon_matte(mat, report):
            K.modulation_for_amplitude(amp_mm, pitch_after)))
     log("%s: grazing fade |N.I| 0.100..0.420 -> %.3f..%.3f"
         % (mat.name, WEAVE_FADE_LO, WEAVE_FADE_HI))
+    return report[mat.name]
+
+
+def fix_carbon_fibre(mat, report):
+    """ONE CONSTANT, ON THE LARGEST CARBON AREA ON THE CAR.
+
+    `CarbonFibre` covers the front wing, rear wing, barge boards, nose, engine
+    cover, sidepod and halo, and until now it was the ONLY car material in the
+    delivered blend carrying no round-2 fix: 68 nodes, zero `R2CP_*`, and all
+    three triplanar `Mapping` nodes still at `Scale = 190.0`.  `car_paint.py`
+    owns `LiveryPaint`, this module owns `CarbonMatte`, and two agents fixed the
+    same bug on either side of the biggest instance of it.
+
+    THE BUG IS THE SAME ONE, IN THE SAME LINE.  Blender's Wave multiplies its
+    coordinate by 20, so a Mapping Scale of S in front of a Wave at Scale 1.0
+    emits a period of (2*pi/20)/S metres.  190 was authored as "190 repeats per
+    metre" -- and `carbon_fibre()`'s own round-1 docstring says so -- but it
+    delivers 604.8/m, a 1.6535 mm twill.  At the beat-1 payoff frame that is
+    0.87 px: SUB-PIXEL, so it averages to nothing and the panel behaves as a
+    dead-flat mirror under a 0.045-roughness coat.  Round 1 PREDICTED this
+    symptom verbatim while mis-fixing it -- it condemned 1.3 mm as "far below a
+    pixel at any sane render scale ... flat endplates caught the cove and
+    rendered as white plastic", then shipped 1.6535 mm, a 27 % improvement on a
+    defect that needed 4x.  Thirteen months later the client wrote "the front
+    wing is a plain white bent sheet".
+
+    WHY THIS IS ONE CONSTANT AND NOT THE THREE `fix_carbon_matte` MAKES.
+    Re-pitching a weave divides its radiance modulation by the pitch ratio, so
+    `fix_carbon_matte` re-derives the bump amplitude to hold `WEAVE_MOD_PP`.
+    Here the arithmetic says not to: round 1's 0.0005 x 0.095 = 47.5 um reads
+    m = 0.813 pp at 1.6535 mm -- far above the band, and sub-pixel, so it only
+    ever delivered noise -- and the SAME amplitude reads m = 0.270 at 5.0 mm,
+    which is inside `isotropic_micro` (0.12, 0.45) on its own.  `CarbonMatte`
+    was lifted to 0.32 because a shaded cockpit interior lit by sky and bounce
+    under-delivers modulation for a given slope; this material is exterior
+    bodywork under a rig carrying 61 % of the interior load, so it does not need
+    the lift.  The implied modulation is ASSERTED below rather than assumed, and
+    the assertion is what makes leaving the bump alone a decision.
+
+    Nothing else moves: not the triplanar projection, not the grazing fade, not
+    the coat, not the imperfection layer.  Reversible by setting Scale back.
+    """
+    import itemkit as K
+    nt = mat.node_tree
+    bsdf = find_bsdf(mat)
+    if bsdf is None:
+        raise RuntimeError("%s has no Principled BSDF" % mat.name)
+
+    # -- the pitch, asserted against round 1 before it is touched ------------
+    maps = [n for n in nt.nodes if n.bl_idname == "ShaderNodeMapping"]
+    if len(maps) != 3:
+        raise RuntimeError("%s: expected round 1's three triplanar Mapping "
+                           "nodes, found %d" % (mat.name, len(maps)))
+    before = []
+    for m in maps:
+        s = m.inputs["Scale"]
+        if s.is_linked:
+            raise RuntimeError("%s: %s.Scale is LINKED, so its default is dead "
+                               "data and this pass would move a number nothing "
+                               "reads -- exactly the trap `LiveryPaint`'s "
+                               "Metallic set (R2-1145). Refusing."
+                               % (mat.name, m.name))
+        before.append(float(s.default_value[0]))
+    if not all(abs(v - 190.0) < 1e-4 for v in before):
+        raise RuntimeError("%s: expected round 1's Scale 190.0 on all three "
+                           "Mapping nodes, read %s. This is not the material "
+                           "this fix was diagnosed against." % (mat.name, before))
+    for m in maps:
+        m.inputs["Scale"].default_value = (MAPPING_SCALE,) * 3
+
+    # Every Wave behind them must still be at Scale 1.0, or the pitch arithmetic
+    # above is not the pitch the material emits.
+    waves = [n for n in nt.nodes if n.bl_idname == "ShaderNodeTexWave"]
+    bad = [(n.name, float(n.inputs["Scale"].default_value)) for n in waves
+           if abs(float(n.inputs["Scale"].default_value) - 1.0) > 1e-6]
+    if bad:
+        raise RuntimeError("%s: Wave nodes not at Scale 1.0: %s -- the emitted "
+                           "pitch is not (2*pi/20)/MappingScale" % (mat.name, bad))
+    if len(waves) != 6:
+        raise RuntimeError("%s: expected round 1's six TexWave nodes (two "
+                           "perpendicular bands per projection axis), found %d"
+                           % (mat.name, len(waves)))
+
+    pitch_before = WAVE_FACTOR / before[0]
+    pitch_after = WAVE_FACTOR / MAPPING_SCALE
+
+    # -- the relief that pitch now implies, ASSERTED not assumed -------------
+    bumps = [n for n in nt.nodes if n.bl_idname == "ShaderNodeBump"]
+    weave_b = [b for b in bumps if not b.name.startswith("R2IMP_")]
+    if len(weave_b) != 1:
+        raise RuntimeError("%s: expected exactly one round-1 weave Bump after "
+                           "strip(), found %d (%s)"
+                           % (mat.name, len(weave_b), [b.name for b in bumps]))
+    b = weave_b[0]
+    if not b.inputs["Height"].is_linked:
+        raise RuntimeError("%s: the weave Bump has an UNLINKED Height -- a "
+                           "constant has zero gradient and no relief" % mat.name)
+    amp_mm = (float(b.inputs["Distance"].default_value)
+              * float(b.inputs["Strength"].default_value) * 1000.0)
+    mod_before = K.modulation_for_amplitude(amp_mm, pitch_before)
+    mod_after = K.modulation_for_amplitude(amp_mm, pitch_after)
+    lo, hi = K.RELIEF_BANDS["isotropic_micro"]
+    if not lo <= mod_after <= hi:
+        raise RuntimeError(
+            "%s: leaving round 1's %.4f mm bump at the new %.3f mm pitch gives "
+            "m = %.3f pp, OUTSIDE isotropic_micro (%.2f, %.2f). The decision "
+            "not to re-derive the amplitude was made on the assumption it lands "
+            "in band; it does not, so re-derive it instead of shipping this."
+            % (mat.name, amp_mm, pitch_after * 1000.0, mod_after, lo, hi))
+
+    report[mat.name] = dict(
+        pitch_before_mm=pitch_before * 1000.0,
+        pitch_after_mm=pitch_after * 1000.0,
+        px_before=pitch_before * BODY_PX_PER_M,
+        px_after=pitch_after * BODY_PX_PER_M,
+        px_per_m=BODY_PX_PER_M,
+        mapping_scale_before=before, mapping_scale_after=MAPPING_SCALE,
+        bump_amp_mm=amp_mm, bump_amp_changed=False,
+        mod_before=mod_before, mod_after=mod_after,
+        relief_band=[lo, hi],
+    )
+    log("%s: weave pitch %.4f -> %.4f mm  (%.2f -> %.2f px at %.0f px/m, the "
+        "bodywork at f599)"
+        % (mat.name, pitch_before * 1000, pitch_after * 1000,
+           pitch_before * BODY_PX_PER_M, pitch_after * BODY_PX_PER_M,
+           BODY_PX_PER_M))
+    log("%s: bump LEFT AT %.4f mm on purpose; m %.3f -> %.3f pp, inside "
+        "isotropic_micro %.2f..%.2f" % (mat.name, amp_mm, mod_before,
+                                        mod_after, lo, hi))
     return report[mat.name]
 
 
@@ -902,6 +1052,13 @@ def relief_budget(report):
     if sg:
         stages.append(("suede BEFORE", 1.6 / 1400.0, sg["bump_amp_before_mm"]))
         stages.append(("suede AFTER", NAP_ACROSS_M, sg["bump_amp_mm"]))
+    cf = report.get("materials", {}).get("CarbonFibre")
+    if cf:
+        # same amplitude on both rows: this fix moves the pitch and nothing else,
+        # so the budget is where that shows up.
+        stages.append(("bodywork weave BEFORE (old pitch)",
+                       cf["pitch_before_mm"] / 1000.0, cf["bump_amp_mm"]))
+        stages.append(("bodywork weave AFTER", WEAVE_PITCH_M, cf["bump_amp_mm"]))
     return K.relief_budget(stages, band="isotropic_micro")
 
 
@@ -1010,6 +1167,7 @@ def main():
 
     fix_carbon_matte(mats["CarbonMatte"], rep["materials"])
     build_suede_grip(mats["SuedeGrip"], rep["materials"])
+    fix_carbon_fibre(mats["CarbonFibre"], rep["materials"])
 
     if not a.no_imp:
         for nm, m in mats.items():
@@ -1029,6 +1187,22 @@ def main():
     bad = []
     bad += verify(mats["CarbonMatte"], want_coat_normal=True)
     bad += verify(mats["SuedeGrip"], want_coat_normal=False)
+    # CarbonFibre keeps round 1's coat wiring: this pass moved one Mapping
+    # constant and touched no normal, so demanding Coat Normal == Normal here
+    # would be asserting a change nobody made.
+    bad += verify(mats["CarbonFibre"], want_coat_normal=False)
+    # ...and the constant it DID move, read back off the socket rather than
+    # trusted from the setter. ASSERT ON THE ARTEFACT, NEVER ON THE CODE THAT
+    # WAS SUPPOSED TO BUILD IT.
+    for _m in [n for n in mats["CarbonFibre"].node_tree.nodes
+               if n.bl_idname == "ShaderNodeMapping"]:
+        _s = _m.inputs["Scale"]
+        if _s.is_linked or abs(float(_s.default_value[0]) - MAPPING_SCALE) > 1e-3:
+            bad.append("CarbonFibre: %s.Scale reads %s after the fix, wanted "
+                       "%.4f" % (_m.name,
+                                 "LINKED" if _s.is_linked
+                                 else "%.4f" % float(_s.default_value[0]),
+                                 MAPPING_SCALE))
     if bad:
         for b in bad:
             log("WIRING FAIL: %s" % b)

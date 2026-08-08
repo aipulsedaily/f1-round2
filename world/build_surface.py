@@ -2753,6 +2753,113 @@ def _mat_kerb():
 # ============================================================================
 # 21. CONCRETE MATERIAL  (unrubbered access road, mu 0.90)
 # ============================================================================
+#: `Traffic Passes` for the PIT-EXIT APRON, and this number is an art decision
+#: that is deliberately not derived.  R2-1226, signed off.
+#:
+#: One tractive-slip pass transfers about 10.6 nm of rubber over 0.34 % coverage,
+#: changes no albedo measurably, and measures +0.71 % with a p50 of -0.91 % --
+#: it straddles zero.  N = 1000 says this pit exit has been run all season, and
+#: that is what makes it black.  The film opens on a WORKING CIRCUIT; a
+#: delivery-bay apron would be the wrong subject whatever one launch deposits.
+#:
+#: Measured in the film at N = 1000: -17.97 % / -14.04 %, 3.2x the paint it
+#: replaces, ONE unbroken segment, 0.924-coherent, 98.3 % longitudinal, crossing
+#: SNR 5 within 0.40 m of along-track integration, and adding +0.00078 pp of
+#: pure black against a control already carrying 0.00216 % from the car's own
+#: shadow.
+#:
+#: N = 60 was the first answer and it was not merely an order of magnitude
+#: short, it was the WORST AVAILABLE VALUE: the interface term saturates at
+#: 99.7 % (all of the brightening) while coverage reaches only 18.6 % (almost
+#: none of the darkening), so the mark broke into 14 segments with 16 sign flips
+#: and its two tracks carried OPPOSITE SIGNS.  Do not read the N = 60 null as
+#: evidence about the approach, and do not re-derive N.
+#:
+#: !! PER-SURFACE.  NEVER SET THIS GLOBALLY. !!  The apron is the only surface
+#: where N is an open question.  `tyre_deposit`'s deck and floor substrates are
+#: N = 1 BY CONSTRUCTION -- a showroom display turntable has not been driven
+#: over a thousand times -- and they are not this module's to set.
+APRON_TRAFFIC_PASSES = 1000.0
+
+
+def _apply_tyre_deposit(g, base, rough, micro, h):
+    """Wire `world/items/tyre_deposit.py`'s derived rubber into the apron.
+
+    R2-1222 handed this over as a patch spec measured at N = 1000 against
+    `tyre_deposit.mat_concrete()`, which is a faithful replica of this
+    function's substrate.  THAT FUNCTION IS THE REFERENCE WIRING, NOT THE PROSE
+    -- and the two disagree in one place that matters: the handover's channel
+    list omits `Interface`, the group's brightening term, which defaults to 0.0
+    and would have silently shipped a deposit with one channel disconnected.
+    `Interface` is wired here and `K.assert_wired` is asserted below so the
+    omission cannot recur.
+
+    `_mat_concrete` uses this module's own `_G` kit, which is NOT itemkit's
+    `NT`: `_G` has `.n()` and `.set()`, and has no `.pin_named()` and no
+    `.object_coords()`.  So `TDP.field_node()`, `TDP.world_position()` and
+    `TDP.mat_concrete()` cannot be called from here -- they need an `NT`.  Only
+    `build_groups()`, `front_x_value_node()` and `bind_time()` are
+    kit-independent.  The two nodes are therefore instantiated by hand.
+
+    Returns `(base, rough, spec, height_micro, height_coarse, normal, frontx)`.
+    """
+    _items = os.path.join(os.path.dirname(os.path.abspath(__file__)), "items")
+    if _items not in sys.path:
+        sys.path.insert(0, _items)
+    import tyre_deposit as TDP
+    import itemkit as K
+
+    TDP.build_groups()                    # idempotent; builds the four groups
+
+    # World position.  DO NOT reuse `_mat_concrete`'s existing `P`: that is
+    # TexCoord->Object, and the deposit field is authored in WORLD metres
+    # against the car's derived track.  They coincide today only because
+    # `_build_access` writes world-coordinate vertices into an untransformed
+    # object -- a build coincidence, not a guarantee.
+    _oc = g.n("ShaderNodeTexCoord").outputs["Object"]
+    _vt = g.n("ShaderNodeVectorTransform", vector_type="POINT",
+              convert_from="OBJECT", convert_to="WORLD")
+    g.set(_vt.inputs["Vector"], _oc)
+    Pw = _vt.outputs["Vector"]
+
+    fld = g.n("ShaderNodeGroup", node_tree=bpy.data.node_groups[TDP.FIELD_GROUP])
+    g.set(fld.inputs["World Position"], Pw)
+    g.set(fld.inputs["Traffic Passes"], APRON_TRAFFIC_PASSES)
+    frontx = TDP.front_x_value_node(g)                 # _G-compatible
+    g.set(fld.inputs["Front X"], frontx.outputs[0])
+
+    dep = g.n("ShaderNodeGroup", node_tree=bpy.data.node_groups[TDP.CONC_GROUP])
+    for _nm, _src in (("Base Color", base), ("Roughness", rough),
+                      ("Specular IOR Level", 0.32),
+                      ("Height Micro", micro), ("Height Coarse", h),
+                      ("Coverage", fld.outputs["Coverage"]),
+                      ("Interface", fld.outputs["Interface"]),
+                      ("Wetting", fld.outputs["Wetting"]),
+                      ("Grain", fld.outputs["Grain"]),
+                      ("World Position", Pw)):
+        g.set(dep.inputs[_nm], _src)
+
+    # THE GUARD.  `assert_wired` refuses a built node whose declared inputs are
+    # unlinked and names the value standing in.  It exists because an A/B once
+    # rendered with a channel disconnected and produced a confident, wrong,
+    # client-facing verdict -- which is exactly what the handover's missing
+    # `Interface` would have produced here.  `Specular IOR Level` is excused
+    # because it is deliberately a constant on the way IN; everything else on
+    # both nodes must be a link.
+    # `Traffic Passes` is deliberately NOT in either list: it is a typed
+    # constant on the way in, and an exemption you typed is a decision.
+    K.assert_wired(fld, ("World Position", "Front X"),
+                   what="the apron's TDP_DepositField")
+    K.assert_wired(dep, ("Base Color", "Roughness", "Height Micro",
+                         "Height Coarse", "Coverage", "Interface", "Wetting",
+                         "Grain", "World Position"),
+                   what="the apron's TDP_Apply_Concrete")
+
+    return (dep.outputs["Base Color"], dep.outputs["Roughness"],
+            dep.outputs["Specular IOR Level"], dep.outputs["Height Micro"],
+            dep.outputs["Height Coarse"], dep.outputs["Normal"], frontx)
+
+
 def _mat_concrete():
     mat = bpy.data.materials.new(MPFX + "Concrete")
     mat.use_nodes = True
@@ -2832,13 +2939,14 @@ def _mat_concrete():
 
     base = g.mixc(g.math("MULTIPLY", joints, 0.75), base, g.rgb(0.0900, 0.0870, 0.0830))
 
-    # the car has been down here exactly once, so the rubber is a single pair of
-    # streaks either side of the launch axis, not a rubbered-in line
-    launch = g.mr(g.math("ABSOLUTE", g.math("SUBTRACT", g.math("ABSOLUTE", u), 0.72)),
-                  0.10, 0.32, 1.0, 0.0)
-    launch = g.math("MULTIPLY", launch, g.mr(t, 0.0, 34.0, 1.0, 0.0))
-    launch = g.math("MULTIPLY", launch, g.mr(stain, 0.3, 0.8, 0.4, 1.0))
-    base = g.mixc(g.math("MULTIPLY", launch, 0.55), base, g.rgb(0.0420, 0.0390, 0.0380))
+    # R2-1222/R2-2041: the hand-painted launch streaks are GONE, replaced by
+    # `world/items/tyre_deposit.py`'s derived field.  The five lines that stood
+    # here painted a pair of streaks at a fixed |u| = 0.72 with a 34 m ramp the
+    # telemetry contradicts; the field puts them on the wheels' own tracks at
+    # |y| = 0.79750, 251.1 mm wide, with an edge, and carries a tractive film
+    # down the rest of the exit.  `launch` had exactly two consumers -- this
+    # `base` mix and the roughness line below -- and both are now fed by the
+    # apply group.  Do not reintroduce `launch`.
 
     # ================= pit-exit markings ===========================================
     # The contract gives this module the ribbon's markings: build_architecture cuts
@@ -2877,7 +2985,6 @@ def _mat_concrete():
     base = g.mixc(mark, base, mark_col)
 
     rough = g.math("ADD", 0.80, g.math("MULTIPLY", g.mr(broom, 0.2, 0.8, -0.07, 0.07), 1.0))
-    rough = g.math("SUBTRACT", rough, g.math("MULTIPLY", launch, 0.18))
     rough = g.math("SUBTRACT", rough, g.math("MULTIPLY", mark, 0.16))
     rough = g.math("ADD", rough, g.math("MULTIPLY", eff, 0.10))
     rough = g.math("ADD", rough, g.math("MULTIPLY", craze, 0.06))
@@ -2888,18 +2995,34 @@ def _mat_concrete():
     h = g.math("SUBTRACT", h, g.math("MULTIPLY", joints, 0.9))
     h = g.math("SUBTRACT", h, g.math("MULTIPLY", craze, 0.55))
     h = g.math("ADD", h, g.math("MULTIPLY", mark, 0.30))   # paint fills the broom finish
-    nrm = g.bump(micro, strength=0.45, distance=0.0006)
+
+    # ---- THE TYRE DEPOSIT -------------------------------------------------
+    # R2-1222's handover, applied.  Order is not negotiable: field -> apply
+    # group -> the substrate's own bumps -> BSDF.  The group REDUCES both
+    # substrate height stages (rubber fills texture) and that reduction has to
+    # land before the bumps read them, so `micro` and `h` are rebound here and
+    # the first bump now chains onto the group's normal instead of starting
+    # from none.
+    base, rough, spec, micro, h, nrm, frontx = _apply_tyre_deposit(
+        g, base, rough, micro, h)
+
+    nrm = g.bump(micro, strength=0.45, distance=0.0006, normal=nrm)
     nrm = g.bump(h, strength=1.0, distance=0.0030, normal=nrm)
 
     bsdf = g.n("ShaderNodeBsdfPrincipled")
     g.set(bsdf.inputs["Base Color"], base)
     g.set(bsdf.inputs["Roughness"], rough)
-    g.set(bsdf.inputs["Specular IOR Level"], 0.32)
+    g.set(bsdf.inputs["Specular IOR Level"], spec)
     g.set(bsdf.inputs["Normal"], nrm)
     out = g.n("ShaderNodeOutputMaterial")
     nt.links.new(bsdf.outputs["BSDF"], out.inputs["Surface"])
     mat.displacement_method = 'BUMP'
-    return mat
+    # `frontx` travels with the material because `bind_time` CANNOT be called
+    # here: an animated shader tree is only evaluated by the depsgraph once
+    # something in the scene uses the material, and nothing does yet.  `build()`
+    # binds it after `_build_access` has made the object.  Without the binding
+    # the deposit exists on frame 1.
+    return mat, frontx
 
 
 def _mat_joint():
@@ -3097,7 +3220,7 @@ def build():
 
     m_asph = _mat_asphalt()
     m_kerb = _mat_kerb()
-    m_conc = _mat_concrete()
+    m_conc, conc_frontx = _mat_concrete()
     m_joint = _mat_joint()
     m_paint = _mat_paint()
 
@@ -3106,6 +3229,35 @@ def build():
     acc, acc_q = _build_access(coll, m_conc)
     joint, joint_q, joint_len = _build_apron_joint(coll, m_joint)
     nums = _build_grid_numbers(coll, m_paint)
+
+    # THE TIME BINDING, and it is the part that is easy to miss.  The deposit
+    # field masks BOTH its terms -- the launch mark and the tractive film -- by
+    # `Front X`, keyed from the wheel's own per-frame world x.  WITHOUT THE
+    # BINDING THE DEPOSIT EXISTS ON FRAME 1, under a parked car.
+    #
+    # It also FAILS SILENTLY IF THE MATERIAL HAS NO USER IN THE SCENE: an
+    # animated shader tree is only evaluated by the depsgraph when something in
+    # the scene uses the material, so with no user `frame_set` leaves every
+    # frame at the static default and the mark merely looks un-animated -- no
+    # error, no warning.  Hence this call sits AFTER `_build_access`, which is
+    # what puts `m_conc` on an object.  Asserted, not assumed.
+    if not m_conc.users:
+        raise RuntimeError(
+            "REFUSING: %s has no user in the scene, so `bind_time` would key an "
+            "action the depsgraph never evaluates and the tyre deposit would "
+            "render un-animated with no error. `_build_access` is supposed to "
+            "have assigned it." % m_conc.name)
+    import tyre_deposit as TDP                  # sys.path set by _apply_tyre_deposit
+    TDP.bind_time(conc_frontx)
+    _n_keys = sum(len(fc.keyframe_points)
+                  for fc in TDP.action_fcurves(conc_frontx.id_data))
+    if _n_keys < 2:
+        raise RuntimeError(
+            "REFUSING: `Front X` carries %d keyframe(s); bind_time did not take. "
+            "A static Front X means the whole apron is laid on frame 1."
+            % _n_keys)
+    print(">> tyre deposit: Traffic Passes = %.4f, Front X bound with %d keys "
+          "on %s" % (APRON_TRAFFIC_PASSES, _n_keys, m_conc.name))
 
     tris = road_q * 2 + kerb_tris + acc_q * 2 + joint_q * 2
     for o in nums:
@@ -3130,6 +3282,12 @@ def build():
         ribbon_t_min_m=RIBBON_T_MIN,
         ribbon_cap_end_m=RIBBON_CAP_END_M,
         grid_numerals=len(nums),
+        # R2-2041: the deposit's own numbers travel with the artefact, so
+        # "is the rubber in this world" is answerable from the build json
+        # without opening a 10 GB blend.
+        tyre_deposit_traffic_passes=APRON_TRAFFIC_PASSES,
+        tyre_deposit_front_x_keys=_n_keys,
+        tyre_deposit_material=m_conc.name,
         materials=[m_asph.name, m_kerb.name, m_conc.name, m_joint.name,
                    m_paint.name],
         lap_m=LAP,
