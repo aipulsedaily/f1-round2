@@ -1236,3 +1236,48 @@ carries 139 of their staged insertions, so a path-scoped commit of it would
 commit **their** work under my message. Both are one-line changes, both are
 described precisely, and both belong to whoever owns that branch.
 
+
+## R2-3023 — THE FIX IS ON DISK AND NOT IN FORCE. Restart the brokers.
+
+`MIN_CPU_RAM_GB` is a module-level constant read at **import** time, and it is
+also bound as a default argument in `search_offers` — bound when the function is
+defined, i.e. when the module is imported. **Every broker process now running
+imported the old file and holds 50.0 in memory.**
+
+```
+vastctl.py modified                 18:05:03 today
+renderbroker  pid 1960091  started  Sat Aug 8 04:10:27
+ladderbroker  pid  677451  started  Tue Aug 4 20:20:55
+fleet03       pid 1974220  started  Sat Aug 8 05:31:20
+fleet08       pid 1974442  started  Sat Aug 8 05:31:35
+fleet11       pid 1985431  started  Sat Aug 8 05:53:18
+```
+
+Every one predates the edit by hours or days. What they imported, from git:
+
+```
+280f49a^  MIN_CPU_RAM_GB = float(... or 50.0)     <- what all live brokers hold
+HEAD      MIN_CPU_RAM_GB = float(... or 72.0)     <- what a NEW process gets
+          fresh import -> MIN_CPU_RAM_GB=72.0, floor=63.2 GiB/GPU
+```
+
+**So the master must be launched on brokers started after 18:05, or the floor
+does not apply and the whole of R2-3021 is decorative.** This is the failure
+shape this project has hit a dozen times — an instrument that exists and is not
+in the path — and it would be silent: a broker with the old constant rents a
+60 GiB box and logs a perfectly confident rent line.
+
+`fleetctl up` starts brokers 3..n+2 via `scripts/brokerd.sh`, so a fleet brought
+up fresh for the master picks the new floor up by construction. **A fleet reusing
+the nine brokers already running since 05:31 does not.** Check before renting:
+
+```bash
+# each fleet broker must have started AFTER vastctl.py was modified
+ps -o pid,lstart= -p <broker pid>
+```
+
+**I have not restarted anything.** Brokers 3-11 and the two protected ones are
+other agents' processes with other agents' work on them; `fleetctl down`/`up` on
+the fleet is the owner's call, and `rq status` showed fleet08 renting a card at
+17:58 while I was writing this.
+
