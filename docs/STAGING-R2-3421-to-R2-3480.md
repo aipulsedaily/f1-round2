@@ -89,6 +89,25 @@ are in the depsgraph; `is_instance` is what throws them away. The instrument
 written for "one tree spammed 100 times" has never counted a tree, and neither
 the 311/1.99 % record nor the 1,569/2.03 % one includes a single one.
 
+**And it reconciles on the shipping world, not only on the control scene.**
+Summing `assembly14_build.json`'s own `gn_kind` populations:
+
+```
+grass 2,975,018 + grit 1,616,541 + sward drifts 266,525 + shrubs 38,847
+    + weeds 35,486 + ferns 7,211 + saplings 5,500 + stones 264 + spray 125
+                                                       = 4,945,517
+instance_variety.py measured VEG                       = 4,955,784   (+0.2 %)
+
+woodland 24,646 + hedgerow 3,299 + avenue 24
+    + near-band short 356 + amenity 64                 =    28,389   ABSENT
+```
+
+The measured total lands on the geometry-nodes population to within 0.2 % — the
+remainder is near-band scrub the summary does not itemise — and the **28,389
+discrete plants are simply not in it**. Had they been counted the total would be
+~4,984,000. So the 1,569 sources and the 2.03 % are a census of the ground cover
+with every tree in the world left out.
+
 #### R2-3425 — the family key makes the ratio a grass ratio, always
 
 `instance_variety.py` keys the family off `key.split("_")[0]`. Every vegetation
@@ -182,6 +201,8 @@ both would have produced a confident wrong answer.**
 Calibration on f2319's own band — every control built out of the **same pixels**,
 so grade, blur, grain and contrast are held and the only new thing is repetition:
 
+All of it on **f2319's** band — the verge at its sharpest.
+
 | band | NCC ≥ 0.90 | ≥ 0.96 | ≥ 0.98 | period peak |
 |---|---:|---:|---:|---:|
 | `phase` — THE NULL: same power spectrum, no structure | 0.26 % | **0.000 %** | 0.000 % | 0.131 |
@@ -210,6 +231,44 @@ seams correlate with each other. A control that introduces its own artefact
 measures the artefact. It is retired as a null and replaced by `phase`, which
 randomises the band's Fourier phase and keeps its power spectrum exactly: same
 texture statistics, same blur, same contrast, no repeated structure anywhere.
+
+#### The arm fires on five delivered frames, and neither firing is repetition
+
+Swept over eight frames of beat 5 with the same fixed band, the delivery does
+**not** read as uniformly clean, and that has to be said before the verdict is:
+
+| frame | textured patches | NCC ≥ 0.96 | period | what is actually in the band |
+|---|---:|---:|---:|---|
+| f2316 | 9,021 / 9,165 | **0.000 %** | 0.102 | verge, sharp |
+| f2318 | 9,073 | **0.000 %** | 0.113 | verge, sharp |
+| f2319 | 9,038 | **0.011 %** | 0.119 | verge, sharp |
+| f2320 | 9,066 | **0.000 %** | 0.122 | verge, sharp |
+| f2330 | 6,862 | 1.46 % | 0.242 | verge **and concrete run-off** |
+| f2292 | 8,160 | 5.21 % | 0.097 | verge, 213–245 px of drag |
+| f2251 | **2,217** | 13.2 % | 0.168 | **asphalt and gravel run-off** |
+| f2400 | 4,111 | 14.9 % | 0.264 | **a painted kerb** |
+| f2365 | **2,848** | **26.4 %** | **0.318** | **gravel run-off, near-featureless** |
+
+Looked at, not assumed. **f2365's band is not vegetation at all** — it is the
+smooth gravel-and-asphalt run-off at T-whatever, which is why only 2,848 of
+9,165 patches clear the variance floor: the ones that do are faint smooth
+gradients and shutter streaks, and near-flat gradients correlate with each other
+trivially. **f2400's band contains the red-and-white kerb**, which is periodic
+*by design and by regulation* — that is the period arm correctly finding a
+repeating pattern that is supposed to repeat.
+
+So the honest statement of the image-domain result is narrower than the sweep:
+
+> **On every frame where the band is the near-field verge and the grass is
+> sharp — f2316, f2318, f2319, f2320, the entire window in which the top source
+> is both large and resolvable — the duplicate arm reads 0.000–0.011 %, against
+> 13.75 % for the same band with the top source forced to 20 %.**
+
+**The band is a fixed rectangle and that is this instrument's real limitation.**
+It should be selected per frame from the co-visibility pass (which knows where
+the grass is) rather than assumed to be the bottom third. Not fixed here, and
+named so the next reader does not quote the f2365 number as a finding about
+vegetation. **A high reading on a flat gravel apron is a fact about gravel.**
 
 **And the controls answer the question by eye before any number does.**
 
