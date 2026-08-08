@@ -1170,3 +1170,93 @@ python3 tools/r2990_forecourt_pixels.py --graze 0.2071 --out work/r2990/pixels.j
 > `WAVE2-RANKING.md` §7 step 1 asks for this to be done to 32 items, and the
 > `.blend1` backup only survives ONE overwrite. Either honour `--witness-dir`
 > for the blend too, or add `--stage-only`-style isolation.
+
+---
+
+## R2-2949 — correcting R2-2945: three of my rows do not survive, the headline does, and the field I ranked on is not occlusion-aware
+
+R2-2990..R2-2999 refuted my top row. I re-tested the rest of my own table the
+same way — camera outside the pavilion, and a **minimum sharp-sample floor**,
+which is the control I did not apply and should have. Re-run with the point
+cloud and the live camera:
+
+| object | ≥1 sample | ≥10 | ≥25 | verdict on my row |
+|---|---:|---:|---:|---|
+| `VEG_grass_fescue_H` | 425.82 | **425.82** | **396.91** | **survives** |
+| `VEG_grit_chip` | 425.82 | **425.82** | **396.91** | **survives** |
+| `VEG_weed_thistle` | 347.88 | **141.41** | **85.73** | **single-sample artifact** |
+| `ARCH_Paving_Forecourt` | 165.48 | 163.46 | 161.64 | **withdrawn** (see below) |
+
+**Four things I got wrong.**
+
+1. **`ARCH_Paving_Forecourt` at 1049.4 px/m is withdrawn.** The single point of
+   2,448 that sets it is at (3.5, −3.5, −0.5) — inside `R1_SHELL`, on the voxel
+   layer holding the closed formation slab at −0.36..−0.100, **under an opaque
+   showroom floor, in a frame where the camera is inside the pavilion.** The
+   item module's own docstring says it does not build that geometry. Masking to
+   the item's own geometry moves the answer **73.75 %**. My independent re-test
+   above gives **165.5 px/m**, agreeing with the 158–163 the owning agent
+   measured at a ≥25 floor. It was never the highest-resolution surface in the
+   film, and it is not in the top group at all.
+
+2. **`VEG_weed_thistle` at 347.9 px/m is withdrawn** — it collapses to 141.4 at
+   a 10-sample floor and 85.7 at 25. Same defect as the forecourt row, caught by
+   the same control.
+
+3. **The depth column in R2-2945 was composed from two different frames.** I
+   paired each `peak_unocc_sharp_px_per_m` with `min_depth_m`, which is the
+   minimum over *all* visible frames, not the depth at the peak. Grass is not
+   425.8 px/m "at 4.58 m" — it is 425.8 px/m at **f2316, depth 17.40 m**.
+   **That is exactly the composition error I criticised the manifest for**, made
+   in my own table two sections earlier.
+
+4. **`peak_unocc_sharp_px_per_m` is not occlusion-aware for most of the world.**
+   It is bit-identical to the non-occluded `peak_sharp_px_per_m` for **1,992 of
+   2,261 objects (88.1 %)**, and `points_ever_unoccluded == points` for 92.6 %.
+   `screen_presence.py` says in terms that `ever_unoccluded = True` is not proof
+   — a 1 m point cloud at quarter resolution cannot express a wall. I read the
+   field's name as a guarantee. It is not one.
+
+### What survives, and why I am not withdrawing the finding
+
+**Grass and grit hold at 425.82 px/m to a 10-sample floor and 396.91 to 25**, and
+that row is corroborated by an image rather than by arithmetic:
+`work/r22161_proxy/r22161_proxy_002316.png` shows sharp foreground sward filling
+the bottom third of frame. The forecourt row was refuted by the same test —
+proxy 282 is a showroom interior — so the instrument that killed three rows is
+the one that confirms this one.
+
+**Trees hold, by two independent methods that were never wired together:**
+`sp_objects.json` gives `VEG_tree_oak0` **22.66 px/m**; my own segment model
+(`r2941_veg_framing.py`, different inputs, different code path) gives 829.2 px
+on a 23.2 m tree at 104.77 m = **35.7 px/m**. They disagree by 1.6× and agree on
+the order of magnitude.
+
+So the corrected ratio is **grass ~397–426 px/m against trees ~23–36 px/m —
+11× to 19×, not the 18.8× I quoted.** The build-order conclusion is unchanged:
+grass and grit are the top buildable class by measured sharp resolution, trees
+are the bottom, and a pine needle at 22.7–35.7 px/m is 0.04–0.06 px.
+
+**What this costs the rest of the ranking:** the R2-2945 table's non-vegetation
+rows were taken from the same field with no sample floor and no working
+occlusion, so `spectator library figures 791–844 px/m` and `TER_Ground 121.2`
+should be treated as **unverified** until re-run with a floor. The two
+vegetation rows and the tree rows are the ones tested here.
+
+### And a correction to R2-2947's own arithmetic
+
+R2-2947 reported **0.17 deg** of orientation difference at f282. That is an
+artifact of my comparator, not a property of the cameras: the path files round
+quaternions to six decimals, so |q|² = 0.999999, and `acos((tr−1)/2)` is
+ill-conditioned at tr = 3. With the rotation orthonormalised and
+`2·asin(‖Ra−Rb‖_F / 2√2)` the answer at f282 is **exactly 0.0** — the two
+cameras are byte-identical there in `p`, `q` and `lens`. **This does not weaken
+R2-2947's conclusion, it strengthens it**: the frames my build decision rests on
+are not merely close, they are identical. The whole-film worst cases reproduce
+unchanged (21.399 m at f2177, 55.996 mm at f2978, 78.753 deg at f2857), and the
+one number to restate is the count: my **846** is the *position-or-lens* count;
+**2,477 of 2,978** frames differ in any of `p`/`q`/`lens`.
+
+The arm that caught it was an identity control — a path compared against itself,
+which must report zero — and it was watched failing at 1,087 frames before it was
+believed. I did not build that arm; I should have.
