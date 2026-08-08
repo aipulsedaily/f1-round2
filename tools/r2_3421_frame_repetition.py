@@ -21,7 +21,12 @@ are exactly two ways an audience notices one:
      any other patch of the frame at least `--exclude` pixels away.  This is
      copy-move detection, and it does not care whether the placement is random.
 
-  2. A PERIOD.  The placement itself has a lattice or a beat, so the eye reads
+  2. A COMB.  Every instance oriented the same way, so the surface reads as
+     brushed rather than grown. This survives ANY library size and any
+     placement, and it is the failure both of the other arms passed -- see
+     `orientation_R`.
+
+  3. A PERIOD.  The placement itself has a lattice or a beat, so the eye reads
      a texture instead of a landscape -- and this is the failure that survives
      a large library, because a hundred DIFFERENT trees on a 12 m grid still
      read as planted.  Measured as the strongest off-centre peak of the band's
@@ -231,6 +236,41 @@ def ncc_fullsearch(band, p=PATCH, stride=STRIDE, exclude=EXCLUDE,
                 kept=len(best), total=int(len(ys) * len(xs)))
 
 
+def orientation_R(band):
+    """Axial concentration of the gradient orientations. 0 = isotropic, 1 = one way.
+
+    THE THIRD ARM, ADDED BECAUSE THE OTHER TWO MISSED THE ONE CONTROL THAT WAS
+    ACTUALLY WRONG.  The `stamp` rung of `tools/r2_3421_variety_control.py` --
+    one mesh AND no per-instance yaw or mirror -- is instantly wrong to look at:
+    every clump combs the same way.  The duplicate arm scored it 0.000 %, the
+    same as the ship, and the period arm moved it only 0.114 against a 0.30 fail
+    line, because a combed sward is not a lattice and contains no duplicated
+    window.  Both arms would have passed it.
+
+    Gradient orientations are doubled before averaging so the statistic is
+    AXIAL: a blade leaning up-left and one leaning down-right are the same
+    direction, which is what "combed" means and what an unsigned edge is.
+    Magnitude-weighted, so the flat ground between blades does not vote.
+
+    Measured on the ladder, all five rungs at 4K scale:
+
+        ship 0.3100   top20 0.3104   top100 0.3107   allgrass100 0.2891
+        stamp 0.6226
+
+    Flat to 0.2 % across a top share of 9 %, 20 % and 100 %, and 2.01x on the
+    rung that is wrong. That is the separation neither other arm had.
+    """
+    gy, gx = np.gradient(band.astype(np.float64))
+    mag = np.hypot(gx, gy)
+    if mag.sum() <= 1e-12:
+        return 0.0, 0.0
+    th = np.arctan2(gy, gx) * 2.0
+    w = mag / mag.sum()
+    C = float((w * np.cos(th)).sum())
+    S = float((w * np.sin(th)).sum())
+    return float(np.hypot(C, S)), float(np.degrees(np.arctan2(S, C) / 2.0))
+
+
 def periodicity(band):
     """Strongest off-centre peak of the normalised autocorrelation."""
     a = band - band.mean()
@@ -343,6 +383,7 @@ def main():
             rows.append({"frame": f, "vacuous": True})
             continue
         peak, lag = periodicity(hp)
+        oR, oDeg = orientation_R(band)
         hit = float((res["best"] >= NCC_HIT).mean())
         # the whole top tail, so the verdict line is CHOSEN from the controls
         # rather than asserted: an exact duplicate scores 1.000 and generic
@@ -356,7 +397,8 @@ def main():
                "ncc_p99": round(float(np.percentile(res["best"], 99)), 4),
                "ncc_max": round(float(res["best"].max()), 4),
                "hit_frac": round(hit, 5),
-               "period_peak": round(peak, 4), "period_lag_px": list(lag)}
+               "period_peak": round(peak, 4), "period_lag_px": list(lag),
+               "orient_R": round(oR, 4), "orient_deg": round(oDeg, 1)}
         row.update(tail)
         rows.append(row)
         print("f%-6d %-9s textured %5d/%-6d  NCC p50 %.3f p99 %.3f max %.3f  "
@@ -364,6 +406,8 @@ def main():
               % (f, a.control, res["kept"], res["total"], row["ncc_p50"],
                  row["ncc_p99"], row["ncc_max"], NCC_HIT, hit * 100,
                  peak, tuple(lag)))
+        print("        orient  R %.4f at %.1f deg  (isotropic 0, combed 1; "
+              "ladder: ship 0.310, stamp 0.623)" % (oR, oDeg))
         print("        tail  " + "  ".join("%s %.3f%%" % (k, v * 100)
                                            for k, v in tail.items()))
         if a.dump:

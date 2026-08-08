@@ -381,15 +381,33 @@ windows of a sward built from one mesh are the same picture, because the
 per-instance transform means they are not the same picture. That is the ladder's
 result stated in the instrument's own units.
 
-**And the instrument would have MISSED the one rung that is actually wrong.**
-`stamp` moves the period arm 2.2–2.9x — 0.114 against 0.039–0.051 — but
-`PERIOD_FAIL` is 0.30, so it passes. The failure in `stamp` is a *directional*
-uniformity, every clump combed the same way, and an off-centre autocorrelation
-peak is not the statistic for that. So: **the eye caught `stamp` and the numbers
-did not.** The visual comparison is the load-bearing evidence in §4b; the
-numbers corroborate the flat part of the ladder and are not sufficient on their
-own. A third arm — orientation-histogram concentration — would catch it, and is
-not built here.
+**Both arms would have MISSED the one rung that is actually wrong.** `stamp`
+moves the period arm only 2.2–2.9x — 0.114 against a `PERIOD_FAIL` of 0.30 — and
+the duplicate arm not at all. A combed sward is not a lattice and contains no
+duplicated window; the failure is *directional uniformity*, and neither arm has
+a statistic for it. **The eye caught `stamp` and the numbers did not.**
+
+So a third arm was built rather than left as a note — `orientation_R`, the
+magnitude-weighted axial concentration of the gradient orientations, 0 isotropic
+and 1 all-one-way — and it is the separation the other two lacked:
+
+| rung | `orient_R` | whole-frame NCC vs `ship` |
+|---|---:|---:|
+| `ship` | 0.3100 | 1.000 |
+| `top20` | 0.3104 | **0.988** |
+| `top100` | **0.3107** | **0.986** |
+| `allgrass100` | 0.2891 | 0.278 |
+| `stamp` | **0.6226** | 0.171 |
+
+**Flat to 0.2 % across a top share of 9 %, 20 % and 100 %; 2.01x on the rung
+that is wrong.** And the second column is the hard version of "indistinguishable":
+**collapsing the near-field fescue library from eleven meshes to one changes the
+rendered picture by 1.4 %**, because the per-instance transform, not the mesh,
+is what makes one clump differ from the next.
+
+The delivered f2319 measures `orient_R` **0.0963** — a third of the still
+render's, as motion and the wider view make it more isotropic still — and now
+returns `>> STAGE RESULT: FRAME_REPETITION_CLEAN`.
 
 Cost: five CPU renders of ~4.5 minutes each, **$0**, on the box, not the 5090.
 48 samples with denoising — adequate for a *relative* comparison between five
