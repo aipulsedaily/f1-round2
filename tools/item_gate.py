@@ -1024,6 +1024,131 @@ def _shape_signature(me):
             int(round(math.log(max(vol, 1e-12)) * 100)))
 
 
+def _scale_invariant_key(sig):
+    """`_shape_signature` with UNIFORM SCALE divided out.
+
+    RECORDED, NOT GATED (R2-1381).  A builder that bakes a per-copy scale into
+    the vertex data rather than the object matrix produces N signatures from
+    one body: the bounding box is quantised in metres, so 4,500 sizes of one
+    tree are 4,500 "shapes" to the fingerprint and one tree to the eye. Divided
+    by its own largest side, that family collapses back to a single key.
+
+    It is not a check because it cannot distinguish that failure from a
+    legitimate library whose bodies share a topology and an aspect ratio --
+    jittered copies of one generator differ by millimetres, which is under the
+    quantisation, and gating on this would reject them. So the number is put in
+    the report where a reader can see it, and the rule stays on what it can
+    prove. The residual is named in `docs/STAGING-R2-2941-to-R2-3000.md`.
+    """
+    if sig is None:
+        return None
+    nv, npoly, bx, by, bz = sig[0], sig[1], sig[2], sig[3], sig[4]
+    m = max(bx, by, bz, 1)
+    return (nv, npoly, round(bx / m, 2), round(by / m, 2), round(bz / m, 2))
+
+
+# THE VARIETY LAW LIVES HERE, ONCE.  (R2-1381.)
+#
+# It used to live in two places with two different strengths: realized
+# geometry-nodes instances were held to 8-40 distinct sources, 8-40 distinct
+# SHAPES and no shape over 25 % of the population, while anything emitting
+# PLAIN OBJECTS was asked for a size CV of 0.03 and two distinct triangle
+# counts. The second is satisfied by 4,500 copies of two meshes at slightly
+# different scales -- which is, verbatim, the failure the check exists to
+# catch: "i dont want repeat stuff aka one tree spammed 100 times".
+#
+# Nineteen of the 32 wave-1 items took the weak path, four of them declaring
+# 900-3,641 instances. It had not yet produced a false accept. Nothing
+# prevented one, and the tree tier -- 11 of the top 11 items by screen time --
+# was about to be built straight through it (`docs/WAVE2-RANKING.md` §5).
+TOP_SHARE_LIMIT = 0.25
+CV_SIZE_FLOOR = 0.03
+
+
+def need_distinct_shapes(n):
+    """How many distinct shapes a population of `n` must show.
+
+    `max(8, min(40, sqrt(n)))` is the number the realized-instance path has
+    always used: eight at the small end, forty at 1,600 instances and above.
+
+    THE `min(n, ...)` IS NOT A RELAXATION. Without it a population of seven
+    objects is asked for eight distinct shapes, which no population of seven
+    can ever contain: that is an arithmetically impossible requirement, not a
+    strict one, and it would fail `pont_girder` (7 objects, 7 different bodies,
+    ACCEPTED) for being small rather than for being repetitive. Where it binds,
+    `top_share_limit` still does the work. Verified not to move any shipped
+    verdict: every realized-instance population on disk is 10 or larger, where
+    `min(n, ...)` is a no-op.
+    """
+    return min(n, max(8, min(40, int(math.sqrt(n)))))
+
+
+def top_share_limit(n):
+    """No single shape may be more than a quarter of the population.
+
+    Same reasoning as the `min(n, ...)` above: at n < 4 a 25 % share is
+    unreachable even when every single object is unique, so the limit relaxes
+    to exactly "not two of the same". At n >= 4 this returns 0.25 and is the
+    rule as it has always been.
+    """
+    return max(TOP_SHARE_LIMIT, 1.0 / max(n, 1))
+
+
+def variation_verdict(declared, var, real, gn_instanced):
+    """THE ONE PLACE `per_instance_variation` IS DECIDED.
+
+    Extracted from `main()` so that the false accept can be run against it
+    directly -- `tools/r2_1381_variety_control.py` builds 4,500 plain objects
+    from two meshes and watches this function refuse them, and builds 4,500
+    from forty bodies and watches it accept them. A rule that is only ever
+    exercised through a 40-minute item gate is a rule nobody tests.
+
+    Annotates `var` and `real` in place with the thresholds actually applied,
+    so the report says what was required and not merely what was found.
+    """
+    if declared <= 1:
+        return True
+
+    if real:
+        # `distinct_sources` catches "one tree spammed 100 times".
+        # `distinct_shapes` catches its sequel: 420 datablocks holding 6 poses,
+        # which is what the rebuilt spectator crowd actually is.
+        n = real["realized"]
+        need, limit = need_distinct_shapes(n), top_share_limit(n)
+        real["distinct_sources_required"] = need
+        real["distinct_shapes_required"] = need
+        real["top_source_share_limit"] = limit
+        real["top_shape_share_limit"] = limit
+        return (real["distinct_sources"] >= need
+                and real["distinct_shapes"] >= need
+                and real["top_source_share"] <= limit
+                and real["top_shape_share"] <= limit)
+
+    if gn_instanced:
+        # UNPROVEN IS NOT A PASS (R2-019). No fallthrough to chunk statistics.
+        return False
+
+    # ---- PLAIN OBJECTS: the same law, on the same terms ------------------
+    # `distinct_topologies` is `len(set(triangle_count))`, and a triangle count
+    # is a weak proxy for a shape: two entirely different bodies with the same
+    # count collide, and the old floor of 2 was clearable by any pair of
+    # meshes at any population. The population is now fingerprinted with
+    # `_shape_signature` -- the SAME function the realized-instance path uses,
+    # not a second one -- and held to the same count and the same 25 % ceiling.
+    # `cv_size` and the topology floor are kept as well: this is strictly
+    # additive, nothing that failed before passes now.
+    n = var["n"]
+    need, limit = need_distinct_shapes(n), top_share_limit(n)
+    var["distinct_shapes_required"] = need
+    var["top_shape_share_limit"] = round(limit, 4)
+    return (var["cv_size"] is not None and var["cv_size"] >= CV_SIZE_FLOOR
+            and var["distinct_topologies"] >= 2
+            and var.get("distinct_shapes") is not None
+            and var["distinct_shapes"] >= need
+            and var.get("top_shape_share") is not None
+            and var["top_shape_share"] <= limit)
+
+
 def realized_instances(deps, want_names):
     """Measure the instances GEOMETRY NODES ACTUALLY EMITS, not the chunks.
 
@@ -1098,8 +1223,23 @@ def instance_variation(objs, deps, per_tris):
     Measures the SHAPE of each instance, not just its transform: rotating one
     mesh randomly is the exact failure the user named, and a transform-only
     metric would pass it.
+
+    THE SHAPES ARE FINGERPRINTED HERE TOO (R2-1381). This function used to
+    report `distinct_topologies` -- `len(set(triangle_count))` -- as its only
+    account of how many different bodies were on screen, and `variation_verdict`
+    had nothing better to gate on. It now runs `_shape_signature`, the same
+    fingerprint the realized-instance path uses, over each object's evaluated
+    mesh. It costs nothing: the evaluated mesh is already in hand for the
+    bounding box.
+
+    The signature is taken in the object's LOCAL space on purpose, exactly as
+    it is for a geometry-nodes source. A per-object scale in the matrix is a
+    transform, not a shape, and a hundred sizes of one tree must read as one
+    shape or the check is back where it started.
     """
+    from collections import Counter
     dims, vols, tris = [], [], []
+    shapes, srcs, families = Counter(), Counter(), Counter()
     boxes = {}
     for ob in objs:
         oe = ob.evaluated_get(deps)
@@ -1118,18 +1258,39 @@ def instance_variation(objs, deps, per_tris):
         dims.append(d.length)
         vols.append(max(d.x, 1e-6) * max(d.y, 1e-6) * max(d.z, 1e-6))
         tris.append(per_tris.get(ob.name, 0))
+        try:
+            sig = _shape_signature(me)
+        except Exception:
+            sig = ("UNREADABLE", ob.name)
+        shapes[sig] += 1
+        families[_scale_invariant_key(sig)] += 1
+        srcs[ob.data.name if ob.data else ob.name] += 1
         oe.to_mesh_clear()
+
+    def shape_stats(total):
+        if not total:
+            return {"distinct_shapes": None, "top_shape_share": None,
+                    "distinct_source_meshes": None,
+                    "distinct_shapes_scale_invariant": None}
+        return {"distinct_shapes": len(shapes),
+                "top_shape_share": round(shapes.most_common(1)[0][1] / total, 4),
+                "distinct_source_meshes": len(srcs),
+                # recorded, not gated -- see `_scale_invariant_key`
+                "distinct_shapes_scale_invariant": len(families)}
+
     if len(dims) < 2:
-        return {"n": len(dims), "cv_size": None, "cv_volume": None,
-                "distinct_topologies": len(set(tris))}, boxes
+        return dict({"n": len(dims), "cv_size": None, "cv_volume": None,
+                     "distinct_topologies": len(set(tris))},
+                    **shape_stats(len(dims))), boxes
 
     def cv(xs):
         mu = statistics.mean(xs)
         return (statistics.pstdev(xs) / mu) if mu > 1e-9 else 0.0
 
-    return {"n": len(dims), "cv_size": round(cv(dims), 5),
-            "cv_volume": round(cv(vols), 5),
-            "distinct_topologies": len(set(tris))}, boxes
+    return dict({"n": len(dims), "cv_size": round(cv(dims), 5),
+                 "cv_volume": round(cv(vols), 5),
+                 "distinct_topologies": len(set(tris))},
+                **shape_stats(len(dims))), boxes
 
 
 # ===========================================================================
@@ -2966,26 +3127,9 @@ def main():
     gn_instanced = declared > 1 and var["n"] < declared * 0.5
     real = realized_instances(deps, {o.name for o in objs}) if gn_instanced else None
 
-    if declared <= 1:
-        var_ok = True
-    elif real:
-        # `distinct_sources` catches "one tree spammed 100 times".
-        # `distinct_shapes` catches its sequel: 420 datablocks holding 6 poses,
-        # which is what the rebuilt spectator crowd actually is.
-        need_sources = max(8, min(40, int(math.sqrt(real["realized"]))))
-        var_ok = (real["distinct_sources"] >= need_sources
-                  and real["distinct_shapes"] >= need_sources
-                  and real["top_source_share"] <= 0.25
-                  and real["top_shape_share"] <= 0.25)
-        real["distinct_sources_required"] = need_sources
-        real["distinct_shapes_required"] = need_sources
-        real["top_source_share_limit"] = 0.25
-    elif gn_instanced:
-        # UNPROVEN IS NOT A PASS (R2-019). No fallthrough to chunk statistics.
-        var_ok = False
-    else:
-        var_ok = (var["cv_size"] is not None and var["cv_size"] >= 0.03
-                  and var["distinct_topologies"] >= 2)
+    # ONE RULE, ONE PLACE, TESTABLE WITHOUT A GATE RUN. See
+    # `variation_verdict` for what changed in R2-1381 and why.
+    var_ok = variation_verdict(declared, var, real, gn_instanced)
 
     pre = {"no_external_assets": ext_ok, "material_depth": mat_ok,
            "relief_wiring_reaches_the_shader": wiring_ok,
@@ -3397,6 +3541,16 @@ def main():
             "cv_size": var["cv_size"],
             "cv_volume": var["cv_volume"],
             "distinct_topologies": var["distinct_topologies"],
+            # R2-1381. `distinct_topologies` is a triangle-count proxy and is
+            # kept for continuity with the 32 wave-1 reports; the SHAPES below
+            # are what the plain-object path is now gated on.
+            "distinct_shapes": var.get("distinct_shapes"),
+            "top_shape_share": var.get("top_shape_share"),
+            "distinct_shapes_required": var.get("distinct_shapes_required"),
+            "top_shape_share_limit": var.get("top_shape_share_limit"),
+            "distinct_source_meshes": var.get("distinct_source_meshes"),
+            "distinct_shapes_scale_invariant":
+                var.get("distinct_shapes_scale_invariant"),
             "variation_measured_over": (
                 "REALIZED geometry-nodes instances via depsgraph.object_instances"
                 if real else
@@ -3485,13 +3639,30 @@ def main():
     if declared > 1:
         print(f">> instances {var['n']} found vs {declared} declared, "
               f"size CV {var['cv_size']}, {var['distinct_topologies']} distinct topologies")
+        if not real and not gn_instanced:
+            print(f">> PLAIN OBJECTS: {var['distinct_shapes']} distinct SHAPES "
+                  f"over {var['n']} objects "
+                  f"(need {var['distinct_shapes_required']}), commonest shape "
+                  f"{(var['top_shape_share'] or 0)*100:.1f} % "
+                  f"(limit {(var['top_shape_share_limit'] or 0)*100:.1f} %); "
+                  f"{var['distinct_source_meshes']} source mesh datablocks")
+            if (var["distinct_shapes_scale_invariant"] is not None
+                    and var["distinct_shapes"]
+                    and var["distinct_shapes_scale_invariant"]
+                    < var["distinct_shapes"] / 2):
+                print(">>   ** RECORDED, NOT FAILED: those shapes collapse to "
+                      f"{var['distinct_shapes_scale_invariant']} once uniform "
+                      "scale is divided out -- much of this population may be "
+                      "one body at many sizes with the scale baked into the "
+                      "vertices.")
         if real:
             print(f">> REALIZED instances: {real['realized']} from "
                   f"{real['distinct_sources']} distinct source meshes and "
                   f"{real['distinct_shapes']} distinct SHAPES "
                   f"(need {real['distinct_sources_required']} of each); "
                   f"commonest source {real['top_source_share']*100:.1f} %, "
-                  f"commonest shape {real['top_shape_share']*100:.1f} % (limit 25 %)")
+                  f"commonest shape {real['top_shape_share']*100:.1f} % "
+                  f"(limit {real['top_shape_share_limit']*100:.1f} %)")
             if real["distinct_shapes"] < real["distinct_sources"] / 2:
                 print(">>   ** the source meshes are largely COPIES of each other: "
                       f"{real['distinct_sources']} datablocks carrying only "
