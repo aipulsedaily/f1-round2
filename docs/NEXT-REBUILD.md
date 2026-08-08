@@ -17,10 +17,40 @@ rendered before it is superseded by construction. Written 2026-08-07.
 | **Beat-6 lap-down (R2-943)** | ALREADY IN SOURCE — `anim/carpath.py` (`LapDown`, `Car._extrap`), `anim/carrig.py` (`ground_distance`, `body_pitch`, `body_roll`), `audio/scene.py`, `tools/car_anim_gate.py`. **Nothing to fold in; the rebuild picks it up by running the source.** | car at the last frame 79.0 -> 230.7 px; beats 1-5 bit-identical at 0.000e+00 m and 0.00000 deg through f2715; rolling contact exact to 1.35e-12 m |
 | **Breach frost** | `sim/apply_breach.py --fracture-faces`, **off by default** — a material edit on `BREACH_Glass`, no geometry, not appendable | pending probe |
 | **Breach fines** | `world/breach_fines.blend` (101.9 MB library) landed by **`apply_breach.py --fines-lib`** — NOT a `build_film_scene` append | round-trip EXACT: 11,246 of 11,246 objects, 2,844,012 of 2,844,012 keys, worst world-position error **1.70e-06 m = 0.0037 px**, **0** visibility mismatches across f866/880/900/930/1200/2978 |
-| **Asphalt relief re-budget** | `world/build_surface.py` — 7 stages spanning 3.7 mm–1.03 m, all inside the camera's readable band, all from `relief_amplitude_for`; the 0.6 mm stage moved to roughness; six meso structures via `amp_field` | octave contrast **2.70× at f2000**, 1.90× on the wide; bit-identity survives (identical SHA256, 2,721,433 tris). Milled-repair feather **1.6 m → 0.13 m** with a sealed lip — the client's "patches in the land", second instance |
+| ~~**Asphalt relief re-budget**~~ **THIS ROW IS WRONG — SEE THE CORRECTION BELOW THE TABLE (R2-3061)** | `world/build_surface.py` — 7 stages spanning 3.7 mm–1.03 m, all inside the camera's readable band, all from `relief_amplitude_for`; the 0.6 mm stage moved to roughness; six meso structures via `amp_field` | octave contrast **2.70× at f2000**, 1.90× on the wide; bit-identity survives (identical SHA256, 2,721,433 tris). Milled-repair feather **1.6 m → 0.13 m** with a sealed lip — the client's "patches in the land", second instance |
 | **Audio beat-1 camera** | `audio/master.py:117` builds `CameraPath()` with **no argument** and gets the stale rig. Beat 1's assembly layer is positional. | level error p50 **2.19 dB**, max 11.69; binaural azimuth max **178.1°** — the source is panned to the **wrong ear on 318 of 792 frames**. Beats 2–6 untouched |
 | **Beat-5 bridge blackout** | **IN SOURCE, R2-1701** — `tools/author_beats2_5.py` `pont_offset()`, applied inside `emit_keys`' sampler, and `docs/beat_sheet.json` is regenerated with it. **Nothing to fold in; the rebuild picks it up by running the source.** `render/film_path_R2971_PONT_B5_REBASED.json` is evidence, not an artefact — **do not merge it or any other `film_path_*.json`** | occlusion **12 → 0** across all four bridge bands; acceleration 47.7 m/s² *below* the shipped 49.1; clearance 2.391 m against a 1.20 m sphere; boundaries bit-identical. Re-measured from source: identical, and the film's worst authored camera acceleration drops 61.94 m/s² at f2194 → 53.75 at f2560 |
 | **Beat-5 framing re-pace** (promoted 2026-08-08 06:15) | `docs/beat_sheet.json` sha256 `d8825d84…` (was `7be83550…`). Diff vs snapshot is **`['beat5']` and nothing else** — `total_frames` 2978, `total_s` 124.1, `fps` 24, `time_map` and `beat6` bit-identical. **One continuous take, runtime untouched.** Regeneration is deterministic: `promo.json` came out byte-identical to the gated candidate | Post-promotion aim gate: **1 `STAGE RESULT` line, 0 FAIL lines**, `CAMERA_RIG_CONTINUOUS_AND_AIMED`, all six beats PASS, worst 12.02° at f2273 vs a 22.0 bound. The promoted rig's `_path.json` is bit-identical to the gated candidate's (`7fc6d688…`) — **the gate that passed is the gate on what is on disk** |
+
+> **CORRECTION — THE ASPHALT RE-BUDGET IS NOT "IN NO FILM BLEND". IT IS IN BOTH
+> OF THEM, AND HAS BEEN SINCE `assembly11`.** (R2-3061, 2026-08-08)
+>
+> ```
+> tools/r2_3061_film_material.py --blend render/film22.blend
+>   amp_field chip_hi offline ravel screed craze pluck h_hard   8/8 PRESENT
+>   38-texture wavelength census identical to a fresh build of HEAD
+>   >> STAGE RESULT: FILM_CARRIES_REBUDGET
+>   ... and byte-for-byte the same on render/film23_breach.blend
+> ```
+>
+> `assembly14_build.json` records `world/build_surface.py` at `678fdb3fa6a7…`,
+> which is the blob at `244ff16`, and `git merge-base --is-ancestor cc38455
+> 244ff16` confirms the re-budget commit is an ancestor of it. The only delta
+> between that state and HEAD before R2-3061 was `76a685b`, which replaces four
+> retyped car-box literals with `C.CAR_BODY_*` and is inert by its own
+> measurement.
+>
+> **Why this row mattering is not bookkeeping:** it is the difference between
+> "nothing to do, the rebuild carries the fix" and "this is unfixed and the
+> rebuild reproduces it". `work/r22881` measured the delivered asphalt as the
+> blankest large surface in the film *after* this change was already in it.
+> **A rebuild off the source as it stood on 2026-08-08 06:00 would have shipped
+> the same defect and looked like a fix.**
+>
+> R2-3065 authors the octave the re-budget did not reach — 45-160 mm, in albedo
+> and roughness — in `world/build_surface.py`. **That IS a real "landed in
+> source, in no film blend" item and the rebuild does need to pick it up.** See
+> `docs/STAGING-R2-3061-to-R2-3120.md`.
 
 > **CORRECTION — "alters ONLY the camera's aim, never its position" is WRONG, and it
 > was my sentence.** Measured on the two gated rig paths, at the rendered-frame level
