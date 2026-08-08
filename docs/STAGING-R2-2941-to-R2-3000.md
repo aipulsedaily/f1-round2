@@ -643,6 +643,10 @@ bash tools/buildlock.sh r2-1381-POSTFIX /opt/blender-5.2.0-linux-x64/blender \
 python3 tools/r2_1381_rescore.py                  # no Blender, no render
 ```
 
+The post-fix run was repeated against the final committed code (`tmp/r2_1381_final.log`, all four controls pass) because the report-key
+addition in R2-2957 landed after the first one — a control that ran against an earlier state of the file is evidence about that file, not
+about this one.
+
 ### Proposed defect-log entry (NOT written to `DEFECT-LOG-R2.md` — for the owner to merge)
 
 > **R2-1381 — CLOSED. The variety guard's plain-object path graded 4,500 copies
