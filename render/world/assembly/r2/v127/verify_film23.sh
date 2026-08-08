@@ -32,7 +32,31 @@
 # file on which this one is known to report 27 findings.  Keep it.  If film10
 # ever comes back PASS the instrument is broken and every PASS above it is
 # vacuous.
+#
+# R2-3121 -- THE THREE EDITS R2-2821 WROTE OUT FOR WHOEVER HELD THIS FILE.
+# The lease `r2-2101-breach-strip` is gone, so they are applied here:
+#   1. `set -o pipefail`, below.  Of 176 shell scripts in this repo, 5 set it,
+#      and every discarded verdict in this harness came from a `cmd | tail`
+#      whose status the shell then reported as the tool's.
+#   2. the inline `python3 -c "..."` judge is replaced by `tools/film_bar.py`,
+#      which counts EVERY assertion this header makes.  The old judge made 37
+#      assertions and could act on 24; the 13 silent ones included both socket
+#      arms, `rig_preflight`, `slabcheck`, and every stage's printed verdict.
+#      With them counted, this film's recorded `VERIFY23_BAR_PASS` became
+#      `FILM_BAR_FAIL`.
+#   3. the trailing `socket_index_audit` / `rig_preflight` / `slabcheck`
+#      sections are deleted.  `film_bar.py` runs all four as list-argv
+#      subprocesses -- no shell, therefore no pipe, therefore the status is
+#      the tool's own -- and judges each one.
+# The judge lives in `tools/`, ONCE, and not in this `vNNN` directory: this bar
+# was copy-pasted per generation, so R2-2109's repair landed in one of four
+# copies and the other three kept printing PASS.
+#
+# THE MATERIALS BUILD NOW RUNS BEFORE THE JUDGE, not after it.  It has to: the
+# judge reads `materials_${NAME}.log`, and in the old order that log was the
+# PREVIOUS run's.
 set -u
+set -o pipefail
 cd /home/zany/f1-round2
 FILM=${1:-render/film23_breach.blend}
 NAME=$(basename "$FILM" .blend)
@@ -40,8 +64,11 @@ B=/opt/blender-5.2.0-linux-x64/blender
 W=work/r22101
 mkdir -p $W
 
-WANT_WATTS=46866.886
-WANT_STAMPS=24
+# R2-3121: `WANT_WATTS=46866.886` and `WANT_STAMPS=24` used to live here and
+# were the inline judge's only copy of this film's predicted load.  They are
+# now `FILM23` in `tools/film_bar.py`, once.  A second copy here would be a
+# number nothing reconciles -- seven copies of the car's bounding box were
+# found in this codebase on 2026-08-08 and this file is not adding to that.
 
 [ -s "$FILM" ] || { echo ">> STAGE RESULT: VERIFY23_FAIL (no $FILM)"; exit 2; }
 
@@ -97,87 +124,41 @@ for k in sorted(m): print('  %-24s %s' % (k, json.dumps(m[k])))
 "
 
 echo
-echo "=== THE BAR, judged ==="
-python3 -c "
-import json, sys
-b=json.load(open('$W/extra_${NAME}.json'))
-try:    m=json.load(open('$W/measured_${NAME}.json'))
-except Exception: m={}
-try:    s=json.load(open('$W/strip_${NAME}.json'))
-except Exception: s={}
-ok=True
-def chk(name, got, want, tol=0.0):
-    global ok
-    if isinstance(want,(int,float)) and isinstance(got,(int,float)) and not isinstance(want,bool):
-        good = abs(float(got)-float(want)) <= tol
-    else:
-        good = (got==want)
-    ok = ok and good
-    print('  %-34s want %-16s got %-16s %s' % (name, want, got, 'OK' if good else 'FAIL'))
-chk('interior_lamp_watts', b.get('interior_lamp_watts_measured'), $WANT_WATTS, 1e-2)
-chk('n_lamp_stamps',       b.get('n_lamp_stamps'), $WANT_STAMPS)
-chk('scene_mark',          b.get('scene_mark'), 3.628, 1e-9)
-chk('assert_levelled',     b.get('assert_levelled'), 'PASS')
-chk('strip present',       s.get('present'), True)
-chk('strip narrow axis m', s.get('size_y'), 0.10, 1e-4)
-chk('strip radiance (authored)', s.get('radiance_authored'), 47.4569, 1e-3)
-chk('strip is hidden from camera', s.get('visible_camera'), False)
-for k,want in (('fps',24),('frame_start',1),('frame_end',2978),
-               ('view_transform','AgX'),('look','None'),('exposure',-3.628)):
-    if k in m: chk(k, m.get(k), want, 1e-6 if isinstance(want,float) else 0)
-    else:      print('  %-34s NOT REPORTED by measure_film_scene' % k)
-# R2-2109.  THE ONER/4K/CLIP LINE OF THE BAR WAS NEVER ACTUALLY JUDGED.
-# v124, v125 and v126 all asked measure_film_scene for 'resolution_x',
-# 'resolution_y', 'clip_start', 'clip_end' and 'camera'.  IT EMITS NONE OF
-# THOSE KEYS -- it has 'scene_camera', and no resolution and no clip at all --
-# so all five fell into the else branch, printed 'NOT REPORTED', and were
-# counted as neither pass nor fail.  Five of the bar's own lines have been
-# decorative on every film this project has verified, including the one that
-# names the delivery format.
-# They ARE in measure_film_extra, off the same open blend.
-res = b.get('resolution') or [None, None, None]
-chk('resolution_x', res[0], 3840)
-chk('resolution_y', res[1], 2160)
-chk('resolution_pct', res[2], 100)
-cam = b.get('camera') or {}
-chk('camera',     cam.get('name'), 'ONER')
-chk('clip_start', cam.get('clip_start'), 0.05, 1e-9)
-chk('clip_end',   cam.get('clip_end'), 200000.0, 1e-6)
-chk('n_cameras_in_scene', b.get('n_cameras_in_scene'), 1)
-chk('scale_length', b.get('scale_length'), 1.0, 1e-9)
-chk('camera object_fcurves', bool(cam.get('object_fcurves')), True)
-print()
-print('>> STAGE RESULT: %s' % ('VERIFY23_BAR_PASS' if ok else 'VERIFY23_BAR_FAIL'))
-sys.exit(0 if ok else 1)
-"
-BARRC=$?
-
-echo
 echo "=== carbon + rubber, read back out of the FILM (R2-2041's two fixes) ==="
+# THE REDIRECT IS THE WHOLE LOG.  `film_bar.py` requires EXACTLY ONE
+# `>> STAGE RESULT:` line in this file and FAILs on two -- a log carrying two
+# verdicts has an unread verdict (R2-2108).  Nothing else may be appended here.
 waitmem film_materials || exit 90
 $B -b "$FILM" --factory-startup -noaudio \
     -P render/world/assembly/r2/v127/verify_film_materials.py -- \
     --json $W/materials_${NAME}.json > $W/materials_${NAME}.log 2>&1
 grep -aE "^\[|^   |^>> STAGE RESULT" $W/materials_${NAME}.log | tail -40
-grep -qa ">> STAGE RESULT: FILM_MATERIALS_OK" $W/materials_${NAME}.log \
-  || { echo "  ^^ carbon/rubber DID NOT PASS"; BARRC=1; }
 
 echo
-echo "=== socket_index_audit: $NAME must PASS, film10 must still FAIL 27 ==="
-for f in "$FILM" render/film10.blend; do
-  waitmem "socket_audit $(basename $f)" || exit 90
-  echo "--- $(basename $f) ---"
-  python3 tools/socket_index_audit.py --blend "$f" 2>&1 | tail -12
-done
-
-echo
-echo "=== rig_preflight ==="
-python3 tools/rig_preflight.py 2>&1 | tail -12
-echo "  rig_preflight exit=$?"
-
-echo
-echo "=== slabcheck (MUST exit 0) ==="
-.venv/bin/python sim/slabcheck.py 2>&1 | tail -3
-echo "  slabcheck exit=$?"
+echo "=== THE BAR, judged -- every assertion this header makes, counted ==="
+# This film's predicted load lives in film_bar.py's `FILM23`, and the bar's
+# other constants are IMPORTED by it from world/film_exposure.py,
+# world/showroom_lighting.py and docs/beat_sheet.json.  Nothing derivable is
+# retyped here any more.
+#
+# `--socket` opens film23_breach (10.9 GB) and film10 (4.5 GB).  It is not
+# optional: film10 is the bar's ONLY negative control, the one thing that
+# proves the socket instrument still fires, and NOT running it is
+# UNMEASURABLE, which film_bar.py counts as a failure to verify rather than as
+# a pass.  Wrapped in the build lock because two ~10 GB opens on an 11 GB box
+# do not run at half speed -- one of them gets OOM-killed.
+#
+# THE OUTPUT GOES TO A FILE AND IS THEN REPLAYED WITHOUT buildlock's OWN
+# `>> STAGE RESULT: BUILDLOCK RELEASED` LINE.  Not cosmetics: this script's
+# stdout must carry EXACTLY ONE verdict, or every reader of it inherits the
+# two-verdict trap that cost this bar two of its four failures.  `BARRC` is
+# buildlock's status, which is the bar's own -- buildlock ends on `exit $rc`,
+# not on a pipeline.
+bash tools/buildlock.sh "verify23_bar_${NAME}" \
+  python3 tools/film_bar.py --work $W --name "$NAME" \
+      --rig world/surface_test_filmpose.blend \
+      --socket --film "$FILM" > $W/bar_${NAME}.log 2>&1
+BARRC=$?
+grep -av "STAGE RESULT: BUILDLOCK" $W/bar_${NAME}.log
 
 exit $BARRC
