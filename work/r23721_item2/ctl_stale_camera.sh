@@ -68,6 +68,14 @@ fi
 RC=$(run "$T/n2.log" --path world/camera_rig_path.json --why-stale "   ")
 chk "MUST FAIL: a whitespace-only --why-stale is not a reason" 1 "KNOWN-STALE" "$T/n2.log" "$RC"
 
+# ARM N3: the OTHER generation of the same orphan -- the film13/film14 bytes,
+# which are what docs/screen_presence*.json was actually swept from and what git
+# HEAD still has in world/camera_rig_path.json. The film16 entry alone does not
+# cover it, and a guard that catches only the generation somebody happened to
+# write down is the R2-1007 filename check in a new costume.
+RC=$(run "$T/n3.log" --path render/film14_path.json)
+chk "MUST FAIL: the film13/film14 bytes the docs were swept from" 1 "defect #159" "$T/n3.log" "$RC"
+
 # DISCRIMINATION: same bytes, innocent name.
 cp world/camera_rig_path.json "$T/render_film99_path.json"
 RC=$(run "$T/d.log" --path "$T/render_film99_path.json")

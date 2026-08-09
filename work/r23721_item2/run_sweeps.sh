@@ -26,8 +26,16 @@ OUT=$R2/work/r23721_item2
 mkdir -p "$OUT"
 cd "$R2" || exit 1
 
-sweep() {  # arm points campath
-  local arm="$1" pts="$2" cam="$3"
+# WHY SOME ARMS PASS --why-stale.  R2-3721 added film13/film14's bytes to
+# live_campath.KNOWN_STALE, because they are the bytes docs/screen_presence*.json
+# was actually swept from, and tools/screen_presence.py now refuses them.  The
+# baseline arms sweep that camera ON PURPOSE -- that is the whole experiment --
+# so they say so, and the refusal stays intact for everyone who does not.
+WHYSTALE="R2-3721 item 2 / defect #159: the orphan is the BASELINE arm of this \
+comparison. Sweeping it is the measurement, not the mistake."
+
+sweep() {  # arm points campath [extra args...]
+  local arm="$1" pts="$2" cam="$3"; shift 3
   if [ -f "$OUT/${arm}_sp_points.npz" ]; then
     echo "== $arm already done, skipping"; return 0
   fi
@@ -35,7 +43,7 @@ sweep() {  # arm points campath
   bash tools/buildlock.sh --small "sp_$arm" \
     python3 tools/screen_presence.py \
       --points "$pts" --path "$cam" --sheet docs/beat_sheet.json \
-      --uniform-shutter \
+      --uniform-shutter "$@" \
       --out "$OUT/${arm}_sp_objects.json" \
       --npz "$OUT/${arm}_sp_points.npz" > "$OUT/${arm}_sweep.log" 2>&1
   echo "   rc=$? $(grep -c '^\[SP\] wrote' "$OUT/${arm}_sweep.log") wrote-lines  $(date -Is)"
@@ -52,7 +60,7 @@ sweep a9_k100     "$A9"  "$SCR/ctl_k100_path.json"
 sweep a9_k025     "$A9"  "$SCR/ctl_k025_path.json"
 sweep a9_k010     "$A9"  "$SCR/ctl_k010_path.json"
 # --- robustness on a different world ------------------------------------
-sweep a10_film14  "$A10" render/film14_path.json
+sweep a10_film14  "$A10" render/film14_path.json --why-stale "$WHYSTALE"
 sweep a10_film24  "$A10" render/film24_path.json
 # --- the camera the only rendered pixels that exist actually came from -----
 # work/r22161_proxy (the free 2,978-frame proxy) was rendered from film22

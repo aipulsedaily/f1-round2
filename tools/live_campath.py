@@ -83,6 +83,27 @@ KNOWN_STALE = {
         "render/film16_path.json). Superseded 2026-08-07. Diverges from the "
         "live camera by up to 9.866 m and 23.0 mm of lens across f2-f780 "
         "(beat 1). This is R2-1007.",
+    # R2-3721 / defect #159.  THE PREVIOUS GENERATION OF THE SAME ORPHAN, and
+    # the one that did the damage.  `world/camera_rig_path.json` held THESE
+    # bytes (== film13 == film14, and still what git HEAD has) when
+    # `docs/screen_presence*.json` was swept at 2026-08-04 01:49; it acquired
+    # the film16 bytes above at 15:49 the same day, fourteen hours LATER.  So
+    # the entry above does not cover the sweep it was written about: a reader
+    # checking the orphan by filename got the film16 bytes and concluded the
+    # sweep was film16's, and the sweep's own `campos` array matches film14 to
+    # 5 um and film16 only to 8.86 m.
+    #
+    # Against the delivered camera (film24) these bytes are wrong on 2,347 of
+    # 2,978 frames in position (max 21.43 m at f2176), 2,129 in lens (max
+    # 56.00 mm at f2978) and 2,456 above 0.2 deg (max 179.52 deg at f87).  The
+    # item tiering swept from them puts 17 of 435 items on a different tier and
+    # 322 of 559 objects on a px/m detail budget more than 10 % out.
+    "f1c65c46459d4488d252434f6ce123473f03051498f4c471110619026010a5e0":
+        "the film13/film14-era rig output. This is the exact camera "
+        "docs/screen_presence*.json and docs/proposed_tiers.json were swept "
+        "against, and it is what git HEAD still has in "
+        "world/camera_rig_path.json. 17 of 435 items tier differently under "
+        "the delivered camera. This is R2-3721 / defect #159.",
 }
 
 
