@@ -907,11 +907,37 @@ sequence master4k job 467247848cc6: 993 frame(s) requested,
 
 `993 - 139 = 854` exactly; the 139 matches fleet04's PNGs on disk; and the 854
 **includes frame 1133**, which is missing from disk and is therefore back in the
-todo rather than silently skipped. That is the whole resume contract discharged
-on real numbers: nothing re-rendered, nothing dropped.
+todo rather than silently skipped. That is the resume contract discharged on
+real numbers for **that** card: nothing re-rendered, nothing dropped.
 
-**This is the property the whole `--name` design exists for, and it survived a
-simultaneous three-card loss.**
+### But it did NOT apply to the other two, and that is a real follow-up
+
+**A lost frame is only recovered if the JOB is requeued, and only fleet04's
+was.** The three cards took two different paths:
+
+| broker | what happened to the job | the lost frame |
+| --- | --- | --- |
+| fleet04 | deploy failed → `FleetUnavailable` → **job requeued**, plan recomputed from disk | **1133 is in the todo** — will be rendered |
+| fleet03 | transport failure only → **job continued in place** | **192 skipped this pass** |
+| fleet05 | transport failure only → **job continued in place** | **2127 skipped this pass** |
+
+Observed rather than reasoned: `frame 192` is absent from disk while fleet03 is
+rendering `frame 193` with `done=191`, and fleet03 has logged **no new plan
+line** — its only one is from `04:06:31`, so `run_sequence` never restarted and
+never re-read the disk. Same shape on fleet05: `2127` absent, `cur 2129`,
+`done 145`.
+
+**So the master will finish with 2 frames missing unless something re-renders
+them.** That is not a silent loss — it is exactly what
+`fleetctl verify --manifest` reports as `missing`, and the fix is one
+re-submission under the same `--name`, which by construction renders only what
+is absent. But it *would* be a silent loss to anyone who trusted "the resume
+handles it" without checking, which is why it is written down here.
+
+**ACTION, and it is not optional: before encoding, re-submit `master4k` and
+confirm coverage is 2,978 of 2,978.** Do not read a job's own "COMPLETE" line as
+proof of coverage — a sequence job reports complete against *its own todo list*,
+and a frame that failed mid-pass is not on it.
 
 ### The RAM floor held on every replacement
 
@@ -950,6 +976,58 @@ It then did three things in the right order:
 
 Replacement 47286610 (machine 8512, $0.668/hr, 3375 Mbps) was rented 1 second
 later.
+
+### TWO bad hosts in a row on fleet04, and what the blacklist costs
+
+fleet04 drew **two consecutive hosts that never wrote `authorized_keys`**:
+
+| attempt | machine | $/hr | reachable in | outcome |
+| --- | --- | --- | --- | --- |
+| 1 | 52271 (New Jersey) | **$0.3615** | 225 s | key never installed → blacklisted, destroyed for $0.051 |
+| 2 | 8512 (Japan) | $0.6859 | 123 s | key never installed → blacklisted, destroyed for $0.076 |
+| 3 | 56786 | **$0.801** | — | deploying |
+
+This is not our key: fleet03 and fleet05 authenticated on the **same key at the
+same minute** and both reached `worker ready`. The broker checks this itself —
+*"the key itself is fine — it is the account's only key and vast reports it
+attached to this instance"* — which is why it condemns the host instead of
+retrying.
+
+**A possible pattern, noted but not yet established:** the two bad hosts took
+**225 s and 123 s** to become reachable, against **21 s and 31 s** for the two
+good ones. If slow-booting hosts are also slow to inject keys, the 240 s
+`SshNeverReady` threshold may be discarding recoverable hosts. Two samples is
+not a finding. **If a third slow host is condemned, that is worth investigating
+before it costs more.**
+
+**The blacklist walks the price up, and that has a budget consequence.** The
+selector is cheapest-first among non-blacklisted offers, so each condemnation
+moves fleet04 up the ladder: $0.3615 → $0.6859 → **$0.801**, against the
+$0.4637 it started on.
+
+| broker | cap | spent | remaining | work left | cost at its current rate |
+| --- | --- | --- | --- | --- | --- |
+| fleet03 | $51.99 | $7.72 | $44.27 | 802 fr x 205 s = 45.7 h | $20.5 @ $0.4489 |
+| fleet04 | $51.66 | $7.73 | **$43.93** | 854 fr x 300 s = 71.2 h | **$57.0 @ $0.801** |
+| fleet05 | $54.84 | $10.90 | $43.94 | 847 fr x 285 s = 67.0 h | $31.1 @ $0.4637 |
+
+**fleet04 would hit its own cap about $13 short of finishing** and pause with
+roughly 196 frames unrendered. The **fleet total** is still inside the ceiling —
+~$26 spent plus ~$109 to go is **~$135 of the $150** — so this is a
+*distribution* problem created by my even three-way split at R2-3846, not a
+budget overrun.
+
+Two levers, both cheap and neither yet needed:
+
+1. **Move cap between brokers, total unchanged.** fleet03 will finish with ~$24
+   of its $44 unspent; `rq budget --set` moves it without a restart.
+2. **The work-conserving rebalance** (R2-3859) moves fleet04's tail onto
+   fleet03, which is simultaneously the fastest and the cheapest card. That
+   fixes throughput and spend with one action.
+
+**The trigger to escalate is the FLEET total projecting past $150, not fleet04
+hitting its own cap** — the latter is a pause I can fix in one command without
+spending an extra cent. Do not silently raise the total.
 
 ### What a retirement cycle actually costs
 
