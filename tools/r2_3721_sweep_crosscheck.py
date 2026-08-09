@@ -191,11 +191,28 @@ def main():
                 % len(rows), n_pk_bad == 0, "%d disagree" % n_pk_bad)
     ok &= check("CLAIM 2  instance_variety's sharp count is NEVER lower than "
                 "the reference's", n_sh_low == 0, "%d lower" % n_sh_low)
-    ok &= check("CLAIM 3  emulating the reference's tracker reproduces its "
-                "published numbers EXACTLY, so the gap is its tracker",
-                n_em_bad == 0, "%d differ" % n_em_bad)
-    print("\n  and the gap is real: the reference under-reports peak sharp on "
-          "%d of %d comparisons." % (n_sh_high, len(rows)))
+    # THE REFERENCE IS EITHER PRE-FIX OR POST-FIX AND EXACTLY ONE ARM MUST
+    # HOLD. Before R2-3737 it under-reported peak sharp, and the emulation
+    # reproduces that exactly; after the one-line fix the two independently
+    # written loops agree outright. A report matching NEITHER is a third
+    # behaviour nobody has accounted for, and that is the case this arm exists
+    # to refuse -- not to wave through as "close enough".
+    pre = n_em_bad == 0
+    post = n_sh_high == 0 and n_sh_low == 0
+    ok &= check("CLAIM 3  the reference is accounted for: either it is PRE-fix "
+                "and emulating its tracker reproduces it exactly, or it is "
+                "POST-fix and the two loops agree outright",
+                pre or post,
+                "emulation differs on %d, direct differs on %d"
+                % (n_em_bad, n_sh_high + n_sh_low))
+    if post:
+        print("\n  the reference carries the R2-3737 fix: the two "
+              "independently written loops agree EXACTLY on all %d "
+              "comparisons, peak and sharp." % len(rows))
+    elif pre:
+        print("\n  the reference is pre-R2-3737 and under-reports peak sharp "
+              "on %d of %d comparisons; the emulation reproduces it exactly, "
+              "so the gap is its tracker." % (n_sh_high, len(rows)))
     if missing:
         print("  NOTE %d pool(s) are not in the reference report: %s"
               % (len(missing), ", ".join(missing)))

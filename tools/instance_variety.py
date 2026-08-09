@@ -654,6 +654,15 @@ def sweep(P, H, MID, nmesh, path_json, stride=1, ladder=RECOG_PX_LADDER,
     sharp_total = {t: np.zeros(nmesh) for t in ladder}
 
     t0 = time.time()
+    # Subjects deeper than the shell's own reach have no occluders behind the
+    # clip and are counted as visible. That is the safe direction, but it must
+    # be said out loud rather than discovered.
+    shell_reach = np.inf
+    if Sg is not None:
+        shell_reach = float(min(
+            (Sg.lo[0] + Sg.NX * Sg.cell) - Sg.lo[0],
+            (Sg.lo[1] + Sg.NY * Sg.cell) - Sg.lo[1])) / 2.0
+    n_deep = n_subj = 0
     for n_done, f in enumerate(frames):
         cx, cy, cz = C[f]
         Rf, sf = Rm[f], s[f]
@@ -793,6 +802,8 @@ def sweep(P, H, MID, nmesh, path_json, stride=1, ladder=RECOG_PX_LADDER,
         front = np.ones(len(Mf), bool)
         if Sg is not None and len(Mf):
             rq = float(depf.max()) * kf
+            n_deep += int((depf > shell_reach).sum())
+            n_subj += int(len(depf))
             sl = Sg.box(cx, cy, rq)
             if sl is not None:
                 if sl == "ALL":
@@ -905,6 +916,11 @@ def sweep(P, H, MID, nmesh, path_json, stride=1, ladder=RECOG_PX_LADDER,
         if progress and n_done % 250 == 0:
             print("[sweep] frame %d/%d  %.0f s" % (n_done, len(frames),
                                                    time.time() - t0), flush=True)
+    if n_deep:
+        print(">> %d of %d subject tests (%.3f %%) are deeper than the shell's "
+              "own half-extent (%.0f m) and were counted as VISIBLE without an "
+              "occlusion test." % (n_deep, n_subj, 100.0 * n_deep / max(1, n_subj),
+                                   shell_reach), flush=True)
     print("[sweep] %d frames (stride %d) in %.0f s"
           % (len(frames), stride, time.time() - t0), flush=True)
     return dict(peak=peak, peak_f=peak_f, sharp=sharp, sharp_f=sharp_f,
@@ -975,6 +991,9 @@ def main():
     ap.add_argument("--shell", default=None,
                     help="write (in Blender) or read (outside) the world-shell "
                          "occluder point sample")
+    ap.add_argument("--shell-clip-m", type=float, default=1500.0,
+                    help="discard shell points further than this from the "
+                         "camera corridor; they cannot occlude anything")
     ap.add_argument("--no-occlusion", action="store_true",
                     help="report the UNSUBTRACTED counts as the verdict. The "
                          "subtracted ones are reported either way; this only "
@@ -1121,6 +1140,25 @@ def main():
         z = np.load(a.shell, allow_pickle=True)
         SHELL = z["P"]
         smeta = json.loads(str(z["meta"])) if "meta" in z.files else {}
+        # CLIPPED TO THE CAMERA CORRIDOR, AND THIS IS NOT AN APPROXIMATION.
+        # An occluder must be NEARER than the thing it occludes, and no subject
+        # in this film is recognisable past a few hundred metres -- so shell
+        # geometry far from the camera cannot occlude anything, by definition.
+        # `assembly15`'s terrain is a 22 km x 22 km landscape and 64.5 M of its
+        # 64.5 M shell points are 93 % beyond any possible occluder distance;
+        # carrying them costs a gigabyte and buys nothing. `sweep()` asserts the
+        # radius was big enough by reporting any subject deeper than it.
+        cam = np.array([e["p"] for e in json.load(open(path))["path"]],
+                       dtype=np.float64)
+        lo = cam[:, :2].min(0) - a.shell_clip_m
+        hi = cam[:, :2].max(0) + a.shell_clip_m
+        n0 = len(SHELL)
+        keepS = ((SHELL[:, 0] >= lo[0]) & (SHELL[:, 0] <= hi[0])
+                 & (SHELL[:, 1] >= lo[1]) & (SHELL[:, 1] <= hi[1]))
+        SHELL = np.ascontiguousarray(SHELL[keepS])
+        smeta["clip_m"] = a.shell_clip_m
+        smeta["points_before_clip"] = int(n0)
+        smeta["points_after_clip"] = int(len(SHELL))
         report["shell"] = dict(path=os.path.relpath(os.path.abspath(a.shell), R2),
                                **smeta)
         print("occluders: %d world-shell surface points at %.2f m from %d "

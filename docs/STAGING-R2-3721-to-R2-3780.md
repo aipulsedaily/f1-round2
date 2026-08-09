@@ -2,19 +2,25 @@
 
 ## R2-3721..R2-3736 — task #162: the variety gate now sees the trees, and the trees are measured for the first time
 
-**VERDICT: the gate is repaired and the trees are measured. The worst single
-tree source mesh in the film is `VEG_tree_oak_L2_06` at 45 co-visible sharp
-copies at ≥ 64 px, and `VEG_tree_oak_L2_15` at 30 at ≥ 128 px, against the named
-failure of 100. The repaired gate nevertheless returns
-`INSTANCE_VARIETY_SPAM` on `assembly15` — on five REED GRASS meshes, at
-241–300 co-visible sharp copies at ≥ 64 px — and §6 is what those 300 reeds
-actually are in the delivered frame. That one needs your ruling; I have not
-moved a threshold to make it go away.**
+**VERDICT: the gate is repaired, the trees are measured, and `assembly15` is
+CLEAN. With occlusion subtracted (§6b, coordinator ruling) the worst repeat in
+the film is `VEG_grass_reed_F00_u` at 52 co-visible sharp copies at ≥ 64 px, and
+the worst TREE is `VEG_tree_oak_L2_05` at 35 at ≥ 64 px and
+`VEG_tree_oak_L2_15` at 26 at ≥ 128 px — against the named failure of 100.**
+
+**`RECOG_PX` was NOT moved.** The gate first returned `INSTANCE_VARIETY_SPAM` on
+five reed-grass meshes at 241–300 copies; those reeds are 182–387 m out behind
+the pit wall, and subtracting occlusion removes 82–85 % of them while removing
+only 0–31 % of the trees. §6b is that measurement and the six defects the
+control found before it could be trusted.
 
 Files: `tools/instance_variety.py` (rewritten),
-`tools/r2_3721_variety_gate_control.py` (new, 17 checks),
+`tools/r2_3721_variety_gate_control.py` (new, **25 checks**),
 `tools/r2_3721_sweep_crosscheck.py` (new, 3 claims),
-`tools/gate_exit_selftest.py` (contract updated).
+`tools/gate_exit_selftest.py` (contract updated),
+`tools/r2_3421_covisible_repeats.py` (R2-3737 tracker fix, §4a),
+`docs/LIVE-CAMERA.md` (film24 declared, R2-3742),
+`render/world/assembly/r2/v12{0,1,2}/battery.sh` (`--path`, R2-3743).
 Reports: `docs/instance_variety.json` (new schema),
 `docs/instance_variety_SUPERSEDED_pre_R2_3721.json` (the stale pre-fix artefact,
 moved aside so its 310/1.99 % cannot be requoted),
@@ -132,10 +138,12 @@ point) reads **2** and passes. A third case was added: the same positive blend
 with **no** `--path` must return VACUOUS(3), because co-visibility is a screen
 event and a gate with no screen must refuse rather than pass.
 
-> **Carried debt, not fixable by me:** `render/world/assembly/r2/v12{0,1,2}/battery.sh`
-> invoke this gate without `--path` and will now get VACUOUS(3) rather than a
-> verdict. Those files are under `render/world/assembly/`, which this task was
-> told not to touch. **They need `--path render/film24_path.json` adding.**
+> **R2-3743 — CLOSED by coordinator instruction.** The three
+> `render/world/assembly/r2/v12{0,1,2}/battery.sh` invoked this gate without
+> `--path` and would have got VACUOUS(3) rather than a verdict. They now pass
+> `--path $R2/render/film24_path.json` for the world scene and a generated
+> control camera for the two control blends. A battery that returns VACUOUS is
+> a battery nobody will read.
 
 ---
 
@@ -210,10 +218,20 @@ the orphan `camera_rig_path.json` — a camera difference, not a tracker one. Th
 conclusion "the worst number in the film is ~20 against a named failure of 100"
 survives the correction.
 
-**`tools/r2_3421_covisible_repeats.py` IS NOT EDITED.** It is held by
-`r2-3421-variety`'s lease, and a lease I do not own is not mine to release. The
-defect is reported and the file is left alone. **It needs one line changed by
-its owner:** `if ns > bsharp[thr]["sharp"]:`.
+**R2-3737 — LANDED.** The file was held by `r2-3421-variety`'s lease and was
+left alone until the coordinator released it; **the finding and the file are
+that agent's work, the correction is mine.** The one line is now
+`if ns > bsharp[thr]["sharp"]:`. Re-running it moves **45 rows**, worst
+`VEG_grass_reed_F` at ≥ 32 px from 1,403.7 to 2,742.5 — and `tree:oak_L2` at
+≥ 128 px is **347 either way**, so the R2-3421 headline stands.
+
+**And the closure is exact:** with the fix in place the cross-check's two
+independently written loops agree on **all 120 comparisons, peak AND sharp**.
+CLAIM 3 now demands that the reference be *accounted for* — either pre-fix, in
+which case emulating its tracker reproduces it exactly, or post-fix, in which
+case the two loops agree outright. Both arms were run and each holds on its own
+report. A reference matching neither would be a third behaviour nobody had
+accounted for, and that is what the arm refuses.
 
 ---
 
@@ -322,7 +340,122 @@ because there is no silhouette in it. This instrument subtracts neither
 occlusion nor atmospheric extinction, by design, and this is that bound doing
 its job in the direction it was built to err.
 
-#### 6b. What I have NOT done, and why it is your call
+#### 6b. R2-3740..R2-3746 — OCCLUSION SUBTRACTED. **The gate is CLEAN, the trees barely move, and the reeds fall.**
+
+**Coordinator ruling: subtract occlusion, do NOT move `RECOG_PX`.** Co-visible
+means visible together; an instance the audience cannot see is not a repeat of
+anything, so counting an occluded mesh is a defect in the measure rather than a
+strictness setting. `RECOG_PX` is still the inherited **64**.
+
+Subtracting occlusion can only ever LOWER a count, so it will read as a
+weakening to anyone looking at the diff. It is not, and here is the proof in one
+table — the same run, both ways:
+
+| source mesh | ≥64 px sharp, **no occlusion** | **occlusion subtracted** | removed |
+|---|---:|---:|---:|
+| `VEG_grass_reed_F03_u` | 300 | **45** | 85 % |
+| `VEG_grass_reed_F01_u` | 298 | **48** | 84 % |
+| `VEG_grass_reed_F00_u` | 292 | **52** | 82 % |
+| `VEG_grass_reed_F02_u` | 266 | **43** | 84 % |
+| `VEG_grass_reed_F04_u` | 241 | **40** | 83 % |
+| `VEG_tree_oak_L2_06` | 45 | **31** | 31 % |
+| `VEG_tree_oak_L2_05` | 36 | **35** | 3 % |
+| `VEG_tree_oak_L2_15` (≥128 px) | 30 | **26** | 13 % |
+| `VEG_tree_oak_L2_15` (≥256 px) | 13 | **13** | **0 %** |
+
+**The reeds lose 82–85 % and the trees lose 0–31 %.** That is the shape a
+correct occlusion pass has to have here: the reeds were behind the pit wall and
+the trees were not. A change that had merely lowered everything would have
+lowered them together.
+
+```
+recog px    worst source mesh              SHARP    frame      (no occlusion)
+>= 32       VEG_grass_reed_F03_u             140     2341      832
+>= 64       VEG_grass_reed_F00_u              52     2337      300
+>= 128      VEG_tree_oak_L2_15                26     2340       30
+>= 256      VEG_tree_oak_L2_15                13     2343       13
+>> STAGE RESULT: INSTANCE_VARIETY_CLEAN
+```
+
+**The worst repeat in the film is now 52, against the named failure of 100, and
+the worst TREE is 35 at ≥64 px and 26 at ≥128 px.** The client's number is
+comfortable and it always was.
+
+##### What the occluder set is, and which way every error in it points
+
+The shell is **7,943,063 surface points at 1.5 m from 2,191 objects** —
+terrain, track, kerbs, barriers, walls, grandstands, buildings, bridges: every
+real object whose mesh has one user. Deliberately conservative in four separate
+places, so the subtracted count is still an **upper bound**, just a tighter one:
+
+* **Repeated instances do not occlude each other.** A tree behind a tree still
+  counts. That is the case the red line is actually about.
+* **`OCC_TOL_M` = 0.75 m**, so a plant is not occluded by the ground it stands on.
+* **Subjects beyond the shell's reach are counted visible without a test** —
+  65,807 of 13,736,766 subject tests, **0.479 %**, reported by the run itself.
+* **The shell is clipped to the camera corridor ±1,500 m.** That is not an
+  approximation: an occluder must be *nearer* than what it occludes, and
+  `assembly15`'s terrain is a 22 km × 22 km landscape of which **93 % is beyond
+  any possible occluder distance** (64.5 M points → 7.9 M).
+
+The one bias in the other direction, stated rather than hoped away: the mip
+reconstruction dilates an occluding surface by up to two sample spacings **at
+its silhouette edge**, so a subject within ~3 m of the *end* of a wall may be
+called occluded when a sliver of it shows. Everywhere that is not an edge —
+which is all of a pit wall except its ends — the reconstruction is exact.
+
+##### R2-3741..R2-3746 — the control failed FIVE times, and every failure was a real defect
+
+Arms G and H of `tools/r2_3721_variety_gate_control.py`: G is the grove of 40
+with occlusion on and **nothing in the way** — it must still see 40. H is the
+same grove, same camera, with a **two-triangle wall** between the lens and the
+trees — it must fall, and its *unsubtracted* count on the same run must still
+read 40, so that it is shown to have fallen because of the wall and not because
+the measurement stopped working.
+
+| # | what the control saw | the defect behind it |
+|---|---|---|
+| 1 | shell = 55,979 points for a 2.5 km world | `HOST_DIAG_M` applied to *every* object threw out `SURF_Track` (1,688 m), the terrain and all 131 `BR_*` armco runs — **it threw out the pit wall.** The host test is size **and** being vegetation. |
+| 2 | 38 GB of swap, run stopped by task id | the sampler materialised one object's entire sample set before deduping. A few thousand 50 m terrain triangles are ~1,100 samples each. Now batched at 400 k. |
+| 3 | **40 of 40 trees through a solid wall** | a splatted point is not a surface: 1.5 m at 30 m is 67 quarter-res pixels, so 203 wall samples filled 55 of the ~387,000 they cover — a buffer 99.98 % holes. |
+| 4 | **35 of 40** through the wall | the query footprint was taken from the **subject's** depth; an occluder is nearer and has a *larger* footprint. Replaced with a mip pyramid, each sample splatted at its own footprint. |
+| 5 | **40 → 33 in an empty field** | the probe was the instance **origin**, and `instance_plants()`/`gn_kind()` put a plant's origin **on the ground** — so every plant was occluded by the earth it stands on. Now probed at mid-height. |
+| 6 | **5 of 40** through the wall | random samples do not cover a grid: drawing `area/cell²` uniform points leaves **1/e = 37 %** of cells empty. Now ×6 oversampled before dedupe (99.75 % coverage). |
+
+```
+ARM G -- occlusion ON, nothing in the way
+  ok   with occlusion ON the gate STILL sees all 40 trees
+  ok   and the unsubtracted count is the same 40, i.e. nothing was hidden
+  ok   gate still returns PASS(0)
+ARM H -- the SAME grove, a two-triangle wall between lens and trees
+  ok   the walled shell has more points than the open one
+  ok   behind the wall the gate sees 0 of the 40 trees
+  ok   and that is at least a 10x reduction, i.e. the wall did the work
+  ok   and it fell BECAUSE OF THE WALL: the unsubtracted count is still 40
+25/25 checks passed          >> STAGE RESULT: IV_GATE_CONTROL_OK
+```
+
+**A seventh defect, in the control itself:** `run_gate()` did not delete the
+report before running, so a *crashing* arm was graded on the previous arm's
+json and passed. It deletes it now. A stale report is a pass nobody earned.
+
+##### The threshold was NOT moved, and that is the point
+
+`RECOG_PX` is 64, exactly as inherited. Had it been moved to 128 the FAIL would
+also have gone away — and the number would have meant less while reading the
+same. The reeds fall because the pit wall is between them and the lens, which
+is a fact about the world, not about where a line was drawn.
+
+---
+
+#### 6c. Superseded: what §6b replaces
+
+**The rest of this section records the state BEFORE occlusion was subtracted**
+and is kept because the ruling turned on it. The 300-copy reed FAIL below is
+real as an unoccluded count — it is the `no-occ` column of the table in §6b —
+and the frames referenced are still the right frames to look at.
+
+#### 6d. What I had NOT done, and why it was your call
 
 The verdict row is `RECOG_PX = 64`, **inherited unchanged** from
 `r2_3421_covisible_repeats.py`. Moving it to 128 — where R2-3421 argued a
@@ -351,6 +484,47 @@ depth buffer from the point cloud for exactly this. That is real work, not a
 threshold move, and it is not in this task's scope.
 
 ---
+
+### R2-3747 — the five skipped items: what shipping without them costs
+
+Asked for cheaply from what item 2 already measured
+(`work/r23721_item2/a9_film24_item_presence.json`, delivered camera, 2,978
+frames at 24 fps). "Sharp+unoccluded" is the only column worth ranking on — it
+is the frames on which the thing is both resolvable and actually in view.
+
+| item | visible f | **sharp+unocc f** | = seconds | peak px (was) | where it peaks |
+|---|---:|---:|---:|---|---|
+| `exterior_ground_apron` | 1,464 | **354** | 14.8 s | **495.8** (151.6) | beat 1, f282 |
+| `farm_gate` | 2,257 | **719** | 30.0 s | 157.5 (157.4) | beat 5, f122 |
+| `grandstand_debris_fence` | 1,112 | **248** | 10.3 s | 179.8 (118.2) | **f2978 — the last frame** |
+| `podium_backdrop` | 1,112 | **248** | 10.3 s | 189.6 (131.4) | **f2976** |
+| `podium_structure` | 1,112 | **248** | 10.3 s | 165.9 (114.9) | **f2976** |
+
+**The apron is the one that counts, and for a reason beyond its 3.3× jump.**
+`exterior_ground_apron` and the **already-built** `forecourt_paving_bay` share a
+host set and measure *identically* — 1,464 / 354 / 495.8 px, peaking in beat 1 at
+f282 where their host reaches 1,061 px. So it is not merely a BULK item that
+crossed a line: **it is the unbuilt twin of a module that was already judged
+worth building, on the same surface, in the opening shot.** Shipping without it
+means half of that surface is dressed and half is not.
+
+**`farm_gate` has the most screen time and the least reason to worry** — 30
+seconds sharp and unoccluded, but it peaks at 157.5 px against 157.4 before, i.e.
+**it crossed the tier line on frame count, not on size.** It is a background
+silhouette for the whole of beat 5. Cheapest of the five to skip.
+
+**The three grandstand/podium items are one decision, not three.** Identical
+1,112 / 248 / f2976–2978, same host set. 10 seconds each — but those seconds are
+the **closing frames of the film**, at the longest lens, and in a single
+unbroken take the last image is the one that is remembered. They are also the
+only three of the five whose peak lands in beat 6.
+
+**If only one is built: `exterior_ground_apron`.** If two: add the podium group
+as a single pass. `farm_gate` last.
+
+*(Caveat carried from item 2 §"The one thing this measurement is NOT": these are
+`assembly9` presence numbers with the world held fixed, which is what makes the
+diff a camera diff. They are not the shipping world's absolute numbers.)*
 
 ## R2-3721 item 2 (defect #159) — THE TIERING DOES MOVE, AND MOSTLY NOT IN BEAT 1
 
