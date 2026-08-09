@@ -633,7 +633,7 @@ instrument could not see below.
 today's parent commit, so reusing the 08-04 baseline npz does not smuggle a code
 change into a camera diff (above).
 
-**C4 — the guard added to `screen_presence.py`**, 8 arms, 3 of which must fail
+**C4 — the guard added to `screen_presence.py`**, 9 arms, 4 of which must fail
 (below).
 
 **C5 — the answer is not an artefact of assembly9.** The whole pair was re-run
@@ -740,18 +740,27 @@ default camera.** Changed:
   bytes were replaced fourteen hours after the sweep. A reader comparing by name
   would have concluded they matched.
 
-`ctl_stale_camera.sh` runs six arms and three of them **must** fail:
+`ctl_stale_camera.sh` runs nine arms and **four of them must fail**. Re-run by
+the lead against the final committed state of the tools:
 
 ```
-  MUST FAIL: the real R2-1007 orphan, no reason given        ok  rc=1, KNOWN-STALE
-    ...and it refused BEFORE reading points or measuring     ok  no npz, no json
-  MUST FAIL: a whitespace-only --why-stale is not a reason   ok  rc=1, KNOWN-STALE
-  MUST FAIL: the same bytes under an innocent filename       ok  rc=1, KNOWN-STALE
-  POSITIVE: a stated reason lets the stale sweep run         ok  rc=0
-    ...and the OUTPUT records that it was stale              ok  sha=d9c8f5c54ccd1ad8
-  POSITIVE: no --path resolves docs/LIVE-CAMERA.md           ok  rc=0, film19_path.json
-  >> STAGE RESULT: SP_CAMERA_GUARD_OK  8 passed, 0 failed
+  MUST FAIL: the real R2-1007 orphan, no reason given          ok  rc=1, KNOWN-STALE
+    ...and it refused BEFORE reading points or measuring       ok  no npz, no json
+  MUST FAIL: a whitespace-only --why-stale is not a reason     ok  rc=1, KNOWN-STALE
+  MUST FAIL: the film13/film14 bytes the docs were swept from  ok  rc=1, says defect #159
+  MUST FAIL: the same bytes under an innocent filename         ok  rc=1, KNOWN-STALE
+  POSITIVE: a stated reason lets the stale sweep run           ok  rc=0
+    ...and the OUTPUT records that it was stale                ok  sha=d9c8f5c54ccd1ad8 stale=True
+  POSITIVE: no --path resolves docs/LIVE-CAMERA.md             ok  rc=0
+    ...and it swept exactly that file                          ok  film19_path.json
+  >> STAGE RESULT: SP_CAMERA_GUARD_OK  9 passed, 0 failed
 ```
+
+The fourth arm is the one that arrived last and matters most: `KNOWN_STALE`
+originally named only the *film16* generation of the orphan, and **the bytes
+that actually contaminated `docs/screen_presence*.json` are film13/film14's**
+(commit `ab0239d`). A guard that named the wrong generation of the same defect
+would have passed every other arm here.
 
 The third arm is the one that earns its place: R2-1007's file was already
 sitting under the most innocent name in the tree, so a guard that keys on the
@@ -785,7 +794,7 @@ python3 work/r23721_item2/builtcheck.py \
 python3 work/r23721_item2/objdelta.py work/w2_0/retier_a9/sp_objects.json \
   work/r23721_item2/a9_film24_sp_objects.json --label "orphan -> film24"
 
-# 6. the guard control. Three of its eight arms MUST fail.
+# 6. the guard control. Four of its nine arms MUST fail.
 bash work/r23721_item2/ctl_stale_camera.sh
 ```
 
