@@ -73,6 +73,8 @@ import numpy as np
 R2 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(R2, "anim"))
 import filmtime as FT                                            # noqa: E402
+sys.path.insert(0, os.path.join(R2, "tools"))
+import live_campath as LC                                        # noqa: E402
 
 RES_X, RES_Y = 3840, 2160
 SENSOR_MM = 36.0
@@ -141,7 +143,35 @@ def build_grid(pts, cell):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--points", required=True)
-    ap.add_argument("--path", default=os.path.join(R2, "world/camera_rig_path.json"))
+    # THERE IS NO DEFAULT CAMERA ANY MORE.  R2-3721 / defect #159.
+    #
+    # This argument used to default to `world/camera_rig_path.json`, and that
+    # file is the R2-1007 orphan -- `live_campath.KNOWN_STALE` names it by
+    # content and `docs/LIVE-CAMERA.md` exists because of it.  Every sweep that
+    # took the default measured a camera no frame was ever rendered from, and
+    # `docs/screen_presence*.json` -- the file the whole item campaign's tiering
+    # is read out of -- is one of them.  17 of 435 items sit on a different tier
+    # under the delivered camera, and 322 of 559 objects have a px/m detail
+    # budget that moves by more than 10 %.
+    #
+    # A default is the wrong shape for this answer for the same reason
+    # `input_stamp.default_inputs()` was: a hardcoded filename cannot notice
+    # that the bytes behind it changed.  It is worse than that here -- the
+    # docs sweep's own `campos` array matches `render/film14_path.json` to
+    # 5 um and today's `world/camera_rig_path.json` to 8.86 m, so the FILE the
+    # stamp names was already not the BYTES that were read.  The camera is now
+    # either stated on the command line or resolved from the one file that
+    # declares it.  It is never assumed.
+    ap.add_argument("--path", default=None,
+                    help="camera path json. OMIT to resolve the LIVE camera "
+                         "through docs/LIVE-CAMERA.md (tools/live_campath.py). "
+                         "There is no hardcoded default: that default was "
+                         "defect #159.")
+    ap.add_argument("--why-stale", default="",
+                    help="REQUIRED to sweep a camera live_campath knows to be "
+                         "superseded. Non-empty prose. Sweeping the orphan on "
+                         "purpose (an A/B, a historical re-measurement) is "
+                         "legitimate; doing it by accident is #159.")
     ap.add_argument("--sheet", default=os.path.join(R2, "docs/beat_sheet.json"))
     ap.add_argument("--out", required=True)
     ap.add_argument("--stride", type=int, default=1)
@@ -161,6 +191,31 @@ def main():
                          "reproduces the old ramped shutter, which is only useful as "
                          "the other half of a diff.")
     a = ap.parse_args()
+
+    # ---- WHICH CAMERA, resolved and IDENTIFIED BY ITS BYTES ---------------
+    if a.path is None:
+        a.path = LC.declared_campath()
+        print("[SP] no --path given; docs/LIVE-CAMERA.md declares %s"
+              % os.path.relpath(a.path, R2), flush=True)
+    cam_sha = LC.sha256(a.path)
+    stale_note = LC.KNOWN_STALE.get(cam_sha)
+    if stale_note and not a.why_stale.strip():
+        raise SystemExit(
+            "REFUSING to sweep a KNOWN-STALE camera.\n"
+            "    file   %s\n"
+            "    sha256 %s\n"
+            "    what   %s\n"
+            "This is defect #159: docs/screen_presence*.json was swept against "
+            "an orphan camera because this argument had a default. If the "
+            "stale sweep is what you actually want -- an A/B, a historical "
+            "re-measurement -- say so with --why-stale '<reason>' and it will "
+            "run and be recorded as such." % (a.path, cam_sha, stale_note))
+    if stale_note:
+        print(">> [SP] DELIBERATE stale-camera sweep\n"
+              "     file   %s\n     sha256 %s\n     what   %s\n     why    %s"
+              % (a.path, cam_sha, stale_note, a.why_stale), flush=True)
+    print("[SP] camera %s\n[SP] camera sha256 %s"
+          % (os.path.relpath(a.path, R2), cam_sha), flush=True)
 
     t0 = time.time()
     z = np.load(a.points, allow_pickle=True)
@@ -425,6 +480,18 @@ def main():
     json.dump({"generated": time.strftime("%Y-%m-%dT%H:%M:%S"),
                "points_file": os.path.abspath(a.points),
                "camera_path": os.path.abspath(a.path),
+               # THE FIELD THAT WOULD HAVE CAUGHT #159 ON THE DAY.
+               # `camera_path` above is a FILENAME, and the filename of the
+               # camera behind docs/screen_presence*.json stayed
+               # `world/camera_rig_path.json` while its bytes were replaced
+               # fourteen hours after the sweep. A reader comparing the two
+               # files by name would conclude they matched. Nothing recorded
+               # here could tell present from absent -- the project's
+               # most-logged defect shape. The bytes can.
+               "camera_path_sha256": cam_sha,
+               "camera_is_known_stale": bool(stale_note),
+               "camera_stale_note": stale_note,
+               "why_stale": a.why_stale or None,
                "frames": nframes, "stride": a.stride,
                "max_range_m": a.maxrange,
                "smear_sharp_px": SMEAR_SHARP_PX,
