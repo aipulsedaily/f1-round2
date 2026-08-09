@@ -636,7 +636,148 @@ carve a chunk off the slowest broker's remaining tail, cancel and resubmit that
 broker's job without it, and hand the chunk to fleet03 under the same `--name`.
 Not a re-submission of the whole range to every broker, which would race.
 
-*(Sections below are filled in as the render proceeds.)*
+## R2-3856 — THE THREE FRAME CHECKS, REHEARSED BEFORE THEY MATTER
+
+All three were run against the frames delivered in the first half hour, so that
+a tooling problem surfaces now rather than at hour 82.
+
+**Checks 1 and 2 — `fleetctl verify --manifest state/fleet/master4k.json`:**
+
+```
+sequence master4k   frames 1-2978 (2978 wanted)
+  present    13        duplicated 0        outside the requested range 0
+    broker 3   1-993      5/993      broker 4   994-1986   4/993
+    broker 5   1987-2978  4/992
+  distinct sha256 across all delivered frames: 13 of 13
+  sha256 agrees with the broker's own frames table: 13/13
+  resolutions delivered: 3840x2160
+  blank gate: 13 OK, 0 not-OK, 0 unmeasured
+  render_sec across all brokers: min 209.1 median 267.0 max 359.8 mean 266.3
+```
+
+It returns FAIL, and correctly — 2,965 frames do not exist yet. What matters is
+that every column that *can* be true this early is: coverage attributed to the
+right broker, **13 of 13 distinct hashes** (no frame is a repeat of another),
+and **13 of 13 agreeing with the sha256 the broker recorded independently at
+fetch time**, which is the only form of check 2 that is not a file compared
+against itself.
+
+**Check 3 — `tools/r23841_verify_frames.py`**, which decodes rather than reads.
+Written for this task because `fleetctl verify` never inflates a PNG: its
+`width`, `height` and `blank` columns are re-read out of the broker's own
+SQLite, so **a frame truncated in its IDAT stream passes it** — and this farm
+has already delivered one truncated file that looked finished. Validated on
+three arms before use:
+
+| arm | expected | got |
+| --- | --- | --- |
+| four real 4K frames | PASS | PASS |
+| one frame truncated to 60% of its bytes | FAIL | FAIL — `frame 3: OSError: image file is truncated` |
+| one frame deleted | FAIL | FAIL — `missing 1 [2]` |
+
+On the master's own frames it reports 3840x2160, 256 distinct luminance levels
+on f994, and nothing flat or blank.
+
+## R2-3857 — THE ENDING WAS LOOKED AT, AT HOUR ONE
+
+The re-ordering at R2-3850 bought exactly what it was meant to. Four beat-6
+frames, all delivered inside 25 minutes of the render starting:
+
+| frame | render | size | mean | sd |
+| --- | --- | --- | --- | --- |
+| 2850 | 252.9 s | 10.6 MB | 0.37950 | 0.08984 |
+| 2900 | 251.6 s | 10.1 MB | 0.37154 | 0.08621 |
+| 2950 | 267.0 s | 9.46 MB | 0.34574 | 0.09731 |
+| **2978** | | **11.88 MB** | 0.33293 | 0.09912 |
+
+```
+>> sequence master4k job 9532142009d5 COMPLETE — 4 frame(s) in 18.2 min
+   (273.3s/frame), all verified
+```
+
+All decode at 3840x2160 with 186-194 distinct luminance levels, none flat, none
+blank.
+
+### f2978 — the frame the warning banner was about
+
+**The car is in frame on the film's final frame, in delivered pixels.** Not
+inferred from the key probe, not projected from a bounding box: rendered, fetched,
+hash-checked, decoded and looked at. It sits on the track on the main straight
+with the kerb line, catch fencing, a populated grandstand and the ground cover
+around it, in the blue/teal livery, at the largest file size of any frame
+delivered so far (11.88 MB — the tail of this shot is the densest part of it).
+
+That closes R2-3181 the only way it can actually be closed. The old artefact had
+the car **absent from f2978 and from the preceding 91 frames**; this one does
+not. The `watch/` banner asserting that no clip in that folder can be used to
+judge the ending is, as of this frame, false about this render — and the
+replacement text is drafted against these numbers rather than against a hope.
+
+**And they were looked at, not just measured.** At 1280 px f2850 reads as a wide
+aerial with the car as a speck — which is the "smallness" caveat in the actual
+pixels, and is worth knowing. **At full 4K it resolves properly**: the car's
+livery, wheels and motion-blurred shadow are all legible on the main straight,
+with kerbs, catch fencing, a populated grandstand, trackside signage and the
+assembly15 ground cover around it. The deliverable is 4K, so the ending reads
+at delivery resolution. That is the honest form of the claim, and it is the form
+the `watch/` row makes.
+
+## R2-3858 — WHERE THIS STANDS, AND WHAT IS LEFT
+
+**The render is in flight and is not finished.** 2,978 frames at ~270 s each on
+three cards is **~82 hours**; it started 04:07Z on 2026-08-09 and is due around
+**2026-08-12**. Everything below the render is built, measured and rehearsed;
+none of it can run until the frames exist.
+
+State at the time of writing (04:45Z, 38 min in):
+
+| | |
+| --- | --- |
+| frames delivered | 16 of 2,978 |
+| spend on this batch | **$0.91** of the $150 ceiling |
+| projected total | **$102-114** against the ~$113 estimate (mean render 266.3 s/frame → 220 GPU-h; 296.6 s/frame → 245 GPU-h) |
+| credit | $172.63, 124 h of runway |
+| instances | 3, all `running`, all exclusive whole-machine RTX 5090s |
+| disk | 114.6 GB free; frames 23.5 GiB + ProRes 11.4 GB + H.265 0.86 GB ≈ 36 GB |
+
+### What remains, in order
+
+1. **Watch the first 12 h retirement.** Due **16:06:32Z / 16:07:02Z /
+   16:07:33Z** for fleet03/04/05. It has never fired on any instance in this
+   project (longest life 10.7 h) and the master takes that path ~21 times.
+   Watch it; do not assume the resume worked.
+2. **Rebalance when fleet03 finishes early.** It is running 209-276 s against
+   289-360 s on the other two and will idle roughly a day early. Carve a
+   **disjoint** chunk off the slowest broker's remaining tail, cancel and
+   resubmit that broker without it, hand the chunk to fleet03 under the same
+   `--name`. Do not re-submit the whole range to every broker — they would race.
+3. **Run the three frame checks in full** — `fleetctl verify --manifest`
+   (coverage + hash against the brokers' own records) and
+   `tools/r23841_verify_frames.py` (decode + geometry + blank). Both rehearsed.
+4. **Encode**, with `tools/r23841_build_framelist.py` then the two ffmpeg
+   commands at R2-3854, **checking disk headroom first** and **not while the box
+   is under the load that broke a 720p libx265 run**.
+5. **Verify the encodes** with `tools/r23841_verify_delivery.sh` — counted
+   `nb_read_frames` = 2978, duration 124.083333 s, audio at both ends.
+6. **File them in `watch/`** and replace the R2-3181 banner. Draft text is
+   written against measured numbers and is honest about what is *not* closed
+   (car presence: fixed; car size: improved, height-under-60 still 78.4%).
+7. **Re-hash the protected films** against
+   `work/r23841/protected_films_BEFORE.txt` and confirm all six unchanged.
+8. **Tear down and verify against the vast.ai API**, not a local state file —
+   `fleetctl down` re-queries and exits non-zero if any fleet instance is still
+   alive. Then confirm with `vastctl status` that the account holds nothing of
+   mine.
+
+### One transient, recorded rather than smoothed over
+
+At 04:44:22Z fleet05's heartbeat to instance 47238618 failed once
+(`ssh: connect ... Connection timed out`, 1 in a row) and did not recur; the
+instance stayed `ready` and the job it was running completed and verified two
+minutes later. This is the documented transient class — the in-container
+watchdog reaps only on a **30 minute** stale heartbeat, and a transport failure
+is explicitly not licensed to destroy a rendering box. Noted because a second
+one on the same instance would mean something else.
 
 ## R2-3847 — A DEFECT IN `fleetctl plan`, FOUND AND NOT WORKED AROUND SILENTLY
 
