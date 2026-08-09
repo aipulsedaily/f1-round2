@@ -249,12 +249,16 @@ __all__ = [
     "px_per_m", "mm_per_px", "resolvable_mm", "chunk_spans",
     "hash01", "Rng", "clamp01", "smoothstep", "vnoise1", "vnoise2",
     "fbm1", "fbm2",
-    "coll", "purge", "new_mesh", "shade_by_angle", "bake_attributes",
+    "coll", "purge", "strays", "assert_scene_is_ours", "clean_scene",
+    "unwired", "assert_wired",
+    "new_mesh", "shade_by_angle", "bake_attributes",
     "winding_audit", "orient_outward", "mesh_winding_report",
     "object_winding_report", "inside_out_fraction",
     "sun_elev_deg", "sun_amplifier", "slope_for_modulation",
     "modulation_for_slope", "relief_amplitude_for", "modulation_for_amplitude",
     "relief_budget", "RELIEF_BANDS", "bump_relief_report",
+    "detail_for", "finest_octave_for", "OCTAVE_FLOOR_PX",
+    "OCTAVE_FLOOR_MM_PER_PX", "OCTAVE_FLOOR_MM",
     "NOISE_WAVELENGTH_FACTOR", "VORONOI_WAVELENGTH_FACTOR",
     "WAVE_WAVELENGTH_FACTOR", "WAVE_DIAGONAL_FACTOR",
     "noise_scale_for", "voronoi_scale_for", "wave_scale_for",
@@ -537,6 +541,158 @@ def purge(prefix, coll_name=None):
                 bpy.data.collections.remove(c)
                 removed["collections"] += 1
     return removed
+
+
+def strays(prefix, scene=None, ignore=()):
+    """Every object in the scene that this item did not make. THE OTHER HALF.
+
+    `purge` above explains, correctly and at length, why it must NOT delete a
+    datablock the caller has not named -- and then leaves the caller with no way
+    to get a clean scene at all. These two functions are one contract and only
+    one half of it existed, so every module that needed the other half invented
+    it, or did not.
+    """
+    _require_bpy("strays")
+    if not prefix or not isinstance(prefix, str):
+        raise ValueError("itemkit.strays(prefix): the prefix is mandatory.")
+    sc = scene or bpy.context.scene
+    skip = tuple(ignore)
+    return [ob.name for ob in sc.objects
+            if not ob.name.startswith(prefix) and ob.name not in skip]
+
+
+def assert_scene_is_ours(prefix, scene=None, ignore=(), what="this measurement"):
+    """REFUSE to measure a scene containing anything this item did not make.
+
+    `--factory-startup` IS NOT AN EMPTY SCENE. It contains a 2 m **Cube at the
+    world origin**, a point Light and a Camera, and `purge(prefix)` leaves all
+    three standing -- deliberately, for the reason its own docstring gives.
+
+    R2-1220, MEASURED, not inferred. A module whose measurement plane is centred
+    near the origin was photographing that Cube: with a probe material emitting
+    a constant 0.86, 99.7 % of the frame came back at a MEAN of 5.390 against
+    that 0.86, the mask took 70.54 % of a frame whose feature is ~12 %, and
+    "Roughness" read 9.82 against a real 0.40. Three gate runs produced numbers
+    that looked plausible. The module's other two substrates sat at x = 32 and
+    x = 10.5, far off-centre, so the defect stayed invisible for a whole arm.
+
+    AND IT HAD ALREADY HAPPENED ONCE, WITH THE WARNING IN THIS FILE.
+    `emitted_wavelength_m`'s docstring records the same Cube "once sat between an
+    ortho camera and a measurement plane and returned one identical number for
+    fourteen different stages". Prose in a docstring is what was already there
+    the second time, and it did not stop it. So this RAISES. It does not warn,
+    and it does not quietly clean up either: a function that silently deleted
+    the stray would hide the fact that the caller's scene setup is wrong, and
+    the caller might have meant to put it there. Ask for
+    `clean_scene(prefix)` if a clean scene is what you want; get a refusal if
+    you thought you already had one.
+
+    `ignore` takes names you know about and accept -- a shared control object, a
+    borrowed camera. Naming them is the point: an exemption you typed is a
+    decision, and a Cube nobody mentioned is not.
+    """
+    bad = strays(prefix, scene, ignore)
+    if bad:
+        raise RuntimeError(
+            "REFUSING %s: %d object(s) in the scene were not made by %r -- %s. "
+            "`--factory-startup` ships a 2 m Cube at the world origin, a Light "
+            "and a Camera, and `purge(%r)` leaves them standing on purpose (see "
+            "its docstring). In R2-1220 that Cube WAS the measurement: 70.54 %% "
+            "of the frame, a probe reading 5.390 against a true 0.86, for three "
+            "gate runs. Call K.clean_scene(%r) first, or name what you meant to "
+            "keep in ignore=()."
+            % (what, len(bad), prefix, ", ".join(sorted(bad)[:12]), prefix,
+               prefix))
+    return True
+
+
+def clean_scene(prefix, scene=None, keep=()):
+    """The sanctioned way to get an empty scene: delete everything NOT ours.
+
+    The exact inverse of `purge`, and the reason it is here rather than in each
+    module is R2-1220: `purge` refuses to do this (rightly), nothing else
+    offered it, so the modules that needed it wrote their own and the ones that
+    did not need it *yet* photographed the default Cube.
+
+    This is for a MEASUREMENT scene the module owns outright. Do not call it in
+    anything that builds into a shared file -- it deletes other modules' suns,
+    which is the failure `purge`'s docstring is about, pointed the other way.
+    `keep` names objects to spare.
+    """
+    _require_bpy("clean_scene")
+    if not prefix or not isinstance(prefix, str):
+        raise ValueError("itemkit.clean_scene(prefix): the prefix is mandatory.")
+    spare = tuple(keep)
+    gone = []
+    for ob in list(bpy.data.objects):
+        if not ob.name.startswith(prefix) and ob.name not in spare:
+            gone.append(ob.name)
+            bpy.data.objects.remove(ob, do_unlink=True)
+    assert_scene_is_ours(prefix, scene, ignore=spare, what="clean_scene")
+    return gone
+
+
+def unwired(node, names):
+    """Which of `names` are input sockets on `node` that nothing is linked to.
+
+    Returns a list of (socket name, the default value it is silently using).
+    """
+    _require_bpy("unwired")
+    out = []
+    for nm in names:
+        sock = node.inputs.get(nm)
+        if sock is None:
+            out.append((nm, "NO SUCH SOCKET"))
+        elif not sock.is_linked:
+            try:
+                out.append((nm, tuple(sock.default_value)))
+            except TypeError:
+                out.append((nm, sock.default_value))
+    return out
+
+
+def assert_wired(node, names, what="this material"):
+    """REFUSE a built node whose named inputs are not actually LINKED.
+
+    ASSERT ON THE ARTEFACT, NEVER ON THE CODE THAT WAS SUPPOSED TO BUILD IT.
+    That is the whole rule, and R2-1226 is what it cost to learn twice.
+
+    An A/B was rendered to decide whether a deposit material read better than
+    the paint it replaced. Its treatment arm was grafted in with `Interface` --
+    the Specular IOR Level channel, and the exact channel the deposit wins on --
+    LEFT UNLINKED. Nothing failed. The socket fell back to its default, the
+    render completed, the numbers looked ordinary, and the measured verdict was
+    "the fix does not work". It was reported to the client in those words. The
+    arm was not the thing it claimed to be.
+
+    THE FAILURE MODE IS THE DEFAULT, NOT AN ERROR. An unlinked socket does not
+    raise, does not warn and does not render black -- it renders something
+    plausible, which is why this cannot be left to review. So the refusal names
+    the value that was silently standing in, because "Interface unlinked" and
+    "Interface silently 0.0" read very differently to whoever has to judge it.
+
+    This is the same shape as `assert_scene_is_ours`: both refuse to let a
+    measurement proceed against an artefact nobody interrogated after building
+    it. Of the eight instrument failures recorded in R2-1234, those two guards
+    would have caught two, and both were failures of the *environment* the
+    measurement ran in rather than of the thing being measured.
+
+    Name the channels you actually rely on. An exemption you typed is a
+    decision; a channel nobody listed is how this happened.
+    """
+    _require_bpy("assert_wired")
+    bad = unwired(node, names)
+    if bad:
+        raise RuntimeError(
+            "REFUSING %s: %d declared input(s) on %r are NOT LINKED and are "
+            "silently using a default -- %s. This does not render black, it "
+            "renders something plausible: in R2-1226 an unlinked `Interface` "
+            "socket produced an A/B whose verdict ('the fix does not work') "
+            "was reported to the client before anyone read the built socket. "
+            "Link them, or drop them from the list and say why."
+            % (what, len(bad), getattr(node, "name", node),
+               ", ".join("%s = %r" % (n, v) for n, v in bad)))
+    return True
 
 
 # ===========================================================================
@@ -1943,6 +2099,157 @@ def relief_budget(stages, elev_deg=None, band=None, verbose=True):
     return rows
 
 
+# ===========================================================================
+# 5c. HOW MANY OCTAVES A FRACTAL MAY EMIT — the other half of the octave law
+#
+# THE OCTAVE LAW APPLIES TO THE FRACTAL, NOT ONLY TO THE AMPLITUDE. `noise()`
+# above makes the caller state a wavelength instead of a `Scale`, and then the
+# `Detail` socket quietly spends that statement: `ShaderNodeTexNoise` with
+# `Detail = d` emits d+1 octaves, at lam, lam/2, lam/4 ... lam/2^d. So does
+# fractal `ShaderNodeTexVoronoi` and so does `ShaderNodeTexWave`. A 120 mm noise
+# at the house default `detail=6` is therefore ALSO emitting a 1.88 mm octave
+# and a 0.94 mm octave. Those are below the "material only, never pattern" line
+# on every surface this film puts an item on, they cannot reach the image at any
+# resolution it is graded at, and they are MOST OF THE COST -- with the house
+# defaults ONE 4K frame of R2-1219's concrete arm did not finish in ten minutes
+# on this box. Found in R2-1219 §4, in a module that had already got its
+# amplitudes right; the finding is that nobody CHOSE those octaves. A typed
+# `detail=6` cascades six times below whatever wavelength it is attached to,
+# automatically, and the deeper the octave the less anyone looked at it.
+#
+# This is strictly worse than the circuit road's "nine of twenty layers below
+# the band", because there nine AUTHORED layers sat below the floor and could be
+# counted. Here every node walks further down on its own.
+#
+# `detail_for()` derives the count; `finest_octave_for()` audits a pair you
+# already have, and is the direction `modulation_for_amplitude` is to
+# `relief_amplitude_for`.
+# ===========================================================================
+
+#: A FEATURE NEEDS TWO PIXELS. One pixel is a sample, not a feature -- and this
+#: is not a rule of thumb here, it is arithmetic already on the page: every
+#: per-surface "band floor" in R2-1211's resolvability table is EXACTLY
+#: 2 x that surface's own `mm_per_px` at 4K (apron far 3.89 -> 7.8, apron near
+#: 2.73 -> 5.5, showroom floor 3.31 -> 6.6, dais deck 1.31 -> 2.6).
+OCTAVE_FLOOR_PX = 2.0
+
+#: mm/px at 4K on the finest-resolving ground surface this film's items are
+#: built on: R2-1211 ray-cast all 433 camera keys of beats 2-6 against the real
+#: piecewise ground; the delivery ramp's coverage-weighted p50 is 1.19 mm/px.
+#: (The dais *platform* resolves finer still at 0.67, and carries no authored
+#: relief; if you build on it, pass its own `distance_m`/`lens_mm`.)
+OCTAVE_FLOOR_MM_PER_PX = 1.19
+
+#: The default resolvable floor, in mm, when the caller names no camera:
+#: `OCTAVE_FLOOR_PX * OCTAVE_FLOOR_MM_PER_PX`. This IS the staging doc's
+#: "below ~2.4 mm -- below the band on every surface, material only, never
+#: pattern" line, arrived at from the pixel law rather than typed.
+OCTAVE_FLOOR_MM = OCTAVE_FLOOR_PX * OCTAVE_FLOOR_MM_PER_PX          # 2.38 mm
+
+
+def _octave_floor_mm(floor_mm=None, distance_m=None, lens_mm=None,
+                     res_x=RES_X_4K, px=None):
+    """Resolve the floor: stated, else the pixel law, else the film default."""
+    if floor_mm is not None:
+        f = float(floor_mm)
+    elif distance_m is not None and lens_mm is not None:
+        f = resolvable_mm(distance_m, lens_mm,
+                          px=(OCTAVE_FLOOR_PX if px is None else float(px)),
+                          res_x=res_x)
+    else:
+        f = OCTAVE_FLOOR_MM
+    if not f > 0.0:
+        raise ValueError(
+            "octave floor must be positive; got %r. A floor of zero says every "
+            "octave reaches the image, which is how detail=6 got typed 28 "
+            "times." % (floor_mm,))
+    return f
+
+
+def detail_for(wavelength_m, floor_mm=None, distance_m=None, lens_mm=None,
+               res_x=RES_X_4K, px=None, max_detail=8):
+    """How many fractal octaves a texture at `wavelength_m` may EMIT.
+
+    Feed this to the `Detail` socket instead of typing 6. State the wavelength
+    you are building at -- the same one you already gave `noise_scale_for` --
+    and the count comes back such that the FINEST octave, lam/2^d, still lands
+    at or above the resolvable floor.
+
+        d = K.detail_for(0.120)            # -> 5, emits 120..3.75 mm
+        d = K.detail_for(0.120, floor_mm=12.0)          # -> 3, 120..15 mm
+        d = K.detail_for(0.120, distance_m=2.6, lens_mm=35.0)   # from the shot
+
+    WHY THIS EXISTS, R2-1219 §4. `Detail = d` emits d+1 octaves at lam, lam/2
+    ... lam/2^d, and NOBODY CHOSE THE TAIL. A 120 mm noise at the house default
+    `detail=6` is also emitting 1.88 mm and 0.94 mm -- below the 2.4 mm
+    "material only" line on every surface in R2-1211's own band table, so they
+    cannot reach the image at any resolution this film is graded at. They are
+    also most of the cost: with the house defaults one 4K frame of R2-1219's
+    concrete arm did not finish in ten minutes on this box. The amplitude law
+    one section up was already being obeyed by that module when this was found;
+    getting `relief_amplitude_for` right does not save you from the fractal.
+
+    THE FLOOR, in order of precedence: `floor_mm` if you state it; else the
+    pixel law at `distance_m`/`lens_mm` (`resolvable_mm`, `px` pixels, default
+    `OCTAVE_FLOOR_PX` = 2, because one pixel is a sample and not a feature);
+    else `OCTAVE_FLOOR_MM`, 2.38 mm, which is 2 px on the finest ground this
+    film's items stand on. The default is the STRICT end of the surface table,
+    so a caller who names no shot buys octaves it may not need rather than
+    losing one it does. `max_detail` is Blender's own ceiling of 8.
+
+    Returns a float, because `Detail` is a float socket and Blender interpolates
+    the last octave over the fraction. Clamped at 0: a texture already at or
+    below the floor gets a single octave, not a negative one.
+    """
+    lam_mm = 1000.0 * max(float(wavelength_m), 1e-12)
+    floor = _octave_floor_mm(floor_mm, distance_m, lens_mm, res_x, px)
+    if lam_mm <= floor:
+        return 0.0
+    return float(max(0, min(int(max_detail),
+                            int(math.floor(math.log(lam_mm / floor, 2.0))))))
+
+
+def finest_octave_for(wavelength_m, detail, floor_mm=None, distance_m=None,
+                      lens_mm=None, res_x=RES_X_4K, px=None):
+    """What a (wavelength, detail) pair you ALREADY have actually emits.
+
+    The audit direction, and the census instrument -- `modulation_for_amplitude`
+    is to `relief_amplitude_for` what this is to `detail_for`. Point it at every
+    `ShaderNodeTexNoise` / `TexVoronoi` / `TexWave` in a module before changing
+    anything; it takes no render and no bpy.
+
+        r = K.finest_octave_for(0.120, 6.0)
+        r["finest_mm"]        # 1.875
+        r["below_floor"]      # True
+        r["wasted_octaves"]   # 1  (0.94 mm; the 1.88 mm one is the 'finest')
+
+    `octaves` is d+1, not d. `finest_mm` is lam/2^d in millimetres.
+    `wasted_octaves` counts how many EMITTED octaves fall strictly below the
+    floor -- that is the count you can delete, and `suggested_detail` is what
+    `detail_for` would have returned for the same wavelength and floor.
+    `ratio` is floor/finest: how many times below the floor the tail reaches,
+    which is the number to sort a census by.
+    """
+    lam_mm = 1000.0 * max(float(wavelength_m), 1e-12)
+    d = max(0.0, float(detail))
+    floor = _octave_floor_mm(floor_mm, distance_m, lens_mm, res_x, px)
+    n = int(math.floor(d))
+    finest = lam_mm / (2.0 ** d)
+    wasted = sum(1 for k in range(n + 1) if lam_mm / (2.0 ** k) < floor)
+    if finest < floor and wasted == 0:                 # fractional last octave
+        wasted = 1
+    return {"wavelength_m": float(wavelength_m),
+            "wavelength_mm": lam_mm,
+            "detail": d,
+            "octaves": d + 1.0,
+            "finest_mm": finest,
+            "floor_mm": floor,
+            "below_floor": bool(finest < floor),
+            "ratio": floor / max(finest, 1e-12),
+            "wasted_octaves": int(wasted),
+            "suggested_detail": detail_for(wavelength_m, floor_mm=floor)}
+
+
 def _vector_gain(sock, depth=0):
     """How much the coordinate reaching this texture has ALREADY been scaled.
 
@@ -3060,6 +3367,67 @@ def selftest(verbose=True):
         % (rows[0]["m"], rows[1]["amp_mm"], rows[1]["m"],
            rows[2]["amp_mm"], rows[2]["m"]))
 
+    # [23] THE OCTAVE COUNT IS DERIVED, AND THE DERIVATION IS MEASURED AGAINST
+    #      THE HOUSE DEFAULT IT REPLACES. R2-1219 §4. Every number below is
+    #      recomputed from lam/2^d, not quoted.
+    #      The default floor must also BE the pixel law, not a number that
+    #      happens to look like it: 2 px at the ramp's 1.19 mm/px.
+    lam = 0.120
+    d_house = 6.0
+    a_house = finest_octave_for(lam, d_house)
+    d_derived = detail_for(lam)
+    a_derived = finest_octave_for(lam, d_derived)
+    floor_from_law = resolvable_mm(2.6, 35.0, px=OCTAVE_FLOOR_PX)  # 1.436 mm/px
+    chk("detail_for_holds_the_finest_octave",
+        a_house["below_floor"] and not a_derived["below_floor"]
+        and abs(a_house["finest_mm"] - 1.875) < 1e-9
+        and a_house["wasted_octaves"] == 1
+        and d_derived == 5.0 and abs(a_derived["finest_mm"] - 3.75) < 1e-9
+        and abs(OCTAVE_FLOOR_MM - 2.38) < 1e-9
+        and abs(_octave_floor_mm(None, 2.6, 35.0) - floor_from_law) < 1e-12,
+        "120 mm at the house detail=6 emits 7 octaves down to %.3f mm, %.2fx "
+        "below the %.2f mm floor, %d of them unreachable; detail_for gives "
+        "%.0f -> %d octaves down to %.3f mm, ratio %.2f. Floor is the pixel "
+        "law: 2 px at 2.6 m/35 mm = %.3f mm"
+        % (a_house["finest_mm"], a_house["ratio"], a_house["floor_mm"],
+           a_house["wasted_octaves"], d_derived, int(a_derived["octaves"]),
+           a_derived["finest_mm"], a_derived["ratio"], floor_from_law))
+
+    # [24] and it is a LAW, not one worked example: over four decades of
+    #      wavelength and three floors, the derived detail must never put an
+    #      octave below the floor, and must never be more than one octave shy
+    #      of the finest it could legally emit (i.e. it is TIGHT, not merely
+    #      safe -- a function that returned 0 everywhere would pass [23]).
+    bad, slack, under = [], [], 0
+    for floor in (1.30, OCTAVE_FLOOR_MM, 7.80, 12.00):
+        for i in range(0, 41):
+            lam_m = 0.004 * (10.0 ** (i / 20.0))          # 4 mm .. 4 m
+            d = detail_for(lam_m, floor_mm=floor)
+            r = finest_octave_for(lam_m, d, floor_mm=floor)
+            if 1000.0 * lam_m <= floor:
+                # the WHOLE texture is under the floor -- a different defect,
+                # and all this function can do is refuse to make it worse.
+                under += 1
+                if d != 0.0:
+                    bad.append((lam_m, floor, d))
+                continue
+            if r["below_floor"]:
+                bad.append((lam_m, floor, r["finest_mm"]))
+            if r["finest_mm"] >= 2.0 * floor and d < 8.0:
+                slack.append((lam_m, floor, r["finest_mm"]))
+    # the round trip, in the register of relief_amplitude_for/modulation_for_
+    # amplitude: audit what the deriver produced and get the same floor back.
+    rt = finest_octave_for(0.251, detail_for(0.251, floor_mm=12.0),
+                           floor_mm=12.0)
+    chk("detail_for_is_tight_and_never_crosses_the_floor",
+        not bad and not slack and rt["suggested_detail"] == rt["detail"]
+        and not rt["below_floor"],
+        "164 (wavelength, floor) pairs over 4 mm - 4 m x 4 floors: %d cross "
+        "the floor, %d waste a whole octave, %d are wholly under it and get "
+        "detail 0; 251 mm at a 12 mm floor -> detail %.0f, finest %.2f mm, "
+        "round trip agrees"
+        % (len(bad), len(slack), under, rt["detail"], rt["finest_mm"]))
+
     # ---- the bpy half ---------------------------------------------------
     if not HAVE_BPY:
         chk("bpy_half", True, "skipped -- not running inside Blender")
@@ -3206,6 +3574,79 @@ def selftest(verbose=True):
             ok = True
         chk("law1_catches_image_node", ok,
             "a planted ShaderNodeTexImage is caught before any render")
+
+        # [20b] R2-1220: THE SCENE-PURITY REFUSAL, MEASURED ON A PLANTED CUBE
+        #       standing in for factory-startup's own. The check has to fire on
+        #       the stray, stay quiet once it is gone, and `purge` has to leave
+        #       it standing -- that last one is the half that made this a bug,
+        #       so it is measured here and not assumed.
+        for _ob in list(bpy.data.objects):
+            bpy.data.objects.remove(_ob, do_unlink=True)
+        _sc = bpy.context.scene
+        _V, _Q = _ctl_tube()
+        _me, _ = new_mesh("IKT3_Subject", _V, quads=_Q)
+        _mine = bpy.data.objects.new("IKT3_Subject", _me)
+        _sc.collection.objects.link(_mine)
+        _cube = bpy.data.objects.new("Cube", _me)      # stands in for the real one
+        _sc.collection.objects.link(_cube)
+        _before = strays("IKT3_", _sc)
+        try:
+            assert_scene_is_ours("IKT3_", _sc)
+            _fired = False
+        except RuntimeError:
+            _fired = True
+        _survived_purge = "Cube" in [o.name for o in _sc.objects]
+        purge("IKT3_")
+        _still_there = "Cube" in [o.name for o in _sc.objects]
+        _ignored_ok = assert_scene_is_ours("IKT3_", _sc, ignore=("Cube",))
+        _gone = clean_scene("IKT3_", _sc)
+        try:
+            _clean_ok = assert_scene_is_ours("IKT3_", _sc)
+        except RuntimeError:
+            _clean_ok = False
+        chk("scene_purity_refuses_the_default_cube",
+            _fired and _before == ["Cube"] and _survived_purge and _still_there
+            and _ignored_ok and _gone == ["Cube"] and _clean_ok
+            and strays("IKT3_", _sc) == [],
+            "one stray named %r: assert_scene_is_ours RAISES; purge('IKT3_') "
+            "leaves it standing (%s), which is why the refusal is needed; "
+            "ignore=('Cube',) passes; clean_scene removes %d and the scene then "
+            "has %d strays"
+            % (_before[0] if _before else "<none>", _still_there, len(_gone),
+               len(strays("IKT3_", _sc))))
+
+        # [20b] assert_wired REFUSES A DEAD CHANNEL, and the test builds a real
+        #       one rather than describing it. This is R2-1226: an A/B arm was
+        #       grafted with `Interface` unlinked, rendered fine, and produced
+        #       the verdict "the fix does not work".
+        _nt = bpy.data.materials.new("IKT4_wired").node_tree \
+            if False else bpy.data.node_groups.new("IKT4_wired", "ShaderNodeTree")
+        _gi = _nt.nodes.new("NodeGroupInput")
+        _mix = _nt.nodes.new("ShaderNodeMix")
+        _mix.data_type = "FLOAT"
+        for _n, _t in (("Live", "NodeSocketFloat"), ("Dead", "NodeSocketFloat")):
+            _nt.interface.new_socket(_n, in_out="INPUT", socket_type=_t)
+        _nt.links.new(_gi.outputs["Live"], _mix.inputs["A"])
+        _mix.inputs["B"].default_value = 0.375        # the plausible stand-in
+        _dead = unwired(_mix, ["A", "B"])
+        try:
+            assert_wired(_mix, ["A", "B"], what="the selftest graft")
+            _fired2, _msg2 = False, ""
+        except RuntimeError as _e:
+            _fired2, _msg2 = True, str(_e)
+        _named_value = "0.375" in _msg2          # it must name the STAND-IN
+        _live_ok = assert_wired(_mix, ["A"], what="the live channel only")
+        _missing = unwired(_mix, ["NoSuchSocket"])
+        bpy.data.node_groups.remove(_nt)
+        chk("assert_wired_refuses_a_dead_channel_and_names_its_stand_in",
+            _fired2 and _live_ok is True and len(_dead) == 1
+            and _dead[0][0] == "B" and _named_value
+            and _missing and _missing[0][1] == "NO SUCH SOCKET",
+            "one linked input and one left on its default: unwired() finds "
+            "exactly %r, assert_wired RAISES and names the silent stand-in "
+            "%s in the message, the linked-only call passes, and a socket that "
+            "does not exist is reported rather than skipped"
+            % ([n for n, _ in _dead], "0.375" if _named_value else "NOT NAMED"))
 
         # [21] new_mesh ORIENTS BY DEFAULT, and the proof is the built mesh's
         #      own polygon normals, not the array that went in.

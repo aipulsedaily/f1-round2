@@ -2653,8 +2653,23 @@ def build_fence(mb_struct, mb_mesh, nd, i0, i1, tier, stats):
         posts.append(dict(u=u, s=sj, base=base, axis=axis, T=Ta, A=Aa, h=hgt, pi=pi,
                           ghost=(pi in ghost)))
 
+    # R2-331.  `world/items/catch_fence_post.py` builds 676 posts and this loop
+    # builds 676 -- `fence_posts = 676` in the ship's own build report.  The
+    # counts agree exactly, so this is unambiguously the same population twice
+    # (R2-229).  The item also builds the base plates, the holding-down bolts,
+    # the grout and the back-stay rakers this loop builds, so the swap is whole
+    # and not a swap of the post leaving its footing behind.
+    #
+    # The posts are removable HERE and nowhere else: they are welded into 27
+    # BR_FenceStruct_* meshes together with the tension cables, the top rail and
+    # the marshal-gate frames.  Those are built from the SAME `posts` list in a
+    # second pass below, which is why this skip leaves no hole -- the spans, the
+    # weave and the gates are unaffected and `stats["fence_posts"]` reports 0
+    # honestly rather than reporting a population that is not there.
+    import build_items as _BI
+    _skip_posts = _BI.class_feature_owned("barriers.fence_posts")
     for p in posts:
-        if p is None or p["ghost"]:
+        if _skip_posts or p is None or p["ghost"]:
             continue
         seedp = seed * 3 + p["pi"]
         wear, paint, _, _ = node_attrs(np.array([p["s"]]), side)

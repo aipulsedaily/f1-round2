@@ -227,6 +227,207 @@ def _abs(p):
 
 
 # --------------------------------------------------------------------------- #
+#  0b. CLASS-FEATURE OWNERSHIP — the arm that makes `supersedes` real            #
+# --------------------------------------------------------------------------- #
+#
+# R2-227 filed 24 of 42 rows under `SUPERSEDE_WELDED`, and the docstring above
+# says why the stage cannot clear them: it runs LAST, so it can unlink a whole
+# object, and a feature welded inside a shared class mesh is not a whole object.
+# `ARCH_PitWall` is one mesh carrying a terminal nose, a 357 m wall run, return
+# walls, ~40 advertising panels AND five timing stands.  Nothing this stage can
+# do takes the five stands out and leaves the wall.
+#
+# **So the removal has to happen at the only moment it is possible: before the
+# class builder welds them in.**  That is a change to the class module, and the
+# thing the class module has to be told is one bit — does an item own this
+# feature in the build that is running right now?
+#
+# This is that question, answered from the SAME registry that decides what gets
+# placed, so the two can never disagree.  A row's supersede record may carry
+#
+#     {"welded_in": "ARCH_PitWall", "counter": "pit_wall_stands", "n": 5,
+#      "class_switch": "architecture.pit_wall_stands", "reason": "..."}
+#
+# and `build_architecture` asks `class_feature_owned("architecture.pit_wall_stands")`
+# before it builds them.  The switch fires ONLY for rows in state `PLACE`: an
+# item that is not going in must not take the class version out with it, which
+# is the hole-in-the-world failure this whole exercise exists to avoid.
+#
+# WHICH WAY IT FAILS, AND WHY THAT DIRECTION
+# ==========================================
+# If the registry cannot be read, this returns the EMPTY set — every class
+# feature gets built.  The two failure directions are not symmetric:
+#
+#     built twice  -> visible in any frame that sees it, and the placement
+#                     report says `superseded_removed: 0` on a row that
+#                     declares one.  Loud.
+#     built zero   -> a hole in the world nobody sees until somebody renders
+#                     that corner months later.  Silent.
+#
+# The user's rule for this work is "measure before removing; deleting class
+# geometry that an item does not actually replace leaves a hole in the world."
+# An unreadable registry is the case where nothing has been measured, so it
+# builds.  It prints a loud line rather than passing quietly.
+
+_OWNED_CACHE = {}
+
+
+def ownership_registry():
+    """Which registry decides ownership for the build that is running.
+
+    `R2_ITEM_REGISTRY` exists for ONE purpose: building the same world twice,
+    un-superseded and superseded, so a removal can be shown in pixels against
+    a repeat-render null.  Every gate on this project has to be shown failing
+    the world it must fail before it is trusted passing the world it must pass,
+    and there is no other way to build the failing half once the shipping
+    registry says PLACE.  It announces itself, loudly, every time.
+    """
+    p = os.environ.get("R2_ITEM_REGISTRY")
+    if p:
+        print(">> ITEMS REGISTRY OVERRIDE: R2_ITEM_REGISTRY=%s (NOT the "
+              "shipping %s). This is an A/B build path." % (p, REGISTRY))
+        return p
+    return REGISTRY
+
+
+def class_features_owned(registry=None):
+    """-> {switch_name: row_key} for every feature an item in state PLACE owns.
+
+    Called by `build_architecture` / `build_barriers` at build time.  Imports
+    nothing from `bpy`, touches no scene, and is cached per registry path, so a
+    class builder may call it inside a loop.
+    """
+    registry = registry or ownership_registry()
+    if registry in _OWNED_CACHE:
+        return _OWNED_CACHE[registry]
+    owned = {}
+    try:
+        with open(registry) as fh:
+            reg = json.load(fh)
+        for r in reg.get("items", []):
+            if r.get("state") != "PLACE":
+                continue
+            for s in r.get("supersedes", []):
+                sw = s.get("class_switch")
+                if sw:
+                    owned[sw] = r.get("key") or r["item"]
+    except Exception as e:                                  # pragma: no cover
+        print(">> ITEMS OWNERSHIP UNREADABLE: %s (%r). Every class feature will "
+              "be BUILT. Double-built geometry is visible; a hole is not."
+              % (registry, e))
+        owned = {}
+    _OWNED_CACHE[registry] = owned
+    return owned
+
+
+def class_feature_owned(feature, registry=None):
+    """Does an item that is going into THIS build own `feature`?
+
+    True  -> the class builder must not build it; the item supersedes it.
+    False -> build it exactly as before.
+    """
+    registry = registry or ownership_registry()
+    own = class_features_owned(registry)
+    if feature in own:
+        sites, _ = class_feature_sites(feature, registry)
+        if sites:
+            # Ownership is declared with an extent, so it is not a whole-feature
+            # switch and the caller must ask per site. Answering True here would
+            # remove the stands the item does not reach.
+            return False
+        # Announced once, not once per chunk: `build_barriers` asks this inside
+        # a 27-chunk loop and 27 identical lines would bury the one that matters.
+        if feature not in _ANNOUNCED:
+            _ANNOUNCED.add(feature)
+            print(">> ITEMS CLASS FEATURE SUPERSEDED: %r is owned by item %r "
+                  "(registry state PLACE); the class builder is not building it. "
+                  "world/build_items.py, %s"
+                  % (feature, own[feature], os.path.basename(registry)))
+        return True
+    return False
+
+
+_ANNOUNCED = set()
+_SITES_CACHE = {}
+
+
+def class_feature_sites(feature, registry=None):
+    """-> ([(x, y), ...], radius_m) if this feature is owned WITH AN EXTENT.
+
+    R2-334.  The first cut of the pit-wall switch removed all five welded
+    stands, and the measurement of what it did said so: five clusters removed,
+    four of them with a hero stand 1.9-8.6 m away and the fifth with none
+    within **64.6 m**.  The item's ten stands span world x 158-321; the class's
+    fifth stand is at x 367.  So a whole-feature switch takes out a stand the
+    item never reaches, which is the hole this exercise exists to prevent, and
+    a vertex count would have called it a clean 9,448-vertex removal.
+
+    A supersede record may therefore carry the SITES the item actually occupies,
+    measured off the item's own artefact, and the class builder asks per site:
+
+        "class_switch_sites_world_xy": [[169.6, 51.6], ...],
+        "class_switch_radius_m": 31.0
+
+    The class module is not guessing where the item is; it is being told, by
+    the same registry that decides the placement, and it keeps everything it is
+    not told about.  The radius is the class feature's own spacing, halved --
+    for the pit wall, stands are pitched 62 m, so 31 m is "there is a hero
+    stand at this station" and nothing looser.
+    """
+    registry = registry or ownership_registry()
+    ck = (registry, feature)
+    if ck in _SITES_CACHE:
+        return _SITES_CACHE[ck]
+    out = (None, None)
+    try:
+        with open(registry) as fh:
+            reg = json.load(fh)
+        for r in reg.get("items", []):
+            if r.get("state") != "PLACE":
+                continue
+            for s in r.get("supersedes", []):
+                if s.get("class_switch") != feature:
+                    continue
+                sites = s.get("class_switch_sites_world_xy")
+                if sites:
+                    out = ([tuple(p) for p in sites],
+                           float(s.get("class_switch_radius_m", 31.0)))
+    except Exception:                                       # pragma: no cover
+        out = (None, None)
+    _SITES_CACHE[ck] = out
+    return out
+
+
+def class_feature_owned_at(feature, wx, wy, registry=None):
+    """Does an item stand at THIS world position, so the class must skip here?
+
+    Returns False for a feature nobody owns, True for a feature owned without
+    an extent (whole-feature switch), and a per-site answer when an extent is
+    declared.  A class builder that calls this instead of `class_feature_owned`
+    is correct in all three cases.
+    """
+    registry = registry or ownership_registry()
+    own = class_features_owned(registry)
+    if feature not in own:
+        return False
+    sites, rad = class_feature_sites(feature, registry)
+    if not sites:
+        return class_feature_owned(feature, registry)
+    hit = any((wx - sx) ** 2 + (wy - sy) ** 2 <= rad * rad for sx, sy in sites)
+    key = (feature, "sited")
+    if key not in _ANNOUNCED:
+        _ANNOUNCED.add(key)
+        print(">> ITEMS CLASS FEATURE SUPERSEDED (SITED): %r is owned by item "
+              "%r at %d declared sites, radius %.1f m; the class builder keeps "
+              "every station no site reaches."
+              % (feature, own[feature], len(sites), rad))
+    print("[ITEMS]   %s at (%.1f, %.1f): %s"
+          % (feature, wx, wy, "SUPERSEDED" if hit else "KEPT (no item within "
+             "%.0f m)" % rad))
+    return hit
+
+
+# --------------------------------------------------------------------------- #
 #  1.  what the registry says vs what the artefact says                         #
 # --------------------------------------------------------------------------- #
 
@@ -278,8 +479,23 @@ def check_row(row, strict_sha=False):
         notes.append("STALE_CLOSURE: blend predates %s" % ", ".join(sorted(stale)))
     row["_stale_against"] = sorted(stale)
 
-    # The gate's own verdict, read from the canonical path.
-    g = os.path.join(GATE_DIR, row["item"], "gate.json")
+    # The gate's own verdict, read from the canonical path -- unless the row
+    # names a different one, and R2-227 is why that escape hatch exists:
+    #
+    #   "spectator_crowd.py sets ITEM = 'spectator_seated', so the row's
+    #    verdict came from render/items/spectator_seated/gate.json (REJECTED)
+    #    and not from render/items/spectator_crowd/gate.json (ACCEPTED)."
+    #
+    # Two modules deliberately serve one manifest record.  Deriving the gate
+    # path from the manifest id then reads the SIBLING module's verdict about
+    # a DIFFERENT artefact -- in that case a rejection standing in for an
+    # acceptance, but the failure is symmetric and the other direction ships
+    # un-gated geometry.  A row may therefore name its gate explicitly; it is
+    # never guessed, and the resolved path is reported so a reader can see
+    # which file the verdict came out of.
+    g = (_abs(row["gate_json"]) if row.get("gate_json")
+         else os.path.join(GATE_DIR, row["item"], "gate.json"))
+    row["_gate_path"] = os.path.relpath(g, ROOT)
     row["_gate_result"] = None
     if os.path.exists(g):
         try:
@@ -287,9 +503,10 @@ def check_row(row, strict_sha=False):
         except Exception as e:                          # pragma: no cover
             notes.append("gate.json unreadable: %r" % e)
     if row.get("require_gate_accepted", True) and row["_gate_result"] != "ITEM_ACCEPTED":
-        fatal.append("gate verdict is %r, not ITEM_ACCEPTED. A placement stage "
-                     "that ships un-accepted geometry makes the gate optional."
-                     % row["_gate_result"])
+        fatal.append("gate verdict is %r, not ITEM_ACCEPTED (read from %s). A "
+                     "placement stage that ships un-accepted geometry makes "
+                     "the gate optional."
+                     % (row["_gate_result"], row["_gate_path"]))
     return fatal, notes
 
 
@@ -321,19 +538,74 @@ def resolve_supersede(row):
                              "note": "declared superseded but not in this scene; "
                                      "nothing removed, nothing double-built"})
             else:
+                _refuse_partial_supersede(row, s)
                 drop.append(ob)
         elif "welded_in" in s:
             host = bpy.data.objects.get(s["welded_in"])
-            owed.append({"kind": "REBUILD_OWED",
-                         "target": s["welded_in"],
-                         "present": host is not None,
-                         "counter": s.get("counter"), "n": s.get("n"),
-                         "note": s.get("reason", "")})
+            sw = s.get("class_switch")
+            if sw and class_feature_owned(sw):
+                # The class builder was told, at ITS build time, not to weld
+                # this feature in. There is nothing left here to remove and
+                # nothing owed -- the debt was paid four modules earlier.
+                owed.append({"kind": "SUPERSEDE_AT_CLASS_BUILD_TIME",
+                             "target": s["welded_in"], "class_switch": sw,
+                             "host_present_in_this_scene": host is not None,
+                             "counter": s.get("counter"), "n": s.get("n"),
+                             "verified_here": False,
+                             "note": ("the registry declares %r, so the class "
+                                      "builder was asked not to weld this "
+                                      "feature in. THIS STAGE CANNOT VERIFY "
+                                      "THAT FROM THE SCENE -- a scene built "
+                                      "before the switch existed looks "
+                                      "identical from here. The check is the "
+                                      "class module's own counter in the build "
+                                      "report (%s)." % (sw, s.get("counter")))})
+            else:
+                owed.append({"kind": "REBUILD_OWED",
+                             "target": s["welded_in"],
+                             "class_switch": sw,
+                             "present": host is not None,
+                             "counter": s.get("counter"), "n": s.get("n"),
+                             "note": s.get("reason", "")})
         else:
             raise PlacementRefusal("registry %s: supersede record has neither "
                                    "`object` nor `welded_in`: %r"
                                    % (row["item"], s))
     return drop, owed
+
+
+def _refuse_partial_supersede(row, s):
+    """A whole-object supersede must not open a hole the item cannot fill.
+
+    R2-333.  `tyre_wall_tyre` is `ITEM_ACCEPTED`, its blend holds 338 units,
+    its `expect_objects` is 338 -- so every check in `place_one` passes -- and
+    its supersede is `{"object": "BR_TyreWall_T4"}`, a whole object holding
+    about 1,530 tyres.  As written, this stage would have placed 338 tyres and
+    deleted 1,530.  Nothing in the file would have said so: `expect_objects`
+    measures the item against ITS OWN blend and can never see the size of the
+    thing being removed.
+
+    So a supersede record must declare `replaces_units`, and the item's
+    population is checked against it.  The user's rule for this work, verbatim:
+    "Deleting class geometry that an item does not actually replace leaves a
+    hole in the world, and it will not be obvious until someone renders that
+    corner months later."
+    """
+    n_out = s.get("replaces_units")
+    if n_out is None:
+        return
+    n_in = row.get("expect_objects")
+    frac = float(s.get("min_replacement_frac", 0.90))
+    if n_in is None or n_in >= frac * n_out:
+        return
+    raise PlacementRefusal(
+        "%s: superseding %r would remove class geometry standing in for about "
+        "%d units and put %d in its place -- %.1f %% of it, under the declared "
+        "floor of %.0f %%. That is a HOLE, not a replacement. The item's own "
+        "`expect_objects` cannot see this: it measures the item against its own "
+        "blend, never against the size of the thing being taken out."
+        % (row.get("key") or row["item"], s["object"], n_out, n_in,
+           100.0 * n_in / max(n_out, 1), 100.0 * frac))
 
 
 # --------------------------------------------------------------------------- #
@@ -547,6 +819,7 @@ def place_one(row, scene=None):
         "source_blend": os.path.relpath(blend, ROOT),
         "source_sha256": row.get("_sha_now"),
         "gate_result": row.get("_gate_result"),
+        "gate_json": row.get("_gate_path"),
         "stale_against": row.get("_stale_against", []),
         "objects": len(objs), "distinct_meshes": distinct, "triangles": tris,
         "top_source_mesh": top_mesh, "top_share": round(top_share, 6),
@@ -655,7 +928,7 @@ def purge():
     return n
 
 
-def build(place=None, registry=REGISTRY, strict_sha=False, scene=None):
+def build(place=None, registry=None, strict_sha=False, scene=None):
     """Place every item the registry marks PLACE (or every item named in
     `place`, for a test build).
 
@@ -663,6 +936,9 @@ def build(place=None, registry=REGISTRY, strict_sha=False, scene=None):
     """
     import bpy
     scene = scene or bpy.context.scene
+    # One registry decides BOTH what gets placed here and what the class
+    # builders were told not to build. They must never be two different files.
+    registry = registry or ownership_registry()
     reg, rows = load_registry(registry)
 
     if place is None:

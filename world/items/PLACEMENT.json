@@ -1,7 +1,7 @@
 {
  "schema": "f1-round2/item_placement/1.0",
  "generated": "2026-08-04",
- "defect_block": "R2-226",
+ "defect_block": "R2-226 + R2-296 + R2-331",
  "purpose": "THE PLACEMENT LEDGER. One row per module under world/items/. world/build_items.py places every row whose state is PLACE and REFUSES any item that has no row -- there is no auto-detection and no fallback, because R2-180 is what a fallback looks like.",
  "how_a_row_is_established": {
   "collection/prefix": "read from the module's own top-level constants by AST (work/r2226/gen_registry.py); agrees with the census \u00a78 table on all 41 rows, two independent readings",
@@ -10,9 +10,9 @@
   "supersedes": "assembly9_build.json's own counters and assembly9's object-name list, read back from the 4.21 GB artefact"
  },
  "counts": {
-  "rows": 41,
-  "state_PLACE": 1,
-  "state_HOLD": 40
+  "rows": 42,
+  "state_PLACE": 4,
+  "state_HOLD": 38
  },
  "items": [
   {
@@ -49,7 +49,11 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into SURF_AccessRoad. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class",
+    "argument": "SURF_AccessRoad is exactly the access ribbon -- 816 rows x 44 columns = 35,904 quads from the breach plane at world x 15.0 out 244.6 m, plus its two 0.30 m sawn edge strips -- and the car drives on it through the Beat 3-to-4 hinge. The item is 459 slabs at ITEM_REJECTED. A floor the film drives across is not something to swap on a rejected gate. Interface stub."
+   }
   },
   {
    "key": "armco_post",
@@ -72,7 +76,8 @@
      "welded_in": "BR_Armco_*",
      "counter": "armco_posts",
      "n": 3561,
-     "reason": "build_barriers welds 3,561 posts into 27 BR_Armco_* meshes with 1,781 panels and 4,675 bolts. The posts cannot be lifted out without a build_barriers change."
+     "reason": "build_barriers welds 3,561 posts into 27 BR_Armco_* meshes with 1,781 panels and 4,675 bolts. The posts cannot be lifted out without a build_barriers change.",
+     "class_switch": "barriers.armco_posts"
     }
    ],
    "state": "HOLD",
@@ -85,7 +90,11 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into BR_Armco_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class",
+    "argument": "The posts ARE separable -- build_armco_posts is a clean function boundary and nothing reads the posts back -- but the item holds 3,236 of a declared 3,641 against a world that builds 3,561, so placing it and removing them is a 325-post hole, and the W-beam rails have no other support. Class, until the population is whole. The class_switch is wired and will fire the moment the row goes PLACE."
+   }
   },
   {
    "key": "armco_w_beam",
@@ -125,7 +134,28 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into BR_Armco_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class",
+    "argument": "Real duplication: 44.10 % of BR_Armco_*'s 955,194 vertices in the 1,048 unit boxes, 12.33 % in cores, 1,043 of 1,048 units, against 0.62 % for BR_FenceMesh_*. But the panels are welded into the same 27 meshes as 3,561 posts and 4,675 splice bolts with no function boundary between them, the item holds 1,048 of a declared 1,821, and its gate is ITEM_REJECTED. Removing the panel sweep alone leaves the bolts in open air at rail height. Class, until the item is whole and the removal is a post-and-panel pair.",
+    "measured": {
+     "probe": "work/r2331/own_armco_w_beam.json",
+     "host_objects_in_assembly9": 29,
+     "host_vertices": 955194,
+     "item_units": 1048,
+     "host_verts_in_unit_boxes": 421204,
+     "host_frac_in_unit_boxes": 0.440962,
+     "host_verts_in_unit_cores_50pct": 117767,
+     "host_frac_in_unit_cores": 0.123291,
+     "units_overlapping": 1043,
+     "unit_to_nearest_host_vertex_m_median": null,
+     "units_within_2m_of_host": null,
+     "control_host": "BR_FenceMesh_*",
+     "control_host_frac_in_unit_boxes": 0.006234,
+     "control_unit_to_host_m_median": null,
+     "foreign_objects_in_collection": []
+    }
+   }
   },
   {
    "key": "asphalt_wearing_course",
@@ -161,7 +191,11 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into SURF_Track. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class",
+    "argument": "There is no separable wearing course to own. SURF_Track is one welded cyclic sheet of 516,664 quads and the wearing course IS the road body: no binder, no base, no sub-base, and every line marking is procedural shader paint, not geometry. The item is five objects. WAVE2-SCOPE 3.3: interface stub, not a module."
+   }
   },
   {
    "key": "catch_fence_post",
@@ -184,20 +218,34 @@
      "welded_in": "BR_FenceStruct_*",
      "counter": "fence_posts",
      "n": 676,
-     "reason": "build_barriers reports fence_posts = 676 and the item builds 676. The counts agree exactly, so this is unambiguously the same population twice -- welded into 27 BR_FenceStruct_* meshes."
+     "reason": "build_barriers reports fence_posts = 676 and the item builds 676. The counts agree exactly, so this is unambiguously the same population twice -- welded into 27 BR_FenceStruct_* meshes.",
+     "class_switch": "barriers.fence_posts"
     }
    ],
-   "state": "HOLD",
-   "blockers": [
-    {
-     "kind": "PARTIAL_BUILD",
-     "detail": "the blend holds 676 units; the item declares 690. A gating sample is not the shipping population."
-    },
-    {
-     "kind": "SUPERSEDE_WELDED",
-     "detail": "the world already builds this feature, welded into BR_FenceStruct_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+   "state": "PLACE",
+   "blockers": [],
+   "r2331_ownership": {
+    "verdict": "own",
+    "argument": "The counts already agreed exactly -- the item builds 676 and build_barriers reports fence_posts = 676 (R2-229) -- and the geometry agrees too: 22.99 % of BR_FenceStruct_*'s 153,060 vertices sit inside the 676 unit boxes, 7.66 % inside their cores, 672 of 676 units overlapping, and ALL 676 units within 2 m of class geometry at a median of 0.68 m. The control, BR_Armco_*, reads 1.14 %. The item also builds the base plates, holding-down bolts, grout and back-stay rakers this loop builds, so the swap is whole. The class posts are welded into 27 BR_FenceStruct_* meshes with the cables, top rail and gate frames, which are built from the SAME posts list in a second pass -- so skipping the post pass leaves the spans, the weave and the gates untouched and opens no hole.",
+    "measured": {
+     "probe": "work/r2331/own_catch_fence_post.json",
+     "host_objects_in_assembly9": 27,
+     "host_vertices": 153060,
+     "item_units": 676,
+     "host_verts_in_unit_boxes": 35187,
+     "host_frac_in_unit_boxes": 0.22989,
+     "host_verts_in_unit_cores_50pct": 11717,
+     "host_frac_in_unit_cores": 0.076552,
+     "units_overlapping": 672,
+     "unit_to_nearest_host_vertex_m_median": 0.683,
+     "units_within_2m_of_host": 676,
+     "control_host": "BR_Armco_*",
+     "control_host_frac_in_unit_boxes": 0.011361,
+     "control_unit_to_host_m_median": 0.794,
+     "foreign_objects_in_collection": []
     }
-   ]
+   },
+   "place_because": "ITEM_ACCEPTED; the supersede debt is cleared at its only possible moment -- build_barriers now asks build_items.class_feature_owned('barriers.fence_posts') before welding the 676 posts into BR_FenceStruct_*, and skips them while this row is PLACE. The PARTIAL_BUILD blocker is retired on measurement, not waived: the blend holds 676, the WORLD builds 676, and all 676 units sit within 2 m of the class geometry they replace at a median of 0.68 m. The declared 690 is the item's own pre-filter site count; there is no 690-post population anywhere in this world to fall short of."
   },
   {
    "key": "crew_figure",
@@ -287,7 +335,11 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into (round-1 showroom, film14 only). Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class_not_in_ship",
+    "argument": "The declared host is round-1 showroom geometry that exists only in film14, not in assembly9 (census 1.4). No world module builds it, so there is no class-level removal for this stage to make and no rebuild is owed. It is a film-composite question, not a world one."
+   }
   },
   {
    "key": "driver_figure",
@@ -352,7 +404,11 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into ARCH_Paving_Forecourt. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class",
+    "argument": "ARCH_Paving_Forecourt is not paving bays. It also casts the formation slab the round-1 pavilion floor sits on -- build_architecture publishes that as r1_floor_interface with the note that without it 'the mouth reads as a 100 mm formation step -- ground, not a hole' -- plus the granite sett bands, the bedding, the perimeter edge band and slot drain, and the bollard line protecting the glass frontage. verify_contract ray-casts 40,000 columns over it and requires 97 % to land on the finished slab. The item holds 450 of a declared 1,400. Class."
+   }
   },
   {
    "key": "gantry_truss",
@@ -388,7 +444,28 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into ARCH_Gantry. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class",
+    "argument": "The overlap is real -- 49.07 % of ARCH_Gantry in three unit boxes, 10.51 % in cores, 3 of 3, median 0.98 m, control ARCH_PitWall 0.00 % at 13.88 m -- and it is beside the point. ARCH_Gantry is one mesh carrying the lattice legs, ladder, cable duct, photo-finish timing heads, span truss, top walkway and handrail, five start-light pods, the pit-lane repeater, TV camera pods, two banner faces with baked CIRCUIT VITRINE / START FINISH text, a chequer band and two flags. The item is three truss objects. Removing the host to gain the truss deletes the start lights. Worse, build_pit_wall hard-codes the gantry-leg gap at circuit x -1.9/+1.9 and builds return walls into it, so the wall would carry a 3.8 m void facing nothing. The class keeps it until the item is the whole gantry.",
+    "measured": {
+     "probe": "work/r2331/own_gantry_truss.json",
+     "host_objects_in_assembly9": 1,
+     "host_vertices": 10988,
+     "item_units": 3,
+     "host_verts_in_unit_boxes": 5392,
+     "host_frac_in_unit_boxes": 0.490717,
+     "host_verts_in_unit_cores_50pct": 1155,
+     "host_frac_in_unit_cores": 0.105115,
+     "units_overlapping": 3,
+     "unit_to_nearest_host_vertex_m_median": 0.976,
+     "units_within_2m_of_host": 3,
+     "control_host": "ARCH_PitWall",
+     "control_host_frac_in_unit_boxes": 0.0,
+     "control_unit_to_host_m_median": 13.876,
+     "foreign_objects_in_collection": []
+    }
+   }
   },
   {
    "key": "grandstand_riser_unit",
@@ -428,7 +505,11 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into ARCH_Grandstand_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class",
+    "argument": "ARCH_Grandstand_Terrace is the 918 counted bays PLUS their bedding, a 1.85 m battered retaining skirt with counterforts, and the front and rear asphalt concourse aprons -- and the six grandstands physically stand on it, every undercroft column starting at z = 0.0 over a band where world_ground_z returns NaN. verify_contract ray-casts 40,000 columns over that rectangle and hard-fails on a miss. The item is ITEM_REJECTED at 3,394 of 3,400. Class."
+   }
   },
   {
    "key": "gravel_bed_surface",
@@ -464,7 +545,11 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into BR_Trap_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class_wrong_counter",
+    "argument": "The row cites 'welded_in BR_Trap_*, counter stones, n 240000' and that pairing is wrong in the source: the 240,000 stones are scattered into BR_Stones_* -- five SEPARATE objects with their own material -- while BR_Trap_* is 20 objects of bed surface only, one add_grid each, nothing welded in. So the item's real counterpart is the bed, not the stones, and the two are already separable. It stays class: the item holds 43 objects on ITEM_REJECTED, and platform_z sinks a sub-base basin up to 0.62 m under every gravel programme, so removing the beds exposes BR_Subbase_*."
+   }
   },
   {
    "key": "heras_fence_panel",
@@ -482,25 +567,43 @@
     "W_Item_HerasFencePanel/Standins"
    ],
    "gate_result_at_registry_time": "ITEM_ACCEPTED",
-   "supersedes": [
-    {
-     "welded_in": "BR_Transit_Fence",
-     "counter": "gates",
-     "n": 28,
-     "reason": "the transit-corridor fencing is BR_Transit_Fence + BR_Transit_FenceMesh; the item's 771 panels span a wider footprint than either, so the overlap is not established and the swap is not a clean one."
-    }
-   ],
+   "supersedes": [],
    "state": "HOLD",
    "blockers": [
     {
      "kind": "PARTIAL_BUILD",
      "detail": "the blend holds 771 units; the item declares 900. A gating sample is not the shipping population."
-    },
-    {
-     "kind": "SUPERSEDE_WELDED",
-     "detail": "the world already builds this feature, welded into BR_Transit_Fence. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "false",
+    "argument": "MEASURED FALSE. Zero of BR_Transit_Fence's 672 vertices fall inside any of the 771 unit boxes, 0 of 771 units overlap, and the median panel stands 116.84 m away. BR_Transit_Fence is 84 m of I-section posts along the access route; the item is 771 panels over x -109.9 to 377.8, y -105.5 to 320.0. The row's own reason already hedged -- 'the overlap is not established' -- and it is now established as absent. The item supersedes nothing and its SUPERSEDE_WELDED blocker is retired.",
+    "measured": {
+     "probe": "work/r2331/own_heras_fence_panel.json",
+     "host_objects_in_assembly9": 1,
+     "host_vertices": 672,
+     "item_units": 771,
+     "host_verts_in_unit_boxes": 0,
+     "host_frac_in_unit_boxes": 0.0,
+     "host_verts_in_unit_cores_50pct": 0,
+     "host_frac_in_unit_cores": 0.0,
+     "units_overlapping": 0,
+     "unit_to_nearest_host_vertex_m_median": 116.84,
+     "units_within_2m_of_host": 0,
+     "control_host": "BR_Transit_TyreWall",
+     "control_host_frac_in_unit_boxes": 0.0,
+     "control_unit_to_host_m_median": 116.79,
+     "foreign_objects_in_collection": []
+    },
+    "supersede_claim_retired": [
+     {
+      "welded_in": "BR_Transit_Fence",
+      "counter": "gates",
+      "n": 28,
+      "reason": "the transit-corridor fencing is BR_Transit_Fence + BR_Transit_FenceMesh; the item's 771 panels span a wider footprint than either, so the overlap is not established and the swap is not a clean one."
+     }
+    ]
+   }
   },
   {
    "key": "hospitality_deck",
@@ -523,7 +626,8 @@
      "welded_in": "ARCH_Ground_Decks",
      "counter": "ground_decks",
      "n": 5,
-     "reason": "ground_decks = 5 and the item builds 5. The counts agree exactly."
+     "reason": "ground_decks = 5 and the item builds 5. The counts agree exactly.",
+     "class_switch": "architecture.ground_decks"
     }
    ],
    "state": "HOLD",
@@ -536,7 +640,35 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into ARCH_Ground_Decks. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "own_blocked",
+    "argument": "ARCH_Ground_Decks is EXACTLY this feature -- one MB, built and closed in one block of build_paddock_ground, nothing else welded in -- ground_decks = 5 and the item builds 5. Measured: 57.93 % of its 13,500 vertices in the five unit boxes, 14.91 % in cores, 5 of 5 units, against 0.00 % for ARCH_Ground_Compound. On the merits the item wins outright. It is blocked on two things that are not this: its canonical gate is ITEM_REJECTED, and its declared collection carries six CTX_* context objects that build_items refuses on the foreign-prefix arm.",
+    "measured": {
+     "probe": "work/r2331/own_hospitality_deck.json",
+     "host_objects_in_assembly9": 1,
+     "host_vertices": 13500,
+     "item_units": 5,
+     "host_verts_in_unit_boxes": 7820,
+     "host_frac_in_unit_boxes": 0.579259,
+     "host_verts_in_unit_cores_50pct": 2013,
+     "host_frac_in_unit_cores": 0.149111,
+     "units_overlapping": 5,
+     "unit_to_nearest_host_vertex_m_median": 2.098,
+     "units_within_2m_of_host": 1,
+     "control_host": "ARCH_Ground_Compound",
+     "control_host_frac_in_unit_boxes": 0.0,
+     "control_unit_to_host_m_median": 343.982,
+     "foreign_objects_in_collection": [
+      "CTX_Apron",
+      "CTX_Unit_1",
+      "CTX_Unit_2",
+      "CTX_Unit_3",
+      "CTX_Unit_4",
+      "CTX_Unit_5"
+     ]
+    }
+   }
   },
   {
    "key": "human_bench",
@@ -711,7 +843,11 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into SURF_Kerb_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class",
+    "argument": "35 kerb runs, 1,609,580 triangles. The individual precast units are not objects in the class build at all -- they are a sampled field, one drawn section length of 1.85-2.25 m per run applied as a per-unit height step, roll and serration scale to the vertex rows, about 1,230 units in total. The item declares 3,400 and holds 2,296, on ITEM_REJECTED. Class."
+   }
   },
   {
    "key": "marshal_post_column",
@@ -729,25 +865,43 @@
     "MPC_Columns/Standins"
    ],
    "gate_result_at_registry_time": "ITEM_REJECTED",
-   "supersedes": [
-    {
-     "welded_in": "DR_Post_*",
-     "counter": "objects",
-     "n": 24,
-     "reason": "24 DR_Post_* objects are the marshal posts."
-    }
-   ],
+   "supersedes": [],
    "state": "HOLD",
    "blockers": [
     {
      "kind": "GATE_NOT_ACCEPTED",
      "detail": "canonical gate.json result is 'ITEM_REJECTED'"
-    },
-    {
-     "kind": "SUPERSEDE_WELDED",
-     "detail": "the world already builds this feature, welded into DR_Post_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "false",
+    "argument": "MEASURED FALSE. 177 of DR_Post_*'s 168,837 vertices fall inside the 120 unit boxes -- 0.105 % -- and ZERO inside their cores, with 3 of 120 units overlapping at all. The bounding boxes of the two populations all but coincide (IoU 0.89) because both run the whole lap, and that is exactly the reading a containment test alone would have mistaken for ownership. The nearest-vertex measure separates them: the median column stands 25.80 m from anything DR_Post_* built and only 25 of 120 are within 2 m. This is not the same feature twice; it is a larger, differently-sited population. Removing DR_Post_* would delete 24 complete marshal posts and put 120 bare columns somewhere else.",
+    "measured": {
+     "probe": "work/r2331/own_marshal_post_column.json",
+     "host_objects_in_assembly9": 24,
+     "host_vertices": 168837,
+     "item_units": 120,
+     "host_verts_in_unit_boxes": 177,
+     "host_frac_in_unit_boxes": 0.001048,
+     "host_verts_in_unit_cores_50pct": 0,
+     "host_frac_in_unit_cores": 0.0,
+     "units_overlapping": 3,
+     "unit_to_nearest_host_vertex_m_median": 25.803,
+     "units_within_2m_of_host": 25,
+     "control_host": "DR_Sign_*",
+     "control_host_frac_in_unit_boxes": 0.0,
+     "control_unit_to_host_m_median": 67.151,
+     "foreign_objects_in_collection": []
+    },
+    "supersede_claim_retired": [
+     {
+      "welded_in": "DR_Post_*",
+      "counter": "objects",
+      "n": 24,
+      "reason": "24 DR_Post_* objects are the marshal posts."
+     }
+    ]
+   }
   },
   {
    "key": "marshal_post_deck",
@@ -783,7 +937,79 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into DR_Post_*. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class",
+    "argument": "The first reading said 40.06 %. It was wrong, and how it was wrong is the finding: 50 of the 75 mesh objects in ITEM_MARSHAL_POST_DECK are CTX_Column_* -- the item's own context COPIES of the host -- so the measure was scoring the item against its own copy of DR_Post_*. Split on the declared prefix, as build_items does, it reads 12.25 % in boxes and 1.93 % in cores, 18 of 25 decks within 2 m at a median of 0.46 m. So 18 decks do sit on class posts. The class still wins: DR_Post_NN is one welded mesh holding the hardstanding, the shelter, the deck, the railings, the stair, a full equipment kit and the POSTE number board, and only the kind-3 posts have a deck at all. Trading 24 complete installations for 25 decks is a hole with a deck in it.",
+    "measured": {
+     "probe": "work/r2331/own_marshal_post_deck.json",
+     "host_objects_in_assembly9": 24,
+     "host_vertices": 168837,
+     "item_units": 25,
+     "host_verts_in_unit_boxes": 20681,
+     "host_frac_in_unit_boxes": 0.122491,
+     "host_verts_in_unit_cores_50pct": 3257,
+     "host_frac_in_unit_cores": 0.019291,
+     "units_overlapping": 18,
+     "unit_to_nearest_host_vertex_m_median": 0.46,
+     "units_within_2m_of_host": 18,
+     "control_host": "DR_Sign_*",
+     "control_host_frac_in_unit_boxes": 0.0,
+     "control_unit_to_host_m_median": 52.633,
+     "foreign_objects_in_collection": [
+      "CTX_Column_01",
+      "CTX_Column_02",
+      "CTX_Column_03",
+      "CTX_Column_04",
+      "CTX_Column_05",
+      "CTX_Column_06",
+      "CTX_Column_07",
+      "CTX_Column_08",
+      "CTX_Column_09",
+      "CTX_Column_10",
+      "CTX_Column_11",
+      "CTX_Column_12",
+      "CTX_Column_13",
+      "CTX_Column_14",
+      "CTX_Column_15",
+      "CTX_Column_16",
+      "CTX_Column_17",
+      "CTX_Column_18",
+      "CTX_Column_19",
+      "CTX_Column_20",
+      "CTX_Column_21",
+      "CTX_Column_22",
+      "CTX_Column_23",
+      "CTX_Column_24",
+      "CTX_Column_25",
+      "CTX_Ground_01",
+      "CTX_Ground_02",
+      "CTX_Ground_03",
+      "CTX_Ground_04",
+      "CTX_Ground_05",
+      "CTX_Ground_06",
+      "CTX_Ground_07",
+      "CTX_Ground_08",
+      "CTX_Ground_09",
+      "CTX_Ground_10",
+      "CTX_Ground_11",
+      "CTX_Ground_12",
+      "CTX_Ground_13",
+      "CTX_Ground_14",
+      "CTX_Ground_15",
+      "CTX_Ground_16",
+      "CTX_Ground_17",
+      "CTX_Ground_18",
+      "CTX_Ground_19",
+      "CTX_Ground_20",
+      "CTX_Ground_21",
+      "CTX_Ground_22",
+      "CTX_Ground_23",
+      "CTX_Ground_24",
+      "CTX_Ground_25"
+     ]
+    }
+   }
   },
   {
    "key": "mullion_intact",
@@ -823,7 +1049,11 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into (round-1 showroom, film14 only). Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class_not_in_ship",
+    "argument": "As dais_delivery_ramp: the showroom is not in the shipping world. Also the row holds 1 unit against a declared 11."
+   }
   },
   {
    "key": "paddock_paving_bay",
@@ -863,7 +1093,11 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into ARCH_Paving_Paddock. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class",
+    "argument": "As forecourt_paving_bay, and worse on population: 78 units built against a declared 5,560. _paving_region welds bays, manhole and duct-pit recesses, saw-joint weeds, a two-layer closed sub-base, cast-in slot drains and cable ducts into one mesh. Class."
+   }
   },
   {
    "key": "paddock_personnel_figure",
@@ -911,7 +1145,8 @@
      "welded_in": "ARCH_PitWall",
      "counter": "pit_wall_stands",
      "n": 5,
-     "reason": "ARCH_PitWall IS the pit wall. Placing 119 hero units beside it double-builds the whole wall."
+     "reason": "ARCH_PitWall IS the pit wall. Placing 119 hero units beside it double-builds the whole wall.",
+     "class_switch": "architecture.pit_wall"
     }
    ],
    "state": "HOLD",
@@ -924,7 +1159,28 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into ARCH_PitWall. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "own_blocked",
+    "argument": "The strongest overlap measured anywhere in the 24: 57.33 % of ARCH_PitWall in the 119 unit boxes, 21.28 % in their cores, 119 of 119 units and all 119 within 2 m at a median of 0.59 m, against 0.00 % for ARCH_PitBuilding_Shell. The item IS the pit wall. But ARCH_PitWall also carries the flared terminal nose, the 357 m wall run's coping, the two return walls at the gantry leg and pit entry, and a band of ~40 branded advertising panels with baked text -- and the item builds 119 of a declared 125. Retiring ARCH_PitWall needs pit_wall_unit at full population AND an owner for the ad band; until then the class keeps it.",
+    "measured": {
+     "probe": "work/r2331/own_pit_wall_unit.json",
+     "host_objects_in_assembly9": 1,
+     "host_vertices": 24664,
+     "item_units": 119,
+     "host_verts_in_unit_boxes": 14139,
+     "host_frac_in_unit_boxes": 0.573265,
+     "host_verts_in_unit_cores_50pct": 5249,
+     "host_frac_in_unit_cores": 0.21282,
+     "units_overlapping": 119,
+     "unit_to_nearest_host_vertex_m_median": 0.591,
+     "units_within_2m_of_host": 119,
+     "control_host": "ARCH_PitBuilding_Shell",
+     "control_host_frac_in_unit_boxes": 0.0,
+     "control_unit_to_host_m_median": 11.735,
+     "foreign_objects_in_collection": []
+    }
+   }
   },
   {
    "key": "pit_wall_unit_itemkit",
@@ -997,7 +1253,28 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into ARCH_PontPlongee. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class",
+    "argument": "As pont_girder: 0 of 6 units overlap, median 3.53 m, LOCAL_FRAME unresolved. The deck slab is also the thing the parapet, the mesh fence and the asphalt wearing course all sit on -- each at a literal z keyed to soff + 1.35 -- so removing it leaves three features floating. Class.",
+    "measured": {
+     "probe": "work/r2331/own_pont_deck_slab.json",
+     "host_objects_in_assembly9": 1,
+     "host_vertices": 1376,
+     "item_units": 6,
+     "host_verts_in_unit_boxes": 0,
+     "host_frac_in_unit_boxes": 0.0,
+     "host_verts_in_unit_cores_50pct": 0,
+     "host_frac_in_unit_cores": 0.0,
+     "units_overlapping": 0,
+     "unit_to_nearest_host_vertex_m_median": 3.529,
+     "units_within_2m_of_host": 0,
+     "control_host": "ARCH_LaPasserelle",
+     "control_host_frac_in_unit_boxes": 0.0,
+     "control_unit_to_host_m_median": 606.026,
+     "foreign_objects_in_collection": []
+    }
+   }
   },
   {
    "key": "pont_girder",
@@ -1033,7 +1310,28 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into ARCH_PontPlongee. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class",
+    "argument": "Zero of ARCH_PontPlongee's 1,376 vertices fall inside the seven unit boxes and 0 of 7 units overlap, but the median girder is only 3.51 m from the bridge -- near enough that this is an offset, not a different place, and the row's LOCAL_FRAME blocker is the likely cause. Until the item's place=(R, t) is applied the two cannot be compared, so no removal is justified. And build_dressing pins two 27.0 x 1.15 m fascia banners at soff + 0.70, on the girder web face; the girders cannot leave without taking a cross-module interface with them.",
+    "measured": {
+     "probe": "work/r2331/own_pont_girder.json",
+     "host_objects_in_assembly9": 1,
+     "host_vertices": 1376,
+     "item_units": 7,
+     "host_verts_in_unit_boxes": 0,
+     "host_frac_in_unit_boxes": 0.0,
+     "host_verts_in_unit_cores_50pct": 0,
+     "host_frac_in_unit_cores": 0.0,
+     "units_overlapping": 0,
+     "unit_to_nearest_host_vertex_m_median": 3.506,
+     "units_within_2m_of_host": 0,
+     "control_host": "ARCH_LaPasserelle",
+     "control_host_frac_in_unit_boxes": 0.0,
+     "control_unit_to_host_m_median": 606.014,
+     "foreign_objects_in_collection": []
+    }
+   }
   },
   {
    "key": "showroom_facade_panel",
@@ -1069,7 +1367,11 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into (round-1 showroom, film14 only). Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class_not_in_ship",
+    "argument": "As dais_delivery_ramp: the showroom is not in the shipping world."
+   }
   },
   {
    "key": "showroom_facade_panel_v2",
@@ -1136,7 +1438,9 @@
      "detail": "the blend holds 801 units; the item declares 7800. A gating sample is not the shipping population."
     }
    ],
-   "gate_path_note": "spectator_crowd.py sets ITEM = 'spectator_seated', so this row's gate verdict is read from render/items/spectator_seated/gate.json (ITEM_REJECTED) and NOT from render/items/spectator_crowd/gate.json (ITEM_ACCEPTED), which exists for a directory that is not a manifest id -- census \u00a71.3's off-by-one. The row is HOLD either way on NO_WORLD_FRAME, which is decisive and independent of the gate, but the GATE_NOT_ACCEPTED blocker on this one row is reading the sibling item's report and is flagged rather than silently taken as true."
+   "gate_path_note": "spectator_crowd.py sets ITEM = 'spectator_seated', so this row's gate verdict is read from render/items/spectator_seated/gate.json (ITEM_REJECTED) and NOT from render/items/spectator_crowd/gate.json (ITEM_ACCEPTED), which exists for a directory that is not a manifest id -- census \u00a71.3's off-by-one. The row is HOLD either way on NO_WORLD_FRAME, which is decisive and independent of the gate, but the GATE_NOT_ACCEPTED blocker on this one row is reading the sibling item's report and is flagged rather than silently taken as true.",
+   "blockers_annotated_R2_299": "MEASURED AND WRONG, in part. NO_WORLD_FRAME is FALSE: this blend's own depsgraph gives 3,803 realised instances at world x[263.34,395.69] y[51.65,168.34] z[2.56,10.05], against TRIBUNE PRINCIPALE's seats at x[262.96,397.02] y[51.65,168.34] z[3.00,10.06] -- the population is already on the real stand. The grid the blocker describes is the 894-source LIBRARY contact sheet, a different collection. PARTIAL_BUILD quotes 801 of 7800, which is spectator_seated's object count, not this row's own expect_objects of 895. GATE_NOT_ACCEPTED is R2-227's own flagged off-by-one: render/items/spectator_crowd/gate.json is ITEM_ACCEPTED 8/8. THE ROW STAYS HOLD ANYWAY, on a blocker nobody had found: its 894 library sources are hide_render=False on a contact sheet at world x[216.8,247.0] y[-4.3,44.0], which is inside the 4K frustum on 545 of 2,978 frames, closest at 60.6 m where a 1.7 m figure is 105 px -- see R2-298. world/items/spectator_crowd_world.py takes the yard=None branch and is the row that is PLACE.",
+   "superseded_by": "spectator_crowd_world"
   },
   {
    "key": "spectator_seated",
@@ -1216,25 +1520,43 @@
     "W_Item_TeamTruckTrailer/Standins"
    ],
    "gate_result_at_registry_time": "ITEM_REJECTED",
-   "supersedes": [
-    {
-     "welded_in": "ARCH_Ground_Compound",
-     "counter": "transporters",
-     "n": 20,
-     "reason": "transporters = 20 welded into ARCH_Ground_Compound."
-    }
-   ],
+   "supersedes": [],
    "state": "HOLD",
    "blockers": [
     {
      "kind": "GATE_NOT_ACCEPTED",
      "detail": "canonical gate.json result is 'ITEM_REJECTED'"
-    },
-    {
-     "kind": "SUPERSEDE_WELDED",
-     "detail": "the world already builds this feature, welded into ARCH_Ground_Compound. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "false",
+    "argument": "MEASURED FALSE, AND THE DECLARED HOST IS THE WRONG OBJECT. Zero of ARCH_Ground_Compound's 9,692 vertices fall inside any of the ten unit boxes, the bounding boxes are disjoint (IoU 0.0000; the item runs world x 23.6-73.7, the compound x -103.0 to -31.9) and the median trailer stands 102.78 m from it. The control read louder than the subject: ARCH_PaddockBuildings, which this row does not claim, holds 9,153 vertices inside the unit boxes (10.43 %), 2,638 in cores, 5 of 10 units, median 4.71 m. Read independently out of the source: the 20 transporters are built by _transporter() into MB('ARCH_PaddockBuildings'), and ARCH_Ground_Compound is a hardcore yard with site cabins, silos and loose stones and has no transporter in it. Two readings, one artefact and one source, agree.",
+    "measured": {
+     "probe": "work/r2331/own_team_truck_trailer.json",
+     "host_objects_in_assembly9": 1,
+     "host_vertices": 9692,
+     "item_units": 10,
+     "host_verts_in_unit_boxes": 0,
+     "host_frac_in_unit_boxes": 0.0,
+     "host_verts_in_unit_cores_50pct": 0,
+     "host_frac_in_unit_cores": 0.0,
+     "units_overlapping": 0,
+     "unit_to_nearest_host_vertex_m_median": 102.783,
+     "units_within_2m_of_host": 0,
+     "control_host": "ARCH_PaddockBuildings",
+     "control_host_frac_in_unit_boxes": 0.104258,
+     "control_unit_to_host_m_median": 4.705,
+     "foreign_objects_in_collection": []
+    },
+    "supersede_claim_retired": [
+     {
+      "welded_in": "ARCH_Ground_Compound",
+      "counter": "transporters",
+      "n": 20,
+      "reason": "transporters = 20 welded into ARCH_Ground_Compound."
+     }
+    ]
+   }
   },
   {
    "key": "terrain_ground",
@@ -1266,7 +1588,11 @@
      "kind": "SUPERSEDE_WELDED",
      "detail": "the world already builds this feature, welded into TER_Ground. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "class",
+    "argument": "The clearest CLASS verdict in the set, and the one that most needed measuring rather than reading. TER_Ground is a single 638,365-vertex graded grid running x -10,907 to +10,827 and y -10,487 to +11,217 -- 21.7 km square. It is the film's horizon. The item is a ten-object hero patch of the same material. Superseding a horizon with a patch is the hole this exercise exists to prevent, and it would strand 24,646 trees, 2.98 M grass clumps and 1.62 M grit pieces on air. This is also WAVE2-SCOPE 3.3's case exactly -- geometry that exists so other items can read its z -- so the class keeps the geometry and the item becomes an interface stub."
+   }
   },
   {
    "key": "timing_stand",
@@ -1289,16 +1615,78 @@
      "welded_in": "ARCH_PitWall",
      "counter": "pit_wall_stands",
      "n": 5,
-     "reason": "build_architecture welds 5 stands into ARCH_PitWall's single mesh; the item builds 10. Census \u00a72.2: 'timing_stand's feature IS in the world as pit_wall_stands = 5 welded inside ARCH_PitWall'."
+     "reason": "build_architecture welds 5 stands into ARCH_PitWall's single mesh; the item builds 10. Census \u00a72.2: 'timing_stand's feature IS in the world as pit_wall_stands = 5 welded inside ARCH_PitWall'.",
+     "class_switch": "architecture.pit_wall_stands",
+     "class_switch_sites_world_xy": [
+      [
+       161.94,
+       47.34
+      ],
+      [
+       177.47,
+       60.63
+      ],
+      [
+       194.2,
+       74.64
+      ],
+      [
+       215.68,
+       92.38
+      ],
+      [
+       230.93,
+       105.65
+      ],
+      [
+       247.88,
+       119.66
+      ],
+      [
+       264.22,
+       133.17
+      ],
+      [
+       280.4,
+       146.92
+      ],
+      [
+       300.2,
+       163.76
+      ],
+      [
+       317.24,
+       177.65
+      ]
+     ],
+     "class_switch_radius_m": 31.0,
+     "class_switch_sites_source": "world/items/timing_stand_test.blend, the bounding-box centroid of each TS_Stand* unit in world XY, dumped by work/r2331/dump_sites.py. The radius is half the class feature's own 62 m stand pitch: 'there is a hero stand at this station' and nothing looser. R2-334: a whole-feature skip removed a fifth welded stand at world (367.3, 218.6) that has no hero stand within 64.6 m; with these sites the class keeps it."
     }
    ],
-   "state": "HOLD",
-   "blockers": [
-    {
-     "kind": "SUPERSEDE_WELDED",
-     "detail": "the world already builds this feature, welded into ARCH_PitWall. Census \u00a73.2: 'the moment it is placed the old version has to come out.'"
+   "state": "PLACE",
+   "blockers": [],
+   "r2331_ownership": {
+    "verdict": "own",
+    "argument": "17.43 % of ARCH_PitWall's 24,664 vertices fall inside the ten units' boxes and 3.03 % inside their 50 %-shrunk cores, 10 of 10 units and 8 of 10 cores -- against 0.036 % / 0 cores for the same ten units measured against ARCH_Gantry. The core count is the part a bounding box cannot fake: geometry that is merely adjacent drops out of a box shrunk by half, and 748 vertices do not. The item is ITEM_ACCEPTED, 10 of 10 declared, world frame, keep-out clean (R2-228), and it carries material history the welded five do not. It wins, and build_architecture stops building them.",
+    "measured": {
+     "probe": "work/r2331/own_timing_stand.json",
+     "host_objects_in_assembly9": 1,
+     "host_vertices": 24664,
+     "item_units": 10,
+     "host_verts_in_unit_boxes": 4300,
+     "host_frac_in_unit_boxes": 0.174343,
+     "host_verts_in_unit_cores_50pct": 748,
+     "host_frac_in_unit_cores": 0.030328,
+     "units_overlapping": 10,
+     "unit_to_nearest_host_vertex_m_median": 2.14,
+     "units_within_2m_of_host": 1,
+     "control_host": "ARCH_Gantry",
+     "control_host_frac_in_unit_boxes": 0.000364,
+     "control_unit_to_host_m_median": 104.508,
+     "foreign_objects_in_collection": []
     }
-   ]
+   },
+   "place_because": "ITEM_ACCEPTED, 10 of 10 declared, world frame, keep-out clean (R2-228), every unit its own mesh datablock. Its one blocker was the supersede debt and that is now paid where it had to be paid: build_architecture asks build_items.class_feature_owned('architecture.pit_wall_stands') and builds picks = [] while this row is PLACE, so the five welded stands are never made and there is nothing left for this stage to unweld. top_share is 10.000 %, the honest edge of a ten-unit population, admitted by min_units_for_share."
   },
   {
    "key": "tyre_blanket",
@@ -1345,7 +1733,10 @@
    "supersedes": [
     {
      "object": "BR_TyreWall_T4",
-     "reason": "BR_TyreWall_T4 is a WHOLE OBJECT in assembly9 and is exactly the wall this item rebuilds (s 912-1058). This one supersede is removable at placement time -- but only once the item ships its full population; see blockers."
+     "reason": "BR_TyreWall_T4 is a WHOLE OBJECT in assembly9 and is exactly the wall this item rebuilds (s 912-1058). This one supersede is removable at placement time -- but only once the item ships its full population; see blockers.",
+     "replaces_units": 1530,
+     "replaces_units_source": "build_barriers builds 2255 tyres total; BR_Transit_TyreWall accounts for ~722 by its own path arithmetic (113 samples over t 6-90 m, portal gap, three runs), leaving ~1530 in BR_TyreWall_T4. Read from source, not from a counter -- the counter is a single global.",
+     "min_replacement_frac": 0.9
     }
    ],
    "state": "HOLD",
@@ -1354,7 +1745,32 @@
      "kind": "PARTIAL_BUILD",
      "detail": "the blend holds 338 units; the item declares 2255. A gating sample is not the shipping population."
     }
-   ]
+   ],
+   "r2331_ownership": {
+    "verdict": "own_blocked",
+    "argument": "The one supersede in the registry that was already a whole object, and the one that would have opened a hole. BR_TyreWall_T4 is exactly a tyre wall -- individual tyre meshes plus its conveyor-belt facing, nothing else welded in -- but it stands in for about 1,530 of the world's 2,255 tyres, and this item's blend holds 338. Every check in place_one passes, because expect_objects measures the item against its own blend and can never see the size of the thing being removed. It would have placed 338 tyres and deleted 1,530. The supersede record now declares replaces_units and the stage refuses."
+   }
+  },
+  {
+   "key": "spectator_crowd_world",
+   "item": "spectator_seated",
+   "module": "world/items/spectator_crowd_world.py",
+   "collection": "ITEM_spectator_crowd",
+   "prefix": "SPECX_",
+   "frame": "world",
+   "source_blend": "world/items/spectator_crowd_world.blend",
+   "source_sha256": "3d72d4effbf16a3098034c152e8b7ca5aa907a8e5b202792b82745677ca1e2c1",
+   "expect_objects": 900,
+   "expect_objects_source": "read off the artefact by work/r2296/add_row.py: every MESH object under ITEM_spectator_crowd in the built blend. 894 library sources (all hide_render) + 6 crowd fields.",
+   "gate_json": "render/items/spectator_crowd/gate.json",
+   "gate_json_why": "R2-227: spectator_crowd.py and spectator_crowd_world.py both set ITEM = 'spectator_seated', so deriving the gate path from the manifest id reads render/items/spectator_seated/gate.json -- the WAVE-1 module's verdict (ITEM_REJECTED / really ITEM_UNMEASURABLE) about geometry that is not in this blend. The gate named here was run on world/items/spectator_crowd_test.blend, selected collection ITEM_spectator_crowd and scored SPECX_Lib0889_turned_b4: same module, same library builder, same materials as this artefact.",
+   "rig_subcollections": [],
+   "gate_result_at_registry_time": "ITEM_ACCEPTED",
+   "supersedes": [],
+   "supersedes_why": "NOTHING. build_architecture._seat() casts 18,350 chairs welded into ARCH_Grandstand_*, and they are EMPTY: film14.blend's 32,069 datablock names yield 0 human hits (the 40 that match the census's /crew/ pattern are all *Screws), against a positive control of 22 /Grandstand|Seat/ hits. Spectators go ON the seats, not INSTEAD of them, so this is the one item class that carries no supersede debt.",
+   "state": "PLACE",
+   "blockers": []
   }
- ]
+ ],
+ "r2331": "Every SUPERSEDE_WELDED blocker in this file was written from a name and a counter. work/r2331/ownership_probe.py measured all of them against assembly9.blend with a control host each time; the per-row `r2331_ownership` block carries the numbers and the argument. Four claims were measured FALSE and retired, one named the wrong object, and one whole-object supersede would have deleted about 1,530 tyres to place 338."
 }
