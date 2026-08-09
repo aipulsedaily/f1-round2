@@ -135,6 +135,20 @@ are **73.10, 73.57, then nothing until 99.93 GiB**. The first offer is lost at
 0.0008 GiB.** Do not treat the ground cover's headroom as comfortable; measure
 the film's actual resident footprint against 73.0992 and nothing rounder.
 
+**THE RAM GATE FILTERS ON ADVERTISED RAM; THE SCENE LIVES IN THE CAP.**
+Measured on the rented knife-edge box (offer 42272271): advertised **91.374
+GiB**, container `memory.max` = 94,187,290,624 B = **87.72 GiB**. That is
+**96.0% of what was sold**, and it reproduces an earlier independent
+observation (61.9 sold → 59.4 capped, also 96%).
+
+So `_meets_scene_working_set` filtering on the advertised figure **overstates
+the margin by 4%**: a 73.09 GiB working set that just clears the gate on this
+box actually sits at 87.72 / 73.09 = **1.20x headroom, not the 1.25x
+`RAM_HEADROOM` names.** Still headroom, but not the headroom the constant
+claims. **Either filter on `advertised x 0.96`, or raise `RAM_HEADROOM` to
+1.30 so the effective margin is the stated one.** The code comment already
+anticipated the gap; this puts a measured number on it.
+
 **THE BVH PREMISE IS MEASURABLY WRONG.** The baseline's first frame rendered in
 **274.66 s, BELOW the 283.3 s mean** — `render_sec` never contained the BVH
 build, which sits in the ~948 s of setup. **Discarding each card's first frame
