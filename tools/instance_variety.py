@@ -5,11 +5,11 @@
         -noaudio -P tools/instance_variety.py -- \
         --path render/film24_path.json \
         --census work/r23721/census15.npz \
-        --out docs/instance_variety_assembly15.json
+        --out docs/instance_variety.json
 
     # the sweep again, from the saved census, with no Blender at all
     python3 tools/instance_variety.py --census work/r23721/census15.npz \
-        --path render/film24_path.json --out docs/instance_variety_a15.json
+        --path render/film24_path.json --out docs/instance_variety.json
 
 WHY
 ---
@@ -430,7 +430,7 @@ def sweep(P, H, MID, nmesh, path_json, stride=1, ladder=RECOG_PX_LADDER,
     asserted: `tools/r2_3721_sweep_crosscheck.py` runs the same loop both ways
     and shows the emulation reproducing that tool's published numbers exactly.
     """
-    C, Rm, s, lens, nf = camera_track(path_json)
+    C, Rm, s, _lens, nf = camera_track(path_json)
     frames = list(range(0, nf - 1, stride))
     smin = float(np.min(ladder))
 
