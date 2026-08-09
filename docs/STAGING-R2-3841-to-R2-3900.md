@@ -742,10 +742,8 @@ State at the time of writing (04:45Z, 38 min in):
 
 ### What remains, in order
 
-1. **Watch the first 12 h retirement.** Due **16:06:32Z / 16:07:02Z /
-   16:07:33Z** for fleet03/04/05. It has never fired on any instance in this
-   project (longest life 10.7 h) and the master takes that path ~21 times.
-   Watch it; do not assume the resume worked.
+1. ~~Watch the first 12 h retirement.~~ **DONE — it fired at 16:07-16:09Z and is
+   written up at R2-3861.**
 2. **Rebalance when fleet03 finishes early — but NOT by weighting on host rate.**
    Carve a **disjoint** chunk off the slowest broker's remaining tail, cancel
    and resubmit that broker without it, hand the chunk to fleet03 under the same
@@ -853,6 +851,120 @@ misses are on `host-A` — but that IP carries **two of my three
 instances**, so its expected share of four misses is 2.7. Observing 3 is not a
 signal. The honest read is baseline SSH flakiness at roughly 0.7% of beats, from
 more than one cause.
+
+## R2-3861 — THE 12-HOUR RETIREMENT FIRED, ON ALL THREE CARDS AT ONCE
+
+The runbook's own words: *"The 12 h retirement has never fired on any instance
+(longest life 10.7 h). The master takes that path 21 times. **Exercise it once
+first.**"* It exercised itself at **16:07:32Z**, and because the three cards were
+rented within 61 seconds of each other on 08-09, **all three retired together**
+— the hardest version of this test, not the easiest.
+
+### The timeline, and a prediction made before the fact
+
+| when | what |
+| --- | --- |
+| 16:07:32 / 16:08:01 / 16:08:57 | all three job sockets `ConnectionDropped`, mid-frame |
+| — | error is `Connection refused`, not `unreachable`: **hosts up, containers gone** |
+| 16:10:10 / 16:10:27 / 16:11:48 | 3 consecutive missed beats → reconcile → `instance DOES NOT EXIST on vast.ai any more` |
+| 16:11:27 | vast.ai API: **no instances on this account** |
+| 16:22:42 / 16:23:17 / 16:24:13 | `await_render` gives up: *"not answered a single progress probe for 15.0 min"* |
+| 16:22:43 / 16:23:18 / 16:24:14 | **fresh card rented, ~1 second later** |
+
+Between the reconcile and the re-rent there is a **~12 minute silence** in which
+nothing is logged and no card is rented, and it looks exactly like a stall. It
+is not. `fleet.await_render()` carries `unknown_grace = 900.0` — fifteen minutes
+of *continuous* silence before it will call a render lost — and the comment
+above it says why: this loop *"used to return None the first time
+`read_progress` came back empty... each time reported to the operator as 'the
+worker really is gone' while the GPU was at 96% on that exact frame."*
+`REATTACH_SEC = 5400` is the outer bound for a legitimately long frame, not this.
+
+I predicted the three wake-ups from `unknown_since + 900 s` **before they
+happened** — 16:22:39 / 16:23:08 / 16:24:04 — and they landed at 16:22:42 /
+16:23:17 / 16:24:13. **Within 3, 9 and 9 seconds.** The mechanism is understood,
+not guessed at.
+
+### Nothing was lost
+
+**474 frames were on disk before the retirement and 474 after** (191 + 139 +
+144), and every job row in SQLite still carried its own count, matching disk
+exactly. Each broker requeued **without spending an attempt**, which is the
+right accounting:
+
+> *"job 467247848cc6 requeued WITHOUT spending an attempt — this pass delivered
+> 139 frame(s) before it stopped, so it made progress rather than failing."*
+
+Three frames were in flight and were lost: **192, 1133, 2127**, one per card,
+each ~5 min of GPU. They are absent from disk, so the resume plan picks them up
+again — the resume is computed from files, not from a cursor. **Observed, not
+assumed:**
+
+```
+sequence master4k job 467247848cc6: 993 frame(s) requested,
+                                    139 already delivered, 854 to render
+```
+
+`993 - 139 = 854` exactly; the 139 matches fleet04's PNGs on disk; and the 854
+**includes frame 1133**, which is missing from disk and is therefore back in the
+todo rather than silently skipped. That is the whole resume contract discharged
+on real numbers: nothing re-rendered, nothing dropped.
+
+**This is the property the whole `--name` design exists for, and it survived a
+simultaneous three-card loss.**
+
+### The RAM floor held on every replacement
+
+The commitment at R2-3849 was to check the advertised RAM of every re-rent
+rather than trust the gate once. Measured on all three:
+
+| instance | advertised | cap at 96% | over the 52.4 GiB resident scene |
+| --- | --- | --- | --- |
+| 47286201 (fleet03) | 124.9 GiB | 119.9 | **+67.5** |
+| 47286257 (fleet05) | 91.4 GiB | 87.7 | **+35.3** |
+| 47286610 (fleet04) | 251.3 GiB | 241.3 | **+188.9** |
+
+### One of the three replacements was a broken host, and the broker knew why
+
+fleet04's first replacement (47286172, machine 52271, New Jersey, and the
+**cheapest** offer at $0.3615/hr) completed the SSH handshake and then denied
+publickey auth, for 240 s. The diagnosis is exact and is the opposite of a
+retry loop:
+
+> *"sshd IS SERVING and REFUSED OUR KEY — it completed the handshake, sent
+> vast's banner, then denied publickey auth. The container is up; what is
+> missing is authorized_keys. vast.ai writes that file at container start, so a
+> key still absent 240 s in was never written: THE HOST DID NOT INSTALL IT, and
+> it will not appear now."*
+
+It then did three things in the right order:
+
+1. **Blacklisted machine 52271** for the session.
+2. **Blacklisted offer 46319510 as well** — *"it was just destroyed as unusable
+   and is still the cheapest, so the next rent would buy it straight back."*
+   Without that second blacklist a cheapest-first selector loops on a broken
+   box forever. This is the detail that makes the recovery terminate.
+3. Destroyed it — *"this broker rented it and has never run a single command on
+   it — it holds no worker and no frame, so there is nothing to lose"* —
+   **confirmed gone, gpu $0.046 + disk $0.005 = $0.051.**
+
+Replacement 47286610 (machine 8512, $0.668/hr, 3375 Mbps) was rented 1 second
+later.
+
+### What a retirement cycle actually costs
+
+| | |
+| --- | --- |
+| silence grace before re-rent | ~15 min (no card exists — **$0 GPU**) |
+| rent + boot + deploy + 10.96 GB scene push | ~15-20 min |
+| frames lost in flight | 1 per card, ~5 min of GPU each |
+| **dead wall-clock per cycle** | **~35 min**, all three cards in parallel |
+
+Over the master's ~7 cycles that is **~4 h added to the wall clock**, taking the
+render from ~82 h to **~86 h**. **Cost is unaffected** — nothing is billed while
+no instance exists — so the ~$105-113 projection stands. The fleet came back
+marginally *cheaper* on the first cycle ($1.2741/hr against $1.3881/hr) before
+the broken-host replacement pushed it back up.
 
 ### The escalation bar, in the config's own numbers — so this needs deciding once
 
