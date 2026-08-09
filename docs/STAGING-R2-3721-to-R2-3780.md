@@ -352,5 +352,462 @@ threshold move, and it is not in this task's scope.
 
 ---
 
-<!-- ITEM 2 (#159) -- the beat-1 re-sweep against render/film24_path.json --
-     lands here. -->
+## R2-3721 item 2 (defect #159) — THE TIERING DOES MOVE, AND MOSTLY NOT IN BEAT 1
+
+
+### The premise needed one correction before it could be tested
+
+The brief says `docs/screen_presence*.json` was swept against
+`world/camera_rig_path.json`. That is true of the **filename** and false of the
+**bytes**, and the difference is the whole of R2-1007 wearing a new coat.
+
+`work/w2_0/retier_a9/inputs.json` stamps `camera_path` sha256 `f1c65c46…`.
+That hash is `render/film13_path.json` = `render/film14_path.json` = **git
+HEAD's copy of `world/camera_rig_path.json`**. The working-tree copy carries
+`d9c8f5c5…` (film16's bytes) and acquired them at 2026-08-04 15:49 — **fourteen
+hours after the 01:49 sweep**. The sweep's own `campos` array settles it
+independently of any stamp: it reproduces `render/film14_path.json` to
+**5 micrometres** and today's `world/camera_rig_path.json` only to **8.86 m**.
+
+So the orphan that actually produced the delivered tiering is **film14's
+bytes**, and a re-sweep pointed at `world/camera_rig_path.json` today would have
+compared the wrong pair. Every arm below uses `render/film14_path.json` as the
+baseline camera and says so.
+
+### The diff, reproduced and then corrected
+
+The R2-3243 C4 metric — `|Δp| > 1e-6 m`, `|Δlens| > 1e-6 mm`, and
+`max |Δq_i| > 1e-6` on the **raw stored** quaternion components — reproduces
+exactly against `film22`:
+
+```
+world/camera_rig_path.json vs render/film22_path.json
+  position    1142/2978   max 21.3991 m  @f2177
+  lens        1065/2978   max 55.9962 mm @f2978
+  orientation 2516/2978   (raw components)
+```
+
+**1,142 / 1,065 / 2,516 confirmed.** Two riders on it:
+
+* The **orientation** count is on raw six-decimal components with no
+  re-normalisation and **no sign fix**, so it counts rounding noise and
+  double-cover sign flips as differences. The R2-103-safe geodesic angle gives
+  **1,023** frames above 0.2°, not 2,516. The *maxima* are unaffected.
+* The **maxima are not beat 1's.** 21.40 m is at **f2177** and 56.00 mm at
+  **f2978** — beat 5 and beat 6. Beat 1's own worst is 9.85 m / 23.00 mm.
+
+Against the camera this task is actually about, and from the baseline the docs
+were actually swept from:
+
+```
+render/film14_path.json vs render/film24_path.json      (C4 metric)
+  position    2347/2978   max 21.4339 m  @f2176
+  lens        2129/2978   max 55.9962 mm @f2978
+  orientation 2708/2978   raw   |   2456/2978 above 0.2 deg geodesic, max 179.52 deg @f87
+  divergent (1 mm / 1 um / 0.2 deg): 2498 frames
+      inside beat 1 (f1-792)   753 of 792   worst  9.79 m / 28.64 mm / 179.52 deg
+      outside beat 1          1745          worst 21.43 m / 56.00 mm /  78.75 deg
+```
+
+**Beat 1 is 753 of 792 frames divergent — the brief's "essentially the whole of
+beat 1" is right. What the brief omits is that 1,745 further frames outside
+beat 1 also diverge, and they carry the larger numbers.** That omission turns
+out to be the finding.
+
+### The answer: 17 items change tier, and only 5 of them peak in beat 1
+
+Camera-only re-derive: same point cloud (`work/w2_0/retier_a9/world_points.npz`,
+assembly9 — the world the delivered docs were swept from), same
+`screen_presence.py --uniform-shutter`, same `tools/item_presence.py`, same
+`work/w2_0/tier_delta.py` R2-1275 used. The baseline re-derived through today's
+`item_hosts.py` reproduces `docs/screen_presence.json` **item for item, 435 of
+435, zero tier differences** — so the chain being diffed is the chain that made
+the delivered file.
+
+```
+                   HERO   MID   BULK
+  orphan (film14)    69    58    308      <- docs/screen_presence.json
+  DELIVERED film24   71    57    307
+  delta              +2    -1     -1
+
+  wave-2 build set (unbuilt HERO+MID)   109 -> 111
+  agents per round (agents_per_round.py) 149 -> 151
+  FRAME-peeps (frame_peeps.py)            29 ->  28
+```
+
+**The one confound in reusing the 08-04 baseline npz was checked, not assumed.**
+The baseline arm reuses `work/w2_0/retier_a9/sp_points.npz` as it was written on
+2026-08-04, so if the sweep code had changed since, "camera-only" would be false.
+`git show 2675a06:tools/screen_presence.py` and `git show 68f94cc~1:…` hash
+identically (`a166a669…`) — the measurement half of the tool did not change
+between the baseline sweep and today's arms. `item_presence.py` and
+`item_hosts.py` **have** changed since, which is why both arms were re-derived
+through today's copies rather than one arm being read off `docs/`; that
+re-derivation reproduces `docs/screen_presence.json` 435 of 435.
+
+The aggregate barely moves. **The rows move: 17 of 435 items change tier**, and
+`tier_delta.py`'s own partition arm fires — `PARTITION_REFUTED` — because
+**12 of the 17 peak outside beat 1**.
+
+```
+  PEAK INSIDE beat 1 — 5
+    exterior_ground_apron     BULK -> MID    f153   151.6 px   showroom_breach
+    farm_gate                 BULK -> MID    f154   157.4 px   vegetation
+    forecourt_paving_bay      BULK -> MID    f153   151.6 px   showroom_breach   BUILT
+    media_centre_building     MID  -> HERO   f154   801.0 px   paddock
+    medical_centre_building   MID  -> HERO   f154   629.3 px   paddock
+
+  PEAK OUTSIDE beat 1 — 12
+    apron_wall_panel          MID  -> HERO   f910   514.5 px   transit_corridor
+    big_screen_tower          MID  -> HERO   f2572  328.4 px   crowd
+    grandstand_debris_fence   BULK -> MID    f2572  118.2 px   grandstand
+    podium_backdrop           BULK -> MID    f2572  131.4 px   crowd
+    podium_structure          BULK -> MID    f2572  114.9 px   crowd
+    grass_clump_reed          HERO -> MID    f2316  383.2 px   vegetation
+    pont_abutment             HERO -> MID    f2191  718.5 px   bridges
+    hoarding_leg              MID  -> BULK   f1559  269.0 px   trackside
+    marshal_broom             MID  -> BULK   f2321  247.6 px   trackside
+    marshal_figure_flagging   MID  -> BULK   f2321  309.5 px   trackside
+    marshal_post_column       MID  -> BULK   f2175  162.1 px   trackside         BUILT
+    pont_girder               MID  -> BULK   f2191  242.5 px   bridges           BUILT
+```
+
+**So the framing in the brief — "beat 1's item priorities" — is the smaller half
+of the defect.**
+
+That is not an inference from the peak-frame column; it is measured directly, by
+a third arm. `ctl_k100_path.json` is film24 everywhere **except** beat 1, where
+it is the orphan — so diffing it against each end splits the swap in two, and
+the two halves are byte-identical outside the span each is meant to test:
+
+```
+                                          HERO  MID  BULK   items changing tier
+  orphan everywhere (docs baseline)         69   58   308
+  orphan in beat 1, film24 outside          68   57   310   11  (all outside beat 1)
+  film24 everywhere                         71   57   307    6  (5 inside beat 1)
+                                                            ---
+                                          total                17
+```
+
+**11 of the 17 tier moves are caused by the part of the camera change that is
+not in beat 1**, and 6 by beat 1. The two contributions are exactly additive at
+the tier level — 11 + 6 = 17, no interaction — so neither is masking the other.
+The 11 come from the beat-5 re-pace and the beat-6 closing lens that film24
+carries, which were never part of the R2-1007 story. The one item in the beat-1
+half whose *peak* is elsewhere, `apron_wall_panel` (peak f910), crosses the
+HERO line on beat-1 frames it does not peak on — which is why the peak-frame
+partition is a heuristic and `tier_delta.py` is right to report it as refuted.
+
+### And the swap is two changes, not one — which matters for the proxy
+
+`film22` (== the bytes `docs/LIVE-CAMERA.md` still declares, and the camera
+`work/r22161_proxy/`'s 2,978 frames were actually rendered from) sits between
+the orphan and film24, so the swap splits into the R2-3243 defect and the newer
+re-pace:
+
+```
+                                             HERO  MID  BULK   moved  build set
+  orphan (film14)  — docs/screen_presence.json  69   58   308            109
+  film22           — the R2-3243 defect, and    73   60   302     12     115
+                     the camera the proxy has
+  film24           — delivered                  71   57   307      7     111
+  orphan -> film24 net                                            17     111
+```
+
+Two things fall out. **12 + 7 = 19 against a net of 17**, so two items move and
+move back — a tier that agrees at the ends is not evidence that nothing happened
+in between. And the **film22 tiering (73/60/302, build set 115) is the one that
+matches the only rendered pixels in existence**; anything joining presence
+numbers to proxy frames should use that arm, not film24's and not the docs'.
+All 7 of the film22 → film24 moves peak outside beat 1.
+
+### Built that shouldn't have been, skipped that should have been
+
+Read against the **delivered** camera, with BUILT defined as `world/items/*.py`
+whose stem is a manifest id (36 modules), exactly as `WAVE2-SCOPE.md` §1.1 does:
+
+**Built on a tier the delivered camera does not support — 2.**
+
+* `marshal_post_column` — MID under the orphan, **BULK** under film24
+* `pont_girder` — MID under the orphan, **BULK** under film24
+
+Both have a dedicated module; under the delivered camera both belong in the
+class-level W2-D pass. (Seventeen further built items are BULK under *both*
+cameras — that is a scoping question, not this defect's.)
+
+**Skipped that should have been built — 5**, all BULK under the orphan and
+therefore never in the wave-2 build set at all:
+
+* `exterior_ground_apron` — 151.6 → **495.8 px** (+227 %)
+* `farm_gate` — 157.4 → 157.5 px (it crossed on frame count, not size)
+* `grandstand_debris_fence` — 118.2 → 179.8 px
+* `podium_backdrop` — 131.4 → 189.6 px
+* `podium_structure` — 114.9 → 165.9 px
+
+**Would have been wasted — 3**, unbuilt items in the build set under the orphan
+that the delivered camera puts in BULK: `hoarding_leg`, `marshal_broom`,
+`marshal_figure_flagging`.
+
+**Budgeted at the wrong depth — 6.** MID → HERO (needs macro history nobody
+budgeted): `apron_wall_panel`, `big_screen_tower`, `media_centre_building`,
+`medical_centre_building`. HERO → MID (budgeted macro history it does not
+need): `grass_clump_reed`, `pont_abutment`.
+
+### The number that moved far more than the tier — px/m
+
+`WAVE2-SCOPE.md` §2.6's R2-634 note already wrote the correct warning for a
+*smaller* camera swap than this one:
+
+> TIER ASSIGNMENT IS ROBUST TO THE CAMERA. `px_per_m` IS NOT, AND `px_per_m` IS
+> WHAT AGENTS ACTUALLY BUILD AGAINST. — 1 of 560 objects changed tier, 14 of 560
+> moved `px_per_m` by more than 10 %.
+
+On this swap, on the same field (`peak_unocc_sharp_px_per_m`, 560 objects):
+
+```
+  moved > 10 %                          322 of 559
+  moved by 2x or more                    76 of 559
+  lost a sharp unoccluded peak entirely  49
+  gained one                              1
+  |log2 ratio|   p50 0.170   p90 1.283   max 4.184
+```
+
+**322 of 559, against R2-634's 14.** Extremes: `DR_Apex_022` 7.5 → 135.7 px/m,
+`DR_TVCam_11` 7.5 → 134.6, `BR_Runoff_R` 76.7 → 405.0, `SURF_Kerb_T11_out1`
+76.2 → 347.6. Of the 36 items that already have modules, **11 have a detail
+budget that moved by more than 25 % and 4 by more than 2×** — `forecourt_paving_bay`
+151.6 → 495.8 px (+227 %), `pont_deck_slab` 3.7 → 11.5, `kerb_precast_unit`
+11.7 → 26.1, `asphalt_wearing_course` 3.3 → 7.0. The 49 that lose every sharp
+unoccluded moment are the dressing and grid-number families —
+`DR_Marker_021` 176.8 → 0, `BR_TecPro_R11` 157.3 → 0, `DR_Apex_023` 93.0 → 0,
+and eleven `SURF_GridNum_*`.
+
+**And the same split says this is not beat 1's doing either:**
+
+```
+                            objects >10 %   >2x   lost sharp peak entirely
+  BEAT 1 ALONE                     2         1              0
+  BEATS 2-6 ALONE                320        75             49
+  both together                  322        76             49
+```
+
+**Beat 1's camera change is the larger one in metres and degrees — 9.8 m and
+179° against 21.4 m and 79° — and it barely touches the detail budget at all**,
+because it re-frames the same forecourt at similar scale. `ARCH_Paving_Forecourt`
+476.7 → 1049.4 px/m is essentially beat 1's whole contribution. The beat-5
+re-pace and beat-6 closing lens are what redistribute the film's resolution.
+
+**The tier count is the reassuring number and it is the wrong one to read; and
+"beat 1" is the wrong span to read it over.**
+
+### The controls, and what each of them was watched to do
+
+A comparison that cannot report a difference is not evidence of no difference —
+and equally, one that reports differences for any input is not evidence of one.
+Both failure modes were tested.
+
+**C1 — the null.** `tier_delta.py` fed the baseline against **itself**:
+`moved=0 inside_beat1=0 outside_beat1=0`, `PARTITION_HOLDS`. The tool does not
+manufacture moves.
+
+**C2 — dose-response, on a control camera that is a measured FRACTION of the
+real defect.** `ctl_kNNN_path.json` is film24 with beat 1 pulled a fraction *k*
+of the way back to the orphan — position lerped, lens lerped, orientation
+slerped — and byte-identical to film24 everywhere else (verified: max
+0.000000 m / 0.000003° outside beat 1). Injecting that error into the delivered
+camera and re-running the whole chain:
+
+```
+  k = 0.00   beat-1 error 0.00 m / 0.00 deg      0 items change tier
+  k = 0.10                0.98 m / 17.95 deg     3
+  k = 0.25                2.45 m / 44.88 deg     5
+  k = 1.00                9.79 m / 179.52 deg    6      <- the real defect
+```
+
+**Monotone, and it resolves a tenth of the defect.** So when the beat-1 half of
+the swap is reported as 6 tier moves, that is a measured 6 and not a floor the
+instrument could not see below.
+
+**C3 — the code was not the variable.** The measurement half of
+`screen_presence.py` hashes identically at the 08-03 baseline commit and at
+today's parent commit, so reusing the 08-04 baseline npz does not smuggle a code
+change into a camera diff (above).
+
+**C4 — the guard added to `screen_presence.py`**, 8 arms, 3 of which must fail
+(below).
+
+**C5 — the answer is not an artefact of assembly9.** The whole pair was re-run
+on the assembly10 dump (`work/w2_0/retier_a10/world_points.npz`, 2,261 objects
+against assembly9's 560, and 4 items resolving as SELF rather than via a class
+host):
+
+```
+                        assembly9   assembly10
+  items changing tier        17          16
+    peak inside beat 1        5           5
+    peak outside beat 1      12          11
+  wave-2 build set    109 -> 111   109 -> 112
+  objects px/m > 10 %  322 / 559  1163 / 2261
+  objects px/m > 2x     76 / 559   276 / 2261
+```
+
+**Fifteen of the sixteen assembly10 moves are the same items, in the same
+direction.** The one that does not move on assembly10 is `hoarding_leg`
+(MID → BULK on assembly9 only). Every named finding below survives the world
+change.
+
+**And one control failed usefully during the run.** `item_presence.py` was fired
+at one arm's npz a second before that arm's `sp_objects.json` had been written,
+and it printed `>> STAGE RESULT: item_presence_CRASH` instead of quietly
+producing a record with no `MEASURED_AGAINST`. That is the R2-097 shape being
+caught by the instrument built for it.
+
+### What to do about it, in the order it matters
+
+1. **Do not re-tier through `tools/retier.sh` until `docs/LIVE-CAMERA.md`
+   declares film24.** The script resolves its camera through
+   `live_campath.load()` and takes no camera argument on purpose, so today it
+   would re-tier against film19. One deliberate edit to the declaration, by
+   whoever owns the film24 promotion, unblocks it.
+2. **Re-stamp the detail budgets before any more item work is authored.** 322 of
+   559 objects moved more than 10 % in px/m and 76 moved by 2×; an item built
+   for 477 px/m and filmed at 1049 px/m is built to a quarter of the resolution
+   it needs. This is R2-634's warning, one camera generation later and 23× worse.
+3. **Nine items need a decision on their tier**: 5 that should have been in the
+   build set and were not, 3 that were and should not have been, and the 2 built
+   modules the delivered camera puts in BULK.
+4. **Beat 1 is not where the correction lands.** If the opening shot is what the
+   dressing decision is about, beat 1's re-frame moves 6 tiers and 2 objects'
+   detail budgets. The rest of the film moves 11 tiers and 320 detail budgets.
+
+### Four things found on the way that are not this defect
+
+**1. `docs/LIVE-CAMERA.md` is stale again, and this is its third recurrence.**
+It declares `render/film19_path.json`. Those bytes (`363e4e88…`) are also
+film21, film22 and film23 — so the declaration was accurate until film24 was
+built at 2026-08-08 19:21 and did not re-declare. `tools/retier.sh` resolves its
+camera through `live_campath.load()` and takes no camera argument by design, so
+**`bash tools/retier.sh` run today re-tiers against film19, not film24.** The
+gap is real if smaller than the orphan's: film22 → film24 differs on 1,374
+frames in position (max 0.264 m), 1,522 in lens (max 7.03 mm) and 1,724 above
+0.2° (max 12.05°). R2-1701 logged this same failure for film18; it is now
+film24's turn. The file needs one deliberate edit by whoever owns the film24
+promotion — it is a decision, not a repair, so this task did not make it.
+
+**2. The `FILM_POSE_FRAMES` non-contamination note no longer holds in
+orientation.** R2-3243 scoped its finding by observing that f1547, f2000, f1226,
+f1350, f1787, f2622 and f2632 were byte-identical between the authoring camera
+and film22, so R2-651 and R2-1036's surface work was safe. Against **film24**
+those same frames have moved:
+
+```
+  f1547   dp 0.013 m   dlens 0.05 mm   dq  9.658 deg
+  f2000   dp 0.004 m   dlens 0.00 mm   dq  6.826 deg
+  f1226   dp 0.001 m   dlens 0.00 mm   dq  8.285 deg
+  f2225   dp 0.055 m   dlens 0.15 mm   dq  0.721 deg
+```
+
+All four `FILM_POSE_FRAMES` are in beat 5 (f1191–f2714) and beat 5 is what
+film24 re-paced. Position and lens are still right to centimetres; **the aim is
+up to 9.7° different**, which for a grazing-angle surface bed is not nothing.
+This is a flag for whoever owns R2-651/R2-1036, not a verdict — and note that
+`world/build_surface._film_pose_defs()` reads `world/camera_rig_path.json`
+directly, i.e. the orphan, so the bed is not built from film24 either way.
+
+**3. The only rendered pixels that exist for the whole take are film22's.**
+`work/r22161_proxy/` was rendered from `render/film22_path.json`
+(`tools/r2_2881_pixelpeep.py:76`). film24 has no proxy. Anything that joins
+presence numbers to proxy pixels must use film22 for the pixels and say so.
+
+**4. `tools/screen_presence.py` still defaulted `--path` to the orphan.**
+Fixed under this task — see below.
+
+### The instrument, and the control that was watched to fail
+
+`tools/screen_presence.py --path` defaulted to `world/camera_rig_path.json`,
+which is the file `live_campath.KNOWN_STALE` names by content. **The tool whose
+output the item campaign is tiered from shipped with the R2-1007 orphan as its
+default camera.** Changed:
+
+* `--path` has **no default**. Omitted, it resolves the live camera through
+  `docs/LIVE-CAMERA.md`; there is no route to a camera nobody named.
+* A camera in `live_campath.KNOWN_STALE` is **refused** unless `--why-stale
+  '<reason>'` is given, mirroring `load_explicit`'s contract.
+* The output json now records **`camera_path_sha256`**, plus
+  `camera_is_known_stale` / `why_stale`. This is the field that would have
+  caught #159 on the day: `camera_path` is a *filename*, and the filename behind
+  `docs/screen_presence*.json` stayed `world/camera_rig_path.json` while its
+  bytes were replaced fourteen hours after the sweep. A reader comparing by name
+  would have concluded they matched.
+
+`ctl_stale_camera.sh` runs six arms and three of them **must** fail:
+
+```
+  MUST FAIL: the real R2-1007 orphan, no reason given        ok  rc=1, KNOWN-STALE
+    ...and it refused BEFORE reading points or measuring     ok  no npz, no json
+  MUST FAIL: a whitespace-only --why-stale is not a reason   ok  rc=1, KNOWN-STALE
+  MUST FAIL: the same bytes under an innocent filename       ok  rc=1, KNOWN-STALE
+  POSITIVE: a stated reason lets the stale sweep run         ok  rc=0
+    ...and the OUTPUT records that it was stale              ok  sha=d9c8f5c54ccd1ad8
+  POSITIVE: no --path resolves docs/LIVE-CAMERA.md           ok  rc=0, film19_path.json
+  >> STAGE RESULT: SP_CAMERA_GUARD_OK  8 passed, 0 failed
+```
+
+The third arm is the one that earns its place: R2-1007's file was already
+sitting under the most innocent name in the tree, so a guard that keys on the
+filename would have passed every other arm and still missed the defect.
+
+### How to reproduce every number above
+
+```bash
+cd /home/zany/f1-round2
+# 1. the camera diff, R2-3243's metric and the R2-103-safe one side by side
+python3 work/r23721_item2/camdiff.py
+
+# 2. the control cameras: fractions k of the REAL beat-1 change
+python3 work/r23721_item2/make_ctl.py 1.00 0.25 0.10
+
+# 3. the arms. World held fixed, camera varied, one at a time under buildlock
+bash work/r23721_item2/run_sweeps.sh
+
+# 4. the baseline, re-derived through TODAY's hosts so both sides match
+python3 tools/item_presence.py --npz work/w2_0/retier_a9/sp_points.npz \
+  --sheet docs/beat_sheet.json --objects work/w2_0/retier_a9/sp_objects.json \
+  --out work/r23721_item2/a9_orphan14_item_presence.json \
+  --tiers work/r23721_item2/a9_orphan14_tiers_raw.json
+
+# 5. every delta, through the tool R2-1275 used
+bash work/r23721_item2/analyse_all.sh a9_film24 a9_film22 a9_k100 a9_k025 \
+                                      a9_k010 a10_film14 a10_film24
+python3 work/r23721_item2/builtcheck.py \
+  work/r23721_item2/a9_orphan14_item_presence.json \
+  work/r23721_item2/a9_film24_item_presence.json
+python3 work/r23721_item2/objdelta.py work/w2_0/retier_a9/sp_objects.json \
+  work/r23721_item2/a9_film24_sp_objects.json --label "orphan -> film24"
+
+# 6. the guard control. Three of its eight arms MUST fail.
+bash work/r23721_item2/ctl_stale_camera.sh
+```
+
+Artefacts (`work/` is gitignored, so the scripts are tracked and the npz are
+not — every number regenerates from the commands above):
+`work/r23721_item2/{camdiff,make_ctl,moved,objdelta,builtcheck}.py`,
+`work/r23721_item2/{run_sweeps,analyse_all,ctl_stale_camera}.sh`, and per arm
+`<arm>_{sweep.log,sp_objects.json,sp_points.npz,item_presence.json,tiers_raw.json}`
+plus `delta_<arm>.json`.
+
+**Nothing was rendered and nothing was spent.** Every arm is numpy over an
+already-dumped point cloud.
+
+### The one thing this measurement is NOT
+
+Both point clouds available on disk are stale worlds — `assembly9` and
+`assembly10`, against `SHIPPING.md`'s `assembly14`. That is deliberate and it is
+the right call for this question: holding the world fixed is what makes the diff
+a *camera* diff, and `tools/retier.sh`'s own header names "a camera-only
+re-derive, where the world is deliberately held fixed and ONLY the projection is
+redone" as a supported mode. It does mean **these tier numbers are not the
+shipping world's tier numbers.** Dumping `assembly14` opens a 7 GB+ blend on a
+box with 2 GB free and is a separate job. The assembly10 arms are here so the
+camera answer can be shown not to be an artefact of assembly9.
+
