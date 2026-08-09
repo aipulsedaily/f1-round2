@@ -854,10 +854,34 @@ instances**, so its expected share of four misses is 2.7. Observing 3 is not a
 signal. The honest read is baseline SSH flakiness at roughly 0.7% of beats, from
 more than one cause.
 
-None of it is close to dangerous: the watchdog reaps on a **30 minute** stale
-heartbeat, so a single 26-30 s miss is about 1/60th of the threshold, and beats
-run on their own thread precisely so a busy broker cannot starve them. The
-escalation trigger is the `(N in a row)` counter passing 1 on any one instance.
+### The escalation bar, in the config's own numbers — so this needs deciding once
+
+Everything that acts on heartbeats counts **consecutive** failures, not total.
+The three constants that matter:
+
+| constant | value | what happens |
+| --- | --- | --- |
+| `HEARTBEAT_INTERVAL` | **60 s** | one beat per instance per minute |
+| `RECONCILE_AFTER_HEARTBEATS` | **3 consecutive** | broker asks vast.ai whether the instance still exists (~3 min). Diagnostic, not destructive |
+| `HEARTBEAT_STALE_SEC` (in-container watchdog) | **1800 s = 30 consecutive** | the instance destroys itself |
+
+**Every miss so far has read `(1 in a row)`.** The counter has never reached 2 on
+any instance. So the fleet is sitting at **1 of 3** to the benign reconcile probe
+and **1 of 30** to anything that could lose a card, and each miss resets the
+counter on the next successful beat.
+
+By 07:21Z fleet03 had 3 misses in ~195 beats (1.5%), fleet04 and fleet05 one
+each (~0.5%). Even taken at face value that is a rate at which reaching 30
+consecutive is not a thing that happens; and with 5 events across 3 instances,
+fleet03's share (3 against an expected 1.67) is not statistically distinguishable
+from noise anyway.
+
+**So: do not re-analyse individual heartbeat warnings.** The bar is the
+`(N in a row)` counter. At **3** the broker will start questioning the instance
+and it is worth a look; below that it is a log line. What would genuinely matter
+is a miss that coincides with frames stopping — and it has not: fleet03
+delivered frames 43-48 across two of its own misses at 203.8-205.2 s, a spread
+of 1.4 s, with no fetch, transfer or tunnel error in its whole log.
 
 The one operational lesson worth keeping: **heavy local Blender work during a
 live render has a measurable cost on the fleet's control plane.** That is a
