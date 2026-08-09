@@ -127,10 +127,40 @@ FILM23 = dict(watts=46866.886, stamps=24,
 FILM24 = dict(watts=46866.886, stamps=24,
               strip_size_y=0.10, strip_radiance=47.4569)
 
+#: film25's OWN prediction.  R2-3661.
+#:
+#: film25 is film24's rig and film24's car on a DIFFERENT WORLD -- assembly15
+#: rather than assembly14.  That is the only difference, and it is a world
+#: difference: assembly15 is assembly14's object graph to the object (31,068
+#: objects, 4,247 meshes, 181 materials) PLUS ground cover, +17.16 % traced
+#: triangles.  Ground cover is TER/VEG geometry and carries no lamp.
+#:
+#: So the arithmetic below is re-run, not copied.  It was printed at
+#: 2026-08-09T01:29:14Z into
+#: `work/r23661/PREDICTION_film25_20260809T012914Z.log`, which predates
+#: `render/film25_breach.blend`, from `world/showroom_strip.py --selftest` on
+#: the reference binary:
+#:
+#:     50.0 W nominal / luma(COLD) 0.931576                =     53.6725 W
+#:     levelled by 2**LIFT_STOPS = 2**3.628 = 12.363369    =    663.5727 W
+#:     46203.313 (the pre-strip interior load) + 663.573   =  46866.886 W
+#:     n_lamp_stamps 23 -> 24
+#:     radiance 53.6725 / (3.60 x 0.10 x pi)               =     47.4569
+#:
+#: It agrees with FILM23 and FILM24 to the last digit for the same reason they
+#: agree with each other: THE PREDICTION IS A FUNCTION OF THE SHOWROOM, which
+#: `tools/build_film_scene.py` builds identically for all three, and not of the
+#: world or the car.  Agreement is the expected result, not evidence of
+#: copying -- the separate literal is what keeps it from BEING copying, because
+#: it means a future world that does add an emitter fails this row instead of
+#: silently inheriting a number that was never re-derived.
+FILM25 = dict(watts=46866.886, stamps=24,
+              strip_size_y=0.10, strip_radiance=47.4569)
+
 #: Per-film predictions, selected by `--want`.  Adding a film here is how a new
 #: generation declares what it expects; editing an existing entry is how the
 #: record of what an OLD generation was judged against gets destroyed.
-WANTS = {"film23": FILM23, "film24": FILM24}
+WANTS = {"film23": FILM23, "film24": FILM24, "film25": FILM25}
 
 #: The `>>` IS OPTIONAL, AND THAT IS A FINDING, NOT A CONVENIENCE.  R2-2821.
 #: `gate_exit._VERDICT_RE` requires `>>`, and every verify script greps
@@ -141,6 +171,34 @@ WANTS = {"film23": FILM23, "film24": FILM24}
 #: both so a stage cannot hide behind punctuation, and the two files are named
 #: in the staging note so the convention can be made single.
 VERDICT_RE = r">{0,2} *STAGE RESULT: *(.+)"
+
+
+def token(line):
+    """THE VERDICT IS THE FIRST WORD; THE REST IS DETAIL.  R2-3124.
+
+    `gate_exit._VERDICT_RE` captures `(\\S+)` -- one token -- and everything in
+    this project that decides anything decides on that token.  This file
+    captured `(.+)` and then compared the WHOLE remainder to the wanted token,
+    so a stage that reports its verdict WITH ITS EVIDENCE, as
+    `verify_film_materials.py` does --
+
+        >> STAGE RESULT: FILM_MATERIALS_OK (0 failures)
+
+    -- could never equal `FILM_MATERIALS_OK` and was FAILed for being correct
+    and informative.  That defect could not surface until R2-3121 got the log
+    down to one verdict, because until then the row FAILed earlier, on the
+    two-verdict rule, and the mismatch hid behind it.  Found by reading the
+    output of the repaired bar, not by reading the bar.
+
+    The loosening is EXACTLY one token wide and takes nothing away:
+      * `FILM_MATERIALS_FAIL (1 failures)` still tokenises to
+        `FILM_MATERIALS_FAIL` and still FAILs against `FILM_MATERIALS_OK`;
+      * a log with TWO verdict lines is still a FAIL, on a separate rule that
+        counts matches and never looks at their contents;
+      * the full line, suffix and all, is what gets PRINTED in the `got`
+        column, so no evidence is discarded on the way to the judgement.
+    """
+    return (line or "").split()[0] if (line or "").split() else ""
 
 
 def film_constants():
@@ -224,7 +282,7 @@ class Bar(object):
             return self._row(name, want_token, "%d verdicts: %s"
                              % (len(found), found), "FAIL")
         return self._row(name, want_token, found[0],
-                         "OK" if found[0] == want_token else "FAIL")
+                         "OK" if token(found[0]) == want_token else "FAIL")
 
     def run(self, name, cmd, want_rc=0, want_token=None, log=None,
             rc_is_ok=None):
@@ -261,7 +319,8 @@ class Bar(object):
                 ok = False
             else:
                 ok = self._row(name + " verdict", want_token, found[0],
-                               "OK" if found[0] == want_token else "FAIL") and ok
+                               "OK" if token(found[0]) == want_token
+                               else "FAIL") and ok
         return ok, p
 
     # -- the tally ---------------------------------------------------------
@@ -579,6 +638,30 @@ def selftest():
       one(">> STAGE RESULT: STRIP_MEASURED\n") == "OK")
     t("STAGE: one wrong verdict is FAIL",
       one(">> STAGE RESULT: STRIP_ABSENT\n") == "FAIL")
+    # R2-3124.  THE VERDICT IS THE FIRST TOKEN, THE REST IS EVIDENCE -- and
+    # the loosening must not loosen anything else.  Four cases, two of which
+    # must still FAIL.
+    t("TOKEN: a verdict carrying its evidence is OK, not FAIL (R2-3124)",
+      one(">> STAGE RESULT: STRIP_MEASURED (12 samples)\n") == "OK")
+    t("TOKEN: a WRONG verdict carrying evidence is still FAIL",
+      one(">> STAGE RESULT: STRIP_ABSENT (0 found)\n") == "FAIL")
+    t("TOKEN: a token that merely STARTS WITH the wanted one is FAIL",
+      one(">> STAGE RESULT: STRIP_MEASURED_PARTIALLY\n") == "FAIL")
+    t("TOKEN: two verdicts is still FAIL when both carry evidence",
+      one(">> STAGE RESULT: STRIP_MEASURED (ok)\n"
+          ">> STAGE RESULT: STRIP_ABSENT (raised)\n") == "FAIL")
+    bb = Bar(dev)
+    bb.run("suffix", [sys.executable, "-c",
+                      "print('>> STAGE RESULT: FILM_MATERIALS_OK (0 failures)')"],
+           want_token="FILM_MATERIALS_OK")
+    t("TOKEN: run() judges the token too, not the whole remainder",
+      [r[3] for r in bb.rows] == ["OK", "OK"])
+    bb = Bar(dev)
+    bb.run("suffix-bad", [sys.executable, "-c",
+                          "print('>> STAGE RESULT: FILM_MATERIALS_FAIL (1 failures)')"],
+           want_token="FILM_MATERIALS_OK")
+    t("TOKEN: run() still FAILs a wrong token that carries evidence",
+      [r[3] for r in bb.rows] == ["OK", "FAIL"])
     t("STAGE: TWO verdicts is FAIL even though one of them is right (R2-2108)",
       one(">> STAGE RESULT: STRIP_MEASURED\n"
           ">> STAGE RESULT: STRIP_ABSENT (probe raised SystemExit(0))\n")

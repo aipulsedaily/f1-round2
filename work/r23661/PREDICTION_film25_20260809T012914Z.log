@@ -1,0 +1,31 @@
+FILM25 PREDICTION -- printed 2026-08-09T01:29:14Z, BEFORE render/film25_breach.blend exists.
+
+Derived by running world/showroom_strip.py --selftest on the reference binary
+just now (see the SHOWROOM_STRIP_OK block); NOT copied off film24's dict and
+NOT read off any artefact.  The four numbers are a function of the SHOWROOM,
+which tools/build_film_scene.py builds, and are independent of the world:
+
+    50.0 W nominal / luma(COLD) 0.931576        = 53.6725 W
+    levelled by 2**LIFT_STOPS = 12.363369       =    663.5727 W
+    46203.313 + 663.573                         =  46866.886 W
+    n_lamp_stamps 23 -> 24
+    radiance 53.6725 / (3.60 x 0.10 x pi)        =     47.4569
+
+  interior_lamp_watts   46866.886
+  n_lamp_stamps         24
+  strip_size_y          0.10
+  strip_radiance        47.4569
+
+WHY IT EQUALS FILM24'S.  film25 differs from film24 ONLY in the world
+underneath it: assembly15 instead of assembly14.  assembly15 is assembly14's
+object graph plus ground cover in TER/VEG (+17.16 % traced triangles), and
+carries no lamp.  The showroom, its strip and its levelling are built by
+tools/build_film_scene.py, which is byte-identical for both films.  So the
+prediction is the same NUMBER arrived at by the same arithmetic -- it is not
+film24's dict reused, and film_bar gets its own FILM25 literal so that
+editing one film's record can never rewrite another's.
+
+ground cover check: if assembly15 HAD added an emitter, 46203.313 (the
+pre-strip interior baseline inside world/showroom_strip.py) would be wrong
+and this dict would have to be re-derived rather than copied.  It is
+asserted by the bar, not assumed here.
