@@ -746,11 +746,61 @@ State at the time of writing (04:45Z, 38 min in):
    16:07:33Z** for fleet03/04/05. It has never fired on any instance in this
    project (longest life 10.7 h) and the master takes that path ~21 times.
    Watch it; do not assume the resume worked.
-2. **Rebalance when fleet03 finishes early.** It is running 209-276 s against
-   289-360 s on the other two and will idle roughly a day early. Carve a
-   **disjoint** chunk off the slowest broker's remaining tail, cancel and
-   resubmit that broker without it, hand the chunk to fleet03 under the same
+2. **Rebalance when fleet03 finishes early — but NOT by weighting on host rate.**
+   Carve a **disjoint** chunk off the slowest broker's remaining tail, cancel
+   and resubmit that broker without it, hand the chunk to fleet03 under the same
    `--name`. Do not re-submit the whole range to every broker — they would race.
+   See R2-3859 for why the weighting must not come from measured s/frame.
+
+## R2-3859 — THE RATE SPREAD IS CONTENT, NOT HARDWARE, AND THAT CHANGES THE REBALANCE
+
+Measured at 07:02Z, ~3 h in, as the mean of each broker's last 10 frames — so
+deploy, scene push and first-frame setup are all excluded:
+
+| broker | host IP | machine | mean of last 10 | its block |
+| --- | --- | --- | --- | --- |
+| fleet03 | host-A | 36179 | **204.9 s** | 1-993, showroom |
+| fleet05 | **host-A** | 131197 | **284.2 s** | 1987-2978, circuit |
+| fleet04 | host-B | 141468 | 300.8 s | 994-1986 |
+
+**fleet03 and fleet05 are behind the same host IP and differ by 39%.** Two
+machines in the same facility, same GPU model, same spec hash, same scene — and
+a 79-second gap. Whatever that is, it is not the host lottery.
+
+What it is, is the film. fleet03 holds the **showroom**, which is an interior
+with bounded geometry; fleet04 and fleet05 hold the **circuit**, which carries
+the 28,894-object VEG ground cover, the crowd, and the breach. The runbook
+already says this in the general case — *"the proxy predicts nothing, R^2 =
+0.00; its two cheapest frames are the master's two dearest"* — and this is the
+same fact showing up inside the master itself.
+
+**Why it matters for the rebalance.** The obvious move is to weight the split by
+each broker's measured s/frame, and `fleetctl submit --weights` exists to do
+exactly that. On these numbers that would hand fleet03 about 40% of the film —
+and it would be **wrong**, because fleet03's 204.9 s is a fact about frames
+1-993, not about machine 36179. Move fleet04's tail onto fleet03 and those
+frames cost what circuit frames cost, not what showroom frames cost. The
+projected finish would be missed in the direction that hurts: too much work on
+one card, discovered at hour 70.
+
+**So the rebalance must be work-conserving, not rate-weighted:** wait until a
+broker is genuinely idle, then hand it whatever frames are still absent, in a
+chunk carved disjointly off the slowest broker's tail. That is robust to the
+confound because it never predicts a rate — it only ever moves work to a card
+that has none.
+
+Projected on current rates, with each block scored at its own content cost:
+
+| broker | remaining | finishes |
+| --- | --- | --- |
+| fleet03 | 993 x 204.9 s | **~56.6 h** (≈ 2026-08-11 12:40Z) |
+| fleet05 | 992 x 284.2 s | ~78.3 h |
+| fleet04 | 993 x 300.8 s | **~83.0 h** — the fleet finishes here |
+
+fleet03 idles ~26 h if nothing is done. A work-conserving rebalance at the
+moment it goes idle should bring the whole film in around **~72 h**, saving
+roughly 11 h. It cannot be done earlier with confidence, because until a card is
+free there is no way to price circuit frames on machine 36179.
 3. **Run the three frame checks in full** — `fleetctl verify --manifest`
    (coverage + hash against the brokers' own records) and
    `tools/r23841_verify_frames.py` (decode + geometry + blank). Both rehearsed.
@@ -771,13 +821,48 @@ State at the time of writing (04:45Z, 38 min in):
 
 ### One transient, recorded rather than smoothed over
 
-At 04:44:22Z fleet05's heartbeat to instance 47238618 failed once
-(`ssh: connect ... Connection timed out`, 1 in a row) and did not recur; the
-instance stayed `ready` and the job it was running completed and verified two
-minutes later. This is the documented transient class — the in-container
-watchdog reaps only on a **30 minute** stale heartbeat, and a transport failure
-is explicitly not licensed to destroy a rendering box. Noted because a second
-one on the same instance would mean something else.
+Four isolated heartbeat misses in the first three hours, across all three
+instances:
+
+| when | broker | host | signature | counter |
+| --- | --- | --- | --- | --- |
+| 04:44:22 | fleet05 | host-A | `Connection timed out` | 1 in a row |
+| 05:28:08 | fleet04 | host-B | `no exit after 30s` | 1 in a row |
+| 05:28:25 | fleet03 | host-A | `no exit after 30s` | 1 in a row |
+| 07:01:52 | fleet03 | host-A | `banner exchange` timeout | 1 in a row |
+
+**Every one recovered on the next beat** — the counter never reached 2 on any
+instance — and rendering never paused: fleet03 delivered frame 18 eleven seconds
+after its own 05:28 miss. All three instances were confirmed `running` against
+the **vast.ai API** after each event, not against a local state file.
+
+Two corrections to my first read of these, both in the direction of claiming
+less:
+
+**I over-attributed the 05:28 pair to local memory pressure.** That pair does
+fit it — they hung with `no exit after 30s`, which is process-spawn starvation
+rather than a network refusal, and my own `placement_gate` run had just pushed
+13 GB into swap on an 11 GB box with `kswapd0` still reclaiming. But the 07:01
+miss has a different signature (`Connection timed out during banner exchange`:
+TCP connected, remote banner never arrived) and happened with the box **idle** —
+load 1.00, zero CPU pressure, swap drained to 8.4 GB. One explanation does not
+cover both, and I should not have implied it did.
+
+**There is also no host pattern, though it looks like one.** Three of the four
+misses are on `host-A` — but that IP carries **two of my three
+instances**, so its expected share of four misses is 2.7. Observing 3 is not a
+signal. The honest read is baseline SSH flakiness at roughly 0.7% of beats, from
+more than one cause.
+
+None of it is close to dangerous: the watchdog reaps on a **30 minute** stale
+heartbeat, so a single 26-30 s miss is about 1/60th of the threshold, and beats
+run on their own thread precisely so a busy broker cannot starve them. The
+escalation trigger is the `(N in a row)` counter passing 1 on any one instance.
+
+The one operational lesson worth keeping: **heavy local Blender work during a
+live render has a measurable cost on the fleet's control plane.** That is a
+second, independent reason the 4K encode must not be attempted while the box is
+loaded.
 
 ## R2-3847 — A DEFECT IN `fleetctl plan`, FOUND AND NOT WORKED AROUND SILENTLY
 
