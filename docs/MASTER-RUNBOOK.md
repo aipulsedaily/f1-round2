@@ -110,6 +110,37 @@ nine is not purchasable.
 taken on `film16_breach` at 7.97 GB. The scene is now 10.95 GB, renders at
 283.3 s, and carries 16 GPU-h of overhead no previous figure counted.
 
+## CORRECTIONS TO THE COST, MADE BEFORE SPENDING (R2-3666/3667)
+
+**GATE 7 CAUGHT A LIVE ONE, AND IT WOULD HAVE BEEN BILLED TO THIS RENDER.**
+The broker `rq anim` actually routes to was **101 hours stale** — started before
+`280f49a` introduced the working-set gate — so it carried **no working-set check
+at all** and would have rented against a **50 GB floor for a film projected at
+~59.3 GiB.** Restarted, `rq drift` clean, 478/478 selftest, nothing rented.
+**Fleet brokers 8762-8770 are STILL STALE and must be restarted before any
+`fleetctl up`.** This is the gate working, not a theory about it.
+
+**THE GPU-HOUR HAS RISEN 23.1 %.** Cheapest qualifying 5090 today is
+**$0.454/hr against $0.3689/hr** at baseline. Re-price before committing.
+
+**AND THE $112.88 WAS NEVER PRICED AT $0.3689.** 245.5 GPU-h x $0.3689 =
+$90.58; the published figure used the floor-enforced pool, i.e. **$0.4598/GPU-h**
+($112.88 / 245.5). An independent integrator reproduces **$112.90** from the
+baseline's own per-beat seconds, so the model is calibrated — but quote the
+rate, not just the total.
+
+**THE MARKET GAP IS A KNIFE EDGE, NOT A DESIGN POINT.** Purchasable tiers today
+are **73.10, 73.57, then nothing until 99.93 GiB**. The first offer is lost at
+**x = 73.0992 GiB** — the "73.1" quoted elsewhere in this file **misses it by
+0.0008 GiB.** Do not treat the ground cover's headroom as comfortable; measure
+the film's actual resident footprint against 73.0992 and nothing rounder.
+
+**THE BVH PREMISE IS MEASURABLY WRONG.** The baseline's first frame rendered in
+**274.66 s, BELOW the 283.3 s mean** — `render_sec` never contained the BVH
+build, which sits in the ~948 s of setup. **Discarding each card's first frame
+is still right** (push, load and first-fetch variance) **but it is not removing
+a BVH cost**, and any argument that leans on that is wrong.
+
 ## THINGS THAT LOOK LIKE LEVERS AND ARE NOT
 
 - **The proxy predicts nothing. R^2 = 0.00.** Its two *cheapest* frames are the
