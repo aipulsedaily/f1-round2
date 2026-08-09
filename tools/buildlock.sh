@@ -55,6 +55,58 @@ if [ "${1:-}" = "--small" ]; then SMALL=1; shift; fi
 NAME="${1:-unnamed}"; shift || true
 [ $# -gt 0 ] || { echo "usage: bash tools/buildlock.sh [--small] <name> <command...>"; exit 2; }
 
+# --------------------------------------------------------------------------
+# R2-3602: THIS BOX HAS TWO Blender 5.2.0 BINARIES AND THEY ARE NOT THE SAME.
+#
+#     /opt/blender-5.2.0-linux-x64/blender   built 2026-07-14  python 3.13  numpy 2.3.4
+#     /usr/bin/blender                       built 2026-07-15  python 3.14  numpy 2.5.1
+#
+# BOTH report themselves as `Blender 5.2.0 LTS (hash fbe6228777e7)`, and
+# /usr/bin is what a bare `blender` resolves to on PATH.  The only visible
+# difference in a log header is the build DATE, which nobody reads.
+#
+# The difference that matters is numpy.  `float()` on an array with ndim > 0
+# has been deprecated since numpy 1.25; under 2.3.4 it is a warning, under
+# 2.5.1 it is a TypeError.  assembly15 was built with the bare-`blender` one
+# and `build_dressing` died on its first marshal post 1.1 s in -- and because
+# assemble.py catches every module exception and saves the blend anyway, the
+# result was a 9 GB world missing all 247 dressing objects (the ad boards, the
+# tyre stacks, the flagpoles, the marshal posts, the TV cameras) whose only
+# symptom was one line in a 4,000-line log.  It was then bisected against the
+# ground cover and the near band, which are innocent: the arms that "passed"
+# were simply the ones run with the /opt binary.  Two days of a real defect
+# hunt went into a variable nobody knew was moving.
+#
+# So the binary is pinned HERE, at the one choke point every heavy build in
+# this project already goes through.  A build with the wrong Blender is
+# refused, loudly, instead of producing an artefact that is wrong quietly.
+# Deliberately testing the other binary is legitimate; say so out loud with
+# R2_ALLOW_ANY_BLENDER=1 and the refusal downgrades to a warning.
+REF_BLENDER=/opt/blender-5.2.0-linux-x64/blender
+_ref_real="$(readlink -f -- "$REF_BLENDER" 2>/dev/null || echo "$REF_BLENDER")"
+for _a in "$@"; do
+    [ "$(basename -- "$_a")" = "blender" ] || continue
+    _got="$(command -v -- "$_a" 2>/dev/null || echo "$_a")"
+    _got_real="$(readlink -f -- "$_got" 2>/dev/null || echo "$_got")"
+    [ "$_got_real" != "$_ref_real" ] || continue
+    if [ "${R2_ALLOW_ANY_BLENDER:-0}" = 1 ]; then
+        echo "  buildlock: WARNING -- '$_a' resolves to $_got_real, NOT the"
+        echo "  reference $_ref_real.  Allowed because R2_ALLOW_ANY_BLENDER=1."
+        continue
+    fi
+    echo ">> STAGE RESULT: BUILDLOCK REFUSED  ($NAME: wrong Blender)"
+    echo "   '$_a' resolves to"
+    echo "       $_got_real"
+    echo "   and the reference binary for this project is"
+    echo "       $_ref_real"
+    echo "   These two report the SAME version string and the SAME build hash"
+    echo "   and ship DIFFERENT numpy versions (2.5.1 vs 2.3.4).  The wrong one"
+    echo "   does not fail the build; it silently drops build_dressing's 247"
+    echo "   objects and saves the blend anyway (R2-3602)."
+    echo "   Use the absolute path, or set R2_ALLOW_ANY_BLENDER=1 if you mean it."
+    exit 4
+done
+
 ROOT=/home/zany/f1-round2
 LOCK="$ROOT/.buildlock"
 SMALL_LOCK="$ROOT/.buildlock.small"

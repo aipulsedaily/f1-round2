@@ -283,8 +283,27 @@ def station_world(s, lat, side):
     The third element used to be the centreline elevation and every call site
     threw it away.  It is now `ground_z`, so throwing it away is merely wasteful
     rather than wrong.
+
+    SCALAR IN, SCALAR OUT (R2-3602).  `world_contract.su_to_world` already
+    returns three Python floats when both its arguments are scalars.  This
+    function used to push them through `np.atleast_2d` and hand back three
+    RANK-1 arrays anyway, and all twelve scalar call sites in this module then
+    wrote `float(wx)` on the result.  `float()` on an array with ndim > 0 has
+    been deprecated since numpy 1.25; it is still only a DeprecationWarning
+    under the numpy 2.3.4 bundled with /opt/blender-5.2.0-linux-x64, and it is
+    a HARD TypeError -- "only 0-dimensional arrays can be converted to Python
+    scalars" -- under the numpy 2.5.1 bundled with /usr/bin/blender.  Both
+    binaries report themselves as `Blender 5.2.0 LTS (hash fbe6228777e7)`, so
+    the difference is invisible in a log header, and the one that raises kills
+    `build_dressing` on its FIRST marshal post, 1.1 s in, taking all 247
+    dressing objects with it.  Returning what the contract returned removes the
+    dependence on a deprecation that is already gone in the wild.
     """
+    scalar = np.ndim(s) == 0 and np.ndim(lat) == 0
     P = C.su_to_world(np.asarray(s, float), np.abs(np.asarray(lat, float)), side)
+    if scalar:
+        v = np.asarray(P, float).reshape(3)
+        return float(v[0]), float(v[1]), float(v[2])
     P = np.atleast_2d(P)
     return P[..., 0], P[..., 1], P[..., 2]
 

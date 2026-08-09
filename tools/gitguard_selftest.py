@@ -478,6 +478,45 @@ def run():
                ["world/items/keep.py"],
                json.load(open(os.path.join(ld, seed_name + ".json")))["paths"])
 
+        # -- direction 3: A PATH THAT DOES NOT EXIST.  (R2-3603.)
+        # This is the real one, reproduced exactly.  A coordinator retired
+        # `world/items/itemkit.py`; the file is at `world/itemkit.py`, one
+        # directory up.  retire reported "OK (0 retired, nothing selected)",
+        # the coordinator read it as success and told the next agent the path
+        # was free, and an eight-path landing stayed blocked for two more
+        # agent-days.  The one input most likely to be wrong was the one input
+        # that exited clean.
+        open(os.path.join(r, "world/itemkit.py"), "w").write("# itemkit\n")
+        json.dump({"owner": seed_name, "created": old,
+                   "paths": ["world/items/keep.py", "world/itemkit.py"]},
+                  open(os.path.join(ld, seed_name + ".json"), "w"))
+        rc, out = sh("python3 tools/gitguard.py retire --apply "
+                     "world/items/itemkit.py", r, {"R2_AGENT": "grace"})
+        record("C16o a retire aimed at a NONEXISTENT path REFUSES",
+               (2, True, False),
+               (rc, "STAGE RESULT: FAIL" in out, "STAGE RESULT: OK" in out))
+        record("C16p and it names the path it thinks you meant", True,
+               "did you mean:  world/itemkit.py" in out)
+        record("C16q the refusal left the seed exactly as it was",
+               ["world/items/keep.py", "world/itemkit.py"],
+               json.load(open(os.path.join(ld, seed_name + ".json")))["paths"])
+        # VACUITY: the refusal must not be blanket -- the CORRECT path works.
+        rc, out = sh("python3 tools/gitguard.py retire --apply world/itemkit.py",
+                     r, {"R2_AGENT": "grace"})
+        record("C16r VACUITY: the corrected path still retires normally",
+               (0, ["world/items/keep.py"]),
+               (rc, json.load(
+                   open(os.path.join(ld, seed_name + ".json")))["paths"]))
+        # -- direction 4: a path that EXISTS but no seed holds.  Retiring it
+        # frees nothing either, so it is not an OK.
+        open(os.path.join(r, "world/items/free.py"), "w").write("# free\n")
+        rc, out = sh("python3 tools/gitguard.py retire --apply world/items/free.py",
+                     r, {"R2_AGENT": "grace"})
+        record("C16s a real path that NO SEED HOLDS is not an OK either",
+               (2, True, False),
+               (rc, "held by no retirable lease" in out,
+                "STAGE RESULT: OK" in out))
+
         # ---------------------------------------------------------------
         print("")
         print("C17 A SEED AND A WORKING LEASE MUST NOT SHARE ONE LIFETIME")

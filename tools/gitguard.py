@@ -723,6 +723,59 @@ def cmd_retire(argv, cwd=None):
         return 2
 
     leases = load_leases(cwd)
+    # ----------------------------------------------------------------------
+    # R2-3603: A RETIRE AIMED AT A PATH THAT DOES NOT EXIST MUST REFUSE.
+    #
+    # It used to print
+    #
+    #     nothing selected.  Name a path, or --owner <seed> [--all-paths].
+    #     >> STAGE RESULT: OK (0 retired, nothing selected)
+    #
+    # and exit 0.  A coordinator retired `world/items/itemkit.py` -- the file
+    # is at `world/itemkit.py`, one directory up -- read the OK as success,
+    # and told the next agent the path was free.  It was not, and the landing
+    # of an eight-path commit set was blocked for two more agent-days on a
+    # command that had reported it done.  A typo in a path is the single most
+    # likely way to call this thing wrongly, and it was the one input that
+    # produced a clean exit.
+    #
+    # `holds()` is used in BOTH directions, exactly as the selection loop
+    # below does, so that naming a file a seed holds via a directory entry is
+    # still "known" (it is then reported as SKIPPED, which is a different and
+    # already-correct message).  A path that no lease mentions AND that git has
+    # never heard of AND that is not on disk is a typo, and typos are refused.
+    # ----------------------------------------------------------------------
+    def _known_to_git(p):
+        try:
+            git("ls-files", "--error-unmatch", "--", p, cwd=cwd)
+            return True
+        except RuntimeError:
+            return False
+
+    root = repo_root(cwd)
+    mentioned = [lp for lease in leases for lp in lease.get("paths", [])]
+    unknown = [p for p in rest
+               if not any(holds(lp, p) or holds(p, lp) for lp in mentioned)
+               and not os.path.exists(os.path.join(root, p))
+               and not _known_to_git(p)]
+    if unknown:
+        print("")
+        print("  REFUSED -- %d path(s) that do not exist, and are held by no "
+              "lease:" % len(unknown))
+        for p in unknown:
+            print("    %s" % p)
+            near = sorted({lp for lp in mentioned
+                           if os.path.basename(lp) == os.path.basename(p)})
+            for n in near[:3]:
+                print("        did you mean:  %s" % n)
+        print("")
+        print("  Retiring a path that does not exist frees nothing.  Reporting")
+        print("  OK for it is how a landing stays blocked while the record says")
+        print("  it was unblocked (R2-3603).  Check the path and run it again.")
+        print(">> STAGE RESULT: FAIL (0 retired, %d nonexistent path(s))"
+              % len(unknown))
+        return 2
+
     targets = []
     refusals = []
     # A PATH CAN BE HELD BY A SEED *AND* BY A LIVE NAMED AGENT AT ONCE, and the
@@ -801,6 +854,22 @@ def cmd_retire(argv, cwd=None):
                 print("    %-26s age %6.2f h  %d path(s)"
                       % (lease.get("owner"), lease.get("age_h") or 0.0,
                          len(lease.get("paths", []))))
+        # R2-3603, second half.  "Nothing selected" is a fine OK when nothing
+        # was ASKED FOR -- a bare `retire` is a listing.  It is not an OK when
+        # named paths were asked for and not one of them is held by anything
+        # retirable: the caller's intent was not satisfied, and the whole
+        # reason this block is being rewritten is that a caller believed one
+        # of these OK lines.
+        if rest:
+            print("")
+            print("  You named %d path(s) and NO SEED HOLDS ANY OF THEM, so"
+                  % len(rest))
+            print("  nothing was retired and nothing was unblocked:")
+            for p in rest:
+                print("    %s" % p)
+            print(">> STAGE RESULT: FAIL (0 retired, %d path(s) held by no "
+                  "retirable lease)" % len(rest))
+            return 2
         print(">> STAGE RESULT: OK (0 retired, nothing selected)")
         return 0
 
