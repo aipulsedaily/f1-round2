@@ -236,6 +236,22 @@ it is doing something.
 **The crowd is also measured for the first time**, and it is clean: 746 repeated
 `SPECX_*` meshes, 12,029 instances, worst **3** co-visible sharp copies.
 
+#### 5a. And the one silent drop the gate could have had, named and counted
+
+`HOST_DIAG_M` (200 m) keeps 2.5 km scatter hosts out of the height buckets. A
+host has one user, so `MIN_USERS` already excludes it — but a genuinely
+*repeated* mesh that large would leave the metric without a word, which is this
+project's most-repeated defect shape. The gate now computes and prints it:
+
+```
+host-diagonal filter: 102 source mesh(es) exceed 200 m and NONE of them is
+repeated, so nothing was dropped by it.
+```
+
+Measured, not assumed. Had any been repeated the report would carry them under
+`repeated_but_larger_than_host_diag` and the run would say **"this is a hole,
+not a pass."**
+
 ---
 
 ### 6. THE TREES, MEASURED. And the reed grass, which is why the gate says SPAM.

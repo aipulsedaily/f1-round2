@@ -740,8 +740,32 @@ def main():
     report["camera_path_sha16"] = sha16(path)
 
     # ---- who is even a candidate ----------------------------------------
-    cand = np.nonzero((n_use >= MIN_USERS) & (np.asarray(c["diag"]) <= HOST_DIAG_M))[0]
+    rep = n_use >= MIN_USERS
+    small = np.asarray(c["diag"]) <= HOST_DIAG_M
+    cand = np.nonzero(rep & small)[0]
     report["candidate_source_meshes"] = int(len(cand))
+    # A SILENT DROP IS A DEFECT EVEN WHEN IT DROPS NOTHING. `HOST_DIAG_M` is
+    # there to keep 2.5 km scatter hosts out of the height buckets, and a host
+    # has one user so `MIN_USERS` already excludes it -- but if a genuinely
+    # REPEATED mesh were ever that large it would leave the metric without a
+    # word. So the count is computed, reported and named. On assembly15 it is
+    # zero: 102 meshes exceed the diagonal and every one of them is used once.
+    dropped = np.nonzero(rep & ~small)[0]
+    report["repeated_but_larger_than_host_diag"] = [
+        {"source_mesh": names[i], "example_object": obj_of[i],
+         "instances": int(n_use[i]),
+         "diag_m": round(float(np.asarray(c["diag"])[i]), 1)} for i in dropped]
+    if len(dropped):
+        print(">> NOTE: %d REPEATED source mesh(es) are larger than "
+              "HOST_DIAG_M (%.0f m) and are NOT swept. They are listed in the "
+              "report; this is a hole, not a pass." % (len(dropped), HOST_DIAG_M))
+        for i in dropped[:10]:
+            print("     %-34s %d instances, %.0f m across"
+                  % (names[i], int(n_use[i]), float(np.asarray(c["diag"])[i])))
+    else:
+        print("host-diagonal filter: %d source mesh(es) exceed %.0f m and "
+              "NONE of them is repeated, so nothing was dropped by it."
+              % (int((~small).sum()), HOST_DIAG_M))
     if len(cand) == 0:
         report["sources"] = []
         json.dump(report, open(a.out, "w"), indent=1)
