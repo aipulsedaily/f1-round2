@@ -57705,3 +57705,1239 @@ of error as judging on `$?`.
 
 
 <!-- COST AND FOOTPRINT BELOW -->
+
+## R2-3781..R2-3796 — the last four items: the tiering that promoted them is a host measurement, and the item the brief calls decisive cannot reach a frame
+
+**VERDICT: STOP AND SHIP `film25_breach`. No module was authored, no world was
+rebuilt, no film was built, and nothing was rendered or spent.**
+
+The task was to build four modules and rebuild the world as `assembly16` and the
+film as `film26_breach`. **Three of the brief's load-bearing premises are false,
+and each is false in a way that is measurable on files already on disk.** They
+were tested before any geometry was written, which is the only reason this cost
+hours instead of days.
+
+| the brief says | measured |
+|---|---|
+| the apron "shares a host set with the **already-built** `forecourt_paving_bay`" | `forecourt_paving_bay` is **`state: HOLD`** in the registry and contributes **zero datablocks** to `assembly15` / `film25`. Its ownership was ruled **`class`** |
+| "**half that surface is dressed and half is not**" | **neither half is dressed by an item.** The whole surface is `build_architecture` class geometry. 4 of 42 registry rows are `PLACE`, and neither of these two is one of them |
+| the apron peaks at **495.8 px at f282 — the opening** | f282 is a **showroom interior** (camera at world (1.698, 1.603, 2.401), inside the glass at x = 15.0, 58 mm). The apron is not in that frame. 495.8 px is `ARCH_Paving_Forecourt`'s number, inherited |
+| the two "**measure identically**" | they measure identically because the presence tool takes `max()` over a **shared host list**. The two surfaces are **4.7× apart** in the resolution the film gives them |
+| the three grandstand/podium items are **ONE decision** | **true, and for a deeper reason than stated** — they are literally *one measurement* (`ARCH_Grandstand_Terrace`, 47.39 px/m) multiplied by three declared heights |
+
+Files: `work/r23781/framing.py` (new, with a 5-arm control),
+`work/r23781/footprint.py` (new, with a 5-arm control).
+Reports: `work/r23781/{framing,footprint}.json`,
+`work/r23781/protected_films_{BEFORE,AFTER}.txt`,
+`work/r23781/socket_film10.log`.
+
+
+### 0. The `film10` negative control, reported first as instructed
+
+```
+python3 tools/socket_index_audit.py --blend render/film10.blend
+rc = 1
+FAIL -- 27 finding(s) in the built artefact.
+```
+
+**rc = 1.** The instrument is live and every pass measured above it is not
+vacuous. Run standalone rather than through `film_bar.py`, because the bar's
+`--socket` arm also opens the ~10.9 GB film blend and no film was built here.
+
+
+### 1. Only four item modules are in the ship, and `forecourt_paving_bay` is not one of them
+
+`world/items/PLACEMENT.json` holds **42 rows: 4 `PLACE`, 38 `HOLD`.**
+
+```
+catch_fence_post        PLACE   CFP_     676
+crew_figure             PLACE   CRF_     120
+timing_stand            PLACE   TS_       10
+spectator_crowd_world   PLACE   SPECX_   900        = 1,706 objects
+```
+
+`render/world/assembly/r2/assembly15_build.json` agrees from the artefact side —
+`items_placed: 4`, `objects: 1706`, and `object_prefixes` is
+`{ARCH, BR, CFP, CRF, DR, SPECX, SURF, TER, TS, VEG}`. **There is no `FCP_`.**
+
+Corroborated three further ways, none of them the registry:
+
+* **the realized-mesh census of `assembly15`** (`work/r23721/census_a15_meta.json`)
+  — 4,997,117 realized meshes over ten families; exactly four are item-owned.
+  This is the arm that proves the negative, because it counts GN instances a
+  datablock-name scan cannot see.
+* **rendered pixels at f2978** (`work/r2500/items_cheap.json`, R2-709) —
+  `SPECX_ 68,025 px`, `TS_ 11,821`, `CFP_ 10,263`, `CRF_ 6,232`, negative
+  control `0`. Four families, four non-zero readings.
+* **`SHIPPING.md`'s promotion ledger** — assembly9 → assembly10 `+1,707`
+  objects, attributed to "four registry rows going HOLD → PLACE".
+
+`forecourt_paving_bay`'s row carries two blockers — `PARTIAL_BUILD` (the blend
+holds 450 units against a declared 1,400) and `SUPERSEDE_WELDED` — and an
+`r2331_ownership.verdict` of **`class`**:
+
+> "`ARCH_Paving_Forecourt` is not paving bays. It also casts the formation slab
+> the round-1 pavilion floor sits on … plus the granite sett bands, the bedding,
+> the perimeter edge band and slot drain, and the bollard line … The item holds
+> 450 of a declared 1,400. **Class.**"
+
+**So the defect the apron was to fix — "half that surface is dressed and half is
+not" — does not exist.** The forecourt and the apron are both undressed, both
+built by `build_architecture`, and building one more module would have produced
+a fifth `HOLD` row, not a changed pixel.
+
+
+### 2. f282 is a showroom interior, and it is where the apron's 495.8 px comes from
+
+Read off `render/film25_path.json` (byte-identical to film24's, the delivered
+camera):
+
+```
+f275   pos (  0.935   1.126   2.402)   58.00 mm
+f282   pos (  1.698   1.603   2.401)   58.00 mm     <- the apron's declared peak
+f910   pos ( 15.691  -1.759   2.137)   21.00 mm
+f2976  pos (594.190  16.050 140.000)  129.76 mm     <- the closing crane
+```
+
+`world_contract.ACCESS_GLASS_X = 15.0`. At f282 the camera is at **x = 1.698 —
+thirteen metres inside the glass.** `work/r22161_proxy/r22161_proxy_000282.png`
+was looked at: it is the car's rear wing against the glazed wall and the polished
+interior floor. **There is no exterior ground anywhere in the frame.**
+
+This is R2-2990's finding arriving a second time by a second route. That entry
+established that `ARCH_Paving_Forecourt`'s headline 1049.4475 px/m at f282 is set
+by geometry *buried under the showroom floor* — the formation slab at
+z −0.36…−0.100 beneath a floor whose top is 0.000 — and that masking to the
+item's own geometry moved the answer by 73.75 %. **`exterior_ground_apron`
+inherits that object as a host and therefore inherits the whole defect.**
+
+
+### 3. The presence numbers are `declared height × host px/m`. All four.
+
+`work/r23721_item2/a9_film24_item_presence.json` carries
+`measured_as_self: false` on all four. Dividing each item's
+`peak_unocc_sharp_px_4k` by its manifest `height_m` returns a host's px/m
+exactly:
+
+```
+item                        h     peak px   =>  implied px/m   the host it is
+exterior_ground_apron      1.0      495.8         495.80       ARCH_Paving_Forecourt
+forecourt_paving_bay       1.0      495.8         495.80       ARCH_Paving_Forecourt  (identical row)
+grandstand_debris_fence    3.6      179.8          49.94       ARCH_Grandstand_05_TEMPORAIRE  (49.96)
+podium_backdrop            4.0      189.6          47.40       ARCH_Grandstand_Terrace        (47.39)
+podium_structure           3.5      165.9          47.40       ARCH_Grandstand_Terrace        (47.39)
+```
+
+**The three grandstand/podium items are not three measurements that happen to
+agree. They are one measurement wearing three declared heights.** The brief's
+"identical numbers, same host set" is right on the fact and understates it: there
+is no independent evidence about any of the three, because none of the three
+exists to be measured.
+
+**And the apron and the forecourt bay have byte-identical `measured` blocks** —
+every field, not just the peak — because `item_presence` takes `max()` over the
+shared host list `[ARCH_Paving_Forecourt, ARCH_Paving_ApronPlatform]`. That is
+what "measures identically" means here. It is a property of the host list, not
+of the two surfaces.
+
+
+### 4. What the film actually gives these four — `work/r23781/framing.py`
+
+The projection, the constants and the quaternion convention are **imported from
+`tools/screen_presence.py`**, not retyped, so this arm and the published table
+are the same instrument pointed at a different subject (R2-2990's rule). The
+authoritative column is `peak_unocc_sharp_px_per_m` out of
+`work/r23721_item2/a9_film24_sp_objects.json`; this task's own arm is printed
+beside it and differs where noted.
+
+```
+                                     published        this task's arm
+exterior_ground_apron
+  ARCH_Paving_ApronPlatform  (self)    133.60 @f1020     155.63 @f2581
+  ARCH_Paving_Forecourt   (ranked)    1049.45 @f282      870.80 @f382
+                                       -- 7.86x --        -- 5.60x --
+grandstand_debris_fence  (self==ranked) 49.96 @f2978     256.35 @f2703
+podium_backdrop / _structure             47.39 @f2976     115.79 @f2695
+```
+
+**Only the apron is over-ranked.** The three grandstand/podium items are ranked
+through their own would-be location, so their numbers — poor as they are — are
+honest.
+
+**Where the two arms disagree, the published one wins, and the reason is a
+defect in mine, stated rather than buried:** my smear mask is built from the
+camera's *angular* rate alone. For a near object on a fast-translating camera
+(f2703, the grandstand at 10.76 m in beat 5) translation dominates and my mask
+calls sharp a frame the published table does not. The published
+`peak_unocc_sharp_px_per_m` for `ARCH_Grandstand_03_PRINCIPALE` is **22.98**,
+mine reads 256.35 at the same object. **Use 49.96 / 47.39, not my numbers.**
+
+#### The control, and what each arm was watched to do
+
+`python3 work/r23781/framing.py --control`
+
+```
+  (none)       NULL, must NOT move    0/ 8 moved   ok
+  no_frustum   must move              8/ 8 moved   ok
+  no_depth     must move              8/ 8 moved   ok
+  no_smear     must move              2/ 8 moved   ok
+  frozen_lens  must move              8/ 8 moved   ok
+>> STAGE RESULT: R2_3781_FRAMING_CONTROL_OK
+```
+
+`no_smear` moving only 2 of 8 is reported rather than tuned away: for the
+grandstand objects the peak frame is already sharp, so removing the sharpness
+test cannot move them. An arm that moves 2 of 8 is still an arm that can fail;
+an arm that moved 0 would have been declared vacuous.
+
+**One defect in this instrument was caught by its own output and fixed before
+any number above was used.** The first draft printed the *median* depth beside a
+*minimum*-depth px/m — "155.63 px/m at 178.02 m on a 40 mm lens", which is
+arithmetically impossible. Fixed to report the depth of the point that set the
+figure. The impossible pair is what made it visible; a plausible one would not
+have been.
+
+
+### 5. Every feature's pixel size, stated before anything was built — `work/r23781/footprint.py`
+
+R2-2970's law, unchanged: **isolated features are declined at 1 px, periodic
+features at 2 px on their PITCH** — "a wave sampled under twice per period does
+not come out small, it comes out aliased". Two amplifiers, both derived from the
+contract rather than typed: the sun at **12.47061°** gives relief features a
+shadow of **×4.5217**, and in-plane rows on the apron are foreshortened by
+**|n·v| = 0.2071** (R2-2990's measured grazing angle for this surface — carried
+here as a *stated* assumption, flagged in the tool's own output).
+
+#### 5a. `exterior_ground_apron` — 133.60 px/m, **1 px = 7.485 mm**, Nyquist 14.97 mm
+
+| feature | kind | mm | px | line | verdict |
+|---|---|---:|---:|---:|---|
+| bay saw-cut joint PITCH | per | 3000.0 | 400.81 | 2.0 | ABOVE — **already built** (`paving_bays 5491`, `paving_sawn 2178`) |
+| surface undulation, λ 1.5 m | per | 1500.0 | 200.40 | 2.0 | ABOVE — already built |
+| edge upstand / drop to bedding | relief | 100.0 | 60.41 | 1.0 | ABOVE — already built (`apron_edge_max_drop_mm 5.0`) |
+| tyre-rubber deposit band WIDTH | inplane | 600.0 | 16.60 | 1.0 | ABOVE — already built by `build_surface` |
+| drainage channel slot PITCH | per | 25.0 | 3.34 | 2.0 | ABOVE |
+| bay joint SHADOW (5 mm sinking) | relief | 5.0 | **3.02** | 1.0 | ABOVE — already built (`apron_joint_quads 2432`) |
+| arris chamfer at bay edge | relief | 3.0 | **1.81** | 1.0 | ABOVE |
+| exposed aggregate diameter | iso | 8.0 | 1.07 | 1.0 | **MARGINAL** |
+| **joint sealant bead WIDTH** | inplane | 10.0 | **0.28** | 1.0 | **BELOW** |
+| **bay joint WIDTH** | inplane | 4.0 | **0.11** | 1.0 | **BELOW** |
+| **broom / tine finish PITCH** | per | 2.5 | **0.33** | 2.0 | **BELOW** |
+| **float-texture stipple** | iso | 1.2 | **0.16** | 1.0 | **BELOW** |
+| **hairline shrinkage crack WIDTH** | inplane | 0.8 | **0.02** | 1.0 | **BELOW** |
+
+**7 ABOVE, 1 MARGINAL, 5 BELOW — and every one of the seven ABOVE is already
+built by `build_architecture` or `build_surface`.** The genuinely new candidates
+— the broom finish, the float skin, the aggregate, the sealant bead, the
+hairlines, the visible cut of the joint itself — are all BELOW the line or
+marginal. **At the resolution the film gives this surface, an item module has
+nothing to add that reads.** The one exception, the 3 mm arris at 1.81 px, is a
+single chamfer on an edge the class module already draws.
+
+The declined rows are on the record deliberately: R2-2970's rule is that "the
+arithmetic that declines a feature has to be on the record or somebody will
+build it again."
+
+#### 5b. `grandstand_debris_fence` — 49.96 px/m, **1 px = 20.018 mm**, Nyquist 40.04 mm
+
+| feature | kind | mm | px | line | verdict |
+|---|---|---:|---:|---:|---|
+| fence overall height | iso | 3600.0 | 179.84 | 1.0 | ABOVE |
+| post PITCH | per | 2500.0 | 124.89 | 2.0 | ABOVE |
+| post section depth | iso | 150.0 | 7.49 | 1.0 | ABOVE |
+| bracket / cleat plate | iso | 100.0 | 5.00 | 1.0 | ABOVE |
+| top rail diameter | iso | 48.0 | 2.40 | 1.0 | ABOVE |
+| **debris MESH aperture PITCH** | per | 50.0 | **2.50** | **2.0** | **MARGINAL** |
+| **mesh wire diameter** | iso | 3.15 | **0.16** | 1.0 | **BELOW — must be shading** |
+| **tensioning cable diameter** | iso | 8.0 | **0.40** | 1.0 | **BELOW** |
+| **galvanising spangle** | iso | 15.0 | **0.75** | 1.0 | **BELOW** |
+
+**The defining feature of a debris fence — the mesh itself — lands at 2.50 px of
+pitch against a 2.0 px Nyquist line, and its wire is 0.16 px.** A debris fence
+at the closing frames is a 180 px tall translucent band with a hatch one sample
+either side of aliasing. It is buildable; it is not obviously worth building,
+and the mesh must be **shading, not wire geometry**, or it will alias rather than
+soften.
+
+#### 5c. `podium_structure` — 47.39 px/m, **1 px = 21.100 mm**
+
+**7 ABOVE, 1 MARGINAL, 1 BELOW.** Overall height 165.88 px, dais riser 8.53,
+step nosing **6.43 px through its shadow** (1.42 px as geometry — the ×4.5217 is
+what makes a step read as a step), deck plank pitch 7.11, balustrade infill
+pitch 4.74, panel joint reveal 2.14, handrail tube 1.99. Declined: **fixing bolt
+head 19 mm = 0.90 px**. Marginal: deck plank gap 5 mm = 1.07 px in shadow.
+
+#### 5d. `podium_backdrop` — 47.39 px/m, **1 px = 21.100 mm**
+
+**5 ABOVE, 1 MARGINAL, 2 BELOW.** Overall height 189.57 px, brand tile pitch
+56.87, **sponsor lettering cap height 300 mm = 14.22 px** (the only thing a
+backdrop is for, and it reads), fabric sag 8.57 px in shadow, frame tube 2.37.
+Declined: **fabric weave pitch 1.2 mm = 0.06 px** and **panel seam 12 mm =
+0.57 px**. Marginal: eyelet 25 mm = 1.19 px.
+
+#### The control
+
+`python3 work/r23781/footprint.py --control`
+
+```
+  (none)           NULL, must NOT move    0/39   ok
+  no_shadow        must move              4/39   ok
+  no_foreshorten   must move              1/39   ok
+  no_nyquist       must move              1/39   ok
+  ranked_px_per_m  must move              4/39   ok
+>> STAGE RESULT: R2_3781_FOOTPRINT_CONTROL_OK
+```
+
+`no_shadow` moving 4 rows is the ×4.5217 doing real work: without it the step
+nosing, the plank gap, the bay-joint shadow and the arris all fall below the
+line. `ranked_px_per_m` moving 4 rows is **the defect itself, dosed** — swapping
+the apron's honest 133.60 px/m for the ranking's 1049.45 promotes four features
+that do not read.
+
+
+### 6. The two surfaces are 4.7× apart, and the apron cannot reach a frame anyway
+
+The manifest's own note for `exterior_ground_apron` describes **world X 10..90,
+Y −40..+40** — the showroom breach ground — while `tools/item_hosts.py` maps it
+to `ARCH_Paving_ApronPlatform`, the **316 m pit-exit apron** at x −83.5…166.5,
+y −146.5…47.5. Measured against the built point cloud, the declared rectangle
+holds **26.7 %** of the apron platform's points and **31.7 %** of the forecourt's,
+so the two readings of the item overlap but are not the same object.
+
+Restricting each surface to that declared rectangle and re-measuring:
+
+```
+  ApronPlatform, whole 316 m strip           155.63 px/m  @f2581  27.50 m   1 px = 6.425 mm
+  ApronPlatform INSIDE X 10..90 Y -40..40    143.09 px/m  @f996   20.60 m   1 px = 6.989 mm
+  Forecourt,     whole object                870.80 px/m  @f382    6.75 m   1 px = 1.148 mm
+  Forecourt     INSIDE X 10..90 Y -40..40    671.72 px/m  @f868    4.39 m   1 px = 1.489 mm
+```
+
+**f868 is beat 3, the breach.** The forecourt paving genuinely is 4.39 m from
+the lens there — that number is not an artefact, and it is why
+`forecourt_paving_bay` was written. **The apron is 4.7× coarser than the
+forecourt on the same "shared" surface.** They were never one surface at one
+resolution; the host list made them look like one.
+
+**And the apron cannot reach a frame without a class-level change.**
+`ARCH_Paving_ApronPlatform` is a single object `build_items` could delete — but
+that one mesh carries five welded layers (finished bays, gully cylinders,
+bedding, sealant, a closed formation slab), and two other modules have already
+cut themselves back to its boundary: `build_surface`'s `SURF_ApronJoint` laps
+onto it on the identical `apron_zone(s,+1) > 0.5` predicate, and
+`build_terrain` cuts a real hole in `TER_Ground` there. Removing it opens
+~6,400 m² of sky. Doing it properly needs a `class_switch` inside
+`build_apron_platform` that skips the finished-bay pass while keeping bedding,
+sealant and formation — a source change to `build_architecture.py` plus a full
+re-assembly. **Its twin on the same host set was ruled `class` for exactly this
+reason.**
+
+
+### 7. Two corrections to the acceptance criteria
+
+**7a. "`assembly16` must fingerprint 0 of 94 drifted" cannot survive adding
+modules, and the invariant that can is `0 drifted`.** The 94 is a *count of
+source files*, not a constant:
+
+```
+   world/items              82        (49 *.py + 33 *.json)
+   world/build_*.py         10
+   world/itemkit.py          1
+   world/world_contract.py   1
+   assemble.py               1        = 94
+```
+
+Adding N item modules with their interface json makes it **94 + 2N**. A build
+that added four modules and still reported "94" would mean the fingerprint had
+*not* picked them up — the opposite of what the criterion is for.
+
+**7b. `assembly15` still fingerprints 0 of 94 against the worktree right now**,
+re-run under this task:
+
+```
+assembly15 fingerprint: 94 file(s), 0 differ from the worktree now
+```
+
+So no world source has drifted under any agent since film25 was built, and
+`film25_breach` remains buildable from its own recorded state.
+
+
+### 8. The three protected films are untouched
+
+Taken before any work and re-taken after. **`film25_breach` had no recorded
+sha anywhere in `docs/`, `work/` or `render/` — this is the first one.**
+
+```
+BEFORE 2026-08-09T04:12:13Z          AFTER (see protected_films_AFTER.txt)
+film23_breach  642371aea6df60c1515066a2497d093ac1c0886bbc13c5ffc4c591e90c4f908e   10,946,487,113 B
+film24_breach  19b59635d1c394b3dcef77baebbb0d9dc6852a84175ecc3d08ca19c97406592c   10,946,488,553 B
+film25_breach  1d2aa2d86533574ef6b57d2b947ce32598b714d0eb3477fa0cbe6659f59c1418   10,956,580,171 B
+```
+
+The first sixteen hex of film23 and film24 reproduce the values
+`run_rebuild25.sh` recorded (`642371aea6df60c1`, `19b59635d1c394b3`).
+**`film25_breach` = `1d2aa2d86533574e` should go into the next rebuild script's
+tripwire; there was nothing to compare its first reading against.**
+
+
+### 9. What was deliberately NOT done
+
+**No module was authored. No `assembly16`. No `film26_breach`. No render, no
+GPU job, $0 spent.** Credit is untouched at $73.33.
+
+Proceeding would have meant: authoring four modules against a detail budget
+overstated 7.86× for the decisive one; gating four items on the 5090 (money, and
+the gate needs **12,000 subject pixels** in its witness frame — the same floor
+that returned `ITEM_UNMEASURABLE` for `forecourt_paving_bay` at its corrected
+framing, for $0.0264); adding registry rows that `build_items` would refuse
+unless the live `gate.json` reads `ITEM_ACCEPTED`; and then a ~22 min world
+rebuild and a multi-hour film rebuild, to put a fifth `HOLD` row next to the
+four that already exist.
+
+**`film26_breach` therefore has no camera-path sha and no bar verdict to
+report.** Manufacturing either would be worse than reporting neither.
+
+
+### 10. If the increment is still wanted, this is the only defensible one
+
+**The podium group — `podium_structure` then `podium_backdrop` — and nothing
+else.** They are the only two of the four that are *both* reachable and have
+content above the line.
+
+* **Reachable.** `build_architecture` builds **no podium on the grandstands at
+  all** — the sole podium geometry in the world is a timber deck, nine 35 mm
+  balusters and a handrail welded into `ARCH_RaceControl` on the pit building,
+  which is not in either item's host set. The census records both as `UNDET`:
+  *"host `ARCH_Grandstand_*` exists; assembly9 carries NO name and NO counter for
+  this feature."* So `"supersedes": []`, **no `class_switch`, no
+  `rebuild_owed`, no class-builder edit** — exactly the position
+  `spectator_crowd_world` was in.
+* **Content.** 7 of 9 and 5 of 8 features above the line, including 14.22 px of
+  sponsor lettering and a step nosing that reads at 6.43 px through its shadow.
+* **Anchoring.** Anchor to the terrace deck at **`APRON_Z = 0.000`**, *not* to
+  `C.world_ground_z` — the grandstand band is beyond `platform_edge(-1) = 25.0`
+  and `world_ground_z` returns **NaN** there. Respect `grandstand_max_z = 13.25`,
+  which is asserted twice because the beat-6 camera passes 13.8 m above the
+  roofline.
+* **Order.** `podium_structure` (build order 424) before `podium_backdrop` (425);
+  the backdrop consumes the structure's interface json. Note
+  `podium_structure` declares `depends_on: ["pit_building_roof_deck"]`, which
+  has no module — that dependency needs resolving or explicitly waiving first.
+
+**`grandstand_debris_fence` I would decline** on its own arithmetic: its
+defining feature is 2.50 px against a 2.0 px Nyquist line and its wire is
+0.16 px. **`exterior_ground_apron` I would decline** on §5a and §6: nothing it
+could add reads, and it cannot reach a frame without a class-level change.
+
+**The honest expected gain from the podium group is two objects, 166 and 190 px
+tall, at ~292 m on a 130 mm lens, in the last 10.3 seconds, beside a grandstand
+that is already cropped at frame edge.** That is a real increment and a small
+one, and it costs a world rebuild, a film rebuild and a full bar re-run against
+a `film26` that must still land the camera path at `9d055d63da724993`.
+
+
+### 11. How to reproduce every number above
+
+```bash
+cd /home/zany/f1-round2
+
+# the negative control, first
+python3 tools/socket_index_audit.py --blend render/film10.blend ; echo "rc=$?"
+
+# what the film gives the four items, and the 5-arm control
+python3 work/r23781/framing.py --out work/r23781/framing.json
+python3 work/r23781/framing.py --control
+
+# every feature's pixel size, stated before building, and the 5-arm control
+python3 work/r23781/footprint.py --out work/r23781/footprint.json
+python3 work/r23781/footprint.py --control
+
+# the presence numbers are height x host px/m
+python3 -c "
+import json
+d=json.load(open('work/r23721_item2/a9_film24_item_presence.json'))
+for r in d['items']:
+    if r['id'] in ('exterior_ground_apron','forecourt_paving_bay',
+                   'grandstand_debris_fence','podium_backdrop','podium_structure'):
+        m=r['measured']
+        print('%-26s h=%4.1f peak=%7.1f => px/m %8.2f  self=%s'%(
+            r['id'],r['height_m'],m['peak_unocc_sharp_px_4k'],
+            m['peak_unocc_sharp_px_4k']/r['height_m'],r['measured_as_self']))"
+
+# the fingerprint, and what the 94 is made of
+python3 -c "
+import json,hashlib,os
+R2='/home/zany/f1-round2'
+fp=json.load(open(R2+'/render/world/assembly/r2/assembly15_build.json'))['source_sha256']
+d=[r for r,s in sorted(fp.items()) if hashlib.sha256(open(os.path.join(R2,r),'rb').read()).hexdigest()!=s]
+print('fingerprint: %d file(s), %d differ'%(len(fp),len(d)))"
+
+# f282 is a showroom interior -- look at it
+#   work/r22161_proxy/r22161_proxy_000282.png   (camera x=1.698, inside glass at x=15.0)
+#   work/r22161_proxy/r22161_proxy_002976.png   (the closing crane, 140 m up, 130 mm)
+```
+
+`work/` is gitignored, so the two scripts are tracked and their json are not;
+every number regenerates from the commands above. **Nothing was rendered and
+nothing was spent.**
+
+## R2-3841 — WHICH BLEND, AND WHY IT IS NOT FILM26
+
+`film26_breach.blend` was to be built by another agent. It is absent:
+
+```
+$ ls render/film26*                    -> no such file (03:59, 04:03, 04:05 Z)
+$ grep -rl film26 work/ tools/ docs/    -> nothing
+```
+
+The most recent other-agent work in the tree (`work/r23721/`, last write 03:43Z)
+is the occlusion/variety gate, not a film build. The brief's rule — *"Otherwise
+render `render/film25_breach.blend`"* — is therefore the operative one, and its
+second clause ("if film26 exists but is worse in any respect, render film25 and
+say so") never arises. **film25 passes the bar today; nothing was waited on.**
+
+## R2-3842 — THE BAR, READ OFF THE LOG RATHER THAN OFF A REPORT
+
+`work/r23661/bar_film25_breach.log`, written 2026-08-09 03:19Z — **after** the
+blend it judges (02:38Z) and after every measurement it quotes (02:56-03:18Z).
+All 40 checks and both controls:
+
+| group | checks | result |
+| --- | --- | --- |
+| the lamps, and the levelling identity | 10 | 10 OK |
+| the strip source | 4 | 4 OK |
+| the delivery format, the oner, the clip | 17 | 17 OK |
+| the stages that produced those numbers | 4 | 4 OK |
+| the controls that have to actually execute | 3 | 3 OK |
+| socket_index_audit + its negative control | 2 | 2 OK |
+| **total** | **40** | **40 OK / 0 FAIL / 0 UNMEASURABLE** |
+
+The delivery-format group is the one that matters for this task and it carries
+the whole spec: `resolution_x 3840`, `resolution_y 2160`, `resolution_pct 100`,
+`fps 24`, `frame_start 1`, `frame_end 2978`, `view_transform AgX`, `look None`,
+`exposure -3.628`, `camera ONER`, `n_cameras_in_scene 1`.
+
+The negative control is load-bearing and it fired: the socket audit is required
+to **fail** on `film10.blend` (`rc=1`) and to pass on film25 (`rc=0`). Both
+observed. A bar that passes everything it is pointed at is not a bar.
+
+## R2-3843 — THE .blend1 SWEEP, RE-RUN BEFORE THE MASTER STARTED
+
+`tools/disk_policy.py selftest` first: **SELFTEST PASS (0 mismatches)**, 19
+controls including both arms of the B1/B2 backup guards and five path guards.
+Then three scopes, applied:
+
+| scope | files | deleted | refused | why refused |
+| --- | --- | --- | --- | --- |
+| `film-backups` | 3 | 27.973 GB | 0 | — |
+| `render-misc` | 6 | 9.329 GB | 3 (8.577 GB) | `assembly15.blend1` is protected; 2 backups have no sibling `.blend` |
+| `world` | 3 | 0.434 GB | 1 (0.280 GB) | `car_anim_R2_3301.blend1` has no sibling `.blend` |
+
+**Free space 85.5 GB → 114.6 GB.** Note the measured statvfs deltas are smaller
+than the sums of the file sizes (+19.8 GB measured against 27.97 GB deleted on
+the first scope) because other agents were writing to the same filesystem
+throughout; the tool reports the measurement, not the arithmetic, which is the
+right way round. Receipts in `work/w2_0/blend1_*_20260809T040215.json`.
+
+Headroom against the deliverables: frames 23.5 GiB + ProRes ~11 GB + H.265 <1 GB
+≈ 36 GB of 114.6 GB. Checked **before** the encode, per the brief.
+
+## R2-3844 — THE STALE FLEET, AND WHY NONE OF IT WAS REUSED
+
+`fleetctl up` reuses any broker already listening on its port. Brokers 3, 4 and 5
+were listening, and all three were stale by the launch rule's own test:
+
+```
+pid 1974220  fleet03  started Sat Aug  8 05:31:20 2026
+pid 1974254  fleet04  started Sat Aug  8 05:31:23 2026
+pid 1974323  fleet05  started Sat Aug  8 05:31:26 2026
+commit 280f49a "The RAM floor and the requirement were the same number"
+                                 Sat Aug  8 18:05:46 2026
+```
+
+All three predate the fix by 12.5 hours, so all three still held the 50.0 GB
+floor. **They were confirmed idle before being replaced** — not assumed idle:
+`/queue` reported `depth 0`, `fleet.status down`, `instance_id null` and
+`idle_sec` of 71,113 / 71,443 / 49,328 s on brokers 3/4/5 respectively, and the
+vast.ai API reported **no instances on the account at all**. Broker 5 was
+additionally parked on a `$6.00` cap it had hit at `$9.20`.
+
+They were stopped with `scripts/brokerd.sh stop` under each broker's own
+`Broker.env()`, which is **pidfile-scoped** (`our_broker()` reads
+`$BPID_FILE`) — not a `pkill -f` sweep, which the standards forbid and which
+would have taken the six brokers 6-11 and the two protected live brokers with
+it. `other_brokers` printed them as `NOT ours ... (left alone by stop)`.
+
+Brokers 1, 2 and 6-11 were **not touched**. They belong to other agents.
+
+## R2-3845 — THE RAM FLOOR, PROVED FROM THE RUNNING PROCESS
+
+The fleet came up clean — `0 were already running`, so nothing was inherited:
+
+```
+>> STAGE RESULT: PASS — 3 broker(s) up and identity-verified against /proc
+   (0 were already running). No instance is rented until work is submitted.
+```
+
+The floor is a module-level `float(os.environ.get(...) or default)` read at
+import time, so the value in force is decided by the environment the process was
+started with. That is a fact of the **kernel's** record, and it is what was
+checked — `/proc/<pid>/environ` of each broker actually listening:
+
+| broker | pid | started | `MIN_RAM_GB` | `SCENE_WORKING_SET_GIB` | `RAM_HEADROOM` |
+| --- | --- | --- | --- | --- | --- |
+| fleet03 | 2998103 | 04:03:21Z | **72** | **52.4** | **1.25** |
+| fleet04 | 2998166 | 04:03:24Z | **72** | **52.4** | **1.25** |
+| fleet05 | 2998198 | 04:03:27Z | **72** | **52.4** | **1.25** |
+
+Two things to note.
+
+**The working set was raised above what shipped.** `280f49a` set
+`SCENE_WORKING_SET_GIB = 50.6`, measured on `film23_breach.blend`. The scene
+being rendered is `film25_breach.blend` and the brief's measurement is
+**52.4 GiB worker / 64.5 GiB cgroup**. I pinned 52.4 explicitly rather than
+inherit 50.6, which raises the GiB re-check from 63.2 GiB to
+**52.4 × 1.25 = 65.5 GiB**. No code was changed; the constant is an env
+override by design.
+
+**The gate filters on ADVERTISED RAM and the scene lives in the CAP**, measured
+at 96.0% of advertised. The operational check is therefore what was actually
+rented, and all three clear it with room:
+
+| instance | broker | advertised RAM | cap at 96% | vs 64.5 GiB cgroup peak |
+| --- | --- | --- | --- | --- |
+| 47238557 | fleet03 | 124.9 GiB | 119.9 GiB | +55.4 GiB |
+| 47238586 | fleet04 | **91.4 GiB** | **87.7 GiB** | **+23.2 GiB** (worst case) |
+| 47238618 | fleet05 | 124.9 GiB | 119.9 GiB | +55.4 GiB |
+
+The 50.0 GB floor these brokers would have carried before the restart admits
+boxes at 60.5 and 62.7 GiB — under the 64.5 GiB the scene needs in the cgroup.
+That is the rental the render dies on, and it is the one that did not happen.
+
+## R2-3846 — THE SUBMISSION
+
+Budget first. Each broker's `MAX_BATCH_USD` is cumulative and each SQLite
+carried historic spend, so a flat `--set 150` per broker would have authorised
+$450. Caps were set to `banked + 50.00` each, which makes the **new** spend
+ceiling exactly the $150 the brief asked for:
+
+| broker | banked | cap set | remaining |
+| --- | --- | --- | --- |
+| fleet03 | $1.9883 | $51.99 | $50.00 |
+| fleet04 | $1.6636 | $51.66 | $50.00 |
+| fleet05 | $4.8414 | $54.84 | $50.00 |
+| | | | **$150.00** |
+
+The submission:
+
+```
+fleetctl submit -n 3 --scene render/film25_breach.blend \
+    --frames 1-2978 --name master4k \
+    --res 3840 2160 --samples 512 --cam ONER -- --prio 1
+
+>> STAGE RESULT: PASS — 2978 frames in 3 contiguous disjoint blocks.
+   fleet03  1-993      fleet04  994-1986      fleet05  1987-2978
+```
+
+Every unstated field is a default that was **checked, not assumed**:
+`--engine` defaults to `CYCLES` (`rq` line 1339) — the blend's own saved engine
+is `BLENDER_EEVEE`, so this was worth checking and would have been a catastrophe
+to get wrong; `--denoiser` to `OPENIMAGEDENOISE`; `--dof` to `scene`, which uses
+the blend's own animated depth of field — overriding animated DOF is how round 1
+lost a render; `--adaptive-threshold` to 0.01, matching the `r22161_proxy`
+manifest, which recorded `adaptive_threshold: null` for the same reason. No
+`--exposure` was passed: the -3.628 is authored in the blend and the bar checked
+it there. `--prio 1`, because `--prio 0` is stored as 100.
+
+`--name master4k` is the resume key.
+
+All three brokers printed the same scene hash `1d2aa2d86533574e` and the same
+**spec hash `3cf8d9c4de51280f`** — which is the check that the three blocks are
+one film and not three slightly different ones.
+
+Cost before spending, from `fleetctl plan -n 3 --frames 1-2978 --push-sec 900`:
+**175.2 GPU-hours (96.4-254.1 with the ±45% host lottery), 32.4-85.0 h wall,
+$47.67-$124.93 at $0.49/hr all-in.** The brief's ~245 GPU-hour / ~$113 estimate
+sits inside that range, toward the pessimistic end.
+
+Rented at 04:06-04:07Z, three exclusive whole-machine RTX 5090s:
+
+| instance | offer | $/hr | geo | uplink |
+| --- | --- | --- | --- | --- |
+| 47238557 | 47033336 | 0.428 | South Korea | 594 Mbps |
+| 47238586 | 42272271 | 0.454 | Sweden | 746 Mbps |
+| 47238618 | 46937219 | 0.455 | South Korea | 805 Mbps |
+
+`$1.3881/hr` all-in including disk; credit $173.30 = **124.8 h of runway**.
+
+## R2-3848 — THE RUNBOOK'S SEVEN UN-WAIVABLE GATES, CHECKED ONE BY ONE
+
+`docs/MASTER-RUNBOOK.md` line 21: *"THE GATES — none of these may be waived.
+The master does not start until every line is green."* I checked all seven
+rather than the two the brief named.
+
+| # | gate | verdict | evidence I read |
+| --- | --- | --- | --- |
+| 1 | `film_bar.py`, all rows, nothing opted out | **GREEN** | `work/r23661/bar_film25_breach.log:55` — 40 claimed / 40 OK / 0 FAIL / 0 UNMEASURABLE |
+| 2 | the film10 negative control must FAIL | **GREEN** | same log line 53 — `want rc=1  got rc=1` |
+| 3 | `placement_gate` CLEAN on the scene that renders | *delegated, pending* | see below |
+| 4 | the car is in the last 91 frames | **GREEN — and newly closed here** | `work/r23841/filmkeys_film25_breach.log` |
+| 5 | `rig_preflight` OK on the film | **GREEN** | bar log — `rc=0`, `RIG_PREFLIGHT_OK` |
+| 6 | `MIN_CPU_RAM_GB` above the resident scene | **GREEN** | 72 in force, working set pinned 52.4 (R2-3845) |
+| 7 | brokers launched after 18:05 on 08-08 | **GREEN** | all three started 04:03Z on 08-09 (R2-3844/3845) |
+
+### Gate 4 was closed on the SHIPPED ARTEFACT, not on its parent
+
+The strongest existing evidence for gate 4 was a probe run on
+`render/film25.blend` — the *pre-breach* build. Between it and the artefact that
+renders there are two more passes (`r2791_apply_focus`, then the breach), so the
+10.96 GB file actually being rendered had **never itself been probed**. That is
+an inference, and gate 4 is un-waivable, so I ran the probe on the shipped file:
+
+```
+>> film   /home/zany/f1-round2/render/film25_breach.blend (10956580171 bytes)
+>> probe frames (1200, 2000, 2714, 2760, 2850, 2978)   tolerance 0.050 m
+>> CAR_ROOT found: 'CAR_ROOT', animation_data=True
+>> CAR KEYS: none - the appended CAR_ROOT matches anim/carrig to 0.0000 m over 6
+   probe frames spanning the confined span AND the lap-down
+   (f1200 0.000 m, f2000 0.000 m, f2714 0.000 m, f2760 0.000 m,
+    f2850 0.000 m, f2978 0.000 m)
+>> STAGE RESULT: FILM_CAR_KEYS_MATCH_SOURCE
+```
+
+The byte count in that header is `film25_breach.blend`'s own, so the probe
+provably opened the shipped file. The instrument discriminates rather than
+passing everything: on the old car the same probe reads **678.031 m at f2978**.
+Run under `tools/buildlock.sh` with the reference binary
+`/opt/blender-5.2.0-linux-x64/blender`, log in
+`work/r23841/filmkeys_film25_breach.log`.
+
+**The mechanism is still a verification and not a fix.**
+`tools/build_film_scene.py` contains no `check_appended_car_keys` call — the
+wiring was written up at R2-3301 and never made because the file was leased. So
+the append still does not re-key; it is now *checked* afterwards. **Any future
+film built without running `v129/film_car_keys.py` can reintroduce R2-3181
+silently.** That is the note to carry forward.
+
+### What gate 4 does and does not license
+
+Measured on film25's exact camera path (`render/film25_path.json`
+`9d055d63da724993`, byte-identical to `film24_path.json` and to
+`world/R2_3361_camera_rig_path.json`) with the car artefact film25 appends,
+`work/r2-3361/beat6_subject.log`:
+
+| beat 6, f2715-f2978 | old shipped car | film25's car |
+| --- | --- | --- |
+| car width p50 @4K | 31.0 px | **81.0 px** |
+| frames wholly off frame | **91/264 = 34.5%** | **0/264 = 0.0%** |
+| final frame f2978 in shot | NO | **YES** |
+| frames under 60 px (width) | 79.9% | 20.5% |
+| frames under 60 px (height) | 95.8% | **78.4%** |
+
+**Absence is fixed; smallness is improved, not closed.** Height-under-60 is
+still 78.4% and the minimum width is 53.5 px. Any claim I make in `watch/`
+must say the car is *present* through the ending, not that it reads large.
+
+Also inherited, and worth correcting once rather than repeating: the warning
+banner's "95.8% of frames under 60 px" is a **height** count printed beside a
+**width** figure (31.0 px). The width count was 79.9%.
+
+## R2-3849 — THE RAM MARGIN: THE RUNBOOK'S 4% CORRECTION, CONSIDERED AND DECLINED
+
+`MASTER-RUNBOOK.md` observes that `_meets_scene_working_set` filters on the
+**advertised** figure while the container is capped at **96.0% of advertised**
+(measured twice: 91.374 → 87.72 GiB, and 61.9 → 59.4 GiB), so the gate
+overstates its margin by 4%, and recommends either filtering on
+`advertised × 0.96` or raising `RAM_HEADROOM` to 1.30.
+
+I considered restarting the fleet to apply that, at the one moment it was free —
+zero frames delivered — and decided **not to**, for a measured reason:
+
+`SCENE_WORKING_SET_GIB` is defined by its own commit as a **RESIDENT** figure
+(*"50.6 GiB RESIDENT"*, worker RSS). The scene's two numbers are **52.4 GiB
+resident** and **64.5 GiB cgroup `memory.current`**, and the ~12 GiB between
+them is page cache from reading a 10.96 GB scene file — reclaimable under
+pressure, not an allocation the OOM killer must satisfy. The commit's own
+measurement shows the same shape: RSS 50.6, current 54.3, a 3.7 GiB gap.
+
+So 52.4 is the right value for that constant, and what matters is resident
+against cap. The three cards actually rented give:
+
+| card | advertised | cap at 96% | over the 52.4 GiB resident scene |
+| --- | --- | --- | --- |
+| fleet03 | 124.9 GiB | 119.9 GiB | +67.5 GiB |
+| fleet04 | 91.4 GiB | 87.7 GiB | **+35.3 GiB** (worst) |
+| fleet05 | 124.9 GiB | 119.9 GiB | +67.5 GiB |
+
+Restarting three brokers to improve a 35 GiB margin is risk without benefit, and
+the risk is to a live paid render. **What I am doing instead is watching the
+advertised RAM of every re-rent** — the batch takes the 12 h retirement path
+roughly 21 times, and the runbook records purchasable tiers at 73.10 and 73.57
+GiB whose caps would be 70.2 and 70.6 GiB. Those still clear a 52.4 GiB resident
+scene by 18 GiB, so they are acceptable; a tier below that would not be, and the
+floor already refuses it.
+
+*(Sections below are filled in as the render proceeds.)*
+
+## R2-3847 — A DEFECT IN `fleetctl plan`, FOUND AND NOT WORKED AROUND SILENTLY
+
+`fleetctl plan --frames ...` exits with `vastctl: error: argument cmd: invalid
+choice: 'plan'`. Its last step calls `api_credit()`, which reaches into
+`vastctl` and re-parses **the parent's `sys.argv`** instead of its own. The cost
+block is computed before that point, so the numbers are sound; they are simply
+swallowed, because argparse's `SystemExit` escapes the `try/except Exception`
+around the credit call and takes the buffered stdout with it when the output is
+a pipe. Reproduced and worked past with `python -u` and a stdout redirect. It
+costs nothing but the plan's readability. **Not fixed here** — it is
+`~/vast-render` middleware, it is cosmetic, and the master is in flight.
+
+## R2-3850 — THE ENDING WAS SCHEDULED LAST, SO I RE-ORDERED IT FIRST
+
+`fleetctl submit` splits the range into three contiguous ascending blocks, which
+puts **beat 6 (f2715-f2978) at the tail of broker 5's block** — frames 728-992
+of 992. At the measured rate that is **hour ~70 of a ~95 hour render**.
+
+Beat 6 is the part of this film a client has now rejected twice, and R2-3181 was
+found in it. Discovering a problem there at hour 70 costs the whole render;
+discovering it at hour 1 costs nothing. So, at 1 frame delivered:
+
+```
+rq cancel 39de703a758f                    -> {"canceled": true, "was": "running"}
+rq anim ... --name master4k --frames 2850,2900,2950,2978     (4 frames)
+rq anim ... --name master4k --frames 1987-2978               (the block)
+```
+
+`--frames` takes a comma-separated list, so the four probes are one small job
+that finishes in ~23 min instead of a range that finishes in three days. Both
+new jobs came back with the **same scene hash `1d2aa2d86533574e` and the same
+spec hash `3cf8d9c4de51280f`** as brokers 3 and 4 — so the ending probes are the
+master's own pixels at the master's own spec, not a side render.
+
+This costs one interrupted frame (~6 min of GPU, ~$0.03). Nothing is
+double-rendered that matters: `--name` is the resume key and a re-render writes
+the same filename, so the four frames cannot become duplicate files.
+
+**The job I cancelled was one I created**, in this task, minutes earlier. No
+broker, job or instance belonging to anyone else was touched.
+
+Note for the verification step: `state/fleet/master4k.json` now carries a stale
+`job_id` for broker 5 (`39de703a758f`, cancelled). This does **not** affect
+`fleetctl verify`, which reads `blk["dir"]` and `blk["state"]` — the output
+directory and the broker's SQLite — and never the job id. Block boundaries and
+directories are unchanged and still correct.
+
+## R2-3851 — THE FIRST FRAME, LOOKED AT RATHER THAN COUNTED
+
+`master4k_000994.png`, 7.6 MB, 348.6 s. Decoded from scratch by
+`tools/r23841_verify_frames.py`: **3840x2160, 256 distinct luminance levels,
+sd 0.11885, mean 0.25565, not flat, not black.**
+
+And then actually looked at, because every number above is also true of the
+wrong film: the frame shows the car in a low three-quarter aerial over the
+forecourt slabs with the breach debris in flight, the barrier line and glazing
+above it, AgX contrast and the -3.628 exposure reading correctly. It is the film.
+
+## R2-3852 — THE PROTECTED FILMS, HASHED BEFORE
+
+Per the coordinator: film23, film24 and film25 were verified identical before
+and after the previous agent's work and must be verified again after mine. The
+baseline is `work/r23841/protected_films_BEFORE.txt`, taken while the render
+was in flight, covering all six artefacts (`film2{3,4,5}.blend` and
+`film2{3,4,5}_breach.blend`). It is re-taken at the end of this task and the
+two compared.
+
+`render/film25_breach.blend` had **no recorded sha anywhere** before this task.
+It is `1d2aa2d86533574ef6b57d2b947ce32598b714d0eb3477fa0cbe6659f59c1418`, and it
+is recorded here, in the delivered `watch/INDEX.md` row, and in the manifest the
+brokers wrote — three places, because a ship candidate with no recorded hash is
+how this project lost track of which artefact was which.
+
+The `.blend1` sweep did not touch any of them: the tool's `_forbidden()` refuses
+any path ending `.blend` under every scope and flag, checked immediately before
+each unlink rather than only at selection time. It deleted
+`film23/24/25.blend1` — the *backups*, which regenerate on the next save.
+
+## R2-3853 — GATE 3 WAS NOT ESTABLISHED FOR THE WORLD THAT RENDERS
+
+This is the one finding in this task that could have stopped the ship, and it
+was found by checking a gate the brief did not name.
+
+`docs/STAGING-R2-3601-to-R2-3660.md:364` (mirrored into the defect log) records
+`placement_gate` as `PLACEMENT_CLEAN, 0 (+1,203 hidden on 894 non-rendering
+meshes)` for the assembly15 era. **There is no log, no JSON and no work
+directory behind that row.** The complete inventory of `placement_gate` outputs
+on disk is:
+
+| file | mtime | subject |
+| --- | --- | --- |
+| `work/r22701/gate_assembly14_FIXED.json` | 08-08 18:13 | **assembly14** |
+| `work/r2-3181/determinism_control_{pos,neg}.json` | 08-08 17:55 | controls |
+| `work/r22701/gate_film23_breach_FIXED2.json` | 08-08 17:48 | film23_breach |
+
+All three predate `assembly15.blend` (built 08-09 00:22) and
+`film25_breach.blend` (08-09 02:38). Two further reasons not to accept the prose
+row: the number does not reconcile (it claims assembly14 re-measured at **1,203**
+hidden; the one run that exists says **1,159**, same tool sha, same unchanged
+blend), and its quoted selftest line is verbatim the tail of
+`work/r22701/selftest_5.log` from 08-08 16:50 — the same minute the tool was
+last edited.
+
+### Why assembly14's CLEAN does not transfer to assembly15
+
+Two independent reasons, both measured:
+
+1. **The ground cover lands exactly on the meshes assembly14's verdict could not
+   see.** That report's `determinism.skipped.empty_mesh` lists **50 objects left
+   out of every number** — and they are `VEG_grass_*`, all 15 `VEG_sward_*`, the
+   6 `VEG_weed_*`, `VEG_fern`, `VEG_sapling`, the shrub L0/L1 pairs. They were
+   **empty** in assembly14. In assembly15 they carry geometry: *"GROUNDCOVER
+   PRESENT — 32 of 32 clumps carry panicle geometry"*, BASE +114,436 tris on the
+   same 3,445 meshes, rendered triangles **+17.16%**. So assembly15 asks the
+   gate to measure precisely the set the last CLEAN excluded.
+2. **The camera path moved, and the camera margin is the tight one.** The
+   assembly14 run used `render/film23_path.json`; the film that renders uses
+   `render/film25_path.json`. Between them, **1,374 of 2,978 frames differ in
+   camera position (max 0.263 m) and 1,522 differ in focal length.** The
+   camera-arm closest approach on assembly14 was `BR_Verge_R +0.648 m`, so a
+   0.263 m move is **40% of the entire margin**.
+
+Object counts are unchanged (DR 247, SPECX 900, VEG 28,894, 31,068 total), so
+this is geometry inside existing meshes plus a moved camera — not new objects.
+
+### What I did about it
+
+I did **not** stop the render, and I want the reasoning on the record rather
+than assumed. The gate is a **local** job on a 9.59 GB world; the render is on
+three rented cards and is completely unaffected by it. Holding the fleet would
+have cost $1.39/hr to establish something that costs nothing to establish in
+parallel, and the frames already delivered stay valid if the gate is green. The
+exposure of being wrong is ~15 minutes of fleet time, about **$0.35**.
+
+**The instrument was watched firing first**, because a gate believed without a
+control is the failure this project keeps repeating:
+
+```
+>> all 60 controls behaved
+>> STAGE RESULT: PLACEMENT_SELFTEST_OK          (work/r23841/pg_selftest.log)
+```
+
+Then the gate itself, on the world that renders with the camera path that
+renders:
+
+```
+tools/buildlock.sh r23841_pg_assembly15 \
+  /opt/blender-5.2.0-linux-x64/blender -b render/world/assembly/r2/assembly15.blend \
+    --factory-startup -noaudio -P tools/placement_gate.py -- \
+      --campath render/film25_path.json --repeat 2 \
+      --out work/r23841/gate_assembly15.json
+```
+
+**Gate 3 is dischargeable only against the WORLD, not the film.** Running
+`placement_gate` on `film25_breach.blend` returns `PLACEMENT_FAIL` by
+construction — the violations are `NOSE_Shell`, `DRV_Helmet`, `MB_underpan`,
+`SW_Shell`, i.e. the car, 1.602 m into the car path, which is where the car is
+supposed to be. `work/r22701/gate_film23_breach_FIXED2.log` shows exactly that,
+and the project's own conclusion is that this is a world gate. The runbook's
+wording — *"CLEAN on the scene that renders"* — should be read as **CLEAN on
+`assembly15.blend` under `render/film25_path.json`**, which is what was run.
+
+Also worth recording: **gate 1 does not cover this.** `tools/film_bar.py`
+contains no placement row, and neither does the 40-row bar log. Gate 3 is not a
+subset of gate 1, which is why the runbook lists it separately.
+
+### The verdict: PLACEMENT_CLEAN, and the number that settles the discrepancy
+
+```
+>> subject: 30204 meshes via every mesh in the scene (nothing looks like context)
+>> camera path: per-frame path, 2978 frames, from render/film25_path.json;
+   sphere r=1.2 m over 3432 sample points
+>> instances: 4966913 realised in 49.7 s
+>> determinism: 2 pass(es), IDENTICAL; scene walk 792ca66e9c3ef973
+>> NOTHING is on the road, in the car's path, or in the camera's path
+>> STAGE RESULT: PLACEMENT_CLEAN  [+1159 hidden findings on 894 non-rendering mesh(es)]
+```
+
+**Zero violations**, on the world that renders, under the camera path that
+renders, with the item convention explicitly refused (it would have excused
+29,304 of 30,204 meshes as "context" — the exact misclassification the runbook
+warns about, and the fixed gate says so in the log rather than doing it).
+
+Three things this run settles:
+
+1. **The camera move did not eat the margin.** Closest approach on the camera
+   path is `BR_Verge_R` at **+0.648 m of clearance** — the same figure
+   assembly14 reported. The 0.263 m shift between `film23_path` and
+   `film25_path` was the reason to worry, and measured, it did not consume the
+   clearance.
+2. **The hidden count is 1,159, not 1,203.** That is exactly the number the one
+   real assembly14 run produced. So the `1,203` in
+   `docs/STAGING-R2-3601-to-R2-3660.md` was wrong, and the failure to reconcile
+   it was the right thread to pull.
+3. **It is deterministic.** Two passes, byte-identical, scene walk
+   `792ca66e9c3ef973`.
+
+### The residual, named rather than buried
+
+`PLACEMENT_CLEAN` here means what the instrument defines it to mean, and the
+instrument declares its own blind spot:
+
+```
+empty_mesh 50: VEG_shrub_{bramble,gorse,hazel,broom,juniper}_L{0,1}, VEG_sapling,
+  VEG_fern, VEG_grass_{fescue,tussock,meadow,dry,reed}_{H,F}, the 15 VEG_sward_*,
+  the 6 VEG_weed_*, VEG_stone_*, VEG_grit_*, VEG_nb_clump_N1
+of_visible_sources_NOT_MEASURED: 4955784
+note: realisations of a hidden source are measured at their instance matrix and
+  counted as violations; realisations of a VISIBLE source are not measured -- the
+  source object is, where it stands. Declared, not implied.
+```
+
+**So the ground cover is still outside the verdict**, and for a precise reason:
+its 50 source objects are empty meshes (the geometry is generated at instance
+time), and instances of a *visible* source are not measured because the tool
+measures the source where it stands — which for an empty mesh measures nothing.
+This is **the same residual assembly14 carried**, not a new one, and it is
+printed by the tool rather than discovered by reading the JSON.
+
+What it means practically: gate 3 proves nothing built as a placed object is on
+the road, in the car's path or in the camera's path. It does **not** prove the
+grass is off the tarmac. That claim rests instead on the delivered pixels, and
+`master4k_001987.png` and `master4k_002850.png` — both inspected at full 4K —
+show the ground cover correctly bounded by the kerbs and verges with clean
+asphalt edges. **Recorded as a limitation of the gate, not as a pass.**
+
+## R2-3854 — THE DELIVERY PIPELINE, MEASURED BEFORE THERE WAS ANYTHING TO DELIVER
+
+Built and validated end to end while the frames rendered, so that the encode is
+a known quantity rather than something attempted at hour 95.
+
+**The audio is finished and was not rebuilt.** `audio/out/master.wav`,
+35,736,044 B, **md5 `d5087fd021b5f748f176ecb2b6c1de67`** — matches, and
+re-checked unchanged afterwards. `pcm_s24le`, 48 kHz, stereo,
+**124.083333 s**. `5956000/48000 = 1489/12` and `2978/24 = 1489/12`: picture and
+sound are **exactly** the same length, so no `-shortest` and no padding. The
+master wraps it with `-c:a copy`, proved lossless by decoding both sides to
+`s24le` and comparing — identical.
+
+**The frames span three directories**, so the input is an ffconcat list, not a
+printf pattern. `tools/r23841_build_framelist.py` derives stem, pad width and
+per-directory ranges from disk and refuses (exit 2, writing no list) on a gap,
+an overlap, mixed stems, mixed pad widths, a zero-byte PNG or a dimension
+mismatch. All four negative controls fired. The concat form was **measured, not
+assumed**:
+
+| form | frames out of 48 |
+| --- | --- |
+| `file` + `duration` + repeated last file (the usual advice) | **49 — one extra** |
+| `file` only, `-r 24` as an output option | **4 — catastrophic** |
+| `file` + `duration`, no repeat, read with `-r 24 -f concat` | **48, clean** |
+
+**ProRes 422 HQ is the profile the ~11 GB in the brief actually names**, measured
+on real 4K film frames rather than read off a table:
+
+| profile | measured | extrapolated to 2,978 frames |
+| --- | --- | --- |
+| ProRes 422 | 2.534 MB/frame | 7.55 GB |
+| **ProRes 422 HQ** | **3.837 MB/frame, 737 Mbps** | **11.43 GB** |
+| ProRes 4444 | 5.732 MB/frame | 17.07 GB |
+
+**The H.265 copy cannot exceed 1 GB even in the worst case the rate control
+permits**: 1e9 bytes over 124.0833 s is a 64.473 Mbps ceiling; `-b:v 55M` with
+`-maxrate 60M -bufsize 120M` plus 192 kbps AAC gives 856 MB at target and
+**934 MB pinned at the VBV ceiling for the entire run** — which is why the
+maxrate/bufsize pair is there rather than a bare `-b:v`.
+
+**No grade is introduced.** A `setparams` is load-bearing: without it the PNG
+decoder's tags win and both outputs came out tagged `iec61966-2-1` despite
+`-color_trc bt709` on the command line. Only the RGB→YUV matrix and the
+full→limited range scale are applied; **no transfer conversion**. Proved by
+PSNR: ProRes 4:2:2 roundtrip vs source is 42.3 dB, and the same chain to
+ProRes 4444 (subsampling removed) is **59.8 dB** — so the entire 42 dB is chroma
+subsampling, not a level or gamma shift. A stray transfer conversion would have
+read 15-25 dB.
+
+Validated end to end on 48 real frames **deliberately split across three
+directories**: `nb_read_frames` **counted** = 48 on both outputs, 24/1, bt709
+throughout, audio present, video and audio `start_time` both 0.000000, and the
+mp4's `moov` before `mdat`. Verification for the real thing is packaged at
+`tools/r23841_verify_delivery.sh`, whose resolution check was watched failing on
+a 720p clip so it is known to have teeth.
+
+**One operational note carried forward:** the local box was at load ~19 on 6
+cores from other agents' work, and a `libx265 -preset slow` run on 48 frames of
+720p blew a 2-minute timeout purely from CPU contention. **The real 4K encode
+must not be run while that load persists** — it is a scheduling fact, not a
+defect in the command.
+
+## R2-3855 — THE RATE, MEASURED ON THIS BATCH RATHER THAN A NEIGHBOURING ONE
+
+The runbook records that this project's master estimate has been wrong five
+times, every time by taking a number from a neighbouring configuration. So the
+first five frames of this batch, at this spec, on this blend:
+
+| frame | broker | render |
+| --- | --- | --- |
+| 1 | fleet03 | 276.0 s |
+| 2 | fleet03 | **209.1 s** |
+| 994 | fleet04 | 348.6 s (first frame, carries setup) |
+| 995 | fleet04 | 289.5 s |
+| 1987 | fleet05 | 359.8 s (first frame, carries setup) |
+
+**Mean 296.6 s/frame → 2,978 × 296.6 = 245.4 GPU-hours → ~$113.6** at the
+fleet's blended $0.4627/hr, and **81.8 h per card ≈ 3.4 days** wall.
+
+That is the brief's ~245 GPU-hour / ~$113 / ~3.5 day estimate reproduced to
+within a percent, from this batch's own frames. Note the broker's own
+`~163.8h left at 595.0s/frame` line is not this number and should not be read as
+it — that divides elapsed-since-job-start by frames done, so it still carries
+the whole deploy and the 10.96 GB scene push. It converges downward.
+
+**fleet03 is materially faster than the other two** (209-276 s against
+289-360 s) while also being the cheapest at $0.428/hr. With equal blocks it will
+finish roughly a day early and then idle, and the fleet finishes when its
+slowest block does. The lever for that is a **deliberate, disjoint** rebalance —
+carve a chunk off the slowest broker's remaining tail, cancel and resubmit that
+broker's job without it, and hand the chunk to fleet03 under the same `--name`.
+Not a re-submission of the whole range to every broker, which would race.
+
+## R2-3856 — THE THREE FRAME CHECKS, REHEARSED BEFORE THEY MATTER
+
+All three were run against the frames delivered in the first half hour, so that
+a tooling problem surfaces now rather than at hour 82.
+
+**Checks 1 and 2 — `fleetctl verify --manifest state/fleet/master4k.json`:**
+
+```
+sequence master4k   frames 1-2978 (2978 wanted)
+  present    13        duplicated 0        outside the requested range 0
+    broker 3   1-993      5/993      broker 4   994-1986   4/993
+    broker 5   1987-2978  4/992
+  distinct sha256 across all delivered frames: 13 of 13
+  sha256 agrees with the broker's own frames table: 13/13
+  resolutions delivered: 3840x2160
+  blank gate: 13 OK, 0 not-OK, 0 unmeasured
+  render_sec across all brokers: min 209.1 median 267.0 max 359.8 mean 266.3
+```
+
+It returns FAIL, and correctly — 2,965 frames do not exist yet. What matters is
+that every column that *can* be true this early is: coverage attributed to the
+right broker, **13 of 13 distinct hashes** (no frame is a repeat of another),
+and **13 of 13 agreeing with the sha256 the broker recorded independently at
+fetch time**, which is the only form of check 2 that is not a file compared
+against itself.
+
+**Check 3 — `tools/r23841_verify_frames.py`**, which decodes rather than reads.
+Written for this task because `fleetctl verify` never inflates a PNG: its
+`width`, `height` and `blank` columns are re-read out of the broker's own
+SQLite, so **a frame truncated in its IDAT stream passes it** — and this farm
+has already delivered one truncated file that looked finished. Validated on
+three arms before use:
+
+| arm | expected | got |
+| --- | --- | --- |
+| four real 4K frames | PASS | PASS |
+| one frame truncated to 60% of its bytes | FAIL | FAIL — `frame 3: OSError: image file is truncated` |
+| one frame deleted | FAIL | FAIL — `missing 1 [2]` |
+
+On the master's own frames it reports 3840x2160, 256 distinct luminance levels
+on f994, and nothing flat or blank.
+
+## R2-3857 — THE ENDING WAS LOOKED AT, AT HOUR ONE
+
+The re-ordering at R2-3850 bought exactly what it was meant to. Four beat-6
+frames, all delivered inside 25 minutes of the render starting:
+
+| frame | render | size | mean | sd |
+| --- | --- | --- | --- | --- |
+| 2850 | 252.9 s | 10.6 MB | 0.37950 | 0.08984 |
+| 2900 | 251.6 s | 10.1 MB | 0.37154 | 0.08621 |
+| 2950 | 267.0 s | 9.46 MB | 0.34574 | 0.09731 |
+| **2978** | | **11.88 MB** | 0.33293 | 0.09912 |
+
+```
+>> sequence master4k job 9532142009d5 COMPLETE — 4 frame(s) in 18.2 min
+   (273.3s/frame), all verified
+```
+
+All decode at 3840x2160 with 186-194 distinct luminance levels, none flat, none
+blank.
+
+### f2978 — the frame the warning banner was about
+
+**The car is in frame on the film's final frame, in delivered pixels.** Not
+inferred from the key probe, not projected from a bounding box: rendered, fetched,
+hash-checked, decoded and looked at. It sits on the track on the main straight
+with the kerb line, catch fencing, a populated grandstand and the ground cover
+around it, in the blue/teal livery, at the largest file size of any frame
+delivered so far (11.88 MB — the tail of this shot is the densest part of it).
+
+That closes R2-3181 the only way it can actually be closed. The old artefact had
+the car **absent from f2978 and from the preceding 91 frames**; this one does
+not. The `watch/` banner asserting that no clip in that folder can be used to
+judge the ending is, as of this frame, false about this render — and the
+replacement text is drafted against these numbers rather than against a hope.
+
+**And they were looked at, not just measured.** At 1280 px f2850 reads as a wide
+aerial with the car as a speck — which is the "smallness" caveat in the actual
+pixels, and is worth knowing. **At full 4K it resolves properly**: the car's
+livery, wheels and motion-blurred shadow are all legible on the main straight,
+with kerbs, catch fencing, a populated grandstand, trackside signage and the
+assembly15 ground cover around it. The deliverable is 4K, so the ending reads
+at delivery resolution. That is the honest form of the claim, and it is the form
+the `watch/` row makes.
+
+## R2-3858 — WHERE THIS STANDS, AND WHAT IS LEFT
+
+**The render is in flight and is not finished.** 2,978 frames at ~270 s each on
+three cards is **~82 hours**; it started 04:07Z on 2026-08-09 and is due around
+**2026-08-12**. Everything below the render is built, measured and rehearsed;
+none of it can run until the frames exist.
+
+State at the time of writing (04:45Z, 38 min in):
+
+| | |
+| --- | --- |
+| frames delivered | 16 of 2,978 |
+| spend on this batch | **$0.91** of the $150 ceiling |
+| projected total | **$102-114** against the ~$113 estimate (mean render 266.3 s/frame → 220 GPU-h; 296.6 s/frame → 245 GPU-h) |
+| credit | $172.63, 124 h of runway |
+| instances | 3, all `running`, all exclusive whole-machine RTX 5090s |
+| disk | 114.6 GB free; frames 23.5 GiB + ProRes 11.4 GB + H.265 0.86 GB ≈ 36 GB |
+
+### What remains, in order
+
+1. **Watch the first 12 h retirement.** Due **16:06:32Z / 16:07:02Z /
+   16:07:33Z** for fleet03/04/05. It has never fired on any instance in this
+   project (longest life 10.7 h) and the master takes that path ~21 times.
+   Watch it; do not assume the resume worked.
+2. **Rebalance when fleet03 finishes early.** It is running 209-276 s against
+   289-360 s on the other two and will idle roughly a day early. Carve a
+   **disjoint** chunk off the slowest broker's remaining tail, cancel and
+   resubmit that broker without it, hand the chunk to fleet03 under the same
+   `--name`. Do not re-submit the whole range to every broker — they would race.
+3. **Run the three frame checks in full** — `fleetctl verify --manifest`
+   (coverage + hash against the brokers' own records) and
+   `tools/r23841_verify_frames.py` (decode + geometry + blank). Both rehearsed.
+4. **Encode**, with `tools/r23841_build_framelist.py` then the two ffmpeg
+   commands at R2-3854, **checking disk headroom first** and **not while the box
+   is under the load that broke a 720p libx265 run**.
+5. **Verify the encodes** with `tools/r23841_verify_delivery.sh` — counted
+   `nb_read_frames` = 2978, duration 124.083333 s, audio at both ends.
+6. **File them in `watch/`** and replace the R2-3181 banner. Draft text is
+   written against measured numbers and is honest about what is *not* closed
+   (car presence: fixed; car size: improved, height-under-60 still 78.4%).
+7. **Re-hash the protected films** against
+   `work/r23841/protected_films_BEFORE.txt` and confirm all six unchanged.
+8. **Tear down and verify against the vast.ai API**, not a local state file —
+   `fleetctl down` re-queries and exits non-zero if any fleet instance is still
+   alive. Then confirm with `vastctl status` that the account holds nothing of
+   mine.
+
+### One transient, recorded rather than smoothed over
+
+At 04:44:22Z fleet05's heartbeat to instance 47238618 failed once
+(`ssh: connect ... Connection timed out`, 1 in a row) and did not recur; the
+instance stayed `ready` and the job it was running completed and verified two
+minutes later. This is the documented transient class — the in-container
+watchdog reaps only on a **30 minute** stale heartbeat, and a transport failure
+is explicitly not licensed to destroy a rendering box. Noted because a second
+one on the same instance would mean something else.

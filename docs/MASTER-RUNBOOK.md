@@ -1,5 +1,60 @@
 # THE 4K MASTER — what has to be true, and what it costs
 
+> ## LIVE: THE MASTER IS RENDERING. Launched 2026-08-09 ~04:30Z.
+>
+> ```
+> blend    render/film25_breach.blend   sha16 1d2aa2d86533574e
+> world    assembly15                   0 of 94 source files drifted
+> fleet    3 fresh cards on 8762/8763/8764, RAM floor verified from /proc
+> ETA      ~82 h, around 2026-08-12
+> spend    ~$0.99 of a ~$102-113 projection, cap $150, credit $172.34
+> ```
+>
+> **The brokers are DETACHED — each is its own session leader with its own
+> supervisor — so the render survives the session that started it.** Verified
+> from `/proc/<pid>/stat`: ppid == sid for every one.
+>
+> **THE REMAINING STEPS ARE WRITTEN OUT IN ORDER, WITH EXACT COMMANDS, AT
+> `docs/STAGING-R2-3841-to-R2-3900.md` (R2-3858)** — including the disjoint
+> rebalance if fleet03 finishes early, and both ffmpeg command lines with their
+> measured output sizes. **Read that before touching anything.**
+>
+> ### Three things for whoever picks this up
+>
+> **1. WATCH THE FIRST 12-HOUR RETIREMENT — do not assume the resume worked.**
+> Due **16:06:32 / 16:07:02 / 16:07:33Z**. It has **never fired on this
+> project** (longest instance life ever: 10.7 h) and the master takes that path
+> roughly 21 times. Broker 5's job already demonstrated the resume logic
+> correctly skipping five delivered frames, which is encouraging and **is not
+> the same test**.
+>
+> **2. GATE 3's RESIDUAL IS REAL AND IS NOT A PASS.** `PLACEMENT_CLEAN` does
+> **not** cover the ground cover's 4.96 M instances — by the tool's own
+> declaration. It proves nothing *placed* is on the road; it does not prove the
+> grass is off the tarmac. That rests on pixels, which were looked at.
+>
+> **3. DO NOT RUN THE 4K ENCODE WHILE THE BOX IS LOADED.** A 720p libx265 test
+> already died on CPU contention at load ~19. Encode after the render, not
+> beside it.
+>
+> ### And the correction that matters most about this launch
+>
+> **`placement_gate` had NEVER been run on the world that renders.** The
+> `PLACEMENT_CLEAN` recorded for the assembly15 era had **no log, no JSON and no
+> work directory**; its hidden count (1,203) did not reconcile with the only
+> real run (1,159); and its selftest quote was verbatim from a log written the
+> minute the tool was last edited. assembly14's verdict does not transfer — the
+> 50 meshes it skipped as *empty* are exactly the `VEG_*` ground cover that
+> carries geometry in assembly15, and the camera moved on **1,374 of 2,978
+> frames** against a 0.648 m margin.
+>
+> It was run properly before the render: selftest first (**all 60 controls
+> behaved**), then the gate — **`PLACEMENT_CLEAN`, zero violations, two
+> identical passes, camera clearance `BR_Verge_R +0.648 m`.** The margin
+> survived the camera move. **It is clean. It simply was not proven when this
+> file first said it was.**
+
+
 Written 2026-08-08 from measurements, not estimates. Every number here has a
 run behind it; where a figure was inherited rather than measured it says so.
 
