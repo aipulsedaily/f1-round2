@@ -76,6 +76,7 @@ REFERENCE_BLENDER = "/opt/blender-5.2.0-linux-x64/blender"
 N_TREES = 40
 N_POINTS = 40
 N_SWARM = 120
+WALL_LEAK_MAX = 2
 TREE_H = 3.0
 CAM_Y = -60.0
 CAM_Z = 3.0
@@ -227,8 +228,43 @@ def retired_walk():
 
 
 # ---------------------------------------------------------------------------
+def build_shell(blend_out, shell_out, with_wall):
+    """Sample the current scene's shell, optionally with a wall in the way.
+
+    The wall is TWO TRIANGLES. That is deliberate: the first version of
+    `shell_points()` voxelised VERTICES, which records a 60 m x 12 m panel as
+    four corner points and no wall at all -- an occlusion pass that subtracts
+    nothing while appearing to work. If arm H passes, the face sampler is
+    sampling faces.
+    """
+    sc = bpy.context.scene
+    bpy.ops.mesh.primitive_plane_add(size=400.0, location=(0, 200, 0))
+    g = bpy.context.object
+    g.name = g.data.name = "TER_Ground_ctl"
+    if with_wall:
+        bpy.ops.mesh.primitive_plane_add(size=1.0, location=(0.0, -30.0, 6.0))
+        w = bpy.context.object
+        w.name = w.data.name = "BR_Wall_ctl"
+        w.rotation_euler = (math.pi / 2, 0.0, 0.0)
+        w.scale = (60.0, 12.0, 1.0)
+        print("  built a %d-triangle wall at y=-30, between the camera "
+              "(y=%.0f) and the trees (y=0..24)" % (len(w.data.polygons) * 2,
+                                                    CAM_Y))
+    bpy.context.view_layer.update()
+    P, meta = IV.shell_points()
+    np.savez_compressed(shell_out, P=P, meta=json.dumps(meta))
+    bpy.ops.wm.save_as_mainfile(filepath=blend_out)
+    return P, meta
+
+
 def run_gate(blend, out_json, path_json, extra=()):
     """The REAL gate, as a subprocess, judged on BOTH status and text."""
+    # A STALE REPORT IS A PASS NOBODY EARNED. If the gate crashes, the json
+    # from the previous arm is still on disk and every assertion below reads
+    # it happily -- which is exactly what happened at R2-3743, where a crashing
+    # run was graded on the previous arm's numbers.
+    if os.path.exists(out_json):
+        os.remove(out_json)
     cmd = [REFERENCE_BLENDER, "-b", blend, "--factory-startup", "-noaudio",
            "-P", os.path.join(_HERE, "instance_variety.py"), "--",
            "--out", out_json]
@@ -391,6 +427,62 @@ def main():
           F["rc"] == gate_exit.VACUOUS and F["scan_rc"] == gate_exit.VACUOUS,
           "rc=%d scan=%d %s" % (F["rc"], F["scan_rc"], F["verdicts"]))
 
+    # ============ ARM G -- OCCLUSION ON, AND THE TREES MUST SURVIVE ========
+    print("\nARM G -- the grove again, occlusion SUBTRACTED, nothing in the "
+          "way. Subtracting occlusion can only LOWER counts, so the case this "
+          "gate exists for must be shown to survive it.")
+    build("grove")
+    g_blend = os.path.join(work, "ctl_iv_grove_open.blend")
+    g_shell = os.path.join(work, "ctl_shell_open.npz")
+    SP, smeta = build_shell(g_blend, g_shell, with_wall=False)
+    G = run_gate(g_blend, os.path.join(work, "ctl_iv_grove_open.json"),
+                 path_json, ["--shell", g_shell])
+    row_g, px_g = mesh_row(G["report"], tm)
+    check("the shell sampled %d points from %d objects with no wall in it"
+          % (len(SP), smeta["shell_objects"]), len(SP) > 100, json.dumps(smeta))
+    check("with occlusion ON the gate STILL sees all %d trees" % N_TREES,
+          bool(px_g) and px_g["peak_covisible_sharp"] == N_TREES,
+          json.dumps(px_g))
+    check("and the unsubtracted count is the same %d, i.e. nothing was hidden"
+          % N_TREES,
+          bool(px_g)
+          and px_g["peak_covisible_sharp_no_occlusion"] == N_TREES,
+          json.dumps(px_g))
+    check("gate still returns PASS(0)", G["rc"] == gate_exit.PASS,
+          "rc=%d" % G["rc"])
+
+    # ============ ARM H -- A WALL, AND THEY MUST FALL BECAUSE OF IT ========
+    print("\nARM H -- the SAME grove, the SAME camera, occlusion ON, and a "
+          "two-triangle wall between the lens and the trees.")
+    build("grove")
+    h_blend = os.path.join(work, "ctl_iv_grove_walled.blend")
+    h_shell = os.path.join(work, "ctl_shell_walled.npz")
+    SPw, wmeta = build_shell(h_blend, h_shell, with_wall=True)
+    H = run_gate(h_blend, os.path.join(work, "ctl_iv_grove_walled.json"),
+                 path_json, ["--shell", h_shell])
+    row_h, px_h = mesh_row(H["report"], tm)
+    check("the walled shell has more points than the open one (the wall was "
+          "actually sampled, not recorded as four corners)",
+          len(SPw) > len(SP) + 100, "%d vs %d" % (len(SPw), len(SP)))
+    # NOT `== 0`. The shell is a STOCHASTIC surface sample voxel-deduped at
+    # 1.5 m, so a cell or two of a 60 m wall can come up empty and let a tree
+    # through. That residual is the sampler's coverage, not a hole in the
+    # occlusion test, and it is bounded and stated rather than tuned away: at
+    # SAMPLE_OVERSAMPLE = 6 the expected coverage is 99.75 %. Anything above a
+    # couple of trees means the test itself is leaking.
+    n_h = (px_h or {}).get("peak_covisible_sharp", -1)
+    check("behind the wall the gate sees %s of the %d trees -- at most %d may "
+          "survive the sampler's coverage" % (n_h, N_TREES, WALL_LEAK_MAX),
+          bool(px_h) and 0 <= n_h <= WALL_LEAK_MAX, json.dumps(px_h))
+    check("and that is at least a %dx reduction, i.e. the wall did the work"
+          % 10, bool(px_h) and n_h * 10 <= N_TREES, "%s of %d" % (n_h, N_TREES))
+    check("and it fell BECAUSE OF THE WALL, not because the measurement "
+          "stopped working: the unsubtracted count on the same run is still "
+          "%d" % N_TREES,
+          bool(px_h)
+          and px_h["peak_covisible_sharp_no_occlusion"] == N_TREES,
+          json.dumps(px_h))
+
     # ---- summary ---------------------------------------------------------
     bad = [r for r in RESULTS if not r["ok"]]
     res = {"n_trees_built": N_TREES, "n_swarm": N_SWARM, "tree_mesh": tm,
@@ -403,6 +495,11 @@ def main():
            "swarm_covisible_sharp_px64": (px_e or {}).get(
                "peak_covisible_sharp"),
            "top_share_grove": ts_c, "top_share_strung": ts_d,
+           "occ_open_covisible_sharp": (px_g or {}).get("peak_covisible_sharp"),
+           "occ_walled_covisible_sharp": (px_h or {}).get(
+               "peak_covisible_sharp"),
+           "occ_walled_covisible_sharp_no_occlusion": (px_h or {}).get(
+               "peak_covisible_sharp_no_occlusion"),
            "spam_cvr": IV.SPAM_CVR, "recog_px": IV.RECOG_PX,
            "checks": RESULTS, "failed": len(bad)}
     json.dump(res, open(a.out, "w"), indent=1)

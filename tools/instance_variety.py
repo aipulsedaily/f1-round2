@@ -201,6 +201,43 @@ SHUTTER = 0.5                 # flat 180 deg, the shipping mode since R2-037
 # are candidates" rule -- there is deliberately no name test in it.
 MIN_USERS = 2
 
+# ---------------------------------------------------------------------------
+# OCCLUSION.  R2-3741.
+# ---------------------------------------------------------------------------
+# CO-VISIBLE MEANS VISIBLE TOGETHER, and until R2-3741 this gate counted every
+# instance in the frustum whether or not the audience could see it.  On
+# `assembly15` that was not a theoretical looseness: the five reed meshes that
+# tripped the 100-copy line are 182-387 m away BEHIND THE PIT WALL.  An
+# instance nobody can see is not a repeat of anything, so counting it is a
+# defect in the measure and not a strictness setting.
+#
+# WHICH DIRECTION THE ERRORS GO, because subtracting occlusion can only ever
+# LOWER a count and must therefore be shown not to be a quiet weakening:
+#
+#   * The occluder set is the WORLD SHELL ONLY -- terrain, track, barriers,
+#     walls, buildings, structures; every real object whose mesh has one user.
+#     Repeated instances DO NOT OCCLUDE EACH OTHER here: a tree behind a tree
+#     still counts.  That is the conservative direction and it is the case the
+#     red line is actually about.
+#   * The shell is a SURFACE SAMPLE and the depth buffer is quarter
+#     resolution, so it has holes, and a hole lets a hidden instance through as
+#     visible.  Also conservative.
+#   * `OCC_TOL_M` lets an instance within 0.75 m of the front surface count as
+#     the front, so a plant standing ON the ground is not occluded by the
+#     ground it stands on.
+#
+# So the subtracted count remains an UPPER BOUND on what is visible.  It is
+# just a tighter one.  `tools/r2_3721_variety_gate_control.py` arms G and H
+# hold that to account: the 40-trees-from-one-mesh case must still be caught
+# with occlusion on, and a wall built between the camera and those same 40
+# trees must be what makes them fall.
+OCC_RES = 4                   # depth buffer is 1/4 linear -> 960 x 540
+OCC_TOL_M = 0.75              # screen_presence.py's own tolerance
+OCC_CELL_M = 1.5              # shell sample spacing, metres
+SAMPLE_BATCH = 400000         # max face-samples held live at once
+SAMPLE_OVERSAMPLE = 6         # draws per cell before voxel dedupe
+OCC_LEVELS = 9                # mip levels: footprints 1..256 quarter-res px
+
 # `tools/dump_world_points.py`'s own threshold, and the reason it exists: a
 # scatter HOST is a real object whose base mesh spans +-1,250 m and carries the
 # ground cover as merged geometry.  It is one object, so MIN_USERS already
@@ -348,6 +385,153 @@ def census():
     return out
 
 
+def shell_points(cell_m=OCC_CELL_M, progress_every=200):
+    """A SURFACE sample of the world shell, for the occlusion depth buffer.
+
+    Every real object whose mesh has ONE user -- terrain, track, kerbs,
+    barriers, walls, grandstands, buildings, bridges.  A mesh with two or more
+    users is a repeated instance and is deliberately NOT an occluder (see the
+    OCCLUSION block at the top of this file).
+
+    IT SAMPLES FACES, NOT VERTICES, and that is the whole reason this function
+    exists rather than a call to `tools/dump_world_points.py`.  That tool
+    voxelises `me.vertices`, which for a large flat quad records FOUR POINTS
+    AND NO WALL -- and a hollow pit wall occludes nothing, which would have
+    made this change look like it had measured something when it had not.
+    Here each triangle gets `ceil(area / cell^2)` stratified barycentric
+    samples, so a 40 m x 1.2 m concrete panel with two triangles becomes ~21
+    points at 1.5 m spacing instead of 4 at its corners.
+
+    Scatter hosts are skipped: `to_mesh()` on one is the 7 GB / 13-billion
+    triangle evaluated layer, and grass is not an occluder worth that.  Skipping
+    it can only leave an instance counted that a blade of grass hid, which is
+    the safe direction.
+    """
+    import bpy
+
+    t0 = time.time()
+    deps = bpy.context.evaluated_depsgraph_get()
+    users = Counter()
+    for ob in bpy.context.scene.objects:
+        if ob.type == "MESH" and ob.data is not None:
+            users[ob.data.name] += 1
+
+    rng = np.random.default_rng(20260809)
+    chunks = []
+    n_obj = n_skip_rep = n_skip_host = n_fail = 0
+    objs = [o for o in bpy.context.scene.objects if o.type == "MESH"]
+    for k, ob in enumerate(objs):
+        if ob.data is not None and users[ob.data.name] >= MIN_USERS:
+            n_skip_rep += 1
+            continue
+        bb = np.array([list(v) for v in ob.bound_box], dtype=np.float64)
+        M = np.array(ob.matrix_world, dtype=np.float64)
+        w = bb @ M[:3, :3].T + M[:3, 3]
+        # SIZE ALONE IS NOT THE HOST TEST HERE, and the first version of this
+        # function used it and measured almost nothing. `HOST_DIAG_M` exists to
+        # spot a 2.5 km VEGETATION scatter host whose evaluated mesh is the
+        # 13-billion-triangle layer. Applied to every object it also threw out
+        # SURF_Track (1,688 m), the terrain and all 131 BR_* armco runs (up to
+        # 259 m) -- which is to say it threw out THE PIT WALL, the one occluder
+        # this change is about. 2,089 objects survived and produced 55,979
+        # points for a 2.5 km world; the corrected pass produces two orders of
+        # magnitude more. The test is size AND being vegetation, exactly as
+        # `dump_world_points.py` has it.
+        if (ob.name.startswith("VEG")
+                and float(np.linalg.norm(w.max(0) - w.min(0))) > HOST_DIAG_M):
+            n_skip_host += 1
+            continue
+        oe = ob.evaluated_get(deps)
+        try:
+            me = oe.to_mesh()
+        except Exception as exc:                                # noqa: BLE001
+            print("[shell] %s: to_mesh failed %r" % (ob.name, exc), flush=True)
+            n_fail += 1
+            continue
+        try:
+            me.calc_loop_triangles()
+            nt = len(me.loop_triangles)
+            nv = len(me.vertices)
+            if nt == 0 or nv == 0:
+                continue
+            V = np.empty(nv * 3, np.float64)
+            me.vertices.foreach_get("co", V)
+            V = V.reshape(-1, 3) @ M[:3, :3].T + M[:3, 3]
+            T = np.empty(nt * 3, np.int32)
+            me.loop_triangles.foreach_get("vertices", T)
+            T = T.reshape(-1, 3)
+        finally:
+            oe.to_mesh_clear()
+        A, B, Cv = V[T[:, 0]], V[T[:, 1]], V[T[:, 2]]
+        area = 0.5 * np.linalg.norm(np.cross(B - A, Cv - A), axis=1)
+        # OVERSAMPLED, BECAUSE RANDOM SAMPLES DO NOT COVER A GRID. Drawing
+        # exactly `area / cell^2` uniform points and then voxel-deduping leaves
+        # 1/e -- 37 % -- of the cells empty by the coupon-collector argument,
+        # and an occluder with 37 % holes is an occluder things walk through:
+        # the control measured 5 of 40 trees visible through a solid wall for
+        # exactly this reason. At x6 the expected coverage is 99.75 %. The
+        # dedupe means the OUTPUT size is unchanged; only the sampling costs
+        # more.
+        k_per = np.clip(np.ceil(SAMPLE_OVERSAMPLE * area / (cell_m * cell_m)),
+                        1, 20000).astype(np.int64)
+        # BATCHED, AND THE FIRST VERSION WAS NOT. Materialising one object's
+        # whole sample set before deduping is fine for a bolt and fatal for the
+        # terrain: a few thousand 50 m triangles are 1,100 samples each, and the
+        # run reached 38 GB of swap and had to be stopped before it took the
+        # box down with somebody else's build on it. Sample and dedupe in
+        # bounded slabs instead -- the deduped result is identical, the peak is
+        # not.
+        cum = np.cumsum(k_per)
+        tot = int(cum[-1])
+        edges = [0]
+        while edges[-1] < len(T):
+            base = int(cum[edges[-1] - 1]) if edges[-1] > 0 else 0
+            nxt = int(np.searchsorted(cum, base + SAMPLE_BATCH, side="right"))
+            edges.append(min(len(T), max(nxt, edges[-1] + 1)))
+        got = []
+        for e0, e1 in zip(edges[:-1], edges[1:]):
+            kk = k_per[e0:e1]
+            idx = np.repeat(np.arange(e0, e1), kk)
+            u = rng.random(len(idx))
+            v = rng.random(len(idx))
+            fold = u + v > 1.0
+            u[fold] = 1.0 - u[fold]
+            v[fold] = 1.0 - v[fold]
+            Pb = (A[idx] + (B[idx] - A[idx]) * u[:, None]
+                  + (Cv[idx] - A[idx]) * v[:, None])
+            q = np.floor(Pb / cell_m).astype(np.int64)
+            _, keep = np.unique(
+                q[:, 0] * 40000000000 + q[:, 1] * 200000 + q[:, 2],
+                return_index=True)
+            got.append(Pb[keep].astype(np.float32))
+            del idx, u, v, Pb, q
+        P = np.concatenate(got) if got else np.zeros((0, 3), np.float32)
+        if tot > SAMPLE_BATCH:
+            print("[shell] %-28s %8d tris -> %9d samples -> %7d points"
+                  % (ob.name[:28], len(T), tot, len(P)), flush=True)
+        chunks.append(P)
+        n_obj += 1
+        if progress_every and n_obj % progress_every == 0:
+            print("[shell] %d objects, %d points, %.0f s"
+                  % (n_obj, sum(len(c) for c in chunks), time.time() - t0),
+                  flush=True)
+
+    P = (np.concatenate(chunks) if chunks
+         else np.zeros((0, 3), np.float32))
+    # one global voxel dedupe, so overlapping objects do not pay twice
+    q = np.floor(P.astype(np.float64) / cell_m).astype(np.int64)
+    _, keep = np.unique(q[:, 0] * 40000000000 + q[:, 1] * 200000 + q[:, 2],
+                        return_index=True)
+    P = P[keep]
+    print("[shell] %d shell objects sampled -> %d points at %.2f m "
+          "(%d repeated meshes and %d hosts skipped, %d to_mesh failures) "
+          "in %.0f s" % (n_obj, len(P), cell_m, n_skip_rep, n_skip_host,
+                         n_fail, time.time() - t0), flush=True)
+    return P, dict(shell_objects=n_obj, points=int(len(P)), cell_m=cell_m,
+                   skipped_repeated=n_skip_rep, skipped_hosts=n_skip_host,
+                   to_mesh_failures=n_fail)
+
+
 def save_census(c, path):
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     np.savez_compressed(path, **c)
@@ -405,7 +589,7 @@ class _Grid:
 
 def sweep(P, H, MID, nmesh, path_json, stride=1, ladder=RECOG_PX_LADDER,
           shutter=SHUTTER, smear_px=SMEAR_SHARP_PX, progress=True,
-          sharp_tracker="max"):
+          sharp_tracker="max", shell=None):
     """Peak co-visible count per source mesh, over the film.
 
     Returns two dicts of arrays keyed by ladder threshold:
@@ -448,11 +632,23 @@ def sweep(P, H, MID, nmesh, path_json, stride=1, ladder=RECOG_PX_LADDER,
                             MID=np.ascontiguousarray(MID[m][g.order]),
                             grid=g, hmax=float(Hc[m].max())))
 
+    # THE OCCLUDER SET. See the OCCLUSION block at the top of this file for
+    # which way every error in it points.
+    Sg = None
+    if shell is not None and len(shell):
+        Sg = _Grid(np.ascontiguousarray(shell), 32.0)
+        Sp = np.ascontiguousarray(shell)[Sg.order]
+    ow, oh = RES_X // OCC_RES, RES_Y // OCC_RES
+
     peak = {t: np.zeros(nmesh) for t in ladder}
     peak_f = {t: np.zeros(nmesh, np.int64) for t in ladder}
     sharp = {t: np.zeros(nmesh) for t in ladder}
     sharp_f = {t: np.zeros(nmesh, np.int64) for t in ladder}
     peak_sharp_at_peak = {t: np.zeros(nmesh) for t in ladder}
+    # the SAME sweep without occlusion subtracted, carried the whole way so the
+    # change can be read as a diff rather than taken on trust
+    sharp_no = {t: np.zeros(nmesh) for t in ladder}
+    sharp_no_f = {t: np.zeros(nmesh, np.int64) for t in ladder}
     # only read by the "r2_3421" emulation: the TOTAL count of the frame
     # currently held as the busiest-sharp one.
     sharp_total = {t: np.zeros(nmesh) for t in ladder}
@@ -493,6 +689,7 @@ def sweep(P, H, MID, nmesh, path_json, stride=1, ladder=RECOG_PX_LADDER,
         # 120 comparisons against the R2-3421 loop disagreed, every one of them
         # low, `tree:plane_L0` reading 17 against 26.
         frame_ids, frame_px, frame_sharp = [], [], []
+        frame_x, frame_y, frame_dep = [], [], []
         for b in buckets:
             r = b["hmax"] * sf / smin * kf
             sl = b["grid"].box(cx, cy, r)
@@ -544,9 +741,11 @@ def sweep(P, H, MID, nmesh, path_json, stride=1, ladder=RECOG_PX_LADDER,
             big = px >= smin
             if not big.any():
                 continue
+            W0 = d[ok][infr]                       # camera-relative positions
             x, y, px, Mq = x[big], y[big], px[big], Mq[big]
+            Hq = Hq[big]
             # smear: the SAME world point through the NEXT frame's camera
-            W = d[ok][infr][big] + np.array([cx, cy, cz]) - Cg
+            W = W0[big] + np.array([cx, cy, cz]) - Cg
             c1 = W @ Rg
             dp1 = -c1[:, 2]
             good = dp1 > 0.05
@@ -558,13 +757,119 @@ def sweep(P, H, MID, nmesh, path_json, stride=1, ladder=RECOG_PX_LADDER,
             frame_ids.append(Mq)
             frame_px.append(px)
             frame_sharp.append(is_sharp)
+            # THE OCCLUSION PROBE IS THE SUBJECT'S MID-HEIGHT, NOT ITS ORIGIN.
+            # `instance_plants()` and `gn_kind()` both put a plant's origin ON
+            # THE GROUND, and the ground a few metres in front of a plant
+            # projects to the same pixel as the plant's base at almost every
+            # camera height in this film. Probing the origin therefore reports
+            # every plant in the world as occluded by the earth it is standing
+            # on -- measured, on the control: 40 trees in an empty field with
+            # one ground plane came back 33.
+            #
+            # The mid-height point is on the subject, is what a silhouette is
+            # read from, and clears the ground plane by half the plant.
+            Wm = W0[big].copy()
+            Wm[:, 2] += 0.5 * Hq
+            cm = Wm @ Rf
+            dm = -cm[:, 2]
+            gm = dm > 0.05
+            im = 1.0 / np.where(gm, dm, 1.0)
+            frame_x.append(np.where(gm, cm[:, 0] * im * sf + RES_X / 2, x))
+            frame_y.append(np.where(gm, -cm[:, 1] * im * sf + RES_Y / 2, y))
+            frame_dep.append(np.where(gm, dm, dep[infr][big]))
 
         if not frame_ids:
             continue
-        Mf = frame_ids[0] if len(frame_ids) == 1 else np.concatenate(frame_ids)
-        pxf = frame_px[0] if len(frame_px) == 1 else np.concatenate(frame_px)
-        shf = (frame_sharp[0] if len(frame_sharp) == 1
-               else np.concatenate(frame_sharp))
+        cat = (lambda L: L[0] if len(L) == 1 else np.concatenate(L))
+        Mf, pxf, shf = cat(frame_ids), cat(frame_px), cat(frame_sharp)
+        xf, yf, depf = cat(frame_x), cat(frame_y), cat(frame_dep)
+
+        # ---- OCCLUSION ---------------------------------------------------
+        # A quarter-resolution depth buffer of the world shell, rasterised for
+        # THIS frame only, and only out to the furthest subject that could
+        # matter. Nothing beyond the subjects can occlude them, so the query
+        # radius is the subjects' own reach -- which is what keeps this
+        # affordable at 2,977 frames.
+        front = np.ones(len(Mf), bool)
+        if Sg is not None and len(Mf):
+            rq = float(depf.max()) * kf
+            sl = Sg.box(cx, cy, rq)
+            if sl is not None:
+                if sl == "ALL":
+                    O = Sp
+                else:
+                    kp = [t for t in sl if t[1] > t[0]]
+                    O = (Sp[kp[0][0]:kp[0][1]] if len(kp) == 1
+                         else (np.concatenate([Sp[i:j] for i, j in kp])
+                               if kp else Sp[:0]))
+                if len(O):
+                    od = O.astype(np.float64)
+                    od[:, 0] -= cx
+                    od[:, 1] -= cy
+                    od[:, 2] -= cz
+                    oc = od @ Rf
+                    odep = -oc[:, 2]
+                    om = odep > 0.05
+                    if om.any():
+                        oi = 1.0 / odep[om]
+                        oxp = oc[om, 0] * oi * sf + RES_X / 2
+                        oyp = -oc[om, 1] * oi * sf + RES_Y / 2
+                        inb = ((oxp >= 0) & (oxp < RES_X)
+                               & (oyp >= 0) & (oyp < RES_Y))
+                        if inb.any():
+                            # A SPLATTED POINT IS NOT A SURFACE, and two
+                            # earlier versions of this test believed variants of
+                            # that. The shell is sampled every 1.5 m of WORLD,
+                            # and 1.5 m at 30 m through a 50 mm lens is 67
+                            # quarter-res pixels -- so 203 wall samples filled
+                            # 55 pixels of the ~387,000 they cover and the
+                            # buffer was 99.98 % holes. The control caught it
+                            # twice: 40 trees behind a solid wall came back 40,
+                            # and then 35, when the footprint was taken from the
+                            # SUBJECT's depth instead of the occluder's.
+                            #
+                            # A SAMPLE'S FOOTPRINT IS SET BY ITS OWN DEPTH, so
+                            # each shell sample is splatted into the level of a
+                            # mip pyramid whose cells are about its footprint.
+                            # Cost is one pass per level rather than one per
+                            # pixel of footprint, and it is bounded by the
+                            # buffer, not by how close the geometry comes.
+                            #
+                            # THE BIAS THIS CARRIES, stated rather than hoped
+                            # away: a level-L cell is a 2^L block aligned to the
+                            # grid, not a disc centred on the sample, so an
+                            # occluding surface is dilated by up to two sample
+                            # spacings at its SILHOUETTE EDGE. A subject within
+                            # ~3 m of the edge of a wall may be called occluded
+                            # when a sliver of it is visible. Everywhere that is
+                            # not an edge -- which is all of a pit wall except
+                            # its ends -- the reconstruction is exact.
+                            od_in = odep[om][inb]
+                            fp = OCC_CELL_M * sf / od_in / OCC_RES
+                            lv = np.clip(np.ceil(np.log2(np.maximum(fp, 1.0))),
+                                         0, OCC_LEVELS - 1).astype(np.int32)
+                            qy = (oyp[inb] / OCC_RES).astype(np.int32)
+                            qx = (oxp[inb] / OCC_RES).astype(np.int32)
+                            sy = np.clip((yf / OCC_RES).astype(np.int32), 0,
+                                         oh - 1)
+                            sx = np.clip((xf / OCC_RES).astype(np.int32), 0,
+                                         ow - 1)
+                            near = np.full(len(depf), np.inf)
+                            for L in range(OCC_LEVELS):
+                                g = lv == L
+                                if not g.any():
+                                    continue
+                                hL, wL = max(1, oh >> L), max(1, ow >> L)
+                                b = np.full((hL, wL), np.inf, np.float64)
+                                np.minimum.at(
+                                    b, (np.clip(qy[g] >> L, 0, hL - 1),
+                                        np.clip(qx[g] >> L, 0, wL - 1)),
+                                    od_in[g])
+                                near = np.minimum(
+                                    near, b[np.clip(sy >> L, 0, hL - 1),
+                                            np.clip(sx >> L, 0, wL - 1)])
+                            front = depf <= near + OCC_TOL_M
+
         for thr in ladder:
             sel = pxf >= thr
             if not sel.any():
@@ -574,8 +879,16 @@ def sweep(P, H, MID, nmesh, path_json, stride=1, ladder=RECOG_PX_LADDER,
             # pointless comparisons.
             u, back = np.unique(Mf[sel], return_inverse=True)
             cnt = np.bincount(back, minlength=len(u)).astype(np.float64)
-            cs = np.bincount(back, weights=shf[sel].astype(np.float64),
+            csn = np.bincount(back, weights=shf[sel].astype(np.float64),
+                              minlength=len(u))
+            cs = np.bincount(back,
+                             weights=(shf[sel] & front[sel]).astype(np.float64),
                              minlength=len(u))
+            un = csn > sharp_no[thr][u]
+            if un.any():
+                iu = u[un]
+                sharp_no[thr][iu] = csn[un]
+                sharp_no_f[thr][iu] = f + 1
             up = cnt > peak[thr][u]
             if up.any():
                 iu = u[up]
@@ -595,7 +908,9 @@ def sweep(P, H, MID, nmesh, path_json, stride=1, ladder=RECOG_PX_LADDER,
     print("[sweep] %d frames (stride %d) in %.0f s"
           % (len(frames), stride, time.time() - t0), flush=True)
     return dict(peak=peak, peak_f=peak_f, sharp=sharp, sharp_f=sharp_f,
-                sharp_at_peak=peak_sharp_at_peak, nframes=nf,
+                sharp_at_peak=peak_sharp_at_peak,
+                sharp_no_occ=sharp_no, sharp_no_occ_f=sharp_no_f,
+                occlusion=Sg is not None, nframes=nf,
                 frames_swept=len(frames))
 
 
@@ -657,6 +972,13 @@ def main():
     ap.add_argument("--spam-cvr", type=float, default=SPAM_CVR)
     ap.add_argument("--top", type=int, default=25)
     ap.add_argument("--census-only", action="store_true")
+    ap.add_argument("--shell", default=None,
+                    help="write (in Blender) or read (outside) the world-shell "
+                         "occluder point sample")
+    ap.add_argument("--no-occlusion", action="store_true",
+                    help="report the UNSUBTRACTED counts as the verdict. The "
+                         "subtracted ones are reported either way; this only "
+                         "changes which decides.")
     a = ap.parse_args(argv)
 
     in_blender = "bpy" in sys.modules or os.environ.get("R2_FORCE_BPY")
@@ -671,6 +993,12 @@ def main():
         c = census()
         if a.census:
             save_census(c, a.census)
+        if a.shell:
+            SP, smeta = shell_points()
+            os.makedirs(os.path.dirname(a.shell) or ".", exist_ok=True)
+            np.savez_compressed(a.shell, P=SP, meta=json.dumps(smeta))
+            print("[shell] wrote %s (%.1f MB)"
+                  % (a.shell, os.path.getsize(a.shell) / 1e6), flush=True)
     else:
         if not a.census or not os.path.exists(a.census):
             raise SystemExit("REFUSING: not running inside Blender and no "
@@ -788,7 +1116,24 @@ def main():
     print("sweeping %d instances of %d repeated source meshes against %s\n"
           % (len(P), len(cand), report["camera_path"]))
 
-    sw = sweep(P, H, MID, len(names), path, stride=a.stride)
+    SHELL = None
+    if a.shell and os.path.exists(a.shell):
+        z = np.load(a.shell, allow_pickle=True)
+        SHELL = z["P"]
+        smeta = json.loads(str(z["meta"])) if "meta" in z.files else {}
+        report["shell"] = dict(path=os.path.relpath(os.path.abspath(a.shell), R2),
+                               **smeta)
+        print("occluders: %d world-shell surface points at %.2f m from %d "
+              "objects\n" % (len(SHELL), smeta.get("cell_m", OCC_CELL_M),
+                             smeta.get("shell_objects", -1)))
+    else:
+        print(">> NO SHELL GIVEN (--shell): occlusion will NOT be subtracted, "
+              "so every count below is the loose bound.\n")
+    report["occlusion_subtracted"] = bool(SHELL is not None and not a.no_occlusion)
+
+    sw = sweep(P, H, MID, len(names), path, stride=a.stride, shell=SHELL)
+    if a.no_occlusion or SHELL is None:
+        sw["sharp"], sw["sharp_f"] = sw["sharp_no_occ"], sw["sharp_no_occ_f"]
     report["frames"] = sw["nframes"]
     report["frames_swept"] = sw["frames_swept"]
     report["stride"] = a.stride
@@ -827,7 +1172,10 @@ def main():
                 "frame": int(sw["peak_f"][thr][i]),
                 "sharp_at_that_frame": int(sw["sharp_at_peak"][thr][i]),
                 "peak_covisible_sharp": int(sw["sharp"][thr][i]),
-                "sharp_frame": int(sw["sharp_f"][thr][i])}
+                "sharp_frame": int(sw["sharp_f"][thr][i]),
+                "peak_covisible_sharp_no_occlusion":
+                    int(sw["sharp_no_occ"][thr][i]),
+                "sharp_frame_no_occlusion": int(sw["sharp_no_occ_f"][thr][i])}
         rows.append(row)
     rows.sort(key=lambda r: -r["px%d" % int(key)]["peak_covisible_sharp"])
     report["sources"] = rows
@@ -838,18 +1186,19 @@ def main():
                                               RES_X, RES_Y))
     print("(sharp = shutter smear <= %.0f px at the flat %.0f deg shutter; "
           "occlusion NOT subtracted)\n" % (SMEAR_SHARP_PX, SHUTTER * 360))
-    hdr = ("%-34s%9s%9s%9s%9s%8s   %s"
-           % ("source mesh", "used", "inst h m", "covis", "SHARP", "frame",
-              "note"))
+    hdr = ("%-34s%9s%9s%9s%9s%9s%8s   %s"
+           % ("source mesh", "used", "inst h m", "covis", "SHARP", "no-occ",
+              "frame", "note"))
     print(hdr)
     print("-" * len(hdr))
     for r in rows[:a.top]:
         b = r["px%d" % int(key)]
         note = "EXEMPT " + r["exempt"].split(":")[0] if r["exempt"] else ""
-        print("%-34s%9d%9.2f%9d%9d%8d   %s"
+        print("%-34s%9d%9.2f%9d%9d%9d%8d   %s"
               % (r["source_mesh"][:34], r["instances"],
                  r["instance_height_median_m"],
                  b["peak_covisible"], b["peak_covisible_sharp"],
+                 b["peak_covisible_sharp_no_occlusion"],
                  b["sharp_frame"], note))
     print("\n('inst h m' is the MEASURED median height of that mesh's "
           "instances, not the mesh's own extent -- the library meshes are "
@@ -861,12 +1210,17 @@ def main():
     for thr in RECOG_PX_LADDER:
         vals = [(int(sw["sharp"][thr][i]), i) for i in cand]
         v, i = max(vals) if vals else (0, cand[0])
+        vn, jn = max([(int(sw["sharp_no_occ"][thr][j]), j) for j in cand]) \
+            if len(cand) else (0, cand[0])
         ladder_worst["px%d" % int(thr)] = {
             "source_mesh": names[i], "peak_covisible_sharp": v,
             "frame": int(sw["sharp_f"][thr][i]),
+            "worst_no_occlusion": names[jn],
+            "peak_covisible_sharp_no_occlusion": vn,
             "exempt": exempt_reason(obj_of[i])}
-        print("%-12s%-34s%9d%9d" % (">= %d" % int(thr), names[i][:34], v,
-                                    int(sw["sharp_f"][thr][i])))
+        print("%-12s%-34s%9d%9d   (no-occ: %s %d)"
+              % (">= %d" % int(thr), names[i][:34], v,
+                 int(sw["sharp_f"][thr][i]), names[jn][:26], vn))
     report["ladder_worst"] = ladder_worst
 
     # ---- the verdict: unexempt first, then exempt -----------------------

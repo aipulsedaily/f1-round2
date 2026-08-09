@@ -296,7 +296,27 @@ def main():
                 ns = float((sel & (sm <= SMEAR_SHARP_PX)).sum()) * sc
                 if n > best[thr]["n"]:
                     best[thr] = dict(n=n, f=f + 1, sharp=ns)
-                if ns > bsharp[thr]["n"]:
+                # R2-3737: this read `ns > bsharp[thr]["n"]` -- comparing this
+                # frame's SHARP count against the stored frame's TOTAL. Since
+                # total >= sharp always, a later frame could only displace an
+                # earlier one by beating its TOTAL, so the tracker reported a
+                # LOWER BOUND on the peak sharp count rather than the peak. It
+                # under-reported on 26 of 120 pool/rung comparisons, worst
+                # `tree:willow_L1` at >=128 px reading 12 where the peak is 49.
+                #
+                # Found by `tools/r2_3721_sweep_crosscheck.py`, which put this
+                # loop against `instance_variety.sweep()` on the same 27,969
+                # trees and then PROVED the mechanism rather than asserting it:
+                # it re-ran the other loop with `sharp_tracker="r2_3421"` and
+                # reproduced this file's published numbers exactly, on all 120.
+                #
+                # The R2-3421 headline is unaffected -- `tree:oak_L2` at
+                # >=128 px is 347 either way -- so the conclusion that the worst
+                # number in the film is ~20 against a named failure of 100
+                # stands. The instrument was reporting low, which is the safe
+                # direction, but low is not the peak and the peak is what the
+                # column says.
+                if ns > bsharp[thr]["sharp"]:
                     bsharp[thr] = dict(n=n, f=f + 1, sharp=ns)
         row = {"pool": pool, "library": L, "instances": int(round(len(P) * sc)),
                "exact_positions": bool(g["exact"]), "voxel_scale": round(sc, 3),

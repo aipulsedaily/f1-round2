@@ -1,8 +1,36 @@
 # WHICH PATH FILE IS THE LIVE CAMERA
 
-**`render/film17_path.json`**
+**`render/film24_path.json`**
 
-sha256 `676798074601107f2260905b67ded44e28a646535658b3612e016c730b85a15b`
+sha256 `9d055d63da7249935cb3f6e5905beeed709c9cde8874d44e67c172e3300971a7`
+
+Declared 2026-08-09 02:4x under R2-3742 by coordinator ruling, replacing
+`render/film19_path.json` (`363e4e88b3…`). film24 carries beat 1's re-pace,
+beat 5's re-pace and beat 6's closing lens.
+
+**THIS IS THE THIRD RECURRENCE OF THE SAME DEFECT AND IT IS WORTH SAYING
+PLAINLY.** film17 was declared while film18 was newest (R2-1701). Then
+film19's bytes stayed declared while film21, film22 and film23 were built —
+which was *accurate*, because all four are byte-identical — and then film24
+was built at 2026-08-08 19:21 and did not re-declare. So between 19:21 on
+08-08 and this line, `bash tools/retier.sh` would have re-tiered the entire
+item campaign against film19. That is not hypothetical: `retier.sh` resolves
+its camera through `live_campath.load()` and takes no camera argument by
+design, precisely so that this file is the only answer.
+
+The gap film19 → film24 is real if smaller than the orphan's: 1,374 frames
+differ in position (max 0.264 m), 1,522 in lens (max 7.03 mm) and 1,724 by
+more than 0.2 deg (max 12.05 deg).
+
+**And a document that names the wrong camera is exactly how the item tiering
+came to be swept against a path that never rendered a frame** — see
+R2-3721/#159, where `docs/screen_presence*.json` was derived from
+`render/film14_path.json`'s bytes under the filename
+`world/camera_rig_path.json`, and 17 of 435 items sat on the wrong tier
+because of it. This file is cheap to update and that is the whole point of it.
+
+`audio/scene.py` reads this declaration for its listener (R2-1705), so a stale
+line here is audible as well as visible.
 
 This file is to the camera what `render/world/assembly/r2/SHIPPING.md` is to the
 world: the ONE place the answer is written down. `tools/live_campath.py` parses

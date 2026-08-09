@@ -156,11 +156,27 @@ run "probeA  D1 D4 D5 P4" $B -b -noaudio $S --factory-startup -P $D/probeA.py --
 
 # ------------------------------------------------------------- variety -----
 run "instance_variety (shipped)" \
-  $B -b $S --factory-startup -P $R2/tools/instance_variety.py -- --out $V/instance_variety_v121.json
+  # R2-3721: instance_variety.py's verdict is CO-VISIBLE SHARP INSTANCES PER
+  # SOURCE MESH -- a screen event -- so it needs a camera and REFUSES (VACUOUS,
+  # exit 3) without one. The world scene is judged against the DELIVERED camera;
+  # the two control blends need a camera that frames them, and it is generated
+  # here rather than committed so the control and the camera model it is read
+  # with cannot drift apart (same reasoning as tools/gate_exit_selftest.py).
+  python3 - "$V/ctl_variety_path.json" <<'PYCAM'
+import json, sys
+json.dump({"frames": 4,
+           "path": [{"f": f + 1, "p": [-6.0, 0.0, 0.1],
+                     "q": [0.5, 0.5, -0.5, -0.5], "lens": 200.0}
+                    for f in range(4)]}, open(sys.argv[1], "w"))
+PYCAM
+  $B -b $S --factory-startup -P $R2/tools/instance_variety.py -- --out $V/instance_variety_v121.json \
+     --path $R2/render/film24_path.json
 expect fail    "instance_variety POSITIVE control (1 mesh, 500 instances)" \
-  $B -b $V0/ctl_variety_pos.blend --factory-startup -P $R2/tools/instance_variety.py -- --out $V/ctl_variety_pos.json
+  $B -b $V0/ctl_variety_pos.blend --factory-startup -P $R2/tools/instance_variety.py -- --out $V/ctl_variety_pos.json \
+     --path $V/ctl_variety_path.json
 expect pass    "instance_variety NEGATIVE control (500 meshes, 500 inst)" \
-  $B -b $V0/ctl_variety_neg.blend --factory-startup -P $R2/tools/instance_variety.py -- --out $V/ctl_variety_neg.json
+  $B -b $V0/ctl_variety_neg.blend --factory-startup -P $R2/tools/instance_variety.py -- --out $V/ctl_variety_neg.json \
+     --path $V/ctl_variety_path.json
 run "variety_distribution (per-family sources)" \
   $B -b $S --factory-startup -P $V0/variety_distribution.py -- $V/variety_distribution_v121.json
 run "mesh_reuse" $B -b $S --factory-startup -P $R2/tools/mesh_reuse.py
