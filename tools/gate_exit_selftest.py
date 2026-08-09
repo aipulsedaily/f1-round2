@@ -223,6 +223,35 @@ def main():
 
     # ---- 4. THE REAL GATES, THE REAL CONTROL BLENDS ----------------------
     print("\n4. THE SHIPPED GATES against the shipped control blends.")
+
+    # R2-3721: `instance_variety.py` no longer grades on `top_share`. Its
+    # verdict is CO-VISIBLE SHARP INSTANCES PER SOURCE MESH, which is a screen
+    # event, so it needs a screen -- and it REFUSES (VACUOUS) without one
+    # rather than passing. The two shipped control blends still discriminate
+    # under the new measure, but only once they are given a camera:
+    #
+    #   ctl_variety_pos  500 instances of ONE mesh at (0.5*i, 0, 0), i.e. a
+    #                    250 m row. Sighted DOWN the row, 100+ of them are in
+    #                    frame at a readable size at once -> the named failure.
+    #   ctl_variety_neg  500 DISTINCT meshes, all at the origin. No mesh is
+    #                    used twice, so the most co-visible copies any of them
+    #                    can have is 1.
+    #
+    # The path is written here rather than committed so that the control and
+    # the camera model it is read with cannot drift apart.
+    ctl_cam = os.path.join(TMP, "ctl_variety_path.json")
+    # A STATIC 200 mm camera at (-6, 0, 0.1) sighted down world +X. Blender's
+    # camera looks along its local -Z with local +Y up, so the basis wanted is
+    # localZ -> -X, localY -> +Z, localX -> -Y, which is the quaternion
+    # (w, x, y, z) = (0.5, 0.5, -0.5, -0.5). Static on purpose: the shutter
+    # smear is then exactly zero, so "sharp" does no silent work in a control
+    # that must fire.
+    json.dump({"frames": 4,
+               "path": [{"f": f + 1, "p": [-6.0, 0.0, 0.1],
+                         "q": [0.5, 0.5, -0.5, -0.5], "lens": 200.0}
+                        for f in range(4)]},
+              open(ctl_cam, "w"))
+
     CASES = [
         # tool,               blend,                     args,          want
         ("placement_gate",  "ctl_place_pos.blend",    [],  gate_exit.FAIL),
@@ -233,29 +262,38 @@ def main():
         ("depth_probe", "ctl_depth_float_pos.blend", ["--frames", "1"],
          gate_exit.FAIL),
         ("depth_probe", "ctl_depth_neg.blend", ["--frames", "1"], gate_exit.PASS),
-        ("instance_variety", "ctl_variety_pos.blend", [], gate_exit.FAIL),
-        ("instance_variety", "ctl_variety_neg.blend", [], gate_exit.PASS),
+        ("instance_variety", "ctl_variety_pos.blend", ["--path", ctl_cam],
+         gate_exit.FAIL),
+        ("instance_variety", "ctl_variety_neg.blend", ["--path", ctl_cam],
+         gate_exit.PASS),
+        # R2-3721: and with NO camera it must REFUSE rather than pass, because
+        # co-visibility is a screen event and it has no screen.
+        ("instance_variety", "ctl_variety_pos.blend", [], gate_exit.VACUOUS),
     ]
     reports = {}
-    for tool, blend, extra, want in CASES:
+    for ci, (tool, blend, extra, want) in enumerate(CASES):
         bp = os.path.join(V120, blend)
         if not os.path.exists(bp):
             check("%s on %s" % (tool, blend), False, "MISSING CONTROL BLEND")
             continue
-        out_json = os.path.join(TMP, "%s_%s.json" % (tool, blend[:-6]))
+        # numbered: one blend may appear twice with different arguments, and an
+        # overwritten report would have section 5 grading the wrong run.
+        out_json = os.path.join(TMP, "%02d_%s_%s.json" % (ci, tool, blend[:-6]))
         r = subprocess.run(
             [BLENDER, "-b", bp, "--factory-startup", "-P",
              os.path.join(HERE, tool + ".py"), "--", "--out", out_json] + extra,
             capture_output=True, text=True, cwd=TMP)
         txt = (r.stdout or "") + (r.stderr or "")
         said = [l for l in txt.splitlines() if "STAGE RESULT" in l]
-        reports[(tool, blend)] = out_json
+        reports.setdefault((tool, blend), out_json)
         # BOTH: the status AND the text. The defect was the two disagreeing, so
         # a control that only reads one of them could not have caught it.
         code_says = r.returncode == want
         text_says = bool(said) and gate_exit.code_for(
             said[-1].split("STAGE RESULT:")[1].strip()) == want
-        check("%-16s %-26s -> %s" % (tool, blend, gate_exit.NAMES[want]),
+        check("%-16s %-26s %-14s -> %s"
+              % (tool, blend, " ".join(extra[:1]) or "(no args)",
+                 gate_exit.NAMES[want]),
               code_says and text_says,
               "rc=%d  %s" % (r.returncode, said[-1].strip() if said else
                              "NO STAGE RESULT LINE"))
