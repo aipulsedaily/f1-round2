@@ -1029,6 +1029,39 @@ Two levers, both cheap and neither yet needed:
 hitting its own cap** — the latter is a pause I can fix in one command without
 spending an extra cent. Do not silently raise the total.
 
+### Done at 17:26Z — cap moved between brokers, total provably unchanged
+
+Refreshed rates after the retirement (mean of each broker's last 8 frames):
+fleet03 **262.1 s**, fleet04 **307.1 s**, fleet05 **252.8 s**.
+
+| broker | frames left | hours | $/hr | needs | old cap headroom | new cap | new headroom |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| fleet03 | 791 | 57.6 | 0.4489 | $25.9 | $43.90 | **$42.00** | $33.91 |
+| fleet04 | 847 | 72.3 | **0.801** | **$57.9** | **$43.28** ✗ | **$71.49** | $63.09 |
+| fleet05 | 837 | 58.8 | 0.4637 | $27.3 | $43.56 | **$45.00** | $33.71 |
+
+`tools`-side this is `rq budget --set` on each broker, and the script asserts
+the **sum of caps is identical before and after** ($158.49) and refuses to run
+otherwise. Against the $8.49 of pre-existing banked spend that leaves the
+new-spend ceiling at **exactly $150.00** — the number the brief set, unmoved.
+
+**The projection is now ~$139 of $150 — a 7.5% margin, down from the ~$113
+estimate.** The whole difference is fleet04's $0.801/hr card, which is a
+consequence of the two blacklisted bad hosts, not of the render. Credit is
+$154.87 = **89.3 h of runway against ~72 h needed**.
+
+**This is close enough that the next adverse event is worth surfacing rather
+than absorbing.** Specifically: each further retirement can blacklist more
+hosts and walk the price up again. If the fleet total projects past $150, stop
+and say so — do not raise it.
+
+The mitigation that costs nothing is already planned: the work-conserving
+rebalance at R2-3859 moves fleet04's tail onto fleet03, which is simultaneously
+**the fastest and the cheapest** card. Modelled on current rates it saves ~8.6 h
+of wall clock and ~$3.5. It is deliberately deferred until a card is genuinely
+idle, because until then there is no way to price fleet04's content on another
+machine — and R2-3859 is exactly the mistake of assuming you can.
+
 ### What a retirement cycle actually costs
 
 | | |
