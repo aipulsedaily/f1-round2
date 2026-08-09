@@ -231,7 +231,7 @@ rather than the two the brief named.
 | --- | --- | --- | --- |
 | 1 | `film_bar.py`, all rows, nothing opted out | **GREEN** | `work/r23661/bar_film25_breach.log:55` — 40 claimed / 40 OK / 0 FAIL / 0 UNMEASURABLE |
 | 2 | the film10 negative control must FAIL | **GREEN** | same log line 53 — `want rc=1  got rc=1` |
-| 3 | `placement_gate` CLEAN on the scene that renders | *delegated, pending* | see below |
+| 3 | `placement_gate` CLEAN on the scene that renders | **GREEN — established here for the first time** | `work/r23841/gate_assembly15.{log,json}` |
 | 4 | the car is in the last 91 frames | **GREEN — and newly closed here** | `work/r23841/filmkeys_film25_breach.log` |
 | 5 | `rig_preflight` OK on the film | **GREEN** | bar log — `rc=0`, `RIG_PREFLIGHT_OK` |
 | 6 | `MIN_CPU_RAM_GB` above the resident scene | **GREEN** | 72 in force, working set pinned 52.4 (R2-3845) |
@@ -481,6 +481,66 @@ wording — *"CLEAN on the scene that renders"* — should be read as **CLEAN on
 Also worth recording: **gate 1 does not cover this.** `tools/film_bar.py`
 contains no placement row, and neither does the 40-row bar log. Gate 3 is not a
 subset of gate 1, which is why the runbook lists it separately.
+
+### The verdict: PLACEMENT_CLEAN, and the number that settles the discrepancy
+
+```
+>> subject: 30204 meshes via every mesh in the scene (nothing looks like context)
+>> camera path: per-frame path, 2978 frames, from render/film25_path.json;
+   sphere r=1.2 m over 3432 sample points
+>> instances: 4966913 realised in 49.7 s
+>> determinism: 2 pass(es), IDENTICAL; scene walk 792ca66e9c3ef973
+>> NOTHING is on the road, in the car's path, or in the camera's path
+>> STAGE RESULT: PLACEMENT_CLEAN  [+1159 hidden findings on 894 non-rendering mesh(es)]
+```
+
+**Zero violations**, on the world that renders, under the camera path that
+renders, with the item convention explicitly refused (it would have excused
+29,304 of 30,204 meshes as "context" — the exact misclassification the runbook
+warns about, and the fixed gate says so in the log rather than doing it).
+
+Three things this run settles:
+
+1. **The camera move did not eat the margin.** Closest approach on the camera
+   path is `BR_Verge_R` at **+0.648 m of clearance** — the same figure
+   assembly14 reported. The 0.263 m shift between `film23_path` and
+   `film25_path` was the reason to worry, and measured, it did not consume the
+   clearance.
+2. **The hidden count is 1,159, not 1,203.** That is exactly the number the one
+   real assembly14 run produced. So the `1,203` in
+   `docs/STAGING-R2-3601-to-R2-3660.md` was wrong, and the failure to reconcile
+   it was the right thread to pull.
+3. **It is deterministic.** Two passes, byte-identical, scene walk
+   `792ca66e9c3ef973`.
+
+### The residual, named rather than buried
+
+`PLACEMENT_CLEAN` here means what the instrument defines it to mean, and the
+instrument declares its own blind spot:
+
+```
+empty_mesh 50: VEG_shrub_{bramble,gorse,hazel,broom,juniper}_L{0,1}, VEG_sapling,
+  VEG_fern, VEG_grass_{fescue,tussock,meadow,dry,reed}_{H,F}, the 15 VEG_sward_*,
+  the 6 VEG_weed_*, VEG_stone_*, VEG_grit_*, VEG_nb_clump_N1
+of_visible_sources_NOT_MEASURED: 4955784
+note: realisations of a hidden source are measured at their instance matrix and
+  counted as violations; realisations of a VISIBLE source are not measured -- the
+  source object is, where it stands. Declared, not implied.
+```
+
+**So the ground cover is still outside the verdict**, and for a precise reason:
+its 50 source objects are empty meshes (the geometry is generated at instance
+time), and instances of a *visible* source are not measured because the tool
+measures the source where it stands — which for an empty mesh measures nothing.
+This is **the same residual assembly14 carried**, not a new one, and it is
+printed by the tool rather than discovered by reading the JSON.
+
+What it means practically: gate 3 proves nothing built as a placed object is on
+the road, in the car's path or in the camera's path. It does **not** prove the
+grass is off the tarmac. That claim rests instead on the delivered pixels, and
+`master4k_001987.png` and `master4k_002850.png` — both inspected at full 4K —
+show the ground cover correctly bounded by the kerbs and verges with clean
+asphalt edges. **Recorded as a limitation of the gate, not as a pass.**
 
 ## R2-3854 — THE DELIVERY PIPELINE, MEASURED BEFORE THERE WAS ANYTHING TO DELIVER
 
