@@ -110,6 +110,69 @@ nine is not purchasable.
 taken on `film16_breach` at 7.97 GB. The scene is now 10.95 GB, renders at
 283.3 s, and carries 16 GPU-h of overhead no previous figure counted.
 
+## FINAL MEASURED NUMBERS — film25_breach on assembly15 (R2-3669)
+
+**Measured on the knife-edge card, six frames at true delivery spec, $0.312
+spent, instance destroyed and confirmed by BOTH authorities (vast.ai API and
+the broker).**
+
+| frame | beat | film25 | film23 baseline | delta |
+|---:|---|---:|---:|---:|
+| 100 | assembly — **LEADER, DISCARD** | 243.575 | 274.660 | -11.32 % |
+| 600 | assembly | 226.241 | 231.569 | -2.30 % |
+| 900 | breach | 385.173 | 418.389 | -7.94 % |
+| 1400 | lap | 308.266 | 331.773 | -7.09 % |
+| 2100 | lap | 251.938 | 284.075 | -11.31 % |
+| 2800 | ending | 230.521 | 255.917 | -9.92 % |
+
+Five measured frames: mean **280.428 s** against the baseline's mean **over
+those same five frames** of **304.345 s** — **-7.86 %**.
+
+**DO NOT COMPARE 280.428 AGAINST 283.3.** That figure is the baseline's mean
+over all 14 of its frames including its own leader. The like-for-like number
+is 304.345.
+
+**AND DO NOT BANK THE SPEEDUP.** Every frame got faster despite +17.16 %
+traced triangles, but this is **a different host and n=1 per frame**. The card
+is the likelier explanation than the world. **Treat the sign as unverified
+until both worlds have run on one box**, and price the master at the baseline
+seconds — the speedup is upside, not budget.
+
+**THE RATE IS ESSENTIALLY UNCHANGED, WHICH IS THE POINT.** Today's cheapest
+qualifying card is **$0.454/hr** against the **$0.4598/GPU-h that actually
+produced $112.88.** The "+23.1 %" figure was measured against $0.3689, a rate
+that never produced that total. **So the master is still ~$113, and today's
+rate is marginally cheaper than the one behind the published figure.**
+
+Setup overhead also came in **better**: **527.19 s** of rent+push+load+BVH
+against the baseline's ~948 s, then 9.41-17.97 s per frame thereafter.
+
+### FOOTPRINT — the projection was wrong and the direction is safe
+
+| | GiB |
+|---|---:|
+| **Worker `VmHWM` — the successor to the 50.6 constant** | **52.4173** |
+| cgroup `memory.peak` | 64.5228 |
+| cgroup `memory.max` (the cap) | 87.7238 |
+
+**Implied floor at x1.25: 65.52 GiB/GPU**, against a projection of 74.13 that
+**overshot by 11.6 %.** Versus the old baseline it is **+3.6 %** — so
+**+17.16 % of traced triangles bought ~3.6 % of resident memory**, because the
+ground cover is instanced: it multiplies what the BVH traces, not what the
+worker holds. The blend grew ~10 MB on disk, which says the same thing.
+
+**All 9 of today's offers clear 65.52 GiB. Margin to the 73.0992 cliff is
+20.68 GiB — the footprint would have to grow another 39.4 % to lose the
+cheapest card.** `memory.events` read `oom 0 oom_kill 0 high 0 max 0` for the
+whole run; peak sat at 74.6 % of cap.
+
+**One qualifier to carry:** `VmHWM` is the like-for-like successor to 50.6, but
+**the cgroup is what the OOM killer acts on**, and that peaked at 64.52 GiB —
+~12 GiB higher, because it also counts page cache from streaming an 11 GB file.
+Setting the constant from the cgroup instead gives a floor of 80.65 GiB, which
+still clears all 9 offers but leaves only **8.58 GiB** of margin on the
+cheapest.
+
 ## CORRECTIONS TO THE COST, MADE BEFORE SPENDING (R2-3666/3667)
 
 **GATE 7 CAUGHT A LIVE ONE, AND IT WOULD HAVE BEEN BILLED TO THIS RENDER.**
