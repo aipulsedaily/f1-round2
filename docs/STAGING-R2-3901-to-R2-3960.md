@@ -350,3 +350,69 @@ decode at **3840x2160**, none failed to decode, **0 flat, 0 black**, luminance s
 0.132-0.259 and 194-256 distinct levels. That is the whole delivered showroom
 block, not a sample, and it is the check `fleetctl verify` structurally cannot
 make.
+
+## R2-3906 — THE REBALANCE IS NOW PRICED, AND THE ANSWER IS TO LEAVE IT ALONE
+
+R2-3858 carries the work-conserving rebalance as remaining step 2, deferred
+until a card is genuinely idle because R2-3859 showed the split must not be
+predicted from measured s/frame. A card is about to be idle, so it is time to
+price it rather than inherit the plan.
+
+Rates measured at 18:18Z as each broker's mean over its own last 10 frames:
+
+| broker | s/frame | done / todo | left | hours | finishes |
+| --- | ---: | --- | ---: | ---: | --- |
+| fleet03 | 280.3 | 558/993 | 435 | **33.9** | **2026-08-12 ~04:15Z** |
+| fleet05 | 302.9 | 440/987 | 547 | 46.0 | 2026-08-12 ~16:20Z |
+| fleet04 | 343.8 | 136/716 | 580 | **55.4** | **2026-08-13 ~01:45Z** ← the film lands here |
+
+**fleet03 goes idle ~21.5 h before the film finishes.** On the face of it that
+is the rebalance's whole case.
+
+### The cost argument for rebalancing does not survive contact with the config
+
+`broker/config.py` runs a three-stage lifecycle on an idle instance:
+
+```
+IDLE_GRACE_SEC = 300     running -> stopped   (GPU billing ends immediately)
+HIBERNATE_SEC  = 3600    stopped -> destroyed (disk ~$0.014/hr in between)
+```
+
+**So fleet03 stops billing for GPU five minutes after its last frame and is
+destroyed an hour later, without anyone doing anything.** The 21.5 idle hours
+cost approximately **$0.30 of disk**, not the ~$10.50 of GPU an idle rented card
+would imply. **There is no money in the rebalance.** What it buys is roughly
+**10 hours of wall clock** and nothing else.
+
+### And I cannot perform it anyway, which is the right outcome here
+
+The rebalance requires cancelling and resubmitting fleet04's job so its tail is
+disjoint from the chunk handed to fleet03. **I did not create that job**, and the
+standing constraint is not to cancel, stop, destroy or reuse a broker, job or
+instance I did not create. Racing instead — handing fleet03 a chunk of fleet04's
+tail *without* cancelling fleet04's job — is the specific mistake R2-3859 warns
+against: both cards would render the same frames, and the only outcomes are
+wasted GPU and `duplicated` rows in the manifest.
+
+**Recommendation: do nothing.** The brief states there is no time pressure and
+that holding a paid render is preferable to delivering something unverified. Ten
+hours of wall clock is not worth an intervention into a recovery path that has
+now survived three retirements untouched, on a job I did not start, to save
+$0.30.
+
+### Budgets — checked because a paused broker is a reportable event
+
+| broker | cap | spent | remaining | needs | headroom |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| fleet03 | $42.00 | $19.94 | $22.06 | 33.9 h x $0.4889 = **$16.57** | $5.49 |
+| fleet04 | $63.49 | $25.29 | $38.20 | 55.4 h x $0.4550 = **$25.21** | $12.99 |
+| fleet05 | $53.00 | $23.31 | $29.69 | 46.0 h x $0.4756 = **$21.88** | $7.81 |
+
+**No broker will hit its own cap**, so none will pause. Caps still sum to
+$158.49, the invariant R2-3862 established.
+
+**Fleet projection: $68.55 spent + $63.66 to go = $132.21 against caps**, which
+net of the $8.49 of pre-existing banked spend is **$123.7 of the $150 new-spend
+ceiling — a 17.5% margin.** That is inside the brief's ~$122 projection and is
+**not** threatening $150. Retirement gaps do not bill, so remaining cycles move
+the wall clock without moving this number.
