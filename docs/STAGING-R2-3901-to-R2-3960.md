@@ -313,3 +313,40 @@ PREDICTED 'to render' ON RE-SUBMISSION = 1592 = 5 orphaned + 1587 not yet render
 job requeues on every retirement and so recovers its own casualty, while fleet03
 and fleet05 do not. With ~3 cycles left that projects **10-11 orphans** at the
 end, and ~1.5 h of re-rendering to recover them.
+
+## R2-3905 — THE VERIFICATION PASS, TIMED AND WITH ITS INTERPRETER PINNED
+
+Rehearsed again at 1,397 frames rather than the 13 of R2-3856, to get a real
+cost for the endgame and to catch anything that only breaks at scale.
+
+**The interpreter is not `python3` and is not the broker's venv.** Both fail,
+differently, and the failure is silent until it isn't:
+
+| interpreter | numpy | PIL | usable |
+| --- | --- | --- | --- |
+| `python3` | yes | **no** | no |
+| `/home/zany/vast-render/.venv/bin/python` | **no** | — | no |
+| **`/home/zany/f1-round2/.venv/bin/python`** | **2.5.1** | **12.3.0** | **yes** |
+
+The tool's own docstring says `.venv/bin/python` relative to `f1-round2`, which
+is correct; it is only ambiguous if it is read from another directory. **Pinned
+here as an absolute path** so the endgame does not spend a turn on a
+`ModuleNotFoundError`.
+
+**Timing: 552 frames decoded in 100 s at load 5.76 → 0.181 s/frame → ~9 minutes
+for all 2,978.** Cheap enough that there is no reason to sample rather than
+decode everything.
+
+**One behaviour worth knowing before it is read as a defect:** `--first/--last`
+does **not** restrict which files are decoded — the tool decodes every PNG in
+every `--dir` it is given and uses the range only to classify coverage. Running
+it on one broker's directory with `--first 1 --last 100` therefore reports
+`452 out of range` and `STAGE RESULT: FAIL`, which is correct and is not a
+finding. With all three directories and `--first 1 --last 2978`, `outside range`
+must be **0**.
+
+**The interim quality signal is good.** All 552 of fleet03's delivered frames
+decode at **3840x2160**, none failed to decode, **0 flat, 0 black**, luminance sd
+0.132-0.259 and 194-256 distinct levels. That is the whole delivered showroom
+block, not a sample, and it is the check `fleetctl verify` structurally cannot
+make.
