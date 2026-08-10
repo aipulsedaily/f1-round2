@@ -1000,6 +1000,9 @@ good ones. If slow-booting hosts are also slow to inject keys, the 240 s
 not a finding. **If a third slow host is condemned, that is worth investigating
 before it costs more.**
 
+> **INVESTIGATED AT R2-3863 AFTER THE THIRD. THE HYPOTHESIS ABOVE IS WRONG, AND
+> SO IS THE THRESHOLD WORRY. The 240 s cut-off discards nothing recoverable.**
+
 **The blacklist walks the price up, and that has a budget consequence.** The
 selector is cheapest-first among non-blacklisted offers, so each condemnation
 moves fleet04 up the ladder: $0.3615 → $0.6859 → **$0.801**, against the
@@ -1061,6 +1064,53 @@ rebalance at R2-3859 moves fleet04's tail onto fleet03, which is simultaneously
 of wall clock and ~$3.5. It is deliberately deferred until a card is genuinely
 idle, because until then there is no way to price fleet04's content on another
 machine — and R2-3859 is exactly the mistake of assuming you can.
+
+## R2-3863 — THE KEY EITHER WORKS IN FOUR SECONDS OR IT NEVER WORKS
+
+Cycle 2 condemned a third host (`machine 142281`, instance 47335635), which was
+the trigger I set at R2-3861 for investigating whether `SshNeverReady`'s 240 s
+cut-off was throwing away hosts that merely boot slowly. It is not. **Both of my
+hypotheses were wrong and the broker's diagnosis is exactly right.**
+
+Every rental this render has made, by whether it ever pushed the Blender bundle:
+
+| instance | reachable in | first bundle push | outcome |
+| --- | --- | --- | --- |
+| 47088518 | 144 s | **+3 s** | OK |
+| 47146841 | 31 s | **+0 s** | OK |
+| 47238557 | 62 s | **+3 s** | OK |
+| 47238586 | 21 s | **+2 s** | OK |
+| 47238618 | 63 s | **+3 s** | OK |
+| 47286201 | 21 s | **+4 s** | OK |
+| 47287138 | **82 s** | **+2 s** | OK |
+| 47334620 | 32 s | **+2 s** | OK |
+| 47286172 | 225 s | *never* | CONDEMNED |
+| 47286610 | 123 s | *never* | CONDEMNED |
+| 47335635 | **82 s** | *never* | CONDEMNED |
+
+**Two things fall out, and they kill both hypotheses.**
+
+1. **No publickey denial has ever cleared.** Every host that worked pushed the
+   bundle within **0-4 seconds** of `deploying onto`. Not one host recovered
+   after a denial. So "it is a container-start race that will resolve" — which
+   is what I said in cycle 1, and had to retract once already — is false. The
+   condition is perfectly bimodal.
+2. **Reachability time does not predict it.** 47287138 was reachable in **82 s
+   and worked instantly**; 47335635 was reachable in **82 s and never worked**.
+   Meanwhile 47088518 took 144 s to become reachable and was fine. The
+   "slow-booting hosts get unfairly condemned" theory has a direct
+   counterexample in its own data.
+
+**So the 240 s budget is not too tight — it is generous.** The discriminating
+signal arrives in under four seconds. A much tighter cut-off (say 30 s) would
+reach the same verdict every time and save ~3.5 min per bad host. That is ~10
+min across the three so far: **real, but not worth changing middleware under a
+live render.** Recorded for whoever tunes this next.
+
+**Base rate: 3 bad hosts in 14 rentals, ~21%.** All three landed on fleet04,
+which looks like a pattern and is not — fleet04 has made 6 of the 14 rentals
+because each condemnation forces another. Its original host and its cycle-1
+third host were both clean.
 
 ### What a retirement cycle actually costs
 
