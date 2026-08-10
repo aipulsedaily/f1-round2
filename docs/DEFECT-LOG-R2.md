@@ -58941,3 +58941,1221 @@ minutes later. This is the documented transient class — the in-container
 watchdog reaps only on a **30 minute** stale heartbeat, and a transport failure
 is explicitly not licensed to destroy a rendering box. Noted because a second
 one on the same instance would mean something else.
+
+## R2-3859 — THE RATE SPREAD IS CONTENT, NOT HARDWARE, AND THAT CHANGES THE REBALANCE
+
+Measured at 07:02Z, ~3 h in, as the mean of each broker's last 10 frames — so
+deploy, scene push and first-frame setup are all excluded:
+
+| broker | host IP | machine | mean of last 10 | its block |
+| --- | --- | --- | --- | --- |
+| fleet03 | host-A | 36179 | **204.9 s** | 1-993, showroom |
+| fleet05 | **host-A** | 131197 | **284.2 s** | 1987-2978, circuit |
+| fleet04 | host-B | 141468 | 300.8 s | 994-1986 |
+
+**fleet03 and fleet05 are behind the same host IP and differ by 39%.** Two
+machines in the same facility, same GPU model, same spec hash, same scene — and
+a 79-second gap. Whatever that is, it is not the host lottery.
+
+What it is, is the film. fleet03 holds the **showroom**, which is an interior
+with bounded geometry; fleet04 and fleet05 hold the **circuit**, which carries
+the 28,894-object VEG ground cover, the crowd, and the breach. The runbook
+already says this in the general case — *"the proxy predicts nothing, R^2 =
+0.00; its two cheapest frames are the master's two dearest"* — and this is the
+same fact showing up inside the master itself.
+
+**Why it matters for the rebalance.** The obvious move is to weight the split by
+each broker's measured s/frame, and `fleetctl submit --weights` exists to do
+exactly that. On these numbers that would hand fleet03 about 40% of the film —
+and it would be **wrong**, because fleet03's 204.9 s is a fact about frames
+1-993, not about machine 36179. Move fleet04's tail onto fleet03 and those
+frames cost what circuit frames cost, not what showroom frames cost. The
+projected finish would be missed in the direction that hurts: too much work on
+one card, discovered at hour 70.
+
+**So the rebalance must be work-conserving, not rate-weighted:** wait until a
+broker is genuinely idle, then hand it whatever frames are still absent, in a
+chunk carved disjointly off the slowest broker's tail. That is robust to the
+confound because it never predicts a rate — it only ever moves work to a card
+that has none.
+
+Projected on current rates, with each block scored at its own content cost:
+
+| broker | remaining | finishes |
+| --- | --- | --- |
+| fleet03 | 993 x 204.9 s | **~56.6 h** (≈ 2026-08-11 12:40Z) |
+| fleet05 | 992 x 284.2 s | ~78.3 h |
+| fleet04 | 993 x 300.8 s | **~83.0 h** — the fleet finishes here |
+
+fleet03 idles ~26 h if nothing is done. A work-conserving rebalance at the
+moment it goes idle should bring the whole film in around **~72 h**, saving
+roughly 11 h. It cannot be done earlier with confidence, because until a card is
+free there is no way to price circuit frames on machine 36179.
+3. **Run the three frame checks in full** — `fleetctl verify --manifest`
+   (coverage + hash against the brokers' own records) and
+   `tools/r23841_verify_frames.py` (decode + geometry + blank). Both rehearsed.
+4. **Encode**, with `tools/r23841_build_framelist.py` then the two ffmpeg
+   commands at R2-3854, **checking disk headroom first** and **not while the box
+   is under the load that broke a 720p libx265 run**.
+5. **Verify the encodes** with `tools/r23841_verify_delivery.sh` — counted
+   `nb_read_frames` = 2978, duration 124.083333 s, audio at both ends.
+6. **File them in `watch/`** and replace the R2-3181 banner. Draft text is
+   written against measured numbers and is honest about what is *not* closed
+   (car presence: fixed; car size: improved, height-under-60 still 78.4%).
+7. **Re-hash the protected films** against
+   `work/r23841/protected_films_BEFORE.txt` and confirm all six unchanged.
+8. **Tear down and verify against the vast.ai API**, not a local state file —
+   `fleetctl down` re-queries and exits non-zero if any fleet instance is still
+   alive. Then confirm with `vastctl status` that the account holds nothing of
+   mine.
+
+### One transient, recorded rather than smoothed over
+
+Four isolated heartbeat misses in the first three hours, across all three
+instances:
+
+| when | broker | host | signature | counter |
+| --- | --- | --- | --- | --- |
+| 04:44:22 | fleet05 | host-A | `Connection timed out` | 1 in a row |
+| 05:28:08 | fleet04 | host-B | `no exit after 30s` | 1 in a row |
+| 05:28:25 | fleet03 | host-A | `no exit after 30s` | 1 in a row |
+| 07:01:52 | fleet03 | host-A | `banner exchange` timeout | 1 in a row |
+
+**Every one recovered on the next beat** — the counter never reached 2 on any
+instance — and rendering never paused: fleet03 delivered frame 18 eleven seconds
+after its own 05:28 miss. All three instances were confirmed `running` against
+the **vast.ai API** after each event, not against a local state file.
+
+Two corrections to my first read of these, both in the direction of claiming
+less:
+
+**I over-attributed the 05:28 pair to local memory pressure.** That pair does
+fit it — they hung with `no exit after 30s`, which is process-spawn starvation
+rather than a network refusal, and my own `placement_gate` run had just pushed
+13 GB into swap on an 11 GB box with `kswapd0` still reclaiming. But the 07:01
+miss has a different signature (`Connection timed out during banner exchange`:
+TCP connected, remote banner never arrived) and happened with the box **idle** —
+load 1.00, zero CPU pressure, swap drained to 8.4 GB. One explanation does not
+cover both, and I should not have implied it did.
+
+**There is also no host pattern, though it looks like one.** Three of the four
+misses are on `host-A` — but that IP carries **two of my three
+instances**, so its expected share of four misses is 2.7. Observing 3 is not a
+signal. The honest read is baseline SSH flakiness at roughly 0.7% of beats, from
+more than one cause.
+
+## R2-3861 — THE 12-HOUR RETIREMENT FIRED, ON ALL THREE CARDS AT ONCE
+
+The runbook's own words: *"The 12 h retirement has never fired on any instance
+(longest life 10.7 h). The master takes that path 21 times. **Exercise it once
+first.**"* It exercised itself at **16:07:32Z**, and because the three cards were
+rented within 61 seconds of each other on 08-09, **all three retired together**
+— the hardest version of this test, not the easiest.
+
+### The timeline, and a prediction made before the fact
+
+| when | what |
+| --- | --- |
+| 16:07:32 / 16:08:01 / 16:08:57 | all three job sockets `ConnectionDropped`, mid-frame |
+| — | error is `Connection refused`, not `unreachable`: **hosts up, containers gone** |
+| 16:10:10 / 16:10:27 / 16:11:48 | 3 consecutive missed beats → reconcile → `instance DOES NOT EXIST on vast.ai any more` |
+| 16:11:27 | vast.ai API: **no instances on this account** |
+| 16:22:42 / 16:23:17 / 16:24:13 | `await_render` gives up: *"not answered a single progress probe for 15.0 min"* |
+| 16:22:43 / 16:23:18 / 16:24:14 | **fresh card rented, ~1 second later** |
+
+Between the reconcile and the re-rent there is a **~12 minute silence** in which
+nothing is logged and no card is rented, and it looks exactly like a stall. It
+is not. `fleet.await_render()` carries `unknown_grace = 900.0` — fifteen minutes
+of *continuous* silence before it will call a render lost — and the comment
+above it says why: this loop *"used to return None the first time
+`read_progress` came back empty... each time reported to the operator as 'the
+worker really is gone' while the GPU was at 96% on that exact frame."*
+`REATTACH_SEC = 5400` is the outer bound for a legitimately long frame, not this.
+
+I predicted the three wake-ups from `unknown_since + 900 s` **before they
+happened** — 16:22:39 / 16:23:08 / 16:24:04 — and they landed at 16:22:42 /
+16:23:17 / 16:24:13. **Within 3, 9 and 9 seconds.** The mechanism is understood,
+not guessed at.
+
+### Nothing was lost
+
+**474 frames were on disk before the retirement and 474 after** (191 + 139 +
+144), and every job row in SQLite still carried its own count, matching disk
+exactly. Each broker requeued **without spending an attempt**, which is the
+right accounting:
+
+> *"job 467247848cc6 requeued WITHOUT spending an attempt — this pass delivered
+> 139 frame(s) before it stopped, so it made progress rather than failing."*
+
+Three frames were in flight and were lost: **192, 1133, 2127**, one per card,
+each ~5 min of GPU. They are absent from disk, so the resume plan picks them up
+again — the resume is computed from files, not from a cursor. **Observed, not
+assumed:**
+
+```
+sequence master4k job 467247848cc6: 993 frame(s) requested,
+                                    139 already delivered, 854 to render
+```
+
+`993 - 139 = 854` exactly; the 139 matches fleet04's PNGs on disk; and the 854
+**includes frame 1133**, which is missing from disk and is therefore back in the
+todo rather than silently skipped. That is the resume contract discharged on
+real numbers for **that** card: nothing re-rendered, nothing dropped.
+
+### But it did NOT apply to the other two, and that is a real follow-up
+
+**A lost frame is only recovered if the JOB is requeued, and only fleet04's
+was.** The three cards took two different paths:
+
+| broker | what happened to the job | the lost frame |
+| --- | --- | --- |
+| fleet04 | deploy failed → `FleetUnavailable` → **job requeued**, plan recomputed from disk | **1133 is in the todo** — will be rendered |
+| fleet03 | transport failure only → **job continued in place** | **192 skipped this pass** |
+| fleet05 | transport failure only → **job continued in place** | **2127 skipped this pass** |
+
+Observed rather than reasoned: `frame 192` is absent from disk while fleet03 is
+rendering `frame 193` with `done=191`, and fleet03 has logged **no new plan
+line** — its only one is from `04:06:31`, so `run_sequence` never restarted and
+never re-read the disk. Same shape on fleet05: `2127` absent, `cur 2129`,
+`done 145`.
+
+**So the master will finish with 2 frames missing unless something re-renders
+them.** That is not a silent loss — it is exactly what
+`fleetctl verify --manifest` reports as `missing`, and the fix is one
+re-submission under the same `--name`, which by construction renders only what
+is absent. But it *would* be a silent loss to anyone who trusted "the resume
+handles it" without checking, which is why it is written down here.
+
+**ACTION, and it is not optional: before encoding, re-submit `master4k` and
+confirm coverage is 2,978 of 2,978.** Do not read a job's own "COMPLETE" line as
+proof of coverage — a sequence job reports complete against *its own todo list*,
+and a frame that failed mid-pass is not on it.
+
+### The RAM floor held on every replacement
+
+The commitment at R2-3849 was to check the advertised RAM of every re-rent
+rather than trust the gate once. Measured on all three:
+
+| instance | advertised | cap at 96% | over the 52.4 GiB resident scene |
+| --- | --- | --- | --- |
+| 47286201 (fleet03) | 124.9 GiB | 119.9 | **+67.5** |
+| 47286257 (fleet05) | 91.4 GiB | 87.7 | **+35.3** |
+| 47286610 (fleet04) | 251.3 GiB | 241.3 | **+188.9** |
+
+### One of the three replacements was a broken host, and the broker knew why
+
+fleet04's first replacement (47286172, machine 52271, New Jersey, and the
+**cheapest** offer at $0.3615/hr) completed the SSH handshake and then denied
+publickey auth, for 240 s. The diagnosis is exact and is the opposite of a
+retry loop:
+
+> *"sshd IS SERVING and REFUSED OUR KEY — it completed the handshake, sent
+> vast's banner, then denied publickey auth. The container is up; what is
+> missing is authorized_keys. vast.ai writes that file at container start, so a
+> key still absent 240 s in was never written: THE HOST DID NOT INSTALL IT, and
+> it will not appear now."*
+
+It then did three things in the right order:
+
+1. **Blacklisted machine 52271** for the session.
+2. **Blacklisted offer 46319510 as well** — *"it was just destroyed as unusable
+   and is still the cheapest, so the next rent would buy it straight back."*
+   Without that second blacklist a cheapest-first selector loops on a broken
+   box forever. This is the detail that makes the recovery terminate.
+3. Destroyed it — *"this broker rented it and has never run a single command on
+   it — it holds no worker and no frame, so there is nothing to lose"* —
+   **confirmed gone, gpu $0.046 + disk $0.005 = $0.051.**
+
+Replacement 47286610 (machine 8512, $0.668/hr, 3375 Mbps) was rented 1 second
+later.
+
+### TWO bad hosts in a row on fleet04, and what the blacklist costs
+
+fleet04 drew **two consecutive hosts that never wrote `authorized_keys`**:
+
+| attempt | machine | $/hr | reachable in | outcome |
+| --- | --- | --- | --- | --- |
+| 1 | 52271 (New Jersey) | **$0.3615** | 225 s | key never installed → blacklisted, destroyed for $0.051 |
+| 2 | 8512 (Japan) | $0.6859 | 123 s | key never installed → blacklisted, destroyed for $0.076 |
+| 3 | 56786 | **$0.801** | — | deploying |
+
+This is not our key: fleet03 and fleet05 authenticated on the **same key at the
+same minute** and both reached `worker ready`. The broker checks this itself —
+*"the key itself is fine — it is the account's only key and vast reports it
+attached to this instance"* — which is why it condemns the host instead of
+retrying.
+
+**A possible pattern, noted but not yet established:** the two bad hosts took
+**225 s and 123 s** to become reachable, against **21 s and 31 s** for the two
+good ones. If slow-booting hosts are also slow to inject keys, the 240 s
+`SshNeverReady` threshold may be discarding recoverable hosts. Two samples is
+not a finding. **If a third slow host is condemned, that is worth investigating
+before it costs more.**
+
+> **INVESTIGATED AT R2-3863 AFTER THE THIRD. THE HYPOTHESIS ABOVE IS WRONG, AND
+> SO IS THE THRESHOLD WORRY. The 240 s cut-off discards nothing recoverable.**
+
+**The blacklist walks the price up, and that has a budget consequence.** The
+selector is cheapest-first among non-blacklisted offers, so each condemnation
+moves fleet04 up the ladder: $0.3615 → $0.6859 → **$0.801**, against the
+$0.4637 it started on.
+
+| broker | cap | spent | remaining | work left | cost at its current rate |
+| --- | --- | --- | --- | --- | --- |
+| fleet03 | $51.99 | $7.72 | $44.27 | 802 fr x 205 s = 45.7 h | $20.5 @ $0.4489 |
+| fleet04 | $51.66 | $7.73 | **$43.93** | 854 fr x 300 s = 71.2 h | **$57.0 @ $0.801** |
+| fleet05 | $54.84 | $10.90 | $43.94 | 847 fr x 285 s = 67.0 h | $31.1 @ $0.4637 |
+
+**fleet04 would hit its own cap about $13 short of finishing** and pause with
+roughly 196 frames unrendered. The **fleet total** is still inside the ceiling —
+~$26 spent plus ~$109 to go is **~$135 of the $150** — so this is a
+*distribution* problem created by my even three-way split at R2-3846, not a
+budget overrun.
+
+Two levers, both cheap and neither yet needed:
+
+1. **Move cap between brokers, total unchanged.** fleet03 will finish with ~$24
+   of its $44 unspent; `rq budget --set` moves it without a restart.
+2. **The work-conserving rebalance** (R2-3859) moves fleet04's tail onto
+   fleet03, which is simultaneously the fastest and the cheapest card. That
+   fixes throughput and spend with one action.
+
+**The trigger to escalate is the FLEET total projecting past $150, not fleet04
+hitting its own cap** — the latter is a pause I can fix in one command without
+spending an extra cent. Do not silently raise the total.
+
+### Done at 17:26Z — cap moved between brokers, total provably unchanged
+
+Refreshed rates after the retirement (mean of each broker's last 8 frames):
+fleet03 **262.1 s**, fleet04 **307.1 s**, fleet05 **252.8 s**.
+
+| broker | frames left | hours | $/hr | needs | old cap headroom | new cap | new headroom |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| fleet03 | 791 | 57.6 | 0.4489 | $25.9 | $43.90 | **$42.00** | $33.91 |
+| fleet04 | 847 | 72.3 | **0.801** | **$57.9** | **$43.28** ✗ | **$71.49** | $63.09 |
+| fleet05 | 837 | 58.8 | 0.4637 | $27.3 | $43.56 | **$45.00** | $33.71 |
+
+`tools`-side this is `rq budget --set` on each broker, and the script asserts
+the **sum of caps is identical before and after** ($158.49) and refuses to run
+otherwise. Against the $8.49 of pre-existing banked spend that leaves the
+new-spend ceiling at **exactly $150.00** — the number the brief set, unmoved.
+
+**The projection is now ~$139 of $150 — a 7.5% margin, down from the ~$113
+estimate.** The whole difference is fleet04's $0.801/hr card, which is a
+consequence of the two blacklisted bad hosts, not of the render. Credit is
+$154.87 = **89.3 h of runway against ~72 h needed**.
+
+**This is close enough that the next adverse event is worth surfacing rather
+than absorbing.** Specifically: each further retirement can blacklist more
+hosts and walk the price up again. If the fleet total projects past $150, stop
+and say so — do not raise it.
+
+The mitigation that costs nothing is already planned: the work-conserving
+rebalance at R2-3859 moves fleet04's tail onto fleet03, which is simultaneously
+**the fastest and the cheapest** card. Modelled on current rates it saves ~8.6 h
+of wall clock and ~$3.5. It is deliberately deferred until a card is genuinely
+idle, because until then there is no way to price fleet04's content on another
+machine — and R2-3859 is exactly the mistake of assuming you can.
+
+## R2-3863 — THE KEY EITHER WORKS IN FOUR SECONDS OR IT NEVER WORKS
+
+Cycle 2 condemned a third host (`machine 142281`, instance 47335635), which was
+the trigger I set at R2-3861 for investigating whether `SshNeverReady`'s 240 s
+cut-off was throwing away hosts that merely boot slowly. It is not. **Both of my
+hypotheses were wrong and the broker's diagnosis is exactly right.**
+
+Every rental this render has made, by whether it ever pushed the Blender bundle:
+
+| instance | reachable in | first bundle push | outcome |
+| --- | --- | --- | --- |
+| 47088518 | 144 s | **+3 s** | OK |
+| 47146841 | 31 s | **+0 s** | OK |
+| 47238557 | 62 s | **+3 s** | OK |
+| 47238586 | 21 s | **+2 s** | OK |
+| 47238618 | 63 s | **+3 s** | OK |
+| 47286201 | 21 s | **+4 s** | OK |
+| 47287138 | **82 s** | **+2 s** | OK |
+| 47334620 | 32 s | **+2 s** | OK |
+| 47286172 | 225 s | *never* | CONDEMNED |
+| 47286610 | 123 s | *never* | CONDEMNED |
+| 47335635 | **82 s** | *never* | CONDEMNED |
+
+**Two things fall out, and they kill both hypotheses.**
+
+1. **No publickey denial has ever cleared.** Every host that worked pushed the
+   bundle within **0-4 seconds** of `deploying onto`. Not one host recovered
+   after a denial. So "it is a container-start race that will resolve" — which
+   is what I said in cycle 1, and had to retract once already — is false. The
+   condition is perfectly bimodal.
+2. **Reachability time does not predict it.** 47287138 was reachable in **82 s
+   and worked instantly**; 47335635 was reachable in **82 s and never worked**.
+   Meanwhile 47088518 took 144 s to become reachable and was fine. The
+   "slow-booting hosts get unfairly condemned" theory has a direct
+   counterexample in its own data.
+
+**So the 240 s budget is not too tight — it is generous.** The discriminating
+signal arrives in under four seconds. A much tighter cut-off (say 30 s) would
+reach the same verdict every time and save ~3.5 min per bad host. That is ~10
+min across the three so far: **real, but not worth changing middleware under a
+live render.** Recorded for whoever tunes this next.
+
+**Base rate: 3 bad hosts in 14 rentals, ~21%.** All three landed on fleet04,
+which looks like a pattern and is not — fleet04 has made 6 of the 14 rentals
+because each condemnation forces another. Its original host and its cycle-1
+third host were both clean.
+
+## R2-3864 — A RETIREMENT CAN COST 68 MINUTES, NOT 35, AND CONCURRENT PUSHES ARE WHY
+
+I closed cycle 2 at 05:08Z reporting all three cards back and fleet05 down
+~22 min. **That was wrong, and it is the third time in this task I have
+reported a state I inferred instead of one I read.** I saw fleet05's instance
+`running` in the vast API and a frame line in its log, and concluded the worker
+was serving. An instance existing is not a worker being ready.
+
+**fleet05's true cycle-2 downtime was 04:25:02 -> 05:33:32 = 68.5 minutes**,
+against the 21.8 min (fleet03) and 29.5 min (fleet04) of the same cycle. Its
+`deploy finished in 3160.7s`.
+
+The cause is in the transfer rates, and it is not the host:
+
+| stage | fleet05, cycle 2 | normal this render |
+| --- | --- | --- |
+| blender bundle, 481 MB | 523.2 s @ **0.92 MB/s** | ~50 s |
+| scene, 10.96 GB | 2587.7 s @ **4.2 MB/s** | 250-500 s @ 22-43 MB/s |
+
+**fleet04 was pushing at 29.0 MB/s in the same window that fleet05 managed
+4.2 MB/s.** Their sum, ~33 MB/s, is about this workstation's real uplink. So the
+two were competing for one pipe and the split was **7:1, not 1:1** — fleet05
+(South Korea) lost to fleet04 (Japan). This is the documented behaviour that
+OpenSSH's fixed internal buffer caps single-stream throughput regardless of link
+speed, which penalises the higher-RTT path disproportionately once the link
+saturates.
+
+**Consequences for the estimate at R2-3861.** "~35 min of dead wall clock per
+cycle, all three in parallel" holds only when the pushes do not overlap. When a
+condemned host delays one card's re-rent into another's push window — which is
+exactly what fleet04's bad host did — the two collide and the slower path can
+lose an extra ~45 min. Cycle 2's true cost was **68.5 min on its worst card**,
+not 35.
+
+Revised: budget **35-70 min per cycle**, and with ~5 cycles left expect
+**3-6 h** of retirement overhead rather than a flat 4 h. Cost is still
+unaffected — nothing bills while no instance exists — so the ~$116 projection
+stands.
+
+**The mitigation, if this recurs and matters:** stagger the re-rents so the
+pushes do not overlap, or push to the lowest-RTT host first. Neither is worth
+doing pre-emptively — the cost is wall clock on a render with budget headroom,
+and interfering with a working recovery path to chase 45 minutes is the wrong
+trade. **But do not report a retirement as closed until every card has logged
+`worker ready`.** That is the check I skipped.
+
+### What a retirement cycle actually costs
+
+| | |
+| --- | --- |
+| silence grace before re-rent | ~15 min (no card exists — **$0 GPU**) |
+| rent + boot + deploy + 10.96 GB scene push | ~15-20 min |
+| frames lost in flight | 1 per card, ~5 min of GPU each |
+| **dead wall-clock per cycle** | **~35 min**, all three cards in parallel |
+
+Over the master's ~7 cycles that is **~4 h added to the wall clock**, taking the
+render from ~82 h to **~86 h**. **Cost is unaffected** — nothing is billed while
+no instance exists — so the ~$105-113 projection stands. The fleet came back
+marginally *cheaper* on the first cycle ($1.2741/hr against $1.3881/hr) before
+the broken-host replacement pushed it back up.
+
+### The escalation bar, in the config's own numbers — so this needs deciding once
+
+Everything that acts on heartbeats counts **consecutive** failures, not total.
+The three constants that matter:
+
+| constant | value | what happens |
+| --- | --- | --- |
+| `HEARTBEAT_INTERVAL` | **60 s** | one beat per instance per minute |
+| `RECONCILE_AFTER_HEARTBEATS` | **3 consecutive** | broker asks vast.ai whether the instance still exists (~3 min). Diagnostic, not destructive |
+| `HEARTBEAT_STALE_SEC` (in-container watchdog) | **1800 s = 30 consecutive** | the instance destroys itself |
+
+**Every miss so far has read `(1 in a row)`.** The counter has never reached 2 on
+any instance. So the fleet is sitting at **1 of 3** to the benign reconcile probe
+and **1 of 30** to anything that could lose a card, and each miss resets the
+counter on the next successful beat.
+
+By 07:21Z fleet03 had 3 misses in ~195 beats (1.5%), fleet04 and fleet05 one
+each (~0.5%). Even taken at face value that is a rate at which reaching 30
+consecutive is not a thing that happens; and with 5 events across 3 instances,
+fleet03's share (3 against an expected 1.67) is not statistically distinguishable
+from noise anyway.
+
+**So: do not re-analyse individual heartbeat warnings.** The bar is the
+`(N in a row)` counter. At **3** the broker will start questioning the instance
+and it is worth a look; below that it is a log line. What would genuinely matter
+is a miss that coincides with frames stopping — and it has not: fleet03
+delivered frames 43-48 across two of its own misses at 203.8-205.2 s, a spread
+of 1.4 s, with no fetch, transfer or tunnel error in its whole log.
+
+## R2-3860 — A REAL NETWORK OUTAGE, AND THE MIDDLEWARE HELD
+
+At **11:45Z** the bar was crossed for the first time. This is what a genuine
+incident looks like, against the seven false alarms before it.
+
+**All three instances went unreachable simultaneously, on two continents.** The
+error changed from `Connection timed out` to **`Network is unreachable`** and
+then `No route to host` — both of which are generated by the *local* kernel
+before a packet leaves, so this was this workstation's route, not the hosts.
+Confirmed by a fourth symptom the earlier events never produced: the broker
+could not reach **`console.vast.ai`** either.
+
+Timeline, ~5 minutes:
+
+| | |
+| --- | --- |
+| 11:45:02-11:45:09 | all three job sockets hit `ConnectionDropped` mid-call |
+| 11:45:27-11:47:05 | consecutive counters climb: fleet03 **2**, fleet05 **2**, fleet04 **3** |
+| 11:47:05 | fleet04 reaches 3 → reconcile fires, asks vast.ai if the card exists |
+| 11:49:33 | **the reconcile itself fails** — `No route to host` to the API |
+| 11:48:38 | my probe: gateway, DNS and direct TCP to all three ports all OK |
+| 11:49:30 | broker sees `No route to host` again — genuinely flapping |
+| ~11:50 | flap ends. 30 pings to gateway and 30 to 1.1.1.1: **0% loss both** |
+
+**Nothing was lost, and no card was touched.** Every in-flight frame completed
+at its normal cost: f122 (204.7 s vs a 205.6 s baseline), f2073 (285.6 vs
+282.1), f1080 (305.6 vs 303.8). No re-rent, no redeploy, no 10.96 GB re-push.
+
+Three pieces of the middleware were exercised for real, and each did the right
+thing:
+
+1. **`ConnectionDropped` did not condemn the render.** *"the worker may still be
+   rendering — reattaching over SSH rather than assuming the render was lost"*.
+   All three frames were still rendering, and all three came back.
+2. **The tunnel was repaired before the instance was blamed** — *"this is the
+   tunnel, not necessarily the worker — reopening before redeploying"*. This is
+   the fix that stops a hiccup becoming a fresh rental plus another image pull
+   plus another half-gigabyte push.
+3. **A failed reconcile defaulted to SAFE.** fleet04 hit 3 consecutive, asked
+   vast.ai, and *the question itself failed* — and the broker logged
+   *"assuming it still exists"* rather than treating an unanswerable question as
+   a dead card. Had it defaulted the other way, a five-minute local network flap
+   would have destroyed three healthy GPUs holding 7.7 hours of work.
+
+**Margin used: 3 of 30.** The watchdog needs 30 consecutive stale beats (30 min);
+the outage produced 3. Even a flap six times longer would not have reached it.
+
+**A grep flaw worth recording**, because it nearly produced a false alarm in my
+own checking: broker logs timestamp `HH:MM:SS` with **no date**, so filtering
+with `awk '$1>="11:44"'` happily matches lines from previous days. My
+"did anything redeploy?" check came back with `renting offer` and `pushing
+scene` lines that looked alarming and were from 08-07. The disambiguator is the
+payload, not the timestamp: they push `film17_R2943.blend`, which is not this
+master's scene. **Filter these logs by content, not by time.**
+
+The one operational lesson worth keeping: **heavy local Blender work during a
+live render has a measurable cost on the fleet's control plane.** That is a
+second, independent reason the 4K encode must not be attempted while the box is
+loaded.
+
+## R2-3901 — HANDOVER TAKEN MID-CYCLE-3, AND THE ORPHAN MODEL IS NOW MECHANICAL
+
+Picked the master up at **2026-08-10 16:55Z** from an agent terminated by an API
+limit. **The render never stopped.** State read, not inherited:
+
+| | |
+| --- | --- |
+| frames on disk | **1,376 / 2,978 (46.2%)** |
+| credit | $117.45 |
+| blend | `film25_breach.blend` sha16 `1d2aa2d86533574e` on assembly15 |
+| burn | $1.0444/hr across the live cards, 112.5 h of runway |
+
+`fleetctl status` at 16:55Z showed **two** cards running and fleet05 with none —
+which is cycle 3 in progress, not a fault.
+
+### Cycle 3, and it did not follow the cycle-1/2 script
+
+**fleet03 was down 7 minutes 58 seconds, not 35-70.** The whole thing:
+
+| when | what |
+| --- | --- |
+| 16:40:02 | f542 delivered normally |
+| 16:40:15 | tunnel to 47334620 refused; broker logs `UNKNOWN, not dead` and reopens |
+| 16:40:16 | tunnel repair fails → `deploying onto existing instance (attempt 1/3)` |
+| 16:42:55 | 3 consecutive missed beats → reconcile → **instance does not exist on vast.ai** |
+| 16:44:16 | `SshNeverReady` on the dead endpoint → second confirmation it is gone |
+| 16:44:17 | offer 38597207 (machine 43130) rented, $0.468/hr, EXCLUSIVE |
+| 16:45:29 | reachable in 72 s |
+| 16:45:40 | blender bundle pushed, 10.7 s @ 45.15 MB/s |
+| 16:47:53 | **scene uploaded in 111.9 s @ 97.9 MB/s** |
+| **16:48:13** | **`worker ready`** — deploy finished in 163.6 s |
+| 16:55:33 | f543 delivered |
+
+**The 900 s `unknown_grace` was never spent.** Because a deploy was already in
+flight when the card vanished, the broker reached its verdict through the
+`SshNeverReady` path (240 s) and the heartbeat reconcile (3 beats) instead of
+through `await_render`'s silence timer. That is the same mechanism arriving by a
+shorter road, and it is why this cycle cost 8 minutes rather than 35.
+
+**The scene push ran at 97.9 MB/s — roughly 3x this render's previous best** and
+23x fleet05's cycle-2 worst (4.2 MB/s). R2-3864's diagnosis is confirmed from
+the other direction: fleet05 had **no card at all** in this window, so nothing
+was competing for the uplink and one stream got the whole pipe. The 7:1 split is
+contention, not a property of any host.
+
+**And no frame was orphaned.** f543 was in flight at the drop and was re-rendered
+on the new card, costing **436.4 s against a 225 s baseline** — the interrupted
+attempt plus the real one. fleet03's gaps are still exactly `[192, 355]`.
+
+### THE ORPHAN RULE, NOW READ OFF THE PLAN LINES RATHER THAN INFERRED
+
+R2-3861 said a lost frame is only recovered if the **job** is requeued. Every
+`N frame(s) requested, M already delivered` line each broker has ever written,
+for `master4k`:
+
+| broker | plan lines for its master4k job | gaps below its high-water mark |
+| --- | --- | --- |
+| fleet03 | **one**, `04:06:31` on 08-09: 993 / 0 / 993 | **192, 355** |
+| fleet04 | **four** — 08-09 04:07 (993/0/993), 08-09 16:30 and 16:37 (993/139/854), 08-10 05:00 (993/277/716) | **none** |
+| fleet05 | 08-09 04:07 (992/0/992), cancelled 04:27 for the R2-3850 beat-6 re-order, `dbc2c783eb28` from 08-09 04:45 (992/5/987) — **and nothing since** | **2127, 2292** |
+
+**fleet04 is the only broker whose job has ever been recomputed from disk, and
+fleet04 is the only broker with zero gaps.** The correlation is total and the
+mechanism is stated: a requeue re-reads the delivered files and rebuilds the
+todo, so it sweeps up its own casualties; a transport-only failure resumes the
+same in-memory todo list, which never contained the lost frame.
+
+So the orphan count is not a rate to be estimated — it is a consequence of which
+recovery path each card took:
+
+- **fleet03 and fleet05 will each report `COMPLETE` while short.** fleet03 will
+  finish 991 of 993, fleet05 correspondingly short of 987.
+- **fleet04 will be genuinely complete** unless it orphans one after its last
+  requeue.
+
+**Confirmed orphans at 1,376 frames: 192, 355, 2127, 2292.** fleet05's cycle-3
+casualty is expected to be **2417**, which was in flight at its 16:41:27 drop; it
+will show as a gap once fleet05 passes it.
+
+**This does not change the endgame.** Step 1 of R2-3858 — re-submit `master4k`
+and confirm 2,978 of 2,978 — recovers all of them, because a fresh submission
+under the same `--name` computes its todo from files on disk. It is ~1.5-2 h of
+real rendering, and it is the step that makes the difference between a film and
+a film with holes in it.
+
+### fleet05's cycle 3, in progress at the time of writing
+
+| when | what |
+| --- | --- |
+| 16:40:44 | f2416 delivered normally |
+| 16:41:27 | heartbeat 1/3, and the job socket hits `ConnectionDropped` mid-f2417 |
+| 16:43:28 | 3 consecutive misses → reconcile → instance 47334687 gone |
+| 16:56:44 | **offer 46937219 re-rented — machine 131197, the same machine it was retired off**, $0.455/hr, EXCLUSIVE, 838 Mbps up |
+| 16:57:31 | instance 47389166 provisioning; scene cache budget derived on the new card |
+
+The fleet is back to **three cards at $1.5200/hr ($36.48/day)** against $117.38
+of credit — **77.2 h of runway** for a tail that needs roughly 43. fleet04 is the
+expensive one at $0.5556/hr and is the card due to retire next, so if anything
+the blended rate is about to improve.
+
+fleet04 was at 11.92 h of uptime at 16:55Z and is due to retire imminently, so
+its push may collide with fleet05's. Under R2-3864 that is the 35-70 min case,
+not a deviation, and it is not worth reporting unless it runs past 70.
+
+## R2-3902 — CYCLE 3 CLOSED, AND THE ORPHAN LEDGER IS NOW A TOOL WITH A FALSIFIABLE PREDICTION
+
+### Cycle 3, all three cards, measured to `worker ready` rather than to "running"
+
+| broker | went silent | `worker ready` | **down** | frame orphaned |
+| --- | --- | --- | ---: | --- |
+| fleet03 | 16:40:15 | **16:48:13** | **7 m 58 s** | none — f543 re-rendered at 436.4 s vs a 225 s baseline |
+| fleet05 | 16:41:27 | **17:05:21** | **23 m 54 s** | pending — cursor still 2416 |
+| fleet04 | 17:01:18 | *in its grace window* | — | — |
+
+**Both closed cards came back faster than the 35-70 min band**, and neither is a
+deviation worth reporting. The reason fleet03 took 8 minutes is mechanical: a
+deploy was already in flight when the card vanished, so the verdict arrived
+through `SshNeverReady` (240 s) plus the 3-beat reconcile instead of through
+`await_render`'s 900 s silence timer. **The grace is an upper bound on how long
+the broker will wait for a silent worker, not a fixed cost.**
+
+fleet04 re-rented onto machine 8449 at $0.535/hr in cycle 2 and its retirement
+at 17:01 is on schedule. **No host has been condemned this cycle** — the running
+total stays at 3 bad hosts in 14 rentals.
+
+### `tools/r23901_orphan_ledger.py` — the ledger, and the test it sets up
+
+R2-3901 established the rule by reading plan lines by hand. It is now a tool, so
+that the check is repeatable and so the endgame has a **number to be wrong
+about**. It reconstructs each broker's live job from its own delivery stream,
+finds the frames that stream skipped, and keeps only those that are also absent
+from disk — i.e. dropped in flight and on no todo list anywhere.
+
+Output at 17:15Z, 1,380 frames in:
+
+```
+broker    live job         cursor done/todo    plans  orphans
+fleet03   d3b1b8bde2f4        546  544/993         1  [192, 355]
+fleet04   467247848cc6       1397  127/716         4  none
+fleet05   dbc2c783eb28       2416  427/987         3  [2127, 2292]
+
+ORPHANED (on no todo list, only a re-submission recovers these): [192, 355, 2127, 2292]
+PREDICTED 'to render' ON RE-SUBMISSION = 1598  = 4 orphaned + 1594 not yet rendered
+```
+
+It reproduces the four orphans that were found by hand, from a different route,
+and **the plan-line count column carries the mechanism in one number**: fleet04
+has 4 plan lines and no orphans; the two brokers with a single live plan line
+have two orphans each.
+
+**The test, stated before the answer is available.** At re-submission the broker
+prints `2978 frame(s) requested, N already delivered, K to render`. **K must
+equal the ledger's prediction.**
+
+- **K > predicted** — something other than retirement is dropping frames.
+  **Stop. Do not encode. Escalate.**
+- **K < predicted** — the gap reader is wrong and the coverage claim is unfounded.
+  **Stop.**
+- **K = predicted** — the model is confirmed and the re-render is the known
+  recovery of known casualties.
+
+This is worth more than a re-submission that simply "renders whatever is
+missing", because that version cannot tell a retirement casualty from a defect.
+
+### THE `COMPLETE` LINES ARE GOING TO BE WRONG, BY CONSTRUCTION
+
+Stated plainly so nobody downstream reads one as coverage: **fleet03 will report
+`COMPLETE` at 991 of 993 and fleet05 short by however many it orphans.** Those
+lines will be accurate about each job's own todo list and false about the film.
+**Only the re-submission plus `fleetctl verify --manifest` against the 1-2978
+range is coverage.**
+
+## R2-3903 — THE ENCODE COMMANDS WERE DESCRIBED BUT NEVER WRITTEN DOWN, AND ARE NOW RECOVERED BYTE-EXACTLY
+
+**Recorded, NOT run.** The client has asked to review the frame set before the
+film is cut, so nothing below has been executed beyond four-frame reconstruction
+probes.
+
+R2-3858 says *"both ffmpeg command lines with their measured output sizes"* are
+at R2-3854. **They are not.** R2-3854 describes the encodes — profile, bitrate,
+the `setparams`, the concat form — but the literal command lines appear nowhere
+in the repository. That is a real gap: at 4am it would have been reconstructed
+from prose.
+
+So they were recovered from the validated artefacts themselves and **proved by
+byte-comparison**, which is a stronger check than re-reading a command:
+
+**ProRes 422 HQ — reproduces `tmp/r23841_encodetest/rate4k_prores422hq.mov` byte for byte:**
+
+```
+ffmpeg -r 24 -f concat -safe 0 -i FRAMES.ffconcat \
+  -vf "setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709,\
+scale=in_range=full:out_range=tv:out_color_matrix=bt709" \
+  -c:v prores_ks -profile:v 3 -vendor apl0 -pix_fmt yuv422p10le \
+  -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -i audio/out/master.wav -map 0:v:0 -map 1:a:0 -c:a copy OUT.mov
+```
+
+**`-vendor apl0` is the detail that would have been lost.** The first
+reconstruction differed from the reference in exactly **16 bytes — four per
+frame**, at the same offset in each ProRes frame header: octal `141 160 154 60`
+(`apl0`) against `114 141 166 143` (`Lavc`). Decoded pixels were already
+bit-identical (PSNR `inf`); only the creator ID differed. With `-vendor apl0`
+the file is **byte-identical to the reference**. Some NLEs treat ProRes without
+the Apple creator ID as third-party, so this is not cosmetic.
+
+**H.265 — reproduces the reference's every tag and its size to 0.03%:**
+
+```
+ffmpeg -r 24 -f concat -safe 0 -i FRAMES.ffconcat -i audio/out/master.wav \
+  -map 0:v:0 -map 1:a:0 \
+  -vf "setparams=...,scale=in_range=full:out_range=tv:out_color_matrix=bt709" \
+  -c:v libx265 -preset slow -pix_fmt yuv420p \
+  -b:v 55M -maxrate 60M -bufsize 120M -tag:v hvc1 \
+  -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -c:a aac -b:a 192k -movflags +faststart OUT.mp4
+```
+
+Not byte-identical, and **should not be expected to be** — x265 runs
+`frame-threads=2` with WPP, so its output depends on thread scheduling. The
+deliverable that must be reproducible is the ProRes master, and that one is.
+
+**Two settings recovered that no document records**, both read out of the x265
+SEI options string in the reference file rather than guessed:
+
+- **`-preset slow`**, not medium: `ref=4 rc-lookahead=25 rd=4 subme=3 me=3
+  merange=57 rdoq-level=2 max-merge=3 limit-refs=3` is the `slow` row exactly.
+- **`-tag:v hvc1`** (not `hev1`) and `+faststart` — confirmed by
+  `codec_tag_string=hvc1` and `ftyp/moov/free/mdat` atom order.
+
+**The `setparams` defect reproduced on demand.** Encoding the same four frames
+**without** it, with `-color_trc bt709` still on the command line, yields
+`color_transfer=iec61966-2-1` — the PNG decoder's tag wins. That is R2-3854's
+claim, reproduced rather than inherited.
+
+### ENCODE RATES, MEASURED ON REAL 4K FRAMES — a number nobody had
+
+Timed on the four reference 4K frames, on this box, **at load ~4.5-5.2 with two
+brokers pushing 11 GB scenes**, so these are pessimistic:
+
+| output | measured | extrapolated to 2,978 frames |
+| --- | --- | --- |
+| ProRes 422 HQ | 2 s / 4 frames = **0.50 s/frame** | **~25 min** |
+| H.265, preset slow | 15 s / 4 frames = **3.75 s/frame** | **~3.1 h** |
+
+**The H.265 pass is a three-hour job, not a footnote**, and it is the one
+R2-3854 warns dies under CPU contention. It should be run on an idle box, after
+the fleet is down. The ProRes master is cheap by comparison.
+
+### The audio master, re-checked on disk rather than at mux time
+
+```
+md5  d5087fd021b5f748f176ecb2b6c1de67   35,736,044 B
+     pcm_s24le, 48 kHz, stereo, duration 124.083333 s
+```
+
+**Unchanged**, and exactly `2978/24 = 1489/12 = 124.083333 s` of picture. No
+`-shortest`, no padding, `-c:a copy`.
+
+## R2-4020 — THE SWEEP AFTER THE GITIGNORED BUILD INPUT, AND FOUR MEASUREMENT PASSES THAT RAN OUTSIDE THE LOCK
+
+Two defects, both local, neither touching the master render. The 4K master was
+live on three rented 5090s throughout and nothing here went near it, its
+brokers, its jobs or any instance. One heavy Blender pass was run, under
+`tools/buildlock.sh` like everything else, and it is the measurement Part 2
+rests on.
+
+
+# PART 1 — THE SWEEP (task #164)
+
+`work/r2_1211_rubber_tracks.json` was found gitignored and force-added. The
+question this part answers is **what else is in that position**.
+
+## The method, and why extension-grepping would have missed it
+
+The known defect could not be found by looking for JSON files. It hid because
+`world/items/tyre_deposit.py` does this **at module scope**:
+
+```python
+TRACKS_JSON = os.path.join(_ROOT, "work", "r2_1211_rubber_tracks.json")   # L295
+def _tracks(): ...  json.load(open(TRACKS_JSON))                          # L304-305
+TR = _tracks()                                                            # L308  <-- top level
+```
+
+`TR = _tracks()` is an ordinary-looking assignment. The `open()` is one call
+away, and it fires on `import tyre_deposit` — which `world/build_surface.py`
+does at L2809, making the file a **stage-1 dependency of the world build**.
+
+So the sweep was done twice, from both ends:
+
+1. **Import-graph walk** from `assemble.py`, `world/build_surface.py` and
+   `tools/build_film_scene.py`, resolving the runtime `sys.path` inserts
+   (`world/`, `world/items/`, `tools/`) — without those, `import tyre_deposit`
+   does not resolve at all and the known defect is invisible. **19 modules**
+   in the transitive closure; every literal path passed to `open`, `json.load`,
+   `np.load`, `csv.DictReader`, `bpy.data.libraries.load`,
+   `bpy.ops.wm.open_mainfile` and `bpy.data.images.load` collected.
+2. **An AST pass over the whole repo** for *module-scope* reads, including the
+   one-level indirection above (a top-level statement calling a module-level
+   function that contains an `open`). **474 module-scope read sites**;
+   filtering the `list.append` collisions leaves the table below.
+
+**The method was calibrated before it was trusted**: the AST pass reports
+`world/items/tyre_deposit.py 308 INDIRECT via _tracks() load,open`. It finds
+the known defect, so it is allowed to be believed about the rest.
+
+Each surviving path was then asked the two questions: **is it tracked**, and
+**if it vanished, what regenerates it**.
+
+## Everything the build opens, and its verdict
+
+### Read at IMPORT time (hard dependency of an `import` statement)
+
+| path | opened by | tracked? | verdict |
+| --- | --- | --- | --- |
+| `docs/circuit_spec.json` | `world_contract.py:339` (direct), `build_barriers.py:83`, `build_dressing.py:74` | **tracked** | clear |
+| `docs/item_manifest.json` | `world/items/heras_fence_panel.py:268` via `_manifest_record()` | **tracked** | clear |
+| `docs/circuit_spec.json` | `world/items/dais_delivery_ramp.py:218` via `_spec_dais()` | **tracked** | clear |
+| `telemetry/telemetry.csv` | `tyre_deposit.py:380` via `_film_profile()` | **tracked** (`.gitignore:100`, re-included on purpose) | clear |
+| `work/r2_1211_rubber_tracks.json` | `tyre_deposit.py:305` via `_tracks()` | **tracked** (force-added, R2-3961) | already fixed |
+| 11 × `world/*.py`, 84 × `world/items/*.{py,json}`, `assemble.py` | `assemble.py:132` `_source_fingerprint()`, byte-hashed | **tracked** | clear |
+
+Three more import-time reads were found beyond the known one
+(`item_manifest.json`, and `circuit_spec.json` from two item modules). **All
+three are tracked.**
+
+### Read during `build()`
+
+| path | tracked? | what regenerates it |
+| --- | --- | --- |
+| `docs/beat_sheet.json` | **tracked** (`.gitignore:46-50` records why it must be) | — |
+| `world/camera_rig_path.json` | **tracked** | — |
+| `world/items/PLACEMENT.json` | **tracked** | — |
+| `world/sky_cause.json` | **tracked** | — |
+| `sim/out/apply_requirements.json` | **tracked** | — |
+| `render/world/assembly/r2/SHIPPING.md` | **tracked** | — |
+| `render/r2651/dof.json` | **UNTRACKED** — `.gitignore:26 render/*` | `tools/r2651_dof_dump.py` (tracked) |
+| `render/exposure_cal/expcal_measured.json` | **UNTRACKED** — `.gitignore:26` | `tools/exposure_calibration.py --measure` (tracked, `OUTDIR` L70 is this dir) |
+| `render/world/sky/sky_banding.png` | **UNTRACKED** — `.gitignore:78` | `build_sky.render_test()` (tracked) |
+| `world/car_anim.blend` (301 MB) | **UNTRACKED** — `.gitignore:12 *.blend` | `anim/build_car_anim.py` (tracked) |
+| `world/showroom_ceiling.blend` (7.3 MB) | **UNTRACKED** — `*.blend` | `world/items/showroom_ceiling.py` (tracked) |
+| 4 × `world/items/*_test.blend` (up to 2.0 GB) | **UNTRACKED** — `*.blend` | each item's own `world/items/<item>.py` (all tracked) |
+| **33 × `render/items/*/gate.json`** | **UNTRACKED** — `.gitignore:26 render/*` | **see below — this is the defect** |
+
+**Counted: 44 distinct build-input paths checked, 42 of them resolvable to a
+concrete file. 13 were untracked. 12 of those 13 have a kept, tracked
+regenerator. One did not.**
+
+## THE DEFECT: `render/items/*/gate.json`
+
+`world/build_items.py::check_row()` (L497-509):
+
+```python
+g = (_abs(row["gate_json"]) if row.get("gate_json")
+     else os.path.join(GATE_DIR, row["item"], "gate.json"))
+if os.path.exists(g):
+    row["_gate_result"] = json.load(open(g)).get("result")
+if row.get("require_gate_accepted", True) and row["_gate_result"] != "ITEM_ACCEPTED":
+    fatal.append("gate verdict is %r, not ITEM_ACCEPTED ...")
+```
+
+`require_gate_accepted` **defaults to True**, so a missing `gate.json` is not a
+degradation — it is a **fatal** on that row. `rm -rf render/items/` does not
+make the world build worse, it **stops it**. That is precisely the position
+`work/r2_1211_rubber_tracks.json` was in, one directory over, and for the same
+structural reason: a blanket exclusion written to keep *renders* out of git
+(`render/*`) swallowed the *evidence* that was sitting among them.
+
+**And "a script writes it" is true here and beside the point.**
+`tools/item_gate.py` will happily produce a `gate.json` — of **a new run**.
+This project's own tooling says so, in `tools/r2_1381_rescore.py:9`:
+
+> `gate.json` files are the record of the run that produced them and are not
+> edited after the fact.
+
+The 33 files are the record of the runs that **accepted the geometry that
+shipped**. Re-rendering cannot restore that record; it can only replace it with
+a different one wearing the same name. By the test set for this sweep —
+*untracked, and nothing regenerates it* — this is the one that fails.
+
+520 KB across 33 files, so the `.gitignore` header's "large, regenerable
+artefacts" reasoning does not reach them either.
+
+### The fix
+
+`.gitignore` gained a block in the house style — every level opened one at a
+time and immediately re-closed, because git will not descend into an excluded
+directory — with the reasoning above as its comment:
+
+```
+!render/items/
+render/items/*
+!render/items/*/
+render/items/*/*
+!render/items/*/gate.json
+```
+
+**Verified surgical.** `git status --porcelain -uall render/items/` returns
+**33 paths, all of them `gate.json`, nothing else**. The gate renders, crops
+and EXRs beside them stay ignored (`gate.png`, `foo.exr`, `notes.txt` all still
+excluded on a spot check). All 33 staged.
+
+## A SECOND FINDING: THE BATTERY SOURCE `.gitignore` RE-INCLUDES WAS NEVER `git add`ed
+
+Different failure mode, same consequence. `.gitignore:83-96` deliberately
+re-includes `render/world/assembly/r2/**/*.py` and `*.sh` — that block exists
+*because* the battery had no history. The rule works. **Nobody ran `git add`.**
+
+**14 hand-written source files were sitting untracked with no rule ignoring
+them**, including the whole of **v129 — the current generation, the one that
+built and verified `film25_breach`, the ship candidate now on the farm**:
+
+```
+v129/verify_film25.sh   v129/run_rebuild25.sh   v129/build_breach25.sh   v129/film_car_keys.py
+v126/build_assembly11.sh  v126/build_assembly12.sh  v126/build_assembly13.sh
+v126/build_breach19.sh    v126/build_car_cs.sh      v126/build_film19.sh
+v126/run_rebuild.sh       v126/run_rebuild20.sh     v126/run_rebuild21.sh
+v126/verify_film19.sh
+```
+
+`git log` on any of them was empty, which is the exact condition
+`.gitignore:68-71` says makes R2-079 ("establish a baseline from committed
+state before you change anything") structurally impossible. All 14 staged.
+**A re-inclusion rule is not a backup; it only makes an `add` possible.**
+
+## CLEARED, WITH THE REASON
+
+Reported so the next sweep does not redo them:
+
+* **`world/car_anim.blend`, `world/showroom_ceiling.blend`, the four
+  `world/items/*_test.blend`** — untracked, but each has a tracked builder, and
+  at 301 MB / 2.0 GB they are what the `.gitignore` header means by "large,
+  regenerable, would make commits useless". Correctly excluded.
+* **`render/r2651/dof.json`** — regenerated by `tools/r2651_dof_dump.py`.
+  Worth one caution: `build_surface.py:4577` reads it **guarded by
+  `os.path.exists`**, so its absence does not raise — it silently changes the
+  film pose defs. Regenerable, but it fails quiet rather than loud.
+* **`render/exposure_cal/expcal_measured.json`** — regenerated by
+  `tools/exposure_calibration.py --measure`, whose `OUTDIR` is that directory.
+* **`render/world/sky/sky_banding.png`** — a render, regenerated by
+  `build_sky.render_test()`.
+* **`docs/r2401_cockpit_fit.json`, `r2401_cockpit_sweep.json`,
+  `r2401_headroom.json`** — untracked *and unignored*, which looks like the
+  battery case, but they are **outputs** of their own tracked tools and nothing
+  reads them as a build input. Not defects.
+* **`docs/collision_report.json`, `instance_variety.json`, `inventory_iter.json`,
+  `placement*.json`, `presentation_normals.json`, `screen_presence*.json`** —
+  untracked, each named individually in `.gitignore:43-56`, all generated
+  reports. Correctly excluded.
+* **`docs/item_placement.json`** — referenced at `tools/item_placement_gate.py:4`
+  and **does not exist**. It is that tool's `--out` example, not an input.
+  Nothing reads it. Not a defect.
+
+## THE ONE THING THIS SWEEP CANNOT FIX, STATED PLAINLY
+
+Following the regeneration chain to its root rather than stopping at the first
+script that writes the file:
+
+```
+render/film25_breach.blend
+  <- world/car_anim.blend        (anim/build_car_anim.py)
+  <- world/beat1_anim.blend      (anim/build_beat1_anim.py)
+  <- /home/zany/opus5-car-render/work/iter.blend      288 MB, 2026-07-26
+```
+
+`anim/build_beat1_anim.py:2-3` names it as its input blend. **The entire round-2
+car bottoms out in a round-1 artefact that lives outside this repository**, is
+288 MB, and is protected by nothing but the convention that round 1 is
+read-only. `build_beat1_anim.py`'s own header is explicit that this is
+deliberate — "the seated pose is not authored, it is the round-1 car" — so it is
+a design choice, not an oversight. It is recorded here because the sweep's
+question was *what happens if this vanishes*, and for this one the answer is
+that nothing in `f1-round2` can rebuild it. **Not actioned: round 1 is
+read-only and out of scope.**
+
+
+# PART 2 — MEASUREMENT PASSES OUTSIDE THE BUILD LOCK (task #165)
+
+## The defect is real, and the script already knew it
+
+`render/world/assembly/r2/v129/verify_film25.sh` ran **five** heavy Blender
+steps against `render/film25_breach.blend` (10.9 GB). The fifth — the bar —
+was wrapped in `tools/buildlock.sh`, with a comment saying exactly why:
+
+> Wrapped in the build lock because two ~10 GB opens on an 11 GB box do not run
+> at half speed -- one of them gets OOM-killed.
+
+The four above it were gated by a local `waitmem` helper instead:
+
+```bash
+waitmem () {
+  for i in $(seq 1 960); do
+    A=$(free -g | awk '/^Mem:/{print $7}')
+    [ "$A" -ge 5 ] && { echo "[gate] ${A} GB available, starting $1"; return 0; }
+    sleep 30
+  done
+  echo "[gate] TIMEOUT before $1"; return 1
+}
+```
+
+The same reasoning that justified the lock for step 5 applies unchanged to
+steps 1-4. They were the ones outside it.
+
+## THE MEASUREMENT
+
+One pass run under the lock, instrumented — `VmHWM` polled from `/proc` every
+0.5 s, `ru_maxrss` taken from `wait4()`:
+
+| | |
+| --- | --- |
+| pass | `work/lighting/measure_film_scene.py` on `render/film25_breach.blend` |
+| blend on disk | 10,956,580,171 B (10.9 GB) |
+| **peak RSS** | **7,847 MB = 7.66 GB** (`VmHWM`; `ru_maxrss` agrees) |
+| MemAvailable at start | 7,382 MB |
+| **MemAvailable at trough** | **264 MB** |
+| box | 11,888 MB RAM, 45 GB swap |
+
+**One pass takes this box to 264 MB.**
+
+**Lane: BIG, for all four.** 7.66 GB is not a `--small` job by any reading —
+that lane is two concurrent slots gated at `SMALL_MIN_MB=1000`, sized for the
+~400 MB surface builds R2-3066b measured. Putting a 7.66 GB pass in it would
+permit two at once and kill the thing the lane exists to protect.
+
+## WATCHED TO FAIL: THE GATE WAS GREEN FOR EXACTLY THE WINDOW THAT MATTERED
+
+`waitmem`'s verdict is a pure function of the number it reads, so it was
+evaluated against the recorded MemAvailable of the real pass, at 0.5 s
+resolution — not simulated, *the actual guard against the actual ramp*:
+
+```
+t=   0.0s  holder_rss=     0 MB  mem_avail= 7382 MB (7 GB)  waitmem: START
+t=   2.5s  holder_rss=  1050 MB  mem_avail= 7155 MB (6 GB)  waitmem: START
+t=  11.5s  holder_rss=  4312 MB  mem_avail= 6081 MB (5 GB)  waitmem: START
+t=  16.5s  holder_rss=  6379 MB  mem_avail= 5495 MB (5 GB)  waitmem: START   <-- last
+t=  17.0s  holder_rss=  6938 MB  mem_avail= 5079 MB (4 GB)  waitmem: wait
+...
+t= 552.5s  holder_rss=  6447 MB  mem_avail= 1291 MB         (trough was 264 MB)
+```
+
+**For the first 16.5 seconds, `waitmem` returns START** — while the process it
+is standing next to is already committed to 7.66 GB and has touched under 6 of
+it. A second pass admitted anywhere in that window lands in a box that ends up
+with 264 MB spare, and the OOM killer then takes **the biggest process**, which
+is whichever 7.66 GB pass is nearest to finishing, or somebody else's 10 GB
+film append.
+
+And `waitmem` sleeps **30 s** between polls, so its sampling interval is nearly
+twice the width of the window in which it is wrong. It cannot even see itself
+be wrong.
+
+This is the class of defect named in the brief: **a memory poll cannot see
+intent.** It samples what is *allocated now*; the quantity that decides whether
+the box survives is what is *intended*. Only a lock carries intent, because the
+holder registers before it allocates.
+
+Full 0.5 s timeline: `docs/r2_4020_waitmem_timeline.tsv`.
+
+## THE FIX
+
+`waitmem` is gone. The four passes go through `tools/buildlock.sh`, big lane,
+via a `runlocked` helper. Two constraints shaped it and both are load-bearing:
+
+**1. The blender binary stays a direct argv element.** `buildlock.sh`'s
+wrong-Blender refusal (R2-3602) inspects `basename` of each argument. Wrapping
+the command in `bash -c "..."` to get the redirect inside the lock would have
+hidden `/opt/blender-.../blender` from that scan and **silently disarmed the
+one check standing between this script and a quietly-corrupt world**. That is
+an escape hatch by accident, and it is not there.
+
+**2. buildlock's own verdict line must not reach the four logs.** `buildlock`
+prints `>> STAGE RESULT: BUILDLOCK RELEASED`. `film_bar.py`'s `VERDICT_RE` is
+`>{0,2} *STAGE RESULT:`, and `stage()` **FAILs any log with two verdicts**
+(R2-2108). The four logs written by these passes are exactly the four
+`film_bar.py` reads. So the naive wrap — `buildlock ... > $W/measure.log` —
+would have turned **all four passing bar rows into FAILs**. `runlocked`
+captures buildlock's stream to a `.lock.log` beside the log and strips the
+BUILDLOCK verdict on the way in, which is the same capture-and-replay the bar
+wrapper at the bottom of the file has always used.
+
+```bash
+runlocked () {
+  local lname="$1" flog="$2"; shift 2
+  local raw="${flog%.log}.lock.log"
+  bash tools/buildlock.sh "$lname" "$@" > "$raw" 2>&1
+  local rc=$?
+  grep -av "STAGE RESULT: BUILDLOCK" "$raw" > "$flog"
+  [ $rc -eq 0 ] || echo "  [lock] $lname rc=$rc -- refused, or the pass failed; raw log: $raw"
+  return $rc
+}
+```
+
+One deliberate behaviour change: `waitmem` gave up after 8 h and returned
+failure; **buildlock queues instead of failing**, by design, so a contended
+pass is now late rather than lost.
+
+## PROOF
+
+`runlocked` was extracted verbatim from the edited script (`awk` on the
+function body, so there is no second copy to drift) and exercised.
+
+### The two guards, asked the same question at the same instant, disagreeing
+
+This is the whole defect in four lines. While the instrumented 7.66 GB pass
+held the lock, a **real** buildlock-wrapped second pass was launched, and
+`waitmem`'s gate condition was polled beside it. At the tail of the run the
+holder had come down off its peak but was **still resident and still holding
+the lock**:
+
+| wall clock | holder | `waitmem` says | `buildlock` says |
+| --- | --- | --- | --- |
+| 17:18:53 | resident, 2.4 GB, lock held | `wait 3` | **QUEUED** |
+| **17:18:58** | **resident, 2.2 GB, lock held** | **`START 5`** | **QUEUED (refused)** |
+| **17:19:03** | **resident, 2.3 GB, lock held** | **`START 8`** | **QUEUED (refused)** |
+| 17:19:08 | gone, lock released | `START 8` | RAN |
+
+At 17:18:58 and 17:19:03 `waitmem` would have launched a second 7.66 GB pass
+**into a box still occupied by the first one**. The lock, asked at the same
+moment, refused:
+
+```
+BUILD LOCK HELD by 'r2_4020_rss_probe_measure_film_scene pid=3118974 since=17:06:41';
+0 waiter(s) ahead of me -- queuing, not racing.
+```
+
+The contender was held for the **entire 12½ minutes** the pass ran and started
+only after `BUILDLOCK RELEASED`. Same box, same second, one guard green and one
+guard red — and the red one is right.
+
+### The three regression tests
+
+`runlocked` sits between two invariants it could easily have broken, so both
+were tested rather than reasoned about:
+
+| | test | result |
+| --- | --- | --- |
+| **T1** | a passing stage leaves **exactly one** verdict in the log `film_bar.py` reads, counted with `film_bar.VERDICT_RE` itself, not a lookalike | **PASS** — 1 verdict, `FILM_MATERIALS_OK (0 failures)`; zero `BUILDLOCK` tokens in the log; buildlock's stream preserved beside it |
+| **T2** | buildlock's wrong-Blender refusal is **still armed** through `runlocked` | **PASS** — `/usr/bin/blender` refused, `rc=4`, the wrong binary never ran, and the log is left with **0 verdicts → UNMEASURABLE**, i.e. it fails safe rather than passing quietly |
+| **T3** | a second pass **queues** while the lock is held | **PASS** — waited 19 s behind a 20 s holder, logged `queuing, not racing`, and **still exactly 1 verdict** afterwards: the queue chatter is not mistaken for a verdict |
+
+T1 is the one that matters most. The naive wrap really would have failed all
+four bar rows, and it would have failed them *on a passing film* — the bar
+would have reported a defect that did not exist, which is the failure mode this
+log has paid for before.
+
+## WHAT WAS NOT CHANGED, AND WHY
+
+**`v127/verify_film23.sh` and `v128/verify_film24.sh` still contain
+`waitmem`.** They carry the same defect. They were left alone deliberately:
+they are the scripts that produced film23's and film24's evidence in
+`work/r22101` and `work/r23361`, which v129's own header calls "the ONLY proof
+that those two ship candidates passed 40/40, and neither is reproducible from
+any later state of these files." Both are tracked, so `git show` recovers them
+exactly; editing them would gain nothing and would blur what those two films
+were actually verified by.
+
+**`v126/verify_film19.sh` also has it**, with a different shape (the socket
+audit is inside a loop). Same reasoning.
+
+**The live path is fixed.** v129 is the current generation. **v130, when it is
+forked from v129, inherits `runlocked` and must not reintroduce `waitmem`.**
+
+## LEDGER
+
+| | |
+| --- | --- |
+| build inputs checked | 44 paths, 42 resolvable |
+| untracked | 13 |
+| untracked but regenerated by a kept, tracked script | 12 |
+| **untracked and unregenerable → fixed** | **1 class: 33 × `render/items/*/gate.json`** |
+| second finding → fixed | 14 battery source files the `.gitignore` already re-included but nobody `git add`ed |
+| not actioned, recorded | round-1 `iter.blend` at the root of the car chain |
+| heavy Blender passes run | **1** (under the lock, 739 s, rc=0, `assert_levelled` PASS) |
+| master render touched | **none** |
+
+## POSTSCRIPT — THE COMMIT WAS REFUSED FIRST, BY THE DEFECT `.gitignore:29-36` DESCRIBES
+
+The first `git commit` was refused by `gitguard`: all 14 battery source files,
+**including the v129 fix itself**, were leased by `inflight-auto` — an
+auto-lease that had claimed **202 paths** 12.4 hours earlier, alongside an older
+`inflight-2026-08-07` seed holding **295 paths at 67.2 hours**.
+
+Neither was a person doing work. This is exactly the failure `.gitignore:29-36`
+was written about — *"a lock that claims 'everything dirty' inherits the tree's
+untidiness as policy"*, and every such entry is *"a future false refusal aimed
+at whoever next touched that name."* Twelve hours later it was aimed at this
+one.
+
+**It was cleared through the front door.** `gitguard.py`'s own docstring
+(R2-2232) says the only mechanism that used to exist was
+`R2_AGENT=inflight-2026-08-07 gitguard.py release <path>` — setting your
+identity to another owner's name — and that *"a guard whose only escape hatch
+looks like impersonation is a guard people route around."* `retire` is the
+hatch built in the open, and it is what was used:
+
+* dry run first, then `--apply`, **under my own `R2_AGENT`**, never the owner's;
+* scoped to the **14 paths of this task**, not `--all-paths`;
+* both seeds seed-shaped and past the 8 h floor (S1, S2), **0 refusals**, no
+  named agent's lease touched;
+* `retire` only *removes*, so the paths came back **unowned** and were then
+  claimed under my own identity (S3), which is the step that makes this a
+  transfer nobody had to pretend about.
+
+Recorded because a refusal that gets worked around silently is worth more as a
+report than as a cleared obstacle.
