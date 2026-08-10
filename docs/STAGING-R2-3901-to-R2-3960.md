@@ -92,8 +92,169 @@ a film with holes in it.
 | 16:40:44 | f2416 delivered normally |
 | 16:41:27 | heartbeat 1/3, and the job socket hits `ConnectionDropped` mid-f2417 |
 | 16:43:28 | 3 consecutive misses → reconcile → instance 47334687 gone |
-| 16:57:31 | re-rented; scene cache budget derived on the new card |
+| 16:56:44 | **offer 46937219 re-rented — machine 131197, the same machine it was retired off**, $0.455/hr, EXCLUSIVE, 838 Mbps up |
+| 16:57:31 | instance 47389166 provisioning; scene cache budget derived on the new card |
+
+The fleet is back to **three cards at $1.5200/hr ($36.48/day)** against $117.38
+of credit — **77.2 h of runway** for a tail that needs roughly 43. fleet04 is the
+expensive one at $0.5556/hr and is the card due to retire next, so if anything
+the blended rate is about to improve.
 
 fleet04 was at 11.92 h of uptime at 16:55Z and is due to retire imminently, so
 its push may collide with fleet05's. Under R2-3864 that is the 35-70 min case,
 not a deviation, and it is not worth reporting unless it runs past 70.
+
+## R2-3902 — CYCLE 3 CLOSED, AND THE ORPHAN LEDGER IS NOW A TOOL WITH A FALSIFIABLE PREDICTION
+
+### Cycle 3, all three cards, measured to `worker ready` rather than to "running"
+
+| broker | went silent | `worker ready` | **down** | frame orphaned |
+| --- | --- | --- | ---: | --- |
+| fleet03 | 16:40:15 | **16:48:13** | **7 m 58 s** | none — f543 re-rendered at 436.4 s vs a 225 s baseline |
+| fleet05 | 16:41:27 | **17:05:21** | **23 m 54 s** | pending — cursor still 2416 |
+| fleet04 | 17:01:18 | *in its grace window* | — | — |
+
+**Both closed cards came back faster than the 35-70 min band**, and neither is a
+deviation worth reporting. The reason fleet03 took 8 minutes is mechanical: a
+deploy was already in flight when the card vanished, so the verdict arrived
+through `SshNeverReady` (240 s) plus the 3-beat reconcile instead of through
+`await_render`'s 900 s silence timer. **The grace is an upper bound on how long
+the broker will wait for a silent worker, not a fixed cost.**
+
+fleet04 re-rented onto machine 8449 at $0.535/hr in cycle 2 and its retirement
+at 17:01 is on schedule. **No host has been condemned this cycle** — the running
+total stays at 3 bad hosts in 14 rentals.
+
+### `tools/r23901_orphan_ledger.py` — the ledger, and the test it sets up
+
+R2-3901 established the rule by reading plan lines by hand. It is now a tool, so
+that the check is repeatable and so the endgame has a **number to be wrong
+about**. It reconstructs each broker's live job from its own delivery stream,
+finds the frames that stream skipped, and keeps only those that are also absent
+from disk — i.e. dropped in flight and on no todo list anywhere.
+
+Output at 17:15Z, 1,380 frames in:
+
+```
+broker    live job         cursor done/todo    plans  orphans
+fleet03   d3b1b8bde2f4        546  544/993         1  [192, 355]
+fleet04   467247848cc6       1397  127/716         4  none
+fleet05   dbc2c783eb28       2416  427/987         3  [2127, 2292]
+
+ORPHANED (on no todo list, only a re-submission recovers these): [192, 355, 2127, 2292]
+PREDICTED 'to render' ON RE-SUBMISSION = 1598  = 4 orphaned + 1594 not yet rendered
+```
+
+It reproduces the four orphans that were found by hand, from a different route,
+and **the plan-line count column carries the mechanism in one number**: fleet04
+has 4 plan lines and no orphans; the two brokers with a single live plan line
+have two orphans each.
+
+**The test, stated before the answer is available.** At re-submission the broker
+prints `2978 frame(s) requested, N already delivered, K to render`. **K must
+equal the ledger's prediction.**
+
+- **K > predicted** — something other than retirement is dropping frames.
+  **Stop. Do not encode. Escalate.**
+- **K < predicted** — the gap reader is wrong and the coverage claim is unfounded.
+  **Stop.**
+- **K = predicted** — the model is confirmed and the re-render is the known
+  recovery of known casualties.
+
+This is worth more than a re-submission that simply "renders whatever is
+missing", because that version cannot tell a retirement casualty from a defect.
+
+### THE `COMPLETE` LINES ARE GOING TO BE WRONG, BY CONSTRUCTION
+
+Stated plainly so nobody downstream reads one as coverage: **fleet03 will report
+`COMPLETE` at 991 of 993 and fleet05 short by however many it orphans.** Those
+lines will be accurate about each job's own todo list and false about the film.
+**Only the re-submission plus `fleetctl verify --manifest` against the 1-2978
+range is coverage.**
+
+## R2-3903 — THE ENCODE COMMANDS WERE DESCRIBED BUT NEVER WRITTEN DOWN, AND ARE NOW RECOVERED BYTE-EXACTLY
+
+**Recorded, NOT run.** The client has asked to review the frame set before the
+film is cut, so nothing below has been executed beyond four-frame reconstruction
+probes.
+
+R2-3858 says *"both ffmpeg command lines with their measured output sizes"* are
+at R2-3854. **They are not.** R2-3854 describes the encodes — profile, bitrate,
+the `setparams`, the concat form — but the literal command lines appear nowhere
+in the repository. That is a real gap: at 4am it would have been reconstructed
+from prose.
+
+So they were recovered from the validated artefacts themselves and **proved by
+byte-comparison**, which is a stronger check than re-reading a command:
+
+**ProRes 422 HQ — reproduces `tmp/r23841_encodetest/rate4k_prores422hq.mov` byte for byte:**
+
+```
+ffmpeg -r 24 -f concat -safe 0 -i FRAMES.ffconcat \
+  -vf "setparams=color_primaries=bt709:color_trc=bt709:colorspace=bt709,\
+scale=in_range=full:out_range=tv:out_color_matrix=bt709" \
+  -c:v prores_ks -profile:v 3 -vendor apl0 -pix_fmt yuv422p10le \
+  -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -i audio/out/master.wav -map 0:v:0 -map 1:a:0 -c:a copy OUT.mov
+```
+
+**`-vendor apl0` is the detail that would have been lost.** The first
+reconstruction differed from the reference in exactly **16 bytes — four per
+frame**, at the same offset in each ProRes frame header: octal `141 160 154 60`
+(`apl0`) against `114 141 166 143` (`Lavc`). Decoded pixels were already
+bit-identical (PSNR `inf`); only the creator ID differed. With `-vendor apl0`
+the file is **byte-identical to the reference**. Some NLEs treat ProRes without
+the Apple creator ID as third-party, so this is not cosmetic.
+
+**H.265 — reproduces the reference's every tag and its size to 0.03%:**
+
+```
+ffmpeg -r 24 -f concat -safe 0 -i FRAMES.ffconcat -i audio/out/master.wav \
+  -map 0:v:0 -map 1:a:0 \
+  -vf "setparams=...,scale=in_range=full:out_range=tv:out_color_matrix=bt709" \
+  -c:v libx265 -preset slow -pix_fmt yuv420p \
+  -b:v 55M -maxrate 60M -bufsize 120M -tag:v hvc1 \
+  -color_primaries bt709 -color_trc bt709 -colorspace bt709 -color_range tv \
+  -c:a aac -b:a 192k -movflags +faststart OUT.mp4
+```
+
+Not byte-identical, and **should not be expected to be** — x265 runs
+`frame-threads=2` with WPP, so its output depends on thread scheduling. The
+deliverable that must be reproducible is the ProRes master, and that one is.
+
+**Two settings recovered that no document records**, both read out of the x265
+SEI options string in the reference file rather than guessed:
+
+- **`-preset slow`**, not medium: `ref=4 rc-lookahead=25 rd=4 subme=3 me=3
+  merange=57 rdoq-level=2 max-merge=3 limit-refs=3` is the `slow` row exactly.
+- **`-tag:v hvc1`** (not `hev1`) and `+faststart` — confirmed by
+  `codec_tag_string=hvc1` and `ftyp/moov/free/mdat` atom order.
+
+**The `setparams` defect reproduced on demand.** Encoding the same four frames
+**without** it, with `-color_trc bt709` still on the command line, yields
+`color_transfer=iec61966-2-1` — the PNG decoder's tag wins. That is R2-3854's
+claim, reproduced rather than inherited.
+
+### ENCODE RATES, MEASURED ON REAL 4K FRAMES — a number nobody had
+
+Timed on the four reference 4K frames, on this box, **at load ~4.5-5.2 with two
+brokers pushing 11 GB scenes**, so these are pessimistic:
+
+| output | measured | extrapolated to 2,978 frames |
+| --- | --- | --- |
+| ProRes 422 HQ | 2 s / 4 frames = **0.50 s/frame** | **~25 min** |
+| H.265, preset slow | 15 s / 4 frames = **3.75 s/frame** | **~3.1 h** |
+
+**The H.265 pass is a three-hour job, not a footnote**, and it is the one
+R2-3854 warns dies under CPU contention. It should be run on an idle box, after
+the fleet is down. The ProRes master is cheap by comparison.
+
+### The audio master, re-checked on disk rather than at mux time
+
+```
+md5  d5087fd021b5f748f176ecb2b6c1de67   35,736,044 B
+     pcm_s24le, 48 kHz, stereo, duration 124.083333 s
+```
+
+**Unchanged**, and exactly `2978/24 = 1489/12 = 124.083333 s` of picture. No
+`-shortest`, no padding, `-c:a copy`.
