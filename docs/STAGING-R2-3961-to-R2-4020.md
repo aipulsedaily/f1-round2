@@ -418,3 +418,34 @@ forked from v129, inherits `runlocked` and must not reintroduce `waitmem`.**
 | heavy Blender passes run | **1** (under the lock, 739 s, rc=0, `assert_levelled` PASS) |
 | master render touched | **none** |
 
+## POSTSCRIPT — THE COMMIT WAS REFUSED FIRST, BY THE DEFECT `.gitignore:29-36` DESCRIBES
+
+The first `git commit` was refused by `gitguard`: all 14 battery source files,
+**including the v129 fix itself**, were leased by `inflight-auto` — an
+auto-lease that had claimed **202 paths** 12.4 hours earlier, alongside an older
+`inflight-2026-08-07` seed holding **295 paths at 67.2 hours**.
+
+Neither was a person doing work. This is exactly the failure `.gitignore:29-36`
+was written about — *"a lock that claims 'everything dirty' inherits the tree's
+untidiness as policy"*, and every such entry is *"a future false refusal aimed
+at whoever next touched that name."* Twelve hours later it was aimed at this
+one.
+
+**It was cleared through the front door.** `gitguard.py`'s own docstring
+(R2-2232) says the only mechanism that used to exist was
+`R2_AGENT=inflight-2026-08-07 gitguard.py release <path>` — setting your
+identity to another owner's name — and that *"a guard whose only escape hatch
+looks like impersonation is a guard people route around."* `retire` is the
+hatch built in the open, and it is what was used:
+
+* dry run first, then `--apply`, **under my own `R2_AGENT`**, never the owner's;
+* scoped to the **14 paths of this task**, not `--all-paths`;
+* both seeds seed-shaped and past the 8 h floor (S1, S2), **0 refusals**, no
+  named agent's lease touched;
+* `retire` only *removes*, so the paths came back **unowned** and were then
+  claimed under my own identity (S3), which is the step that makes this a
+  transfer nobody had to pretend about.
+
+Recorded because a refusal that gets worked around silently is worth more as a
+report than as a cleared obstacle.
+
