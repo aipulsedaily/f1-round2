@@ -1,0 +1,467 @@
+{
+ "item": "heras_fence_panel",
+ "hero": true,
+ "filmed_at_m": 3.0,
+ "lens_mm": 35.0,
+ "onscreen_px_4k": 2160.0,
+ "flexible": false,
+ "flexible_because": "no cloth token and no clothed-human pattern in id/name",
+ "subject_selection": "collection 'W_Item_HerasFencePanel' (auto-detected from item id), skipping sub-collections ['W_Item_HerasFencePanel/Cameras', 'W_Item_HerasFencePanel/Standins']",
+ "prefix_integrity": null,
+ "witness_subject": "HFP_Panel_pad_n_017.002",
+ "witness_subject_because": "median-triangle instance of 771 objects (7860 tris) -- the TYPICAL instance of a population of 900, not the best one",
+ "checks": {
+  "no_external_assets": true,
+  "material_depth": true,
+  "geometry_resolves_at_distance": true,
+  "per_instance_variation": true,
+  "witness_frame_valid": true,
+  "surface_microstructure": true,
+  "relief_reads_as_lip_and_shade": true,
+  "silhouette_departs_from_analytic": "not_applicable"
+ },
+ "check_notes": {
+  "surface_microstructure": "fine(r1-r2) 20.062 % of mean vs the strictest brightness-matched smooth control 0.044 [wedge2(alb 0.12)] = x450.82, need x2.00; controls in play ['wedge2(alb 0.12)']; spectral balance fine/coarse None vs control 0.479",
+  "relief_reads_as_lip_and_shade": "lip-and-shadow dip +0.1058 along the light vs the strictest smooth control -0.2934 (need control + 0.030 AND >= 0.050 absolute).  | TWO-LIGHT: the band that MOVED when the sun crossed to its other candidate side is 11.0939 % contrast, x361.60 the strictest smooth control's (wedge2(alb 0.12), need x2.00) -- PASS. The band that did NOT move is 9.0770 %, and corr(chosen, flip) = -0.1961 (REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL). Fine-band contrast x450.82 the control (need x2.00) -- PASS. [dip re-derived on the light-driven half alone: +0.0878]",
+  "silhouette_departs_from_analytic": "rigid item (no cloth token and no clothed-human pattern in id/name); an analytic outline is correct here"
+ },
+ "unmeasurable": [],
+ "framing_source": "item_manifest.json",
+ "thresholds": {
+  "procedural_texture_nodes_required": 6,
+  "detail_limit_px": 6.0,
+  "fine_over_control_required": 2.0,
+  "fine_over_coarse_at_least_control": true,
+  "relief_margin_over_control": 0.03,
+  "relief_dip_absolute_floor": 0.05,
+  "relief_control_sane_band": 0.3,
+  "relief_light_over_control_required": 2.0,
+  "relief_two_light_rho": "REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL",
+  "silhouette_rms_mm_required": 5.0,
+  "silhouette_rms_over_control_required": 3.0,
+  "silhouette_min_px_for_5mm": 1.0
+ },
+ "threshold_kinds": {
+  "fine_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "fine_over_coarse_at_least_control": "SCALE-INVARIANT (spectral shape vs in-frame control)",
+  "relief_margin_over_control": "SCALE-INVARIANT (margin over in-frame control)",
+  "relief_dip_absolute_floor": "SCALE-INVARIANT (calibrated from control spread)",
+  "silhouette_rms_mm_required": "PHYSICAL (millimetres of cloth)",
+  "silhouette_rms_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "silhouette_min_px_for_5mm": "SIZE-DEPENDENT SCOPING TEST, not a bar",
+  "detail_limit_px": "SIZE-DEPENDENT (screen px at the filmed distance)",
+  "procedural_texture_nodes_required": "size-independent node floor"
+ },
+ "measured": {
+  "external_image_files": [],
+  "image_texture_nodes": 0,
+  "materials": 1,
+  "procedural_texture_nodes": 21,
+  "objects": 771,
+  "triangles": 14279066,
+  "triangles_per_declared_instance": 15865.6,
+  "triangles_per_found_object": 18520.2,
+  "triangles_per_onscreen_px": 6610.68,
+  "edges": 15268498,
+  "p10_edge_m": 0.001551,
+  "median_edge_m": 0.003,
+  "p90_edge_m": 0.080997,
+  "p10_edge_px_at_filmed_distance": 1.93,
+  "median_edge_px_at_filmed_distance": 3.73,
+  "px_per_m_at_filmed_distance": 1244.4,
+  "mm_per_px_at_filmed_distance": 0.8036,
+  "band_radii_mm_at_filmed_distance": {
+   "1": 0.804,
+   "2": 1.607,
+   "4": 3.214,
+   "8": 6.429,
+   "16": 12.857
+  },
+  "instances_declared": 900,
+  "instances_found": 771,
+  "cv_size": 0.0969,
+  "cv_volume": 0.21975,
+  "distinct_topologies": 258,
+  "variation_measured_over": "individual objects",
+  "realized_instances": null
+ },
+ "witness": {
+  "blend": null,
+  "png": "/home/zany/f1-round2/render/gate_witness/heras_fence_panel/witness.png",
+  "spec": "/home/zany/f1-round2/render/gate_witness/heras_fence_panel/witness_spec.json",
+  "render": {
+   "backend": "supplied PNG (--from-png)",
+   "png": "/home/zany/f1-round2/render/gate_witness/heras_fence_panel/witness.png",
+   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/heras_fence_panel/witness_flip.png"
+  },
+  "render_error": null,
+  "image": {
+   "frame": {
+    "subject_px": 447969,
+    "sphere_px": 115817,
+    "plane_px": 69550,
+    "subject_mean_linear": 0.023248,
+    "sphere_mean_linear": 0.11134,
+    "plane_mean_linear": 0.284674,
+    "subject_clipped_frac": 0.0,
+    "subject_crushed_frac": 0.1181,
+    "sphere_clipped_frac": 0.0,
+    "sphere_highlight_R_minus_B": 0.05258,
+    "sphere_dynamic_range": 74.13,
+    "subject_px_lit": 177413,
+    "subject_mean_measured": 0.03709
+   },
+   "why": {
+    "two_light": null,
+    "silhouette": "only 62 rows carry a single unbroken outline; need 100"
+   },
+   "lit_cut_linear": 0.01422,
+   "luminance_window": [
+    0.022254,
+    0.063052
+   ],
+   "controls": {
+    "sphere": {
+     "px_matched": 7249,
+     "px_total": 115817,
+     "mean_linear": 0.11134,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "7249 px in the subject's luminance window [0.022254, 0.063052]; need 8000"
+    },
+    "card": {
+     "px_matched": 0,
+     "px_total": 69550,
+     "mean_linear": 0.284674,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.022254, 0.063052]; need 8000"
+    },
+    "wedge0(alb 0.02)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.012271,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.022254, 0.063052]; need 8000"
+    },
+    "wedge1(alb 0.05)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.020083,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.022254, 0.063052]; need 8000"
+    },
+    "wedge2(alb 0.12)": {
+     "px_matched": 34875,
+     "px_total": 34875,
+     "mean_linear": 0.040108,
+     "bands": {
+      "1": 0.0461,
+      "2": 0.043,
+      "4": 0.0514,
+      "8": 0.093,
+      "16": null
+     },
+     "fine": 0.04455,
+     "relief": -0.29336
+    },
+    "wedge3(alb 0.28)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.08731,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.022254, 0.063052]; need 8000"
+    },
+    "wedge4(alb 0.55)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.167533,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.022254, 0.063052]; need 8000"
+    },
+    "wedge5(alb 0.95)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.287285,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.022254, 0.063052]; need 8000"
+    }
+   },
+   "controls_participating": [
+    "wedge2(alb 0.12)"
+   ],
+   "bands_subject": {
+    "1": 19.7466,
+    "2": 20.3764,
+    "4": 20.1566,
+    "8": null,
+    "16": null
+   },
+   "fine_subject": 20.061500000000002,
+   "coarse_subject": null,
+   "fine_control": 0.0445,
+   "fine_control_from": "wedge2(alb 0.12)",
+   "fine_over_control": 450.8202,
+   "fine_over_coarse": null,
+   "fine_over_coarse_control": 0.479,
+   "fine_max_subject": 20.3764,
+   "colour": {
+    "px": 177413,
+    "median_chromaticity": [
+     0.34136,
+     0.33198
+    ],
+    "chroma_sd_u": 0.02462,
+    "chroma_sd_v": 0.00538,
+    "single_hue_fraction_r010": 0.6344,
+    "single_hue_fraction_r005": 0.3201,
+    "chroma_p95_radius": 0.04153,
+    "gated": false,
+    "note": "NOT GATED -- the smooth controls are neutral by construction so there is no in-frame floor for chroma, and an absolute bar here would be uncalibrated. Read it."
+   },
+   "relief_subject": 0.10585,
+   "relief_subject_detail": {
+    "lag4": {
+     "along_light": -0.18209,
+     "across_light": -0.07624
+    },
+    "best_lag_px": 4,
+    "lag6": {
+     "along_light": 0.05963,
+     "across_light": -0.00023
+    },
+    "lag8": {
+     "along_light": 0.03866,
+     "across_light": 0.0123
+    },
+    "lag10": {
+     "along_light": 0.04651,
+     "across_light": -0.01918
+    },
+    "lag12": {
+     "along_light": 0.02561,
+     "across_light": -0.06908
+    },
+    "lag16": {
+     "along_light": 0.05834,
+     "across_light": -0.00506
+    },
+    "dip_along": 0.18209,
+    "dip_across": 0.07624
+   },
+   "relief_control_all": [
+    -0.29336
+   ],
+   "relief_control": -0.29336,
+   "relief_control_degenerate": null,
+   "two_light": {
+    "rho": -0.19615,
+    "light_pct": 11.09395,
+    "still_pct": 9.07701,
+    "px": 178697,
+    "log_floor": 0.00074179,
+    "px_lit_in_both": 443029,
+    "px_chosen_lit": 443533,
+    "px_flip_lit": 447131,
+    "px_chosen_lit_core": 177413,
+    "alpha_agreement": 0.999043,
+    "flip_png": "/home/zany/f1-round2/render/gate_witness/heras_fence_panel/witness_flip.png",
+    "sun_screen_direction_rowcol_flip": [
+     -0.015507272258920544,
+     -0.9998797550241167
+    ],
+    "dip_light_driven": 0.08784,
+    "dip_light_driven_detail": {
+     "lag4": {
+      "along_light": -0.0896,
+      "across_light": -0.12482
+     },
+     "best_lag_px": 10,
+     "lag6": {
+      "along_light": -0.02352,
+      "across_light": -0.09219
+     },
+     "lag8": {
+      "along_light": -0.16366,
+      "across_light": -0.00265
+     },
+     "lag10": {
+      "along_light": -0.21266,
+      "across_light": -0.01402
+     },
+     "lag12": {
+      "along_light": -0.14003,
+      "across_light": -0.05016
+     },
+     "lag16": {
+      "along_light": 0.02301,
+      "across_light": -0.03811
+     },
+     "dip_along": 0.21266,
+     "dip_across": 0.12482
+    },
+    "controls": {
+     "wedge2(alb 0.12)": {
+      "light_pct": 0.03068,
+      "rho": 0.0264,
+      "still_pct": 0.03149
+     }
+    },
+    "light_control": 0.03068,
+    "light_control_from": "wedge2(alb 0.12)",
+    "light_over_control": 361.602
+   },
+   "silhouette_control": {
+    "side": "right",
+    "rows": 348,
+    "y0": 161,
+    "y1": 508,
+    "global_rms_px": 1.144,
+    "global_rms_mm": 0.919,
+    "rms_px": 0.268,
+    "rms_mm": 0.216,
+    "local_max_px": 0.577,
+    "local_max_mm": 0.464,
+    "windows": 5
+   },
+   "silhouette_control_rows": 428,
+   "silhouette": null,
+   "silhouette_detail": {
+    "reason": "only 62 rows carry a single unbroken outline; need 100"
+   }
+  }
+ },
+ "result": "ITEM_ACCEPTED",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-03T14:10:37",
+  "written_at": 1785766237.425,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "status": "OK",
+   "mtime": 1785757608.739,
+   "mtime_iso": "2026-08-03T11:46:48",
+   "bytes": 170986,
+   "sha256": "3b9d07043cf326992a7e23b195498364727c1ddd3610e78168856cf8dd246220"
+  },
+  "tool_version": "item_gate RIG_VERSION 6, 8 checks",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/world/items/heras_fence_panel_test.blend",
+    "status": "OK",
+    "mtime": 1785697169.322,
+    "mtime_iso": "2026-08-02T18:59:29",
+    "bytes": 861616459,
+    "sha256": "8f1597e794d65a5c50c266699b8bff2c08b8690ec1da4886892d8527daf22cad",
+    "hash_seconds": 1.64
+   },
+   {
+    "role": "manifest",
+    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "status": "OK",
+    "mtime": 1785264294.872,
+    "mtime_iso": "2026-07-28T18:44:54",
+    "bytes": 299660,
+    "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505"
+   },
+   {
+    "role": "from_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/heras_fence_panel/witness.png",
+    "status": "OK",
+    "mtime": 1785765961.396,
+    "mtime_iso": "2026-08-03T14:06:01",
+    "bytes": 7610788,
+    "sha256": "fbbac5381d16b7f2a95b21b8f2c5af96a5a87d4edb24ae6d86b69f5493a07d8d"
+   }
+  ],
+  "describes": [
+   {
+    "role": "witness_blend",
+    "path": null,
+    "status": "NOT_GIVEN",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null
+   },
+   {
+    "role": "witness_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/heras_fence_panel/witness.png",
+    "status": "OK",
+    "mtime": 1785765961.396,
+    "mtime_iso": "2026-08-03T14:06:01",
+    "bytes": 7610788,
+    "sha256": "fbbac5381d16b7f2a95b21b8f2c5af96a5a87d4edb24ae6d86b69f5493a07d8d"
+   },
+   {
+    "role": "witness_spec",
+    "path": "/home/zany/f1-round2/render/gate_witness/heras_fence_panel/witness_spec.json",
+    "status": "OK",
+    "mtime": 1785760274.182,
+    "mtime_iso": "2026-08-03T12:31:14",
+    "bytes": 2944,
+    "sha256": "8fc5f96bd001ed958bd1433ab50f1b248f0c2d1f0fe7eab8838767be392e897f"
+   }
+  ],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785741347.142,
+    "mtime_iso": "2026-08-03T07:15:47",
+    "bytes": 167634,
+    "sha256": "2ef9e80d754a5532d48f26093db2791759e34a3d2be3215e4ca45d3236340000"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785684602.475,
+    "mtime_iso": "2026-08-02T15:30:02",
+    "bytes": 224176,
+    "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "/home/zany/f1-round2/world/items/heras_fence_panel_test.blend",
+   "--factory-startup",
+   "-P",
+   "/home/zany/f1-round2/tools/item_gate.py",
+   "--",
+   "--item",
+   "heras_fence_panel",
+   "--out",
+   "/home/zany/f1-round2/work/r2061/gate/heras_fence_panel/gate.json",
+   "--samples",
+   "512",
+   "--always-render",
+   "--from-png",
+   "/home/zany/f1-round2/render/gate_witness/heras_fence_panel/witness.png"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

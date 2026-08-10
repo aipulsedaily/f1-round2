@@ -1,0 +1,545 @@
+{
+ "item": "armco_post",
+ "hero": true,
+ "filmed_at_m": 2.6,
+ "lens_mm": 35.0,
+ "onscreen_px_4k": 2154.0,
+ "flexible": false,
+ "flexible_because": "no cloth token and no clothed-human pattern in id/name",
+ "subject_selection": "collection 'W_Item_ArmcoPost' (auto-detected from item id), skipping sub-collections ['W_Item_ArmcoPost/Cameras', 'W_Item_ArmcoPost/Standins']",
+ "prefix_integrity": null,
+ "witness_subject": "AP_Post_L00215",
+ "witness_subject_because": "median-triangle instance of 3236 objects (744 tris) -- the TYPICAL instance of a population of 3641, not the best one",
+ "checks": {
+  "no_external_assets": true,
+  "material_depth": true,
+  "geometry_resolves_at_distance": true,
+  "per_instance_variation": true,
+  "witness_frame_valid": true,
+  "surface_microstructure": true,
+  "relief_reads_as_lip_and_shade": true,
+  "silhouette_departs_from_analytic": "not_applicable"
+ },
+ "check_notes": {
+  "surface_microstructure": "fine(r1-r2) 5.391 % of mean vs the strictest brightness-matched smooth control 0.035 [wedge2(alb 0.12)] = x154.91, need x2.00; controls in play ['wedge1(alb 0.05)', 'wedge2(alb 0.12)']; spectral balance fine/coarse 1.0522 vs control 0.3598",
+  "relief_reads_as_lip_and_shade": "lip-and-shadow dip +1.4515 along the light vs the strictest smooth control -0.0436 (need control + 0.030 AND >= 0.050 absolute).  | TWO-LIGHT: the band that MOVED when the sun crossed to its other candidate side is 4.0987 % contrast, x168.95 the strictest smooth control's (wedge2(alb 0.12), need x2.00) -- PASS. The band that did NOT move is 2.0173 %, and corr(chosen, flip) = -0.6152 (REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL). Fine-band contrast x154.91 the control (need x2.00) -- PASS. [dip re-derived on the light-driven half alone: +1.5276]",
+  "silhouette_departs_from_analytic": "rigid item (no cloth token and no clothed-human pattern in id/name); an analytic outline is correct here"
+ },
+ "unmeasurable": [],
+ "framing_source": "item_manifest.json",
+ "thresholds": {
+  "procedural_texture_nodes_required": 6,
+  "detail_limit_px": 6.0,
+  "fine_over_control_required": 2.0,
+  "fine_over_coarse_at_least_control": true,
+  "relief_margin_over_control": 0.03,
+  "relief_dip_absolute_floor": 0.05,
+  "relief_control_sane_band": 0.3,
+  "relief_light_over_control_required": 2.0,
+  "relief_two_light_rho": "REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL",
+  "silhouette_rms_mm_required": 5.0,
+  "silhouette_rms_over_control_required": 3.0,
+  "silhouette_min_px_for_5mm": 1.0
+ },
+ "threshold_kinds": {
+  "fine_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "fine_over_coarse_at_least_control": "SCALE-INVARIANT (spectral shape vs in-frame control)",
+  "relief_margin_over_control": "SCALE-INVARIANT (margin over in-frame control)",
+  "relief_dip_absolute_floor": "SCALE-INVARIANT (calibrated from control spread)",
+  "silhouette_rms_mm_required": "PHYSICAL (millimetres of cloth)",
+  "silhouette_rms_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "silhouette_min_px_for_5mm": "SIZE-DEPENDENT SCOPING TEST, not a bar",
+  "detail_limit_px": "SIZE-DEPENDENT (screen px at the filmed distance)",
+  "procedural_texture_nodes_required": "size-independent node floor"
+ },
+ "measured": {
+  "external_image_files": [],
+  "image_texture_nodes": 0,
+  "materials": 2,
+  "procedural_texture_nodes": 26,
+  "objects": 3236,
+  "triangles": 4316936,
+  "triangles_per_declared_instance": 1185.6,
+  "triangles_per_found_object": 1334.0,
+  "triangles_per_onscreen_px": 2004.15,
+  "edges": 4322762,
+  "p10_edge_m": 0.00151,
+  "median_edge_m": 0.014928,
+  "p90_edge_m": 0.132193,
+  "p10_edge_px_at_filmed_distance": 2.17,
+  "median_edge_px_at_filmed_distance": 21.43,
+  "px_per_m_at_filmed_distance": 1435.9,
+  "mm_per_px_at_filmed_distance": 0.6964,
+  "band_radii_mm_at_filmed_distance": {
+   "1": 0.696,
+   "2": 1.393,
+   "4": 2.786,
+   "8": 5.571,
+   "16": 11.143
+  },
+  "instances_declared": 3641,
+  "instances_found": 3236,
+  "cv_size": 0.0993,
+  "cv_volume": 0.40358,
+  "distinct_topologies": 90,
+  "variation_measured_over": "individual objects",
+  "realized_instances": null
+ },
+ "witness": {
+  "blend": null,
+  "png": "/home/zany/f1-round2/render/gate_witness/armco_post/witness.png",
+  "spec": "/home/zany/f1-round2/render/gate_witness/armco_post/witness_spec.json",
+  "render": {
+   "backend": "supplied PNG (--from-png)",
+   "png": "/home/zany/f1-round2/render/gate_witness/armco_post/witness.png",
+   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/armco_post/witness_flip.png"
+  },
+  "render_error": null,
+  "image": {
+   "frame": {
+    "subject_px": 404641,
+    "sphere_px": 115817,
+    "plane_px": 69550,
+    "subject_mean_linear": 0.014158,
+    "sphere_mean_linear": 0.36634,
+    "plane_mean_linear": 0.268955,
+    "subject_clipped_frac": 0.0,
+    "subject_crushed_frac": 0.2801,
+    "sphere_clipped_frac": 0.0,
+    "sphere_highlight_R_minus_B": 0.08241,
+    "sphere_dynamic_range": 79.07,
+    "subject_px_lit": 134546,
+    "subject_mean_measured": 0.028919
+   },
+   "why": {
+    "two_light": null
+   },
+   "lit_cut_linear": 0.011893,
+   "luminance_window": [
+    0.017352,
+    0.049163
+   ],
+   "controls": {
+    "sphere": {
+     "px_matched": 2041,
+     "px_total": 115817,
+     "mean_linear": 0.36634,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "2041 px in the subject's luminance window [0.017352, 0.049163]; need 8000"
+    },
+    "card": {
+     "px_matched": 0,
+     "px_total": 69550,
+     "mean_linear": 0.268955,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.017352, 0.049163]; need 8000"
+    },
+    "wedge0(alb 0.02)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.008748,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.017352, 0.049163]; need 8000"
+    },
+    "wedge1(alb 0.05)": {
+     "px_matched": 35030,
+     "px_total": 35030,
+     "mean_linear": 0.018081,
+     "bands": {
+      "1": 0.0377,
+      "2": 0.0293,
+      "4": 0.0284,
+      "8": 0.0931,
+      "16": null
+     },
+     "fine": 0.0335,
+     "relief": -0.1045
+    },
+    "wedge2(alb 0.12)": {
+     "px_matched": 34875,
+     "px_total": 34875,
+     "mean_linear": 0.039424,
+     "bands": {
+      "1": 0.0394,
+      "2": 0.0303,
+      "4": 0.0287,
+      "8": 0.0785,
+      "16": null
+     },
+     "fine": 0.03485,
+     "relief": -0.04357
+    },
+    "wedge3(alb 0.28)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.087827,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.017352, 0.049163]; need 8000"
+    },
+    "wedge4(alb 0.55)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.169251,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.017352, 0.049163]; need 8000"
+    },
+    "wedge5(alb 0.95)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.28969,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.017352, 0.049163]; need 8000"
+    }
+   },
+   "controls_participating": [
+    "wedge1(alb 0.05)",
+    "wedge2(alb 0.12)"
+   ],
+   "bands_subject": {
+    "1": 4.4001,
+    "2": 6.3819,
+    "4": 10.5625,
+    "8": 5.1235,
+    "16": null
+   },
+   "fine_subject": 5.391,
+   "coarse_subject": 5.1235,
+   "fine_control": 0.0348,
+   "fine_control_from": "wedge2(alb 0.12)",
+   "fine_over_control": 154.9138,
+   "fine_over_coarse": 1.0522,
+   "fine_over_coarse_control": 0.3598,
+   "fine_max_subject": 6.3819,
+   "colour": {
+    "px": 134546,
+    "median_chromaticity": [
+     0.34254,
+     0.33285
+    ],
+    "chroma_sd_u": 0.02732,
+    "chroma_sd_v": 0.00439,
+    "single_hue_fraction_r010": 0.7083,
+    "single_hue_fraction_r005": 0.5212,
+    "chroma_p95_radius": 0.05668,
+    "gated": false,
+    "note": "NOT GATED -- the smooth controls are neutral by construction so there is no in-frame floor for chroma, and an absolute bar here would be uncalibrated. Read it."
+   },
+   "relief_subject": 1.45152,
+   "relief_subject_detail": {
+    "lag4": {
+     "along_light": -0.5044,
+     "across_light": 0.95205
+    },
+    "best_lag_px": 4,
+    "lag6": {
+     "along_light": -0.13639,
+     "across_light": 0.94712
+    },
+    "lag8": {
+     "along_light": 0.018,
+     "across_light": 0.94891
+    },
+    "lag10": {
+     "along_light": 0.07139,
+     "across_light": 0.95043
+    },
+    "lag12": {
+     "along_light": 0.05146,
+     "across_light": 0.95142
+    },
+    "lag16": {
+     "along_light": 0.01752,
+     "across_light": 0.95011
+    },
+    "dip_along": 0.5044,
+    "dip_across": -0.94712
+   },
+   "relief_control_all": [
+    -0.1045,
+    -0.04357
+   ],
+   "relief_control": -0.04357,
+   "relief_control_degenerate": null,
+   "two_light": {
+    "rho": -0.61519,
+    "light_pct": 4.09874,
+    "still_pct": 2.01733,
+    "px": 136326,
+    "log_floor": 0.00057839,
+    "px_lit_in_both": 269244,
+    "px_chosen_lit": 336364,
+    "px_flip_lit": 325954,
+    "px_chosen_lit_core": 134546,
+    "alpha_agreement": 0.999985,
+    "flip_png": "/home/zany/f1-round2/render/gate_witness/armco_post/witness_flip.png",
+    "sun_screen_direction_rowcol_flip": [
+     -0.015504931160739433,
+     0.9998797913297881
+    ],
+    "dip_light_driven": 1.52757,
+    "dip_light_driven_detail": {
+     "lag4": {
+      "along_light": -0.54283,
+      "across_light": 0.98906
+     },
+     "best_lag_px": 4,
+     "lag6": {
+      "along_light": -0.15853,
+      "across_light": 0.98817
+     },
+     "lag8": {
+      "along_light": 0.01518,
+      "across_light": 0.9877
+     },
+     "lag10": {
+      "along_light": 0.03588,
+      "across_light": 0.98702
+     },
+     "lag12": {
+      "along_light": 0.03005,
+      "across_light": 0.98632
+     },
+     "lag16": {
+      "along_light": 0.00935,
+      "across_light": 0.98474
+     },
+     "dip_along": 0.54283,
+     "dip_across": -0.98474
+    },
+    "controls": {
+     "wedge1(alb 0.05)": {
+      "light_pct": 0.02313,
+      "rho": 0.07411,
+      "still_pct": 0.02494
+     },
+     "wedge2(alb 0.12)": {
+      "light_pct": 0.02426,
+      "rho": 0.03748,
+      "still_pct": 0.02517
+     }
+    },
+    "light_control": 0.02426,
+    "light_control_from": "wedge2(alb 0.12)",
+    "light_over_control": 168.9505
+   },
+   "silhouette_control": {
+    "side": "right",
+    "rows": 428,
+    "y0": 123,
+    "y1": 550,
+    "global_rms_px": 2.88,
+    "global_rms_mm": 2.006,
+    "rms_px": 0.285,
+    "rms_mm": 0.199,
+    "local_max_px": 0.55,
+    "local_max_mm": 0.383,
+    "windows": 7
+   },
+   "silhouette_control_rows": 428,
+   "silhouette": {
+    "side": "right",
+    "rows": 1024,
+    "y0": 317,
+    "y1": 1340,
+    "global_rms_px": 63.211,
+    "global_rms_mm": 44.022,
+    "rms_px": 0.168,
+    "rms_mm": 0.117,
+    "local_max_px": 0.479,
+    "local_max_mm": 0.334,
+    "windows": 19
+   },
+   "silhouette_detail": {
+    "profiles": [
+     {
+      "side": "right",
+      "rows": 533,
+      "y0": 1356,
+      "y1": 1888,
+      "global_rms_px": 0.112,
+      "global_rms_mm": 0.078,
+      "rms_px": 0.014,
+      "rms_mm": 0.01,
+      "local_max_px": 0.034,
+      "local_max_mm": 0.023,
+      "windows": 9
+     },
+     {
+      "side": "left",
+      "rows": 533,
+      "y0": 1356,
+      "y1": 1888,
+      "global_rms_px": 0.198,
+      "global_rms_mm": 0.138,
+      "rms_px": 0.148,
+      "rms_mm": 0.103,
+      "local_max_px": 0.355,
+      "local_max_mm": 0.247,
+      "windows": 9
+     },
+     {
+      "side": "right",
+      "rows": 1024,
+      "y0": 317,
+      "y1": 1340,
+      "global_rms_px": 63.211,
+      "global_rms_mm": 44.022,
+      "rms_px": 0.168,
+      "rms_mm": 0.117,
+      "local_max_px": 0.479,
+      "local_max_mm": 0.334,
+      "windows": 19
+     },
+     {
+      "side": "left",
+      "rows": 1024,
+      "y0": 317,
+      "y1": 1340,
+      "global_rms_px": 69.498,
+      "global_rms_mm": 48.4,
+      "rms_px": 0.173,
+      "rms_mm": 0.121,
+      "local_max_px": 0.364,
+      "local_max_mm": 0.253,
+      "windows": 19
+     }
+    ],
+    "n_profiles": 4,
+    "statistic": "median over 100-row windows of the residual RMS after refitting a quadratic inside each window"
+   }
+  }
+ },
+ "result": "ITEM_ACCEPTED",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-03T13:42:22",
+  "written_at": 1785764542.645,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "status": "OK",
+   "mtime": 1785757608.739,
+   "mtime_iso": "2026-08-03T11:46:48",
+   "bytes": 170986,
+   "sha256": "3b9d07043cf326992a7e23b195498364727c1ddd3610e78168856cf8dd246220"
+  },
+  "tool_version": "item_gate RIG_VERSION 6, 8 checks",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/world/items/armco_post_test.blend",
+    "status": "OK",
+    "mtime": 1785690090.641,
+    "mtime_iso": "2026-08-02T17:01:30",
+    "bytes": 148970374,
+    "sha256": "1046ae5db449e62d348d29809aec13f153c7ef84034ba08c45f39c92741dd8da",
+    "hash_seconds": 0.29
+   },
+   {
+    "role": "manifest",
+    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "status": "OK",
+    "mtime": 1785264294.872,
+    "mtime_iso": "2026-07-28T18:44:54",
+    "bytes": 299660,
+    "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505"
+   },
+   {
+    "role": "from_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/armco_post/witness.png",
+    "status": "OK",
+    "mtime": 1785764375.116,
+    "mtime_iso": "2026-08-03T13:39:35",
+    "bytes": 4222045,
+    "sha256": "9e588e52a065b8840b42de5341ee25663514c9c740ca7bd3f0826c59605efdab"
+   }
+  ],
+  "describes": [
+   {
+    "role": "witness_blend",
+    "path": null,
+    "status": "NOT_GIVEN",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null
+   },
+   {
+    "role": "witness_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/armco_post/witness.png",
+    "status": "OK",
+    "mtime": 1785764375.116,
+    "mtime_iso": "2026-08-03T13:39:35",
+    "bytes": 4222045,
+    "sha256": "9e588e52a065b8840b42de5341ee25663514c9c740ca7bd3f0826c59605efdab"
+   },
+   {
+    "role": "witness_spec",
+    "path": "/home/zany/f1-round2/render/gate_witness/armco_post/witness_spec.json",
+    "status": "OK",
+    "mtime": 1785759628.304,
+    "mtime_iso": "2026-08-03T12:20:28",
+    "bytes": 2905,
+    "sha256": "515e0cb827e3cdc3c9b9ba82ae2ee504f644916f2b07b09f160b791d0756dc50"
+   }
+  ],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785741347.142,
+    "mtime_iso": "2026-08-03T07:15:47",
+    "bytes": 167634,
+    "sha256": "2ef9e80d754a5532d48f26093db2791759e34a3d2be3215e4ca45d3236340000"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785684602.475,
+    "mtime_iso": "2026-08-02T15:30:02",
+    "bytes": 224176,
+    "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "/home/zany/f1-round2/world/items/armco_post_test.blend",
+   "--factory-startup",
+   "-P",
+   "/home/zany/f1-round2/tools/item_gate.py",
+   "--",
+   "--item",
+   "armco_post",
+   "--out",
+   "/home/zany/f1-round2/work/r2061/gate/armco_post/gate.json",
+   "--samples",
+   "512",
+   "--always-render",
+   "--from-png",
+   "/home/zany/f1-round2/render/gate_witness/armco_post/witness.png"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

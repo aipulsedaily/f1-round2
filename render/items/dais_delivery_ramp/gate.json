@@ -1,0 +1,529 @@
+{
+ "item": "dais_delivery_ramp",
+ "hero": true,
+ "filmed_at_m": 1.4,
+ "lens_mm": 35.0,
+ "onscreen_px_4k": 907.0,
+ "flexible": false,
+ "flexible_because": "no cloth token and no clothed-human pattern in id/name",
+ "subject_selection": "collection 'W_Item_DaisDeliveryRamp' (auto-detected from item id), skipping sub-collections ['W_Item_DaisDeliveryRamp/Cameras', 'W_Item_DaisDeliveryRamp/Standins']",
+ "prefix_integrity": null,
+ "witness_subject": "DDR_Deck",
+ "witness_subject_because": "largest of 6 objects by bbox diagonal (4.39 m) -- one declared instance, so there is no population to be typical of and the item's principal body is what it is",
+ "checks": {
+  "no_external_assets": true,
+  "material_depth": true,
+  "geometry_resolves_at_distance": true,
+  "per_instance_variation": true,
+  "witness_frame_valid": true,
+  "surface_microstructure": true,
+  "relief_reads_as_lip_and_shade": false,
+  "silhouette_departs_from_analytic": "not_applicable"
+ },
+ "check_notes": {
+  "surface_microstructure": "fine(r1-r2) 19.889 % of mean vs the strictest brightness-matched smooth control 0.067 [sphere] = x295.09, need x2.00; controls in play ['sphere', 'wedge2(alb 0.12)', 'wedge3(alb 0.28)']; spectral balance fine/coarse 0.6571 vs control 0.4653",
+  "relief_reads_as_lip_and_shade": "lip-and-shadow dip -0.1196 along the light vs the strictest smooth control -0.0633 (need control + 0.030 AND >= 0.050 absolute). The features on this surface are single-value marks: they have no sunward lip and no lee shadow, which is how a printed decal behaves and not how a physical object does. | TWO-LIGHT: the band that MOVED when the sun crossed to its other candidate side is 8.1928 % contrast, x193.96 the strictest smooth control's (sphere, need x2.00) -- PASS. The band that did NOT move is 7.7220 %, and corr(chosen, flip) = -0.0567 (REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL). Fine-band contrast x295.09 the control (need x2.00) -- PASS. [dip re-derived on the light-driven half alone: -0.2460]",
+  "silhouette_departs_from_analytic": "rigid item (no cloth token and no clothed-human pattern in id/name); an analytic outline is correct here"
+ },
+ "unmeasurable": [],
+ "framing_source": "item_manifest.json",
+ "thresholds": {
+  "procedural_texture_nodes_required": 6,
+  "detail_limit_px": 6.0,
+  "fine_over_control_required": 2.0,
+  "fine_over_coarse_at_least_control": true,
+  "relief_margin_over_control": 0.03,
+  "relief_dip_absolute_floor": 0.05,
+  "relief_control_sane_band": 0.3,
+  "relief_light_over_control_required": 2.0,
+  "relief_two_light_rho": "REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL",
+  "silhouette_rms_mm_required": 5.0,
+  "silhouette_rms_over_control_required": 3.0,
+  "silhouette_min_px_for_5mm": 1.0
+ },
+ "threshold_kinds": {
+  "fine_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "fine_over_coarse_at_least_control": "SCALE-INVARIANT (spectral shape vs in-frame control)",
+  "relief_margin_over_control": "SCALE-INVARIANT (margin over in-frame control)",
+  "relief_dip_absolute_floor": "SCALE-INVARIANT (calibrated from control spread)",
+  "silhouette_rms_mm_required": "PHYSICAL (millimetres of cloth)",
+  "silhouette_rms_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "silhouette_min_px_for_5mm": "SIZE-DEPENDENT SCOPING TEST, not a bar",
+  "detail_limit_px": "SIZE-DEPENDENT (screen px at the filmed distance)",
+  "procedural_texture_nodes_required": "size-independent node floor"
+ },
+ "measured": {
+  "external_image_files": [],
+  "image_texture_nodes": 0,
+  "materials": 3,
+  "procedural_texture_nodes": 31,
+  "objects": 6,
+  "triangles": 5515588,
+  "triangles_per_declared_instance": 5515588.0,
+  "triangles_per_found_object": 919264.7,
+  "triangles_per_onscreen_px": 6081.13,
+  "edges": 5515592,
+  "p10_edge_m": 0.00075,
+  "median_edge_m": 0.002017,
+  "p90_edge_m": 0.0054,
+  "p10_edge_px_at_filmed_distance": 2.0,
+  "median_edge_px_at_filmed_distance": 5.38,
+  "px_per_m_at_filmed_distance": 2666.7,
+  "mm_per_px_at_filmed_distance": 0.375,
+  "band_radii_mm_at_filmed_distance": {
+   "1": 0.375,
+   "2": 0.75,
+   "4": 1.5,
+   "8": 3.0,
+   "16": 6.0
+  },
+  "instances_declared": 1,
+  "instances_found": 6,
+  "cv_size": 0.16468,
+  "cv_volume": 1.38106,
+  "distinct_topologies": 5,
+  "variation_measured_over": "individual objects",
+  "realized_instances": null
+ },
+ "witness": {
+  "blend": null,
+  "png": "/home/zany/f1-round2/render/gate_witness/dais_delivery_ramp/witness.png",
+  "spec": "/home/zany/f1-round2/render/gate_witness/dais_delivery_ramp/witness_spec.json",
+  "render": {
+   "backend": "supplied PNG (--from-png)",
+   "png": "/home/zany/f1-round2/render/gate_witness/dais_delivery_ramp/witness.png",
+   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/dais_delivery_ramp/witness_flip.png"
+  },
+  "render_error": null,
+  "image": {
+   "frame": {
+    "subject_px": 6984527,
+    "sphere_px": 115817,
+    "plane_px": 69550,
+    "subject_mean_linear": 0.031062,
+    "sphere_mean_linear": 0.118974,
+    "plane_mean_linear": 0.103376,
+    "subject_clipped_frac": 0.0,
+    "subject_crushed_frac": 0.0228,
+    "sphere_clipped_frac": 0.0,
+    "sphere_highlight_R_minus_B": 0.05401,
+    "sphere_dynamic_range": 74.24,
+    "subject_px_lit": 2790568,
+    "subject_mean_measured": 0.057337
+   },
+   "why": {
+    "two_light": null
+   },
+   "lit_cut_linear": 0.027727,
+   "luminance_window": [
+    0.034402,
+    0.097473
+   ],
+   "controls": {
+    "sphere": {
+     "px_matched": 11663,
+     "px_total": 115817,
+     "mean_linear": 0.118974,
+     "bands": {
+      "1": 0.0674,
+      "2": null,
+      "4": null,
+      "8": null,
+      "16": null
+     },
+     "fine": 0.0674,
+     "relief": null
+    },
+    "card": {
+     "px_matched": 263,
+     "px_total": 69550,
+     "mean_linear": 0.103376,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "263 px in the subject's luminance window [0.034402, 0.097473]; need 8000"
+    },
+    "wedge0(alb 0.02)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.012373,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.034402, 0.097473]; need 8000"
+    },
+    "wedge1(alb 0.05)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.0203,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.034402, 0.097473]; need 8000"
+    },
+    "wedge2(alb 0.12)": {
+     "px_matched": 34875,
+     "px_total": 34875,
+     "mean_linear": 0.040584,
+     "bands": {
+      "1": 0.0481,
+      "2": 0.0378,
+      "4": 0.0446,
+      "8": 0.0755,
+      "16": null
+     },
+     "fine": 0.04295,
+     "relief": -0.13284
+    },
+    "wedge3(alb 0.28)": {
+     "px_matched": 34875,
+     "px_total": 34875,
+     "mean_linear": 0.088348,
+     "bands": {
+      "1": 0.0464,
+      "2": 0.0394,
+      "4": 0.043,
+      "8": 0.0922,
+      "16": null
+     },
+     "fine": 0.042899999999999994,
+     "relief": -0.06326
+    },
+    "wedge4(alb 0.55)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.16936,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.034402, 0.097473]; need 8000"
+    },
+    "wedge5(alb 0.95)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.29006,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.034402, 0.097473]; need 8000"
+    }
+   },
+   "controls_participating": [
+    "sphere",
+    "wedge2(alb 0.12)",
+    "wedge3(alb 0.28)"
+   ],
+   "bands_subject": {
+    "1": 15.0831,
+    "2": 24.6952,
+    "4": 51.1415,
+    "8": 38.3425,
+    "16": 22.1945
+   },
+   "fine_subject": 19.88915,
+   "coarse_subject": 30.268500000000003,
+   "fine_control": 0.0674,
+   "fine_control_from": "sphere",
+   "fine_over_control": 295.0912,
+   "fine_over_coarse": 0.6571,
+   "fine_over_coarse_control": 0.4653,
+   "fine_max_subject": 24.6952,
+   "colour": {
+    "px": 2790568,
+    "median_chromaticity": [
+     0.32794,
+     0.33017
+    ],
+    "chroma_sd_u": 0.0348,
+    "chroma_sd_v": 0.0071,
+    "single_hue_fraction_r010": 0.4225,
+    "single_hue_fraction_r005": 0.2443,
+    "chroma_p95_radius": 0.09172,
+    "gated": false,
+    "note": "NOT GATED -- the smooth controls are neutral by construction so there is no in-frame floor for chroma, and an absolute bar here would be uncalibrated. Read it."
+   },
+   "relief_subject": -0.11955,
+   "relief_subject_detail": {
+    "lag4": {
+     "along_light": 0.20588,
+     "across_light": -0.36279
+    },
+    "best_lag_px": 12,
+    "lag6": {
+     "along_light": -0.11324,
+     "across_light": -0.28031
+    },
+    "lag8": {
+     "along_light": -0.20875,
+     "across_light": -0.1539
+    },
+    "lag10": {
+     "along_light": -0.22555,
+     "across_light": -0.05405
+    },
+    "lag12": {
+     "along_light": -0.24325,
+     "across_light": 0.04583
+    },
+    "lag16": {
+     "along_light": -0.16465,
+     "across_light": 0.07689
+    },
+    "dip_along": 0.24325,
+    "dip_across": 0.36279
+   },
+   "relief_control_all": [
+    -0.13284,
+    -0.06326
+   ],
+   "relief_control": -0.06326,
+   "relief_control_degenerate": null,
+   "two_light": {
+    "rho": -0.05667,
+    "light_pct": 8.19279,
+    "still_pct": 7.72204,
+    "px": 5995962,
+    "log_floor": 0.00114675,
+    "px_lit_in_both": 6920430,
+    "px_chosen_lit": 6976420,
+    "px_flip_lit": 6922016,
+    "px_chosen_lit_core": 2790568,
+    "alpha_agreement": 0.999995,
+    "flip_png": "/home/zany/f1-round2/render/gate_witness/dais_delivery_ramp/witness_flip.png",
+    "sun_screen_direction_rowcol_flip": [
+     -0.01550669793301006,
+     -0.999879763931251
+    ],
+    "dip_light_driven": -0.24603,
+    "dip_light_driven_detail": {
+     "lag4": {
+      "along_light": 0.06009,
+      "across_light": -0.46925
+     },
+     "best_lag_px": 6,
+     "lag6": {
+      "along_light": -0.22322,
+      "across_light": -0.3263
+     },
+     "lag8": {
+      "along_light": -0.19745,
+      "across_light": -0.06122
+     },
+     "lag10": {
+      "along_light": -0.11822,
+      "across_light": 0.04256
+     },
+     "lag12": {
+      "along_light": -0.10559,
+      "across_light": 0.05337
+     },
+     "lag16": {
+      "along_light": -0.10527,
+      "across_light": 0.02737
+     },
+     "dip_along": 0.22322,
+     "dip_across": 0.46925
+    },
+    "controls": {
+     "sphere": {
+      "light_pct": 0.04224,
+      "rho": -0.02037,
+      "still_pct": 0.04148
+     },
+     "wedge2(alb 0.12)": {
+      "light_pct": 0.02925,
+      "rho": 0.03344,
+      "still_pct": 0.03018
+     },
+     "wedge3(alb 0.28)": {
+      "light_pct": 0.03115,
+      "rho": 0.02081,
+      "still_pct": 0.03181
+     }
+    },
+    "light_control": 0.04224,
+    "light_control_from": "sphere",
+    "light_over_control": 193.9581
+   },
+   "silhouette_control": {
+    "side": "left",
+    "rows": 323,
+    "y0": 195,
+    "y1": 517,
+    "global_rms_px": 1.034,
+    "global_rms_mm": 0.388,
+    "rms_px": 0.29,
+    "rms_mm": 0.109,
+    "local_max_px": 0.552,
+    "local_max_mm": 0.207,
+    "windows": 5
+   },
+   "silhouette_control_rows": 397,
+   "silhouette": {
+    "side": "right",
+    "rows": 1513,
+    "y0": 647,
+    "y1": 2159,
+    "global_rms_px": 0.0,
+    "global_rms_mm": 0.0,
+    "rms_px": 0.0,
+    "rms_mm": 0.0,
+    "local_max_px": 0.0,
+    "local_max_mm": 0.0,
+    "windows": 29
+   },
+   "silhouette_detail": {
+    "profiles": [
+     {
+      "side": "left",
+      "rows": 1513,
+      "y0": 647,
+      "y1": 2159,
+      "global_rms_px": 0.0,
+      "global_rms_mm": 0.0,
+      "rms_px": 0.0,
+      "rms_mm": 0.0,
+      "local_max_px": 0.0,
+      "local_max_mm": 0.0,
+      "windows": 29
+     },
+     {
+      "side": "right",
+      "rows": 1513,
+      "y0": 647,
+      "y1": 2159,
+      "global_rms_px": 0.0,
+      "global_rms_mm": 0.0,
+      "rms_px": 0.0,
+      "rms_mm": 0.0,
+      "local_max_px": 0.0,
+      "local_max_mm": 0.0,
+      "windows": 29
+     }
+    ],
+    "n_profiles": 2,
+    "statistic": "median over 100-row windows of the residual RMS after refitting a quadratic inside each window"
+   }
+  }
+ },
+ "result": "ITEM_REJECTED",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-03T14:34:00",
+  "written_at": 1785767640.082,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "status": "OK",
+   "mtime": 1785757608.739,
+   "mtime_iso": "2026-08-03T11:46:48",
+   "bytes": 170986,
+   "sha256": "3b9d07043cf326992a7e23b195498364727c1ddd3610e78168856cf8dd246220"
+  },
+  "tool_version": "item_gate RIG_VERSION 6, 8 checks",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/world/items/dais_delivery_ramp_test.blend",
+    "status": "OK",
+    "mtime": 1785756751.199,
+    "mtime_iso": "2026-08-03T11:32:31",
+    "bytes": 78745136,
+    "sha256": "b7625a30dc83e7aa5b254f5102c9bbf13782f229656d5de8eca465cca922226a"
+   },
+   {
+    "role": "manifest",
+    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "status": "OK",
+    "mtime": 1785264294.872,
+    "mtime_iso": "2026-07-28T18:44:54",
+    "bytes": 299660,
+    "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505"
+   },
+   {
+    "role": "from_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/dais_delivery_ramp/witness.png",
+    "status": "OK",
+    "mtime": 1785767350.254,
+    "mtime_iso": "2026-08-03T14:29:10",
+    "bytes": 43424669,
+    "sha256": "9c555391e4dc56802d3c56bcf6056815bd1ea0a3e30b10eb8caac82a54c89c8f"
+   }
+  ],
+  "describes": [
+   {
+    "role": "witness_blend",
+    "path": null,
+    "status": "NOT_GIVEN",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null
+   },
+   {
+    "role": "witness_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/dais_delivery_ramp/witness.png",
+    "status": "OK",
+    "mtime": 1785767350.254,
+    "mtime_iso": "2026-08-03T14:29:10",
+    "bytes": 43424669,
+    "sha256": "9c555391e4dc56802d3c56bcf6056815bd1ea0a3e30b10eb8caac82a54c89c8f"
+   },
+   {
+    "role": "witness_spec",
+    "path": "/home/zany/f1-round2/render/gate_witness/dais_delivery_ramp/witness_spec.json",
+    "status": "OK",
+    "mtime": 1785761824.745,
+    "mtime_iso": "2026-08-03T12:57:04",
+    "bytes": 2859,
+    "sha256": "764020e41d3b673cb26e921729376bc8e8b5821323859ba6f7ef0387b2f03d0d"
+   }
+  ],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785741347.142,
+    "mtime_iso": "2026-08-03T07:15:47",
+    "bytes": 167634,
+    "sha256": "2ef9e80d754a5532d48f26093db2791759e34a3d2be3215e4ca45d3236340000"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785684602.475,
+    "mtime_iso": "2026-08-02T15:30:02",
+    "bytes": 224176,
+    "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "/home/zany/f1-round2/world/items/dais_delivery_ramp_test.blend",
+   "--factory-startup",
+   "-P",
+   "/home/zany/f1-round2/tools/item_gate.py",
+   "--",
+   "--item",
+   "dais_delivery_ramp",
+   "--out",
+   "/home/zany/f1-round2/work/r2061/gate/dais_delivery_ramp/gate.json",
+   "--samples",
+   "512",
+   "--always-render",
+   "--from-png",
+   "/home/zany/f1-round2/render/gate_witness/dais_delivery_ramp/witness.png"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

@@ -1,0 +1,536 @@
+{
+ "item": "gravel_bed_surface",
+ "hero": true,
+ "filmed_at_m": 2.8,
+ "lens_mm": 35.0,
+ "onscreen_px_4k": 67.0,
+ "flexible": false,
+ "flexible_because": "no cloth token and no clothed-human pattern in id/name",
+ "subject_selection": "collection 'W_Item_GravelBedSurface' (auto-detected from item id); 3 collections matched, took the largest -- pass --collection to be explicit",
+ "prefix_integrity": null,
+ "witness_subject": "GBS_Bed_OR0252_c02",
+ "witness_subject_because": "median-triangle instance of 43 objects (10920 tris) -- the TYPICAL instance of a population of 21, not the best one",
+ "checks": {
+  "no_external_assets": true,
+  "material_depth": true,
+  "geometry_resolves_at_distance": true,
+  "per_instance_variation": true,
+  "witness_frame_valid": true,
+  "surface_microstructure": true,
+  "relief_reads_as_lip_and_shade": false,
+  "silhouette_departs_from_analytic": "not_applicable"
+ },
+ "check_notes": {
+  "surface_microstructure": "fine(r1-r2) 16.049 % of mean vs the strictest brightness-matched smooth control 0.302 [sphere] = x53.18, need x2.00; controls in play ['sphere', 'wedge0(alb 0.02)', 'wedge1(alb 0.05)']; spectral balance fine/coarse 6.6804 vs control 0.2367",
+  "relief_reads_as_lip_and_shade": "lip-and-shadow dip +0.1339 along the light vs the strictest smooth control +0.1162 (need control + 0.030 AND >= 0.050 absolute). 1 of 3 control dips fell outside +/-0.3 ([1.67, 0.116, -0.14]) and were discarded as the correlation of near-zero noise with itself The features on this surface are single-value marks: they have no sunward lip and no lee shadow, which is how a printed decal behaves and not how a physical object does. | TWO-LIGHT: the band that MOVED when the sun crossed to its other candidate side is 17.7864 % contrast, x122.67 the strictest smooth control's (sphere, need x2.00) -- PASS. The band that did NOT move is 7.6923 %, and corr(chosen, flip) = -0.6760 (REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL). Fine-band contrast x53.18 the control (need x2.00) -- PASS. [dip re-derived on the light-driven half alone: +0.1719]",
+  "silhouette_departs_from_analytic": "rigid item (no cloth token and no clothed-human pattern in id/name); an analytic outline is correct here"
+ },
+ "unmeasurable": [],
+ "framing_source": "item_manifest.json",
+ "thresholds": {
+  "procedural_texture_nodes_required": 6,
+  "detail_limit_px": 6.0,
+  "fine_over_control_required": 2.0,
+  "fine_over_coarse_at_least_control": true,
+  "relief_margin_over_control": 0.03,
+  "relief_dip_absolute_floor": 0.05,
+  "relief_control_sane_band": 0.3,
+  "relief_light_over_control_required": 2.0,
+  "relief_two_light_rho": "REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL",
+  "silhouette_rms_mm_required": 5.0,
+  "silhouette_rms_over_control_required": 3.0,
+  "silhouette_min_px_for_5mm": 1.0
+ },
+ "threshold_kinds": {
+  "fine_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "fine_over_coarse_at_least_control": "SCALE-INVARIANT (spectral shape vs in-frame control)",
+  "relief_margin_over_control": "SCALE-INVARIANT (margin over in-frame control)",
+  "relief_dip_absolute_floor": "SCALE-INVARIANT (calibrated from control spread)",
+  "silhouette_rms_mm_required": "PHYSICAL (millimetres of cloth)",
+  "silhouette_rms_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "silhouette_min_px_for_5mm": "SIZE-DEPENDENT SCOPING TEST, not a bar",
+  "detail_limit_px": "SIZE-DEPENDENT (screen px at the filmed distance)",
+  "procedural_texture_nodes_required": "size-independent node floor"
+ },
+ "measured": {
+  "external_image_files": [],
+  "image_texture_nodes": 0,
+  "materials": 2,
+  "procedural_texture_nodes": 19,
+  "objects": 43,
+  "triangles": 15950396,
+  "triangles_per_declared_instance": 759542.7,
+  "triangles_per_found_object": 370939.4,
+  "triangles_per_onscreen_px": 238065.61,
+  "edges": 23939421,
+  "p10_edge_m": 0.003837,
+  "median_edge_m": 0.007282,
+  "p90_edge_m": 0.056339,
+  "p10_edge_px_at_filmed_distance": 5.12,
+  "median_edge_px_at_filmed_distance": 9.71,
+  "px_per_m_at_filmed_distance": 1333.3,
+  "mm_per_px_at_filmed_distance": 0.75,
+  "band_radii_mm_at_filmed_distance": {
+   "1": 0.75,
+   "2": 1.5,
+   "4": 3.0,
+   "8": 6.0,
+   "16": 12.0
+  },
+  "instances_declared": 21,
+  "instances_found": 43,
+  "cv_size": 0.39146,
+  "cv_volume": 1.16263,
+  "distinct_topologies": 32,
+  "variation_measured_over": "individual objects",
+  "realized_instances": null
+ },
+ "witness": {
+  "blend": null,
+  "png": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness.png",
+  "spec": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness_spec.json",
+  "render": {
+   "backend": "supplied PNG (--from-png)",
+   "png": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness.png",
+   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness_flip.png"
+  },
+  "render_error": null,
+  "image": {
+   "frame": {
+    "subject_px": 7148866,
+    "sphere_px": 115817,
+    "plane_px": 69550,
+    "subject_mean_linear": 0.017563,
+    "sphere_mean_linear": 0.114308,
+    "plane_mean_linear": 0.237691,
+    "subject_clipped_frac": 0.0,
+    "subject_crushed_frac": 0.0725,
+    "sphere_clipped_frac": 0.0,
+    "sphere_highlight_R_minus_B": 0.05578,
+    "sphere_dynamic_range": 70.16,
+    "subject_px_lit": 2827316,
+    "subject_mean_measured": 0.019834
+   },
+   "why": {
+    "two_light": null
+   },
+   "lit_cut_linear": 0.017598,
+   "luminance_window": [
+    0.0119,
+    0.033717
+   ],
+   "controls": {
+    "sphere": {
+     "px_matched": 37344,
+     "px_total": 115817,
+     "mean_linear": 0.114308,
+     "bands": {
+      "1": 0.1591,
+      "2": 0.4445,
+      "4": 0.6722,
+      "8": 1.2753,
+      "16": null
+     },
+     "fine": 0.3018,
+     "relief": 1.66966
+    },
+    "card": {
+     "px_matched": 10001,
+     "px_total": 69550,
+     "mean_linear": 0.237691,
+     "bands": {
+      "1": null,
+      "2": null,
+      "4": null,
+      "8": null,
+      "16": null
+     },
+     "fine": null,
+     "relief": null
+    },
+    "wedge0(alb 0.02)": {
+     "px_matched": 31932,
+     "px_total": 34875,
+     "mean_linear": 0.012341,
+     "bands": {
+      "1": 0.0442,
+      "2": 0.0336,
+      "4": 0.0335,
+      "8": 0.0417,
+      "16": null
+     },
+     "fine": 0.038900000000000004,
+     "relief": 0.11622
+    },
+    "wedge1(alb 0.05)": {
+     "px_matched": 35030,
+     "px_total": 35030,
+     "mean_linear": 0.020219,
+     "bands": {
+      "1": 0.045,
+      "2": 0.0334,
+      "4": 0.034,
+      "8": 0.0273,
+      "16": null
+     },
+     "fine": 0.0392,
+     "relief": -0.14035
+    },
+    "wedge2(alb 0.12)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.040393,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.0119, 0.033717]; need 8000"
+    },
+    "wedge3(alb 0.28)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.087901,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.0119, 0.033717]; need 8000"
+    },
+    "wedge4(alb 0.55)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.16846,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.0119, 0.033717]; need 8000"
+    },
+    "wedge5(alb 0.95)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.288267,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.0119, 0.033717]; need 8000"
+    }
+   },
+   "controls_participating": [
+    "sphere",
+    "wedge0(alb 0.02)",
+    "wedge1(alb 0.05)"
+   ],
+   "bands_subject": {
+    "1": 17.3258,
+    "2": 14.7724,
+    "4": 11.2363,
+    "8": 3.2367,
+    "16": 1.5681
+   },
+   "fine_subject": 16.0491,
+   "coarse_subject": 2.4024,
+   "fine_control": 0.3018,
+   "fine_control_from": "sphere",
+   "fine_over_control": 53.1779,
+   "fine_over_coarse": 6.6804,
+   "fine_over_coarse_control": 0.2367,
+   "fine_max_subject": 17.3258,
+   "colour": {
+    "px": 2827316,
+    "median_chromaticity": [
+     0.40653,
+     0.33589
+    ],
+    "chroma_sd_u": 0.01756,
+    "chroma_sd_v": 0.00222,
+    "single_hue_fraction_r010": 0.6393,
+    "single_hue_fraction_r005": 0.3467,
+    "chroma_p95_radius": 0.03549,
+    "gated": false,
+    "note": "NOT GATED -- the smooth controls are neutral by construction so there is no in-frame floor for chroma, and an absolute bar here would be uncalibrated. Read it."
+   },
+   "relief_subject": 0.13391,
+   "relief_subject_detail": {
+    "lag4": {
+     "along_light": -0.3212,
+     "across_light": -0.1873
+    },
+    "best_lag_px": 4,
+    "lag6": {
+     "along_light": -0.17413,
+     "across_light": -0.03021
+    },
+    "lag8": {
+     "along_light": -0.03413,
+     "across_light": 0.01722
+    },
+    "lag10": {
+     "along_light": -0.00087,
+     "across_light": 0.00964
+    },
+    "lag12": {
+     "along_light": 0.00272,
+     "across_light": 0.00218
+    },
+    "lag16": {
+     "along_light": 0.00044,
+     "across_light": -0.00077
+    },
+    "dip_along": 0.3212,
+    "dip_across": 0.1873
+   },
+   "relief_control_all": [
+    1.66966,
+    0.11622,
+    -0.14035
+   ],
+   "relief_control": 0.11622,
+   "relief_control_degenerate": "1 of 3 control dips fell outside +/-0.3 ([1.67, 0.116, -0.14]) and were discarded as the correlation of near-zero noise with itself",
+   "two_light": {
+    "rho": -0.67599,
+    "light_pct": 17.78642,
+    "still_pct": 7.69231,
+    "px": 3538118,
+    "log_floor": 0.00039668,
+    "px_lit_in_both": 7012721,
+    "px_chosen_lit": 7068290,
+    "px_flip_lit": 7093297,
+    "px_chosen_lit_core": 2827316,
+    "alpha_agreement": 1.0,
+    "flip_png": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness_flip.png",
+    "sun_screen_direction_rowcol_flip": [
+     -0.015508972958323335,
+     -0.9998797286462897
+    ],
+    "dip_light_driven": 0.17195,
+    "dip_light_driven_detail": {
+     "lag4": {
+      "along_light": -0.35807,
+      "across_light": -0.18613
+     },
+     "best_lag_px": 4,
+     "lag6": {
+      "along_light": -0.18505,
+      "across_light": -0.04238
+     },
+     "lag8": {
+      "along_light": -0.0397,
+      "across_light": 0.01406
+     },
+     "lag10": {
+      "along_light": -0.00611,
+      "across_light": 0.01029
+     },
+     "lag12": {
+      "along_light": -0.00036,
+      "across_light": 0.00564
+     },
+     "lag16": {
+      "along_light": 0.00166,
+      "across_light": 0.00137
+     },
+     "dip_along": 0.35807,
+     "dip_across": 0.18613
+    },
+    "controls": {
+     "sphere": {
+      "light_pct": 0.14499,
+      "rho": 0.01508,
+      "still_pct": 0.14574
+     },
+     "wedge0(alb 0.02)": {
+      "light_pct": 0.02589,
+      "rho": 0.21033,
+      "still_pct": 0.03203
+     },
+     "wedge1(alb 0.05)": {
+      "light_pct": 0.0252,
+      "rho": 0.18649,
+      "still_pct": 0.0305
+     }
+    },
+    "light_control": 0.14499,
+    "light_control_from": "sphere",
+    "light_over_control": 122.6734
+   },
+   "silhouette_control": {
+    "side": "left",
+    "rows": 365,
+    "y0": 153,
+    "y1": 517,
+    "global_rms_px": 1.153,
+    "global_rms_mm": 0.865,
+    "rms_px": 0.284,
+    "rms_mm": 0.213,
+    "local_max_px": 0.536,
+    "local_max_mm": 0.402,
+    "windows": 6
+   },
+   "silhouette_control_rows": 366,
+   "silhouette": {
+    "side": "right",
+    "rows": 1513,
+    "y0": 647,
+    "y1": 2159,
+    "global_rms_px": 0.0,
+    "global_rms_mm": 0.0,
+    "rms_px": 0.0,
+    "rms_mm": 0.0,
+    "local_max_px": 0.0,
+    "local_max_mm": 0.0,
+    "windows": 29
+   },
+   "silhouette_detail": {
+    "profiles": [
+     {
+      "side": "left",
+      "rows": 1513,
+      "y0": 647,
+      "y1": 2159,
+      "global_rms_px": 0.0,
+      "global_rms_mm": 0.0,
+      "rms_px": 0.0,
+      "rms_mm": 0.0,
+      "local_max_px": 0.0,
+      "local_max_mm": 0.0,
+      "windows": 29
+     },
+     {
+      "side": "right",
+      "rows": 1513,
+      "y0": 647,
+      "y1": 2159,
+      "global_rms_px": 0.0,
+      "global_rms_mm": 0.0,
+      "rms_px": 0.0,
+      "rms_mm": 0.0,
+      "local_max_px": 0.0,
+      "local_max_mm": 0.0,
+      "windows": 29
+     }
+    ],
+    "n_profiles": 2,
+    "statistic": "median over 100-row windows of the residual RMS after refitting a quadratic inside each window"
+   }
+  }
+ },
+ "result": "ITEM_REJECTED",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-03T14:08:36",
+  "written_at": 1785766116.304,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "status": "OK",
+   "mtime": 1785757608.739,
+   "mtime_iso": "2026-08-03T11:46:48",
+   "bytes": 170986,
+   "sha256": "3b9d07043cf326992a7e23b195498364727c1ddd3610e78168856cf8dd246220"
+  },
+  "tool_version": "item_gate RIG_VERSION 6, 8 checks",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/world/items/gravel_bed_surface_test.blend",
+    "status": "OK",
+    "mtime": 1785328029.225,
+    "mtime_iso": "2026-07-29T12:27:09",
+    "bytes": 1039887827,
+    "sha256": "b6f6edd9d97688081cdd64505a750a462d323f41bd76b405fa900eda07036aa4",
+    "hash_seconds": 1.99
+   },
+   {
+    "role": "manifest",
+    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "status": "OK",
+    "mtime": 1785264294.872,
+    "mtime_iso": "2026-07-28T18:44:54",
+    "bytes": 299660,
+    "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505"
+   },
+   {
+    "role": "from_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness.png",
+    "status": "OK",
+    "mtime": 1785765855.965,
+    "mtime_iso": "2026-08-03T14:04:15",
+    "bytes": 49579129,
+    "sha256": "96b646f7eca09ee53ef77804e5dc969cde0ffdd4d006e379df81b32de87ac2fe"
+   }
+  ],
+  "describes": [
+   {
+    "role": "witness_blend",
+    "path": null,
+    "status": "NOT_GIVEN",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null
+   },
+   {
+    "role": "witness_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness.png",
+    "status": "OK",
+    "mtime": 1785765855.965,
+    "mtime_iso": "2026-08-03T14:04:15",
+    "bytes": 49579129,
+    "sha256": "96b646f7eca09ee53ef77804e5dc969cde0ffdd4d006e379df81b32de87ac2fe"
+   },
+   {
+    "role": "witness_spec",
+    "path": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness_spec.json",
+    "status": "OK",
+    "mtime": 1785760206.34,
+    "mtime_iso": "2026-08-03T12:30:06",
+    "bytes": 2897,
+    "sha256": "02b0e8cf09baf6f3bd4373ae80a151c739c4a1c0647f0ed57493b39de298ad04"
+   }
+  ],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785741347.142,
+    "mtime_iso": "2026-08-03T07:15:47",
+    "bytes": 167634,
+    "sha256": "2ef9e80d754a5532d48f26093db2791759e34a3d2be3215e4ca45d3236340000"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785684602.475,
+    "mtime_iso": "2026-08-02T15:30:02",
+    "bytes": 224176,
+    "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "/home/zany/f1-round2/world/items/gravel_bed_surface_test.blend",
+   "--factory-startup",
+   "-P",
+   "/home/zany/f1-round2/tools/item_gate.py",
+   "--",
+   "--item",
+   "gravel_bed_surface",
+   "--out",
+   "/home/zany/f1-round2/work/r2061/gate/gravel_bed_surface/gate.json",
+   "--samples",
+   "512",
+   "--always-render",
+   "--from-png",
+   "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness.png"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

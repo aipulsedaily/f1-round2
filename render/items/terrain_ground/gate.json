@@ -1,0 +1,512 @@
+{
+ "item": "terrain_ground",
+ "hero": true,
+ "filmed_at_m": 2.4,
+ "lens_mm": 35.0,
+ "onscreen_px_4k": 467.0,
+ "flexible": false,
+ "flexible_because": "no cloth token and no clothed-human pattern in id/name",
+ "subject_selection": "collection 'ITEM_TERRAIN_GROUND' (auto-detected from item id), skipping sub-collections ['ITEM_TERRAIN_GROUND/Cameras']",
+ "prefix_integrity": null,
+ "witness_subject": "TG_Ground_L4",
+ "witness_subject_because": "largest of 10 objects by bbox diagonal (367.78 m) -- one declared instance, so there is no population to be typical of and the item's principal body is what it is",
+ "checks": {
+  "no_external_assets": true,
+  "material_depth": true,
+  "geometry_resolves_at_distance": true,
+  "per_instance_variation": true,
+  "witness_frame_valid": true,
+  "surface_microstructure": true,
+  "relief_reads_as_lip_and_shade": true,
+  "silhouette_departs_from_analytic": "not_applicable"
+ },
+ "check_notes": {
+  "surface_microstructure": "fine(r1-r2) 9.351 % of mean vs the strictest brightness-matched smooth control 0.038 [wedge1(alb 0.05)] = x247.38, need x2.00; controls in play ['wedge1(alb 0.05)']; spectral balance fine/coarse 4.8669 vs control 0.9165",
+  "relief_reads_as_lip_and_shade": "lip-and-shadow dip +0.1746 along the light vs the strictest smooth control -0.0267 (need control + 0.030 AND >= 0.050 absolute).  | TWO-LIGHT: the band that MOVED when the sun crossed to its other candidate side is 8.1229 % contrast, x315.58 the strictest smooth control's (wedge1(alb 0.05), need x2.00) -- PASS. The band that did NOT move is 4.2455 %, and corr(chosen, flip) = -0.5752 (REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL). Fine-band contrast x247.38 the control (need x2.00) -- PASS. [dip re-derived on the light-driven half alone: +0.2890]",
+  "silhouette_departs_from_analytic": "rigid item (no cloth token and no clothed-human pattern in id/name); an analytic outline is correct here"
+ },
+ "unmeasurable": [],
+ "framing_source": "item_manifest.json",
+ "thresholds": {
+  "procedural_texture_nodes_required": 6,
+  "detail_limit_px": 6.0,
+  "fine_over_control_required": 2.0,
+  "fine_over_coarse_at_least_control": true,
+  "relief_margin_over_control": 0.03,
+  "relief_dip_absolute_floor": 0.05,
+  "relief_control_sane_band": 0.3,
+  "relief_light_over_control_required": 2.0,
+  "relief_two_light_rho": "REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL",
+  "silhouette_rms_mm_required": 5.0,
+  "silhouette_rms_over_control_required": 3.0,
+  "silhouette_min_px_for_5mm": 1.0
+ },
+ "threshold_kinds": {
+  "fine_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "fine_over_coarse_at_least_control": "SCALE-INVARIANT (spectral shape vs in-frame control)",
+  "relief_margin_over_control": "SCALE-INVARIANT (margin over in-frame control)",
+  "relief_dip_absolute_floor": "SCALE-INVARIANT (calibrated from control spread)",
+  "silhouette_rms_mm_required": "PHYSICAL (millimetres of cloth)",
+  "silhouette_rms_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "silhouette_min_px_for_5mm": "SIZE-DEPENDENT SCOPING TEST, not a bar",
+  "detail_limit_px": "SIZE-DEPENDENT (screen px at the filmed distance)",
+  "procedural_texture_nodes_required": "size-independent node floor"
+ },
+ "measured": {
+  "external_image_files": [],
+  "image_texture_nodes": 0,
+  "materials": 6,
+  "procedural_texture_nodes": 37,
+  "objects": 10,
+  "triangles": 7752520,
+  "triangles_per_declared_instance": 7752520.0,
+  "triangles_per_found_object": 775252.0,
+  "triangles_per_onscreen_px": 16600.69,
+  "edges": 8799109,
+  "p10_edge_m": 0.0025,
+  "median_edge_m": 0.003987,
+  "p90_edge_m": 0.020067,
+  "p10_edge_px_at_filmed_distance": 3.89,
+  "median_edge_px_at_filmed_distance": 6.2,
+  "px_per_m_at_filmed_distance": 1555.6,
+  "mm_per_px_at_filmed_distance": 0.6429,
+  "band_radii_mm_at_filmed_distance": {
+   "1": 0.643,
+   "2": 1.286,
+   "4": 2.571,
+   "8": 5.143,
+   "16": 10.286
+  },
+  "instances_declared": 1,
+  "instances_found": 10,
+  "cv_size": 2.04219,
+  "cv_volume": 2.94769,
+  "distinct_topologies": 10,
+  "variation_measured_over": "individual objects",
+  "realized_instances": null
+ },
+ "witness": {
+  "blend": null,
+  "png": "/home/zany/f1-round2/render/gate_witness/terrain_ground/witness.png",
+  "spec": "/home/zany/f1-round2/render/gate_witness/terrain_ground/witness_spec.json",
+  "render": {
+   "backend": "supplied PNG (--from-png)",
+   "png": "/home/zany/f1-round2/render/gate_witness/terrain_ground/witness.png",
+   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/terrain_ground/witness_flip.png"
+  },
+  "render_error": null,
+  "image": {
+   "frame": {
+    "subject_px": 7148866,
+    "sphere_px": 115817,
+    "plane_px": 69550,
+    "subject_mean_linear": 0.01916,
+    "sphere_mean_linear": 0.382955,
+    "plane_mean_linear": 0.092725,
+    "subject_clipped_frac": 0.0,
+    "subject_crushed_frac": 0.0,
+    "sphere_clipped_frac": 0.0,
+    "sphere_highlight_R_minus_B": 0.0925,
+    "sphere_dynamic_range": 49.55,
+    "subject_px_lit": 2859547,
+    "subject_mean_measured": 0.020306
+   },
+   "why": {
+    "two_light": null
+   },
+   "lit_cut_linear": 0.019463,
+   "luminance_window": [
+    0.012184,
+    0.03452
+   ],
+   "controls": {
+    "sphere": {
+     "px_matched": 1221,
+     "px_total": 115817,
+     "mean_linear": 0.382955,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "1221 px in the subject's luminance window [0.012184, 0.03452]; need 8000"
+    },
+    "card": {
+     "px_matched": 25870,
+     "px_total": 69550,
+     "mean_linear": 0.092725,
+     "bands": {
+      "1": null,
+      "2": null,
+      "4": null,
+      "8": null,
+      "16": null
+     },
+     "fine": null,
+     "relief": null
+    },
+    "wedge0(alb 0.02)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.009006,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.012184, 0.03452]; need 8000"
+    },
+    "wedge1(alb 0.05)": {
+     "px_matched": 35030,
+     "px_total": 35030,
+     "mean_linear": 0.018618,
+     "bands": {
+      "1": 0.0428,
+      "2": 0.0329,
+      "4": 0.0462,
+      "8": 0.0413,
+      "16": null
+     },
+     "fine": 0.037849999999999995,
+     "relief": -0.0267
+    },
+    "wedge2(alb 0.12)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.040589,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.012184, 0.03452]; need 8000"
+    },
+    "wedge3(alb 0.28)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.090368,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.012184, 0.03452]; need 8000"
+    },
+    "wedge4(alb 0.55)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.173991,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.012184, 0.03452]; need 8000"
+    },
+    "wedge5(alb 0.95)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.297732,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.012184, 0.03452]; need 8000"
+    }
+   },
+   "controls_participating": [
+    "wedge1(alb 0.05)"
+   ],
+   "bands_subject": {
+    "1": 9.6712,
+    "2": 9.0309,
+    "4": 7.2355,
+    "8": 2.4308,
+    "16": 1.4119
+   },
+   "fine_subject": 9.35105,
+   "coarse_subject": 1.92135,
+   "fine_control": 0.0378,
+   "fine_control_from": "wedge1(alb 0.05)",
+   "fine_over_control": 247.3823,
+   "fine_over_coarse": 4.8669,
+   "fine_over_coarse_control": 0.9165,
+   "fine_max_subject": 9.6712,
+   "colour": {
+    "px": 2859547,
+    "median_chromaticity": [
+     0.41909,
+     0.37595
+    ],
+    "chroma_sd_u": 0.0044,
+    "chroma_sd_v": 0.00249,
+    "single_hue_fraction_r010": 0.9668,
+    "single_hue_fraction_r005": 0.6641,
+    "chroma_p95_radius": 0.00919,
+    "gated": false,
+    "note": "NOT GATED -- the smooth controls are neutral by construction so there is no in-frame floor for chroma, and an absolute bar here would be uncalibrated. Read it."
+   },
+   "relief_subject": 0.17457,
+   "relief_subject_detail": {
+    "lag4": {
+     "along_light": -0.29126,
+     "across_light": -0.11668
+    },
+    "best_lag_px": 4,
+    "lag6": {
+     "along_light": -0.05352,
+     "across_light": -0.03013
+    },
+    "lag8": {
+     "along_light": 0.01828,
+     "across_light": 0.00916
+    },
+    "lag10": {
+     "along_light": 0.01109,
+     "across_light": 0.00633
+    },
+    "lag12": {
+     "along_light": 0.0065,
+     "across_light": -5e-05
+    },
+    "lag16": {
+     "along_light": -0.00023,
+     "across_light": -0.00121
+    },
+    "dip_along": 0.29126,
+    "dip_across": 0.11668
+   },
+   "relief_control_all": [
+    -0.0267
+   ],
+   "relief_control": -0.0267,
+   "relief_control_degenerate": null,
+   "two_light": {
+    "rho": -0.57522,
+    "light_pct": 8.12291,
+    "still_pct": 4.24553,
+    "px": 7104784,
+    "log_floor": 0.00040612,
+    "px_lit_in_both": 7148866,
+    "px_chosen_lit": 7148866,
+    "px_flip_lit": 7148866,
+    "px_chosen_lit_core": 2859547,
+    "alpha_agreement": 1.0,
+    "flip_png": "/home/zany/f1-round2/render/gate_witness/terrain_ground/witness_flip.png",
+    "sun_screen_direction_rowcol_flip": [
+     -0.01549953997331552,
+     0.9998798749152897
+    ],
+    "dip_light_driven": 0.28901,
+    "dip_light_driven_detail": {
+     "lag4": {
+      "along_light": -0.38871,
+      "across_light": -0.0997
+     },
+     "best_lag_px": 4,
+     "lag6": {
+      "along_light": -0.10446,
+      "across_light": -0.04701
+     },
+     "lag8": {
+      "along_light": 0.00207,
+      "across_light": -0.00133
+     },
+     "lag10": {
+      "along_light": 0.0127,
+      "across_light": 0.00468
+     },
+     "lag12": {
+      "along_light": 0.01053,
+      "across_light": 0.00392
+     },
+     "lag16": {
+      "along_light": -0.00081,
+      "across_light": -0.00124
+     },
+     "dip_along": 0.38871,
+     "dip_across": 0.0997
+    },
+    "controls": {
+     "wedge1(alb 0.05)": {
+      "light_pct": 0.02574,
+      "rho": 0.05994,
+      "still_pct": 0.02738
+     }
+    },
+    "light_control": 0.02574,
+    "light_control_from": "wedge1(alb 0.05)",
+    "light_over_control": 315.5754
+   },
+   "silhouette_control": {
+    "side": "left",
+    "rows": 365,
+    "y0": 153,
+    "y1": 517,
+    "global_rms_px": 1.153,
+    "global_rms_mm": 0.741,
+    "rms_px": 0.284,
+    "rms_mm": 0.183,
+    "local_max_px": 0.536,
+    "local_max_mm": 0.345,
+    "windows": 6
+   },
+   "silhouette_control_rows": 366,
+   "silhouette": {
+    "side": "right",
+    "rows": 1513,
+    "y0": 647,
+    "y1": 2159,
+    "global_rms_px": 0.0,
+    "global_rms_mm": 0.0,
+    "rms_px": 0.0,
+    "rms_mm": 0.0,
+    "local_max_px": 0.0,
+    "local_max_mm": 0.0,
+    "windows": 29
+   },
+   "silhouette_detail": {
+    "profiles": [
+     {
+      "side": "left",
+      "rows": 1513,
+      "y0": 647,
+      "y1": 2159,
+      "global_rms_px": 0.0,
+      "global_rms_mm": 0.0,
+      "rms_px": 0.0,
+      "rms_mm": 0.0,
+      "local_max_px": 0.0,
+      "local_max_mm": 0.0,
+      "windows": 29
+     },
+     {
+      "side": "right",
+      "rows": 1513,
+      "y0": 647,
+      "y1": 2159,
+      "global_rms_px": 0.0,
+      "global_rms_mm": 0.0,
+      "rms_px": 0.0,
+      "rms_mm": 0.0,
+      "local_max_px": 0.0,
+      "local_max_mm": 0.0,
+      "windows": 29
+     }
+    ],
+    "n_profiles": 2,
+    "statistic": "median over 100-row windows of the residual RMS after refitting a quadratic inside each window"
+   }
+  }
+ },
+ "result": "ITEM_ACCEPTED",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-03T14:39:01",
+  "written_at": 1785767941.881,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "status": "OK",
+   "mtime": 1785757608.739,
+   "mtime_iso": "2026-08-03T11:46:48",
+   "bytes": 170986,
+   "sha256": "3b9d07043cf326992a7e23b195498364727c1ddd3610e78168856cf8dd246220"
+  },
+  "tool_version": "item_gate RIG_VERSION 6, 8 checks",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/world/items/terrain_ground_test.blend",
+    "status": "OK",
+    "mtime": 1785302890.706,
+    "mtime_iso": "2026-07-29T05:28:10",
+    "bytes": 237881155,
+    "sha256": "20c439fd06ad7d323d149e8fc9bd6a7c7a34a00efcdf6138b0ac4d333cba7624",
+    "hash_seconds": 0.46
+   },
+   {
+    "role": "manifest",
+    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "status": "OK",
+    "mtime": 1785264294.872,
+    "mtime_iso": "2026-07-28T18:44:54",
+    "bytes": 299660,
+    "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505"
+   },
+   {
+    "role": "from_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/terrain_ground/witness.png",
+    "status": "OK",
+    "mtime": 1785767753.405,
+    "mtime_iso": "2026-08-03T14:35:53",
+    "bytes": 47985977,
+    "sha256": "89f3946d6a89ea22b844603c9e14cd250244dbc0227bcaed527117700f0b5bda"
+   }
+  ],
+  "describes": [
+   {
+    "role": "witness_blend",
+    "path": null,
+    "status": "NOT_GIVEN",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null
+   },
+   {
+    "role": "witness_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/terrain_ground/witness.png",
+    "status": "OK",
+    "mtime": 1785767753.405,
+    "mtime_iso": "2026-08-03T14:35:53",
+    "bytes": 47985977,
+    "sha256": "89f3946d6a89ea22b844603c9e14cd250244dbc0227bcaed527117700f0b5bda"
+   },
+   {
+    "role": "witness_spec",
+    "path": "/home/zany/f1-round2/render/gate_witness/terrain_ground/witness_spec.json",
+    "status": "OK",
+    "mtime": 1785761505.932,
+    "mtime_iso": "2026-08-03T12:51:45",
+    "bytes": 2897,
+    "sha256": "bb8d38fa7b573274774db2efddc4e2bf59f2219f4d4601d68261a82fa8e220bb"
+   }
+  ],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785741347.142,
+    "mtime_iso": "2026-08-03T07:15:47",
+    "bytes": 167634,
+    "sha256": "2ef9e80d754a5532d48f26093db2791759e34a3d2be3215e4ca45d3236340000"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785684602.475,
+    "mtime_iso": "2026-08-02T15:30:02",
+    "bytes": 224176,
+    "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "/home/zany/f1-round2/world/items/terrain_ground_test.blend",
+   "--factory-startup",
+   "-P",
+   "/home/zany/f1-round2/tools/item_gate.py",
+   "--",
+   "--item",
+   "terrain_ground",
+   "--out",
+   "/home/zany/f1-round2/work/r2061/gate/terrain_ground/gate.json",
+   "--samples",
+   "512",
+   "--always-render",
+   "--from-png",
+   "/home/zany/f1-round2/render/gate_witness/terrain_ground/witness.png"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

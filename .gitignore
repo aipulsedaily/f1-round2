@@ -95,6 +95,41 @@ render/world/assembly/r2/v1??/*
 !render/world/assembly/r2/v1??/*.py
 !render/world/assembly/r2/v1??/*.sh
 
+# THE ITEM GATE VERDICTS ARE A STAGE-1 BUILD INPUT, AND `render/*` ATE THEM.
+# R2-4020, found by the sweep that followed R2-3961.
+#
+# `world/build_items.py::check_row()` reads `render/items/<item>/gate.json` and,
+# because `require_gate_accepted` defaults TRUE, appends a FATAL unless it finds
+# `"result": "ITEM_ACCEPTED"`:
+#
+#     gate verdict is None, not ITEM_ACCEPTED (read from ...). A placement
+#     stage that ships un-accepted geometry makes the gate optional.
+#
+# So `rm -rf render/items/` does not degrade the world build, it STOPS it --
+# exactly the position `work/r2_1211_rubber_tracks.json` was in, one directory
+# over, and for the same reason: a blanket `render/*` written to exclude
+# renders swallowed the evidence sitting among them.
+#
+# AND THEY ARE NOT REGENERABLE IN THE WAY THAT MATTERS.  `tools/item_gate.py`
+# will write a gate.json, so "a script produces it" is true and beside the
+# point: what it writes is the verdict of A NEW RUN.  This project's own
+# `tools/r2_1381_rescore.py` says it plainly -- "`gate.json` files are the
+# record of the run that produced them and are not edited after the fact".
+# The 33 files here are the record of the runs that ACCEPTED THE SHIPPED
+# GEOMETRY. Re-rendering cannot restore that; it can only replace it with
+# something else that has the same name.  520 KB for 33 files, so the "large,
+# regenerable artefacts" reasoning at the top of this file does not apply.
+#
+# Git cannot re-include a file whose parent DIRECTORY is excluded, so every
+# level is opened one at a time and immediately re-closed.  Nothing else under
+# `render/items/` -- the gate renders, the crops, the EXRs -- becomes visible,
+# and the *.png / *.exr / *.blend rules above still win inside it.
+!render/items/
+render/items/*
+!render/items/*/
+render/items/*/*
+!render/items/*/gate.json
+
 # Telemetry is generated from the spec, but it IS the single source of truth for
 # motion AND audio and it has been wrong in ways that took a day to find. Track it.
 !telemetry/telemetry.csv

@@ -1,0 +1,524 @@
+{
+ "item": "pont_deck_slab",
+ "hero": true,
+ "filmed_at_m": 3.0,
+ "lens_mm": 35.0,
+ "onscreen_px_4k": 1244.0,
+ "flexible": false,
+ "flexible_because": "no cloth token and no clothed-human pattern in id/name",
+ "subject_selection": "every mesh MINUS 3 named like a standin/context object (no collection matched 'pont_deck_slab' -- pass --prefix or --collection to be explicit)",
+ "prefix_integrity": null,
+ "witness_subject": "PDS_Slab",
+ "witness_subject_because": "largest of 13 objects by bbox diagonal (36.06 m) -- one declared instance, so there is no population to be typical of and the item's principal body is what it is",
+ "checks": {
+  "no_external_assets": true,
+  "material_depth": true,
+  "geometry_resolves_at_distance": true,
+  "per_instance_variation": true,
+  "witness_frame_valid": true,
+  "surface_microstructure": true,
+  "relief_reads_as_lip_and_shade": false,
+  "silhouette_departs_from_analytic": "not_applicable"
+ },
+ "check_notes": {
+  "surface_microstructure": "fine(r1-r2) 3.709 % of mean vs the strictest brightness-matched smooth control 0.039 [wedge1(alb 0.05)] = x96.09, need x2.00; controls in play ['wedge0(alb 0.02)', 'wedge1(alb 0.05)']; spectral balance fine/coarse 1.048 vs control 1.0419",
+  "relief_reads_as_lip_and_shade": "lip-and-shadow dip +0.1101 along the light vs the strictest smooth control +0.1336 (need control + 0.030 AND >= 0.050 absolute). The features on this surface are single-value marks: they have no sunward lip and no lee shadow, which is how a printed decal behaves and not how a physical object does. | TWO-LIGHT: the band that MOVED when the sun crossed to its other candidate side is 5.0729 % contrast, x185.48 the strictest smooth control's (wedge1(alb 0.05), need x2.00) -- PASS. The band that did NOT move is 3.5218 %, and corr(chosen, flip) = -0.3571 (REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL). Fine-band contrast x96.09 the control (need x2.00) -- PASS. [dip re-derived on the light-driven half alone: +0.3469]",
+  "silhouette_departs_from_analytic": "rigid item (no cloth token and no clothed-human pattern in id/name); an analytic outline is correct here"
+ },
+ "unmeasurable": [],
+ "framing_source": "item_manifest.json",
+ "thresholds": {
+  "procedural_texture_nodes_required": 6,
+  "detail_limit_px": 6.0,
+  "fine_over_control_required": 2.0,
+  "fine_over_coarse_at_least_control": true,
+  "relief_margin_over_control": 0.03,
+  "relief_dip_absolute_floor": 0.05,
+  "relief_control_sane_band": 0.3,
+  "relief_light_over_control_required": 2.0,
+  "relief_two_light_rho": "REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL",
+  "silhouette_rms_mm_required": 5.0,
+  "silhouette_rms_over_control_required": 3.0,
+  "silhouette_min_px_for_5mm": 1.0
+ },
+ "threshold_kinds": {
+  "fine_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "fine_over_coarse_at_least_control": "SCALE-INVARIANT (spectral shape vs in-frame control)",
+  "relief_margin_over_control": "SCALE-INVARIANT (margin over in-frame control)",
+  "relief_dip_absolute_floor": "SCALE-INVARIANT (calibrated from control spread)",
+  "silhouette_rms_mm_required": "PHYSICAL (millimetres of cloth)",
+  "silhouette_rms_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "silhouette_min_px_for_5mm": "SIZE-DEPENDENT SCOPING TEST, not a bar",
+  "detail_limit_px": "SIZE-DEPENDENT (screen px at the filmed distance)",
+  "procedural_texture_nodes_required": "size-independent node floor"
+ },
+ "measured": {
+  "external_image_files": [],
+  "image_texture_nodes": 0,
+  "materials": 11,
+  "procedural_texture_nodes": 85,
+  "objects": 13,
+  "triangles": 30943406,
+  "triangles_per_declared_instance": 30943406.0,
+  "triangles_per_found_object": 2380262.0,
+  "triangles_per_onscreen_px": 24874.12,
+  "edges": 31439180,
+  "p10_edge_m": 0.001131,
+  "median_edge_m": 0.003,
+  "p90_edge_m": 0.01375,
+  "p10_edge_px_at_filmed_distance": 1.41,
+  "median_edge_px_at_filmed_distance": 3.73,
+  "px_per_m_at_filmed_distance": 1244.4,
+  "mm_per_px_at_filmed_distance": 0.8036,
+  "band_radii_mm_at_filmed_distance": {
+   "1": 0.804,
+   "2": 1.607,
+   "4": 3.214,
+   "8": 6.429,
+   "16": 12.857
+  },
+  "instances_declared": 1,
+  "instances_found": 13,
+  "cv_size": 0.05071,
+  "cv_volume": 0.68553,
+  "distinct_topologies": 13,
+  "variation_measured_over": "individual objects",
+  "realized_instances": null
+ },
+ "witness": {
+  "blend": null,
+  "png": "/home/zany/f1-round2/render/gate_witness/pont_deck_slab/witness.png",
+  "spec": "/home/zany/f1-round2/render/gate_witness/pont_deck_slab/witness_spec.json",
+  "render": {
+   "backend": "supplied PNG (--from-png)",
+   "png": "/home/zany/f1-round2/render/gate_witness/pont_deck_slab/witness.png",
+   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/pont_deck_slab/witness_flip.png"
+  },
+  "render_error": null,
+  "image": {
+   "frame": {
+    "subject_px": 7148866,
+    "sphere_px": 115817,
+    "plane_px": 69550,
+    "subject_mean_linear": 0.013986,
+    "sphere_mean_linear": 0.112336,
+    "plane_mean_linear": 0.158701,
+    "subject_clipped_frac": 0.0,
+    "subject_crushed_frac": 0.1561,
+    "sphere_clipped_frac": 0.0,
+    "sphere_highlight_R_minus_B": 0.05379,
+    "sphere_dynamic_range": 73.05,
+    "subject_px_lit": 2461049,
+    "subject_mean_measured": 0.019047
+   },
+   "why": {
+    "two_light": null
+   },
+   "lit_cut_linear": 0.016115,
+   "luminance_window": [
+    0.011428,
+    0.03238
+   ],
+   "controls": {
+    "sphere": {
+     "px_matched": 3686,
+     "px_total": 115817,
+     "mean_linear": 0.112336,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "3686 px in the subject's luminance window [0.011428, 0.03238]; need 8000"
+    },
+    "card": {
+     "px_matched": 8018,
+     "px_total": 69550,
+     "mean_linear": 0.158701,
+     "bands": {
+      "1": null,
+      "2": null,
+      "4": null,
+      "8": null,
+      "16": null
+     },
+     "fine": null,
+     "relief": null
+    },
+    "wedge0(alb 0.02)": {
+     "px_matched": 34875,
+     "px_total": 34875,
+     "mean_linear": 0.012293,
+     "bands": {
+      "1": 0.0428,
+      "2": 0.033,
+      "4": 0.0335,
+      "8": 0.0305,
+      "16": null
+     },
+     "fine": 0.0379,
+     "relief": 0.13361
+    },
+    "wedge1(alb 0.05)": {
+     "px_matched": 35030,
+     "px_total": 35030,
+     "mean_linear": 0.020133,
+     "bands": {
+      "1": 0.0435,
+      "2": 0.0336,
+      "4": 0.0329,
+      "8": 0.037,
+      "16": null
+     },
+     "fine": 0.03855,
+     "relief": -0.08751
+    },
+    "wedge2(alb 0.12)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.040191,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.011428, 0.03238]; need 8000"
+    },
+    "wedge3(alb 0.28)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.087527,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.011428, 0.03238]; need 8000"
+    },
+    "wedge4(alb 0.55)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.167676,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.011428, 0.03238]; need 8000"
+    },
+    "wedge5(alb 0.95)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.286854,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.011428, 0.03238]; need 8000"
+    }
+   },
+   "controls_participating": [
+    "wedge0(alb 0.02)",
+    "wedge1(alb 0.05)"
+   ],
+   "bands_subject": {
+    "1": 2.5653,
+    "2": 4.8526,
+    "4": 8.0989,
+    "8": 4.5052,
+    "16": 2.5728
+   },
+   "fine_subject": 3.7089499999999997,
+   "coarse_subject": 3.539,
+   "fine_control": 0.0386,
+   "fine_control_from": "wedge1(alb 0.05)",
+   "fine_over_control": 96.0868,
+   "fine_over_coarse": 1.048,
+   "fine_over_coarse_control": 1.0419,
+   "fine_max_subject": 4.8526,
+   "colour": {
+    "px": 2461049,
+    "median_chromaticity": [
+     0.3721,
+     0.33948
+    ],
+    "chroma_sd_u": 0.00517,
+    "chroma_sd_v": 0.00117,
+    "single_hue_fraction_r010": 0.972,
+    "single_hue_fraction_r005": 0.7625,
+    "chroma_p95_radius": 0.0085,
+    "gated": false,
+    "note": "NOT GATED -- the smooth controls are neutral by construction so there is no in-frame floor for chroma, and an absolute bar here would be uncalibrated. Read it."
+   },
+   "relief_subject": 0.1101,
+   "relief_subject_detail": {
+    "lag4": {
+     "along_light": -0.22752,
+     "across_light": -0.14977
+    },
+    "best_lag_px": 6,
+    "lag6": {
+     "along_light": -0.42274,
+     "across_light": -0.31263
+    },
+    "lag8": {
+     "along_light": -0.29032,
+     "across_light": -0.16811
+    },
+    "lag10": {
+     "along_light": -0.09902,
+     "across_light": -0.02726
+    },
+    "lag12": {
+     "along_light": 0.04297,
+     "across_light": 0.03356
+    },
+    "lag16": {
+     "along_light": 0.13281,
+     "across_light": 0.05061
+    },
+    "dip_along": 0.42274,
+    "dip_across": 0.31263
+   },
+   "relief_control_all": [
+    0.13361,
+    -0.08751
+   ],
+   "relief_control": 0.13361,
+   "relief_control_degenerate": null,
+   "two_light": {
+    "rho": -0.35714,
+    "light_pct": 5.07289,
+    "still_pct": 3.5218,
+    "px": 4321583,
+    "log_floor": 0.00038094,
+    "px_lit_in_both": 6021439,
+    "px_chosen_lit": 6152621,
+    "px_flip_lit": 6948827,
+    "px_chosen_lit_core": 2461049,
+    "alpha_agreement": 1.0,
+    "flip_png": "/home/zany/f1-round2/render/gate_witness/pont_deck_slab/witness_flip.png",
+    "sun_screen_direction_rowcol_flip": [
+     -0.015500139720517054,
+     -0.9998798656181874
+    ],
+    "dip_light_driven": 0.34692,
+    "dip_light_driven_detail": {
+     "lag4": {
+      "along_light": -0.36283,
+      "across_light": 0.0352
+     },
+     "best_lag_px": 6,
+     "lag6": {
+      "along_light": -0.44039,
+      "across_light": -0.09347
+     },
+     "lag8": {
+      "along_light": -0.21063,
+      "across_light": -0.03724
+     },
+     "lag10": {
+      "along_light": -0.01872,
+      "across_light": 0.00393
+     },
+     "lag12": {
+      "along_light": 0.07004,
+      "across_light": 0.01778
+     },
+     "lag16": {
+      "along_light": 0.05951,
+      "across_light": 0.03424
+     },
+     "dip_along": 0.44039,
+     "dip_across": 0.09347
+    },
+    "controls": {
+     "wedge0(alb 0.02)": {
+      "light_pct": 0.02612,
+      "rho": 0.13439,
+      "still_pct": 0.02995
+     },
+     "wedge1(alb 0.05)": {
+      "light_pct": 0.02735,
+      "rho": 0.16037,
+      "still_pct": 0.03218
+     }
+    },
+    "light_control": 0.02735,
+    "light_control_from": "wedge1(alb 0.05)",
+    "light_over_control": 185.4804
+   },
+   "silhouette_control": {
+    "side": "left",
+    "rows": 365,
+    "y0": 153,
+    "y1": 517,
+    "global_rms_px": 1.153,
+    "global_rms_mm": 0.927,
+    "rms_px": 0.284,
+    "rms_mm": 0.228,
+    "local_max_px": 0.536,
+    "local_max_mm": 0.431,
+    "windows": 6
+   },
+   "silhouette_control_rows": 366,
+   "silhouette": {
+    "side": "right",
+    "rows": 1513,
+    "y0": 647,
+    "y1": 2159,
+    "global_rms_px": 0.0,
+    "global_rms_mm": 0.0,
+    "rms_px": 0.0,
+    "rms_mm": 0.0,
+    "local_max_px": 0.0,
+    "local_max_mm": 0.0,
+    "windows": 29
+   },
+   "silhouette_detail": {
+    "profiles": [
+     {
+      "side": "left",
+      "rows": 1513,
+      "y0": 647,
+      "y1": 2159,
+      "global_rms_px": 0.0,
+      "global_rms_mm": 0.0,
+      "rms_px": 0.0,
+      "rms_mm": 0.0,
+      "local_max_px": 0.0,
+      "local_max_mm": 0.0,
+      "windows": 29
+     },
+     {
+      "side": "right",
+      "rows": 1513,
+      "y0": 647,
+      "y1": 2159,
+      "global_rms_px": 0.0,
+      "global_rms_mm": 0.0,
+      "rms_px": 0.0,
+      "rms_mm": 0.0,
+      "local_max_px": 0.0,
+      "local_max_mm": 0.0,
+      "windows": 29
+     }
+    ],
+    "n_profiles": 2,
+    "statistic": "median over 100-row windows of the residual RMS after refitting a quadratic inside each window"
+   }
+  }
+ },
+ "result": "ITEM_REJECTED",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-03T14:27:39",
+  "written_at": 1785767259.021,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "status": "OK",
+   "mtime": 1785757608.739,
+   "mtime_iso": "2026-08-03T11:46:48",
+   "bytes": 170986,
+   "sha256": "3b9d07043cf326992a7e23b195498364727c1ddd3610e78168856cf8dd246220"
+  },
+  "tool_version": "item_gate RIG_VERSION 6, 8 checks",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/world/items/pont_deck_slab_test.blend",
+    "status": "OK",
+    "mtime": 1785695631.726,
+    "mtime_iso": "2026-08-02T18:33:51",
+    "bytes": 2376792853,
+    "sha256": "c49ff9d3808ee7d6afeb89cc8cbac46e32970424c73084316f690cd32b6e3a40",
+    "hash_seconds": 4.82
+   },
+   {
+    "role": "manifest",
+    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "status": "OK",
+    "mtime": 1785264294.872,
+    "mtime_iso": "2026-07-28T18:44:54",
+    "bytes": 299660,
+    "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505"
+   },
+   {
+    "role": "from_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/pont_deck_slab/witness.png",
+    "status": "OK",
+    "mtime": 1785766783.504,
+    "mtime_iso": "2026-08-03T14:19:43",
+    "bytes": 42102760,
+    "sha256": "34c428670ee3c15e1190fc8214f540fe38e2c518ee4bc774e58fc0a206341c71"
+   }
+  ],
+  "describes": [
+   {
+    "role": "witness_blend",
+    "path": null,
+    "status": "NOT_GIVEN",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null
+   },
+   {
+    "role": "witness_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/pont_deck_slab/witness.png",
+    "status": "OK",
+    "mtime": 1785766783.504,
+    "mtime_iso": "2026-08-03T14:19:43",
+    "bytes": 42102760,
+    "sha256": "34c428670ee3c15e1190fc8214f540fe38e2c518ee4bc774e58fc0a206341c71"
+   },
+   {
+    "role": "witness_spec",
+    "path": "/home/zany/f1-round2/render/gate_witness/pont_deck_slab/witness_spec.json",
+    "status": "OK",
+    "mtime": 1785760945.642,
+    "mtime_iso": "2026-08-03T12:42:25",
+    "bytes": 2915,
+    "sha256": "5b03db30b965e599db31c2a37a353ad0990f1d127e5e38b35994874329c50c8f"
+   }
+  ],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785741347.142,
+    "mtime_iso": "2026-08-03T07:15:47",
+    "bytes": 167634,
+    "sha256": "2ef9e80d754a5532d48f26093db2791759e34a3d2be3215e4ca45d3236340000"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785684602.475,
+    "mtime_iso": "2026-08-02T15:30:02",
+    "bytes": 224176,
+    "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "/home/zany/f1-round2/world/items/pont_deck_slab_test.blend",
+   "--factory-startup",
+   "-P",
+   "/home/zany/f1-round2/tools/item_gate.py",
+   "--",
+   "--item",
+   "pont_deck_slab",
+   "--out",
+   "/home/zany/f1-round2/work/r2061/gate/pont_deck_slab/gate.json",
+   "--samples",
+   "512",
+   "--always-render",
+   "--from-png",
+   "/home/zany/f1-round2/render/gate_witness/pont_deck_slab/witness.png"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

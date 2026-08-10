@@ -1,0 +1,253 @@
+{
+ "item": "mullion_intact",
+ "hero": true,
+ "filmed_at_m": 1.6,
+ "lens_mm": 35.0,
+ "onscreen_px_4k": 2160.0,
+ "flexible": false,
+ "flexible_because": "'mullion_intact' is in RIGID_FORCE",
+ "subject_selection": "collection 'W_Item_MullionIntact' (auto-detected from item id), skipping sub-collections ['W_Item_MullionIntact_Cameras', 'W_Item_MullionIntact_Standins']",
+ "prefix_integrity": null,
+ "witness_subject": "MUL_Mullion05_Y+00.0",
+ "witness_subject_because": "median-triangle instance of 1 objects (558988 tris) -- the TYPICAL instance of a population of 11, not the best one",
+ "checks": {
+  "no_external_assets": true,
+  "material_depth": true,
+  "geometry_resolves_at_distance": true,
+  "per_instance_variation": true,
+  "witness_frame_valid": false,
+  "surface_microstructure": null,
+  "relief_reads_as_lip_and_shade": null,
+  "silhouette_departs_from_analytic": null
+ },
+ "check_notes": {
+  "surface_microstructure": null,
+  "relief_reads_as_lip_and_shade": null,
+  "silhouette_departs_from_analytic": null
+ },
+ "unmeasurable": [
+  "74% of the subject is crushed to black -- the subject is in its own shadow, reframe or relight"
+ ],
+ "framing_source": "item_manifest.json",
+ "thresholds": {
+  "procedural_texture_nodes_required": 6,
+  "detail_limit_px": 6.0,
+  "fine_over_control_required": 2.0,
+  "fine_over_coarse_at_least_control": true,
+  "relief_margin_over_control": 0.03,
+  "relief_dip_absolute_floor": 0.05,
+  "relief_control_sane_band": 0.3,
+  "relief_light_over_control_required": 2.0,
+  "relief_two_light_rho": "REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL",
+  "silhouette_rms_mm_required": 5.0,
+  "silhouette_rms_over_control_required": 3.0,
+  "silhouette_min_px_for_5mm": 1.0
+ },
+ "threshold_kinds": {
+  "fine_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "fine_over_coarse_at_least_control": "SCALE-INVARIANT (spectral shape vs in-frame control)",
+  "relief_margin_over_control": "SCALE-INVARIANT (margin over in-frame control)",
+  "relief_dip_absolute_floor": "SCALE-INVARIANT (calibrated from control spread)",
+  "silhouette_rms_mm_required": "PHYSICAL (millimetres of cloth)",
+  "silhouette_rms_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "silhouette_min_px_for_5mm": "SIZE-DEPENDENT SCOPING TEST, not a bar",
+  "detail_limit_px": "SIZE-DEPENDENT (screen px at the filmed distance)",
+  "procedural_texture_nodes_required": "size-independent node floor"
+ },
+ "measured": {
+  "external_image_files": [],
+  "image_texture_nodes": 0,
+  "materials": 6,
+  "procedural_texture_nodes": 54,
+  "objects": 1,
+  "triangles": 558988,
+  "triangles_per_declared_instance": 50817.1,
+  "triangles_per_found_object": 558988.0,
+  "triangles_per_onscreen_px": 258.79,
+  "edges": 563978,
+  "p10_edge_m": 0.000156,
+  "median_edge_m": 0.001786,
+  "p90_edge_m": 0.045,
+  "p10_edge_px_at_filmed_distance": 0.36,
+  "median_edge_px_at_filmed_distance": 4.17,
+  "px_per_m_at_filmed_distance": 2333.3,
+  "mm_per_px_at_filmed_distance": 0.4286,
+  "band_radii_mm_at_filmed_distance": {
+   "1": 0.429,
+   "2": 0.857,
+   "4": 1.714,
+   "8": 3.429,
+   "16": 6.857
+  },
+  "instances_declared": 11,
+  "instances_found": 1,
+  "cv_size": null,
+  "cv_volume": null,
+  "distinct_topologies": 1,
+  "variation_measured_over": "REALIZED geometry-nodes instances via depsgraph.object_instances",
+  "realized_instances": {
+   "realized": 10,
+   "distinct_sources": 10,
+   "distinct_shapes": 10,
+   "top_source_share": 0.1,
+   "top_shape_share": 0.1,
+   "cv_scale": 0.0,
+   "rot_sd_deg": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "distinct_sources_required": 8,
+   "distinct_shapes_required": 8,
+   "top_source_share_limit": 0.25
+  }
+ },
+ "witness": {
+  "blend": null,
+  "png": "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness.png",
+  "spec": "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness_spec.json",
+  "render": {
+   "backend": "supplied PNG (--from-png)",
+   "png": "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness.png",
+   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness_flip.png"
+  },
+  "render_error": null,
+  "image": {
+   "frame": {
+    "subject_px": 714503,
+    "sphere_px": 115817,
+    "plane_px": 69550,
+    "subject_mean_linear": 0.024576,
+    "sphere_mean_linear": 0.366545,
+    "plane_mean_linear": 0.302945,
+    "subject_clipped_frac": 0.0,
+    "subject_crushed_frac": 0.7401,
+    "sphere_clipped_frac": 0.0,
+    "sphere_highlight_R_minus_B": 0.08284,
+    "sphere_dynamic_range": 79.04
+   },
+   "why": {}
+  }
+ },
+ "result": "ITEM_REJECTED",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-03T14:17:23",
+  "written_at": 1785766643.958,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "status": "OK",
+   "mtime": 1785757608.739,
+   "mtime_iso": "2026-08-03T11:46:48",
+   "bytes": 170986,
+   "sha256": "3b9d07043cf326992a7e23b195498364727c1ddd3610e78168856cf8dd246220"
+  },
+  "tool_version": "item_gate RIG_VERSION 6, 8 checks",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/world/items/mullion_intact_test.blend",
+    "status": "OK",
+    "mtime": 1785324466.989,
+    "mtime_iso": "2026-07-29T11:27:46",
+    "bytes": 426505566,
+    "sha256": "a2c50dbaec81b1008e0708e38c3a444234a7ba6df2614d40ffe5314358fe158d",
+    "hash_seconds": 0.85
+   },
+   {
+    "role": "manifest",
+    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "status": "OK",
+    "mtime": 1785264294.872,
+    "mtime_iso": "2026-07-28T18:44:54",
+    "bytes": 299660,
+    "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505"
+   },
+   {
+    "role": "from_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness.png",
+    "status": "OK",
+    "mtime": 1785766458.05,
+    "mtime_iso": "2026-08-03T14:14:18",
+    "bytes": 4336628,
+    "sha256": "c310d04d4a4b4149fbe21e92eacce106283704ce4fba009121ffff72c3c53073"
+   }
+  ],
+  "describes": [
+   {
+    "role": "witness_blend",
+    "path": null,
+    "status": "NOT_GIVEN",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null
+   },
+   {
+    "role": "witness_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness.png",
+    "status": "OK",
+    "mtime": 1785766458.05,
+    "mtime_iso": "2026-08-03T14:14:18",
+    "bytes": 4336628,
+    "sha256": "c310d04d4a4b4149fbe21e92eacce106283704ce4fba009121ffff72c3c53073"
+   },
+   {
+    "role": "witness_spec",
+    "path": "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness_spec.json",
+    "status": "OK",
+    "mtime": 1785760539.993,
+    "mtime_iso": "2026-08-03T12:35:39",
+    "bytes": 2923,
+    "sha256": "1ae168c2e2db701d187d7df9cf181c12cdec0e4accf1f9ea460b4afbf59e6328"
+   }
+  ],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785741347.142,
+    "mtime_iso": "2026-08-03T07:15:47",
+    "bytes": 167634,
+    "sha256": "2ef9e80d754a5532d48f26093db2791759e34a3d2be3215e4ca45d3236340000"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785684602.475,
+    "mtime_iso": "2026-08-02T15:30:02",
+    "bytes": 224176,
+    "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "/home/zany/f1-round2/world/items/mullion_intact_test.blend",
+   "--factory-startup",
+   "-P",
+   "/home/zany/f1-round2/tools/item_gate.py",
+   "--",
+   "--item",
+   "mullion_intact",
+   "--out",
+   "/home/zany/f1-round2/work/r2061/gate/mullion_intact/gate.json",
+   "--samples",
+   "512",
+   "--always-render",
+   "--from-png",
+   "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness.png"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

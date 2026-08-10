@@ -1,0 +1,263 @@
+{
+ "item": "lighting_mast",
+ "hero": false,
+ "filmed_at_m": 84.178,
+ "lens_mm": 35.0,
+ "onscreen_px_4k": 588.0,
+ "flexible": false,
+ "flexible_because": "no cloth token and no clothed-human pattern in id/name",
+ "subject_selection": "--collection W_Item_LightingMast (skipped sub-collections ['W_Item_LightingMast/Cameras', 'W_Item_LightingMast/Standins'])",
+ "prefix_integrity": null,
+ "witness_subject": "LMA_Mast04_H13.0",
+ "witness_subject_because": "median-triangle instance of 1 objects (74948 tris) -- the TYPICAL instance of a population of 11, not the best one",
+ "checks": {
+  "no_external_assets": true,
+  "material_depth": true,
+  "relief_wiring_reaches_the_shader": true,
+  "geometry_resolves_at_distance": true,
+  "per_instance_variation": true,
+  "witness_frame_valid": false,
+  "surface_microstructure": null,
+  "relief_reads_as_lip_and_shade": null,
+  "silhouette_departs_from_analytic": null
+ },
+ "check_notes": {
+  "surface_microstructure": null,
+  "relief_reads_as_lip_and_shade": null,
+  "silhouette_departs_from_analytic": null
+ },
+ "unmeasurable": [
+  "witness frame unusable -- RuntimeError: witness render failed (rc=1). rq said:\nb4362d1b783a  queued (depth 4) scene=gate_witness/lighting_mast/witness.blend\n  queued... 60s\n  queued... 120s\n  queued... 180s\n  queued... 240s\n  queued... 300s\n  queued... 360s\n  queued... 420s\nb4362d1b783a  canceled: None\n"
+ ],
+ "framing_source": "--filmed-distance-m (caller override of the manifest) + --onscreen-px-4k",
+ "thresholds": {
+  "procedural_texture_nodes_required": 3,
+  "detail_limit_px": 16.0,
+  "fine_over_control_required": 2.0,
+  "fine_over_coarse_at_least_control": true,
+  "relief_margin_over_control": 0.03,
+  "relief_dip_absolute_floor": 0.05,
+  "relief_control_sane_band": 0.3,
+  "relief_light_over_control_required": 2.0,
+  "relief_two_light_rho": "REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL",
+  "silhouette_rms_mm_required": 5.0,
+  "silhouette_rms_over_control_required": 3.0,
+  "silhouette_min_px_for_5mm": 1.0
+ },
+ "threshold_kinds": {
+  "fine_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "fine_over_coarse_at_least_control": "SCALE-INVARIANT (spectral shape vs in-frame control)",
+  "relief_margin_over_control": "SCALE-INVARIANT (margin over in-frame control)",
+  "relief_dip_absolute_floor": "SCALE-INVARIANT (calibrated from control spread)",
+  "silhouette_rms_mm_required": "PHYSICAL (millimetres of cloth)",
+  "silhouette_rms_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "silhouette_min_px_for_5mm": "SIZE-DEPENDENT SCOPING TEST, not a bar",
+  "detail_limit_px": "SIZE-DEPENDENT (screen px at the filmed distance)",
+  "procedural_texture_nodes_required": "size-independent node floor"
+ },
+ "measured": {
+  "external_image_files": [],
+  "image_texture_nodes": 0,
+  "materials": 3,
+  "procedural_texture_nodes": 27,
+  "relief_wiring": {
+   "ok": true,
+   "trees_scanned": 6,
+   "item_materials": [
+    "LMA_Cabinet",
+    "LMA_Conc",
+    "LMA_Galv"
+   ],
+   "failing": [],
+   "failing_on_item_materials": 0,
+   "failing_elsewhere_in_blend": 0,
+   "computation_notes": [
+    {
+     "owner": "LMA_Cabinet",
+     "node": "Bevel",
+     "to_node": "ShaderNodeVectorMath",
+     "to_socket": "Vector"
+    },
+    {
+     "owner": "LMA_Galv",
+     "node": "Bevel",
+     "to_node": "ShaderNodeVectorMath",
+     "to_socket": "Vector"
+    }
+   ]
+  },
+  "objects": 1,
+  "triangles": 74948,
+  "triangles_per_declared_instance": 6813.5,
+  "triangles_per_found_object": 74948.0,
+  "triangles_per_onscreen_px": 127.46,
+  "edges": 79180,
+  "p10_edge_m": 0.003399,
+  "median_edge_m": 0.009881,
+  "p90_edge_m": 0.038,
+  "p10_edge_px_at_filmed_distance": 0.15,
+  "median_edge_px_at_filmed_distance": 0.44,
+  "px_per_m_at_filmed_distance": 44.4,
+  "mm_per_px_at_filmed_distance": 22.5477,
+  "band_radii_mm_at_filmed_distance": {
+   "1": 22.548,
+   "2": 45.095,
+   "4": 90.191,
+   "8": 180.381,
+   "16": 360.763
+  },
+  "instances_declared": 11,
+  "instances_found": 1,
+  "cv_size": null,
+  "cv_volume": null,
+  "distinct_topologies": 1,
+  "variation_measured_over": "REALIZED geometry-nodes instances via depsgraph.object_instances",
+  "realized_instances": {
+   "realized": 10,
+   "distinct_sources": 10,
+   "distinct_shapes": 10,
+   "top_source_share": 0.1,
+   "top_shape_share": 0.1,
+   "cv_scale": 0.0,
+   "rot_sd_deg": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "distinct_sources_required": 8,
+   "distinct_shapes_required": 8,
+   "top_source_share_limit": 0.25
+  }
+ },
+ "witness": {
+  "blend": "/home/zany/f1-round2/render/gate_witness/lighting_mast/witness.blend",
+  "png": "/home/zany/f1-round2/render/gate_witness/lighting_mast/witness.png",
+  "spec": "/home/zany/f1-round2/render/gate_witness/lighting_mast/witness_spec.json",
+  "render": null,
+  "render_error": "RuntimeError: witness render failed (rc=1). rq said:\nb4362d1b783a  queued (depth 4) scene=gate_witness/lighting_mast/witness.blend\n  queued... 60s\n  queued... 120s\n  queued... 180s\n  queued... 240s\n  queued... 300s\n  queued... 360s\n  queued... 420s\nb4362d1b783a  canceled: None\n",
+  "image": null
+ },
+ "result": "ITEM_UNMEASURABLE",
+ "verdict_is_vacuous_because": "the witness frame is unusable, so every render-based check was forfeited and nothing was measured about this module -- a transport or staging failure is the ABSENCE of a verdict, not a verdict. See witness.render_error.",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-07T15:37:26",
+  "written_at": 1786117046.119,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "status": "OK",
+   "mtime": 1785872307.202,
+   "mtime_iso": "2026-08-04T19:38:27",
+   "bytes": 186066,
+   "sha256": "563d1c880158510aab9067a9f50cbd61aaa1381307ce5e2b1a505b106eaffd48"
+  },
+  "tool_version": "item_gate RIG_VERSION 6, 9 checks",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/world/items/lighting_mast_test.blend",
+    "status": "OK",
+    "mtime": 1786116474.394,
+    "mtime_iso": "2026-08-07T15:27:54",
+    "bytes": 12836592,
+    "sha256": "3d95240e3312cdc0a21cbf28d95ad023d117af20557aec25b935562028646ca8"
+   },
+   {
+    "role": "manifest",
+    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "status": "OK",
+    "mtime": 1785264294.872,
+    "mtime_iso": "2026-07-28T18:44:54",
+    "bytes": 299660,
+    "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505"
+   },
+   {
+    "role": "from_png",
+    "path": null,
+    "status": "NOT_GIVEN",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null
+   }
+  ],
+  "describes": [
+   {
+    "role": "witness_blend",
+    "path": "/home/zany/f1-round2/render/gate_witness/lighting_mast/witness.blend",
+    "status": "OK",
+    "mtime": 1786116574.315,
+    "mtime_iso": "2026-08-07T15:29:34",
+    "bytes": 5632845,
+    "sha256": "22f6bf3699acd5b3bd3d1f9db3bf11ce95d6989ce0f9613aa3f400d5c070dd0f"
+   },
+   {
+    "role": "witness_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/lighting_mast/witness.png",
+    "status": "MISSING",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null,
+    "error": "FileNotFoundError: [Errno 2] No such file or directory: '/home/zany/f1-round2/render/gate_witness/lighting_mast/witness.png'"
+   },
+   {
+    "role": "witness_spec",
+    "path": "/home/zany/f1-round2/render/gate_witness/lighting_mast/witness_spec.json",
+    "status": "OK",
+    "mtime": 1786116574.685,
+    "mtime_iso": "2026-08-07T15:29:34",
+    "bytes": 2915,
+    "sha256": "a62f94cbd2cbe1faf4539b282380118e209ae31052309d6861c7fad4ba2c07da"
+   }
+  ],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785786939.014,
+    "mtime_iso": "2026-08-03T19:55:39",
+    "bytes": 168482,
+    "sha256": "0f12b3c34c89a35e70e80c3620b2e2561049f1d092d3197a875b8015168abdbd"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785796863.209,
+    "mtime_iso": "2026-08-03T22:41:03",
+    "bytes": 230216,
+    "sha256": "d1e6ec608b7651ec7f77c5a2930a5abfaa0e53a99c9a05edcdc8e3a05f831f9d"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "world/items/lighting_mast_test.blend",
+   "--factory-startup",
+   "-P",
+   "tools/item_gate.py",
+   "--",
+   "--item",
+   "lighting_mast",
+   "--collection",
+   "W_Item_LightingMast",
+   "--out",
+   "render/items/lighting_mast/gate.json",
+   "--filmed-distance-m",
+   "84.1780",
+   "--onscreen-px-4k",
+   "588.0"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

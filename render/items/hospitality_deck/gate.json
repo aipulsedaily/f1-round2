@@ -1,0 +1,479 @@
+{
+ "item": "hospitality_deck",
+ "hero": false,
+ "filmed_at_m": 22.0,
+ "lens_mm": 35.0,
+ "onscreen_px_4k": 102.0,
+ "flexible": false,
+ "flexible_because": "'hospitality_deck' is in RIGID_FORCE",
+ "subject_selection": "collection 'ITEM_HOSPITALITY_DECK' (auto-detected from item id), skipping sub-collections ['ITEM_HOSPITALITY_DECK_Cameras', 'ITEM_HOSPITALITY_DECK_Context']",
+ "prefix_integrity": null,
+ "witness_subject": "HD_Deck_1_Versant",
+ "witness_subject_because": "median-triangle instance of 5 objects (3282082 tris) -- the TYPICAL instance of a population of 5, not the best one",
+ "checks": {
+  "no_external_assets": true,
+  "material_depth": true,
+  "geometry_resolves_at_distance": true,
+  "per_instance_variation": true,
+  "witness_frame_valid": true,
+  "surface_microstructure": true,
+  "relief_reads_as_lip_and_shade": false,
+  "silhouette_departs_from_analytic": "not_applicable"
+ },
+ "check_notes": {
+  "surface_microstructure": "fine(r1-r2) 10.837 % of mean vs the strictest brightness-matched smooth control 0.035 [wedge1(alb 0.05)] = x314.11, need x2.00; controls in play ['wedge1(alb 0.05)', 'wedge2(alb 0.12)']; spectral balance fine/coarse 3.269 vs control 0.3577",
+  "relief_reads_as_lip_and_shade": "lip-and-shadow dip -0.1674 along the light vs the strictest smooth control -0.1328 (need control + 0.030 AND >= 0.050 absolute). The features on this surface are single-value marks: they have no sunward lip and no lee shadow, which is how a printed decal behaves and not how a physical object does. | TWO-LIGHT: the band that MOVED when the sun crossed to its other candidate side is 8.4241 % contrast, x352.62 the strictest smooth control's (wedge2(alb 0.12), need x2.00) -- PASS. The band that did NOT move is 10.7886 %, and corr(chosen, flip) = +0.2414 (REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL). Fine-band contrast x314.11 the control (need x2.00) -- PASS. [dip re-derived on the light-driven half alone: -0.0533]",
+  "silhouette_departs_from_analytic": "rigid item ('hospitality_deck' is in RIGID_FORCE); an analytic outline is correct here"
+ },
+ "unmeasurable": [],
+ "framing_source": "item_manifest.json",
+ "thresholds": {
+  "procedural_texture_nodes_required": 3,
+  "detail_limit_px": 16.0,
+  "fine_over_control_required": 2.0,
+  "fine_over_coarse_at_least_control": true,
+  "relief_margin_over_control": 0.03,
+  "relief_dip_absolute_floor": 0.05,
+  "relief_control_sane_band": 0.3,
+  "relief_light_over_control_required": 2.0,
+  "relief_two_light_rho": "REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL",
+  "silhouette_rms_mm_required": 5.0,
+  "silhouette_rms_over_control_required": 3.0,
+  "silhouette_min_px_for_5mm": 1.0
+ },
+ "threshold_kinds": {
+  "fine_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "fine_over_coarse_at_least_control": "SCALE-INVARIANT (spectral shape vs in-frame control)",
+  "relief_margin_over_control": "SCALE-INVARIANT (margin over in-frame control)",
+  "relief_dip_absolute_floor": "SCALE-INVARIANT (calibrated from control spread)",
+  "silhouette_rms_mm_required": "PHYSICAL (millimetres of cloth)",
+  "silhouette_rms_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "silhouette_min_px_for_5mm": "SIZE-DEPENDENT SCOPING TEST, not a bar",
+  "detail_limit_px": "SIZE-DEPENDENT (screen px at the filmed distance)",
+  "procedural_texture_nodes_required": "size-independent node floor"
+ },
+ "measured": {
+  "external_image_files": [],
+  "image_texture_nodes": 0,
+  "materials": 10,
+  "procedural_texture_nodes": 71,
+  "objects": 5,
+  "triangles": 15693726,
+  "triangles_per_declared_instance": 3138745.2,
+  "triangles_per_found_object": 3138745.2,
+  "triangles_per_onscreen_px": 153860.06,
+  "edges": 16091364,
+  "p10_edge_m": 0.00105,
+  "median_edge_m": 0.004548,
+  "p90_edge_m": 0.035,
+  "p10_edge_px_at_filmed_distance": 0.18,
+  "median_edge_px_at_filmed_distance": 0.77,
+  "px_per_m_at_filmed_distance": 169.7,
+  "mm_per_px_at_filmed_distance": 5.8929,
+  "band_radii_mm_at_filmed_distance": {
+   "1": 5.893,
+   "2": 11.786,
+   "4": 23.571,
+   "8": 47.143,
+   "16": 94.286
+  },
+  "instances_declared": 5,
+  "instances_found": 5,
+  "cv_size": 0.28562,
+  "cv_volume": 0.59969,
+  "distinct_topologies": 5,
+  "variation_measured_over": "individual objects",
+  "realized_instances": null
+ },
+ "witness": {
+  "blend": null,
+  "png": "/home/zany/f1-round2/render/gate_witness/hospitality_deck/witness.png",
+  "spec": "/home/zany/f1-round2/render/gate_witness/hospitality_deck/witness_spec.json",
+  "render": {
+   "backend": "supplied PNG (--from-png)",
+   "png": "/home/zany/f1-round2/render/gate_witness/hospitality_deck/witness.png",
+   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/hospitality_deck/witness_flip.png"
+  },
+  "render_error": null,
+  "image": {
+   "frame": {
+    "subject_px": 914166,
+    "sphere_px": 115817,
+    "plane_px": 69550,
+    "subject_mean_linear": 0.024874,
+    "sphere_mean_linear": 0.366571,
+    "plane_mean_linear": 0.212028,
+    "subject_clipped_frac": 0.0,
+    "subject_crushed_frac": 0.0289,
+    "sphere_clipped_frac": 0.0,
+    "sphere_highlight_R_minus_B": 0.08242,
+    "sphere_dynamic_range": 78.8,
+    "subject_px_lit": 363132,
+    "subject_mean_measured": 0.029915
+   },
+   "why": {
+    "two_light": null,
+    "silhouette": "only 45 rows carry a single unbroken outline; need 100"
+   },
+   "lit_cut_linear": 0.025656,
+   "luminance_window": [
+    0.017949,
+    0.050855
+   ],
+   "controls": {
+    "sphere": {
+     "px_matched": 2137,
+     "px_total": 115817,
+     "mean_linear": 0.366571,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "2137 px in the subject's luminance window [0.017949, 0.050855]; need 8000"
+    },
+    "card": {
+     "px_matched": 0,
+     "px_total": 69550,
+     "mean_linear": 0.212028,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.017949, 0.050855]; need 8000"
+    },
+    "wedge0(alb 0.02)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.008759,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.017949, 0.050855]; need 8000"
+    },
+    "wedge1(alb 0.05)": {
+     "px_matched": 34736,
+     "px_total": 35030,
+     "mean_linear": 0.018102,
+     "bands": {
+      "1": 0.0391,
+      "2": 0.03,
+      "4": 0.0305,
+      "8": 0.0966,
+      "16": null
+     },
+     "fine": 0.03455,
+     "relief": -0.13277
+    },
+    "wedge2(alb 0.12)": {
+     "px_matched": 34875,
+     "px_total": 34875,
+     "mean_linear": 0.039477,
+     "bands": {
+      "1": 0.039,
+      "2": 0.0301,
+      "4": 0.0291,
+      "8": 0.0924,
+      "16": null
+     },
+     "fine": 0.03455,
+     "relief": -0.28796
+    },
+    "wedge3(alb 0.28)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.087937,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.017949, 0.050855]; need 8000"
+    },
+    "wedge4(alb 0.55)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.16942,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.017949, 0.050855]; need 8000"
+    },
+    "wedge5(alb 0.95)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.28991,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.017949, 0.050855]; need 8000"
+    }
+   },
+   "controls_participating": [
+    "wedge1(alb 0.05)",
+    "wedge2(alb 0.12)"
+   ],
+   "bands_subject": {
+    "1": 14.1927,
+    "2": 7.481,
+    "4": 5.0783,
+    "8": 4.3809,
+    "16": 2.2492
+   },
+   "fine_subject": 10.83685,
+   "coarse_subject": 3.31505,
+   "fine_control": 0.0345,
+   "fine_control_from": "wedge1(alb 0.05)",
+   "fine_over_control": 314.1116,
+   "fine_over_coarse": 3.269,
+   "fine_over_coarse_control": 0.3577,
+   "fine_max_subject": 14.1927,
+   "colour": {
+    "px": 363132,
+    "median_chromaticity": [
+     0.44434,
+     0.33609
+    ],
+    "chroma_sd_u": 0.03602,
+    "chroma_sd_v": 0.00317,
+    "single_hue_fraction_r010": 0.3536,
+    "single_hue_fraction_r005": 0.1638,
+    "chroma_p95_radius": 0.10928,
+    "gated": false,
+    "note": "NOT GATED -- the smooth controls are neutral by construction so there is no in-frame floor for chroma, and an absolute bar here would be uncalibrated. Read it."
+   },
+   "relief_subject": -0.16745,
+   "relief_subject_detail": {
+    "lag4": {
+     "along_light": -0.04611,
+     "across_light": 0.27318
+    },
+    "best_lag_px": 8,
+    "lag6": {
+     "along_light": 0.1484,
+     "across_light": -0.11079
+    },
+    "lag8": {
+     "along_light": -0.09894,
+     "across_light": -0.26639
+    },
+    "lag10": {
+     "along_light": 0.03775,
+     "across_light": -0.23294
+    },
+    "lag12": {
+     "along_light": 0.01165,
+     "across_light": -0.1277
+    },
+    "lag16": {
+     "along_light": -0.0135,
+     "across_light": 0.04634
+    },
+    "dip_along": 0.09894,
+    "dip_across": 0.26639
+   },
+   "relief_control_all": [
+    -0.13277,
+    -0.28796
+   ],
+   "relief_control": -0.13277,
+   "relief_control_degenerate": null,
+   "two_light": {
+    "rho": 0.24143,
+    "light_pct": 8.42415,
+    "still_pct": 10.78862,
+    "px": 595003,
+    "log_floor": 0.00059829,
+    "px_lit_in_both": 901450,
+    "px_chosen_lit": 907830,
+    "px_flip_lit": 907538,
+    "px_chosen_lit_core": 363132,
+    "alpha_agreement": 0.999865,
+    "flip_png": "/home/zany/f1-round2/render/gate_witness/hospitality_deck/witness_flip.png",
+    "sun_screen_direction_rowcol_flip": [
+     -0.015506339719767764,
+     0.9998797694865594
+    ],
+    "dip_light_driven": -0.05329,
+    "dip_light_driven_detail": {
+     "lag4": {
+      "along_light": -0.12895,
+      "across_light": 0.19137
+     },
+     "best_lag_px": 4,
+     "lag6": {
+      "along_light": 0.14299,
+      "across_light": -0.06727
+     },
+     "lag8": {
+      "along_light": -0.07701,
+      "across_light": -0.16437
+     },
+     "lag10": {
+      "along_light": 0.05616,
+      "across_light": -0.18224
+     },
+     "lag12": {
+      "along_light": 0.06318,
+      "across_light": -0.119
+     },
+     "lag16": {
+      "along_light": -0.04966,
+      "across_light": 0.01214
+     },
+     "dip_along": 0.12895,
+     "dip_across": 0.18224
+    },
+    "controls": {
+     "wedge1(alb 0.05)": {
+      "light_pct": 0.02357,
+      "rho": 0.06862,
+      "still_pct": 0.02533
+     },
+     "wedge2(alb 0.12)": {
+      "light_pct": 0.02389,
+      "rho": 0.04652,
+      "still_pct": 0.02502
+     }
+    },
+    "light_control": 0.02389,
+    "light_control_from": "wedge2(alb 0.12)",
+    "light_over_control": 352.6224
+   },
+   "silhouette_control": {
+    "side": "right",
+    "rows": 430,
+    "y0": 121,
+    "y1": 550,
+    "global_rms_px": 2.976,
+    "global_rms_mm": 17.538,
+    "rms_px": 0.287,
+    "rms_mm": 1.691,
+    "local_max_px": 0.565,
+    "local_max_mm": 3.327,
+    "windows": 7
+   },
+   "silhouette_control_rows": 430,
+   "silhouette": null,
+   "silhouette_detail": {
+    "reason": "only 45 rows carry a single unbroken outline; need 100"
+   }
+  }
+ },
+ "result": "ITEM_REJECTED",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-03T14:12:18",
+  "written_at": 1785766338.854,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "status": "OK",
+   "mtime": 1785757608.739,
+   "mtime_iso": "2026-08-03T11:46:48",
+   "bytes": 170986,
+   "sha256": "3b9d07043cf326992a7e23b195498364727c1ddd3610e78168856cf8dd246220"
+  },
+  "tool_version": "item_gate RIG_VERSION 6, 8 checks",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/world/items/hospitality_deck_test.blend",
+    "status": "OK",
+    "mtime": 1785346288.017,
+    "mtime_iso": "2026-07-29T17:31:28",
+    "bytes": 2030426862,
+    "sha256": "5db8c30ab8f7a49d027ee38c85c5e3323fba3e00f59865938201fe9757a9f4a5",
+    "hash_seconds": 3.86
+   },
+   {
+    "role": "manifest",
+    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "status": "OK",
+    "mtime": 1785264294.872,
+    "mtime_iso": "2026-07-28T18:44:54",
+    "bytes": 299660,
+    "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505"
+   },
+   {
+    "role": "from_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/hospitality_deck/witness.png",
+    "status": "OK",
+    "mtime": 1785766071.735,
+    "mtime_iso": "2026-08-03T14:07:51",
+    "bytes": 7618038,
+    "sha256": "f7a88c61559b49f9bb8c32367e55b9470ea99a58bac9fc78783591edc1458097"
+   }
+  ],
+  "describes": [
+   {
+    "role": "witness_blend",
+    "path": null,
+    "status": "NOT_GIVEN",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null
+   },
+   {
+    "role": "witness_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/hospitality_deck/witness.png",
+    "status": "OK",
+    "mtime": 1785766071.735,
+    "mtime_iso": "2026-08-03T14:07:51",
+    "bytes": 7618038,
+    "sha256": "f7a88c61559b49f9bb8c32367e55b9470ea99a58bac9fc78783591edc1458097"
+   },
+   {
+    "role": "witness_spec",
+    "path": "/home/zany/f1-round2/render/gate_witness/hospitality_deck/witness_spec.json",
+    "status": "OK",
+    "mtime": 1785760347.863,
+    "mtime_iso": "2026-08-03T12:32:27",
+    "bytes": 2931,
+    "sha256": "6c5d76844c843250f37d4e282e76450f7afb0133b972699725636053a9dc3066"
+   }
+  ],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785741347.142,
+    "mtime_iso": "2026-08-03T07:15:47",
+    "bytes": 167634,
+    "sha256": "2ef9e80d754a5532d48f26093db2791759e34a3d2be3215e4ca45d3236340000"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785684602.475,
+    "mtime_iso": "2026-08-02T15:30:02",
+    "bytes": 224176,
+    "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "/home/zany/f1-round2/world/items/hospitality_deck_test.blend",
+   "--factory-startup",
+   "-P",
+   "/home/zany/f1-round2/tools/item_gate.py",
+   "--",
+   "--item",
+   "hospitality_deck",
+   "--out",
+   "/home/zany/f1-round2/work/r2061/gate/hospitality_deck/gate.json",
+   "--samples",
+   "512",
+   "--always-render",
+   "--from-png",
+   "/home/zany/f1-round2/render/gate_witness/hospitality_deck/witness.png"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

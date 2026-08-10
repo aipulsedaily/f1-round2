@@ -1,0 +1,479 @@
+{
+ "item": "asphalt_wearing_course",
+ "hero": true,
+ "filmed_at_m": 1.1,
+ "lens_mm": 21.0,
+ "onscreen_px_4k": 41.0,
+ "flexible": false,
+ "flexible_because": "no cloth token and no clothed-human pattern in id/name",
+ "subject_selection": "collection 'W_Item_AsphaltWearingCourse' (auto-detected from item id)",
+ "prefix_integrity": null,
+ "witness_subject": "AWC_Surround_t4_apex",
+ "witness_subject_because": "largest of 5 objects by bbox diagonal (132.85 m) -- one declared instance, so there is no population to be typical of and the item's principal body is what it is",
+ "checks": {
+  "no_external_assets": true,
+  "material_depth": true,
+  "geometry_resolves_at_distance": true,
+  "per_instance_variation": true,
+  "witness_frame_valid": true,
+  "surface_microstructure": true,
+  "relief_reads_as_lip_and_shade": false,
+  "silhouette_departs_from_analytic": "not_applicable"
+ },
+ "check_notes": {
+  "surface_microstructure": "fine(r1-r2) 3.912 % of mean vs the strictest brightness-matched smooth control 0.046 [wedge1(alb 0.05)] = x84.32, need x2.00; controls in play ['wedge1(alb 0.05)', 'wedge2(alb 0.12)']; spectral balance fine/coarse 5.1303 vs control 0.4264",
+  "relief_reads_as_lip_and_shade": "lip-and-shadow dip -0.0027 along the light vs the strictest smooth control -0.1004 (need control + 0.030 AND >= 0.050 absolute). The features on this surface are single-value marks: they have no sunward lip and no lee shadow, which is how a printed decal behaves and not how a physical object does. | TWO-LIGHT: the band that MOVED when the sun crossed to its other candidate side is 7.1525 % contrast, x238.81 the strictest smooth control's (wedge1(alb 0.05), need x2.00) -- PASS. The band that did NOT move is 6.2177 %, and corr(chosen, flip) = -0.1527 (REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL). Fine-band contrast x84.32 the control (need x2.00) -- PASS. [dip re-derived on the light-driven half alone: +0.3463]",
+  "silhouette_departs_from_analytic": "rigid item (no cloth token and no clothed-human pattern in id/name); an analytic outline is correct here"
+ },
+ "unmeasurable": [],
+ "framing_source": "item_manifest.json",
+ "thresholds": {
+  "procedural_texture_nodes_required": 6,
+  "detail_limit_px": 6.0,
+  "fine_over_control_required": 2.0,
+  "fine_over_coarse_at_least_control": true,
+  "relief_margin_over_control": 0.03,
+  "relief_dip_absolute_floor": 0.05,
+  "relief_control_sane_band": 0.3,
+  "relief_light_over_control_required": 2.0,
+  "relief_two_light_rho": "REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL",
+  "silhouette_rms_mm_required": 5.0,
+  "silhouette_rms_over_control_required": 3.0,
+  "silhouette_min_px_for_5mm": 1.0
+ },
+ "threshold_kinds": {
+  "fine_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "fine_over_coarse_at_least_control": "SCALE-INVARIANT (spectral shape vs in-frame control)",
+  "relief_margin_over_control": "SCALE-INVARIANT (margin over in-frame control)",
+  "relief_dip_absolute_floor": "SCALE-INVARIANT (calibrated from control spread)",
+  "silhouette_rms_mm_required": "PHYSICAL (millimetres of cloth)",
+  "silhouette_rms_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "silhouette_min_px_for_5mm": "SIZE-DEPENDENT SCOPING TEST, not a bar",
+  "detail_limit_px": "SIZE-DEPENDENT (screen px at the filmed distance)",
+  "procedural_texture_nodes_required": "size-independent node floor"
+ },
+ "measured": {
+  "external_image_files": [],
+  "image_texture_nodes": 0,
+  "materials": 3,
+  "procedural_texture_nodes": 39,
+  "objects": 5,
+  "triangles": 8126916,
+  "triangles_per_declared_instance": 8126916.0,
+  "triangles_per_found_object": 1625383.2,
+  "triangles_per_onscreen_px": 198217.46,
+  "edges": 12192810,
+  "p10_edge_m": 0.001541,
+  "median_edge_m": 0.003623,
+  "p90_edge_m": 0.006728,
+  "p10_edge_px_at_filmed_distance": 3.14,
+  "median_edge_px_at_filmed_distance": 7.38,
+  "px_per_m_at_filmed_distance": 2036.4,
+  "mm_per_px_at_filmed_distance": 0.4911,
+  "band_radii_mm_at_filmed_distance": {
+   "1": 0.491,
+   "2": 0.982,
+   "4": 1.964,
+   "8": 3.929,
+   "16": 7.857
+  },
+  "instances_declared": 1,
+  "instances_found": 5,
+  "cv_size": 1.59278,
+  "cv_volume": 1.9986,
+  "distinct_topologies": 5,
+  "variation_measured_over": "individual objects",
+  "realized_instances": null
+ },
+ "witness": {
+  "blend": null,
+  "png": "/home/zany/f1-round2/render/gate_witness/asphalt_wearing_course/witness.png",
+  "spec": "/home/zany/f1-round2/render/gate_witness/asphalt_wearing_course/witness_spec.json",
+  "render": {
+   "backend": "supplied PNG (--from-png)",
+   "png": "/home/zany/f1-round2/render/gate_witness/asphalt_wearing_course/witness.png",
+   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/asphalt_wearing_course/witness_flip.png"
+  },
+  "render_error": null,
+  "image": {
+   "frame": {
+    "subject_px": 189891,
+    "sphere_px": 115817,
+    "plane_px": 43802,
+    "subject_mean_linear": 0.015093,
+    "sphere_mean_linear": 0.051492,
+    "plane_mean_linear": 0.093201,
+    "subject_clipped_frac": 0.0,
+    "subject_crushed_frac": 0.1923,
+    "sphere_clipped_frac": 0.0,
+    "sphere_highlight_R_minus_B": 0.02742,
+    "sphere_dynamic_range": 43.14,
+    "subject_px_lit": 75957,
+    "subject_mean_measured": 0.029771
+   },
+   "why": {
+    "two_light": null,
+    "silhouette": "only 0 rows carry a single unbroken outline; need 100"
+   },
+   "lit_cut_linear": 0.007758,
+   "luminance_window": [
+    0.017863,
+    0.05061
+   ],
+   "controls": {
+    "sphere": {
+     "px_matched": 6201,
+     "px_total": 115817,
+     "mean_linear": 0.051492,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "6201 px in the subject's luminance window [0.017863, 0.05061]; need 8000"
+    },
+    "card": {
+     "px_matched": 15,
+     "px_total": 43802,
+     "mean_linear": 0.093201,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "15 px in the subject's luminance window [0.017863, 0.05061]; need 8000"
+    },
+    "wedge0(alb 0.02)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.013067,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.017863, 0.05061]; need 8000"
+    },
+    "wedge1(alb 0.05)": {
+     "px_matched": 35030,
+     "px_total": 35030,
+     "mean_linear": 0.020241,
+     "bands": {
+      "1": 0.0552,
+      "2": 0.0377,
+      "4": 0.0388,
+      "8": 0.0919,
+      "16": null
+     },
+     "fine": 0.04645,
+     "relief": -0.10037
+    },
+    "wedge2(alb 0.12)": {
+     "px_matched": 34875,
+     "px_total": 34875,
+     "mean_linear": 0.040045,
+     "bands": {
+      "1": 0.0439,
+      "2": 0.0343,
+      "4": 0.037,
+      "8": 0.0917,
+      "16": null
+     },
+     "fine": 0.039099999999999996,
+     "relief": -0.18137
+    },
+    "wedge3(alb 0.28)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.087343,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.017863, 0.05061]; need 8000"
+    },
+    "wedge4(alb 0.55)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.167698,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.017863, 0.05061]; need 8000"
+    },
+    "wedge5(alb 0.95)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.287245,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.017863, 0.05061]; need 8000"
+    }
+   },
+   "controls_participating": [
+    "wedge1(alb 0.05)",
+    "wedge2(alb 0.12)"
+   ],
+   "bands_subject": {
+    "1": 4.4063,
+    "2": 3.4184,
+    "4": 2.5085,
+    "8": 0.9318,
+    "16": 0.5934
+   },
+   "fine_subject": 3.91235,
+   "coarse_subject": 0.7626,
+   "fine_control": 0.0464,
+   "fine_control_from": "wedge1(alb 0.05)",
+   "fine_over_control": 84.3179,
+   "fine_over_coarse": 5.1303,
+   "fine_over_coarse_control": 0.4264,
+   "fine_max_subject": 4.4063,
+   "colour": {
+    "px": 75957,
+    "median_chromaticity": [
+     0.3563,
+     0.33442
+    ],
+    "chroma_sd_u": 0.00589,
+    "chroma_sd_v": 0.00136,
+    "single_hue_fraction_r010": 0.9052,
+    "single_hue_fraction_r005": 0.7422,
+    "chroma_p95_radius": 0.01439,
+    "gated": false,
+    "note": "NOT GATED -- the smooth controls are neutral by construction so there is no in-frame floor for chroma, and an absolute bar here would be uncalibrated. Read it."
+   },
+   "relief_subject": -0.00274,
+   "relief_subject_detail": {
+    "lag4": {
+     "along_light": -0.17279,
+     "across_light": -0.17553
+    },
+    "best_lag_px": 4,
+    "lag6": {
+     "along_light": -0.03323,
+     "across_light": 0.0137
+    },
+    "lag8": {
+     "along_light": -0.0039,
+     "across_light": 0.00075
+    },
+    "lag10": {
+     "along_light": -0.00019,
+     "across_light": -0.00422
+    },
+    "lag12": {
+     "along_light": 0.02311,
+     "across_light": 0.00226
+    },
+    "lag16": {
+     "along_light": -0.00144,
+     "across_light": 0.0128
+    },
+    "dip_along": 0.17279,
+    "dip_across": 0.17553
+   },
+   "relief_control_all": [
+    -0.10037,
+    -0.18137
+   ],
+   "relief_control": -0.10037,
+   "relief_control_degenerate": null,
+   "two_light": {
+    "rho": -0.15273,
+    "light_pct": 7.15248,
+    "still_pct": 6.21768,
+    "px": 171777,
+    "log_floor": 0.00059542,
+    "px_lit_in_both": 189891,
+    "px_chosen_lit": 189891,
+    "px_flip_lit": 189891,
+    "px_chosen_lit_core": 75957,
+    "alpha_agreement": 0.999985,
+    "flip_png": "/home/zany/f1-round2/render/gate_witness/asphalt_wearing_course/witness_flip.png",
+    "sun_screen_direction_rowcol_flip": [
+     -0.015489236465404087,
+     -0.9998800345810085
+    ],
+    "dip_light_driven": 0.34625,
+    "dip_light_driven_detail": {
+     "lag4": {
+      "along_light": -0.44963,
+      "across_light": -0.10339
+     },
+     "best_lag_px": 4,
+     "lag6": {
+      "along_light": 0.0063,
+      "across_light": 0.00097
+     },
+     "lag8": {
+      "along_light": 0.04787,
+      "across_light": 0.00542
+     },
+     "lag10": {
+      "along_light": 0.00086,
+      "across_light": -0.00677
+     },
+     "lag12": {
+      "along_light": 0.00689,
+      "across_light": -0.00332
+     },
+     "lag16": {
+      "along_light": -0.00016,
+      "across_light": 0.00043
+     },
+     "dip_along": 0.44963,
+     "dip_across": 0.10339
+    },
+    "controls": {
+     "wedge1(alb 0.05)": {
+      "light_pct": 0.02995,
+      "rho": 0.03576,
+      "still_pct": 0.03096
+     },
+     "wedge2(alb 0.12)": {
+      "light_pct": 0.02698,
+      "rho": 0.02586,
+      "still_pct": 0.02768
+     }
+    },
+    "light_control": 0.02995,
+    "light_control_from": "wedge1(alb 0.05)",
+    "light_over_control": 238.814
+   },
+   "silhouette_control": {
+    "side": "right",
+    "rows": 395,
+    "y0": 123,
+    "y1": 517,
+    "global_rms_px": 3.485,
+    "global_rms_mm": 1.712,
+    "rms_px": 0.286,
+    "rms_mm": 0.141,
+    "local_max_px": 0.55,
+    "local_max_mm": 0.27,
+    "windows": 6
+   },
+   "silhouette_control_rows": 415,
+   "silhouette": null,
+   "silhouette_detail": {
+    "reason": "only 0 rows carry a single unbroken outline; need 100"
+   }
+  }
+ },
+ "result": "ITEM_REJECTED",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-03T13:46:45",
+  "written_at": 1785764805.609,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "status": "OK",
+   "mtime": 1785757608.739,
+   "mtime_iso": "2026-08-03T11:46:48",
+   "bytes": 170986,
+   "sha256": "3b9d07043cf326992a7e23b195498364727c1ddd3610e78168856cf8dd246220"
+  },
+  "tool_version": "item_gate RIG_VERSION 6, 8 checks",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/world/items/asphalt_wearing_course_test.blend",
+    "status": "OK",
+    "mtime": 1785300495.586,
+    "mtime_iso": "2026-07-29T04:48:15",
+    "bytes": 265538175,
+    "sha256": "d5c5b107981ac2cfd61265c136dab306014e0842a35be2565b3c8cc9a3f0b9a9",
+    "hash_seconds": 0.53
+   },
+   {
+    "role": "manifest",
+    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "status": "OK",
+    "mtime": 1785264294.872,
+    "mtime_iso": "2026-07-28T18:44:54",
+    "bytes": 299660,
+    "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505"
+   },
+   {
+    "role": "from_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/asphalt_wearing_course/witness.png",
+    "status": "OK",
+    "mtime": 1785764585.878,
+    "mtime_iso": "2026-08-03T13:43:05",
+    "bytes": 3807389,
+    "sha256": "e88e7ca45a27f00bfe04576c9dfe26b0cfaa5784f96057cb130557fe74ad9254"
+   }
+  ],
+  "describes": [
+   {
+    "role": "witness_blend",
+    "path": null,
+    "status": "NOT_GIVEN",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null
+   },
+   {
+    "role": "witness_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/asphalt_wearing_course/witness.png",
+    "status": "OK",
+    "mtime": 1785764585.878,
+    "mtime_iso": "2026-08-03T13:43:05",
+    "bytes": 3807389,
+    "sha256": "e88e7ca45a27f00bfe04576c9dfe26b0cfaa5784f96057cb130557fe74ad9254"
+   },
+   {
+    "role": "witness_spec",
+    "path": "/home/zany/f1-round2/render/gate_witness/asphalt_wearing_course/witness_spec.json",
+    "status": "OK",
+    "mtime": 1785759741.691,
+    "mtime_iso": "2026-08-03T12:22:21",
+    "bytes": 2940,
+    "sha256": "c8f4254cb72ffb2e33f9ebcae917e36dd4f8024e65900739621f8b14a7af6751"
+   }
+  ],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785741347.142,
+    "mtime_iso": "2026-08-03T07:15:47",
+    "bytes": 167634,
+    "sha256": "2ef9e80d754a5532d48f26093db2791759e34a3d2be3215e4ca45d3236340000"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785684602.475,
+    "mtime_iso": "2026-08-02T15:30:02",
+    "bytes": 224176,
+    "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "/home/zany/f1-round2/world/items/asphalt_wearing_course_test.blend",
+   "--factory-startup",
+   "-P",
+   "/home/zany/f1-round2/tools/item_gate.py",
+   "--",
+   "--item",
+   "asphalt_wearing_course",
+   "--out",
+   "/home/zany/f1-round2/work/r2061/gate/asphalt_wearing_course/gate.json",
+   "--samples",
+   "512",
+   "--always-render",
+   "--from-png",
+   "/home/zany/f1-round2/render/gate_witness/asphalt_wearing_course/witness.png"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

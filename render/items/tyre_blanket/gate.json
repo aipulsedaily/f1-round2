@@ -1,0 +1,421 @@
+{
+ "item": "tyre_blanket",
+ "hero": true,
+ "filmed_at_m": 13.0,
+ "lens_mm": 35.0,
+ "onscreen_px_4k": 195.0,
+ "flexible": true,
+ "flexible_because": "'tyre_blanket' is in FLEX_FORCE",
+ "subject_selection": "collection 'W_Item_TyreBlanket' (auto-detected from item id)",
+ "prefix_integrity": null,
+ "witness_subject": "TBK_i14_flat_off",
+ "witness_subject_because": "median-triangle instance of 56 objects (326484 tris) -- the TYPICAL instance of a population of 56, not the best one",
+ "checks": {
+  "no_external_assets": true,
+  "material_depth": true,
+  "geometry_resolves_at_distance": true,
+  "per_instance_variation": true,
+  "witness_frame_valid": true,
+  "surface_microstructure": true,
+  "relief_reads_as_lip_and_shade": null,
+  "silhouette_departs_from_analytic": null
+ },
+ "check_notes": {
+  "surface_microstructure": "fine(r1-r2) 13.654 % of mean vs the strictest brightness-matched smooth control 0.033 [wedge1(alb 0.05)] = x418.85, need x2.00; controls in play ['wedge0(alb 0.02)', 'wedge1(alb 0.05)']; spectral balance fine/coarse None vs control 0.2799",
+  "relief_reads_as_lip_and_shade": "NOT MEASURED -- the dip alone cannot separate paint from geometry, and the two-light clause that can was not measurable: the two frames are lit in common on too little to measure: no band had enough pixels after erosion. 15103 px lit and unclipped in BOTH, of 40914 and 22268. (dip was 0.02579)",
+  "silhouette_departs_from_analytic": "NOT MEASURED -- no contiguous run of 100+ single-outline rows"
+ },
+ "unmeasurable": [
+  "relief_reads_as_lip_and_shade: NOT MEASURED -- the dip alone cannot separate paint from geometry, and the two-light clause that can was not measurable: the two frames are lit in common on too little to measure: no band had enough pixels after erosion. 15103 px lit and unclipped in BOTH, of 40914 and 22268. (dip was 0.02579)",
+  "silhouette_departs_from_analytic: NOT MEASURED -- no contiguous run of 100+ single-outline rows"
+ ],
+ "framing_source": "item_manifest.json",
+ "thresholds": {
+  "procedural_texture_nodes_required": 6,
+  "detail_limit_px": 6.0,
+  "fine_over_control_required": 2.0,
+  "fine_over_coarse_at_least_control": true,
+  "relief_margin_over_control": 0.03,
+  "relief_dip_absolute_floor": 0.05,
+  "relief_control_sane_band": 0.3,
+  "relief_light_over_control_required": 2.0,
+  "relief_two_light_rho": "REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL",
+  "silhouette_rms_mm_required": 5.0,
+  "silhouette_rms_over_control_required": 3.0,
+  "silhouette_min_px_for_5mm": 1.0
+ },
+ "threshold_kinds": {
+  "fine_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "fine_over_coarse_at_least_control": "SCALE-INVARIANT (spectral shape vs in-frame control)",
+  "relief_margin_over_control": "SCALE-INVARIANT (margin over in-frame control)",
+  "relief_dip_absolute_floor": "SCALE-INVARIANT (calibrated from control spread)",
+  "silhouette_rms_mm_required": "PHYSICAL (millimetres of cloth)",
+  "silhouette_rms_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "silhouette_min_px_for_5mm": "SIZE-DEPENDENT SCOPING TEST, not a bar",
+  "detail_limit_px": "SIZE-DEPENDENT (screen px at the filmed distance)",
+  "procedural_texture_nodes_required": "size-independent node floor"
+ },
+ "measured": {
+  "external_image_files": [],
+  "image_texture_nodes": 0,
+  "materials": 10,
+  "procedural_texture_nodes": 50,
+  "objects": 56,
+  "triangles": 23017602,
+  "triangles_per_declared_instance": 411028.6,
+  "triangles_per_found_object": 411028.6,
+  "triangles_per_onscreen_px": 118038.98,
+  "edges": 23150332,
+  "p10_edge_m": 0.001537,
+  "median_edge_m": 0.0045,
+  "p90_edge_m": 0.01036,
+  "p10_edge_px_at_filmed_distance": 0.44,
+  "median_edge_px_at_filmed_distance": 1.29,
+  "px_per_m_at_filmed_distance": 287.2,
+  "mm_per_px_at_filmed_distance": 3.4821,
+  "band_radii_mm_at_filmed_distance": {
+   "1": 3.482,
+   "2": 6.964,
+   "4": 13.929,
+   "8": 27.857,
+   "16": 55.714
+  },
+  "instances_declared": 56,
+  "instances_found": 56,
+  "cv_size": 0.10124,
+  "cv_volume": 0.23082,
+  "distinct_topologies": 54,
+  "variation_measured_over": "individual objects",
+  "realized_instances": null
+ },
+ "witness": {
+  "blend": null,
+  "png": "/home/zany/f1-round2/render/gate_witness/tyre_blanket/witness.png",
+  "spec": "/home/zany/f1-round2/render/gate_witness/tyre_blanket/witness_spec.json",
+  "render": {
+   "backend": "supplied PNG (--from-png)",
+   "png": "/home/zany/f1-round2/render/gate_witness/tyre_blanket/witness.png",
+   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/tyre_blanket/witness_flip.png"
+  },
+  "render_error": null,
+  "image": {
+   "frame": {
+    "subject_px": 54595,
+    "sphere_px": 115817,
+    "plane_px": 69550,
+    "subject_mean_linear": 0.012371,
+    "sphere_mean_linear": 0.1112,
+    "plane_mean_linear": 0.300958,
+    "subject_clipped_frac": 0.0,
+    "subject_crushed_frac": 0.3876,
+    "sphere_clipped_frac": 0.0,
+    "sphere_highlight_R_minus_B": 0.0522,
+    "sphere_dynamic_range": 74.06,
+    "subject_px_lit": 40914,
+    "subject_mean_measured": 0.016211
+   },
+   "why": {
+    "two_light": "the two frames are lit in common on too little to measure: no band had enough pixels after erosion. 15103 px lit and unclipped in BOTH, of 40914 and 22268.",
+    "silhouette": "no contiguous run of 100+ single-outline rows"
+   },
+   "lit_cut_linear": null,
+   "luminance_window": [
+    0.009727,
+    0.027559
+   ],
+   "controls": {
+    "sphere": {
+     "px_matched": 3277,
+     "px_total": 115817,
+     "mean_linear": 0.1112,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "3277 px in the subject's luminance window [0.009727, 0.027559]; need 8000"
+    },
+    "card": {
+     "px_matched": 0,
+     "px_total": 69550,
+     "mean_linear": 0.300958,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.009727, 0.027559]; need 8000"
+    },
+    "wedge0(alb 0.02)": {
+     "px_matched": 34875,
+     "px_total": 34875,
+     "mean_linear": 0.01228,
+     "bands": {
+      "1": 0.0279,
+      "2": 0.0227,
+      "4": 0.0254,
+      "8": 0.0904,
+      "16": null
+     },
+     "fine": 0.025300000000000003,
+     "relief": 0.06365
+    },
+    "wedge1(alb 0.05)": {
+     "px_matched": 35030,
+     "px_total": 35030,
+     "mean_linear": 0.020101,
+     "bands": {
+      "1": 0.0372,
+      "2": 0.0281,
+      "4": 0.0331,
+      "8": 0.0934,
+      "16": null
+     },
+     "fine": 0.03265,
+     "relief": 0.04105
+    },
+    "wedge2(alb 0.12)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.040135,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.009727, 0.027559]; need 8000"
+    },
+    "wedge3(alb 0.28)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.087343,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.009727, 0.027559]; need 8000"
+    },
+    "wedge4(alb 0.55)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.167446,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.009727, 0.027559]; need 8000"
+    },
+    "wedge5(alb 0.95)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.286571,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.009727, 0.027559]; need 8000"
+    }
+   },
+   "controls_participating": [
+    "wedge0(alb 0.02)",
+    "wedge1(alb 0.05)"
+   ],
+   "bands_subject": {
+    "1": 12.4822,
+    "2": 14.8267,
+    "4": 15.7527,
+    "8": null,
+    "16": null
+   },
+   "fine_subject": 13.65445,
+   "coarse_subject": null,
+   "fine_control": 0.0326,
+   "fine_control_from": "wedge1(alb 0.05)",
+   "fine_over_control": 418.8482,
+   "fine_over_coarse": null,
+   "fine_over_coarse_control": 0.2799,
+   "fine_max_subject": 14.8267,
+   "colour": {
+    "px": 40914,
+    "median_chromaticity": [
+     0.35763,
+     0.33221
+    ],
+    "chroma_sd_u": 0.02584,
+    "chroma_sd_v": 0.00492,
+    "single_hue_fraction_r010": 0.3636,
+    "single_hue_fraction_r005": 0.1961,
+    "chroma_p95_radius": 0.06152,
+    "gated": false,
+    "note": "NOT GATED -- the smooth controls are neutral by construction so there is no in-frame floor for chroma, and an absolute bar here would be uncalibrated. Read it."
+   },
+   "relief_subject": 0.02579,
+   "relief_subject_detail": {
+    "lag4": {
+     "along_light": -0.25905,
+     "across_light": -0.37718
+    },
+    "best_lag_px": 6,
+    "lag6": {
+     "along_light": -0.40297,
+     "across_light": -0.17039
+    },
+    "lag8": {
+     "along_light": -0.29281,
+     "across_light": 0.08986
+    },
+    "lag10": {
+     "along_light": -0.1131,
+     "across_light": 0.07844
+    },
+    "lag12": {
+     "along_light": 0.05919,
+     "across_light": 0.02071
+    },
+    "lag16": {
+     "along_light": 0.00547,
+     "across_light": 0.02109
+    },
+    "dip_along": 0.40297,
+    "dip_across": 0.37718
+   },
+   "relief_control_all": [
+    0.06365,
+    0.04105
+   ],
+   "relief_control": 0.06365,
+   "relief_control_degenerate": null,
+   "two_light": null,
+   "silhouette_control": {
+    "side": "right",
+    "rows": 430,
+    "y0": 121,
+    "y1": 550,
+    "global_rms_px": 2.974,
+    "global_rms_mm": 10.356,
+    "rms_px": 0.287,
+    "rms_mm": 1.0,
+    "local_max_px": 0.565,
+    "local_max_mm": 1.966,
+    "windows": 7
+   },
+   "silhouette_control_rows": 430,
+   "silhouette": null,
+   "silhouette_detail": {
+    "reason": "no contiguous run of 100+ single-outline rows"
+   }
+  }
+ },
+ "result": "ITEM_REJECTED",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-03T14:42:29",
+  "written_at": 1785768149.757,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "status": "OK",
+   "mtime": 1785757608.739,
+   "mtime_iso": "2026-08-03T11:46:48",
+   "bytes": 170986,
+   "sha256": "3b9d07043cf326992a7e23b195498364727c1ddd3610e78168856cf8dd246220"
+  },
+  "tool_version": "item_gate RIG_VERSION 6, 8 checks",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/world/items/tyre_blanket_test.blend",
+    "status": "OK",
+    "mtime": 1785324539.628,
+    "mtime_iso": "2026-07-29T11:28:59",
+    "bytes": 485844616,
+    "sha256": "4261c777e08df9d1dede339a87165c8c55c4ef58616e600f8d95d53f235c6af1",
+    "hash_seconds": 0.92
+   },
+   {
+    "role": "manifest",
+    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "status": "OK",
+    "mtime": 1785264294.872,
+    "mtime_iso": "2026-07-28T18:44:54",
+    "bytes": 299660,
+    "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505"
+   },
+   {
+    "role": "from_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/tyre_blanket/witness.png",
+    "status": "OK",
+    "mtime": 1785767914.036,
+    "mtime_iso": "2026-08-03T14:38:34",
+    "bytes": 1799351,
+    "sha256": "8befab2d1a3aa0f1c8828e44e9e178c475ff644c75abafdb8b84a8cd8829720c"
+   }
+  ],
+  "describes": [
+   {
+    "role": "witness_blend",
+    "path": null,
+    "status": "NOT_GIVEN",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null
+   },
+   {
+    "role": "witness_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/tyre_blanket/witness.png",
+    "status": "OK",
+    "mtime": 1785767914.036,
+    "mtime_iso": "2026-08-03T14:38:34",
+    "bytes": 1799351,
+    "sha256": "8befab2d1a3aa0f1c8828e44e9e178c475ff644c75abafdb8b84a8cd8829720c"
+   },
+   {
+    "role": "witness_spec",
+    "path": "/home/zany/f1-round2/render/gate_witness/tyre_blanket/witness_spec.json",
+    "status": "OK",
+    "mtime": 1785761727.421,
+    "mtime_iso": "2026-08-03T12:55:27",
+    "bytes": 2910,
+    "sha256": "d4d7741a0826af14e74fdd299de13e253c9646282095a770e8c4ddaf549477f8"
+   }
+  ],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785741347.142,
+    "mtime_iso": "2026-08-03T07:15:47",
+    "bytes": 167634,
+    "sha256": "2ef9e80d754a5532d48f26093db2791759e34a3d2be3215e4ca45d3236340000"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785684602.475,
+    "mtime_iso": "2026-08-02T15:30:02",
+    "bytes": 224176,
+    "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "/home/zany/f1-round2/world/items/tyre_blanket_test.blend",
+   "--factory-startup",
+   "-P",
+   "/home/zany/f1-round2/tools/item_gate.py",
+   "--",
+   "--item",
+   "tyre_blanket",
+   "--out",
+   "/home/zany/f1-round2/work/r2061/gate/tyre_blanket/gate.json",
+   "--samples",
+   "512",
+   "--always-render",
+   "--from-png",
+   "/home/zany/f1-round2/render/gate_witness/tyre_blanket/witness.png"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

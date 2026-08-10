@@ -1,0 +1,512 @@
+{
+ "item": "access_road_slab",
+ "hero": true,
+ "filmed_at_m": 1.7,
+ "lens_mm": 35.0,
+ "onscreen_px_4k": 2160.0,
+ "flexible": false,
+ "flexible_because": "no cloth token and no clothed-human pattern in id/name",
+ "subject_selection": "collection 'W_Item_AccessRoadSlab' (auto-detected from item id); 2 collections matched, took the largest -- pass --collection to be explicit",
+ "prefix_integrity": null,
+ "witness_subject": "ARS_Bed_01",
+ "witness_subject_because": "largest of 459 objects by bbox diagonal (65.49 m) -- one declared instance, so there is no population to be typical of and the item's principal body is what it is",
+ "checks": {
+  "no_external_assets": true,
+  "material_depth": true,
+  "geometry_resolves_at_distance": true,
+  "per_instance_variation": true,
+  "witness_frame_valid": true,
+  "surface_microstructure": true,
+  "relief_reads_as_lip_and_shade": false,
+  "silhouette_departs_from_analytic": "not_applicable"
+ },
+ "check_notes": {
+  "surface_microstructure": "fine(r1-r2) 4.203 % of mean vs the strictest brightness-matched smooth control 0.044 [wedge2(alb 0.12)] = x96.39, need x2.00; controls in play ['wedge2(alb 0.12)']; spectral balance fine/coarse None vs control 0.9179",
+  "relief_reads_as_lip_and_shade": "lip-and-shadow dip -0.1412 along the light vs the strictest smooth control -0.1602 (need control + 0.030 AND >= 0.050 absolute). The features on this surface are single-value marks: they have no sunward lip and no lee shadow, which is how a printed decal behaves and not how a physical object does. | TWO-LIGHT: the band that MOVED when the sun crossed to its other candidate side is 9.5732 % contrast, x356.28 the strictest smooth control's (wedge2(alb 0.12), need x2.00) -- PASS. The band that did NOT move is 6.3595 %, and corr(chosen, flip) = -0.3824 (REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL). Fine-band contrast x96.39 the control (need x2.00) -- PASS. [dip re-derived on the light-driven half alone: +0.0121]",
+  "silhouette_departs_from_analytic": "rigid item (no cloth token and no clothed-human pattern in id/name); an analytic outline is correct here"
+ },
+ "unmeasurable": [],
+ "framing_source": "item_manifest.json",
+ "thresholds": {
+  "procedural_texture_nodes_required": 6,
+  "detail_limit_px": 6.0,
+  "fine_over_control_required": 2.0,
+  "fine_over_coarse_at_least_control": true,
+  "relief_margin_over_control": 0.03,
+  "relief_dip_absolute_floor": 0.05,
+  "relief_control_sane_band": 0.3,
+  "relief_light_over_control_required": 2.0,
+  "relief_two_light_rho": "REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL",
+  "silhouette_rms_mm_required": 5.0,
+  "silhouette_rms_over_control_required": 3.0,
+  "silhouette_min_px_for_5mm": 1.0
+ },
+ "threshold_kinds": {
+  "fine_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "fine_over_coarse_at_least_control": "SCALE-INVARIANT (spectral shape vs in-frame control)",
+  "relief_margin_over_control": "SCALE-INVARIANT (margin over in-frame control)",
+  "relief_dip_absolute_floor": "SCALE-INVARIANT (calibrated from control spread)",
+  "silhouette_rms_mm_required": "PHYSICAL (millimetres of cloth)",
+  "silhouette_rms_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "silhouette_min_px_for_5mm": "SIZE-DEPENDENT SCOPING TEST, not a bar",
+  "detail_limit_px": "SIZE-DEPENDENT (screen px at the filmed distance)",
+  "procedural_texture_nodes_required": "size-independent node floor"
+ },
+ "measured": {
+  "external_image_files": [],
+  "image_texture_nodes": 0,
+  "materials": 6,
+  "procedural_texture_nodes": 36,
+  "objects": 459,
+  "triangles": 20008064,
+  "triangles_per_declared_instance": 20008064.0,
+  "triangles_per_found_object": 43590.6,
+  "triangles_per_onscreen_px": 9262.99,
+  "edges": 20222097,
+  "p10_edge_m": 0.001099,
+  "median_edge_m": 0.003053,
+  "p90_edge_m": 0.027681,
+  "p10_edge_px_at_filmed_distance": 2.41,
+  "median_edge_px_at_filmed_distance": 6.71,
+  "px_per_m_at_filmed_distance": 2196.1,
+  "mm_per_px_at_filmed_distance": 0.4554,
+  "band_radii_mm_at_filmed_distance": {
+   "1": 0.455,
+   "2": 0.911,
+   "4": 1.821,
+   "8": 3.643,
+   "16": 7.286
+  },
+  "instances_declared": 1,
+  "instances_found": 459,
+  "cv_size": 1.34793,
+  "cv_volume": 9.76919,
+  "distinct_topologies": 264,
+  "variation_measured_over": "individual objects",
+  "realized_instances": null
+ },
+ "witness": {
+  "blend": null,
+  "png": "/home/zany/f1-round2/render/gate_witness/access_road_slab/witness.png",
+  "spec": "/home/zany/f1-round2/render/gate_witness/access_road_slab/witness_spec.json",
+  "render": {
+   "backend": "supplied PNG (--from-png)",
+   "png": "/home/zany/f1-round2/render/gate_witness/access_road_slab/witness.png",
+   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/access_road_slab/witness_flip.png"
+  },
+  "render_error": null,
+  "image": {
+   "frame": {
+    "subject_px": 7148866,
+    "sphere_px": 115817,
+    "plane_px": 69550,
+    "subject_mean_linear": 0.024201,
+    "sphere_mean_linear": 0.116119,
+    "plane_mean_linear": 0.092711,
+    "subject_clipped_frac": 0.0,
+    "subject_crushed_frac": 0.2013,
+    "sphere_clipped_frac": 0.0,
+    "sphere_highlight_R_minus_B": 0.05652,
+    "sphere_dynamic_range": 70.51,
+    "subject_px_lit": 2587909,
+    "subject_mean_measured": 0.038998
+   },
+   "why": {
+    "two_light": null
+   },
+   "lit_cut_linear": 0.02678,
+   "luminance_window": [
+    0.023399,
+    0.066297
+   ],
+   "controls": {
+    "sphere": {
+     "px_matched": 7628,
+     "px_total": 115817,
+     "mean_linear": 0.116119,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "7628 px in the subject's luminance window [0.023399, 0.066297]; need 8000"
+    },
+    "card": {
+     "px_matched": 12526,
+     "px_total": 69550,
+     "mean_linear": 0.092711,
+     "bands": {
+      "1": null,
+      "2": null,
+      "4": null,
+      "8": null,
+      "16": null
+     },
+     "fine": null,
+     "relief": null
+    },
+    "wedge0(alb 0.02)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.012412,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.023399, 0.066297]; need 8000"
+    },
+    "wedge1(alb 0.05)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.020353,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.023399, 0.066297]; need 8000"
+    },
+    "wedge2(alb 0.12)": {
+     "px_matched": 34875,
+     "px_total": 34875,
+     "mean_linear": 0.040675,
+     "bands": {
+      "1": 0.0499,
+      "2": 0.0373,
+      "4": 0.0358,
+      "8": 0.0475,
+      "16": null
+     },
+     "fine": 0.0436,
+     "relief": -0.16018
+    },
+    "wedge3(alb 0.28)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.088561,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.023399, 0.066297]; need 8000"
+    },
+    "wedge4(alb 0.55)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.169667,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.023399, 0.066297]; need 8000"
+    },
+    "wedge5(alb 0.95)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.290314,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.023399, 0.066297]; need 8000"
+    }
+   },
+   "controls_participating": [
+    "wedge2(alb 0.12)"
+   ],
+   "bands_subject": {
+    "1": 3.3453,
+    "2": 5.0602,
+    "4": 8.6965,
+    "8": null,
+    "16": null
+   },
+   "fine_subject": 4.20275,
+   "coarse_subject": null,
+   "fine_control": 0.0436,
+   "fine_control_from": "wedge2(alb 0.12)",
+   "fine_over_control": 96.3933,
+   "fine_over_coarse": null,
+   "fine_over_coarse_control": 0.9179,
+   "fine_max_subject": 5.0602,
+   "colour": {
+    "px": 2587909,
+    "median_chromaticity": [
+     0.38597,
+     0.34002
+    ],
+    "chroma_sd_u": 0.01591,
+    "chroma_sd_v": 0.00184,
+    "single_hue_fraction_r010": 0.8927,
+    "single_hue_fraction_r005": 0.6354,
+    "chroma_p95_radius": 0.01481,
+    "gated": false,
+    "note": "NOT GATED -- the smooth controls are neutral by construction so there is no in-frame floor for chroma, and an absolute bar here would be uncalibrated. Read it."
+   },
+   "relief_subject": -0.14122,
+   "relief_subject_detail": {
+    "lag4": {
+     "along_light": 0.05366,
+     "across_light": -0.23748
+    },
+    "best_lag_px": 8,
+    "lag6": {
+     "along_light": -0.09521,
+     "across_light": -0.19121
+    },
+    "lag8": {
+     "along_light": -0.09626,
+     "across_light": -0.05118
+    },
+    "lag10": {
+     "along_light": -0.07032,
+     "across_light": 0.00752
+    },
+    "lag12": {
+     "along_light": -0.04542,
+     "across_light": 0.01649
+    },
+    "lag16": {
+     "along_light": -0.01656,
+     "across_light": 0.01784
+    },
+    "dip_along": 0.09626,
+    "dip_across": 0.23748
+   },
+   "relief_control_all": [
+    -0.16018
+   ],
+   "relief_control": -0.16018,
+   "relief_control_degenerate": null,
+   "two_light": {
+    "rho": -0.38244,
+    "light_pct": 9.57322,
+    "still_pct": 6.35947,
+    "px": 2117460,
+    "log_floor": 0.00077996,
+    "px_lit_in_both": 5804578,
+    "px_chosen_lit": 6469772,
+    "px_flip_lit": 6483672,
+    "px_chosen_lit_core": 2587909,
+    "alpha_agreement": 1.0,
+    "flip_png": "/home/zany/f1-round2/render/gate_witness/access_road_slab/witness_flip.png",
+    "sun_screen_direction_rowcol_flip": [
+     -0.015506944504308964,
+     -0.9998797601072543
+    ],
+    "dip_light_driven": 0.01215,
+    "dip_light_driven_detail": {
+     "lag4": {
+      "along_light": -0.06169,
+      "across_light": -0.1329
+     },
+     "best_lag_px": 6,
+     "lag6": {
+      "along_light": -0.19039,
+      "across_light": -0.17824
+     },
+     "lag8": {
+      "along_light": -0.16403,
+      "across_light": -0.07875
+     },
+     "lag10": {
+      "along_light": -0.12886,
+      "across_light": -0.01003
+     },
+     "lag12": {
+      "along_light": -0.09657,
+      "across_light": 0.01676
+     },
+     "lag16": {
+      "along_light": -0.04358,
+      "across_light": 0.00379
+     },
+     "dip_along": 0.19039,
+     "dip_across": 0.17824
+    },
+    "controls": {
+     "wedge2(alb 0.12)": {
+      "light_pct": 0.02687,
+      "rho": 0.15417,
+      "still_pct": 0.03156
+     }
+    },
+    "light_control": 0.02687,
+    "light_control_from": "wedge2(alb 0.12)",
+    "light_over_control": 356.2791
+   },
+   "silhouette_control": {
+    "side": "left",
+    "rows": 365,
+    "y0": 153,
+    "y1": 517,
+    "global_rms_px": 1.153,
+    "global_rms_mm": 0.525,
+    "rms_px": 0.284,
+    "rms_mm": 0.129,
+    "local_max_px": 0.536,
+    "local_max_mm": 0.244,
+    "windows": 6
+   },
+   "silhouette_control_rows": 366,
+   "silhouette": {
+    "side": "right",
+    "rows": 1513,
+    "y0": 647,
+    "y1": 2159,
+    "global_rms_px": 0.0,
+    "global_rms_mm": 0.0,
+    "rms_px": 0.0,
+    "rms_mm": 0.0,
+    "local_max_px": 0.0,
+    "local_max_mm": 0.0,
+    "windows": 29
+   },
+   "silhouette_detail": {
+    "profiles": [
+     {
+      "side": "left",
+      "rows": 1513,
+      "y0": 647,
+      "y1": 2159,
+      "global_rms_px": 0.0,
+      "global_rms_mm": 0.0,
+      "rms_px": 0.0,
+      "rms_mm": 0.0,
+      "local_max_px": 0.0,
+      "local_max_mm": 0.0,
+      "windows": 29
+     },
+     {
+      "side": "right",
+      "rows": 1513,
+      "y0": 647,
+      "y1": 2159,
+      "global_rms_px": 0.0,
+      "global_rms_mm": 0.0,
+      "rms_px": 0.0,
+      "rms_mm": 0.0,
+      "local_max_px": 0.0,
+      "local_max_mm": 0.0,
+      "windows": 29
+     }
+    ],
+    "n_profiles": 2,
+    "statistic": "median over 100-row windows of the residual RMS after refitting a quadratic inside each window"
+   }
+  }
+ },
+ "result": "ITEM_REJECTED",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-03T13:40:39",
+  "written_at": 1785764439.041,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "status": "OK",
+   "mtime": 1785757608.739,
+   "mtime_iso": "2026-08-03T11:46:48",
+   "bytes": 170986,
+   "sha256": "3b9d07043cf326992a7e23b195498364727c1ddd3610e78168856cf8dd246220"
+  },
+  "tool_version": "item_gate RIG_VERSION 6, 8 checks",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/world/items/access_road_slab_test.blend",
+    "status": "OK",
+    "mtime": 1785337777.078,
+    "mtime_iso": "2026-07-29T15:09:37",
+    "bytes": 461740136,
+    "sha256": "a7c3108d9f1e1d39c72d235e232a0d34a26074ad429585146ac7f52fc0d97f51",
+    "hash_seconds": 0.88
+   },
+   {
+    "role": "manifest",
+    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "status": "OK",
+    "mtime": 1785264294.872,
+    "mtime_iso": "2026-07-28T18:44:54",
+    "bytes": 299660,
+    "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505"
+   },
+   {
+    "role": "from_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/access_road_slab/witness.png",
+    "status": "OK",
+    "mtime": 1785764279.759,
+    "mtime_iso": "2026-08-03T13:37:59",
+    "bytes": 44782458,
+    "sha256": "e08d3b492681e5ebb5fa360ec937bf8c8bad099160bf69ee210dc61a7696c545"
+   }
+  ],
+  "describes": [
+   {
+    "role": "witness_blend",
+    "path": null,
+    "status": "NOT_GIVEN",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null
+   },
+   {
+    "role": "witness_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/access_road_slab/witness.png",
+    "status": "OK",
+    "mtime": 1785764279.759,
+    "mtime_iso": "2026-08-03T13:37:59",
+    "bytes": 44782458,
+    "sha256": "e08d3b492681e5ebb5fa360ec937bf8c8bad099160bf69ee210dc61a7696c545"
+   },
+   {
+    "role": "witness_spec",
+    "path": "/home/zany/f1-round2/render/gate_witness/access_road_slab/witness_spec.json",
+    "status": "OK",
+    "mtime": 1785759588.392,
+    "mtime_iso": "2026-08-03T12:19:48",
+    "bytes": 2909,
+    "sha256": "8ce3ae21d878343436620a33fec4d816aea198df06bf4eb97bee124828a38d29"
+   }
+  ],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785741347.142,
+    "mtime_iso": "2026-08-03T07:15:47",
+    "bytes": 167634,
+    "sha256": "2ef9e80d754a5532d48f26093db2791759e34a3d2be3215e4ca45d3236340000"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785684602.475,
+    "mtime_iso": "2026-08-02T15:30:02",
+    "bytes": 224176,
+    "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "/home/zany/f1-round2/world/items/access_road_slab_test.blend",
+   "--factory-startup",
+   "-P",
+   "/home/zany/f1-round2/tools/item_gate.py",
+   "--",
+   "--item",
+   "access_road_slab",
+   "--out",
+   "/home/zany/f1-round2/work/r2061/gate/access_road_slab/gate.json",
+   "--samples",
+   "512",
+   "--always-render",
+   "--from-png",
+   "/home/zany/f1-round2/render/gate_witness/access_road_slab/witness.png"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}

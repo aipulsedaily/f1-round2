@@ -1,0 +1,530 @@
+{
+ "item": "pont_girder",
+ "hero": true,
+ "filmed_at_m": 2.5,
+ "lens_mm": 21.0,
+ "onscreen_px_4k": 1210.0,
+ "flexible": false,
+ "flexible_because": "no cloth token and no clothed-human pattern in id/name",
+ "subject_selection": "every mesh MINUS 3 named like a standin/context object (no collection matched 'pont_girder' -- pass --prefix or --collection to be explicit)",
+ "prefix_integrity": null,
+ "witness_subject": "PGD_Girder_B",
+ "witness_subject_because": "median-triangle instance of 7 objects (2206546 tris) -- the TYPICAL instance of a population of 4, not the best one",
+ "checks": {
+  "no_external_assets": true,
+  "material_depth": true,
+  "geometry_resolves_at_distance": true,
+  "per_instance_variation": true,
+  "witness_frame_valid": true,
+  "surface_microstructure": true,
+  "relief_reads_as_lip_and_shade": true,
+  "silhouette_departs_from_analytic": "not_applicable"
+ },
+ "check_notes": {
+  "surface_microstructure": "fine(r1-r2) 5.820 % of mean vs the strictest brightness-matched smooth control 0.065 [sphere] = x88.99, need x2.00; controls in play ['sphere', 'wedge2(alb 0.12)', 'wedge3(alb 0.28)']; spectral balance fine/coarse 4.4566 vs control 0.2511",
+  "relief_reads_as_lip_and_shade": "lip-and-shadow dip +0.2044 along the light vs the strictest smooth control -0.0733 (need control + 0.030 AND >= 0.050 absolute).  | TWO-LIGHT: the band that MOVED when the sun crossed to its other candidate side is 6.1009 % contrast, x146.97 the strictest smooth control's (sphere, need x2.00) -- PASS. The band that did NOT move is 4.6171 %, and corr(chosen, flip) = -0.2904 (REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL). Fine-band contrast x88.99 the control (need x2.00) -- PASS. [dip re-derived on the light-driven half alone: -0.3155]",
+  "silhouette_departs_from_analytic": "rigid item (no cloth token and no clothed-human pattern in id/name); an analytic outline is correct here"
+ },
+ "unmeasurable": [],
+ "framing_source": "item_manifest.json",
+ "thresholds": {
+  "procedural_texture_nodes_required": 6,
+  "detail_limit_px": 6.0,
+  "fine_over_control_required": 2.0,
+  "fine_over_coarse_at_least_control": true,
+  "relief_margin_over_control": 0.03,
+  "relief_dip_absolute_floor": 0.05,
+  "relief_control_sane_band": 0.3,
+  "relief_light_over_control_required": 2.0,
+  "relief_two_light_rho": "REPORTED, NOT GATED -- see LIGHT_OVER_CONTROL",
+  "silhouette_rms_mm_required": 5.0,
+  "silhouette_rms_over_control_required": 3.0,
+  "silhouette_min_px_for_5mm": 1.0
+ },
+ "threshold_kinds": {
+  "fine_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "fine_over_coarse_at_least_control": "SCALE-INVARIANT (spectral shape vs in-frame control)",
+  "relief_margin_over_control": "SCALE-INVARIANT (margin over in-frame control)",
+  "relief_dip_absolute_floor": "SCALE-INVARIANT (calibrated from control spread)",
+  "silhouette_rms_mm_required": "PHYSICAL (millimetres of cloth)",
+  "silhouette_rms_over_control_required": "SCALE-INVARIANT (ratio to in-frame control)",
+  "silhouette_min_px_for_5mm": "SIZE-DEPENDENT SCOPING TEST, not a bar",
+  "detail_limit_px": "SIZE-DEPENDENT (screen px at the filmed distance)",
+  "procedural_texture_nodes_required": "size-independent node floor"
+ },
+ "measured": {
+  "external_image_files": [],
+  "image_texture_nodes": 0,
+  "materials": 5,
+  "procedural_texture_nodes": 44,
+  "objects": 7,
+  "triangles": 14086306,
+  "triangles_per_declared_instance": 3521576.5,
+  "triangles_per_found_object": 2012329.4,
+  "triangles_per_onscreen_px": 11641.58,
+  "edges": 14661623,
+  "p10_edge_m": 0.000726,
+  "median_edge_m": 0.002301,
+  "p90_edge_m": 0.015,
+  "p10_edge_px_at_filmed_distance": 0.65,
+  "median_edge_px_at_filmed_distance": 2.06,
+  "px_per_m_at_filmed_distance": 896.0,
+  "mm_per_px_at_filmed_distance": 1.1161,
+  "band_radii_mm_at_filmed_distance": {
+   "1": 1.116,
+   "2": 2.232,
+   "4": 4.464,
+   "8": 8.929,
+   "16": 17.857
+  },
+  "instances_declared": 4,
+  "instances_found": 7,
+  "cv_size": 0.04263,
+  "cv_volume": 0.34254,
+  "distinct_topologies": 7,
+  "variation_measured_over": "individual objects",
+  "realized_instances": null
+ },
+ "witness": {
+  "blend": null,
+  "png": "/home/zany/f1-round2/render/gate_witness/pont_girder/witness.png",
+  "spec": "/home/zany/f1-round2/render/gate_witness/pont_girder/witness_spec.json",
+  "render": {
+   "backend": "supplied PNG (--from-png)",
+   "png": "/home/zany/f1-round2/render/gate_witness/pont_girder/witness.png",
+   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/pont_girder/witness_flip.png"
+  },
+  "render_error": null,
+  "image": {
+   "frame": {
+    "subject_px": 4550333,
+    "sphere_px": 115817,
+    "plane_px": 69550,
+    "subject_mean_linear": 0.040033,
+    "sphere_mean_linear": 0.051785,
+    "plane_mean_linear": 0.302463,
+    "subject_clipped_frac": 0.0,
+    "subject_crushed_frac": 0.0915,
+    "sphere_clipped_frac": 0.0,
+    "sphere_highlight_R_minus_B": 0.02583,
+    "sphere_dynamic_range": 41.92,
+    "subject_px_lit": 1708024,
+    "subject_mean_measured": 0.057123
+   },
+   "why": {
+    "two_light": null
+   },
+   "lit_cut_linear": 0.046384,
+   "luminance_window": [
+    0.034274,
+    0.09711
+   ],
+   "controls": {
+    "sphere": {
+     "px_matched": 11446,
+     "px_total": 115817,
+     "mean_linear": 0.051785,
+     "bands": {
+      "1": 0.0654,
+      "2": null,
+      "4": null,
+      "8": null,
+      "16": null
+     },
+     "fine": 0.0654,
+     "relief": null
+    },
+    "card": {
+     "px_matched": 0,
+     "px_total": 69550,
+     "mean_linear": 0.302463,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.034274, 0.09711]; need 8000"
+    },
+    "wedge0(alb 0.02)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.012997,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.034274, 0.09711]; need 8000"
+    },
+    "wedge1(alb 0.05)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.020125,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.034274, 0.09711]; need 8000"
+    },
+    "wedge2(alb 0.12)": {
+     "px_matched": 34875,
+     "px_total": 34875,
+     "mean_linear": 0.039761,
+     "bands": {
+      "1": 0.0388,
+      "2": 0.0303,
+      "4": 0.0291,
+      "8": 0.0926,
+      "16": null
+     },
+     "fine": 0.03455,
+     "relief": -0.12533
+    },
+    "wedge3(alb 0.28)": {
+     "px_matched": 34875,
+     "px_total": 34875,
+     "mean_linear": 0.086713,
+     "bands": {
+      "1": 0.0266,
+      "2": 0.0183,
+      "4": 0.0165,
+      "8": 0.0894,
+      "16": null
+     },
+     "fine": 0.022449999999999998,
+     "relief": -0.07328
+    },
+    "wedge4(alb 0.55)": {
+     "px_matched": 0,
+     "px_total": 35030,
+     "mean_linear": 0.166803,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.034274, 0.09711]; need 8000"
+    },
+    "wedge5(alb 0.95)": {
+     "px_matched": 0,
+     "px_total": 34875,
+     "mean_linear": 0.285581,
+     "bands": null,
+     "fine": null,
+     "relief": null,
+     "skipped": "0 px in the subject's luminance window [0.034274, 0.09711]; need 8000"
+    }
+   },
+   "controls_participating": [
+    "sphere",
+    "wedge2(alb 0.12)",
+    "wedge3(alb 0.28)"
+   ],
+   "bands_subject": {
+    "1": 6.7777,
+    "2": 4.8626,
+    "4": 3.561,
+    "8": 1.5734,
+    "16": 1.0385
+   },
+   "fine_subject": 5.82015,
+   "coarse_subject": 1.30595,
+   "fine_control": 0.0654,
+   "fine_control_from": "sphere",
+   "fine_over_control": 88.9931,
+   "fine_over_coarse": 4.4566,
+   "fine_over_coarse_control": 0.2511,
+   "fine_max_subject": 6.7777,
+   "colour": {
+    "px": 1708024,
+    "median_chromaticity": [
+     0.30948,
+     0.33803
+    ],
+    "chroma_sd_u": 0.01502,
+    "chroma_sd_v": 0.00477,
+    "single_hue_fraction_r010": 0.5014,
+    "single_hue_fraction_r005": 0.2277,
+    "chroma_p95_radius": 0.03117,
+    "gated": false,
+    "note": "NOT GATED -- the smooth controls are neutral by construction so there is no in-frame floor for chroma, and an absolute bar here would be uncalibrated. Read it."
+   },
+   "relief_subject": 0.20435,
+   "relief_subject_detail": {
+    "lag4": {
+     "along_light": -0.17862,
+     "across_light": 0.03447
+    },
+    "best_lag_px": 4,
+    "lag6": {
+     "along_light": -0.04408,
+     "across_light": 0.07798
+    },
+    "lag8": {
+     "along_light": 0.03565,
+     "across_light": 0.06186
+    },
+    "lag10": {
+     "along_light": 0.04712,
+     "across_light": 0.02572
+    },
+    "lag12": {
+     "along_light": 0.03802,
+     "across_light": 0.03679
+    },
+    "lag16": {
+     "along_light": -0.02432,
+     "across_light": 0.04269
+    },
+    "dip_along": 0.17862,
+    "dip_across": -0.02572
+   },
+   "relief_control_all": [
+    -0.12533,
+    -0.07328
+   ],
+   "relief_control": -0.07328,
+   "relief_control_degenerate": null,
+   "two_light": {
+    "rho": -0.2904,
+    "light_pct": 6.10089,
+    "still_pct": 4.61712,
+    "px": 2160812,
+    "log_floor": 0.00114247,
+    "px_lit_in_both": 2660737,
+    "px_chosen_lit": 4270060,
+    "px_flip_lit": 2900583,
+    "px_chosen_lit_core": 1708024,
+    "alpha_agreement": 0.999975,
+    "flip_png": "/home/zany/f1-round2/render/gate_witness/pont_girder/witness_flip.png",
+    "sun_screen_direction_rowcol_flip": [
+     -0.015508199762250976,
+     -0.9998797406389102
+    ],
+    "dip_light_driven": -0.31547,
+    "dip_light_driven_detail": {
+     "lag4": {
+      "along_light": 0.36025,
+      "across_light": -0.25477
+     },
+     "best_lag_px": 16,
+     "lag6": {
+      "along_light": 0.4033,
+      "across_light": -0.19226
+     },
+     "lag8": {
+      "along_light": 0.34255,
+      "across_light": -0.02819
+     },
+     "lag10": {
+      "along_light": 0.27446,
+      "across_light": 0.12452
+     },
+     "lag12": {
+      "along_light": 0.20057,
+      "across_light": 0.11532
+     },
+     "lag16": {
+      "along_light": 0.0607,
+      "across_light": -0.04809
+     },
+     "dip_along": -0.0607,
+     "dip_across": 0.25477
+    },
+    "controls": {
+     "sphere": {
+      "light_pct": 0.04151,
+      "rho": -0.00504,
+      "still_pct": 0.0413
+     },
+     "wedge2(alb 0.12)": {
+      "light_pct": 0.02838,
+      "rho": 0.0201,
+      "still_pct": 0.02891
+     },
+     "wedge3(alb 0.28)": {
+      "light_pct": 0.02373,
+      "rho": 0.02401,
+      "still_pct": 0.02423
+     }
+    },
+    "light_control": 0.04151,
+    "light_control_from": "sphere",
+    "light_over_control": 146.974
+   },
+   "silhouette_control": {
+    "side": "right",
+    "rows": 395,
+    "y0": 123,
+    "y1": 517,
+    "global_rms_px": 3.488,
+    "global_rms_mm": 3.893,
+    "rms_px": 0.286,
+    "rms_mm": 0.319,
+    "local_max_px": 0.55,
+    "local_max_mm": 0.614,
+    "windows": 6
+   },
+   "silhouette_control_rows": 395,
+   "silhouette": {
+    "side": "left",
+    "rows": 1317,
+    "y0": 690,
+    "y1": 2006,
+    "global_rms_px": 135.605,
+    "global_rms_mm": 151.345,
+    "rms_px": 0.759,
+    "rms_mm": 0.847,
+    "local_max_px": 1.545,
+    "local_max_mm": 1.724,
+    "windows": 25
+   },
+   "silhouette_detail": {
+    "profiles": [
+     {
+      "side": "right",
+      "rows": 1317,
+      "y0": 690,
+      "y1": 2006,
+      "global_rms_px": 0.0,
+      "global_rms_mm": 0.0,
+      "rms_px": 0.0,
+      "rms_mm": 0.0,
+      "local_max_px": 0.0,
+      "local_max_mm": 0.0,
+      "windows": 25
+     },
+     {
+      "side": "left",
+      "rows": 1317,
+      "y0": 690,
+      "y1": 2006,
+      "global_rms_px": 135.605,
+      "global_rms_mm": 151.345,
+      "rms_px": 0.759,
+      "rms_mm": 0.847,
+      "local_max_px": 1.545,
+      "local_max_mm": 1.724,
+      "windows": 25
+     }
+    ],
+    "n_profiles": 2,
+    "statistic": "median over 100-row windows of the residual RMS after refitting a quadratic inside each window"
+   }
+  }
+ },
+ "result": "ITEM_ACCEPTED",
+ "provenance": {
+  "stamp_version": 1,
+  "written_at_iso": "2026-08-03T14:30:05",
+  "written_at": 1785767405.208,
+  "tool": {
+   "role": "tool",
+   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "status": "OK",
+   "mtime": 1785757608.739,
+   "mtime_iso": "2026-08-03T11:46:48",
+   "bytes": 170986,
+   "sha256": "3b9d07043cf326992a7e23b195498364727c1ddd3610e78168856cf8dd246220"
+  },
+  "tool_version": "item_gate RIG_VERSION 6, 8 checks",
+  "contract_version": "1.2.1",
+  "blender": {
+   "version": "5.2.0 LTS",
+   "hash": "fbe6228777e7"
+  },
+  "inputs": [
+   {
+    "role": "blend",
+    "path": "/home/zany/f1-round2/world/items/pont_girder_test.blend",
+    "status": "OK",
+    "mtime": 1785694696.461,
+    "mtime_iso": "2026-08-02T18:18:16",
+    "bytes": 1106922451,
+    "sha256": "b755c7362b5b52d5b24c43ee0ffbd6abd8e8da26cf73fe4933d39bdeaa925eae",
+    "hash_seconds": 3.19
+   },
+   {
+    "role": "manifest",
+    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "status": "OK",
+    "mtime": 1785264294.872,
+    "mtime_iso": "2026-07-28T18:44:54",
+    "bytes": 299660,
+    "sha256": "ebc2862677cec47f498ae3a361143965b944cf6420a0d64c4fb64c3c0541f505"
+   },
+   {
+    "role": "from_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/pont_girder/witness.png",
+    "status": "OK",
+    "mtime": 1785767134.057,
+    "mtime_iso": "2026-08-03T14:25:34",
+    "bytes": 29391851,
+    "sha256": "7d5d4b91e0038fbee9c7ee8bcdf07af0049a5dbfbcdd004c7252063c97306ce6"
+   }
+  ],
+  "describes": [
+   {
+    "role": "witness_blend",
+    "path": null,
+    "status": "NOT_GIVEN",
+    "mtime": null,
+    "mtime_iso": null,
+    "bytes": null,
+    "sha256": null
+   },
+   {
+    "role": "witness_png",
+    "path": "/home/zany/f1-round2/render/gate_witness/pont_girder/witness.png",
+    "status": "OK",
+    "mtime": 1785767134.057,
+    "mtime_iso": "2026-08-03T14:25:34",
+    "bytes": 29391851,
+    "sha256": "7d5d4b91e0038fbee9c7ee8bcdf07af0049a5dbfbcdd004c7252063c97306ce6"
+   },
+   {
+    "role": "witness_spec",
+    "path": "/home/zany/f1-round2/render/gate_witness/pont_girder/witness_spec.json",
+    "status": "OK",
+    "mtime": 1785761018.967,
+    "mtime_iso": "2026-08-03T12:43:38",
+    "bytes": 2878,
+    "sha256": "a13e1c7303e48f4647a985fa93d27afc354430372ee42f211cbd359142bc9319"
+   }
+  ],
+  "also_hash": [
+   {
+    "role": "itemkit",
+    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "status": "OK",
+    "mtime": 1785741347.142,
+    "mtime_iso": "2026-08-03T07:15:47",
+    "bytes": 167634,
+    "sha256": "2ef9e80d754a5532d48f26093db2791759e34a3d2be3215e4ca45d3236340000"
+   },
+   {
+    "role": "world_contract",
+    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "status": "OK",
+    "mtime": 1785684602.475,
+    "mtime_iso": "2026-08-02T15:30:02",
+    "bytes": 224176,
+    "sha256": "8a0fbebcb67f66a105a4f14853f44d083c6d3357cb3ee1c194b3b444f431136a"
+   }
+  ],
+  "argv": [
+   "/opt/blender-5.2.0-linux-x64/blender",
+   "-b",
+   "/home/zany/f1-round2/world/items/pont_girder_test.blend",
+   "--factory-startup",
+   "-P",
+   "/home/zany/f1-round2/tools/item_gate.py",
+   "--",
+   "--item",
+   "pont_girder",
+   "--out",
+   "/home/zany/f1-round2/work/r2061/gate/pont_girder/gate.json",
+   "--samples",
+   "512",
+   "--always-render",
+   "--from-png",
+   "/home/zany/f1-round2/render/gate_witness/pont_girder/witness.png"
+  ],
+  "cwd": "/home/zany/f1-round2",
+  "host": "zed",
+  "python": "3.13.13"
+ }
+}
