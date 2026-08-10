@@ -258,3 +258,58 @@ md5  d5087fd021b5f748f176ecb2b6c1de67   35,736,044 B
 
 **Unchanged**, and exactly `2978/24 = 1489/12 = 124.083333 s` of picture. No
 `-shortest`, no padding, `-c:a copy`.
+
+## R2-3904 — CYCLE 3 CLOSED ON ALL THREE CARDS, AND f2417 WAS PREDICTED BEFORE IT EXISTED
+
+**Every card has logged `worker ready`.** That is the bar R2-3864 set after
+cycle 2 was declared closed while a card was still 68.5 minutes down, and it is
+the bar this cycle is measured against — not "the API says running", not "a
+frame line appeared".
+
+| broker | went silent | `worker ready` | **down** | replacement | host condemned |
+| --- | --- | --- | ---: | --- | --- |
+| fleet03 | 16:40:15 | 16:48:13 | **7 m 58 s** | machine 43130, $0.468/hr | none |
+| fleet05 | 16:41:27 | 17:05:21 | **23 m 54 s** | machine 131197, $0.455/hr | none |
+| fleet04 | 17:01:18 | 17:24:44 | **23 m 26 s** | machine 44842, $0.455/hr | none |
+
+**The whole cycle cost 23 m 26 s of wall clock, not 35-70**, because the three
+cards retired 21 minutes apart rather than within 61 seconds of each other, so
+**no two scene pushes overlapped.** fleet03 uploaded at 97.9 MB/s and fleet04 at
+a comparable rate; nothing saw fleet05's contended 4.2 MB/s from cycle 2. R2-3864
+predicted exactly this — the 7:1 split is contention, not a host property — and
+the staggering it recommends as a mitigation **has now happened by itself**,
+because each re-rent resets that card's 12-hour clock to when it was rented.
+
+**This is the first cycle with no condemned host.** The running base rate stays
+at 3 bad hosts in 14 rentals; it is now 3 in 17. And the fleet came back
+**cheaper**: fleet04 replaced a $0.535/hr card with a $0.455/hr one, so the
+blended rate fell rather than walking further up the blacklist ladder.
+
+fleet04's re-rent fired at **17:16:27 against a predicted 17:16:18** — the
+`unknown_grace` clock from its 17:01:18 drop, correct to **9 seconds**.
+
+### The ledger's first real prediction, made before the fact and confirmed
+
+At 17:15Z, with fleet05's cursor still at 2416, R2-3902 recorded that its
+cycle-3 casualty was **expected to be 2417**. fleet05 has now delivered past
+that point:
+
+```
+fleet05   dbc2c783eb28       2420  430/987         3  [2127, 2292, 2417]
+```
+
+**2417 is on no todo list, exactly as predicted, and the count moved 4 -> 5.**
+The mechanism is not a story fitted to the data afterwards; it forecast a
+specific frame number and the frame number is what appeared.
+
+Revised prediction, which is the number the re-submission must reproduce:
+
+```
+ORPHANED: [192, 355, 2127, 2292, 2417]                       count = 5
+PREDICTED 'to render' ON RE-SUBMISSION = 1592 = 5 orphaned + 1587 not yet rendered
+```
+
+**Expect roughly two more orphans per remaining cycle, not three** — fleet04's
+job requeues on every retirement and so recovers its own casualty, while fleet03
+and fleet05 do not. With ~3 cycles left that projects **10-11 orphans** at the
+end, and ~1.5 h of re-rendering to recover them.
