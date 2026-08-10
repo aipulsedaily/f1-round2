@@ -1112,6 +1112,52 @@ which looks like a pattern and is not — fleet04 has made 6 of the 14 rentals
 because each condemnation forces another. Its original host and its cycle-1
 third host were both clean.
 
+## R2-3864 — A RETIREMENT CAN COST 68 MINUTES, NOT 35, AND CONCURRENT PUSHES ARE WHY
+
+I closed cycle 2 at 05:08Z reporting all three cards back and fleet05 down
+~22 min. **That was wrong, and it is the third time in this task I have
+reported a state I inferred instead of one I read.** I saw fleet05's instance
+`running` in the vast API and a frame line in its log, and concluded the worker
+was serving. An instance existing is not a worker being ready.
+
+**fleet05's true cycle-2 downtime was 04:25:02 -> 05:33:32 = 68.5 minutes**,
+against the 21.8 min (fleet03) and 29.5 min (fleet04) of the same cycle. Its
+`deploy finished in 3160.7s`.
+
+The cause is in the transfer rates, and it is not the host:
+
+| stage | fleet05, cycle 2 | normal this render |
+| --- | --- | --- |
+| blender bundle, 481 MB | 523.2 s @ **0.92 MB/s** | ~50 s |
+| scene, 10.96 GB | 2587.7 s @ **4.2 MB/s** | 250-500 s @ 22-43 MB/s |
+
+**fleet04 was pushing at 29.0 MB/s in the same window that fleet05 managed
+4.2 MB/s.** Their sum, ~33 MB/s, is about this workstation's real uplink. So the
+two were competing for one pipe and the split was **7:1, not 1:1** — fleet05
+(South Korea) lost to fleet04 (Japan). This is the documented behaviour that
+OpenSSH's fixed internal buffer caps single-stream throughput regardless of link
+speed, which penalises the higher-RTT path disproportionately once the link
+saturates.
+
+**Consequences for the estimate at R2-3861.** "~35 min of dead wall clock per
+cycle, all three in parallel" holds only when the pushes do not overlap. When a
+condemned host delays one card's re-rent into another's push window — which is
+exactly what fleet04's bad host did — the two collide and the slower path can
+lose an extra ~45 min. Cycle 2's true cost was **68.5 min on its worst card**,
+not 35.
+
+Revised: budget **35-70 min per cycle**, and with ~5 cycles left expect
+**3-6 h** of retirement overhead rather than a flat 4 h. Cost is still
+unaffected — nothing bills while no instance exists — so the ~$116 projection
+stands.
+
+**The mitigation, if this recurs and matters:** stagger the re-rents so the
+pushes do not overlap, or push to the lowest-RTT host first. Neither is worth
+doing pre-emptively — the cost is wall clock on a render with budget headroom,
+and interfering with a working recovery path to chase 45 minutes is the wrong
+trade. **But do not report a retirement as closed until every card has logged
+`worker ready`.** That is the check I skipped.
+
 ### What a retirement cycle actually costs
 
 | | |
