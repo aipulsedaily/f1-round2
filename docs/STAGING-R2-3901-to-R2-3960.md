@@ -537,3 +537,52 @@ PREDICTED 'to render' ON RE-SUBMISSION = 1200 = 3 orphaned + 1197 not yet render
 has never been requeued, and it is the only one accumulating casualties
 monotonically; its cycle-4 frame (f697) will surface as a fourth once its cursor
 passes it.
+
+## R2-3909 — CYCLE 4 CLOSED, AND `FAILED` IS THE ORPHAN MECHANISM WEARING ITS OWN NAME
+
+**Every card has logged `worker ready`.**
+
+| broker | dropped | `worker ready` | **down** | notes |
+| --- | --- | --- | ---: | --- |
+| fleet03 | 04:45:52 | 05:15:45 | **29 m 53 s** | deploy 831 s — uplink shared again |
+| fleet05 | 04:57:50 | 05:18:06 | **20 m 16 s** | *including* a condemned host and two rentals |
+| fleet04 | 05:17:04 | 05:41:29 | **24 m 25 s** | same machine 44842, $0.455/hr |
+
+**Worst card 29 m 53 s, against a 35-70 min band.** Four cycles have now run and
+none has reached 35 minutes since cycle 2's 68.5. The stagger closed to ~30 min
+this cycle and the pushes did overlap — fleet03's deploy went from 164 s to
+831 s — and it still came in under the band, because a shared uplink slows a
+push without stalling it.
+
+### The `FAILED` lines are the orphan mechanism, correctly labelled
+
+`sequence master4k frame N FAILED (~1100-1260s, 1 consecutive)` has now appeared
+**once per cycle on fleet04** and is not a defect. The broker's own text is
+exact: *"the instance has not answered a single progress probe for 15.0 min while
+reattaching. This is a TRANSPORT failure, not a statement about the render."*
+It is `await_render` spending its grace on a card that no longer exists.
+
+| frame | cycle | outcome |
+| --- | --- | --- |
+| f1133 | 1 | recovered — a later deploy failure requeued the job |
+| f1271 | 2 | **on disk** — recovered by fleet04's 05:00:20 requeue |
+| f1398 | 3 | **orphan** — job continued in place |
+| f1517 | 4 | **will orphan** — no requeue line follows and it is absent from disk |
+
+**A correction to R2-3901, which was too strong.** I wrote that fleet04 "is the
+only broker whose job has ever been recomputed from disk" and framed that as a
+property of the broker. It is not. **fleet04 requeues only on a *deploy*
+failure; on a transport-only failure it continues in place exactly like the
+others.** That is why f1133 and f1271 came back while f1398 and f1517 do not.
+The rule is about **which failure path the cycle took**, not about which broker
+took it — and R2-3908's fleet05 requeue, triggered by a condemned host, is the
+same rule seen from the other side.
+
+The corrected statement of the mechanism:
+
+> **A retirement orphans its in-flight frame unless something later forces that
+> broker's job to requeue.** A deploy failure forces it; a transport failure does
+> not. Nothing about the identity of the broker predicts which one happens.
+
+Orphan set will reach `[192, 355, 697, 1398, 1517]` when fleet04 passes 1517.
+The pulse announces changes, so this needs no further watching.
