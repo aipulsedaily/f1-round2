@@ -844,3 +844,93 @@ the upper end whenever a condemnation storm overlaps a deploy.
 against three in the whole render before it. **Base rate 6 bad in ~24 rentals,
 ~25%** — consistent with the 21% at R2-3863, so the market has not degraded; this
 cycle simply drew more rentals because each condemnation forces another.
+
+## R2-3914 — RETRACTION: THE "CONDEMNATION STORM STOLE THE UPLINK" CLAIM IN R2-3913 IS FALSE
+
+**R2-3913's causal explanation is withdrawn. Its measurements stand; its
+mechanism does not.** The 78-minute downtime is real. The reason I gave for it
+is not, and it was relayed onward before I checked it.
+
+### What I claimed, and why it was wrong
+
+I wrote that fleet04's four rental attempts *"each of which opens SSH and starts
+pushing a 481 MB bundle before the host's refusal is established"* stole uplink
+from fleet05's deploy. **R2-3863 already recorded the opposite** — its table has
+a `first bundle push` column reading `never` for every condemned host — and I
+did not check my claim against it.
+
+The log is unambiguous:
+
+```
+17:48:50  deploying onto instance 47484025 (machine 34481)
+17:53:05  instance 47484025 refuses our ssh key            <- nothing between
+18:03:19  deploying onto instance 47484341 (machine 31233)
+18:07:32  instance 47484341 refuses our ssh key            <- nothing between
+```
+
+A grep for any push line against either instance id returns **nothing**. The
+publickey denial happens during the SSH handshake, before a byte of payload.
+**A condemned host transfers nothing and therefore steals no bandwidth.** The
+cost of a failed rental is its ~5 minutes and nothing else.
+
+### What the measurements actually show
+
+Bounded by **log line offsets**, not timestamps — several lines I first read as
+concurrent were from 08-10, which is exactly the trap R2-3860 documented and
+which I walked into anyway:
+
+| transfer | window | rate | competing traffic |
+| --- | --- | ---: | --- |
+| fleet05 bundle | 17:36:01-17:57:03 | **0.38 MB/s** | **none — alone on the uplink** |
+| fleet05 scene | 17:57:24-18:31:41 | 5.3 MB/s | partial: fleet04's bundle 18:13:29-18:28:24 |
+| **fleet05, cycle 4, same broker** | 05:13:34-05:17:55 | **30.27 / 69.3 MB/s** | — |
+
+fleet03 finished pushing at **17:23:06** and fleet04 pushed nothing until
+**18:13:29**, so **fleet05's bundle had the link to itself and still managed
+0.38 MB/s.** Contention cannot explain a transfer that had no competition.
+
+**The difference is the path.** Cycle 5 pushed to `host-A` — the South
+Korea host R2-3864 identified as the high-RTT loser of its 7:1 split. Cycle 4's
+fast push went to `host-C`. R2-3864's **underlying** mechanism, that
+OpenSSH's fixed internal buffer caps single-stream throughput regardless of link
+speed and penalises high-RTT paths, explains this cleanly. Its **framing** as
+"two pushes competing" does not, and I extended that framing past its evidence.
+
+### The consequence for #169
+
+**The coupling argument does not survive, and it was the strongest case for
+fixing the blacklist.** What remains is the direct cost only: one rung up the
+price ladder per re-rent that draws a bad host or the unbuyable offer — and even
+that is **transient**, because the selector returns to ~$0.455/hr once the
+session blacklist has absorbed them. Observed three times this cycle. That is a
+materially weaker case than the one I made.
+
+### The pattern in my own errors, which is the thing worth fixing
+
+Three times now I have asserted a mechanism ahead of the measurement: the 400
+called "a transient" (R2-3910 corrected it), "fleet04 is the broker whose job
+requeues" (R2-3909 corrected it to a property of the failure path), and this.
+**Each was a correlation generalised without an attempt to break it**, and in
+each case the disconfirming evidence was already in the repository.
+
+The standard for the rest of this task: **mark inference as inference, and
+search for the record that contradicts it before reporting, not after.** The
+frame checks are built on exactly this principle — `fleetctl verify` is not
+trusted about decoding because it re-reads its own record — and my prose should
+meet the bar my tools do.
+
+## R2-3915 — CYCLE 5 CLOSED
+
+| broker | down | attempts | notes |
+| --- | ---: | ---: | --- |
+| fleet03 | **21 m 00 s** | 2 | offer 46851284 400'd; landed $0.5502/hr |
+| fleet04 | **62 m 49 s** | 4 | 400 + machines 34481, 31233 condemned; landed $0.455/hr |
+| fleet05 | **78 m 06 s** | 3 | 400 + machine 34481 condemned; deploy 3359.7 s on a high-RTT path |
+
+Band widened to **35-80 min** with escalation above 80. Three condemnations in
+one cycle; base rate **6 bad hosts in ~24 rentals, ~25%**, consistent with the
+21% at R2-3863.
+
+**All three jobs requeued except fleet03's**, so the orphan set stands at
+**[192, 355, 697, 876]** — all four fleet03's, the only broker whose job has
+never been recomputed from disk.
