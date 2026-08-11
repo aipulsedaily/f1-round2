@@ -473,3 +473,67 @@ bounded, known cost — not something to intervene over.
 minutes, so their 11 GB scene pushes will compete for the uplink again. Under
 R2-3864 that is the 35-70 min case. Report thresholds set at fleet03 05:55Z,
 fleet05 06:06Z, fleet04 06:26Z.
+
+## R2-3908 — THE BAD HOST REPAIRED THE ORPHANS, AND MY LEDGER HAD BOTH A BUG AND A BLIND SPOT
+
+The condemnation at R2-3907 had a consequence I did not anticipate and which
+runs the opposite way to the cost:
+
+```
+05:07:13 ERROR broker  job dbc2c783eb28 requeued: sequence master4k stopped at
+                       frame 2127 ... FleetUnavailable: deploy failed on freshly
+                       rented instance
+05:07:13 INFO  broker  sequence master4k job dbc2c783eb28: 992 frame(s) requested,
+                       563 already delivered, 429 to render
+```
+
+**It stopped at frame 2127 — which is one of fleet05's own orphans.** A deploy
+failure requeues the job; a requeue recomputes the todo **from the files on
+disk**; and the lowest frame absent from fleet05's block is 2127. So all three of
+its casualties — **2127, 2292 and 2417** — are back on a todo list and will be
+rendered by the running fleet.
+
+**The broken host paid for itself.** It cost 4 min 50 s and ~$0.05, and in
+exchange it converted three permanent orphans into scheduled work, saving ~15
+minutes of re-render at the end. That is luck, not design, and it is only worth
+recording because it confirms the mechanism in the **recovering** direction:
+R2-3861 said a requeue sweeps up its own casualties, and this is the first time
+one has been observed doing so for frames orphaned in *earlier* cycles.
+
+### Two defects in my own instrument, found by running it
+
+**1. It crashed on a requeued-but-not-yet-delivering job.** The empty-stream
+branch built a dict without `done_in_pass`/`todo`/`plan_lines` and the report
+line raised `KeyError`. Fixed: that state now prints `cursor = requeued` and
+**orphans = none**, which is the correct reading — a job whose todo was just
+recomputed from disk can orphan nothing, because every absent frame in its block
+is back on the list.
+
+**2. I was not running it often enough, and it cost me twelve hours of
+accuracy.** `fleet04` orphaned **f1398** at its cycle-3 retirement (~17:25 on
+08-10). At 17:24 the ledger correctly said `none`, because fleet04's cursor was
+still 1397 and it had not yet passed the gap. **I did not run it again until
+05:10 today**, so an orphan sat undetected for ~12 h. It was never *lost* — the
+re-submission recovers it regardless — but a ledger that is only consulted
+occasionally is not a ledger.
+
+**Fixed structurally rather than by intending to remember:** the 30-minute pulse
+now runs the ledger every cycle and emits a line **only when the orphan set
+changes**. Silence means unchanged; a change announces itself.
+
+### The ledger now, and the revised prediction
+
+```
+broker    live job         cursor done/todo    plans  orphans
+fleet03   d3b1b8bde2f4        696  694/993         1  [192, 355]
+fleet04   467247848cc6       1515  244/716         4  [1398]
+fleet05   dbc2c783eb28   requeued    0/429         5  none
+
+ORPHANED: [192, 355, 1398]                                    count = 3
+PREDICTED 'to render' ON RE-SUBMISSION = 1200 = 3 orphaned + 1197 not yet rendered
+```
+
+**The count went 5 -> 3, not 5 -> 7.** fleet03 remains the only broker whose job
+has never been requeued, and it is the only one accumulating casualties
+monotonically; its cycle-4 frame (f697) will surface as a fourth once its cursor
+passes it.

@@ -148,7 +148,20 @@ def main():
         live = jobs[-1]                      # the job actually running now
         stream = live["frames"]
         if not stream:
-            per_broker[b] = {"cursor": None, "orphans": [], "job": live["id"]}
+            # A job requeued but not yet delivering. It has no cursor and can
+            # orphan nothing: its todo was just recomputed from disk, so every
+            # frame absent from its block is back ON the list. This is the state
+            # that recovers a broker's earlier casualties.
+            per_broker[b] = {
+                "cursor": "requeued",
+                "orphans": [],
+                "job": live["id"],
+                "plan_lines": len(jobs),
+                "requeued": True,
+                "complete": live["complete"],
+                "todo": live["todo"],
+                "done_in_pass": 0,
+            }
             continue
 
         lo, cursor = min(stream), max(stream)
