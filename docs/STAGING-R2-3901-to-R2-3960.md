@@ -667,3 +667,106 @@ up by the pre-encode re-submission along with the orphans.
 `f876` (fleet03) and `f2669` (fleet05) both FAILED on the transport path with
 their jobs continuing in place, so both orphan. Expected set once the cursors
 pass them: **[192, 355, 697, 876, 1398, 1517, 2669]**.
+
+## R2-3911 — THE BLACKLIST CANNOT BE FIXED, AND WOULD NOT HAVE HELPED. #169, SECOND INSTANCE.
+
+### There is no supported way to blacklist an offer, and I have not invented one
+
+`rq` offers `render exec anim seq budget get status cancel teardown resume drift`.
+`fleetctl` offers `plan up submit status down record verify`. **Neither has a
+blacklist command.** The list lives in the broker's SQLite `meta` table under
+`bad_hosts` (`broker/app.py:1535`), written only by `save_blacklist()` after a
+condemnation. The only routes in are writing to a running broker's database or
+restarting it to reload — both excluded. **So: not fixed, by instruction and by
+absence of a mechanism.**
+
+### And here is why fixing it would have changed nothing
+
+```python
+# broker/app.py:1519
+BLACKLIST_TTL_SEC = 6 * 3600
+```
+
+**The blacklist expires after 6 hours. The retirement period is 12.** So *every
+condemnation is forgotten before the cycle that could use it.* No entry has ever
+survived to influence a later re-rent, and none can, in any broker, for any host.
+
+**This is the actual root cause of R2-3907, and my account there was incomplete.**
+I attributed fleet05 buying machine 142281 to the blacklist being per-broker
+session state. That is true but insufficient: fleet04's entry was **24 h old**,
+so it had lapsed four times over, and fleet04 itself would have re-bought that
+machine just as readily. **Per-broker scope and a 6 h TTL are two independent
+reasons cross-cycle learning cannot happen**, and the TTL is the binding one.
+
+The TTL is deliberate and its comment argues for it — *"short enough that a
+machine having a bad hour is not written off for the week"* — a defensible
+trade for a farm doing many short jobs. **It is simply mis-tuned for a render
+whose hardware rotates every 12 hours.** Nothing is broken; the constant was
+chosen against a different workload.
+
+**Logged against #169 as a second instance of the same root cause:** a blacklist
+that records only what it *destroyed* never learns from a failure that produced
+no instance (the 400), and a TTL shorter than the failure's recurrence interval
+means even what it does record is forgotten first.
+
+**Cost, bounded and accepted:** one rung up the price ladder per re-rent that
+draws offer 46851284. Two so far (+16% on fleet03, +47% on fleet05). With ~1-2
+cycles left this is a few dollars, against the risk of poking a live broker
+mid-render. **Not worth it.**
+
+## R2-3912 — THE CAP REBALANCE IS WRITTEN, GATED AND NOT YET RUN
+
+Authorised: move cap fleet03 -> fleet05, **after fleet03 finishes**, on measured
+spare, total unchanged, `rq budget --set` only, fleet04 untouched.
+
+`scratchpad/r23911_cap_rebalance.sh` is written and dry-run. It refuses unless
+**fleet03 holds no instance on the vast.ai API**, its **live spend has settled
+to zero**, and the **sum of the three caps is identical to the cent** before and
+after. It re-reads all three caps afterwards and exits non-zero if the total
+moved.
+
+### The dry run caught a gate that FAILED OPEN, which is the whole reason to rehearse
+
+First version of gate 1:
+
+```bash
+INST=$("$VR/.venv/bin/python" -m vastctl.vastctl status 2>/dev/null | grep -c "fleet03 pid")
+```
+
+It reported **0 instances while fleet03 was visibly running one**. `python -m
+vastctl.vastctl` resolves only with `cwd == ~/vast-render`; run from anywhere
+else it dies, stderr is swallowed by `2>/dev/null`, stdout is empty, and
+`grep -c` returns 0 — **which the gate read as "the card is gone, proceed."**
+The single most important safety check in the script was a no-op, and it looked
+like a pass.
+
+It also had a second, opposite bug: a bare `fleet03 pid` match hits the trailing
+`"broker(s) running with no rented card: ... fleet03 pid ..."` line — i.e. it
+matches **exactly when fleet03 is idle**, so once the first bug was fixed the
+gate would have blocked forever.
+
+Both fixed. The gate now **proves the query worked** before trusting its answer:
+
+```bash
+if ! printf '%s' "$STATUS" | grep -qE '^[0-9]+ instance\(s\)|no instances'; then
+  echo ">>>> ABORT: could not read instance state from the vast.ai API."
+  echo "     An unanswered question is not a 'no'. Refusing to act on silence."
+```
+
+and counts only real instance rows (`^<id> running|loading ... fleet03 pid`).
+
+**Both arms verified against the live system:**
+
+| arm | expected | got |
+| --- | --- | --- |
+| fleet03 holding a card | ABORT | **exit 91** — "still holds an instance (1)" |
+| API unreadable (empty status) | ABORT | **exit 90** — "refusing to act on silence" |
+
+This is the same defect family as R2-3860's failed reconcile, which defaulted to
+*"assuming it still exists"* rather than treating an unanswerable question as a
+dead card. **A check that cannot distinguish "no" from "I could not ask" is not
+a check.** It would have moved cap out of a broker that was still spending.
+
+**Trigger:** fleet03 has ~121 frames left, ~12.7 h, finishing ~**08-12 06:00Z**.
+Its `COMPLETE` line is already matched by the lifecycle monitor. fleet05 does not
+pause until ~**08-12 19:40Z**, so there are ~13 h of slack between the two.
