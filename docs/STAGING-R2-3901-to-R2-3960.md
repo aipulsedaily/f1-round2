@@ -586,3 +586,84 @@ The corrected statement of the mechanism:
 
 Orphan set will reach `[192, 355, 697, 1398, 1517]` when fleet04 passes 1517.
 The pulse announces changes, so this needs no further watching.
+
+## R2-3910 — AN UNBUYABLE OFFER IS WALKING THE PRICE UP, AND fleet05 WILL HIT ITS CAP
+
+### Offer 46851284 is not a race. It is persistently unbuyable, and it is not blacklisted.
+
+I reported it at 17:17 as a lost race and said the listing was "evidently still
+live and the earlier 400 was a transient". **That was wrong, and the next
+re-rent disproved it twelve minutes later.**
+
+```
+state3  17:17:35  renting offer 46851284 (machine 53711) — $0.455/hr
+state3  17:17:35  offer 46851284 could not be created (HTTPError: 400) — trying the next
+state3  17:17:35  renting offer 36318699 (machine 46633) — $0.529/hr      <- +16%
+state5  17:29:06  renting offer 46851284 (machine 53711) — $0.455/hr
+state5  17:29:07  offer 46851284 could not be created (HTTPError: 400) — trying the next
+state5  17:29:07  renting offer 46285754 (machine 34481) — $0.668/hr      <- +47%
+```
+
+**Two brokers, twelve minutes apart, same offer, same 400.** If it were a race
+lost to another buyer the listing would have gone; instead it is still the
+cheapest qualifying offer and it 400s every time it is asked for.
+
+**And nothing blacklists it.** The broker blacklists an offer it *destroyed as
+unusable* — R2-3861's "the detail that makes the recovery terminate" — but a
+create that returns 400 never produces an instance to destroy, so that path is
+never reached. **The offer therefore stays at the top of the cheapest-first list
+and will be selected again on every future re-rent**, costing one rung up the
+price ladder each time. It has now cost two.
+
+This is the same shape of defect as R2-3907's per-broker blacklist: the recovery
+is correct, terminates, and does not learn.
+
+### The consequence: fleet05 will hit its own cap and pause
+
+| broker | cap | spent | remaining | work left | needs | verdict |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| fleet03 | $42.00 | $31.29 | $10.71 | 121 fr, 12.7 h @ $0.5502 | $6.97 | ok |
+| fleet04 | $63.49 | $36.60 | $26.89 | 348 fr, 31.4 h @ $0.4756 | $14.93 | ok |
+| fleet05 | $53.00 | $35.53 | **$17.47** | 306 fr, 31.3 h @ **$0.6680** | **$20.88** | **PAUSES** |
+
+**fleet05's budget lasts 26.2 h of the 31.3 h it needs — short by $3.40, about
+50 frames.** On current rates it would stop around **2026-08-12 ~19:40Z**.
+
+**This is a distribution problem, not an overrun, and it is exactly the case
+R2-3862 already solved once.** Its rule: *"The trigger to escalate is the FLEET
+total projecting past $150, not one broker hitting its own cap — the latter is a
+pause I can fix in one command without spending an extra cent. Do not silently
+raise the total."*
+
+The fleet total does **not** breach:
+
+```
+caps sum          $158.49   (unchanged, the R2-3862 invariant)
+fleet spent       $103.41
+still needs        $42.78
+PROJECTED TOTAL   $146.18  =  $137.69 of the $150 new-spend ceiling
+```
+
+**But the margin has narrowed from 17.5% to 8.2%** since R2-3906, and the entire
+difference is the price walk: fleet05 at $0.668/hr against the $0.455 it aimed
+at, and fleet03 at $0.5502. **Both premiums were bought by the same unbuyable
+offer.**
+
+**The fix is `rq budget --set`, moving cap from fleet03 to fleet05 with the total
+unchanged** — fleet03 finishes in ~12.7 h with **$3.74** of its $10.71 unspent,
+which is almost exactly fleet05's shortfall. **I have not done it.** Changing a
+broker's budget is an intervention on a broker I did not create, and the standing
+instruction is to verify rather than drive. It is also not urgent: the pause is
+~26 h away, it costs nothing to leave until fleet03 actually finishes, and doing
+it *after* fleet03 finishes is strictly better because the spare cap is then a
+measured number rather than a projection.
+
+**If it is never done, the failure mode is benign and recoverable**: fleet05
+pauses with ~50 frames unrendered, nothing is lost, and those frames are picked
+up by the pre-encode re-submission along with the orphans.
+
+### Orphans, cycle 5
+
+`f876` (fleet03) and `f2669` (fleet05) both FAILED on the transport path with
+their jobs continuing in place, so both orphan. Expected set once the cursors
+pass them: **[192, 355, 697, 876, 1398, 1517, 2669]**.
