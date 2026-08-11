@@ -416,3 +416,60 @@ net of the $8.49 of pre-existing banked spend is **$123.7 of the $150 new-spend
 ceiling — a 17.5% margin.** That is inside the brief's ~$122 projection and is
 **not** threatening $150. Retirement gaps do not bill, so remaining cycles move
 the wall clock without moving this number.
+
+## R2-3907 — THE BAD-HOST BLACKLIST IS PER-BROKER, AND THE FLEET PAID FOR THE SAME BROKEN MACHINE TWICE
+
+**Reportable event: a card was condemned.** It cost 4 min 50 s and ~$0.05, and
+the interesting part is not the bad host — it is *why the fleet bought it again*.
+
+```
+state4  04:54:26 (08-10)  renting offer 46307220 (machine 142281)
+state4  05:00:04          machine 142281 refuses our ssh key -> blacklisted for this session
+state4  05:00:14          offer 46307220 blacklisted -- "still the cheapest, the next rent
+                          would buy it straight back"
+state5  05:02:17 (08-11)  renting offer 46307220 (machine 142281)      <-- same offer
+state5  05:06:57          machine 142281 refuses our ssh key -> blacklisted for this session
+state5  05:07:07          offer 46307220 blacklisted for this session
+```
+
+R2-3861 praised the double blacklist — machine *and* offer — as "the detail that
+makes the recovery terminate", and it does. **But it terminates only for the
+broker that learned it.** The blacklist is session-scoped state inside one
+broker process, so fleet05 had no knowledge of fleet04's verdict from 24 hours
+earlier and bought the same box. **Every broker must rediscover every bad host
+independently**, and with three brokers the fleet can pay for the same broken
+machine up to three times.
+
+**The host has not been repaired in 24 hours**, which strengthens R2-3863 rather
+than contradicting it. fleet04's verdict on 08-10 and fleet05's on 08-11 are the
+same machine, the same offer, the same failure — `sshd` completes the handshake
+and denies publickey, so `authorized_keys` was never written. It is a durable
+property of machine 142281, not a transient.
+
+**The discriminating signal again arrived long before the timeout.**
+`Permission denied` was in the log at **05:03:44, 55 s after renting**; the
+verdict was not reached until **05:06:57**, on the 240 s `SshNeverReady` budget.
+R2-3863 already recorded that a ~30 s cut-off would reach the same verdict and
+save ~3.5 min per bad host. This is the fourth instance of that, and the
+argument is now worth ~14 min across the render. **Still not worth changing
+middleware under a live render** — recorded for whoever tunes this next.
+
+**Base rate: 4 bad hosts in 19 rentals, ~21%**, unchanged from R2-3863's 3 in 14.
+
+**Exposure that remains:** fleet03 has never drawn machine 142281 and its
+blacklist does not contain it. If it draws that offer on a future retirement it
+will pay the same ~5 min. There are 2-3 cycles left, so this is a small,
+bounded, known cost — not something to intervene over.
+
+### Cycle 4 in progress, all three cards, and the fleet has re-synchronised
+
+| broker | dropped | re-rented | note |
+| --- | --- | --- | --- |
+| fleet03 | 04:45:52 | 05:01:10 (predicted 05:00:52, **+18 s**) | took machine 131197, which fleet05 released 91 s earlier |
+| fleet05 | ~04:56 | 05:02:17 -> condemned -> re-renting | machine 142281 |
+| fleet04 | due ~05:16 | — | at 11.75 h |
+
+**Cycle 3's helpful stagger is gone**: all three cards now retire inside ~30
+minutes, so their 11 GB scene pushes will compete for the uplink again. Under
+R2-3864 that is the 35-70 min case. Report thresholds set at fleet03 05:55Z,
+fleet05 06:06Z, fleet04 06:26Z.
