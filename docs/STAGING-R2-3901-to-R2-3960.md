@@ -770,3 +770,77 @@ a check.** It would have moved cap out of a broker that was still spending.
 **Trigger:** fleet03 has ~121 frames left, ~12.7 h, finishing ~**08-12 06:00Z**.
 Its `COMPLETE` line is already matched by the lifecycle monitor. fleet05 does not
 pause until ~**08-12 19:40Z**, so there are ~13 h of slack between the two.
+
+## R2-3913 — CYCLE 5 BROKE THE 70-MINUTE BAR: fleet05 WAS DOWN 78 MINUTES
+
+**Reportable deviation.** Four cycles ran at 8-30 minutes; this one did not.
+
+```
+17:09:35  f2668 delivered, the last frame on the old card
+17:13:50  ConnectionDropped mid-f2669 — the retirement
+18:31:56  worker ready
+          ------------------------------------------------
+          78 min 06 s
+```
+
+Against R2-3864's 35-70 min budget and cycle 2's previous worst of 68.5 min.
+**Nothing was lost** — f2669 was recovered by the requeue (R2-3908's mechanism),
+and no frame is at risk.
+
+### It was not the rentals. It was the uplink, and it was worse than cycle 2.
+
+fleet05 needed three attempts (a 400 on offer 46851284, a condemnation of
+machine 34481), but those cost only **~6 minutes total**; it had a good card at
+**17:35:04**. The remaining **57 minutes were the deploy**:
+
+| stage | this cycle | normal | ratio |
+| --- | --- | --- | ---: |
+| blender bundle, 481 MB | **1262.0 s @ 0.38 MB/s** | ~11-50 s @ 14-45 MB/s | **~118x slower** |
+| scene, 10.96 GB | **2054.5 s @ 5.3 MB/s** | 112-665 s @ 16-98 MB/s | ~10x slower |
+| **deploy total** | **3359.7 s** | 164-830 s | |
+
+**0.38 MB/s on the bundle is not contention as previously characterised — it is
+near-collapse.** Cycle 2's bad case was 0.92 MB/s on the same transfer; this is
+2.4x worse again.
+
+### The cause is a new one: a condemnation storm overlapping a deploy
+
+R2-3864 explained the 7:1 split as **two** scene pushes competing. This cycle had
+something the earlier analysis never saw: **fleet04 made four rental attempts
+between 17:48 and 18:07**, each of which opens SSH and starts pushing a 481 MB
+bundle before the host's refusal is established, *while fleet05 was pushing.*
+fleet04 then began its own 10.96 GB scene push at **18:28:46**, still concurrent.
+
+So the uplink was serving fleet05's bundle, fleet05's scene, and a stream of
+fleet04 bundle attempts — **and every fleet04 attempt that ends in a
+condemnation still consumed uplink first.** The cost of a bad host is therefore
+not just its own ~5 minutes; **it is also the bandwidth it steals from whichever
+card is legitimately deploying at the time.** That is a coupling between the two
+failure modes that neither R2-3863 nor R2-3864 anticipated.
+
+### Why this is still not worth intervening in
+
+- **No frames lost, no cost.** Nothing bills while no instance exists, and the
+  frames were recovered by the requeue. The whole event is wall clock.
+- **The mitigation R2-3864 names — stagger the re-rents — is not available to
+  me.** It would mean interfering with a live recovery path, on brokers I did
+  not create, to save wall clock on a render with budget headroom.
+- **The fleet re-staggers itself.** Each re-rent resets that card's 12 h clock,
+  so the cards drift apart again on their own; cycle 3 cost 23 minutes precisely
+  because they had drifted 21 minutes apart.
+
+**Recorded, not acted on.** Budget the next cycles at **35-80 min**, and expect
+the upper end whenever a condemnation storm overlaps a deploy.
+
+### Cycle 5, the most eventful of the render
+
+| broker | down | attempts | notes |
+| --- | ---: | ---: | --- |
+| fleet03 | 21 m 00 s | 2 | offer 46851284 400'd; landed $0.5502 |
+| fleet05 | **78 m 06 s** | 3 | 400 + machine 34481 condemned; deploy 3359.7 s |
+| fleet04 | in progress | 4 | 400 + machines 34481 and 31233 condemned; landed $0.455 |
+
+**Three separate hosts condemned in one cycle** (34481 twice, 31233 once),
+against three in the whole render before it. **Base rate 6 bad in ~24 rentals,
+~25%** — consistent with the 21% at R2-3863, so the market has not degraded; this
+cycle simply drew more rentals because each condemnation forces another.
