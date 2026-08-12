@@ -1116,3 +1116,51 @@ Moving cap now would be arithmetic on a number still in motion.
 **There is no urgency in the 8-minute wait:** fleet05 holds 15.5 h of budget at
 its current rate against 14.2 h of work, so it cannot pause before the gate
 opens. The rebalance will be re-run after ~06:05 on settled figures.
+
+## R2-3920 — CORRECTION: THE IDLE CARD IS DESTROYED AT 09:08Z, NOT 06:05Z
+
+I said fleet03's stopped card would be destroyed "at ~06:05" and that the
+rebalance gate would open then. **Wrong, and the correct figure was in a log line
+I had already fetched.**
+
+```
+05:08:18  idle 300s — stopping instance (disk kept)
+05:08:19  instance 47482165 stopped after 710.7 min running (~$6.271 gpu).
+          disk keeps billing ~$0.037/hr; destroying in 240 min
+```
+
+**240 minutes, so 09:08Z.** I read `HIBERNATE_SEC = _env("HIBERNATE", 3600)` out
+of `config.py` and quoted the *default* without checking whether it was
+overridden. It is:
+
+```
+/proc/2998103/environ:  VASTRENDER_HIBERNATE=14400
+```
+
+**Fourth instance of stating a mechanism ahead of the measurement**, and the
+cheapest one to have avoided: the broker prints the actual number, in plain
+English, in the same line that announced the stop.
+
+**What was right:** `IDLE_GRACE_SEC = 300` predicted the stop exactly — COMPLETE
+at 05:03:18, stopped at 05:08:18, five minutes to the second. **GPU billing
+ended there**, which is the part that matters for cost. The card now costs
+**$0.037/hr of disk**, so the whole 4-hour hibernation is **~$0.15**.
+
+### Consequence for the rebalance
+
+The gate stays shut until **09:08Z**, because fleet03's **$6.77 of `live` spend
+does not bank until the instance is destroyed**. Acting before then would move
+cap computed against an unsettled figure — exactly what the gate exists to
+prevent, and it is refusing correctly for the second reason in a row.
+
+**No urgency, verified rather than assumed:**
+
+| broker | cap remaining | work left | needs | headroom |
+| --- | ---: | --- | ---: | ---: |
+| fleet04 | $20.53 | 221 fr, 20.2 h @ $0.4756 | **$9.6** | $10.9 |
+| fleet05 | $11.00 | 170 fr, 13.2 h @ $0.5289 | **$7.0** | $4.0 |
+
+**Neither broker can exhaust its cap before 09:08Z**, or indeed at all on
+current rates. fleet03's spare is $4.06 and will still be spare at 09:08.
+
+Finish projections: **fleet05 ~08-12 19:50Z**, **fleet04 ~08-13 02:50Z**.
