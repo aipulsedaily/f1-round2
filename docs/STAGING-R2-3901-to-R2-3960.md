@@ -1378,3 +1378,54 @@ reason it was written.
 sequence directory forces exactly that frame to be re-rendered on the next
 submission. That is the sanctioned way to fix one bad frame — not editing the
 database.
+
+## R2-3924 — TWO CORRECTIONS TO R2-3918, BOTH FROM ITS OWN CLAIMS BREAKING
+
+R2-3918 made two statements about the condemnation pattern. **The durability
+finding survives. The pattern claim does not.**
+
+### 1. "fleet05 has never independently discovered a bad host" — falsified
+
+Machine **58073** was condemned by fleet05 at 18:22:57. It appears **nowhere** in
+fleet03's or fleet04's logs — `grep -c` returns 0 in both. It is a bad host
+fleet05 found first.
+
+The claim was true across the three samples I had and I stated it more firmly
+than three samples support. **The fourth broke it.**
+
+### 2. "fleet05 rediscovers fleet04's verdicts" — the direction was an artefact
+
+At 18:34:32 **fleet04 rented machine 58073**, which fleet05 had condemned
+**twelve minutes earlier**, and condemned it at 18:39:10 — 4 m 38 s later.
+
+```
+18:22:57  fleet05  machine 58073 blacklisted for this session
+18:34:32  fleet04  renting offer 38769886 (machine 58073)
+18:39:10  fleet04  machine 58073 blacklisted for this session
+```
+
+**The gap is symmetric.** It was never a property of fleet05; fleet04 simply
+happened to hit the bad hosts first for the first six cycles, because each of its
+condemnations forced another rental and gave it more draws. Stated correctly:
+
+> **No broker can see any other broker's condemnations, in either direction.**
+
+Twelve minutes is also far inside the 6 h TTL, so **scoping alone is sufficient
+to cause the repeat here** — no expiry is involved. That is the cleanest
+demonstration of the per-broker defect in the whole render, and it is
+independent of the TTL argument.
+
+### What still stands, unchanged
+
+**The durability evidence**, which is what the #169 case actually rests on:
+machine 8512 refused the key across **61 h 19 min**, machine 142281 across
+**24 h**, against `BLACKLIST_TTL_SEC = 6 * 3600`. Nothing observed in this render
+has ever looked like a host having a bad hour.
+
+**Running tally: 10 condemnations across ~35 rentals (~29%)** — 4 rediscoveries,
+6 first encounters. The rate is consistent with the 21-25% recorded earlier; the
+count is high this cycle only because each condemnation forces another rental.
+
+**No cost consequence.** fleet05 held $4.78 against 28 frames and fleet04 ~$20
+against ~14 h; both absorb several rungs. fleet05's job requeued on the deploy
+failure, so no frame was orphaned.
