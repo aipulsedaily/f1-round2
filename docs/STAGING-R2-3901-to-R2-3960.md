@@ -1227,3 +1227,96 @@ achievable fleet spend *lower*, which is the safer direction and costs nothing.
 | credit | $60.45 = 60.2 h runway against ~20 h of work |
 | orphans | **[1766]** — fleet04's cycle-6 frame, deferred not lost |
 | projected total | ~$119 of the $150 ceiling |
+
+## R2-3922 — THE ENDGAME, WRITTEN OUT BEFORE IT IS NEEDED
+
+Scope confirmed by the coordinator: **stop at a verified frame set.** No encode,
+no mux, nothing written to `watch/`, and the R2-3181 "do not judge the ending"
+banner **stays exactly where it is** until the client has seen the film.
+
+Projections at 13:40Z: **fleet05 finishes ~19:55Z today, fleet04 ~08-13 03:49Z.**
+fleet04 is the long pole; the fleet is done when it is.
+
+### Step 1 — re-submit `master4k`, with the ORIGINAL parameters
+
+The resume key is `--name`. **Every other flag must match the original
+submission**, because `submit` re-derives the render settings rather than
+inheriting them from the delivered frames — a different `--samples` or `--cam`
+would silently render mismatched frames into the same directory. The original,
+from R2-3846:
+
+```
+fleetctl submit -n 3 --scene render/film25_breach.blend \
+    --frames 1-2978 --name master4k \
+    --res 3840 2160 --samples 512 --cam ONER -- --prio 1
+```
+
+Unstated fields are defaults that were **checked** at submission time and must
+stay unstated: `--engine CYCLES` (the blend's own saved engine is
+`BLENDER_EEVEE`, so passing nothing is correct and passing the blend's value
+would be a catastrophe), `--denoiser OPENIMAGEDENOISE`, `--dof scene` (the
+blend's animated DOF — overriding this is how round 1 lost a render),
+`--adaptive-threshold 0.01`, and **no `--exposure`** (the -3.628 is authored in
+the blend).
+
+**The test set at R2-3902 fires here.** Before submitting, run
+
+```
+python3 tools/r23901_orphan_ledger.py
+```
+
+and compare its `PREDICTED 'to render'` against the broker's own
+`N frame(s) requested, M already delivered, K to render`. **K must equal the
+prediction.** K > predicted means something other than retirement is dropping
+frames — **stop, do not encode, escalate.** K < predicted means the ledger is
+wrong and the coverage claim is unfounded — **stop.**
+
+**Open question to settle at the time, not now:** if the prediction is **0**,
+a `-n 3` submit may still rent three cards to render nothing. Check whether
+`submit` computes its plan before renting; if it does not, prefer a narrower
+`-n` or rely on `fleetctl verify` alone. **Renting three 5090s to confirm an
+empty todo list would be a self-inflicted cost.**
+
+### Step 2 — the three frame checks
+
+```
+# checks 1 and 2: coverage, and re-hash against the brokers' own records
+fleetctl verify --manifest state/fleet/master4k.json --json work/r23901/hashes.json
+
+# check 3: decode and geometry — the one fleetctl structurally cannot do
+/home/zany/f1-round2/.venv/bin/python tools/r23841_verify_frames.py \
+    --dir /home/zany/vast-render/out3/seq/master4k \
+    --dir /home/zany/vast-render/out4/seq/master4k \
+    --dir /home/zany/vast-render/out5/seq/master4k \
+    --first 1 --last 2978 --res 3840 2160 \
+    --json work/r23901/decode.json
+```
+
+**The interpreter is pinned (R2-3905):** `python3` has no PIL, and
+`~/vast-render/.venv` has no numpy. Only `f1-round2/.venv` has both.
+**Runtime ~9 minutes** for all 2,978 frames, so decode everything; do not sample.
+`outside range` must be **0** with all three directories and the full range.
+
+### Step 3 — teardown, proved against the API
+
+```
+fleetctl down
+/home/zany/vast-render/.venv/bin/python -m vastctl.vastctl status
+```
+
+**`vastctl` is a package, not a script** — `./vastctl` is a directory and fails;
+it must be run as a module **with cwd `~/vast-render`**, or the import dies to
+stderr and an empty answer reads as "nothing rented". That exact failure mode
+put a fail-open gate into the rebalance script at R2-3912. **The account must
+show zero instances**, read from vast.ai, not from a local state file.
+
+### What must be true before this is called done
+
+| | |
+| --- | --- |
+| coverage | 2,978 of 2,978 against the range 1-2978, `duplicated 0`, `outside range 0` |
+| hashes | every frame agrees with the sha256 the broker recorded **at fetch** |
+| decode | 2,978 decoded, `3840x2160`, 0 failed, 0 flat, 0 black |
+| orphans | ledger reports **none** |
+| teardown | vast.ai API reports **0 instances** |
+| untouched | `watch/` unchanged, banner in place, `DEFECT-LOG-R2.md` unedited |
