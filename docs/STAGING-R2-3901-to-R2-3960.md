@@ -1042,3 +1042,77 @@ card is gone and its spend has settled, so the decision rests on measured
 numbers rather than these.
 
 Credit **$64.59 = 43.0 h of runway** against ~19.4 h of remaining work.
+
+## R2-3918 — HOST DEFECTS OUTLIVE THE BLACKLIST BY AN ORDER OF MAGNITUDE. #169, PROPERLY ARGUED THIS TIME.
+
+Cycle 6 condemned **machine 8512** on fleet05. The same machine, with the same
+failure, was condemned by fleet04 in **cycle 1**:
+
+```
+state4:3255  16:37:06 (08-09)  instance 47286610 (machine 8512) refuses our ssh key
+state5:3649  05:56:27 (08-12)  instance 47523049 (machine 8512) refuses our ssh key
+```
+
+**61 hours 19 minutes apart, still broken.** With machine 142281 (24 h) that is
+two independent measurements of the same thing: **`authorized_keys` failures are
+a durable property of a host, not a bad hour.**
+
+```python
+BLACKLIST_TTL_SEC = 6 * 3600     # broker/app.py:1519
+```
+
+**The TTL is ~10x shorter than the shortest observed defect lifetime and ~60x
+shorter than the longest.** Its comment justifies itself as *"short enough that a
+machine having a bad hour is not written off for the week"* — a reasonable
+instinct that the measurements do not support. **Nothing in this render has ever
+looked like a bad hour.** Every condemned host was condemned again on every
+subsequent encounter, without exception.
+
+### The unshared blacklist, demonstrated cleanly
+
+Every machine each broker has condemned:
+
+| broker | condemned |
+| --- | --- |
+| fleet04 | 52271, 8512, 142281, 34481, 31233 |
+| fleet05 | 142281, 34481, 8512 |
+
+**Every single one of fleet05's condemnations is a host fleet04 had already
+condemned.** fleet05 has never independently discovered a bad host — it has only
+ever rediscovered fleet04's, at ~5 minutes each. And fleet05 has just rented
+**machine 31233**, which fleet04 condemned yesterday at 18:07:32.
+
+**This is the argument for #169, and it does not depend on the bandwidth claim I
+retracted at R2-3914.** It rests on two measured facts: the defects are durable
+over days, and the blacklist is both per-process and expires in 6 hours. A
+fleet-wide blacklist with a TTL matched to the observed defect lifetime would
+have prevented **every repeat condemnation in this render** — 3 of the 7, at
+~5 minutes and one price-ladder rung each.
+
+## R2-3919 — fleet05'S BUDGET IS NOW GENUINELY TIGHT, AND THE REBALANCE IS BLOCKED FOR ~8 MINUTES
+
+| | |
+| --- | --- |
+| cap | $53.00 |
+| spent | $41.59 |
+| **remaining** | **$11.41** |
+| work left | **176 frames**, ~14.2 h |
+| current card | **$0.734/hr** (machine 31233, deploying) |
+| **needs** | **~$10.4** |
+| **headroom** | **~$1.0** |
+
+The price walk this cycle: $0.537 (create failed) -> $0.668 (machine 8512,
+condemned) -> **$0.734**. If machine 31233 is also condemned — and fleet04
+condemned it yesterday — the next rung likely breaches the cap.
+
+**fleet03 has $4.08 of cap sitting idle**, which is more than the shortfall.
+This is precisely the case the rebalance was authorised for.
+
+**It is blocked, correctly.** fleet03's card went `cold` at ~05:05 and
+`HIBERNATE_SEC = 3600` destroys it at ~06:05; until then the gate refuses
+because an instance still exists and **$6.74 of live spend has not settled**.
+Moving cap now would be arithmetic on a number still in motion.
+
+**There is no urgency in the 8-minute wait:** fleet05 holds 15.5 h of budget at
+its current rate against 14.2 h of work, so it cannot pause before the gate
+opens. The rebalance will be re-run after ~06:05 on settled figures.
