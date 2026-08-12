@@ -934,3 +934,111 @@ one cycle; base rate **6 bad hosts in ~24 rentals, ~25%**, consistent with the
 **All three jobs requeued except fleet03's**, so the orphan set stands at
 **[192, 355, 697, 876]** — all four fleet03's, the only broker whose job has
 never been recomputed from disk.
+
+## R2-3916 — fleet03 FINISHED ITS BLOCK AND SWEPT ITS OWN ORPHANS. THE ORPHAN COUNT IS ZERO.
+
+**This corrects the central claim of R2-3901 through R2-3915, in the direction of
+the system being better than I described it.**
+
+```
+04:45:18  sequence master4k frame 993 done (989/993)
+04:45:18  job d3b1b8bde2f4 requeued WITHOUT spending an attempt — this pass
+          delivered 989 frame(s) before it stopped, so it made progress
+04:45:19  sequence master4k job d3b1b8bde2f4: 993 requested, 989 already
+          delivered, 4 to render
+04:49:40  frame 192 done (1/4)
+04:53:33  frame 355 done (2/4)
+04:56:55  frame 697 done (3/4)
+05:03:18  frame 876 done (4/4)
+05:03:18  job d3b1b8bde2f4 COMPLETE — 4 frame(s) in 18.0 min, all verified
+```
+
+**Those four frames are exactly fleet03's four orphans**, and all four are now on
+disk. The ledger reads:
+
+```
+ORPHANED: none          count = 0
+PREDICTED 'to render' ON RE-SUBMISSION = 417   = 0 orphaned + 417 not yet rendered
+```
+
+### What I had wrong
+
+I reported, repeatedly and to the coordinator, that
+
+> *"A retirement orphans its in-flight frame unless something later forces that
+> broker's job to requeue. A deploy failure forces it; a transport failure does
+> not."*
+
+The first sentence is right. **The second is incomplete: reaching the end of the
+pass also forces it.** When `run_sequence` exhausts its todo having delivered
+fewer frames than were requested, it requeues *without spending an attempt* and
+recomputes the plan from disk — which finds precisely the frames that were
+skipped. **The orphans were never permanent. They were deferred to the end of the
+block.**
+
+R2-3861's *"the master will finish with 2 frames missing unless something
+re-renders them"* was therefore pessimistic, and every ledger reading since has
+been measuring **work deferred**, not **work lost**. The distinction matters
+because it is the difference between a defect and a schedule.
+
+**Why I did not see it sooner, stated plainly:** no broker had ever finished a
+block before. The behaviour is only observable at the end of a pass, and until
+05:03Z today no pass had ended. The ledger was right about every frame it
+listed; my interpretation of what the listing *meant* outran the evidence — the
+same error as R2-3910 and R2-3914, for the third and I hope last time.
+
+### The falsifiable form, stated before the evidence exists
+
+**fleet04 and fleet05 will each do the same when their blocks end**, and the
+pre-encode re-submission will find **0 frames to render, not 4-10.**
+
+- **Re-submission reports 0 to render** — the model above is confirmed and
+  coverage is proven by `fleetctl verify --manifest` alone.
+- **Re-submission reports N > 0** — the sweep is not universal, those N frames
+  are the real orphans, and they get rendered. Nothing is lost either way.
+
+**The re-submission stays mandatory regardless.** Its value was never that it
+rescues frames; it is that it is the only check that compares the film against
+the range 1-2978 rather than against a job's own todo list. A `COMPLETE` line
+that reads *"4 frame(s), all verified"* is true and tells you nothing about
+coverage — which is exactly the trap this whole exercise was built to avoid.
+
+### fleet03 is done: 993 of 993
+
+Its block is complete, its four casualties recovered, and it holds the only
+finished third of the film.
+
+## R2-3917 — THE REBALANCE GATE FIRED CORRECTLY, AND THERE IS LIKELY NOTHING TO MOVE
+
+Run at 05:04Z, 46 seconds after fleet03's `COMPLETE`:
+
+```
+>>>> ABORT: fleet03 still holds an instance on vast.ai (1). Spare is
+     a projection until its card is gone. Waiting is free; this is not.
+exit=91
+```
+
+**Correct.** `IDLE_GRACE_SEC` is 300 s, so the card is still rented and still
+billing for up to five minutes after the last frame. Acting now would have
+computed spare against a number still moving — and fleet03's `live` spend was
+**$6.67** at that moment, unsettled.
+
+**And the spare is much smaller than I projected.** fleet03 has spent **$37.85
+of its $42.00 cap — $4.15 remaining**, against the ~$10.49 I estimated at 17:53Z
+yesterday. The difference is the $0.5502/hr card it drew in cycle 5 after losing
+the 400-race, run for a full 12 hours.
+
+Whether anything needs moving:
+
+| broker | cap remaining | work left | needs @ current rate |
+| --- | ---: | --- | ---: |
+| fleet04 | ~$26.8 banked-basis | 233 fr, ~19.4 h | ~$9.2 |
+| fleet05 | **$11.76** | 184 fr, ~14.8 h | **~$7.0** |
+
+**Neither is short.** On these numbers the rebalance script will reach
+`nothing to move` and exit 0 without touching a cap, which is the right outcome
+and the one it was written to be able to reach. It will be re-run once fleet03's
+card is gone and its spend has settled, so the decision rests on measured
+numbers rather than these.
+
+Credit **$64.59 = 43.0 h of runway** against ~19.4 h of remaining work.
