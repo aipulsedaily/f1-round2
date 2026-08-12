@@ -1320,3 +1320,61 @@ show zero instances**, read from vast.ai, not from a local state file.
 | orphans | ledger reports **none** |
 | teardown | vast.ai API reports **0 instances** |
 | untouched | `watch/` unchanged, banner in place, `DEFECT-LOG-R2.md` unedited |
+
+## R2-3923 — THREE THINGS ABOUT THE RE-SUBMISSION, READ OUT OF THE CODE RATHER THAN ASSUMED
+
+### 1. An empty todo rents nothing. The `-n 3` worry at R2-3922 was unfounded.
+
+`broker/app.py:1224`:
+
+```python
+if not plan.todo:
+    self.db.finish(job_id, str(directory), 0.0)
+    log.info("sequence %s job %s: nothing to do, all %d frame(s) already "
+             "delivered and verified", name, job_id, len(frames))
+    return
+```
+
+**The plan is computed from disk before anything is rented** — confirmed against
+the launch log, where the plan line at `04:06:31` precedes `renting offer` in the
+same second — and an empty todo returns **before** the rental. So re-submitting
+with the original `-n 3` costs **nothing** if every frame is present. Use the
+original command unchanged.
+
+### 2. The resume re-checks FILES, not just rows — but not their hashes
+
+`broker/seq.py:plan_range`, whose docstring is explicit: *"A row says a frame was
+delivered; only the file says it still is."* Every planning pass re-checks size
+and geometry against the recorded values and routes a failure to `plan.stale`,
+which is **added to `todo` and re-rendered**.
+
+**But the sha256 is only compared when `deep=True`**, and the resume path does
+not pass it:
+
+```python
+ok, _ = verify_frame(path, row.get("bytes"), wh,
+                     row.get("sha256") if deep else None, ...)
+```
+
+So the re-submission catches a **missing or truncated** frame and will not catch
+a frame whose content changed at constant size. **It is not a substitute for
+`fleetctl verify --manifest`**, which is the pass that compares against the
+sha256 the broker recorded at fetch. Both are still required.
+
+### 3. A wrong parameter cannot silently contaminate the film
+
+The worry at R2-3922 was that a mistyped `--samples` would render mismatched
+frames into the same directory. It cannot: `plan_range` compares each delivered
+frame's `spec_hash` against the submission's and routes a mismatch to
+**`plan.conflict`**, which is neither rendered nor counted as delivered.
+
+The failure is therefore **loud rather than silent** — a wrong spec reports
+`0 already delivered, 0 to render` on a range known to be nearly complete, which
+is exactly the shape the R2-3902 ledger comparison is built to catch. **The
+ledger test covers parameter error as well as frame loss**, which was not the
+reason it was written.
+
+**Also recorded, because it is the supported repair:** deleting a frame from the
+sequence directory forces exactly that frame to be re-rendered on the next
+submission. That is the sanctioned way to fix one bad frame — not editing the
+database.
