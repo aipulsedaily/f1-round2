@@ -1507,3 +1507,78 @@ because a job has failed and the reason it failed is understood.
 
 **Do not `rq resume`.** That clears a *pause*; this is a failed job with
 attempts exhausted, and resume is not the mechanism for it.
+
+## R2-3926 — THE RE-SUBMISSION TEST PASSED: PREDICTED 101, RENDERED 101
+
+fleet05's block completed at 20:50:15 (992/992 on disk, queue depth 0, verified
+by two independent checks). The ledger was then re-run and its prediction
+**recorded before submitting**, to `work/r23901/orphan_ledger.json`:
+
+```
+frames on disk           2877 / 2978
+ORPHANED: none
+PREDICTED 'to render' ON RE-SUBMISSION = 101
+At re-submission the broker's own plan line must read
+    2978 frame(s) requested, 2877 already delivered, 101 to render
+```
+
+**The stale figure was caught before it was used.** 127 was the number an hour
+earlier; it counted fleet05's 26 in-flight frames as outstanding. Quoting it at
+submission time would have been the same stale-constant error caught in the
+rebalance script at R2-3921 — a forecast used after the thing it forecast had
+happened.
+
+### The submission, and the result
+
+Run unchanged from R2-3922, from `/home/zany/f1-round2` so `--scene` resolves,
+scene sha16 re-checked as **`1d2aa2d86533574e`** first:
+
+```
+fleetctl submit -n 3 --scene render/film25_breach.blend \
+    --frames 1-2978 --name master4k \
+    --res 3840 2160 --samples 512 --cam ONER -- --prio 1
+```
+
+```
+20:52:21  job 4f21900326c2: 993 requested, 993 already delivered,   0 to render
+          -> nothing to do, all 993 frame(s) already delivered and verified
+20:52:22  job ec021c80c468: 993 requested, 892 already delivered, 101 to render
+20:52:23  job d0a9318c35f9: 992 requested, 992 already delivered,   0 to render
+          -> nothing to do, all 992 frame(s) already delivered and verified
+```
+
+| | predicted | actual |
+| --- | ---: | ---: |
+| already delivered | 2,877 | **993 + 892 + 992 = 2,877** |
+| **to render** | **101** | **101** |
+
+**Exact, in both columns.** The model built over five days — that a retirement's
+in-flight frame is deferred rather than lost, and swept by the next requeue —
+predicted the recovery set to the frame.
+
+### Three things the submission confirmed as side effects
+
+**1. An empty todo rents nothing (R2-3923).** fleet03 and fleet05 logged
+`nothing to do` and **rented no card**. Only fleet04 rented — offer 47033336,
+machine 36179, **$0.441/hr**, the cheapest card of the whole render. The `-n 3`
+cost worry raised at R2-3922 was correctly dismissed.
+
+**2. The parameters were reproduced exactly.** Every block carries spec
+**`3cf8d9c4de51280f`** and **no frame was routed to `plan.conflict`** — 993 + 892
++ 992 accounts for every delivered frame as *delivered*, not quarantined. A
+mistyped `--samples` or `--cam` would have shown as `0 already delivered`.
+
+**3. The missing frames are `1766` and `1887-1986`** — one orphan-shaped
+singleton and one 100-frame contiguous tail, all inside fleet04's block, which is
+why only one card was needed.
+
+### One consequence worth surfacing rather than absorbing
+
+**All 101 frames fall in a single block, so the submission uses ONE card**, not
+two. At ~330 s/frame that is **~9.3 h** (ETA ~08-13 06:10Z) against ~4.6 h on
+two. A second card would require cancelling and re-submitting fleet04's
+*new* job with a disjoint split; handing a chunk to another broker without that
+would have both render the same frames, which is the race R2-3859 forbids.
+
+**Not done unilaterally.** fleet04 is already rendering, so nothing is lost by
+asking, and the brief states there is no time pressure.
