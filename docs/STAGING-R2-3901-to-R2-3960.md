@@ -1429,3 +1429,81 @@ count is high this cycle only because each condemnation forces another rental.
 **No cost consequence.** fleet05 held $4.78 against 28 frames and fleet04 ~$20
 against ~14 h; both absorb several rungs. fleet05's job requeued on the deploy
 failure, so no frame was orphaned.
+
+## R2-3925 — STOP: fleet04'S JOB HAS FAILED AND THE BROKER IS IDLE WITH ~101 FRAMES UNRENDERED
+
+**This is the first thing in this render that has actually failed rather than
+recovered, and it is escalated rather than worked around.**
+
+```
+18:39:22 ERROR broker  job 467247848cc6 failed: RuntimeError: sequence master4k
+                       stopped at frame 1766 after 0 frame(s) this pass:
+                       FleetUnavailable: no worker available ...
+                       deploy failed on freshly rented instance None (0/3 rounds)
+
+rq status (fleet04):  queue {'canceled': 3, 'done': 2, 'failed': 1}  depth=0
+                      gpu down  instance=None
+```
+
+**`failed`, not `requeued`. Queue depth 0. No activity since.** fleet04 is idle
+and will not resume on its own.
+
+### Why it failed here and requeued five times before
+
+The accounting is in the log lines themselves, and it is not arbitrary:
+
+| when | frames this pass | outcome |
+| --- | ---: | --- |
+| 16:37:22 (08-09) | **0** | requeued, **attempt spent** |
+| 05:00:20 (08-10) | 138 | requeued WITHOUT spending an attempt |
+| 17:53:22 (08-11) | 368 | requeued WITHOUT spending an attempt |
+| 18:07:48 (08-11) | **0** | requeued, **attempt spent** |
+| 18:30:01 (08-12) | 247 | requeued WITHOUT spending an attempt |
+| **18:39:22 (08-12)** | **0** | **FAILED — attempts exhausted** |
+
+**A pass that delivers at least one frame requeues for free; a pass that
+delivers none spends an attempt.** That is a sound policy — it distinguishes
+"slow progress" from "cannot start" — and fleet04 hit its third zero-progress
+pass. All three zero-progress passes were the same cause: a retirement
+immediately followed by a **condemned host**, so the replacement never deployed
+and the pass ended having rendered nothing.
+
+**This cycle it drew machine 58073, which fleet05 had condemned 12 minutes
+earlier** (R2-3924). Had the blacklist been shared, fleet04 would have skipped
+that offer, deployed on its next choice, and the pass would not have been a
+zero. **#169 has now cost a job, not just a price rung.**
+
+### What is and is not at risk
+
+**Nothing is lost.** Every delivered frame is on disk and verified. The state:
+
+```
+frames on disk           2851 / 2978
+fleet03  complete (993/993)
+fleet04  IDLE — job failed, ~101 frames of its block unrendered
+fleet05  healthy — gpu ready, rendering, 26 frames left, finishes ~20:40Z
+ORPHANED: none
+PREDICTED 'to render' ON RE-SUBMISSION = 127
+```
+
+**The 127 outstanding frames are exactly what the planned endgame re-submission
+renders**, and the ledger's prediction already covers them. fleet04 holds ~$20
+of unspent cap and the fleet is at ~$119 of the $150 ceiling, so there is budget.
+
+### What I have NOT done, and why
+
+I have **not** resubmitted, resumed, or cancelled anything. The standing
+instruction is to stop and report rather than work around a failure, and this is
+a failure. The obvious remedy — the `fleetctl submit` re-submission already
+written out at R2-3922 — is also **step 1 of the authorised endgame**, so the
+fix and the plan coincide; but restarting work on a job that has failed is a
+decision to be taken deliberately, not absorbed into a routine step.
+
+**Recommendation, for the coordinator to accept or reject:** let fleet05 finish
+its remaining 26 frames (~2 h, ~20:40Z), then run the R2-3922 re-submission
+unchanged. It will find **127 frames to render**, which must equal the ledger's
+prediction — and that comparison is now a live test rather than a formality,
+because a job has failed and the reason it failed is understood.
+
+**Do not `rq resume`.** That clears a *pause*; this is a failed job with
+attempts exhausted, and resume is not the mechanism for it.
