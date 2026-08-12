@@ -1164,3 +1164,66 @@ prevent, and it is refusing correctly for the second reason in a row.
 current rates. fleet03's spare is $4.06 and will still be spare at 09:08.
 
 Finish projections: **fleet05 ~08-12 19:50Z**, **fleet04 ~08-13 02:50Z**.
+
+## R2-3921 — THE REBALANCE RAN, MEASURED THE NEED, AND CORRECTLY DECLINED TO ACT
+
+fleet03's card was destroyed at ~09:08Z as its own log said it would be. Its
+spend settled — **`live $0.0000`, banked $38.03** — and both gates opened for the
+first time.
+
+**And the first thing the dry run produced was a proposal I refused to apply.**
+
+```
+fleet03 spare = $2.97
+fleet05 shortfall at worst case = $14.36
+MOVE = $2.97
+```
+
+That `$14.36` came from a **hardcoded constant** — `(spent + 24.00) - cap` —
+which I wrote when fleet05 had **306 frames** left. It had 138. The number was
+stale within hours and the script was about to move real cap on the strength of
+it. **A gate that checks the world but computes on a constant is only half a
+gate**, which is the same lesson as the fail-open cwd bug at R2-3912, arriving
+from the other direction.
+
+Replaced with a measurement: frames still on fleet05's todo, at the mean of its
+last 10 delivered frames, priced at **the dearest card this render has ever
+actually rented ($0.734/hr)**, times a 1.20 margin. It also aborts (exit 97)
+rather than guessing if it cannot read those numbers.
+
+```
+fleet03 spare (cap - spent - $1.00 reserve) = $2.97   [dead money: its block is done]
+fleet05 work left = 138 frames x 278.2s @ $0.734/hr worst-case x1.20 = $9.39
+fleet05 cap available now                        = $9.63
+fleet05 shortfall                                = $0.00
+MOVE                                             = $0.00
+>>>> nothing to move. Doing nothing is the correct outcome.
+```
+
+**No cap was moved. The three caps still read $42.00 / $63.49 / $53.00, summing
+to $158.49**, the R2-3862 invariant, untouched since it was set.
+
+### Why doing nothing is right, and where the residual risk sits
+
+fleet05 covers its remaining work **even at the worst rate this render has ever
+paid, with a fifth on top** — $9.63 available against $9.39. At its actual
+current rate ($0.5289/hr) the need is ~$6.8 and the headroom ~$2.8.
+
+The one thing to keep in view: **fleet05 retires once more at ~18:06Z**, with
+roughly 2 hours of work left afterwards. Even a bad price walk at that point
+costs ~$1.5 against several dollars of remaining cap. **The exposure is small
+and shrinking**, and the script stays ready if it changes.
+
+**fleet03's $2.97 is dead money and stays dead** — its block is complete, its
+card destroyed, and it will never rent again. Leaving it in place keeps the
+achievable fleet spend *lower*, which is the safer direction and costs nothing.
+
+### Fleet position
+
+| | |
+| --- | --- |
+| frames | **2,641 / 2,978 (88.7%)** |
+| cards | 2, $1.0044/hr |
+| credit | $60.45 = 60.2 h runway against ~20 h of work |
+| orphans | **[1766]** — fleet04's cycle-6 frame, deferred not lost |
+| projected total | ~$119 of the $150 ceiling |
