@@ -1582,3 +1582,114 @@ would have both render the same frames, which is the race R2-3859 forbids.
 
 **Not done unilaterally.** fleet04 is already rendering, so nothing is lost by
 asking, and the brief states there is no time pressure.
+
+## R2-3927 — THE FILM IS COMPLETE AND VERIFIED. ONE FAIL, AND IT IS A RECORD, NOT A PIXEL.
+
+**2,978 of 2,978 frames on disk at 05:45:19Z on 2026-08-13.** fleet04's block
+closed 993/993 with queue depth 0 and no `.part` files in flight, verified on the
+block rather than on a `COMPLETE` line.
+
+### Pass 1 and 2 — `fleetctl verify --manifest`: everything clean except one column
+
+```
+present    2978      missing 0      duplicated 0      outside the requested range 0
+  broker 3   1-993     993/993
+  broker 4   994-1986  993/993
+  broker 5   1987-2978 992/992
+distinct sha256 across all delivered frames: 2978 of 2978
+sha256 agrees with the broker's own frames table: 2978/2978
+blank gate: 2978 OK, 0 not-OK, 0 unmeasured
+render_sec: min 194.7  median 283.8  max 445.1  mean 280.0
+
+>> STAGE RESULT: FAIL — ... 2 distinct resolution(s) ... NOT exactly-once at delivery spec
+   resolutions delivered: 3840x2160, NonexNone
+```
+
+**Coverage is exact and every hash agrees with the sha256 the broker recorded
+independently at fetch.** The only failure is `resolutions delivered:
+3840x2160, NonexNone` — **10 frames carry a NULL width/height in the broker's
+SQLite**: `122, 123, 624, 625, 1080, 1462, 2073, 2074, 2489, 2606`.
+
+### Pass 3 — decode: the files are fine, and this is why the pass exists
+
+```
+decoded 2978      FAILED to decode 0      resolutions 3840x2160
+distinct levels min 167  median 237  max 256
+FLAT 0    BLACK 0
+
+>> STAGE RESULT: PASS — all 2978 frames decoded from scratch, exactly one
+   resolution (3840x2160), no gaps, no duplicates, no flat or near-blank frames.
+```
+
+All ten suspect frames decode individually at **3840x2160, mode RGB, `err: null`**,
+with luminance means (0.29-0.44) sitting with their neighbours. **8m25s to read
+every byte of 23.5 GiB.**
+
+R2-3856 wrote this tool because *"a resolution check sourced from the record
+cannot catch a record that is wrong about the file."* **That is exactly what
+happened, and the record was wrong in the harmless direction.**
+
+### Root cause of the ten NULLs — a real but cosmetic middleware gap
+
+Every one of the ten went through the same path:
+
+```
+ConnectionDropped: job socket reached EOF with no reply — the SSH forward ended mid-call
+recovered job <id>_f000NNN from the instance — N.N MB already rendered, no re-render needed
+```
+
+**The post-`ConnectionDropped` recovery path records the frame's sha256, byte
+count and blank verdict, but never populates `width`/`height`.** The frames are
+correct; only the bookkeeping is short. They cluster on two transport
+interruptions — the 11:45Z outage of R2-3860 (122, 123, 1080, 2073, 2074) and a
+later 23:24Z flap (624, 625, 1462, 2489, 2606) — which is consistent with
+recovery being the trigger rather than anything about the frames.
+
+**Consequence:** `fleetctl verify` will report `FAIL` on a perfectly good
+sequence whenever any frame was recovered rather than fetched normally. Worth
+fixing where the recovery path writes its row; **not** a reason to doubt this
+film.
+
+### Teardown — and `fleetctl down` is broken the same way `fleetctl plan` is
+
+```
+$ ./fleetctl down
+usage: vastctl [-h] {offers,status,reap,destroy} ...
+vastctl: error: argument cmd: invalid choice: 'down'
+exit=2
+```
+
+**Identical to the R2-3847 defect**: it reaches into `vastctl`, which re-parses
+**the parent's `sys.argv`**. It failed *before* destroying anything — confirmed
+by querying the API, which still showed fleet04's card. **Had I trusted the
+command's own failure as "nothing to tear down", a card would have been left
+rented.**
+
+Torn down with the broker's own supported command instead, `rq teardown` on
+fleet04, then proved against the API:
+
+```
+credit $45.47   autobill=None
+no instances on this account (checked the vast.ai API, not a local state file)
+```
+
+### Cost
+
+| broker | cap | banked |
+| --- | ---: | ---: |
+| fleet03 | $42.00 | $38.03 |
+| fleet04 | $63.49 | $53.14 |
+| fleet05 | $53.00 | $49.89 |
+| **total** | **$158.49** | **$141.06** |
+
+Less the **$8.49** of pre-existing banked spend the caps were set against
+(R2-3862): **$132.57 of the $150 ceiling — 11.6% margin, never breached, and no
+cap was ever moved.** Credit remaining **$45.47**.
+
+### Untouched, as instructed
+
+`watch/` is unmodified — its two untracked directories (`r2943_4k`,
+`r2943b6_frames`) date from 08-07 and were only ever read, for the encode
+reconstruction at R2-3903. `watch/INDEX.md` still carries its 08-08 mtime and
+the **R2-3181 "DO NOT JUDGE THE ENDING" banner is still in place.**
+`docs/DEFECT-LOG-R2.md` was never edited. **No encode, no mux, nothing filed.**
