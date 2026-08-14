@@ -1,0 +1,50 @@
+{
+ "rows": [
+  {
+   "label": "impacts + NOTHING (the shipped architecture)",
+   "G_EVENT_ldr_db": 27.167149541493757,
+   "gap_dynamic_range_db": 18.76694918400807,
+   "ami": 0.803699818803376,
+   "audible_db": -140.7141521668649,
+   "gap_windows": 19,
+   "rms": 0.025833275701905956
+  },
+  {
+   "label": "impacts + the shipped cell (CELL_GAIN 0.008)",
+   "G_EVENT_ldr_db": 20.26429074864746,
+   "gap_dynamic_range_db": 18.104696552738133,
+   "ami": 0.7063373259719362,
+   "audible_db": 14.562725809179472,
+   "gap_windows": 19,
+   "rms": 0.026378443563318636
+  },
+  {
+   "label": "impacts + the cell, +18 dB (audible)",
+   "G_EVENT_ldr_db": 17.86164076489274,
+   "gap_dynamic_range_db": NaN,
+   "ami": 0.8179405957556569,
+   "audible_db": NaN,
+   "gap_windows": 0,
+   "rms": 0.049905920414502
+  },
+  {
+   "label": "impacts + a HAIR DRYER at the same level",
+   "G_EVENT_ldr_db": 5.374344050847585,
+   "gap_dynamic_range_db": NaN,
+   "ami": 0.33087123098835,
+   "audible_db": NaN,
+   "gap_windows": 0,
+   "rms": 0.049974526111302014
+  },
+  {
+   "label": "impacts + a DRONE at the same level",
+   "G_EVENT_ldr_db": 0.25809830500408104,
+   "gap_dynamic_range_db": NaN,
+   "ami": 0.18072656895126823,
+   "audible_db": NaN,
+   "gap_windows": 0,
+   "rms": 0.04982847413327681
+  }
+ ],
+ "bar_g_event_db": 13.7
+}

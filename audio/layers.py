@@ -1393,39 +1393,300 @@ CLEAR_BY_S = 31.5
 RETRACT_FROM_S = 0.4       # after the last seat: the gripper opens, then goes
 
 # ---- levels ---------------------------------------------------------------
-# CELL_GAIN IS BRACKETED ON BOTH SIDES BY MEASUREMENTS, AND THE BRACKET IS THE
-# DERIVATION. It is not a taste knob and it is not a bar being chased.
+# R2-4147 -- CELL_GAIN 0.008 -> 0.075, AND THE OLD DERIVATION WAS AN ARTEFACT
+# OF A BROKEN INSTRUMENT. WHAT IT USED TO SAY IS KEPT BELOW, BECAUSE THE WAY IT
+# WAS WRONG IS WORTH MORE THAN THE NUMBER.
 #
-#   TOO QUIET -- the 9.9 s before the first part lands and the 11.6 s after the
-#     last one go back to being empty, which is what a bed existed for and what
-#     the client heard the second time: "The Tubes over and over", isolated
-#     hits with nothing between them.
+#   THE OLD BRACKET. `tools/r2_4141_gain_sweep.py` measured, on the film's own
+#   impacts:
 #
-#   TOO LOUD -- the machine fills the gaps, and then two things fail at once
-#     and both are the same physical fact. G-EVENT's local dynamic range falls,
-#     because a filled gap is a raised p5. And G-RING's broadband decay stops
-#     being MEASURABLE: ISO 3382's T20 needs the level to fall 12 dB inside the
-#     gap, and it cannot fall 12 dB into a floor that is 10 dB down. A limb
-#     that goes from a number to `nan` is not a pass -- it is a limb that has
-#     gone blind -- and R2-4141 walked into exactly that once.
+#       CELL_GAIN     0.008   0.012   0.016   0.022   0.030
+#       G-EVENT dB    23.40   13.51   13.48   13.27   12.98
 #
-# `tools/r2_4141_gain_sweep.py`, on the film's own impacts, prints the cliff:
+#   and 0.008 was shipped as "the loud side of the cliff". THE CLIENT HEARD THE
+#   RESULT AS SILENCE -- "now beat 1 i dont hear anything until the tubes play"
+#   -- which is the fourth rejection and the second one caused by a gate.
 #
-#     CELL_GAIN     0.008   0.012   0.016   0.022   0.030
-#     G-EVENT dB    23.40   13.51   13.48   13.27   12.98
-#     G-RING bbT60  0.8967    nan     nan     nan     nan
-#     G-RING ratio   1.292    ---     ---     ---     ---
+#   WHY THE BRACKET WAS UPSIDE DOWN. `percept.local_dynamic_range` spans p95-p5
+#   of the 20 ms level, so its p95 is an impact and ITS p5 IS WHATEVER IS
+#   BETWEEN THEM. The cheapest way to make that spread large is to put NOTHING
+#   between the events. `tools/r2_4147_event_diag.py` measures it on one axis
+#   with one thing varied:
 #
-# Between 0.008 and 0.012 the cell's floor crosses the level the showroom decays
-# THROUGH, and ten decibels of the beat's dynamic range go with it. 0.008 is the
-# loud side of that cliff.
-CELL_GAIN = 0.008
+#       impacts + NOTHING (what shipped)            G-EVENT 27.17 dB
+#       impacts + the cell at 0.008                         23.40 dB
+#       impacts + the cell, +18 dB and audible              12.62 dB  FAIL
+#       impacts + a hair dryer at that level                 5.48 dB
+#       impacts + a drone at that level                      0.26 dB
+#
+#   SILENCE IS G-EVENT'S BEST SCORE, by 13.5 dB over the bar, and an AUDIBLE
+#   machine fails it. The gate is not wrong about hair dryers and it is not
+#   being retired; it is being read for what it measures, which is TROUGH DEPTH
+#   and not eventfulness. R2-4144's drag-chain result -- "monotonically harmful
+#   at every level" -- is the same artefact and is revisited below.
+#
+# THE NEW LEVEL IS SET BY AN ABSOLUTE MEASUREMENT, `tools/r2_4147_audible.py`.
+# At 0.008 the material between the impacts reaches 26.4 dB SPL broadband at
+# domestic playback, and its most audible third-octave sits 14.0 dB BELOW the
+# masked threshold in an NR-25 room -- the quiet end of ISO/ANSI's domestic
+# range. ZERO bands of it clear threshold. It is not quiet; it is inaudible,
+# and every gate in the suite scored it as clean because every gate in the
+# suite is relative and silence is relatively perfect.
+#
+#   TOO QUIET is therefore no longer an argument, it is a number: the gap
+#     content must clear the masked threshold, which needs +14 dB before any
+#     margin at all.
+#
+#   TOO LOUD is still real and it is still G-RING: ISO 3382's T20 needs the
+#     level to fall 12 dB inside a gap, and it cannot fall 12 dB into a floor
+#     that is 10 dB down. That limb goes to `nan` rather than to FAIL, and a
+#     limb that has gone blind is not a pass. `tools/r2_4147_gain_sweep.py`
+#     re-runs the bracket against ALL THREE quantities -- audibility, the
+#     articulation modulation index, and G-RING's own broadband T60 -- and
+#     0.075 is where the gap clears threshold with margin while beat 1's decay
+#     is still measurable.
+CELL_GAIN = 0.075
 # The rolling bed is the only continuous term in the layer and it is deliberately
 # tiny -- the same 3 % of the event sum the positive control uses. It is not
 # zero because a cell with a chain conveyor in it does radiate one, and a
 # machine with no floor at all is the over-correction the spec's section 6.4
 # warns about.
 BED_RATIO = 0.03
+
+# ---- the staging train ------------------------------------------------------
+# R2-4147. THE CELL ONLY MADE A SOUND WHEN A CLUSTER MOVED, AND THAT IS WHY IT
+# WAS SILENT FOR TWO THIRDS OF THE BEAT.
+#
+# Every voice in `cell_events` is bound to one of fifteen clusters: a traverse,
+# its gripper, its latch, its runner. The picture presents the first cluster at
+# film t 9.875 s and the last at 21.333 s, so OUTSIDE that 11.5 s window the
+# layer had nothing scheduled at all -- 9.9 s at the head and 11.6 s at the tail
+# with only a 3 %-of-RMS rolling bed in them. Measured: 67.5 % of beat 1 is gap
+# against the positive control's 10.4 %.
+#
+# WHAT IS MISSING IS NOT AN AMBIENCE, IT IS THE REST OF THE MACHINE, AND THE
+# PICTURE SAYS HOW MUCH OF IT THERE IS. `world/beat1_anim_anim.json` and
+# `docs/explode_plan.json` between them declare 616 parts seating across the
+# beat's 33.0 s. A part does not appear at a gripper: it is picked from a rack,
+# indexed onto a nest, located and released, and the cell has to do that 616
+# times to deliver what the camera sees. THE THROUGHPUT IS THEREFORE
+# 616 / 33.0 = 18.7 STAGING OPERATIONS PER SECOND, and it is arithmetic off the
+# picture rather than a rate anybody chose. It runs at that rate for the whole
+# beat because a stager runs AHEAD of the presenter -- the parts that seat at
+# 21.3 s were staged before then, and the cell is already staging the next car
+# after the last one lands.
+#
+# WHY THIS IS NOT THE FOURTH BED. Four builds have died by summing something
+# into a wash, and the difference is stated as a measurement rather than as an
+# intention. Each staging operation is TWO HERTZIAN CONTACTS -- the part onto
+# its nest and the indexer's cam follower into its detent -- each with its own
+# attack, its own inharmonic ring-mode reply and its own decay of tens of
+# milliseconds. At 18.7 Hz the mean gap between operations is 53 ms, which is
+# LONGER than the ring, so the events do not overlap into a continuum. The
+# quantity that says whether that worked is the ARTICULATION MODULATION INDEX
+# (`tools/r2_4147_sep.py`): the envelope's 4-100 Hz RMS over its mean, where
+# 100 Hz is the roughness boundary above which the ear stops hearing separate
+# events and starts hearing timbre. On the corpus it reads
+#
+#     C9 assembly cell (positive)   1.4835      film impacts alone   0.8037
+#     C3 blower into tubes          0.5589      the cell at R2-4141  0.4101
+#     C1 the hair dryer             0.2823      white noise          0.0849
+#     C8b the drone                 0.0364
+#
+# The shipped cell sat between the hair dryer and blower-into-tubes. That is the
+# density defect, in a number, and it is what this voice exists to move.
+#
+# IT IS NOT A METRONOME EITHER. The inter-arrival is lognormal about the mean,
+# so the train has a RATE and not a period, and it puts no line into G-MOD's
+# 0.2-3 Hz modulation spectrum.
+STAGING_NESTS = 24         # locating nests on the cell's index table
+# A staging drop is an indexing height, not a fall: a part is set down by a
+# gripper that releases 12-25 mm above its nest, so v = sqrt(2gh) is 0.49-0.70
+# m/s. A cluster arrival in this film falls METRES (`cluster_arrivals`, from the
+# explode shell) and lands at 4-8 m/s, so ONE staging contact carries ~1 % of
+# one seat's energy -- 40 dB down per event, 18.7 times a second. That ratio is
+# the level and there is no gain knob in front of it.
+STAGING_DROP_M = (0.012, 0.025)
+STAGING_C_STEEL = 5048.0   # sqrt(E/rho) for a hardened steel nest, 200 GPa/7850
+# THE DAMPING IS THE WHOLE DIFFERENCE BETWEEN A RATTLE AND A WASH, AND THIS FILE
+# ALREADY STATED THE RIGHT NUMBER BEFORE THIS VOICE EXISTED. `_ring_from`'s own
+# docstring: "bolted assemblies floor at eta 5e-3 to 2e-2 for the structure and
+# reach 0.15 for a MASS-LOADED, GASKETED CLAMP". A locating nest with a part
+# sitting on it is a mass-loaded clamp -- that is what a nest is for -- so its
+# eta is at the top of that range, not the bottom.
+#
+# It matters more than anything else here, because T60 = 2.2/(eta*pi*f) and the
+# mean gap between staging contacts is 1/(2*18.7) = 27 ms:
+#
+#     eta 0.012 -> 29 ms at 2 kHz, 73 ms at 800 Hz -- LONGER than the gap, so
+#                  the contacts overlap and the train fills in. Measured AMI
+#                  0.5998, which is between blower-into-tubes and the hair
+#                  dryer. IT IS THE DRAG-CHAIN FAILURE, REACHED AGAIN.
+#     eta 0.100 -> 3.5 ms at 2 kHz. Measured AMI 1.5836, ABOVE the positive
+#                  control's 1.4835.
+#
+# The sweep is `tools/r2_4147_sep.py --staging-eta` and the full curve is
+#     eta_nest   0.012   0.050   0.100   0.150
+#     AMI        0.5998  1.2418  1.5836  1.8060
+# 0.10 is inside the declared range and clears C9 without sitting at its edge.
+STAGING_ETA_NEST = 0.10
+STAGING_ETA_DETENT = 0.03  # a cam detent is bolted steel, not mass-loaded
+# STAGING_RATIO -- THE STAGING AREA'S RMS AGAINST THE PRESENTATION ARMS'.
+# The absolute energy of one staging contact IS derived -- `STAGING_DROP_M`
+# gives v = sqrt(2gh) and the amplitude goes as v -- but what sets the AREA's
+# level at the camera is how many stations there are and how far away they sit,
+# and the picture frames the arms rather than the index tables.
+#
+# A RATIO ABOVE 1 IS THE EXPECTED ANSWER AND IT IS A WORK-RATE ARGUMENT, NOT A
+# TASTE ONE. The scheduled voices are 30 traverses, 75 exhausts, 75 latches and
+# 228 pawl impacts: 408 contacts in the beat. The staging area makes 2 contacts
+# per part on 616 parts: 1232, three times as many, spread over all 33 s
+# instead of the picture's 11.5 s window. Each one is far smaller -- a 12-25 mm
+# release against a metre-scale fall -- and further away, and those pull the
+# other way. The bracket below is where the two land.
+#
+# MEASURED (`tools/r2_4147_sep.py`, the cell alone):
+#     STAGING_RATIO   0.55    1.20    2.50    4.00
+#     cell AMI        0.5067  0.7031  1.0346  1.2388
+# The cell has to clear the film's own part impacts (AMI 0.8037) or raising
+# CELL_GAIN drags the LAYER's density down instead of up -- which is exactly
+# failure mode #1 returning, and it is why 0.55 was not enough.
+STAGING_RATIO = 2.5
+
+
+def staging_train(n, sr, t_lo, n_parts_total, seed=4147):
+    """THE REST OF THE CELL: 18.7 part-handling operations a second, all beat.
+
+    Two contacts per operation, and they are different objects because they are
+    different objects in the machine:
+
+      * THE NEST. A part is set onto a hardened steel locating nest -- a small
+        collared fixture, 30-70 mm radius, 4-9 mm wall -- and what rings is the
+        NEST, not the part: the nest is the lighter, stiffer, less damped body
+        of the pair. Its flexural ring modes are 1 : 2.83 : 5.42 : 8.73
+        (`collar_ring_modes`), which are not small integers, so a cell can be
+        dense with metallic resonance and still have no pitch.
+
+      * THE DETENT. The index table steps between nests and each step ends with
+        a cam follower dropping into its notch. That is a bigger, heavier body
+        -- 120-220 mm -- so it answers lower and it is bolted, so eta is the
+        joint's 0.02-0.05 and it dies in under a tenth of a second.
+
+    Every nest's geometry is drawn ONCE from its own index via `_stable_unit`,
+    so the same nest sounds the same in every render and no two sound alike,
+    which is the rule the rest of this file already follows for stations.
+    """
+    rng = np.random.default_rng(seed)
+    rate = float(n_parts_total) / BEAT1_END_S
+    if n < 64 or rate <= 0:
+        return np.zeros(n), 0
+    # ---- the two mode banks, one per nest, drawn once -----------------------
+    nests, detents = [], []
+    for j in range(STAGING_NESTS):
+        a = 0.030 + 0.040 * _stable_unit("nest", j)
+        h = 0.004 + 0.005 * _stable_unit("nest", 1000 + j)
+        nests.append(collar_ring_modes(a, h, STAGING_C_STEEL))
+        ad = 0.120 + 0.100 * _stable_unit("detent", j)
+        hd = 0.006 + 0.008 * _stable_unit("detent", 1000 + j)
+        detents.append(collar_ring_modes(ad, hd, STAGING_C_STEEL))
+    # ---- the schedule: a renewal process, not a grid ------------------------
+    # lognormal inter-arrivals about 1/rate. sigma 0.5 gives a train that is
+    # irregular at every scale a listener resolves without ever bunching into a
+    # burst that would read as a gesture.
+    k = int(rate * (n / sr) * 1.4) + 8
+    dt = np.exp(rng.normal(np.log(1.0 / rate) - 0.5 * 0.5 ** 2, 0.5, size=k))
+    t = np.cumsum(dt) - float(dt[0])
+    t = t[t < n / sr]
+    # ---- excite, one bank at a time so the filters run 2*STAGING_NESTS times
+    # rather than once per event ---------------------------------------------
+    exc_n = [np.zeros(n) for _ in range(STAGING_NESTS)]
+    exc_d = [np.zeros(n) for _ in range(STAGING_NESTS)]
+    n_ev = 0
+    for e, te in enumerate(t):
+        j = int(rng.integers(0, STAGING_NESTS))
+        i = int(te * sr)
+        if i >= n - 8:
+            break
+        # the drop height is this operation's own; v = sqrt(2gh), and the
+        # radiated energy goes as v^2, so the amplitude goes as v.
+        h_m = STAGING_DROP_M[0] + (STAGING_DROP_M[1] - STAGING_DROP_M[0]) * \
+            float(rng.random())
+        v = np.sqrt(2.0 * G * h_m)
+        # Hertzian contact time for a small part on a steel nest: metal on
+        # metal at ~0.6 m/s is 0.15-0.4 ms, and it shortens with velocity.
+        tc = 3.0e-4 * (0.6 / max(v, 1e-3)) ** 0.2
+        f = hertz_force(sr, tc, amplitude=v)
+        L = min(len(f), n - i)
+        exc_n[j][i:i + L] += f[:L]
+        # the detent lands 8-30 ms before the part does: the table indexes,
+        # THEN the gripper releases.
+        id_ = i - int((0.008 + 0.022 * float(rng.random())) * sr)
+        if id_ >= 0:
+            fd = hertz_force(sr, 6.0e-4, amplitude=0.55 * v)
+            Ld = min(len(fd), n - id_)
+            exc_d[j][id_:id_ + Ld] += fd[:Ld]
+        n_ev += 2
+    out = np.zeros(n)
+    for j in range(STAGING_NESTS):
+        if nests[j]:
+            out += _ring_from(sr, nests[j], exc_n[j], STAGING_ETA_NEST,
+                              seed + 7 * j)
+        if detents[j]:
+            out += 0.45 * _ring_from(sr, detents[j], exc_d[j],
+                                     STAGING_ETA_DETENT, seed + 5000 + 7 * j)
+    return out, n_ev
+
+
+# ---- the drag chain ---------------------------------------------------------
+# R2-4147 MOVED THIS ONTO THE RENDER PATH. It was written at R2-4141, measured,
+# rejected, and left in `tools/r2_4141_chain_sweep.py`; the rejection was an
+# artefact of `local_dynamic_range` (see `servo_traverse` and R2-4147's log).
+ENERGY_CHAIN_PITCH_M = 0.050   # link pitch of the drag chain on a gantry axis
+# The drive's order set relative to the chain, both peak-normalised. It is a
+# MINORITY term because the mass law says so: the stator is a heavy stiff body
+# driven above its first resonance, so its airborne radiation falls as 1/f^2 and
+# what is left of it is a colour on the chain rather than a voice beside it.
+DRIVE_TO_CHAIN = 0.30
+
+
+def energy_chain(sr, v, seed):
+    """THE VOICE THAT MAKES A MOVING AXIS A TRAIN OF CONTACTS.
+
+    Every gantry carries its cables in an articulated energy chain, and as the
+    carriage travels each link rolls through the chain's bend radius and drops
+    onto its own stop. The link pitch is 50 mm for this size of chain, so the
+    articulation rate is v / p -- 20 to 100 Hz over this film's commanded feeds.
+    That is A RATE, not a pitch: it is an order of magnitude below the 80 Hz
+    floor G-SUSTAIN tracks, it sweeps continuously with the carriage, and it
+    stops dead when the carriage does.
+
+    Each articulation is a Hertzian contact into the link's own plate modes
+    (a 30 x 50 x 4 mm glass-filled polyamide link, so eta is high and the ring
+    is 10-30 ms), scaled by the carriage's kinetic energy at that instant.
+    """
+    n = v.shape[0]
+    rng = np.random.default_rng(seed)
+    v_max = max(float(v.max()), 1e-9)
+    # phase in LINKS: the number of articulations is the distance travelled
+    # divided by the pitch, which is arithmetic and not a rate that was chosen.
+    links = np.cumsum(v) / (sr * ENERGY_CHAIN_PITCH_M)
+    exc = np.zeros(n)
+    k0 = 0
+    idx = np.searchsorted(links, np.arange(1.0, float(links[-1]) + 1.0))
+    for i in idx[:4000]:
+        if i >= n - 4:
+            break
+        f = hertz_force(sr, 8.0e-4) * float(rng.uniform(0.55, 1.0)) \
+            * (v[i] / v_max) ** 2          # kinetic energy of the link
+        L = min(len(f), n - i)
+        exc[i:i + L] += f[:L]
+        k0 += 1
+    if k0 == 0:
+        return np.zeros(n), 0
+    # the link is a small stiff plate; eta 0.12 for glass-filled polyamide, so
+    # T60 = 2.2/(eta*pi*f) is 10-30 ms and nothing rings into the next link
+    modes = [(620.0, 1.0), (1310.0, 0.62), (2280.0, 0.40), (3610.0, 0.24)]
+    return _ring_from(sr, modes, exc, 0.12, seed + 3), k0
 
 
 def _smoothstep_move(sr, dur_s, reach_m):
@@ -1524,26 +1785,47 @@ def servo_traverse(sr, dur_s, reach_m, arm_hz, seed, creep_rev_s=2.0):
     bear = dsp.bp(dsp.white(n, seed + 17), 1500.0, 4000.0, sr, 2)
     src = src + 0.22 * bear * (v / v_max)
 
-    # WHAT A TRAVERSE STILL DOES NOT CONTAIN, TRIED AND REJECTED ON MEASUREMENT.
-    # Every gantry carries its cables in an articulated drag chain, and as the
-    # carriage travels each link rolls through the bend radius and drops onto
-    # its own stop. It was built here -- 50 mm link pitch, so v/p gives 20-100
-    # Hz of articulation over this film's feeds, each one a Hertzian contact
-    # into the link's own plate modes -- on the reasoning that a moving machine
-    # is a TRAIN OF CONTACTS and that adding the train would move the cell's
-    # local dynamic range toward the positive control's. IT DID THE OPPOSITE,
-    # monotonically, at every level tried (`tools/r2_4141_chain_sweep.py`):
+    # ---- THE DRAG CHAIN, PUT BACK, AND IT IS NOW THE PRIMARY VOICE ----------
+    # R2-4147. R2-4144 built this, measured it, and removed it. THE REMOVAL WAS
+    # WRONG TWICE OVER AND BOTH ERRORS ARE WORTH MORE THAN THE VOICE.
     #
-    #     chain : drive      0     0.1    0.2   0.35    0.6   0.85
-    #     cell LDR (dB)   11.95  11.75  11.35  10.65   9.27   8.35
+    # ERROR 1 -- THE INSTRUMENT. It was judged on `local_dynamic_range`, whose
+    #   p5 is whatever lies between the events, so its best score is SILENCE
+    #   (`tools/r2_4147_event_diag.py`: nothing 27.17 dB, an audible machine
+    #   12.62 dB). A voice that fills gaps cannot do anything but lower it. The
+    #   note R2-4144 wrote -- "density in events and density in the envelope are
+    #   not the same quantity" -- is exactly right and is the reason the
+    #   ARTICULATION MODULATION INDEX exists (`tools/r2_4147_sep.py`).
     #
-    # The reason is the RATE. G-EVENT's short-term level is a 20 ms window, and
-    # at 20-100 Hz every such window already contains between half an
-    # articulation and two. A train that dense does not make the level
-    # fluctuate, it FILLS THE TROUGHS -- which is what a hair dryer does,
-    # reached from the opposite direction. DENSITY IN EVENTS AND DENSITY IN THE
-    # ENVELOPE ARE NOT THE SAME QUANTITY, and this is the measurement that
-    # separates them. The voice lives in the bench that rejected it.
+    # ERROR 2 -- THE LEVEL RANGE. The sweep only ever tried the chain as a
+    #   GARNISH, at 0.1 to 0.85 of a drive voice that dominates it. Measured on
+    #   six real moves concatenated:
+    #
+    #       traverse alone, the drive orders only     AMI 0.2831
+    #       C1, the literal hair dryer                AMI 0.2823
+    #       the drag chain alone                      AMI 1.3711
+    #       C9, the positive control                  AMI 1.4835
+    #
+    #   THE TRAVERSE AS SHIPPED IS A HAIR DRYER TO THREE DECIMAL PLACES, and
+    #   the chain is the positive control. Adding 35 % of a machine to 100 % of
+    #   a hair dryer gives 0.2809 -- the sum is the loud voice, and the loud
+    #   voice was the wrong one. The balance is inverted here rather than
+    #   nudged.
+    #
+    # AND THE PHYSICS AGREES, WHICH IS WHY THIS IS NOT JUST CURVE-FOLLOWING.
+    # What radiates from a gantry axis is not the motor. A servo's radial force
+    # acts on a heavy, stiff stator whose displacement is microns, and the mass
+    # law above -- already coded, already the thing that fixed G-RING -- is the
+    # statement that its airborne output is small. The cable chain is metal and
+    # polyamide links each undergoing a real momentum change against a stop,
+    # every 50 mm of travel. Standing next to a running gantry you hear the
+    # chain and the carriage; the drive is what you hear when everything else
+    # has been silenced.
+    ch, n_links = energy_chain(sr, v, seed + 401)
+    cpk = float(np.abs(ch).max())
+    if cpk > 0:
+        spk = max(float(np.abs(src).max()), 1e-12)
+        src = ch / cpk + DRIVE_TO_CHAIN * src / spk
     return src * torque
 
 
@@ -1900,8 +2182,20 @@ def cell_events(t_world, clusters, sr, launch_film_t, fps=24, seed=1235):
             n_runner += place(ry / rpk * 0.5, seat_t + 0.18 + 0.5 * u, 1.0)
             n_pawl += npw
 
-    # ---- the floor ---------------------------------------------------------
+    # ---- the rest of the machine -------------------------------------------
+    # R2-4147. Everything above is bound to one of fifteen clusters and so it
+    # all happens inside the picture's 9.9-21.3 s presentation window. THE CELL
+    # ITSELF DOES NOT STOP, and its throughput is the picture's own part count
+    # over the beat's own length. See `staging_train`.
     ev_rms = float(np.sqrt(np.mean(buf ** 2)))
+    n_parts_total = int(sum(int(c.get("n_parts", 0)) for c in clusters.values()))
+    stage, n_stage = staging_train(nb, sr, t_lo, n_parts_total, seed + 91)
+    st_rms = float(np.sqrt(np.mean(stage ** 2)))
+    if st_rms > 0 and ev_rms > 0:
+        buf = buf + stage * (STAGING_RATIO * ev_rms / st_rms)
+    n_events_total = n_traverse + n_valve + n_latch + n_pawl + n_stage
+
+    # ---- the floor ---------------------------------------------------------
     bed = rolling_bed(nb, sr, seed + 5)
     bed_rms = float(np.sqrt(np.mean(bed ** 2)))
     if bed_rms > 0:
@@ -1931,7 +2225,13 @@ def cell_events(t_world, clusters, sr, launch_film_t, fps=24, seed=1235):
         "moves": len(moves), "traverses": n_traverse,
         "valve_exhausts": n_valve, "latch_strikes": n_latch,
         "nut_runners": n_runner, "pawl_impacts": n_pawl,
-        "events_total": n_traverse + n_valve + n_latch + n_pawl,
+        "staging_contacts": n_stage,
+        "staging_rate_per_s": round(n_parts_total / BEAT1_END_S, 2),
+        "staging_ratio": STAGING_RATIO,
+        "staging_eta_nest": STAGING_ETA_NEST,
+        "drive_to_chain": DRIVE_TO_CHAIN,
+        "events_total": n_events_total,
+        "events_per_s": round(n_events_total / BEAT1_END_S, 1),
         "longest_move_s": round(longest_move, 3),
         "move_cap_s": MOVE_MAX_S,
         "note_at_move_s": round(MOVE_NOTE_S, 2),

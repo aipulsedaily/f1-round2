@@ -16,17 +16,68 @@ still true.** It is written by dates that can be checked, not by memory.
 
 | file | cut | shows |
 |---|---|---|
-| **`PART2_THE_FILM_4K_ProRes422HQ.mov`** | **08-14 18:00** | **THE FILM. The whole of part 2, one unbroken 4K shot.** 3840x2160, 24 fps, **2,978 frames = 124.0833 s, zero cuts**, 512 spp, AgX / look None / exposure -3.628, SDR. ProRes 422 HQ, **11.25 GB**. Rendered from `render/film25_breach.blend` (sha16 **`1d2aa2d86533574e`**) on world `assembly15`, frames 1-2978 on three rented RTX 5090s over 2026-08-09 to 08-13. **AUDIO REBUILT 08-14 (R2-4141)** — carries `PART2_AUDIO_MASTER_R2-4141.wav`, muxed `-c:v copy -c:a copy`. **The picture is unchanged and that is proven, not assumed: the video stream's md5 is `c346a7a322a4a2a403727c1e85f17511` before and after the re-mux.** **This is the delivery master.** |
+| **`PART2_THE_FILM_4K_ProRes422HQ.mov`** | **08-14 18:00** | **THE FILM. The whole of part 2, one unbroken 4K shot.** 3840x2160, 24 fps, **2,978 frames = 124.0833 s, zero cuts**, 512 spp, AgX / look None / exposure -3.628, SDR. ProRes 422 HQ, **11.25 GB**. Rendered from `render/film25_breach.blend` (sha16 **`1d2aa2d86533574e`**) on world `assembly15`, frames 1-2978 on three rented RTX 5090s over 2026-08-09 to 08-13. **AUDIO REBUILT 08-14, TWICE — now R2-4147** — carries `PART2_AUDIO_MASTER_R2-4147.wav`, muxed `-c:v copy`. **The picture is unchanged and that is proven, not assumed: the video stream's md5 is `c346a7a322a4a2a403727c1e85f17511` before and after the re-mux.** **This is the delivery master.** |
 | **`PART2_THE_FILM_4K_h265.mp4`** | **08-14 18:01** | **The viewing copy of the same film**, same 2,978 frames, same new audio. 3840x2160, 24 fps, 124.0833 s, H.265 `hvc1`, faststart, **880 MB**, AAC 192 kbps. Video stream md5 `235ef36e844a62b0e303e4138907b9fa`, identical before and after the re-mux. Use this to watch; use the ProRes to grade or cut. |
-| **`PART2_AUDIO_MASTER_R2-4141.wav`** | **08-14 17:50** | **The audio master the two films carry.** 124.083333 s, 48 kHz, 24-bit stereo, **-23.00 LUFS / -1.12 dBTP** (EBU R 128 — see below for why this is not -14), limiter gain reduction **-0.84 dB**, pre-mix short-term range **48.2 dB**. The fifth master. Its beat 1 is an assembly cell built from events; see the section below for what changed and what still fails. |
-| **`listen_2026-08-14/`** | **08-14 18:03** | **The A/B for this rebuild, and the thing to actually play.** Four clips, 1280x720, cut from the delivered H.265 with the two masters muxed against identical picture: `NEW_`/`OLD_beat1_showroom_34s.mp4` (film t 0-34 s) and `NEW_`/`OLD_breach_glass_14s.mp4` (t 34-48 s). **NEW is R2-4141, OLD is `audio/out/master.wav`** — the hair-blower master the films carried until today, kept as the permanent negative control. `CLIPS_OF.json` records both sha16s and the in-points, and each clip's audio was cross-correlated against the master it claims (r ≥ 0.9978). **No per-clip normalisation**: both masters are -23.0 LUFS integrated, so this is a comparison of content, not of gain. |
+| **`PART2_AUDIO_MASTER_R2-4147.wav`** | **08-14 19:45** | **The audio master the two films carry.** 124.083333 s, 48 kHz, 24-bit stereo, **-23.00 LUFS / -1.12 dBTP** (EBU R 128 — see below for why this is not -14), limiter gain reduction **-0.85 dB**. The **sixth** master. Its beat 1 is an assembly cell built from events **that you can actually hear** — R2-4141's was 14.0 dB below the threshold of hearing in a quiet room and the client said so. See the section below. |
+| `PART2_AUDIO_MASTER_R2-4141.wav` | 08-14 17:50 | **SUPERSEDED, kept as the arm of the current A/B.** The fifth master, rejected on hearing: *"now beat 1 i dont hear anything until the tubes play"*. Measured cause: between the part impacts its beat 1 reached 26.4 dB SPL at domestic playback, **0 of 29 third-octave bands over threshold**. |
+| **`listen_2026-08-14/`** | **08-14 19:50** | **The A/B for this rebuild, and the thing to actually play.** Four clips, 1280x720, cut from the delivered H.265 with the two masters muxed against identical picture: `NEW_`/`OLD_beat1_showroom_34s.mp4` (film t 0-34 s) and `NEW_`/`OLD_breach_glass_14s.mp4` (t 34-48 s). **NEW is R2-4147, OLD is R2-4141** — the master the client heard as *"i dont hear anything until the tubes play"*, so the A/B is pointed straight at the complaint. `CLIPS_OF.json` records both sha16s and the in-points, and each clip's audio was cross-correlated against the master it claims (r ≥ 0.9978). **No per-clip normalisation**: both masters are -23.0 LUFS integrated, so this is a comparison of content, not of gain. |
 | `AFTER_beat5_doppler_4s.mp4` | 08-08 08:20 | **R2-2161, the beat-5 framing fix.** f2340-2439 (t 97.5-101.6 s), 100 frames, 1280x720, 24 fps. The doppler pass. The car is placed **off-centre and travels across the frame**; beat 5's frame-offset is **0.754** against a 0.92 bound. Built from `render/r22161_after.blend`, whose camera path is bit-identical to the gated rig `7fc6d688…`. |
 | `BEFORE_beat5_doppler_4s.mp4` | 08-08 08:17 | its matched BEFORE, same 100 frames, same resolution, same 64 samples, same DOF. The shipped camera, which pins the car near **frame centre** the whole way — frame-offset **0.055**. From `render/film22.blend`, camera path `363e4e88…`, the sha `docs/LIVE-CAMERA.md` declares. |
 | `AFTER_opening_18s.mp4` | 08-08 01:36 | the opening tempo pass (R2-1606). The most recent camera deliverable. |
 | `BEFORE_opening_18s.mp4` | 08-07 17:52 | its matched BEFORE. Correctly named. |
 | `audio/` | 08-08 03:14 | re-cut from the master; `audio/INDEX.md` explains the earlier staleness and states it is fixed. |
 
-### THE AUDIO REBUILD OF 2026-08-14 (R2-4141) — WHAT THE FILMS CARRY NOW
+### THE AUDIO OF 2026-08-14 (R2-4147) — WHAT THE FILMS CARRY NOW
+
+**R2-4141 was rejected by ear within hours of shipping: _"now beat 1 i dont hear anything
+until the tubes play"_. It was the fourth rejection and the second one caused by a gate.**
+
+**THE CAUSE WAS NOT SUBTLE AND IT HAD NEVER BEEN MEASURED.** Between the part impacts,
+R2-4141's beat 1 reached **26.4 dB SPL** at domestic playback and its loudest third-octave
+sat **14.0 dB BELOW the threshold of hearing in a quiet (NR-25) room — 0 of 29 bands
+audible**. The cell-only stretches read **-60 LUFS-S against a -23 LUFS programme**. There
+was nothing there to hear.
+
+**WHY EVERY GATE CALLED IT CLEAN.** Every quality instrument in the suite is *relative* — it
+measures structure within whatever it is handed — so **digital silence scores perfectly on
+all of them**. G-EVENT in particular spans p95-p5 of the short-term level, so its p5 is
+whatever lies between the events and **its best possible score is silence**: measured, the
+empty beat scored 27.17 dB against a 13.7 dB bar while an *audible* machine scored 12.62 and
+FAILED. The build was steered downhill into an empty beat and it arrived.
+
+**WHAT SHIPPED NOW.**
+
+| beat 1 | R2-4141 (rejected) | **R2-4147** |
+|---|---:|---:|
+| gap level vs threshold, NR-25 room | **-13.99 dB** | **+9.24 dB** |
+| third-octave bands audible | **0** | **7** |
+| gap SPL at domestic playback | 26.4 dB | 32.9 dB |
+| G-PRESENCE (new gate) | **FAIL** | **PASS** |
+| G-SUSTAIN note cover | **0.2075 FAIL** | **0.0453 PASS** |
+| G-EVENT | 14.69 PASS | **14.93 PASS** |
+| G-NOVEL r at the 1.04 s ladder | 0.549 | **0.413** |
+| the seat ladder's own level | -30.99 dBFS | **-31.01 dBFS** (unchanged) |
+
+**The picture-locked impacts were not touched** — the ladder is within 0.02 dB. What changed
+is that the machine around them now exists for the whole beat instead of only while a cluster
+is moving, and that it is **denser rather than merely louder**: the traverse's voice was a
+stationary drive tone measuring an articulation index of **0.2831 against the literal hair
+dryer's 0.2823**, and it is now a drag chain — a train of contacts — at **1.3711**, beside a
+staging train whose rate is arithmetic off the picture (616 parts / 33.0 s = **18.7
+operations per second**). A cell nine times louder passes G-EVENT *more* comfortably than the
+silent one did, because short distinct events do not fill troughs.
+
+**WHAT THIS COST, STATED PLAINLY.** G-RING's beat-1 measurement is **gone**: it had 4 usable
+decay regions and now has 2, so it reports INAPPLICABLE where it previously reported FAIL
+(ratio 1.529 against a 1.5 bar). You cannot measure a room's reverberation time in an
+operating factory, and that is not a metaphor — ISO 3382 needs the level to fall 12 dB into a
+gap. **The reverb itself was not touched in this pass** (no line of `showroom_tail` or
+`fdn_reverb` changed), so the room is the same room; what was lost is the ability to read it
+off the master's beat 1. G-RING still measures and still fails at `5_lap`.
+
+---
+
+### THE AUDIO REBUILD OF 2026-08-14 (R2-4141) — SUPERSEDED, KEPT FOR THE RECORD
 
 **The films above carry `PART2_AUDIO_MASTER_R2-4141.wav`.** The R2-4079 rebuild described further
 down was muxed in on 08-14, played to the client, judged *"ngl audio is worse, sounds like a shitty

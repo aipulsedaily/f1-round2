@@ -1,0 +1,39 @@
+{
+ "film": "PART2_THE_FILM_4K_h265.mp4",
+ "film_sha16": "4ded074e34a5febc",
+ "NEW_wav": "audio/out/r2_4147/master_R2-4147.wav",
+ "NEW_sha16": "c02885e3e17fbaf0",
+ "OLD_wav": "watch/PART2_AUDIO_MASTER_R2-4141.wav",
+ "OLD_sha16": "eea0ccd7a514ebd2",
+ "clips": [
+  {
+   "file": "NEW_beat1_showroom_34s.mp4",
+   "t0_s": 0.0,
+   "dur_s": 34.0,
+   "arm": "NEW",
+   "listen_for": "BEAT 1, THE COMPLAINT. In OLD the 9.9 s before the first part lands and the 11.6 s after the last one are effectively silent: measured 14.0 dB BELOW the threshold of hearing in a quiet room, 0 of 29 bands audible. In NEW the cell is there the whole time -- +9.2 dB over that threshold, 7 bands audible. Listen for a MACHINE working continuously: small distinct contacts, nests, detents, valves, moves that start and stop. Nothing should hold a pitch and nothing should sound like a bed."
+  },
+  {
+   "file": "OLD_beat1_showroom_34s.mp4",
+   "t0_s": 0.0,
+   "dur_s": 34.0,
+   "arm": "OLD",
+   "listen_for": "BEAT 1, THE COMPLAINT. In OLD the 9.9 s before the first part lands and the 11.6 s after the last one are effectively silent: measured 14.0 dB BELOW the threshold of hearing in a quiet room, 0 of 29 bands audible. In NEW the cell is there the whole time -- +9.2 dB over that threshold, 7 bands audible. Listen for a MACHINE working continuously: small distinct contacts, nests, detents, valves, moves that start and stop. Nothing should hold a pitch and nothing should sound like a bed."
+  },
+  {
+   "file": "NEW_breach_glass_14s.mp4",
+   "t0_s": 34.0,
+   "dur_s": 14.0,
+   "arm": "NEW",
+   "listen_for": "the launch and the glass wall."
+  },
+  {
+   "file": "OLD_breach_glass_14s.mp4",
+   "t0_s": 34.0,
+   "dur_s": 14.0,
+   "arm": "OLD",
+   "listen_for": "the launch and the glass wall."
+  }
+ ],
+ "what_this_ab_is": "NEW is R2-4147; OLD is R2-4141, the master the client heard as 'now beat 1 i dont hear anything until the tubes play'. Both are -23.00 LUFS integrated and neither clip is normalised, so this is a comparison of CONTENT."
+}

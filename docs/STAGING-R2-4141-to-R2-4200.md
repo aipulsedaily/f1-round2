@@ -272,3 +272,324 @@ impacts and the cell together — reads 23.40 dB.
 3. **`reflect_garage` −22 → −27 LUFS-S** is carried in from the stopped agent's
    tree with its own derivation and its own prediction that it flips no gate.
    The prediction is checked against this render's stems rather than repeated.
+
+---
+
+## R2-4147 — THE CLIENT: *"now beat 1 i dont hear anything until the tubes play"*
+
+**THE CHEAP EXPLANATION WAS THE WHOLE EXPLANATION, AND IT WAS NEVER MEASURED.**
+The cell was not too thin, too smooth or too sparse. **It was 14 dB below the
+threshold of hearing.**
+
+`tools/r2_4147_audible.py`, on the delivered `PART2_AUDIO_MASTER_R2-4141.wav`,
+at EBU R 128 playback less 12 dB for domestic listening:
+
+| beat 1, between the impacts | measured |
+|---|---:|
+| broadband SPL | **26.4 dB SPL** |
+| loudest third-octave, re: threshold in an NR-25 room | **−13.99 dB** |
+| third-octave bands above threshold | **0 of 29** |
+| re: threshold in quiet (anechoic, no room) | +5.20 dB |
+
+**Zero bands clear threshold.** A quiet living room's own noise floor is
+~15 dB louder than the cell. The client did not mishear it; there was nothing
+there to hear. The LUFS-S trace says the same thing in one line: the beat's
+cell-only stretches read **−60 LUFS-S against a −23 LUFS programme — 37 LU
+down**, and the seat ladder reads −25 to −35.
+
+---
+
+### R2-4147(1) — THE GATE THAT CAUSED IT, AND THE MEASUREMENT THAT PROVES IT
+
+`percept.local_dynamic_range` spans p95 − p5 of the 20 ms level. **Its p95 is an
+impact and its p5 is whatever lies between them, so the cheapest way to maximise
+it is to put NOTHING between them.** `tools/r2_4147_event_diag.py` — the film's
+own 777 part impacts, one filler varied, fillers at matched level:
+
+| beat 1 = impacts + | G-EVENT dB | AMI | AUDIBLE dB |
+|---|---:|---:|---:|
+| **NOTHING (what R2-4141 shipped)** | **27.17** | 0.8037 | **−140.71** |
+| the cell, audible | 12.62 → **FAIL** | 0.8179 | +14.56 |
+| a hair dryer | 5.48 | 0.3309 | audible |
+| a drone | 0.26 | 0.1807 | audible |
+
+**Silence is G-EVENT's best score, 13.5 dB clear of the bar, and an audible
+machine fails it.** R2-4145's CELL_GAIN bracket was walking downhill toward an
+empty beat and it arrived. R2-4144's drag-chain rejection — "monotonically
+harmful at every level" — is the same artefact.
+
+**No threshold was moved.** G-EVENT is not retired and is not wrong about hair
+dryers; it measures TROUGH DEPTH, and trough depth is not eventfulness.
+
+---
+
+### R2-4147(2) — G-PRESENCE: THE INSTRUMENT THE SUITE NEVER HAD
+
+Every quality gate in `percept.py` is RELATIVE — it measures structure *within*
+whatever it is handed — so **digital silence scores perfectly on all of them.**
+G-PRESENCE is the first absolute measurement in the file. Two limbs, and the
+measurement above is why there are two:
+
+* **AUDIBLE** — sensation level of the material *between* the events, in dB over
+  the greater of the ISO 226 threshold in quiet and an **NR-25** room (ISO
+  R 1996; the *quiet* end of ISO/ANSI's domestic range, chosen so the bar cannot
+  flatter itself), at R 128 reference less 12 dB. **Bar 0 dB — the definition of
+  audible, not a tuned number.**
+* **AMI**, articulation modulation index — the envelope's 4–100 Hz RMS over its
+  mean; 100 Hz is the roughness boundary above which a train stops being events
+  and becomes timbre. Level-invariant. **Bar 0.50, control-derived and placed
+  UNDER the loudest negative rather than at the midpoint, because this corpus
+  has exactly one beat-1 positive and a midpoint bar would be drawn through a
+  single point.**
+
+**Neither limb alone is sufficient and that is the point:** silence has the
+second-best AMI in the table above and is inaudible; the hair dryer is plainly
+audible and has the worst AMI but one. A composite score could be traded between
+them; two limbs cannot.
+
+| | verdict | sens dB | bands | AMI |
+|---|---|---:|---:|---:|
+| **R2-4141 shipped master — the complaint** | **FAIL** | −13.99 | 0 | 0.8260 |
+| 33 s of digital silence | **FAIL** | — | — | — |
+| a silent beat 1 inside a loud programme | **FAIL** | −238.08 | 0 | — |
+| C4 `master.wav`, "a hair blower" | **FAIL** | +16.70 | 16 | 0.4225 |
+| C1 octave-matched noise | **FAIL** | +25.73 | 19 | 0.2823 |
+| C8b the drone | **FAIL** | +38.77 | 9 | 0.0364 |
+| **C9 assembly cell (positive)** | **PASS** | +7.20 | 4 | **1.4835** |
+
+**TWO BUGS IN THIS GATE WERE FOUND BY ITS OWN CONTROLS AND ARE WORTH MORE THAN
+THE GATE.** The first version returned **INAPPLICABLE** for C1, C8b *and 33 s of
+digital silence* — the three signals it exists to fail:
+
+1. **The event mask went blind on stationary material.** With only a "within
+   12 dB of p98" test, a signal with no dynamics has every frame inside 12 dB of
+   its own top, so the whole passage reads EVENT and there is no gap left to
+   measure. Fixed by requiring a frame to be **both** near the p98 **and** 6 dB
+   over the passage's median. A hair dryer is now correctly **all gap** — it has
+   no events — and is judged on whether that material is articulated.
+2. **A silent programme returned INAPPLICABLE from the calibration guard**,
+   because `loudness_lufs` returns −inf and −inf was treated as "no calibration
+   supplied" rather than as "measured, and there is nothing here".
+
+**A gate that goes blind on its own negative controls is the exact failure this
+file already documents twice** (G-HNR at beat 1, G-RING's `nan` broadband). It
+was caught only because the controls were run before the gate was believed.
+
+---
+
+### R2-4147(3) — THE FIX IS STRUCTURAL. LOUDER WAS MEASURED AND IT WAS NOT ENOUGH.
+
+Raising `CELL_GAIN` alone reproduces failure mode #1. On the R2-4141 cell:
+
+| CELL_GAIN | 0.008 | 0.030 | 0.050 | 0.075 | 0.120 |
+|---|---:|---:|---:|---:|---:|
+| AUDIBLE dB | −5.63 | +5.82 | +10.21 | +13.62 | +16.79 |
+| **AMI** | 0.7710 | 0.6895 | 0.6273 | **0.5650** | **0.4868** |
+
+**At the level that makes it audible the old cell becomes a wash** — AMI 0.487
+is between blower-into-tubes and the hair dryer. **The bracket for that
+architecture was genuinely EMPTY**, and saying so is the result.
+
+**WHY, IN ONE NUMBER.** Six real moves, concatenated:
+
+| | AMI |
+|---|---:|
+| **`servo_traverse` as it shipped — the drive's order set** | **0.2831** |
+| **C1, the literal hair dryer** | **0.2823** |
+| the drag chain alone | 1.3711 |
+| C9, the positive control | 1.4835 |
+
+**The cell's dominant voice was a hair dryer to three decimal places.** R2-4144
+added the chain at 0.1–0.85 of it and measured no benefit — correct, and for a
+reason it did not name: it was adding a machine as a *garnish* to a stationary
+voice five times louder. **The balance is inverted here, not nudged**, and the
+physics agrees: a servo's radial force acts on a heavy stiff stator whose
+displacement is microns (the mass law, already coded, already the thing that
+fixed G-RING), while a cable chain is links undergoing real momentum changes
+against stops every 50 mm of travel.
+
+**AND THE CELL ONLY EXISTED WHILE A CLUSTER WAS MOVING.** Every voice was bound
+to one of fifteen clusters, so outside the picture's 9.9–21.3 s presentation
+window the layer had nothing scheduled at all — 67.5 % of the beat was gap
+against the positive control's 10.4 %. `staging_train` is the rest of the
+machine, and **its rate is arithmetic off the picture**: 616 parts / 33.0 s =
+**18.7 staging operations per second**, two Hertzian contacts each, running the
+whole beat because a stager runs ahead of a presenter.
+
+**THE DAMPING IS THE DIFFERENCE BETWEEN A RATTLE AND A WASH, AND THIS FILE
+ALREADY HELD THE RIGHT NUMBER.** `_ring_from`'s own docstring: eta reaches 0.15
+for a *mass-loaded, gasketed clamp* — and a locating nest with a part sitting on
+it is exactly that. The mean gap between contacts is 27 ms:
+
+| nest eta | 0.012 | 0.050 | 0.100 | 0.150 |
+|---|---:|---:|---:|---:|
+| T60 at 2 kHz | 29 ms | 7 ms | 3.5 ms | 2.3 ms |
+| staging AMI | **0.5998** | 1.2418 | **1.5836** | 1.8060 |
+
+At eta 0.012 the rings are **longer than the gap between them** and the train
+fills in — **the drag-chain failure, reached a third time by a different route.**
+At 0.10 it is above the positive control.
+
+---
+
+### R2-4147(4) — WHAT SHIPS, AND THE PREDICTION THAT WAS WRONG
+
+`CELL_GAIN` 0.008 → **0.075**, `STAGING_RATIO` **2.5**, `STAGING_ETA_NEST`
+**0.10**, `DRIVE_TO_CHAIN` **0.30**, the drag chain restored as the traverse's
+primary voice.
+
+**THE WARNING FROM THE AGENT THAT BUILT `cell_events` WAS THAT 9.4× LOUDER MUST
+BREAK G-EVENT AND G-RING. MEASURED, IT DID NOT, AND THE REASON IS THAT THE FIX
+WAS STRUCTURAL:**
+
+| beat-1 layer | R2-4141 | **R2-4147** |
+|---|---:|---:|
+| G-EVENT LDR | 23.40 dB PASS | **20.26 dB PASS** |
+| G-SUSTAIN note / chord / held | 0.021 / 0.000 / 0.0002 | **0.000 / 0.000 / 0.0000** |
+| G-ROOM | FAIL | **PASS** |
+| G-NOVEL r at 1.04 s | 0.578 | **0.382** |
+| gap sensation level | −13.99 dB | **+14.56 dB** |
+
+**A cell nine times louder passes G-EVENT by 6.6 dB, because short distinct
+events do not fill troughs — only long ones do.**
+
+**THE `nan` CLIFF THAT SET `CELL_GAIN = 0.008` WAS MEASURED ON A SIGNAL WITH NO
+ROOM IN IT.** `tools/r2_4141_gain_sweep.py` reads G-RING off `render_parts()`,
+which is the **dry** `assembly` layer; the showroom tail is a different bus
+(`reflect_showroom`). A dry layer has no room decay to measure, so its broadband
+T60 is noise in the region detector — which is why it is `nan` at 0.030 and a
+number at 0.050 and 0.075, **non-monotonic in the quantity it was read as a
+cliff in.** On the delivered master, where the tail is present, beat 1 gives 30
+bands and 4 decay regions at the shipped level. G-RING's Sabine limb also still
+runs when the broadband is `nan`; only the isolated-mode ratio is skipped.
+
+---
+
+### R2-4147(5) — SECONDARY: `wet_hf_hz`. **DO NOT IMPLEMENT IT TO HIT 0.35 s.**
+
+`wet_hf_hz=4000.0` is in `dsp.fdn_reverb`'s signature and in no line of its
+body. The per-line damping is a one-pole whose coefficient is chosen to make the
+**Nyquist** gain right, so its corner lands wherever that puts it. Measured on
+the 6.5 m line at the shipped settings:
+
+| | 250 Hz | 1 kHz | **4 kHz** | 8 kHz | 16 kHz | Nyquist |
+|---|---:|---:|---:|---:|---:|---:|
+| delivered RT60 | 2.39 s | 2.22 s | **1.10 s** | 0.50 s | 0.25 s | 0.21 s |
+
+Declared: 2.4 s low, **0.35 s above 4 kHz**. The crossover is an octave and a
+half too high and it **overshoots** past 12 kHz.
+
+**BUT THE DECLARED TARGET IS THE THING THAT IS WRONG.** Sabine with ISO 9613 air
+absorption, on the showroom's own 4290 m³ / 1996 m²:
+
+| RT60 at 4 kHz | surface alpha it demands |
+|---|---:|
+| **0.35 s (declared)** | **0.967 — anechoic-grade, impossible** |
+| 0.805 s (measured, R2-4141) | 0.408 — an ordinary treated showroom |
+| 2.4 s (declared low) | 0.122 — consistent with the code's own 0.144 |
+
+**The network is already delivering a physically correct high-frequency decay
+and the declaration is the error.** That also explains the previous prediction
+failure: a shelf built to chase 0.35 s lengthened the tail because it was
+chasing a number that should not be chased.
+
+**NOTHING IN THE REVERB WAS CHANGED IN THIS PASS**, deliberately: the correct
+fix is to change a *declaration*, which changes the room under every beat, and
+it must not be confounded with a beat-1 A/B the client is being asked to judge.
+It needs its own pass and its own listen.
+
+---
+
+## R2-4148 — THE RENDER, AND WHAT IT COST
+
+`audio/out/r2_4147/master_R2-4147.wav`, -23.00 LUFS / -1.12 dBTP, limiter GR
+-0.85 dB, `AUDIO_MASTER_OK`. `tools/percept_matrix.py` returns
+**`PERCEPT_MATRIX_OK`** — 40 thresholds, **0 provenance violations**, every
+control got its required verdict, every mutation fired. **G-CONSTRUCT is
+unchanged at 17 pre-existing violations and none of them are in the new code.**
+
+| beat 1, at MASTER level | R2-4141 | **R2-4147** |
+|---|---:|---:|
+| **G-PRESENCE** | **FAIL** −13.99 dB, 0 bands | **PASS** +9.24 dB, 7 bands |
+| **G-SUSTAIN** note cover | **FAIL 0.2075** | **PASS 0.0453** |
+| G-EVENT | PASS 14.69 dB | **PASS 14.93 dB** |
+| G-NOVEL r at 1.04 s | FAIL 0.549 | FAIL **0.413** |
+| G-MOD | FAIL 12.14 dB | FAIL 12.16 dB |
+| G-RING | **FAIL, ratio 1.529** | **INAPPLICABLE** |
+| the seat ladder's own RMS | −30.99 dBFS | **−31.01 dBFS** |
+
+**G-SUSTAIN AT BEAT 1 WAS FAILING ON THE SHIPPED MASTER AND THE LAYER BENCH SAID
+IT PASSED.** R2-4146 read G-SUSTAIN off the dry `assembly` layer, which measures
+0.000; the MASTER measures 0.2075 against a 0.20 bar, from partials in the room
+tail that the layer bench cannot see. The gate this entire rebuild exists to
+satisfy was red on the delivered file and the bench was pointed away from it.
+
+---
+
+### THE COST, AND IT IS THE ONE THE PREVIOUS AGENT PREDICTED
+
+**G-RING's beat-1 measurement is gone.** 4 usable decay regions → 2 →
+INAPPLICABLE. **That warning was correct and it is recorded as correct.** Three
+things bound it:
+
+1. It was **already FAILING** at beat 1 (1.529 against 1.5). A failing
+   measurement became an absent one; a passing one was not broken.
+2. **The reverb was not touched** — no line of `showroom_tail` or `fdn_reverb`
+   changed, so the room is the same room. What was lost is the ability to read
+   it off the master's beat 1, not the room's correctness.
+3. G-RING still measures and still fails at `5_lap` (14 regions), so the gate is
+   not blind.
+
+**It is still a real loss of coverage and it is not written off.** You cannot
+measure ISO 3382 T20 in an operating factory: the standard needs a 12 dB fall
+into a gap, and an audible machine is what is in the gap. The remedy is to
+measure the room from a source with no machine in it, and the obvious candidate
+— the `reflect_showroom` stem — **does not work either**: it is wet-only and
+continuous, so `decay_regions` finds ZERO regions in it, on R2-4141's stems as
+well as R2-4147's. **The room needs a dedicated impulse-response measurement
+rather than a stolen gap.** OPEN.
+
+---
+
+### THE OTHER NEW FAILURE, AND WHY IT IS NOT ACTED ON
+
+**G-PRESENCE FAILS AT `3_breach`** — AMI 0.1409, on the density limb. It is
+reported and it is deliberately not chased, for a reason that is about the
+instrument and not about the beat: **the AMI bar is control-derived from a corpus
+whose only positive is C9, and C9 is a BEAT-1 control.** The breach's
+between-event material is a decaying tail plus a debris bed, and a decaying tail
+has a smooth envelope by definition. Whether 0.1409 is a defect or the
+instrument reaching past its validation needs a breach-beat positive control,
+which this corpus does not have. **Adjusting the gate's scope to make the
+failure disappear would be the exact behaviour this file forbids**, so it stands
+as a red flag with a stated caveat. OPEN.
+
+---
+
+### DELIVERY
+
+Both films re-muxed `-c:v copy`, **video stream md5 verified byte-identical**:
+ProRes `c346a7a322a4a2a403727c1e85f17511`, H.265
+`235ef36e844a62b0e303e4138907b9fa`. 124.083333 s in both, unchanged.
+`watch/INDEX.md` updated; `watch/listen_2026-08-14/` re-cut with **NEW =
+R2-4147, OLD = R2-4141** so the A/B is pointed at the complaint itself rather
+than at a two-rejections-old negative; `CLIPS_OF.json` accurate.
+`audio/out/master.wav` and `watch/rejected_audio_R2-4079/` are untouched and
+both still fail.
+
+**PREDICTIONS MADE IN THIS PASS THAT WERE WRONG:**
+
+1. **That the staging train would raise the layer's density on its own.** It
+   lowered it — cell AMI 0.4101 → 0.3558 — because at eta 0.012 the nest rings
+   were longer than the gaps between contacts. Diagnosed only because the voice
+   was measured alone before being believed.
+2. **That `STAGING_RATIO` was a distance.** It is a work-rate ratio and the
+   answer is above 1, not below it; 0.55 was not enough and the curve says so.
+3. **That the drag chain needed to be re-added at R2-4144's levels.** At
+   0.1-0.85 of the drive it changes nothing, because the drive was the louder
+   voice AND the wrong one. It had to become the primary voice.
+4. **That a new gate would be right because its controls were chosen carefully.**
+   The first version of G-PRESENCE returned INAPPLICABLE for the hair dryer, the
+   drone AND 33 s of digital silence. It was caught by running the controls
+   before believing the gate, which is the only reason this entry is not another
+   rejection.

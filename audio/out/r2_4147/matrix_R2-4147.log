@@ -1,0 +1,132 @@
+>> threshold provenance: 40 thresholds, 0 violations, PASS=True
+   physics          17
+   published         1
+   control-derived  22
+>> ok   C1_octave_matched_noise            required FAIL got FAIL         fails: G-EVENT,G-PRESENCE
+        G-EVENT: 1_assembly: the median 2 s window spans only 4.70 dB of 20 ms level < 13.7 dB -- stationary, i.e. a bed and not a sequence of events
+        G-PRESENCE: 1_assembly: articulation index 0.2823 < 0.50 -- what is between the events is a smooth bed, not a train of distinct events
+>> ok   C2_tiled_loop                      required FAIL got FAIL         fails: G-GESTURE,G-MOD,G-NOVEL,G-PRESENCE,G-ROOM
+        G-GESTURE: 1_assembly: mean pairwise similarity 0.777 > 0.55
+        G-GESTURE: 1_assembly: worst pair 1.000 > 0.80
+        G-MOD: 1_assembly: 41.83 dB peak at 2.545 Hz > 6.0 dB
+        G-NOVEL: 1_assembly: r=0.999 at lag 2.000 s > 0.15
+        G-PRESENCE: 1_assembly: between the events the loudest third-octave sits -15.18 dB relative to the masked threshold of a quiet room, i.e. 15.2 dB UNDER it, with 0 bands audible -- there is nothing here to hear
+        G-PRESENCE: 1_assembly: articulation index 0.4839 < 0.50 -- what is between the events is a smooth bed, not a train of distinct events
+        G-ROOM: 1_assembly(a density): 1.00 of the 8 fixed lines are harmonics of 28.65 Hz (0.52 over chance) > 0.40 -- the tail is a delay-line bank, not a field
+        G-ROOM: 1_assembly(b mobility): 1.000 of peak observations recur in >=3 bursts > 0.35
+>> ok   C3_blower_plus_tubes               required FAIL got FAIL         fails: G-FLAT,G-GESTURE,G-HNR,G-ORDER,G-ROOM
+        G-FLAT: 5_lap: worst 3 s slice 0.661*W > 0.55*W
+        G-GESTURE: 5_lap: mean pairwise similarity 0.758 > 0.55
+        G-GESTURE: 5_lap: worst pair 0.907 > 0.80
+        G-HNR: 5_lap: 0.705 of windows below 0 dB > 0.10
+        G-ORDER: 5_lap: 0.180 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.063)
+        G-ROOM: 5_lap(c ripple): cepstral peak 274.66x median at 2.854 ms > 1.5x
+        G-ROOM: 5_lap(c ripple): 1/12-oct ripple 20.18 dB > 8.0 dB
+>> ok   C4_delivered_master                required FAIL got FAIL         fails: G-BALANCE,G-EVENT,G-FLAT,G-GESTURE,G-HNR,G-MOD,G-NOVEL,G-ORDER,G-PRESENCE,G-RING,G-ROOM,G-SUSTAIN
+        G-BALANCE: 1_assembly: near-white stems carry 1.000 of beat power > 0.25
+        G-BALANCE: 1_assembly: protagonist assembly leads the near-white background (crowd+engine+room+structure) by -0.57 dB < +8.0 dB
+        G-EVENT: 1_assembly: the median 2 s window spans only 13.25 dB of 20 ms level < 13.7 dB -- stationary, i.e. a bed and not a sequence of events
+        G-EVENT: 3_breach: the median 2 s window spans only 10.11 dB of 20 ms level < 13.7 dB -- stationary, i.e. a bed and not a sequence of events
+        G-FLAT: 4_transit: worst 3 s slice 0.583*W > 0.55*W
+        G-FLAT: 5_lap: worst 3 s slice 0.900*W > 0.55*W
+        G-GESTURE: 1_assembly: worst pair 0.808 > 0.80
+        G-HNR: 4_transit: 0.298 of windows below 0 dB > 0.10
+        G-HNR: 6_ending: 0.274 of windows below 0 dB > 0.10
+        G-MOD: 1_assembly: 16.71 dB peak at 0.727 Hz > 6.0 dB
+>> ok   C5_swap_b1_loop                    required FAIL got FAIL         fails: G-EVENT,G-FLAT,G-GESTURE,G-HNR,G-MOD,G-NOVEL,G-ORDER,G-PRESENCE,G-ROOM,G-SUSTAIN
+        G-EVENT: 3_breach: the median 2 s window spans only 10.11 dB of 20 ms level < 13.7 dB -- stationary, i.e. a bed and not a sequence of events
+        G-FLAT: 4_transit: worst 3 s slice 0.583*W > 0.55*W
+        G-FLAT: 5_lap: worst 3 s slice 0.900*W > 0.55*W
+        G-GESTURE: 1_assembly: mean pairwise similarity 0.836 > 0.55
+        G-GESTURE: 1_assembly: worst pair 0.978 > 0.80
+        G-HNR: 4_transit: 0.298 of windows below 0 dB > 0.10
+        G-HNR: 6_ending: 0.274 of windows below 0 dB > 0.10
+        G-MOD: 1_assembly: 17.21 dB peak at 0.727 Hz > 6.0 dB
+        G-NOVEL: 1_assembly: r=0.712 at lag 2.750 s > 0.15
+>> ok   C6_jittered_identical_gestures     required FAIL got FAIL         fails: G-GESTURE,G-NOVEL,G-PRESENCE,G-ROOM,G-SUSTAIN
+        G-GESTURE: 1_assembly: worst pair 1.000 > 0.80
+        G-NOVEL: 1_assembly: r=0.578 at lag 3.790 s > 0.15
+        G-PRESENCE: 1_assembly: between the events the loudest third-octave sits -238.86 dB relative to the masked threshold of a quiet room, i.e. 238.9 dB UNDER it, with 0 bands audible -- there is nothing here to hear
+        G-ROOM: 1_assembly(b mobility): 0.836 of peak observations recur in >=3 bursts > 0.35
+        G-SUSTAIN: 1_assembly: something holds a pitch for 0.408 of the beat > 0.20
+        G-SUSTAIN: 1_assembly: three or more pitches are held at once for 0.315 of the beat > 0.05 -- that is a chord, not a machine
+>> ok   C7_master_plus_tilt                required FAIL got FAIL         fails: G-FLAT,G-RING,G-ROOM
+        G-FLAT: 5_lap: worst 3 s slice 0.743*W > 0.55*W
+        G-RING: 5_lap: a 1/6-oct band at 1796 Hz rings 3.47x the broadband decay > 1.50x -- an under-damped isolated mode, not a room
+        G-ROOM: 5_lap(c ripple): cepstral peak 33.93x median at 1.521 ms > 1.5x
+        G-ROOM: 5_lap(c ripple): 1/12-oct ripple 19.45 dB > 8.0 dB
+>> ok   C8_constant_rpm_pu                 required PASS got PASS         fails: -
+>> ok   C8b_tonal_showroom_drone           required FAIL got FAIL         fails: G-EVENT,G-PRESENCE,G-SUSTAIN
+        G-EVENT: 1_assembly: the median 2 s window spans only 0.64 dB of 20 ms level < 13.7 dB -- stationary, i.e. a bed and not a sequence of events
+        G-PRESENCE: 1_assembly: articulation index 0.0364 < 0.50 -- what is between the events is a smooth bed, not a train of distinct events
+        G-SUSTAIN: 1_assembly: something holds a pitch for 0.597 of the beat > 0.20
+        G-SUSTAIN: 1_assembly: three or more pitches are held at once for 0.576 of the beat > 0.05 -- that is a chord, not a machine
+>> ok   C9_assembly_cell                   required PASS got PASS         fails: -
+        OPEN, NOT COUNTED -- G-ROOM: LIMB (c) ONLY, and both of its bars sit under their own floors. (1) The cepstral bar is 1.5x peak-over-median. Measured ...
+            1_assembly(c ripple): cepstral peak 5.91x median at 1.333 ms > 1.5x
+            1_assembly(c ripple): 1/12-oct ripple 10.45 dB > 8.0 dB
+>> per-gate mutation controls (a gate that does not move when its own defect is re-injected is blind):
+   FIRED  G-FLAT     M-FLAT  broadband bed over the constant-rpm unit
+            5_lap: worst 3 s slice 0.761*W > 0.55*W
+   FIRED  G-HNR      M-HNR   noise through fixed high-Q pipes at beat level
+            5_lap: 0.149 of windows below 0 dB > 0.10
+   FIRED  G-SUSTAIN  M-SUST  three held notes over the assembly cell
+            1_assembly: something holds a pitch for 0.632 of the beat > 0.20
+            1_assembly: three or more pitches are held at once for 0.301 of the beat > 0.05 -- that is a chord, not a machine
+            1_assembly: held notes carry 0.250 of the beat's power > 0.15
+   FIRED  G-EVENT    M-EVENT the assembly cell's own spectrum, stationary
+            1_assembly: the median 2 s window spans only 2.02 dB of 20 ms level < 13.7 dB -- stationary, i.e. a bed and not a sequence of events
+   FIRED  G-NOVEL    M-NOVEL 2 s block tiled over the assembly cell
+            1_assembly: r=1.000 at lag 2.000 s > 0.15
+   FIRED  G-MOD      M-MOD   gestures back on an exact 1.375 s grid
+            1_assembly: 22.06 dB peak at 1.455 Hz > 6.0 dB
+   FIRED  G-GESTURE  M-GEST  one gesture repeated, jittered grid
+            1_assembly: worst pair 1.000 > 0.80
+   FIRED  G-ROOM     M-ROOMc master.py:530-532 self-delay comb re-injected
+            1_assembly(c ripple): cepstral peak 85.27x median at 22.583 ms > 1.5x
+            1_assembly(c ripple): 1/12-oct ripple 10.41 dB > 8.0 dB
+   FIRED  G-ROOM     M-ROOMb fixed inharmonic resonator bank, no dry blend
+            1_assembly(c ripple): cepstral peak 7.32x median at 1.333 ms > 1.5x
+            1_assembly(c ripple): 1/12-oct ripple 19.70 dB > 8.0 dB
+   FIRED  G-ROOM     M-ROOMa 8-tap FDN, no diffusion: lines are delay harmonics
+            1_assembly(c ripple): cepstral peak 120.33x median at 18.938 ms > 1.5x
+   FIRED  G-RING     M-RING  tail at RT60 4.5 s in a 2.4 s Sabine room
+            1_assembly: a 1/6-oct band at 2263 Hz rings 2.22x the broadband decay > 1.50x -- an under-damped isolated mode, not a room
+   FIRED  G-ORDER    M-ORDER comb detuned 9 % off the telemetry rpm
+            5_lap: 0.029 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.081)
+   FIRED  G-BALANCE  M-BAL   near-white stem raised 26 dB (baseline PASS)
+            1_assembly: near-white stems carry 0.799 of beat power > 0.25
+            1_assembly: protagonist assembly leads the near-white background (wind) by -6.00 dB < +8.0 dB
+   FIRED  G-CONSTRUCT M-CONS  three source fixtures that break the law
+            bp_no_derivation: 1 hit(s) -> FAIL
+            raw_white_to_bus: 1 hit(s) -> FAIL
+            rng_click: 1 hit(s) -> FAIL
+>> G-CONSTRUCT on 8 render-path modules: 17 violations, verdict FAIL
+   dsp.py:187 white() reaches a bus with no scheduler and no physically-parameterised filter
+      w = white(n, seed)
+   dsp.py:197 white() reaches a bus with no scheduler and no physically-parameterised filter
+      w = white(n, seed)
+   dsp.py:159 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter
+      return np.random.default_rng(seed).standard_normal(n).astype(np.float32)
+   engine.py:790 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter
+      pops[a:a + L] += r.standard_normal(L) * env * r.uniform(0.25, 1.0)
+   engine.py:592 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter
+      crack[b - ncr:b] += (_ev_rng(1, i).standard_normal(ncr) * env * 0.40).astype(np.float32)
+   engine.py:599 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter
+      crack[a:a + ncr] += (_ev_rng(2, i).standard_normal(ncr) * env * 0.5).astype(np.float32)
+   layers.py:170 brown() reaches a bus with no scheduler and no physically-parameterised filter
+      base = dsp.brown(n, seed, 25.0, sr)
+   layers.py:171 pink() reaches a bus with no scheduler and no physically-parameterised filter
+      mid = dsp.pink(n, seed + 1, sr)
+   layers.py:172 white() reaches a bus with no scheduler and no physically-parameterised filter
+      hiss = dsp.white(n, seed + 2)
+   layers.py:363 white() reaches a bus with no scheduler and no physically-parameterised filter
+      src = dsp.white(n, seed)
+   layers.py:2806 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter
+      x = rng.standard_normal(n)
+   layers.py:2838 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter
+      x = rng.standard_normal(n_space)
+>> stems for adjudication: audio/out/r2_4147/stems (used, 17 stems)
+>> adjudication audio/out/r2_4147/master_R2-4147.wav: FAIL fails ['G-BALANCE', 'G-EVENT', 'G-FLAT', 'G-HNR', 'G-MOD', 'G-NOVEL', 'G-ORDER', 'G-PRESENCE', 'G-RING', 'G-ROOM', 'G-SUSTAIN']
+>> wrote audio/out/r2_4147/matrix_R2-4147.json
+>> STAGE RESULT: PERCEPT_MATRIX_OK

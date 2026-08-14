@@ -1,0 +1,58 @@
+[
+ {
+  "label": "C9_assembly_cell           POSITIVE -- a machine",
+  "LDR": 37.38479642103844,
+  "GDR": 12.209551703013481,
+  "AMI": 1.4835028773784562,
+  "rms": 0.08994567812432741
+ },
+ {
+  "label": "C1_octave_matched_noise    NEGATIVE -- the hair dryer",
+  "LDR": 4.6980650965595,
+  "GDR": NaN,
+  "AMI": 0.2822627058577842,
+  "rms": 0.05786964256003125
+ },
+ {
+  "label": "C8b_tonal_showroom_drone   NEGATIVE -- the drone",
+  "LDR": 0.6417472788018017,
+  "GDR": NaN,
+  "AMI": 0.03642075783251445,
+  "rms": 0.089921083051562
+ },
+ {
+  "label": "C3_blower_plus_tubes       NEGATIVE -- blower into tubes",
+  "LDR": 8.786541882029274,
+  "GDR": 1.9218491444907713,
+  "AMI": 0.5589428851461061,
+  "rms": 0.05586501916830781
+ },
+ {
+  "label": "NULL white noise           the smooth-bed null",
+  "LDR": 0.6336134412727379,
+  "GDR": NaN,
+  "AMI": 0.08494084559156086,
+  "rms": 0.05001711065200825
+ },
+ {
+  "label": "film part impacts alone    ",
+  "LDR": 27.16714954924228,
+  "GDR": 10.187938247143137,
+  "AMI": 0.8036998201796881,
+  "rms": 0.025833275700378674
+ },
+ {
+  "label": "film cell alone (0.008)    ",
+  "LDR": 10.615756207900855,
+  "GDR": 20.35418882456451,
+  "AMI": 0.41012245238520356,
+  "rms": 0.0009556069087496863
+ },
+ {
+  "label": "SHIPPED beat-1 layer       ",
+  "LDR": 23.396172169334072,
+  "GDR": 10.69216601825466,
+  "AMI": 0.7748670976819286,
+  "rms": 0.025846243192760757
+ }
+]

@@ -1,0 +1,42 @@
+[
+ {
+  "label": "STAGING_RATIO 1.000",
+  "audible_db": 12.009560241880092,
+  "bands": 9.0,
+  "ami": 0.6745995667915555,
+  "ldr_db": 15.61647655187783,
+  "gap_frac": 0.6712121212121213,
+  "ring_t60": NaN,
+  "ring_verdict": "INAPPLICABLE"
+ },
+ {
+  "label": "STAGING_RATIO 2.500",
+  "audible_db": 14.562725809179472,
+  "bands": 9.0,
+  "ami": 0.7063373259719362,
+  "ldr_db": 20.26429074864746,
+  "gap_frac": 0.6745454545454546,
+  "ring_t60": NaN,
+  "ring_verdict": "INAPPLICABLE"
+ },
+ {
+  "label": "STAGING_RATIO 4.000",
+  "audible_db": 14.718904190553843,
+  "bands": 9.0,
+  "ami": 0.7211358011559958,
+  "ldr_db": 22.236140610010764,
+  "gap_frac": 0.6745454545454546,
+  "ring_t60": NaN,
+  "ring_verdict": "INAPPLICABLE"
+ },
+ {
+  "label": "STAGING_RATIO 6.000",
+  "audible_db": 14.713170475103428,
+  "bands": 9.0,
+  "ami": 0.7292603014359819,
+  "ldr_db": 24.180033451133383,
+  "gap_frac": 0.6745454545454546,
+  "ring_t60": NaN,
+  "ring_verdict": "INAPPLICABLE"
+ }
+]

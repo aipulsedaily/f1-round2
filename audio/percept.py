@@ -2159,6 +2159,370 @@ def g_sustain(mono, sr, beats, percussive_beats=None):
             "verdict": _verdict(per_beat, failures, inapp)}
 
 
+# ---------------------------------------- the absolute-audibility estimators -
+# R2-4147. These are the only ABSOLUTE measurements in this file: everything
+# else is a statement about a signal's own internal structure, and these are
+# statements about whether a listener's ear is reached at all.
+
+# THE CALIBRATION, DECLARED AND DERIVED. EBU R 128 / Tech 3343 monitoring
+# practice puts a -23 LUFS programme at 73 dB SPL at the reference position.
+# The film is delivered at -23.0 LUFS (`master.TARGET_LUFS_I`). A domestic
+# viewer does not run reference level; 12 dB under it is the median domestic
+# figure and it is the one gated on, because the client watched this on a
+# laptop and a passage that is inaudible at home is inaudible.
+REF_SPL_AT_TARGET_LUFS = 73.0
+DOMESTIC_OFFSET_DB = 12.0
+# NR-25 (ISO R 1996): octave-band L = a + b*N. ISO/ANSI recommend NR 25-30 for
+# a living room; 25 is the QUIET end and therefore the conservative choice for
+# a bar -- material inaudible in the quietest domestic room is inaudible.
+NR_BANDS = np.array([31.5, 63.0, 125.0, 250.0, 500.0, 1000.0, 2000.0, 4000.0,
+                     8000.0])
+NR_A = np.array([55.4, 35.5, 22.0, 12.0, 4.8, 0.0, -3.5, -6.1, -8.0])
+NR_B = np.array([0.681, 0.790, 0.870, 0.930, 0.974, 1.000, 1.015, 1.025, 1.030])
+ROOM_NR = 25.0
+ART_LO, ART_HI = 4.0, 100.0
+ART_ENV_HZ = 400.0
+
+
+def threshold_in_quiet_db(f_hz):
+    """ISO 226 / Terhardt's closed form for the absolute threshold of hearing,
+    dB SPL against frequency. A PUBLISHED curve, not a fit to this film."""
+    f = np.maximum(np.asarray(f_hz, dtype=np.float64), 20.0) / 1000.0
+    return (3.64 * f ** -0.8
+            - 6.5 * np.exp(-0.6 * (f - 3.3) ** 2)
+            + 1e-3 * f ** 4)
+
+
+def room_noise_third_octave_db(f_hz, nr=ROOM_NR):
+    """NR-`nr` octave levels interpolated in log f, spread to third-octaves.
+    An octave holds three thirds, so each third is 10*log10(3) = 4.77 dB down."""
+    oct_l = NR_A + NR_B * nr
+    lf = np.log2(np.maximum(np.asarray(f_hz, dtype=np.float64), 20.0))
+    return np.interp(lf, np.log2(NR_BANDS), oct_l) - 10.0 * np.log10(3.0)
+
+
+def masked_threshold_db(f_hz, nr=ROOM_NR):
+    """What a band must exceed to be heard at all, in a real domestic room."""
+    return np.maximum(threshold_in_quiet_db(f_hz),
+                      room_noise_third_octave_db(f_hz, nr))
+
+
+def third_octave_centres(f_lo=25.0, f_hi=16000.0):
+    """IEC 61260 preferred centres. Audibility is decided inside a critical
+    band and a third-octave is within ~1.4x of the ERB where it matters."""
+    n0 = int(np.round(3.0 * np.log2(f_lo / 1000.0)))
+    n1 = int(np.round(3.0 * np.log2(f_hi / 1000.0)))
+    return 1000.0 * 2.0 ** (np.arange(n0, n1 + 1) / 3.0)
+
+
+def band_spl(seg, sr, full_scale_spl_db, centres=None):
+    """Per-third-octave SPL of one segment at the declared calibration."""
+    if centres is None:
+        centres = third_octave_centres()
+    seg = np.asarray(seg, dtype=np.float64)
+    n = len(seg)
+    if n < 256:
+        return centres, np.full(len(centres), -np.inf)
+    nfft = int(2 ** np.ceil(np.log2(min(max(n, 4096), 65536))))
+    f, pxx = _sig.welch(seg, fs=sr, nperseg=min(nfft, n), window="hann",
+                        scaling="spectrum")
+    out = np.empty(len(centres))
+    for i, fc in enumerate(centres):
+        m = (f >= fc / 2 ** (1 / 6)) & (f < fc * 2 ** (1 / 6))
+        p = float(pxx[m].sum()) if m.any() else 0.0
+        out[i] = 10.0 * np.log10(max(p, 1e-30)) + full_scale_spl_db
+    return centres, out
+
+
+def event_mask(mono, sr, guard_s=0.35, hop_s=0.010):
+    """WHICH SAMPLES ARE 'BETWEEN THE EVENTS', measured off the signal itself.
+
+    A frame is EVENT if its 20 ms level is BOTH within 12 dB of the passage's
+    p98 AND more than 6 dB over the passage's own median. The mask is dilated
+    FORWARD by `guard_s` so an impact's own decay -- which is the thing a
+    listener does hear -- is never counted as the gap it decays into.
+    Everything else is GAP.
+
+    THE SECOND CONDITION IS NOT A REFINEMENT, IT IS WHAT MAKES THE GATE WORK ON
+    THE CASES IT EXISTS FOR. With only the p98 test, a STATIONARY signal has
+    p98 ~ p50, so every frame lands within 12 dB of the top and the whole
+    passage is marked EVENT -- leaving no gap to measure and returning
+    INAPPLICABLE. Measured, before this was fixed: the hair dryer C1, the drone
+    C8b and THIRTY-THREE SECONDS OF DIGITAL SILENCE all came back INAPPLICABLE
+    from the one gate built to fail them. A gate that goes blind on its own
+    negative controls is the failure this file has already documented twice
+    (G-HNR at beat 1, G-RING's `nan` broadband).
+
+    With both conditions, a stationary passage is ALL GAP -- which is correct
+    and is the whole point: a hair dryer has no events, so it is nothing but
+    the material between them, and it is then judged on whether that material
+    is articulated. Silence is likewise all gap, and gap containing nothing.
+    """
+    w = max(int(0.020 * sr), 8)
+    hop = max(int(hop_s * sr), 1)
+    n = (len(mono) - w) // hop + 1
+    if n < 8:
+        return np.zeros(len(mono), dtype=bool)
+    idx = np.arange(w)[None, :] + hop * np.arange(n)[:, None]
+    L = 20.0 * np.log10(np.maximum(np.sqrt((mono[idx] ** 2).mean(axis=1)), 1e-12))
+    hot = (L > (np.percentile(L, 98) - 12.0)) & (L > np.median(L) + 6.0)
+    k = int(guard_s / hop_s)
+    if k > 0:
+        hot = np.convolve(hot.astype(float), np.ones(k + 1), mode="full")[:n] > 0
+    out = np.zeros(len(mono), dtype=bool)
+    for i in np.flatnonzero(hot):
+        out[i * hop:i * hop + w] = True
+    return out
+
+
+def gap_audibility(mono, sr, lufs_i, seg_s=1.0, spl_offset_db=DOMESTIC_OFFSET_DB):
+    """SENSATION LEVEL OF THE GAPS, in dB over the masked threshold.
+
+    A listener sets the volume by the PROGRAMME, so a film delivered at
+    `lufs_i` and played at (REF - offset) dB SPL puts 0 dBFS at
+    (REF - offset) - lufs_i dB SPL, and every band is measured against that.
+
+    Reported as the MEDIAN over 1 s gap segments, so one busy second cannot
+    carry a beat -- `local_dynamic_range`'s own reasoning, pointed at the
+    opposite quantity.
+    """
+    mono = np.asarray(mono, dtype=np.float64)
+    fs_spl = (REF_SPL_AT_TARGET_LUFS - spl_offset_db) - lufs_i
+    gap = ~event_mask(mono, sr)
+    centres = third_octave_centres()
+    thr = masked_threshold_db(centres)
+    ns = int(seg_s * sr)
+    rows = []
+    for i in range(0, len(mono) - ns + 1, ns):
+        g = gap[i:i + ns]
+        if g.mean() < 0.60:
+            continue
+        s = mono[i:i + ns][g]
+        if len(s) < int(0.20 * sr):
+            continue
+        _, spl = band_spl(s, sr, fs_spl, centres)
+        sl = spl - thr
+        rows.append((float(np.max(sl)), int((sl > 0).sum()),
+                     float(10.0 * np.log10(np.sum(10.0 ** (spl / 10.0))))))
+    if not rows:
+        return {"median_sensation_db": float("nan"),
+                "median_bands_audible": float("nan"),
+                "median_gap_spl_db": float("nan"),
+                "gap_fraction": float(gap.mean()),
+                "why": "no segment of this passage is mostly gap"}
+    # A GAP THAT CONTAINS NOTHING IS A MEASUREMENT, NOT A MISSING ONE. Digital
+    # silence gives -inf here, and -inf must reach the gate as a FAIL rather
+    # than as a nan that reads INAPPLICABLE -- which is precisely how the first
+    # version of this gate scored 33 s of silence as "not applicable".
+    a = np.nan_to_num(np.array(rows), neginf=-400.0, posinf=400.0)
+    return {"median_sensation_db": float(np.median(a[:, 0])),
+            "median_bands_audible": float(np.median(a[:, 1])),
+            "median_gap_spl_db": float(np.median(a[:, 2])),
+            "p10_sensation_db": float(np.percentile(a[:, 0], 10)),
+            "n_gap_segments": len(rows),
+            "full_scale_spl_db": fs_spl,
+            "gap_fraction": float(gap.mean())}
+
+
+def articulation_modulation_index(mono, sr, f_lo=ART_LO, f_hi=ART_HI):
+    """RMS OF THE ENVELOPE'S ARTICULATION BAND OVER THE ENVELOPE'S MEAN.
+
+    THE ONE THING IT MUST NOT BE IS TROUGH DEPTH. A dense machine and an empty
+    gap both make `local_dynamic_range` large -- the machine because its
+    contacts are loud, the gap because its floor is low -- and that degeneracy
+    is what steered R2-4141 into silence. A MODULATION INDEX cannot be bought
+    with level: it is normalised by the envelope's own mean, so a passage with a
+    SMOOTH envelope scores low however loud it is, and a passage with no signal
+    has no envelope and returns nan rather than a perfect score.
+
+    4-100 Hz is not chosen. 4 Hz is below the slowest rate an actuator or a
+    hand produces, and 100 Hz is the roughness boundary above which the ear
+    stops resolving separate events and starts hearing timbre -- above it a
+    train IS a tone, which is the failure this project has shipped four times.
+
+    Stationary noise is not zero here and must not be: a band-limited noise
+    envelope fluctuates by its own Rayleigh statistics. White noise measures
+    0.0849 and that is the floor of the scale, not an error.
+    """
+    mono = np.asarray(mono, dtype=np.float64)
+    if mono.ndim > 1:
+        mono = mono.mean(axis=1)
+    dec = max(int(sr // (4 * ART_ENV_HZ)), 1)
+    e = _sig.sosfiltfilt(_sig.butter(4, ART_ENV_HZ, btype="lowpass", fs=sr,
+                                     output="sos"), np.abs(mono))[::dec]
+    fs = sr / dec
+    mu = float(np.mean(e))
+    if mu <= 1e-12 or len(e) < int(4 * fs):
+        return {"ami": float("nan"), "why": "no envelope: nothing is here"}
+    # detrend at f_lo/2 so a macro fade cannot enter the band
+    e = _sig.sosfiltfilt(_sig.butter(2, f_lo * 0.5, btype="highpass", fs=fs,
+                                     output="sos"), e)
+    band = _sig.sosfiltfilt(_sig.butter(4, [f_lo, f_hi], btype="bandpass",
+                                        fs=fs, output="sos"), e)
+    return {"ami": float(np.sqrt(np.mean(band ** 2)) / mu), "env_fs": fs}
+
+
+# ------------------------------------------------------------- G-PRESENCE ---
+# R2-4147. THE SUITE HAD NO CHECK FOR "IS ANYTHING AUDIBLE HERE", AND SILENCE
+# PASSED EVERY GATE IN IT.
+#
+# Every quality instrument above is RELATIVE: it measures structure WITHIN
+# whatever it is handed. G-EVENT reads the spread of the short-term level,
+# G-SUSTAIN the cover of held partials, G-MOD the depth of a modulation,
+# G-FLAT the shape of a spectrum. Feed any of them digital silence and it scores
+# perfectly -- infinite local dynamic range, zero note cover, no modulation --
+# so a beat that contains NOTHING is, to this suite, a clean beat.
+#
+# That is not a hypothetical. R2-4141's CELL_GAIN bracket had a measured upper
+# bound and an ARGUED lower bound, silence sat inside it, and the suite could
+# not see the difference. `tools/r2_4147_audible.py` measured the delivered
+# master: between the part impacts, beat 1 reaches 26.4 dB SPL broadband at
+# domestic playback and its most audible third-octave sits 14.0 dB BELOW the
+# masked threshold in an NR-25 room. ZERO bands clear threshold. The client
+# said "now beat 1 i dont hear anything until the tubes play" and the client
+# was reading an instrument the suite did not have.
+#
+# TWO LIMBS, AND NEITHER IS SUFFICIENT ALONE. THAT IS THE POINT.
+#
+#   AUDIBLE -- the sensation level of the material BETWEEN the events, in dB
+#     over the masked threshold of a quiet domestic room. It is ABSOLUTE: it
+#     depends on the delivered loudness and a declared playback calibration,
+#     not on the passage's own internal contrast. Silence scores -inf.
+#
+#   AMI -- the articulation modulation index, the envelope's 4-100 Hz RMS over
+#     its mean. It says whether what is there is a train of distinct events or
+#     a smooth bed. It is level-invariant by construction.
+#
+# MEASURED, AND THE MEASUREMENT IS WHY BOTH ARE HERE (`r2_4147_event_diag.py`,
+# the film's own impacts plus one filler, all fillers at matched level):
+#
+#     filler            AMI      AUDIBLE dB
+#     nothing         0.8037       -140.71     <- best AMI in the table
+#     the cell        0.8179        +14.56
+#     a hair dryer    0.3309         (aud.)
+#     a drone         0.1807         (aud.)
+#
+# SILENCE HAS THE SECOND-BEST AMI IN THAT TABLE AND IS INAUDIBLE; the hair
+# dryer is audible and has the worst AMI but one. Either limb alone can be
+# satisfied by the defect the other one catches, which is exactly the trap
+# G-EVENT fell into, and it is why this gate has two limbs rather than a
+# composite score that could be traded off between them.
+_T("G_PRESENCE.min_gap_sensation_db", 0.0, "dB over masked threshold",
+   "physics",
+   "ZERO, and a bar at zero cannot be accused of being tuned: it is the "
+   "definition of audible. A third-octave band is heard when its level exceeds "
+   "the greater of the ISO 226 / Terhardt threshold in quiet and the ambient "
+   "of the room it is played in. The room is NR-25 (ISO R 1996 noise rating, "
+   "L = a + b*N per octave, minus 10*log10(3) for a third), which is the QUIET "
+   "END of ISO/ANSI's 25-30 domestic recommendation -- chosen deliberately, "
+   "because material that is inaudible even in the quietest living room is "
+   "inaudible. Playback is the R 128 / Tech 3343 reference of 73 dB SPL for a "
+   "-23 LUFS programme, less 12 dB for domestic listening. The delivered "
+   "R2-4141 master reads -13.99 dB here.")
+_T("G_PRESENCE.min_articulation_index", 0.50, "dimensionless",
+   "control-derived",
+   "THE CORPUS SETS IT AND THE CORPUS IS PRINTED (`tools/r2_4147_sep.py`, all "
+   "at beat 1 on the shipped estimator): POSITIVE C9 assembly cell 1.4835. "
+   "NEGATIVES: C3 blower-into-tubes 0.5589, C1 the hair dryer 0.2823, white "
+   "noise 0.0849, C8b the drone 0.0364. The film's own part impacts read "
+   "0.8037. 0.50 sits under the loudest negative rather than at the geometric "
+   "midpoint, and that is DELIBERATE AND CONSERVATIVE: this corpus has exactly "
+   "ONE positive at beat 1, so there is no spread to estimate and a bar placed "
+   "at the midpoint (0.91) would be a bar drawn through a single point. It is "
+   "placed to fail every negative the corpus contains and no higher. IT IS NOT "
+   "A TARGET -- C9 is the target, and anything reading near 0.50 is passing by "
+   "a hair and should be read as such.")
+
+
+def g_presence(mono, sr, beats, lufs_i=None, percussive_beats=None):
+    """G-PRESENCE -- IS ANYTHING AUDIBLE BETWEEN THE EVENTS, AND IS IT A MACHINE.
+
+    `lufs_i` is the delivered programme loudness and it is what makes this gate
+    ABSOLUTE. Without it there is no calibration and the gate reports
+    INAPPLICABLE rather than guessing, because a guessed calibration is how an
+    absolute measurement quietly becomes a relative one.
+    """
+    pb = PERCUSSIVE_BEATS if percussive_beats is None else percussive_beats
+    per_beat, failures, inapp = {}, [], []
+    lim_a = V("G_PRESENCE.min_gap_sensation_db")
+    lim_m = V("G_PRESENCE.min_articulation_index")
+    # -inf IS A MEASUREMENT AND IT IS THE WORST ONE. `loudness_lufs` returns
+    # -inf for a programme with no signal in it, and an earlier version of this
+    # guard treated that the same as "no calibration supplied" -- so THIRTY-
+    # THREE SECONDS OF DIGITAL SILENCE came back INAPPLICABLE from the gate
+    # whose entire reason for existing is that silence passes everything else.
+    # A silent programme fails here, by name.
+    if lufs_i is not None and np.isneginf(lufs_i):
+        return {"gate": "G-PRESENCE", "kind": QUALITY,
+                "per_beat": {b.name: {"outcome": FAIL} for b in beats
+                             if b.name in pb},
+                "failures": ["the programme has no measurable loudness at all: "
+                             "there is no signal here"],
+                "inapplicable": [], "verdict": FAIL}
+    if lufs_i is None or not np.isfinite(lufs_i):
+        return {"gate": "G-PRESENCE", "kind": QUALITY, "per_beat": {},
+                "failures": [], "inapplicable": ["no programme loudness: this "
+                                                 "gate is absolute and will "
+                                                 "not guess a calibration"],
+                "verdict": INAPPLICABLE}
+    for b in beats:
+        if b.name not in pb:
+            inapp.append(f"{b.name}: an engine beat -- a power unit running is "
+                         f"audible by physics and G-ORDER judges it")
+            continue
+        seg = _slice(mono, sr, b)
+        if len(seg) < int(4.0 * sr):
+            inapp.append(f"{b.name}: shorter than 4 s")
+            continue
+        a = gap_audibility(seg, sr, lufs_i)
+        m = articulation_modulation_index(seg, sr)
+        row = {"gap_sensation_db": a.get("median_sensation_db", float("nan")),
+               "gap_bands_audible": a.get("median_bands_audible", float("nan")),
+               "gap_spl_db": a.get("median_gap_spl_db", float("nan")),
+               "gap_fraction": a.get("gap_fraction", float("nan")),
+               "articulation_index": m.get("ami", float("nan")),
+               "limits": {"gap_sensation_db": lim_a,
+                          "articulation_index": lim_m},
+               "outcome": PASS}
+        if not np.isfinite(row["gap_sensation_db"]):
+            inapp.append(f"{b.name}: {a.get('why', 'no gap segments')}")
+            continue
+        if row["gap_sensation_db"] < lim_a:
+            row["outcome"] = FAIL
+            failures.append(
+                f"{b.name}: between the events the loudest third-octave sits "
+                f"{row['gap_sensation_db']:.2f} dB relative to the masked "
+                f"threshold of a quiet room, i.e. {-row['gap_sensation_db']:.1f} "
+                f"dB UNDER it, with {row['gap_bands_audible']:.0f} bands "
+                f"audible -- there is nothing here to hear")
+        # A nan ARTICULATION INDEX MEANS "no envelope: nothing is here", which
+        # is a FAIL and not an absent measurement. The only quantity that
+        # returns it is silence, and silence is what this gate exists to catch.
+        if not np.isfinite(row["articulation_index"]):
+            row["outcome"] = FAIL
+            failures.append(
+                f"{b.name}: no envelope at all -- there is no signal here to "
+                f"be articulated")
+        elif row["articulation_index"] < lim_m:
+            row["outcome"] = FAIL
+            failures.append(
+                f"{b.name}: articulation index {row['articulation_index']:.4f} "
+                f"< {lim_m:.2f} -- what is between the events is a smooth bed, "
+                f"not a train of distinct events")
+        per_beat[b.name] = row
+    return {"gate": "G-PRESENCE", "kind": QUALITY,
+            "measures": ("the sensation level of the material BETWEEN the "
+                         "events, in dB over the greater of the threshold in "
+                         "quiet and an NR-25 room, at R 128 playback less 12 dB "
+                         "for domestic listening; and the articulation "
+                         "modulation index, the envelope's 4-100 Hz RMS over "
+                         "its mean. ABSOLUTE, so silence fails it, which is the "
+                         "one thing every other quality gate here scores as "
+                         "perfect."),
+            "per_beat": per_beat, "failures": failures, "inapplicable": inapp,
+            "verdict": _verdict(per_beat, failures, inapp)}
+
+
 def g_event(mono, sr, beats, percussive_beats=None):
     """G-EVENT -- IS IT EVENTFUL, measured in the time domain.
 
@@ -2875,9 +3239,9 @@ def constant_rpm_telemetry(rpm=11000.0):
 
 
 # ============================================================ the suite =====
-QUALITY_GATES = ("G-FLAT", "G-HNR", "G-SUSTAIN", "G-EVENT", "G-ORDER",
-                 "G-IDENTITY", "G-RING", "G-NOVEL", "G-MOD", "G-GESTURE",
-                 "G-ROOM", "G-BALANCE")
+QUALITY_GATES = ("G-FLAT", "G-HNR", "G-SUSTAIN", "G-EVENT", "G-PRESENCE",
+                 "G-ORDER", "G-IDENTITY", "G-RING", "G-NOVEL", "G-MOD",
+                 "G-GESTURE", "G-ROOM", "G-BALANCE")
 PROVENANCE_GATES = ("G-CONSTRUCT",)
 
 
@@ -2900,6 +3264,18 @@ def run_suite(x, sr, sheet, stems=None, telemetry=None, gates=None,
         out["G-SUSTAIN"] = g_sustain(mono, sr, beats)
     if "G-EVENT" in want:
         out["G-EVENT"] = g_event(mono, sr, beats)
+    if "G-PRESENCE" in want:
+        # THE PROGRAMME'S OWN DELIVERED LOUDNESS IS THE CALIBRATION. It is
+        # measured here rather than passed in, so the gate cannot be handed a
+        # flattering number, and it is measured on the FULL signal because that
+        # is what a listener sets the volume by.
+        from audio import dsp as _dsp
+        try:
+            _li, _, _ = _dsp.loudness_lufs(
+                x if np.ndim(x) > 1 else np.stack([mono, mono], axis=1), sr)
+        except Exception:
+            _li = None
+        out["G-PRESENCE"] = g_presence(mono, sr, beats, lufs_i=_li)
     if "G-NOVEL" in want:
         out["G-NOVEL"] = g_novel(mono, sr, beats)
     if "G-MOD" in want:
