@@ -1,5 +1,23 @@
 # STAGING — R2-1151 to R2-1180 · R2-1084 re-opened: the sheet did not regress
 
+> ## MERGED, THEN RENUMBERED — THESE ENTRIES ARE NOW R2-4151 … R2-4157
+>
+> **2026-08-14, #170.** The range check below was honest and still wrong: the
+> main thread was writing R2-1151…R2-1157 into the log at the same time, from a
+> different session, and neither side could see the other. Both landed, and for
+> a week each of those seven numbers named two entirely different entries.
+>
+> **Resolved by moving the seven in THIS file**, because every citation from
+> outside the log — `tools/r2_1881_ab.sh`, `tools/r2_1881_bake_cams.py`,
+> `tools/r2_1898_split_arms.py`, `world/build_nearband.py`,
+> `tools/r2_1821_ground_detail.py`, `render/world/assembly/r2/SHIPPING.md` —
+> means the main thread's entries, and nothing outside cites these.
+>
+> **Add 3000 to read the log: R2-1151→R2-4151 … R2-1157→R2-4157.** The headings
+> below are left at their staged numbers as the historical record of what was
+> staged under what. **Do not cite R2-1151…R2-1157 from this file.** Full
+> account: `docs/DUPLICATE-ID-SWEEP-R2.md`.
+
 Range check before writing: `R2-1151…R2-1180` is unused anywhere in `docs/`.
 `docs/STAGING-R2-1181-to-R2-1210.md` holds R2-1181…R2-1187 and is another
 agent's. No collision.

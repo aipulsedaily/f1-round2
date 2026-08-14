@@ -129,7 +129,8 @@ sha256 b7f6041d30560b44...  sim/out/breach_film_R2387.npz        <- NOT this one
 * **R2-513** applied the ship with `--film sim/out/breach_film_R6_SHIPPED.npz`
   explicitly, calling R2387 *"the trap next to the fix"*.
 * **R2-778** re-verified the shipping table byte-identical and untouched.
-* **R2-1097** — the most recent audit, and **after** R2-916 — certifies
+* **R2-4097** (was R2-1097; renumbered 2026-08-14, #170) — the most recent
+  audit, and **after** R2-916 — certifies
   *"the shipping bake is verifiably the right one"*, `MUL05_S02 0.1449 m`, and
   notes *"a wrong bake reads 55.35 m here"*. 55.35 m **is R2387**.
 * `docs/NEXT-REBUILD.md`'s verification bar demands
