@@ -22,11 +22,24 @@ The corpus has two halves and both are load-bearing:
         G-FLAT, proving the per-band construction is tilt-immune -- the
         whole-band SFM reads a reassuring 0.0142 on the delivered master and
         that is what let it ship.
+    C8b ANTI-CHEAT, and a POSITIVE UNTIL R2-4081 MEASURED IT: the cheapest
+        signal that clears the old beat-1 tonality bars. 98.3 % of its power
+        is a servo comb, it holds one pitch for 8.49 s, and its 20 ms level
+        varies by 0.64 dB inside a 2 s window -- white noise varies by 0.65.
+        It cleared the +8 dB HNR bar by 24 dB and was the evidence that bar
+        was reachable; the fourth master built toward that bar was rejected
+        as "a shitty musical". The SIGNAL is untouched: what R2-4081 changed
+        is the claim made about it, and it changed on numbers.
 
   POSITIVE CONTROLS, which must PASS.
     C8  a constant-rpm power unit built from first principles
-    C8b a physically-constructed showroom beat: non-uniform arrivals, plate
-        modes per cluster, distinct gestures, a diffuse tail
+    C9  an assembly cell on the film's own picture-locked contact schedule:
+        ~780 Hertzian contacts, a geometry per part, thin-ring and plate
+        modes, jet-noise exhausts with a Strouhal peak, servo moves that
+        GLIDE, joint damping that puts T60 in tens of milliseconds. It is the
+        percussive, inharmonic, transient-dense, UNPITCHED half of the corpus,
+        and until R2-4081 it did not exist -- which is why every beat-1 bar
+        was anchored on a drone.
 
 Without the positive half a suite that failed everything would look finished.
 With it, every bar in `percept.py` is bracketed on both sides by a signal whose
@@ -42,4 +55,6 @@ from .synth import (                                             # noqa: F401
     octave_matched_noise, tiled_loop, blower_plus_tubes,
     jittered_identical_gestures, spectral_tilt, constant_rpm_pu,
     physical_showroom_beat, diffuse_tail, comb_tail, distinct_gestures,
+    assembly_cell, ring_modes, jet_exhaust, servo_move, nut_runner,
+    conveyor_bed,
 )

@@ -122,30 +122,14 @@ THRESHOLDS: dict[str, Threshold] = {}
 # control that proves this).
 _T("G_FLAT.slice_max_ratio_of_white", 0.55, "SFM / SFM(white)", "control-derived",
    "TWO-SIDED, from synthesised controls only, all measured per 3 s slice on "
-   "the shipped estimator: physical construction C8b worst slice 0.496; "
+   "the shipped estimator: the constant-rpm power unit C8 worst slice 0.127; "
    "octave-matched noise 0.721; blower-into-tubes 0.661; tiled loop 0.700; the "
-   "delivered master 0.973. 0.55 clears the positive by 11 % and sits 14 % "
-   "under the nearest negative. SPEC DEVIATION, DECLARED: the spec asserts "
-   "0.45. That number was never measured against a signal that should pass -- "
-   "there was no such signal when it was written -- and 0.45 fails a "
-   "construction that follows the spec's own B3/B4/B6 prescriptions. It is "
-   "moved here by a SYNTHESISED POSITIVE CONTROL and never by any master.")
-_T("G_FLAT.beat1_median_max_ratio_of_white", 0.45, "SFM / SFM(white)",
-   "control-derived",
-   "The showroom is held tighter than the film average because it has no "
-   "engine to carry it. Same two-sided anchor, per-beat medians: C8b 0.389, "
-   "blower-into-tubes 0.639, tiled loop 0.669, octave-matched noise 0.700, the "
-   "DELIVERED MASTER 0.922. NOT zero -- a real showroom has air, HVAC and "
-   "contact noise, and over-correction is a named failure mode in the spec. "
-   "SPEC DEVIATION, DECLARED: the spec asserts 0.30; the tightest a legitimate "
-   "tonal showroom bed can measure on this estimator is ~0.39, because a "
-   "1/3-octave band at 500 Hz is 116 Hz wide and a servo comb at f0 > 115 Hz "
-   "has at most one harmonic inside it. G-FLAT is the hiss instrument; "
-   "periodicity is G-HNR's job (the same bed reads +45 dB there) and comb "
-   "structure is G-ORDER's. This bar MOVED IN THE LOOSENING DIRECTION, which "
-   "is the direction that shipped three masters, so: it was moved by a "
-   "synthesised control, the rejected artefact still fails it by 2.4x, and "
-   "every degenerate in the corpus still fails it.")
+   "delivered master 0.973. 0.55 clears the positive by 4.3x and sits 17 % "
+   "under the nearest negative. R2-4081 REPLACED THE POSITIVE ANCHOR: it was "
+   "C8b's 0.496 worst slice, and C8b is 98.3 % sustained tone by power, so it "
+   "anchored a tonality bar with a drone. The bar is unchanged at 0.55 and its "
+   "DOMAIN is now engine beats only -- see g_flat's docstring for the "
+   "measurement that forced that, and G-EVENT for what judges the rest.")
 
 # ---------------------------------------------------------------- G-HNR -----
 # Boersma (1993) autocorrelation harmonic-to-noise ratio: the textbook HNR,
@@ -157,14 +141,12 @@ _T("G_HNR.calibration_max_error_db", 0.5, "dB", "published",
    "must hold against truths computed from the mixture coefficients. The "
    "diagnosis measured <=0.22 dB, so this is a loose guard on the INSTRUMENT, "
    "not on any film.")
-_T("G_HNR.beat1_median_min_db", 8.0, "dB", "control-derived",
-   "10*log10(0.85/0.15) = 7.53 dB is the point where the aperiodic fraction "
-   "falls below 15 % on the calibrated mixtures; 8.0 dB is that rounded up. "
-   "Derived from the mixture coefficients, not from any master.")
 _T("G_HNR.fraction_below_zero_max", 0.10, "fraction of windows", "physics",
    "0 dB is equal harmonic and aperiodic power -- the definition, not a "
-   "calibration. A window below it carries more noise than signal. The "
-   "delivered master ran 42.1 % of beat 1 below this line.")
+   "calibration. A window below it carries more noise than signal. Applied to "
+   "ENGINE BEATS ONLY since R2-4081: a power unit that spends a tenth of a "
+   "beat with more noise than firing in it is a defect, and a struck plate "
+   "below the same line is a struck plate.")
 
 # --------------------------------------------------------------- G-ORDER ----
 _T("G_ORDER.min_energy_on_predicted_lines", 0.60, "fraction of 300-4000 Hz energy",
@@ -308,6 +290,17 @@ _T("G_ROOM.max_fixed_line_comb_regularity", 0.40, "fraction over chance",
    "inharmonic pipes -- also fixed, also narrow -- score at chance. DEVIATION "
    "FROM SPEC, DECLARED: the spec's '20 dB of Weyl' bar is not measurable on a "
    "mix; the Weyl number is reported for reference and this is what is gated.")
+_T("G_ROOM.max_bursts", 16.0, "bursts", "control-derived",
+   "R2-4081. THE RECURRENCE STATISTIC IS A BIRTHDAY PROBLEM and its chance "
+   "level was never measured. On INDEPENDENT log-uniform peaks -- peaks that "
+   "by construction share nothing -- it reads 0.031 at 8 bursts, 0.162 at 12, "
+   "0.277 at 20, 0.638 at 40 and 0.835 at 60, against a 0.35 bar. Any beat "
+   "dense enough to produce forty bursts therefore fails limb (b) whatever it "
+   "sounds like, which is what the physics-true assembly cell C9 was doing at "
+   "0.666 and what the film's own beat 1 was doing at 0.600. Sixteen holds the "
+   "chance level near 0.22 while leaving the delivered master at 0.570 and the "
+   "fixed-resonator mutation at 0.375, so nothing that should fire stops "
+   "firing. The bar itself is UNCHANGED and was not touched.")
 _T("G_ROOM.max_peak_recurrence", 0.35, "fraction of peak observations", "control-derived",
    "Mobility. Whatever you strike, the room must not reply at the same pitches. "
    "Per-burst top-8 peaks, recurrence at 1 % tolerance across >=3 bursts. "
@@ -345,6 +338,109 @@ _T("G_BALANCE.min_protagonist_margin_db", 8.0, "dB", "control-derived",
    "judgement and not read from any master. Delivered: -12.01 / +0.11 / "
    "+0.03 dB on beats 1 / 4 / 5.")
 
+# ------------------------------------------------------------- G-SUSTAIN ----
+# R2-4081. THE GATE THAT WOULD HAVE CAUGHT R2-4079, and the reason it is a
+# separate instrument rather than another bar on G-HNR: G-HNR's beat-1 median
+# read R2-4079 as NOT TONAL ENOUGH (+0.49 dB against +8 dB) on the same file
+# the client rejected as "a shitty musical". A median over 80 ms windows is an
+# opinion about the whole mix; what an audience hears is the loudest thing that
+# HOLDS A NOTE inside it. That is what these three numbers measure.
+_T("G_SUSTAIN.min_note_s", 0.60, "s", "physics",
+   "A pitch shorter than this is a RING, not a note: a struck steel plate at "
+   "eta 0.02-0.15 has T60 = 2.2/(eta*pi*f) = 30-350 ms at 200 Hz, so 0.6 s is "
+   "above every decay a struck resonator in this film can produce and below "
+   "any note a listener would call held. Derived from the damping, not chosen.")
+_T("G_SUSTAIN.stability_cents", 25.0, "cents", "physics",
+   "A quarter of a semitone. The physical claim being tested is that machine "
+   "pitch MOVES: a servo under a trapezoidal move profile sweeps its gear-mesh "
+   "line over an octave, an engine on throttle sweeps with rpm, and a Doppler "
+   "pass at the film's own 1.41-semitone station sweeps 141 cents. 25 cents is "
+   "under the smallest of those by 5.6x and above the +-11 cent worst-case "
+   "parabolic bin-interpolation error of a 4096-point window at 80 Hz.")
+_T("G_SUSTAIN.peak_prominence_db", 8.0, "dB over the local floor", "physics",
+   "A partial has to stand 8 dB over the median of its own +-1/3-octave "
+   "neighbourhood, i.e. carry 6.3x its own floor's power density, before it is "
+   "a partial at all. Below that a peak is the Rayleigh fluctuation of a "
+   "broadband field: the p95-p5 of a diffuse transfer function is 17.7 dB by "
+   "construction (R2-4067), so an isolated 8 dB excess is common in noise and "
+   "an 8 dB excess HELD FOR 0.6 s at one frequency is not.")
+_T("G_SUSTAIN.max_note_cover", 0.20, "fraction of the beat", "control-derived",
+   "How much of the beat has something holding a pitch. Two-sided, from "
+   "synthesised controls only: the physics-true assembly cell C9 reads 0.000 "
+   "-- over five seeds, without exception -- and the drone-plus-clicks C8b "
+   "reads 0.597. A ratio placement is undefined against a zero anchor, so the "
+   "bar is one third of the NEGATIVE: the most of a beat that may hold a "
+   "pitch while two thirds of it does not. It is deliberately not 0, because "
+   "a real showroom has an HVAC line and a lighting ballast and over-"
+   "correction is a named failure mode in the spec.")
+_T("G_SUSTAIN.max_chord_cover", 0.05, "fraction of the beat", "control-derived",
+   "THREE PITCHES HELD AT ONCE IS A CHORD. This is the limb that separates "
+   "MUSICAL from merely TONAL and it is the cleanest one in the corpus: the "
+   "assembly cell C9 reads 0.000 across every seed, because three independent "
+   "constant-rate sources is not a thing an assembly cell has, and C8b reads "
+   "0.576. 0.05 of a 33 s beat is 1.65 s -- the allowance for a coincidence, "
+   "not for a chord.")
+_T("G_SUSTAIN.max_held_power_share", 0.15, "fraction of beat power",
+   "control-derived",
+   "The power limb, so that a short LOUD pad cannot pass on coverage alone. "
+   "Each held note is credited its own three-bin share of its own frames' "
+   "power, time-weighted over the beat. C9 reads 0.0000 and C8b reads 0.5193, "
+   "which is its own R2-4081 dry-gain sweep (98.3 % of its power in a servo "
+   "comb) recovered from the audio by a different instrument. The bar is 0.15 "
+   "because a bed that is one part in seven sustained tone is a bed and one "
+   "part in three is a pad. HONEST LIMITATION, DECLARED: this limb does NOT "
+   "fire on the master the client called a musical -- R2-4079 reads 0.0116 -- "
+   "because its pad sits inside a broadband bed. The cover and chord limbs are "
+   "what catch that file. This limb catches the drone.")
+
+# ---------------------------------------------------------------- G-EVENT ----
+# R2-4081. THE INSTRUMENT THAT MAKES RESCOPING G-FLAT AND G-HNR SAFE. Once
+# those two stop being applied to percussive beats, something still has to be
+# able to fail a hair dryer at beat 1 -- and it cannot be a stationary spectral
+# statistic, because the measurement below is what R2-4081 found:
+#
+#   passage                                   per-band SFM      Boersma HNR
+#   660 struck plates over 33 s, no noise           1.263 x W       -3.78 dB
+#   source anywhere in the signal path
+#   the delivered "hair blower" master               0.922 x W       +0.26 dB
+#   octave-matched filtered noise (C1)               0.700 x W        --
+#   the C8b servo drone bed alone                    0.338 x W      +30.54 dB
+#
+# A signal built ENTIRELY of Hertzian impulses driving plate modes reads
+# FLATTER THAN WHITE NOISE and LESS PERIODIC than the hair dryer, on both
+# instruments at once. That is not a threshold that needs moving; it is a
+# statistic that is not monotone in the property being gated. An impulse has a
+# smooth deterministic magnitude spectrum, so its per-bin variance is LOWER
+# than white noise's chi-square fluctuation and its SFM is HIGHER. The
+# difference between a hair dryer and an assembly cell is not in the spectrum
+# at all. It is in the envelope.
+_T("G_EVENT.window_s", 2.0, "s", "physics",
+   "The spread is taken inside 2 s windows and the median over windows is "
+   "gated, so a macro fade cannot buy the number and one busy passage cannot "
+   "carry a stationary beat. 2 s holds at least two of the film's own "
+   "arrivals at its slowest cluster spacing.")
+_T("G_EVENT.short_term_ms", 20.0, "ms", "physics",
+   "20 ms is under the 30-350 ms T60 of every struck resonator in the film, so "
+   "an individual event's decay is resolved rather than averaged away, and it "
+   "is over the 12.5 ms period of the lowest gated band so the measurement is "
+   "a level and not a waveform.")
+_T("G_EVENT.min_local_dynamic_range_db", 13.7, "dB", "control-derived",
+   "p95-p5 of the 20 ms level inside 2 s windows, MEDIAN over windows. "
+   "Two-sided and synthesised at BOTH ends, every number measured with the "
+   "shipped estimator: white noise 0.65 dB; the C8b drone 0.64 dB; the "
+   "assembly cell's OWN octave-band spectrum re-synthesised as stationary "
+   "noise 2.06 dB (the M-EVENT mutation, and the sharpest negative there is "
+   "-- every spectral statistic in the suite survives it and every event in "
+   "the beat is gone); octave-matched noise C1 4.70 dB; blower-into-tubes C3 "
+   "8.79 dB. The positive, C9, reads 21.36 dB and holds 21.4-26.4 dB over "
+   "five seeds. 13.7 is the MAXIMUM-MARGIN placement in log units between the "
+   "positive and the loudest negative -- equal ratio to each, 1.56x either "
+   "way -- which is the only defensible position given one anchor on each "
+   "side and no distribution. NO MASTER WAS CONSULTED. That two of the "
+   "rejected masters land 0.2-0.5 dB under it is an outcome, not a "
+   "derivation, and R2-4081 says in the staging log that a 0.45 dB margin is "
+   "not a margin it would defend.")
+
 # ----------------------------------------------------------- G-CONSTRUCT ----
 _T("G_CONSTRUCT.max_unscheduled_noise_sources", 0.0, "count", "physics",
    "THE LAW: no white()/pink()/brown() output may reach a bus without passing "
@@ -373,6 +469,72 @@ PROTAGONIST = {
 }
 # Beats where no stem is the protagonist by design are INAPPLICABLE to
 # G-BALANCE rather than passed by it.
+
+# WHICH BEATS MAY HOLD A PITCH, DECLARED ONCE (R2-4081).
+#
+# A power unit is periodic in PITCH by physics: its firing comb is order*rpm/60
+# and holding a note is what it does. An assembly cell is periodic in RHYTHM
+# and never in pitch: everything in it is struck, and struck resonators decay.
+# The suite had one set of tonality instruments pointed at both, and the bar it
+# carried to beat 1 (+8 dB Boersma median, <=0.45x white flatness) is
+# satisfiable ONLY by sustained pitched material -- which is what R2-4079 built
+# and what the client rejected on hearing.
+#
+# So the beats split, and the split is derived from PROTAGONIST rather than
+# listed by hand: a beat whose protagonist is the engine is judged on whether
+# it holds the note it should (G-ORDER, G-IDENTITY, G-HNR, G-FLAT); a beat
+# whose protagonist is not is judged on whether it is EVENTFUL (G-EVENT) and on
+# whether it is NOT holding a note (G-SUSTAIN).
+ENGINE_BEATS = tuple(k for k, v in PROTAGONIST.items() if "engine" in v)
+PERCUSSIVE_BEATS = tuple(k for k, v in PROTAGONIST.items() if "engine" not in v)
+
+
+# ============================================== RETIRED, AND WHY (R2-4081) ==
+# A bar that is deleted leaves no evidence that it was ever wrong, and the next
+# rebuild re-derives it. These two are kept here, unenforced, with the
+# measurement that retired them, so that re-adding either one has to argue with
+# a number. NEITHER WAS MOVED TO MAKE A MASTER PASS -- both were removed
+# because a SYNTHESISED POSITIVE CONTROL cannot reach them and every synthesised
+# NEGATIVE outscores it, which is a statement about the statistic and not about
+# any film.
+RETIRED = {
+    "G_HNR.beat1_median_min_db": {
+        "value": 8.0, "units": "dB", "retired_at": "R2-4081",
+        "was": ("10*log10(0.85/0.15) = 7.53 dB rounded up: the point where the "
+                "aperiodic fraction of a calibrated mixture falls below 15 %."),
+        "why": ("Boersma HNR at a percussive beat is INVERTED, not "
+                "mis-thresholded. Measured on beat 1, medians: physics-true "
+                "assembly cell C9 -4.34 dB; 660 struck plates with no noise "
+                "source at all -3.78 dB; blower-into-tubes C3 -0.63 dB; the "
+                "delivered hair-blower master +0.26 dB; the tubes master "
+                "+0.04 dB; the master rejected as a musical +0.49 dB. Every "
+                "negative outscores every positive, so no bar exists that "
+                "passes what should pass and fails what should fail. The only "
+                "corpus signal that ever cleared +8 dB at beat 1 is C8b, which "
+                "is 98.3 % sustained tone by power -- the bar's sole "
+                "validation came from a drone, and R2-4079 chasing the bar "
+                "produced a drone the client rejected on hearing."),
+        "replaced_by": ("G-SUSTAIN for pitch and G-EVENT for noisiness; G-HNR "
+                        "itself is unchanged and still gated on engine beats, "
+                        "where holding a note is the physics."),
+    },
+    "G_FLAT.beat1_median_max_ratio_of_white": {
+        "value": 0.45, "units": "SFM / SFM(white)", "retired_at": "R2-4081",
+        "was": ("the showroom held tighter than the film average, anchored on "
+                "C8b's 0.389 per-beat median."),
+        "why": ("Per-band SFM is not monotone in noisiness for impulsive "
+                "material. A 33 s passage of Hertzian impulses driving plate "
+                "modes measures 1.263x white -- FLATTER THAN WHITE NOISE -- "
+                "because an impulse's magnitude spectrum is smooth and "
+                "deterministic while white noise's per-bin power is "
+                "chi-square. Against 0.922x for the delivered hair-blower "
+                "master and 0.700x for octave-matched noise, the ordering is "
+                "inverted. The 0.389 anchor that set the bar is C8b's, and "
+                "C8b is a drone."),
+        "replaced_by": "G-EVENT, which measures the same property in the "
+                       "envelope, where hiss and machinery actually differ.",
+    },
+}
 
 
 def audit_thresholds(extra: dict | None = None):
@@ -645,9 +807,19 @@ def calibrate_hnr(sr=48000, dur_s=3.0):
 
 
 def calibrate_flat(sr=48000, dur_s=3.0):
-    """Where 0.45*W and 0.30*W come from: the per-band SFM of mixtures whose
+    """Where the slice bar comes from: the per-band SFM of mixtures whose
     aperiodic fraction is known by construction. Reported every run so the
-    placement of both bars is auditable from the report alone."""
+    placement is auditable from the report alone.
+
+    R2-4081: the beat-1 limb of this calibration is gone with the beat-1 bar
+    (see RETIRED). What remains is the mapping from the surviving slice bar to
+    an aperiodic fraction, and one number that should have been read years ago:
+    THIS CALIBRATION ONLY EVER RAN ON HARMONIC-PLUS-NOISE MIXTURES. Every
+    signal it was ever shown was a sustained comb with noise added, so the
+    monotonicity it verifies is monotonicity ALONG THAT ONE AXIS. It says
+    nothing about impulsive material, and impulsive material is where the
+    estimator inverts.
+    """
     n = int(dur_s * sr)
     W = white_sfm_reference(n, sr)
     rows = []
@@ -658,20 +830,22 @@ def calibrate_flat(sr=48000, dur_s=3.0):
     fr = [r["noise_fraction"] for r in rows]
     ra = [r["ratio_of_white"] for r in rows]
     implied_45 = float(np.interp(V("G_FLAT.slice_max_ratio_of_white"), ra, fr))
-    implied_30 = float(np.interp(V("G_FLAT.beat1_median_max_ratio_of_white"), ra, fr))
     monotone = bool(np.all(np.diff(ra) > 0))
     return {"white_reference_sfm": W, "rows": rows,
             "noise_fraction_implied_by_slice_bar": implied_45,
-            "noise_fraction_implied_by_beat1_bar": implied_30,
             "monotone": monotone,
             "note": ("Per-band SFM saturates FAST: a pure harmonic comb reads "
                      "0.126*W and 15 % added noise already reads 0.554*W. So "
-                     "0.45*W is not 'half noise' -- it is about 11 % aperiodic "
-                     "energy in 500-3000 Hz, and 0.30*W is about 6 %. The "
-                     "mapping is recomputed here every run so the bar's meaning "
-                     "is read off the report and not off a comment."),
-            "PASS": bool(monotone and 0.03 <= implied_45 <= 0.45
-                         and 0.02 <= implied_30 <= 0.40)}
+                     "0.55*W is not 'half noise' -- it is about 15 % aperiodic "
+                     "energy in 500-3000 Hz. The mapping is recomputed here "
+                     "every run so the bar's meaning is read off the report "
+                     "and not off a comment."),
+            "domain": ("HARMONIC-PLUS-NOISE MIXTURES ONLY. Monotone along the "
+                       "noise-fraction axis of a SUSTAINED comb; not monotone "
+                       "in noisiness for impulsive material, where 660 struck "
+                       "plates read 1.263x white. That is why G-FLAT is an "
+                       "engine-beat instrument from R2-4081 on."),
+            "PASS": bool(monotone and 0.03 <= implied_45 <= 0.45)}
 
 
 # ===================================================== envelope machinery ===
@@ -1174,13 +1348,68 @@ def fractional_octave_ripple_of(S, f, f_lo=400.0, f_hi=6000.0, frac=12):
             "occupancy": occ, "n_bands": len(out)}
 
 
+def recurrence_null(n_bursts, top_k=8, tol_pct=1.0, f_lo=200.0, f_hi=6000.0,
+                    n_rep=200, seed=20260814):
+    """THE CHANCE LEVEL OF `peak_recurrence`, MEASURED RATHER THAN ASSUMED.
+
+    R2-4081. This statistic was never null-tested and it is a birthday problem:
+    n_bursts x top_k observations land in ln(f_hi/f_lo)/ln(1+tol) resolvable
+    bins -- 341 of them at 1 % over 200-6000 Hz -- so coincidences accumulate
+    with the number of bursts. Measured on INDEPENDENT log-uniform draws, i.e.
+    on peaks that by construction have nothing to do with each other:
+
+        bursts      8     12     20     40     60
+        recurrence  0.031  0.162  0.277  0.638  0.835     (bar 0.35)
+
+    At 40 bursts pure independence scores 0.638 and the gate fails everything,
+    including a beat in which every part has its own geometry. Two things
+    follow, and R2-4081 does both: the burst count is capped where the null is
+    still small (G_ROOM.max_bursts), and a line only counts as recurring if it
+    appears in MORE bursts than the most-recurring line of an independent draw
+    does 19 times out of 20 -- which is a family-wise error rate of 5 % over
+    all the bins at once, not a per-bin test.
+    """
+    rng = np.random.default_rng(seed)
+    lo, hi = math.log(f_lo), math.log(f_hi)
+    maxes, fracs = [], []
+    for _ in range(n_rep):
+        obs = [list(np.exp(rng.uniform(lo, hi, top_k))) for _ in range(n_bursts)]
+        flat = sorted(v for row in obs for v in row)
+        clusters = []
+        for v in flat:
+            if clusters and abs(v - clusters[-1][-1]) / v * 100.0 <= tol_pct:
+                clusters[-1].append(v)
+            else:
+                clusters.append([v])
+        best, rec = 0, 0
+        for c in clusters:
+            mu = float(np.mean(c))
+            nb = sum(1 for row in obs
+                     if any(abs(v - mu) / mu * 100 <= tol_pct for v in row))
+            best = max(best, nb)
+            if nb >= 3:
+                rec += len(c)
+        maxes.append(best)
+        fracs.append(rec / max(len(flat), 1))
+    return {"n_bursts": int(n_bursts), "n_rep": int(n_rep),
+            "max_bursts_per_line_p95": float(np.percentile(maxes, 95)),
+            "recurrence_mean": float(np.mean(fracs)),
+            "min_bursts_to_count": int(max(3, math.ceil(np.percentile(maxes, 95)) + 1))}
+
+
 def peak_recurrence(mono, sr, bursts, top_k=8, tol_pct=1.0, f_lo=200.0, f_hi=6000.0):
     """Mobility: does the answer move when the question moves?
 
     Whatever is struck, a room with position-dependent early reflections and a
     diffuse tail replies differently. A bank of fixed high-Q resonators replies
     at the same frequencies every time -- 430.2 Hz recurred in 7 of 12 bursts of
-    the delivered master inside a 0.27 Hz spread."""
+    the delivered master inside a 0.27 Hz spread.
+
+    R2-4081: a line now has to beat the CHANCE LEVEL for this many bursts (see
+    `recurrence_null`) before it is called a line at all. The bar is unchanged
+    and the anchors it was placed between are unchanged; what changed is that
+    the numerator no longer counts coincidences, which is what it was doing on
+    any beat dense enough to produce more than about twenty bursts."""
     if len(bursts) < 4:
         return {"n_bursts": len(bursts), "recurrence": float("nan"),
                 "n_observations": 0}
@@ -1223,13 +1452,16 @@ def peak_recurrence(mono, sr, bursts, top_k=8, tol_pct=1.0, f_lo=200.0, f_hi=600
         else:
             clusters.append([v])
     n_obs = len(flat)
+    null = recurrence_null(len(obs), top_k=top_k, tol_pct=tol_pct,
+                           f_lo=f_lo, f_hi=f_hi)
+    n_min = null["min_bursts_to_count"]
     recurring = 0
     top = []
     for c in clusters:
         # how many DISTINCT bursts contributed to this cluster
         nb = sum(1 for row in obs if any(abs(v - np.mean(c)) / np.mean(c) * 100 <= tol_pct
                                          for v in row))
-        if nb >= 3:
+        if nb >= n_min:
             recurring += len(c)
             top.append({"f_hz": float(np.mean(c)), "bursts": int(nb),
                         "spread_hz": float(max(c) - min(c))})
@@ -1237,6 +1469,7 @@ def peak_recurrence(mono, sr, bursts, top_k=8, tol_pct=1.0, f_lo=200.0, f_hi=600
     return {"n_bursts": len(obs), "n_observations": n_obs,
             "recurrence": recurring / n_obs,
             "distinct_frequencies": len(clusters),
+            "null": null, "min_bursts_to_count": n_min,
             "top_recurring": top[:24]}
 
 
@@ -1249,16 +1482,38 @@ def _verdict(rows, failures, inapplicable_reasons):
     return PASS
 
 
-def g_flat(mono, sr, beats, slice_s=3.0):
+def g_flat(mono, sr, beats, slice_s=3.0, engine_beats=None):
     """G-FLAT -- tilt-free per-band spectral flatness against white.
 
     Replaces one third of `harmonic`. Answers ONE question: is this band noise
     or is it not. It has no opinion about harmonicity (G-HNR) or about order
     structure (G-ORDER), because collapsing the three was the original mistake.
+
+    R2-4081: APPLIED TO ENGINE BEATS ONLY, and the beat-1 median bar is
+    RETIRED. The rescoping is not a relaxation, it is a correction of the
+    instrument's domain, and it was forced by a measurement rather than argued:
+    a 33 s passage of 660 Hertzian impulses driving plate modes -- no noise
+    generator anywhere in its signal path -- measures 1.263x white on this
+    estimator, against 0.922x for the delivered master the client called a hair
+    blower and 0.700x for literal octave-matched noise. An impulse's magnitude
+    spectrum is smooth and deterministic, so its per-bin variance is LOWER than
+    white noise's chi-square fluctuation and its spectral flatness is HIGHER.
+    There is therefore NO value of this bar that passes a percussive positive
+    control and fails the negatives: the ordering is inverted, not
+    mis-thresholded. G-EVENT is the instrument that fails a hair dryer at a
+    percussive beat, and it does it in the envelope, where the difference is.
     """
+    engine_beats = ENGINE_BEATS if engine_beats is None else engine_beats
     W = white_sfm_reference(min(len(mono), int(8 * sr)), sr)
     per_beat, failures, inapp = {}, [], []
     for b in beats:
+        if b.name not in engine_beats:
+            inapp.append(f"{b.name}: not an engine beat -- per-band SFM is not "
+                         f"monotone in noisiness for percussive material "
+                         f"(struck plates read 1.263x white), so this "
+                         f"instrument has no opinion here. G-EVENT and "
+                         f"G-SUSTAIN judge this beat.")
+            continue
         seg = _slice(mono, sr, b)
         if len(seg) < int(2.0 * sr):
             inapp.append(f"{b.name}: shorter than 2 s")
@@ -1279,12 +1534,6 @@ def g_flat(mono, sr, beats, slice_s=3.0):
         if worst > lim:
             row["outcome"] = FAIL
             failures.append(f"{b.name}: worst 3 s slice {worst:.3f}*W > {lim:.2f}*W")
-        if b.name == "1_assembly":
-            l1 = V("G_FLAT.beat1_median_max_ratio_of_white")
-            row["beat1_median_limit"] = l1
-            if med > l1:
-                row["outcome"] = FAIL
-                failures.append(f"{b.name}: median {med:.3f}*W > {l1:.2f}*W")
         per_beat[b.name] = row
     return {"gate": "G-FLAT", "kind": QUALITY,
             "measures": ("spectral flatness computed inside each 1/3-octave band "
@@ -1296,13 +1545,29 @@ def g_flat(mono, sr, beats, slice_s=3.0):
             "verdict": _verdict(per_beat, failures, inapp)}
 
 
-def g_hnr(mono, sr, beats):
+def g_hnr(mono, sr, beats, engine_beats=None):
     """G-HNR -- calibrated Boersma harmonic-to-noise ratio.
 
     Replaces one third of `harmonic`. The instrument is re-validated against
     synthetic mixtures of known noise fraction on every invocation, and the
     gate REFUSES to return a verdict if that calibration fails.
+
+    R2-4081: APPLIED TO ENGINE BEATS ONLY. Boersma HNR asks "does this hold a
+    note", which is the right question of a power unit and close to the
+    opposite of the right question of an assembly cell. The +8 dB beat-1 bar
+    was flagged at R2-4062 as never validated against a signal that should
+    pass; R2-4081 built that signal and the answer is that NO BAR WORKS on this
+    statistic at a percussive beat, because the ordering is inverted:
+    physics-true assembly cell -4.34 dB, 660 struck plates -3.78 dB, the
+    blower-into-tubes negative -0.63 dB, the delivered hair-blower master
+    +0.26 dB, the master the client called a musical +0.49 dB. Every negative
+    outscores every positive. The one signal in the corpus that cleared +8 dB
+    at beat 1 is C8b, which R2-4081's own sweep shows is 98.3 % sustained tone
+    by power -- so the bar's only validation came from a drone, and chasing the
+    bar produced a drone. The `fraction_below_0db` limb is rescoped with it,
+    for the same reason and by the same measurement (C9 reads 0.986).
     """
+    engine_beats = ENGINE_BEATS if engine_beats is None else engine_beats
     cal = calibrate_hnr(sr=sr)
     per_beat, failures, inapp = {}, [], []
     if not cal["PASS"]:
@@ -1312,6 +1577,12 @@ def g_hnr(mono, sr, beats):
                 "verdict": INAPPLICABLE,
                 "measures": "Boersma 1993 autocorrelation HNR"}
     for b in beats:
+        if b.name not in engine_beats:
+            inapp.append(f"{b.name}: not an engine beat -- Boersma HNR measures "
+                         f"whether the signal holds a note, and a struck "
+                         f"resonator does not. G-SUSTAIN judges the pitch of "
+                         f"this beat and G-EVENT judges its noisiness.")
+            continue
         seg = _slice(mono, sr, b)
         h, live = boersma_hnr(seg, sr)
         if live.sum() < 40:
@@ -1328,12 +1599,6 @@ def g_hnr(mono, sr, beats):
             row["outcome"] = FAIL
             failures.append(f"{b.name}: {below:.3f} of windows below 0 dB "
                             f"> {lim_below:.2f}")
-        if b.name == "1_assembly":
-            lim = V("G_HNR.beat1_median_min_db")
-            row["beat1_median_limit_db"] = lim
-            if med < lim:
-                row["outcome"] = FAIL
-                failures.append(f"{b.name}: median {med:+.2f} dB < {lim:+.1f} dB")
         per_beat[b.name] = row
     return {"gate": "G-HNR", "kind": QUALITY,
             "measures": ("Boersma (1993) autocorrelation HNR: the normalised "
@@ -1454,7 +1719,13 @@ def g_room(mono, sr, beats, interior_beats=INTERIOR_BEATS):
         regions = decay_regions(seg, sr)
         S, f, n_reg = tail_spectrum(seg, sr, regions)
 
-        bursts = find_bursts(seg, sr)
+        # THE BURST COUNT IS CAPPED (R2-4081) because the recurrence statistic
+        # is a birthday problem and its chance level rises with the number of
+        # observations: 0.162 at 12 bursts, 0.638 at 40, against a 0.35 bar. The
+        # cap keeps the measurement on the side of that curve where it means
+        # something, and `recurrence_null` reports the chance level for the
+        # count actually used so the report carries its own scepticism.
+        bursts = find_bursts(seg, sr, max_bursts=int(V("G_ROOM.max_bursts")))
         pr = peak_recurrence(seg, sr, bursts)
 
         # (a) DENSITY: are the room's FIXED lines a comb? Runs on the lines
@@ -1603,6 +1874,337 @@ def g_ring(mono, sr, beats, interior_beats=INTERIOR_BEATS):
                          "of the declared showroom and against the broadband "
                          "decay over the same gaps"),
             "reference": {"sabine": sab},
+            "per_beat": per_beat, "failures": failures, "inapplicable": inapp,
+            "verdict": _verdict(per_beat, failures, inapp)}
+
+
+# ======================================================= G-SUSTAIN / G-EVENT =
+# The two instruments R2-4081 adds, and the reason they exist:
+#
+# THE CLIENT REJECTED THREE MASTERS FOR THREE DIFFERENT REASONS and the suite
+# could name only one of them. R2-4079 was rejected as "a shitty musical" while
+# the suite's beat-1 opinion of it was that it was NOT TONAL ENOUGH (G-HNR
+# +0.49 dB against a +8 dB bar). Both statements are true at once, because the
+# film's beat 1 is a broadband mix with a sustained pitched pad inside it: the
+# median says noise, the audience hears the pad.
+#
+# So the quantity that was missing is not "how tonal is this beat on average".
+# It is "is anything in here HOLDING A NOTE" -- a statement about the loudest
+# stable thing present, not about the median of everything present. G-SUSTAIN
+# tracks individual partials and asks how long they hold a pitch. G-EVENT asks
+# the complementary question in the time domain, because once the spectral
+# bars stop being applied to percussive beats (R2-4081, below) something still
+# has to be able to fail a hair dryer.
+
+
+def stft_partials(mono, sr, win=4096, hop=1024, f_lo=80.0, f_hi=4000.0,
+                  prom_db=None, max_peaks=24):
+    """Per-frame prominent spectral peaks, parabolically refined.
+
+    Prominence is measured against a running median of the log spectrum over a
+    +-1/3-octave neighbourhood, so a partial has to stand out of ITS OWN local
+    floor. That is what makes this instrument work on a MIX: a sustained pad
+    sitting inside a broadband bed is 20 dB over its neighbourhood even when
+    the beat's median periodicity reads 0 dB, which is precisely the case the
+    Boersma median could not see.
+    """
+    prom_db = V("G_SUSTAIN.peak_prominence_db") if prom_db is None else prom_db
+    n = (len(mono) - win) // hop + 1
+    if n < 1:
+        return [], np.zeros(0)
+    w = np.hanning(win)
+    idx = np.arange(win)[None, :] + hop * np.arange(n)[:, None]
+    S = np.abs(np.fft.rfft(mono[idx] * w, axis=1)) ** 2
+    f = np.fft.rfftfreq(win, 1.0 / sr)
+    df = f[1]
+    lo, hi = max(int(f_lo / df), 2), min(int(f_hi / df), S.shape[1] - 2)
+    if hi <= lo + 4:
+        return [], np.zeros(0)
+    L = 10.0 * np.log10(np.maximum(S, 1e-30))
+
+    # the local floor, on a log-spaced grid of centres and interpolated between
+    kk = np.arange(L.shape[1])
+    hw = np.maximum((kk * (2 ** (1 / 6.0) - 1)).astype(int), 6)
+    grid = np.unique(np.clip(np.round(np.geomspace(max(lo, 1), hi, 48)).astype(int),
+                             1, L.shape[1] - 1))
+    med = np.empty((L.shape[0], len(grid)))
+    for gi, k in enumerate(grid):
+        a, b = max(k - hw[k], 0), min(k + hw[k] + 1, L.shape[1])
+        med[:, gi] = np.median(L[:, a:b], axis=1)
+
+    total = S.sum(axis=1)
+    frames = []
+    for t in range(L.shape[0]):
+        row = L[t]
+        exc = row - np.interp(kk, grid, med[t])
+        k = np.arange(lo + 1, hi - 1)
+        m = (row[k] > row[k - 1]) & (row[k] >= row[k + 1]) & (exc[k] > prom_db)
+        kk2 = k[m]
+        if len(kk2) == 0:
+            frames.append(np.zeros((0, 4)))
+            continue
+        y0, y1, y2 = row[kk2 - 1], row[kk2], row[kk2 + 1]
+        den = y0 - 2 * y1 + y2
+        d = np.where(np.abs(den) > 1e-9,
+                     0.5 * (y0 - y2) / np.where(np.abs(den) > 1e-9, den, 1.0), 0.0)
+        d = np.clip(d, -0.5, 0.5)
+        fk = (kk2 + d) * df
+        amp = y1 - 0.25 * (y0 - y2) * d
+        # the partial's share of the frame's own power: three bins, because a
+        # Hann mainlobe is four bins wide and the peak bin alone understates it
+        share = (S[t, kk2 - 1] + S[t, kk2] + S[t, kk2 + 1]) / max(total[t], 1e-30)
+        order = np.argsort(-exc[kk2])[:max_peaks]
+        frames.append(np.stack([fk[order], amp[order], exc[kk2][order],
+                                share[order]], axis=1))
+    return frames, np.arange(len(frames)) * hop / sr
+
+
+def partial_tracks(frames, times, tol_cents=40.0, max_gap=2):
+    """Greedy frame-to-frame association of peaks into partial tracks."""
+    active, done = [], []
+    for ti, pk in enumerate(frames):
+        used = set()
+        for tr in active:
+            if len(pk):
+                d = 1200.0 * np.abs(np.log2(pk[:, 0] / tr["f"][-1]))
+                j = int(np.argmin(d))
+                if d[j] <= tol_cents and j not in used:
+                    used.add(j)
+                    tr["f"].append(float(pk[j, 0]))
+                    tr["e"].append(float(pk[j, 2]))
+                    tr["p"].append(float(pk[j, 3]))
+                    tr["t"].append(float(times[ti]))
+                    tr["miss"] = 0
+                    continue
+            tr["miss"] += 1
+        for tr in list(active):
+            if tr["miss"] > max_gap:
+                done.append(tr)
+                active.remove(tr)
+        for j in range(len(pk)):
+            if j not in used:
+                active.append({"f": [float(pk[j, 0])], "e": [float(pk[j, 2])],
+                               "p": [float(pk[j, 3])], "t": [float(times[ti])],
+                               "miss": 0})
+    done.extend(active)
+    return [t for t in done if len(t["f"]) >= 2]
+
+
+def held_notes(tracks, hop_s, min_dur_s=None, tol_cents=None):
+    """MAXIMAL RUNS INSIDE A TRACK WHOSE PITCH STAYS IN A BAND.
+
+    A NOTE, operationally: a partial that HOLDS a pitch. This is the one
+    definition in the file that separates a machine from music, and it is
+    written as physics rather than as taste -- a servo under a trapezoidal move
+    profile, an engine on a throttle ramp and a Doppler pass all sweep through
+    the band and none of them is counted; a held note does not sweep, which is
+    what "held" means.
+    """
+    min_dur_s = V("G_SUSTAIN.min_note_s") if min_dur_s is None else min_dur_s
+    tol_cents = V("G_SUSTAIN.stability_cents") if tol_cents is None else tol_cents
+    out = []
+    for tr in tracks:
+        f = np.asarray(tr["f"])
+        t = np.asarray(tr["t"])
+        c = 1200.0 * np.log2(f / f[0])
+        i = 0
+        while i < len(c):
+            j, lo, hi = i, c[i], c[i]
+            while j + 1 < len(c):
+                nl, nh = min(lo, c[j + 1]), max(hi, c[j + 1])
+                if nh - nl > tol_cents:
+                    break
+                lo, hi, j = nl, nh, j + 1
+            dur = t[j] - t[i] + hop_s
+            if dur >= min_dur_s:
+                out.append({
+                    "t0": float(t[i]), "t1": float(t[j] + hop_s), "dur": float(dur),
+                    "f_hz": float(np.median(f[i:j + 1])),
+                    "excess_db": float(np.median(np.asarray(tr["e"])[i:j + 1])),
+                    "power_share": float(np.mean(np.asarray(tr["p"])[i:j + 1])),
+                })
+            i = j + 1 if j > i else i + 1
+    return out
+
+
+def _cover(spans, total_s, min_overlap=1):
+    """Fraction of `total_s` covered by at least `min_overlap` spans."""
+    if not spans or total_s <= 0:
+        return 0.0
+    ev = []
+    for a, b in spans:
+        ev.append((a, 1))
+        ev.append((b, -1))
+    ev.sort()
+    depth, last, tot = 0, None, 0.0
+    for t, d in ev:
+        if depth >= min_overlap and last is not None:
+            tot += t - last
+        depth += d
+        last = t
+    return float(min(tot / total_s, 1.0))
+
+
+def note_statistics(mono, sr, total_s):
+    """The three numbers G-SUSTAIN gates, from one pass of the tracker."""
+    frames, times = stft_partials(mono, sr)
+    hop_s = float(times[1] - times[0]) if len(times) > 1 else 1024.0 / sr
+    notes = held_notes(partial_tracks(frames, times), hop_s)
+    spans = [(n["t0"], n["t1"]) for n in notes]
+    # power share of held notes: time-weighted mean of each note's share of its
+    # own frames' power, summed. Bounded by construction at 1.0.
+    share = 0.0
+    for n in notes:
+        share += n["power_share"] * n["dur"] / max(total_s, 1e-9)
+    return {
+        "n_notes": len(notes),
+        "note_cover": _cover(spans, total_s, 1),
+        "chord_cover": _cover(spans, total_s, 3),
+        "longest_note_s": max([n["dur"] for n in notes], default=0.0),
+        "held_power_share": float(min(share, 1.0)),
+        "loudest_notes": sorted(notes, key=lambda n: -n["dur"] * n["excess_db"])[:6],
+    }
+
+
+def local_dynamic_range(mono, sr, win_s=None, st_ms=None, floor_db=60.0):
+    """MEDIAN, OVER SHORT WINDOWS, OF THE SPREAD OF THE SHORT-TERM LEVEL.
+
+    Hiss is stationary and machinery is not, and that difference lives in the
+    ENVELOPE, not in the spectrum -- which is the whole lesson of R2-4081. The
+    p95-p5 spread of the 20 ms level inside a 2 s window is ~0.6 dB for white
+    noise and ~0.6 dB for a drone, and tens of dB for anything struck. Taken as
+    a median over windows so a macro fade cannot buy the number, and floored
+    60 dB under the window's own peak so digital silence cannot inflate it.
+    """
+    win_s = V("G_EVENT.window_s") if win_s is None else win_s
+    st_ms = V("G_EVENT.short_term_ms") if st_ms is None else st_ms
+    w = max(int(st_ms * 1e-3 * sr), 8)
+    hop = max(w // 2, 1)
+    n = (len(mono) - w) // hop + 1
+    if n < 8:
+        return {"median_db": float("nan"), "p25_db": float("nan"), "n_windows": 0}
+    idx = np.arange(w)[None, :] + hop * np.arange(n)[:, None]
+    rms = np.sqrt((mono[idx] ** 2).mean(axis=1))
+    L = 20.0 * np.log10(np.maximum(rms, 1e-12))
+    per = max(int(win_s * sr / hop), 8)
+    peak = L.max()
+    vals = []
+    for i in range(0, len(L) - per + 1, per):
+        seg = L[i:i + per]
+        if seg.max() < peak - 40.0:      # a silent window is not a measurement
+            continue
+        seg = np.maximum(seg, seg.max() - floor_db)
+        vals.append(float(np.percentile(seg, 95) - np.percentile(seg, 5)))
+    if not vals:
+        return {"median_db": float("nan"), "p25_db": float("nan"), "n_windows": 0}
+    return {"median_db": float(np.median(vals)),
+            "p25_db": float(np.percentile(vals, 25)),
+            "n_windows": len(vals)}
+
+
+def g_sustain(mono, sr, beats, percussive_beats=None):
+    """G-SUSTAIN -- IS ANYTHING HOLDING A NOTE.
+
+    The gate that would have caught R2-4079. It runs only on beats whose
+    protagonist is not the engine, because an engine at constant rpm HOLDS a
+    pitch by physics and gating it for that would be an error of the same
+    family as the one being corrected.
+    """
+    pb = PERCUSSIVE_BEATS if percussive_beats is None else percussive_beats
+    per_beat, failures, inapp = {}, [], []
+    for b in beats:
+        if b.name not in pb:
+            inapp.append(f"{b.name}: an engine beat -- a power unit holds a "
+                         f"pitch by physics and G-ORDER/G-IDENTITY are the "
+                         f"instruments that judge it")
+            continue
+        seg = _slice(mono, sr, b)
+        if len(seg) < int(4.0 * sr):
+            inapp.append(f"{b.name}: shorter than 4 s")
+            continue
+        st = note_statistics(seg, sr, (b.t1 - b.t0))
+        row = dict(st); row["outcome"] = PASS
+        row["limits"] = {
+            "note_cover": V("G_SUSTAIN.max_note_cover"),
+            "chord_cover": V("G_SUSTAIN.max_chord_cover"),
+            "held_power_share": V("G_SUSTAIN.max_held_power_share"),
+        }
+        if st["note_cover"] > V("G_SUSTAIN.max_note_cover"):
+            row["outcome"] = FAIL
+            failures.append(f"{b.name}: something holds a pitch for "
+                            f"{st['note_cover']:.3f} of the beat > "
+                            f"{V('G_SUSTAIN.max_note_cover'):.2f}")
+        if st["chord_cover"] > V("G_SUSTAIN.max_chord_cover"):
+            row["outcome"] = FAIL
+            failures.append(f"{b.name}: three or more pitches are held at once "
+                            f"for {st['chord_cover']:.3f} of the beat > "
+                            f"{V('G_SUSTAIN.max_chord_cover'):.2f} -- that is a "
+                            f"chord, not a machine")
+        if st["held_power_share"] > V("G_SUSTAIN.max_held_power_share"):
+            row["outcome"] = FAIL
+            failures.append(f"{b.name}: held notes carry "
+                            f"{st['held_power_share']:.3f} of the beat's power > "
+                            f"{V('G_SUSTAIN.max_held_power_share'):.2f}")
+        per_beat[b.name] = row
+    return {"gate": "G-SUSTAIN", "kind": QUALITY,
+            "measures": ("sinusoidal partials tracked frame to frame; a NOTE is "
+                         "a partial that stays inside "
+                         f"{V('G_SUSTAIN.stability_cents'):.0f} cents for "
+                         f"{V('G_SUSTAIN.min_note_s'):.2f} s while standing "
+                         f"{V('G_SUSTAIN.peak_prominence_db'):.0f} dB over its "
+                         "own +-1/3-octave floor. Gated on how much of the beat "
+                         "holds a note, how much of it holds three at once, and "
+                         "what share of the power they carry."),
+            "per_beat": per_beat, "failures": failures, "inapplicable": inapp,
+            "verdict": _verdict(per_beat, failures, inapp)}
+
+
+def g_event(mono, sr, beats, percussive_beats=None):
+    """G-EVENT -- IS IT EVENTFUL, measured in the time domain.
+
+    THE INSTRUMENT THAT REPLACES G-FLAT AND G-HNR ON PERCUSSIVE BEATS. Both of
+    those read a dense shower of struck plates as WORSE than the hair dryer the
+    client rejected (R2-4081 measured 1.263x white and -3.78 dB on a passage
+    containing no noise generator at all), so neither can be the instrument
+    that fails a hair dryer at beat 1. This one can: a hair dryer is stationary
+    and an assembly cell is not.
+    """
+    pb = PERCUSSIVE_BEATS if percussive_beats is None else percussive_beats
+    per_beat, failures, inapp = {}, [], []
+    lim = V("G_EVENT.min_local_dynamic_range_db")
+    for b in beats:
+        if b.name not in pb:
+            inapp.append(f"{b.name}: an engine beat -- a power unit is "
+                         f"legitimately stationary and G-ORDER judges it")
+            continue
+        seg = _slice(mono, sr, b)
+        if len(seg) < int(4.0 * sr):
+            inapp.append(f"{b.name}: shorter than 4 s")
+            continue
+        d = local_dynamic_range(seg, sr)
+        row = dict(d); row["limit_db"] = lim; row["outcome"] = PASS
+        if not np.isfinite(d["median_db"]):
+            inapp.append(f"{b.name}: no live window")
+            continue
+        # THE MEDIAN, NOT THE QUARTILE, and the choice is a measurement:
+        # beat 1's arrivals are CLUSTERED, so the quietest quarter of its 2 s
+        # windows lands in the gaps between clusters, where the only content is
+        # room tone and tail and where stationarity is correct. On the
+        # percussive positive the p25 reads 8.72 dB against blower-into-tubes'
+        # 8.07 -- no separation at all -- while the median reads 21.36 against
+        # 8.79. The quartile measures the silence; the median measures the beat.
+        if d["median_db"] < lim:
+            row["outcome"] = FAIL
+            failures.append(f"{b.name}: the median 2 s window spans only "
+                            f"{d['median_db']:.2f} dB of 20 ms level < "
+                            f"{lim:.1f} dB -- stationary, i.e. a bed and not "
+                            f"a sequence of events")
+        per_beat[b.name] = row
+    return {"gate": "G-EVENT", "kind": QUALITY,
+            "measures": ("p95-p5 of the 20 ms short-term level inside each 2 s "
+                         "window, taken as the 25th percentile over windows so "
+                         "neither a macro fade nor one busy passage can carry "
+                         "the beat"),
             "per_beat": per_beat, "failures": failures, "inapplicable": inapp,
             "verdict": _verdict(per_beat, failures, inapp)}
 
@@ -2273,8 +2875,9 @@ def constant_rpm_telemetry(rpm=11000.0):
 
 
 # ============================================================ the suite =====
-QUALITY_GATES = ("G-FLAT", "G-HNR", "G-ORDER", "G-IDENTITY", "G-RING",
-                 "G-NOVEL", "G-MOD", "G-GESTURE", "G-ROOM", "G-BALANCE")
+QUALITY_GATES = ("G-FLAT", "G-HNR", "G-SUSTAIN", "G-EVENT", "G-ORDER",
+                 "G-IDENTITY", "G-RING", "G-NOVEL", "G-MOD", "G-GESTURE",
+                 "G-ROOM", "G-BALANCE")
 PROVENANCE_GATES = ("G-CONSTRUCT",)
 
 
@@ -2293,6 +2896,10 @@ def run_suite(x, sr, sheet, stems=None, telemetry=None, gates=None,
         out["G-FLAT"] = g_flat(mono, sr, beats)
     if "G-HNR" in want:
         out["G-HNR"] = g_hnr(mono, sr, beats)
+    if "G-SUSTAIN" in want:
+        out["G-SUSTAIN"] = g_sustain(mono, sr, beats)
+    if "G-EVENT" in want:
+        out["G-EVENT"] = g_event(mono, sr, beats)
     if "G-NOVEL" in want:
         out["G-NOVEL"] = g_novel(mono, sr, beats)
     if "G-MOD" in want:

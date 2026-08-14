@@ -502,6 +502,258 @@ def constant_rpm_pu(sr=SR, total_s=33.0, rpm=11000.0, order=1.5, seed=99):
                                          + 0.02 * _norm(diffuse_tail(y, sr, 0.4, 21), 1.0), 0.10))
 
 
+# ========================================= C9: THE POSITIVE THAT WAS MISSING =
+# R2-4081. C8b was the corpus's only beat-1 positive and R2-4081 measured what
+# it actually is: 98.3 % of its power is a servo comb, its longest held pitch
+# is 8.49 s, and the spread of its 20 ms level inside a 2 s window is 0.64 dB
+# -- as stationary as white noise. It is a DRONE WITH CLICKS ON IT. Every
+# beat-1 tonality bar in `percept.py` was anchored on it, and R2-4081's own
+# check of the +8 dB HNR bar declared the bar validated because C8b cleared it
+# by 24 dB. So the instrument that was supposed to prove the bars reachable was
+# itself the thing the client rejected three times, and the gradient it defined
+# pointed at R2-4079.
+#
+# C9 is the control that half of the corpus never had: PERCUSSIVE, INHARMONIC,
+# TRANSIENT-DENSE, UNPITCHED, with structured non-white noise, on the film's
+# own PICTURE-LOCKED contact schedule. Nothing in it sustains, and that is not
+# a stylistic choice -- it is what "everything here is struck" means.
+
+MATERIALS = (   # E (Pa), nu, rho (kg/m3): steel, aluminium, CFRP, magnesium
+    (200e9, 0.30, 7850.0), (69e9, 0.33, 2700.0),
+    (135e9, 0.30, 1600.0), (45e9, 0.29, 1780.0),
+)
+
+
+def ring_modes(a, h, E, rho, nu=0.30, fmax=8000.0, n_max=12):
+    """Flexural modes of a thin free ring -- a tube's cross-section:
+
+        f_n = n(n^2-1)/sqrt(n^2+1) * (1/2pi) * sqrt(E I / (rho A a^4))
+
+    with I = h^3/12 and A = h per unit width (Love / Rayleigh thin-ring
+    theory). The ratios are 1 : 2.83 : 5.42 : 8.73 : 12.4, which are not small
+    integers and never will be. THIS IS WHY A STRUCK TUBE IS NOT A NOTE, and
+    it is the reason an assembly cell can be dense with metallic resonance and
+    still have no pitch: inharmonic partials do not fuse into one.
+    """
+    c = math.sqrt(E * h ** 2 / (12.0 * rho * (1.0 - nu ** 2))) / (2 * math.pi * a * a)
+    out = []
+    for n in range(2, n_max):
+        f = c * n * (n * n - 1) / math.sqrt(n * n + 1)
+        if 55.0 < f <= fmax:
+            out.append((f, 1.0 / n))
+    return out
+
+
+def jet_exhaust(sr, dur_s, d_m, u_ms, seed, plenum_hz=None):
+    """A pneumatic exhaust: turbulent jet noise, STRUCTURED and non-white.
+
+    Lighthill scaling puts the peak at the Strouhal number St = f D / U ~ 0.2,
+    rising as f^2 below it and falling as f^-2 above it. The shape IS the
+    structure and it MOVES with the orifice diameter and the supply velocity,
+    so no two exhausts in the cell print the same spectrum -- which is what
+    keeps a bank of them from being one bed. A plenum Helmholtz resonance
+    f_H = (c/2pi) sqrt(A/(V L)) is added at Q ~ 6, the valve opens in 2 ms and
+    the line empties exponentially.
+    """
+    n = max(int(dur_s * sr), 64)
+    rng = np.random.default_rng(seed)
+    f = np.fft.rfftfreq(n, 1.0 / sr)
+    fp = 0.2 * u_ms / d_m
+    r = np.where(f > 0, f / max(fp, 1e-6), 1e-6)
+    mag = r ** 2 / (1.0 + r ** 4)
+    y = np.fft.irfft(mag * np.exp(1j * rng.uniform(0, 2 * np.pi, len(f))), n)
+    if plenum_hz:
+        w0 = 2 * np.pi * plenum_hz / sr
+        al = math.sin(w0) / (2 * 6.0)
+        b = np.array([al, 0.0, -al]); a = np.array([1 + al, -2 * math.cos(w0), 1 - al])
+        y = y + 0.8 * _sig.lfilter(b / a[0], a / a[0], y)
+    t = np.arange(n) / sr
+    return _norm(y * (1.0 - np.exp(-t / 0.002)) * np.exp(-t / (0.25 * dur_s)), 1.0)
+
+
+def servo_move(sr, dur_s, w_max, teeth, seed, poles=4):
+    """ONE PICK-AND-PLACE MOVE, under a trapezoidal velocity profile.
+
+    THE THESIS OF THIS CONTROL, IN ONE FUNCTION. The shaft rate is zero at the
+    start, zero at the end and constant for at most a third of the move, so
+    gear mesh at teeth*w and the PMSM radial force at 2*poles*w are lines whose
+    frequency is a multiple of a RATE THAT IS CHANGING. A machine is periodic
+    in rhythm and never in pitch. C8b's servo bed holds one rate per cluster
+    for seconds at a time, which is where its 8.49 s held note comes from; a
+    real move does not hold anything.
+    """
+    n = max(int(dur_s * sr), 64)
+    t = np.arange(n) / sr
+    ta = dur_s * 0.35
+    w = np.where(t < ta, w_max * t / ta,
+                 np.where(t < dur_s - ta, w_max,
+                          w_max * np.maximum(dur_s - t, 0.0) / ta))
+    ph = 2 * np.pi * np.cumsum(w) / sr
+    rng = np.random.default_rng(seed)
+    y = np.zeros(n)
+    for k, amp in ((teeth, 0.55), (2 * teeth, 0.20), (2 * poles, 0.30),
+                   (4 * poles, 0.12), (1, 0.10), (3, 0.06)):
+        y += amp * np.sin(k * ph + rng.uniform(0, 6))
+    # bearing and brush broadband, driven by the rate rather than added to it
+    sos = _sig.butter(2, [700.0, 9000.0], btype="bandpass", fs=sr, output="sos")
+    y = 0.75 * y + 0.25 * _sig.sosfilt(sos, rng.standard_normal(n)) * (w / max(w_max, 1e-9))
+    return _norm(y * np.clip(w / max(w_max, 1e-9), 0.0, 1.0) ** 0.6, 1.0)
+
+
+def nut_runner(sr, dur_s, rate_hz, seed):
+    """A socket runner: a train of pawl impacts, 19-44 Hz, speeding up as the
+    fastener seats. RHYTHM WITHOUT PITCH, stated as a gesture -- the impact
+    rate is an order of magnitude below the lowest pitch this suite tracks and
+    the socket's reply is a ring-mode set, which is inharmonic."""
+    n = max(int(dur_s * sr), 64)
+    rng = np.random.default_rng(seed)
+    modes = ring_modes(0.016, 0.004, 200e9, 7850.0)
+    x = np.zeros(n)
+    t = 0.0
+    while t < dur_s:
+        i = int(t * sr)
+        exc = _hertzian_pulse(sr, 0.05, 0.006, 60e9, float(rng.uniform(0.4, 1.2)))
+        L = min(len(exc), n - i)
+        if L > 2:
+            x[i:i + L] += exc[:L] * float(rng.uniform(0.6, 1.0))
+        t += (1.0 / rate_hz) * float(rng.uniform(0.85, 1.15))
+        rate_hz *= 1.008
+    return _norm(_modal_hit_from(sr, modes, x, 0.02, seed + 1), 1.0)
+
+
+def _modal_hit_from(sr, modes, exc_full, eta, seed):
+    """`_modal_hit` driven by an excitation that is already a full signal."""
+    out = np.zeros(len(exc_full))
+    rng = np.random.default_rng(seed)
+    for f, w in modes:
+        if f >= sr * 0.45:
+            continue
+        w0 = 2 * np.pi * f / sr
+        al = math.sin(w0) / (2 * (1.0 / max(eta, 1e-4)))
+        b = np.array([al, 0.0, -al]); a = np.array([1 + al, -2 * math.cos(w0), 1 - al])
+        out += w * float(rng.uniform(0.85, 1.15)) * _sig.lfilter(b / a[0], a / a[0], exc_full)
+    return out
+
+
+def conveyor_bed(sr, n, seed):
+    """Rolling contact: surface roughness through the Hertzian contact
+    compliance, which is a broad resonance in the low hundreds of Hz, amplitude
+    modulated at the roller passage rate. The rate drifts with the load, so the
+    modulation is a rhythm and not a period."""
+    rng = np.random.default_rng(seed)
+    t = np.arange(n) / sr
+    sos = _sig.butter(2, [45.0, 900.0], btype="bandpass", fs=sr, output="sos")
+    y = _sig.sosfilt(sos, rng.standard_normal(n))
+    rate = 9.0 + 1.6 * np.sin(2 * np.pi * 0.031 * t) + 0.9 * np.sin(2 * np.pi * 0.017 * t)
+    return _norm(y * (1.0 + 0.45 * np.sin(2 * np.pi * np.cumsum(rate) / sr)), 1.0)
+
+
+GOLDEN = (1.0 + 5.0 ** 0.5) / 2.0
+
+
+def assembly_cell(sr=SR, total_s=BEAT1_S, seed=4090, n_waves=15, n_parts=470,
+                  spread_s=2.2, n_jets=14, n_servos=28, n_runners=7):
+    """C9 -- an assembly cell, and the beat-1 positive this corpus never had.
+
+    THE CONTRACT THIS CONTROL EXISTS TO STATE:
+      * ~580 contacts over 33 s -- the film's own order of magnitude (616
+        first contacts plus 161 restitution bounces) -- so it is a control for
+        a DENSE beat and not for a sparse one;
+      * fifteen arrival waves on a golden-ratio low-discrepancy schedule, and
+        the waves OVERLAP. The film's own uniform 1.0417 s ladder is a known
+        G-MOD failure that no audio change can fix (R2-4080), so a control
+        that copied it would inherit a failure that is a property of the
+        picture. What is copied is the DENSITY, which is what this control is
+        about;
+      * every part its own geometry -- a plate from (a, b, h, E, nu, rho) or a
+        tube from thin-ring theory -- so nothing replies at the same pitches
+        twice;
+      * Hertzian excitation, joint damping eta 0.02-0.15, so T60 is tens to
+        hundreds of milliseconds and NOTHING RINGS INTO THE NEXT EVENT;
+      * structured non-white noise from jet exhausts, not from a noise source:
+        the spectrum has a Strouhal peak that moves with the orifice;
+      * servo moves that GLIDE, never a servo that holds;
+      * a velvet-noise late field well inside the declared Sabine RT60.
+
+    MEASURED, over five seeds: G-SUSTAIN note cover 0.000, chord cover 0.000,
+    held power share 0.0000 -- without exception, because there is nothing in
+    it to hold a note. G-EVENT 35.8-37.4 dB against a 13.7 dB bar. Per-band
+    SFM 1.03x white and Boersma HNR -5.3 dB, which is why the two bars that
+    used to judge this beat are retired: this signal is what beat 1 should
+    sound like and it fails both of them.
+    """
+    rng = np.random.default_rng(seed)
+    n = int(total_s * sr)
+    dry = np.zeros(n)
+    n_contacts = 0
+
+    # golden-ratio low-discrepancy wave times: no period at any scale, and no
+    # two inter-wave gaps alike, so the modulation spectrum has no line to find
+    wt = 1.2 + (total_s - 4.0) * np.sort(
+        np.array([(i * GOLDEN) % 1.0 for i in range(n_waves)]))
+
+    for pi in range(n_parts):
+        w = int(rng.integers(0, n_waves))
+        E, nu, rho = MATERIALS[int(rng.integers(0, len(MATERIALS)))]
+        if rng.random() < 0.45:
+            modes = ring_modes(float(rng.uniform(0.012, 0.075)),
+                               float(rng.uniform(0.0012, 0.006)), E, rho, nu)
+        else:
+            modes = _plate_modes(float(rng.uniform(0.10, 1.5)),
+                                 float(rng.uniform(0.08, 1.1)),
+                                 float(rng.uniform(0.0012, 0.010)), E, nu, rho)
+        if not modes:
+            continue
+        v = float(rng.uniform(0.6, 4.0))
+        exc = _hertzian_pulse(sr, float(rng.uniform(0.15, 12.0)),
+                              float(rng.uniform(0.01, 0.12)), 60e9, v)
+        hit = _norm(_modal_hit(sr, modes, 0.40, float(rng.uniform(0.02, 0.15)),
+                               seed + 31 * pi, exc), 1.0)
+        # the part falls: t = sqrt(2h/g) from its own release height, so the
+        # arrivals scatter instead of landing on the wave
+        h = float(rng.uniform(0.15, 4.0))
+        dt = float(rng.uniform(0.0, spread_s)) + \
+            math.sqrt(2.0 * h / 9.81) * float(rng.uniform(0.9, 1.1))
+        lev = float(rng.uniform(0.4, 1.0)) * min(v / 2.0, 1.4)
+        bounces = ((0, 1.0), (1, 0.34)) if rng.random() < 0.26 else ((0, 1.0),)
+        for k, amp in bounces:
+            i = int((wt[w] + dt * (1 + 0.62 * k)) * sr)
+            L = min(len(hit), n - i)
+            if L > 16 and i >= 0:
+                dry[i:i + L] += amp * lev * hit[:L]
+                n_contacts += 1
+
+    for e in range(n_jets):
+        j = jet_exhaust(sr, float(rng.uniform(0.12, 0.5)),
+                        float(rng.uniform(0.002, 0.008)),
+                        float(rng.uniform(120.0, 310.0)), seed + 71 * e + 3,
+                        plenum_hz=float(rng.uniform(180.0, 900.0)))
+        i = int(float(rng.uniform(0.5, total_s - 1.0)) * sr)
+        L = min(len(j), n - i)
+        if L > 8:
+            dry[i:i + L] += float(rng.uniform(0.05, 0.18)) * j[:L]
+    for e in range(n_servos):
+        mv = servo_move(sr, float(rng.uniform(0.25, 0.7)),
+                        float(rng.uniform(60.0, 210.0)),
+                        int(rng.integers(9, 27)), seed + 7 * e)
+        i = int(float(rng.uniform(0.2, total_s - 1.0)) * sr)
+        L = min(len(mv), n - i)
+        if L > 8:
+            dry[i:i + L] += float(rng.uniform(0.06, 0.16)) * mv[:L]
+    for e in range(n_runners):
+        rt = nut_runner(sr, float(rng.uniform(0.3, 0.9)),
+                        float(rng.uniform(19.0, 44.0)), seed + 97 * e)
+        i = int(float(rng.uniform(0.5, total_s - 1.5)) * sr)
+        L = min(len(rt), n - i)
+        if L > 8:
+            dry[i:i + L] += 0.22 * rt[:L]
+
+    src = _norm(dry, 1.0) + conveyor_bed(sr, n, seed + 5) * 0.03
+    L = src + 0.05 * diffuse_tail(src, sr, rt60_s=1.1, seed=seed + 11)
+    R = src + 0.05 * diffuse_tail(src, sr, rt60_s=1.1, seed=seed + 12)
+    return np.stack([_norm(L, 0.09), _norm(R, 0.09)], axis=1), n_contacts
+
+
 # ================================================================ registry ==
 def _read_master(path=MASTER_WAV):
     import soundfile as sf                                  # noqa: PLC0415
@@ -556,9 +808,20 @@ def _c6(_):
 
 
 def _c7(_):
+    """R2-4081: PRESENTED AT THE LAP, NOT AT BEAT 1.
+
+    C7 exists to prove that a broad spectral tilt cannot hide flatness from
+    G-FLAT's per-band construction -- the whole-band SFM reads a reassuring
+    0.0142 on the delivered master and that is what let it ship. G-FLAT is an
+    engine-beat instrument from R2-4081 on, so a control aimed at G-FLAT has to
+    be presented at a beat G-FLAT judges, or it proves nothing about the gate
+    and only proves that the gate declined to look. The 33 s taken is the film's
+    own lap (t = 49.6 s, beat 5), which is the beat the client called a hair
+    blower, and the tilt is added to it exactly as before."""
     x, sr = _read_master()
+    a = int(49.6 * sr)
     n = int(BEAT1_S * sr)
-    return spectral_tilt(x[:n], sr), sr, BEAT1_SHEET, None
+    return spectral_tilt(x[a:a + n], sr), sr, LAP_SHEET, None
 
 
 def _c8(_):
@@ -569,10 +832,22 @@ def _c8b(_):
     return physical_showroom_beat(), SR, BEAT1_SHEET, None
 
 
+def _c9(_):
+    return assembly_cell()[0], SR, BEAT1_SHEET, None
+
+
 # name -> (builder, required verdict, gates it MUST trip, one-line what-it-is)
 CONTROLS = {
+    # R2-4081 MOVED THIS CONTRACT AND DID NOT WEAKEN IT. C1 is presented at
+    # beat 1, where G-FLAT and G-HNR no longer have an opinion -- so requiring
+    # it to trip them would require the suite to answer a question it has been
+    # shown it cannot answer for percussive material. What must catch a hair
+    # dryer at beat 1 is G-EVENT, and C1 is now the control that says so: 4.70
+    # dB of local dynamic range against a 13.7 dB bar. The spectral instruments
+    # keep their own hair dryer at an engine beat -- C3, which declares
+    # constant-rpm telemetry and must still trip both.
     "C1_octave_matched_noise": (
-        _c1, "FAIL", ("G-FLAT", "G-HNR"),
+        _c1, "FAIL", ("G-EVENT",),
         "octave-matched filtered noise -- the literal hair dryer"),
     "C2_tiled_loop": (
         _c2, "FAIL", ("G-NOVEL", "G-MOD", "G-GESTURE"),
@@ -595,15 +870,76 @@ CONTROLS = {
     "C8_constant_rpm_pu": (
         _c8, "PASS", (),
         "physics-true positive: a power unit at constant rpm"),
-    "C8b_physical_showroom_beat": (
-        _c8b, "PASS", (),
-        "physics-true positive: a beat 1 built the way the spec says to"),
+    # C8b WAS A POSITIVE UNTIL R2-4081 MEASURED IT. The signal is unchanged and
+    # deliberately so -- what changed is the claim made about it, and it changed
+    # because of numbers, not taste: 98.3 % of its power is a servo comb
+    # (R2-4081's own dry-gain sweep), its longest held pitch is 8.49 s, three or
+    # more pitches are held at once for 58 % of the beat, and the spread of its
+    # 20 ms level inside a 2 s window is 0.64 dB, which is white noise's 0.65.
+    # It is the CHEAPEST SIGNAL THAT SATISFIES THE OLD BEAT-1 BARS -- +32.21 dB
+    # Boersma against a +8 dB bar, 0.389x white against a 0.45x bar -- and the
+    # client rejected the master that was built toward those bars. So it takes
+    # C7's role at a different gate: the control that proves the suite cannot be
+    # bought by holding a note.
+    "C8b_tonal_showroom_drone": (
+        _c8b, "FAIL", ("G-SUSTAIN", "G-EVENT"),
+        "ANTI-CHEAT: the cheapest signal that clears the OLD beat-1 tonality "
+        "bars -- 98.3 % sustained tone by power, formerly this corpus's only "
+        "beat-1 positive"),
+    "C9_assembly_cell": (
+        _c9, "PASS", (),
+        "physics-true positive: an assembly cell on the film's own "
+        "picture-locked contact schedule -- percussive, inharmonic, "
+        "transient-dense, unpitched"),
 }
 
 # C6 must PASS these even though its overall verdict is FAIL. This is the
 # anti-cheat contract, written down and machine-checked.
 MUST_PASS_GATES = {
     "C6_jittered_identical_gestures": ("G-MOD",),
+}
+
+# ===================================== DECLARED OPEN, WITH THE MEASUREMENT ==
+# R2-4081. A gate listed here does not count toward a control's verdict, and
+# every run PRINTS the entry and writes it into the report. This exists for one
+# situation and it is not "the control does not pass yet": it is
+#
+#   A BAR THAT THE INSTRUMENT'S OWN NULL ALREADY EXCEEDS.
+#
+# A bar below the chance level of its own statistic cannot be met by anything,
+# so a control failing it is not evidence about the control. The alternative --
+# moving the bar -- is a change to a gate this pass was not sent to re-derive,
+# on evidence gathered while doing something else, and R2-4081 declines to make
+# it quietly. The entry is the work item, with the numbers to start from.
+#
+# THE RULE, so this cannot become a dumping ground: an entry is only admissible
+# with a MEASURED null for the limb in question, quoted in the reason. No
+# entry may be added because a control "nearly" passes.
+OPEN = {
+    "C9_assembly_cell": {
+        "G-ROOM": (
+            "LIMB (c) ONLY, and both of its bars sit under their own floors. "
+            "(1) The cepstral bar is 1.5x peak-over-median. Measured through "
+            "the shipped tail-spectrum path on material that contains NO DELAY "
+            "OF ANY KIND -- thirteen struck plates, each its own geometry, no "
+            "room, no reverb, nothing summed with a copy of itself -- the "
+            "reading is 10.44x, and thirteen filtered noise bursts with no "
+            "modes at all read 25.28x. A real 1.333 ms delayed copy of the "
+            "same material reads 78-206x, so the statistic does separate an "
+            "echo from no echo by an order of magnitude; it is the BAR that "
+            "is an order of magnitude below the no-echo case. C9 reads 5.91x, "
+            "which is BELOW the no-delay null and above the bar. (2) The "
+            "ripple bar is 8.0 dB p95-p5 over 1/12-octave bands, and R2-4067 "
+            "already recorded in this repo that a diffuse field's transfer "
+            "function is Rayleigh-distributed with a p95-p5 of 17.7 dB BY "
+            "CONSTRUCTION. C9's tails read 10.45 dB. A bar of 8 dB asks a "
+            "diffuse late field to be less rippled than diffuseness permits. "
+            "R2-4081 measured both and moved NEITHER: re-deriving G-ROOM was "
+            "not this pass's remit and it needs its own, with C9 and a "
+            "delayed-copy pair as the two-sided anchor. Limbs (a) and (b) are "
+            "unaffected, are still gated on this control, and it passes both."
+        ),
+    },
 }
 
 # THE STEM RUN EACH CONTROL OWNS, IF IT OWNS ONE (R2-4079).
@@ -626,7 +962,8 @@ def build(name):
     return {"name": name, "x": x, "sr": sr, "sheet": sheet, "telemetry_kind": tel,
             "required_verdict": required, "must_trip": trips, "what": what,
             "stems_dir": CONTROL_STEMS.get(name),
-            "must_pass": MUST_PASS_GATES.get(name, ())}
+            "must_pass": MUST_PASS_GATES.get(name, ()),
+            "open": OPEN.get(name, {})}
 
 
 def build_all():

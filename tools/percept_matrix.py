@@ -271,26 +271,84 @@ def _detune_order(x, sr):
     return out
 
 
+def _held_chord(x, sr):
+    """G-SUSTAIN's defect, injected as the cheapest possible version of it:
+    THREE HELD NOTES over the positive control, at the level a pad sits at.
+
+    Not a musical quotation and not a scale -- three arbitrary frequencies in
+    an arbitrary ratio (1 : 1.331 : 1.587, none of them a small-integer
+    interval), because the property being gated is HOLDING, not harmony. If
+    the gate only fired on consonant intervals it would be a taste instrument;
+    it fires on three things that do not move, which is what a machine never
+    does."""
+    n = x.shape[0]
+    t = np.arange(n) / sr
+    r = np.sqrt(np.mean(x ** 2))
+    y = x.copy()
+    for c in range(x.shape[1]):
+        pad = np.zeros(n)
+        for f, a in ((233.0, 1.0), (310.1, 0.8), (369.7, 0.7)):
+            for k, ak in ((1, 1.0), (2, 0.45), (3, 0.25), (4, 0.12)):
+                pad += a * ak * np.sin(2 * np.pi * f * k * t + 0.7 * c + 0.3 * k)
+        y[:, c] += pad / np.sqrt(np.mean(pad ** 2)) * r * 0.55
+    return y
+
+
+def _octave_matched(x, sr):
+    """G-EVENT's defect, and the sharpest statement of why it exists: the
+    control's OWN octave-band spectrum, re-synthesised as stationary noise.
+
+    Every spectral statistic in the suite is approximately preserved by this
+    mutation -- same energy in every octave, same tilt, same bandwidth -- and
+    every event in the beat is gone. If the suite cannot fail this, it cannot
+    fail a hair dryer, which is what it was asked to do three rejections ago."""
+    y = np.zeros_like(x)
+    for c in range(x.shape[1]):
+        n = C.octave_matched_noise(x[:, c:c + 1], sr, seed=1401 + c)
+        n = np.asarray(n).reshape(-1)[:x.shape[0]]
+        y[:len(n), c] = n / max(np.sqrt(np.mean(n ** 2)), 1e-20) * \
+            np.sqrt(np.mean(x[:, c] ** 2))
+    return y
+
+
 MUTATIONS = [
     # (label, base control, mutation, gate that MUST fire)
-    ("M-FLAT  broadband bed over the physical beat",
-     "C8b_physical_showroom_beat", _add_broadband, "G-FLAT"),
+    #
+    # R2-4081 MOVED TWO BASES AND ADDED TWO ROWS. M-FLAT and M-HNR now run on
+    # the ENGINE control, because G-FLAT and G-HNR are engine-beat instruments
+    # from this pass on and a mutation aimed at a beat the gate no longer judges
+    # would report the gate blind when it is merely out of scope. Everything
+    # aimed at beat 1 now runs on C9, the percussive positive, because a
+    # mutation has to be injected into something that PASSES before the
+    # injection or it proves nothing.
+    ("M-FLAT  broadband bed over the constant-rpm unit",
+     "C8_constant_rpm_pu", _add_broadband, "G-FLAT"),
     ("M-HNR   noise through fixed high-Q pipes at beat level",
-     "C8b_physical_showroom_beat", _noise_through_tubes, "G-HNR"),
-    ("M-NOVEL 2 s block tiled over the physical beat",
-     "C8b_physical_showroom_beat", _tile, "G-NOVEL"),
+     "C8_constant_rpm_pu", _noise_through_tubes, "G-HNR"),
+    ("M-SUST  three held notes over the assembly cell",
+     "C9_assembly_cell", _held_chord, "G-SUSTAIN"),
+    ("M-EVENT the assembly cell's own spectrum, stationary",
+     "C9_assembly_cell", _octave_matched, "G-EVENT"),
+    ("M-NOVEL 2 s block tiled over the assembly cell",
+     "C9_assembly_cell", _tile, "G-NOVEL"),
     ("M-MOD   gestures back on an exact 1.375 s grid",
-     "C8b_physical_showroom_beat", _exact_grid, "G-MOD"),
+     "C9_assembly_cell", _exact_grid, "G-MOD"),
     ("M-GEST  one gesture repeated, jittered grid",
-     "C8b_physical_showroom_beat", _identical_gestures, "G-GESTURE"),
+     "C9_assembly_cell", _identical_gestures, "G-GESTURE"),
     ("M-ROOMc master.py:530-532 self-delay comb re-injected",
-     "C8b_physical_showroom_beat", _add_comb, "G-ROOM"),
+     "C9_assembly_cell", _add_comb, "G-ROOM"),
     ("M-ROOMb fixed inharmonic resonator bank, no dry blend",
-     "C8b_physical_showroom_beat", _fixed_resonators, "G-ROOM"),
+     "C9_assembly_cell", _fixed_resonators, "G-ROOM"),
     ("M-ROOMa 8-tap FDN, no diffusion: lines are delay harmonics",
-     "C8b_physical_showroom_beat", _fdn_comb_tail, "G-ROOM"),
+     "C9_assembly_cell", _fdn_comb_tail, "G-ROOM"),
+    # M-RING STAYS ON C8b. G-RING needs inter-event gaps to backward-integrate
+    # a decay out of, and C9 is a DENSE beat by design -- 580 contacts over
+    # 33 s -- so G-RING is INAPPLICABLE on it and a mutation injected there
+    # reports the gate blind when it is only unable to look. The carrier for a
+    # mutation has to be a signal the gate can measure; C8b's sparse clicks
+    # over a bed can be, whatever else is wrong with C8b.
     ("M-RING  tail at RT60 4.5 s in a 2.4 s Sabine room",
-     "C8b_physical_showroom_beat", _long_tail, "G-RING"),
+     "C8b_tonal_showroom_drone", _long_tail, "G-RING"),
     ("M-ORDER comb detuned 9 % off the telemetry rpm",
      "C8_constant_rpm_pu", _detune_order, "G-ORDER"),
 ]
@@ -441,9 +499,20 @@ def main():
         b = C.build(name)
         rep = run_signal(b["x"], b["sr"], b["sheet"], b["telemetry_kind"],
                          stems_dir=b["stems_dir"])
-        got = "FAIL" if rep["any_fail"] else ("PASS" if rep["no_fail"]
-                                              else "INAPPLICABLE")
-        failed = P.failing_gates(rep)
+        failed_all = P.failing_gates(rep)
+        # R2-4081: DECLARED-OPEN GATES ARE REPORTED AND NOT COUNTED. The
+        # declaration lives in `audio.controls.synth.OPEN`, it is admissible
+        # only with a measured null for the limb it names, and it is printed on
+        # every run so it cannot become invisible.
+        openg = b.get("open") or {}
+        failed = [g for g in failed_all if g not in openg]
+        got = ("FAIL" if any(rep["quality_verdicts"].get(g) == P.FAIL
+                             for g in rep["quality_verdicts"] if g not in openg)
+               or any(rep["provenance_verdicts"].get(g) == P.FAIL
+                      for g in rep["provenance_verdicts"] if g not in openg)
+               else ("PASS" if rep["no_fail"] or any(
+                   v == P.PASS for v in rep["quality_verdicts"].values())
+                     else "INAPPLICABLE"))
         ok = (got == b["required_verdict"])
         missing_trips = [g for g in b["must_trip"] if g not in failed]
         wrong_passes = [g for g in b["must_pass"]
@@ -456,6 +525,8 @@ def main():
             "control": name, "what": b["what"],
             "required": b["required_verdict"], "got": got,
             "failing_gates": failed,
+            "declared_open": {g: openg[g] for g in openg},
+            "open_and_failing": [g for g in failed_all if g in openg],
             "must_trip": list(b["must_trip"]), "missing_trips": missing_trips,
             "must_pass": list(b["must_pass"]), "wrong_passes": wrong_passes,
             "inapplicable": rep["inapplicable_gates"],
@@ -473,6 +544,10 @@ def main():
             print(f"        MUST TRIP BUT DID NOT: {missing_trips}")
         if wrong_passes:
             print(f"        MUST PASS BUT DID NOT: {wrong_passes}")
+        for g in rows[-1]["open_and_failing"]:
+            print(f"        OPEN, NOT COUNTED -- {g}: {openg[g][:120]}...")
+            for f in rep["gates"][g]["failures"][:2]:
+                print(f"            {f}")
         for g in failed[:6]:
             for f in rep["gates"][g]["failures"][:2]:
                 print(f"        {g}: {f}")

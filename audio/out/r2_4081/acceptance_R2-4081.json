@@ -1,0 +1,1250 @@
+{
+ "M1 hair blower": {
+  "wav": "/home/zany/f1-round2/audio/out/master.wav",
+  "complaint": "TOO NOISY -- 'a wind blower', 'hair blower'",
+  "verdicts": {
+   "G-FLAT": "FAIL",
+   "G-HNR": "FAIL",
+   "G-SUSTAIN": "FAIL",
+   "G-EVENT": "FAIL",
+   "G-NOVEL": "FAIL",
+   "G-MOD": "FAIL",
+   "G-GESTURE": "FAIL",
+   "G-ROOM": "FAIL",
+   "G-RING": "FAIL",
+   "G-ORDER": "FAIL",
+   "G-IDENTITY": "INAPPLICABLE",
+   "G-BALANCE": "FAIL"
+  },
+  "failing": [
+   "G-BALANCE",
+   "G-EVENT",
+   "G-FLAT",
+   "G-GESTURE",
+   "G-HNR",
+   "G-MOD",
+   "G-NOVEL",
+   "G-ORDER",
+   "G-RING",
+   "G-ROOM",
+   "G-SUSTAIN",
+   "G-CONSTRUCT"
+  ],
+  "stems_used": true,
+  "per_beat_outcome": {
+   "G-FLAT@2_launch": "PASS",
+   "G-FLAT@4_transit": "FAIL",
+   "G-FLAT@5_lap": "FAIL",
+   "G-FLAT@6_ending": "FAIL",
+   "G-HNR@2_launch": "PASS",
+   "G-HNR@4_transit": "FAIL",
+   "G-HNR@5_lap": "PASS",
+   "G-HNR@6_ending": "FAIL",
+   "G-SUSTAIN@1_assembly": "PASS",
+   "G-SUSTAIN@3_breach": "FAIL",
+   "G-EVENT@1_assembly": "FAIL",
+   "G-EVENT@3_breach": "FAIL",
+   "G-NOVEL@1_assembly": "FAIL",
+   "G-NOVEL@3_breach": "PASS",
+   "G-NOVEL@4_transit": "PASS",
+   "G-NOVEL@5_lap": "PASS",
+   "G-NOVEL@6_ending": "PASS",
+   "G-MOD@1_assembly": "FAIL",
+   "G-MOD@5_lap": "PASS",
+   "G-GESTURE@1_assembly": "FAIL",
+   "G-GESTURE@3_breach": "PASS",
+   "G-ROOM@1_assembly": "FAIL",
+   "G-ROOM@3_breach": "PASS",
+   "G-ROOM@5_lap": "FAIL",
+   "G-ROOM@6_ending": "PASS",
+   "G-RING@1_assembly": "FAIL",
+   "G-RING@5_lap": "PASS",
+   "G-ORDER@4_transit": "FAIL",
+   "G-ORDER@5_lap": "FAIL",
+   "G-BALANCE@1_assembly": "FAIL",
+   "G-BALANCE@2_launch": "PASS",
+   "G-BALANCE@3_breach": "FAIL",
+   "G-BALANCE@4_transit": "FAIL",
+   "G-BALANCE@5_lap": "FAIL",
+   "G-BALANCE@6_ending": "FAIL"
+  },
+  "beat1": {
+   "G-SUSTAIN": {
+    "n_notes": 8,
+    "note_cover": 0.15773737373737387,
+    "chord_cover": 0.0,
+    "longest_note_s": 1.0879999999999999,
+    "held_power_share": 0.010460751785860943,
+    "loudest_notes": [
+     {
+      "t0": 23.701333333333334,
+      "t1": 24.661333333333335,
+      "dur": 0.9599999999999996,
+      "f_hz": 430.0045764400151,
+      "excess_db": 18.98233896455981,
+      "power_share": 0.14280366366054045
+     },
+     {
+      "t0": 8.64,
+      "t1": 9.344,
+      "dur": 0.7039999999999994,
+      "f_hz": 409.07843328628786,
+      "excess_db": 19.712895942769865,
+      "power_share": 0.20952145089367188
+     },
+     {
+      "t0": 8.576,
+      "t1": 9.664,
+      "dur": 1.0879999999999999,
+      "f_hz": 1101.5634506741414,
+      "excess_db": 11.535283639836685,
+      "power_share": 0.030156665544641137
+     },
+     {
+      "t0": 24.917333333333332,
+      "t1": 25.770666666666667,
+      "dur": 0.853333333333334,
+      "f_hz": 1597.2369339697184,
+      "excess_db": 13.428519863639803,
+      "power_share": 0.019237342415953974
+     },
+     {
+      "t0": 29.205333333333332,
+      "t1": 30.037333333333333,
+      "dur": 0.8319999999999995,
+      "f_hz": 1595.8188176228414,
+      "excess_db": 11.48232281551372,
+      "power_share": 0.005317629300652277
+     },
+     {
+      "t0": 26.346666666666668,
+      "t1": 27.136000000000003,
+      "dur": 0.789333333333334,
+      "f_hz": 1599.309848411597,
+      "excess_db": 9.892328122343905,
+      "power_share": 0.004698894590812564
+     }
+    ],
+    "outcome": "PASS",
+    "limits": {
+     "note_cover": 0.2,
+     "chord_cover": 0.05,
+     "held_power_share": 0.15
+    }
+   },
+   "G-EVENT": {
+    "median_db": 13.251045361917448,
+    "p25_db": 6.090696740913587,
+    "n_windows": 16,
+    "limit_db": 13.7,
+    "outcome": "FAIL"
+   },
+   "G-NOVEL": {
+    "r_max": 0.34318864150402,
+    "lag_s": 1.38,
+    "n_frames": 3297,
+    "prominence": 0.18090367952701103,
+    "n_candidate_peaks": 9,
+    "ladder": [
+     {
+      "lag_s": 1.38,
+      "r": 0.34318864150402
+     },
+     {
+      "lag_s": 2.76,
+      "r": 0.290644214903108
+     },
+     {
+      "lag_s": 4.14,
+      "r": 0.2529962068218386
+     },
+     {
+      "lag_s": 5.52,
+      "r": 0.1962359901600539
+     }
+    ],
+    "limit": 0.15,
+    "outcome": "FAIL"
+   },
+   "G-MOD": {
+    "peak_over_local_median_db": 16.706375227247385,
+    "peak_hz": 0.7272727272727273,
+    "welch_segments": 7,
+    "resolution_hz": 0.09090909090909091,
+    "baseline_scatter_p95_db": 2.76663443319699,
+    "modulation_period_s": 1.375,
+    "limit_db": 6.0,
+    "outcome": "FAIL"
+   },
+   "G-GESTURE": {
+    "n": 29,
+    "mean": 0.030899933110699503,
+    "max": 0.8075858391539857,
+    "p90": 0.4551744469256631,
+    "limit_mean": 0.55,
+    "limit_max": 0.8,
+    "outcome": "FAIL"
+   },
+   "G-ROOM": {
+    "outcome": "FAIL",
+    "limbs": {
+     "a_density": {
+      "score": NaN,
+      "spacing_hz": NaN,
+      "n_lines": 0,
+      "why": "fewer than 6 fixed lines",
+      "limit": 0.4,
+      "n_tail_regions": 4,
+      "outcome": "INAPPLICABLE"
+     },
+     "b_mobility": {
+      "n_bursts": 16,
+      "n_observations": 128,
+      "recurrence": 0.0,
+      "distinct_frequencies": 59,
+      "null": {
+       "n_bursts": 16,
+       "n_rep": 200,
+       "max_bursts_per_line_p95": 5.0,
+       "recurrence_mean": 0.1942578125,
+       "min_bursts_to_count": 6
+      },
+      "min_bursts_to_count": 6,
+      "top_recurring": [],
+      "limit": 0.35,
+      "outcome": "PASS"
+     },
+     "c_ripple": {
+      "cepstral_peak_over_median": 48.55333233026707,
+      "cepstral_quefrency_ms": 11.291666666666666,
+      "ripple_p95_minus_p5_db": 6.956421532066944,
+      "band_occupancy": 1.0,
+      "limit_cepstral": 1.5,
+      "limit_ripple_db": 8.0,
+      "min_occupancy": 0.75,
+      "n_tail_regions": 4,
+      "outcome": "FAIL"
+     }
+    }
+   },
+   "G-BALANCE": {
+    "near_white_power_share": 0.9999999993659374,
+    "protagonist": [
+     "assembly"
+    ],
+    "protagonist_margin_db": -0.5694808189297256,
+    "limit_share": 0.25,
+    "limit_margin_db": 8.0,
+    "outcome": "FAIL",
+    "near_white_background_stems": [
+     "crowd",
+     "engine",
+     "room",
+     "structure"
+    ],
+    "near_white_stems_including_protagonist": [
+     "assembly",
+     "crowd",
+     "engine",
+     "room",
+     "structure"
+    ],
+    "protagonist_counted_near_white": [
+     "assembly"
+    ],
+    "margin_note": "the denominator is the near-white stems that are NOT the protagonist; the share limb above still counts every near-white stem including the protagonist",
+    "instrument_limit": "per-band SFM cannot score a comb whose spacing exceeds a 1/3-octave bandwidth: w(f) = 0.2316*f, so a comb of spacing df is resolvable only above 4.318*df. Each stem's own measured spacing and the resulting unresolved fraction of the 500-3000 Hz window are reported per stem. NOTHING GATES ON THEM -- they say which near-white verdicts this instrument is entitled to.",
+    "stems": {
+     "aperture": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 3.2286940262844245e-89,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "assembly": {
+      "sfm_ratio_of_white": 0.9321920993715859,
+      "comb_spacing_hz": 193.359375,
+      "comb_autocorr_r": 0.12047536396612178,
+      "sfm_resolvable_above_hz": 834.9257812499999,
+      "sfm_unresolved_band_fraction": 0.13397031249999997,
+      "power_share": 0.46726494040809397,
+      "is_protagonist": true,
+      "near_white": true
+     },
+     "bed": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "crowd": {
+      "sfm_ratio_of_white": 0.9875376585712463,
+      "comb_spacing_hz": 164.0625,
+      "comb_autocorr_r": 0.11159364501292644,
+      "sfm_resolvable_above_hz": 708.4218749999999,
+      "sfm_unresolved_band_fraction": 0.08336874999999995,
+      "power_share": 0.01386992283754752,
+      "is_protagonist": false,
+      "near_white": true
+     },
+     "engine": {
+      "sfm_ratio_of_white": 0.881793950735086,
+      "comb_spacing_hz": 210.9375,
+      "comb_autocorr_r": 0.3448435775539208,
+      "sfm_resolvable_above_hz": 910.8281249999999,
+      "sfm_unresolved_band_fraction": 0.16433124999999996,
+      "power_share": 0.05920381474852199,
+      "is_protagonist": false,
+      "near_white": true
+     },
+     "fence": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "impact": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "reflect_garage": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "reflect_showroom": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "room": {
+      "sfm_ratio_of_white": 0.9143269895680887,
+      "comb_spacing_hz": 175.78125,
+      "comb_autocorr_r": 0.7192632844985128,
+      "sfm_resolvable_above_hz": 759.0234374999999,
+      "sfm_unresolved_band_fraction": 0.10360937499999995,
+      "power_share": 0.45948051374008614,
+      "is_protagonist": false,
+      "near_white": true
+     },
+     "shards": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "structure": {
+      "sfm_ratio_of_white": 0.7034117032696361,
+      "comb_spacing_hz": 152.34375,
+      "comb_autocorr_r": 0.18736643951145984,
+      "sfm_resolvable_above_hz": 657.8203124999999,
+      "sfm_unresolved_band_fraction": 0.06312812499999995,
+      "power_share": 0.0001808076316878028,
+      "is_protagonist": false,
+      "near_white": true
+     },
+     "tyres": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "wind": {
+      "sfm_ratio_of_white": 0.7160741662533542,
+      "comb_spacing_hz": 111.328125,
+      "comb_autocorr_r": 0.1423035964908863,
+      "sfm_resolvable_above_hz": 480.71484374999994,
+      "sfm_unresolved_band_fraction": 0.0,
+      "power_share": 6.340626369746752e-10,
+      "is_protagonist": false,
+      "near_white": false
+     }
+    }
+   }
+  },
+  "failures": {
+   "G-BALANCE": [
+    "1_assembly: near-white stems carry 1.000 of beat power > 0.25",
+    "1_assembly: protagonist assembly leads the near-white background (crowd+engine+room+structure) by -0.57 dB < +8.0 dB",
+    "3_breach: near-white stems carry 1.000 of beat power > 0.25",
+    "4_transit: near-white stems carry 0.651 of beat power > 0.25",
+    "4_transit: protagonist engine leads the near-white background (aperture+bed+crowd+impact+reflect_garage+shards+tyres+wind) by -2.71 dB < +8.0 dB",
+    "5_lap: near-white stems carry 0.498 of beat power > 0.25",
+    "5_lap: protagonist engine leads the near-white background (aperture+bed+crowd+fence+reflect_garage+tyres+wind) by +0.03 dB < +8.0 dB",
+    "6_ending: near-white stems carry 0.981 of beat power > 0.25",
+    "6_ending: protagonist engine+assembly leads the near-white background (aperture+bed+crowd+reflect_garage+tyres+wind) by -17.25 dB < +8.0 dB"
+   ],
+   "G-EVENT": [
+    "1_assembly: the median 2 s window spans only 13.25 dB of 20 ms level < 13.7 dB -- stationary, i.e. a bed and not a sequence of events",
+    "3_breach: the median 2 s window spans only 10.11 dB of 20 ms level < 13.7 dB -- stationary, i.e. a bed and not a sequence of events"
+   ],
+   "G-FLAT": [
+    "4_transit: worst 3 s slice 0.583*W > 0.55*W",
+    "5_lap: worst 3 s slice 0.900*W > 0.55*W",
+    "6_ending: worst 3 s slice 0.950*W > 0.55*W"
+   ],
+   "G-GESTURE": [
+    "1_assembly: worst pair 0.808 > 0.80"
+   ],
+   "G-HNR": [
+    "4_transit: 0.298 of windows below 0 dB > 0.10",
+    "6_ending: 0.274 of windows below 0 dB > 0.10"
+   ],
+   "G-MOD": [
+    "1_assembly: 16.71 dB peak at 0.727 Hz > 6.0 dB"
+   ],
+   "G-NOVEL": [
+    "1_assembly: r=0.343 at lag 1.380 s > 0.15"
+   ],
+   "G-ORDER": [
+    "4_transit: 0.252 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.208)",
+    "5_lap: 0.190 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.075)"
+   ],
+   "G-RING": [
+    "1_assembly: worst band T60 3.35 s at 713 Hz > 3.00 s (Sabine 2.40 s x 1.25)"
+   ],
+   "G-ROOM": [
+    "1_assembly(c ripple): cepstral peak 48.55x median at 11.292 ms > 1.5x",
+    "5_lap(c ripple): cepstral peak 28.10x median at 1.583 ms > 1.5x",
+    "5_lap(c ripple): 1/12-oct ripple 14.52 dB > 8.0 dB"
+   ],
+   "G-SUSTAIN": [
+    "3_breach: something holds a pitch for 0.317 of the beat > 0.20",
+    "3_breach: three or more pitches are held at once for 0.101 of the beat > 0.05 -- that is a chord, not a machine"
+   ],
+   "G-CONSTRUCT": [
+    "dsp.py:187 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "dsp.py:197 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "dsp.py:159 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "engine.py:790 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "engine.py:592 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "engine.py:599 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:170 brown() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:171 pink() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:172 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:363 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:2162 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:2194 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:2527 brown() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:2533 pink() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:210 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:217 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:717 white() reaches a bus with no scheduler and no physically-parameterised filter"
+   ]
+  },
+  "unique_failures": [],
+  "unique_rows": [
+   "G-BALANCE@1_assembly"
+  ]
+ },
+ "M2 tubes": {
+  "wav": "/home/zany/f1-round2/audio/out/ab/master_R2-2001_REJECTED_tubes.wav",
+  "complaint": "WRONG STRUCTURE -- 'banging on tubes', 'The Tubes over and over'",
+  "verdicts": {
+   "G-FLAT": "FAIL",
+   "G-HNR": "FAIL",
+   "G-SUSTAIN": "FAIL",
+   "G-EVENT": "FAIL",
+   "G-NOVEL": "FAIL",
+   "G-MOD": "FAIL",
+   "G-GESTURE": "FAIL",
+   "G-ROOM": "FAIL",
+   "G-RING": "FAIL",
+   "G-ORDER": "FAIL",
+   "G-IDENTITY": "INAPPLICABLE",
+   "G-BALANCE": "INAPPLICABLE"
+  },
+  "failing": [
+   "G-EVENT",
+   "G-FLAT",
+   "G-GESTURE",
+   "G-HNR",
+   "G-MOD",
+   "G-NOVEL",
+   "G-ORDER",
+   "G-RING",
+   "G-ROOM",
+   "G-SUSTAIN",
+   "G-CONSTRUCT"
+  ],
+  "stems_used": false,
+  "per_beat_outcome": {
+   "G-FLAT@2_launch": "PASS",
+   "G-FLAT@4_transit": "FAIL",
+   "G-FLAT@5_lap": "FAIL",
+   "G-FLAT@6_ending": "FAIL",
+   "G-HNR@2_launch": "PASS",
+   "G-HNR@4_transit": "FAIL",
+   "G-HNR@5_lap": "FAIL",
+   "G-HNR@6_ending": "FAIL",
+   "G-SUSTAIN@1_assembly": "PASS",
+   "G-SUSTAIN@3_breach": "FAIL",
+   "G-EVENT@1_assembly": "FAIL",
+   "G-EVENT@3_breach": "FAIL",
+   "G-NOVEL@1_assembly": "FAIL",
+   "G-NOVEL@3_breach": "PASS",
+   "G-NOVEL@4_transit": "PASS",
+   "G-NOVEL@5_lap": "PASS",
+   "G-NOVEL@6_ending": "PASS",
+   "G-MOD@1_assembly": "FAIL",
+   "G-MOD@5_lap": "PASS",
+   "G-GESTURE@1_assembly": "FAIL",
+   "G-GESTURE@3_breach": "PASS",
+   "G-GESTURE@5_lap": "PASS",
+   "G-ROOM@1_assembly": "FAIL",
+   "G-ROOM@3_breach": "FAIL",
+   "G-ROOM@5_lap": "FAIL",
+   "G-ROOM@6_ending": "FAIL",
+   "G-RING@1_assembly": "FAIL",
+   "G-RING@5_lap": "FAIL",
+   "G-ORDER@4_transit": "FAIL",
+   "G-ORDER@5_lap": "FAIL"
+  },
+  "beat1": {
+   "G-SUSTAIN": {
+    "n_notes": 8,
+    "note_cover": 0.1415757575757578,
+    "chord_cover": 0.0,
+    "longest_note_s": 0.8106666666666685,
+    "held_power_share": 0.0037798655391346877,
+    "loudest_notes": [
+     {
+      "t0": 25.045333333333332,
+      "t1": 25.792,
+      "dur": 0.7466666666666685,
+      "f_hz": 1597.2104420020717,
+      "excess_db": 13.303088116470086,
+      "power_share": 0.01971824215991736
+     },
+     {
+      "t0": 19.392,
+      "t1": 20.07466666666667,
+      "dur": 0.6826666666666684,
+      "f_hz": 2482.9222984286416,
+      "excess_db": 14.444402200838146,
+      "power_share": 0.005954630095442038
+     },
+     {
+      "t0": 15.338666666666667,
+      "t1": 15.957333333333333,
+      "dur": 0.6186666666666666,
+      "f_hz": 1147.3128514401212,
+      "excess_db": 14.93675979178218,
+      "power_share": 0.004958954360975707
+     },
+     {
+      "t0": 26.325333333333333,
+      "t1": 27.136000000000003,
+      "dur": 0.8106666666666685,
+      "f_hz": 1600.3096411769045,
+      "excess_db": 10.993070249342356,
+      "power_share": 0.004682034044697097
+     },
+     {
+      "t0": 27.797333333333334,
+      "t1": 28.608,
+      "dur": 0.810666666666665,
+      "f_hz": 2475.5428087119367,
+      "excess_db": 10.855216280942408,
+      "power_share": 0.001184781089835787
+     },
+     {
+      "t0": 29.184,
+      "t1": 29.866666666666667,
+      "dur": 0.6826666666666649,
+      "f_hz": 1596.0096032532078,
+      "excess_db": 12.460761881170452,
+      "power_share": 0.005334454384946636
+     }
+    ],
+    "outcome": "PASS",
+    "limits": {
+     "note_cover": 0.2,
+     "chord_cover": 0.05,
+     "held_power_share": 0.15
+    }
+   },
+   "G-EVENT": {
+    "median_db": 13.460302487939455,
+    "p25_db": 5.985450622233382,
+    "n_windows": 16,
+    "limit_db": 13.7,
+    "outcome": "FAIL"
+   },
+   "G-NOVEL": {
+    "r_max": 0.30726194519010175,
+    "lag_s": 1.38,
+    "n_frames": 3297,
+    "prominence": 0.1465501792082217,
+    "n_candidate_peaks": 9,
+    "ladder": [
+     {
+      "lag_s": 1.38,
+      "r": 0.30726194519010175
+     },
+     {
+      "lag_s": 2.76,
+      "r": 0.2587429204777366
+     },
+     {
+      "lag_s": 4.14,
+      "r": 0.2502121038446324
+     },
+     {
+      "lag_s": 5.52,
+      "r": 0.19451017828554873
+     }
+    ],
+    "limit": 0.15,
+    "outcome": "FAIL"
+   },
+   "G-MOD": {
+    "peak_over_local_median_db": 18.976302281915494,
+    "peak_hz": 0.7272727272727273,
+    "welch_segments": 7,
+    "resolution_hz": 0.09090909090909091,
+    "baseline_scatter_p95_db": 2.563494548602609,
+    "modulation_period_s": 1.375,
+    "limit_db": 6.0,
+    "outcome": "FAIL"
+   },
+   "G-GESTURE": {
+    "n": 32,
+    "mean": 0.0255988773856056,
+    "max": 0.8278711140309359,
+    "p90": 0.43784228877903747,
+    "limit_mean": 0.55,
+    "limit_max": 0.8,
+    "outcome": "FAIL"
+   },
+   "G-ROOM": {
+    "outcome": "FAIL",
+    "limbs": {
+     "a_density": {
+      "score": NaN,
+      "spacing_hz": NaN,
+      "n_lines": 0,
+      "why": "fewer than 6 fixed lines",
+      "limit": 0.4,
+      "n_tail_regions": 3,
+      "outcome": "INAPPLICABLE"
+     },
+     "b_mobility": {
+      "n_bursts": 16,
+      "n_observations": 128,
+      "recurrence": 0.0,
+      "distinct_frequencies": 74,
+      "null": {
+       "n_bursts": 16,
+       "n_rep": 200,
+       "max_bursts_per_line_p95": 5.0,
+       "recurrence_mean": 0.1942578125,
+       "min_bursts_to_count": 6
+      },
+      "min_bursts_to_count": 6,
+      "top_recurring": [],
+      "limit": 0.35,
+      "outcome": "PASS"
+     },
+     "c_ripple": {
+      "cepstral_peak_over_median": 50.59910781378575,
+      "cepstral_quefrency_ms": 11.291666666666666,
+      "ripple_p95_minus_p5_db": 7.895900966005646,
+      "band_occupancy": 1.0,
+      "limit_cepstral": 1.5,
+      "limit_ripple_db": 8.0,
+      "min_occupancy": 0.75,
+      "n_tail_regions": 3,
+      "outcome": "FAIL"
+     }
+    }
+   },
+   "G-BALANCE": null
+  },
+  "failures": {
+   "G-EVENT": [
+    "1_assembly: the median 2 s window spans only 13.46 dB of 20 ms level < 13.7 dB -- stationary, i.e. a bed and not a sequence of events",
+    "3_breach: the median 2 s window spans only 9.62 dB of 20 ms level < 13.7 dB -- stationary, i.e. a bed and not a sequence of events"
+   ],
+   "G-FLAT": [
+    "4_transit: worst 3 s slice 0.590*W > 0.55*W",
+    "5_lap: worst 3 s slice 0.913*W > 0.55*W",
+    "6_ending: worst 3 s slice 0.965*W > 0.55*W"
+   ],
+   "G-GESTURE": [
+    "1_assembly: worst pair 0.828 > 0.80"
+   ],
+   "G-HNR": [
+    "4_transit: 0.414 of windows below 0 dB > 0.10",
+    "5_lap: 0.157 of windows below 0 dB > 0.10",
+    "6_ending: 0.281 of windows below 0 dB > 0.10"
+   ],
+   "G-MOD": [
+    "1_assembly: 18.98 dB peak at 0.727 Hz > 6.0 dB"
+   ],
+   "G-NOVEL": [
+    "1_assembly: r=0.307 at lag 1.380 s > 0.15"
+   ],
+   "G-ORDER": [
+    "4_transit: 0.191 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.203)",
+    "5_lap: 0.177 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.075)"
+   ],
+   "G-RING": [
+    "1_assembly: a 1/6-oct band at 317 Hz rings 1.65x the broadband decay > 1.50x -- an under-damped isolated mode, not a room",
+    "5_lap: a 1/6-oct band at 800 Hz rings 3.60x the broadband decay > 1.50x -- an under-damped isolated mode, not a room"
+   ],
+   "G-ROOM": [
+    "1_assembly(c ripple): cepstral peak 50.60x median at 11.292 ms > 1.5x",
+    "3_breach(c ripple): cepstral peak 17.06x median at 3.125 ms > 1.5x",
+    "3_breach(c ripple): 1/12-oct ripple 9.44 dB > 8.0 dB",
+    "5_lap(c ripple): cepstral peak 23.31x median at 1.479 ms > 1.5x",
+    "5_lap(c ripple): 1/12-oct ripple 13.35 dB > 8.0 dB",
+    "6_ending(c ripple): cepstral peak 10.12x median at 1.812 ms > 1.5x"
+   ],
+   "G-SUSTAIN": [
+    "3_breach: something holds a pitch for 0.285 of the beat > 0.20",
+    "3_breach: three or more pitches are held at once for 0.128 of the beat > 0.05 -- that is a chord, not a machine"
+   ],
+   "G-CONSTRUCT": [
+    "dsp.py:187 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "dsp.py:197 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "dsp.py:159 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "engine.py:790 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "engine.py:592 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "engine.py:599 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:170 brown() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:171 pink() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:172 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:363 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:2162 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:2194 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:2527 brown() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:2533 pink() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:210 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:217 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:717 white() reaches a bus with no scheduler and no physically-parameterised filter"
+   ]
+  },
+  "unique_failures": [],
+  "unique_rows": [
+   "G-RING@5_lap"
+  ]
+ },
+ "M3 musical": {
+  "wav": "/home/zany/f1-round2/audio/out/r2_4079/master_R2-4079.wav",
+  "complaint": "TOO MUCH STRUCTURE -- 'ngl audio is worse, sounds like a shitty musical'",
+  "verdicts": {
+   "G-FLAT": "FAIL",
+   "G-HNR": "FAIL",
+   "G-SUSTAIN": "FAIL",
+   "G-EVENT": "FAIL",
+   "G-NOVEL": "PASS",
+   "G-MOD": "FAIL",
+   "G-GESTURE": "PASS",
+   "G-ROOM": "FAIL",
+   "G-RING": "PASS",
+   "G-ORDER": "FAIL",
+   "G-IDENTITY": "PASS",
+   "G-BALANCE": "FAIL"
+  },
+  "failing": [
+   "G-BALANCE",
+   "G-EVENT",
+   "G-FLAT",
+   "G-HNR",
+   "G-MOD",
+   "G-ORDER",
+   "G-ROOM",
+   "G-SUSTAIN",
+   "G-CONSTRUCT"
+  ],
+  "stems_used": true,
+  "per_beat_outcome": {
+   "G-FLAT@2_launch": "FAIL",
+   "G-FLAT@4_transit": "FAIL",
+   "G-FLAT@5_lap": "FAIL",
+   "G-FLAT@6_ending": "FAIL",
+   "G-HNR@2_launch": "PASS",
+   "G-HNR@4_transit": "FAIL",
+   "G-HNR@5_lap": "FAIL",
+   "G-HNR@6_ending": "FAIL",
+   "G-SUSTAIN@1_assembly": "FAIL",
+   "G-SUSTAIN@3_breach": "FAIL",
+   "G-EVENT@1_assembly": "FAIL",
+   "G-EVENT@3_breach": "FAIL",
+   "G-NOVEL@1_assembly": "PASS",
+   "G-NOVEL@3_breach": "PASS",
+   "G-NOVEL@4_transit": "PASS",
+   "G-NOVEL@5_lap": "PASS",
+   "G-NOVEL@6_ending": "PASS",
+   "G-MOD@1_assembly": "FAIL",
+   "G-MOD@5_lap": "PASS",
+   "G-GESTURE@1_assembly": "PASS",
+   "G-ROOM@1_assembly": "FAIL",
+   "G-ROOM@3_breach": "FAIL",
+   "G-ROOM@5_lap": "FAIL",
+   "G-ROOM@6_ending": "FAIL",
+   "G-RING@1_assembly": "PASS",
+   "G-RING@5_lap": "PASS",
+   "G-ORDER@4_transit": "FAIL",
+   "G-ORDER@5_lap": "FAIL",
+   "G-IDENTITY@5_lap": "PASS",
+   "G-BALANCE@1_assembly": "PASS",
+   "G-BALANCE@2_launch": "FAIL",
+   "G-BALANCE@3_breach": "FAIL",
+   "G-BALANCE@4_transit": "FAIL",
+   "G-BALANCE@5_lap": "FAIL",
+   "G-BALANCE@6_ending": "FAIL"
+  },
+  "beat1": {
+   "G-SUSTAIN": {
+    "n_notes": 14,
+    "note_cover": 0.37494949494949487,
+    "chord_cover": 0.2857373737373737,
+    "longest_note_s": 6.506666666666667,
+    "held_power_share": 0.01159120074793142,
+    "loudest_notes": [
+     {
+      "t0": 0.0,
+      "t1": 6.421333333333334,
+      "dur": 6.421333333333334,
+      "f_hz": 1403.6409614785227,
+      "excess_db": 26.485724674545523,
+      "power_share": 0.04172356941322389
+     },
+     {
+      "t0": 0.0,
+      "t1": 6.506666666666667,
+      "dur": 6.506666666666667,
+      "f_hz": 1453.9871345735044,
+      "excess_db": 18.887873654111164,
+      "power_share": 0.005176342632679362
+     },
+     {
+      "t0": 0.0,
+      "t1": 6.442666666666667,
+      "dur": 6.442666666666667,
+      "f_hz": 1353.9204800641592,
+      "excess_db": 18.701654856301744,
+      "power_share": 0.004954274737463139
+     },
+     {
+      "t0": 6.421333333333333,
+      "t1": 9.621333333333332,
+      "dur": 3.1999999999999997,
+      "f_hz": 1398.7704254040568,
+      "excess_db": 25.475341831867745,
+      "power_share": 0.011496896308069058
+     },
+     {
+      "t0": 6.506666666666667,
+      "t1": 9.6,
+      "dur": 3.0933333333333333,
+      "f_hz": 1447.8745713998044,
+      "excess_db": 16.861222639013448,
+      "power_share": 0.0012141736414385442
+     },
+     {
+      "t0": 6.442666666666667,
+      "t1": 9.429333333333332,
+      "dur": 2.986666666666666,
+      "f_hz": 1348.1733516372335,
+      "excess_db": 15.569968461148031,
+      "power_share": 0.001086461211000947
+     }
+    ],
+    "outcome": "FAIL",
+    "limits": {
+     "note_cover": 0.2,
+     "chord_cover": 0.05,
+     "held_power_share": 0.15
+    }
+   },
+   "G-EVENT": {
+    "median_db": 11.17763896386144,
+    "p25_db": 8.188756200553101,
+    "n_windows": 16,
+    "limit_db": 13.7,
+    "outcome": "FAIL"
+   },
+   "G-NOVEL": {
+    "r_max": -0.2402025200459068,
+    "lag_s": 10.52,
+    "n_frames": 3297,
+    "prominence": 0.08509175755407111,
+    "n_candidate_peaks": 1,
+    "ladder": [
+     {
+      "lag_s": 10.52,
+      "r": -0.2402025200459068
+     }
+    ],
+    "limit": 0.15,
+    "outcome": "PASS"
+   },
+   "G-MOD": {
+    "peak_over_local_median_db": 11.957586752770283,
+    "peak_hz": 1.0,
+    "welch_segments": 7,
+    "resolution_hz": 0.09090909090909091,
+    "baseline_scatter_p95_db": 2.484432576380355,
+    "modulation_period_s": 1.0,
+    "limit_db": 6.0,
+    "outcome": "FAIL"
+   },
+   "G-GESTURE": {
+    "n": 30,
+    "mean": -0.0011160883434907915,
+    "max": 0.7135110012236324,
+    "p90": 0.25425913359402835,
+    "limit_mean": 0.55,
+    "limit_max": 0.8,
+    "outcome": "PASS"
+   },
+   "G-ROOM": {
+    "outcome": "FAIL",
+    "limbs": {
+     "a_density": {
+      "score": NaN,
+      "spacing_hz": NaN,
+      "n_lines": 0,
+      "why": "fewer than 6 fixed lines",
+      "limit": 0.4,
+      "n_tail_regions": 6,
+      "outcome": "INAPPLICABLE"
+     },
+     "b_mobility": {
+      "n_bursts": 16,
+      "n_observations": 128,
+      "recurrence": 0.0,
+      "distinct_frequencies": 68,
+      "null": {
+       "n_bursts": 16,
+       "n_rep": 200,
+       "max_bursts_per_line_p95": 5.0,
+       "recurrence_mean": 0.1942578125,
+       "min_bursts_to_count": 6
+      },
+      "min_bursts_to_count": 6,
+      "top_recurring": [],
+      "limit": 0.35,
+      "outcome": "PASS"
+     },
+     "c_ripple": {
+      "cepstral_peak_over_median": 9.598784003285513,
+      "cepstral_quefrency_ms": 1.3541666666666667,
+      "ripple_p95_minus_p5_db": 8.158564749215914,
+      "band_occupancy": 1.0,
+      "limit_cepstral": 1.5,
+      "limit_ripple_db": 8.0,
+      "min_occupancy": 0.75,
+      "n_tail_regions": 6,
+      "outcome": "FAIL"
+     }
+    }
+   },
+   "G-BALANCE": {
+    "near_white_power_share": 0.07182500406562406,
+    "protagonist": [
+     "assembly"
+    ],
+    "protagonist_margin_db": 11.111931415005397,
+    "limit_share": 0.25,
+    "limit_margin_db": 8.0,
+    "outcome": "PASS",
+    "near_white_background_stems": [
+     "engine",
+     "room"
+    ],
+    "near_white_stems_including_protagonist": [
+     "engine",
+     "room"
+    ],
+    "protagonist_counted_near_white": [],
+    "margin_note": "the denominator is the near-white stems that are NOT the protagonist; the share limb above still counts every near-white stem including the protagonist",
+    "instrument_limit": "per-band SFM cannot score a comb whose spacing exceeds a 1/3-octave bandwidth: w(f) = 0.2316*f, so a comb of spacing df is resolvable only above 4.318*df. Each stem's own measured spacing and the resulting unresolved fraction of the 500-3000 Hz window are reported per stem. NOTHING GATES ON THEM -- they say which near-white verdicts this instrument is entitled to.",
+    "stems": {
+     "aperture": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 1.3079852523092874e-86,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "assembly": {
+      "sfm_ratio_of_white": 0.4356063134642467,
+      "comb_spacing_hz": 480.46875,
+      "comb_autocorr_r": 0.12100536103310151,
+      "sfm_resolvable_above_hz": 2074.6640625,
+      "sfm_unresolved_band_fraction": 0.629865625,
+      "power_share": 0.9278308333555184,
+      "is_protagonist": true,
+      "near_white": false
+     },
+     "bed": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "brakes": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "crowd": {
+      "sfm_ratio_of_white": 0.9667049452794931,
+      "comb_spacing_hz": 87.890625,
+      "comb_autocorr_r": 0.14702352413499795,
+      "sfm_resolvable_above_hz": 379.51171874999994,
+      "sfm_unresolved_band_fraction": 0.0,
+      "power_share": 8.575218638603375e-06,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "debris": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "engine": {
+      "sfm_ratio_of_white": 0.9272540974403565,
+      "comb_spacing_hz": 105.46875,
+      "comb_autocorr_r": 0.3368025804994427,
+      "sfm_resolvable_above_hz": 455.41406249999994,
+      "sfm_unresolved_band_fraction": 0.0,
+      "power_share": 0.024148417157249663,
+      "is_protagonist": false,
+      "near_white": true
+     },
+     "fence": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "impact": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "reflect_garage": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "reflect_showroom": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "room": {
+      "sfm_ratio_of_white": 0.8757543372814847,
+      "comb_spacing_hz": 82.03125,
+      "comb_autocorr_r": 0.24691412749432856,
+      "sfm_resolvable_above_hz": 354.21093749999994,
+      "sfm_unresolved_band_fraction": 0.0,
+      "power_share": 0.047676586908374397,
+      "is_protagonist": false,
+      "near_white": true
+     },
+     "shards": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "structure": {
+      "sfm_ratio_of_white": 0.559603516900712,
+      "comb_spacing_hz": 93.75,
+      "comb_autocorr_r": 0.2169508840778832,
+      "sfm_resolvable_above_hz": 404.81249999999994,
+      "sfm_unresolved_band_fraction": 0.0,
+      "power_share": 0.0003355873601585169,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "suspension": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "tyres": {
+      "sfm_ratio_of_white": NaN,
+      "comb_spacing_hz": NaN,
+      "comb_autocorr_r": NaN,
+      "sfm_resolvable_above_hz": NaN,
+      "sfm_unresolved_band_fraction": NaN,
+      "power_share": 0.0,
+      "is_protagonist": false,
+      "near_white": false
+     },
+     "wind": {
+      "sfm_ratio_of_white": 0.908048102535496,
+      "comb_spacing_hz": 328.125,
+      "comb_autocorr_r": 0.17062284302273018,
+      "sfm_resolvable_above_hz": 1416.8437499999998,
+      "sfm_unresolved_band_fraction": 0.3667374999999999,
+      "power_share": 6.042896612659953e-14,
+      "is_protagonist": false,
+      "near_white": false
+     }
+    }
+   }
+  },
+  "failures": {
+   "G-BALANCE": [
+    "2_launch: near-white stems carry 0.968 of beat power > 0.25",
+    "3_breach: near-white stems carry 0.474 of beat power > 0.25",
+    "3_breach: protagonist shards+structure+impact leads the near-white background (aperture+bed+crowd+debris+reflect_showroom+room+tyres) by +4.13 dB < +8.0 dB",
+    "4_transit: near-white stems carry 1.000 of beat power > 0.25",
+    "4_transit: protagonist engine leads the near-white background (aperture+bed+crowd+debris+reflect_garage+reflect_showroom+shards+tyres+wind) by -4.58 dB < +8.0 dB",
+    "5_lap: near-white stems carry 1.000 of beat power > 0.25",
+    "5_lap: protagonist engine leads the near-white background (aperture+bed+brakes+crowd+fence+reflect_garage+reflect_showroom+suspension+tyres+wind) by -3.52 dB < +8.0 dB",
+    "6_ending: near-white stems carry 1.000 of beat power > 0.25",
+    "6_ending: protagonist engine+assembly leads the near-white background (aperture+bed+brakes+crowd+reflect_garage+tyres+wind) by -22.57 dB < +8.0 dB"
+   ],
+   "G-EVENT": [
+    "1_assembly: the median 2 s window spans only 11.18 dB of 20 ms level < 13.7 dB -- stationary, i.e. a bed and not a sequence of events",
+    "3_breach: the median 2 s window spans only 2.71 dB of 20 ms level < 13.7 dB -- stationary, i.e. a bed and not a sequence of events"
+   ],
+   "G-FLAT": [
+    "2_launch: worst 3 s slice 0.564*W > 0.55*W",
+    "4_transit: worst 3 s slice 0.704*W > 0.55*W",
+    "5_lap: worst 3 s slice 0.958*W > 0.55*W",
+    "6_ending: worst 3 s slice 0.982*W > 0.55*W"
+   ],
+   "G-HNR": [
+    "4_transit: 0.682 of windows below 0 dB > 0.10",
+    "5_lap: 0.699 of windows below 0 dB > 0.10",
+    "6_ending: 0.997 of windows below 0 dB > 0.10"
+   ],
+   "G-MOD": [
+    "1_assembly: 11.96 dB peak at 1.000 Hz > 6.0 dB"
+   ],
+   "G-ORDER": [
+    "4_transit: 0.166 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.068)",
+    "5_lap: 0.187 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.071)"
+   ],
+   "G-ROOM": [
+    "1_assembly(c ripple): cepstral peak 9.60x median at 1.354 ms > 1.5x",
+    "1_assembly(c ripple): 1/12-oct ripple 8.16 dB > 8.0 dB",
+    "3_breach(c ripple): cepstral peak 23.26x median at 1.000 ms > 1.5x",
+    "3_breach(c ripple): 1/12-oct ripple 12.40 dB > 8.0 dB",
+    "5_lap(c ripple): cepstral peak 5.70x median at 3.646 ms > 1.5x",
+    "6_ending(c ripple): cepstral peak 5.25x median at 1.500 ms > 1.5x"
+   ],
+   "G-SUSTAIN": [
+    "1_assembly: something holds a pitch for 0.375 of the beat > 0.20",
+    "1_assembly: three or more pitches are held at once for 0.286 of the beat > 0.05 -- that is a chord, not a machine",
+    "3_breach: three or more pitches are held at once for 0.099 of the beat > 0.05 -- that is a chord, not a machine"
+   ],
+   "G-CONSTRUCT": [
+    "dsp.py:187 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "dsp.py:197 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "dsp.py:159 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "engine.py:790 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "engine.py:592 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "engine.py:599 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:170 brown() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:171 pink() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:172 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:363 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:2162 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:2194 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:2527 brown() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:2533 pink() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:210 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:217 white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "layers.py:717 white() reaches a bus with no scheduler and no physically-parameterised filter"
+   ]
+  },
+  "unique_failures": [],
+  "unique_rows": [
+   "G-BALANCE@2_launch",
+   "G-FLAT@2_launch",
+   "G-SUSTAIN@1_assembly"
+  ]
+ }
+}
