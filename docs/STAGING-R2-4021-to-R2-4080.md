@@ -158,3 +158,96 @@ recovery is one the next agent gets to make again. It also argues for the merge
 discipline already in force: **`DEFECT-LOG-R2.md` is merged by the coordinator,
 not written by agents** — that convention exists for exactly this reason, and
 staging files deserve the same care.
+
+## R2-4024 — THE H.265 VIEWING COPY, AND THE 0.333 ms AUDIO QUESTION ADJUDICATED BY COUNTING
+
+Encoded detached, 02:57:23Z -> 04:22:19Z, **5,082 s (1 h 25 m)** against a ~3.1 h
+estimate. **880,272,255 B = 880 MB**, inside the 1 GB brief ceiling and between
+R2-3854's 856 MB target and 934 MB VBV-pinned bounds.
+
+```
+== watch/PART2_THE_FILM_4K_h265.mp4
+  PASS  nb_read_frames (COUNTED) = 2978
+  PASS  width = 3840   height = 2160   r_frame_rate = 24/1
+  PASS  color_primaries/transfer/space = bt709,  color_range = tv
+  PASS  video start_time = 0.000000
+  PASS  duration = 124.083333 s
+  PASS  audio stream present (aac, 48000 Hz, 2 ch), start_time = 0.000000
+  PASS  frame 0 matches master4k_000001.png  (PSNR 43.85 dB)
+  PASS  frame 2977 matches master4k_002978.png  (PSNR 40.23 dB)
+  PASS  faststart (moov before mdat)
+ALL CHECKS PASSED
+```
+
+`hvc1` and the full bt709 set both landed, so the `setparams` fix held on the
+real file and not just on the four-frame probe.
+
+### The audio number: refuted as a defect, by counting samples rather than reasoning
+
+The container reports audio `124.083000` against video `124.083333` — 0.333 ms.
+**Counted off the artefacts:**
+
+| | samples | seconds |
+| --- | ---: | --- |
+| source `audio/out/master.wav` | **5,956,000** | 124.083333 |
+| ProRes master, decoded | **5,956,000** | exact, and bit-identical |
+| **H.265 AAC, decoded** | **5,956,608** | **608 samples LONGER** |
+| H.265 container `duration_ts` | 5,955,984 | 124.083000 |
+
+**The decoded audio is longer than the source, not shorter.** A truncation
+presents as *fewer* decoded samples; there are 608 *more*, which is AAC filling
+its final 1024-sample frame (5,818 frames emitted, one frame of priming removed
+by the decoder). **No audio is missing, so there is nothing to be out of sync
+with at the tail.**
+
+**And the 0.333 ms is not AAC granularity** — that would be a multiple of 1024
+samples; this is 16. The mechanism is coarser and is in the container:
+
+```
+mvhd timescale = 1000        duration = 124084
+round(124.083333 * 1000) = 124083 ms  ->  at 48 kHz = 5,955,984
+```
+
+**The MP4 movie header stores duration at millisecond resolution**, so
+124.083333 s is written as 124083 ms and reads back as 124.083000 s — the
+reported figure, exactly. A bookkeeping rounding in the header, 16 samples wide,
+with the full audio present in the stream.
+
+**Confirmed rather than waved through**, which was the right instruction: the
+answer was in the same direction as "probably rounding", but the *reason* given
+first (AAC frame granularity) was wrong, and only counting distinguished them.
+
+## R2-4025 — FILED, AND THE BANNER IS RETIRED
+
+Both files moved from gitignored `tmp/` into `watch/`, and **re-verified after
+the move** — 2,978 counted frames each, so nothing was truncated in transit.
+
+```
+watch/PART2_THE_FILM_4K_ProRes422HQ.mov   11,252,309,062 B   2026-08-14 02:29
+watch/PART2_THE_FILM_4K_h265.mp4             880,272,255 B   2026-08-14 04:22
+```
+
+`watch/INDEX.md` gains two **CURRENT** rows carrying real provenance — source
+blend and its sha16, world, frame range, spec, and the fact that the audio was
+muxed losslessly and verified bit-identical rather than rebuilt.
+
+**The R2-3181 "DO NOT JUDGE THE ENDING" blockquote is removed**, replaced by a
+block that names `PART2_THE_FILM_4K_ProRes422HQ.mov` and
+`PART2_THE_FILM_4K_h265.mp4` as the files that supersede every clip above. It
+states what the old banner claimed, that it is fixed in delivered pixels, and
+that the clips above remain superseded **for a different reason than before** —
+they are old cuts of a film that now exists in full.
+
+### One repository hazard worth flagging rather than fixing unilaterally
+
+**`watch/` tracks no video.** `git ls-files watch/` returns only `INDEX.md`,
+`audio/INDEX.md` and `audio/clips.json`; `*.mp4` is gitignored at `.gitignore:21`.
+**`*.mov` is not**, so the 11.25 GB ProRes master now sits in `watch/` as an
+untracked file that a single `git add -A` would commit permanently into history.
+
+The standing rule — *`git add` path-scoped only, never `-A`* — already prevents
+this, and only `watch/INDEX.md` was committed here. **But the rule is now the
+only thing standing between the repository and an 11 GB blob.** Adding `*.mov`
+alongside `*.mp4` in `.gitignore` would make it structural instead of
+behavioural. **Not done unilaterally** — it is a shared file and the call is the
+coordinator's.
