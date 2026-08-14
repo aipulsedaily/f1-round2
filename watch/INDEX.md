@@ -25,7 +25,38 @@ still true.** It is written by dates that can be checked, not by memory.
 | `BEFORE_opening_18s.mp4` | 08-07 17:52 | its matched BEFORE. Correctly named. |
 | `audio/` | 08-08 03:14 | re-cut from the master; `audio/INDEX.md` explains the earlier staleness and states it is fixed. |
 
-### THE AUDIO REBUILD OF 2026-08-14 — what changed, and the one thing that did not
+### THE AUDIO REBUILD OF 2026-08-14 — REJECTED AND REVERTED. Read this before reading the rest.
+
+**The films above carry `audio/out/master.wav` again.** The R2-4079 rebuild described below was
+muxed in, played to the client, and **judged WORSE than what it replaced**: *"ngl audio is worse,
+sounds like a shitty musical"*. It is parked at `rejected_audio_R2-4079/`. The video was never
+touched — md5 verified identical through both the mux and the revert.
+
+**The client's three rejections now trace an arc, and the middle of it is the target:**
+
+```
+"a wind blower"              no structure at all        TOO NOISY
+"banging on tubes"           inharmonic ringing         WRONG STRUCTURE
+"a shitty musical"           sustained pitch            TOO MUCH STRUCTURE
+```
+
+**The rebuild overshot because the GATES POINT THE WRONG WAY.** `G-HNR` demands +8 dB of Boersma
+autocorrelation periodicity on beat 1 and `G-FLAT` demands a non-flat spectrum. Push both hard and
+the cheapest way to satisfy them is **sustained pitched material** — which is music. That +8 dB bar
+was flagged in R2-4062 as never validated against a signal that *should* pass it, and a positive
+control for it was never built. It was chased anyway.
+
+**A machine is periodic in RHYTHM and never in PITCH.** It is percussive, inharmonic, and
+transient-dense. Boersma HNR measures "does this hold a note", which is close to the opposite of what
+a robot assembly cell should score well on.
+
+**What this gives us that we did not have before: three rejected masters, each rejected for a
+DIFFERENT reason.** `master.wav` (noise), the R2-1400/R2-2001 pair (tube ringing), and R2-4079
+(musical). **Any instrument worth keeping must fail all three, and fail each for its own reason.**
+That is a far stronger control set than any single adversary, and it did not exist until the client
+rejected the third one.
+
+### THE AUDIO REBUILD OF 2026-08-14 — what it changed (superseded, kept for the record)
 
 The client rejected three successive audio masters — *"a wind blower"*, *"the first 30 seconds sound
 like the instrument The Tubes over and over"*, *"the sound even glass breaking is awful"* — while
