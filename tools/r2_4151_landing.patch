@@ -1,0 +1,520 @@
+diff --git a/audio/layers.py b/audio/layers.py
+index 6d221ff..385bedb 100644
+--- a/audio/layers.py
++++ b/audio/layers.py
+@@ -15,6 +15,8 @@ stiffness.
+ from __future__ import annotations
+ 
+ import hashlib
++import json
++import os
+ 
+ import numpy as np
+ from scipy import signal as _sig
+@@ -28,6 +30,18 @@ GLASS_NU = 0.22
+ GLASS_RHO = 2500.0
+ GLASS_H = 0.012                      # m, the showroom glazing
+ GLASS_CL = np.sqrt(GLASS_E / (GLASS_RHO * (1.0 - GLASS_NU ** 2)))   # 5424 m/s
++# R2-4150: the showroom's glazing is LAMINATED -- `sim/out/fracture_wall.json`
++# declares "5 mm HS / 1.5 mm PVB / 5 mm HS", i.e. a constrained-layer damping
++# sandwich. The middle of the published standard-interlayer band (0.02-0.06),
++# inside the Ross-Kerwin-Ungar ceiling of 0.423 x eta_PVB = 0.063 that this
++# section's own thicknesses impose. `tools/r2_4150_glass_material.py` derives
++# both and checks its own free-plate arithmetic against a published case first
++# (Leissa's free square plate: 19.68 Hz computed against 19.7 Hz published).
++# EN 16612's effective thickness at the glassy interlayer is 11.49 mm against
++# the 12.0 mm already in `GLASS_H`, i.e. 4 %, which is why the laminate changes
++# the damping by a factor of thirty and the pitch not at all.
++GLASS_LAMINATE_ETA = 0.030
++GLASS_LAMINATE_ETA_PUBLISHED = (0.020, 0.060)
+ 
+ 
+ # ================================================================== tyres ====
+@@ -2455,11 +2469,25 @@ def shard_modes(L, rng, n_modes=None, mmax=4, nmax=4):
+     not a clean rectangle. Reference free-square ratios 1 : 1.47 : 1.81 : 2.60
+     : 2.60 : 4.56 are recovered to within that jitter.
+ 
+-    PER-MODE DECAY. tau_n = Q/(pi f_n) with Q = 800-1500. Frequency-proportional
+-    damping is the cue a listener uses to identify a material, and the previous
+-    single `decay` -- capped at 0.45 s and scaled LINEARLY in L -- was wrong
+-    twice: all modes died together, and tau should go as L^2, which it now does
+-    because f goes as 1/L^2.
++    PER-MODE DECAY. tau_n = 1/(pi eta f_n). Frequency-proportional damping is
++    the cue a listener uses to identify a material, and the previous single
++    `decay` -- capped at 0.45 s and scaled LINEARLY in L -- was wrong twice: all
++    modes died together, and tau should go as L^2, which it now does because f
++    goes as 1/L^2.
++
++    R2-4150/R2-4151: THE LOSS FACTOR IS THE GLAZING'S, AND THE GLAZING IS
++    LAMINATED. This drew Q = 800-1500, i.e. eta = 0.00067-0.00125, BELOW the
++    published internal loss factor of MONOLITHIC float glass (0.0006-0.002) --
++    and `sim/out/fracture_wall.json`, the file the delivered frames' crack
++    pattern came out of, declares the section as "5 mm HS / 1.5 mm PVB / 5 mm HS
++    laminated". That is a constrained-layer damping sandwich, which is the whole
++    acoustic reason laminated glazing is specified. `GLASS_LAMINATE_ETA` is
++    derived twice over in `tools/r2_4150_glass_material.py` (published PVB
++    laminate 0.02-0.06; Ross-Kerwin-Ungar's ceiling from this section's own
++    thicknesses, 0.423 x eta_PVB = 0.063) and swept across the whole published
++    band in `tools/r2_4150_breach_bench.py`, where no value in the band -- not
++    even the acoustic-interlayer end at 0.10 -- clears the G-PRESENCE bar. The
++    result therefore cannot be bought by moving it.
+ 
+     Returns (freqs, amps, taus, q).
+     """
+@@ -2478,8 +2506,11 @@ def shard_modes(L, rng, n_modes=None, mmax=4, nmax=4):
+     # part of that is the contact-force spectrum, applied by the caller, so what
+     # is left here is the modal density weighting alone
+     amps = 1.0 / np.sqrt(np.arange(1, k + 1, dtype=np.float64))
+-    q = float(rng.uniform(800.0, 1500.0))
+-    taus = q / (np.pi * f)
++    # a loss factor is a RATIO, so its scatter is multiplicative: at sigma 0.25
++    # the middle 95 % of the draw spans 0.0184-0.0490 about eta = 0.030
++    eta = float(GLASS_LAMINATE_ETA * rng.lognormal(0.0, 0.25))
++    q = 1.0 / eta
++    taus = 1.0 / (np.pi * eta * f)
+     return f, amps, taus, q
+ 
+ 
+@@ -2501,6 +2532,57 @@ def hertz_spectrum(f, t_contact_s):
+     return out
+ 
+ 
++_PICTURE_FRAGMENT_CACHE = {}
++
++
++def picture_fragments():
++    """THE FRAGMENTS THE DELIVERED FRAMES CONTAIN, READ RATHER THAN INVENTED.
++
++    `sim/fracture.py` partitions every pane -- radials first, then hoops
++    arrested on them, then a mosaic coarsening outward, with the 16 mm clamped
++    under the pressure plate holding SLABS -- and publishes one record per shard
++    in `sim/out/breach_sim.json`, which is TRACKED and is the partition the 4K
++    frames were rendered from. Until R2-4151 the audio had never read it and
++    drew its own size law instead:
++
++        equivalent side       the picture      the audio, as delivered
++        under 20 mm                  1412                            0
++        20-50 mm                     1108                            2
++        over 400 mm                    28                          132
++        median piece                21 mm                       321 mm
++        count / mass          3216 / 1119 kg              351 / 1624 kg
++
++    An order of magnitude out in count and in size, IN BOTH DIRECTIONS AT ONCE.
++    Correcting it is worth 0.017 of articulation on the layer and -0.0003 in the
++    mix -- the population was never the defect, the damping was (`shard_modes`)
++    -- and it ships anyway because it is a picture desync and because it takes
++    the shard bus from 0.15 % of its energy above 4 kHz to 6.46 %, i.e. 43x.
++
++    Which bays come down is the picture's answer too: `fracture_wall.json`'s
++    `breach_state` marks the destroyed bays, and of the 3016 shards in them
++    2936 displace more than 0.5 m in the delivered bake while the other four
++    bays contribute 24 pieces between them -- so the bay test is the picture's
++    own answer to "which glass comes down", to 97 %.
++
++    Returns (L_m, mass_kg, origin_xyz, clamped).
++    """
++    if "frags" in _PICTURE_FRAGMENT_CACHE:
++        return _PICTURE_FRAGMENT_CACHE["frags"]
++    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
++    with open(os.path.join(root, "sim", "out", "fracture_wall.json")) as fh:
++        wall = json.load(fh)
++    gone = {b["uid"] for b in wall["breach_state"] if b["beat3"] == "destroyed"}
++    with open(os.path.join(root, "sim", "out", "breach_sim.json")) as fh:
++        meta = json.load(fh)["shard_meta"]
++    keep = sorted((m for m in meta if m["bay"] in gone), key=lambda m: m["name"])
++    out = (np.sqrt(np.array([m["area"] for m in keep], dtype=np.float64)),
++           np.array([m["mass"] for m in keep], dtype=np.float64),
++           np.array([m["origin"] for m in keep], dtype=np.float64),
++           np.array([bool(m["clamped"]) for m in keep]))
++    _PICTURE_FRAGMENT_CACHE["frags"] = out
++    return out
++
++
+ def shard_ballistics(spec, v_contact, seed=31337, max_shards=2200):
+     """A real (if simple) ballistic simulation of the shard field.
+ 
+@@ -2508,8 +2590,14 @@ def shard_ballistics(spec, v_contact, seed=31337, max_shards=2200):
+     velocity, a flight, and a sequence of floor contacts, and the tinkle tail's
+     TIMING is whatever that produces. Fed by the telemetry's own contact speed.
+ 
+-    Returns a list of (t_world, position, freqs, amp, decay_s) contact events and
+-    a summary.
++    R2-4151: THE POPULATION COMES FROM `picture_fragments()`. The launch law,
++    the drag, the bounces and the event tuple are exactly what they were; only
++    where each piece starts and how heavy it is now comes from the partition the
++    frames were rendered from. The integration is vectorised over shards because
++    the population went from 351 to 3216 and the step is identical either way.
++
++    Returns a list of (t_world, position, shard_index, normal_speed_in,
++    bounce_number, size) contact events and a summary.
+     """
+     ap = spec["showroom"]["breach_aperture_m"]
+     W, H = float(ap["width"]), float(ap["height"])
+@@ -2518,28 +2606,9 @@ def shard_ballistics(spec, v_contact, seed=31337, max_shards=2200):
+ 
+     area_total = W * H
+     impact = np.array([cx, 0.0, 0.60])            # the nose meets the pane here
+-    events = []
+-    shards = []
+-    area = 0.0
+-    while area < area_total and len(shards) < max_shards:
+-        y = rng.uniform(-W * 0.5, W * 0.5)
+-        z = rng.uniform(cz - H * 0.5, cz + H * 0.5)
+-        d = float(np.hypot(y - impact[1], z - impact[2]))
+-        # SMALL AT THE IMPACT POINT, LARGER AT THE EDGES -- the brief's own rule,
+-        # and what a real cell-fracture pattern does.
+-        L = (0.030 + 0.34 * np.clip(d / 3.2, 0.0, 1.0)) * float(rng.lognormal(0.0, 0.45))
+-        L = float(np.clip(L, 0.015, 0.75))
+-        area += L * L
+-        m = GLASS_RHO * GLASS_H * L * L
+-        # launch: radially away from the impact point, decaying with distance,
+-        # plus the forward push of the car coming through
+-        rad = np.array([0.0, y - impact[1], z - impact[2]])
+-        nrm = float(np.linalg.norm(rad))
+-        rad = rad / nrm if nrm > 1e-6 else np.array([0.0, 1.0, 0.0])
+-        sp = v_contact * float(np.exp(-d / 2.6)) * float(rng.uniform(0.25, 1.15))
+-        vel = rad * sp + np.array([v_contact * float(rng.uniform(0.35, 0.95)), 0.0, 0.0]) \
+-            + rng.normal(0.0, 1.4, 3)
+-        shards.append((np.array([cx, y, z]), vel, L, m))
++    Ls, ms, org, clamped = picture_fragments()
++    ns = int(Ls.shape[0])
++    area = float((Ls ** 2).sum())
+ 
+     # ring frequencies: a free plate of side L and thickness h rings at
+     # 0.47 * (h / L^2) * c_L, with the classic 1 : 2.08 : 3.41 free-plate ratios
+@@ -2553,7 +2622,6 @@ def shard_ballistics(spec, v_contact, seed=31337, max_shards=2200):
+     # parabola this replaced threw debris to x = 59 m.
+     K_DRAG = 0.5 * 1.204 * 1.2 / (GLASS_RHO * GLASS_H)
+     DT = 1.0 / 480.0
+-    debris_x = []
+     # R2-4041: THE BALLISTICS OWN THE MECHANICS AND NOTHING ELSE. An event is
+     # now (t, position, shard_index, normal_speed_in, bounce_number, size). The
+     # mode set that shard rings with belongs to `shard_modes` and is looked up
+@@ -2561,39 +2629,76 @@ def shard_ballistics(spec, v_contact, seed=31337, max_shards=2200):
+     # longer silently constrain each other -- which is how `amp = m * vz` came
+     # to sit two lines from `f1 = 30.59/L^2` and make loudness the reciprocal of
+     # pitch without anybody writing that down.
+-    for sid, (p0, v0, L, m) in enumerate(shards):
+-        p = p0.copy(); v = v0.copy()
+-        t = 0.0
+-        bounce = 0
+-        for _step in range(int(6.0 / DT)):
+-            sp_ = float(np.linalg.norm(v))
+-            acc = np.array([0.0, 0.0, -G]) - K_DRAG * sp_ * v
+-            v = v + acc * DT
+-            p = p + v * DT
+-            t += DT
+-            if p[2] <= 0.0:
+-                p[2] = 0.0
+-                vz_in = abs(v[2])
+-                e = 0.30 * float(rng.uniform(0.6, 1.25))
+-                events.append((t, p.copy(), int(sid), float(vz_in), int(bounce), float(L)))
+-                debris_x.append(float(p[0]))
+-                v = np.array([v[0] * 0.72, v[1] * 0.72, vz_in * e])
+-                p[2] = 1e-3
+-                bounce += 1
+-                if v[2] < 0.30 or bounce >= 4:
+-                    break
++    #
++    # launch: radially away from the impact point, decaying with distance, plus
++    # the forward push of the car coming through. Unchanged from the version
++    # that drew its own sizes; only `p0` and the masses come from the picture.
++    p0 = org.copy()
++    p0[:, 0] = cx
++    rad = p0 - impact[None, :]
++    rad[:, 0] = 0.0
++    d = np.hypot(rad[:, 1], rad[:, 2])
++    rad = rad / np.maximum(np.linalg.norm(rad, axis=1), 1e-6)[:, None]
++    rad[d <= 1e-6] = np.array([0.0, 1.0, 0.0])
++    sp = v_contact * np.exp(-d / 2.6) * rng.uniform(0.25, 1.15, ns)
++    v0 = rad * sp[:, None]
++    v0[:, 0] += v_contact * rng.uniform(0.35, 0.95, ns)
++    v0 += rng.normal(0.0, 1.4, (ns, 3))
++    # A CLAMPED PIECE IS STILL BOLTED TO SOMETHING WHEN THE PANE GOES. The
++    # section's 16 mm bite is in compression and does not participate in the
++    # dice, so those pieces come away later and slower.
++    v0[clamped] *= 0.45
++
++    events, debris_x = [], []
++    p, v = p0.copy(), v0.copy()
++    bounce = np.zeros(ns, dtype=np.int64)
++    alive = np.ones(ns, dtype=bool)
++    t = 0.0
++    for _step in range(int(6.0 / DT)):
++        if not alive.any():
++            break
++        idx = np.flatnonzero(alive)
++        vv = v[idx]
++        acc = -K_DRAG * np.linalg.norm(vv, axis=1)[:, None] * vv
++        acc[:, 2] -= G
++        vv = vv + acc * DT
++        pp = p[idx] + vv * DT
++        t += DT
++        hit = pp[:, 2] <= 0.0
++        if hit.any():
++            h = idx[hit]
++            pp[hit, 2] = 0.0
++            vz_in = np.abs(vv[hit, 2])
++            e = 0.30 * rng.uniform(0.6, 1.25, h.shape[0])
++            ph = pp[hit]
++            for k in range(h.shape[0]):
++                events.append((t, ph[k].copy(), int(h[k]), float(vz_in[k]),
++                               int(bounce[h[k]]), float(Ls[h[k]])))
++                debris_x.append(float(ph[k][0]))
++            vv[hit, 0] *= 0.72
++            vv[hit, 1] *= 0.72
++            vv[hit, 2] = vz_in * e
++            pp[hit, 2] = 1e-3
++            bounce[h] += 1
++            alive[h[(vv[hit, 2] < 0.30) | (bounce[h] >= 4)]] = False
++        p[idx] = pp
++        v[idx] = vv
+     events.sort(key=lambda e: e[0])
+     dx = np.array(debris_x) if debris_x else np.array([15.0])
+     summary = {
+-        "shards": len(shards),
++        "shards": ns,
+         "contact_events": len(events),
+         "glass_area_m2": float(area),
+         "aperture_m2": float(area_total),
++        "glass_mass_kg": float(ms.sum()),
+         "contact_speed_ms": float(v_contact),
+-        "shard_size_min_m": float(min(s[2] for s in shards)),
+-        "shard_size_max_m": float(max(s[2] for s in shards)),
+-        "ring_hz_min": float(0.47 * GLASS_H / max(s[2] for s in shards) ** 2 * GLASS_CL),
+-        "ring_hz_max": float(0.47 * GLASS_H / min(s[2] for s in shards) ** 2 * GLASS_CL),
++        "shard_size_min_m": float(Ls.min()),
++        "shard_size_median_m": float(np.median(Ls)),
++        "shard_size_max_m": float(Ls.max()),
++        "shards_clamped": int(clamped.sum()),
++        "population_source": "sim/out/breach_sim.json (the picture's own partition)",
++        "ring_hz_min": float(0.47 * GLASS_H / float(Ls.max()) ** 2 * GLASS_CL),
++        "ring_hz_max": float(0.47 * GLASS_H / float(Ls.min()) ** 2 * GLASS_CL),
+         "settle_world_s": float(max(e[0] for e in events)) if events else 0.0,
+         "drag_coefficient_per_m": float(K_DRAG),
+         "debris_p80_x_m": float(np.percentile(dx, 80)),
+@@ -2732,7 +2837,34 @@ def render_shards(events, n, sr, onset_t, groups=4, seed=31337):
+         # a click, and inaudible as a transient once the chain high-passes.
+         # The real radiated transient is d/dt of the contact force, which for
+         # the Hertzian half-cosine is one full sine cycle at 1/T, band-limited.
+-        s[:] += _accel_noise(sr, t_contact, ACCEL_NOISE_RATIO * float(amp.sum()), Ls)
++        #
++        # R2-4151: THE REFERENCE IS THE RING, NOT THE COHERENT SUM OF ITS MODE
++        # AMPLITUDES. `ACCEL_NOISE_RATIO` is declared as "the acceleration
++        # transient's PEAK, as a fraction of the modal ring of the same
++        # contact", and this line used to pass `amp.sum()` -- the value the
++        # ring would reach only if all 8-14 of its modes were in phase, which
++        # they never are because `ph` is drawn uniformly. Measured over 2848
++        # contacts of the rebuilt breach, `amp.sum()/ring peak` runs a median
++        # of 1.69 and spans 1.07-3.19 between the 10th and 90th percentiles, so
++        # the DELIVERED ratio was a median 0.76 against a declared 0.45 and it
++        # varied by 3x from contact to contact ACCORDING TO HOW MANY MODES
++        # `shard_modes` happened to draw -- a shard's attack got louder because
++        # of a random integer. `latch_strike` in this same file already
++        # references
++        # `np.abs(y).max()`, and `part_impacts` gets away with `amp.sum()` only
++        # because it peak-normalises the whole contact afterwards; this call
++        # site is the one where the reference reaches the mix unnormalised.
++        #
++        # WHAT IT IS WORTH, AND WHY THAT IS NOT WHY IT CHANGED. Same population,
++        # same damping, this line the only difference: the dry field's peak
++        # falls 3.56 dB (241.97 -> 160.89) while its 3 s short-term loudness
++        # falls 0.60 dB (22.74 -> 22.14 LUFS) and its articulation index does
++        # not move at all (0.8161 -> 0.8140). A peak that can be removed
++        # without moving the loudness or the articulation was not carrying any
++        # of the sound -- and under a fixed peak ceiling it is worth 2.96 dB of
++        # delivered level, which is the only reason the mix can hear this fix.
++        s[:] += _accel_noise(sr, t_contact,
++                             ACCEL_NOISE_RATIO * float(np.abs(s).max()), Ls)
+         sigs[gi][i:i + Ls] += s
+         cents[gi] += p
+         counts[gi] += 1
+@@ -3227,8 +3359,8 @@ def impact_event(t_world, t_impact, sr, v_contact, seed=606,
+     return out.astype(np.float32), info
+ 
+ 
+-def debris_bed(n, sr, onset_t, sizes, seed=20260814, fines_per_contact=140,
+-               tau_sys=0.9, amp_sigma=0.45, amp_clip_q=1.0,
++def debris_bed(n, sr, onset_t, sizes, seed=20260814, fines_per_contact=None,
++               fines_total=139950, tau_sys=0.9, amp_sigma=0.45, amp_clip_q=1.0,
+                res_hz=(3000.0, 8000.0), n_res=5):
+     """LAYER 5: THE PhISEM BED -- the thousands of pieces you do not integrate.
+ 
+@@ -3253,8 +3385,22 @@ def debris_bed(n, sr, onset_t, sizes, seed=20260814, fines_per_contact=140,
+     Resonators: 3-8 kHz, Q 20-60, which is the measured range for sub-centimetre
+     glass on concrete -- short enough to read as noise-like grain, long enough to
+     keep the glassiness.
++
++    R2-4151: THE DENSITY IS A DECLARED TOTAL, NOT A PER-CONTACT MULTIPLIER. The
++    number of sub-centimetre pieces in the showroom is a property of how much
++    glass came down, and it was `fines_per_contact` x however many contacts the
++    ballistics happened to produce -- so it TRACKED THE SHARD COUNT, which is
++    not a physical quantity. Correcting the population from 351 pieces to the
++    picture's 3216 silently took the bed from 139,950 fines to 1,177,213, i.e.
++    8.4x denser at 113,000 arrivals per second against a 100 Hz roughness
++    boundary. `fines_total` defaults to the delivered figure exactly, so the bed
++    is unchanged and the field above it is a single-variable change.
++    `fines_per_contact` is kept and still wins if it is passed, because the
++    sweeps in `tools/` are written against it.
+     """
+     rng = np.random.default_rng(seed)
++    if fines_per_contact is None:
++        fines_per_contact = float(fines_total) / max(int(np.asarray(onset_t).size), 1)
+     onset_t = np.asarray(onset_t, dtype=np.float64)
+     if onset_t.size == 0:
+         return np.zeros(n, dtype=np.float32), {}
+@@ -3336,6 +3482,7 @@ def debris_bed(n, sr, onset_t, sizes, seed=20260814, fines_per_contact=140,
+         acc += _sig.lfilter(b / a[0], a / a[0], seg)
+     out[span0:span1] = acc
+     info = {"fines_events": int(idx.shape[0]),
++            "fines_total_declared": int(fines_total),
+             "fines_per_contact": float(fines_per_contact),
+             "peak_rate_per_s": float(lam.max()),
+             "resonators_hz_q": [[float(f), float(q)] for f, q in res],
+diff --git a/audio/master.py b/audio/master.py
+index ecb0a8d..b050e38 100644
+--- a/audio/master.py
++++ b/audio/master.py
+@@ -152,7 +152,25 @@ TARGET_LUFS_S = {
+     # 0.2%). It is also the layer the spec designates to carry the fines'
+     # density. Sitting it 1.5 dB under the foreground shards is a mix statement:
+     # the fragments lead, the fines sit just beneath them.
+-    "debris": -10.5,
++    #
++    # R2-4151: THAT PREMISE IS NOW FALSE BY MEASUREMENT, SO THE RAISE IT BOUGHT
++    # IS REVERTED AND THE STATEMENT IS MADE RELATIVE. With the laminate's own
++    # loss factor and the picture's own fragment population, the `shards` bus
++    # carries 6.46 % of its energy above 4 kHz against the 0.15 % R2-4060
++    # measured -- 43x -- so "the only bus in the breach with any top end" is not
++    # true of anything any more, and the 2.5 dB it bought goes back. The offset
++    # returns to R2-4044's own words, "it sits UNDER the foreground shards
++    # rather than beside them", i.e. the -13.0 that was in this table before
++    # R2-4060, which is 4.0 dB under `shards`.
++    #
++    # AND IT IS DECLARED AS AN OFFSET, WHICH IS THE ACTUAL FIX. See
++    # `RELATIVE_TARGET_LUFS_S` below: an absolute -10.5 beside an absolute -9.0
++    # is a relationship only for as long as both buses reach their numbers, and
++    # `shards` does not -- the peak criterion holds it 11.71 dB short, at which
++    # point the declared "1.5 dB under" was DELIVERED as 10.2 dB OVER. The mix
++    # statement was inverted by 11.7 dB by a trim, silently, and every gate that
++    # reads the breach read the inversion. See R2-4151(5).
++    "debris": -10.5,          # superseded by RELATIVE_TARGET_LUFS_S["debris"]
+     # R2-4081: -22.0 -> -27.0, ON ITS OWN TERMS AND WITH THE NUMBER IT MUST
+     # MOVE WRITTEN DOWN FIRST. This bus is the ENGINE'S OWN first-order specular
+     # reflection off the pit-garage facade at 20-40 m, low-passed at 6.5 kHz.
+@@ -263,10 +281,74 @@ BUS_HF_SHELF = {}
+ # headroom on something the meter cannot hear, and it says so in the report.
+ BUS_PEAK_CEILING = 1.0
+ 
++# ===== R2-4151: THE PEAK CRITERION RE-DERIVED, AND LEFT AT 1.0 ANYWAY ========
++# The paragraph above is the derivation, and it is measurably obsolete. What it
++# says is that the K-weighted meter cannot hear the breach's buses. That was
++# true of the build it was written against and it is true of NO BUS IN THIS
++# FILM, because R2-4035 -- in the same rebuild -- moved the transient
++# world-attached sources onto the film grid and took the `impact` bus's energy
++# below 30 Hz from 92.99 % to 3.09 %.
++#
++# MEASURED, EVERY BUS, ON BOTH SHIPPED STEM SETS (`tools/r2_4151_peak_scope.py`)
++# as the gap between the same 3 s short-term measure taken K-weighted and taken
++# UNWEIGHTED -- which is exactly "how much of this bus is under the meter's own
++# rolloff":
++#
++#     the three buses the peak criterion wins on:
++#       engine  -1.62 dB     impact  +0.07 dB     shards  -1.04 dB
++#     the largest deafness anywhere in the film: assembly, +2.27 dB
++#
++# THE METER CAN HEAR ALL OF THEM. R2-4034's `impact` bus read +0.82 dBFS
++# unweighted against -13.26 K-weighted, a 14.09 dB gap; today that same bus
++# reads +0.07. So the criterion is no longer doing the job it was derived for.
++#
++# WHAT IT IS DOING INSTEAD, AND WHY IT STAYS. `g_peak < g_lufs` reduces exactly
++# to `PLR > -target`, where PLR is the bus's peak-to-loudness ratio -- so the
++# criterion is a CREST TAX with a threshold nobody chose, and a bus is punished
++# for being eventful. But it is still load-bearing, for a reason R2-4034 does
++# not state: `impact` is ONE event in a 124 s film, its 3 s short-term meter
++# reads -27.63 LUFS, and its -6.5 target therefore asks for +21.13 dB. Without
++# the ceiling that bus enters the sum at a linear peak of 19.5. THE CEILING IS
++# NOT DISABLED AND NOT MOVED.
++#
++# AND IT IS NOT THE 8.38 dB BLOCKER THE OPEN ITEM SAID IT WAS. Measured on the
++# R2-4150 stems by summing them and running the real chain offline:
++#     `shards` +4.05 dB -> premix peak +6.00 dBFS, i.e. G14 binds there
++#     `shards` +8.20 dB -> limiter gain reduction -3.0 dB, i.e. G1 binds there
++# The ceiling is worth at most 4 dB of the 11.71 before a DECLARED film-level
++# threshold stops it, and neither of those may be moved to make a master pass.
++# The 8.38 dB is therefore not available in the mix at all, and this pass takes
++# 2.96 dB of it out of the SOURCE instead -- see `layers.render_shards`'s
++# acceleration-transient reference, which delivered a median 0.76 of the ring's
++# peak while declaring 0.45 and varied 3x from contact to contact on a random
++# integer. THE REST IS OPEN AND IT IS A HEADROOM BUDGET, NOT A CEILING.
++
+ # G15: a trim this large is a source-level bug being papered over by one
+ # broadband number, not a mix. Reported per bus and aggregated into `build_ok`.
+ BUS_TRIM_LIMIT_DB = 12.0
+ 
++# ===================== R2-4151: RELATIVE MIX STATEMENTS ======================
++# `{bus: (reference_bus, offset_db)}`. A bus listed here is trimmed to the
++# DELIVERED short-term loudness of its reference plus the offset, instead of to
++# its own absolute entry in TARGET_LUFS_S.
++#
++# WHY THIS EXISTS. The table above is a set of absolute numbers, and two of them
++# are a RELATIONSHIP: R2-4060's comment on `debris` says in so many words
++# "sitting it 1.5 dB under the foreground shards is a mix statement". An
++# absolute pair only expresses that relationship for as long as both buses
++# actually reach their numbers. `shards` does not. The peak criterion held it
++# 11.71 dB short of -9.0 on R2-4150, `debris` reached -10.5 exactly, and the
++# delivered relationship came out as debris 10.21 dB OVER shards -- the mix
++# statement inverted by 11.7 dB, by a trim, with nothing in the report saying
++# so. The breach's articulate layer fell to 6.36 % of the beat and an unchanged
++# wash took 31.55 % of it.
++#
++# The reference bus must be summed BEFORE the dependent one; `build()` adds
++# `shards` and then `debris` and asserts it.
++RELATIVE_TARGET_LUFS_S = {
++    "debris": ("shards", -4.0),
++}
++
+ 
+ def hf_shelf(x, db, fc, sr):
+     """High shelf via a ZERO-PHASE complementary split, so lo + hi == x exactly.
+@@ -717,6 +799,10 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
+     # ============================================================ PROPAGATE ===
+     master = np.zeros((n, 2), dtype=np.float32)
+     bus_log = {}
++    # delivered short-term loudness per bus, so RELATIVE_TARGET_LUFS_S can be
++    # resolved against what a reference bus ACTUALLY got rather than what it
++    # asked for. That distinction is the whole point of the mechanism.
++    delivered_lufs_s = {}
+ 
+     # R2-2221: OPTIONAL STEM DUMP, AND WHY IT IS EXACTLY HERE.
+     # The wind diagnosis that fixed the flying lap ("wind delivered -22.48 dBFS
+@@ -756,6 +842,15 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
+         ceiling, sum it, log all of it. See BUS_PEAK_CEILING (R2-4034)."""
+         key = name if name in TARGET_LUFS_S else name.rstrip("0123456789")
+         target = TARGET_LUFS_S[key]
++        rel = RELATIVE_TARGET_LUFS_S.get(key)
++        if rel is not None:
++            ref, off = rel
++            if ref not in delivered_lufs_s:
++                raise RuntimeError(
++                    "bus %r declares its level relative to %r, which has not "
++                    "been summed yet -- a relative target must follow its "
++                    "reference in build()" % (name, ref))
++            target = delivered_lufs_s[ref] + float(off)
+         meas = dsp.max_short_term_lufs(stereo, sr)
+         raw_peak = float(np.abs(stereo).max())
+         g_lufs = target - meas if np.isfinite(meas) else -200.0
+@@ -772,8 +867,12 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
+         if shelf is not None:
+             trimmed = hf_shelf(trimmed, shelf[0], shelf[1], sr)
+         master[:] += trimmed
++        delivered_lufs_s[key] = float(meas + g_db) if np.isfinite(meas) else -200.0
+         bus_log[name] = {"measured_max_short_term_lufs": meas,
+-                         "target_lufs": target, "trim_db": g_db,
++                         "target_lufs": target,
++                         "target_declared_relative_to": (list(rel) if rel else None),
++                         "delivered_lufs_s": delivered_lufs_s[key],
++                         "trim_db": g_db,
+                          "trim_db_from_lufs_target": g_lufs,
+                          "trim_db_from_peak_ceiling": g_peak,
+                          "peak_criterion_won": peak_limited,

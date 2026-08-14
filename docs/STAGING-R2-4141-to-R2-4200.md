@@ -1365,3 +1365,491 @@ it and reproduces every number above with the render path untouched.
    G-RING's Sabine limb un-anchored; AMI's and G-EVENT's shared hole; C10 a
    bench control; the diffuser's 0.777 s floor above 11 kHz; G-ROOM(c)'s two
    bars under their nulls; **G-MOD and G-NOVEL at beat 1 remain PICTURE.**
+
+---
+
+## R2-4151 — THE MIX. THE 8.38 dB IS NOT IN THE CEILING; 2.96 dB OF IT IS IN THE ATTACK, AND THE REST IS HEADROOM THE FILM DOES NOT HAVE.
+
+R2-4150 built the breach fix, measured it, and correctly refused to ship it:
+the glass layer got 4.3× more articulate and the delivered beat got worse,
+because `master.add()` trimmed the improved bus 8.38 dB down. It left two
+candidate directions with their arithmetic attached. **This pass adjudicated
+both. The one with the bigger number attached is wrong, and the mechanism that
+is right was not on the list.**
+
+---
+
+### R2-4151(1) — THE CANDIDATE WITH THE ARITHMETIC, CHECKED FIRST, AND REFUTED. `tools/r2_4151_contact_time.py`
+
+The standing rule is that a guard which fires on a signal that is genuinely too
+peaky is RIGHT and the signal is wrong, so R2-4150(8)'s contact-time candidate
+was adjudicated before a line of the mix was touched:
+
+> `t_contact = 8e-5 (1 + 0.6 b)(1 + 2 L)` spans 1.99× where Hertz gives
+> `L^0.6` = 6.7×, so the largest fragments are ~10.6 dB too peaky.
+
+**THE PREMISE IS RIGHT AND THE CONCLUSION IS WRONG.**
+
+* **The coefficient is checked, not quoted** (R2-4149's hazard rule, after a
+  free-plate constant was once wrong by 13.5×). `t_c = 2.9432 δ_max/v` is
+  verified by integrating the Hertz ODE `m δ'' = −k δ^{3/2}` directly:
+  **2.9433 against 2.9432.**
+* **The exponent really is wrong.** Over the picture's 21.3 → 495 mm the
+  shipped law's effective exponent is **0.21 against Hertz's 0.60**, and a
+  433 mm fragment's contact is **5.25× too short** at α = 0.05. The absolute
+  level is robust: α over its whole plausible range, 0.01 → 0.50, moves `t_c`
+  by 2.19× and the exponent not at all.
+* **AND CORRECTING IT MAKES THE BUS PEAKIER.** Measured over all 8401 contacts:
+  the peak proxy falls **2.29 dB** and the energy proxy **3.60 dB**, i.e.
+  **crest +1.31 dB**, and the sign holds across α = 0.02–0.20 (+0.94 to
+  +1.53 dB). **The peak criterion would take MORE away, not less.**
+
+**WHY THE ARITHMETIC MISLED.** It assumed peak ∝ 1/T. `hertz_spectrum` is FLAT
+below 1/T, and a 433 mm fragment's entire mode set sits at 174–2049 Hz while
+1/T is 6.7 kHz on the shipped law and 1.7 kHz on the Hertz law. Lengthening the
+contact does not touch the peak; it attenuates the UPPER modes, which carry
+energy and not peak. **NOT IMPLEMENTED**, on R2-4150(8)'s own reasoning: it is
+a real ~3.4× error in contact hardness and it belongs to whoever next opens the
+shard synthesiser with nothing riding on the answer.
+
+---
+
+### R2-4151(2) — `BUS_PEAK_CEILING`'s STATED REASON DOES NOT EXIST ANYWHERE IN THIS FILM. `tools/r2_4151_peak_scope.py`
+
+R2-4034's derivation is that the BS.1770 meter is deaf to the breach's buses
+because they are almost entirely sub-bass. The direct measure of that is the
+**same 3 s short-term meter taken K-weighted and taken UNWEIGHTED** — identical
+window, hop and offset, differing only by the filter, so the gap is the meter's
+deafness to that bus and nothing else. Every bus, both shipped stem sets:
+
+| the three buses the peak criterion wins on | K-weighted | unweighted | **deafness** |
+|---|---:|---:|---:|
+| `engine` | −29.46 | −31.08 | **−1.62 dB** |
+| `impact` | −27.63 | −27.56 | **+0.07 dB** |
+| `shards` (R2-4150) | +1.05 | +0.01 | **−1.04 dB** |
+| the deafest bus in the whole film, `assembly` | −34.16 | −31.89 | **+2.27 dB** |
+
+**R2-4034 MEASURED 14.09 dB ON THE `impact` BUS. IT READS +0.07 dB TODAY** —
+because **R2-4035, in the same rebuild, moved the transient world-attached
+sources onto the film grid** and took `impact` from **92.99 % of its energy
+below 30 Hz to 3.09 %**. The ceiling's premise was eliminated by its own
+commit's neighbour and nobody re-measured it.
+
+**WHAT THE CRITERION ACTUALLY IS.** `g_peak < g_lufs` reduces exactly to
+`PLR > −target`: a bus is trimmed below its declared loudness precisely when
+its peak-to-loudness ratio exceeds a **mix constant**. `shards` declares −9.0,
+so anything over **9.0 dB of PLR** is taxed — less PLR than any transient
+signal on earth has. **This is the same mechanism as the other three: it
+punishes eventfulness, and it does so by construction.**
+
+**THE POSITIVE CONTROL SAYS THE SAME, ON THE CRITERION'S OWN MEASURE.**
+`synth.glass_breach` is the validated physics positive for this exact event.
+Its peak-to-loudness ratio, measured the way `add()` measures it:
+
+| | PLR | crest | AMI |
+|---|---:|---:|---:|
+| corpus positive, dice + slabs + mullions | **27.14 dB** | 33.44 | 0.7782 |
+| corpus, slabs alone | 27.85 dB | 34.12 | 1.4070 |
+| **R2-4150's rebuilt `shards` bus** | **20.71 dB** | 27.81 | 1.1107 |
+| R2-4147's shipped `shards` bus | **12.88 dB** | 17.60 | 0.2565 |
+| the criterion's tax threshold at `shards`' -9.0 target | **9.00 dB** | — | — |
+
+**THE REFERENCE ANSWER WOULD BE TAXED 18.14 dB — 6.4 dB HARDER THAN THE THING
+BEING FIXED.** And the master that shipped sits at less than half the
+reference's PLR, which is the same statement as "it was a wash", in the units
+the mix actually uses. **A guard that punishes the correct answer more than the
+defect is not measuring the defect.**
+
+**AND IT IS NOT DISABLED.** It is still load-bearing for a reason R2-4034 does
+not state: `impact` is ONE event in a 124 s film, its 3 s meter reads
+−27.63 LUFS, and its −6.5 target therefore asks for **+21.13 dB**. Without the
+ceiling that bus enters the sum at a linear peak of **19.5**. The 3-second
+short-term meter is the wrong instrument for a single-event bus and the peak
+ceiling is what has been covering for it. **`BUS_PEAK_CEILING` IS UNCHANGED AT
+1.0.**
+
+---
+
+### R2-4151(3) — AND IT IS NOT THE 8.38 dB BLOCKER EITHER. TWO DECLARED THRESHOLDS BIND FIRST.
+
+The R2-4150 stems summed and put through `master.py`'s real post-premix chain —
+30 Hz high-pass, program gain, DC block, the solved-for single limiter pass:
+
+| `shards` | premix peak | G14 (≤ +6 dBFS) | limiter GR | G1 (≤ 3 dB) |
+|---|---:|---|---:|---|
+| +0.00 dB (as delivered) | +2.99 dBFS | PASS | −0.59 dB | PASS |
+| +4.00 dB | +5.91 dBFS | PASS | −1.02 dB | PASS |
+| +6.00 dB | +7.55 dBFS | **FAIL** | −1.24 dB | PASS |
+| **+8.38 dB (the OPEN item's ask)** | **+9.58 dBFS** | **FAIL** | **−3.07 dB** | **FAIL** |
+
+**G14 BINDS AT ABOUT +4.05 dB AND G1 AT ABOUT +8.2 dB.** Both are declared
+thresholds and neither may be moved to make a master pass. **So the 8.38 dB was
+never available from the mix at any setting of the ceiling, and the OPEN item
+that named the ceiling as "THE BLOCKER" was wrong by construction.** What is
+available from the mix is at most 4 dB, and this pass does not take it: it
+takes 2.96 dB out of the SOURCE instead, at unchanged premix peak.
+
+---
+
+### R2-4151(4) — WHERE THE PEAK ACTUALLY COMES FROM. THE ATTACK WAS 1.7× ITS OWN DECLARATION AND VARIED BY 3× ON A RANDOM INTEGER.
+
+`ACCEL_NOISE_RATIO = 0.45` is declared as *"the acceleration transient's PEAK,
+as a fraction of the modal ring of the same contact"* — the one number in the
+shard synthesiser the file says is stated rather than derived. `render_shards`
+passed it **`amp.sum()`**: the value the ring would reach only if all 8–14 of
+its modes were in phase, which they never are, because `ph` is drawn uniformly.
+
+Measured over 2848 contacts of the rebuilt breach:
+
+| `amp.sum()` / ring peak | p10 | median | p90 |
+|---|---:|---:|---:|
+| | 1.07 | **1.69** | 3.19 |
+
+**THE DELIVERED RATIO WAS A MEDIAN 0.76 AGAINST A DECLARED 0.45, AND IT VARIED
+BY 3× BETWEEN CONTACTS ACCORDING TO HOW MANY MODES `shard_modes` HAPPENED TO
+DRAW.** A shard's attack got louder because of a random integer.
+
+`latch_strike`, in the same file, already references `np.abs(y).max()`.
+`part_impacts` uses `amp.sum()` and gets away with it because it
+peak-normalises the whole contact afterwards. **`render_shards` is the one call
+site where the reference reaches the mix unnormalised, and it is the one that
+was wrong.** `part_impacts` is beat 1 and was deliberately NOT touched.
+
+**WHAT IT IS WORTH.** Same population, same damping, that line the only
+difference:
+
+| dry glass field, 36–44 s | `amp.sum()` | **ring peak** |
+|---|---:|---:|
+| peak | 241.97 | **160.89** (−3.56 dB) |
+| max short-term | 22.74 | **22.14 LUFS** (−0.60 dB) |
+| crest | 27.81 dB | **24.58 dB** |
+| **articulation index** | **0.8161** | **0.8140** |
+
+**A peak that can be removed without moving the loudness or the articulation
+was not carrying any of the sound.** Under a fixed peak ceiling it is worth
+**2.96 dB of delivered level**, and the premix peak does not move, so G14 and
+G1 are untouched. **This is the one place the 8.38 dB was actually hiding, and
+it is in the source, exactly where R2-4150(8) said to look — just at a
+different parameter.**
+
+---
+
+### R2-4151(5) — THE DECLARED MIX WAS INVERTED BY A TRIM, AND NOTHING SAID SO.
+
+`TARGET_LUFS_S` is a table of absolute numbers, and two of its entries are a
+RELATIONSHIP. R2-4060's own comment: *"Sitting it 1.5 dB under the foreground
+shards is a mix statement: the fragments lead, the fines sit just beneath
+them."*
+
+An absolute pair expresses that relationship only for as long as both buses
+reach their numbers. **`shards` does not.**
+
+| 36–44 s | declared | R2-4147 delivered | R2-4150 delivered |
+|---|---:|---:|---:|
+| `shards` LUFS-S | −9.0 | −12.89 | **−20.71** |
+| `debris` LUFS-S | −10.5 | −14.12 | **−10.50** |
+| **`debris` relative to `shards`** | **−1.5 dB** | −1.23 dB | **+10.21 dB** |
+
+**THE MIX STATEMENT WAS INVERTED BY 11.7 dB BY A TRIM, SILENTLY, AND EVERY GATE
+THAT READS THE BREACH READ THE INVERSION.** The reason the two renders differ
+is itself the fourth mechanism: R2-4147's `debris` was peak-limited and fell
+3.62 dB short of its target; R2-4150's, spread over 8401 contacts instead of
+1055, is smoother, is no longer peak-limited, and collects its declared level
+in full. **The wash was rewarded for being a wash.**
+
+`RELATIVE_TARGET_LUFS_S` is added to `master.py`: a bus may declare its level as
+an offset from another bus's **DELIVERED** short-term loudness, and `build()`
+resolves it after the reference has been summed and refuses if it has not.
+
+**AND THE OFFSET GOES BACK TO −4.0 dB.** R2-4060 raised `debris` from −13.0 to
+−10.5 on one stated reason — *"the bed carries 97.6 % of its own energy above
+4 kHz and is the only bus in the breach with any top end (every other bus is
+below 0.2 %)"*. **R2-4150(5) refuted that by measurement**: the rebuilt `shards`
+bus carries **6.46 %** of its energy above 4 kHz against 0.15 % as delivered,
+i.e. **43×**. A raise whose premise is false is reverted, not re-argued, so the
+offset is R2-4044's own words — *"it sits UNDER the foreground shards rather
+than beside them"* — which is the −13.0 that was in the table before R2-4060,
+i.e. **4.0 dB under `shards`**. R2-4150(5) left this OPEN with the number
+specifically so it would not be confounded with the A/B the client was asked to
+judge. That A/B has happened.
+
+---
+
+### R2-4151(6) — WHAT WAS BUILT, AND THE ONE THING THAT WAS NOT
+
+> **THIS SECTION WAS WRITTEN BEFORE THE RENDER AND IT SAID "WHAT SHIPS".
+> R2-4151(9) REVERSES IT: NOTHING SHIPS.** It is left standing because a plan
+> that was overturned by its own measurement is the most useful thing in the
+> file. The five changes below were written into `audio/layers.py` and
+> `audio/master.py`, rendered end to end and adjudicated; they are now
+> `tools/r2_4151_landing.patch`, applied with
+> `git apply tools/r2_4151_landing.patch`, and the render path in git is the
+> shipped one again.
+
+Built, rendered and measured:
+
+1. **`layers.shard_modes`** — `GLASS_LAMINATE_ETA = 0.030` replaces Q = 800–1500.
+   R2-4150(3)'s derivation, unchanged, swept across the whole published band in
+   `tools/r2_4150_breach_bench.py`. **This is the whole glass fix.**
+2. **`layers.picture_fragments` / `layers.shard_ballistics`** — the population is
+   read from `sim/out/breach_sim.json`, the partition the 4K frames were
+   rendered from. Worth 0.017 of AMI and 43× the energy above 4 kHz.
+3. **`layers.debris_bed`** — density is a declared TOTAL, defaulted to the
+   delivered 139,950, so correcting the population cannot silently take the bed
+   to 1,177,213.
+4. **`layers.render_shards`** — the acceleration transient references the ring's
+   own peak, so `ACCEL_NOISE_RATIO` delivers the 0.45 it declares. R2-4151(4).
+5. **`master.RELATIVE_TARGET_LUFS_S`** — `debris` is declared 4.0 dB under
+   `shards`'s DELIVERED level. R2-4151(5).
+
+**NOT CHANGED, AND EACH FOR A STATED REASON:** `BUS_PEAK_CEILING` (its premise
+is dead but it is still the only thing standing between a single-event bus and
+a linear peak of 19.5); G14 and G1 (declared thresholds, and they are what
+bounds this); the contact-time law (R2-4151(1)); `part_impacts`' identical
+`amp.sum()` reference (beat 1 is picture-locked); `audio/verify.py` and
+`tools/percept_matrix.py`; the engine (R2-4150(2)'s bound says no glass layer
+clears 0.50 through it, and it is the next defect and a separate pass).
+
+---
+
+### R2-4151(7) — THE PREDICTIONS, WRITTEN DOWN BEFORE THE RENDER WAS ADJUDICATED
+
+Every one has a number, and they are recorded before `tools/percept_matrix.py`
+was run on the new master.
+
+1. **`shards` delivered LUFS-S −20.71 → −17.8 ± 0.7**, still peak-criterion-won,
+   still short of its −9.0 target by about 8.8 dB. **`debris` −10.50 → −21.8 ±
+   0.7**, and the peak criterion will NOT win on it.
+2. **The premix peak does not move: +2.9 to +3.2 dBFS, G14 PASS, limiter GR
+   within 0.2 dB of −0.59, G1 PASS.** The whole point of taking the level out of
+   the attack rather than out of the ceiling is that the mix's headroom is
+   unchanged.
+3. **G-PRESENCE `3_breach` AMI 0.1409 (R2-4147) / 0.1472 (R2-4150) → 0.20–0.25,
+   AND STILL FAIL.** R2-4150(2)'s measured bound says an ORACLE glass layer
+   reaches 0.3031 through this engine against a 0.50 bar, so a PASS here would
+   mean the bound is wrong, not that the build is good.
+4. **G-BALANCE `3_breach` protagonist margin +4.13 (R2-4147) / −7.44 (R2-4150) →
+   +0.8 to +2.2 dB. THIS IS THE ONE NUMBER THAT DOES NOT RECOVER, IT IS
+   PREDICTED TO REGRESS AGAINST THE SHIPPED MASTER, AND THE REASON IS STATED
+   RATHER THAN DISCOVERED:** R2-4147's +4.13 dB was bought by a `shards` bus
+   that was 33.74 % of the beat *because it was a wash* — 17.6 dB crest, eta
+   0.00087, 63 rings alight at once. An articulate bus cannot be that loud
+   under any peak ceiling this film's headroom allows. **If this pass is judged
+   on that limb alone it ships nothing.**
+5. **G-BALANCE `3_breach` near-white share 0.474 (R2-4147) / 0.398 (R2-4150) →
+   0.24–0.33.** It may cross the 0.25 bar. If it does, that limb PASSES for the
+   first time in the project.
+6. **G-EVENT `3_breach` 2.71 dB (R2-4147) / 4.30 (R2-4150) → 4.0–5.5 dB, still
+   far under the 13.7 bar.**
+7. **G-SUSTAIN `3_breach`: R2-4150's new worse limb — a pitch held 0.269 of the
+   beat, which is the ENGINE showing through with the glass 8.4 dB down —
+   improves, and the chord limb stays clear. I do not predict it clears the
+   0.20 bar.**
+8. **BEAT 1 IS UNCHANGED, ALL GATES, ALL NUMBERS.** Nothing in this pass touches
+   the assembly layer, the cell, the reverb or beat 1's mix, and
+   `part_impacts`' identical `amp.sum()` reference was deliberately left alone.
+9. **BEATS 4–6 MOVE VIA `debris_p80_x_m` 30.15 → 23.14 m**, exactly as R2-4150(6)
+   predicted and R2-4150(10) scored RIGHT: G-BALANCE `4_transit` +1.34 dB,
+   G-FLAT `4_transit` 0.700 → 0.661, G-HNR `4_transit` 0.675 → 0.631.
+10. **NO GATE'S FILM-LEVEL VERDICT FLIPS.** I predict this pass improves five of
+    the breach's numbers and regresses one.
+
+---
+
+### R2-4151(8) — THE RENDER
+
+`audio/out/r2_4151/master_R2-4151.wav`, **−23.00 LUFS / −1.11 dBTP, limiter GR
+−1.10 dB, premix peak +3.21 dBFS, `AUDIO_MASTER_OK`** — G1 and G14 both PASS,
+which is the point: **the level was taken out of the attack and not out of the
+headroom.** `tools/percept_matrix.py` returns `PERCEPT_MATRIX_OK`, 40
+thresholds, 0 provenance violations, G-CONSTRUCT unchanged at 17 pre-existing
+violations with none in the new code.
+
+**AND THE SOURCE FIX WAS WORTH A THIRD OF WHAT THE BENCH SAID.**
+
+| `shards` bus | R2-4150 | **R2-4151** |
+|---|---:|---:|
+| raw linear peak | 12.23 | **10.73** (−1.15 dB) |
+| max short-term | 1.05 | 0.84 |
+| trim from the peak ceiling | −21.76 | −20.61 |
+| **delivered LUFS-S** | **−20.71** | **−19.77 (+0.94 dB)** |
+| short of its −9.0 target by | 11.71 dB | **10.77 dB** |
+
+**The dry field's peak fell 3.85 dB and the propagated bus's fell 1.15 dB**,
+because the acceleration transient is the highest-frequency thing in a contact
+and `prop.render`'s air absorption had already removed most of it before the
+peak ceiling ever saw it. **A bench measured on the dry layer cannot see what
+propagation does to a transient.** That is the same class of error as
+R2-4150(10)'s first scored prediction — a bench that held the mix constant and
+could not see a trim — **in two consecutive passes.**
+
+`debris` followed its reference down to **−23.77 LUFS-S**, i.e. 13.27 dB below
+where R2-4150 delivered it, because that is what "4.0 dB under `shards`" means
+when `shards` is 10.77 dB short of its own declaration.
+
+---
+
+### R2-4151(9) — THE ADJUDICATION IMPROVES, THE ARTEFACT DOES NOT, AND NOTHING SHIPS
+
+`tools/r2_4150_matrix_diff.py`, R2-4147 against R2-4151. **NO GATE'S FILM-LEVEL
+VERDICT MOVED. THREE FAILURE LINES DISAPPEARED AND NONE APPEARED:**
+
+| | R2-4147 | R2-4151 | |
+|---|---|---|---|
+| G-PRESENCE `3_breach` AMI | 0.1409 | **0.1710** | better, bar 0.50 |
+| G-EVENT `3_breach` | 2.71 dB | **3.27 dB** | better, bar 13.7 |
+| **G-BALANCE `3_breach` near-white share** | **0.474 FAIL** | **— GONE** | **the limb PASSES, for the first time** |
+| **G-BALANCE `3_breach` margin** | **+4.13 dB** | **−0.14 dB** | **4.27 dB WORSE** |
+| G-ROOM `3_breach` (c) cepstral 23.26× | FAIL | **— GONE** | the rings are gone |
+| G-ROOM `3_breach` (c) ripple 12.40 dB | FAIL | **— GONE** | the rings are gone |
+| G-ROOM `3_breach` (c) | FAIL | INAPPLICABLE | **0 usable decay tails** |
+| G-SUSTAIN `3_breach` | no line | no line | R2-4150's new bad limb did not arrive |
+| G-BALANCE `4_transit` | −2.30 dB | −0.93 dB | better |
+| G-FLAT `4_transit` | 0.700 | 0.662 | better |
+| G-HNR `4_transit` | 0.675 | 0.624 | better |
+| every beat-1 line | — | — | **IDENTICAL** |
+
+Beat 1's waveform differs from R2-4147 by **a pure gain of +0.285 dB with the
+residual 92.4 dB below it** — the film's own program gain, and nothing else.
+
+**AND THE PASS STILL DOES NOT SHIP. THE REASON IS THE ABLATION, NOT THE TABLE.**
+
+On the delivered stems, putting `debris` back where R2-4150 had it and changing
+nothing else:
+
+| `debris` | beat AMI | G-BALANCE margin | near-white share | breach 4–8 kHz |
+|---|---:|---:|---:|---:|
+| **as rendered (−4.0 dB under `shards`)** | **0.1810** | **−0.14 dB** | **0.200** | **81.9 dB** |
+| +6.00 dB | 0.1712 | −1.88 dB | 0.239 | 85.7 dB |
+| +13.27 dB (R2-4150's level) | **0.1516** | −6.51 dB | 0.407 | 92.1 dB |
+
+**THE GLASS REBUILD IS WORTH 0.1421 → 0.1516 AND TAKING THE WASH AWAY IS WORTH
+0.1516 → 0.1810. THREE QUARTERS OF THE ADJUDICATION'S IMPROVEMENT IS
+SUBTRACTION** — and this file has already documented one gate whose best
+possible score is silence. Three more measurements, on the delivered masters:
+
+* **The breach is 3.6 dB darker at 4–8 kHz than the master it would replace.**
+  That band at the breach was the debris bed, which is 97.6 % above 4 kHz, and
+  the client's word for a film with no top end is on record.
+* **The glass is 6.9 dB quieter** (`shards` delivered −12.89 → −19.77 LUFS-S)
+  **and the engine goes from 52 % to 79 % of the beat.** R2-4150(1) named the
+  engine as the breach's next defect at 44.7 %. **This pass would deliver it
+  worse.**
+* **The glass LAYER's spectrum is right, and that is not the same thing.**
+  Against the corpus positive `synth.glass_breach`, band by band, the layer
+  moves toward the reference in **all five bands** (1–4 kHz −8.3 → −5.5 against
+  −2.5; 8–16 kHz −20.2 → −17.4 against −11.7; 0–200 Hz −12.4 → −14.8 against
+  −23.2). **The shape is better and the level is 6.9 dB down, and it is the
+  level the client hears.**
+
+**THE MIX CANNOT DELIVER THIS FIX, AND THAT IS NOW MEASURED RATHER THAN
+SUSPECTED.** The peak criterion costs the articulate bus 10.77 dB; G14 binds
+any mix-side recovery at +4.05 dB and G1 at +8.2 dB, and neither may be moved;
+the source-side recovery available without touching a declared number is
+0.94 dB; and restoring the declared balance by lowering the wash instead costs
+the breach the top end the wash was carrying. **A breach in which the glass is
+6.9 dB quieter and the engine is 79 % of the beat is not shippable on the
+strength of three gate lines.**
+
+**`PART2_AUDIO_MASTER_R2-4147.wav` REMAINS THE DELIVERY, UNTOUCHED.** Neither
+film was re-muxed; both video streams were re-verified read-only this pass and
+still read `c346a7a322a4a2a403727c1e85f17511` (ProRes) and
+`235ef36e844a62b0e303e4138907b9fa` (H.265). `watch/INDEX.md` and
+`watch/listen_2026-08-14/` are unchanged because nothing was cut.
+`audio/out/master.wav` and `watch/rejected_audio_R2-4079/` are untouched and
+still fail. **`audio/layers.py` AND `audio/master.py` ARE REVERTED TO THE
+SHIPPED STATE**, and the whole landing is `tools/r2_4151_landing.patch`
+(`git apply tools/r2_4151_landing.patch`), on R2-4149(5)'s standing rule that
+the render path in git must reproduce the delivered master at all times.
+
+---
+
+### R2-4151(10) — THE PREDICTIONS FROM R2-4151(7), SCORED
+
+**Four wrong, one partly, five right — and the headline was one of the wrong
+ones, again.**
+
+1. **`shards` −17.8 ± 0.7, `debris` −21.8 ± 0.7. BOTH WRONG** — −19.77 and
+   −23.77. The accel fix was worth **+0.94 dB in the mix against +2.96 dB on
+   the dry field**, and R2-4151(8) has the mechanism: propagation had already
+   taken the transient out before the ceiling saw it. **A layer bench mis-sized
+   a mix effect in two consecutive passes, in opposite directions.**
+2. **Premix +2.9 to +3.2 dBFS, GR within 0.2 dB of −0.59, both PASS. PARTLY
+   RIGHT** — +3.21 dBFS (just outside) and −1.10 dB (0.51 dB outside). Both
+   PASS, and the headroom claim — that the source fix costs no headroom — held.
+3. **AMI 0.20–0.25 and still FAIL. WRONG ON THE RANGE, RIGHT ON THE VERDICT** —
+   0.1710.
+4. **G-BALANCE margin +0.8 to +2.2 dB, predicted to regress. WRONG ON THE
+   RANGE, RIGHT ON THE DIRECTION AND ON WHAT IT WOULD MEAN** — −0.14 dB. The
+   prediction said in terms: *"if this pass is judged on that limb alone it
+   ships nothing."* It was not judged on that limb alone; it was judged on the
+   artefact, and it still ships nothing.
+5. **Near-white share may cross the 0.25 bar. RIGHT** — the line is gone.
+6. **G-EVENT 4.0–5.5 dB. WRONG** — 3.27 dB, between R2-4147's 2.71 and
+   R2-4150's 4.30.
+7. **G-SUSTAIN `3_breach` improves and does not clear its bar. RIGHT, AND
+   BETTER THAN PREDICTED** — there is no G-SUSTAIN failure line at the breach
+   in either master; R2-4150's *"a pitch held 0.269 of the beat"* did not
+   arrive, because the engine no longer stands alone in the gap.
+8. **Beat 1 unchanged, all gates, all numbers. RIGHT** — every line identical,
+   and the waveform is a pure +0.285 dB with the residual 92.4 dB down.
+9. **Beats 4–6 move via `debris_p80_x_m`. RIGHT** — G-BALANCE `4_transit`
+   −2.30 → −0.93, G-FLAT 0.700 → 0.662, G-HNR 0.675 → 0.624.
+10. **No verdict flips; five numbers better, one worse. RIGHT ON THE VERDICTS**
+    — and three failure LINES disappeared, which the prediction did not
+    anticipate.
+
+---
+
+## OPEN, AFTER R2-4151
+
+1. **THE BREACH FIX IS BUILT, RENDERED AND ADJUDICATED, AND IT IS ONE PATCH
+   AWAY.** `tools/r2_4151_landing.patch` carries the laminate damping, the
+   picture's fragment population, the declared-total fines bed, the
+   acceleration transient's ring reference and `RELATIVE_TARGET_LUFS_S`.
+   `git apply` it and the render reproduces `audio/out/r2_4151/`. **It is
+   withheld for ONE reason and it is not a gate: the delivered glass is 6.9 dB
+   quieter than the master it would replace and the engine becomes 79 % of the
+   beat.**
+2. **THE BLOCKER IS A HEADROOM BUDGET, NOT A CEILING, AND THE 8.38 dB WAS NEVER
+   IN THE MIX.** `BUS_PEAK_CEILING`'s stated derivation is dead — measured
+   deafness ≤ 2.27 dB on every bus in the film, +0.07 dB on R2-4034's own case,
+   because R2-4035 moved the sub-bass out from under it. What the criterion
+   actually does is bound peak-to-loudness ratio at −target, i.e. tax
+   eventfulness; the validated positive control for this event would be taxed
+   **18.14 dB, 6.4 dB harder than the bus it trimmed 11.71 dB.** It stays
+   anyway, because it is the only thing between a single-event bus and a linear
+   peak of 19.5 — **the real defect is that a 3-second short-term meter is the
+   wrong instrument for a bus whose event is 0.16 ms, and there is no second
+   instrument.** Whoever takes this needs a headroom BUDGET across buses,
+   measured against G14's +6 dBFS and G1's 3 dB, both of which are declared and
+   were measured this pass at +4.05 dB and +8.2 dB of `shards`.
+3. **THE ENGINE IS NOW THE WHOLE PROBLEM AND IT HAS BEEN SINCE R2-4150(1).**
+   44.7 % of the breach as shipped, 79 % with the glass fixed, AMI 0.069,
+   −17.79 dBFS RMS against −30.19 on the flying lap. The measured bound says an
+   ORACLE glass layer reaches **0.3031** against a 0.50 bar through it. **No
+   pass at the breach can succeed until the engine's eight-held-seconds is
+   dealt with, and this pass is the proof: the glass layer now reads 1.11
+   against a corpus positive's 0.79 and the beat still reads 0.17.**
+4. **THE CONTACT-TIME LAW IS WRONG BY 3.4× ON THE LARGEST FRAGMENTS AND IT IS
+   NOT WORTH ANY LEVEL.** `L^0.21` against Hertz's `L^0.6`, verified against a
+   directly-integrated ODE. Correcting it makes the bus 1.3 dB PEAKIER. It
+   belongs to whoever next opens the shard synthesiser with nothing riding on
+   the answer. `tools/r2_4151_contact_time.py`.
+5. **`ACCEL_NOISE_RATIO` IS NOW THE SHARD BUS'S TOP END, AND IT IS THE ONE
+   UNDERIVED NUMBER IN THE SYNTHESISER.** With the reference corrected, the
+   bus's energy above 4 kHz falls from 2.22 % to 0.68 % of itself — the attack
+   *was* the top end. 0.45 is stated rather than derived, and it now controls a
+   band the client has rejected a master over.
+6. **`reflect_showroom` + `aperture` ARE 61 % OF THE NEAR-WHITE BACKGROUND AT
+   THE BREACH** once the wash is gone (3.31 % and 3.07 % of the beat against a
+   protagonist at 10.1 %), and G-BALANCE's margin limb cannot be reached
+   without them. R2-4054 already wrote the rule for these two — *"if they still
+   measure more than 15 dB under the mix after this, they should be deleted
+   rather than raised again"* — and they now sit 14.8 and 15.1 dB under the
+   beat. Nobody has applied that rule.
+7. **THE AUDIO STILL THROWS ITS DEBRIS SIX TIMES TOO FAR** (p80 23.14 m rebuilt
+   against a picture that rests at 16.6 m), carried unchanged from R2-4150(6).
+8. Carried unchanged: G-RING's ratio bar under its own null; G-RING's Sabine
+   limb un-anchored; AMI's and G-EVENT's shared hole; G-ROOM(c)'s two bars
+   under their nulls; **G-MOD and G-NOVEL at beat 1 remain PICTURE.**
