@@ -2707,3 +2707,386 @@ Recorded because the near-miss is the interesting part: nothing stopped an
 argument named `--report` from silently meaning the opposite of what it reads
 like, and the only reason it was noticed at all was a timestamp that did not
 match the run that was supposed to have produced it.
+
+## R2-4079 — FOUR INSTRUMENT DEFECTS. TWO OF THE FOUR NAMED FIXES WERE WRONG, AND THE MEASUREMENT SAYS SO.
+
+R2-4075 and R2-4077 named four defects that are in the INSTRUMENTS rather than
+in the audio, and gave a one-line fix and a predicted number for each. All four
+are addressed here. **Two of the four predicted fixes did not survive being
+measured**, and in both cases the measurement is reported and the prediction is
+not adopted — which is the entire point of predicting a number rather than
+asserting an outcome.
+
+### (1) THE MATRIX WAS JUDGING ANOTHER FILE'S STEMS. FIXED, AND IT FLIPS A LIMB ON ITS OWN.
+
+`tools/percept_matrix._stems()` read a hard-coded `audio/out/stems` — the stem
+run of the **delivered master the client rejected** — and handed it to every
+signal that declared film telemetry. Every G-BALANCE number the matrix has
+printed about any newer build was therefore a number about C4.
+
+**This is a runner bug of the family this rebuild exists to correct**: an
+instrument that silently reports on a file nobody asked about. It is the same
+shape as R2-4078's `--report` reading an input, and as `verify.py:816`'s bar
+read out of the artefact it judges.
+
+The stems now FOLLOW the signal. `stems_dir_for(wav)` is the `stems/` directory
+beside the wav; `--stems` overrides it; there is **no fallback**, because a
+fallback is how the defect happened. `audio/controls/synth.CONTROL_STEMS`
+declares which control owns a stem run: C4 owns `audio/out/stems` because C4 IS
+the delivered master, and C5 — whose first beat is a synthesised loop — owns
+none, so its G-BALANCE is INAPPLICABLE, which is not a PASS.
+
+`audio/master.py` now writes **`STEMS_OF.json`** into any stem directory it
+fills, naming the master it rendered alongside. `percept_matrix` reads it and
+**refuses to adjudicate** (exit 2, verdict UNDEFINED) if a stem run declares
+itself the stems of a different wav. Guessing was the defect; refusing is the fix.
+
+Measured immediately, on `master_R2-4069.wav` against its own stems, R2-4075's
+prediction reproduces exactly:
+
+```
+1_assembly   PASS   near-white share 0.081   protagonist margin +10.55 dB
+```
+
+**−3.30 dB → +10.55 dB against an +8 dB bar.** Beat 1 — the beat the client
+named — was passing G-BALANCE's margin limb all along and the runner was
+reporting C4's number for it.
+
+### (2) THE PITCH ESTIMATOR WAS OCTAVE-AMBIGUOUS. FIXED. THE NAMED DOPPLER FIX WAS MEASURED AND REJECTED.
+
+**`pitch`.** `verify.track_f0`'s octave re-score considered `mul` in (1, 2, 3, 4)
+and kept the best. **It could only ever go UP.** B7 puts the declared
+fundamental 6.25 dB under its own second harmonic, so an octave-up lock is
+likely and, once made, permanent. Measured on the dry engine, 221 firing windows:
+
+```
+                    median    p90     within 50c   corr    octave locks
+shipped             1.14 c   7.98 c     0.941      0.358        9
+symmetric search    1.12 c   3.75 c     0.982      0.998        0
+```
+
+The fix is to score the sub-multiples too and take the **LOWEST** candidate that
+explains the spectrum within the same 2 % margin the code already used — the
+rule harmonic-product spectra exist to implement, of which the shipped loop
+implemented half. **`corr` 0.358 → 0.998 against a 0.97 bar.** Three synthesised
+controls — the known chirp, a chirp with a WEAK fundamental, a chirp with NO
+fundamental — return *identical* numbers before and after, so the new rule is
+not simply biased low. The margin is not a knob: 1.02, 1.10 and 1.25 give
+bit-identical results.
+
+**`doppler`. R2-4077's named fix — "track at 2 × ENGINE_ORDER" — makes it worse,
+and the reasoning behind it was about the wrong quantity.** It argued from which
+LINE is strongest. A comb search's ambiguity is a property of the SPACING: a
+comb of spacing d matches itself at every r = (k+1)/k, and doubling the search
+spacing to order 3.0 makes the search comb match every OTHER tooth of the real
+one — an ambiguity added at r = 1.5, not removed. Measured on R2-4069:
+
+| comb built on | median | p90 | corr | tracker failure fraction |
+|---|---:|---:|---:|---:|
+| **order 1.5 (shipped)** | 35.9 c | 1052 c | 0.987 | **0.325** |
+| **order 3.0 (R2-4077's fix)** | **443.1 c** | 1200.8 c | 0.886 | **0.662** |
+
+A second candidate was built and also rejected: weighting the comb with the
+regulation's own A(m) = 2|cos(πm/4)|, including the exact order-6 null, as a
+matched filter. It did not move the declared station at all (ff 0.325 → 0.325)
+and it made the second station worse (0.094 → 0.376).
+
+**What the failures actually were, found by looking rather than by reasoning:**
+`measured_ratio_min` was **0.6068 — ON the 0.60 rail.** The search was running
+over ratios no source on this car can radiate, and the sub-octave locks piled up
+there. The retarded-time solve already produces the ratio at every control
+instant of the whole film, so its envelope is the complete set of ratios this
+geometry can put on the microphone anywhere: **[0.799, 1.368]** after a semitone
+of margin at each end. It is a global property of the camera path, the car path
+and the speed of sound — not the per-window prediction, and not read off the
+audio — so a master with no Doppler, with the sweep reversed or with half the
+sweep is still inside the band and still fails.
+
+```
+declared station, R2-4069:  median 60.9 -> 6.0 cents
+                            p90    1064 -> 110 cents
+                            tracker failure fraction 0.350 -> 0.032
+                            OUTCOME  FAIL -> PASS      (first time)
+```
+
+The wrong-`f_emit` CONTROL is deliberately left on the WIDE range: the answer it
+is supposed to produce is non-physical, so holding it inside the physical
+envelope would turn a control into a tautology. It reads 0.835, unchanged.
+
+The station at t = 106.76 s still fails (corr 0.591, p90 151.0 against 150) over
+a predicted span of **1.41 semitones**. R2-4077 flagged it as a station with very
+little Doppler in it to measure; that is still true and it is still not excluded.
+
+### (3) THE DIFFUSER WAS ITSELF METALLIC. FIXED — BUT NOT WITH THE PREDICTED COEFFICIENT.
+
+`DIFFUSION_MS[0] = 0.94 ms` at g = 0.7 is a metallic diffuser: an allpass has
+|H| = 1 at every frequency so it adds no ripple, but its impulse response still
+has a discrete echo at its own delay, and eight cascaded stages with the
+shortest under 1 ms put those echoes inside the ear's own ~2 ms fusion window.
+
+**Two derived numbers, no free parameter.** The shortest stage moves to **4 ms**
+— the ~2 ms fusion boundary with a factor of two on it, and longer than the
+shortest snapped network line at 3.6 ms, so no diffusion stage can coincide with
+a network mode. The span moves bodily to 4 → 36 ms at the same 1.32x ratio the
+shipped list used, with the longest stage under the ~40 ms discrete-echo
+threshold.
+
+**R2-4076 also predicted g 0.7 → 0.55. The bench says that half is wrong.**
+`tools/r2_4079_fdn_bench.py` measures the reverberator's own impulse response
+with G-ROOM(c)'s own estimator:
+
+```
+0.94 ms, g 0.70   (shipped)   23.93x / 26.49x
+4.03 ms, g 0.70               12.59x / 16.66x     <- the DELAYS are the fix
+4.03 ms, g 0.55               13.95x / 18.33x
+4.03 ms, g 0.45               14.66x / 19.51x
+```
+
+Lowering g made it **monotonically worse**, so g stays at Schroeder's published
+0.7. A weaker allpass diffuses less; the coefficient was never what put an echo
+at 1 ms.
+
+**The bench also found that half of its own first design was blind.** A single
+long FFT of the impulse response returns **15.49x at 13.00 ms for every one of
+these configurations, including no diffusion at all** — and that is not a bug, it
+is the theorem: the allpass chain precedes an LTI network, so the system's
+MAGNITUDE spectrum is mathematically independent of the diffusion. Only a
+frame-averaged estimator — which is what `tail_spectrum` is — can see it. The
+single-FFT row is kept in the bench and labelled, because anyone who reaches for
+the obvious measurement will otherwise conclude the change did nothing.
+
+### (4) G-BALANCE'S MARGIN CONTAINED ITS OWN NUMERATOR. THAT IS ARITHMETIC, NOT A BAR.
+
+Once the stems were the right ones (1), the shape of the remaining failures was
+unmistakable. The near-white set did not exclude the protagonist, so on any beat
+where the protagonist is both the loudest stem and reads over the near-white
+line, **the margin was the protagonist measured against itself and could not
+exceed 0 dB whatever the mix did.** Beat 2 is 95.97 % engine and reported
+−0.04 dB. Five of six beats were in this state; at the breach BOTH `shards` and
+`impact` were inside their own denominator.
+
+The fix is to the DENOMINATOR ONLY, and deliberately not to the share limb:
+
+* **the margin** asks whether the protagonist leads the near-white BACKGROUND,
+  so the background is the near-white stems that are not the protagonist;
+* **the share** asks how much of the beat is near-white and must keep counting
+  the protagonist, because a protagonist that is itself near-white is the
+  client's actual complaint. Excluding it there would let a beat that is 99 %
+  white noise pass both limbs.
+
+Measured on R2-4069's own stems, no threshold touched:
+
+| beat | margin, before | margin, after |
+|---|---:|---:|
+| 1_assembly | +10.55 | +10.55 dB (already passing) |
+| **2_launch** | **−0.04** | **+20.52 dB** |
+| 3_breach | −1.38 | +4.13 dB |
+| 4_transit | −5.88 | −4.58 dB |
+| 5_lap | −5.11 | −3.52 dB |
+| 6_ending | −22.59 | −22.57 dB |
+
+C4 still fails G-BALANCE on both limbs, so the gate has not been softened.
+
+**AND THE BAND-WIDTH QUESTION IS ANSWERED WITH A MEASUREMENT, NOT A THRESHOLD.**
+R2-4075(2) argued that per-band SFM cannot resolve the engine's comb after B7.
+That argument now has an instrument. A 1/3-octave band at f is
+w(f) = f·(2^(1/6) − 2^(−1/6)) = **0.2316·f** wide, so a comb of spacing df has
+two lines in a band only above **4.318·df** — a ratio of a bandwidth to a
+spacing, with no free parameter in it. `percept.comb_spacing_of` measures each
+stem's own line spacing from the autocorrelation of its own log spectrum and
+reports the fraction of the 500–3000 Hz window that is too narrow to resolve it:
+
+```
+2_launch  engine  sfm 0.706 x white   spacing 480.5 Hz   resolvable only above 2075 Hz   63 % of the window unresolved
+3_breach  engine  sfm 0.554 x white   spacing 416.0 Hz   resolvable only above 1796 Hz   52 % of the window unresolved
+```
+
+**Nothing gates on it.** It is reported per stem so that a near-white verdict the
+instrument is not entitled to is visible as such. The autocorrelation peak is
+weak (r = 0.24–0.35) and that is reported too: over beats 4 and 5 the rpm sweeps
+so far that the comb smears and the measurement finds 100–111 Hz instead, which
+is a limit of measuring a moving comb over a whole beat and is stated rather
+than smoothed over. The answer to "band-width-aware term or genuine limit" is
+therefore: **a genuine limit, now measured per stem instead of argued.**
+
+## R2-4080 — THE ONE THING THAT CANNOT BE FIXED IN AUDIO, AND WHAT ATTACKING THE PERCEPT INSTEAD ACTUALLY BOUGHT
+
+**B5(a) still cannot land and nothing here pretends otherwise.** The 15 cluster
+seat frames in `world/beat1_anim_anim.json` are the frames the 2,978 delivered
+4K frames show; commit `7d2e8af` rewrote that file specifically to re-sync it
+with the promoted blend. **No frame moved and no picture was re-rendered.** The
+25-frame (1.0417 s) ladder is in the audio because it is in the picture.
+
+What is NOT picture-locked is what each arrival SOUNDS like, and burst-to-burst
+timbral similarity is a large part of what makes a sequence read as repetitive.
+So the attack is on timbre, and G-GESTURE is the gate that measures exactly that.
+
+### The part, not the cluster, is now the object that rings
+
+R2-4048 replaced one shared four-sine bank with one bank PER CLUSTER and was
+right about the defect it named. What it left is a smaller version of the same
+thing: inside a cluster, every one of its 10 to 120 parts was the SAME member at
+the SAME size, differing only by a 22 % lognormal scatter applied to the finished
+mode list. **A cluster of 44 parts is not 44 copies of a 231 mm object.**
+
+Two numbers per part, both bounded by the cluster's own bounding box, both
+deterministic in the part's name and index so the same part sounds the same in
+every render:
+
+* **SIZE, log-uniform, with no free parameter.** The largest member cannot be
+  longer than the box; the geometric-mean member must stay exactly where R2-4048
+  put it, at (V/n)^(1/3), so this change cannot move the layer's level. A
+  log-uniform distribution has geometric mean √(L_min·L_max), so
+  **L_min = L_typ²/L_max is forced.** For the 44-part rear corner that is 65 mm
+  to 815 mm about a 231 mm mean.
+* **SHAPE**, because scaling alone only TRANSPOSES a spectrum — which is the
+  criticism `cluster_modes`'s own docstring makes of what came before it. One
+  slenderness draw interpolates the aspect ratios logarithmically between the
+  box's own proportions and a cube of the same volume, and nothing outside that
+  range. `cluster_modes` then decides BEAM or PLATE per part on its own 3.5:1
+  test, so a single cluster now emits **both mode series** instead of one series
+  at many pitches.
+
+Materials likewise: `ASM_CLUSTER_MIX` declares each family's inventory (a metal
+corner is an aluminium upright, titanium fasteners and carbon ducts) and each
+part draws from it. This is a declaration about the car, in the same class as
+`PROTAGONIST` is a declaration about the film — not a threshold, and nothing
+gates on it.
+
+Measured across the fifteen clusters, per-part fundamentals now span
+
+```
+MB    26 ..  4895 Hz   13 plate + 4 beam   cfrp 10, aluminium 6, titanium 1
+FW    27 .. 19767 Hz   83 plate + 37 beam  cfrp 90, aluminium 22, titanium 8
+RW    69 .. 18726 Hz   97 plate            cfrp 67, aluminium 19, titanium 11
+```
+
+against one fundamental per cluster before. **CORNER_FL and CORNER_FR are
+geometrically identical and seat on the same frame**, and they now differ anyway,
+because their inventories are drawn per part — which is what two separately
+built corner assemblies actually are.
+
+### A bug the change exposed, and a bug it fixed
+
+`cluster_modes` indexed `f[0]` unconditionally in its own report. It had been
+unreachable while every part was mid-sized; drawing part sizes across the
+cluster's whole range reached it immediately, on the members whose entire first
+series is under 25 Hz. Guarded.
+
+Skipping those members then lost **79 of 777 contacts — and they are the BIGGEST
+parts in the beat.** A 5.47 m monocoque longitudinal landing is not silent; what
+it radiates is the acceleration noise of the contact itself, and it radiates it
+efficiently because its ka = 1 corner is low. Those events are now rendered as
+contact noise alone. **777 contacts, 616 first + 161 bounces — R2-4070's count,
+restored.**
+
+And a bug that was there before: a restitution bounce drew a FRESH 22 % mode
+scatter, so every bounce was a different part from the one that bounced. The
+part index now travels with the event.
+
+### Tried, measured, REVERTED: the servo arm's payload
+
+A cantilever's first mode goes as 1/L² **at constant tip mass** and as
+1/√m at constant length, and only the length term is implemented — which is why
+all four corners, sharing `explode_distance` = 1.33 m, hold in unison at 350 Hz.
+Adding `f_arm · √(V_ref/V_cluster)` was implemented and measured, and reverted:
+the bounding-box volume is a poor proxy for the mass of an exploded cluster
+(mostly air), the spread it produces is 0.27x to 7.8x, and it drove **SW and MB
+both onto the 1400 Hz clip ceiling — two actuators in exact unison over film
+t 0–9.9 s**, inside the thirty seconds the client named. A correct version needs
+the arm's mass per unit length and an effective cluster density, i.e. two more
+declared constants, and is not shipped on the strength of a prediction.
+
+### THE DELIVERABLE, AND THE ADJUDICATION
+
+**`audio/out/r2_4079/master_R2-4079.wav`** — 124.083 s, **−23.00 LUFS /
+−1.12 dBTP**, 0 clipped samples, limiter max GR **−0.83 dB**, peak-to-loudness
+21.77 dB. EBU R 128 within tolerance. `audio/out/master.wav` (C4, the rejected
+delivery) is untouched, as is `audio/out/r2_4064/master_R2-4069.wav`.
+
+`python -m tools.percept_matrix --adjudicate`. **All nine controls return the
+correct verdict and all twelve mutations fire**, so the verdict is defined:
+
+```
+BEFORE (R2-4069): FAIL ['G-BALANCE','G-FLAT','G-GESTURE','G-HNR','G-MOD',
+                        'G-NOVEL','G-ORDER','G-ROOM']
+AFTER  (R2-4079): FAIL ['G-BALANCE','G-FLAT','G-HNR','G-MOD','G-ORDER','G-ROOM']
+```
+
+**Six, from eight.** G-GESTURE and G-NOVEL move to PASS; G-RING and G-IDENTITY
+stay PASS. Nothing regressed.
+
+| gate | R2-4069 | **R2-4079** | bar |
+|---|---:|---:|---|
+| **G-GESTURE** | worst pair **0.811** FAIL | **0.714 PASS** (mean 0.0145 → −0.0011) | 0.80 |
+| **G-NOVEL** | r **0.520 at 2.090 s** FAIL | **r −0.240 at 10.52 s, PASS** | 0.15 |
+| **G-MOD** | 11.49 dB at 1.000 Hz | **11.96 dB at 1.000 Hz, still FAIL** | 6 dB |
+| G-ROOM(c) beat 1 | 11.45x at 1.062 ms | **9.60x at 1.354 ms** | 1.5x |
+| G-ROOM(b) beat 1 | 0.525 | **0.600** (worse) | 0.35 |
+| G-BALANCE beat 1 | margin +10.55 PASS | **+11.11 PASS** | +8 dB |
+| G-BALANCE beat 2 | margin −0.04 | **+20.55** (share limb still fails) | +8 dB |
+| G-BALANCE beat 3 | margin −1.38 | **+4.13** | +8 dB |
+| G-FLAT beat 1 median | 0.766·W | 0.773·W | 0.45·W |
+| G-HNR beat 1 median | +0.70 dB | +0.49 dB | +8 dB |
+| G-RING | PASS | **PASS** | — |
+| G-IDENTITY | PASS | **PASS** | — |
+
+`python -m audio.verify`: **`pitch` PASSES for the first time** — corr 0.358 →
+**0.998**, within 50 cents 0.941 → 0.982, chirp control unchanged at 4.82 cents,
+constant-speed anti-control 0.101 and failing as required. `levels` PASS at
+−23.00 LUFS / −1.12 dBTP, `edges`, `seam` and `external_assets` PASS.
+**`doppler`'s declared station passes for the first time** (median 6.0 cents,
+p90 110, failure fraction 0.031) and the gate still FAILS on the t = 106.76 s
+station, which has 1.41 semitones of Doppler in it.
+
+### BE CLEAR ABOUT WHAT G-NOVEL PASSING DOES AND DOES NOT MEAN
+
+**The 1.0417 s onset ladder is still there. No frame moved and no onset moved.**
+G-NOVEL measures the autocorrelation of a **40-band, per-band** log-spectrum
+envelope, and it no longer finds a repeat because **the bands no longer repeat**:
+successive clusters now excite different parts of the spectrum, so band k is
+loud at cluster i and quiet at cluster i+1. Its whole 2.09/4.18/6.27/8.36 s
+ladder is gone — one candidate peak remains, at 10.52 s, and it is NEGATIVE.
+
+**G-MOD is the gate that reads the rhythm, and it has not moved: 11.49 →
+11.96 dB at exactly 1.000 Hz.** It runs on the BROADBAND envelope, where timbre
+cannot help, and 1.000 Hz is the ladder. That is the correct and expected
+outcome, it was predicted before the render, and it is stated here rather than
+buried under the two gates that did move.
+
+**So: the film is measurably less repetitive in TIMBRE and exactly as periodic
+in TIME.** The honest promise is R2-4076's, unchanged — *"not a hair dryer,
+still somewhat regular"*. G-MOD passes only if beat 1's picture is re-rendered
+with a non-uniform seat ladder, and that is a director's decision (≈800 4K
+frames), not an audio one.
+
+### AND THE ONE PLACE THE DIFFUSION FIX DID NOT BUY WHAT IT WAS MEANT TO
+
+G-ROOM(c) at beat 1 went **11.45x → 9.60x** and the quefrency moved off
+`DIFFUSION_MS[0]` — 1.062 ms was 0.94 ms plus the network; 1.354 ms is not
+4.03 ms plus anything, so the diffuser is no longer the largest cepstral feature
+in the film. **It is still 6.4x over the bar and it is still a failure.** Beat 1's
+1/12-octave ripple also crossed, 6.76 → 8.16 dB against 8.0, and beat 3 is
+unchanged at 23.26x — the breach's peak sits AT the 1.000 ms search boundary,
+which means the true maximum is below the window and the number is a lower
+bound, not a located echo. **G-ROOM(b) mobility got worse, 0.525 → 0.600**: with
+every part a different object, more distinct spectral peaks exist per burst, and
+`peak_recurrence` counts more of them recurring. That is a real interaction
+between this change and that limb, it was not predicted, and it is reported
+rather than netted off against the two gates that improved.
+
+### WHAT IS STILL OPEN, IN ORDER
+
+1. **G-MOD needs the picture.** See above. Nothing in audio will move it.
+2. **`reflect_garage` −22.0 → −27.0 LUFS-S** (R2-4076 item 2). Still not done:
+   it was outside this pass's scope and it is still 44.3 % of beat 4 at
+   0.975 × white while being the ENGINE'S OWN reflection. It is the single
+   largest lever left on G-BALANCE's share limb at beats 4 and 5.
+3. **G-ROOM(c) at the breach.** 23.26x at exactly the 1.000 ms boundary. The
+   number is a lower bound on something the search cannot see, and the first
+   move is to widen the quefrency window, not to touch the audio.
+4. **G-ROOM(b) mobility**, which this pass made worse for a legible reason.
+5. **The Doppler station at t = 106.76 s**, unchanged and still not excluded.
+6. **G-HNR's +8 dB beat-1 bar**, exactly as R2-4076 left it: build a positive
+   control that is a showroom a listener would call tonal, and see which side of
+   the bar it lands on. Do not move the bar to find out.

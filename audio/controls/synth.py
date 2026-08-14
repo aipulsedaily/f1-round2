@@ -606,12 +606,26 @@ MUST_PASS_GATES = {
     "C6_jittered_identical_gestures": ("G-MOD",),
 }
 
+# THE STEM RUN EACH CONTROL OWNS, IF IT OWNS ONE (R2-4079).
+# `tools.percept_matrix._stems` used to hand a hard-coded `audio/out/stems` to
+# EVERY signal that declared film telemetry, so C5 -- whose whole first beat is
+# a tiled loop -- was scored on the delivered master's stems, and so was every
+# new master ever adjudicated. A stem run belongs to exactly ONE rendered wav.
+# C4 IS the delivered master, so `audio/out/stems` is genuinely its own. C5
+# replaced beat 1 of that master with a synthesised loop, so no stem run
+# corresponds to it and G-BALANCE on it is INAPPLICABLE, which is not a PASS
+# and is not a regression: C5 exists to trip G-NOVEL.
+CONTROL_STEMS = {
+    "C4_delivered_master": os.path.join(ROOT, "audio", "out", "stems"),
+}
+
 
 def build(name):
     fn, required, trips, what = CONTROLS[name]
     x, sr, sheet, tel = fn(None)
     return {"name": name, "x": x, "sr": sr, "sheet": sheet, "telemetry_kind": tel,
             "required_verdict": required, "must_trip": trips, "what": what,
+            "stems_dir": CONTROL_STEMS.get(name),
             "must_pass": MUST_PASS_GATES.get(name, ())}
 
 

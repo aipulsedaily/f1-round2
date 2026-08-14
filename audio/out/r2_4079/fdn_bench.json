@@ -1,0 +1,304 @@
+{
+ "sr": 48000,
+ "delays_m": [
+  6.5,
+  11.0,
+  15.0,
+  15.348045478170828,
+  18.601075237738275,
+  18.882862600781692,
+  22.940139493908923,
+  37.765725201563384
+ ],
+ "rows": [
+  {
+   "diffusion_ms": [
+    0.94,
+    1.51,
+    2.42,
+    3.87,
+    6.19,
+    9.91,
+    12.7,
+    16.3
+   ],
+   "g": 0.7,
+   "seconds": 0.12,
+   "channels": {
+    "L": {
+     "cepstral_peak_over_median": 23.93259899621768,
+     "cepstral_quefrency_ms": 16.291666666666668,
+     "ripple_p95_p5_db": 2.813413051885231,
+     "occupancy": 1.0,
+     "ir_fft_cepstral_peak_over_median": 15.487055792905588,
+     "ir_fft_cepstral_quefrency_ms": 13.0,
+     "ir_fft_ripple_p95_p5_db": 2.6367087678514745,
+     "t60_125hz": 2.466163146319039,
+     "t60_713hz": 1.942877569688545,
+     "t60_2khz": 1.2853852641379724
+    },
+    "R": {
+     "cepstral_peak_over_median": 26.49079997819147,
+     "cepstral_quefrency_ms": 16.291666666666668,
+     "ripple_p95_p5_db": 3.5079790401747735,
+     "occupancy": 1.0,
+     "ir_fft_cepstral_peak_over_median": 21.238751893523343,
+     "ir_fft_cepstral_quefrency_ms": 24.604166666666668,
+     "ir_fft_ripple_p95_p5_db": 3.4927941557377737,
+     "t60_125hz": 2.3764633808845708,
+     "t60_713hz": 2.121161093262313,
+     "t60_2khz": 1.466063594145497
+    }
+   },
+   "lr_correlation": 0.07707863920466886,
+   "label": "SHIPPED R2-4067  0.94 ms, g 0.70"
+  },
+  {
+   "diffusion_ms": [],
+   "g": 0.0,
+   "seconds": 0.08,
+   "channels": {
+    "L": {
+     "cepstral_peak_over_median": 7.061263178644923,
+     "cepstral_quefrency_ms": 11.8125,
+     "ripple_p95_p5_db": 2.150725993709594,
+     "occupancy": 1.0,
+     "ir_fft_cepstral_peak_over_median": 15.487050121074267,
+     "ir_fft_cepstral_quefrency_ms": 13.0,
+     "ir_fft_ripple_p95_p5_db": 2.6367087244615592,
+     "t60_125hz": 2.4914429791877666,
+     "t60_713hz": 1.9541148098535555,
+     "t60_2khz": 1.2979983414850738
+    },
+    "R": {
+     "cepstral_peak_over_median": 13.219688073448546,
+     "cepstral_quefrency_ms": 24.604166666666668,
+     "ripple_p95_p5_db": 3.676453537301203,
+     "occupancy": 1.0,
+     "ir_fft_cepstral_peak_over_median": 21.23873337965555,
+     "ir_fft_cepstral_quefrency_ms": 24.604166666666668,
+     "ir_fft_ripple_p95_p5_db": 3.4927940981040413,
+     "t60_125hz": 2.3733350839840184,
+     "t60_713hz": 2.135016290938585,
+     "t60_2khz": 1.4924340182338793
+    }
+   },
+   "lr_correlation": 0.0770786406052318,
+   "label": "no diffusion at all (the R2-4067 defect)"
+  },
+  {
+   "diffusion_ms": [
+    4.03,
+    5.51,
+    7.53,
+    10.3,
+    14.07,
+    19.23,
+    26.29,
+    35.93
+   ],
+   "g": 0.7,
+   "seconds": 0.1,
+   "channels": {
+    "L": {
+     "cepstral_peak_over_median": 12.588554452954996,
+     "cepstral_quefrency_ms": 13.0,
+     "ripple_p95_p5_db": 2.6253335845673806,
+     "occupancy": 1.0,
+     "ir_fft_cepstral_peak_over_median": 15.487053715152001,
+     "ir_fft_cepstral_quefrency_ms": 13.0,
+     "ir_fft_ripple_p95_p5_db": 2.636708582768641,
+     "t60_125hz": 2.5280297135884027,
+     "t60_713hz": 1.9258384004956464,
+     "t60_2khz": 1.3800645332759482
+    },
+    "R": {
+     "cepstral_peak_over_median": 16.657875287940023,
+     "cepstral_quefrency_ms": 24.604166666666668,
+     "ripple_p95_p5_db": 3.7403386529107316,
+     "occupancy": 1.0,
+     "ir_fft_cepstral_peak_over_median": 21.2387463572793,
+     "ir_fft_cepstral_quefrency_ms": 24.604166666666668,
+     "ir_fft_ripple_p95_p5_db": 3.4927941122549906,
+     "t60_125hz": 2.3928063680296843,
+     "t60_713hz": 2.1919088871145793,
+     "t60_2khz": 1.4801968736094764
+    }
+   },
+   "lr_correlation": 0.07707863618620601,
+   "label": "shortest 4.0 ms, g 0.70"
+  },
+  {
+   "diffusion_ms": [
+    4.03,
+    5.51,
+    7.53,
+    10.3,
+    14.07,
+    19.23,
+    26.29,
+    35.93
+   ],
+   "g": 0.55,
+   "seconds": 0.09,
+   "channels": {
+    "L": {
+     "cepstral_peak_over_median": 13.948116448079512,
+     "cepstral_quefrency_ms": 13.0,
+     "ripple_p95_p5_db": 2.449037318737271,
+     "occupancy": 1.0,
+     "ir_fft_cepstral_peak_over_median": 15.487057016299099,
+     "ir_fft_cepstral_quefrency_ms": 13.0,
+     "ir_fft_ripple_p95_p5_db": 2.636708651653284,
+     "t60_125hz": 2.5374043518546223,
+     "t60_713hz": 1.93467195058422,
+     "t60_2khz": 1.3203499698484802
+    },
+    "R": {
+     "cepstral_peak_over_median": 18.32551721563974,
+     "cepstral_quefrency_ms": 24.604166666666668,
+     "ripple_p95_p5_db": 3.812206527398171,
+     "occupancy": 1.0,
+     "ir_fft_cepstral_peak_over_median": 21.238740287461606,
+     "ir_fft_cepstral_quefrency_ms": 24.604166666666668,
+     "ir_fft_ripple_p95_p5_db": 3.492794111546605,
+     "t60_125hz": 2.377777020503562,
+     "t60_713hz": 2.1645522669388297,
+     "t60_2khz": 1.4829539024523888
+    }
+   },
+   "lr_correlation": 0.0770786377640959,
+   "label": "shortest 4.0 ms, g 0.55"
+  },
+  {
+   "diffusion_ms": [
+    4.03,
+    5.51,
+    7.53,
+    10.3,
+    14.07,
+    19.23,
+    26.29,
+    35.93
+   ],
+   "g": 0.45,
+   "seconds": 0.09,
+   "channels": {
+    "L": {
+     "cepstral_peak_over_median": 14.656480774669499,
+     "cepstral_quefrency_ms": 13.0,
+     "ripple_p95_p5_db": 2.4359747920040657,
+     "occupancy": 1.0,
+     "ir_fft_cepstral_peak_over_median": 15.4870573388392,
+     "ir_fft_cepstral_quefrency_ms": 13.0,
+     "ir_fft_ripple_p95_p5_db": 2.6367086011254686,
+     "t60_125hz": 2.53299106300231,
+     "t60_713hz": 1.9413437089697925,
+     "t60_2khz": 1.3156802000778733
+    },
+    "R": {
+     "cepstral_peak_over_median": 19.51362143827821,
+     "cepstral_quefrency_ms": 24.604166666666668,
+     "ripple_p95_p5_db": 3.7909492982093194,
+     "occupancy": 1.0,
+     "ir_fft_cepstral_peak_over_median": 21.238735526129037,
+     "ir_fft_cepstral_quefrency_ms": 24.604166666666668,
+     "ir_fft_ripple_p95_p5_db": 3.4927941131398335,
+     "t60_125hz": 2.373291120237744,
+     "t60_713hz": 2.1531885592049043,
+     "t60_2khz": 1.4877249608553964
+    }
+   },
+   "lr_correlation": 0.07707863850236653,
+   "label": "shortest 4.0 ms, g 0.45"
+  },
+  {
+   "diffusion_ms": [
+    5.01,
+    6.71,
+    8.99,
+    12.05,
+    16.15,
+    21.63,
+    28.99,
+    38.83
+   ],
+   "g": 0.55,
+   "seconds": 0.1,
+   "channels": {
+    "L": {
+     "cepstral_peak_over_median": 16.02995127261022,
+     "cepstral_quefrency_ms": 13.0,
+     "ripple_p95_p5_db": 2.576115723725734,
+     "occupancy": 1.0,
+     "ir_fft_cepstral_peak_over_median": 15.487055751558653,
+     "ir_fft_cepstral_quefrency_ms": 13.0,
+     "ir_fft_ripple_p95_p5_db": 2.6367080546610397,
+     "t60_125hz": 2.4603543739490803,
+     "t60_713hz": 1.9177093310206992,
+     "t60_2khz": 1.3072389921071332
+    },
+    "R": {
+     "cepstral_peak_over_median": 19.732116086368436,
+     "cepstral_quefrency_ms": 24.604166666666668,
+     "ripple_p95_p5_db": 3.5543774701143356,
+     "occupancy": 1.0,
+     "ir_fft_cepstral_peak_over_median": 21.238749226922504,
+     "ir_fft_cepstral_quefrency_ms": 24.604166666666668,
+     "ir_fft_ripple_p95_p5_db": 3.4927941716671187,
+     "t60_125hz": 2.3970612204743253,
+     "t60_713hz": 2.138963085179114,
+     "t60_2khz": 1.498153919344167
+    }
+   },
+   "lr_correlation": 0.0770786384616728,
+   "label": "shortest 5.0 ms, g 0.55"
+  },
+  {
+   "diffusion_ms": [
+    4.03,
+    5.51,
+    7.53,
+    10.3,
+    14.07,
+    19.23,
+    26.29,
+    35.93
+   ],
+   "g": 0.55,
+   "seconds": 0.1,
+   "channels": {
+    "L": {
+     "cepstral_peak_over_median": 13.948116448079512,
+     "cepstral_quefrency_ms": 13.0,
+     "ripple_p95_p5_db": 2.449037318737271,
+     "occupancy": 1.0,
+     "ir_fft_cepstral_peak_over_median": 15.487057016299099,
+     "ir_fft_cepstral_quefrency_ms": 13.0,
+     "ir_fft_ripple_p95_p5_db": 2.636708651653284,
+     "t60_125hz": 2.5374043518546223,
+     "t60_713hz": 1.93467195058422,
+     "t60_2khz": 1.3203499698484802
+    },
+    "R": {
+     "cepstral_peak_over_median": 18.32551721563974,
+     "cepstral_quefrency_ms": 24.604166666666668,
+     "ripple_p95_p5_db": 3.812206527398171,
+     "occupancy": 1.0,
+     "ir_fft_cepstral_peak_over_median": 21.238740287461606,
+     "ir_fft_cepstral_quefrency_ms": 24.604166666666668,
+     "ir_fft_ripple_p95_p5_db": 3.492794111546605,
+     "t60_125hz": 2.377777020503562,
+     "t60_713hz": 2.1645522669388297,
+     "t60_2khz": 1.4829539024523888
+    }
+   },
+   "lr_correlation": 0.0770786377640959,
+   "label": "PROPOSED  4.03 ms, g 0.55"
+  }
+ ],
+ "bars": {
+  "cepstral": 1.5,
+  "ripple_db": 8.0
+ }
+}

@@ -62,34 +62,95 @@ def _telemetry(kind):
     return _TEL_CACHE[kind]
 
 
-def _stems(kind):
-    """Stems for G-BALANCE. Only the delivered master has a stem run on disk;
-    for every other control G-BALANCE is INAPPLICABLE, which is not a pass."""
-    if kind != "film":
-        return None
-    d = os.path.join(ROOT, "audio", "out", "stems")
-    if not os.path.isdir(d):
-        return None
+def stems_dir_for(wav):
+    """THE STEM RUN THAT BELONGS TO `wav`: the `stems/` directory beside it.
+
+    R2-4079 -- THIS RUNNER WAS JUDGING ANOTHER FILE'S STEMS. `_stems` read a
+    HARD-CODED `audio/out/stems`, which is the stem run of the DELIVERED,
+    REJECTED master. So every G-BALANCE number the matrix printed about any
+    other master was a number about the artefact the client rejected: R2-4075
+    caught it because they came back bit-identical to C4's (-3.30 dB, 1.000),
+    and measured against its own stems the same build read +10.55 dB on beat 1.
+
+    That is not a G-BALANCE bug. It is a RUNNER bug of exactly the family this
+    rebuild exists to correct -- an instrument that silently reports on a file
+    nobody asked about -- and it is the same shape as R2-4078's `--report`
+    reading an input, and as `verify.py:816`'s bar read out of the artefact.
+    The fix is that the stems FOLLOW the signal: a master's stems are the ones
+    rendered beside it, they are named per signal rather than per process, and
+    a signal with no stem run gets INAPPLICABLE, which is not PASS."""
+    return os.path.join(os.path.dirname(os.path.abspath(wav)), "stems")
+
+
+def _stems(kind, stems_dir):
+    """Stems for G-BALANCE, from `stems_dir` and from nowhere else.
+
+    Returns (stems | None, provenance dict). A missing directory is reported
+    rather than silently substituted, and a directory whose own manifest names
+    a DIFFERENT master is refused outright -- judging a master with another
+    master's stems is the defect this signature exists to make impossible."""
+    prov = {"telemetry_kind": kind, "stems_dir": stems_dir, "used": False}
+    if kind != "film" or not stems_dir:
+        prov["why"] = ("this signal declares no film telemetry, so it has no "
+                       "stem run; G-BALANCE is INAPPLICABLE, which is not PASS")
+        return None, prov
+    if not os.path.isdir(stems_dir):
+        prov["why"] = ("no stem run at %s -- G-BALANCE is INAPPLICABLE, which "
+                       "is not PASS" % stems_dir)
+        return None, prov
+    man_path = os.path.join(stems_dir, "STEMS_OF.json")
+    if os.path.isfile(man_path):
+        man = json.load(open(man_path))
+        prov["manifest"] = man
+        prov["stems_of"] = man.get("master_wav")
+    else:
+        prov["manifest"] = None
+        prov["stems_of"] = None
+        prov["manifest_note"] = (
+            "this stem run predates STEMS_OF.json and cannot name the master it "
+            "was rendered with; its provenance is the directory it sits in")
     import soundfile as sf                                      # noqa: PLC0415
     out = {}
-    for fn in sorted(os.listdir(d)):
+    for fn in sorted(os.listdir(stems_dir)):
         if not fn.endswith(".wav"):
             continue
-        x, sr = sf.read(os.path.join(d, fn), always_2d=True)
+        x, sr = sf.read(os.path.join(stems_dir, fn), always_2d=True)
         out[fn[:-4]] = (np.asarray(x, dtype=np.float32), int(sr))
-    return out
+    if not out:
+        prov["why"] = "%s holds no .wav stems" % stems_dir
+        return None, prov
+    prov["used"] = True
+    prov["n_stems"] = len(out)
+    prov["stems"] = sorted(out)
+    return out, prov
 
 
-def run_signal(x, sr, sheet, telemetry_kind, gates=None, with_stems=False):
+def _check_stem_provenance(prov, wav):
+    """A stem run that NAMES a different master is a hard stop, not a warning."""
+    if prov.get("stems_of") is None:
+        return None
+    if os.path.abspath(prov["stems_of"]) != os.path.abspath(wav):
+        return ("the stem run at %s declares itself the stems of %s, not of %s"
+                % (prov["stems_dir"], prov["stems_of"], wav))
+    return None
+
+
+def run_signal(x, sr, sheet, telemetry_kind, gates=None, stems_dir=None):
     """Signal gates only. G-CONSTRUCT is a property of the SOURCE TREE, not of
     any wav, so running it per-control would attach the repo's verdict to every
     signal in the corpus and tell us nothing about the signal. It is run once,
-    on its own, below."""
+    on its own, below.
+
+    `stems_dir` is the stem run belonging to THIS signal. There is no default
+    and no fallback: the old `with_stems=True` handed every film-telemetry
+    signal the same hard-coded directory."""
     sheet = sheet or _film_sheet()
     tel = _telemetry(telemetry_kind)
-    stems = _stems(telemetry_kind) if with_stems else None
+    stems, prov = _stems(telemetry_kind, stems_dir)
     gates = gates or P.QUALITY_GATES
-    return P.run_suite(x, sr, sheet, stems=stems, telemetry=tel, gates=gates)
+    rep = P.run_suite(x, sr, sheet, stems=stems, telemetry=tel, gates=gates)
+    rep["stem_provenance"] = prov
+    return rep
 
 
 # ==================================================== per-gate mutations ====
@@ -345,6 +406,11 @@ def main():
     ap.add_argument("--adjudicate", action="store_true",
                     help="after the matrix passes, judge --wav")
     ap.add_argument("--only", default=None, help="run one control by name")
+    ap.add_argument("--stems", default=None,
+                    help="the stem run belonging to --wav. Defaults to the "
+                         "`stems/` directory BESIDE --wav; there is no global "
+                         "fallback, because judging one master with another "
+                         "master's stems is the R2-4075 defect.")
     ap.add_argument("--skip-mutations", action="store_true")
     ap.add_argument("--out", default=os.path.join(ROOT, "audio", "out",
                                                   "percept_matrix.json"))
@@ -374,7 +440,7 @@ def main():
         t0 = time.time()
         b = C.build(name)
         rep = run_signal(b["x"], b["sr"], b["sheet"], b["telemetry_kind"],
-                         with_stems=True)
+                         stems_dir=b["stems_dir"])
         got = "FAIL" if rep["any_fail"] else ("PASS" if rep["no_fail"]
                                               else "INAPPLICABLE")
         failed = P.failing_gates(rep)
@@ -393,6 +459,7 @@ def main():
             "must_trip": list(b["must_trip"]), "missing_trips": missing_trips,
             "must_pass": list(b["must_pass"]), "wrong_passes": wrong_passes,
             "inapplicable": rep["inapplicable_gates"],
+            "stem_provenance": rep["stem_provenance"],
             "CORRECT": bool(ok), "seconds": round(time.time() - t0, 1),
             "verdicts": rep["quality_verdicts"],
             "detail": {g: rep["gates"][g]["failures"][:4] for g in failed},
@@ -449,9 +516,32 @@ def main():
         else:
             import soundfile as sf                             # noqa: PLC0415
             x, sr = sf.read(a.wav, always_2d=True)
-            rep = run_signal(x, sr, None, "film", with_stems=True)
+            sdir = a.stems or stems_dir_for(a.wav)
+            rep = run_signal(x, sr, None, "film", stems_dir=sdir)
+            prov = rep["stem_provenance"]
+            mismatch = _check_stem_provenance(prov, a.wav)
+            print(f">> stems for adjudication: {sdir} "
+                  f"({'used, ' + str(prov.get('n_stems')) + ' stems' if prov['used'] else 'NOT USED'})")
+            if not prov["used"]:
+                print(f"   {prov.get('why')}")
+            if prov.get("manifest_note"):
+                print(f"   {prov['manifest_note']}")
+            if mismatch:
+                # Refusing is the point. The whole reason this argument exists
+                # is that the runner used to answer about a file nobody asked
+                # about, and it did it silently.
+                report["adjudication"] = {"wav": a.wav, "verdict": "UNDEFINED",
+                                          "stem_provenance": prov,
+                                          "why": mismatch}
+                print(f">> adjudication: UNDEFINED -- {mismatch}")
+                os.makedirs(os.path.dirname(a.out), exist_ok=True)
+                with open(a.out, "w") as fh:
+                    json.dump(report, fh, indent=1, default=float)
+                print(">> STAGE RESULT: PERCEPT_MATRIX_STEM_PROVENANCE_FAIL")
+                return 2
             report["adjudication"] = {
-                "wav": a.wav, "quality_verdicts": rep["quality_verdicts"],
+                "wav": a.wav, "stem_provenance": prov,
+                "quality_verdicts": rep["quality_verdicts"],
                 "provenance_verdicts": rep["provenance_verdicts"],
                 "failing_gates": P.failing_gates(rep),
                 "verdict": "PASS" if rep["quality_pass"] else "FAIL",

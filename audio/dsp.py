@@ -402,11 +402,53 @@ def allpass_chain(x, delays, g=0.7):
     return y
 
 
-# THE DIFFUSION DELAYS. Mutually prime, spanning 0.9-16 ms, in a 1.6x geometric
-# progression so no stage's echo pattern lands on another's. Eight stages, which
-# is the top of the spec's 4-8 range: each roughly doubles the echo count, so
-# eight take one impulse to a few hundred before the network sees it.
-DIFFUSION_MS = (0.94, 1.51, 2.42, 3.87, 6.19, 9.91, 12.7, 16.3)
+# THE DIFFUSION DELAYS. Mutually prime, in a geometric progression so no
+# stage's echo pattern lands on another's. Eight stages, which is the top of the
+# spec's 4-8 range: each roughly doubles the echo count, so eight take one
+# impulse to a few hundred before the network sees it.
+#
+# R2-4079(3) -- THE DIFFUSER WAS ITSELF THE FILM'S LARGEST CEPSTRAL FEATURE, AND
+# THE SHORTEST STAGE WAS WHY.
+# R2-4067 shipped this list starting at 0.94 ms with g = 0.7 and R2-4075(3)
+# measured the consequence honestly: G-ROOM(c)'s cepstral peak moved from 38.30x
+# at 11.292 ms (`master.py`'s deleted self-delay) to 11.45x at 1.062 ms -- which
+# is THIS stage plus the network. An allpass has |H| = 1 at every frequency, so
+# it cannot add ripple, but its impulse response still has a discrete echo at
+# its own delay, and eight cascaded allpasses at g = 0.7 with the shortest under
+# 1 ms is the textbook metallic diffuser: the echoes land inside the ear's own
+# ~2 ms coincidence window and fuse into a pitch instead of a density.
+#
+# TWO NUMBERS, BOTH DERIVED, NEITHER TUNED TO A GATE:
+#  * SHORTEST STAGE >= 4 ms. Below the ~2 ms at which two clicks fuse into one
+#    coloured event, an allpass echo is heard as timbre; above it, as density.
+#    4 ms is that boundary with a factor of two on it, and it is also longer
+#    than the shortest network line (the 6.5 m ceiling height is 19 ms, but the
+#    snapped prime lines start at 3.6 ms), so no diffusion stage can coincide
+#    with a network mode.
+#  * SPAN 4 -> 36 ms, i.e. a factor of 9 across eight stages -- the same 1.32x
+#    ratio the shipped list used, moved up bodily rather than compressed. The
+#    longest stage stays under the ~40 ms echo threshold, so no single stage can
+#    be heard as a discrete repeat.
+# The figures are then rounded so that no two are commensurate.
+DIFFUSION_MS = (4.03, 5.51, 7.53, 10.3, 14.07, 19.23, 26.29, 35.93)
+
+# THE DIFFUSION COEFFICIENT, AND THE HALF OF R2-4076's PREDICTION THAT THE
+# MEASUREMENT DID NOT SUPPORT.
+# R2-4076 item 1 predicted the fix as "shortest >= 4 ms AND g 0.7 -> 0.55".
+# `tools/r2_4079_fdn_bench.py` ran both halves separately, on the
+# reverberator's own impulse response, with G-ROOM(c)'s own estimator:
+#
+#   0.94 ms, g 0.70   (shipped)   23.93x / 26.49x
+#   4.03 ms, g 0.70               12.59x / 16.66x     <- the delays are the fix
+#   4.03 ms, g 0.55               13.95x / 18.33x
+#   4.03 ms, g 0.45               14.66x / 19.51x
+#
+# LOWERING g MADE IT WORSE, MONOTONICALLY, and it is kept at Schroeder's own
+# published 0.7. A weaker allpass diffuses less, so more of the input survives
+# undispersed to the network -- the coefficient was never the thing that put an
+# echo at 1 ms; the 0.94 ms delay was. Reported rather than quietly adopted,
+# because "the previous agent predicted 0.55" is not a measurement.
+DIFFUSION_G = 0.70
 
 # Two independent allpass chains, for turning one mono source into two ears.
 # Prime millisecond figures, no common factor between the two lists.
@@ -523,7 +565,8 @@ def fdn_reverb(x, sr, delays_m, rt60_low, rt60_high, c=None, seed=11,
 
     if n_diffusion:
         x = allpass_chain(x, [max(int(round(ms * 1e-3 * sr)), 2)
-                              for ms in DIFFUSION_MS[:int(n_diffusion)]])
+                              for ms in DIFFUSION_MS[:int(n_diffusion)]],
+                          g=DIFFUSION_G)
 
     # BLOCK SIZE = the SHORTEST delay. Inside a block of that length every read
     # from every line was written before the block began, so the whole block can
@@ -564,6 +607,7 @@ def fdn_reverb(x, sr, delays_m, rt60_low, rt60_high, c=None, seed=11,
                        "effective_delays_m": d_eff,
                        "diffusion_stages": int(n_diffusion),
                        "diffusion_delays_ms": list(DIFFUSION_MS[:int(n_diffusion)]),
+                       "diffusion_g": float(DIFFUSION_G),
                        "output_taps": "orthogonal +-1 pair" if stereo else "sum"}
     if not stereo:
         return out[:, 0].astype(np.float32)

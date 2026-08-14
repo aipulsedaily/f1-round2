@@ -960,6 +960,92 @@ ASM_CLUSTER_MATERIAL = {
     "halo_assembly": "titanium",
 }
 
+# R2-4079(5) -- A CLUSTER IS NOT MADE OF ONE MATERIAL EITHER.
+# `ASM_CLUSTER_MATERIAL` gives every one of a cluster's parts the same c_bar and
+# the same Q, so 44 pieces of a front corner all ring with an aluminium Q of 170.
+# A real corner is an aluminium upright, titanium fasteners and uprights' carbon
+# brake ducts; a real floor is carbon with metal edge stays. THE MIX IS A
+# DECLARATION ABOUT THE CAR, in the same sense `PROTAGONIST` is a declaration
+# about the film -- it is not a threshold and nothing gates on it -- and each
+# part draws from it deterministically, so the same part gets the same material
+# in every render. Weights are part COUNTS, not masses: fasteners are numerous
+# and small, which is why the metal fraction of a carbon cluster is not tiny.
+ASM_CLUSTER_MIX = {
+    "metal_corner": (("aluminium", 0.55), ("titanium", 0.20), ("cfrp", 0.25)),
+    "carbon_body":  (("cfrp", 0.75), ("aluminium", 0.17), ("titanium", 0.08)),
+    "titanium_hoop": (("titanium", 0.70), ("cfrp", 0.20), ("aluminium", 0.10)),
+}
+ASM_CLUSTER_FAMILY = {
+    "CORNER_FL": "metal_corner", "CORNER_FR": "metal_corner",
+    "CORNER_RL": "metal_corner", "CORNER_RR": "metal_corner",
+    "halo_assembly": "titanium_hoop",
+}
+
+
+def part_material(name, k):
+    """Which material part `k` of cluster `name` is made of. Deterministic."""
+    mix = ASM_CLUSTER_MIX[ASM_CLUSTER_FAMILY.get(name, "carbon_body")]
+    u = _stable_unit(name, 90000 + k)
+    acc = 0.0
+    for mat, w in mix:
+        acc += w
+        if u < acc:
+            return mat
+    return mix[-1][0]
+
+
+def part_geometry(size, nparts, name, k):
+    """THE SIZE AND SHAPE OF ONE PART, FROM THE CLUSTER'S OWN BOUNDING BOX.
+
+    R2-4079(5) -- FIFTEEN OBJECTS BECAME FIFTEEN, NOT 616.
+    R2-4048 replaced one shared four-sine bank with one bank PER CLUSTER, from
+    that cluster's bbox, and it was right about the defect it named. What it
+    left is a smaller version of the same thing: inside a cluster every one of
+    its 10 to 120 parts is still the SAME member, at the same size, differing
+    only by a 22 % lognormal scatter on the finished mode list. A cluster of 44
+    parts is not 44 copies of a 231 mm object; it is an upright, a wishbone, a
+    duct and thirty brackets.
+
+    TWO NUMBERS PER PART, AND BOTH ARE BOUNDED BY THE CLUSTER'S OWN GEOMETRY.
+
+    1. SIZE, log-uniform, with NO free parameter. The largest member cannot be
+       longer than the box, so L_max is the box's longest dimension. The
+       geometric-mean member must stay exactly where R2-4048 put it, at
+       L_typ = (V_bbox / n)^(1/3) -- that is the volume argument, and this
+       change must not quietly move the whole layer up or down. A log-uniform
+       distribution on [L_min, L_max] has geometric mean sqrt(L_min*L_max), so
+       L_min = L_typ^2 / L_max is FORCED. For the 44-part rear corner that is
+       65 mm to 815 mm about a 231 mm mean, which is a corner assembly's actual
+       inventory.
+
+    2. SHAPE, because scaling alone only TRANSPOSES a spectrum and this file's
+       own docstring says why that is not enough. A member drawn out of this box
+       may be as slender as the box itself or as compact as a cube of the same
+       volume, and nothing outside that range, so the aspect ratios are
+       interpolated logarithmically between the two by one slenderness draw.
+       At t = 1 the part inherits the box's proportions; at t = 0 it is
+       isotropic. `cluster_modes` then decides BEAM or PLATE per part on its own
+       3.5:1 test, so a single cluster now emits both mode SERIES rather than
+       one series at many pitches.
+
+    Deterministic in `name` and `k` via `_stable_unit`, like the arrival heights:
+    the same part must sound the same in every render.
+    """
+    box = np.sort(np.asarray(size, dtype=np.float64))
+    n = max(int(nparts), 1)
+    l_max = float(box[2])
+    l_typ = float(np.prod(box) ** (1.0 / 3.0)) / n ** (1.0 / 3.0)
+    l_typ = min(max(l_typ, 1e-3), l_max)
+    l_min = max(l_typ * l_typ / l_max, 1e-3)
+    u = _stable_unit(name, 50000 + k)
+    L = l_min * (l_max / l_min) ** u if l_max > l_min else l_typ
+    t = _stable_unit(name, 70000 + k)
+    r1 = max(box[1] / max(box[0], 1e-9), 1.0)
+    r2 = max(box[2] / max(box[0], 1e-9), 1.0)
+    dims = np.array([1.0, r1 ** t, r2 ** t], dtype=np.float64)
+    dims = dims / float(np.prod(dims) ** (1.0 / 3.0)) * L
+    return dims
+
 
 def cluster_modes(size, material="cfrp", n_modes=10, n_parts=1):
     """A MODE SET FROM THIS CLUSTER'S OWN GEOMETRY (R2-4048).
@@ -1020,6 +1106,18 @@ def cluster_modes(size, material="cfrp", n_modes=10, n_parts=1):
     f = f[(f > 25.0) & (f < 20000.0)]
     tau = q / (np.pi * np.maximum(f, 1.0))
     amp = 1.0 / np.sqrt(np.arange(1, f.size + 1, dtype=np.float64))
+    if f.size == 0:
+        # A member large enough to put every one of its modes under 25 Hz is
+        # inaudible, not an error. It returns no voice and the caller skips it.
+        # (Latent since R2-4048 and only reachable once R2-4079 started drawing
+        # part sizes across the cluster's whole range: `beat_period_ms` below
+        # indexed f[0] unconditionally.)
+        return f, amp, tau, {"kind": kind, "material": material, "q": q,
+                             "part_size_m": [round(float(x), 4) for x in d],
+                             "wall_mm": round(h_wall * 1e3, 2),
+                             "cbar_ms": cbar, "modes": 0, "f_hz": [],
+                             "beat_period_ms": None,
+                             "note": "every mode below 25 Hz -- inaudible"}
     return f, amp, tau, {"kind": kind, "material": material, "q": q,
                          "part_size_m": [round(float(x), 4) for x in d],
                          "wall_mm": round(h_wall * 1e3, 2),
@@ -1120,10 +1218,14 @@ def cluster_arrivals(name, nparts, seat_f, last_f, c, fps=24):
     t_bounce = 2.0 * RESTITUTION * v_imp / G_ACCEL          # seconds of flight
     out = []
     for k in range(nparts):
-        out.append((float(frames[k]), 1.0, "first"))
+        # the PART INDEX travels with the event (R2-4079): a bounce is the same
+        # object hitting the same floor a second time, so it must ring with the
+        # same mode set. It used to draw a fresh 22 % scatter, which made every
+        # bounce a different part from the one that bounced.
+        out.append((float(frames[k]), 1.0, "first", k))
         fb = float(frames[k] + t_bounce[k] * fps)
         if fb - frames[k] <= SETTLE_FRAMES:
-            out.append((fb, float(RESTITUTION), "bounce"))
+            out.append((fb, float(RESTITUTION), "bounce", k))
     return out
 
 
@@ -1142,6 +1244,19 @@ STATOR_SLOTS = 12
 # period. This is what replaces `f_srv = 320 + 90*sin(2*pi*0.11*t)` -- ONE
 # global 9.09 s LFO running the entire showroom.
 ARM_F1_AT_1M = 620.0
+# WHAT THIS STILL DOES NOT MODEL, TRIED AND REJECTED ON MEASUREMENT (R2-4079).
+# A cantilever's first mode is f1 = (1/2pi) sqrt(3EI/(L^3 m_eff)): it goes as
+# 1/L^2 at constant tip mass AND as 1/sqrt(m_eff) at constant length, and only
+# the length term is here. That matters, because `explode_distance` is 1.33 m
+# for ALL FOUR corners, so four of the fifteen actuators hold in unison at
+# 350 Hz. Adding the payload as f_arm * sqrt(V_ref/V_cluster) was implemented
+# and measured, and it was REVERTED: the bounding-box volume is a poor proxy for
+# the mass of an exploded cluster (mostly air), the spread it produces is
+# 0.27x to 7.8x, and it drove SW and MB BOTH onto the 1400 Hz clip ceiling --
+# putting two actuators in exact unison over film t 0-9.9 s, which is inside the
+# thirty seconds the client named. A correct version needs the arm's own mass
+# per unit length and an effective cluster density, i.e. two more declared
+# constants, and is not shipped on the strength of a prediction.
 # Position-loop bandwidth: the rate at which a servo holding a static load
 # hunts across its encoder's last count. 20-80 Hz is the normal range for a
 # stiff electric axis, and it is spread deterministically per cluster.
@@ -1256,6 +1371,21 @@ def assembly(t_world, clusters, sr, launch_film_t, fps=24, seed=1234):
     `cluster_modes`, and each seat is driven by a Hertzian contact force whose
     duration is the material pairing's -- not by a bare impulse, which excites
     every mode equally hard and is why every part sounded like the same part.
+
+    R2-4079(5) -- THE PART, NOT THE CLUSTER, IS NOW THE OBJECT THAT RINGS.
+    B5(a) cannot land: the 15 cluster seat frames ARE the frames the 2,978
+    delivered 4K frames show, so the 1.0417 s ladder is picture-locked and the
+    onsets do not move. What is not picture-locked is WHAT each arrival sounds
+    like, and human repetition perception depends on timbral similarity at least
+    as much as on onset timing. So every part now gets its own size, its own
+    shape and its own material out of its cluster's own bounding box and
+    inventory (`part_geometry`, `part_material`), and `cluster_modes` runs per
+    part. A bounce reuses its own part's geometry, because it is the same object
+    hitting the floor twice.
+
+    THIS IS AN ATTACK ON THE PERCEPT, NOT ON THE PERIODICITY, and the difference
+    is stated rather than blurred: the envelope autocorrelation ladder at
+    1.0417 s is a consequence of picture-locked onsets and may well survive.
     """
     n = t_world.shape[0]
     rng = np.random.default_rng(seed)
@@ -1268,26 +1398,54 @@ def assembly(t_world, clusters, sr, launch_film_t, fps=24, seed=1234):
         seat_f = int(c["seat_frame"])
         last_f = int(c.get("last_land", seat_f))
         vol = float(c["size"][0] * c["size"][1] * c["size"][2])
-        mat = ASM_CLUSTER_MATERIAL.get(name, "cfrp")
-        f_c, a_c, tau_c, minfo = cluster_modes(c["size"], mat,
-                                               n_parts=int(c["n_parts"]))
-        cl_info[name] = minfo
-        if f_c.size == 0:
-            continue
-        # contact time: carbon on carbon is a SOFTER contact than metal on
-        # metal, so it excites a narrower band. This is the hardness knob, and
-        # it is set by the material pairing rather than by a filter.
-        t_contact = 6.0e-4 if mat == "cfrp" else 2.0e-4
         nparts = int(c["n_parts"])
+        # the cluster-level bank is still computed, and it is what the report
+        # carries: it is the summary of the cluster, not the voice of any part.
+        cl_info[name] = cluster_modes(
+            c["size"], ASM_CLUSTER_MATERIAL.get(name, "cfrp"),
+            n_parts=nparts)[3]
+        part_cache = {}
         arrivals = cluster_arrivals(name, nparts, seat_f, last_f, c, fps)
-        n_bounce += sum(1 for _fr, _g, kind in arrivals if kind == "bounce")
-        for p, (fr, g_bounce, kind) in enumerate(arrivals):
+        n_bounce += sum(1 for a in arrivals if a[2] == "bounce")
+        for p, (fr, g_bounce, kind, k_part) in enumerate(arrivals):
             wt = (fr - 1) / fps - launch_film_t
             i = int((wt - t0) * sr)
             if not (0 <= i < n - int(0.9 * sr)):
                 continue
-            # each PART of a cluster is a different piece of the same structure:
-            # scatter its modes, do not transpose the whole bank by a constant
+            if k_part not in part_cache:
+                pmat = part_material(name, k_part)
+                pdims = part_geometry(c["size"], nparts, name, k_part)
+                part_cache[k_part] = (cluster_modes(pdims, pmat, n_parts=1),
+                                      pmat)
+            (f_c, a_c, tau_c, pinfo), mat = part_cache[k_part]
+            if f_c.size == 0:
+                # A MEMBER WHOSE BENDING MODES ARE ALL SUBSONIC STILL LANDS.
+                # `cluster_modes` drops modes under 25 Hz, and the largest
+                # members a cluster can contain -- the 5.47 m monocoque
+                # longitudinal, the 4.17 m floor edge -- have their whole first
+                # series down there. Skipping the event entirely lost 79 of 777
+                # contacts, and they are the BIGGEST parts, i.e. the loudest
+                # low-frequency arrivals in the beat. What such a body radiates
+                # is the acceleration noise of the contact itself, and it
+                # radiates it efficiently, because its ka = 1 corner is low.
+                t_contact = 6.0e-4 if mat == "cfrp" else 2.0e-4
+                L = int(0.05 * sr)
+                if i + L >= n:
+                    continue
+                hit = _accel_noise(sr, t_contact, 1.0, L)
+                pk = float(np.abs(hit).max())
+                if pk > 0:
+                    g = 0.30 * (vol ** 0.30) / max(nparts, 1) ** 0.35 * g_bounce
+                    out[i:i + L] += hit / pk * g
+                    ev.append((name, fr, 0.0, kind, mat, "rigid"))
+                continue
+            # contact time: carbon on carbon is a SOFTER contact than metal on
+            # metal, so it excites a narrower band. This is the hardness knob,
+            # and it is set by the material pairing rather than by a filter --
+            # now per PART, because a titanium fastener and a carbon panel
+            # landing in the same cluster are not the same contact.
+            t_contact = 6.0e-4 if mat == "cfrp" else 2.0e-4
+            # manufacturing scatter ON TOP of the part's own geometry
             jitter = rng.lognormal(0.0, 0.22, f_c.size)
             f = f_c * jitter
             tau = tau_c / jitter
@@ -1311,16 +1469,36 @@ def assembly(t_world, clusters, sr, launch_film_t, fps=24, seed=1234):
             pk = float(np.abs(hit).max())
             if pk > 0:
                 out[i:i + L] += hit / pk * g
-            ev.append((name, fr, float(f[0]), kind))
+            ev.append((name, fr, float(f[0]), kind, mat, pinfo["kind"]))
     out = _sig.sosfilt(dsp.sos_band(45.0, 18000.0, sr, 2), out)
 
     srv, srv_info = servo_bed(t_world, clusters, sr, launch_film_t, fps=fps,
                               seed=seed + 1)
     out += srv
+    # WHAT THE PART-LEVEL CONSTRUCTION ACTUALLY PRODUCED, counted rather than
+    # claimed: how many distinct mode series and materials each cluster emitted.
+    per_cluster = {}
+    for name, _fr, f0, kind, mat, pk in ev:
+        d = per_cluster.setdefault(name, {"beam": 0, "plate": 0, "materials": {},
+                                          "f0_min": 1e9, "f0_max": 0.0})
+        d[pk] = d.get(pk, 0) + 1
+        d["materials"][mat] = d["materials"].get(mat, 0) + 1
+        d["f0_min"] = min(d["f0_min"], f0)
+        d["f0_max"] = max(d["f0_max"], f0)
+    for d in per_cluster.values():
+        d["f0_min"] = round(d["f0_min"], 1)
+        d["f0_max"] = round(d["f0_max"], 1)
     return out.astype(np.float32), {
         "impacts": len(ev), "clusters": len(clusters), "cluster_modes": cl_info,
         "first_contacts": len(ev) - n_bounce, "restitution_bounces": n_bounce,
-        "arrival_schedule": ARRIVAL_NOTE, "servo": srv_info}
+        "arrival_schedule": ARRIVAL_NOTE, "servo": srv_info,
+        "per_part_voices": per_cluster,
+        "per_part_note": (
+            "R2-4079(5): size, shape and material are drawn per PART from the "
+            "cluster's own bounding box and inventory, so one cluster emits "
+            "both beam and plate mode series over a wide range of fundamentals "
+            "instead of one series at one pitch with a 22 % scatter"),
+    }
 
 
 # =================================================================== breach ==

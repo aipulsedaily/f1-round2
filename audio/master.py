@@ -703,6 +703,21 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     # resampler's own noise or a 24-bit dither's.
     if stems_dir:
         os.makedirs(stems_dir, exist_ok=True)
+        # R2-4079: NAME THE MASTER THESE STEMS BELONG TO, IN THE DIRECTORY.
+        # `tools.percept_matrix` used to read a hard-coded stems path, so it
+        # spent this whole rebuild printing G-BALANCE numbers about the
+        # DELIVERED master while claiming to judge a new one. The runner now
+        # takes the stems beside the wav it is judging -- and this manifest is
+        # what lets it REFUSE, rather than guess, when the two do not match.
+        with open(os.path.join(stems_dir, "STEMS_OF.json"), "w") as _fh:
+            json.dump({"master_wav": os.path.abspath(out_wav),
+                       "generated_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ",
+                                                      time.gmtime()),
+                       "sr_internal": int(sr),
+                       "note": ("the buses as they enter the sum, after the "
+                                "LUFS-S trim and the declared HF shelf, before "
+                                "the program gain and the limiter")}, _fh,
+                      indent=1)
 
     def add(stereo, name):
         """Measure the bus, trim it to its declared target AND to the peak

@@ -1860,6 +1860,86 @@ def g_identity(mono, sr, beats, rpm_at, order=1.5, doppler_at=None,
 
 
 # ------------------------------------------------------------- G-BALANCE ----
+def comb_spacing_of(seg, sr, f_lo=500.0, f_hi=3000.0, d_lo=40.0, d_hi=600.0,
+                    win=16384):
+    """THE LINE SPACING A STEM'S OWN SPECTRUM DECLARES, AND WHETHER THE PER-BAND
+    ESTIMATOR CAN SEE IT. R2-4079(4).
+
+    THE PROBLEM THIS MEASURES, WHICH IS AN INSTRUMENT LIMIT AND NOT A SIGNAL
+    DEFECT. `per_band_sfm` computes flatness INSIDE each 1/3-octave band, which
+    is what makes it immune to tilt (that is G-FLAT's whole design, and C7 is
+    the control that proves it). The cost of that design is a resolution floor:
+    a 1/3-octave band at f is
+
+        w(f) = f * (2^(1/6) - 2^(-1/6)) = 0.2316 * f          Hz wide,
+
+    so a comb of spacing df has TWO lines inside a band only above
+
+        f = df / 0.2316 = 4.318 * df.
+
+    Below that frequency each band holds at most one line, and one line in a
+    band is indistinguishable from a bump of noise: the band reads FLAT however
+    tonal the source is. There is no free parameter in that crossover -- it is
+    the ratio of a 1/3-octave bandwidth to a comb spacing and nothing else.
+
+    IT IS NOT HYPOTHETICAL AND B7 MADE IT WORSE. Adopting the FIA Art. 5.2.10
+    three-journal geometry HALVED the firing fundamental from engine order 3 to
+    order 1.5, i.e. from rpm/20 to rpm/40, which across this film is 275-360 Hz.
+    4.318 x 275 = 1187 Hz and 4.318 x 360 = 1554 Hz, so over the lower 60 % of
+    G-BALANCE's own 500-3000 Hz analysis window the engine's comb CANNOT be
+    scored as tonal by this estimator. Measured consequence: the engine reads
+    0.60-0.71 x white and is counted as one of the near-white stems it is
+    supposed to lead.
+
+    This function reports that, per stem, as a MEASUREMENT rather than as an
+    argument: the spacing is found in the stem's own log spectrum (a comb prints
+    a peak in the spectrum's autocorrelation at its spacing), and the returned
+    `unresolved_band_fraction` is the fraction of the analysis window lying
+    below 4.318 x that spacing. NOTHING GATES ON IT. It is reported so that a
+    near-white verdict the instrument cannot support is visible as such.
+
+    `win` is 16384 and not `SFM_WIN`: at the stems' 96 kHz a 2048-point window
+    puts only 53 bins between 500 and 3000 Hz, which cannot resolve a 275 Hz
+    comb at all. A measurement OF a resolution limit must not itself be coarser
+    than the structure it is looking for.
+    """
+    S, f = _stft_power(seg, sr, win=win)
+    if S is None or S.shape[0] == 0:
+        return {"spacing_hz": float("nan"), "peak_r": float("nan"),
+                "resolvable_above_hz": float("nan"),
+                "unresolved_band_fraction": float("nan")}
+    Sm = S.mean(axis=0)
+    m = (f >= f_lo) & (f <= f_hi)
+    if m.sum() < 64:
+        return {"spacing_hz": float("nan"), "peak_r": float("nan"),
+                "resolvable_above_hz": float("nan"),
+                "unresolved_band_fraction": float("nan")}
+    L = np.log(np.maximum(Sm[m], 1e-20))
+    # remove the coarse spectral SHAPE, so what is left is line structure only.
+    # A Savitzky-Golay over ~200 Hz is wide enough to pass a 275 Hz comb and
+    # narrow enough to take the tilt out.
+    df = float(f[1] - f[0])
+    wlen = int(max(int(200.0 / df) // 2 * 2 + 1, 5))
+    if wlen >= L.size:
+        wlen = int(max((L.size // 2) * 2 - 1, 5))
+    L = L - _sig.savgol_filter(L, wlen, 2)
+    L = L - L.mean()
+    ac = np.correlate(L, L, mode="full")[L.size - 1:]
+    ac = ac / max(ac[0], 1e-30)
+    k0, k1 = int(d_lo / df), min(int(d_hi / df), ac.size - 1)
+    if k1 <= k0 + 2:
+        return {"spacing_hz": float("nan"), "peak_r": float("nan"),
+                "resolvable_above_hz": float("nan"),
+                "unresolved_band_fraction": float("nan")}
+    j = int(np.argmax(ac[k0:k1])) + k0
+    spacing = float(j * df)
+    cross = 4.318 * spacing
+    # the fraction of the analysis window that is NARROWER than the spacing
+    frac = float(np.clip((min(cross, f_hi) - f_lo) / (f_hi - f_lo), 0.0, 1.0))
+    return {"spacing_hz": spacing, "peak_r": float(ac[j]),
+            "resolvable_above_hz": cross, "unresolved_band_fraction": frac}
+
+
 def g_balance(stems: dict, sr, beats, protagonist=PROTAGONIST):
     """G-BALANCE -- the protagonist margin, measured on STEMS.
 
@@ -1867,6 +1947,32 @@ def g_balance(stems: dict, sr, beats, protagonist=PROTAGONIST):
     decorrelated 82-85 %-flat sources sum to 98.6 % of white, so a master can
     read worse than either of its parts and no master-level metric can name
     which part did it. `stems` maps name -> (float array, sr).
+
+    R2-4079(4) -- THE MARGIN CONTAINED ITSELF, AND THAT IS ARITHMETIC, NOT A BAR.
+    ---------------------------------------------------------------------------
+    The near-white set did not exclude the protagonist, so on any beat where the
+    protagonist is BOTH the loudest stem and reads over the near-white line, the
+    margin was the protagonist measured against itself and COULD NOT EXCEED
+    0 dB whatever the mix did. Measured on R2-4069: beat 2 is 95.97 % engine and
+    reported -0.04 dB; beats 4, 5 and 6 are the same shape; at the breach BOTH
+    `shards` and `impact` are protagonists and both were inside their own
+    denominator. Five of six beats.
+
+    The fix is to the DENOMINATOR ONLY, and it is deliberately not applied to
+    the share limb:
+
+      * THE MARGIN asks "does the protagonist lead the near-white BACKGROUND",
+        so the background is the near-white stems that are not the protagonist.
+        A statistic whose denominator contains its own numerator is not a
+        margin.
+      * THE SHARE asks "how much of this beat is near-white", and the answer
+        must keep counting the protagonist, because a protagonist that is itself
+        near-white is the client's actual complaint. Excluding it there would
+        let a beat that is 99 % white noise pass both limbs, which is the exact
+        defect this gate exists to catch.
+
+    So a hair-dryer protagonist still fails, on the share limb, and the margin
+    stops being an identity. NO THRESHOLD MOVED.
     """
     per_beat, failures, inapp = {}, [], []
     if not stems:
@@ -1890,24 +1996,56 @@ def g_balance(stems: dict, sr, beats, protagonist=PROTAGONIST):
             tot += p
             W = white_sfm_reference(min(len(seg), int(8 * ssr)), ssr)
             s = per_band_sfm(seg, ssr) / W if p > 1e-18 else float("nan")
-            rows[name] = {"power": p, "sfm_ratio_of_white": s}
+            cs = (comb_spacing_of(seg, ssr) if p > 1e-18
+                  else {"spacing_hz": float("nan"), "peak_r": float("nan"),
+                        "resolvable_above_hz": float("nan"),
+                        "unresolved_band_fraction": float("nan")})
+            rows[name] = {"power": p, "sfm_ratio_of_white": s,
+                          "comb_spacing_hz": cs["spacing_hz"],
+                          "comb_autocorr_r": cs["peak_r"],
+                          "sfm_resolvable_above_hz": cs["resolvable_above_hz"],
+                          "sfm_unresolved_band_fraction":
+                              cs["unresolved_band_fraction"]}
         if tot <= 1e-18 or not rows:
             inapp.append(f"{b.name}: every stem is digital silence")
             continue
-        for r in rows.values():
+        prot = [n for n in protagonist.get(b.name, ()) if n in rows]
+        for name, r in rows.items():
             r["power_share"] = r["power"] / tot
+            r["is_protagonist"] = bool(name in prot)
             r["near_white"] = bool(np.isfinite(r["sfm_ratio_of_white"])
                                    and r["sfm_ratio_of_white"] >= nw_lim
                                    and r["power_share"] > 1e-4)
+        # THE SHARE keeps the protagonist in: a near-white protagonist is the
+        # complaint, not an exemption. THE MARGIN takes it out: see the
+        # docstring. Two different questions, two different sets, one gate.
         nw_share = sum(r["power_share"] for r in rows.values() if r["near_white"])
-        nw_power = sum(r["power"] for r in rows.values() if r["near_white"])
-        prot = [n for n in protagonist.get(b.name, ()) if n in rows]
+        bg = {k: r for k, r in rows.items()
+              if r["near_white"] and not r["is_protagonist"]}
+        nw_power = sum(r["power"] for r in bg.values())
         pp = sum(rows[n]["power"] for n in prot)
         margin = (10.0 * math.log10(max(pp, 1e-20) / max(nw_power, 1e-20))
                   if nw_power > 1e-18 else float("inf"))
         row = {"near_white_power_share": nw_share, "protagonist": prot,
                "protagonist_margin_db": margin, "limit_share": sh_lim,
                "limit_margin_db": mg_lim, "outcome": PASS,
+               "near_white_background_stems": sorted(bg),
+               "near_white_stems_including_protagonist":
+                   sorted(k for k, r in rows.items() if r["near_white"]),
+               "protagonist_counted_near_white":
+                   sorted(n for n in prot if rows[n]["near_white"]),
+               "margin_note": ("the denominator is the near-white stems that "
+                               "are NOT the protagonist; the share limb above "
+                               "still counts every near-white stem including "
+                               "the protagonist"),
+               "instrument_limit": (
+                   "per-band SFM cannot score a comb whose spacing exceeds a "
+                   "1/3-octave bandwidth: w(f) = 0.2316*f, so a comb of "
+                   "spacing df is resolvable only above 4.318*df. Each stem's "
+                   "own measured spacing and the resulting unresolved fraction "
+                   "of the 500-3000 Hz window are reported per stem. NOTHING "
+                   "GATES ON THEM -- they say which near-white verdicts this "
+                   "instrument is entitled to."),
                "stems": {k: {kk: vv for kk, vv in v.items() if kk != "power"}
                          for k, v in sorted(rows.items())}}
         if not prot:
@@ -1922,7 +2060,9 @@ def g_balance(stems: dict, sr, beats, protagonist=PROTAGONIST):
         if margin < mg_lim:
             row["outcome"] = FAIL
             failures.append(f"{b.name}: protagonist {'+'.join(prot)} leads the "
-                            f"near-white stems by {margin:+.2f} dB < {mg_lim:+.1f} dB")
+                            f"near-white background "
+                            f"({'+'.join(sorted(bg)) or 'none'}) by "
+                            f"{margin:+.2f} dB < {mg_lim:+.1f} dB")
         per_beat[b.name] = row
     scored = {k: v for k, v in per_beat.items() if v["outcome"] != INAPPLICABLE}
     return {"gate": "G-BALANCE", "kind": QUALITY,

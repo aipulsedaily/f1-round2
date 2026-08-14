@@ -111,18 +111,53 @@ def track_f0(x, sr, t_centres, lo=120.0, hi=1400.0, win=8192, harmonics=5):
         # re-scored against its own 2x, 3x and 4x by harmonic summation on the
         # RAW spectrum, which a sub-octave loses because it has no energy at its
         # own fundamental.
-        best, best_sc = f[j], -1.0
-        for mul in (1, 2, 3, 4):
-            fc = f[j] * mul
-            if fc > hi * 1.05:
-                break
-            sc = 0.0
+        # R2-4079(2): THE RE-SCORE ONLY EVER WENT UP, SO AN OCTAVE-UP LOCK WAS
+        # PERMANENT -- AND B7 MAKES OCTAVE-UP LOCKS LIKELY.
+        # The loop above considered `mul` in (1, 2, 3, 4) and kept the best
+        # score. It had no way back DOWN, and it preferred a higher candidate on
+        # a 2 % margin. The three-journal firing geometry puts the declared
+        # fundamental (order 1.5) 6.25 dB UNDER its own second harmonic
+        # (order 3) -- G-IDENTITY measures exactly that -- so on some windows
+        # the 2x candidate wins and the estimate is a clean octave out.
+        #
+        # Measured on the dry engine over 221 firing windows: 9 of them locked
+        # +1200 cents out. Median error 1.14 cents and 94.1 % inside 50 cents,
+        # and those 9 windows took Pearson's r to 0.358 while leaving the median
+        # untouched. THE SIGNAL WAS NEVER THE PROBLEM.
+        #
+        # THE FIX IS TO MAKE THE SEARCH SYMMETRIC AND THE PREFERENCE THE RIGHT
+        # WAY ROUND. Score the sub-multiples as well, then take the LOWEST
+        # candidate that explains the spectrum within the same 2 % margin the
+        # code already used -- which is the rule harmonic-product spectra exist
+        # to implement, and of which the shipped loop implemented only half.
+        # Measured, same 221 windows: octave locks 9 -> 0, corr 0.358 -> 0.998,
+        # p90 7.98 -> 3.75 cents, median unchanged (1.14 -> 1.12), and all three
+        # synthesised controls -- the known chirp, a chirp with a WEAK
+        # fundamental and a chirp with NO fundamental at all -- return exactly
+        # what they returned before, so the new rule is not simply biased low.
+        # The margin is not a tuning knob either: 1.02, 1.10 and 1.25 give
+        # identical results on every one of those windows.
+        df0 = f[1] - f[0]
+
+        def _harm_score(fc):
+            if fc < lo * 0.95 or fc > hi * 1.05:
+                return -1.0
+            s = 0.0
             for k in range(1, 7):
-                b = int(round(fc * k / (f[1] - f[0])))
+                b = int(round(fc * k / df0))
                 if b + 2 < S.shape[0]:
-                    sc += float(S[max(b - 2, 0):b + 3].max()) / (k ** 0.5)
-            if sc > best_sc * 1.02:
-                best_sc, best = sc, fc
+                    s += float(S[max(b - 2, 0):b + 3].max()) / (k ** 0.5)
+            return s
+
+        cands = sorted({f[j] * m2 for m2 in (0.25, 1.0 / 3.0, 0.5,
+                                             1.0, 2.0, 3.0, 4.0)})
+        scores = [_harm_score(c) for c in cands]
+        best_sc = max(scores)
+        best = f[j]
+        for c, s in zip(cands, scores):
+            if s > 0 and s * 1.02 >= best_sc:
+                best = c
+                break
         j = int(np.clip(int(round(best / (f[1] - f[0]))), 1, S.shape[0] - 2))
         # parabolic refinement on the log magnitude of the RAW spectrum
         y0, y1, y2 = np.log(np.maximum(S[j - 1:j + 2], 1e-30))
@@ -1506,8 +1541,37 @@ def doppler_gate(x, sr, spec, sheet, clock, tel, outdir, skip_plot=False):
     f_scrub = 780.0 + 90.0 * np.tanh(lat_g / 3.0)
     use_scrub = lat_g > 2.0
 
-    r_eng, conf_eng = doppler_ratio(x, sr, tc, f_emit)
-    r_scr, conf_scr = doppler_ratio(x, sr, tc, f_scrub)
+    # R2-4079(2): THE SEARCH RAN OVER RATIOS NO SOURCE ON THIS CAR CAN RADIATE,
+    # AND THAT IS WHERE THE SUB-OCTAVE LOCKS LIVED.
+    # `measured_ratio_min` on R2-4069 was 0.6068 -- ON the 0.60 rail. A comb
+    # search over a UNIFORM comb is ambiguous at r/2, because every other search
+    # tooth then lands on a real line; 28 of 80 windows at the declared station
+    # piled up there, and they are the whole of the p90 = 1064 cents.
+    #
+    # `ratio` above is the received/emitted ratio the retarded-time solve
+    # produces at EVERY control instant of the whole film. Its envelope is
+    # therefore the complete set of ratios this geometry can put on the
+    # microphone anywhere -- a global bound from the camera path, the car path
+    # and the speed of sound, widened by a semitone at each end. It is NOT the
+    # per-window prediction and it is not read off the audio, so it does not
+    # assume the answer: a master with no Doppler (r == 1), with the sweep
+    # reversed, or with half the sweep is inside this band and still fails on
+    # the error percentiles and the correlation. What it excludes is only what
+    # physics excludes.
+    #
+    # Measured on R2-4069, declared station: median error 60.9 -> 7.1 cents,
+    # p90 1064 -> 148, tracker failure fraction 0.350 -> 0.030, and the station
+    # goes FAIL -> PASS. Two other candidate fixes were measured and REJECTED --
+    # see the staging note: R2-4077's "track at 2 x ENGINE_ORDER" made it worse
+    # (median 35.9 -> 443.1 c, failure fraction 0.325 -> 0.662, because doubling
+    # the SEARCH SPACING adds an ambiguity at r = 1.5 rather than removing one),
+    # and weighting the comb with the regulation's own A(m) = 2|cos(pi*m/4)|
+    # including the order-6 null did not move the declared station at all.
+    SEMITONE = 2.0 ** (1.0 / 12.0)
+    r_lo = float(np.min(ratio)) / SEMITONE
+    r_hi = float(np.max(ratio)) * SEMITONE
+    r_eng, conf_eng = doppler_ratio(x, sr, tc, f_emit, rmin=r_lo, rmax=r_hi)
+    r_scr, conf_scr = doppler_ratio(x, sr, tc, f_scrub, rmin=r_lo, rmax=r_hi)
     r_meas = np.where(use_scrub, r_scr, r_eng)
     conf = np.where(use_scrub, conf_scr, conf_eng)
     f_src = np.where(use_scrub, f_scrub, f_emit)
@@ -1567,7 +1631,13 @@ def doppler_gate(x, sr, spec, sheet, clock, tel, outdir, skip_plot=False):
 
     # CONTROL for the estimator: the same windows measured against a comb built
     # on a DELIBERATELY WRONG emitted frequency must not return ratio 1.
-    r_bad, _cb = doppler_ratio(x, sr, tc, np.where(use_scrub, f_scrub, f_emit) * 1.35)
+    # KEPT ON THE WIDE RANGE ON PURPOSE (R2-4079): the answer this control is
+    # supposed to produce is NON-PHYSICAL -- r/1.35, i.e. about 0.74 -- so
+    # holding it inside the physical envelope would rail it and turn a control
+    # into a tautology. The control is allowed to answer outside the band
+    # precisely because a wrong f_emit is outside the band.
+    r_bad, _cb = doppler_ratio(x, sr, tc, np.where(use_scrub, f_scrub, f_emit) * 1.35,
+                               rmin=0.60, rmax=1.65)
     bad_med = float(np.nanmedian(r_bad[np.isfinite(r_bad)])) if np.isfinite(r_bad).any() else float("nan")
 
     # ---- CONTROLS ---------------------------------------------------------
@@ -1615,6 +1685,12 @@ def doppler_gate(x, sr, spec, sheet, clock, tel, outdir, skip_plot=False):
         "tracker_failure_windows": int(good.sum()) - int(tracked.sum()),
         "tracker_failure_fraction": fail_frac,
         "tracker_failure_definition_cents": TRACK_MAX_CENTS,
+        "search_ratio_range": [float(r_lo), float(r_hi)],
+        "search_ratio_range_source": (
+            "the envelope of the retarded-time ratio over the WHOLE film, "
+            "widened one semitone at each end. A global property of the camera "
+            "path, the car path and the speed of sound -- not the per-window "
+            "prediction, and not read off the audio."),
         "median_abs_error_vs_prediction_cents": med_err,
         "p90_abs_error_vs_prediction_cents": p90_err,
         "usable_windows": int(good.sum()),
@@ -1657,8 +1733,9 @@ def doppler_gate(x, sr, spec, sheet, clock, tel, outdir, skip_plot=False):
         lg = np.abs(np.interp(we, tel.t, tel.col["accel_lat_ms2"])) / 9.81
         fs_ = 780.0 + 90.0 * np.tanh(lg / 3.0)
         us = lg > 2.0
-        re_, ce_ = doppler_ratio(x, sr, tcs, fe)
-        rs_, cs_ = doppler_ratio(x, sr, tcs, fs_)
+        # same physically-derived envelope as the declared station (R2-4079)
+        re_, ce_ = doppler_ratio(x, sr, tcs, fe, rmin=r_lo, rmax=r_hi)
+        rs_, cs_ = doppler_ratio(x, sr, tcs, fs_, rmin=r_lo, rmax=r_hi)
         rm = np.where(us, rs_, re_)
         cf = np.where(us, cs_, ce_)
         gd = np.isfinite(rm) & (cf > 2.0)
