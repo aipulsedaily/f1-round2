@@ -1,0 +1,941 @@
+{
+ "wav": "audio/out/r2_4064/master_R2-4069.wav",
+ "sr": 48000,
+ "samples": 5956000,
+ "duration_s": 124.08333333333333,
+ "frames_at_24fps": 2978.0,
+ "levels": {
+  "integrated_lufs": -22.999999916847823,
+  "true_peak_dbtp": -1.1523428914125908,
+  "sample_peak": 0.8679170608520508,
+  "sample_peak_dbfs": -1.2304354903708574,
+  "clipped_samples": 0,
+  "dc_offset": [
+   -1.0415533391159601e-07,
+   -1.153547024070376e-07
+  ],
+  "short_term_lufs_min": -61.285600476715516,
+  "short_term_lufs_max": -14.730040507082295,
+  "short_term_range_db": 46.55555996963322,
+  "silent_1s_windows_below_-80dB": 0,
+  "channel_correlation": 0.4966477922899334,
+  "reference_meter": {
+   "available": true,
+   "integrated_lufs": -23.045679236151468,
+   "implementation": "pyloudnorm ?, ITU-R BS.1770-4"
+  },
+  "reference_meter_delta_lu": 0.04567931930364466,
+  "delivery_standard": "EBU R 128 (Tech 3341/3343): -23.0 LUFS +-0.5 LU, true peak <= -1.0 dBTP",
+  "target_lufs": -23.0,
+  "lufs_error_lu": 8.315217669974118e-08,
+  "peak_to_loudness_ratio_db": 21.769564426476965,
+  "PASS": true
+ },
+ "levels_ffmpeg_ebur128": {
+  "integrated_lufs": -23.0,
+  "loudness_range_lu": 18.2,
+  "true_peak_dbfs": -1.2
+ },
+ "edges": {
+  "label": "master",
+  "APPLICABLE": true,
+  "statistic": "edge-frame peak vs adjacent-1s RMS, against the film's own interior p99.9 + headroom; and the outer boundary sample vs the same RMS",
+  "frames": 2978,
+  "interior_crest_p99_9_db": 23.394797722150997,
+  "interior_crest_max_db": 25.505093965617284,
+  "interior_crest_max_frame": 318,
+  "interior_crest_median_db": 10.840800006493245,
+  "crest_limit_db": 26.394797722150997,
+  "step_limit_db": 3.0,
+  "headroom_db": 3.0,
+  "edges": {
+   "first": {
+    "frame": 1,
+    "crest_db": 8.96372107087009,
+    "peak": 0.010202527046203613,
+    "peak_at_sample": 1844,
+    "peak_at_ms": 38.41666666666667,
+    "ref_rms": 0.0036351446848599187,
+    "boundary_sample_abs": 0.00034689903259277344,
+    "onset_step_db": -20.40637224948105,
+    "PASS_crest": true,
+    "PASS_step": true
+   },
+   "last": {
+    "frame": 2978,
+    "crest_db": 15.022647100383155,
+    "peak": 0.07034897804260254,
+    "peak_at_sample": 5954622,
+    "peak_at_ms": 12.958333333333334,
+    "ref_rms": 0.012477438495192316,
+    "boundary_sample_abs": 0.0,
+    "onset_step_db": -201.92250875567296,
+    "PASS_crest": true,
+    "PASS_step": true
+   }
+  },
+  "PASS": true,
+  "CONTROLS_FAIL_AS_EXPECTED": true
+ },
+ "edge_controls": [
+  {
+   "label": "CONTROL: R2-960's signature -- the film's loudest 11.3 ms arriving on frame 1 through the mix's own 0.35 coefficient",
+   "APPLICABLE": true,
+   "statistic": "edge-frame peak vs adjacent-1s RMS, against the film's own interior p99.9 + headroom; and the outer boundary sample vs the same RMS",
+   "frames": 2978,
+   "interior_crest_p99_9_db": 23.394797722150997,
+   "interior_crest_max_db": 25.505093965617284,
+   "interior_crest_max_frame": 318,
+   "interior_crest_median_db": 10.838486690973001,
+   "crest_limit_db": 26.394797722150997,
+   "step_limit_db": 3.0,
+   "headroom_db": 3.0,
+   "edges": {
+    "first": {
+     "frame": 1,
+     "crest_db": 37.89594741104762,
+     "peak": 0.28531136512756344,
+     "peak_at_sample": 440,
+     "peak_at_ms": 9.166666666666666,
+     "ref_rms": 0.0036351446848599187,
+     "boundary_sample_abs": 0.05878586173057556,
+     "onset_step_db": 24.175023752617058,
+     "PASS_crest": false,
+     "PASS_step": false
+    },
+    "last": {
+     "frame": 2978,
+     "crest_db": 15.022647100383155,
+     "peak": 0.07034897804260254,
+     "peak_at_sample": 5954622,
+     "peak_at_ms": 12.958333333333334,
+     "ref_rms": 0.012477438495192316,
+     "boundary_sample_abs": 0.0,
+     "onset_step_db": -201.92250875567296,
+     "PASS_crest": true,
+     "PASS_step": true
+    }
+   },
+   "PASS": false
+  },
+  {
+   "label": "CONTROL: the same energy arriving on the LAST 11.3 ms (proves the gate looks at BOTH edges)",
+   "APPLICABLE": true,
+   "statistic": "edge-frame peak vs adjacent-1s RMS, against the film's own interior p99.9 + headroom; and the outer boundary sample vs the same RMS",
+   "frames": 2978,
+   "interior_crest_p99_9_db": 23.394797722150997,
+   "interior_crest_max_db": 25.505093965617284,
+   "interior_crest_max_frame": 318,
+   "interior_crest_median_db": 10.83318275827976,
+   "crest_limit_db": 26.394797722150997,
+   "step_limit_db": 3.0,
+   "headroom_db": 3.0,
+   "edges": {
+    "first": {
+     "frame": 1,
+     "crest_db": 8.96372107087009,
+     "peak": 0.010202527046203613,
+     "peak_at_sample": 1844,
+     "peak_at_ms": 38.41666666666667,
+     "ref_rms": 0.0036351446848599187,
+     "boundary_sample_abs": 0.00034689903259277344,
+     "onset_step_db": -20.40637224948105,
+     "PASS_crest": true,
+     "PASS_step": true
+    },
+    "last": {
+     "frame": 2978,
+     "crest_db": 27.133806024611754,
+     "peak": 0.2836715221405029,
+     "peak_at_sample": 5955898,
+     "peak_at_ms": 39.54166666666667,
+     "ref_rms": 0.012477438495192316,
+     "boundary_sample_abs": 0.052075290679931635,
+     "onset_step_db": 12.410125300769936,
+     "PASS_crest": false,
+     "PASS_step": false
+    }
+   },
+   "PASS": false
+  },
+  {
+   "label": "CONTROL: a single -9.6 dBFS sample at index 0, the step the shipped master actually opened with",
+   "APPLICABLE": true,
+   "statistic": "edge-frame peak vs adjacent-1s RMS, against the film's own interior p99.9 + headroom; and the outer boundary sample vs the same RMS",
+   "frames": 2978,
+   "interior_crest_p99_9_db": 23.394797722150997,
+   "interior_crest_max_db": 25.505093965617284,
+   "interior_crest_max_frame": 318,
+   "interior_crest_median_db": 10.838486690973001,
+   "crest_limit_db": 26.394797722150997,
+   "step_limit_db": 3.0,
+   "headroom_db": 3.0,
+   "edges": {
+    "first": {
+     "frame": 1,
+     "crest_db": 39.21337408000369,
+     "peak": 0.33204,
+     "peak_at_sample": 0,
+     "peak_at_ms": 0.0,
+     "ref_rms": 0.0036351446848599187,
+     "boundary_sample_abs": 0.33204,
+     "onset_step_db": 39.21337408000369,
+     "PASS_crest": false,
+     "PASS_step": false
+    },
+    "last": {
+     "frame": 2978,
+     "crest_db": 15.022647100383155,
+     "peak": 0.07034897804260254,
+     "peak_at_sample": 5954622,
+     "peak_at_ms": 12.958333333333334,
+     "ref_rms": 0.012477438495192316,
+     "boundary_sample_abs": 0.0,
+     "onset_step_db": -201.92250875567296,
+     "PASS_crest": true,
+     "PASS_step": true
+    }
+   },
+   "PASS": false
+  },
+  {
+   "label": "CONTROL: a -40 dBFS sample at index 0 (below the gate's sensitivity, stated)",
+   "APPLICABLE": true,
+   "statistic": "edge-frame peak vs adjacent-1s RMS, against the film's own interior p99.9 + headroom; and the outer boundary sample vs the same RMS",
+   "frames": 2978,
+   "interior_crest_p99_9_db": 23.394797722150997,
+   "interior_crest_max_db": 25.505093965617284,
+   "interior_crest_max_frame": 318,
+   "interior_crest_median_db": 10.840800006493245,
+   "crest_limit_db": 26.394797722150997,
+   "step_limit_db": 3.0,
+   "headroom_db": 3.0,
+   "edges": {
+    "first": {
+     "frame": 1,
+     "crest_db": 8.96372107087009,
+     "peak": 0.010202527046203613,
+     "peak_at_sample": 1844,
+     "peak_at_ms": 38.41666666666667,
+     "ref_rms": 0.0036351446848599187,
+     "boundary_sample_abs": 0.01,
+     "onset_step_db": 8.789565976232154,
+     "PASS_crest": true,
+     "PASS_step": false
+    },
+    "last": {
+     "frame": 2978,
+     "crest_db": 15.022647100383155,
+     "peak": 0.07034897804260254,
+     "peak_at_sample": 5954622,
+     "peak_at_ms": 12.958333333333334,
+     "ref_rms": 0.012477438495192316,
+     "boundary_sample_abs": 0.0,
+     "onset_step_db": -201.92250875567296,
+     "PASS_crest": true,
+     "PASS_step": true
+    }
+   },
+   "PASS": false
+  },
+  {
+   "label": "CONTROL: circularly rolling the FINISHED master wraps its own ending onto frame 1. Since R2-954 this film ends on a running idle rather than a motored coast, so that IS audible material on frame 1 and it MUST fail",
+   "APPLICABLE": true,
+   "statistic": "edge-frame peak vs adjacent-1s RMS, against the film's own interior p99.9 + headroom; and the outer boundary sample vs the same RMS",
+   "frames": 2978,
+   "interior_crest_p99_9_db": 23.099503919519318,
+   "interior_crest_max_db": 26.37998804789448,
+   "interior_crest_max_frame": 319,
+   "interior_crest_median_db": 10.863662230922058,
+   "crest_limit_db": 26.099503919519318,
+   "step_limit_db": 3.0,
+   "headroom_db": 3.0,
+   "edges": {
+    "first": {
+     "frame": 1,
+     "crest_db": 19.360465907233625,
+     "peak": 0.033797502517700195,
+     "peak_at_sample": 9,
+     "peak_at_ms": 0.1875,
+     "ref_rms": 0.0036379884314817748,
+     "boundary_sample_abs": 0.010542154312133789,
+     "onset_step_db": 9.241361105186625,
+     "PASS_crest": true,
+     "PASS_step": false
+    },
+    "last": {
+     "frame": 2978,
+     "crest_db": 15.037057781354168,
+     "peak": 0.07034897804260254,
+     "peak_at_sample": 5955164,
+     "peak_at_ms": 24.25,
+     "ref_rms": 0.01245675445288538,
+     "boundary_sample_abs": 0.014963507652282715,
+     "onset_step_db": 1.5925701267110344,
+     "PASS_crest": true,
+     "PASS_step": true
+    }
+   },
+   "PASS": false
+  }
+ ],
+ "seam": {
+  "label": "master",
+  "statistic": "|3rd difference| at the boundary sample, percentile against the local +/-0.5 s",
+  "boundaries": [
+   {
+    "beat": "2_launch",
+    "frame": 793,
+    "sample": 1584000,
+    "d3": 0.0016739964485168457,
+    "d3_local_percentile": 66.61666666666667,
+    "d3_local_p99_9": 0.0058548481464386105,
+    "hp20k": 4.744729671854742e-06,
+    "hp20k_local_percentile": 31.34166666666667,
+    "spectral_jump_db": 1.1818888542543666,
+    "max_sample_delta_pm2ms": 0.004264235496520996
+   },
+   {
+    "beat": "3_breach",
+    "frame": 865,
+    "sample": 1728000,
+    "d3": 0.010288357734680176,
+    "d3_local_percentile": 57.989583333333336,
+    "d3_local_p99_9": 0.14604797023535035,
+    "hp20k": 0.0007913624519355922,
+    "hp20k_local_percentile": 61.45208333333333,
+    "spectral_jump_db": 2.816824770952695,
+    "max_sample_delta_pm2ms": 0.09913718700408936
+   },
+   {
+    "beat": "4_transit",
+    "frame": 1057,
+    "sample": 2112000,
+    "d3": 0.011944413185119629,
+    "d3_local_percentile": 85.88125,
+    "d3_local_p99_9": 0.030800122201443476,
+    "hp20k": 4.919942639620449e-05,
+    "hp20k_local_percentile": 16.693749999999998,
+    "spectral_jump_db": 3.1182899736866694,
+    "max_sample_delta_pm2ms": 0.06244957447052002
+   },
+   {
+    "beat": "5_lap",
+    "frame": 1191,
+    "sample": 2380000,
+    "d3": 0.00662684440612793,
+    "d3_local_percentile": 91.39583333333333,
+    "d3_local_p99_9": 0.01631928849220281,
+    "hp20k": 6.724620284005764e-05,
+    "hp20k_local_percentile": 40.85625,
+    "spectral_jump_db": 2.6725483240147025,
+    "max_sample_delta_pm2ms": 0.0170285701751709
+   },
+   {
+    "beat": "6_ending",
+    "frame": 2715,
+    "sample": 5428000,
+    "d3": 0.0023203492164611816,
+    "d3_local_percentile": 83.1875,
+    "d3_local_p99_9": 0.011560735523701848,
+    "hp20k": 3.2491588013980244e-05,
+    "hp20k_local_percentile": 53.833333333333336,
+    "spectral_jump_db": 4.120751426520671,
+    "max_sample_delta_pm2ms": 0.01419532299041748
+   }
+  ],
+  "worst_d3_local_percentile": 91.39583333333333,
+  "worst_hp20k_local_percentile": 61.45208333333333,
+  "max_spectral_jump_db": 4.120751426520671,
+  "threshold_percentile": 99.9,
+  "PASS": true,
+  "CLASS": "advisory",
+  "ADVISORY_NOTE": "A PASS here proves almost nothing and that is measured, not modest: this gate adjudicates 20 samples of 5,956,000 (0.0003 % of the film) and its own 3 dB-step positive control PASSES on broadband material. `swap_b1_loop.wav`, whose beat 1 is a 2 s block tiled 16.5 times, reported a seam percentile BIT-IDENTICAL to the delivered master's, because every one of its sixteen splices is inside a beat. A FAIL is still informative and still stops the build; a PASS is advisory. `splice_film_wide` below is the coverage fix.",
+  "CONTROLS_FAIL_AS_EXPECTED": false,
+  "film_wide_PASS": true
+ },
+ "splice_film_wide": {
+  "statistic": "|3rd difference| peak over the rolling local MEDIAN, over the WHOLE film",
+  "windows_scanned": 497,
+  "coverage_fraction": 1.0,
+  "candidates": [
+   {
+    "t_s": 9.8875625,
+    "d3": 0.09482026100158691,
+    "local_median": 2.6047229766845703e-05,
+    "score": 3640.320366132723
+   },
+   {
+    "t_s": 11.147,
+    "d3": 0.06113475561141968,
+    "local_median": 7.534027099609375e-05,
+    "score": 811.4485759493671
+   },
+   {
+    "t_s": 10.9240625,
+    "d3": 0.064628005027771,
+    "local_median": 8.606910705566406e-05,
+    "score": 750.8850415512466
+   },
+   {
+    "t_s": 14.223583333333334,
+    "d3": 0.025035083293914795,
+    "local_median": 3.349781036376953e-05,
+    "score": 747.3647686832741
+   },
+   {
+    "t_s": 17.4709375,
+    "d3": 0.040316998958587646,
+    "local_median": 5.513429641723633e-05,
+    "score": 731.2508108108108
+   },
+   {
+    "t_s": 13.257895833333333,
+    "d3": 0.03121894598007202,
+    "local_median": 4.941225051879883e-05,
+    "score": 631.8057901085646
+   },
+   {
+    "t_s": 13.125666666666667,
+    "d3": 0.03221249580383301,
+    "local_median": 6.711483001708984e-05,
+    "score": 479.9609236234458
+   },
+   {
+    "t_s": 15.130895833333334,
+    "d3": 0.02855861186981201,
+    "local_median": 6.121397018432617e-05,
+    "score": 466.5374878286271
+   },
+   {
+    "t_s": 12.02525,
+    "d3": 0.020578324794769287,
+    "local_median": 6.592273712158203e-05,
+    "score": 312.15822784810126
+   },
+   {
+    "t_s": 21.690291666666667,
+    "d3": 0.01779264211654663,
+    "local_median": 6.67572021484375e-05,
+    "score": 266.52767857142857
+   },
+   {
+    "t_s": 21.356625,
+    "d3": 0.02003300189971924,
+    "local_median": 7.784366607666016e-05,
+    "score": 257.34915773353754
+   },
+   {
+    "t_s": 16.450145833333334,
+    "d3": 0.02477926015853882,
+    "local_median": 0.00010016560554504395,
+    "score": 247.38292174947932
+   }
+  ],
+  "worst_score": 3640.320366132723,
+  "no_absolute_threshold": "by design: the breach is a legitimate 562x event and a global bar that failed it would be a bar demanding the film not have a breach. Sensitivity is gated by injection instead.",
+  "CONTROL_mid_beat_splice_at_20s": {
+   "score_before_splice": 2.1300376141859214,
+   "score_after_splice": 81.62185324049277,
+   "lift": 38.31944219993871,
+   "required_lift": 5.0,
+   "note": "the boundary gate cannot see this splice at all -- it is 13 s from the nearest beat boundary. This is the gate's own sensitivity, measured by injection, and it is what is gated -- not a number chosen by hand."
+  },
+  "PASS": true
+ },
+ "seam_controls": [
+  {
+   "label": "CONTROL: 977-sample splice at beat 4",
+   "statistic": "|3rd difference| at the boundary sample, percentile against the local +/-0.5 s",
+   "boundaries": [
+    {
+     "beat": "2_launch",
+     "frame": 793,
+     "sample": 1584000,
+     "d3": 0.0016739964485168457,
+     "d3_local_percentile": 66.61666666666667,
+     "d3_local_p99_9": 0.0058548481464386105,
+     "hp20k": 4.744729671854742e-06,
+     "hp20k_local_percentile": 31.34166666666667,
+     "spectral_jump_db": 1.1818888542543666,
+     "max_sample_delta_pm2ms": 0.004264235496520996
+    },
+    {
+     "beat": "3_breach",
+     "frame": 865,
+     "sample": 1728000,
+     "d3": 0.010288357734680176,
+     "d3_local_percentile": 57.989583333333336,
+     "d3_local_p99_9": 0.14604797023535035,
+     "hp20k": 0.0007913624519355922,
+     "hp20k_local_percentile": 61.45208333333333,
+     "spectral_jump_db": 2.816824770952695,
+     "max_sample_delta_pm2ms": 0.09913718700408936
+    },
+    {
+     "beat": "4_transit",
+     "frame": 1057,
+     "sample": 2112000,
+     "d3": 0.01772528886795044,
+     "d3_local_percentile": 96.34583333333333,
+     "d3_local_p99_9": 0.030800122201443476,
+     "hp20k": 0.00015843579117564397,
+     "hp20k_local_percentile": 49.74583333333334,
+     "spectral_jump_db": 9.309574337950643,
+     "max_sample_delta_pm2ms": 0.05559980869293213
+    },
+    {
+     "beat": "5_lap",
+     "frame": 1191,
+     "sample": 2380000,
+     "d3": 0.006659388542175293,
+     "d3_local_percentile": 92.07708333333333,
+     "d3_local_p99_9": 0.01618282496929186,
+     "hp20k": 4.920654308537675e-05,
+     "hp20k_local_percentile": 31.179166666666667,
+     "spectral_jump_db": 2.7809586122935763,
+     "max_sample_delta_pm2ms": 0.017056941986083984
+    },
+    {
+     "beat": "6_ending",
+     "frame": 2715,
+     "sample": 5428000,
+     "d3": 0.004948139190673828,
+     "d3_local_percentile": 99.29375,
+     "d3_local_p99_9": 0.011560735523701848,
+     "hp20k": 3.741754952549635e-05,
+     "hp20k_local_percentile": 60.16666666666667,
+     "spectral_jump_db": 3.4029646736701955,
+     "max_sample_delta_pm2ms": 0.014963388442993164
+    }
+   ],
+   "worst_d3_local_percentile": 99.29375,
+   "worst_hp20k_local_percentile": 61.45208333333333,
+   "max_spectral_jump_db": 9.309574337950643,
+   "threshold_percentile": 99.9,
+   "PASS": true
+  },
+  {
+   "label": "CONTROL: 3 dB level step at beat 4",
+   "statistic": "|3rd difference| at the boundary sample, percentile against the local +/-0.5 s",
+   "boundaries": [
+    {
+     "beat": "2_launch",
+     "frame": 793,
+     "sample": 1584000,
+     "d3": 0.0016739964485168457,
+     "d3_local_percentile": 66.61666666666667,
+     "d3_local_p99_9": 0.0058548481464386105,
+     "hp20k": 4.744729671854742e-06,
+     "hp20k_local_percentile": 31.34166666666667,
+     "spectral_jump_db": 1.1818888542543666,
+     "max_sample_delta_pm2ms": 0.004264235496520996
+    },
+    {
+     "beat": "3_breach",
+     "frame": 865,
+     "sample": 1728000,
+     "d3": 0.010288357734680176,
+     "d3_local_percentile": 57.989583333333336,
+     "d3_local_p99_9": 0.14604797023535035,
+     "hp20k": 0.0007913624519355922,
+     "hp20k_local_percentile": 61.45208333333333,
+     "spectral_jump_db": 2.816824770952695,
+     "max_sample_delta_pm2ms": 0.09913718700408936
+    },
+    {
+     "beat": "4_transit",
+     "frame": 1057,
+     "sample": 2112000,
+     "d3": 0.016941112179135208,
+     "d3_local_percentile": 91.47083333333333,
+     "d3_local_p99_9": 0.03731677600034108,
+     "hp20k": 3.440466055907357e-05,
+     "hp20k_local_percentile": 9.85,
+     "spectral_jump_db": 4.922066620753286,
+     "max_sample_delta_pm2ms": 0.08821236858532419
+    },
+    {
+     "beat": "5_lap",
+     "frame": 1191,
+     "sample": 2380000,
+     "d3": 0.009360666526028976,
+     "d3_local_percentile": 91.39583333333333,
+     "d3_local_p99_9": 0.02305160769676653,
+     "hp20k": 9.498778624489908e-05,
+     "hp20k_local_percentile": 40.85625,
+     "spectral_jump_db": 2.6725483240147048,
+     "max_sample_delta_pm2ms": 0.024053494703672167
+    },
+    {
+     "beat": "6_ending",
+     "frame": 2715,
+     "sample": 5428000,
+     "d3": 0.003277580384887409,
+     "d3_local_percentile": 83.1875,
+     "d3_local_p99_9": 0.016329972970682855,
+     "hp20k": 4.589558795416213e-05,
+     "hp20k_local_percentile": 53.833333333333336,
+     "spectral_jump_db": 4.120751426520677,
+     "max_sample_delta_pm2ms": 0.020051426682011247
+    }
+   ],
+   "worst_d3_local_percentile": 91.47083333333333,
+   "worst_hp20k_local_percentile": 61.45208333333333,
+   "max_spectral_jump_db": 4.922066620753286,
+   "threshold_percentile": 99.9,
+   "PASS": true
+  },
+  {
+   "label": "CONTROL: 40 ms crossfade to elsewhere at beat 4",
+   "statistic": "|3rd difference| at the boundary sample, percentile against the local +/-0.5 s",
+   "boundaries": [
+    {
+     "beat": "2_launch",
+     "frame": 793,
+     "sample": 1584000,
+     "d3": 0.0016739964485168457,
+     "d3_local_percentile": 66.61666666666667,
+     "d3_local_p99_9": 0.0058548481464386105,
+     "hp20k": 4.744729671854742e-06,
+     "hp20k_local_percentile": 31.34166666666667,
+     "spectral_jump_db": 1.1818888542543666,
+     "max_sample_delta_pm2ms": 0.004264235496520996
+    },
+    {
+     "beat": "3_breach",
+     "frame": 865,
+     "sample": 1728000,
+     "d3": 0.010288357734680176,
+     "d3_local_percentile": 57.989583333333336,
+     "d3_local_p99_9": 0.14604797023535035,
+     "hp20k": 0.0007913624519355922,
+     "hp20k_local_percentile": 61.45208333333333,
+     "spectral_jump_db": 2.816824770952695,
+     "max_sample_delta_pm2ms": 0.09913718700408936
+    },
+    {
+     "beat": "4_transit",
+     "frame": 1057,
+     "sample": 2112000,
+     "d3": 0.011917679803081945,
+     "d3_local_percentile": 67.49166666666667,
+     "d3_local_p99_9": 0.12406853568553938,
+     "hp20k": 4.932177289955635e-05,
+     "hp20k_local_percentile": 10.210416666666667,
+     "spectral_jump_db": 4.215353754264701,
+     "max_sample_delta_pm2ms": 0.06217676124701965
+    },
+    {
+     "beat": "5_lap",
+     "frame": 1191,
+     "sample": 2380000,
+     "d3": 0.0005699992179870605,
+     "d3_local_percentile": 50.925,
+     "d3_local_p99_9": 0.00401461219787598,
+     "hp20k": 7.054078030651162e-05,
+     "hp20k_local_percentile": 99.60208333333334,
+     "spectral_jump_db": 3.099522072630326,
+     "max_sample_delta_pm2ms": 0.019393563270568848
+    },
+    {
+     "beat": "6_ending",
+     "frame": 2715,
+     "sample": 5428000,
+     "d3": 0.03938555717468262,
+     "d3_local_percentile": 65.37708333333333,
+     "d3_local_p99_9": 0.16039197862148327,
+     "hp20k": 0.003223309972547027,
+     "hp20k_local_percentile": 76.00416666666666,
+     "spectral_jump_db": 2.565198515260015,
+     "max_sample_delta_pm2ms": 0.193609356880188
+    }
+   ],
+   "worst_d3_local_percentile": 67.49166666666667,
+   "worst_hp20k_local_percentile": 99.60208333333334,
+   "max_spectral_jump_db": 4.215353754264701,
+   "threshold_percentile": 99.9,
+   "PASS": true
+  },
+  {
+   "label": "CONTROL: 0.5 dB level step at beat 4 (below the gate's sensitivity, stated)",
+   "statistic": "|3rd difference| at the boundary sample, percentile against the local +/-0.5 s",
+   "boundaries": [
+    {
+     "beat": "2_launch",
+     "frame": 793,
+     "sample": 1584000,
+     "d3": 0.0016739964485168457,
+     "d3_local_percentile": 66.61666666666667,
+     "d3_local_p99_9": 0.0058548481464386105,
+     "hp20k": 4.744729671854742e-06,
+     "hp20k_local_percentile": 31.34166666666667,
+     "spectral_jump_db": 1.1818888542543666,
+     "max_sample_delta_pm2ms": 0.004264235496520996
+    },
+    {
+     "beat": "3_breach",
+     "frame": 865,
+     "sample": 1728000,
+     "d3": 0.010288357734680176,
+     "d3_local_percentile": 57.989583333333336,
+     "d3_local_p99_9": 0.14604797023535035,
+     "hp20k": 0.0007913624519355922,
+     "hp20k_local_percentile": 61.45208333333333,
+     "spectral_jump_db": 2.816824770952695,
+     "max_sample_delta_pm2ms": 0.09913718700408936
+    },
+    {
+     "beat": "4_transit",
+     "frame": 1057,
+     "sample": 2112000,
+     "d3": 0.0126521641613947,
+     "d3_local_percentile": 87.06041666666667,
+     "d3_local_p99_9": 0.031358809292316554,
+     "hp20k": 4.586448872373821e-05,
+     "hp20k_local_percentile": 15.139583333333334,
+     "spectral_jump_db": 3.2709054351533045,
+     "max_sample_delta_pm2ms": 0.06614994439363485
+    },
+    {
+     "beat": "5_lap",
+     "frame": 1191,
+     "sample": 2380000,
+     "d3": 0.007019509623361288,
+     "d3_local_percentile": 91.39583333333333,
+     "d3_local_p99_9": 0.01728626712760869,
+     "hp20k": 7.123079086235883e-05,
+     "hp20k_local_percentile": 40.85625,
+     "spectral_jump_db": 2.672548324014701,
+     "max_sample_delta_pm2ms": 0.018037576392492653
+    },
+    {
+     "beat": "6_ending",
+     "frame": 2715,
+     "sample": 5428000,
+     "d3": 0.0024578385512487085,
+     "d3_local_percentile": 83.1875,
+     "d3_local_p99_9": 0.012245752169270607,
+     "hp20k": 3.441683564073452e-05,
+     "hp20k_local_percentile": 53.833333333333336,
+     "spectral_jump_db": 4.120751426520669,
+     "max_sample_delta_pm2ms": 0.015036448757694526
+    }
+   ],
+   "worst_d3_local_percentile": 91.39583333333333,
+   "worst_hp20k_local_percentile": 61.45208333333333,
+   "max_spectral_jump_db": 4.120751426520669,
+   "threshold_percentile": 99.9,
+   "PASS": true
+  }
+ ],
+ "external_assets": {
+  "render_path_hits": [],
+  "whole_package_hits": [],
+  "scanned": [
+   "__init__.py",
+   "clock.py",
+   "dsp.py",
+   "engine.py",
+   "layers.py",
+   "master.py",
+   "percept.py",
+   "scene.py",
+   "spatial.py",
+   "verify.py"
+  ],
+  "declared_exception": "verify.py calls sf.read once, on the FINISHED MASTER, to measure it. It contributes nothing to the render; `render_path_hits` excludes verify.py and must be empty.",
+  "CLASS": "provenance",
+  "PROVENANCE_NOTE": "This gate never opens the wav. It is an AST scan of the source tree, so it cannot distinguish any two audio files and it passed 100 % white noise. It is excluded from the quality verdict -- not because it is unimportant, but because it answers a different question.",
+  "controls_exclusion": {
+   "path": "audio/controls/",
+   "why": "the permanent control corpus; it reads the delivered master because C4 IS the delivered master and C1/C7 are built from it, and it is not on the render path",
+   "render_path_imports_it": []
+  },
+  "allowed_third_party": [
+   "parselmouth",
+   "pyloudnorm",
+   "pyroomacoustics"
+  ],
+  "dev_only_third_party": [
+   "parselmouth"
+  ],
+  "PASS": true,
+  "control_hits_per_case": {
+   "sf_read": 1,
+   "librosa": 3,
+   "download": 3
+  },
+  "CONTROL_FAILS_AS_EXPECTED": true
+ },
+ "bandsplit_reconstruction_max_abs_err": 8.940696716308594e-08,
+ "bandsplit_PASS": true,
+ "kerb_classifier_control": {
+  "kerb_fraction_on_control_track": 1.0,
+  "CONTROL_TRIGGERS_AS_EXPECTED": true
+ },
+ "pitch": {
+  "CLASS": "provenance",
+  "PROVENANCE_NOTE": "RECLASSIFIED. This gate re-synthesises the dry engine from the telemetry and measures THAT, so it never takes the delivered master as an input and it passed 100 % white noise. It proves the SOURCE tracks the telemetry, which is worth proving and is kept. It does not and cannot say anything about the artefact, so it is excluded from the quality verdict. What replaces it as a quality test is G-ORDER in audio/percept.py, which tracks the firing comb ON THE DELIVERED MASTER against the same telemetry.",
+  "method": "f0 measured from the DRY world-clock engine every 0.25 s of world time and compared with rpm/60*3, where rpm is the gearbox solution from the telemetry's v_world. Measured on the dry voice because 'the engine pitch tracks the telemetry' is a claim about the SOURCE; what the ears hear is that times the Doppler ratio, which the doppler gate tests separately.",
+  "firing": {
+   "n_windows": 221,
+   "corr_measured_f0_vs_predicted_f0": 0.3575371486612006,
+   "corr_measured_f0_vs_v_world": 0.3215566175916486,
+   "median_abs_error_cents": 1.1421130352670046,
+   "p95_abs_error_cents": 50.54628042553335,
+   "within_50_cents_fraction": 0.9411764705882353
+  },
+  "overrun": {
+   "n_windows": 66,
+   "corr_measured_f0_vs_predicted_f0": 0.9941072400553623,
+   "corr_measured_f0_vs_v_world": 0.5806366107771449,
+   "median_abs_error_cents": 1.5264213657295196,
+   "p95_abs_error_cents": 18.859322536350728,
+   "within_50_cents_fraction": 0.9848484848484849
+  },
+  "all": {
+   "n_windows": 287,
+   "corr_measured_f0_vs_predicted_f0": 0.40774816929942387,
+   "corr_measured_f0_vs_v_world": 0.3519180909572733,
+   "median_abs_error_cents": 1.19692985635057,
+   "p95_abs_error_cents": 42.2071407939242,
+   "within_50_cents_fraction": 0.9512195121951219
+  },
+  "overrun_note": "with the injectors cut there is no combustion and therefore no firing fundamental to find; the tracker reports the pumping and turbo content instead. The overrun rows are listed, not hidden, and they are NOT part of the pass criterion.",
+  "CONTROL_tracker_on_known_chirp_max_err_cents": 4.818573074656553,
+  "CONTROL_constant_speed_corr_vs_v_world": 0.10069001371789268,
+  "PASS": false,
+  "CONTROL_FAILS_AS_EXPECTED": true
+ },
+ "doppler": {
+  "declared": {
+   "station_s": 2555.0,
+   "peak_kph": 313.2,
+   "slant_range_m": 26.1,
+   "dwell_s": 7.46,
+   "semitone_sweep": 7.55,
+   "offset_from_centreline_m": 26.0
+  },
+  "measured_frame_of_closest_approach": 2271,
+  "measured_film_t_closest_approach_s": 94.62291666666667,
+  "measured_slant_range_m": 26.235531016366757,
+  "measured_car_speed_kph": 312.7992980738193,
+  "measured_camera_speed_ms": 1.0902105379731963,
+  "speed_of_sound_ms": 342.041837354473,
+  "measured_approach_closing_speed_ms": 77.11686338618165,
+  "measured_recession_speed_ms": 61.82086497038836,
+  "predicted_sweep_semitones_from_closing_speeds": 7.299372788257787,
+  "ratio_max_from_retarded_solve": 1.2910894440364906,
+  "ratio_min_from_retarded_solve": 0.846926035468044,
+  "predicted_sweep_semitones_from_retarded_solve": 7.299372788191855,
+  "measured_sweep_semitones_in_master": 28.883589895511424,
+  "measured_ratio_span_semitones_in_master": 13.064643110855519,
+  "measured_ratio_max": 1.290474863243724,
+  "measured_ratio_min": 0.6067532266717822,
+  "corr_measured_ratio_vs_predicted_ratio": 0.43690420307484545,
+  "corr_on_tracked_windows": 0.985979324867941,
+  "tracked_windows": 52,
+  "tracker_failure_windows": 28,
+  "tracker_failure_fraction": 0.35,
+  "tracker_failure_definition_cents": 200.0,
+  "median_abs_error_vs_prediction_cents": 60.86063049661912,
+  "p90_abs_error_vs_prediction_cents": 1064.0726358606378,
+  "usable_windows": 80,
+  "window_film_t_s": [
+   91.62291666666667,
+   95.82291666666643
+  ],
+  "emission_lead_at_window_start_s": 0.6549543550749206,
+  "emission_lead_at_closest_approach_s": 0.08049833105606297,
+  "windows_on_throttle": 62,
+  "windows_on_overrun": 18,
+  "windows_measured_on_engine_comb": 56,
+  "windows_measured_on_tyre_scrub_comb": 24,
+  "max_lateral_g_in_window": 4.51068604230736,
+  "CONTROL_estimator_on_wrong_f_emit_median_ratio": 0.8348983872472628,
+  "CONTROL_permuted_windows_corr": -0.20676372829495243,
+  "CONTROL_null_static_source_and_static_ears_semitones": 2.519277112229843e-10,
+  "listener_motion_only_sweep_semitones": 2.903282088041139,
+  "coverage": {
+   "declared_station_only_time_fraction": 0.033848220282068506,
+   "stations": [
+    {
+     "film_t_s": 65.17083333333333,
+     "usable_windows": 85,
+     "tracked_windows": 0,
+     "tracker_failure_fraction": 1.0,
+     "median_abs_error_cents": 836.4500166294521,
+     "OUTCOME": "INAPPLICABLE",
+     "why": "the tracker locked on 0 of 85 windows; with no locked window there is no measured ratio. Most likely the engine is not the loudest tonal source at this range. INAPPLICABLE is not PASS.",
+     "beat": "5_lap",
+     "peak_closing_speed_ms": 21.822350046351858
+    },
+    {
+     "film_t_s": 94.64166666666667,
+     "usable_windows": 80,
+     "tracked_windows": 54,
+     "tracker_failure_fraction": 0.32499999999999996,
+     "median_abs_error_cents": 35.94407679288928,
+     "p90_abs_error_cents": 1052.0480416597447,
+     "corr_on_tracked_windows": 0.9874072430391159,
+     "predicted_ratio_span_semitones": 7.266348227111244,
+     "OUTCOME": "FAIL",
+     "beat": "5_lap",
+     "peak_closing_speed_ms": 21.830554599422612
+    },
+    {
+     "film_t_s": 106.76041666666667,
+     "usable_windows": 85,
+     "tracked_windows": 77,
+     "tracker_failure_fraction": 0.09411764705882353,
+     "median_abs_error_cents": 76.7298638661804,
+     "p90_abs_error_cents": 150.37878816931354,
+     "corr_on_tracked_windows": 0.5908187783461536,
+     "predicted_ratio_span_semitones": 1.4073806769306358,
+     "OUTCOME": "FAIL",
+     "beat": "5_lap",
+     "peak_closing_speed_ms": 17.19243877081317
+    }
+   ],
+   "beats_covered": [
+    "5_lap"
+   ],
+   "n_pass": 0,
+   "n_fail": 2,
+   "n_inapplicable": 1,
+   "min_closing_speed_ms": 15.0,
+   "engine_order": 1.5,
+   "PORTING_NOTE": "B7 halves the firing fundamental to engine order 1.5. Change ENGINE_ORDER at the top of this file BEFORE that render, or every station here reports a tracker failure fraction that looks like a broken Doppler and is not."
+  },
+  "PASS": false,
+  "CONTROL_FAILS_AS_EXPECTED": true
+ },
+ "gate_classes": {
+  "quality": [
+   "levels",
+   "edges",
+   "doppler"
+  ],
+  "provenance": [
+   "external_assets",
+   "pitch"
+  ],
+  "advisory": [
+   "seam"
+  ]
+ },
+ "gate_summary": {
+  "levels": true,
+  "edges": true,
+  "doppler": false,
+  "external_assets": true,
+  "pitch": false,
+  "seam": true
+ },
+ "quality_pass": false,
+ "provenance_pass": false,
+ "advisory_fail": false,
+ "ALL_PASS": false,
+ "NOT_A_QUALITY_VERDICT": "This file no longer judges whether the film sounds like an engine. Three masters passed all eight of its predecessors and all three were rejected. The percept gates -- G-FLAT, G-HNR, G-ORDER, G-RING, G-NOVEL, G-MOD, G-GESTURE, G-ROOM, G-BALANCE, G-CONSTRUCT -- live in audio/percept.py and are adjudicated by tools/percept_matrix.py, which runs a permanent control corpus FIRST and refuses to report a verdict on any master if a control comes back wrong. AUDIO_VERIFY_OK means the levels are legal, the edges are clean, no recorded asset entered the render and the Doppler solves. It does not mean the master is good."
+}

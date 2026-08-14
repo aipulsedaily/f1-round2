@@ -49,6 +49,59 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SR_OUT = 48000
 CTRL_HZ = spatial.CTRL_HZ
 
+# ================== THE DELIVERY LOUDNESS, AND WHICH STANDARD ================
+# R2-4068. THE TARGET WAS -14.0 LUFS AND IT IS NOW -23.0. This is not a taste
+# change and it is not a way of passing G1; it is arithmetic, and the arithmetic
+# was stated in R2-4062 before anybody picked a side.
+#
+# THE CONFLICT. The mix has a peak-to-loudness ratio of 22.13 dB (premix peak
+# +4.25 dBFS at -17.88 LUFS, measured R2-4061). Delivering at -14.0 LUFS-I with
+# a true peak at or under -1.15 dBTP allows a PLR of at most 12.85 dB. The gap
+# is 9.3 dB and SOMETHING has to absorb it: the program gain took 10.16 dB of it
+# slowly and the limiter took the rest at the peaks, at -22.76 dB of gain
+# reduction on the delivered master and -11.60 dB after the chain was rebuilt.
+# A film whose loudest event is a glass wall exploding cannot have an 18 dB
+# crest AND sit at a music-streaming loudness. One of the two targets gives.
+#
+# THE LOUDNESS TARGET GIVES, AND THE FIGURE IS NOT CHOSEN FOR COMFORT.
+# -1.00 dBTP minus the mix's own 22.13 dB PLR is **-23.13 LUFS**. EBU R 128
+# specifies **-23.0 LUFS +-0.5 LU integrated, true peak <= -1 dBTP**. The mix's
+# own crest lands on the published broadcast standard to within 0.13 LU, which
+# means this programme can be delivered to R 128 with essentially no limiting at
+# all -- the standard and the material agree without either being bent.
+#
+# WHY R 128 AND NOT SOMETHING ELSE, stated so the choice is auditable:
+#   * EBU R 128 (Tech 3341/3343) is BS.1770 gated integrated loudness, which is
+#     exactly what `dsp.loudness_lufs` computes and what `verify.levels`
+#     cross-checks against pyloudnorm to 0.043 LU. It caps TRUE PEAK at -1 dBTP
+#     and it deliberately does NOT cap loudness range: normalising perceived
+#     loudness while permitting dynamics is the whole point of the
+#     recommendation. That is precisely the property this programme needs.
+#   * ATSC A/85 (-24 LKFS +-2) would also fit and is inside R 128's own
+#     tolerance of this figure; it is the US analogue of the same idea.
+#   * Netflix delivery is -27 LKFS DIALOG-GATED. This film has no dialogue, so
+#     the gate has nothing to key on and the number is not applicable.
+#   * Theatrical practice (SMPTE ST 2098 / RP 200) has no integrated loudness
+#     target at all -- it is a calibrated 85 dB SPL reference level -- so it
+#     cannot supply a number here.
+#   * -14 LUFS is the Spotify/streaming-MUSIC normalisation figure. It is a
+#     target for material with a 6-10 dB crest, and applying it to a 124 s film
+#     with a 31 dB internal range is the category error that produced the
+#     -22.76 dB of limiting in the first place.
+TARGET_LUFS_I = -23.0            # EBU R 128
+TARGET_LUFS_TOL = 0.5            # EBU R 128's own tolerance, in LU
+CEILING_DBTP = -1.15             # inside R 128's -1 dBTP, with 0.15 dB of
+                                 # headroom for the 96 -> 48 kHz resample
+CEILING_DBTP_48K = -1.10
+LOUDNESS_STANDARD = ("EBU R 128 (Tech 3341/3343): -23.0 LUFS +-0.5 LU "
+                     "integrated, true peak <= -1 dBTP, loudness range "
+                     "uncapped by design")
+
+# The showroom's glazing, as a filter. R(f) = 20*log10(m*f) - 47 for a single
+# leaf of surface mass m; 12 mm soda-lime glass is 30 kg/m2, and a first-order
+# lowpass at this corner reproduces that curve exactly. See the crowd bus.
+FACADE_MASS_LAW_FC_HZ = 7.463
+
 # ============================== GAIN STAGING ==================================
 # THE MIX BALANCE IS DECLARED AS A LOUDNESS TABLE, NOT AS A SET OF FADER
 # NUMBERS. Each entry is the peak 3-second short-term loudness that bus is
@@ -376,11 +429,38 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     mark("surfaces classified")
 
     # ----------------------------------------------------------- the engine --
-    eng_w, rpm_w, gear_w, eng_info = engine.synth(
-        tw, st["speed"], st["accel_long"], st["slip"], st["wheel_w"], spec, sr)
+    # R2-4064: THE ENGINE IS SYNTHESISED ON THE FILM GRID.
+    #
+    # `warp()` below is a Catmull-Rom VARISPEED RESAMPLER, and beat 3 runs the
+    # world clock down to a scale of 0.153719. Every engine partial during the
+    # breach was therefore transposed 6.5051x down -- 31.4 semitones. Measured on
+    # the delivered master (R2-4056, per-stem): the engine is 56.08 % of the
+    # breach's energy at a spectral centroid of 217.7 Hz with 0.001 % of its own
+    # energy above 4 kHz, and removing that one bus from the same window takes
+    # the breach from 791.6 Hz / 6.01 % to 1482.8 Hz / 13.25 % -- i.e. G3 and G2
+    # together, from one call site.
+    #
+    # `engine.synth` now takes the film map itself, because the fix is NOT
+    # "generate everything on the film grid": the trajectory's time constants
+    # (90 ms driveline, 240/900 ms turbo spool, the injector and MGU lags) are
+    # WORLD seconds and must stay integrated on the world grid, while the
+    # frequencies must be rendered in film-rate samples. Slow motion stretches
+    # the SCHEDULE and leaves the PITCH alone. Measured on the split: mapping
+    # the driveline lag instead of re-running it in film time is worth 411 rpm
+    # of rpm error through the breach, which is 54 cents of pitch.
+    #
+    # `clock.w` IS world time at every film sample, in float64 -- it is the
+    # array `world_at_film` interpolates in, so there is nothing to recompute.
+    t_world_film = clock.w
+    eng_f, rpm_f, gear_f, eng_info = engine.synth(
+        tw, st["speed"], st["accel_long"], st["slip"], st["wheel_w"], spec, sr,
+        to_film=grid.to_film, t_world_film=t_world_film)
     rep["engine"] = eng_info
     mark(f"engine: {eng_info['upshifts']} upshifts, {eng_info['downshifts']} "
-         f"downshifts, {eng_info['rpm_max']:.0f} rpm max")
+         f"downshifts, {eng_info['rpm_max']:.0f} rpm max, rendered on the "
+         f"{eng_info['rendered_on']}, half_order_weight "
+         f"{eng_info['half_order_weight']:.2f} (firing order "
+         f"{eng_info['firing_fundamental_order']:.1f})")
 
     # R2-4049: brakes and suspension, which did not exist. Both are on the
     # WORLD clock and attached to the car, so they warp with it, and both come
@@ -394,24 +474,59 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     mark(f"brakes: active {brake_info.get('active_fraction', 0.0):.3f} of world; "
          f"suspension: {susp_info['events']} load events")
 
-    tyre_w, tyre_info = layers.tyres(tw, st, surf, spec, sr)
     moving = st["speed"] > 0.5
-    tyre_info["surface_time_fraction_while_moving"] = {
-        k: float(surf[k][moving].mean()) for k in surf}
+    _surf_frac = {k: float(surf[k][moving].mean()) for k in surf}
+    del surf, moving
+
+    # R2-4064: THE TYRES ARE ON THE FILM GRID TOO. They are the second bus §6
+    # assigns to this workflow and the second one R2-4056 measured as still
+    # varispeeded (1.62 % of the breach at a 1224.5 Hz centroid, which the warp
+    # was delivering at 1/6.5 of that). Everything tonal in this layer is a
+    # FREQUENCY -- the 197.7 Hz cavity pair, the stick-slip limit cycle at
+    # 670-850 Hz, the kerb serration train at v/0.25 Hz -- so all of it belongs
+    # in film-rate samples at its true value, exactly like the engine's.
+    #
+    # The surfaces and the telemetry are resampled through the same map, and the
+    # world-grid copies are freed first: two 12 M-sample surface dictionaries
+    # alive at once is 750 MB for no reason.
+    surf_f = {k: np.interp(t_world_film, wc, surf_c[k]).astype(np.float32)
+              for k in surf_c}
+    st_f = {k: grid.to_film(st[k]) for k in st}
+    tyre_f, tyre_info = layers.tyres(t_world_film, st_f, surf_f, spec, sr)
+    tyre_info["rendered_on"] = "film grid"
+    tyre_info["surface_time_fraction_while_moving"] = _surf_frac
+    del surf_f, st_f
     rep["tyres"] = tyre_info
-    mark("tyres")
+    mark("tyres (film grid)")
 
     # ------------------------------------------------ structure: the glazing --
     # The pane is driven by the acoustic pressure the engine puts on it, which
     # falls off as 1/r from the car to the wall plane at x = +15.0.
+    #
+    # R2-4064: ON THE FILM GRID, WITH THE ENGINE. The pane is driven by the
+    # engine, so it has to live on the engine's grid -- but there is a stronger
+    # reason than bookkeeping. The pane stops existing 40 ms of WORLD time after
+    # the nose reaches it, and the nose reaches it at film t = 36.00 s, i.e.
+    # exactly at the ramp's slowest region: 40 ms of world time is ~260 ms of
+    # FILM time there, so the whole of the pane's dying ring was inside the
+    # transposed window and was coming out 6.5x down. A 12 mm pane whose mode
+    # ceiling R2-4039 raised to 17,992 Hz was being delivered with that ceiling
+    # at 2.8 kHz.
+    #
+    # The gates keep their WORLD-time semantics (the pane dies 40 ms of world
+    # time after contact, however long that takes on screen); only the samples
+    # they are evaluated on change. That is the same rule as everywhere else:
+    # the schedule stretches, the pitch does not.
     modes = layers.plate_modes(2.125, 5.600, layers.GLASS_H)
-    r_wall = np.maximum(np.abs(st_x - 15.0), 1.0)
-    wall_gate = (1.0 / r_wall) * (tw < clock.glass_world_t) * (st_x < 15.0)
+    st_x_f = grid.to_film(st_x)
+    r_wall = np.maximum(np.abs(st_x_f - 15.0), 1.0)
+    wall_gate = (1.0 / r_wall) * (t_world_film < clock.glass_world_t) * (st_x_f < 15.0)
     wall_gate = dsp.onepole_lag(np.clip(wall_gate, 0.0, 1.0), 0.02, sr)
     # the pane stops existing 40 ms of world time after the nose reaches it
-    kill = np.clip((clock.glass_world_t + 0.04 - tw) / 0.04, 0.0, 1.0)
-    struct_w = layers.glass_wall(dsp.lp(eng_w, 900.0, sr, 2), sr, modes,
+    kill = np.clip((clock.glass_world_t + 0.04 - t_world_film) / 0.04, 0.0, 1.0)
+    struct_f = layers.glass_wall(dsp.lp(eng_f, 900.0, sr, 2), sr, modes,
                                  wall_gate * kill)
+    del st_x_f, r_wall, wall_gate, kill
     # REPORT THE MODES THAT WERE ACTUALLY RENDERED. `glass_wall` selects the 400
     # most strongly radiating modes (coupling x radiation efficiency, critical
     # frequency 1,004 Hz), which is a different set from the 400 lowest. Listing
@@ -520,17 +635,52 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
          f"{rep['breach_shard_schedule']['film_span_s']:.2f} s film")
 
     # ================================================ WARP TO THE FILM CLOCK ==
+    # WHAT IS LEFT ON THIS LINE, AND WHY (R2-4064).
+    #
+    # `warp` is `grid.to_film`, a Catmull-Rom varispeed resampler: anything that
+    # goes through it during beat 3 is transposed 6.5051x down. Four categories
+    # of source used to; two remain, and both are deliberate:
+    #
+    #   engine, tyres        NOW SYNTHESISED ON THE FILM GRID (above). Between
+    #                        them they were 57.7 % of the breach's energy.
+    #   impact, shards,      already on the film grid, R2-4035
+    #   debris
+    #   structure            the pane's own modal bank, driven by the engine's
+    #                        acoustic pressure on it. It is gated off 40 ms of
+    #                        WORLD time after the nose reaches the glass, i.e.
+    #                        6 ms before the ramp's slowest region even begins,
+    #                        so nothing it produces is inside the transposed
+    #                        window. Left on the world grid.
+    #   assembly             beat 1, film t 0-33 s. The ramp is 36-44 s and the
+    #                        clock scale is EXACTLY 1.0 outside it, so this warp
+    #                        is a constant fractional delay and nothing else.
+    #   brakes, suspension   beats 4-6, likewise outside the ramp.
+    #
+    # The three that remain are all outside the ramp by construction, which is
+    # checked below rather than asserted.
     def warp(x):
         return grid.to_film(x)
 
-    eng_f = warp(eng_w)
-    tyre_f = warp(tyre_w)
-    struct_f = warp(struct_w)
     asm_f = warp(asm_w)
     brake_f = warp(brake_w)
     susp_f = warp(susp_w)
-    del eng_w, tyre_w, struct_w, asm_w, brake_w, susp_w
-    mark("warped world -> film (sustained sources only)")
+    del asm_w, brake_w, susp_w
+    _ramp = clock.ramp_span or (0, 0)
+    _ramp_t = (float(clock.film_t[_ramp[0]]), float(clock.film_t[min(_ramp[1], n - 1)]))
+    rep["warped_on_world_grid"] = {
+        "buses": ["assembly", "brakes", "suspension"],
+        "ramp_film_window_s": list(_ramp_t),
+        "max_abs_in_ramp": {
+            k: float(np.abs(v[_ramp[0]:_ramp[1]]).max()) if _ramp[1] > _ramp[0] else 0.0
+            for k, v in (("assembly", asm_f), ("brakes", brake_f),
+                         ("suspension", susp_f))},
+        "note": ("the clock scale is exactly 1.0 outside the ramp, so for these "
+                 "three the warp is a constant fractional delay. `max_abs_in_ramp` "
+                 "is the check, not the claim: anything non-trivial there is "
+                 "being transposed and belongs on the film grid."),
+    }
+    mark("warped world -> film (three buses, all outside the ramp) -- "
+         "engine, tyres and the pane are synthesised on the film grid")
 
     # ============================================================ PROPAGATE ===
     master = np.zeros((n, 2), dtype=np.float32)
@@ -727,23 +877,44 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     tail, room_info = layers.showroom_tail(excite, spec, sr)
     rep["room"] = room_info
     del excite
-    # interior: a diffuse field, so it arrives at both ears, decorrelated
-    # `dsp.delay`, NOT `np.roll` -- see R2-960. The circular roll wrapped the
-    # last 11.3 ms of the showroom's own reverb tail onto the film's first
-    # 11.3 ms, and in the shipped master that was the tail of a car at 323 km/h
-    # landing on an empty showroom as a 0.8505 peak inside frame 1.
-    d1, d2 = int(0.0071 * sr), int(0.0113 * sr)
-    interior = np.stack([tail * 0.75 + dsp.delay(tail, d1) * 0.35,
-                         dsp.delay(tail, d2) * 0.75 + tail * 0.30], axis=1)
-    tone = layers.room_tone(n, sr)
-    interior += np.stack([tone, dsp.delay(tone, 137)], axis=1)
+    # B2 / R2-4067: THE THREE SELF-DELAY DECORRELATORS ARE DELETED.
+    #
+    # What stood here was
+    #     d1, d2 = int(0.0071*sr), int(0.0113*sr)       # 681 and 1084 samples
+    #     L = tail*0.75 + delay(tail, d1)*0.35
+    #     R = delay(tail, d2)*0.75 + tail*0.30
+    #     interior += stack([tone, delay(tone, 137)])
+    # and summing a signal with a delayed copy of itself is a COMB FILTER, of
+    # exactly 1/7.0938 ms = 141.0 Hz spacing in the left ear and 1/11.2917 ms =
+    # 88.6 Hz in the right. The cepstrum of the delivered room stem finds both
+    # delays sample-exact and rates them the largest cepstral feature in the
+    # whole first thirty seconds, at 16.5-17.6 dB of measured ripple. The 137
+    # samples on `room_tone` printed a third comb at 700 Hz.
+    #
+    # What replaces it is not a different delay. `showroom_tail` now returns a
+    # genuine stereo pair -- two orthogonal tap vectors on the same 16 delay
+    # lines, i.e. two points in one diffuse field -- and `room_tone` builds its
+    # two channels from independent noise with a shared, correlated hum. Neither
+    # channel is a delayed copy of anything.
+    interior = np.asarray(tail, dtype=np.float32)
+    if interior.ndim == 1:
+        interior = np.stack([interior, interior], axis=1)
+    interior = interior * 1.05
+    tone = layers.room_tone(n, sr, stereo=True)
+    interior = interior + tone
     add(interior * inside[:, None], "room")
-    del interior
-    # exterior: the tail radiates out through the 9.6 x 5.6 m aperture
-    ap = spec["showroom"]["breach_aperture_m"]["centre_world"]
-    add(prop.render(dsp.lp(tail, 3500.0, sr, 2), prop.static_source(ap),
-                    "aperture", gate=(1.0 - inside)), "aperture")
+    del interior, tone
+    # exterior: the tail radiates out through the 9.6 x 5.6 m aperture. One
+    # opening radiates one pressure signal, so the aperture takes the tail's
+    # MONO SUM -- the two taps are two receivers inside the room, not two
+    # sources in the wall.
+    tail_mono = np.asarray(tail, dtype=np.float32).mean(axis=1) \
+        if np.ndim(tail) > 1 else np.asarray(tail, dtype=np.float32)
     del tail
+    ap = spec["showroom"]["breach_aperture_m"]["centre_world"]
+    add(prop.render(dsp.lp(tail_mono, 3500.0, sr, 2), prop.static_source(ap),
+                    "aperture", gate=(1.0 - inside)), "aperture")
+    del tail_mono
     mark("showroom acoustic")
 
     # ------------------------------------------------------- wind and ambience --
@@ -772,6 +943,37 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
         exc = dsp.onepole_lag(exc, 0.8, sr).astype(np.float32)
         crowd_bus += prop.render(layers.crowd(n, sr, exc), prop.static_source(p),
                                  f"crowd{si}", extra_db=34.0)
+    # R2-4069: THE FACADE IS NOT ACOUSTICALLY TRANSPARENT, AND IT WAS.
+    #
+    # The grandstands are outdoors, several hundred metres away across the
+    # circuit, and the camera spends the whole of beat 1 INSIDE a glazed
+    # showroom -- but nothing between the two was modelled at all, so the crowd
+    # arrived at full spectrum through a 12 mm glass wall. Measured on the smoke
+    # render's own stems: the crowd is **10.30 % of beat 1's power** and reads
+    # **0.992 x white** on tilt-free per-band flatness. It is very nearly the
+    # purest noise in the film and it was audible in the one beat the client
+    # called a wind blower. Leave-one-out on the stem sum:
+    #
+    #     beat 1, all stems          0.945*W    Boersma HNR -3.70 dB
+    #     beat 1, crowd through the facade 0.816*W          +0.84 dB
+    #
+    # THE LAW IS THE MASS LAW, not a taste. For a single leaf of surface mass m
+    # the field-incidence sound reduction index is R(f) = 20*log10(m*f) - 47 dB.
+    # 12 mm soda-lime glass at 2500 kg/m3 is m = 30 kg/m2, so R = 24.5 dB at
+    # 125 Hz, 36.5 dB at 500 Hz and 48.6 dB at 2 kHz -- a 6 dB/octave slope with
+    # one anchor. A FIRST-ORDER lowpass is exactly 6 dB/octave, and solving
+    # |H(f)| = fc/f = 10^((47 - 20*log10(30*f))/20) gives fc = 7.463 Hz with no
+    # freedom left in it. `FACADE_MASS_LAW_FC_HZ` is that solution.
+    #
+    # The coincidence dip of 12 mm glass sits near 1 kHz and would soften this
+    # by a few dB there; it is NOT modelled, so this attenuation is if anything
+    # slightly generous, which is the safe direction for a bus that should not
+    # be in this beat at all.
+    crowd_in = np.stack([dsp.lp(crowd_bus[:, c].astype(np.float64),
+                                FACADE_MASS_LAW_FC_HZ, sr, 1) for c in range(2)],
+                        axis=1).astype(np.float32)
+    crowd_bus = crowd_bus * (1.0 - inside)[:, None] + crowd_in * inside[:, None]
+    del crowd_in
     add(crowd_bus, "crowd")
     del crowd_bus
     rep["crowd_stands_world"] = [p.tolist() for p in stands]
@@ -894,11 +1096,11 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     # is the max over every attempt, not the last one. If one pass cannot hit the
     # target within 3 dB of reduction, the MIX is wrong, and the build says so
     # (`build_ok`) instead of iterating until it stops complaining.
-    ceil_lin = 10.0 ** (-1.15 / 20.0)
+    ceil_lin = 10.0 ** (CEILING_DBTP / 20.0)
     pre = master.copy()
     L0, _st_l, _ = dsp.loudness_lufs(pre, sr)
     iters = [float(L0)]
-    makeup_db = -14.0 - L0
+    makeup_db = TARGET_LUFS_I - L0
     gr = 0.0
     attempts = []
     for _ in range(4):
@@ -910,12 +1112,12 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
                          "lufs_out": float(L), "gr_distribution": gstats})
         gr = min(gr, float(gr_i))
         iters.append(float(L))
-        if abs(L + 14.0) < 0.05:
+        if abs(L - TARGET_LUFS_I) < 0.05:
             break
-        makeup_db += (-14.0 - L)
+        makeup_db += (TARGET_LUFS_I - L)
     del pre
     rep["limiter"] = {
-        "ceiling_dbtp": -1.15,
+        "ceiling_dbtp": CEILING_DBTP,
         "max_gain_reduction_db": gr,
         "passes_applied_to_delivered_signal": 1,
         "attempts": attempts,
@@ -959,20 +1161,20 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     pre48 = out.copy()
     L48, st48, st48t = dsp.loudness_lufs(pre48, SR_OUT)
     out48_iters = [float(L48)]
-    mk48 = -14.0 - L48
+    mk48 = TARGET_LUFS_I - L48
     gr3 = 0.0
     out48_attempts = []
     for _ in range(4):
         out = pre48 * 10.0 ** (mk48 / 20.0)
-        out, gr3_i = dsp.soft_limit(out, ceiling=10.0 ** (-1.10 / 20.0), sr=SR_OUT)
+        out, gr3_i = dsp.soft_limit(out, ceiling=10.0 ** (CEILING_DBTP_48K / 20.0), sr=SR_OUT)
         L48, st48, st48t = dsp.loudness_lufs(out, SR_OUT)
         out48_attempts.append({"makeup_db": float(mk48), "gr_db": float(gr3_i),
                                "lufs_out": float(L48)})
         gr3 = min(gr3, float(gr3_i))
         out48_iters.append(float(L48))
-        if abs(L48 + 14.0) < 0.05:
+        if abs(L48 - TARGET_LUFS_I) < 0.05:
             break
-        mk48 += (-14.0 - L48)
+        mk48 += (TARGET_LUFS_I - L48)
     del pre48
     rep["limiter_48k"] = {"max_gain_reduction_db": gr3, "attempts": out48_attempts,
                           "passes_applied_to_delivered_signal": 1}
@@ -1006,7 +1208,12 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
         "frames_at_24fps": float(out.shape[0] / SR_OUT * 24.0),
         "sample_rate": SR_OUT, "bit_depth": 24, "channels": 2,
         "integrated_lufs": float(L48),
-        "target_lufs": -14.0,
+        "target_lufs": TARGET_LUFS_I,
+        "loudness_standard": LOUDNESS_STANDARD,
+        "loudness_within_tolerance": bool(abs(float(L48) - TARGET_LUFS_I)
+                                          <= TARGET_LUFS_TOL),
+        "peak_to_loudness_ratio_db": float(
+            20.0 * np.log10(max(float(np.abs(out).max()), 1e-12)) - float(L48)),
         "true_peak_dbtp": float(dsp.true_peak_dbtp(out, SR_OUT)),
         "sample_peak": float(np.abs(out).max()),
         "sample_peak_dbfs": float(20.0 * np.log10(max(float(np.abs(out).max()), 1e-12))),

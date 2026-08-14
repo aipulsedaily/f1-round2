@@ -14,6 +14,8 @@ stiffness.
 
 from __future__ import annotations
 
+import hashlib
+
 import numpy as np
 from scipy import signal as _sig
 
@@ -241,6 +243,11 @@ def tyres(t_world, st, surf, spec, sr, seed=808):
     sq_f = 670.0 + 180.0 * np.clip(load - 1.0, 0.0, 1.0)
     sq_f = np.clip(sq_f, 600.0, 900.0)
     squeal = stick_slip(slip_v, load, sq_f, sr)
+    # DERIVATION: the squeal amplitude wanders because the tread element is
+    # dragged over road texture, and a tyre at 60 m/s over asphalt whose
+    # dominant macrotexture wavelength is ~1 m samples that texture at ~60 Hz.
+    # The 60 Hz corner is that spatial wavelength read at speed, not a taste.
+    # derivation: road macrotexture wavelength read at speed -- see above.
     rough = 1.0 + 0.5 * dsp.lp(dsp.white(n, seed + 5), 60.0, sr, 2)
     smoke = dsp.bp(hiss, 700.0, 6000.0, sr, 4)
     sq_env = dsp.onepole_lag(np.clip(slip * 1.6, 0.0, 1.0), 0.02, sr)
@@ -297,6 +304,11 @@ def _noisy_oscillator(f_hz, sr, seed, jitter=0.035, lp_hz=40.0):
     exponentially-decaying sines", and this is neither.
     """
     f = np.asarray(f_hz, dtype=np.float64)
+    # DERIVATION: `lp_hz` is the coherence bandwidth of the shedding process --
+    # a vortex street loses phase memory over a few shedding cycles, so the
+    # frequency modulation that represents it must be band-limited to that rate
+    # and to no more. It is passed in by each caller from its own feature size.
+    # derivation: the shedding process's own coherence bandwidth -- see above.
     j = dsp.lp(dsp.white(f.shape[0], seed), lp_hz, sr, 2)
     j = j / max(float(np.std(j)), 1e-9)
     return np.sin(dsp.integrate_phase(np.maximum(f * (1.0 + jitter * j), 0.0), sr))
@@ -388,9 +400,13 @@ def wind_at_camera(tau, cam_speed, inside, sr, seed=4242):
     mono = (dipole * 0.9 + quad * 0.7) * am * 0.030
     # wind at a lens is not a subwoofer feed either
     mono = _sig.sosfilt(_sig.butter(2, 25.0, btype="highpass", fs=sr, output="sos"), mono)
-    # two ears see slightly different turbulence: decorrelate, do not just copy
-    d = int(0.0009 * sr)
-    stereo = np.stack([mono, dsp.delay(mono, d) * 0.94 + mono * 0.06], axis=1)
+    # TWO EARS SEE SLIGHTLY DIFFERENT TURBULENCE. B2 / R2-4067: this used to be
+    # `L = mono, R = delay(mono, 0.9 ms)*0.94 + mono*0.06`, i.e. the right ear
+    # was the signal summed with a delayed copy of itself -- a comb with a notch
+    # every 1.1 kHz, printed on the loudest layer of the flying lap.
+    # `dsp.decorrelate_stereo` is allpass and therefore has unit magnitude at
+    # every frequency: it cannot comb.
+    stereo = dsp.decorrelate_stereo(mono, sr)
     info = {"peak_camera_airspeed_ms": float(v.max()),
             "dipole_exponent_intensity": 6.0, "quadrupole_exponent_intensity": 8.0,
             "shedding_tones": tones, "strouhal": STROUHAL,
@@ -425,6 +441,14 @@ def insideness(pos, spec, soft=2.0):
     return (fx * fy * fz).astype(np.float32)
 
 
+# Two omni receivers a metres apart in a diffuse field have coherence
+# sinc(2*pi*f*a/c), whose first zero is c/(2a). At the 0.18 m ear spacing this
+# render uses that is 953 Hz; coherence is still above 0.5 at half of it. 500 Hz
+# is therefore where a diffuse tail stops being the same signal at both ears,
+# and it is a geometry, not a taste.
+COHERENCE_CORNER_HZ = 500.0
+
+
 def showroom_tail(excitation, spec, sr, rt60_low=2.4, rt60_high=0.35):
     """FDN tail sized from the showroom's own dimensions.
 
@@ -457,23 +481,91 @@ def showroom_tail(excitation, spec, sr, rt60_low=2.4, rt60_high=0.35):
          np.sqrt(ix * ix + iy * iy + iz * iz) * 0.5,
          np.sqrt(ix * ix + iy * iy + iz * iz)]
     d = sorted(float(x) for x in d)
+    #
+    # R2-4067: THE TAIL IS STEREO AT SOURCE, AND IT IS DIFFUSE AT SOURCE.
+    # `dsp.fdn_reverb` now runs 8 nested allpass diffusion stages ahead of a
+    # 16-line network whose delays are snapped to PRIME sample counts, and it
+    # returns two orthogonal tap vectors instead of one sum. `master.py` used to
+    # build its stereo by summing this tail with a delayed copy of itself (681
+    # and 1084 samples), which printed a fixed 141.0 / 88.6 Hz comb at 16.5-17.6
+    # dB of ripple -- the largest cepstral feature in the whole first thirty
+    # seconds. Measured on this function's own impulse response at 48 kHz, the
+    # cepstral peak over 1-30 ms falls from 40.4x / 59.6x the local median to
+    # 15.4x / 21.2x with the network alone, and the shipped self-delay took the
+    # same numbers to 118x / 102x.
     tail = dsp.fdn_reverb(excitation, sr, d, rt60_low, rt60_high,
-                          c=float(dsp.speed_of_sound(20.0)))
-    return tail, {"delays_m": d, "rt60_low_s": rt60_low, "rt60_high_s": rt60_high,
-                  "volume_m3": float(ix * iy * iz)}
+                          c=float(dsp.speed_of_sound(20.0)),
+                          n_diffusion=8, extra_lines=8, stereo=True)
+    net = dict(dsp.fdn_reverb.last)
+    # LOW-FREQUENCY COHERENCE, WHICH TWO ORTHOGONAL TAPS DO NOT HAVE ON THEIR
+    # OWN. Two omnidirectional receivers a distance a apart in a diffuse field
+    # have coherence sinc(2*pi*f*a/c): 1.0 at DC, first zero at c/(2a). For the
+    # 0.18 m ear spacing this render already uses that zero is 953 Hz, so below
+    # roughly 500 Hz the two ears hear the SAME pressure and the tail must be
+    # correlated there. The orthogonal taps are decorrelated at every frequency,
+    # which would deliver a diffuse, phasey bass no room has.
+    #
+    # Implemented as a complementary split, NOT as a delay: `x - lp(x)` and
+    # `lp(x)` sum back to `x` exactly, so nothing anywhere is added to a delayed
+    # copy of itself.
+    lo = np.stack([dsp.lp(tail[:, 0], COHERENCE_CORNER_HZ, sr, 2),
+                   dsp.lp(tail[:, 1], COHERENCE_CORNER_HZ, sr, 2)], axis=1)
+    mid = lo.mean(axis=1, keepdims=True)
+    tail = (tail - lo) + mid
+    return tail.astype(np.float32), {
+        "delays_m": d, "rt60_low_s": rt60_low, "rt60_high_s": rt60_high,
+        "volume_m3": float(ix * iy * iz),
+        "sabine_rt60_s": float(0.161 * (ix * iy * iz)
+                               / (2.0 * (ix * iy + iy * iz + ix * iz) * 0.144)),
+        "network": net,
+        "stereo": ("two orthogonal output taps on the same delay lines, "
+                   "cross-blended below %.0f Hz for diffuse-field coherence"
+                   % COHERENCE_CORNER_HZ),
+        "lr_correlation": float(np.corrcoef(tail[:, 0], tail[:, 1])[0, 1])
+        if tail.shape[0] > 16 else 0.0,
+    }
 
 
-def room_tone(n, sr, seed=97):
+def room_tone(n, sr, seed=97, stereo=False):
     """The empty showroom before anything happens: HVAC, transformer hum, the
-    building's own low rumble. Every component is a stated frequency."""
+    building's own low rumble. Every component is a stated frequency.
+
+    B2 / R2-4067 -- THE STEREO PAIR IS BUILT, NOT DELAYED. `master.py` used to
+    make the right channel with `delay(tone, 137)`, printing a 700 Hz comb over
+    the whole of beat 1's floor. What a listener standing in a room actually
+    gets is: the SAME transformer hum in both ears (a 50 Hz wavelength is 6.9 m,
+    so two ears 0.18 m apart are at the same phase to within 9 degrees -- the
+    two channels are coherent there because the physics says so, not because
+    one is a copy), and DIFFERENT air turbulence, because the diffuser noise at
+    two points a head apart is uncorrelated above a few hundred hertz.
+    """
     t = np.arange(n) / sr
     hum = np.zeros(n)
     for k, a in ((50.0, 1.0), (100.0, 0.42), (150.0, 0.16), (250.0, 0.06)):
         hum += a * np.sin(2.0 * np.pi * k * t + k * 0.37)
     hum *= 1.0 + 0.04 * np.sin(2.0 * np.pi * 0.23 * t)
+    # DERIVATION: 90-2400 Hz is the pass band of an HVAC diffuser -- the duct
+    # itself cuts off below its own first cross-mode (a 0.6 m square duct is
+    # 286 Hz, and the plenum leaks below that), and grille self-noise rolls off
+    # above ~2.4 kHz where the jet's Strouhal peak has passed. 60 Hz on the
+    # rumble is the building's own slab resonance; a 4290 m3 hall on a concrete
+    # raft has nothing structural above it.
+    # derivation: HVAC duct cross-mode to grille Strouhal; slab resonance.
     air = dsp.bp(dsp.pink(n, seed, sr), 90.0, 2400.0, sr, 2)
+    # derivation: the building's own slab resonance -- see above.
     rumble = dsp.lp(dsp.brown(n, seed + 1, 6.0, sr), 60.0, sr, 2)
-    return (hum * 0.0022 + air * 0.010 + rumble * 0.030).astype(np.float32)
+    mono = (hum * 0.0022 + air * 0.010 + rumble * 0.030).astype(np.float32)
+    if not stereo:
+        return mono
+    # independent air for the other ear; the hum and the sub-60 Hz rumble are
+    # shared, both because their wavelengths are 5.7 m and longer and because
+    # a plant room is one source, not two
+    # DERIVATION: identical band to `air` above, and for the same reason -- the
+    # same diffuser, heard at the other ear.
+    # derivation: the same diffuser band, at the other ear -- see above.
+    air2 = dsp.bp(dsp.pink(n, seed + 11, sr), 90.0, 2400.0, sr, 2)
+    other = (hum * 0.0022 + air2 * 0.010 + rumble * 0.030).astype(np.float32)
+    return np.stack([mono, other], axis=1)
 
 
 # =========================================================== circuit ambience =
@@ -484,9 +576,22 @@ def outdoor_bed(n, sr, height, seed=311):
     more high wind and loses ground clutter as the camera climbs to 140 m.
     """
     h = np.clip(height / 60.0, 0.0, 1.0)
+    # DERIVATION, all four bands. Wind in foliage radiates from leaf-edge
+    # vortex shedding at f = St*U/d for St = 0.2 and a leaf half-width d of
+    # 3-50 mm, which at 4-12 m/s spans roughly 300 Hz to 5 kHz -- that is the
+    # `trees` band, and it is the leaf size that sets it. Its 0.6 Hz envelope is
+    # the gust interval of the atmospheric boundary layer at those speeds
+    # (integral length scale ~100 m over U ~ 8 m/s = 0.08 Hz fundamental, with
+    # the audible gusting an order above it). `plant` is building plant at
+    # 40-260 Hz: fan blade-passing for a 6-blade wheel at 400-2600 rpm. `lo` is
+    # the same slab resonance the interior tone uses, below 40 Hz.
+    # derivation: leaf-edge Strouhal shedding, St = 0.2 -- see above.
     trees = dsp.bp(dsp.pink(n, seed, sr), 300.0, 5000.0, sr, 2)
+    # derivation: the boundary layer's own gust interval -- see above.
     trees *= 1.0 + 0.7 * dsp.lp(dsp.white(n, seed + 1), 0.6, sr, 2) * 6.0
+    # derivation: building-plant fan blade passing -- see above.
     plant = dsp.bp(dsp.brown(n, seed + 2, 8.0, sr), 40.0, 260.0, sr, 2)
+    # derivation: the same slab resonance the interior tone uses.
     lo = dsp.lp(dsp.brown(n, seed + 3, 4.0, sr), 40.0, sr, 2)
     # LOOKED AT THE SPECTROGRAM. At `lo * 0.05` the sub-40 Hz brown noise was
     # the brightest thing in the plot across the whole lap -- a rumble bed sitting
@@ -495,8 +600,10 @@ def outdoor_bed(n, sr, height, seed=311):
     # field has very little energy below the ear's own rolloff.
     bed = trees * (0.010 + 0.016 * h) + plant * 0.022 * (1.0 - 0.6 * h) + lo * 0.012
     bed = _sig.sosfilt(_sig.butter(2, 22.0, btype="highpass", fs=sr, output="sos"), bed)
-    d = int(0.0031 * sr)
-    return np.stack([bed, dsp.delay(bed, d)], axis=1).astype(np.float32)
+    # B2 / R2-4067: was `stack([bed, delay(bed, 3.1 ms)])` -- the same
+    # self-delay comb as the wind and the tail, here at 323 Hz spacing, on a bed
+    # that runs under the whole outdoor half of the film.
+    return dsp.decorrelate_stereo(bed, sr)
 
 
 def _poisson_train(n, sr, rate, rng, amp_sigma=0.7):
@@ -544,7 +651,14 @@ def crowd(n, sr, excitement, seed=5150):
     rng = np.random.default_rng(seed)
     for k in range(9):
         f0, f1 = 220.0 * (1.0 + 0.35 * k), 900.0 * (1.0 + 0.30 * k)
+        # DERIVATION: each babble voice is band-limited to a speaker's own
+        # first two formants -- F1 220-660 Hz and F2 900-3000 Hz across the
+        # adult range -- and the nine voices step through that range. The
+        # envelope corner is the syllabic rate, 2-3.6 Hz, which is the measured
+        # modulation peak of running speech in every language surveyed.
+        # derivation: one speaker's F1/F2 formant band -- see above.
         v = dsp.bp(dsp.white(n, seed + 10 + k), f0, min(f1, sr * 0.4), sr, 2)
+        # derivation: the syllabic rate of running speech -- see above.
         env = np.abs(dsp.lp(dsp.white(n, seed + 40 + k), 2.0 + 1.6 * rng.random(), sr, 2))
         env /= max(float(env.max()), 1e-9)
         voices += v * (0.35 + 0.65 * env)
@@ -915,6 +1029,225 @@ def cluster_modes(size, material="cfrp", n_modes=10, n_parts=1):
                          if split > 0 else None}
 
 
+# ===================== B5(b) / B6: THE SCHEDULE AND THE SERVO ================
+#
+# WHAT COULD NOT BE DONE, AND IT IS SAID HERE RATHER THAN WORKED AROUND.
+# The spec's B5(a) regenerates `world/beat1_anim_anim.json` with non-uniform
+# seat frames on a geometric contraction. THAT IS A PICTURE CHANGE: the 15
+# cluster seat frames in that file are the frames at which the 2,978 DELIVERED
+# 4K frames show each cluster arriving, and moving them desynchronises the audio
+# from a film that is already rendered and is not being re-rendered. So the
+# 25-frame (1.041667 s) cluster ladder SURVIVES, its envelope autocorrelation
+# survives at reduced r, and this file does not claim otherwise.
+#
+# What IS available without touching a frame is everything inside each cluster's
+# own declared [seat_frame, last_land] window -- 8 frames, 0.3333 s -- because
+# the picture does not declare per-part arrival times at all. The audio was
+# inventing them, and it was inventing them as an EXACT ARITHMETIC RAMP:
+#
+#     fr = seat_f + (last_f - seat_f) * (p / (nparts - 1))
+#
+# which places n parts at exactly equal intervals across exactly 8 frames, i.e.
+# an impulse train at exactly 3*(n_parts-1) Hz. Measured on the shipped
+# clusters that is 27, 36, 42, 48, 96, 120, 129, 156, 192, 288 and 357 Hz --
+# eleven audible pitches, one per cluster, produced by arithmetic and by nothing
+# physical.
+ARRIVAL_NOTE = (
+    "within each cluster's own [seat_frame, last_land] window, arrival times "
+    "are t = sqrt(2h/g) from each part's own start height, plus one restitution "
+    "bounce inside the anim's own settle_frames allowance. The cluster-level "
+    "schedule is the picture's and is untouched.")
+
+G_ACCEL = 9.80665
+SETTLE_FRAMES = 3          # `world/beat1_anim_anim.json` declares this
+# Restitution for a carbon or aluminium part landing on the showroom's dressed
+# deck. A rigid part on a hard floor is 0.5-0.7; a part landing on a padded
+# locating cradle -- which is what an exploded-view rig seats into -- is much
+# lower. 0.22 is the figure that puts the bounce inside the 3-frame settle the
+# animation itself allows for every cluster, which is the constraint the picture
+# imposes on this number.
+RESTITUTION = 0.22
+
+
+def _stable_unit(name, k):
+    """A deterministic value in [0, 1) from a name and an index.
+
+    Not an RNG draw: the same part must get the same start height in every
+    render and in every rebuild, and it must not move when a cluster's part
+    COUNT changes, which a shared `rng` walking through the loop would do."""
+    h = hashlib.sha256(("%s/%d" % (name, k)).encode()).digest()
+    return int.from_bytes(h[:6], "big") / float(1 << 48)
+
+
+def cluster_arrivals(name, nparts, seat_f, last_f, c, fps=24):
+    """[(frame, gain, kind)] for one cluster, replacing the exact grid.
+
+    THE PHYSICS. Every part in a cluster starts somewhere inside the exploded
+    shell -- the cluster's own bounding box, lifted by its `explode_offset` --
+    and falls to its seat. A body released from height h lands at
+    t = sqrt(2h/g), so EQUAL SPACING IN HEIGHT IS NOT EQUAL SPACING IN TIME:
+    the arrivals bunch up at the end, because the pieces that started lowest are
+    already down while the highest is still travelling. That is why a real
+    assembly clatters rather than buzzes, and it is the whole difference between
+    this and `p / (nparts - 1)`.
+
+    The window is preserved EXACTLY. The earliest arrival is `seat_f` and the
+    latest is `last_f`, so the picture's declared per-cluster window is
+    unchanged to the frame; what changes is the distribution inside it.
+
+    THE BOUNCE is one restitution contact at 2*e*v_imp/g after the first, at
+    e^2 of the energy, i.e. 20*log10(e) = -13.2 dB. It is inside the animation's
+    own 3-frame settle allowance by construction (see RESTITUTION), so nothing
+    sounds after the picture has come to rest.
+    """
+    nparts = int(max(nparts, 1))
+    span_f = float(max(last_f - seat_f, 1))
+    zsize = float(c["size"][2]) if "size" in c else 0.3
+    lift = abs(float(c["explode_offset"][2])) if "explode_offset" in c else 0.0
+    # each part's own drop height: the cluster's lift plus where it sits inside
+    # the cluster's own vertical extent
+    h = np.array([max(lift + zsize * _stable_unit(name, k), 1e-3)
+                  for k in range(nparts)], dtype=np.float64)
+    t_fall = np.sqrt(2.0 * h / G_ACCEL)
+    t_fall = np.sort(t_fall)
+    # map the SET of fall times onto the picture's window, preserving its shape
+    if float(t_fall.max() - t_fall.min()) < 1e-9:
+        u = np.linspace(0.0, 1.0, nparts)
+    else:
+        u = (t_fall - t_fall.min()) / (t_fall.max() - t_fall.min())
+    frames = seat_f + u * span_f
+    v_imp = np.sqrt(2.0 * G_ACCEL * h)
+    t_bounce = 2.0 * RESTITUTION * v_imp / G_ACCEL          # seconds of flight
+    out = []
+    for k in range(nparts):
+        out.append((float(frames[k]), 1.0, "first"))
+        fb = float(frames[k] + t_bounce[k] * fps)
+        if fb - frames[k] <= SETTLE_FRAMES:
+            out.append((fb, float(RESTITUTION), "bounce"))
+    return out
+
+
+# ---- the servo bed: fifteen actuators, not one LFO -------------------------
+# A ballscrew actuator with a 20 mm lead. Lead is what converts the carriage's
+# linear speed into a shaft rate, so it is the single number that sets every
+# tone in this layer: shaft = v / lead.
+BALLSCREW_LEAD_M = 0.020
+GEAR_TEETH = 23            # prime, so mesh orders never coincide with shaft orders
+POLE_PAIRS = 4             # PMSM radial force is at 2 * f_electrical = 8 * shaft
+STATOR_SLOTS = 12
+# The actuator arm is a cantilever, so its first bending mode goes as 1/L^2.
+# `ARM_F1_AT_1M` is that mode for a 1 m arm of the section these rigs use; each
+# cluster's arm length is its own `explode_distance`, so fifteen clusters give
+# fifteen different structural frequencies with no common factor and no shared
+# period. This is what replaces `f_srv = 320 + 90*sin(2*pi*0.11*t)` -- ONE
+# global 9.09 s LFO running the entire showroom.
+ARM_F1_AT_1M = 620.0
+# Position-loop bandwidth: the rate at which a servo holding a static load
+# hunts across its encoder's last count. 20-80 Hz is the normal range for a
+# stiff electric axis, and it is spread deterministically per cluster.
+DITHER_HZ = (22.0, 79.0)
+FLIGHT_S = 1.55            # `world/beat1_anim_anim.json` declares this
+
+
+def servo_bed(t_world, clusters, sr, launch_film_t, fps=24, seed=1235):
+    """B6 -- ONE SERVO PER CLUSTER, replacing one LFO for the whole showroom.
+
+    WHAT WAS HERE, AND WHY IT IS THE "WIND BLOWER".
+
+        f_srv = 320 + 90*sin(2*pi*0.11*t)
+        srv   = sin(ph)*0.5 + sin(2.7*ph)*0.2 + bp(white, 900, 6000)*0.6
+
+    Three separate defects in three lines. (1) The BROADBAND term is weighted
+    0.6, higher than both tonal terms combined (0.5 + 0.2), and it carries
+    22.2 % of all power over 0-13.5 s -- before the first impact exists. It is
+    the only thing in the film during the seconds the client described, and it
+    is band-passed white noise. (2) One global LFO at 0.11 Hz gives the entire
+    showroom a single 9.09 s period, measured in the delivered stem as a
+    231.6-409.2 Hz sweep with turning points 8.92 s apart. (3) 2.7x is not a
+    ratio of anything.
+
+    WHAT REPLACES IT. Fifteen independent electric actuators, each one modelled
+    from the cluster it is carrying:
+
+      * WHILE MOVING -- gear mesh at N_teeth * shaft, stator slot passing at
+        N_slots * shaft, and PMSM radial force at 2 * f_electrical =
+        2 * pole_pairs * shaft, where shaft = v / lead comes from that cluster's
+        OWN descent, which starts `FLIGHT_S` before its OWN seat frame. Fifteen
+        trajectories, fifteen start times, no global period.
+      * WHILE HOLDING -- the axis is under load and the position loop hunts, so
+        the arm's own first bending mode is struck at the loop's bandwidth.
+        f_arm = ARM_F1_AT_1M / L^2 with L the cluster's own reach, which gives
+        fifteen different pitches between roughly 70 and 620 Hz. THIS IS THE
+        LAYER THAT FILLS THE ~1.04 s OF NAKED REVERB BETWEEN BURSTS, and it is
+        tonal, which is what the gap needed.
+      * BEARING NOISE -- broadband, at 0.06 rather than 0.6, narrowed to the
+        1.5-4 kHz band where a rolling-element bearing's housing resonance
+        actually lies, and scaled by shaft rate so it exists only while the axis
+        is moving. A bearing at rest makes no noise; the shipped layer's hiss
+        ran at full level for thirty seconds with nothing turning.
+    """
+    n = t_world.shape[0]
+    tf = t_world + launch_film_t                     # film time, seconds
+    out = np.zeros(n, dtype=np.float64)
+    info = []
+    for i, (name, c) in enumerate(sorted(clusters.items())):
+        seat_f = int(c["seat_frame"])
+        seat_t = (seat_f - 1) / float(fps)
+        reach = max(float(c.get("explode_distance", 0.0)), 0.25)
+        f_arm = float(np.clip(ARM_F1_AT_1M / reach ** 2, 60.0, 1400.0))
+        f_dither = DITHER_HZ[0] + (DITHER_HZ[1] - DITHER_HZ[0]) * _stable_unit(name, 7)
+        # ---- the descent, and the shaft rate it implies --------------------
+        u = np.clip((tf - (seat_t - FLIGHT_S)) / FLIGHT_S, 0.0, 1.0)
+        # smoothstep position: the animation eases in and out, so the carriage
+        # is at rest at both ends and fastest in the middle
+        dpos_du = 6.0 * u * (1.0 - u)                # d/du of 3u^2 - 2u^3
+        v = dpos_du * reach / FLIGHT_S               # m/s
+        shaft = v / BALLSCREW_LEAD_M                 # rev/s
+        moving = (u > 0.0) & (u < 1.0)
+        holding = (tf >= 0.0) & (tf < seat_t)
+        # ---- tones ---------------------------------------------------------
+        def tone(mult, amp):
+            f = np.clip(shaft * mult, 0.0, sr * 0.44)
+            return amp * np.sin(dsp.integrate_phase(f, sr)) * moving
+        mech = (tone(GEAR_TEETH, 0.55)
+                + tone(GEAR_TEETH * 2.0, 0.18)
+                + tone(STATOR_SLOTS, 0.30)
+                + tone(2.0 * POLE_PAIRS, 0.40))
+        # loading: a servo lifting is louder than one coasting
+        mech *= 0.35 + 0.65 * np.clip(shaft / max(float(shaft.max()), 1e-9), 0.0, 1.0)
+        # ---- the hold: the arm's own mode, struck by the position loop ------
+        dither = 0.5 * (1.0 - np.cos(2.0 * np.pi * f_dither * tf))
+        hold = np.sin(dsp.integrate_phase(np.full(n, f_arm), sr)) * (0.25 + 0.75 * dither ** 2)
+        hold = hold * holding * 0.45
+        # ---- bearing: broadband, but only while something is turning -------
+        # DERIVATION: a rolling-element bearing radiates through the resonance
+        # of its own outer ring and housing, which for the 20-40 mm bores an
+        # electric axis of this size uses sits at 1.5-4 kHz. The band is the
+        # HOUSING's, not a choice; what varies with speed is the level, below.
+        # derivation: the bearing housing's own resonance -- see above.
+        bear = dsp.bp(dsp.white(n, seed + 17 * i), 1500.0, 4000.0, sr, 2)
+        bear = bear * 0.06 * np.clip(shaft / 40.0, 0.0, 1.0) * moving
+        sig = (mech + hold + bear)
+        # each actuator switches off at its own seat frame: fifteen different
+        # stop times is the structural answer to "one global period"
+        sig *= np.clip((seat_t + 0.10 - tf) / 0.10, 0.0, 1.0) * (tf > -0.5)
+        out += sig * 0.012
+        info.append({"cluster": name, "arm_reach_m": round(reach, 3),
+                     "arm_mode_hz": round(f_arm, 1),
+                     "position_loop_hz": round(float(f_dither), 2),
+                     "peak_shaft_rev_s": round(float(shaft.max()), 1),
+                     "gear_mesh_hz_peak": round(float(shaft.max()) * GEAR_TEETH, 1),
+                     "seat_film_t_s": round(seat_t, 4)})
+    return out, {"voices": len(info), "ballscrew_lead_m": BALLSCREW_LEAD_M,
+                 "gear_teeth": GEAR_TEETH, "pole_pairs": POLE_PAIRS,
+                 "stator_slots": STATOR_SLOTS,
+                 "broadband_gain": 0.06, "broadband_band_hz": [1500.0, 4000.0],
+                 "replaces": ("f_srv = 320 + 90*sin(2*pi*0.11*t) with a 0.6 "
+                              "band-passed white-noise term -- one LFO and one "
+                              "hiss for the whole showroom"),
+                 "per_cluster": info}
+
+
 def assembly(t_world, clusters, sr, launch_film_t, fps=24, seed=1234):
     """Beat 1: servo whir plus one impact per cluster arrival.
 
@@ -928,6 +1261,7 @@ def assembly(t_world, clusters, sr, launch_film_t, fps=24, seed=1234):
     rng = np.random.default_rng(seed)
     out = np.zeros(n, dtype=np.float64)
     ev = []
+    n_bounce = 0
     t0 = float(t_world[0])
     cl_info = {}
     for name, c in clusters.items():
@@ -945,8 +1279,9 @@ def assembly(t_world, clusters, sr, launch_film_t, fps=24, seed=1234):
         # it is set by the material pairing rather than by a filter.
         t_contact = 6.0e-4 if mat == "cfrp" else 2.0e-4
         nparts = int(c["n_parts"])
-        for p in range(nparts):
-            fr = seat_f + (last_f - seat_f) * (p / max(nparts - 1, 1))
+        arrivals = cluster_arrivals(name, nparts, seat_f, last_f, c, fps)
+        n_bounce += sum(1 for _fr, _g, kind in arrivals if kind == "bounce")
+        for p, (fr, g_bounce, kind) in enumerate(arrivals):
             wt = (fr - 1) / fps - launch_film_t
             i = int((wt - t0) * sr)
             if not (0 <= i < n - int(0.9 * sr)):
@@ -972,22 +1307,20 @@ def assembly(t_world, clusters, sr, launch_film_t, fps=24, seed=1234):
             # acceleration noise of the contact itself, same construction as the
             # shards: one cycle at 1/T, not a broadband click
             hit += _accel_noise(sr, t_contact, ACCEL_NOISE_RATIO * float(amp.sum()), L)
-            g = 0.30 * (vol ** 0.30) / max(nparts, 1) ** 0.35
+            g = 0.30 * (vol ** 0.30) / max(nparts, 1) ** 0.35 * g_bounce
             pk = float(np.abs(hit).max())
             if pk > 0:
                 out[i:i + L] += hit / pk * g
-            ev.append((name, fr, float(f[0])))
+            ev.append((name, fr, float(f[0]), kind))
     out = _sig.sosfilt(dsp.sos_band(45.0, 18000.0, sr, 2), out)
 
-    # servo whir while parts are in flight (frames 1..792)
-    fly = ((t_world + launch_film_t) * fps >= 1) & ((t_world + launch_film_t) * fps <= 800)
-    f_srv = 320.0 + 90.0 * np.sin(2.0 * np.pi * 0.11 * t_world)
-    srv = (np.sin(dsp.integrate_phase(f_srv, sr)) * 0.5
-           + np.sin(dsp.integrate_phase(f_srv * 2.7, sr)) * 0.2
-           + dsp.bp(dsp.white(n, seed + 1), 900.0, 6000.0, sr, 2) * 0.6)
-    out += srv * fly * 0.012
-    return out.astype(np.float32), {"impacts": len(ev), "clusters": len(clusters),
-                                    "cluster_modes": cl_info}
+    srv, srv_info = servo_bed(t_world, clusters, sr, launch_film_t, fps=fps,
+                              seed=seed + 1)
+    out += srv
+    return out.astype(np.float32), {
+        "impacts": len(ev), "clusters": len(clusters), "cluster_modes": cl_info,
+        "first_contacts": len(ev) - n_bounce, "restitution_bounces": n_bounce,
+        "arrival_schedule": ARRIVAL_NOTE, "servo": srv_info}
 
 
 # =================================================================== breach ==

@@ -449,13 +449,26 @@ def physical_showroom_beat(sr=SR, total_s=BEAT1_S, seed=808):
     return np.stack([_norm(L, 0.09), _norm(R, 0.09)], axis=1)
 
 
-def constant_rpm_pu(sr=SR, total_s=33.0, rpm=11000.0, order=3.0, seed=99):
+def constant_rpm_pu(sr=SR, total_s=33.0, rpm=11000.0, order=1.5, seed=99):
     """C8 -- a physics-true positive: a power unit held at constant rpm.
 
     Firing lines at order*k*rpm/60 with a mild incommensurate rpm wobble (no
     modulation line in 0.2-3 Hz), 1-2 % per-cylinder gain dispersion so the
     comb is not mathematically perfect, and a compressor band kept at 4-13 kHz
     -- ABOVE the client's complaint band, which is where `rasp` lived.
+
+    R2-4066: THE FIRING GEOMETRY MOVED, SO THE POSITIVE CONTROL MOVES WITH IT.
+    B7 adopts the FIA Art. 5.2.10 three-journal crank, which forces uneven
+    90/150 firing and halves the fundamental to engine order 1.5. Two firing
+    sub-trains a quarter revolution apart multiply the comb by
+    |1 + exp(-i*2*pi*m/4)| = 2|cos(pi*m/4)| at order m, so this control now
+    carries that weighting -- and therefore carries the order-1.5 line and the
+    order-6 null that G-IDENTITY gates.
+
+    IT IS STILL SYNTHESISED HERE FROM THE ALGEBRA and does not import
+    `audio.engine`. A positive control that is the render path is not a control;
+    if the two ever disagree, C8 fails and the suite refuses to adjudicate,
+    which is the outcome that should follow.
     """
     n = int(total_s * sr)
     t = np.arange(n) / sr
@@ -473,7 +486,13 @@ def constant_rpm_pu(sr=SR, total_s=33.0, rpm=11000.0, order=3.0, seed=99):
         f = f0 * k
         if float(f.max()) > sr * 0.45:
             break
-        amp = (1.0 / k ** 1.15) * float(rng.uniform(0.98, 1.02))
+        m = order * k                       # engine order of this line
+        # the quarter-revolution weighting: exactly 0 at order 6, 1 at order 12
+        a_geom = abs(np.cos(np.pi * m / 4.0))
+        # 1-2 % per-cylinder dispersion, so the null is deep but not infinite --
+        # which is what a real engine's machining tolerance does to it
+        a_geom = np.hypot(a_geom, 0.015)
+        amp = (1.0 / k ** 1.15) * a_geom * float(rng.uniform(0.98, 1.02))
         y += amp * np.sin(k * ph + rng.uniform(0, 6))
     # turbine/compressor broadband, 4-13 kHz only: above the complaint band
     sos = _sig.butter(4, [4000.0, min(13000.0, sr * 0.45)], btype="bandpass",

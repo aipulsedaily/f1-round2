@@ -49,7 +49,13 @@ TRACK_MAX_CENTS = 200.0
 # suite had, and a comb search handed the wrong fundamental locks an octave out
 # and reports a tracker failure fraction, not a Doppler failure. So the order
 # lives here, both gates read it, and porting B7 is one edit rather than a hunt.
-ENGINE_ORDER = 3.0
+# PORTED BY B7 AT R2-4066, DELIBERATELY AND ON ITS OWN LINE. `audio/engine.py`
+# now fires on the Art. 5.2.10 three-journal geometry (`half_order_weight`,
+# default 1.0), which puts the firing fundamental at engine order 1.5. Both
+# `pitch` and `doppler` read this; with it left at 3.0 every Doppler station
+# reports a tracker failure fraction that looks like a broken Doppler and is
+# not. Set it back to 3.0 if and only if `engine.HALF_ORDER_WEIGHT` goes to 0.0.
+ENGINE_ORDER = 1.5
 DOPPLER_MIN_CLOSING_MS = 15.0
 # A pass worth measuring. Below ~15 m/s of closing speed the ratio moves by
 # under 0.8 semitones over the window and the measurement is inside its own
@@ -381,6 +387,23 @@ def _pyloudnorm_lufs(x, sr):
                               getattr(pyloudnorm, "__version__", "?")}
 
 
+# THE DELIVERY LOUDNESS THIS GATE ADJUDICATES AGAINST.
+#
+# R2-4068 retargets the master from -14.0 LUFS (a streaming-MUSIC normalisation
+# figure) to EBU R 128's -23.0 LUFS +-0.5 LU at a true peak of -1 dBTP, because
+# -14 LUFS and this programme's 22.13 dB peak-to-loudness ratio are not
+# simultaneously satisfiable and the loudness target is the one that gives. The
+# reasoning, with the arithmetic, is at `master.TARGET_LUFS_I`.
+#
+# The number lives here as well as there ON PURPOSE and is not imported: a gate
+# that reads its bar out of the thing it is judging cannot fail it. If the two
+# ever disagree the gate fails and says by how much, which is the correct
+# outcome. The TOLERANCE is EBU R 128's own +-0.5 LU, not a figure chosen here.
+DELIVERY_LUFS_I = -23.0
+DELIVERY_LUFS_TOL = 0.5
+DELIVERY_MAX_DBTP = -1.0
+
+
 def level_gate(x, sr):
     L, st, st_t = dsp.loudness_lufs(x, sr)
     tp = dsp.true_peak_dbtp(x, sr)
@@ -402,7 +425,16 @@ def level_gate(x, sr):
         "reference_meter": pln,
         "reference_meter_delta_lu": (
             float(L - pln["integrated_lufs"]) if pln.get("available") else None),
-        "PASS": bool(tp <= -1.0 and pk < 1.0 and abs(L + 14.0) <= 0.5 and quiet == 0
+        "delivery_standard": ("EBU R 128 (Tech 3341/3343): %.1f LUFS +-%.1f LU, "
+                              "true peak <= %.1f dBTP"
+                              % (DELIVERY_LUFS_I, DELIVERY_LUFS_TOL,
+                                 DELIVERY_MAX_DBTP)),
+        "target_lufs": DELIVERY_LUFS_I,
+        "lufs_error_lu": float(L - DELIVERY_LUFS_I),
+        "peak_to_loudness_ratio_db": float(20 * np.log10(max(pk, 1e-12)) - float(L)),
+        "PASS": bool(tp <= DELIVERY_MAX_DBTP and pk < 1.0
+                     and abs(L - DELIVERY_LUFS_I) <= DELIVERY_LUFS_TOL
+                     and quiet == 0
                      and (not pln.get("available")
                           or abs(L - pln["integrated_lufs"]) <= 0.3)),
     }

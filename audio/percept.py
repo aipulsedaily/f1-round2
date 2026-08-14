@@ -75,6 +75,22 @@ PROVENANCE = "provenance"
 # violation is a hard error, not a warning.
 SOURCES_ALLOWED = ("physics", "published", "control-derived")
 
+# THE FIRING ORDER THE SUITE PREDICTS LINES FROM.
+#
+# B7 (R2-4066) adopts the FIA Art. 5.2.10 three-journal geometry, which forces
+# uneven 90/150 firing and HALVES the firing fundamental from engine order 3 to
+# order 1.5. Every gate that predicts a line from telemetry rpm has to move with
+# it or it looks for a comb that is not there.
+#
+# This constant is DELIBERATELY NOT IMPORTED FROM `audio.engine`. A judge that
+# reads its ground truth out of the thing it is judging cannot fail it -- that is
+# the same defect as `verify.py:816`'s "the limit is the midpoint between what
+# THIS master reads and what the adversary reads", pointed at a different
+# quantity. The two are derived independently from the same regulations and are
+# expected to agree; if they ever disagree, G-ORDER and G-IDENTITY both fail and
+# say so, which is the correct outcome.
+ENGINE_FIRING_ORDER = 1.5
+
 
 @dataclass(frozen=True)
 class Threshold:
@@ -162,6 +178,70 @@ _T("G_ORDER.line_tolerance_pct", 1.5, "percent of line frequency", "physics",
    "+-1.5 % is 26 cents, under a quarter of a semitone, and comfortably wider "
    "than the 0.5 % rpm resolution of the telemetry solve across one analysis "
    "window. Set by the measurement's own resolution, not by any film's score.")
+
+# ------------------------------------------------------------ G-IDENTITY ----
+# SPECIFIED IN THE SPEC AND ABSENT FROM THE SUITE UNTIL NOW, and R2-4053 said
+# so rather than shipping it as a row that could only fail: it gates the
+# order-1.5 line and the order-6 notch, and both exist only once B7's
+# `half_order_weight` does. B7 landed at R2-4066, so it lands here.
+#
+# THE DERIVATION, IN FULL, BECAUSE THE BARS ARE DERIVED AND NOT MEASURED.
+# FIA 2025 Art. 5.2.10 permits three con-rod journals; Art. 5.2.7 fixes a
+# 90-degree vee. Two cylinders per journal in a 90-degree vee are forced 90
+# degrees apart in crank angle, and the three journals sit 120 degrees apart, so
+# the six firings land at 0/90, 240/330, 480/570 -- a pattern of period 240
+# degrees, i.e. two thirds of a revolution, so the firing fundamental is engine
+# ORDER 1.5. The pattern is two pulses a quarter revolution apart, so the
+# even-fired comb is multiplied by |1 + exp(-i*2*pi*m/4)| = 2|cos(pi*m/4)| at
+# order m:
+#
+#   order   1.5    3.0    4.5    6.0    7.5    9.0   12.0
+#   A(m)   0.383  0.707  0.924  0.000  0.924  0.707  1.000
+#
+#   20*log10(A(1.5)/A(3.0)) = -5.34 dB      order 6 is an EXACT null
+#
+# NO MEASURED F1 SPECTRUM WAS OBTAINABLE to corroborate any of this -- every
+# publisher returned 403 -- so both bars are deliberately loose and both are
+# marked DERIVED-NOT-MEASURED. What they test is that the geometry is PRESENT
+# and has the right sign, not that its depth is exactly the algebra's.
+_T("G_IDENTITY.half_order_min_db_rel_order3", -12.0, "dB re order 3", "physics",
+   "The half order must be PRESENT. Derived value is -5.34 dB from "
+   "20*log10(cos(0.375*pi)/cos(0.75*pi)); the bar sits 6.7 dB below it because "
+   "a shared turbine collector genuinely attenuates the half order (engine.py's "
+   "own `_collector_tail` argues this) and the pipe response at order 1.5 is not "
+   "the pipe response at order 3. An evenly-fired engine reads MINUS INFINITY "
+   "here -- its order-1.5 amplitude is identically 0.0000, verified to 1e-12 -- "
+   "so this bar separates the two geometries and nothing else. "
+   "DERIVED-NOT-MEASURED.")
+_T("G_IDENTITY.half_order_max_db_rel_order3", 6.0, "dB re order 3", "physics",
+   "The other side, and it is the one that matters for a false pass: a half "
+   "order LOUDER than the main order is not a 90/150 V6, it is a V6 firing "
+   "three times per two revolutions, i.e. a broken engine or an octave error in "
+   "whatever produced it. Derived value -5.34 dB, so this is 11.3 dB of "
+   "headroom above the algebra. DERIVED-NOT-MEASURED.")
+_T("G_IDENTITY.min_order6_notch_db", 6.0, "dB below the mean of orders 4.5/7.5",
+   "physics",
+   "The order-6 null is EXACT in the algebra -- A(6) = |cos(1.5*pi)| = 0 -- and "
+   "it is the one feature no static EQ can fake, because the notch frequency is "
+   "6*rpm/60 and slides with the crank. It cannot be infinitely deep in a real "
+   "render: 1-2 % per-cylinder timing and charge dispersion fills it in, the "
+   "analysis window has finite resolution, and the neighbouring orders leak. "
+   "6 dB is the depth that survives all three and is still unambiguous against "
+   "a comb that has no notch at all, where the ratio is 0 dB by construction. "
+   "DERIVED-NOT-MEASURED.")
+_T("G_IDENTITY.line_present_db_over_floor", 6.0, "dB over the local floor",
+   "control-derived",
+   "A reference order that is not itself a line cannot anchor a ratio. 6 dB of "
+   "excess over the median of a +-25 % neighbourhood is the point at which the "
+   "band carries four times its own floor's power, which the synthesised "
+   "constant-rpm control clears by more than 50 dB and filtered noise cannot "
+   "reach at all. Applied to orders 3 / 4.5 / 7.5 only: order 6 is REQUIRED to "
+   "be absent and gating on its presence would invert the test.")
+_T("G_IDENTITY.min_windows", 8.0, "windows", "control-derived",
+   "Fewer than eight 0.5 s windows on throttle with a telemetry rpm is not a "
+   "measurement, and asserting an identity defect from a measurement that did "
+   "not happen is the same error as calling an unmeasurable beat a pass. Below "
+   "this the beat is INAPPLICABLE, which is not PASS.")
 
 # ---------------------------------------------------------------- G-RING ----
 _T("G_RING.t60_vs_sabine_max_ratio", 1.25, "ratio", "physics",
@@ -1553,7 +1633,7 @@ def order_energy_fraction(seg, sr, f_fund, f_lo=300.0, f_hi=4000.0,
     return float(S[m & on].sum() / tot)
 
 
-def g_order(mono, sr, beats, rpm_at, order=3.0, doppler_at=None,
+def g_order(mono, sr, beats, rpm_at, order=ENGINE_FIRING_ORDER, doppler_at=None,
             throttle_at=None, engine_beats=("2_launch", "4_transit", "5_lap")):
     """G-ORDER -- is the line spectrum a COMB THAT MOVES WITH THE TELEMETRY?
 
@@ -1614,6 +1694,167 @@ def g_order(mono, sr, beats, rpm_at, order=3.0, doppler_at=None,
                          f"f = {order}*k*rpm/60, rpm from TELEMETRY, "
                          f"Doppler-shifted by the render's own retarded-time solve"),
             "engine_order": order,
+            "per_beat": per_beat, "failures": failures, "inapplicable": inapp,
+            "verdict": _verdict(per_beat, failures, inapp)}
+
+
+# ------------------------------------------------------------ G-IDENTITY ----
+def _order_line_db(seg, sr, f_fund, orders, tol_pct=1.5, win=None):
+    """Level of the line at f = m*f_rev, for each engine order m.
+
+    Returns {m: (level_db, over_floor_db)}.
+
+    TWO NUMBERS, AND THE REASON IS A BUG THIS ESTIMATOR HAD FIRST. The obvious
+    construction -- peak bin over the median of a local neighbourhood -- reads
+    the LEAKAGE ENVIRONMENT as much as the line. On the synthesised constant-rpm
+    control, whose true line powers are +51.18 / +49.34 dB at orders 1.5 and 3
+    (a ratio of +1.84 dB, exactly what the construction puts there), that
+    estimator returned +85.1 / +97.6 dB and a ratio of -12.4 dB, because the
+    Hanning skirt of the very strong low orders raises the floor around 275 Hz
+    far more than around 550 Hz. It would have failed a control that is correct
+    by construction, and the number it failed it on was an artefact of the
+    instrument.
+    #
+    So:
+      * `level_db` is the SUMMED power inside the line's own tolerance band
+        with the local floor's contribution subtracted (floor median x the
+        band's bin count). Summing rather than peak-picking is necessary
+        because a line at 1375 Hz with a 0.3 % rpm wander smears over several
+        bins while a line at 275 Hz does not -- peak-picking under-reads high
+        orders by 15 dB for that reason alone. This is the number order ratios
+        are taken from.
+      * `over_floor_db` is that excess against the same local floor, and it is
+        used ONLY as a presence test: a line that does not stand clear of its
+        own neighbourhood is not a line.
+    """
+    win = win or (1 << int(np.log2(max(min(len(seg), int(0.5 * sr)), 4096))))
+    if win < 4096 or len(seg) < win:
+        return {m: (float("nan"), float("nan")) for m in orders}
+    P, f = _stft_power(seg, sr, win=win, hop=win // 2)
+    if P.shape[0] < 1:
+        return {m: (float("nan"), float("nan")) for m in orders}
+    S = P.mean(axis=0)
+    out = {}
+    for m in orders:
+        fl = f_fund * m
+        if fl < 30.0 or fl > sr * 0.45:
+            out[m] = (float("nan"), float("nan"))
+            continue
+        onm = np.abs(f - fl) / fl * 100.0 <= tol_pct
+        near = (np.abs(f - fl) / fl <= 0.25) & ~onm
+        if onm.sum() < 1 or near.sum() < 8:
+            out[m] = (float("nan"), float("nan"))
+            continue
+        floor = float(np.median(S[near])) * float(onm.sum())
+        band = float(S[onm].sum())
+        excess = max(band - floor, 1e-30)
+        out[m] = (float(10.0 * np.log10(excess)),
+                  float(10.0 * np.log10(excess / max(floor, 1e-30))))
+    return out
+
+
+def g_identity(mono, sr, beats, rpm_at, order=1.5, doppler_at=None,
+               throttle_at=None, engine_beats=("2_launch", "4_transit", "5_lap")):
+    """G-IDENTITY -- is this the FIA Art. 5.2.10 firing geometry, or an evenly
+    fired V6 with a half order that is identically zero?
+
+    G-ORDER asks whether the comb tracks the telemetry. This asks a different
+    question that G-ORDER cannot: WHICH comb. An evenly fired V6 puts nothing at
+    all at order 1.5 and has no notch at order 6; the three-journal geometry puts
+    order 1.5 at a derived -5.34 dB under order 3 and nulls order 6 exactly. Both
+    are lines that MOVE WITH RPM, so neither can be faked by a fixed filter --
+    the order-6 notch in particular slides 400 Hz to 1200 Hz across this film.
+
+    Bars are DERIVED, not measured: no F1 spectrum was obtainable. See the
+    threshold notes.
+    """
+    per_beat, failures, inapp = {}, [], []
+    lo_lim = V("G_IDENTITY.half_order_min_db_rel_order3")
+    hi_lim = V("G_IDENTITY.half_order_max_db_rel_order3")
+    notch_lim = V("G_IDENTITY.min_order6_notch_db")
+    min_win = int(V("G_IDENTITY.min_windows"))
+    pres = V("G_IDENTITY.line_present_db_over_floor")
+    tol = V("G_ORDER.line_tolerance_pct")
+    ORDERS = (1.5, 3.0, 4.5, 6.0, 7.5)
+    if order != 1.5:
+        return {"gate": "G-IDENTITY", "kind": QUALITY, "per_beat": {},
+                "failures": [], "verdict": INAPPLICABLE,
+                "inapplicable": [f"the render declares firing order {order}, not "
+                                 f"1.5 -- there is no half order to measure and "
+                                 f"no order-6 notch to find. This is the "
+                                 f"`half_order_weight = 0.0` engine and the gate "
+                                 f"says so rather than failing it for being "
+                                 f"what it declares itself to be."],
+                "measures": "order-1.5 presence and the order-6 notch"}
+    for b in beats:
+        if b.name not in engine_beats:
+            inapp.append(f"{b.name}: not an engine beat by declaration")
+            continue
+        seg = _slice(mono, sr, b)
+        step = 0.5
+        rows = []
+        t = b.t0 + 0.25
+        while t + step <= b.t1:
+            i0, i1 = int((t - b.t0) * sr), int((t - b.t0 + step) * sr)
+            rpm = float(rpm_at(t))
+            if throttle_at is not None and float(throttle_at(t)) <= 0.10:
+                t += step
+                continue
+            if not np.isfinite(rpm) or rpm < 3000.0:
+                t += step
+                continue
+            ratio = float(doppler_at(t)) if doppler_at is not None else 1.0
+            f_rev = rpm / 60.0 * ratio
+            d = _order_line_db(seg[i0:i1], sr, f_rev, ORDERS, tol_pct=tol)
+            # the REFERENCE orders must be present for the ratio to mean
+            # anything; order 6 is allowed -- required, in fact -- to be absent
+            if (all(np.isfinite(d[m][0]) for m in ORDERS)
+                    and all(d[m][1] > pres for m in (3.0, 4.5, 7.5))):
+                rows.append(d)
+            t += step
+        if len(rows) < min_win:
+            inapp.append(f"{b.name}: {len(rows)} windows with orders 3/4.5/7.5 "
+                         f"standing more than {pres:.0f} dB clear of their own "
+                         f"local floor, out of a required {min_win}")
+            continue
+        med = {m: float(np.median([r[m][0] for r in rows])) for m in ORDERS}
+        med_over = {m: float(np.median([r[m][1] for r in rows])) for m in ORDERS}
+        half_rel = med[1.5] - med[3.0]
+        notch = 0.5 * (med[4.5] + med[7.5]) - med[6.0]
+        row = {"windows": len(rows),
+               "order_line_level_db": med,
+               "order_line_db_over_local_floor": med_over,
+               "order1p5_minus_order3_db": half_rel,
+               "order6_notch_db_below_mean_of_4p5_and_7p5": notch,
+               "derived_order1p5_minus_order3_db": -5.34,
+               "limits": {"half_rel_db": [lo_lim, hi_lim],
+                          "notch_db": notch_lim},
+               "outcome": PASS}
+        if half_rel < lo_lim:
+            row["outcome"] = FAIL
+            failures.append(f"{b.name}: order 1.5 is {half_rel:.2f} dB relative to "
+                            f"order 3, below {lo_lim:.1f} dB -- the half order the "
+                            f"three-journal geometry requires is not there")
+        elif half_rel > hi_lim:
+            row["outcome"] = FAIL
+            failures.append(f"{b.name}: order 1.5 is {half_rel:+.2f} dB relative to "
+                            f"order 3, above {hi_lim:.1f} dB -- louder than the "
+                            f"order it is supposed to sit under")
+        if notch < notch_lim:
+            row["outcome"] = FAIL
+            failures.append(f"{b.name}: the order-6 notch is {notch:.2f} dB below "
+                            f"orders 4.5/7.5, less than {notch_lim:.1f} dB -- the "
+                            f"quarter-revolution null is absent")
+        per_beat[b.name] = row
+    return {"gate": "G-IDENTITY", "kind": QUALITY,
+            "measures": ("order-1.5 level relative to order 3, and the depth of "
+                         "the order-6 null, both on lines predicted from "
+                         "TELEMETRY rpm and therefore both sliding with the "
+                         "crank -- no static EQ can produce either"),
+            "engine_order": order,
+            "derivation": ("A(m) = |cos(pi*m/4)| from two firing sub-trains a "
+                           "quarter revolution apart. DERIVED-NOT-MEASURED: no "
+                           "F1 spectrum was obtainable to corroborate it."),
             "per_beat": per_beat, "failures": failures, "inapplicable": inapp,
             "verdict": _verdict(per_beat, failures, inapp)}
 
@@ -1892,13 +2133,13 @@ def constant_rpm_telemetry(rpm=11000.0):
 
 
 # ============================================================ the suite =====
-QUALITY_GATES = ("G-FLAT", "G-HNR", "G-ORDER", "G-RING", "G-NOVEL", "G-MOD",
-                 "G-GESTURE", "G-ROOM", "G-BALANCE")
+QUALITY_GATES = ("G-FLAT", "G-HNR", "G-ORDER", "G-IDENTITY", "G-RING",
+                 "G-NOVEL", "G-MOD", "G-GESTURE", "G-ROOM", "G-BALANCE")
 PROVENANCE_GATES = ("G-CONSTRUCT",)
 
 
 def run_suite(x, sr, sheet, stems=None, telemetry=None, gates=None,
-              engine_order=3.0):
+              engine_order=ENGINE_FIRING_ORDER):
     """Run every gate that applies to `x` and return one report.
 
     `telemetry` is a dict with callables rpm_at / doppler_at / throttle_at, or
@@ -1938,6 +2179,24 @@ def run_suite(x, sr, sheet, stems=None, telemetry=None, gates=None,
                                                "be independent ground truth and "
                                                "is never estimated from the audio"],
                               "measures": "comb tracking against telemetry rpm"}
+    if "G-IDENTITY" in want:
+        if telemetry:
+            out["G-IDENTITY"] = g_identity(mono, sr, beats, telemetry["rpm_at"],
+                                           order=engine_order,
+                                           doppler_at=telemetry.get("doppler_at"),
+                                           throttle_at=telemetry.get("throttle_at"),
+                                           engine_beats=telemetry.get(
+                                               "engine_beats",
+                                               ("2_launch", "4_transit", "5_lap")))
+        else:
+            out["G-IDENTITY"] = {"gate": "G-IDENTITY", "kind": QUALITY,
+                                 "per_beat": {}, "failures": [],
+                                 "verdict": INAPPLICABLE,
+                                 "inapplicable": ["no telemetry supplied -- the "
+                                                  "order lines are predicted from "
+                                                  "rpm and are never estimated "
+                                                  "from the audio"],
+                                 "measures": "order-1.5 presence and the order-6 notch"}
     if "G-BALANCE" in want:
         out["G-BALANCE"] = g_balance(stems or {}, sr, beats)
     if "G-CONSTRUCT" in want:

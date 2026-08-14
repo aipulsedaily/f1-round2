@@ -359,7 +359,101 @@ def speed_of_sound(temp_c=18.0):
 
 
 # -------------------------------------------------------------------- reverb --
-def fdn_reverb(x, sr, delays_m, rt60_low, rt60_high, c=None, seed=11, wet_hf_hz=4000.0):
+def _prime_at_or_below(k):
+    """Largest prime <= k (k >= 2). Delay lengths that share a factor share
+    every mode at that factor's rate, which is exactly the coincidence that
+    turns a reverberator into a comb bank."""
+    k = int(max(k, 2))
+    while k > 2:
+        if all(k % d for d in range(2, int(k ** 0.5) + 1)):
+            return k
+        k -= 1
+    return 2
+
+
+def allpass_chain(x, delays, g=0.7):
+    """A series of Schroeder allpasses. FLAT MAGNITUDE, dispersive phase.
+
+    This is the diffusion stage `fdn_reverb` did not have, and its absence is
+    the measured defect: an 8-tap network with no diffusion is a bank of eight
+    combs, so 13 of the delivered master's strongest narrow lines were each a
+    harmonic of a delay length matched to 0.01-0.93 %, and the tail's 1/12-octave
+    ripple over 0.4-6 kHz measured 20.31 dB on the impulse response alone.
+
+    An allpass CANNOT add a comb, because |H| = 1 at every frequency by
+    construction: y = -g*x + x[n-D] + g*y[n-D] has numerator (-g + z^-D) and
+    denominator (1 - g z^-D), which are reverses of each other. What it does add
+    is echo density -- each stage multiplies the number of echoes -- and that is
+    what fills in the spaces between the network's modes.
+    """
+    y = np.asarray(x, dtype=np.float64)
+    for D in delays:
+        D = int(max(D, 2))
+        # exact block form: inside a window of D samples every value the
+        # recursion reads was written before the window began
+        z = np.zeros(len(y) + D)
+        out = np.empty_like(y)
+        for a0 in range(0, len(y), D):
+            b0 = min(a0 + D, len(y))
+            v = y[a0:b0] + g * z[a0:b0]
+            z[a0 + D:b0 + D] = v
+            out[a0:b0] = z[a0:b0] - g * v
+        y = out
+    return y
+
+
+# THE DIFFUSION DELAYS. Mutually prime, spanning 0.9-16 ms, in a 1.6x geometric
+# progression so no stage's echo pattern lands on another's. Eight stages, which
+# is the top of the spec's 4-8 range: each roughly doubles the echo count, so
+# eight take one impulse to a few hundred before the network sees it.
+DIFFUSION_MS = (0.94, 1.51, 2.42, 3.87, 6.19, 9.91, 12.7, 16.3)
+
+# Two independent allpass chains, for turning one mono source into two ears.
+# Prime millisecond figures, no common factor between the two lists.
+DECORR_MS_L = (2.9, 4.7, 7.3, 11.1)
+DECORR_MS_R = (3.7, 5.9, 9.1, 13.7)
+
+
+def decorrelate_stereo(mono, sr, coherence_hz=500.0, gain=0.7):
+    """One mono source -> two ears, WITHOUT summing anything with a delayed
+    copy of itself.
+
+    THE DEFECT THIS REPLACES. Three places in this package built a stereo pair
+    as `L = x, R = delay(x, d)*a + x*b` (wind at 0.9 ms, the outdoor bed at
+    3.1 ms, the showroom tail at 7.1/11.3 ms). Summing a signal with a delayed
+    copy of itself is a COMB FILTER: notches every 1/d Hz, 1.1 kHz spacing for
+    the wind, 323 Hz for the bed, 141.0 and 88.6 Hz for the tail. Measured on
+    the delivered master those last two are the largest cepstral feature in the
+    entire first thirty seconds, at 16.5-17.6 dB of ripple. A fixed comb across
+    the whole spectrum is the definition of a hollow tube, and the client used
+    that word.
+
+    THE REPLACEMENT IS ALLPASS, so it cannot comb: |H(f)| = 1 at every
+    frequency for each chain, exactly, so neither ear's MAGNITUDE spectrum
+    differs from the source's by anything at all. What differs is phase, and
+    two chains with no common delay produce phase differences that decorrelate
+    the two ears at mid and high frequency -- which is what turbulence at two
+    ears actually is.
+
+    LOW FREQUENCY STAYS COHERENT. Two receivers a apart in a diffuse field have
+    coherence sinc(2*pi*f*a/c), which is 1.0 at DC and first crosses zero at
+    c/(2a) = 953 Hz for a 0.18 m head. Below `coherence_hz` the two channels are
+    therefore replaced by their mean. The split is complementary (`x - lp(x)`
+    plus `lp(x)` reconstructs `x` exactly), so no delay enters here either.
+    """
+    x = np.asarray(mono, dtype=np.float64)
+    L = allpass_chain(x, [max(int(round(ms * 1e-3 * sr)), 2) for ms in DECORR_MS_L], gain)
+    R = allpass_chain(x, [max(int(round(ms * 1e-3 * sr)), 2) for ms in DECORR_MS_R], gain)
+    out = np.stack([L, R], axis=1)
+    lo = np.stack([lp(out[:, 0], coherence_hz, sr, 2),
+                   lp(out[:, 1], coherence_hz, sr, 2)], axis=1)
+    out = (out - lo) + lo.mean(axis=1, keepdims=True)
+    return out.astype(np.float32)
+
+
+
+def fdn_reverb(x, sr, delays_m, rt60_low, rt60_high, c=None, seed=11,
+               wet_hf_hz=4000.0, n_diffusion=8, stereo=False, extra_lines=8):
     """Feedback delay network sized from a REAL room's dimensions.
 
     `delays_m` are acoustic path lengths in metres -- for the showroom they come
@@ -367,22 +461,69 @@ def fdn_reverb(x, sr, delays_m, rt60_low, rt60_high, c=None, seed=11, wet_hf_hz=
     tail is the modal spacing of the actual room rather than of a preset. The
     feedback matrix is a Householder reflection (lossless, so the decay is set
     only by the per-line damping, which is what makes RT60 controllable).
+
+    R2-4067 -- THREE THINGS THIS DID NOT HAVE, ALL OF THEM MEASURED FIRST.
+    ---------------------------------------------------------------------
+    1. NO DIFFUSION AT ALL. Eight delay lines with a lossless mixing matrix and
+       nothing else is eight combs. Measured on this function's own impulse
+       response at the showroom's dimensions: 1/12-octave ripple over 0.4-6 kHz
+       = 20.31 dB p95-p5, and a cepstral peak 39.1x the local median at
+       11.667 ms. `n_diffusion` nested allpass stages now precede the network.
+       An allpass has unit magnitude, so this cannot colour the tail; all it can
+       do is raise echo density, which is the quantity that was short.
+    2. TOO FEW LINES, AND THEIR LENGTHS SHARED FACTORS. The room's eight
+       principal paths are kept -- that is where the tail's identity comes from
+       -- and `extra_lines` more are interleaved between them geometrically.
+       EVERY line's length in SAMPLES is then snapped to a prime, so no two
+       lines can share a mode.
+    3. NO STEREO OUTPUT, so `master.py` made its own by summing the mono tail
+       with a delayed copy of itself (681 and 1084 samples), which printed a
+       fixed 141.0 / 88.6 Hz comb at 16.5-17.6 dB of ripple -- the largest
+       cepstral feature in the whole first thirty seconds. `stereo=True` returns
+       two DIFFERENT linear combinations of the same delay lines instead. That
+       is what a two-microphone pickup in a diffuse field is; it is decorrelated
+       by construction and it cannot comb, because neither output contains a
+       delayed copy of the other.
     """
     x = np.asarray(x, dtype=np.float64)
     if c is None:
         c = float(speed_of_sound(20.0))
     n = x.shape[0]
-    N = len(delays_m)
-    D = [max(int(round(d / c * sr)), 8) for d in delays_m]
+
+    dm = [float(d) for d in delays_m]
+    if extra_lines:
+        # geometric interleave between the room's own paths, so the added lines
+        # are inside the room's range and not a second, different room
+        base = sorted(dm)
+        add = [float(np.sqrt(base[i] * base[i + 1]))
+               for i in range(len(base) - 1)][:int(extra_lines)]
+        while len(add) < int(extra_lines):
+            add.append(float(base[-1] * (1.0 + 0.11 * (len(add) + 1))))
+        dm = dm + add
+    N = len(dm)
+
+    # snap to prime SAMPLE lengths, keeping them distinct
+    D, used = [], set()
+    for d in sorted(dm):
+        k = _prime_at_or_below(max(int(round(d / c * sr)), 8))
+        while k in used and k > 2:
+            k = _prime_at_or_below(k - 1)
+        used.add(k)
+        D.append(k)
+    d_eff = [k * c / sr for k in D]                # what the line really is, in m
     # per-line gain for the target RT60 at low frequency
-    g = np.array([10.0 ** (-3.0 * d / (c * rt60_low)) for d in delays_m])
+    g = np.array([10.0 ** (-3.0 * d / (c * rt60_low)) for d in d_eff])
     # per-line one-pole damping so HF decays at rt60_high instead
-    gh = np.array([10.0 ** (-3.0 * d / (c * rt60_high)) for d in delays_m])
+    gh = np.array([10.0 ** (-3.0 * d / (c * rt60_high)) for d in d_eff])
     damp = np.clip(1.0 - gh / np.maximum(g, 1e-9), 0.0, 0.98)
 
     rng = np.random.default_rng(seed)
     inj = rng.choice([-1.0, 1.0], N) / np.sqrt(N)
     u = np.ones(N) / np.sqrt(N)                       # Householder vector
+
+    if n_diffusion:
+        x = allpass_chain(x, [max(int(round(ms * 1e-3 * sr)), 2)
+                              for ms in DIFFUSION_MS[:int(n_diffusion)]])
 
     # BLOCK SIZE = the SHORTEST delay. Inside a block of that length every read
     # from every line was written before the block began, so the whole block can
@@ -390,7 +531,18 @@ def fdn_reverb(x, sr, delays_m, rt60_low, rt60_high, c=None, seed=11, wet_hf_hz=
     # it is the same recursion, evaluated in an order the data dependencies allow.
     blk = min(D)
     lines = [np.zeros(n + d + blk) for d in D]        # write positions are absolute
-    out = np.zeros(n)
+    # OUTPUT TAPS. `w[0]` is the plain sum the mono version always used. `w[1]`
+    # is an orthogonal sign pattern -- a different point in the same diffuse
+    # field -- and `w[0] . w[1] = 0` exactly, which is what makes the two
+    # channels decorrelated rather than delayed copies of one another.
+    w0 = np.ones(N)
+    w1 = np.ones(N)
+    w1[1::2] = -1.0
+    if N % 2:                                        # keep the dot product zero
+        w1[-1] = 0.0
+    nch = 2 if stereo else 1
+    out = np.zeros((n, nch))
+    W = np.stack([w0, w1])[:nch] / np.sqrt(N)
     zi = [np.zeros(1) for _ in range(N)]
     for a0 in range(0, n, blk):
         b0 = min(a0 + blk, n)
@@ -399,15 +551,22 @@ def fdn_reverb(x, sr, delays_m, rt60_low, rt60_high, c=None, seed=11, wet_hf_hz=
         for k in range(N):
             s[k] = lines[k][a0:b0]                    # what was written D_k ago
         for k in range(N):
-            c = 1.0 - damp[k]
-            y, zi[k] = _sig.lfilter([c], [1.0, -(1.0 - c)], s[k], zi=zi[k])
+            cc = 1.0 - damp[k]
+            y, zi[k] = _sig.lfilter([cc], [1.0, -(1.0 - cc)], s[k], zi=zi[k])
             s[k] = y
         v = s * g[:, None]
         v = v - 2.0 * u[:, None] * (u @ v)[None, :]
         v = v + inj[:, None] * x[a0:b0][None, :]
         for k in range(N):
             lines[k][a0 + D[k]:b0 + D[k]] = v[k]
-        out[a0:b0] = s.sum(axis=0) / np.sqrt(N)
+        out[a0:b0] = (W @ s).T
+    fdn_reverb.last = {"n_lines": N, "delay_samples": D,
+                       "effective_delays_m": d_eff,
+                       "diffusion_stages": int(n_diffusion),
+                       "diffusion_delays_ms": list(DIFFUSION_MS[:int(n_diffusion)]),
+                       "output_taps": "orthogonal +-1 pair" if stereo else "sum"}
+    if not stereo:
+        return out[:, 0].astype(np.float32)
     return out.astype(np.float32)
 
 
