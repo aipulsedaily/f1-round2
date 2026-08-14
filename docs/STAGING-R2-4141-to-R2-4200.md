@@ -593,3 +593,378 @@ both still fail.
    drone AND 33 s of digital silence. It was caught by running the controls
    before believing the gate, which is the only reason this entry is not another
    rejection.
+
+---
+
+## R2-4149 — THE THREE ITEMS R2-4148 LEFT OPEN, CLOSED BY MEASUREMENT
+
+Beat 1 is not re-opened. What is closed here is the three things the pass that
+fixed it wrote down as OPEN: the reverb declaration, G-RING's lost beat-1
+measurement, and G-PRESENCE's failure at the breach.
+
+**THE HEADLINE IS THAT TWO OF THE THREE END IN NO CHANGE TO THE AUDIO AND THE
+THIRD ENDS IN NO CHANGE TO A BAR**, and every one of those non-changes is a
+measurement rather than a shrug. Four predictions in this pass were wrong and
+they are all here.
+
+---
+
+### R2-4149(1) — THE REVERB: THE DECLARATION WAS THE DEFECT AND THE NETWORK WAS ALREADY A ROOM
+
+`tools/r2_4149_room_hf.py` derives the room's own high-frequency decay in the
+shape this design already declares it in — ONE surface absorption, from the
+Sabine reference that is already in `percept.SHOWROOM_*` and in
+`layers.showroom_tail`'s own Sabine line — **with air accounted for separately,
+because air is not a surface**:
+
+    RT60(f) = 0.161 V / (S*alpha + 4 m(f) V),   m from ISO 9613-1
+
+V = 4290 m3, S = 1996 m2, and the declared 2.4 s low-frequency RT60 backs out
+**alpha = 0.1416** once the 250 Hz air term is credited.
+
+| f | 125 | 250 | 1 k | 2 k | **4 k** | 8 k | 16 k | 24 k |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| ISO 9613 air, dB/m | 0.0004 | 0.0013 | 0.0047 | 0.0099 | **0.0297** | 0.1053 | 0.3645 | 0.6901 |
+| 4mV, against S*alpha = 283 | 1.7 | 5.2 | 18.4 | 39.1 | **117** | 416 | 1440 | 2727 |
+| **target RT60, s** | 2.43 | 2.40 | 2.29 | 2.15 | **1.73** | 0.99 | 0.40 | 0.23 |
+
+**THE DOCSTRING'S OWN AIR FIGURE WAS WRONG TOO.** `showroom_tail` said "ISO
+9613 alpha at 4 kHz is ~0.011 dB/m". The closed form at 20 C / 50 % RH /
+101.325 kPa gives **0.0297 dB/m**; 0.011 is roughly the 2 kHz value. Above
+6 kHz **the air IS the room** — 416 absorption units against the surfaces' 283.
+
+**AND THEN THE MEASUREMENT SAID THE NETWORK WAS ALREADY RIGHT.** On
+`dsp.fdn_reverb`'s own impulse response, at the render's own 96 kHz:
+
+| f | 250 | 1 k | 2 k | **4 k** | 8 k | 11.3 k | 16 k | 20 k |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| delivered T60, s | 2.48 | 2.28 | 1.81 | **1.27** | 0.92 | 0.81 | 0.79 | 0.84 |
+| target, s | 2.40 | 2.29 | 2.15 | **1.73** | 0.99 | 0.65 | 0.40 | 0.29 |
+| **surface alpha it implies** | 0.135 | 0.157 | 0.171 | **0.213** | 0.169 | 0.034 | **−0.285** | **−0.640** |
+
+Log-RMS error against the physical room over 250 Hz – 16 kHz: **0.184**, i.e.
+20 % in T60, against a 25 % tolerance G-RING already writes down for this same
+estimator. **The implied surface absorption rises 0.14 → 0.21 from 125 Hz to
+9 kHz, which is what ordinary porous treatment does.** From 125 Hz to 9 kHz
+this network is a physically realisable room and the sentence next to it was
+the only thing that was not.
+
+**WRONG PREDICTION #1, AND IT NEARLY BECAME A CONCLUSION.** The first run of
+this bench was at 48 kHz, because that is the delivered file's rate. **The FDN
+runs at `sr_internal` = 96 kHz.** At 48 kHz the same code reads 0.90 s at 4 kHz
+and a log-RMS of 0.379; at 96 kHz it reads 1.27 s and 0.184. `rt60_high` is a
+NYQUIST target, so halving Nyquist moves the whole curve — and a conclusion was
+one command away from being drawn about a sample rate this film is not
+rendered at.
+
+**`wet_hf_hz` IS DELETED FROM `dsp.fdn_reverb`'s SIGNATURE, NOT IMPLEMENTED.**
+The reason is physics and not tidiness: **a room has no crossover frequency.**
+Sabine-with-air is smooth and has no corner anywhere, so a parameter naming a
+corner asserts a shelf that must not exist — which is exactly why the one time
+this project built that shelf it LENGTHENED the tail. The declaration in
+`showroom_tail` is replaced by the curve above.
+
+**`rt60_high` IS NOT CHANGED, AND THAT DECISION WAS RENDERED RATHER THAN
+ARGUED** — see R2-4149(5).
+
+---
+
+### R2-4149(2) — WHERE THIS NETWORK STOPS BEING A ROOM, AND IT IS NOT THE DAMPER
+
+Above about 11 kHz the delivered tail implies a **NEGATIVE surface
+absorption** — it rings longer than a hall with perfectly reflective walls
+could, once air is credited. That is not a declaration problem and no
+`rt60_high` can fix it.
+
+**WRONG PREDICTION #2: that this was the one-pole damper overshooting.** It is
+the DIFFUSER. The eight-stage allpass chain in front of the network has its own
+energy decay, it is frequency-FLAT because an allpass is, and it is measured:
+
+| the diffuser's own IR | broadband | 1 kHz | 4 kHz | 16 kHz |
+|---|---:|---:|---:|---:|
+| T60, s | **0.777** | 0.659 | 0.765 | 0.861 |
+
+Its longest stage alone — 35.93 ms at g = 0.70 — is 0.696 s. **A tail cannot
+decay faster than the burst that excites it.** With `n_diffusion=0` the same
+network runs monotonically to 0.24 s at 20 kHz; with the diffuser in, no
+`rt60_high` from 0.10 to 0.45 s moves the 16 kHz band off 0.79 ± 0.02 s.
+
+It is **declared and bounded, and deliberately not fixed**: the only levers are
+a shorter span or a lower g, and R2-4079 measured that lowering g makes the
+cepstral ripple **monotonically worse** — which is the metallic-diffuser defect
+a master was rejected for. Trading a rejected defect for an inaudible one above
+11 kHz is not a trade. **OPEN, with the number.**
+
+---
+
+### R2-4149(3) — G-RING AT BEAT 1: THE MEASUREMENT WAS NOT THERE TO LOSE
+
+`tools/r2_4149_ring_cover.py`, on the delivered master's beat 1:
+
+| beat 1, broadband envelope | R2-4147 | R2-4141 | `master.wav` (negative) |
+|---|---:|---:|---:|
+| prominent peaks in 33 s | 54 | 21 | 23 |
+| median gap between them, s | **0.420** | 0.990 | 1.205 |
+| peaks with the 12 dB ISO 3382 needs | 15 of 54 | 13 of 21 | 11 of 23 |
+| **the envelope keeps FALLING for, median s** | **0.040** | 0.150 | 0.085 |
+| longest continuous fall, s | **0.650** | 0.650 | 1.165 |
+| usable decay regions (needs 3) | **2** | 4 | 4 |
+
+**WRONG PREDICTION #3: that per-band region detection would restore coverage.**
+`decay_regions` finds gaps in the BROADBAND envelope and every 1/6-octave band
+is then read inside those same gaps, which is not what ISO 3382 does — a band
+should be measured in its own gap. Implemented with the identical rules (6 dB
+prominence, 0.30 s minimum, 3 dB stop), it made things **worse**: 5 bands with
+a measurable T60 against the 18 the broadband gaps already yield, because a
+1/6-octave envelope's own Rayleigh fluctuation trips the 3 dB stop rule almost
+immediately. Recorded, not shipped.
+
+**AND THEN THE CONTROL THIS GATE NEVER HAD SAID SOMETHING WORSE.**
+`tools/r2_4149_ring_control.py` — impacts convolved with an exponential IR
+whose T60 is **declared** and which is frequency-INDEPENDENT by construction,
+so the truthful `worst/broadband` is 1.0 and the truthful T60 is the exponent:
+
+| a KNOWN 2.4 s room, no floor | gap 4.0 s | 2.0 s | 1.5 s | 1.0 s | 0.60 s | **0.42 s** |
+|---|---:|---:|---:|---:|---:|---:|
+| median T60 returned, s | 2.389 | 2.388 | 2.387 | 2.169 | 1.457 | **0.985** |
+| as a fraction of the truth | 0.995 | 0.995 | **0.994** | 0.904 | 0.607 | **0.410** |
+| worst / broadband | 1.119 | 1.119 | 1.121 | 1.152 | 1.308 | **1.882** |
+
+| a KNOWN 2.4 s room, 1.5 s gaps | no floor | −60 dB | −50 dB | −40 dB | −35 dB |
+|---|---:|---:|---:|---:|---:|
+| median T60 returned, s | 2.387 | 2.455 | 3.085 | **4.550** | — |
+| as a fraction of the truth | 0.994 | 1.023 | 1.285 | **1.896** | — |
+
+**THREE FACTS, AND NONE OF THEM WAS KNOWN BEFORE THIS PASS:**
+
+1. **THE ESTIMATOR IS EXCELLENT WHERE IT IS APPLICABLE** — 0.994 of a known
+   truth with gaps ≥ 1.5 s and a quiet floor. Nothing in this project had ever
+   fed it a decay whose T60 was known.
+2. **BEAT 1 IS NOT IN THAT REGIME AND CANNOT BE.** Its longest continuous fall
+   is 0.650 s; a 2.4 s room needs 1.00 s just to traverse T20's −5 to −25 dB
+   window and ≥ 1.5 s for the estimator to return the truth. At beat 1's own
+   0.42 s gaps the estimator returns **0.41 of a known truth.** **BEAT 1
+   GENUINELY HAS NO MEASURABLE DECAY, INAPPLICABLE IS THE CORRECT VERDICT, AND
+   IT IS NOW CORRECT BY MEASUREMENT RATHER THAN BY ACCIDENT.** What was lost at
+   R2-4147 was not a measurement of the room.
+3. **G-RING's 1.5× BAR SITS BELOW ITS OWN NULL IN THE SHORT-GAP REGIME** —
+   1.882 on a room that is uniform by construction. It is the same shape as
+   G-ROOM's two open bars. **THE BAR IS NOT MOVED**; it is declared open at the
+   point of use in `percept.py` with the numbers, and nothing was tuned to it.
+
+**AND THE ONE BEAT G-RING STILL MEASURES IS INSIDE THE FLOOR BIAS.** 5_lap has
+2.42 s gaps — comfortable — but its broadband envelope p95−p5 is **13.4 dB**,
+because an engine is running through all of it. Matched to that geometry, a
+**uniform 2.4 s room** reads:
+
+| floor | −inf | −50 dB | −40 dB | −35 dB (env 14.5 dB ≈ the film's 13.4) |
+|---|---:|---:|---:|---:|
+| median T60 returned, s | 2.389 | 3.045 | 4.619 | **4.904** |
+| worst band, s (Sabine bar 3.00 s) | 2.65 | 3.67 | 4.98 | **5.32** |
+| worst / broadband (bar 1.50) | 1.119 | 1.250 | 1.048 | **1.029** |
+
+The master's 5_lap reads worst 4.450 s, broadband 2.938 s, **ratio 1.515**.
+**The ratio limb SURVIVES its null there** — a uniform room reads 1.03–1.25 at
+that geometry and the film reads 1.515, so that FAIL is real and is not
+explained away. **The Sabine limb does not**: its null at 5_lap's geometry is
+5.32 s against a 3.00 s bar. That limb only runs on interior beats, all of
+which are currently INAPPLICABLE, so it is firing nowhere — but a re-derivation
+of G-RING now has a two-sided anchor to do it with, which it did not before.
+
+---
+
+### R2-4149(4) — G-PRESENCE AT THE BREACH: THE BAR IS RIGHT AND THE AUDIO IS WRONG
+
+`synth.glass_breach` is the breach-beat positive the corpus did not have: 8 s
+of curtain wall coming down, built from the aperture's own geometry (9.6 × 5.6 m
+of 12 mm toughened glass) and the fracture mechanics, in the corpus module and
+from the theory rather than from the render path's code.
+
+**THE PHYSICS CORRECTION THIS CONTROL FORCED, FOUND BY CHECKING ITS OWN
+NUMBERS — WRONG PREDICTION #4.** The first version rang every fragment as a
+free plate at `0.0459 c_L h / a²`. That constant is **13.5× too small** —
+Leissa's free square plate is `lam² = 13.49`, i.e. `0.6198 c_L h / a²` — and
+with it corrected the real result appears: **a 15 mm dice of 12 mm toughened
+glass has NO AUDIBLE RESONANCE AT ALL.** Plate theory does not even apply
+(a/h = 1.2) and the cube's own lowest elastic mode is a shear mode at
+c_s/2a = **113 kHz**. Only fragments above ~80 mm ring inside the audio band.
+**The tinkle of toughened glass is not the dice ringing — it is a quarter of a
+million Hertzian contacts of 30–70 µs each, high-passed by their own radiation
+(ka = 1 at 3.6 kHz for a 15 mm dice), plus the ring of the few large pieces off
+the restrained edges.**
+
+`tools/r2_4149_breach_bench.py`, all on the shipped estimator:
+
+| | AMI |
+|---|---:|
+| **bar** | **0.50** |
+| **C10 the shower — the conservative positive, five seeds** | **0.697 – 0.775** |
+| the same, with the car-through-the-pane transient | 9.05 – 9.28 |
+| the large pieces and mullions alone | 1.314 |
+| **the fine dice alone — a wash by the physics** | **0.153** |
+| **the film's own `3_breach`** | **0.141** |
+| C10 replaced by its own spectrum, stationary (anti-cheat) | 0.371 |
+
+**A GOOD BREACH CLEARS THE BAR BY 55 %, SO THE BAR IS NOT WRONG FOR THIS BEAT
+AND IT IS NOT MOVED.** The film's 0.1409 is the audio, and the ablation names
+the defect precisely: **the film's breach measures like an unaccompanied dice
+wash.** What it is missing is the layer a listener can count — the large edge
+pieces and the mullions, which read 1.314 on their own.
+
+The envelope statistic says the same thing in one line. Over the whole film:
+
+| beat | 1_assembly | 3_breach | 4_transit | 5_lap | 6_ending |
+|---|---:|---:|---:|---:|---:|
+| AMI | 0.778 | **0.141** | 0.189 | 0.199 | 0.270 |
+| envelope p95−p5, dB | 31.7 | **9.9** | 8.9 | 13.8 | 8.7 |
+| peak − median, dB | 35.7 | **6.4** | 9.8 | 18.5 | 21.4 |
+
+**In eight seconds of a car going through a glass wall at 53.8 km/h, the
+loudest instant is 6.4 dB over the median.** Beat 1 is 35.7.
+
+**AMI's OWN HOLE, FOUND BY RUNNING THE NULLS BEFORE BELIEVING THE CONTROL.** A
+**single impulse in 8 s of digital silence reads 37.13** — 74× the bar and 25×
+the C9 positive — because AMI is normalised by a mean that silence drives to
+zero. It falls to 1.18 with a floor 80 dB down and to 0.055 at 40 dB. **This is
+the same shape as the hole G-EVENT already has** and it is why the car impact
+is deliberately NOT in the default control: with it, C10 reads 9.17 and
+G-PRESENCE **FAILS its own positive** on the audibility limb (+12.28 → −9.50 dB
+gap sensation), because one unlimited transient swamps the beat. G-PRESENCE
+judges the material BETWEEN the events; the car through the pane is the event.
+
+**C10 IS A BENCH CONTROL AND IS NOT REGISTERED IN `CONTROLS`, AND THE REASON IS
+MEASURED.** Over five seeds it returns a clean overall PASS on three: on two of
+them G-GESTURE's worst-pair limb reads 0.812/0.814 against a 0.80 bar — which
+is a TRUE property of a glass shower, two similar slabs landing similarly, not
+a defect to engineer out — and on one the shower's hard arrival cutoff leaves
+the beat's last 2.5 s under threshold. **A control whose required verdict is
+PASS cannot be one that passes three runs in five**, and forcing it would be
+tuning a control to a corpus. It stands with its numbers printed. **OPEN.**
+
+---
+
+### R2-4149(5) — `rt60_high` 0.35 → 0.45 WAS RENDERED IN FULL AND IS NOT SHIPPED
+
+The declaration is corrected in R2-4149(1) at zero cost, because it is a
+sentence. Whether the NUMBER should also move is a different question, it
+changes the room under every beat, and it was answered the only way this chain
+accepts: `tools/r2_4149_tail_ab.py` patches `layers.showroom_tail` rather than
+editing it — so the render path in git is the shipped one at all times — and
+the whole film was rendered at 0.45 s and put through `tools/percept_matrix.py`.
+
+**THE PREDICTION, WRITTEN INTO THE TOOL'S DOCSTRING BEFORE THE RENDER STARTED:**
+0.45 s makes the 4 kHz tail 22 % longer, and R2-4148 measured that beat 1's
+G-SUSTAIN note cover comes from partials IN THE ROOM TAIL rather than from the
+assembly layer — so the physics-correct direction should make the gate this
+whole rebuild exists to satisfy WORSE, and nothing should improve.
+
+**IT WAS RIGHT, AND IT IS THE FIRST PREDICTION IN THIS PASS THAT WAS.**
+
+| | R2-4147, `rt60_high` 0.35 | the A/B, 0.45 |
+|---|---:|---:|
+| **G-SUSTAIN beat-1 note cover** (bar 0.20) | **0.0453** | **0.0666** |
+| G-SUSTAIN beat-1 longest held note, s | 0.768 | 0.768 |
+| G-PRESENCE beat 1: sensation dB / AMI | 9.243 / 0.7776 | 9.207 / 0.7839 |
+| G-PRESENCE `3_breach` AMI | 0.1409 | 0.1406 |
+| G-RING 5_lap worst / broadband | 1.5148 | 1.5139 |
+| G-MOD beat 1, dB | 12.158 | 12.203 |
+| G-NOVEL beat 1, lag s | 1.040 | 1.040 |
+| every gate's film-level verdict | — | **IDENTICAL, all thirteen** |
+
+`PERCEPT_MATRIX_OK`, 40 thresholds, 0 provenance violations, corpus and
+mutations correct on both. **NOT ONE GATE MOVES, AND THE ONE NUMBER THAT MOVES
+MATERIALLY MOVES 47 % THE WRONG WAY.** A physics fit improved by five points
+inside a 25 % tolerance is not worth a 47 % regression on the beat-1 limb that
+four rejections were about. **`rt60_high` STAYS AT 0.35 s.** The render and its
+adjudication are kept at `audio/out/r2_4149/` so the next agent does not have
+to repeat them.
+
+---
+
+### R2-4149(6) — WHAT SHIPS, AND THE PROOF THAT THE AUDIO DID NOT MOVE
+
+**NO AUDIO CHANGED IN THIS PASS. `PART2_AUDIO_MASTER_R2-4147.wav` IS THE
+DELIVERY, UNTOUCHED, AND NEITHER FILM WAS RE-MUXED** — there is nothing to
+re-mux, so the ProRes and H.265 video md5s are not merely unchanged, they were
+never rewritten. `audio/out/master.wav` and `watch/rejected_audio_R2-4079/`
+are untouched and still fail.
+
+What changed is three files, and every change is a declaration, a comment or a
+control:
+
+* **`audio/dsp.py`** — `wet_hf_hz` deleted from `fdn_reverb`'s signature (it
+  was in no line of its body), with the derivation of why a room has no
+  crossover and what `rt60_high` actually controls.
+* **`audio/layers.py`** — `showroom_tail`'s declaration replaced by the curve,
+  and its wrong 4 kHz air-absorption figure corrected.
+* **`audio/percept.py`** — TEXT ONLY, in two `_T` reason strings. **NO
+  THRESHOLD VALUE, LIMB, SCOPE OR APPLICABILITY RULE WAS CHANGED ANYWHERE.**
+  G-RING's ratio bar carries its measured null; G-PRESENCE's AMI bar carries
+  the breach positive that confirms it.
+* **`audio/controls/synth.py`** — `glass_breach` added. Not registered in
+  `CONTROLS`, so no control's required verdict changes; the seven synthesised
+  controls rebuild bit-identically.
+
+**PROVED, NOT ASSERTED.** The signature edit is inert by inspection, which is
+not the standard here, so it was measured: `showroom_tail` run on a fixed
+excitation at 96 kHz under `git show HEAD:audio/dsp.py` and under the edit
+returns **md5 `654a292f5373649baf7df3777915cf36` both ways** — bit-identical.
+The shipped master was then re-adjudicated end to end with the edited files.
+
+**FOUR PREDICTIONS IN THIS PASS WERE WRONG:**
+
+1. **That the reverb bench should run at 48 kHz** because that is the delivered
+   file's rate. The FDN runs at 96 kHz and `rt60_high` is a Nyquist target, so
+   the entire delivered curve moves with it — 4 kHz reads 0.90 s at 48 kHz and
+   1.27 s at 96 kHz. A conclusion about the wrong sample rate was one command
+   from being written down.
+2. **That the top-octave overshoot was the one-pole damper.** It is the
+   diffuser's own 0.777 s frequency-flat decay, and no `rt60_high` can reach
+   below it.
+3. **That per-band decay regions would restore G-RING's beat-1 coverage.**
+   They made it worse — 5 measurable bands against 18 — because a 1/6-octave
+   envelope's own Rayleigh fluctuation trips the 3 dB stop rule.
+4. **That a 15 mm glass dice rings.** Its lowest elastic mode is a shear mode
+   at 113 kHz, and the free-plate constant the control was first written with
+   was 13.5× too small. Caught by checking the control's own numbers against a
+   published case (a 1 m x 6 mm steel plate) before believing it.
+
+**AND THE ONE THAT WAS RIGHT** is the only one that led to a decision: that
+making the room physically correct at 4 kHz would cost G-SUSTAIN at beat 1 and
+buy nothing. It did, so nothing shipped.
+
+---
+
+## OPEN, AFTER THIS PASS
+
+1. **G-RING's 1.5× ratio bar sits below its own null (1.88×) in the short-gap
+   regime**, and its Schroeder estimator OVER-reads by up to 2.06× through an
+   inter-event floor and UNDER-reads to 0.41 with gaps under ~0.6× the T60.
+   `tools/r2_4149_ring_control.py` is the two-sided anchor a re-derivation
+   needs. Nothing was tuned to this bar and nothing should be.
+2. **G-RING's Sabine limb is un-anchored where it would fire.** At 5_lap's
+   geometry a uniform 2.4 s room reads 5.32 s against a 3.00 s bar. The limb
+   only runs on interior beats, which are all INAPPLICABLE, so it fires
+   nowhere today — which is exactly why it needs deriving before it does.
+3. **`3_breach` is the film's flattest beat and G-PRESENCE is right about it.**
+   AMI 0.141 against a control-derived 0.50 that a physics-true breach clears
+   at 0.775. Peak−median 6.4 dB in eight seconds of a car going through a
+   glass wall. **The missing layer is named: the large edge pieces and the
+   mullions, which read 1.314 on their own.** This is the largest un-actioned
+   audio defect in the film and it is not a beat-1 problem.
+4. **AMI has a hole and so does G-EVENT, and it is the same hole.** A single
+   impulse in silence reads 37.13. Both statistics are normalised by something
+   silence drives to zero. Neither is exploited by anything in the corpus or
+   the film, and both should be bounded when either is next re-derived.
+5. **C10 is a bench control, not a corpus control.** Three PASSes in five
+   seeds; G-GESTURE's worst-pair limb reads 0.812 on two of them because two
+   similar glass slabs landing similarly ARE near-copies. Registering it needs
+   either more seeds' worth of evidence or an honest look at whether a
+   worst-pair bar means anything for a shower of identical fragments.
+6. **The diffuser floors the tail at 0.777 s above ~11 kHz**, where the implied
+   surface absorption is negative. Bounded, declared, not traded against
+   R2-4079's ripple fix.
+7. **G-ROOM(c)'s two bars still sit below their own nulls** (R2-4085,
+   R2-4146). Unchanged, and still nothing should be tuned to them.
+8. **G-MOD and G-NOVEL at beat 1 remain PICTURE** (R2-4080, R2-4144).
+

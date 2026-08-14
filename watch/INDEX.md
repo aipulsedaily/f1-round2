@@ -75,6 +75,32 @@ gap. **The reverb itself was not touched in this pass** (no line of `showroom_ta
 `fdn_reverb` changed), so the room is the same room; what was lost is the ability to read it
 off the master's beat 1. G-RING still measures and still fails at `5_lap`.
 
+**R2-4149 CLOSED THAT, AND THE ANSWER IS THAT THE MEASUREMENT WAS NOT THERE TO LOSE.** The gate
+was given the control it had never had: impacts convolved with an exponential decay whose T60 is
+**declared** and which is frequency-independent by construction, so the truthful answer is known
+(`tools/r2_4149_ring_control.py`). It returns **0.994 of the truth** when the gaps are ≥ 1.5 s and
+quiet — the estimator is excellent where it applies — and **0.41 of the truth** at beat 1's own
+0.42 s gaps. Beat 1's longest continuous fall is **0.650 s** and a 2.4 s room needs 1.00 s just to
+traverse ISO 3382's T20 window. **INAPPLICABLE is the correct verdict at beat 1, and it is now
+correct by measurement rather than by accident.** The same control found something the gate did not
+know about itself: its 1.5× narrowband bar reads **1.88 on a room that is uniform by construction**
+when the gaps are short, and its estimator over-reads by up to 2.06× through an inter-event floor.
+**No bar was moved** — it is declared open in `percept.py` with the numbers, as G-ROOM's already
+are. The 5_lap FAIL survives its own null (1.03–1.25 there against the film's 1.515) and stands.
+
+**THE LARGEST UN-ACTIONED AUDIO DEFECT IN THE FILM IS NOT BEAT 1 — IT IS THE BREACH.** G-PRESENCE
+fails `3_breach` at an articulation index of **0.141**, and R2-4148 refused to chase it because
+every positive in the corpus was a beat-1 control. R2-4149 built the missing one: 8 s of curtain
+wall coming down, from the aperture's own geometry and the fracture mechanics
+(`tools/r2_4149_breach_bench.py`). **A physics-true breach reads 0.697–0.775 over five seeds — it
+clears the 0.50 bar comfortably, so the bar is right for this beat and was NOT moved, and the
+film's 0.141 is the audio.** The ablation names what is missing: the fine dice alone — 229 000
+fragments too dense for an ear to resolve — read **0.153**, which is essentially the film's number,
+while the large edge pieces and the mullions read **1.314** on their own. The envelope says the
+same thing in one line: **in eight seconds of a car going through a glass wall at 53.8 km/h, the
+loudest instant is 6.4 dB over the median.** Beat 1 is 35.7 dB. This is a real, named, un-fixed
+defect and it is listed open.
+
 ---
 
 ### THE AUDIO REBUILD OF 2026-08-14 (R2-4141) — SUPERSEDED, KEPT FOR THE RECORD
@@ -135,19 +161,27 @@ tone 0.756**. The cell is the lowest fill measured and a drone is the worst. The
 beats leaving beat 1 empty, and leaving beat 1 empty is the master the client rejected as *"The
 Tubes over and over"*.
 
-**ONE OPEN NUMBER THAT WOULD MOVE BOTH OF THOSE, AND IT IS NOT AUDIO.** `layers.showroom_tail`
-declares the showroom decays in **0.35 s above 4 kHz** against 2.4 s low. Measured on the reverb
-network's own impulse response — no film in the way, `tools/r2_4141_tail_hf.py` — it decays in
-**0.805 s**, 2.3x too long, and 1.825 s below 4 kHz against the declared 2.40. The cause is that
-`dsp.fdn_reverb`'s `wet_hf_hz` parameter **is in its signature and appears nowhere in its body**:
-the per-line damping is a one-pole whose only coefficient is a gain ratio, so its corner falls out
-as a side effect and lands near 10 kHz. R2-4045 moved this number and wrote "the FDN's per-line
-damping already implements this exactly"; it does not. **The obvious repair was built and measured
-and DID NOT WORK** — a first-order shelf placed at `wet_hf_hz` moved the high band from 0.805 s to
-0.878 s, i.e. the wrong way, because a first-order shelf only reaches its target at Nyquist. It was
-reverted rather than shipped. A 0.35 s tail at 4 kHz in this hall also implies a surface absorption
-of about 0.94, which is anechoic-grade, so **the declared number may itself be wrong**. Re-deriving
-the showroom's absorption is a pass of its own and is listed as open.
+**THE OPEN REVERB NUMBER IS CLOSED, AND THE ANSWER WAS THAT THE DECLARATION WAS WRONG AND THE
+NETWORK WAS ALREADY A ROOM (R2-4149).** `layers.showroom_tail` declared **0.35 s above 4 kHz**
+against 2.4 s low. Both halves of that were wrong. A 0.35 s tail at 4 kHz in this hall demands a
+surface absorption of **0.967** — anechoic-grade in a glass building — and **there is no crossover
+frequency at all**: a room's high-frequency decay is Sabine with the ISO 9613 air term,
+`RT60(f) = 0.161 V / (S·α + 4 m(f) V)`, which is a smooth curve with no corner anywhere in it. The
+room's own 4290 m³ / 1996 m² and its declared 2.4 s back out α = 0.1416, and that gives a target of
+**1.73 s at 4 kHz**, 0.99 s at 8 kHz, 0.40 s at 16 kHz. Measured against that curve on the reverb's
+own impulse response **at the render's real 96 kHz** (`tools/r2_4149_room_hf.py`), the network reads
+1.27 s at 4 kHz and sits within **20 % log-RMS** across 250 Hz – 16 kHz, with an implied surface
+absorption that rises 0.14 → 0.21 — which is what ordinary porous treatment does. So
+`dsp.fdn_reverb`'s dead `wet_hf_hz` parameter was **deleted rather than implemented** (a parameter
+naming a corner asserts a shelf that must not exist, which is why the earlier shelf attempt
+lengthened the tail), the declaration was replaced by the curve, and **the number itself was left
+alone** — the alternative was rendered in full and adjudicated: at 0.45 s not one of the thirteen
+gates changes verdict and beat-1 G-SUSTAIN note cover gets **47 % worse**. **No audio changed.**
+
+The one place this reverb is not a room is **above ~11 kHz**, where its implied surface absorption
+goes negative. That is the eight-stage allpass diffuser's own frequency-flat 0.777 s energy decay,
+not the damper, and no `rt60_high` can reach below it — a tail cannot decay faster than the burst
+that excites it. It is left alone because the only levers reopen R2-4079's metallic-diffuser defect.
 
 ---
 

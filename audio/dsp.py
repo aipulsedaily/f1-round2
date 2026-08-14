@@ -495,8 +495,53 @@ def decorrelate_stereo(mono, sr, coherence_hz=500.0, gain=0.7):
 
 
 def fdn_reverb(x, sr, delays_m, rt60_low, rt60_high, c=None, seed=11,
-               wet_hf_hz=4000.0, n_diffusion=8, stereo=False, extra_lines=8):
+               n_diffusion=8, stereo=False, extra_lines=8):
     """Feedback delay network sized from a REAL room's dimensions.
+
+    R2-4149 -- `wet_hf_hz` IS DELETED FROM THIS SIGNATURE, AND NOT IMPLEMENTED.
+    ---------------------------------------------------------------------
+    It was `wet_hf_hz=4000.0`, it appeared in NO LINE of this body, and
+    R2-4147(5) filed it open with the instruction not to implement it to hit
+    0.35 s. It is deleted rather than implemented, for a reason that is
+    physics and not tidiness: A ROOM HAS NO CROSSOVER FREQUENCY. Its
+    high-frequency decay is Sabine with the air term,
+
+        RT60(f) = 0.161 V / (S*alpha + 4 m(f) V),   m from ISO 9613-1,
+
+    which is a SMOOTH curve with no corner anywhere in it. A parameter naming
+    a corner asserts a shelf that must not exist, and the one time this
+    project built that shelf it LENGTHENED the tail (0.805 -> 0.878 s) because
+    a first-order shelf only reaches its target at Nyquist.
+
+    WHAT `rt60_high` ACTUALLY IS, now that it is the only high-frequency
+    control here: THE NETWORK'S NYQUIST TARGET. The per-line damper below is a
+    one-pole whose coefficient is the gain RATIO gh/g, so its asymptote -- and
+    therefore the frequency at which `rt60_high` is the decay -- is Nyquist,
+    and its corner falls wherever the ratio puts it. It is NOT the decay at
+    4 kHz and never was; the declaration that said so is corrected in
+    `layers.showroom_tail`.
+
+    AND IT IS ALREADY RIGHT. `tools/r2_4149_room_hf.py` measures this network's
+    own impulse response at the render's 96 kHz against the room's own Sabine +
+    ISO 9613 curve: log-RMS error 0.184 over 250 Hz - 16 kHz at the shipped
+    0.35 s, and the implied surface absorption rises 0.14 -> 0.22 from 125 Hz
+    to 9 kHz, which is what an ordinary porous treatment does. The best fit on
+    the grid is 0.45 s (0.141), a five-point improvement in a quantity whose
+    own estimator tolerance G-RING sets at 25 %.
+
+    THE ONE PLACE THIS NETWORK IS NOT A ROOM IS THE TOP, AND THE DAMPER IS NOT
+    WHY. Above about 11 kHz the delivered decay flattens at 0.78-0.85 s, which
+    implies a NEGATIVE surface absorption -- longer than a room with perfectly
+    reflective walls could ring, once air is credited. The cause is measured:
+    the eight-stage allpass diffuser below has its OWN frequency-flat energy
+    decay of 0.777 s (its longest stage, 35.93 ms at g = 0.70, is 0.696 s on
+    its own), and a tail cannot decay faster than the burst that excites it.
+    With `n_diffusion=0` the same network runs monotonically down to 0.24 s at
+    20 kHz. NO VALUE OF `rt60_high` CAN REACH BELOW THAT FLOOR at any
+    frequency. It is left alone: the only levers are a shorter span or a lower
+    g, and R2-4079 measured that lowering g makes the cepstral ripple
+    monotonically WORSE -- which is the metallic-diffuser defect a master was
+    rejected for. Declared, bounded, and not traded.
 
     `delays_m` are acoustic path lengths in metres -- for the showroom they come
     straight from `circuit_spec.showroom.interior_m`, so the modal spacing of the

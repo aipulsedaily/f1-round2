@@ -236,7 +236,21 @@ _T("G_RING.narrowband_vs_broadband_max_ratio", 1.5, "ratio", "physics",
    "A diffuse field decays uniformly across frequency. A 1/6-octave band that "
    "decays slower than the broadband envelope is by definition an "
    "under-damped isolated mode -- a pipe, not a room. 1.5 is measurement "
-   "tolerance; the physics bar is 1.0.")
+   "tolerance; the physics bar is 1.0. "
+   "R2-4149: THIS BAR HAS A MEASURED NULL AND IT IS DECLARED OPEN, NOT MOVED. "
+   "`tools/r2_4149_ring_control.py` builds the control this gate never had -- "
+   "impacts convolved with an exponential IR whose T60 is DECLARED and which "
+   "is frequency-INDEPENDENT by construction, so the truthful answer is 1.0. "
+   "Fed to this gate's own estimator it returns 1.12 when the gap is long "
+   "(>= 1.5 s) and the material between events is >= 60 dB down -- and 1.88 "
+   "when the gap is 0.42 s, which is the film's own beat 1. THE BAR IS BELOW "
+   "ITS OWN NULL IN THE SHORT-GAP REGIME. Two further biases from the same "
+   "control: a gap shorter than about 0.6x the T60 makes the estimator "
+   "UNDER-read (0.41 of a known 2.4 s at 0.42 s gaps), and an inter-event "
+   "floor makes it OVER-read (a known 2.4 s room reads 4.55-4.95 s through a "
+   "floor 35-40 dB down). NOTHING WAS TUNED TO THIS BAR AND NOTHING SHOULD "
+   "BE. Re-deriving G-RING needs its own pass with that control as the "
+   "two-sided anchor.")
 
 # --------------------------------------------------------------- G-NOVEL ----
 _T("G_NOVEL.max_envelope_autocorrelation", 0.15, "Pearson r", "control-derived",
@@ -2431,7 +2445,28 @@ _T("G_PRESENCE.min_articulation_index", 0.50, "dimensionless",
    "at the midpoint (0.91) would be a bar drawn through a single point. It is "
    "placed to fail every negative the corpus contains and no higher. IT IS NOT "
    "A TARGET -- C9 is the target, and anything reading near 0.50 is passing by "
-   "a hair and should be read as such.")
+   "a hair and should be read as such. "
+   "R2-4149 -- THE BAR NOW HAS A SECOND POSITIVE, AT A SECOND BEAT, AND IT "
+   "SURVIVED IT UNCHANGED. R2-4148 failed `3_breach` at 0.1409 and refused to "
+   "chase it because every positive in the corpus was a BEAT-1 control, so "
+   "whether 0.1409 was the audio or the instrument reaching past its own "
+   "validation could not be decided. `synth.glass_breach` is the missing half: "
+   "8 s of curtain wall coming down, built from the aperture's own geometry "
+   "and the fracture mechanics. It reads AMI 0.697-0.775 over five seeds "
+   "(0.7746 median) -- IT CLEARS THIS BAR, so the bar is NOT wrong for the "
+   "breach and IS NOT MOVED, and the film's 0.1409 is the audio. "
+   "`tools/r2_4149_breach_bench.py` prints the whole derivation, including "
+   "the ablation that names the defect: the fine dice alone -- 229 000 "
+   "fragments too dense to resolve, a wash by the physics -- read 0.1533, "
+   "which is the film's number, and the large pieces and mullions the film is "
+   "missing read 1.3143 on their own. "
+   "AMI's OWN HOLE, MEASURED AND REPORTED: a SINGLE IMPULSE in 8 s of digital "
+   "silence reads 37.13, because this is a relative statistic normalised by a "
+   "mean that silence drives to zero -- the same shape as the hole G-EVENT "
+   "already has. It falls to 1.18 with a floor 80 dB down and to 0.055 at "
+   "40 dB. The breach positive above contains NO such transient (the car "
+   "going through the pane is deliberately not in it) and clears the bar "
+   "anyway, which is why the hole does not touch this derivation.")
 
 
 def g_presence(mono, sr, beats, lufs_i=None, percussive_beats=None):

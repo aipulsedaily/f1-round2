@@ -1,0 +1,41 @@
+>> showroom_tail patched: rt60_low 2.40  rt60_high 0.450
+[    3.6s] world grid 11520001 samples, -35.0..85.0 s world
+[    8.5s] surfaces classified
+[   69.0s] engine: 31 upshifts, 31 downshifts, 14351 rpm max, rendered on the film grid, half_order_weight 1.00 (firing order 1.5)
+[   75.6s] brakes: active 0.178 of world; suspension: 16 load events
+[  103.9s] tyres (film grid)
+[  125.3s] glass pane: 5605 modes to 17992 Hz, f11 = 7.48 Hz, 400 rendered, density 0.312/Hz
+[  162.2s] assembly: 777 part impacts
+[  172.9s] breach: 995 shard contacts over 3.15 s world = 9.52 s film
+[  177.0s] warped world -> film (three buses, all outside the ramp) -- engine, tyres and the pane are synthesised on the film grid
+[  233.4s]   engine           PEAK CRITERION: LUFS target wanted +19.46 dB, peak ceiling allows +17.91 dB -- the meter is under-reading this bus by 1.54 dB
+[  233.6s] engine propagated
+[  290.2s] tyres propagated
+[  444.6s]   suspension       MIX TRIM -15.71 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 15.7 dB away from its own peak-normalised level (raw trim +15.19 dB, of which +30.90 dB is unit conversion)
+[  444.8s] brakes + suspension propagated
+[  627.6s]   structure        MIX TRIM -12.56 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 12.6 dB away from its own peak-normalised level (raw trim +68.73 dB, of which +81.29 dB is unit conversion)
+[  723.6s]   impact           PEAK CRITERION: LUFS target wanted +21.13 dB, peak ceiling allows -4.67 dB -- the meter is under-reading this bus by 25.81 dB
+[ 1082.6s]   shards           PEAK CRITERION: LUFS target wanted -26.91 dB, peak ceiling allows -30.80 dB -- the meter is under-reading this bus by 3.88 dB
+[ 1177.0s]   debris           PEAK CRITERION: LUFS target wanted +27.88 dB, peak ceiling allows +24.26 dB -- the meter is under-reading this bus by 3.62 dB
+[ 1177.2s] breach propagated
+[ 1272.5s]   reflect_garage   MIX TRIM -13.96 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 14.0 dB away from its own peak-normalised level (raw trim +10.25 dB, of which +24.21 dB is unit conversion)
+[ 1272.7s] garage reflection
+[ 1367.6s] showroom reflection
+[ 1383.4s]   room             MIX TRIM -16.56 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 16.6 dB away from its own peak-normalised level (raw trim -12.85 dB, of which +3.72 dB is unit conversion)
+[ 1443.6s] showroom acoustic
+[ 1458.5s]   wind             MIX TRIM -14.17 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 14.2 dB away from its own peak-normalised level (raw trim -37.08 dB, of which -22.92 dB is unit conversion)
+[ 1465.6s]   bed              MIX TRIM -20.39 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 20.4 dB away from its own peak-normalised level (raw trim +15.34 dB, of which +35.73 dB is unit conversion)
+[ 1465.8s] wind + bed
+[ 1591.8s] crowd
+[ 1663.3s] fence
+[ 1669.6s] pre-mix: peak 1.444, -17.67 LUFS, short-term range 37.3 dB
+[ 1671.4s] 30 Hz high-pass: peak 1.444 -> 1.539 (+0.55 dB), -17.67 -> -17.65 LUFS
+[ 1673.1s] program gain
+[ 1700.7s] internal: -23.01 LUFS, tp -1.15 dBTP
+[ 1711.7s]   G1_limiter_gr_le_3db             PASS  -0.845530487843134
+[ 1711.7s]   G14_premix_peak_le_plus6dbfs     PASS  3.192305427125995
+[ 1711.7s]   G15_bus_trim                     PASS  ['bed', 'reflect_garage', 'room', 'structure', 'suspension', 'wind']
+[archive] master_rt45.wav reproduced byte for byte, nothing superseded
+[ 1712.0s] WROTE /home/zany/f1-round2/audio/out/r2_4149/master_rt45.wav  124.083 s  -23.00 LUFS  -1.12 dBTP
+>> report /home/zany/f1-round2/audio/out/r2_4149/master_rt45.json
+>> STAGE RESULT: AUDIO_MASTER_OK -23.00 LUFS -1.12 dBTP

@@ -754,6 +754,260 @@ def assembly_cell(sr=SR, total_s=BEAT1_S, seed=4090, n_waves=15, n_parts=470,
     return np.stack([_norm(L, 0.09), _norm(R, 0.09)], axis=1), n_contacts
 
 
+# ===================================================== the breach positive ==
+# R2-4149. G-PRESENCE FAILS AT `3_breach` (AMI 0.1409) AND THE CORPUS COULD NOT
+# SAY WHETHER THAT WAS THE AUDIO OR THE INSTRUMENT, because the AMI bar was
+# derived from a corpus whose ONLY positive -- C9 -- is a beat-1 assembly cell.
+# A bar validated on one beat and applied to another is a bar applied outside
+# its own evidence, and R2-4148 said so and declined to chase the number.
+#
+# This is the missing half: what an 8 s glass breach sounds like when it is
+# built from the fracture mechanics rather than from the film, so that the bar
+# can be re-derived against a POSITIVE for the beat it is being applied to.
+#
+# EVERY NUMBER BELOW IS A DERIVATION, and the two that matter most are the two
+# that make a glass shower different from every other event train in this file.
+GLASS_E, GLASS_NU, GLASS_RHO = 70.0e9, 0.22, 2500.0
+GLASS_CL = math.sqrt(GLASS_E / (GLASS_RHO * (1.0 - GLASS_NU ** 2)))   # 5424 m/s
+# Toughened glass dices; the fragment side scales with the thickness and with
+# the stored surface compression, and for 12 mm architectural toughened glass
+# the dice are 10-25 mm. That is the FIRST number that matters, because it
+# sets the ring frequency, and it puts it above 7 kHz.
+GLASS_H = 0.012
+# Crack front in soda-lime glass runs at roughly 0.5 of the Rayleigh speed,
+# ~1500 m/s, so a 2.125 m panel dices in 1.4 ms: THE SHATTER IS ONE TRANSIENT,
+# not a train. What is a train is what happens afterwards, on the floor.
+CRACK_SPEED_MS = 1500.0
+
+
+def _free_plate_modes(a_m, h_m, fmax=18000.0, n_max=6):
+    """A FREE square plate of side `a_m`. f_11 = (lam^2 / 2 pi a^2) sqrt(D/rho h)
+    with Leissa's lam^2 = 13.49 for the first mode of a completely free square
+    plate, which reduces to 0.6198 * c_L * h / a^2. The higher modes follow the
+    free-free ratios 1 : 1.49 : 2.36 : 2.96 : 4.14 -- not small integers, so a
+    piece of broken glass has no pitch either.
+
+    THE NUMBER THAT DECIDES WHAT A GLASS SHOWER IS, AND IT IS NOT THE ONE THIS
+    CONTROL WAS FIRST WRITTEN WITH. A 15 mm dice of 12 mm toughened glass has
+    NO AUDIBLE RESONANCE AT ALL: plate theory does not even apply to it (a/h =
+    1.2), and the cube's own lowest elastic mode is a shear mode at c_s/2a =
+    113 kHz. Only fragments above about 80 mm -- a/h >= 6.7 -- ring inside the
+    audio band. So the tinkle of toughened glass is NOT the dice ringing. It is
+    a quarter of a million HERTZIAN CONTACTS, each 30-70 us long and therefore
+    broadband to 15-30 kHz, and the ring belongs to the few large pieces that
+    come off the restrained edges. Returns nothing when plate theory does not
+    apply, rather than returning an ultrasonic mode as if it were audible.
+    """
+    if a_m < 5.0 * h_m:
+        return []
+    f11 = 0.6198 * GLASS_CL * h_m / (a_m * a_m)
+    out = []
+    for r, w in ((1.0, 1.0), (1.49, 0.62), (2.36, 0.38), (2.96, 0.24),
+                 (4.14, 0.13))[:n_max]:
+        f = f11 * r
+        if 55.0 < f <= fmax:
+            out.append((f, w))
+    return out
+
+
+def _hertz_tau(m_kg, r_m, e_star, v_ms):
+    """Hertzian contact duration, WITHOUT the assembly cell's 0.4 ms floor.
+
+    `_hertzian_pulse` clamps tau to 0.4-2.5 ms and states why: for a part
+    landing in a nest, anything shorter is a click and a click is a noise
+    generator with a schedule. A GLASS DICE IS NOT THAT CASE. Its mass is
+    6.8 grams, so tau comes out at 30-60 us and the clamp would be a factor of
+    ten of invented contact time -- and it is exactly that short contact that
+    puts the energy up where the fragment's own modes are. The only floor here
+    is two samples, which is the rate's floor and not a physical claim.
+    """
+    v = np.maximum(np.asarray(v_ms, dtype=np.float64), 0.05)
+    return 2.94 * (m_kg ** 2 / (r_m * e_star ** 2 * v)) ** 0.2
+
+
+def _pulse(sr, tau_s):
+    n = max(int(round(tau_s * sr)), 2)
+    t = np.arange(n) / sr
+    return np.sin(math.pi * t / (n / sr)) ** 1.5
+
+
+def glass_breach(sr=SR, total_s=8.0, seed=6031, ramp=0.21,
+                 aperture_wh=(9.6, 5.6), v_car_ms=53.8 / 3.6,
+                 n_mullions=5, include=("dice", "slabs", "mullions", "room")):
+    """C10 -- A CURTAIN WALL COMING DOWN, and the breach positive this corpus
+    never had.
+
+    THE PICTURE THIS IS A CONTROL FOR. `3_breach` is 8 s of SCREEN time in
+    which world time ramps to 15-25 %, so roughly 1.7 s of world is stretched
+    over the beat. That matters more here than anywhere else in the film,
+    because it is the one thing that decides whether a glass shower is a train
+    of events or a wash: SLOW MOTION SPREADS THE ARRIVALS AND DOES NOT SPREAD
+    THE RINGS. A fragment's ring is 0.1-0.2 s of real time whatever the camera
+    is doing; its arrival time is picture. Stretching one and not the other is
+    the physics, and it is why the beat CAN be articulated at all.
+
+    WHAT IS IN IT, ALL FROM THE APERTURE'S OWN GEOMETRY (9.6 x 5.6 m of 12 mm
+    toughened glass, `docs/circuit_spec.json`):
+
+      * THE SHATTER, WHICH IS **NOT** IN THE DEFAULT AND THAT IS THE POINT.
+        One Hertzian contact of the car on the pane, exciting the whole
+        panel's modes for the 1.4 ms it takes the crack front to cross it at
+        1500 m/s, and then the panel is gone. At its own contact force it is
+        40 dB over everything else in the beat, and a control containing it is
+        a test of the limiter rather than of the beat: measured, it takes the
+        gap sensation level from +12.28 dB to -9.50 dB and G-PRESENCE FAILS
+        THE POSITIVE on its audibility limb. **G-PRESENCE judges the material
+        BETWEEN the events**, and the car going through the pane is the event,
+        not the material. So the default control is the SHOWER -- which is
+        also the conservative choice, since including the transient takes AMI
+        from 0.77 to 9.17. `include=("shatter", ...)` puts it back, and
+        `tools/r2_4149_breach_bench.py` prints both.
+      * THE DICE. 9.6 x 5.6 x 0.012 m of glass at 2500 kg/m3 is 1613 kg, and
+        at a 15 mm dice that is 239 000 fragments. THEY ARE NOT ALL AUDIBLE AS
+        EVENTS and this control does not pretend they are: at that count the
+        arrivals are 24 us apart, which is four hundred times over the 100 Hz
+        roughness boundary, so the fine dice are a WASH BY THE PHYSICS. They
+        are rendered as what they are, and they have NO ring -- see
+        `_free_plate_modes`. What they have is a 30-70 us Hertzian contact,
+        band-limited only by the rate, high-passed by its own radiation
+        (ka = 1 at c/2*pi*a, which is 3.6 kHz for a 15 mm dice).
+      * THE ARRIVALS. A fragment released at height h reaches the floor at
+        t = sqrt(2h/g), so a uniform release over 0-5.6 m gives an arrival
+        density RISING LINEARLY to a hard cutoff at 1.07 s of world time --
+        5.1 s of film at this ramp. The shower ends; it does not fade.
+      * THE BOUNCES. Glass on concrete has a restitution near 0.65, so each
+        arrival is a geometric train 2ve/g, 2ve^2/g, ... that converges in
+        2ve/(g(1-e)) seconds. THIS IS THE ARTICULATION: the interval between
+        one fragment's bounces sweeps down through the 4-100 Hz band by
+        construction, and a chattering sequence is the one event train whose
+        rate is set by physics rather than by a schedule.
+      * THE SLABS. The pane does not dice uniformly at its edges: the strips
+        held by the mullions come away in large pieces, 0.1-0.4 m across, which
+        ring an octave or two lower and land SPARSELY. These are the events a
+        listener actually resolves, and they are a hundredth of the mass.
+      * THE MULLIONS. Steel box sections at 2.20 m centres, torn out of their
+        fixings: thin-ring modes, low, inharmonic, long.
+      * THE ROOM. `diffuse_tail`, the same velvet-noise late field C9 uses, at
+        the showroom's own RT60.
+    """
+    rng = np.random.default_rng(seed)
+    n = int(total_s * sr)
+    dry = np.zeros(n)
+    w_m, h_m = aperture_wh
+    t_impact = 0.55                       # film seconds before the nose lands
+
+    def film_t(world_t):
+        """World seconds after the impact -> film seconds. The ramp is a
+        constant fraction here; the film's own ramp moves, and a control that
+        copied a moving ramp would be copying the artefact."""
+        return t_impact + world_t / ramp
+
+    # -- 1. THE SHATTER ----------------------------------------------------
+    # The car's effective front mass into a 12 mm pane. The pane rings for the
+    # 1.4 ms the crack takes to cross a 2.125 m panel and then it is not a
+    # pane any more, so the modal decay is cut there rather than left to ring.
+    pane = _plate_modes(2.125, h_m, GLASS_H, GLASS_E, GLASS_NU, GLASS_RHO,
+                        fmax=12000.0)
+    tau = _hertz_tau(180.0, 0.35, 45e9, v_car_ms)
+    shatter = _modal_hit(sr, pane, 0.25, 0.02, seed + 1, _pulse(sr, tau))
+    cut = int((2.125 / CRACK_SPEED_MS) / ramp * sr)
+    shatter[cut:] *= np.exp(-np.arange(len(shatter) - cut) / (0.02 * sr))
+    if "shatter" in include:
+        i = int(t_impact * sr)
+        L = min(len(shatter), n - i)
+        # the pane's contact force sets the scale for the shatter as it does
+        # for every fragment below: F = m v (1+e) / tau, e ~ 0 into a pane
+        dry[i:i + L] += (180.0 * v_car_ms / tau) * \
+            (shatter / max(np.abs(shatter).max(), 1e-12))[:L]
+
+    # -- 2. THE FRAGMENT POPULATION ----------------------------------------
+    # ONE SCALE FOR EVERYTHING BELOW. Every contact is scaled by its own peak
+    # Hertzian force, m*v*(1+e)/tau, so the balance between the dice wash and
+    # the large pieces is the mass distribution's and not a mix decision. That
+    # matters here more than anywhere: the balance between a wash and a train
+    # IS the quantity G-PRESENCE measures, so choosing it with a fader would be
+    # choosing the answer.
+    #
+    # MASS IS CONSERVED. The pane dices everywhere except within a few dice of
+    # a restraint, where the stored compression is lower and the glass comes
+    # away in strips: the aperture holds five 2.125 x 5.6 m panels, each with a
+    # 15.45 m perimeter, and a 0.15 m edge strip on that perimeter is 2.32 m2
+    # of 11.9 m2 -- so 19 % of the AREA leaves in pieces above the dice size,
+    # and the classes below carry that.
+    mass_total = w_m * h_m * GLASS_H * GLASS_RHO
+    classes = ((0.010, 0.22), (0.015, 0.38), (0.022, 0.15), (0.035, 0.06),
+               (0.080, 0.07), (0.150, 0.06), (0.300, 0.06))
+    n_frag_total = 0
+    for L_m, frac in classes:
+        big = L_m >= 5.0 * GLASS_H
+        if (big and "slabs" not in include) or (not big and "dice" not in include):
+            continue
+        m_frag = GLASS_RHO * L_m * L_m * GLASS_H
+        n_frag = max(int(mass_total * frac / m_frag), 1)
+        n_frag_total += n_frag
+        # release height uniform over the aperture -> t = sqrt(2h/g), so the
+        # arrival density RISES LINEARLY and stops dead at sqrt(2H/g)
+        hh = rng.uniform(0.0, h_m, n_frag)
+        v0 = np.sqrt(2.0 * 9.81 * hh)
+        train = np.zeros(n)
+        e = rng.uniform(0.50, 0.75, n_frag)
+        tk, vk = v0 / 9.81, v0.copy()
+        for _k in range(5):
+            idx = (film_t(tk) * sr).astype(np.int64)
+            ok = (idx >= 0) & (idx < n) & (vk > 0.05)
+            amp = (m_frag * vk * (1.0 + e)) / np.maximum(
+                _hertz_tau(m_frag, L_m * 0.5, 45e9, vk), 1e-9)
+            np.add.at(train, idx[ok], amp[ok])
+            vk = vk * e
+            tk = tk + 2.0 * vk / 9.81
+        # ONE convolution with the class's contact pulse and ONE modal bank:
+        # a linear resonator's response to a sum of impulses IS the sum of its
+        # responses, so 239 000 fragments cost two filters, not 239 000.
+        tau_c = float(_hertz_tau(m_frag, L_m * 0.5, 45e9,
+                                 float(np.median(v0))))
+        train = _sig.fftconvolve(train, _pulse(sr, tau_c))[:n]
+        # RADIATION. A source smaller than a wavelength does not radiate: the
+        # monopole efficiency rises as (ka)^2 and reaches 1 at ka = 1, i.e. at
+        # c / (2 pi a). For a 15 mm dice that is 3.6 kHz, which is why a glass
+        # shower is all top end and why the dice cannot be a rumble.
+        f_rad = min(343.0 / (2.0 * math.pi * (L_m * 0.5)), sr * 0.45)
+        train = _sig.sosfilt(_sig.butter(1, f_rad, btype="highpass", fs=sr,
+                                         output="sos"), train)
+        modes = _free_plate_modes(L_m, GLASS_H)
+        if modes:
+            # glass eta is 0.001-0.002; a piece landing flat on concrete and
+            # staying there is contact-damped an order above that
+            train = train + 2.5 * _modal_hit_from(
+                sr, modes, train, 0.006, seed + 17 + int(L_m * 1000))
+        dry += train
+
+    # -- 3. THE MULLIONS ---------------------------------------------------
+    # Steel box sections at 2.20 m centres, torn out of their fixings. Low,
+    # inharmonic, long, and scaled on the same force basis as everything else.
+    for k in range(n_mullions if "mullions" in include else 0):
+        modes = ring_modes(float(rng.uniform(0.05, 0.09)),
+                           float(rng.uniform(0.003, 0.006)), 200e9, 7850.0)
+        if not modes:
+            continue
+        v = v_car_ms * 0.5
+        tau_m = float(_hertz_tau(40.0, 0.05, 60e9, v))
+        hit = _modal_hit(sr, modes, 1.2, 0.004, seed + 401 + k,
+                         _pulse(sr, tau_m) * (40.0 * v / tau_m))
+        i = int(film_t(float(rng.uniform(0.0, 0.35))) * sr)
+        Lp = min(len(hit), n - i)
+        if Lp > 16 and i >= 0:
+            dry[i:i + Lp] += hit[:Lp]
+
+    src = _norm(dry, 1.0)
+    wet = 0.06 if "room" in include else 0.0
+    Lc = src + wet * diffuse_tail(src, sr, rt60_s=2.0, seed=seed + 11)
+    Rc = src + wet * diffuse_tail(src, sr, rt60_s=2.0, seed=seed + 12)
+    return np.stack([_norm(Lc, 0.09), _norm(Rc, 0.09)], axis=1), n_frag_total
+
+
+BREACH_SHEET = {"beats": [{"name": "3_breach", "start_s": 0.0}]}
+
+
 # ================================================================ registry ==
 def _read_master(path=MASTER_WAV):
     import soundfile as sf                                  # noqa: PLC0415

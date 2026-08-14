@@ -1,6 +1,17 @@
 #!/usr/bin/env python
 """R2-4141 -- DOES THE SHOWROOM TAIL ACTUALLY DELIVER ITS DECLARED rt60_high?
 
+SUPERSEDED BY `tools/r2_4149_room_hf.py`, AND ITS CONCLUSION IS WITHDRAWN.
+Two things below are wrong. (1) It runs at 48 kHz and the FDN runs at the
+render's 96 kHz, and `rt60_high` is a NYQUIST target, so this measures a
+sample rate the film is not rendered at -- 4 kHz reads 0.90 s here and 1.27 s
+at 96 kHz. (2) It compares the measurement against a DECLARED 0.35 s at 4 kHz
+that R2-4147(5) showed demands an anechoic surface absorption of 0.967 and
+R2-4149 showed does not exist as a target at all: a room's high-frequency
+decay is Sabine with the ISO 9613 air term and has no crossover anywhere in
+it. Kept because its measurement of the network was sound and it is what
+started the question.
+
 `layers.showroom_tail` declares rt60_low 2.4 s and rt60_high 0.35 s, and
 R2-4045 moved the high number from 0.85 to 0.35 on the argument that "the FDN's
 per-line damping already implements this exactly; the number was simply set too

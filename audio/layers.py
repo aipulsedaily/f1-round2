@@ -464,16 +464,58 @@ def showroom_tail(excitation, spec, sr, rt60_low=2.4, rt60_high=0.35):
     actually LOUDER than the direct sound at 4-8 kHz.
 
     No room does that. Every reflection loses high frequency twice, at the
-    surface and in the air (ISO 9613 alpha at 4 kHz is ~0.011 dB/m, and a 2.4 s
-    tail is 800 m of travel), so a real tail is dark and gets darker as it
+    surface and in the air, so a real tail is dark and gets darker as it
     decays. A full-bandwidth, undamped 1.1 s tail at equal amplitude on every
     assembly clunk is exactly the percept the client described as "the
     instrument The Tubes over and over": each hit is followed by a bright
     ringing copy of itself, which is what a struck tube sounds like and what a
     room does not.
 
-    rt60_high 0.85 -> 0.35 s above 4 kHz, against 2.4 s low. The FDN's per-line
-    damping already implements this exactly; the number was simply set too high.
+    R2-4149 -- THE DECLARATION WAS THE DEFECT, AND THIS IS THE CORRECTION.
+    ---------------------------------------------------------------------
+    What stood here was "rt60_high 0.85 -> 0.35 s ABOVE 4 kHz, against 2.4 s
+    low", and both halves of that sentence were wrong.
+
+    1. **0.35 s AT 4 kHz IS NOT PHYSICALLY REACHABLE IN THIS ROOM.** Sabine on
+       the showroom's own 4290 m3 / 1996 m2 with the air term credited
+       separately demands a SURFACE absorption of 0.967 to decay that fast --
+       anechoic-grade, in a glass hall. The room's own declared alpha is 0.142.
+
+    2. **THERE IS NO CROSSOVER AT ALL.** A room's high-frequency decay is
+       Sabine with ISO 9613 air absorption,
+       RT60(f) = 0.161 V / (S*alpha + 4 m(f) V), which is a smooth curve with
+       no corner in it. `dsp.fdn_reverb`'s `wet_hf_hz=4000.0` named a corner
+       that does not exist, was in no line of its body, and is DELETED rather
+       than implemented (R2-4147(5) predicted, and R2-4149 confirmed, that
+       chasing 0.35 s with a shelf lengthens the tail).
+
+    3. **THE AIR FIGURE THIS DOCSTRING QUOTED WAS ALSO WRONG.** It said ISO
+       9613 alpha at 4 kHz is "~0.011 dB/m". At 20 C, 50 % RH, 101.325 kPa the
+       closed form gives **0.0297 dB/m** at 4 kHz -- 0.011 dB/m is roughly the
+       2 kHz value. Air is 117 of the room's 400 absorption units at 4 kHz,
+       and 416 of 699 at 8 kHz: above 6 kHz THE AIR IS THE ROOM.
+
+    THE CORRECTED DECLARATION, and it is a CURVE and not a pair of numbers
+    (`tools/r2_4149_room_hf.py`, which derives it and measures the network
+    against it on the network's own impulse response at the render's 96 kHz):
+
+        f       125    250     1k     2k     4k     8k    16k
+        target  2.43   2.40   2.29   2.15   1.73   0.99   0.40   seconds
+        network 2.51   2.48   2.28   1.81   1.27   0.92   0.79
+
+    Log-RMS error 0.184 over 250 Hz - 16 kHz, and the surface absorption the
+    network's own curve implies rises 0.14 -> 0.22 from 125 Hz to 9 kHz, which
+    is what ordinary porous treatment does. **THE NETWORK IS ALREADY
+    DELIVERING A PHYSICALLY CORRECT ROOM AND `rt60_high` IS NOT CHANGED.** The
+    best fit on the sweep grid is 0.45 s (log-RMS 0.141) and it was rendered
+    and adjudicated in full rather than argued about; see the staging entry.
+
+    `rt60_high` is the network's NYQUIST target, not its 4 kHz one -- the
+    per-line damper is a one-pole whose corner falls out of the gain ratio.
+    Above about 11 kHz the delivered tail is longer than any room can be (the
+    implied surface absorption goes negative), and that is the DIFFUSER's own
+    0.777 s energy decay rather than the damper's; it is bounded and declared
+    in `dsp.fdn_reverb` and not traded against R2-4079's ripple fix.
     """
     ix, iy, iz = spec["showroom"]["interior_m"]
     d = [iz, iy * 0.5, ix * 0.5,
