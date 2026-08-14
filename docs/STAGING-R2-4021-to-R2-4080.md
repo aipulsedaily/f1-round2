@@ -1211,3 +1211,726 @@ like the client's "banging on tubes", it is that.
 | modes per contact | 3 | **11.05** |
 | **G9** slope of log f₁ vs log L (target −2.0 ±0.1) | −2.0 by construction | **−1.972** |
 | **G10** per-mode Q (target 500–2000) | **45** | **942** |
+
+## R2-4042/4043 — THE BREACH AS FIVE LAYERS, OFFSET BY PHYSICAL DELAYS
+
+`impact_event` was a 41/58/79 Hz thud, a mullion, a crunch, a dust whoosh and
+one 30 ms wideband burst. It measured **92.99 % below 30 Hz** and a spectral
+centroid of **14.0 Hz** on the world grid.
+
+t = 0 is contact. Each layer is placed by r/c:
+
+1. **Fracture rip.** 420 crack sites scattered over the pane, each delayed by
+   its own distance / **1716 m/s** (0.55 c_R for soda-lime). So the rip has a
+   DURATION set by the pane's size and the material's wave speed — **1.24 ms**
+   across the 2.125 m span, **3.26 ms** across the 5.6 m one — instead of being
+   a single burst with no size information in it. 3–7 kHz core.
+2. **Pane modal collapse.** The full 5605-mode bank, selected to 400, driven
+   through `struck_plate` by a **0.25 ms Hertzian point load** at the strike
+   position, gated off 40 ms after contact because by then there is no pane.
+   Normalised on the RMS of its first 100 ms, not on its peak: a 400-mode bank's
+   peak is one sample of constructive interference and says nothing about how
+   loud the collapse is.
+3. **Delayed flexural**, +65 ms, 196/231 Hz, heavily damped. A real and
+   distinctive feature of glass breakage that this file did not have at all.
+4. **Shard shower** (R2-4041), film-grid scheduled.
+5. **PhISEM debris bed** (R2-4044).
+
+**The sub layer is kept and cut from 0.85 to 0.22.** It is the felt weight of a
+car arriving and it belongs in the film — but at 0.85 it WAS the film: the
+impact bus measured 77.1 % of its energy below 100 Hz, a centroid of 79 Hz, and
+a **50 ms crest of 4.4 dB**, i.e. less peaky than white noise, for the sharpest
+event in the picture. It also now has a 1.5 ms attack, so the sub arrives rather
+than fading up.
+
+**The mullion physics was already right and is kept** — free-free beam,
+f₁ = 31.6 Hz, β = 4.730/7.853/10.996/14.137, implied Q = 89, correctly
+joint-dominated for a bolted extrusion. One fix: the higher modes decayed by an
+ad-hoc `1/(k+1)^0.6`, which is not a damping law. A single loss factor gives
+`τ_k = 1/(π η f_k)`, so higher modes die faster because they are higher.
+
+## R2-4044 — THE PhISEM DEBRIS BED, AND WHY NOT MORE SHARDS
+
+A 12 mm architectural pane does not break into 351 pieces. The ballistic sim
+integrates the foreground fragments; everything below them is a stochastic
+particle system — Cook's PhISEM — whose collisions excite a five-resonator bank
+at 3–8 kHz, Q 20–60.
+
+**The rate is not a drawn curve.** It is the ballistic sim's own contact
+schedule in film time, smoothed, times a fines multiplier of 34 — so the bed
+thickens and thins exactly where the shower does, stretch included, with no
+second timing model to keep in sync. **34,100 fine events** at a peak intensity
+of **24,706/s**, costing **five biquads**, because the whole Poisson train is
+filtered once rather than synthesised event by event.
+
+Measured on the bed alone over 36–44 s: **centroid 6532 Hz, 86.5 % of its energy
+above 4 kHz, 50 ms crest 16.5 dB.**
+
+**Deviation from the spec, stated:** §2.3 asks for a cross-fade of layer 4 into
+layer 5 by shard size, foreground = the largest ~200 shards. **Not done, because
+the measurement says there is nothing to fade out.** The smallest shard the sim
+draws is **40.2 mm** — above the 26.6 mm hole — so removing the smaller 151
+shards from layer 4 would delete content rather than move it into the bed. The
+bed is additive here and closes the fines gap from the other direction, which is
+what §2.3 says it also does.
+
+## R2-4045 — THE REVERB WAS DECLARED 4 dB ABOVE THE THING MAKING IT
+
+`TARGET_LUFS_S` set `room = −23.0` and `assembly = −27.0`. Measured on the
+shipped stems over 0–33 s: assembly RMS −36.75 dBFS, room RMS −36.82 dBFS — a
+wet/dry ratio of **−0.07 dB**, with the reverb carrying **45.9 %** of the first
+thirty-three seconds.
+
+Worse, the reverberant field was spectrally *identical* to the direct sound:
+wet−dry tilt flat to ±1.1 dB from 125 Hz to 16 kHz, and the reverb **louder than
+the dry at 4–8 kHz**. No room does that — every reflection loses high frequency
+twice, at the surface and in the air, and a 2.4 s tail is 800 m of travel. A
+full-bandwidth undamped 1.1 s tail at equal amplitude on every clunk is a bright
+ringing copy of each hit, which is what a struck tube sounds like and what a room
+does not.
+
+- `room` **−23.0 → −31.0 LUFS-S** (4 dB *below* the dry bus).
+- `showroom_tail` **rt60_high 0.85 → 0.35 s** above 4 kHz, against 2.4 s low.
+  The FDN's per-line damping already implemented this exactly; the number was
+  simply set too high.
+
+## R2-4046 — WIND: TWO EXPONENTS, STROUHAL TONES, AND GOODY
+
+It was the loudest thing in the lap and it was `brown` buffet plus `pink` edge
+hiss on one gain curve. One noise source with one gain curve does not read as
+SPEED, it reads as a fader move.
+
+1. **Two source families with different velocity exponents.** Dipole (edges,
+   wings, mirrors) intensity ~ U⁶; quadrupole (underbody, wake) ~ U⁸. **The wake
+   must overtake the edges as the rig accelerates**, and that crossover is what
+   a listener hears as "faster" rather than "louder".
+2. **Vortex shedding, one noisy oscillator per bluff feature**, at
+   `f = 0.2·U/d`. This is the third mechanism §3.1 demands: a self-sustained
+   oscillator with phase noise, which is neither of the file's two generators. A
+   resonator on white noise has the same power spectrum and none of the
+   waveform — it never completes a cycle.
+3. **Goody's wall-pressure spectrum** (ω² rise, ω^−0.7 overlap, ω^−5 roll-off)
+   with both corners tracking U, instead of pink noise's flat ω^−1.
+4. **Large-eddy AM** at `U/(5δ)` for δ = 0.8 m: 2 Hz at 8 m/s to 20 Hz at
+   80 m/s, depth 5.4 dB.
+
+Measured, 3 s at each steady speed:
+
+| U | 27.8 | 41.7 | 55.6 | 83.3 m/s |
+|---|---:|---:|---:|---:|
+| level | −35.14 | −22.91 | −13.89 | **−0.67 dBFS** |
+| **spectral centroid** | **699.7** | **1090.4** | **1503.8** | **2364.2 Hz** |
+| 50 ms crest | 10.60 | 11.50 | 11.93 | **12.13 dB** |
+
+Each step sits **between** the U⁶ and U⁸ predictions and moves toward U⁸ at
+speed (+13.22 dB measured against 10.53 for U⁶ and 14.05 for U⁸ over the last
+step) — which is the quadrupole overtaking, measured rather than asserted. The
+centroid is very nearly linear in U (25.2 Hz per m/s at the bottom, 28.4 at the
+top). Shedding tones land at exactly **106.7 / 320 / 800 / 3200 Hz at 80 m/s**,
+the spec's four figures. And the crest is now **above** Gaussian white noise at
+speed, where before the layer *was* Gaussian white noise.
+
+## R2-4047 — TYRES: A FRICTION LIMIT CYCLE, AND THE CAVITY SPLIT
+
+**Squeal was `sin(f) + sin(2.02f) + sin(3.05f)` with f driven by slip velocity.**
+Three pure sines: the file's second generator wearing a tyre.
+
+Real squeal is **stick-slip**. `stick_slip` integrates a tread element as a mass
+on a spring dragged across the road under Coulomb friction with velocity
+weakening, `μ(v) = μ_k + (μ_s−μ_k)·exp(−|v|/v_c)`, μ_s/μ_k = 1.4, v_c = 0.15 m/s.
+`dμ/dv < 0` is negative damping, so the element self-excites into a relaxation
+oscillation — sticking, breaking away, snapping back — which is what squeal *is*
+and why noise never sounded like it. Integrated per-sample only where there is
+slip to drive it (**2.4 %** of the world grid, 4.0 M samples, ≈6 s).
+
+**The first version of this was wrong and the measurement caught it.** With
+`m = 1` normalised, the friction force was of order 1 N against a stiffness of
+1.8e7 N/m: the element deflected 7e-8 m, the velocity-weakening term sat five
+orders of magnitude below the viscous damping, and the "oscillator" was a lightly
+rung resonator — **50 ms crest 0.18 dB and zero harmonic content above 900 Hz**,
+i.e. a sine. Self-excitation needs `N(μ_s−μ_k)/v_c > 2ζmω₀`, which with a real
+0.15 kg tread element under a real 1500 N is **3600 against 12.6** and holds for
+any slip velocity below 0.85 m/s.
+
+| slip velocity | 0.05 | 0.20 | 0.50 | 1.00 m/s |
+|---|---:|---:|---:|---:|
+| emitted peak (element at 670 Hz) | 1980 | 516 | **656** | **668 Hz** |
+| centroid | 3350 | 3290 | 716 | 677 Hz |
+| **50 ms crest** | **8.42** | **7.33** | **8.29** | **5.63 dB** |
+
+A sine scores 3.01 dB. The harmonic content collapses as slip velocity rises,
+which is the physical behaviour: the weakening term saturates.
+
+**Squeal frequency is set by load and slip ratio, not by road speed** — driven
+here from the telemetry's own longitudinal load and downforce, gliding 670 → 850
+Hz as load builds, which is the measured direction of real braking events.
+**F1 tyres are slicks, so there is deliberately no tread-block passing
+tonality.**
+
+**Cavity resonance was one resonator at 165 Hz with no split.** Now three orders,
+each **split fore-aft/vertical by 4 Hz per order** because the contact patch
+flattens the torus and breaks its rotational symmetry — the pair beats slowly,
+and that beating is the single most identifiable thing about a loaded tyre.
+
+*Deviation, stated:* the spec computes f₁ = 343/1.850 = **185 Hz** from ambient
+air. A racing tyre is filled with nitrogen at ~60 °C, where c = 366 m/s, giving
+**197.7 Hz**. The hot-gas figure is kept — it was a deliberate prior decision in
+this file and it is the physically correct one — and both are reported.
+
+**One artefact found and fixed by measuring.** The raw element velocity at a
+0.05 m/s slip peaks at **36.9 kHz**: the break-away is very nearly a
+discontinuity. None of that reaches the air, because the motion is transmitted
+through a rubber carcass whose own bandwidth is a few kHz. Without a 5 kHz
+carcass low-pass the layer spent most of its energy above the delivery format's
+Nyquist.
+
+## R2-4048 — THE ASSEMBLY: FIFTEEN OBJECTS, ONE INSTRUMENT
+
+Every one of the 616 part seats in beat 1 was the same four sines at
+`1 : 2.31 : 3.87 : 6.1`, transposed by the cluster's bounding-box volume, sharing
+one exponential decay. **Fifteen different objects, one instrument** — the other
+half of "the instrument The Tubes over and over".
+
+`cluster_modes` derives a mode set from each cluster's own geometry: **beam**
+(free-free bending, β ratios `1 : 2.756 : 5.404 : 8.933`) when the longest
+dimension exceeds 3.5× the depth, **plate** otherwise. Materials are assigned by
+what an F1 car is made of — CFRP everywhere, aluminium at the four corners,
+titanium for the halo — and the three numbers that matter are all synthesised:
+
+- **specific stiffness** √(E/ρ) is 8600 m/s for CFRP against 5055 for aluminium
+  and 3900 for titanium, so **carbon rings HIGHER than the metal it replaced,
+  not lower**;
+- **loss factor**, Q 65 for CFRP against 150–170 for the metals, so **carbon is
+  shorter in time**, which is the actual cue;
+- **orthotropy** splits mode pairs that would be degenerate in an isotropic part,
+  by 2.5 % clipped to 20–50 Hz, so the pair beats over the first 20–50 ms.
+
+**A correction the measurement forced.** The first version used the cluster's
+bounding box directly, which made the monocoque's "thickness" 0.89 m and put the
+front corner's fundamental at 5220 Hz and the steering wheel's at 16.5 kHz. A
+cluster bbox is not a plate. Scaling by `n_parts^(1/3)` gives the linear size of
+a typical member, and a wall thickness bounded to 2–12 mm gives what car parts
+actually are:
+
+```
+  BB   plate cfrp      wall 12.0mm  f  398  418  700  720
+  FD   beam  cfrp      wall 12.0mm  f  393  413 1097 1124
+  MB   beam  cfrp      wall 12.0mm  f  666  686 1841 1888
+  CORNER_FL plate aluminium         f 1032 2164 2996 4050
+  halo_assembly beam titanium       f 2232 6153 12064 19941
+  FW   beam  cfrp      wall 10.2mm  f 3618 3668 10016 10066
+  SW   plate cfrp      wall  4.8mm  f 9958 10008
+```
+
+Fifteen genuinely different spectra spanning 393 Hz to 10 kHz, and each part
+within a cluster is scattered rather than transposed. Assembly bus centroid over
+2–30 s: **1255 Hz**. Each seat is driven by a Hertzian contact force whose
+duration is the material pairing's — 0.6 ms carbon-on-carbon, 0.2 ms
+metal-on-metal — rather than by a bare impulse, which excites an 18 kHz mode
+exactly as hard as a 200 Hz one and is why every part sounded like the same part.
+
+## R2-4049 — FOUR FAMILIES THAT DID NOT EXIST: BRAKES, SUSPENSION, SCRAPE
+
+Grepping brake / damper / suspension / shift / gear / kerb across `audio/*.py`
+returned nothing outside `engine.gear_and_rpm`. **Beat 6 is an 11.0 s
+deceleration from 89.8 m/s to zero at up to −35.3 m/s², with no braking sound
+available to it**, and 14.8 % of the world grid is under −3 m/s².
+
+- **`brakes`** — carbon-carbon. The pad reads the **disc's own surface**, and a
+  disc is a closed surface, so the roughness profile repeats once per revolution:
+  that is where braking's characteristic grain comes from. Read at ω·r_disc, so
+  pitch and brightness both fall as the car slows with no filter sweep involved.
+  Five disc bell modes 1.5–4 kHz excited by the rub, plus caliper judder at the
+  wheel rotation rate and its first two harmonics (36.7 Hz at 83 m/s, falling to
+  nothing at the stop). Measured active over **17.8 %** of the world grid.
+- **`suspension`** — a two-stage contact. The tyre is between the road and the
+  car, so stage one is **rubber-mediated, T = 3–15 ms**, which by
+  `hertz_spectrum` puts the excitation corner at 65–330 Hz: a thump with nothing
+  above ~100 Hz in it, which is why a kerb strike sounds nothing like a stone.
+  Stage two is the upright/wishbone beam modes 118 Hz–1.78 kHz at η = 1e-2.
+  Triggered on load-transfer jerk from the telemetry: **16 events**.
+- **`roughness_profile` / `read_roughness` / `scrape`** — §3.3 item 4, and the
+  third mechanism for continuous contact. Build a surface once in SPACE with
+  `S(k) ∝ k^−w` (w = 2.2 asphalt, 2.5 glass on concrete), then read it at
+  `s(t) = ∫v dt`. Speed changes pitch and brightness together for free, and
+  **there is no resampling artefact because nothing is resampled**. Used by the
+  brakes and by the shard skitter.
+
+Downshift/gearshift is `gear_and_rpm`'s and belongs to the engine workflow.
+Flagged, not built.
+
+## R2-4050 — THE TWO INAUDIBLE BUSES: RAISED WITH INTENT, WITH A DELETION RULE
+
+`reflect_showroom` measured 25 dB under the mix everywhere and `aperture` 28 dB
+— two buses costing full render time and existing only in the report. Both carry
+a real cue (the facade reflection is what tells you there is a wall beside you
+during the transit; the aperture is the showroom's own tail heard from outside,
+through the hole the car just made), so both are raised rather than deleted:
+`reflect_showroom` −25 → **−19**, `aperture` −27 → **−18** LUFS-S. **If they
+still measure more than 15 dB under the mix after this they should be deleted
+rather than raised again** — the point of §3.4 is to decide, and this is a
+decision with a falsifier attached.
+
+## R2-4051 — §7.1's ABANDONMENT TEST, RUN: THE CHAIN WAS NECESSARY AND NOT SUFFICIENT
+
+The spec states this test in advance and calls it "the cheapest test in the plan
+and it must be run first": land §4 alone, re-measure, and **if breach energy
+above 4 kHz stays below ~1 % and crest under 12 dB, the §1 verdict is wrong and
+the effort should move entirely to sources**.
+
+It was run. The first render carried **the chain fixes and the film-grid
+scheduling with every synthesiser untouched** — its log shows `structure` still
+trimming +52.39 dB and the pane still at 351 modes, i.e. the old glass. It died
+at its last statement on a reporting bug of mine (R2-4052) after producing every
+mix-stage number:
+
+| | delivered | chain only |
+|---|---:|---:|
+| premix peak | **+17.73 dBFS** | **+3.77 dBFS** |
+| limiter max GR, honestly reported | **−22.76 dB** (reported as −0.124) | **−11.47 dB** |
+| 30 Hz high-pass effect on the premix | — | peak **−1.55 dB**, loudness −0.04 dB |
+| LUFS-I / true peak | −14.00 / −1.10 | −14.04 / −1.15 |
+
+**The chain half of the verdict holds, and holds hard.** 14 dB of premix peak
+and 11 dB of limiter gain reduction came off with no synthesiser touched, and
+the 30 Hz high-pass took 1.55 dB of peak for 0.04 dB of loudness — the signature
+of pure limiter fuel.
+
+**The source half of the verdict does not.** The bench measures the breach at
+its SOURCE, where the chain cannot add what is not there: with the old
+synthesisers on the film grid, the shard bus carries **0.034 % of its energy
+above 4 kHz**. No downstream stage can turn that into the 8 % G2 asks for. **The
+chain-only master would have tripped the spec's own abandonment criterion.**
+
+So the honest verdict is narrower than §1's and wider than "it is the sources":
+
+> **`warp()` and the gain-staging/limiter chain made every synthesiser rebuild
+> invisible — that part of the diagnosis is confirmed by measurement. But fixing
+> the chain alone does not put glass in the glass, because the shard synthesiser
+> had no energy above 4 kHz to reveal. Both had to be rebuilt, and the order in
+> the spec is right: the chain first, because until it lands you cannot tell
+> whether a source change did anything.**
+
+## R2-4052 — I KILLED A 27-MINUTE RENDER AT ITS LAST STATEMENT, WITH THE REPORTING CODE
+
+```python
+rep["chain_checks"] = checks
+rep["chain_checks"]["buses_where_peak_criterion_won"] = peak_won   # same dict
+...
+for k, c in checks.items():
+    mark(... c["ok"] ...)        # TypeError: list indices must be integers
+```
+
+Assigning into `rep["chain_checks"]` assigned into `checks`, because they are the
+same object. The loop that iterates the checks then indexed a list with a string.
+**The audio was finished and correct; it was never written.**
+
+The lesson is small and exact: **a reporting dict and an assertion dict are not
+the same dict**, and the pattern `rep[k] = d` followed by `rep[k][x] = ...` is a
+mutation of `d`. Fixed with `dict(checks, ...)`.
+
+The larger lesson cost more: **a 27-minute build had never been smoke-tested.**
+A 48 kHz run of the identical code path takes 9 minutes and exercises every line,
+and adding one immediately paid for itself twice over — see R2-4053.
+
+## R2-4053 — THE SMOKE RENDER FOUND A BUG THAT WOULD HAVE KILLED EVERY RENDER
+
+```
+TypeError: No format specified and unable to get format from file extension:
+           'audio/out/master.wav.new'
+```
+
+`_archive_if_superseded` (R2-2227) writes beside the target and renames, so the
+write path ends in **`.new`** — and soundfile infers the container from the
+extension. **`sf.write` cannot write `.wav.new`.** This is not a bug I
+introduced; it sits at the last statement of `build()` and would have killed any
+render on this environment. It needs `format="WAV"`, which is now passed and
+commented as load-bearing.
+
+Two bugs at the same statement of the same function, both found in the ten
+minutes after a smoke render existed and neither in the two 27-minute renders
+before it.
+
+## R2-4054 — THE FIRST FULL MASTER, AND WHAT IT SAYS ABOUT §3.4's RAISE
+
+`audio/out/r2_4021/master_R2-4051.wav`, 124.083 s, −14.00 LUFS, −1.10 dBTP.
+
+| breach, 36–44 s | delivered | R2-4051 |
+|---|---:|---:|
+| spectral centroid | **51.5 Hz** | **590.0 Hz** |
+| energy < 30 Hz | **60.40 %** | **0.06 %** |
+| energy < 100 Hz | **85.57 %** | **13.53 %** |
+| energy > 4 kHz | **0.0021 %** | **2.77 %** (×1,300) |
+| energy > 6 kHz | 0.0007 % | **1.27 %** |
+| onsets/s, 1–4 kHz | 22.2 | **55.1** |
+| onsets/s, 4–12 kHz | 16.5 | **79.1** |
+| **L/R correlation** | **0.987** | **0.652** |
+| 50 ms crest p50 | 7.31 | 10.16 dB |
+
+| whole film | delivered | R2-4051 |
+|---|---:|---:|
+| median 50 ms crest | 9.70 | 10.20 dB |
+| energy < 30 Hz | 22.15 % | **0.31 %** |
+| 4–8 kHz band RMS, relative to 1–2 kHz | **−14.2 dB** | **−8.4 dB** |
+| 8–12 kHz, relative to 1–2 kHz | **−25.6 dB** | **−18.9 dB** |
+| limiter: fraction pulled > 3 dB | **15.48 %** | **5.22 %** |
+| limiter: mean gain reduction | **−1.75 dB** | **−0.38 dB** |
+| limiter: median gain reduction | — | **0.00 dB** |
+
+**The breach is no longer mono.** L/R correlation 0.987 → 0.652 without touching
+`spatial.py`, which confirms the diagnosis's own reading: the near-mono breach
+was a *symptom* of sub-60 Hz domination, not an independent defect.
+
+**But the master's breach is much darker than its own breach sources.** The
+bench measures impact+shards+debris at a **1547 Hz** centroid with **12.2 %**
+above 4 kHz; the master delivers **590 Hz** and **2.77 %**. Something else in the
+window is dark and loud, and the bus log names it:
+
+```
+reflect_showroom  trim +9.79 dB   enters the sum at peak 1.000  (peak criterion WON)
+aperture          trim +9.76 dB   enters the sum at peak 0.733
+```
+
+**Those are mine, from R2-4050.** Both are low-passed (5 kHz and 3.5 kHz) image
+sources of a reverberant tail, both are active across 37–49 s, and raising them
+6–9 dB laid a dark smeared wash over the sharpest event in the picture — visible
+in the onset rise, which went the wrong way (6.9 ms delivered → **46.3 ms**).
+
+**The falsifier attached to that decision fired, and it is being obeyed.**
+`aperture` −18 → **−24**, `reflect_showroom` −19 → **−23**: +2/+3 dB over the
+originals rather than +6/+9. Recorded rather than quietly retuned, because
+"raise them into audibility with intent" is only a decision if the intent is
+checked afterwards.
+
+## R2-4055 — THE LAST TWO NOISE-ONLY LAYERS, AND G13
+
+`crowd` was nine band-passed white-noise voices whose envelopes were also white
+noise; `fence_buzz` drove five structural resonances with continuous white
+noise. Both are Gaussian noise however they are filtered, and their 50 ms crest
+is Gaussian noise's — which is the whole of G13's complaint.
+
+Both get an **event process** through the same resonators. `_poisson_train`
+builds an inhomogeneous Poisson impulse train and the bank filters it once, so
+ten thousand events cost what one costs.
+
+- **crowd**: babble kept and reduced, plus claps (4–40/s, rising with
+  excitement) through a short bright resonance and shouts (0.5–6.5/s) through
+  two formants. **The balance was swept and measured, not chosen**: at the
+  original ratio the layer scores **10.85 dB**, against Gaussian noise's 10.9;
+  at 0.30 babble **14.17**, at 0.18 **16.91**, at 0.10 **21.02**. Set at 0.22 —
+  measured **15.94 dB at excitement 0.7**, 11.06 at 0.1. A distant grandstand is
+  not a shooting gallery.
+- **fence**: a wire fence hit by a pressure wave does not hum, it clatters
+  against its posts and clips. Rate ∝ excitation², plus two much shorter, much
+  higher clip resonances. Measured **50 ms crest 17.05 dB**, from ~10.9.
+
+## R2-4056 — THE BREACH, ATTRIBUTED BUS BY BUS. THE ENGINE IS 56 % OF IT.
+
+Backing the reverb buses off (R2-4054) moved the breach's centroid from 590 to
+**568 Hz** and its energy above 4 kHz from 2.77 % to 2.80 %. **It changed
+nothing, so they were not the cause**, and the retreat is kept only because it
+was the right level on its own terms.
+
+The render was repeated with `--stems`, and the 36–44 s window measured bus by
+bus settles it:
+
+| stem | share of breach energy | its own centroid | its own >4 kHz |
+|---|---:|---:|---:|
+| **engine** | **56.08 %** | **217.7 Hz** | **0.001 %** |
+| shards | 32.36 % | 608.9 Hz | 0.132 % |
+| **debris** | **3.82 %** | **6072.9 Hz** | **83.9 %** |
+| reflect_showroom | 2.32 % | 820.1 Hz | 0.003 % |
+| tyres | 1.62 % | 1224.5 Hz | 0.120 % |
+| aperture | 1.56 % | 824.7 Hz | 0.001 % |
+| structure | 0.97 % | 95.1 Hz | 0.000 % |
+| everything else | 1.27 % | — | — |
+
+**The engine and tyres are 57.7 % of the breach's energy, and they are the two
+buses that are still varispeeded 6.51× down** — the sustained sources §6 assigns
+jointly and R2-4035 deliberately did not touch. A spectral centroid is the
+energy-weighted mean frequency, so it decomposes exactly:
+
+```
+0.561*218 + 0.324*609 + 0.038*6073 + 0.023*820 + 0.016*1225 + ...  =  ~600 Hz
+```
+
+against the 568 Hz measured. **The model reproduces the master, which means the
+attribution is arithmetic and not a story.**
+
+### The handoff number for the engine workflow
+
+If the engine's world-attached layers were rendered on the film grid the way the
+breach's now are, its centroid at the breach would rise by the transposition
+factor — 217.7 × 6.51 ≈ **1417 Hz** — and the same decomposition gives a breach
+centroid of about **1580 Hz**, which clears G3's 1200 Hz outright. **The single
+highest-value change left in the breach is not in `layers.py`; it is
+`master.py:365` applied to `eng_f` and `tyre_f`, and it belongs to the engine
+workflow.** That is the number to hand them.
+
+### And the bed is the only bus with a top end
+
+`debris` carries **83.9 %** of its own energy above 4 kHz and is **3.82 %** of
+the beat. Every other bus in the window is below 0.2 %. Whatever G2 gets, it
+gets from there.
+
+## R2-4057 — THE BED IS THE ONLY LEVER I OWN ON G2, AND IT IS PEAK-LIMITED
+
+The bed carries the breach's entire top end and is 3.82 % of it. It could not
+simply be turned up: `debris` is one of the buses where **the peak criterion had
+already won** (LUFS target wanted +28.56 dB, peak ceiling allowed +24.55). Once
+a bus is peak-limited the only currency is **RMS at full scale**, i.e. its own
+crest.
+
+| bed setting | RMS at peak 1.0 | its 50 ms crest | its own >4 kHz |
+|---|---:|---:|---:|
+| 34 fines/fragment, σ 0.70, 5 random resonators 3–8 kHz | −25.62 dB | 16.48 | 86.9 % |
+| **90, σ 0.45**, 5 random | **−21.55 dB** | 12.79 | 86.9 % |
+| 140, σ 0.35, 8 deterministic 3.5–9 kHz | −21.79 | 12.82 | 98.4 % |
+| **140, σ 0.45, 4 deterministic 4–9 kHz** | **−20.27 dB** | **13.24** | **98.7 %** |
+
+**Measured on the master, the 34 → 90 step took the breach from 2.80 % above
+4 kHz to 6.63 % and its centroid from 568 to 773 Hz.**
+
+Two things were learned the hard way and both are recorded:
+
+**The resonator bank was an RNG lottery.** Five uniform draws over 3–8 kHz put
+86.9 % of the bed above 4 kHz on one seed and 98.4 % on another — an 11.5-point
+swing in the only bus with a top end, i.e. the breach's whole high-frequency
+content decided by a random draw. Now spread deterministically, with Q still
+drawn over the stated 20–60. **And the band is the contact's, not a mode's:** a
+5 mm chip's first free-plate mode is 30.59/0.005² = **1.2 MHz**, so
+sub-centimetre glass has no modes in the audio band at all and what a listener
+hears is the contact transient, bandwidth 1/T for T = 0.05–0.3 ms, i.e.
+3–20 kHz. 4–9 kHz is the conservative middle of that.
+
+**Truncating the amplitude tail was tried and made it worse — the isolated test
+lied.** A lognormal is unbounded and no fragment population contains an
+arbitrarily large fine, so clipping at the 99.5th percentile should buy RMS at
+the same peak, and on an isolated event train it bought **0.77 dB**. On the real
+bed it **lost 1.41 dB** (−21.55 → −22.96), because at 140,000 events over 9.5 s
+the resonators overlap so heavily that the bus's peak is a sum of many events
+rather than the largest one. Clipping cut the RMS and barely touched the peak.
+Left in the signature, defaulted off, with the measurement attached.
+
+## R2-4058 — TWO OF MY OWN NEW LAYERS, MEASURED AND CORRECTED
+
+Whole-film per-stem measurement from the R2-4056 stems:
+
+```
+stem            film E%   centroid   crest50
+engine            48.36      614.2      9.93
+shards            16.73      607.8      9.64
+brakes             8.24      225.2      8.76
+...
+suspension         3.74      124.6      4.71
+```
+
+- **`brakes` came out at a 225 Hz centroid**, for a layer whose entire content is
+  meant to live at 1.5–4 kHz. The spatial profile read at rubbing speed has an
+  f^−2 temporal spectrum, so mixing the raw rub in at 0.35 buried the disc
+  resonators it exists to excite, and the judder at 0.30 finished the job. Rub
+  0.35 → **0.12**, judder 0.30 → **0.12**, high-pass 60 → 140 Hz. Measured
+  centroid **225 → 1017 Hz**.
+- **`suspension` was 3.74 % of the whole film's energy from 16 events**, with a
+  50 ms crest of **4.71 dB** — a resonant boom rather than structure-borne
+  detail. Target −24 → **−30 LUFS-S**.
+
+Both of these are layers I added in R2-4049, and both were wrong in the mix in
+ways only a whole-film stem measurement shows. Adding a layer is not the same as
+landing one.
+
+## R2-4059/4060 — THE BED'S LEVEL IS ONE NUMBER IN THE MIX TABLE, AND TWO RENDERS PROVED IT
+
+R2-4059 made the bed denser (90 → 140 fines/fragment) and moved its resonator
+bank from a random draw over 3–8 kHz to a deterministic spread over 4–9 kHz.
+**The breach's energy above 4 kHz went DOWN, 6.63 % → 4.99 %.** Two separate
+things were wrong with the reasoning, and both are worth recording because both
+looked obviously right.
+
+**(a) Higher is not brighter.** Octave bands on the delivered breach, 4–9 kHz
+against 3–8 kHz:
+
+| 2–4 k | 4–6 k | 6–8 k | 8–12 k | 12–20 k |
+|---:|---:|---:|---:|---:|
+| **−3.42** | **−1.77** | **−5.15** | **+9.95** | +1.77 dB |
+
+Q 20–60 resonators centred at 4.6–8.4 kHz throw a great deal of energy into
+8–12 kHz — real energy, and audible — but the 4–8 kHz octaves that carry most of
+the absolute total lost more than it gained. Reverted to the spec's 3–8 kHz,
+kept deterministic.
+
+**(b) NOTHING INSIDE THE GENERATOR CHANGES WHAT THE BED DELIVERS.** Measured
+directly, over six configurations spanning 90–200 fines per fragment, σ 0.30–0.45
+and four resonator bands, computing each one's LUFS-S and peak and applying
+whichever criterion binds:
+
+```
+fines nres          band |   LUFS-S     peak   binds |  E>4kHz delivered
+   90    5  (3000, 8000) |   -13.82    0.702    LUFS |        2.936e-03
+  140    4  (4000, 9000) |   -12.79    0.776    LUFS |        3.123e-03
+  140    4  (3000, 8000) |   -13.58    0.700    LUFS |        2.778e-03
+  140    5  (3000, 8000) |   -13.05    0.760    LUFS |        2.760e-03
+  200    4  (3000, 8000) |   -12.66    0.844    LUFS |        2.652e-03
+  200    5  (2800, 7500) |   -12.30    0.853    LUFS |        2.741e-03
+```
+
+**Every configuration lands within 0.7 dB, because the loudness criterion
+re-normalises all of them.** The bed's contribution to the breach is set by
+`TARGET_LUFS_S["debris"]` and by nothing in `debris_bed` whatsoever.
+
+The 2.80 % → 6.63 % jump at R2-4057 was therefore **not** the extra fines. It was
+that at 34 fines the bed was PEAK-capped 4 dB *below* its loudness target, and
+at 90 it stopped being peak-capped and reached it — a one-off +4 dB step, now
+exhausted.
+
+**Two renders were spent tuning a generator before that was measured rather than
+assumed.** The density and the deterministic bank are kept because they are
+right on their own terms — 140 fines per integrated fragment is closer to what a
+12 mm pane produces, and a bank drawn from an RNG is not a construction — but
+neither is why the number moves.
+
+`debris` is therefore set from the mix table: **−13.0 → −10.5 LUFS-S**, 1.5 dB
+under the foreground shard bus. The stems say the bed carries 97.6 % of its own
+energy above 4 kHz and is the only bus in the breach with any top end at all;
+the fragments lead, the fines sit just beneath them.
+
+## R2-4061 — THE DELIVERABLE, MEASURED. AND THE ONE MEASUREMENT THAT SETTLES G2/G3.
+
+**`audio/out/r2_4021/master_R2-4060.wav`** — 124.083 s, −14.00 LUFS, −1.10 dBTP,
+0 clipped samples. `audio/out/master.wav` (the rejected delivery) is left
+untouched.
+
+### Against the delivered master
+
+| breach, 36–44 s | delivered | R2-4060 |
+|---|---:|---:|
+| spectral centroid | **51.5 Hz** | **711.5 Hz** (13.8×) |
+| energy > 4 kHz | **0.0021 %** | **4.97 %** (2,370×) |
+| energy > 6 kHz | 0.0007 % | **2.97 %** |
+| energy < 30 Hz | **60.40 %** | **0.05 %** |
+| energy < 100 Hz | **85.57 %** | **13.62 %** |
+| 50 ms crest, p50 | 7.31 | **10.26 dB** |
+| impact rise 10–90 %, at t = 36.00010 s | 0.60 | 1.92 ms |
+| **L/R correlation** | **0.987** | **0.646** |
+
+| whole film | delivered | R2-4060 |
+|---|---:|---:|
+| median 50 ms crest | 9.70 | **10.33 dB** |
+| energy < 30 Hz | 22.15 % | **0.29 %** |
+| 2–4 kHz vs 1–2 kHz | −6.14 | **−3.84 dB** |
+| 4–8 kHz vs 1–2 kHz | **−14.27** | **−7.92 dB** |
+| 8–12 kHz vs 1–2 kHz | **−25.64** | **−18.79 dB** |
+| 12–16 kHz vs 1–2 kHz | −32.79 | **−25.69 dB** |
+
+| the chain | delivered | R2-4060 |
+|---|---:|---:|
+| premix peak | **+17.73 dBFS** | **+4.25 dBFS** |
+| limiter max GR (honest) | **−22.76 dB**, reported as −0.124 | **−11.60 dB**, reported as −11.60 |
+| limiter mean GR | **−1.75 dB** | **−0.36 dB** |
+| fraction of film pulled > 3 dB | **15.48 %** | **4.81 %** |
+| fraction pulled > 6 dB | **12.15 %** | **1.89 %** |
+| median GR | — | **0.00 dB** |
+| limiter passes on the delivered signal | 9 | **1** |
+| LUFS-I / true peak | −14.00 / −1.10 | −14.00 / −1.10 |
+
+### G2 AND G3 ARE GATED ON ONE BUS, AND IT IS NOT MINE
+
+Measured on the R2-4059 stems, summing the 36–44 s window bus by bus:
+
+| what is in the sum | centroid | energy > 4 kHz |
+|---|---:|---:|
+| **all buses (the delivered breach)** | **791.6 Hz** | **6.01 %** |
+| **without the engine** | **1482.8 Hz** | **13.25 %** |
+| without engine + tyres (the two still varispeeded) | 1496.4 Hz | 13.79 % |
+| the breach layers alone (impact + shards + debris) | **1615.0 Hz** | **15.78 %** |
+
+**Remove the engine bus and the breach clears G3 (≥1200 Hz) and G2 (≥8 %)
+outright.** The engine is 55 % of the beat's energy with a spectral centroid of
+217.7 Hz and 0.001 % of its own energy above 4 kHz, because it is still
+transposed 6.51× down by `warp()` — the sustained-source half of §2.0 that §6
+assigns jointly and that R2-4035 deliberately did not touch.
+
+*(A cruder counterfactual — shifting the engine's measured PSD up by 6.5051× —
+gives a centroid of 1423.7 Hz but only 3.85 % above 4 kHz, because it drags the
+engine's very large low-frequency energy into 1–4 kHz and dilutes the fraction.
+It is reported for completeness and is the weaker of the two, since a film-grid
+engine is not its warped self shifted.)*
+
+**So the remaining work on the glass is not in `layers.py`. It is
+`master.py:365` applied to `eng_f` and `tyre_f`, and it belongs to the engine
+workflow.**
+
+## R2-4062 — THE GATES I DID NOT REACH, AND WHY, WITHOUT ROUNDING ANYTHING UP
+
+| gate | target | delivered | R2-4060 | status |
+|---|---|---:|---:|---|
+| G2 breach > 4 kHz | ≥ 8 % | 0.0021 % | **4.97 %** | **fail** — 13.25 % without the engine |
+| G3 breach centroid | ≥ 1200 Hz | 51.5 Hz | **711.5 Hz** | **fail** — 1482.8 Hz without the engine |
+| G4 breach 50 ms crest | ≥ 18 dB | 7.31 dB | **10.26 dB** | **fail** — see below |
+| G5 impact rise | ≤ 2 ms | 0.60 ms | **1.92 ms** | **pass** |
+| G6 onset density | ≥ 150/s | 87/s | 79/s | **fail** — see below |
+| G8 pane modal density | 0.314 ±25 % | 0.134/Hz | **0.312/Hz** | **pass** |
+| G9 log f₁ vs log L slope | −2.0 ±0.1 | — | **−1.972** | **pass** |
+| G10 per-mode shard Q | 500–2000 | 45 | **942** | **pass** |
+| G13 median 50 ms crest | > 11.0 dB | 9.70 dB | **10.33 dB** | **fail** — see below |
+| G14 premix peak | ≤ +6 dBFS | +17.73 | **+4.25 dBFS** | **pass** |
+| G1 limiter GR | ≤ 3 dB | −22.76 | **−11.60 dB** | **fail** — see below |
+
+**G1 — arithmetic, not tuning.** The mix has a peak-to-loudness ratio of
++4.25 − (−17.88) = **22.1 dB**. Delivering −14 LUFS-I at −1.15 dBTP allows a PLR
+of at most **12.85 dB**. The gap is 9.3 dB and something has to absorb it: the
+program gain takes 10.16 dB of it slowly (kept at +7/−3 over 6 s/12 s exactly as
+§4.3 requires) and the limiter takes the rest at the peaks. **A film whose
+loudest beat has an 18 dB crest cannot also sit at −14 LUFS with 3 dB of
+limiting** — those two targets are not simultaneously satisfiable, and −14 LUFS
+is a music-streaming number applied to material with a 31 dB internal range.
+What DID move is what a listener hears: mean gain reduction −1.75 → **−0.36 dB**,
+median **0.00 dB**, and the fraction of the film pulled more than 6 dB
+**12.15 % → 1.89 %**. The build fails itself loudly on G1 rather than hiding it,
+which is what §4.1 asked for.
+
+**G4 — the target is not reachable with G10.** A 50 ms crest of 18 dB across a
+continuous eight-second shower requires each event to be short compared with its
+spacing. With 995 contacts spread over 9.5 s of film and per-mode τ = Q/(πf) at
+Q 800–1500 (which G10 *requires*), five to ten events overlap in every 50 ms
+window and the sum is quasi-stationary. **G4 and G10 pull in opposite
+directions.** Contact damping after the first bounce (R2-4041) took what it
+could; the delivered figure is 10.26 dB against 7.31.
+
+**G6 — the threshold is below the measurement's own ceiling.** The onset
+detector had a 20 ms refractory period, which caps any signal at 50/s and makes
+a 150/s threshold unreachable by construction. Corrected to 5 ms (ceiling
+200/s), and on that footing **the delivered master already scores 87/s** — the
+spec's "5–13.5/s" is a different detector, not a different signal. The
+detector-free number is the schedule itself: **632 shard contacts per second at
+the peak of the shower on the film grid, plus a fines intensity of 101,731/s**.
+Beyond ~100/s, discrete onsets fuse into texture by definition, which is what
+§2.2 says the goal is.
+
+**G13 — 48 % of the film is a bus I do not own.** Per-stem, whole film: the
+engine is **48.4 % of the energy with a 50 ms crest of 9.93 dB**. The layers I
+rebuilt all clear the bar on their own — fence **17.05 dB**, crowd **15.94**,
+debris **15.56**, wind **11.02** — but no combination of 50 % of a film lifts the
+median past 11.0 dB while the other 50 % sits at 9.93. **G13 is jointly owned and
+its remaining term is the engine's.**
+
+## R2-4063 — WHAT I WOULD DO NEXT, IN ORDER
+
+1. **`master.py:365` on `eng_f` and `tyre_f`** (engine workflow). Worth 13.25 %
+   and 1482.8 Hz at the breach on its own, i.e. G2 and G3 together, and it is
+   the largest single item left anywhere in this spec.
+2. **Re-level the engine bus afterwards.** §6 warned that the engine needs
+   re-levelling from scratch once the chain is fixed and that doing it twice
+   wastes a pass — the chain is now fixed, so that pass is available.
+3. **Decide G1's target against a delivery loudness.** If −14 LUFS-I is
+   non-negotiable then ≤ 3 dB of gain reduction is not, and vice versa; the
+   arithmetic above is the trade and somebody should pick a side rather than
+   have the limiter pick it silently.
+4. **`BUS_PEAK_CEILING` is now the binding constraint on the debris bed** — it
+   enters at peak 1.000 and its loudness target is unreachable by 3.6 dB. The
+   criterion is right for the impact bus (which it stopped over-boosting by
+   25.81 dB) and is arguably too blunt for a dense texture whose meter
+   under-reading is a crest artefact rather than a spectral one. A per-bus
+   ceiling would fix it; I did not add one because a uniform rule that is
+   occasionally too strict is easier to reason about than a table of exceptions,
+   and because the engine change above makes the bed's level much less critical.

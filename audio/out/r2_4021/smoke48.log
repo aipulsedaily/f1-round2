@@ -1,0 +1,70 @@
+=== buildlock: audio-smoke-48k ===  available 9567 MB, swap free 39811 MB
+[    1.9s] world grid 5760001 samples, -35.0..85.0 s world
+[    5.9s] surfaces classified
+[   28.5s] engine: 31 upshifts, 31 downshifts, 14351 rpm max
+[   31.3s] brakes: active 0.178 of world; suspension: 16 load events
+[   39.5s] tyres
+[   44.8s] glass pane: 5605 modes to 17992 Hz, f11 = 7.48 Hz, 400 rendered, density 0.312/Hz
+[   46.0s] assembly: 616 part impacts
+[   51.2s] breach: 995 shard contacts over 3.15 s world = 9.52 s film
+[   53.7s] warped world -> film (sustained sources only)
+[   70.3s]   engine           PEAK CRITERION: LUFS target wanted +24.94 dB, peak ceiling allows +20.79 dB -- the meter is under-reading this bus by 4.15 dB
+[   70.3s] engine propagated
+[   86.8s] tyres propagated
+[  135.9s] brakes + suspension propagated
+[  200.3s]   structure        MIX TRIM -17.27 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 17.3 dB away from its own peak-normalised level (raw trim +62.30 dB, of which +79.56 dB is unit conversion)
+[  233.5s]   impact           PEAK CRITERION: LUFS target wanted +21.13 dB, peak ceiling allows -4.36 dB -- the meter is under-reading this bus by 25.49 dB
+[  354.3s]   shards           PEAK CRITERION: LUFS target wanted -26.79 dB, peak ceiling allows -30.70 dB -- the meter is under-reading this bus by 3.91 dB
+[  385.4s]   debris           PEAK CRITERION: LUFS target wanted +23.04 dB, peak ceiling allows +19.41 dB -- the meter is under-reading this bus by 3.63 dB
+[  385.4s] breach propagated
+[  414.6s] garage reflection
+[  445.6s]   reflect_showroom PEAK CRITERION: LUFS target wanted +11.53 dB, peak ceiling allows +6.41 dB -- the meter is under-reading this bus by 5.12 dB
+[  445.6s] showroom reflection
+[  449.7s]   room             MIX TRIM -14.96 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 15.0 dB away from its own peak-normalised level (raw trim -13.56 dB, of which +1.40 dB is unit conversion)
+[  466.2s] showroom acoustic
+[  471.2s]   wind             MIX TRIM -12.73 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 12.7 dB away from its own peak-normalised level (raw trim -36.86 dB, of which -24.13 dB is unit conversion)
+[  472.2s]   bed              MIX TRIM -21.30 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 21.3 dB away from its own peak-normalised level (raw trim +15.67 dB, of which +36.97 dB is unit conversion)
+[  472.2s] wind + bed
+[  504.9s]   crowd            MIX TRIM -14.28 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 14.3 dB away from its own peak-normalised level (raw trim -11.88 dB, of which +2.40 dB is unit conversion)
+[  504.9s] crowd
+[  527.6s]   fence            MIX TRIM -17.45 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 17.5 dB away from its own peak-normalised level (raw trim +32.19 dB, of which +49.64 dB is unit conversion)
+[  527.6s] fence
+[  530.4s] pre-mix: peak 1.371, -18.07 LUFS, short-term range 30.7 dB
+[  530.9s] 30 Hz high-pass: peak 1.371 -> 1.457 (+0.53 dB), -18.07 -> -18.06 LUFS
+[  531.4s] program gain
+[  554.4s]   LIMITER GAIN REDUCTION -11.71 dB EXCEEDS THE 3 dB LIMIT (G1) -- the mix is too hot for one pass, which is a MIX failure and not a limiter setting
+[  558.2s] internal: -14.07 LUFS, tp -1.15 dBTP
+[  567.0s]   G1_limiter_gr_le_3db             FAIL  -11.708144522379364
+[  567.0s]   G14_premix_peak_le_plus6dbfs     PASS  2.74082872224984
+[  567.0s]   G15_bus_trim_le_12db             FAIL  ['bed', 'crowd', 'fence', 'room', 'structure', 'wind']
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/zany/f1-round2/audio/master.py", line 1075, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/home/zany/f1-round2/audio/master.py", line 1057, in main
+    rep = build(a.out, sr=a.sr, report_path=a.report, speed_source=a.speed_source,
+                stems_dir=a.stems)
+  File "/home/zany/f1-round2/audio/master.py", line 1019, in build
+    sf.write(out_wav + ".new", out, SR_OUT, subtype="PCM_24")
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zany/f1-round2/.venv/lib/python3.14/site-packages/soundfile.py", line 375, in write
+    with SoundFile(file, 'w', samplerate, channels,
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                   subtype, endian, format, closefd,
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                   compression_level, bitrate_mode) as f:
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zany/f1-round2/.venv/lib/python3.14/site-packages/soundfile.py", line 706, in __init__
+    self._info = _create_info_struct(file, mode, samplerate, channels,
+                 ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                     format, subtype, endian)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/zany/f1-round2/.venv/lib/python3.14/site-packages/soundfile.py", line 1570, in _create_info_struct
+    format = _get_format_from_filename(file, mode)
+  File "/home/zany/f1-round2/.venv/lib/python3.14/site-packages/soundfile.py", line 1611, in _get_format_from_filename
+    raise TypeError(f"No format specified and unable to get format from "
+                    f"file extension: {file!r}")
+TypeError: No format specified and unable to get format from file extension: 'audio/out/r2_4021/smoke48.wav.new'
+>> STAGE RESULT: BUILDLOCK RELEASED  audio-smoke-48k rc=1  (available 9506 MB)

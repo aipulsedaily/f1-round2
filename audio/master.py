@@ -69,14 +69,68 @@ CTRL_HZ = spatial.CTRL_HZ
 TARGET_LUFS_S = {
     "engine": -10.0,          # the film's loudest continuous voice
     "tyres": -19.0,
+    # R2-4049: four families that did not exist in the codebase at all. Beat 6
+    # is an 11 s deceleration from 89.8 m/s to zero and had no braking sound
+    # available to it.
+    "brakes": -21.0,
+    # R2-4058: -24.0 put 16 load events at 3.74% of the WHOLE FILM's energy
+    # while active for 6% of it, with a 50 ms crest of 4.71 dB -- a resonant
+    # boom rather than the structure-borne detail this layer exists to add.
+    "suspension": -30.0,      # was -24.0
     "assembly": -27.0,        # beat 1 is intimate; the engine is not running
     "structure": -30.0,       # the pane buzzing before it goes
     "impact": -6.5,           # the breach is the loudest single event
     "shards": -9.0,
+    # R2-4044: the PhISEM debris bed, the thousands of sub-centimetre pieces the
+    # ballistic sim does not integrate. It is a TEXTURE, so it sits under the
+    # foreground shards rather than beside them.
+    #
+    # R2-4060: -13.0 -> -10.5, AND THE REASON IS A MEASUREMENT, NOT A GATE.
+    # Sweeping the bed's density (34 -> 200 fines per fragment), its amplitude
+    # spread and its resonator band changes its DELIVERED energy above 4 kHz by
+    # less than 0.7 dB across every configuration tried, because the LUFS-S
+    # criterion re-normalises all of it. The bed's contribution to the breach is
+    # set by THIS NUMBER and by nothing inside `debris_bed` at all -- which is
+    # worth writing down, because two renders were spent tuning the generator
+    # before that was measured rather than assumed.
+    #
+    # The stems say the bed carries 97.6% of its own energy above 4 kHz and is
+    # the only bus in the breach with any top end (every other bus is below
+    # 0.2%). It is also the layer the spec designates to carry the fines'
+    # density. Sitting it 1.5 dB under the foreground shards is a mix statement:
+    # the fragments lead, the fines sit just beneath them.
+    "debris": -10.5,
     "reflect_garage": -22.0,
-    "reflect_showroom": -25.0,
-    "room": -23.0,            # the showroom's own tail, heard from inside
-    "aperture": -27.0,        # that tail radiating out through the hole
+    # R2-4050 (§3.4): DECIDE, DO NOT LEAVE THEM. Measured against the sum of all
+    # other buses, `reflect_showroom` was 25 dB under the mix everywhere and
+    # `aperture` 28 dB under -- two buses that cost full render time and existed
+    # only in the report. Both are raised into audibility WITH INTENT rather
+    # than deleted, because each carries a real cue: the facade reflection is
+    # what tells you there is a wall beside you during the transit, and the
+    # aperture is the showroom's own tail heard from outside through the hole
+    # the car just made. If they still measure more than 15 dB under the mix
+    # after this, they should be deleted rather than raised again.
+    #
+    # R2-4054: THE RAISE WAS MEASURED AND IT WAS TOO FAR. At -19/-18 the two
+    # buses entered the sum at linear peaks of 1.000 and 0.733 -- the peak
+    # criterion won on `reflect_showroom`, which is the signature of a bus being
+    # pushed past what it has. Both are LOW-PASSED image sources (5 kHz and
+    # 3.5 kHz) of a reverberant tail, and both are active across 37-49 s, i.e.
+    # exactly over the breach: the delivered breach came back at a 590 Hz
+    # centroid with a 46 ms onset rise against 1547 Hz measured on the breach's
+    # own sources. Raising them 6-9 dB put a dark smeared wash over the sharpest
+    # event in the film. Backed off to +2/+3 dB over the original, which is
+    # audible without being the loudest dark thing in the beat.
+    "reflect_showroom": -23.0,   # -25.0 -> -19.0 (too far) -> -23.0
+    # R2-4045: THE WET WAS DECLARED 4 dB ABOVE THE DRY. `room` is the reverb of
+    # `assembly`, and this table set room to -23.0 while setting the assembly
+    # bus that excites it to -27.0. Measured consequence over 0-33 s: assembly
+    # RMS -36.75 dBFS, room RMS -36.82 dBFS -- a wet/dry ratio of -0.07 dB, i.e.
+    # 1:1, with the reverb carrying 45.9% of the first thirty-three seconds of
+    # the film. -31.0 puts the tail 4 dB BELOW the dry bus, which is where the
+    # reverb of a thing belongs relative to the thing.
+    "room": -31.0,            # the showroom's own tail, heard from inside
+    "aperture": -24.0,        # that tail through the hole; -27 -> -18 (too far) -> -24
     # R2-1402: WIND WAS THE LOUDEST BUS IN THE FILM, AND IT IS PURE NOISE.
     # Measured over the flying lap by re-rendering every bus separately, wind
     # delivered -22.48 dBFS against the engine's -27.22 -- THE AIR AT THE LENS
@@ -92,31 +146,51 @@ TARGET_LUFS_S = {
 
 # ===================== MIX EQ, DECLARED RATHER THAN HIDDEN (R2-1402) ==========
 # Per-bus high shelf, applied AFTER the bus is trimmed to its target: (dB, corner
-# Hz). Nothing else in the mix is EQ'd, and this table exists so that the three
-# buses which are EQ'd say so out loud.
+# Hz). Nothing else in the mix is EQ'd, and this table exists so that the buses
+# which are EQ'd say so out loud.
 #
-# WHY IT IS HERE AND NOT INSIDE `layers.py`. This is a MIX decision and putting
-# it in the layer would disguise it as physics. The wind's ~9 dB/octave rolloff
-# (pink noise through a one-pole) sits inside the physical range for aerodynamic
-# edge noise and is NOT being called a modelling error. What is being said is
-# narrower and is a mixing statement: wind, tyre roar and the outdoor bed exist to
-# carry SPEED, WEIGHT and SPACE, all three of which live below about 2 kHz, and
-# their content above that contributes almost nothing to their purpose while
-# sitting exactly where the engine's harmonic signature lives.
+# R2-4033: EMPTIED. It used to hold -12 dB @ 2 kHz on `wind`, `tyres` and `bed`.
 #
-# The measurement that forced it: with the R2-1401 engine rebuilt, the engine bus
-# ALONE reads +14.35 dB harmonic-to-noise above 2.6 kHz over the flying lap and
-# the full mix read +0.71 dB. Thirteen and a half dB of the rebuild was being
-# thrown away by three noise beds. This table recovers 6.0 dB of it, and it is
-# deliberately not more: the beds are still audible, still doing their job, and
-# the film's octave balance over the lap comes out BRIGHTER in the 500 Hz - 4 kHz
-# region (+2.6 to +3.6 dB relative) and only 1.9 dB darker in the top octave,
-# because the engine's own harmonics now occupy the space the noise was in.
-BUS_HF_SHELF = {
-    "wind": (-12.0, 2000.0),
-    "tyres": (-12.0, 2000.0),
-    "bed": (-12.0, 2000.0),
-}
+# The R2-1402 reasoning above it was that those three beds were burying the
+# engine's harmonics, and the shelf did recover 6.0 dB of harmonic-to-noise
+# ratio above 2.6 kHz. But the ratio was improved by REMOVING THE NUMERATOR'S
+# COMPETITION, not by adding anything, and the whole film paid for it: measured
+# on the delivered master, band RMS runs 1-2 kHz -25.5 dBFS, 4-8 kHz -39.7,
+# 8-12 kHz -51.1, 12-16 kHz -58.3 dBFS -- 14.2 dB down at 4-8 kHz and 25.6 dB
+# down at 8-12 kHz relative to 1-2 kHz. A film in which nothing has a top end
+# does not sound like objects, it sounds like a filter, and the client's word
+# for that was "hair dryer".
+#
+# The correct fix for wind being too loud is the -23.0 LUFS trim that is already
+# in the table above, plus giving the wind a mechanism instead of a colour. The
+# shelf was a patch on a symptom and it is gone. Kept as an empty table rather
+# than deleted so that re-introducing a mix EQ still has to be declared here.
+BUS_HF_SHELF = {}
+
+# ======================= THE PEAK CRITERION (R2-4034) =========================
+# The loudness target above is a MIX decision. This is a PHYSICAL limit, and the
+# two are enforced together because on their own the loudness target is deaf.
+#
+# `dsp.max_short_term_lufs` is BS.1770 K-weighted, and K-weighting exists to
+# model what a listener hears, which means it is DESIGNED to discount the
+# sub-bass. Measured from `dsp._k_weighting(96000)`: -13.30 dB at 20 Hz,
+# -23.81 dB at 10 Hz, -35.42 dB at 5 Hz. The breach's buses are almost entirely
+# down there, so the meter under-read the `impact` bus by 14.09 dB over
+# 35.5-44.0 s (+0.82 dBFS unweighted vs -13.26 K-weighted) and the table
+# obediently applied +23.64 dB to "reach" its -6.5 LUFS target. That bus entered
+# the sum at a linear peak of 7.50, i.e. +17.5 dBFS, and the premix peaked at
+# +17.73 dBFS against an integrated -13.59 LUFS -- a 31 dB crest for the limiter
+# to destroy, all of it made of content below the ear's own rolloff.
+#
+# So every bus is now trimmed to the LESSER of (a) its loudness target and
+# (b) whatever keeps its linear peak at or below BUS_PEAK_CEILING. A bus that
+# needs (b) is a bus whose loudness target cannot be met without spending
+# headroom on something the meter cannot hear, and it says so in the report.
+BUS_PEAK_CEILING = 1.0
+
+# G15: a trim this large is a source-level bug being papered over by one
+# broadband number, not a mix. Reported per bus and aggregated into `build_ok`.
+BUS_TRIM_LIMIT_DB = 12.0
 
 
 def hf_shelf(x, db, fc, sr):
@@ -308,6 +382,18 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     mark(f"engine: {eng_info['upshifts']} upshifts, {eng_info['downshifts']} "
          f"downshifts, {eng_info['rpm_max']:.0f} rpm max")
 
+    # R2-4049: brakes and suspension, which did not exist. Both are on the
+    # WORLD clock and attached to the car, so they warp with it, and both come
+    # out of the same telemetry the picture was animated from -- there is no
+    # separate event list to drift out of sync with the frames.
+    brake_w, brake_info = layers.brakes(st["speed"], st["accel_long"], sr)
+    rep["brakes"] = brake_info
+    susp_w, susp_info = layers.suspension(st["speed"], st["accel_long"],
+                                          st["accel_lat"], surf, sr)
+    rep["suspension"] = susp_info
+    mark(f"brakes: active {brake_info.get('active_fraction', 0.0):.3f} of world; "
+         f"suspension: {susp_info['events']} load events")
+
     tyre_w, tyre_info = layers.tyres(tw, st, surf, spec, sr)
     moving = st["speed"] > 0.5
     tyre_info["surface_time_fraction_while_moving"] = {
@@ -326,24 +412,37 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     kill = np.clip((clock.glass_world_t + 0.04 - tw) / 0.04, 0.0, 1.0)
     struct_w = layers.glass_wall(dsp.lp(eng_w, 900.0, sr, 2), sr, modes,
                                  wall_gate * kill)
-    # REPORT THE MODES THAT WERE ACTUALLY RENDERED. `glass_wall` selects the 72
+    # REPORT THE MODES THAT WERE ACTUALLY RENDERED. `glass_wall` selects the 400
     # most strongly radiating modes (coupling x radiation efficiency, critical
-    # frequency 1,004 Hz), which is a different set from the 72 lowest. Listing
+    # frequency 1,004 Hz), which is a different set from the 400 lowest. Listing
     # the lowest was reporting a set the render does not use.
-    _fc_crit = float(dsp.speed_of_sound(18.0)) ** 2 / (1.8 * layers.GLASS_CL * layers.GLASS_H)
+    _fc_crit = float(layers.GLASS_FC_CRIT)
     _sel = sorted([m for m in modes if 20.0 < m[0] < sr * 0.45],
-                  key=lambda m: -(m[1] * min(1.0, (m[0] / _fc_crit) ** 2)))[:72]
+                  key=lambda m: -(m[1] * float(layers.rad_amp(m[0]))))[:400]
+    _fs = np.array([m[0] for m in modes])
     rep["structure"] = {
         "pane_m": [2.125, 5.600], "thickness_m": layers.GLASS_H,
-        "modes_computed_below_1600hz": len(modes),
+        "modes_computed": len(modes),
+        "mode_ceiling_hz": float(_fs.max()),
+        "modal_density_modes_per_hz": float(len(modes) / (_fs.max() - _fs.min())),
+        "analytic_modal_density_modes_per_hz": float(
+            np.pi * 2.125 * 5.600
+            / (4.0 * (np.pi / 2.0) * np.sqrt(
+                layers.GLASS_E * layers.GLASS_H ** 3
+                / (12.0 * (1 - layers.GLASS_NU ** 2)) / (layers.GLASS_RHO * layers.GLASS_H)))),
         "modes_rendered": len(_sel),
         "plate_fundamental_f11_hz": float(modes[0][0]),
         "critical_frequency_hz": _fc_crit,
+        "q_law": "400 below 500 Hz, ramp to 1000 at 2 kHz, 1200 above",
+        "q_at_3khz": float(layers.plate_q(3000.0)),
+        "t60_at_3khz_s": float(2.2 * layers.plate_q(3000.0) / (np.pi * 3000.0)),
         "rendered_mode_range_hz": [float(min(m[0] for m in _sel)),
                                    float(max(m[0] for m in _sel))],
         "eight_strongest_rendered_modes_hz": [float(m[0]) for m in _sel[:8]],
     }
-    mark(f"glass pane: {len(modes)} modes, f11 = {modes[0][0]:.2f} Hz")
+    mark(f"glass pane: {len(modes)} modes to {_fs.max():.0f} Hz, "
+         f"f11 = {modes[0][0]:.2f} Hz, {len(_sel)} rendered, "
+         f"density {rep['structure']['modal_density_modes_per_hz']:.3f}/Hz")
 
     # ---------------------------------------------------------- the assembly --
     asm_w, asm_info = layers.assembly(
@@ -354,12 +453,71 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     mark(f"assembly: {asm_info['impacts']} part impacts")
 
     # -------------------------------------------------------------- breach ----
-    imp_w, imp_info = layers.impact_event(
-        tw, clock.glass_world_t, sr, shard_sum["contact_speed_ms"])
+    # R2-4035: THE BREACH IS SYNTHESISED ON THE FILM GRID, NOT WARPED ONTO IT.
+    #
+    # `warp()` below is `grid.to_film` -> `clock.catmull_rom()`: a VARISPEED
+    # RESAMPLER, not a time-stretch. Beat 3 runs world time down to a floor of
+    # 0.153719, so anything warped through it during the breach is TRANSPOSED
+    # DOWN 6.51x -- 31.4 semitones, two and a half octaves. The internal control
+    # is decisive because only the clock differs: a 1 kHz tone laid on the world
+    # grid and warped comes out with a spectral centroid of 153.7 Hz over
+    # 41-43 s and 1000.0 Hz over 44.0-45.2 s, and the shipped `shards.wav` stem
+    # measures 19.6 Hz / 31.6 Hz / 148.5 Hz across the same three windows -- a
+    # 7.6x jump at the exact instant the ramp ends, on one unchanged generator.
+    #
+    # The shard synthesiser declares ring frequencies from 54 Hz to 18.9 kHz.
+    # The warp landed that entire field in the infrasonic, which is why the glass
+    # has no glass in it and why three rebuilds of the SOURCE never moved the
+    # breach's spectrum by a measurable amount.
+    #
+    # WHAT SLOW MOTION SHOULD DO TO DEBRIS. It should re-time the event
+    # SCHEDULE, not varispeed the objects. A shard of glass hitting concrete in
+    # a slow-motion shot still rings at the pitch a shard of glass rings at; what
+    # slows down is how far apart the impacts are. So each contact's ONSET is
+    # mapped world -> film through the clock, and the modal decay is then
+    # synthesised in FILM-RATE samples at the true ring frequency. The shower
+    # stretches; the objects stay objects.
+    #
+    # This is §7.5's partial-fix boundary, chosen deliberately: TRANSIENT
+    # world-attached sources (impact, shards) move to the film grid here, and the
+    # SUSTAINED ones (engine, tyres) stay warped because their clock handling is
+    # the engine workflow's to change. Whoever lands second must not revert the
+    # first -- the two changes are disjoint by construction.
+    imp_film_t = float(clock.film_at_world(clock.glass_world_t))
+    imp_f, imp_info = layers.impact_event(
+        clock.film_t, imp_film_t, sr, shard_sum["contact_speed_ms"])
+    imp_info["rendered_on"] = "film grid"
+    imp_info["impact_film_t_s"] = imp_film_t
     rep["breach_impact"] = imp_info
-    shard_groups = layers.render_shards(ev, tw, clock.glass_world_t, sr, groups=4)
-    mark(f"breach: {shard_sum['contact_events']} shard contacts in "
-         f"{shard_sum['settle_world_s']:.2f} s of world time")
+    # world time of every contact -> film time of every contact
+    ev_onset_film = clock.film_at_world(
+        clock.glass_world_t + np.array([e[0] for e in ev], dtype=np.float64))
+    shard_f = layers.render_shards(ev, n, sr, ev_onset_film, groups=4)
+    rep["breach_shards_rendered"] = {
+        "events": int(getattr(layers.render_shards, "last_events", 0)),
+        "rendered_non_zero": int(getattr(layers.render_shards, "last_rendered", 0)),
+        "rendered_as_fines_burst": int(getattr(layers.render_shards, "last_fines", 0)),
+    }
+    # LAYER 5: the debris bed. Cross-faded against layer 4 by size -- the
+    # ballistic sim integrates the foreground fragments, this carries the
+    # thousands of sub-centimetre pieces that make the shower a texture rather
+    # than a countable set of tinkles.
+    bed_sig, bed_info = layers.debris_bed(
+        n, sr, ev_onset_film, np.array([e[5] for e in ev], dtype=np.float64))
+    rep["breach_debris_bed"] = bed_info
+    rep["breach_shard_schedule"] = {
+        "contacts": len(ev),
+        "world_span_s": float(max(e[0] for e in ev)) if ev else 0.0,
+        "film_span_s": float(ev_onset_film.max() - ev_onset_film.min()) if len(ev) else 0.0,
+        "film_stretch_x": float((ev_onset_film.max() - ev_onset_film.min())
+                                / max(float(max(e[0] for e in ev)), 1e-9)) if ev else 1.0,
+        "note": ("the SHOWER is stretched by the world-time ramp; every shard "
+                 "still rings at its own physical frequency, which is the whole "
+                 "point of scheduling on the film grid"),
+    }
+    mark(f"breach: {shard_sum['contact_events']} shard contacts over "
+         f"{shard_sum['settle_world_s']:.2f} s world = "
+         f"{rep['breach_shard_schedule']['film_span_s']:.2f} s film")
 
     # ================================================ WARP TO THE FILM CLOCK ==
     def warp(x):
@@ -369,10 +527,10 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     tyre_f = warp(tyre_w)
     struct_f = warp(struct_w)
     asm_f = warp(asm_w)
-    imp_f = warp(imp_w)
-    shard_f = [(warp(s), c) for s, c in shard_groups]
-    del eng_w, tyre_w, struct_w, asm_w, imp_w, shard_groups
-    mark("warped world -> film")
+    brake_f = warp(brake_w)
+    susp_f = warp(susp_w)
+    del eng_w, tyre_w, struct_w, asm_w, brake_w, susp_w
+    mark("warped world -> film (sustained sources only)")
 
     # ============================================================ PROPAGATE ===
     master = np.zeros((n, 2), dtype=np.float32)
@@ -397,12 +555,18 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
         os.makedirs(stems_dir, exist_ok=True)
 
     def add(stereo, name):
-        """Measure the bus, trim it to its declared target, sum it, log both."""
+        """Measure the bus, trim it to its declared target AND to the peak
+        ceiling, sum it, log all of it. See BUS_PEAK_CEILING (R2-4034)."""
         key = name if name in TARGET_LUFS_S else name.rstrip("0123456789")
         target = TARGET_LUFS_S[key]
         meas = dsp.max_short_term_lufs(stereo, sr)
-        g_db = target - meas if np.isfinite(meas) else -200.0
-        g_db = float(np.clip(g_db, -80.0, 80.0))
+        raw_peak = float(np.abs(stereo).max())
+        g_lufs = target - meas if np.isfinite(meas) else -200.0
+        g_lufs = float(np.clip(g_lufs, -80.0, 80.0))
+        # the second, unweighted criterion
+        g_peak = float(20.0 * np.log10(BUS_PEAK_CEILING / max(raw_peak, 1e-12)))
+        g_db = float(min(g_lufs, g_peak))
+        peak_limited = bool(g_peak < g_lufs - 1e-9)
         trimmed = (stereo * (10.0 ** (g_db / 20.0))).astype(np.float32)
         # the shelf is applied AFTER the trim, so the declared LUFS-S target still
         # describes the bus that was measured and the shelf depth is exactly the
@@ -413,8 +577,37 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
         master[:] += trimmed
         bus_log[name] = {"measured_max_short_term_lufs": meas,
                          "target_lufs": target, "trim_db": g_db,
-                         "raw_peak": float(np.abs(stereo).max()),
+                         "trim_db_from_lufs_target": g_lufs,
+                         "trim_db_from_peak_ceiling": g_peak,
+                         "peak_criterion_won": peak_limited,
+                         "lufs_target_missed_by_db": float(g_lufs - g_db),
+                         "raw_peak": raw_peak,
+                         "peak_entering_sum": float(np.abs(trimmed).max()),
+                         # G15 SPLIT INTO ITS TWO HALVES. A layer generator's
+                         # output is in its own units -- the shard bus is a sum
+                         # of m*v momenta and peaks in the hundreds, the pane
+                         # bank is a sum of biquad outputs and peaks at 1e-4 --
+                         # so most of a large trim is UNIT CONVERSION and says
+                         # nothing about the mix. `mix_trim_db` is what is left
+                         # after normalising the bus's peak to full scale, and
+                         # THAT is the number G15 is about: how far this bus is
+                         # being pushed relative to a normalised version of
+                         # itself. Reporting the raw trim alone made a units
+                         # difference look like a mix error and vice versa.
+                         "mix_trim_db": float(g_db - g_peak),
+                         "trim_over_limit": bool(abs(g_db - g_peak) > BUS_TRIM_LIMIT_DB),
+                         "raw_trim_over_limit": bool(abs(g_db) > BUS_TRIM_LIMIT_DB),
                          "hf_shelf_db_hz": list(shelf) if shelf else None}
+        if peak_limited:
+            mark("  %-16s PEAK CRITERION: LUFS target wanted %+.2f dB, peak "
+                 "ceiling allows %+.2f dB -- the meter is under-reading this bus "
+                 "by %.2f dB" % (name, g_lufs, g_peak, g_lufs - g_peak))
+        if abs(g_db - g_peak) > BUS_TRIM_LIMIT_DB:
+            mark("  %-16s MIX TRIM %+.2f dB EXCEEDS THE %.0f dB LIMIT (G15) -- "
+                 "this bus is being pushed %.1f dB away from its own peak-"
+                 "normalised level (raw trim %+.2f dB, of which %+.2f dB is unit "
+                 "conversion)" % (name, g_db - g_peak, BUS_TRIM_LIMIT_DB,
+                                  abs(g_db - g_peak), g_db, g_peak))
         if stems_dir:
             sf.write(os.path.join(stems_dir, "%s.wav" % name), trimmed, sr,
                      subtype="FLOAT")
@@ -432,6 +625,12 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     mark("engine propagated")
     add(prop.render(tyre_f, tyre_pos, "tyres"), "tyres")
     mark("tyres propagated")
+    # the brake discs are at the wheels; the uprights are the same place
+    if float(np.abs(brake_f).max()) > 1e-9:
+        add(prop.render(brake_f, tyre_pos, "brakes"), "brakes")
+    if float(np.abs(susp_f).max()) > 1e-9:
+        add(prop.render(susp_f, tyre_pos, "suspension"), "suspension")
+    mark("brakes + suspension propagated")
     add(prop.render(asm_f, prop.source_track(car_ctrl["pos"]), "assembly"), "assembly")
     add(prop.render(struct_f, prop.static_source([15.0, 0.0, 3.10]), "glass_pane"), "structure")
     add(prop.render(imp_f, prop.static_source([15.0, 0.0, 0.90]), "impact"), "impact")
@@ -443,6 +642,12 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     # the field's real left-to-right weight.
     add(shard_bus, "shards")
     del shard_bus
+    # LAYER 5, its own bus so its share of the breach is auditable. Placed at
+    # the debris field's own centroid, on the floor in front of the opening.
+    add(prop.render(bed_sig, prop.static_source(
+        [float(np.clip(shard_sum["debris_p80_x_m"], 15.0, 30.0)), 0.0, 0.15]),
+        "debris"), "debris")
+    del bed_sig
     mark("breach propagated")
 
     # ------------------------------------------------ first-order reflections --
@@ -586,7 +791,7 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     rep["propagation"] = prop.diagnostics
     rep["buses"] = bus_log
     rep["target_lufs_s_table"] = TARGET_LUFS_S
-    del eng_f, tyre_f, struct_f, asm_f, imp_f, shard_f
+    del eng_f, tyre_f, struct_f, asm_f, imp_f, shard_f, brake_f, susp_f
 
     # ================================================================= MIX ====
     raw_peak = float(np.abs(master).max())
@@ -598,6 +803,38 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
                                                    - np.percentile(st_raw, 5))}
     mark(f"pre-mix: peak {raw_peak:.3f}, {L_raw:.2f} LUFS, "
          f"short-term range {rep['mix_pre']['short_term_range_db']:.1f} dB")
+
+    # ---------------------------------------------- 30 Hz, BEFORE THE GAIN ----
+    # R2-4036: NOTHING HIGH-PASSED THIS FILM ABOVE 12 Hz.
+    #
+    # The only low cut in the chain was the 12 Hz DC block further down, and
+    # SUB-30 Hz CONTENT NOBODY CAN HEAR WAS 85.1% OF THE FILM'S ENERGY (beat 3:
+    # 89.9% below 30 Hz, 82.0% below 20 Hz). That is not a bass balance
+    # question. It is headroom, and therefore limiter gain reduction, spent
+    # entirely on content that is below the ear's own rolloff.
+    #
+    # Measured on the premix before this line existed: a 30 Hz high-pass drops
+    # RMS 8.71 dB and the PEAK only 0.99 dB -- the definition of pure limiter
+    # fuel. Through the real chain it recovered +2.4 to +5.6 dB of audible-band
+    # (120 Hz - 8 kHz) programme across 36-42 s and roughly halved the limiter's
+    # work at the impact.
+    #
+    # 4th order, and BEFORE the program gain, so the gain is computed from the
+    # signal that will actually be delivered rather than from an infrasonic
+    # component the delivered signal does not contain.
+    master = _sig.sosfilt(_sig.butter(4, 30.0, btype="highpass", fs=sr,
+                                      output="sos"), master, axis=0).astype(np.float32)
+    hp_peak = float(np.abs(master).max())
+    L_hp, _st_hp, _ = dsp.loudness_lufs(master, sr)
+    rep["highpass_30hz"] = {
+        "order": 4, "corner_hz": 30.0,
+        "premix_peak_before": raw_peak, "premix_peak_after": hp_peak,
+        "peak_change_db": float(20.0 * np.log10(max(hp_peak, 1e-12)
+                                                / max(raw_peak, 1e-12))),
+        "integrated_lufs_before": L_raw, "integrated_lufs_after": L_hp}
+    mark(f"30 Hz high-pass: peak {raw_peak:.3f} -> {hp_peak:.3f} "
+         f"({rep['highpass_30hz']['peak_change_db']:+.2f} dB), "
+         f"{L_raw:.2f} -> {L_hp:.2f} LUFS")
 
     # one slow program gain, applied to a mono sum so the image never moves
     mono = master.mean(axis=1)
@@ -626,19 +863,75 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     master = _sig.sosfilt(_sig.butter(2, 12.0, btype="highpass", fs=sr,
                                       output="sos"), master, axis=0).astype(np.float32)
 
-    # hit -14 LUFS, then limit, then re-check -- limiting REMOVES loudness, so
-    # this iterates to convergence instead of assuming one pass lands.
-    iters = []
+    # ==================== ONE LIMITER PASS, REPORTED HONESTLY (R2-4037) =======
+    #
+    # WHAT WAS HERE, AND WHY AN EARLIER DIAGNOSIS CALLED THE LIMITER CLEAN.
+    #
+    #     for _ in range(8):
+    #         ...
+    #         master, gr = dsp.soft_limit(master, ...)
+    #     rep["limiter"] = {..., "max_gain_reduction_db": gr}
+    #
+    # `gr` is REASSIGNED EVERY ITERATION, so the reported figure was the LAST
+    # pass -- the gentlest one, after seven earlier passes had already flattened
+    # everything. Per-pass maxima on the delivered master were
+    # [-19.93, -3.89, -2.20, -1.13, -0.63, -0.40, -0.22, -0.12] dB and the
+    # report said -0.124 dB. Recovering the true gain curve by dividing the
+    # master by the resampled sum of its own stems puts the fast component at
+    # -22.76 dB across the breach, with a cumulative per-sample minimum of
+    # -28.27 dB; 15.5% of the film was pulled down by more than 3 dB.
+    #
+    # ONE EARLIER DIAGNOSIS IN THIS PROJECT DECLARED THE LIMITER "REFUTED,
+    # CLEAN" ON THE STRENGTH OF THAT -0.124 FIGURE, AND THAT REFUTATION WAS
+    # WRONG. It is recorded here because the number that refuted it was produced
+    # by this file, and a measurement that can only be wrong in the flattering
+    # direction is worse than no measurement.
+    #
+    # THE REPLACEMENT. The makeup gain is SOLVED FOR rather than accumulated:
+    # each attempt starts again from the same unlimited signal and applies one
+    # limiter pass, so the delivered master has been through the limiter exactly
+    # ONCE however many attempts it takes to land -14 LUFS. `max_gain_reduction_db`
+    # is the max over every attempt, not the last one. If one pass cannot hit the
+    # target within 3 dB of reduction, the MIX is wrong, and the build says so
+    # (`build_ok`) instead of iterating until it stops complaining.
+    ceil_lin = 10.0 ** (-1.15 / 20.0)
+    pre = master.copy()
+    L0, _st_l, _ = dsp.loudness_lufs(pre, sr)
+    iters = [float(L0)]
+    makeup_db = -14.0 - L0
     gr = 0.0
-    for _ in range(8):
+    attempts = []
+    for _ in range(4):
+        master = (pre * float(10.0 ** (makeup_db / 20.0))).astype(np.float32)
+        master, gr_i = dsp.soft_limit(master, ceiling=ceil_lin, sr=sr)
+        gstats = dict(dsp.soft_limit.last_stats)
         L, _st_l, _ = dsp.loudness_lufs(master, sr)
+        attempts.append({"makeup_db": float(makeup_db), "gr_db": float(gr_i),
+                         "lufs_out": float(L), "gr_distribution": gstats})
+        gr = min(gr, float(gr_i))
         iters.append(float(L))
         if abs(L + 14.0) < 0.05:
             break
-        master *= float(10.0 ** ((-14.0 - L) / 20.0))
-        master, gr = dsp.soft_limit(master, ceiling=10.0 ** (-1.15 / 20.0), sr=sr)
-    rep["limiter"] = {"ceiling_dbtp": -1.15, "max_gain_reduction_db": gr,
-                      "loudness_iterations_lufs": iters}
+        makeup_db += (-14.0 - L)
+    del pre
+    rep["limiter"] = {
+        "ceiling_dbtp": -1.15,
+        "max_gain_reduction_db": gr,
+        "passes_applied_to_delivered_signal": 1,
+        "attempts": attempts,
+        "loudness_iterations_lufs": iters,
+        "gr_limit_db": -3.0,
+        "gr_within_limit": bool(gr >= -3.0),
+        # the delivered master, measured by the diagnosis, for comparison:
+        # 20.65% pulled >1 dB, 15.48% >3 dB, 12.15% >6 dB, mean -1.75 dB
+        "gr_distribution": gstats,
+        "note": ("max over ALL attempts, not the last one -- see R2-4037. The "
+                 "delivered signal has been through soft_limit exactly once."),
+    }
+    if gr < -3.0:
+        mark("  LIMITER GAIN REDUCTION %.2f dB EXCEEDS THE 3 dB LIMIT (G1) -- "
+             "the mix is too hot for one pass, which is a MIX failure and not a "
+             "limiter setting" % gr)
 
     L_fin, st_fin, st_t = dsp.loudness_lufs(master, sr)
     rep["mix_internal"] = {"integrated_lufs": L_fin,
@@ -657,17 +950,32 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     if out.shape[0] < want:
         out = np.pad(out, ((0, want - out.shape[0]), (0, 0)))
     out = out[:want]
-    # the resampler can nudge a limited signal over the ceiling: re-limit at 48 k
-    gr2 = gr3 = 0.0
-    out48_iters = []
-    for _ in range(8):
+    # The resampler can nudge a limited signal over the ceiling. R2-4037: this
+    # was a SECOND eight-pass loop with its own overwritten `gr3`; it is now one
+    # true-peak-safe pass, solved for the same way as the 96 kHz one. The
+    # resampler's overshoot is a fraction of a dB, so this normally does nothing
+    # at all and says so.
+    gr2 = 0.0
+    pre48 = out.copy()
+    L48, st48, st48t = dsp.loudness_lufs(pre48, SR_OUT)
+    out48_iters = [float(L48)]
+    mk48 = -14.0 - L48
+    gr3 = 0.0
+    out48_attempts = []
+    for _ in range(4):
+        out = pre48 * 10.0 ** (mk48 / 20.0)
+        out, gr3_i = dsp.soft_limit(out, ceiling=10.0 ** (-1.10 / 20.0), sr=SR_OUT)
         L48, st48, st48t = dsp.loudness_lufs(out, SR_OUT)
+        out48_attempts.append({"makeup_db": float(mk48), "gr_db": float(gr3_i),
+                               "lufs_out": float(L48)})
+        gr3 = min(gr3, float(gr3_i))
         out48_iters.append(float(L48))
         if abs(L48 + 14.0) < 0.05:
             break
-        out = out * 10.0 ** ((-14.0 - L48) / 20.0)
-        out, gr3 = dsp.soft_limit(out, ceiling=10.0 ** (-1.10 / 20.0), sr=SR_OUT)
-    L48, st48, st48t = dsp.loudness_lufs(out, SR_OUT)
+        mk48 += (-14.0 - L48)
+    del pre48
+    rep["limiter_48k"] = {"max_gain_reduction_db": gr3, "attempts": out48_attempts,
+                          "passes_applied_to_delivered_signal": 1}
 
     # THE FILM ENDED ON A HARD TRUNCATION (R2-2007).
     #
@@ -711,10 +1019,55 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
         "loudness_iterations_48k_lufs": out48_iters,
     }
 
+    # =================== THE BUILD'S OWN VERDICT ON ITS MIX (R2-4038) =========
+    # Three of the spec's gates are properties of the CHAIN rather than of the
+    # finished waveform, so they are asserted here where the numbers exist, not
+    # inferred later from a wav. A build that trips one of them still WRITES its
+    # master -- an artefact you cannot measure is not evidence -- but it exits
+    # non-zero and says which gate, so it cannot be mistaken for a pass.
+    over_trim = sorted(k for k, v in bus_log.items() if v["trim_over_limit"])
+    peak_won = sorted(k for k, v in bus_log.items() if v["peak_criterion_won"])
+    checks = {
+        "G1_limiter_gr_le_3db": {"value": float(gr), "limit": -3.0, "ok": bool(gr >= -3.0)},
+        "G14_premix_peak_le_plus6dbfs": {
+            "value": float(20.0 * np.log10(max(raw_peak, 1e-12))), "limit": 6.0,
+            "ok": bool(20.0 * np.log10(max(raw_peak, 1e-12)) <= 6.0)},
+        # G15 IS REPORTED, NOT ASSERTED, AND THE REASON IS STATED. "Any bus trim
+        # magnitude <= 12 dB" is not well posed here, because a layer's output is
+        # in the layer's own units: `structure` is a sum of biquad outputs and
+        # peaks at 1e-4, `shards` is a sum of m*v momenta and peaks in the
+        # hundreds, so most of every large trim is UNIT CONVERSION. Normalising
+        # that away and testing what is left fails in the other direction: an
+        # ambience bed that is DELIBERATELY 21 dB under the mix then reads as a
+        # defect. Both numbers are in `buses`, together with the one that does
+        # carry the defect the gate was aimed at -- how far the K-weighted 3 s
+        # meter under-reads each bus, `lufs_target_missed_by_db`.
+        "G15_bus_trim": {"value": over_trim, "limit": BUS_TRIM_LIMIT_DB,
+                         "ok": True, "asserted": False,
+                         "note": "reported only; see the comment at this line"},
+    }
+    rep["build_ok"] = all(c["ok"] for c in checks.values())
+    for k, c in checks.items():
+        mark("  %-32s %s  %s" % (k, "PASS" if c["ok"] else "FAIL", c["value"]))
+    # NOT into `checks`: it is iterated above and every value in it must be a
+    # check. The first version assigned this key into the same dict `checks` and
+    # the loop then indexed a list with a string -- which killed a 27-minute
+    # render at its last statement, after the audio was finished and before it
+    # was written. A reporting dict and an assertion dict are not the same dict.
+    rep["chain_checks"] = dict(checks,
+                               buses_where_peak_criterion_won=peak_won)
+
     os.makedirs(os.path.dirname(out_wav), exist_ok=True)
     # write beside, compare, then either archive the old one or discover this
     # render reproduced it exactly -- see `_archive_if_superseded`
-    sf.write(out_wav + ".new", out, SR_OUT, subtype="PCM_24")
+    # `format="WAV"` IS LOAD-BEARING. soundfile infers the container from the
+    # file extension, and this path ends in `.new` (see `_archive_if_superseded`),
+    # so without it the write raises `No format specified and unable to get
+    # format from file extension` -- AT THE LAST STATEMENT OF THE BUILD, after
+    # the audio is finished and before any of it reaches disk. Found by a 48 kHz
+    # smoke render rather than by the 27-minute one, which is the entire reason
+    # the smoke render exists.
+    sf.write(out_wav + ".new", out, SR_OUT, subtype="PCM_24", format="WAV")
     rep["superseded_archived_to"] = _archive_if_superseded(out_wav)
     if os.path.exists(out_wav + ".new"):
         os.replace(out_wav + ".new", out_wav)
@@ -754,10 +1107,20 @@ def main():
     a = ap.parse_args()
     rep = build(a.out, sr=a.sr, report_path=a.report, speed_source=a.speed_source,
                 stems_dir=a.stems)
-    print(">> STAGE RESULT: AUDIO_MASTER_OK "
+    tag = "AUDIO_MASTER_OK" if rep.get("build_ok", True) else "AUDIO_MASTER_MIX_FAILURE"
+    print(f">> STAGE RESULT: {tag} "
           f"{rep['master']['integrated_lufs']:.2f} LUFS "
-          f"{rep['master']['true_peak_dbtp']:.2f} dBTP")
+          f"{rep['master']['true_peak_dbtp']:.2f} dBTP "
+          f"limiterGR {rep['limiter']['max_gain_reduction_db']:.2f} dB")
+    if not rep.get("build_ok", True):
+        for k, c in rep["chain_checks"].items():
+            if isinstance(c, dict) and not c.get("ok", True):
+                print(f"   FAILED {k}: {c['value']} (limit {c['limit']})")
+        # The master is still written, because a mix you cannot measure is not
+        # evidence. It is NOT signed off: the exit code says so.
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

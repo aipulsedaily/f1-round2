@@ -1,0 +1,43 @@
+=== buildlock: audio-master-R2-4060 ===  available 9460 MB, swap free 39847 MB
+[    3.3s] world grid 11520001 samples, -35.0..85.0 s world
+[    7.8s] surfaces classified
+[   49.7s] engine: 31 upshifts, 31 downshifts, 14351 rpm max
+[   56.3s] brakes: active 0.178 of world; suspension: 16 load events
+[   74.2s] tyres
+[   84.5s] glass pane: 5605 modes to 17992 Hz, f11 = 7.48 Hz, 400 rendered, density 0.312/Hz
+[   87.4s] assembly: 616 part impacts
+[   97.5s] breach: 995 shard contacts over 3.15 s world = 9.52 s film
+[  105.4s] warped world -> film (sustained sources only)
+[  159.6s]   engine           PEAK CRITERION: LUFS target wanted +25.06 dB, peak ceiling allows +21.03 dB -- the meter is under-reading this bus by 4.03 dB
+[  159.6s] engine propagated
+[  213.7s] tyres propagated
+[  361.0s]   suspension       MIX TRIM -15.71 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 15.7 dB away from its own peak-normalised level (raw trim +15.19 dB, of which +30.90 dB is unit conversion)
+[  361.0s] brakes + suspension propagated
+[  537.7s]   structure        MIX TRIM -16.99 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 17.0 dB away from its own peak-normalised level (raw trim +62.51 dB, of which +79.51 dB is unit conversion)
+[  629.6s]   impact           PEAK CRITERION: LUFS target wanted +21.13 dB, peak ceiling allows -4.67 dB -- the meter is under-reading this bus by 25.81 dB
+[  972.2s]   shards           PEAK CRITERION: LUFS target wanted -26.91 dB, peak ceiling allows -30.80 dB -- the meter is under-reading this bus by 3.88 dB
+[ 1062.5s]   debris           PEAK CRITERION: LUFS target wanted +27.88 dB, peak ceiling allows +24.26 dB -- the meter is under-reading this bus by 3.62 dB
+[ 1062.5s] breach propagated
+[ 1150.8s] garage reflection
+[ 1241.8s]   reflect_showroom PEAK CRITERION: LUFS target wanted +9.86 dB, peak ceiling allows +9.79 dB -- the meter is under-reading this bus by 0.07 dB
+[ 1241.9s] showroom reflection
+[ 1252.3s]   room             MIX TRIM -14.27 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 14.3 dB away from its own peak-normalised level (raw trim -13.54 dB, of which +0.73 dB is unit conversion)
+[ 1307.8s] showroom acoustic
+[ 1320.6s]   wind             MIX TRIM -13.18 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 13.2 dB away from its own peak-normalised level (raw trim -36.58 dB, of which -23.40 dB is unit conversion)
+[ 1324.8s]   bed              MIX TRIM -20.72 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 20.7 dB away from its own peak-normalised level (raw trim +15.57 dB, of which +36.29 dB is unit conversion)
+[ 1324.8s] wind + bed
+[ 1440.4s] crowd
+[ 1507.8s] fence
+[ 1513.5s] pre-mix: peak 1.631, -17.88 LUFS, short-term range 28.6 dB
+[ 1515.2s] 30 Hz high-pass: peak 1.631 -> 1.595 (-0.19 dB), -17.88 -> -17.88 LUFS
+[ 1516.8s] program gain
+[ 1566.8s]   LIMITER GAIN REDUCTION -11.60 dB EXCEEDS THE 3 dB LIMIT (G1) -- the mix is too hot for one pass, which is a MIX failure and not a limiter setting
+[ 1575.6s] internal: -14.07 LUFS, tp -1.15 dBTP
+[ 1586.1s]   G1_limiter_gr_le_3db             FAIL  -11.596673185063171
+[ 1586.1s]   G14_premix_peak_le_plus6dbfs     PASS  4.248400129287151
+[ 1586.1s]   G15_bus_trim                     PASS  ['bed', 'room', 'structure', 'suspension', 'wind']
+[ 1586.3s] WROTE audio/out/r2_4021/master_R2-4060.wav  124.083 s  -14.00 LUFS  -1.10 dBTP
+>> report audio/out/r2_4021/report_R2-4060.json
+>> STAGE RESULT: AUDIO_MASTER_MIX_FAILURE -14.00 LUFS -1.10 dBTP limiterGR -11.60 dB
+   FAILED G1_limiter_gr_le_3db: -11.596673185063171 (limit -3.0)
+>> STAGE RESULT: BUILDLOCK RELEASED  audio-master-R2-4060 rc=1  (available 9288 MB)

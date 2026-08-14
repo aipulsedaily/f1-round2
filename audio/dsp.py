@@ -39,10 +39,119 @@ def phase_pulse(phase, width):
 
     Used for the exhaust firing events, where the pulse must stay locked to the
     crank angle even while the crank speed is changing.
+
+    NOTE: this is a RAISED COSINE, and it is kept only for the layers that want a
+    soft bump. It is the wrong shape for a combustion event and was the first
+    cause of R2-1401 -- see `blowdown_pulse` below for why.
     """
     u = np.mod(phase, 2.0 * np.pi) / (2.0 * np.pi)
     w = max(float(width), 1e-6)
     return np.where(u < w, 0.5 * (1.0 - np.cos(2.0 * np.pi * u / w)), 0.0).astype(np.float32)
+
+
+def blowdown_pulse(phase, width, attack_frac):
+    """An exhaust BLOWDOWN event: steep front, exponential decay (R2-1401).
+
+    WHY THE RAISED COSINE HAD TO GO. `phase_pulse` is C1-continuous, so its
+    spectrum rolls off at -18 dB/octave above 1/w. At 12,000 rpm the old call --
+    width 0.055 of the 720-degree cycle, i.e. 550 us -- put that corner at about
+    1.8 kHz, so the combustion excitation itself had NOTHING to give the pipe
+    above 2 kHz. Measured on the shipped master: the harmonic-to-noise ratio
+    above 2.6 kHz was -0.65 dB, i.e. the top four octaves of an F1 car were
+    broadband noise with no harmonic content whatsoever. That is the client's
+    "hair blower" in one number, and no amount of re-balancing could have fixed
+    it, because there were no harmonics up there to un-bury.
+
+    WHAT A BLOWDOWN ACTUALLY IS. The exhaust valve cracks open against 8-12 bar
+    of cylinder pressure. Flow goes choked essentially at once, so the pressure
+    at the valve rises in a near-step -- a real blowdown front is a weak shock --
+    and then decays roughly exponentially as the cylinder empties, before the
+    piston pushes the remainder out. The energy in the FRONT is what makes an
+    engine bright; a symmetric bump has no front.
+
+    So: a raised-cosine rise over `attack_frac` of the pulse, then an exponential
+    decay, tapered back to zero at the end of the pulse. The rise stays
+    C1-continuous, which caps the roll-off at -18 dB/oct ABOVE ITS OWN corner
+    -- but that corner is now at 1/(attack_frac*w) instead of 1/w, which at
+    attack_frac 0.10 is a decade higher. The pulse still starts and ends at zero
+    with zero slope, so it does not alias: at 14,400 rpm (f0 = 720 Hz) the 66th
+    harmonic sits at Nyquist and is already 60+ dB down.
+
+    `attack_frac` is the LOAD KNOB. Higher cylinder pressure at valve opening
+    means a more violent blowdown and a steeper front, so this is driven from
+    throttle in engine.py rather than being a constant. It is the mechanism by
+    which the engine gets harder under power and thins off-throttle, which a
+    gain envelope alone cannot do -- a fan that changes speed is a hair dryer.
+
+    phase: running phase, one pulse per 2*pi.
+    width: pulse duration as a fraction of the period.
+    attack_frac: rise time as a fraction of `width`. Scalar or per-sample.
+    """
+    u = np.mod(np.asarray(phase, dtype=np.float64), 2.0 * np.pi) / (2.0 * np.pi)
+    w = max(float(width), 1e-6)
+    a = np.clip(np.asarray(attack_frac, dtype=np.float64), 0.02, 0.60) * w
+    x = np.clip(u / w, 0.0, 1.0)                     # 0..1 inside the pulse
+    rise = 0.5 * (1.0 - np.cos(np.pi * np.minimum(x / np.maximum(a / w, 1e-9), 1.0)))
+    # exponential blowdown from the peak, and a C1 taper that lands it on zero
+    d = np.clip((x - a / w) / np.maximum(1.0 - a / w, 1e-9), 0.0, 1.0)
+    decay = np.exp(-3.4 * d) * (0.5 * (1.0 + np.cos(np.pi * d)))
+    y = np.where(x < a / w, rise, decay)
+    return np.where(u < w, y, 0.0).astype(np.float32)
+
+
+def comb_pipe(x, delay_samples, loop_gain, damp_hz, sr, invert=False, blk=None):
+    """A PIPE as a bidirectional delay line, not as a bank of tuned resonators.
+
+    THE SECOND CAUSE OF R2-1401. The exhaust used to be synthesised as a sum of
+    2-pole bandpasses placed on the pipes' computed mode frequencies -- four
+    orders for each primary, five for the collector, three for the tailpipe. That
+    is modal synthesis with the series TRUNCATED, and the highest term in it was
+    1,936 Hz. Everything the film had above 2 kHz therefore came from noise
+    generators, by construction: the harmonic path physically stopped there.
+
+    A pipe does not have four modes. It has as many as fit under Nyquist, at
+    exact integer spacing, with a Q that FALLS with frequency because the open
+    end radiates high frequencies far more efficiently than low ones. All three
+    of those facts come out of a delay line for free:
+
+        y[n] = x[n] +/- g * LP(y[n - D])            D = round(2L/c * sr)
+
+    The round trip is 2L, so the poles land where z^D = +/-g:
+      * `invert=True`  (closed at the valve, open at the far end): negative
+        feedback, poles at ODD multiples of c/4L -- the quarter-wave series.
+      * `invert=False` (open at both ends): positive feedback, poles at ALL
+        multiples of c/2L -- the half-wave series.
+    Same two formulae the old code evaluated by hand, now generating the whole
+    series to Nyquist instead of its first three or four terms.
+
+    `damp_hz` is a one-pole lowpass INSIDE the loop. It is the frequency-
+    dependent part of the reflection at the open end (radiation resistance grows
+    as (ka)^2, so high modes lose more energy per round trip and come out
+    broader). It is what stops the comb ringing like a plucked string.
+
+    EXACT, NOT BLOCKED-APPROXIMATE. Inside a window of D samples every value the
+    recursion reads was written before the window began, so the block is a pure
+    vector operation and the result is bit-identical to the sample loop. This is
+    the same argument `fdn_reverb` uses, and it is the only reason a 6-primary
+    waveguide is affordable over 11.5 M samples.
+    """
+    x = np.asarray(x, dtype=np.float64)
+    n = x.shape[0]
+    D = max(int(delay_samples), 2)
+    if blk is None:
+        blk = D
+    blk = min(max(int(blk), 1), D)
+    s = -1.0 if invert else 1.0
+    c = float(np.exp(-2.0 * np.pi * min(damp_hz, sr * 0.45) / sr))
+    g = float(loop_gain)
+    y = np.zeros(n + D, dtype=np.float64)
+    zi = np.zeros(1)
+    bl, al = np.array([1.0 - c]), np.array([1.0, -c])
+    for a0 in range(0, n, blk):
+        b0 = min(a0 + blk, n)
+        fb, zi = _sig.lfilter(bl, al, y[a0:b0], zi=zi)   # y[n-D] is y[a0..b0]
+        y[a0 + D:b0 + D] = x[a0:b0] + s * g * fb
+    return y[D:D + n]
 
 
 # -------------------------------------------------------------------- noise ---
@@ -303,7 +412,7 @@ def fdn_reverb(x, sr, delays_m, rt60_low, rt60_high, c=None, seed=11, wet_hf_hz=
 
 
 # ------------------------------------------------------------------ dynamics --
-def soft_limit(x, ceiling=0.891, lookahead_ms=2.0, release_ms=120.0, sr=96000,
+def soft_limit(x, ceiling=0.891, lookahead_ms=1.0, release_ms=40.0, sr=96000,
                true_peak=True, oversample=4):
     """Lookahead limiter that limits the TRUE peak, not the sample peak.
 
@@ -315,8 +424,43 @@ def soft_limit(x, ceiling=0.891, lookahead_ms=2.0, release_ms=120.0, sr=96000,
     envelope is therefore taken from a 4x oversampled copy and folded back to
     the base rate by a max over each group of `oversample` samples, so the gain
     that gets applied is the gain the reconstructed waveform needs.
+
+    R2-4032: THE GAIN PATH WAS ZERO-PHASE AND HELD FOR A QUARTER OF A SECOND.
+    ------------------------------------------------------------------------
+    The previous version built the gain as
+
+        g = minimum_filter1d(need, size=2*rel+1)       rel = 120 ms
+        g = sosfiltfilt(butter(2, 1000/release_ms), g)
+
+    Both of those steps are SYMMETRIC IN TIME. `minimum_filter1d` centred on a
+    +-120 ms window pins the gain to the minimum over a quarter of a second on
+    BOTH sides of a transient, and `sosfiltfilt` is zero-phase, so the smoothing
+    also runs backwards. Measured on a single-sample impulse at 96 kHz: the gain
+    began falling 161.4 ms BEFORE the peak and recovered 161.4 ms after it, a
+    322.9 ms hole with the transient in the middle, reaching -14.10 dB.
+
+    That is not a limiter artefact, it is a limiter running in reverse. Every
+    attack in the film ducked the two hundred milliseconds of programme leading
+    up to it -- which is exactly the material whose absence a listener hears as
+    "no attack", because the ear judges an onset against what preceded it. The
+    breach's 10-90% onset rise measured 6.9 ms in the delivered master against a
+    2 ms target, and this stage is where the other 5 ms went.
+
+    THE REPLACEMENT IS CAUSAL AND SHORT. Attack comes from the lookahead alone
+    (1 ms, the spec's ceiling), release is a one-pole with a 40 ms time
+    constant, and NOTHING in the gain path runs backwards. The recursion
+
+        g[i] = need[i]                        if need[i] <= g[i-1]   (attack)
+        g[i] = a*g[i-1] + (1-a)*need[i]       otherwise              (release)
+
+    is genuinely nonlinear, so it is evaluated at a 2 kHz CONTROL RATE over the
+    block minimum of `need` -- which can never miss a peak, because the block
+    minimum bounds every sample in the block -- and interpolated back up. At
+    2 kHz the control grid is 0.5 ms, an eighth of the release constant and half
+    the lookahead, so nothing audible is quantised by it. The final
+    `min(g, need)` guarantees the ceiling exactly, as before.
     """
-    from scipy.ndimage import maximum_filter1d, minimum_filter1d
+    from scipy.ndimage import maximum_filter1d
     x = np.asarray(x, dtype=np.float64)
     squeeze = x.ndim == 1
     if squeeze:
@@ -335,14 +479,48 @@ def soft_limit(x, ceiling=0.891, lookahead_ms=2.0, release_ms=120.0, sr=96000,
     else:
         env = np.abs(x).max(axis=1)
     la = max(int(sr * lookahead_ms / 1000.0), 1)
-    rel = max(int(sr * release_ms / 1000.0), 1)
+    # the lookahead is the ONLY non-causality left, and it is one millisecond:
+    # the gain is allowed to see `la` samples ahead so the attack is a ramp
+    # rather than a step, and no further.
     peak = maximum_filter1d(env, size=2 * la + 1, mode="nearest")
     need = np.minimum(1.0, ceiling / np.maximum(peak, 1e-12))
-    g = minimum_filter1d(need, size=2 * rel + 1, mode="nearest")
-    g = _sig.sosfiltfilt(_sig.butter(2, 1000.0 / max(release_ms, 1.0),
-                                     btype="lowpass", fs=sr, output="sos"), g)
+
+    blk = max(int(sr / 2000.0), 1)                       # 0.5 ms control grid
+    nb = (n + blk - 1) // blk
+    pad = nb * blk - n
+    bm = np.min(np.pad(need, (0, pad), mode="edge").reshape(nb, blk), axis=1)
+    a = float(np.exp(-blk / (release_ms * 1e-3 * sr)))
+    gc = np.empty(nb)
+    prev = 1.0
+    for i in range(nb):
+        v = bm[i]
+        prev = v if v <= prev else a * prev + (1.0 - a) * v
+        gc[i] = prev
+    # linear interpolation between control-block CENTRES, so the release is a
+    # smooth ramp rather than a 0.5 ms staircase. Deliberately not an IIR
+    # smoother: an lfilter would start from zero initial conditions and open the
+    # film with a gain ramp out of silence, which is how the first version of
+    # this rewrite put a 0.5 ms fade-in on sample 0.
+    xc = np.arange(nb) * blk + (blk - 1) * 0.5
+    g = np.interp(np.arange(n), xc, gc)
     g = np.minimum(g, need)
     gr_db = float(20.0 * np.log10(max(float(g.min()), 1e-9)))
+    # HOW MUCH OF THE FILM, NOT JUST HOW DEEP. A maximum is one instant and can
+    # be one sample; what a listener hears is the DISTRIBUTION. The diagnosis
+    # measured the delivered master at "20.65% pulled >1 dB, 15.48% >3 dB,
+    # 12.15% >6 dB, mean -1.75 dB", and those are the numbers a limiter should
+    # be judged on. Stashed on the function rather than added to the return, so
+    # every existing caller keeps working.
+    gdb = 20.0 * np.log10(np.maximum(g, 1e-9))
+    soft_limit.last_stats = {
+        "max_gr_db": gr_db,
+        "mean_gr_db": float(gdb.mean()),
+        "frac_over_1db": float((gdb < -1.0).mean()),
+        "frac_over_3db": float((gdb < -3.0).mean()),
+        "frac_over_6db": float((gdb < -6.0).mean()),
+        "p50_gr_db": float(np.percentile(gdb, 50)),
+        "p01_gr_db": float(np.percentile(gdb, 1)),
+    }
     y = (x * g[:, None]).astype(np.float32)
     return (y[:, 0] if squeeze else y), gr_db
 

@@ -1,0 +1,1435 @@
+{
+ "generated_utc": "2026-08-14T08:38:27Z",
+ "sr_internal": 96000,
+ "sr_out": 48000,
+ "bit_depth": 24,
+ "speed_source": "v_world",
+ "clock": {
+  "sr_internal": 96000,
+  "fps": 24,
+  "total_frames": 2978,
+  "duration_s": 124.08333333333333,
+  "samples": 11912000,
+  "launch_film_t": 34.0718,
+  "glass_world_t": 1.92815,
+  "world_t_at_first_sample": -34.0718,
+  "world_t_at_last_sample": 83.61152291787803,
+  "world_t_at_end_of_film": 83.6115333345447,
+  "permanent_offset_s": 6.399999998788623,
+  "ramp": [
+   {
+    "beat": "3_breach",
+    "frames": [
+     865,
+     1056
+    ],
+    "n": 192,
+    "declared_world_s": 1.6,
+    "achieved_world_s": 1.6000000000000003,
+    "solved_floor": 0.15371900826446283,
+    "ease_in_frames": 6,
+    "ease_out_frames": 15,
+    "declared_floor": 0.153719
+   }
+  ],
+  "ramp_sample_span": [
+   3448000,
+   4232000
+  ],
+  "ramp_declared_offset_s": 6.4,
+  "ramp_pchip_offset_before_correction_s": 6.4,
+  "ramp_correction_eps": 0.0,
+  "scale_min": 0.15371900826446283,
+  "scale_max": 1.0,
+  "max_scale_step_per_frame_piecewise_const": 0.20373431282522192,
+  "max_scale_step_per_sample_smoothed": 5.314808147893757e-05,
+  "agreement_with_filmtime_at_frames_max_s": 0.00038964507453309594
+ },
+ "telemetry_r2026": {
+  "declared_total_s_m": 4052.7297,
+  "walked_world_arc_m": 4056.1990828387175,
+  "global_ratio": 1.0008560607530075,
+  "x_over_s_launch_median": 1.2520869169334,
+  "launch_rows": 47,
+  "max_speed_ratio_launch": 1.2497042880800777,
+  "max_speed_error_pct_launch": 24.97042880800777,
+  "semitones_error_at_worst": 3.8590410817722307,
+  "ratio_at_glass": 1.1173422634669228,
+  "p99_abs_ratio_error_past_20m": 0.009457156945765228,
+  "implied_wheel_radius_m": 0.3599998509961956,
+  "seam_v_world_step_ms2": -7.8705656069042504
+ },
+ "speed_of_sound_ms": 342.041837354473,
+ "air": {
+  "temp_c": 18.0,
+  "rh_pct": 55.0,
+  "iso9613_alpha_db_per_m": {
+   "29": 2.7272548042155147e-05,
+   "125": 0.0004253779010669595,
+   "250": 0.0012484248146033097,
+   "500": 0.0025607904924123005,
+   "999": 0.004409516330264915,
+   "1999": 0.009599034677627426,
+   "3999": 0.02936065241082459,
+   "8000": 0.10472355295912561,
+   "15042": 0.32488193462802395
+  }
+ },
+ "camera": {
+  "frames": 2978,
+  "peak_speed_ms": 101.94540629334502,
+  "mean_speed_ms": 35.273373086904826,
+  "min_camera_car_m": 2.5239704886805256,
+  "max_camera_car_m": 342.8629516556513,
+  "ear_separation_m": 0.175
+ },
+ "racing_line": {
+  "max_abs_lateral_offset_m": 0.011299424629095417,
+  "note": "the telemetry drives the CENTRELINE: the maximum lateral offset anywhere on the lap is 10 mm, so there is no racing line to cross a kerb with. Kerb and gravel layers are implemented and positive-control tested, and they correctly never trigger on this telemetry. Fabricating kerb strikes the picture will not show would be a desync defect, not a feature."
+ },
+ "breach_sim": {
+  "shards": 351,
+  "contact_events": 995,
+  "glass_area_m2": 54.12699007772122,
+  "aperture_m2": 53.76,
+  "contact_speed_ms": 16.70928590302728,
+  "shard_size_min_m": 0.040221481180213035,
+  "shard_size_max_m": 0.75,
+  "ring_hz_min": 54.388662149885974,
+  "ring_hz_max": 18911.012580817234,
+  "settle_world_s": 3.147916666666648,
+  "drag_coefficient_per_m": 0.024079999999999997,
+  "debris_p80_x_m": 30.15042082529262,
+  "debris_p95_x_m": 34.081609397543616,
+  "debris_max_x_m": 42.10075431526175,
+  "debris_surface_end_x_m": 30.15042082529262
+ },
+ "engine": {
+  "component_rms_on_throttle": {
+   "exhaust": 0.08822292542841141,
+   "rasp": 0.0055482442414712535,
+   "pump": 2.1210177622151882e-06,
+   "pops": 4.232396468944775e-62,
+   "turbo": 0.009673927955138576,
+   "mguh": 0.006402360716761416,
+   "mguk": 0.009125723327668185,
+   "crack": 0.0029762052373752705,
+   "starter": 0.0
+  },
+  "harmonic_over_broadband_db": 23.089395857854566,
+  "primary_lengths_m": [
+   0.6572,
+   0.62,
+   0.5834199999999999,
+   0.69828,
+   0.65802,
+   0.6237
+  ],
+  "primary_quarter_wave_per_cylinder_hz": [
+   261.18008557556897,
+   276.8508907101031,
+   294.2092356111617,
+   245.81479097248086,
+   260.8546126869456,
+   275.20851730040715
+  ],
+  "exhaust_topmost_mode_hz": 43200.0,
+  "exhaust_synthesis": "digital waveguide: six per-cylinder quarter-wave primaries into a shared half-wave collector and tailpipe, mode series complete to Nyquist",
+  "rpm_min_running": 4299.999868475319,
+  "rpm_max": 14351.180395573447,
+  "gear_min": 0,
+  "gear_max": 7,
+  "upshifts": 31,
+  "downshifts": 31,
+  "final_drive": 6.4471,
+  "gear_ratios": [
+   2.94,
+   2.4582,
+   2.0554,
+   1.7186,
+   1.437,
+   1.2015,
+   1.0046,
+   0.84
+  ],
+  "rpm_at_vmax": 13143.309712833301,
+  "vmax_ms": 91.88832092285156,
+  "c_exhaust_ms": 686.5902089610557,
+  "primary_quarter_wave_hz": [
+   276.8508907101031,
+   260.0720488488847
+  ],
+  "collector_half_wave_hz": 298.5174821569808,
+  "turbo_shaft_rpm_max": 121414.4230097614,
+  "overrun_fraction": 0.1384466893709471,
+  "throttle_mean": 0.49099430028230384,
+  "clutch_lock_at_t0": 0.029089356289559474
+ },
+ "brakes": {
+  "active": true,
+  "disc_radius_m": 0.139,
+  "wheel_radius_m": 0.36,
+  "peak_wheel_rotation_hz": 40.62355690912849,
+  "disc_modes_hz_q": [
+   [
+    1563.8385035635035,
+    74.77888593393003
+   ],
+   [
+    2112.72104673618,
+    100.42585918468241
+   ],
+   [
+    2730.7547108000635,
+    68.77694779473676
+   ],
+   [
+    3406.681711986722,
+    114.02939499582833
+   ],
+   [
+    4100.367578610169,
+    71.74074838651737
+   ]
+  ],
+  "profile_samples": 34934,
+  "profile_spatial_period_m": 0.8733627576979626,
+  "active_fraction": 0.178445991454341
+ },
+ "suspension": {
+  "events": 16,
+  "upright_modes_hz": [
+   118.0,
+   274.0,
+   430.0,
+   690.0,
+   1150.0,
+   1780.0
+  ],
+  "upright_q": 100.0,
+  "contact_time_ms": [
+   3.0,
+   15.0
+  ],
+  "body_mode_hz": 2.4
+ },
+ "tyres": {
+  "cavity_resonance_hz": 197.73136970767595,
+  "cavity": {
+   "f1_hz": 197.73136970767595,
+   "circumference_m": 1.850398072964388,
+   "split_hz": 4.0,
+   "modes_hz": [
+    195.73136970767595,
+    199.73136970767595,
+    391.4627394153519,
+    399.4627394153519,
+    587.1941091230278,
+    599.1941091230278
+   ]
+  },
+  "squeal_hz_range": [
+   670.0,
+   850.0
+  ],
+  "squeal_mechanism": "stick-slip limit cycle, velocity-weakening Coulomb",
+  "slip_active_fraction": 0.34540179293387213,
+  "kerb_serration_pitch_m": 0.25,
+  "kerb_contact_fraction": 0.0,
+  "gravel_contact_fraction": 0.0,
+  "max_slip": 0.9623347520828247,
+  "max_lateral_g": 4.892966270446777,
+  "surface_time_fraction": {
+   "dais": 0.5545029044151306,
+   "ramp": 0.002851896919310093,
+   "showroom_floor": 0.007204863242805004,
+   "glass_debris": 0.010569640435278416,
+   "apron": 0.01921711303293705,
+   "access_road": 0.025933342054486275,
+   "asphalt": 0.36163613200187683,
+   "paint": 2.854202284652274e-05,
+   "kerb": 0.0,
+   "gravel": 0.0
+  },
+  "surface_time_fraction_while_moving": {
+   "dais": 0.3872795104980469,
+   "ramp": 0.004202164243906736,
+   "showroom_floor": 0.010616100393235683,
+   "glass_debris": 0.015573973767459393,
+   "apron": 0.028315704315900803,
+   "access_road": 0.03821181878447533,
+   "asphalt": 0.4891544580459595,
+   "paint": 4.205561344861053e-05,
+   "kerb": 0.0,
+   "gravel": 0.0
+  }
+ },
+ "structure": {
+  "pane_m": [
+   2.125,
+   5.6
+  ],
+  "thickness_m": 0.012,
+  "modes_computed": 5605,
+  "mode_ceiling_hz": 17992.48737525287,
+  "modal_density_modes_per_hz": 0.3116484283417866,
+  "analytic_modal_density_modes_per_hz": 0.3166463918948075,
+  "modes_rendered": 400,
+  "plate_fundamental_f11_hz": 7.477696805317212,
+  "critical_frequency_hz": 998.511132481189,
+  "q_law": "400 below 500 Hz, ramp to 1000 at 2 kHz, 1200 above",
+  "q_at_3khz": 1200.0,
+  "t60_at_3khz_s": 0.2801126998417358,
+  "rendered_mode_range_hz": [
+   30.06672184045605,
+   17675.60321699523
+  ],
+  "eight_strongest_rendered_modes_hz": [
+   1105.6075848526368,
+   791.8561882676885,
+   1471.6508808684098,
+   530.3966911135648,
+   1889.986076315008,
+   2360.613171192431,
+   2883.5321655006783,
+   321.2290933902657
+  ]
+ },
+ "assembly": {
+  "impacts": 616,
+  "clusters": 15,
+  "cluster_modes": {
+   "BB": {
+    "kind": "plate",
+    "material": "cfrp",
+    "q": 65.0,
+    "part_size_m": [
+     0.2079,
+     0.3992,
+     0.6989
+    ],
+    "wall_mm": 12.0,
+    "cbar_ms": 8600.0,
+    "modes": 20,
+    "f_hz": [
+     398.28339775334746,
+     418.28339775334746,
+     699.5434804091328,
+     719.5434804091328,
+     1196.4980729416652,
+     1226.7891633958848,
+     1315.2250895031345,
+     1348.5219272120746
+    ],
+    "beat_period_ms": 50.0
+   },
+   "CORNER_FL": {
+    "kind": "plate",
+    "material": "aluminium",
+    "q": 170.0,
+    "part_size_m": [
+     0.2093,
+     0.2099,
+     0.2765
+    ],
+    "wall_mm": 12.0,
+    "cbar_ms": 5055.0,
+    "modes": 10,
+    "f_hz": [
+     1031.8708561777387,
+     2163.651521183959,
+     2995.702759704733,
+     4049.95262952766,
+     4127.483424710955,
+     6013.784533054655,
+     6268.7559322497245,
+     6690.7741812088425
+    ],
+    "beat_period_ms": null
+   },
+   "CORNER_FR": {
+    "kind": "plate",
+    "material": "aluminium",
+    "q": 170.0,
+    "part_size_m": [
+     0.2093,
+     0.2099,
+     0.2765
+    ],
+    "wall_mm": 12.0,
+    "cbar_ms": 5055.0,
+    "modes": 10,
+    "f_hz": [
+     1031.8708561777387,
+     2163.651521183959,
+     2995.702759704733,
+     4049.95262952766,
+     4127.483424710955,
+     6013.784533054655,
+     6268.7559322497245,
+     6690.7741812088425
+    ],
+    "beat_period_ms": null
+   },
+   "CORNER_RL": {
+    "kind": "plate",
+    "material": "aluminium",
+    "q": 170.0,
+    "part_size_m": [
+     0.2045,
+     0.2308,
+     0.2644
+    ],
+    "wall_mm": 12.0,
+    "cbar_ms": 5055.0,
+    "modes": 10,
+    "f_hz": [
+     953.7063372892947,
+     2190.9028626529443,
+     2577.628823793528,
+     3814.8253491571786,
+     4252.897071592361,
+     5284.166301300585,
+     5876.819558096595,
+     6521.3628266642345
+    ],
+    "beat_period_ms": null
+   },
+   "CORNER_RR": {
+    "kind": "plate",
+    "material": "aluminium",
+    "q": 170.0,
+    "part_size_m": [
+     0.2045,
+     0.2308,
+     0.2644
+    ],
+    "wall_mm": 12.0,
+    "cbar_ms": 5055.0,
+    "modes": 10,
+    "f_hz": [
+     953.7063372892947,
+     2190.9028626529443,
+     2577.628823793528,
+     3814.8253491571786,
+     4252.897071592361,
+     5284.166301300585,
+     5876.819558096595,
+     6521.3628266642345
+    ],
+    "beat_period_ms": null
+   },
+   "CI": {
+    "kind": "plate",
+    "material": "cfrp",
+    "q": 65.0,
+    "part_size_m": [
+     0.1615,
+     0.1689,
+     0.5034
+    ],
+    "wall_mm": 12.0,
+    "cbar_ms": 8600.0,
+    "modes": 20,
+    "f_hz": [
+     1888.8062039244949,
+     1936.624082504862,
+     2468.4486727967724,
+     2518.4486727967724,
+     3436.3378887669282,
+     3486.3378887669282,
+     4791.3827911251465,
+     4841.3827911251465
+    ],
+    "beat_period_ms": 21.177397615959443
+   },
+   "EC": {
+    "kind": "beam",
+    "material": "cfrp",
+    "q": 65.0,
+    "part_size_m": [
+     0.2784,
+     0.3406,
+     1.0577
+    ],
+    "wall_mm": 12.0,
+    "cbar_ms": 8600.0,
+    "modes": 8,
+    "f_hz": [
+     2177.642061726105,
+     2227.642061726105,
+     6046.455855682667,
+     6096.455855682667,
+     11878.95041365669,
+     11928.95041365669,
+     19650.970501631633,
+     19700.970501631633
+    ],
+    "beat_period_ms": 20.0
+   },
+   "FD": {
+    "kind": "beam",
+    "material": "cfrp",
+    "q": 65.0,
+    "part_size_m": [
+     0.1401,
+     0.8266,
+     1.7545
+    ],
+    "wall_mm": 12.0,
+    "cbar_ms": 8600.0,
+    "modes": 12,
+    "f_hz": [
+     392.8575932083322,
+     412.8575932083322,
+     1096.5730583715524,
+     1124.3344016214653,
+     2152.2020505042865,
+     2202.2020505042865,
+     3573.6846242796946,
+     3623.6846242796946
+    ],
+    "beat_period_ms": 50.0
+   },
+   "FW": {
+    "kind": "beam",
+    "material": "cfrp",
+    "q": 65.0,
+    "part_size_m": [
+     0.0677,
+     0.1383,
+     0.4055
+    ],
+    "wall_mm": 10.15,
+    "cbar_ms": 8600.0,
+    "modes": 6,
+    "f_hz": [
+     3617.717259581228,
+     3667.717259581228,
+     10015.940114867797,
+     10065.940114867797,
+     19661.687357202754,
+     19711.687357202754
+    ],
+    "beat_period_ms": 20.0
+   },
+   "halo_assembly": {
+    "kind": "beam",
+    "material": "titanium",
+    "q": 150.0,
+    "part_size_m": [
+     0.1103,
+     0.2031,
+     0.4454
+    ],
+    "wall_mm": 12.0,
+    "cbar_ms": 3900.0,
+    "modes": 4,
+    "f_hz": [
+     2232.257149305499,
+     6153.088137216216,
+     12064.00208077365,
+     19940.518972643193
+    ],
+    "beat_period_ms": null
+   },
+   "MB": {
+    "kind": "beam",
+    "material": "cfrp",
+    "q": 65.0,
+    "part_size_m": [
+     0.3459,
+     0.5635,
+     2.1273
+    ],
+    "wall_mm": 12.0,
+    "cbar_ms": 8600.0,
+    "modes": 12,
+    "f_hz": [
+     666.411246725645,
+     686.411246725645,
+     1841.1824973478354,
+     1887.7947124705654,
+     3630.5943792119547,
+     3680.5943792119547,
+     6017.3107180274255,
+     6067.3107180274255
+    ],
+    "beat_period_ms": 50.0
+   },
+   "NOSE": {
+    "kind": "plate",
+    "material": "cfrp",
+    "q": 65.0,
+    "part_size_m": [
+     0.1032,
+     0.1419,
+     0.3429
+    ],
+    "wall_mm": 12.0,
+    "cbar_ms": 8600.0,
+    "modes": 16,
+    "f_hz": [
+     2829.961332085515,
+     2879.961332085515,
+     4081.2766647896033,
+     4131.276664789603,
+     6166.802219296416,
+     6216.802219296416,
+     9086.537995605959,
+     9136.537995605959
+    ],
+    "beat_period_ms": 20.0
+   },
+   "RW": {
+    "kind": "plate",
+    "material": "cfrp",
+    "q": 65.0,
+    "part_size_m": [
+     0.1425,
+     0.1568,
+     0.2285
+    ],
+    "wall_mm": 12.0,
+    "cbar_ms": 8600.0,
+    "modes": 16,
+    "f_hz": [
+     2908.7518943733044,
+     2958.7518943733044,
+     5726.7805255436315,
+     5776.7805255436315,
+     8891.978946322888,
+     8941.978946322888,
+     10423.494910827514,
+     10473.494910827514
+    ],
+    "beat_period_ms": 20.0
+   },
+   "SP": {
+    "kind": "beam",
+    "material": "cfrp",
+    "q": 65.0,
+    "part_size_m": [
+     0.2476,
+     0.6293,
+     0.9122
+    ],
+    "wall_mm": 12.0,
+    "cbar_ms": 8600.0,
+    "modes": 6,
+    "f_hz": [
+     2608.120692106283,
+     2658.120692106283,
+     7233.04538222599,
+     7283.04538222599,
+     14205.42749280987,
+     14255.42749280987
+    ],
+    "beat_period_ms": 20.0
+   },
+   "SW": {
+    "kind": "plate",
+    "material": "cfrp",
+    "q": 65.0,
+    "part_size_m": [
+     0.0319,
+     0.0573,
+     0.0697
+    ],
+    "wall_mm": 4.78,
+    "cbar_ms": 8600.0,
+    "modes": 2,
+    "f_hz": [
+     9957.611665728253,
+     10007.611665728253
+    ],
+    "beat_period_ms": 20.0
+   }
+  }
+ },
+ "breach_impact": {
+  "crack_front_speed_ms": 1716.0000000000002,
+  "crack_sweep_short_span_ms": 1.2383449883449882,
+  "crack_sweep_long_span_ms": 3.263403263403263,
+  "crack_sites": 420,
+  "pane_modes_computed": 5605,
+  "pane_modes_rendered": 400,
+  "pane_mode_max_hz": 17992.48737525287,
+  "pane_contact_time_ms": 0.25,
+  "pane_gate_ms": 40.0,
+  "delayed_flexural_ms": 65.0,
+  "delayed_flexural_hz": [
+   196.0,
+   231.0
+  ],
+  "mullion_modes_hz": [
+   31.569791372623378,
+   87.02030984634342,
+   170.61566089167252,
+   282.0096349670288
+  ],
+  "mullion_loss_factor": 0.011235955056179775,
+  "thud_hz": [
+   41.0,
+   58.0,
+   79.0
+  ],
+  "strike_point_m": [
+   1.0625,
+   2.9
+  ],
+  "rendered_on": "film grid",
+  "impact_film_t_s": 36.00009971904743
+ },
+ "breach_shards_rendered": {
+  "events": 995,
+  "rendered_non_zero": 995,
+  "rendered_as_fines_burst": 0
+ },
+ "breach_debris_bed": {
+  "fines_events": 34100,
+  "fines_per_contact": 34.0,
+  "peak_rate_per_s": 24706.179479821574,
+  "resonators_hz_q": [
+   [
+    5882.92343989501,
+    50.583808863962176
+   ],
+   [
+    5727.537639841283,
+    51.60907923137941
+   ],
+   [
+    7629.397975359258,
+    35.610001394447295
+   ],
+   [
+    3958.390589935191,
+    34.61479351443882
+   ],
+   [
+    6356.118777605978,
+    46.367252936906006
+   ]
+  ],
+  "tau_sys_s": 0.9
+ },
+ "breach_shard_schedule": {
+  "contacts": 995,
+  "world_span_s": 3.147916666666648,
+  "film_span_s": 9.523789581022307,
+  "film_stretch_x": 3.0254262070752707,
+  "note": "the SHOWER is stretched by the world-time ramp; every shard still rings at its own physical frequency, which is the whole point of scheduling on the film grid"
+ },
+ "reflections": [
+  {
+   "surface": "pit garage facade",
+   "plane_point": [
+    314.29075416143945,
+    187.82250789901832,
+    6.0
+   ],
+   "normal": [
+    -0.6427876096865266,
+    0.7660444431189887,
+    0.0
+   ],
+   "active_fraction_of_film": 0.06385090664875756
+  },
+  {
+   "surface": "showroom facade x=+15",
+   "plane_point": [
+    15.0,
+    0.0,
+    3.0
+   ],
+   "normal": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "active_fraction_of_film": 0.06223782740094023
+  }
+ ],
+ "showroom": {
+  "camera_inside_frames": 902,
+  "last_frame_inside": 903,
+  "camera_crosses_glass_plane_x15_at_frame": 903
+ },
+ "room": {
+  "delays_m": [
+   6.5,
+   11.0,
+   15.0,
+   15.348045478170828,
+   18.601075237738275,
+   18.882862600781692,
+   22.940139493908923,
+   37.765725201563384
+  ],
+  "rt60_low_s": 2.4,
+  "rt60_high_s": 0.35,
+  "volume_m3": 4290.0
+ },
+ "wind": {
+  "peak_camera_airspeed_ms": 101.9454062933445,
+  "dipole_exponent_intensity": 6.0,
+  "quadrupole_exponent_intensity": 8.0,
+  "shedding_tones": [
+   {
+    "feature": "sidepod edge",
+    "d_m": 0.15,
+    "f_at_80ms_hz": 106.66666666666667
+   },
+   {
+    "feature": "mirror stalk",
+    "d_m": 0.05,
+    "f_at_80ms_hz": 320.0
+   },
+   {
+    "feature": "winglet",
+    "d_m": 0.02,
+    "f_at_80ms_hz": 800.0
+   },
+   {
+    "feature": "trailing edge",
+    "d_m": 0.005,
+    "f_at_80ms_hz": 3200.0
+   }
+  ],
+  "strouhal": 0.2,
+  "large_eddy_am_hz_range": [
+   0.5,
+   25.486351573336126
+  ],
+  "am_depth_db": 5.3769062458516,
+  "wake_delta_m": 0.8
+ },
+ "crowd_stands_world": [
+  [
+   167.20686858804459,
+   -28.93214742499649,
+   7.0
+  ],
+  [
+   369.44260157145476,
+   140.76378153224985,
+   7.0
+  ]
+ ],
+ "propagation": {
+  "engine": {
+   "min_range_m": 2.1753153800964355,
+   "max_range_m": 342.1232604980469,
+   "arrival_monotonic_min_dt_s": 0.0008067615160740615,
+   "max_itd_us": 561.2481689453125
+  },
+  "tyres": {
+   "min_range_m": 2.3443105220794678,
+   "max_range_m": 342.7181091308594,
+   "arrival_monotonic_min_dt_s": 0.0008076234549747596,
+   "max_itd_us": 507.1658020019531
+  },
+  "brakes": {
+   "min_range_m": 2.3443105220794678,
+   "max_range_m": 342.7181091308594,
+   "arrival_monotonic_min_dt_s": 0.0008076234549747596,
+   "max_itd_us": 507.1658020019531
+  },
+  "suspension": {
+   "min_range_m": 2.3443105220794678,
+   "max_range_m": 342.7181091308594,
+   "arrival_monotonic_min_dt_s": 0.0008076234549747596,
+   "max_itd_us": 507.1658020019531
+  },
+  "assembly": {
+   "min_range_m": 2.50459885597229,
+   "max_range_m": 342.86297607421875,
+   "arrival_monotonic_min_dt_s": 0.0008077610597183593,
+   "max_itd_us": 486.7591247558594
+  },
+  "glass_pane": {
+   "min_range_m": 2.037132501602173,
+   "max_range_m": 981.9376831054688,
+   "arrival_monotonic_min_dt_s": 0.0008168139570869926,
+   "max_itd_us": 511.77606201171875
+  },
+  "impact": {
+   "min_range_m": 2.1554622650146484,
+   "max_range_m": 981.931396484375,
+   "arrival_monotonic_min_dt_s": 0.0008168356434907764,
+   "max_itd_us": 511.77606201171875
+  },
+  "shards0": {
+   "min_range_m": 8.537141799926758,
+   "max_range_m": 985.582763671875,
+   "arrival_monotonic_min_dt_s": 0.0008134709922558159,
+   "max_itd_us": 511.77606201171875
+  },
+  "shards1": {
+   "min_range_m": 6.016377925872803,
+   "max_range_m": 981.8877563476562,
+   "arrival_monotonic_min_dt_s": 0.0008137247052104613,
+   "max_itd_us": 511.77606201171875
+  },
+  "shards2": {
+   "min_range_m": 3.5079238414764404,
+   "max_range_m": 976.8408203125,
+   "arrival_monotonic_min_dt_s": 0.0008146163866200595,
+   "max_itd_us": 511.77606201171875
+  },
+  "shards3": {
+   "min_range_m": 5.14214563369751,
+   "max_range_m": 973.1975708007812,
+   "arrival_monotonic_min_dt_s": 0.0008149778737873703,
+   "max_itd_us": 511.77606201171875
+  },
+  "debris": {
+   "min_range_m": 5.2078857421875,
+   "max_range_m": 978.421630859375,
+   "arrival_monotonic_min_dt_s": 0.0008133795417677447,
+   "max_itd_us": 511.77606201171875
+  },
+  "reflect_garage": {
+   "min_range_m": 12.947755813598633,
+   "max_range_m": 1300.2220458984375,
+   "arrival_monotonic_min_dt_s": 0.0007565451274018642,
+   "max_itd_us": 604.5667114257812
+  },
+  "reflect_showroom": {
+   "min_range_m": 2.9295201301574707,
+   "max_range_m": 1264.3968505859375,
+   "arrival_monotonic_min_dt_s": 0.0007188979048322608,
+   "max_itd_us": 611.5260009765625
+  },
+  "aperture": {
+   "min_range_m": 1.9294592142105103,
+   "max_range_m": 981.9367065429688,
+   "arrival_monotonic_min_dt_s": 0.00081681529347577,
+   "max_itd_us": 511.77606201171875
+  },
+  "crowd0": {
+   "min_range_m": 47.82184600830078,
+   "max_range_m": 985.7073974609375,
+   "arrival_monotonic_min_dt_s": 0.0008121475766529329,
+   "max_itd_us": 511.77606201171875
+  },
+  "crowd1": {
+   "min_range_m": 46.95891571044922,
+   "max_range_m": 1014.7579345703125,
+   "arrival_monotonic_min_dt_s": 0.0008092921356279703,
+   "max_itd_us": 511.77606201171875
+  },
+  "fence": {
+   "min_range_m": 2.5684762001037598,
+   "max_range_m": 349.7425231933594,
+   "arrival_monotonic_min_dt_s": 0.0008187308006597505,
+   "max_itd_us": 521.6574096679688
+  }
+ },
+ "buses": {
+  "engine": {
+   "measured_max_short_term_lufs": -35.0594803470152,
+   "target_lufs": -10.0,
+   "trim_db": 21.034160722912066,
+   "trim_db_from_lufs_target": 25.059480347015203,
+   "trim_db_from_peak_ceiling": 21.034160722912066,
+   "peak_criterion_won": true,
+   "lufs_target_missed_by_db": 4.025319624103137,
+   "raw_peak": 0.08877526223659515,
+   "peak_entering_sum": 1.0,
+   "mix_trim_db": 0.0,
+   "trim_over_limit": false,
+   "raw_trim_over_limit": true,
+   "hf_shelf_db_hz": null
+  },
+  "tyres": {
+   "measured_max_short_term_lufs": -10.441755720451027,
+   "target_lufs": -19.0,
+   "trim_db": -8.558244279548973,
+   "trim_db_from_lufs_target": -8.558244279548973,
+   "trim_db_from_peak_ceiling": -2.664916154690275,
+   "peak_criterion_won": false,
+   "lufs_target_missed_by_db": 0.0,
+   "raw_peak": 1.3590824604034424,
+   "peak_entering_sum": 0.5073803067207336,
+   "mix_trim_db": -5.893328124858698,
+   "trim_over_limit": false,
+   "raw_trim_over_limit": false,
+   "hf_shelf_db_hz": null
+  },
+  "brakes": {
+   "measured_max_short_term_lufs": -41.05969992315651,
+   "target_lufs": -21.0,
+   "trim_db": 20.059699923156508,
+   "trim_db_from_lufs_target": 20.059699923156508,
+   "trim_db_from_peak_ceiling": 28.38411060003139,
+   "peak_criterion_won": false,
+   "lufs_target_missed_by_db": 0.0,
+   "raw_peak": 0.03808855265378952,
+   "peak_entering_sum": 0.3835124373435974,
+   "mix_trim_db": -8.324410676874884,
+   "trim_over_limit": false,
+   "raw_trim_over_limit": true,
+   "hf_shelf_db_hz": null
+  },
+  "suspension": {
+   "measured_max_short_term_lufs": -45.18788570464086,
+   "target_lufs": -24.0,
+   "trim_db": 21.187885704640863,
+   "trim_db_from_lufs_target": 21.187885704640863,
+   "trim_db_from_peak_ceiling": 30.896052866096532,
+   "peak_criterion_won": false,
+   "lufs_target_missed_by_db": 0.0,
+   "raw_peak": 0.028523141518235207,
+   "peak_entering_sum": 0.32703304290771484,
+   "mix_trim_db": -9.70816716145567,
+   "trim_over_limit": false,
+   "raw_trim_over_limit": true,
+   "hf_shelf_db_hz": null
+  },
+  "assembly": {
+   "measured_max_short_term_lufs": -36.41491259553461,
+   "target_lufs": -27.0,
+   "trim_db": 9.41491259553461,
+   "trim_db_from_lufs_target": 9.41491259553461,
+   "trim_db_from_peak_ceiling": 20.802720461812406,
+   "peak_criterion_won": false,
+   "lufs_target_missed_by_db": 0.0,
+   "raw_peak": 0.09117252379655838,
+   "peak_entering_sum": 0.2695315480232239,
+   "mix_trim_db": -11.387807866277797,
+   "trim_over_limit": false,
+   "raw_trim_over_limit": false,
+   "hf_shelf_db_hz": null
+  },
+  "structure": {
+   "measured_max_short_term_lufs": -92.51297020610718,
+   "target_lufs": -30.0,
+   "trim_db": 62.512970206107184,
+   "trim_db_from_lufs_target": 62.512970206107184,
+   "trim_db_from_peak_ceiling": 79.50597989124756,
+   "peak_criterion_won": false,
+   "lufs_target_missed_by_db": 0.0,
+   "raw_peak": 0.00010585247218841687,
+   "peak_entering_sum": 0.14136748015880585,
+   "mix_trim_db": -16.99300968514038,
+   "trim_over_limit": true,
+   "raw_trim_over_limit": true,
+   "hf_shelf_db_hz": null
+  },
+  "impact": {
+   "measured_max_short_term_lufs": -27.633412074856967,
+   "target_lufs": -6.5,
+   "trim_db": -4.673733009296678,
+   "trim_db_from_lufs_target": 21.133412074856967,
+   "trim_db_from_peak_ceiling": -4.673733009296678,
+   "peak_criterion_won": true,
+   "lufs_target_missed_by_db": 25.807145084153646,
+   "raw_peak": 1.7127211093902588,
+   "peak_entering_sum": 1.0,
+   "mix_trim_db": 0.0,
+   "trim_over_limit": false,
+   "raw_trim_over_limit": false,
+   "hf_shelf_db_hz": null
+  },
+  "shards": {
+   "measured_max_short_term_lufs": 17.91305395485101,
+   "target_lufs": -9.0,
+   "trim_db": -30.796567305424407,
+   "trim_db_from_lufs_target": -26.91305395485101,
+   "trim_db_from_peak_ceiling": -30.796567305424407,
+   "peak_criterion_won": true,
+   "lufs_target_missed_by_db": 3.8835133505733985,
+   "raw_peak": 34.65998458862305,
+   "peak_entering_sum": 1.0,
+   "mix_trim_db": 0.0,
+   "trim_over_limit": false,
+   "raw_trim_over_limit": true,
+   "hf_shelf_db_hz": null
+  },
+  "debris": {
+   "measured_max_short_term_lufs": -41.56345379126181,
+   "target_lufs": -13.0,
+   "trim_db": 24.551023004377296,
+   "trim_db_from_lufs_target": 28.563453791261807,
+   "trim_db_from_peak_ceiling": 24.551023004377296,
+   "peak_criterion_won": true,
+   "lufs_target_missed_by_db": 4.0124307868845115,
+   "raw_peak": 0.05921733379364014,
+   "peak_entering_sum": 1.0,
+   "mix_trim_db": 0.0,
+   "trim_over_limit": false,
+   "raw_trim_over_limit": true,
+   "hf_shelf_db_hz": null
+  },
+  "reflect_garage": {
+   "measured_max_short_term_lufs": -37.678459662315824,
+   "target_lufs": -22.0,
+   "trim_db": 15.678459662315824,
+   "trim_db_from_lufs_target": 15.678459662315824,
+   "trim_db_from_peak_ceiling": 25.00657017216912,
+   "peak_criterion_won": false,
+   "lufs_target_missed_by_db": 0.0,
+   "raw_peak": 0.05619161203503609,
+   "peak_entering_sum": 0.3416602611541748,
+   "mix_trim_db": -9.328110509853296,
+   "trim_over_limit": false,
+   "raw_trim_over_limit": true,
+   "hf_shelf_db_hz": null
+  },
+  "reflect_showroom": {
+   "measured_max_short_term_lufs": -32.860046272247395,
+   "target_lufs": -23.0,
+   "trim_db": 9.790273506619165,
+   "trim_db_from_lufs_target": 9.860046272247395,
+   "trim_db_from_peak_ceiling": 9.790273506619165,
+   "peak_criterion_won": true,
+   "lufs_target_missed_by_db": 0.06977276562822965,
+   "raw_peak": 0.3239562213420868,
+   "peak_entering_sum": 1.0,
+   "mix_trim_db": 0.0,
+   "trim_over_limit": false,
+   "raw_trim_over_limit": false,
+   "hf_shelf_db_hz": null
+  },
+  "room": {
+   "measured_max_short_term_lufs": -17.46254159461349,
+   "target_lufs": -31.0,
+   "trim_db": -13.53745840538651,
+   "trim_db_from_lufs_target": -13.53745840538651,
+   "trim_db_from_peak_ceiling": 0.7301816527382108,
+   "peak_criterion_won": false,
+   "lufs_target_missed_by_db": 0.0,
+   "raw_peak": 0.9193712472915649,
+   "peak_entering_sum": 0.19347195327281952,
+   "mix_trim_db": -14.26764005812472,
+   "trim_over_limit": true,
+   "raw_trim_over_limit": true,
+   "hf_shelf_db_hz": null
+  },
+  "aperture": {
+   "measured_max_short_term_lufs": -27.757341935090054,
+   "target_lufs": -24.0,
+   "trim_db": 3.7573419350900537,
+   "trim_db_from_lufs_target": 3.7573419350900537,
+   "trim_db_from_peak_ceiling": 12.460286498200833,
+   "peak_criterion_won": false,
+   "lufs_target_missed_by_db": 0.0,
+   "raw_peak": 0.2382240891456604,
+   "peak_entering_sum": 0.36715781688690186,
+   "mix_trim_db": -8.70294456311078,
+   "trim_over_limit": false,
+   "raw_trim_over_limit": false,
+   "hf_shelf_db_hz": null
+  },
+  "wind": {
+   "measured_max_short_term_lufs": 13.578360863926845,
+   "target_lufs": -23.0,
+   "trim_db": -36.57836086392685,
+   "trim_db_from_lufs_target": -36.57836086392685,
+   "trim_db_from_peak_ceiling": -23.402586651370058,
+   "peak_criterion_won": false,
+   "lufs_target_missed_by_db": 0.0,
+   "raw_peak": 14.795489311218262,
+   "peak_entering_sum": 0.2193872034549713,
+   "mix_trim_db": -13.175774212556789,
+   "trim_over_limit": true,
+   "raw_trim_over_limit": true,
+   "hf_shelf_db_hz": null
+  },
+  "bed": {
+   "measured_max_short_term_lufs": -46.569201465775734,
+   "target_lufs": -31.0,
+   "trim_db": 15.569201465775734,
+   "trim_db_from_lufs_target": 15.569201465775734,
+   "trim_db_from_peak_ceiling": 36.29195098622996,
+   "peak_criterion_won": false,
+   "lufs_target_missed_by_db": 0.0,
+   "raw_peak": 0.015325069427490234,
+   "peak_entering_sum": 0.0920158252120018,
+   "mix_trim_db": -20.72274952045423,
+   "trim_over_limit": true,
+   "raw_trim_over_limit": true,
+   "hf_shelf_db_hz": null
+  },
+  "crowd": {
+   "measured_max_short_term_lufs": -33.47425926320582,
+   "target_lufs": -27.0,
+   "trim_db": 6.474259263205823,
+   "trim_db_from_lufs_target": 6.474259263205823,
+   "trim_db_from_peak_ceiling": 10.10109456804802,
+   "peak_criterion_won": false,
+   "lufs_target_missed_by_db": 0.0,
+   "raw_peak": 0.3125685453414917,
+   "peak_entering_sum": 0.6586553454399109,
+   "mix_trim_db": -3.6268353048421975,
+   "trim_over_limit": false,
+   "raw_trim_over_limit": false,
+   "hf_shelf_db_hz": null
+  },
+  "fence": {
+   "measured_max_short_term_lufs": -28.755907052886126,
+   "target_lufs": -31.0,
+   "trim_db": -2.2440929471138737,
+   "trim_db_from_lufs_target": -2.2440929471138737,
+   "trim_db_from_peak_ceiling": 8.306083240040298,
+   "peak_criterion_won": false,
+   "lufs_target_missed_by_db": 0.0,
+   "raw_peak": 0.38432252407073975,
+   "peak_entering_sum": 0.29681864380836487,
+   "mix_trim_db": -10.550176187154172,
+   "trim_over_limit": false,
+   "raw_trim_over_limit": false,
+   "hf_shelf_db_hz": null
+  }
+ },
+ "target_lufs_s_table": {
+  "engine": -10.0,
+  "tyres": -19.0,
+  "brakes": -21.0,
+  "suspension": -24.0,
+  "assembly": -27.0,
+  "structure": -30.0,
+  "impact": -6.5,
+  "shards": -9.0,
+  "debris": -13.0,
+  "reflect_garage": -22.0,
+  "reflect_showroom": -23.0,
+  "room": -31.0,
+  "aperture": -24.0,
+  "wind": -23.0,
+  "bed": -31.0,
+  "crowd": -27.0,
+  "fence": -31.0
+ },
+ "mix_pre": {
+  "peak": 1.4744458198547363,
+  "integrated_lufs": -18.21439378527521,
+  "short_term_lufs_p05": -41.06136504543947,
+  "short_term_lufs_p95": -12.670021449204189,
+  "short_term_range_db": 28.391343596235284
+ },
+ "highpass_30hz": {
+  "order": 4,
+  "corner_hz": 30.0,
+  "premix_peak_before": 1.4744458198547363,
+  "premix_peak_after": 1.4957599639892578,
+  "peak_change_db": 0.12466172045472809,
+  "integrated_lufs_before": -18.21439378527521,
+  "integrated_lufs_after": -18.20857861950216
+ },
+ "program_gain": {
+  "min_db": -3.0166580487107275,
+  "max_db": 7.136299663638294,
+  "range_db": 10.152957712349021,
+  "attack_s": 6.0,
+  "release_s": 12.0,
+  "max_boost_db": 7.0,
+  "max_cut_db": 3.0,
+  "note": "a slow bounded mastering gain, NOT a compressor. The raw mix's short-term loudness spans 35 dB between a dark showroom and a 313 km/h pass at 26 m, which is physically correct and too wide to deliver at -14 LUFS. 10 dB of that range is taken back over 6 s / 12 s time constants; the remaining ~25 dB is left in. An earlier setting (+12/-6 dB over 4 s / 8 s) took back 24 dB and flattened the film to a 10.3 dB short-term range."
+ },
+ "limiter": {
+  "ceiling_dbtp": -1.15,
+  "max_gain_reduction_db": -11.875999300103128,
+  "passes_applied_to_delivered_signal": 1,
+  "attempts": [
+   {
+    "makeup_db": 4.226713821577551,
+    "gr_db": -9.519530144498582,
+    "lufs_out": -15.596704173176251,
+    "gr_distribution": {
+     "max_gr_db": -9.519530144498582,
+     "mean_gr_db": -0.1991023166916144,
+     "frac_over_1db": 0.05437332102081934,
+     "frac_over_3db": 0.027354012760241773,
+     "frac_over_6db": 0.005581094694425789,
+     "p50_gr_db": -3.857309866213157e-14,
+     "p01_gr_db": -5.383900511647582
+    }
+   },
+   {
+    "makeup_db": 5.823417994753802,
+    "gr_db": -11.116235204057201,
+    "lufs_out": -14.554127735948118,
+    "gr_distribution": {
+     "max_gr_db": -11.116235204057201,
+     "mean_gr_db": -0.31422092559527554,
+     "frac_over_1db": 0.07679306581598389,
+     "frac_over_3db": 0.04170256883814641,
+     "frac_over_6db": 0.015437709872397582,
+     "p50_gr_db": -3.857309866213157e-14,
+     "p01_gr_db": -6.978277017006906
+    }
+   },
+   {
+    "makeup_db": 6.37754573070192,
+    "gr_db": -11.670362632267217,
+    "lufs_out": -14.205636239664015,
+    "gr_distribution": {
+     "max_gr_db": -11.670362632267217,
+     "mean_gr_db": -0.3622644723257751,
+     "frac_over_1db": 0.08503374748153122,
+     "frac_over_3db": 0.04792024848891874,
+     "frac_over_6db": 0.0198160678307589,
+     "p50_gr_db": -3.857309866213157e-14,
+     "p01_gr_db": -7.532118403613925
+    }
+   },
+   {
+    "makeup_db": 6.583181970365935,
+    "gr_db": -11.875999300103128,
+    "lufs_out": -14.081121046799513,
+    "gr_distribution": {
+     "max_gr_db": -11.875999300103128,
+     "mean_gr_db": -0.3812061232660915,
+     "frac_over_1db": 0.0883283243787777,
+     "frac_over_3db": 0.05040530557421088,
+     "frac_over_6db": 0.02185862995298858,
+     "p50_gr_db": -3.857309866213157e-14,
+     "p01_gr_db": -7.737616519446096
+    }
+   }
+  ],
+  "loudness_iterations_lufs": [
+   -18.22671382157755,
+   -15.596704173176251,
+   -14.554127735948118,
+   -14.205636239664015,
+   -14.081121046799513
+  ],
+  "gr_limit_db": -3.0,
+  "gr_within_limit": false,
+  "gr_distribution": {
+   "max_gr_db": -11.875999300103128,
+   "mean_gr_db": -0.3812061232660915,
+   "frac_over_1db": 0.0883283243787777,
+   "frac_over_3db": 0.05040530557421088,
+   "frac_over_6db": 0.02185862995298858,
+   "p50_gr_db": -3.857309866213157e-14,
+   "p01_gr_db": -7.737616519446096
+  },
+  "note": "max over ALL attempts, not the last one -- see R2-4037. The delivered signal has been through soft_limit exactly once."
+ },
+ "mix_internal": {
+  "integrated_lufs": -14.081121046799513,
+  "peak": 0.8759738206863403,
+  "true_peak_dbtp": -1.1499995844297763
+ },
+ "limiter_48k": {
+  "max_gain_reduction_db": -0.11667413683691791,
+  "attempts": [
+   {
+    "makeup_db": 0.0615760827354368,
+    "gr_db": -0.11667413683691791,
+    "lufs_out": -14.004872423340963
+   }
+  ],
+  "passes_applied_to_delivered_signal": 1
+ },
+ "tail_fade_ms": 12.0,
+ "master": {
+  "samples": 5956000,
+  "duration_s": 124.08333333333333,
+  "frames_at_24fps": 2978.0,
+  "sample_rate": 48000,
+  "bit_depth": 24,
+  "channels": 2,
+  "integrated_lufs": -14.004872423340963,
+  "target_lufs": -14.0,
+  "true_peak_dbtp": -1.0999996193829973,
+  "sample_peak": 0.8810308575630188,
+  "sample_peak_dbfs": -1.1001776084978452,
+  "dc_offset_l": -1.00461420515785e-06,
+  "dc_offset_r": -8.030247045098804e-06,
+  "short_term_lufs_min": -29.216493321657143,
+  "short_term_lufs_max": -8.437691155232256,
+  "short_term_range_db": 20.77880216642489,
+  "clipped_samples": 0,
+  "silent_1s_windows": 0,
+  "limiter_gr_db": [
+   -11.875999300103128,
+   0.0,
+   -0.11667413683691791
+  ],
+  "loudness_iterations_48k_lufs": [
+   -14.061576082735437,
+   -14.004872423340963
+  ]
+ },
+ "build_ok": false,
+ "chain_checks": {
+  "G1_limiter_gr_le_3db": {
+   "value": -11.875999300103128,
+   "limit": -3.0,
+   "ok": false
+  },
+  "G14_premix_peak_le_plus6dbfs": {
+   "value": 3.372576370982083,
+   "limit": 6.0,
+   "ok": true
+  },
+  "G15_bus_trim": {
+   "value": [
+    "bed",
+    "room",
+    "structure",
+    "wind"
+   ],
+   "limit": 12.0,
+   "ok": true,
+   "asserted": false,
+   "note": "reported only; see the comment at this line"
+  },
+  "buses_where_peak_criterion_won": [
+   "debris",
+   "engine",
+   "impact",
+   "reflect_showroom",
+   "shards"
+  ]
+ },
+ "superseded_archived_to": null,
+ "output_md5": "d31c3eb0f76cea9c41ac1b71bd2aee8d",
+ "output_wav": "audio/out/r2_4021/master_R2-4056.wav",
+ "wall_clock_s": 1584.8704054355621,
+ "log": [
+  "[    3.3s] world grid 11520001 samples, -35.0..85.0 s world",
+  "[    7.8s] surfaces classified",
+  "[   48.4s] engine: 31 upshifts, 31 downshifts, 14351 rpm max",
+  "[   54.7s] brakes: active 0.178 of world; suspension: 16 load events",
+  "[   72.4s] tyres",
+  "[   82.5s] glass pane: 5605 modes to 17992 Hz, f11 = 7.48 Hz, 400 rendered, density 0.312/Hz",
+  "[   85.3s] assembly: 616 part impacts",
+  "[   95.4s] breach: 995 shard contacts over 3.15 s world = 9.52 s film",
+  "[  103.3s] warped world -> film (sustained sources only)",
+  "[  157.1s]   engine           PEAK CRITERION: LUFS target wanted +25.06 dB, peak ceiling allows +21.03 dB -- the meter is under-reading this bus by 4.03 dB",
+  "[  157.2s] engine propagated",
+  "[  211.5s] tyres propagated",
+  "[  360.1s] brakes + suspension propagated",
+  "[  538.4s]   structure        MIX TRIM -16.99 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 17.0 dB away from its own peak-normalised level (raw trim +62.51 dB, of which +79.51 dB is unit conversion)",
+  "[  630.1s]   impact           PEAK CRITERION: LUFS target wanted +21.13 dB, peak ceiling allows -4.67 dB -- the meter is under-reading this bus by 25.81 dB",
+  "[  970.8s]   shards           PEAK CRITERION: LUFS target wanted -26.91 dB, peak ceiling allows -30.80 dB -- the meter is under-reading this bus by 3.88 dB",
+  "[ 1060.0s]   debris           PEAK CRITERION: LUFS target wanted +28.56 dB, peak ceiling allows +24.55 dB -- the meter is under-reading this bus by 4.01 dB",
+  "[ 1060.2s] breach propagated",
+  "[ 1148.3s] garage reflection",
+  "[ 1238.8s]   reflect_showroom PEAK CRITERION: LUFS target wanted +9.86 dB, peak ceiling allows +9.79 dB -- the meter is under-reading this bus by 0.07 dB",
+  "[ 1239.0s] showroom reflection",
+  "[ 1249.3s]   room             MIX TRIM -14.27 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 14.3 dB away from its own peak-normalised level (raw trim -13.54 dB, of which +0.73 dB is unit conversion)",
+  "[ 1305.2s] showroom acoustic",
+  "[ 1317.2s]   wind             MIX TRIM -13.18 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 13.2 dB away from its own peak-normalised level (raw trim -36.58 dB, of which -23.40 dB is unit conversion)",
+  "[ 1321.4s]   bed              MIX TRIM -20.72 dB EXCEEDS THE 12 dB LIMIT (G15) -- this bus is being pushed 20.7 dB away from its own peak-normalised level (raw trim +15.57 dB, of which +36.29 dB is unit conversion)",
+  "[ 1321.6s] wind + bed",
+  "[ 1439.2s] crowd",
+  "[ 1507.4s] fence",
+  "[ 1513.1s] pre-mix: peak 1.474, -18.21 LUFS, short-term range 28.4 dB",
+  "[ 1514.6s] 30 Hz high-pass: peak 1.474 -> 1.496 (+0.12 dB), -18.21 -> -18.21 LUFS",
+  "[ 1516.1s] program gain",
+  "[ 1565.7s]   LIMITER GAIN REDUCTION -11.88 dB EXCEEDS THE 3 dB LIMIT (G1) -- the mix is too hot for one pass, which is a MIX failure and not a limiter setting",
+  "[ 1574.3s] internal: -14.08 LUFS, tp -1.15 dBTP",
+  "[ 1584.7s]   G1_limiter_gr_le_3db             FAIL  -11.875999300103128",
+  "[ 1584.7s]   G14_premix_peak_le_plus6dbfs     PASS  3.372576370982083",
+  "[ 1584.7s]   G15_bus_trim                     PASS  ['bed', 'room', 'structure', 'wind']",
+  "[ 1584.9s] WROTE audio/out/r2_4021/master_R2-4056.wav  124.083 s  -14.00 LUFS  -1.10 dBTP"
+ ]
+}

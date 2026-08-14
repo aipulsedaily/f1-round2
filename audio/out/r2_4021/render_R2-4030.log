@@ -1,0 +1,49 @@
+=== buildlock: audio-master-R2-4030-chainonly ===  available 2233 MB, swap free 36631 MB
+[    6.0s] world grid 11520001 samples, -35.0..85.0 s world
+[   22.7s] surfaces classified
+[  140.1s] engine: 31 upshifts, 31 downshifts, 14351 rpm max
+[  161.7s] tyres
+[  168.9s] glass pane: 351 modes, f11 = 7.48 Hz
+[  182.0s] assembly: 616 part impacts
+[  190.6s] breach: 995 shard contacts over 3.15 s world = 9.52 s film
+[  201.8s] warped world -> film (sustained sources only)
+[  327.4s]   engine           PEAK CRITERION: LUFS target wanted +25.06 dB, peak ceiling allows +21.03 dB -- the meter is under-reading this bus by 4.03 dB
+[  327.4s]   engine           TRIM +21.03 dB EXCEEDS THE 12 dB LIMIT (G15) -- this is a source-level level bug, not a mix
+[  327.5s] engine propagated
+[  455.0s] tyres propagated
+[  766.5s]   structure        TRIM +52.39 dB EXCEEDS THE 12 dB LIMIT (G15) -- this is a source-level level bug, not a mix
+[  890.4s]   impact           PEAK CRITERION: LUFS target wanted +22.41 dB, peak ceiling allows +6.15 dB -- the meter is under-reading this bus by 16.25 dB
+[ 1246.4s]   shards           PEAK CRITERION: LUFS target wanted -47.93 dB, peak ceiling allows -52.09 dB -- the meter is under-reading this bus by 4.17 dB
+[ 1246.4s]   shards           TRIM -52.09 dB EXCEEDS THE 12 dB LIMIT (G15) -- this is a source-level level bug, not a mix
+[ 1246.4s] breach propagated
+[ 1335.9s]   reflect_garage   TRIM +15.59 dB EXCEEDS THE 12 dB LIMIT (G15) -- this is a source-level level bug, not a mix
+[ 1336.0s] garage reflection
+[ 1427.9s] showroom reflection
+[ 1495.8s] showroom acoustic
+[ 1505.5s]   bed              TRIM +15.57 dB EXCEEDS THE 12 dB LIMIT (G15) -- this is a source-level level bug, not a mix
+[ 1505.5s] wind + bed
+[ 1619.0s] crowd
+[ 1687.9s]   fence            TRIM +35.61 dB EXCEEDS THE 12 dB LIMIT (G15) -- this is a source-level level bug, not a mix
+[ 1687.9s] fence
+[ 1694.2s] pre-mix: peak 1.544, -19.09 LUFS, short-term range 31.0 dB
+[ 1696.0s] 30 Hz high-pass: peak 1.544 -> 1.292 (-1.55 dB), -19.09 -> -19.13 LUFS
+[ 1697.7s] program gain
+[ 1748.5s]   LIMITER GAIN REDUCTION -11.47 dB EXCEEDS THE 3 dB LIMIT (G1) -- the mix is too hot for one pass, which is a MIX failure and not a limiter setting
+[ 1757.6s] internal: -14.04 LUFS, tp -1.15 dBTP
+[ 1768.4s]   G1_limiter_gr_le_3db             FAIL  -11.469057281676777
+[ 1768.4s]   G14_premix_peak_le_plus6dbfs     PASS  3.7703309416656166
+[ 1768.4s]   G15_bus_trim_le_12db             FAIL  ['bed', 'engine', 'fence', 'reflect_garage', 'shards', 'structure']
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/zany/f1-round2/audio/master.py", line 978, in <module>
+    "sample_peak": float(np.abs(out).max()),
+                 ^^^^^^
+  File "/home/zany/f1-round2/audio/master.py", line 960, in main
+    # downstream can scale the endpoint back off zero. At 24 fps that is 0.29 of
+    # one frame, and against a 215 Hz idle (4.65 ms period) it is 2.6 cycles --
+  File "/home/zany/f1-round2/audio/master.py", line 917, in build
+    if out.shape[0] < want:
+    
+TypeError: list indices must be integers or slices, not str
+>> STAGE RESULT: BUILDLOCK RELEASED  audio-master-R2-4030-chainonly rc=1  (available 8777 MB)
