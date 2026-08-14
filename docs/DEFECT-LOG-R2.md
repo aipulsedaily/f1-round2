@@ -60159,3 +60159,1438 @@ hatch built in the open, and it is what was used:
 
 Recorded because a refusal that gets worked around silently is worth more as a
 report than as a cleared obstacle.
+
+## R2-3904 — CYCLE 3 CLOSED ON ALL THREE CARDS, AND f2417 WAS PREDICTED BEFORE IT EXISTED
+
+**Every card has logged `worker ready`.** That is the bar R2-3864 set after
+cycle 2 was declared closed while a card was still 68.5 minutes down, and it is
+the bar this cycle is measured against — not "the API says running", not "a
+frame line appeared".
+
+| broker | went silent | `worker ready` | **down** | replacement | host condemned |
+| --- | --- | --- | ---: | --- | --- |
+| fleet03 | 16:40:15 | 16:48:13 | **7 m 58 s** | machine 43130, $0.468/hr | none |
+| fleet05 | 16:41:27 | 17:05:21 | **23 m 54 s** | machine 131197, $0.455/hr | none |
+| fleet04 | 17:01:18 | 17:24:44 | **23 m 26 s** | machine 44842, $0.455/hr | none |
+
+**The whole cycle cost 23 m 26 s of wall clock, not 35-70**, because the three
+cards retired 21 minutes apart rather than within 61 seconds of each other, so
+**no two scene pushes overlapped.** fleet03 uploaded at 97.9 MB/s and fleet04 at
+a comparable rate; nothing saw fleet05's contended 4.2 MB/s from cycle 2. R2-3864
+predicted exactly this — the 7:1 split is contention, not a host property — and
+the staggering it recommends as a mitigation **has now happened by itself**,
+because each re-rent resets that card's 12-hour clock to when it was rented.
+
+**This is the first cycle with no condemned host.** The running base rate stays
+at 3 bad hosts in 14 rentals; it is now 3 in 17. And the fleet came back
+**cheaper**: fleet04 replaced a $0.535/hr card with a $0.455/hr one, so the
+blended rate fell rather than walking further up the blacklist ladder.
+
+fleet04's re-rent fired at **17:16:27 against a predicted 17:16:18** — the
+`unknown_grace` clock from its 17:01:18 drop, correct to **9 seconds**.
+
+### The ledger's first real prediction, made before the fact and confirmed
+
+At 17:15Z, with fleet05's cursor still at 2416, R2-3902 recorded that its
+cycle-3 casualty was **expected to be 2417**. fleet05 has now delivered past
+that point:
+
+```
+fleet05   dbc2c783eb28       2420  430/987         3  [2127, 2292, 2417]
+```
+
+**2417 is on no todo list, exactly as predicted, and the count moved 4 -> 5.**
+The mechanism is not a story fitted to the data afterwards; it forecast a
+specific frame number and the frame number is what appeared.
+
+Revised prediction, which is the number the re-submission must reproduce:
+
+```
+ORPHANED: [192, 355, 2127, 2292, 2417]                       count = 5
+PREDICTED 'to render' ON RE-SUBMISSION = 1592 = 5 orphaned + 1587 not yet rendered
+```
+
+**Expect roughly two more orphans per remaining cycle, not three** — fleet04's
+job requeues on every retirement and so recovers its own casualty, while fleet03
+and fleet05 do not. With ~3 cycles left that projects **10-11 orphans** at the
+end, and ~1.5 h of re-rendering to recover them.
+
+## R2-3905 — THE VERIFICATION PASS, TIMED AND WITH ITS INTERPRETER PINNED
+
+Rehearsed again at 1,397 frames rather than the 13 of R2-3856, to get a real
+cost for the endgame and to catch anything that only breaks at scale.
+
+**The interpreter is not `python3` and is not the broker's venv.** Both fail,
+differently, and the failure is silent until it isn't:
+
+| interpreter | numpy | PIL | usable |
+| --- | --- | --- | --- |
+| `python3` | yes | **no** | no |
+| `/home/zany/vast-render/.venv/bin/python` | **no** | — | no |
+| **`/home/zany/f1-round2/.venv/bin/python`** | **2.5.1** | **12.3.0** | **yes** |
+
+The tool's own docstring says `.venv/bin/python` relative to `f1-round2`, which
+is correct; it is only ambiguous if it is read from another directory. **Pinned
+here as an absolute path** so the endgame does not spend a turn on a
+`ModuleNotFoundError`.
+
+**Timing: 552 frames decoded in 100 s at load 5.76 → 0.181 s/frame → ~9 minutes
+for all 2,978.** Cheap enough that there is no reason to sample rather than
+decode everything.
+
+**One behaviour worth knowing before it is read as a defect:** `--first/--last`
+does **not** restrict which files are decoded — the tool decodes every PNG in
+every `--dir` it is given and uses the range only to classify coverage. Running
+it on one broker's directory with `--first 1 --last 100` therefore reports
+`452 out of range` and `STAGE RESULT: FAIL`, which is correct and is not a
+finding. With all three directories and `--first 1 --last 2978`, `outside range`
+must be **0**.
+
+**The interim quality signal is good.** All 552 of fleet03's delivered frames
+decode at **3840x2160**, none failed to decode, **0 flat, 0 black**, luminance sd
+0.132-0.259 and 194-256 distinct levels. That is the whole delivered showroom
+block, not a sample, and it is the check `fleetctl verify` structurally cannot
+make.
+
+## R2-3906 — THE REBALANCE IS NOW PRICED, AND THE ANSWER IS TO LEAVE IT ALONE
+
+R2-3858 carries the work-conserving rebalance as remaining step 2, deferred
+until a card is genuinely idle because R2-3859 showed the split must not be
+predicted from measured s/frame. A card is about to be idle, so it is time to
+price it rather than inherit the plan.
+
+Rates measured at 18:18Z as each broker's mean over its own last 10 frames:
+
+| broker | s/frame | done / todo | left | hours | finishes |
+| --- | ---: | --- | ---: | ---: | --- |
+| fleet03 | 280.3 | 558/993 | 435 | **33.9** | **2026-08-12 ~04:15Z** |
+| fleet05 | 302.9 | 440/987 | 547 | 46.0 | 2026-08-12 ~16:20Z |
+| fleet04 | 343.8 | 136/716 | 580 | **55.4** | **2026-08-13 ~01:45Z** ← the film lands here |
+
+**fleet03 goes idle ~21.5 h before the film finishes.** On the face of it that
+is the rebalance's whole case.
+
+### The cost argument for rebalancing does not survive contact with the config
+
+`broker/config.py` runs a three-stage lifecycle on an idle instance:
+
+```
+IDLE_GRACE_SEC = 300     running -> stopped   (GPU billing ends immediately)
+HIBERNATE_SEC  = 3600    stopped -> destroyed (disk ~$0.014/hr in between)
+```
+
+**So fleet03 stops billing for GPU five minutes after its last frame and is
+destroyed an hour later, without anyone doing anything.** The 21.5 idle hours
+cost approximately **$0.30 of disk**, not the ~$10.50 of GPU an idle rented card
+would imply. **There is no money in the rebalance.** What it buys is roughly
+**10 hours of wall clock** and nothing else.
+
+### And I cannot perform it anyway, which is the right outcome here
+
+The rebalance requires cancelling and resubmitting fleet04's job so its tail is
+disjoint from the chunk handed to fleet03. **I did not create that job**, and the
+standing constraint is not to cancel, stop, destroy or reuse a broker, job or
+instance I did not create. Racing instead — handing fleet03 a chunk of fleet04's
+tail *without* cancelling fleet04's job — is the specific mistake R2-3859 warns
+against: both cards would render the same frames, and the only outcomes are
+wasted GPU and `duplicated` rows in the manifest.
+
+**Recommendation: do nothing.** The brief states there is no time pressure and
+that holding a paid render is preferable to delivering something unverified. Ten
+hours of wall clock is not worth an intervention into a recovery path that has
+now survived three retirements untouched, on a job I did not start, to save
+$0.30.
+
+### Budgets — checked because a paused broker is a reportable event
+
+| broker | cap | spent | remaining | needs | headroom |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| fleet03 | $42.00 | $19.94 | $22.06 | 33.9 h x $0.4889 = **$16.57** | $5.49 |
+| fleet04 | $63.49 | $25.29 | $38.20 | 55.4 h x $0.4550 = **$25.21** | $12.99 |
+| fleet05 | $53.00 | $23.31 | $29.69 | 46.0 h x $0.4756 = **$21.88** | $7.81 |
+
+**No broker will hit its own cap**, so none will pause. Caps still sum to
+$158.49, the invariant R2-3862 established.
+
+**Fleet projection: $68.55 spent + $63.66 to go = $132.21 against caps**, which
+net of the $8.49 of pre-existing banked spend is **$123.7 of the $150 new-spend
+ceiling — a 17.5% margin.** That is inside the brief's ~$122 projection and is
+**not** threatening $150. Retirement gaps do not bill, so remaining cycles move
+the wall clock without moving this number.
+
+## R2-3907 — THE BAD-HOST BLACKLIST IS PER-BROKER, AND THE FLEET PAID FOR THE SAME BROKEN MACHINE TWICE
+
+**Reportable event: a card was condemned.** It cost 4 min 50 s and ~$0.05, and
+the interesting part is not the bad host — it is *why the fleet bought it again*.
+
+```
+state4  04:54:26 (08-10)  renting offer 46307220 (machine 142281)
+state4  05:00:04          machine 142281 refuses our ssh key -> blacklisted for this session
+state4  05:00:14          offer 46307220 blacklisted -- "still the cheapest, the next rent
+                          would buy it straight back"
+state5  05:02:17 (08-11)  renting offer 46307220 (machine 142281)      <-- same offer
+state5  05:06:57          machine 142281 refuses our ssh key -> blacklisted for this session
+state5  05:07:07          offer 46307220 blacklisted for this session
+```
+
+R2-3861 praised the double blacklist — machine *and* offer — as "the detail that
+makes the recovery terminate", and it does. **But it terminates only for the
+broker that learned it.** The blacklist is session-scoped state inside one
+broker process, so fleet05 had no knowledge of fleet04's verdict from 24 hours
+earlier and bought the same box. **Every broker must rediscover every bad host
+independently**, and with three brokers the fleet can pay for the same broken
+machine up to three times.
+
+**The host has not been repaired in 24 hours**, which strengthens R2-3863 rather
+than contradicting it. fleet04's verdict on 08-10 and fleet05's on 08-11 are the
+same machine, the same offer, the same failure — `sshd` completes the handshake
+and denies publickey, so `authorized_keys` was never written. It is a durable
+property of machine 142281, not a transient.
+
+**The discriminating signal again arrived long before the timeout.**
+`Permission denied` was in the log at **05:03:44, 55 s after renting**; the
+verdict was not reached until **05:06:57**, on the 240 s `SshNeverReady` budget.
+R2-3863 already recorded that a ~30 s cut-off would reach the same verdict and
+save ~3.5 min per bad host. This is the fourth instance of that, and the
+argument is now worth ~14 min across the render. **Still not worth changing
+middleware under a live render** — recorded for whoever tunes this next.
+
+**Base rate: 4 bad hosts in 19 rentals, ~21%**, unchanged from R2-3863's 3 in 14.
+
+**Exposure that remains:** fleet03 has never drawn machine 142281 and its
+blacklist does not contain it. If it draws that offer on a future retirement it
+will pay the same ~5 min. There are 2-3 cycles left, so this is a small,
+bounded, known cost — not something to intervene over.
+
+### Cycle 4 in progress, all three cards, and the fleet has re-synchronised
+
+| broker | dropped | re-rented | note |
+| --- | --- | --- | --- |
+| fleet03 | 04:45:52 | 05:01:10 (predicted 05:00:52, **+18 s**) | took machine 131197, which fleet05 released 91 s earlier |
+| fleet05 | ~04:56 | 05:02:17 -> condemned -> re-renting | machine 142281 |
+| fleet04 | due ~05:16 | — | at 11.75 h |
+
+**Cycle 3's helpful stagger is gone**: all three cards now retire inside ~30
+minutes, so their 11 GB scene pushes will compete for the uplink again. Under
+R2-3864 that is the 35-70 min case. Report thresholds set at fleet03 05:55Z,
+fleet05 06:06Z, fleet04 06:26Z.
+
+## R2-3908 — THE BAD HOST REPAIRED THE ORPHANS, AND MY LEDGER HAD BOTH A BUG AND A BLIND SPOT
+
+The condemnation at R2-3907 had a consequence I did not anticipate and which
+runs the opposite way to the cost:
+
+```
+05:07:13 ERROR broker  job dbc2c783eb28 requeued: sequence master4k stopped at
+                       frame 2127 ... FleetUnavailable: deploy failed on freshly
+                       rented instance
+05:07:13 INFO  broker  sequence master4k job dbc2c783eb28: 992 frame(s) requested,
+                       563 already delivered, 429 to render
+```
+
+**It stopped at frame 2127 — which is one of fleet05's own orphans.** A deploy
+failure requeues the job; a requeue recomputes the todo **from the files on
+disk**; and the lowest frame absent from fleet05's block is 2127. So all three of
+its casualties — **2127, 2292 and 2417** — are back on a todo list and will be
+rendered by the running fleet.
+
+**The broken host paid for itself.** It cost 4 min 50 s and ~$0.05, and in
+exchange it converted three permanent orphans into scheduled work, saving ~15
+minutes of re-render at the end. That is luck, not design, and it is only worth
+recording because it confirms the mechanism in the **recovering** direction:
+R2-3861 said a requeue sweeps up its own casualties, and this is the first time
+one has been observed doing so for frames orphaned in *earlier* cycles.
+
+### Two defects in my own instrument, found by running it
+
+**1. It crashed on a requeued-but-not-yet-delivering job.** The empty-stream
+branch built a dict without `done_in_pass`/`todo`/`plan_lines` and the report
+line raised `KeyError`. Fixed: that state now prints `cursor = requeued` and
+**orphans = none**, which is the correct reading — a job whose todo was just
+recomputed from disk can orphan nothing, because every absent frame in its block
+is back on the list.
+
+**2. I was not running it often enough, and it cost me twelve hours of
+accuracy.** `fleet04` orphaned **f1398** at its cycle-3 retirement (~17:25 on
+08-10). At 17:24 the ledger correctly said `none`, because fleet04's cursor was
+still 1397 and it had not yet passed the gap. **I did not run it again until
+05:10 today**, so an orphan sat undetected for ~12 h. It was never *lost* — the
+re-submission recovers it regardless — but a ledger that is only consulted
+occasionally is not a ledger.
+
+**Fixed structurally rather than by intending to remember:** the 30-minute pulse
+now runs the ledger every cycle and emits a line **only when the orphan set
+changes**. Silence means unchanged; a change announces itself.
+
+### The ledger now, and the revised prediction
+
+```
+broker    live job         cursor done/todo    plans  orphans
+fleet03   d3b1b8bde2f4        696  694/993         1  [192, 355]
+fleet04   467247848cc6       1515  244/716         4  [1398]
+fleet05   dbc2c783eb28   requeued    0/429         5  none
+
+ORPHANED: [192, 355, 1398]                                    count = 3
+PREDICTED 'to render' ON RE-SUBMISSION = 1200 = 3 orphaned + 1197 not yet rendered
+```
+
+**The count went 5 -> 3, not 5 -> 7.** fleet03 remains the only broker whose job
+has never been requeued, and it is the only one accumulating casualties
+monotonically; its cycle-4 frame (f697) will surface as a fourth once its cursor
+passes it.
+
+## R2-3909 — CYCLE 4 CLOSED, AND `FAILED` IS THE ORPHAN MECHANISM WEARING ITS OWN NAME
+
+**Every card has logged `worker ready`.**
+
+| broker | dropped | `worker ready` | **down** | notes |
+| --- | --- | --- | ---: | --- |
+| fleet03 | 04:45:52 | 05:15:45 | **29 m 53 s** | deploy 831 s — uplink shared again |
+| fleet05 | 04:57:50 | 05:18:06 | **20 m 16 s** | *including* a condemned host and two rentals |
+| fleet04 | 05:17:04 | 05:41:29 | **24 m 25 s** | same machine 44842, $0.455/hr |
+
+**Worst card 29 m 53 s, against a 35-70 min band.** Four cycles have now run and
+none has reached 35 minutes since cycle 2's 68.5. The stagger closed to ~30 min
+this cycle and the pushes did overlap — fleet03's deploy went from 164 s to
+831 s — and it still came in under the band, because a shared uplink slows a
+push without stalling it.
+
+### The `FAILED` lines are the orphan mechanism, correctly labelled
+
+`sequence master4k frame N FAILED (~1100-1260s, 1 consecutive)` has now appeared
+**once per cycle on fleet04** and is not a defect. The broker's own text is
+exact: *"the instance has not answered a single progress probe for 15.0 min while
+reattaching. This is a TRANSPORT failure, not a statement about the render."*
+It is `await_render` spending its grace on a card that no longer exists.
+
+| frame | cycle | outcome |
+| --- | --- | --- |
+| f1133 | 1 | recovered — a later deploy failure requeued the job |
+| f1271 | 2 | **on disk** — recovered by fleet04's 05:00:20 requeue |
+| f1398 | 3 | **orphan** — job continued in place |
+| f1517 | 4 | **will orphan** — no requeue line follows and it is absent from disk |
+
+**A correction to R2-3901, which was too strong.** I wrote that fleet04 "is the
+only broker whose job has ever been recomputed from disk" and framed that as a
+property of the broker. It is not. **fleet04 requeues only on a *deploy*
+failure; on a transport-only failure it continues in place exactly like the
+others.** That is why f1133 and f1271 came back while f1398 and f1517 do not.
+The rule is about **which failure path the cycle took**, not about which broker
+took it — and R2-3908's fleet05 requeue, triggered by a condemned host, is the
+same rule seen from the other side.
+
+The corrected statement of the mechanism:
+
+> **A retirement orphans its in-flight frame unless something later forces that
+> broker's job to requeue.** A deploy failure forces it; a transport failure does
+> not. Nothing about the identity of the broker predicts which one happens.
+
+Orphan set will reach `[192, 355, 697, 1398, 1517]` when fleet04 passes 1517.
+The pulse announces changes, so this needs no further watching.
+
+## R2-3910 — AN UNBUYABLE OFFER IS WALKING THE PRICE UP, AND fleet05 WILL HIT ITS CAP
+
+### Offer 46851284 is not a race. It is persistently unbuyable, and it is not blacklisted.
+
+I reported it at 17:17 as a lost race and said the listing was "evidently still
+live and the earlier 400 was a transient". **That was wrong, and the next
+re-rent disproved it twelve minutes later.**
+
+```
+state3  17:17:35  renting offer 46851284 (machine 53711) — $0.455/hr
+state3  17:17:35  offer 46851284 could not be created (HTTPError: 400) — trying the next
+state3  17:17:35  renting offer 36318699 (machine 46633) — $0.529/hr      <- +16%
+state5  17:29:06  renting offer 46851284 (machine 53711) — $0.455/hr
+state5  17:29:07  offer 46851284 could not be created (HTTPError: 400) — trying the next
+state5  17:29:07  renting offer 46285754 (machine 34481) — $0.668/hr      <- +47%
+```
+
+**Two brokers, twelve minutes apart, same offer, same 400.** If it were a race
+lost to another buyer the listing would have gone; instead it is still the
+cheapest qualifying offer and it 400s every time it is asked for.
+
+**And nothing blacklists it.** The broker blacklists an offer it *destroyed as
+unusable* — R2-3861's "the detail that makes the recovery terminate" — but a
+create that returns 400 never produces an instance to destroy, so that path is
+never reached. **The offer therefore stays at the top of the cheapest-first list
+and will be selected again on every future re-rent**, costing one rung up the
+price ladder each time. It has now cost two.
+
+This is the same shape of defect as R2-3907's per-broker blacklist: the recovery
+is correct, terminates, and does not learn.
+
+### The consequence: fleet05 will hit its own cap and pause
+
+| broker | cap | spent | remaining | work left | needs | verdict |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| fleet03 | $42.00 | $31.29 | $10.71 | 121 fr, 12.7 h @ $0.5502 | $6.97 | ok |
+| fleet04 | $63.49 | $36.60 | $26.89 | 348 fr, 31.4 h @ $0.4756 | $14.93 | ok |
+| fleet05 | $53.00 | $35.53 | **$17.47** | 306 fr, 31.3 h @ **$0.6680** | **$20.88** | **PAUSES** |
+
+**fleet05's budget lasts 26.2 h of the 31.3 h it needs — short by $3.40, about
+50 frames.** On current rates it would stop around **2026-08-12 ~19:40Z**.
+
+**This is a distribution problem, not an overrun, and it is exactly the case
+R2-3862 already solved once.** Its rule: *"The trigger to escalate is the FLEET
+total projecting past $150, not one broker hitting its own cap — the latter is a
+pause I can fix in one command without spending an extra cent. Do not silently
+raise the total."*
+
+The fleet total does **not** breach:
+
+```
+caps sum          $158.49   (unchanged, the R2-3862 invariant)
+fleet spent       $103.41
+still needs        $42.78
+PROJECTED TOTAL   $146.18  =  $137.69 of the $150 new-spend ceiling
+```
+
+**But the margin has narrowed from 17.5% to 8.2%** since R2-3906, and the entire
+difference is the price walk: fleet05 at $0.668/hr against the $0.455 it aimed
+at, and fleet03 at $0.5502. **Both premiums were bought by the same unbuyable
+offer.**
+
+**The fix is `rq budget --set`, moving cap from fleet03 to fleet05 with the total
+unchanged** — fleet03 finishes in ~12.7 h with **$3.74** of its $10.71 unspent,
+which is almost exactly fleet05's shortfall. **I have not done it.** Changing a
+broker's budget is an intervention on a broker I did not create, and the standing
+instruction is to verify rather than drive. It is also not urgent: the pause is
+~26 h away, it costs nothing to leave until fleet03 actually finishes, and doing
+it *after* fleet03 finishes is strictly better because the spare cap is then a
+measured number rather than a projection.
+
+**If it is never done, the failure mode is benign and recoverable**: fleet05
+pauses with ~50 frames unrendered, nothing is lost, and those frames are picked
+up by the pre-encode re-submission along with the orphans.
+
+### Orphans, cycle 5
+
+`f876` (fleet03) and `f2669` (fleet05) both FAILED on the transport path with
+their jobs continuing in place, so both orphan. Expected set once the cursors
+pass them: **[192, 355, 697, 876, 1398, 1517, 2669]**.
+
+## R2-3911 — THE BLACKLIST CANNOT BE FIXED, AND WOULD NOT HAVE HELPED. #169, SECOND INSTANCE.
+
+### There is no supported way to blacklist an offer, and I have not invented one
+
+`rq` offers `render exec anim seq budget get status cancel teardown resume drift`.
+`fleetctl` offers `plan up submit status down record verify`. **Neither has a
+blacklist command.** The list lives in the broker's SQLite `meta` table under
+`bad_hosts` (`broker/app.py:1535`), written only by `save_blacklist()` after a
+condemnation. The only routes in are writing to a running broker's database or
+restarting it to reload — both excluded. **So: not fixed, by instruction and by
+absence of a mechanism.**
+
+### And here is why fixing it would have changed nothing
+
+```python
+# broker/app.py:1519
+BLACKLIST_TTL_SEC = 6 * 3600
+```
+
+**The blacklist expires after 6 hours. The retirement period is 12.** So *every
+condemnation is forgotten before the cycle that could use it.* No entry has ever
+survived to influence a later re-rent, and none can, in any broker, for any host.
+
+**This is the actual root cause of R2-3907, and my account there was incomplete.**
+I attributed fleet05 buying machine 142281 to the blacklist being per-broker
+session state. That is true but insufficient: fleet04's entry was **24 h old**,
+so it had lapsed four times over, and fleet04 itself would have re-bought that
+machine just as readily. **Per-broker scope and a 6 h TTL are two independent
+reasons cross-cycle learning cannot happen**, and the TTL is the binding one.
+
+The TTL is deliberate and its comment argues for it — *"short enough that a
+machine having a bad hour is not written off for the week"* — a defensible
+trade for a farm doing many short jobs. **It is simply mis-tuned for a render
+whose hardware rotates every 12 hours.** Nothing is broken; the constant was
+chosen against a different workload.
+
+**Logged against #169 as a second instance of the same root cause:** a blacklist
+that records only what it *destroyed* never learns from a failure that produced
+no instance (the 400), and a TTL shorter than the failure's recurrence interval
+means even what it does record is forgotten first.
+
+**Cost, bounded and accepted:** one rung up the price ladder per re-rent that
+draws offer 46851284. Two so far (+16% on fleet03, +47% on fleet05). With ~1-2
+cycles left this is a few dollars, against the risk of poking a live broker
+mid-render. **Not worth it.**
+
+## R2-3912 — THE CAP REBALANCE IS WRITTEN, GATED AND NOT YET RUN
+
+Authorised: move cap fleet03 -> fleet05, **after fleet03 finishes**, on measured
+spare, total unchanged, `rq budget --set` only, fleet04 untouched.
+
+`scratchpad/r23911_cap_rebalance.sh` is written and dry-run. It refuses unless
+**fleet03 holds no instance on the vast.ai API**, its **live spend has settled
+to zero**, and the **sum of the three caps is identical to the cent** before and
+after. It re-reads all three caps afterwards and exits non-zero if the total
+moved.
+
+### The dry run caught a gate that FAILED OPEN, which is the whole reason to rehearse
+
+First version of gate 1:
+
+```bash
+INST=$("$VR/.venv/bin/python" -m vastctl.vastctl status 2>/dev/null | grep -c "fleet03 pid")
+```
+
+It reported **0 instances while fleet03 was visibly running one**. `python -m
+vastctl.vastctl` resolves only with `cwd == ~/vast-render`; run from anywhere
+else it dies, stderr is swallowed by `2>/dev/null`, stdout is empty, and
+`grep -c` returns 0 — **which the gate read as "the card is gone, proceed."**
+The single most important safety check in the script was a no-op, and it looked
+like a pass.
+
+It also had a second, opposite bug: a bare `fleet03 pid` match hits the trailing
+`"broker(s) running with no rented card: ... fleet03 pid ..."` line — i.e. it
+matches **exactly when fleet03 is idle**, so once the first bug was fixed the
+gate would have blocked forever.
+
+Both fixed. The gate now **proves the query worked** before trusting its answer:
+
+```bash
+if ! printf '%s' "$STATUS" | grep -qE '^[0-9]+ instance\(s\)|no instances'; then
+  echo ">>>> ABORT: could not read instance state from the vast.ai API."
+  echo "     An unanswered question is not a 'no'. Refusing to act on silence."
+```
+
+and counts only real instance rows (`^<id> running|loading ... fleet03 pid`).
+
+**Both arms verified against the live system:**
+
+| arm | expected | got |
+| --- | --- | --- |
+| fleet03 holding a card | ABORT | **exit 91** — "still holds an instance (1)" |
+| API unreadable (empty status) | ABORT | **exit 90** — "refusing to act on silence" |
+
+This is the same defect family as R2-3860's failed reconcile, which defaulted to
+*"assuming it still exists"* rather than treating an unanswerable question as a
+dead card. **A check that cannot distinguish "no" from "I could not ask" is not
+a check.** It would have moved cap out of a broker that was still spending.
+
+**Trigger:** fleet03 has ~121 frames left, ~12.7 h, finishing ~**08-12 06:00Z**.
+Its `COMPLETE` line is already matched by the lifecycle monitor. fleet05 does not
+pause until ~**08-12 19:40Z**, so there are ~13 h of slack between the two.
+
+## R2-3913 — CYCLE 5 BROKE THE 70-MINUTE BAR: fleet05 WAS DOWN 78 MINUTES
+
+**Reportable deviation.** Four cycles ran at 8-30 minutes; this one did not.
+
+```
+17:09:35  f2668 delivered, the last frame on the old card
+17:13:50  ConnectionDropped mid-f2669 — the retirement
+18:31:56  worker ready
+          ------------------------------------------------
+          78 min 06 s
+```
+
+Against R2-3864's 35-70 min budget and cycle 2's previous worst of 68.5 min.
+**Nothing was lost** — f2669 was recovered by the requeue (R2-3908's mechanism),
+and no frame is at risk.
+
+### It was not the rentals. It was the uplink, and it was worse than cycle 2.
+
+fleet05 needed three attempts (a 400 on offer 46851284, a condemnation of
+machine 34481), but those cost only **~6 minutes total**; it had a good card at
+**17:35:04**. The remaining **57 minutes were the deploy**:
+
+| stage | this cycle | normal | ratio |
+| --- | --- | --- | ---: |
+| blender bundle, 481 MB | **1262.0 s @ 0.38 MB/s** | ~11-50 s @ 14-45 MB/s | **~118x slower** |
+| scene, 10.96 GB | **2054.5 s @ 5.3 MB/s** | 112-665 s @ 16-98 MB/s | ~10x slower |
+| **deploy total** | **3359.7 s** | 164-830 s | |
+
+**0.38 MB/s on the bundle is not contention as previously characterised — it is
+near-collapse.** Cycle 2's bad case was 0.92 MB/s on the same transfer; this is
+2.4x worse again.
+
+### The cause is a new one: a condemnation storm overlapping a deploy
+
+R2-3864 explained the 7:1 split as **two** scene pushes competing. This cycle had
+something the earlier analysis never saw: **fleet04 made four rental attempts
+between 17:48 and 18:07**, each of which opens SSH and starts pushing a 481 MB
+bundle before the host's refusal is established, *while fleet05 was pushing.*
+fleet04 then began its own 10.96 GB scene push at **18:28:46**, still concurrent.
+
+So the uplink was serving fleet05's bundle, fleet05's scene, and a stream of
+fleet04 bundle attempts — **and every fleet04 attempt that ends in a
+condemnation still consumed uplink first.** The cost of a bad host is therefore
+not just its own ~5 minutes; **it is also the bandwidth it steals from whichever
+card is legitimately deploying at the time.** That is a coupling between the two
+failure modes that neither R2-3863 nor R2-3864 anticipated.
+
+### Why this is still not worth intervening in
+
+- **No frames lost, no cost.** Nothing bills while no instance exists, and the
+  frames were recovered by the requeue. The whole event is wall clock.
+- **The mitigation R2-3864 names — stagger the re-rents — is not available to
+  me.** It would mean interfering with a live recovery path, on brokers I did
+  not create, to save wall clock on a render with budget headroom.
+- **The fleet re-staggers itself.** Each re-rent resets that card's 12 h clock,
+  so the cards drift apart again on their own; cycle 3 cost 23 minutes precisely
+  because they had drifted 21 minutes apart.
+
+**Recorded, not acted on.** Budget the next cycles at **35-80 min**, and expect
+the upper end whenever a condemnation storm overlaps a deploy.
+
+### Cycle 5, the most eventful of the render
+
+| broker | down | attempts | notes |
+| --- | ---: | ---: | --- |
+| fleet03 | 21 m 00 s | 2 | offer 46851284 400'd; landed $0.5502 |
+| fleet05 | **78 m 06 s** | 3 | 400 + machine 34481 condemned; deploy 3359.7 s |
+| fleet04 | in progress | 4 | 400 + machines 34481 and 31233 condemned; landed $0.455 |
+
+**Three separate hosts condemned in one cycle** (34481 twice, 31233 once),
+against three in the whole render before it. **Base rate 6 bad in ~24 rentals,
+~25%** — consistent with the 21% at R2-3863, so the market has not degraded; this
+cycle simply drew more rentals because each condemnation forces another.
+
+## R2-3914 — RETRACTION: THE "CONDEMNATION STORM STOLE THE UPLINK" CLAIM IN R2-3913 IS FALSE
+
+**R2-3913's causal explanation is withdrawn. Its measurements stand; its
+mechanism does not.** The 78-minute downtime is real. The reason I gave for it
+is not, and it was relayed onward before I checked it.
+
+### What I claimed, and why it was wrong
+
+I wrote that fleet04's four rental attempts *"each of which opens SSH and starts
+pushing a 481 MB bundle before the host's refusal is established"* stole uplink
+from fleet05's deploy. **R2-3863 already recorded the opposite** — its table has
+a `first bundle push` column reading `never` for every condemned host — and I
+did not check my claim against it.
+
+The log is unambiguous:
+
+```
+17:48:50  deploying onto instance 47484025 (machine 34481)
+17:53:05  instance 47484025 refuses our ssh key            <- nothing between
+18:03:19  deploying onto instance 47484341 (machine 31233)
+18:07:32  instance 47484341 refuses our ssh key            <- nothing between
+```
+
+A grep for any push line against either instance id returns **nothing**. The
+publickey denial happens during the SSH handshake, before a byte of payload.
+**A condemned host transfers nothing and therefore steals no bandwidth.** The
+cost of a failed rental is its ~5 minutes and nothing else.
+
+### What the measurements actually show
+
+Bounded by **log line offsets**, not timestamps — several lines I first read as
+concurrent were from 08-10, which is exactly the trap R2-3860 documented and
+which I walked into anyway:
+
+| transfer | window | rate | competing traffic |
+| --- | --- | ---: | --- |
+| fleet05 bundle | 17:36:01-17:57:03 | **0.38 MB/s** | **none — alone on the uplink** |
+| fleet05 scene | 17:57:24-18:31:41 | 5.3 MB/s | partial: fleet04's bundle 18:13:29-18:28:24 |
+| **fleet05, cycle 4, same broker** | 05:13:34-05:17:55 | **30.27 / 69.3 MB/s** | — |
+
+fleet03 finished pushing at **17:23:06** and fleet04 pushed nothing until
+**18:13:29**, so **fleet05's bundle had the link to itself and still managed
+0.38 MB/s.** Contention cannot explain a transfer that had no competition.
+
+**The difference is the path.** Cycle 5 pushed to `host-A` — the South
+Korea host R2-3864 identified as the high-RTT loser of its 7:1 split. Cycle 4's
+fast push went to `host-C`. R2-3864's **underlying** mechanism, that
+OpenSSH's fixed internal buffer caps single-stream throughput regardless of link
+speed and penalises high-RTT paths, explains this cleanly. Its **framing** as
+"two pushes competing" does not, and I extended that framing past its evidence.
+
+### The consequence for #169
+
+**The coupling argument does not survive, and it was the strongest case for
+fixing the blacklist.** What remains is the direct cost only: one rung up the
+price ladder per re-rent that draws a bad host or the unbuyable offer — and even
+that is **transient**, because the selector returns to ~$0.455/hr once the
+session blacklist has absorbed them. Observed three times this cycle. That is a
+materially weaker case than the one I made.
+
+### The pattern in my own errors, which is the thing worth fixing
+
+Three times now I have asserted a mechanism ahead of the measurement: the 400
+called "a transient" (R2-3910 corrected it), "fleet04 is the broker whose job
+requeues" (R2-3909 corrected it to a property of the failure path), and this.
+**Each was a correlation generalised without an attempt to break it**, and in
+each case the disconfirming evidence was already in the repository.
+
+The standard for the rest of this task: **mark inference as inference, and
+search for the record that contradicts it before reporting, not after.** The
+frame checks are built on exactly this principle — `fleetctl verify` is not
+trusted about decoding because it re-reads its own record — and my prose should
+meet the bar my tools do.
+
+## R2-3915 — CYCLE 5 CLOSED
+
+| broker | down | attempts | notes |
+| --- | ---: | ---: | --- |
+| fleet03 | **21 m 00 s** | 2 | offer 46851284 400'd; landed $0.5502/hr |
+| fleet04 | **62 m 49 s** | 4 | 400 + machines 34481, 31233 condemned; landed $0.455/hr |
+| fleet05 | **78 m 06 s** | 3 | 400 + machine 34481 condemned; deploy 3359.7 s on a high-RTT path |
+
+Band widened to **35-80 min** with escalation above 80. Three condemnations in
+one cycle; base rate **6 bad hosts in ~24 rentals, ~25%**, consistent with the
+21% at R2-3863.
+
+**All three jobs requeued except fleet03's**, so the orphan set stands at
+**[192, 355, 697, 876]** — all four fleet03's, the only broker whose job has
+never been recomputed from disk.
+
+## R2-3916 — fleet03 FINISHED ITS BLOCK AND SWEPT ITS OWN ORPHANS. THE ORPHAN COUNT IS ZERO.
+
+**This corrects the central claim of R2-3901 through R2-3915, in the direction of
+the system being better than I described it.**
+
+```
+04:45:18  sequence master4k frame 993 done (989/993)
+04:45:18  job d3b1b8bde2f4 requeued WITHOUT spending an attempt — this pass
+          delivered 989 frame(s) before it stopped, so it made progress
+04:45:19  sequence master4k job d3b1b8bde2f4: 993 requested, 989 already
+          delivered, 4 to render
+04:49:40  frame 192 done (1/4)
+04:53:33  frame 355 done (2/4)
+04:56:55  frame 697 done (3/4)
+05:03:18  frame 876 done (4/4)
+05:03:18  job d3b1b8bde2f4 COMPLETE — 4 frame(s) in 18.0 min, all verified
+```
+
+**Those four frames are exactly fleet03's four orphans**, and all four are now on
+disk. The ledger reads:
+
+```
+ORPHANED: none          count = 0
+PREDICTED 'to render' ON RE-SUBMISSION = 417   = 0 orphaned + 417 not yet rendered
+```
+
+### What I had wrong
+
+I reported, repeatedly and to the coordinator, that
+
+> *"A retirement orphans its in-flight frame unless something later forces that
+> broker's job to requeue. A deploy failure forces it; a transport failure does
+> not."*
+
+The first sentence is right. **The second is incomplete: reaching the end of the
+pass also forces it.** When `run_sequence` exhausts its todo having delivered
+fewer frames than were requested, it requeues *without spending an attempt* and
+recomputes the plan from disk — which finds precisely the frames that were
+skipped. **The orphans were never permanent. They were deferred to the end of the
+block.**
+
+R2-3861's *"the master will finish with 2 frames missing unless something
+re-renders them"* was therefore pessimistic, and every ledger reading since has
+been measuring **work deferred**, not **work lost**. The distinction matters
+because it is the difference between a defect and a schedule.
+
+**Why I did not see it sooner, stated plainly:** no broker had ever finished a
+block before. The behaviour is only observable at the end of a pass, and until
+05:03Z today no pass had ended. The ledger was right about every frame it
+listed; my interpretation of what the listing *meant* outran the evidence — the
+same error as R2-3910 and R2-3914, for the third and I hope last time.
+
+### The falsifiable form, stated before the evidence exists
+
+**fleet04 and fleet05 will each do the same when their blocks end**, and the
+pre-encode re-submission will find **0 frames to render, not 4-10.**
+
+- **Re-submission reports 0 to render** — the model above is confirmed and
+  coverage is proven by `fleetctl verify --manifest` alone.
+- **Re-submission reports N > 0** — the sweep is not universal, those N frames
+  are the real orphans, and they get rendered. Nothing is lost either way.
+
+**The re-submission stays mandatory regardless.** Its value was never that it
+rescues frames; it is that it is the only check that compares the film against
+the range 1-2978 rather than against a job's own todo list. A `COMPLETE` line
+that reads *"4 frame(s), all verified"* is true and tells you nothing about
+coverage — which is exactly the trap this whole exercise was built to avoid.
+
+### fleet03 is done: 993 of 993
+
+Its block is complete, its four casualties recovered, and it holds the only
+finished third of the film.
+
+## R2-3917 — THE REBALANCE GATE FIRED CORRECTLY, AND THERE IS LIKELY NOTHING TO MOVE
+
+Run at 05:04Z, 46 seconds after fleet03's `COMPLETE`:
+
+```
+>>>> ABORT: fleet03 still holds an instance on vast.ai (1). Spare is
+     a projection until its card is gone. Waiting is free; this is not.
+exit=91
+```
+
+**Correct.** `IDLE_GRACE_SEC` is 300 s, so the card is still rented and still
+billing for up to five minutes after the last frame. Acting now would have
+computed spare against a number still moving — and fleet03's `live` spend was
+**$6.67** at that moment, unsettled.
+
+**And the spare is much smaller than I projected.** fleet03 has spent **$37.85
+of its $42.00 cap — $4.15 remaining**, against the ~$10.49 I estimated at 17:53Z
+yesterday. The difference is the $0.5502/hr card it drew in cycle 5 after losing
+the 400-race, run for a full 12 hours.
+
+Whether anything needs moving:
+
+| broker | cap remaining | work left | needs @ current rate |
+| --- | ---: | --- | ---: |
+| fleet04 | ~$26.8 banked-basis | 233 fr, ~19.4 h | ~$9.2 |
+| fleet05 | **$11.76** | 184 fr, ~14.8 h | **~$7.0** |
+
+**Neither is short.** On these numbers the rebalance script will reach
+`nothing to move` and exit 0 without touching a cap, which is the right outcome
+and the one it was written to be able to reach. It will be re-run once fleet03's
+card is gone and its spend has settled, so the decision rests on measured
+numbers rather than these.
+
+Credit **$64.59 = 43.0 h of runway** against ~19.4 h of remaining work.
+
+## R2-3918 — HOST DEFECTS OUTLIVE THE BLACKLIST BY AN ORDER OF MAGNITUDE. #169, PROPERLY ARGUED THIS TIME.
+
+Cycle 6 condemned **machine 8512** on fleet05. The same machine, with the same
+failure, was condemned by fleet04 in **cycle 1**:
+
+```
+state4:3255  16:37:06 (08-09)  instance 47286610 (machine 8512) refuses our ssh key
+state5:3649  05:56:27 (08-12)  instance 47523049 (machine 8512) refuses our ssh key
+```
+
+**61 hours 19 minutes apart, still broken.** With machine 142281 (24 h) that is
+two independent measurements of the same thing: **`authorized_keys` failures are
+a durable property of a host, not a bad hour.**
+
+```python
+BLACKLIST_TTL_SEC = 6 * 3600     # broker/app.py:1519
+```
+
+**The TTL is ~10x shorter than the shortest observed defect lifetime and ~60x
+shorter than the longest.** Its comment justifies itself as *"short enough that a
+machine having a bad hour is not written off for the week"* — a reasonable
+instinct that the measurements do not support. **Nothing in this render has ever
+looked like a bad hour.** Every condemned host was condemned again on every
+subsequent encounter, without exception.
+
+### The unshared blacklist, demonstrated cleanly
+
+Every machine each broker has condemned:
+
+| broker | condemned |
+| --- | --- |
+| fleet04 | 52271, 8512, 142281, 34481, 31233 |
+| fleet05 | 142281, 34481, 8512 |
+
+**Every single one of fleet05's condemnations is a host fleet04 had already
+condemned.** fleet05 has never independently discovered a bad host — it has only
+ever rediscovered fleet04's, at ~5 minutes each. And fleet05 has just rented
+**machine 31233**, which fleet04 condemned yesterday at 18:07:32.
+
+**This is the argument for #169, and it does not depend on the bandwidth claim I
+retracted at R2-3914.** It rests on two measured facts: the defects are durable
+over days, and the blacklist is both per-process and expires in 6 hours. A
+fleet-wide blacklist with a TTL matched to the observed defect lifetime would
+have prevented **every repeat condemnation in this render** — 3 of the 7, at
+~5 minutes and one price-ladder rung each.
+
+## R2-3919 — fleet05'S BUDGET IS NOW GENUINELY TIGHT, AND THE REBALANCE IS BLOCKED FOR ~8 MINUTES
+
+| | |
+| --- | --- |
+| cap | $53.00 |
+| spent | $41.59 |
+| **remaining** | **$11.41** |
+| work left | **176 frames**, ~14.2 h |
+| current card | **$0.734/hr** (machine 31233, deploying) |
+| **needs** | **~$10.4** |
+| **headroom** | **~$1.0** |
+
+The price walk this cycle: $0.537 (create failed) -> $0.668 (machine 8512,
+condemned) -> **$0.734**. If machine 31233 is also condemned — and fleet04
+condemned it yesterday — the next rung likely breaches the cap.
+
+**fleet03 has $4.08 of cap sitting idle**, which is more than the shortfall.
+This is precisely the case the rebalance was authorised for.
+
+**It is blocked, correctly.** fleet03's card went `cold` at ~05:05 and
+`HIBERNATE_SEC = 3600` destroys it at ~06:05; until then the gate refuses
+because an instance still exists and **$6.74 of live spend has not settled**.
+Moving cap now would be arithmetic on a number still in motion.
+
+**There is no urgency in the 8-minute wait:** fleet05 holds 15.5 h of budget at
+its current rate against 14.2 h of work, so it cannot pause before the gate
+opens. The rebalance will be re-run after ~06:05 on settled figures.
+
+## R2-3920 — CORRECTION: THE IDLE CARD IS DESTROYED AT 09:08Z, NOT 06:05Z
+
+I said fleet03's stopped card would be destroyed "at ~06:05" and that the
+rebalance gate would open then. **Wrong, and the correct figure was in a log line
+I had already fetched.**
+
+```
+05:08:18  idle 300s — stopping instance (disk kept)
+05:08:19  instance 47482165 stopped after 710.7 min running (~$6.271 gpu).
+          disk keeps billing ~$0.037/hr; destroying in 240 min
+```
+
+**240 minutes, so 09:08Z.** I read `HIBERNATE_SEC = _env("HIBERNATE", 3600)` out
+of `config.py` and quoted the *default* without checking whether it was
+overridden. It is:
+
+```
+/proc/2998103/environ:  VASTRENDER_HIBERNATE=14400
+```
+
+**Fourth instance of stating a mechanism ahead of the measurement**, and the
+cheapest one to have avoided: the broker prints the actual number, in plain
+English, in the same line that announced the stop.
+
+**What was right:** `IDLE_GRACE_SEC = 300` predicted the stop exactly — COMPLETE
+at 05:03:18, stopped at 05:08:18, five minutes to the second. **GPU billing
+ended there**, which is the part that matters for cost. The card now costs
+**$0.037/hr of disk**, so the whole 4-hour hibernation is **~$0.15**.
+
+### Consequence for the rebalance
+
+The gate stays shut until **09:08Z**, because fleet03's **$6.77 of `live` spend
+does not bank until the instance is destroyed**. Acting before then would move
+cap computed against an unsettled figure — exactly what the gate exists to
+prevent, and it is refusing correctly for the second reason in a row.
+
+**No urgency, verified rather than assumed:**
+
+| broker | cap remaining | work left | needs | headroom |
+| --- | ---: | --- | ---: | ---: |
+| fleet04 | $20.53 | 221 fr, 20.2 h @ $0.4756 | **$9.6** | $10.9 |
+| fleet05 | $11.00 | 170 fr, 13.2 h @ $0.5289 | **$7.0** | $4.0 |
+
+**Neither broker can exhaust its cap before 09:08Z**, or indeed at all on
+current rates. fleet03's spare is $4.06 and will still be spare at 09:08.
+
+Finish projections: **fleet05 ~08-12 19:50Z**, **fleet04 ~08-13 02:50Z**.
+
+## R2-3921 — THE REBALANCE RAN, MEASURED THE NEED, AND CORRECTLY DECLINED TO ACT
+
+fleet03's card was destroyed at ~09:08Z as its own log said it would be. Its
+spend settled — **`live $0.0000`, banked $38.03** — and both gates opened for the
+first time.
+
+**And the first thing the dry run produced was a proposal I refused to apply.**
+
+```
+fleet03 spare = $2.97
+fleet05 shortfall at worst case = $14.36
+MOVE = $2.97
+```
+
+That `$14.36` came from a **hardcoded constant** — `(spent + 24.00) - cap` —
+which I wrote when fleet05 had **306 frames** left. It had 138. The number was
+stale within hours and the script was about to move real cap on the strength of
+it. **A gate that checks the world but computes on a constant is only half a
+gate**, which is the same lesson as the fail-open cwd bug at R2-3912, arriving
+from the other direction.
+
+Replaced with a measurement: frames still on fleet05's todo, at the mean of its
+last 10 delivered frames, priced at **the dearest card this render has ever
+actually rented ($0.734/hr)**, times a 1.20 margin. It also aborts (exit 97)
+rather than guessing if it cannot read those numbers.
+
+```
+fleet03 spare (cap - spent - $1.00 reserve) = $2.97   [dead money: its block is done]
+fleet05 work left = 138 frames x 278.2s @ $0.734/hr worst-case x1.20 = $9.39
+fleet05 cap available now                        = $9.63
+fleet05 shortfall                                = $0.00
+MOVE                                             = $0.00
+>>>> nothing to move. Doing nothing is the correct outcome.
+```
+
+**No cap was moved. The three caps still read $42.00 / $63.49 / $53.00, summing
+to $158.49**, the R2-3862 invariant, untouched since it was set.
+
+### Why doing nothing is right, and where the residual risk sits
+
+fleet05 covers its remaining work **even at the worst rate this render has ever
+paid, with a fifth on top** — $9.63 available against $9.39. At its actual
+current rate ($0.5289/hr) the need is ~$6.8 and the headroom ~$2.8.
+
+The one thing to keep in view: **fleet05 retires once more at ~18:06Z**, with
+roughly 2 hours of work left afterwards. Even a bad price walk at that point
+costs ~$1.5 against several dollars of remaining cap. **The exposure is small
+and shrinking**, and the script stays ready if it changes.
+
+**fleet03's $2.97 is dead money and stays dead** — its block is complete, its
+card destroyed, and it will never rent again. Leaving it in place keeps the
+achievable fleet spend *lower*, which is the safer direction and costs nothing.
+
+### Fleet position
+
+| | |
+| --- | --- |
+| frames | **2,641 / 2,978 (88.7%)** |
+| cards | 2, $1.0044/hr |
+| credit | $60.45 = 60.2 h runway against ~20 h of work |
+| orphans | **[1766]** — fleet04's cycle-6 frame, deferred not lost |
+| projected total | ~$119 of the $150 ceiling |
+
+## R2-3922 — THE ENDGAME, WRITTEN OUT BEFORE IT IS NEEDED
+
+Scope confirmed by the coordinator: **stop at a verified frame set.** No encode,
+no mux, nothing written to `watch/`, and the R2-3181 "do not judge the ending"
+banner **stays exactly where it is** until the client has seen the film.
+
+Projections at 13:40Z: **fleet05 finishes ~19:55Z today, fleet04 ~08-13 03:49Z.**
+fleet04 is the long pole; the fleet is done when it is.
+
+### Step 1 — re-submit `master4k`, with the ORIGINAL parameters
+
+The resume key is `--name`. **Every other flag must match the original
+submission**, because `submit` re-derives the render settings rather than
+inheriting them from the delivered frames — a different `--samples` or `--cam`
+would silently render mismatched frames into the same directory. The original,
+from R2-3846:
+
+```
+fleetctl submit -n 3 --scene render/film25_breach.blend \
+    --frames 1-2978 --name master4k \
+    --res 3840 2160 --samples 512 --cam ONER -- --prio 1
+```
+
+Unstated fields are defaults that were **checked** at submission time and must
+stay unstated: `--engine CYCLES` (the blend's own saved engine is
+`BLENDER_EEVEE`, so passing nothing is correct and passing the blend's value
+would be a catastrophe), `--denoiser OPENIMAGEDENOISE`, `--dof scene` (the
+blend's animated DOF — overriding this is how round 1 lost a render),
+`--adaptive-threshold 0.01`, and **no `--exposure`** (the -3.628 is authored in
+the blend).
+
+**The test set at R2-3902 fires here.** Before submitting, run
+
+```
+python3 tools/r23901_orphan_ledger.py
+```
+
+and compare its `PREDICTED 'to render'` against the broker's own
+`N frame(s) requested, M already delivered, K to render`. **K must equal the
+prediction.** K > predicted means something other than retirement is dropping
+frames — **stop, do not encode, escalate.** K < predicted means the ledger is
+wrong and the coverage claim is unfounded — **stop.**
+
+**Open question to settle at the time, not now:** if the prediction is **0**,
+a `-n 3` submit may still rent three cards to render nothing. Check whether
+`submit` computes its plan before renting; if it does not, prefer a narrower
+`-n` or rely on `fleetctl verify` alone. **Renting three 5090s to confirm an
+empty todo list would be a self-inflicted cost.**
+
+### Step 2 — the three frame checks
+
+```
+# checks 1 and 2: coverage, and re-hash against the brokers' own records
+fleetctl verify --manifest state/fleet/master4k.json --json work/r23901/hashes.json
+
+# check 3: decode and geometry — the one fleetctl structurally cannot do
+/home/zany/f1-round2/.venv/bin/python tools/r23841_verify_frames.py \
+    --dir /home/zany/vast-render/out3/seq/master4k \
+    --dir /home/zany/vast-render/out4/seq/master4k \
+    --dir /home/zany/vast-render/out5/seq/master4k \
+    --first 1 --last 2978 --res 3840 2160 \
+    --json work/r23901/decode.json
+```
+
+**The interpreter is pinned (R2-3905):** `python3` has no PIL, and
+`~/vast-render/.venv` has no numpy. Only `f1-round2/.venv` has both.
+**Runtime ~9 minutes** for all 2,978 frames, so decode everything; do not sample.
+`outside range` must be **0** with all three directories and the full range.
+
+### Step 3 — teardown, proved against the API
+
+```
+fleetctl down
+/home/zany/vast-render/.venv/bin/python -m vastctl.vastctl status
+```
+
+**`vastctl` is a package, not a script** — `./vastctl` is a directory and fails;
+it must be run as a module **with cwd `~/vast-render`**, or the import dies to
+stderr and an empty answer reads as "nothing rented". That exact failure mode
+put a fail-open gate into the rebalance script at R2-3912. **The account must
+show zero instances**, read from vast.ai, not from a local state file.
+
+### What must be true before this is called done
+
+| | |
+| --- | --- |
+| coverage | 2,978 of 2,978 against the range 1-2978, `duplicated 0`, `outside range 0` |
+| hashes | every frame agrees with the sha256 the broker recorded **at fetch** |
+| decode | 2,978 decoded, `3840x2160`, 0 failed, 0 flat, 0 black |
+| orphans | ledger reports **none** |
+| teardown | vast.ai API reports **0 instances** |
+| untouched | `watch/` unchanged, banner in place, `DEFECT-LOG-R2.md` unedited |
+
+## R2-3923 — THREE THINGS ABOUT THE RE-SUBMISSION, READ OUT OF THE CODE RATHER THAN ASSUMED
+
+### 1. An empty todo rents nothing. The `-n 3` worry at R2-3922 was unfounded.
+
+`broker/app.py:1224`:
+
+```python
+if not plan.todo:
+    self.db.finish(job_id, str(directory), 0.0)
+    log.info("sequence %s job %s: nothing to do, all %d frame(s) already "
+             "delivered and verified", name, job_id, len(frames))
+    return
+```
+
+**The plan is computed from disk before anything is rented** — confirmed against
+the launch log, where the plan line at `04:06:31` precedes `renting offer` in the
+same second — and an empty todo returns **before** the rental. So re-submitting
+with the original `-n 3` costs **nothing** if every frame is present. Use the
+original command unchanged.
+
+### 2. The resume re-checks FILES, not just rows — but not their hashes
+
+`broker/seq.py:plan_range`, whose docstring is explicit: *"A row says a frame was
+delivered; only the file says it still is."* Every planning pass re-checks size
+and geometry against the recorded values and routes a failure to `plan.stale`,
+which is **added to `todo` and re-rendered**.
+
+**But the sha256 is only compared when `deep=True`**, and the resume path does
+not pass it:
+
+```python
+ok, _ = verify_frame(path, row.get("bytes"), wh,
+                     row.get("sha256") if deep else None, ...)
+```
+
+So the re-submission catches a **missing or truncated** frame and will not catch
+a frame whose content changed at constant size. **It is not a substitute for
+`fleetctl verify --manifest`**, which is the pass that compares against the
+sha256 the broker recorded at fetch. Both are still required.
+
+### 3. A wrong parameter cannot silently contaminate the film
+
+The worry at R2-3922 was that a mistyped `--samples` would render mismatched
+frames into the same directory. It cannot: `plan_range` compares each delivered
+frame's `spec_hash` against the submission's and routes a mismatch to
+**`plan.conflict`**, which is neither rendered nor counted as delivered.
+
+The failure is therefore **loud rather than silent** — a wrong spec reports
+`0 already delivered, 0 to render` on a range known to be nearly complete, which
+is exactly the shape the R2-3902 ledger comparison is built to catch. **The
+ledger test covers parameter error as well as frame loss**, which was not the
+reason it was written.
+
+**Also recorded, because it is the supported repair:** deleting a frame from the
+sequence directory forces exactly that frame to be re-rendered on the next
+submission. That is the sanctioned way to fix one bad frame — not editing the
+database.
+
+## R2-3924 — TWO CORRECTIONS TO R2-3918, BOTH FROM ITS OWN CLAIMS BREAKING
+
+R2-3918 made two statements about the condemnation pattern. **The durability
+finding survives. The pattern claim does not.**
+
+### 1. "fleet05 has never independently discovered a bad host" — falsified
+
+Machine **58073** was condemned by fleet05 at 18:22:57. It appears **nowhere** in
+fleet03's or fleet04's logs — `grep -c` returns 0 in both. It is a bad host
+fleet05 found first.
+
+The claim was true across the three samples I had and I stated it more firmly
+than three samples support. **The fourth broke it.**
+
+### 2. "fleet05 rediscovers fleet04's verdicts" — the direction was an artefact
+
+At 18:34:32 **fleet04 rented machine 58073**, which fleet05 had condemned
+**twelve minutes earlier**, and condemned it at 18:39:10 — 4 m 38 s later.
+
+```
+18:22:57  fleet05  machine 58073 blacklisted for this session
+18:34:32  fleet04  renting offer 38769886 (machine 58073)
+18:39:10  fleet04  machine 58073 blacklisted for this session
+```
+
+**The gap is symmetric.** It was never a property of fleet05; fleet04 simply
+happened to hit the bad hosts first for the first six cycles, because each of its
+condemnations forced another rental and gave it more draws. Stated correctly:
+
+> **No broker can see any other broker's condemnations, in either direction.**
+
+Twelve minutes is also far inside the 6 h TTL, so **scoping alone is sufficient
+to cause the repeat here** — no expiry is involved. That is the cleanest
+demonstration of the per-broker defect in the whole render, and it is
+independent of the TTL argument.
+
+### What still stands, unchanged
+
+**The durability evidence**, which is what the #169 case actually rests on:
+machine 8512 refused the key across **61 h 19 min**, machine 142281 across
+**24 h**, against `BLACKLIST_TTL_SEC = 6 * 3600`. Nothing observed in this render
+has ever looked like a host having a bad hour.
+
+**Running tally: 10 condemnations across ~35 rentals (~29%)** — 4 rediscoveries,
+6 first encounters. The rate is consistent with the 21-25% recorded earlier; the
+count is high this cycle only because each condemnation forces another rental.
+
+**No cost consequence.** fleet05 held $4.78 against 28 frames and fleet04 ~$20
+against ~14 h; both absorb several rungs. fleet05's job requeued on the deploy
+failure, so no frame was orphaned.
+
+## R2-3925 — STOP: fleet04'S JOB HAS FAILED AND THE BROKER IS IDLE WITH ~101 FRAMES UNRENDERED
+
+**This is the first thing in this render that has actually failed rather than
+recovered, and it is escalated rather than worked around.**
+
+```
+18:39:22 ERROR broker  job 467247848cc6 failed: RuntimeError: sequence master4k
+                       stopped at frame 1766 after 0 frame(s) this pass:
+                       FleetUnavailable: no worker available ...
+                       deploy failed on freshly rented instance None (0/3 rounds)
+
+rq status (fleet04):  queue {'canceled': 3, 'done': 2, 'failed': 1}  depth=0
+                      gpu down  instance=None
+```
+
+**`failed`, not `requeued`. Queue depth 0. No activity since.** fleet04 is idle
+and will not resume on its own.
+
+### Why it failed here and requeued five times before
+
+The accounting is in the log lines themselves, and it is not arbitrary:
+
+| when | frames this pass | outcome |
+| --- | ---: | --- |
+| 16:37:22 (08-09) | **0** | requeued, **attempt spent** |
+| 05:00:20 (08-10) | 138 | requeued WITHOUT spending an attempt |
+| 17:53:22 (08-11) | 368 | requeued WITHOUT spending an attempt |
+| 18:07:48 (08-11) | **0** | requeued, **attempt spent** |
+| 18:30:01 (08-12) | 247 | requeued WITHOUT spending an attempt |
+| **18:39:22 (08-12)** | **0** | **FAILED — attempts exhausted** |
+
+**A pass that delivers at least one frame requeues for free; a pass that
+delivers none spends an attempt.** That is a sound policy — it distinguishes
+"slow progress" from "cannot start" — and fleet04 hit its third zero-progress
+pass. All three zero-progress passes were the same cause: a retirement
+immediately followed by a **condemned host**, so the replacement never deployed
+and the pass ended having rendered nothing.
+
+**This cycle it drew machine 58073, which fleet05 had condemned 12 minutes
+earlier** (R2-3924). Had the blacklist been shared, fleet04 would have skipped
+that offer, deployed on its next choice, and the pass would not have been a
+zero. **#169 has now cost a job, not just a price rung.**
+
+### What is and is not at risk
+
+**Nothing is lost.** Every delivered frame is on disk and verified. The state:
+
+```
+frames on disk           2851 / 2978
+fleet03  complete (993/993)
+fleet04  IDLE — job failed, ~101 frames of its block unrendered
+fleet05  healthy — gpu ready, rendering, 26 frames left, finishes ~20:40Z
+ORPHANED: none
+PREDICTED 'to render' ON RE-SUBMISSION = 127
+```
+
+**The 127 outstanding frames are exactly what the planned endgame re-submission
+renders**, and the ledger's prediction already covers them. fleet04 holds ~$20
+of unspent cap and the fleet is at ~$119 of the $150 ceiling, so there is budget.
+
+### What I have NOT done, and why
+
+I have **not** resubmitted, resumed, or cancelled anything. The standing
+instruction is to stop and report rather than work around a failure, and this is
+a failure. The obvious remedy — the `fleetctl submit` re-submission already
+written out at R2-3922 — is also **step 1 of the authorised endgame**, so the
+fix and the plan coincide; but restarting work on a job that has failed is a
+decision to be taken deliberately, not absorbed into a routine step.
+
+**Recommendation, for the coordinator to accept or reject:** let fleet05 finish
+its remaining 26 frames (~2 h, ~20:40Z), then run the R2-3922 re-submission
+unchanged. It will find **127 frames to render**, which must equal the ledger's
+prediction — and that comparison is now a live test rather than a formality,
+because a job has failed and the reason it failed is understood.
+
+**Do not `rq resume`.** That clears a *pause*; this is a failed job with
+attempts exhausted, and resume is not the mechanism for it.
+
+## R2-3926 — THE RE-SUBMISSION TEST PASSED: PREDICTED 101, RENDERED 101
+
+fleet05's block completed at 20:50:15 (992/992 on disk, queue depth 0, verified
+by two independent checks). The ledger was then re-run and its prediction
+**recorded before submitting**, to `work/r23901/orphan_ledger.json`:
+
+```
+frames on disk           2877 / 2978
+ORPHANED: none
+PREDICTED 'to render' ON RE-SUBMISSION = 101
+At re-submission the broker's own plan line must read
+    2978 frame(s) requested, 2877 already delivered, 101 to render
+```
+
+**The stale figure was caught before it was used.** 127 was the number an hour
+earlier; it counted fleet05's 26 in-flight frames as outstanding. Quoting it at
+submission time would have been the same stale-constant error caught in the
+rebalance script at R2-3921 — a forecast used after the thing it forecast had
+happened.
+
+### The submission, and the result
+
+Run unchanged from R2-3922, from `/home/zany/f1-round2` so `--scene` resolves,
+scene sha16 re-checked as **`1d2aa2d86533574e`** first:
+
+```
+fleetctl submit -n 3 --scene render/film25_breach.blend \
+    --frames 1-2978 --name master4k \
+    --res 3840 2160 --samples 512 --cam ONER -- --prio 1
+```
+
+```
+20:52:21  job 4f21900326c2: 993 requested, 993 already delivered,   0 to render
+          -> nothing to do, all 993 frame(s) already delivered and verified
+20:52:22  job ec021c80c468: 993 requested, 892 already delivered, 101 to render
+20:52:23  job d0a9318c35f9: 992 requested, 992 already delivered,   0 to render
+          -> nothing to do, all 992 frame(s) already delivered and verified
+```
+
+| | predicted | actual |
+| --- | ---: | ---: |
+| already delivered | 2,877 | **993 + 892 + 992 = 2,877** |
+| **to render** | **101** | **101** |
+
+**Exact, in both columns.** The model built over five days — that a retirement's
+in-flight frame is deferred rather than lost, and swept by the next requeue —
+predicted the recovery set to the frame.
+
+### Three things the submission confirmed as side effects
+
+**1. An empty todo rents nothing (R2-3923).** fleet03 and fleet05 logged
+`nothing to do` and **rented no card**. Only fleet04 rented — offer 47033336,
+machine 36179, **$0.441/hr**, the cheapest card of the whole render. The `-n 3`
+cost worry raised at R2-3922 was correctly dismissed.
+
+**2. The parameters were reproduced exactly.** Every block carries spec
+**`3cf8d9c4de51280f`** and **no frame was routed to `plan.conflict`** — 993 + 892
++ 992 accounts for every delivered frame as *delivered*, not quarantined. A
+mistyped `--samples` or `--cam` would have shown as `0 already delivered`.
+
+**3. The missing frames are `1766` and `1887-1986`** — one orphan-shaped
+singleton and one 100-frame contiguous tail, all inside fleet04's block, which is
+why only one card was needed.
+
+### One consequence worth surfacing rather than absorbing
+
+**All 101 frames fall in a single block, so the submission uses ONE card**, not
+two. At ~330 s/frame that is **~9.3 h** (ETA ~08-13 06:10Z) against ~4.6 h on
+two. A second card would require cancelling and re-submitting fleet04's
+*new* job with a disjoint split; handing a chunk to another broker without that
+would have both render the same frames, which is the race R2-3859 forbids.
+
+**Not done unilaterally.** fleet04 is already rendering, so nothing is lost by
+asking, and the brief states there is no time pressure.
+
+## R2-3927 — THE FILM IS COMPLETE AND VERIFIED. ONE FAIL, AND IT IS A RECORD, NOT A PIXEL.
+
+**2,978 of 2,978 frames on disk at 05:45:19Z on 2026-08-13.** fleet04's block
+closed 993/993 with queue depth 0 and no `.part` files in flight, verified on the
+block rather than on a `COMPLETE` line.
+
+### Pass 1 and 2 — `fleetctl verify --manifest`: everything clean except one column
+
+```
+present    2978      missing 0      duplicated 0      outside the requested range 0
+  broker 3   1-993     993/993
+  broker 4   994-1986  993/993
+  broker 5   1987-2978 992/992
+distinct sha256 across all delivered frames: 2978 of 2978
+sha256 agrees with the broker's own frames table: 2978/2978
+blank gate: 2978 OK, 0 not-OK, 0 unmeasured
+render_sec: min 194.7  median 283.8  max 445.1  mean 280.0
+
+>> STAGE RESULT: FAIL — ... 2 distinct resolution(s) ... NOT exactly-once at delivery spec
+   resolutions delivered: 3840x2160, NonexNone
+```
+
+**Coverage is exact and every hash agrees with the sha256 the broker recorded
+independently at fetch.** The only failure is `resolutions delivered:
+3840x2160, NonexNone` — **10 frames carry a NULL width/height in the broker's
+SQLite**: `122, 123, 624, 625, 1080, 1462, 2073, 2074, 2489, 2606`.
+
+### Pass 3 — decode: the files are fine, and this is why the pass exists
+
+```
+decoded 2978      FAILED to decode 0      resolutions 3840x2160
+distinct levels min 167  median 237  max 256
+FLAT 0    BLACK 0
+
+>> STAGE RESULT: PASS — all 2978 frames decoded from scratch, exactly one
+   resolution (3840x2160), no gaps, no duplicates, no flat or near-blank frames.
+```
+
+All ten suspect frames decode individually at **3840x2160, mode RGB, `err: null`**,
+with luminance means (0.29-0.44) sitting with their neighbours. **8m25s to read
+every byte of 23.5 GiB.**
+
+R2-3856 wrote this tool because *"a resolution check sourced from the record
+cannot catch a record that is wrong about the file."* **That is exactly what
+happened, and the record was wrong in the harmless direction.**
+
+### Root cause of the ten NULLs — a real but cosmetic middleware gap
+
+Every one of the ten went through the same path:
+
+```
+ConnectionDropped: job socket reached EOF with no reply — the SSH forward ended mid-call
+recovered job <id>_f000NNN from the instance — N.N MB already rendered, no re-render needed
+```
+
+**The post-`ConnectionDropped` recovery path records the frame's sha256, byte
+count and blank verdict, but never populates `width`/`height`.** The frames are
+correct; only the bookkeeping is short. They cluster on two transport
+interruptions — the 11:45Z outage of R2-3860 (122, 123, 1080, 2073, 2074) and a
+later 23:24Z flap (624, 625, 1462, 2489, 2606) — which is consistent with
+recovery being the trigger rather than anything about the frames.
+
+**Consequence:** `fleetctl verify` will report `FAIL` on a perfectly good
+sequence whenever any frame was recovered rather than fetched normally. Worth
+fixing where the recovery path writes its row; **not** a reason to doubt this
+film.
+
+### Teardown — and `fleetctl down` is broken the same way `fleetctl plan` is
+
+```
+$ ./fleetctl down
+usage: vastctl [-h] {offers,status,reap,destroy} ...
+vastctl: error: argument cmd: invalid choice: 'down'
+exit=2
+```
+
+**Identical to the R2-3847 defect**: it reaches into `vastctl`, which re-parses
+**the parent's `sys.argv`**. It failed *before* destroying anything — confirmed
+by querying the API, which still showed fleet04's card. **Had I trusted the
+command's own failure as "nothing to tear down", a card would have been left
+rented.**
+
+Torn down with the broker's own supported command instead, `rq teardown` on
+fleet04, then proved against the API:
+
+```
+credit $45.47   autobill=None
+no instances on this account (checked the vast.ai API, not a local state file)
+```
+
+### Cost
+
+| broker | cap | banked |
+| --- | ---: | ---: |
+| fleet03 | $42.00 | $38.03 |
+| fleet04 | $63.49 | $53.14 |
+| fleet05 | $53.00 | $49.89 |
+| **total** | **$158.49** | **$141.06** |
+
+Less the **$8.49** of pre-existing banked spend the caps were set against
+(R2-3862): **$132.57 of the $150 ceiling — 11.6% margin, never breached, and no
+cap was ever moved.** Credit remaining **$45.47**.
+
+### Untouched, as instructed
+
+`watch/` is unmodified — its two untracked directories (`r2943_4k`,
+`r2943b6_frames`) date from 08-07 and were only ever read, for the encode
+reconstruction at R2-3903. `watch/INDEX.md` still carries its 08-08 mtime and
+the **R2-3181 "DO NOT JUDGE THE ENDING" banner is still in place.**
+`docs/DEFECT-LOG-R2.md` was never edited. **No encode, no mux, nothing filed.**
