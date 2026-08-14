@@ -1229,139 +1229,724 @@ def cluster_arrivals(name, nparts, seat_f, last_f, c, fps=24):
     return out
 
 
-# ---- the servo bed: fifteen actuators, not one LFO -------------------------
-# A ballscrew actuator with a 20 mm lead. Lead is what converts the carriage's
-# linear speed into a shaft rate, so it is the single number that sets every
-# tone in this layer: shaft = v / lead.
-BALLSCREW_LEAD_M = 0.020
-GEAR_TEETH = 23            # prime, so mesh orders never coincide with shaft orders
+# ---- the cell: A MACHINE IS PERIODIC IN RHYTHM AND NEVER IN PITCH ----------
+#
+# R2-4141. WHY THE PREVIOUS TWO VERSIONS OF THIS LAYER WERE BOTH WRONG, AND
+# WRONG IN OPPOSITE DIRECTIONS.
+#
+# B6/R2-4070 put FIFTEEN independent actuator fundamentals in the air at once.
+# Measured one at a time those voices read +5.9 to +32.8 dB of Boersma
+# harmonic-to-noise ratio; measured together they read +0.30 dB, because
+# fifteen unrelated harmonic combs summed is a construction of noise. That is
+# the delivered master the client called "a wind blower".
+#
+# R2-4081/4088 reacted by collapsing them to ONE line shaft: one master drive,
+# every station geared from it, so every line in the building was an integer
+# multiple of one rate. It worked, on the instrument it was aimed at -- beat 1
+# went from +0.30 dB to +10.37 dB of HNR and cleared the old +8 dB bar. IT IS
+# NOT SHIPPED, AND THE REASON IS MEASURED, NOT ARGUED:
+#
+#     signal                          note cover  chord cover  held power  LDR
+#     bar                                  <=0.20       <=0.05      <=0.15 >=13.7
+#     C9 assembly cell (POSITIVE)           0.000        0.000      0.0000  37.38
+#     the film's part impacts alone         0.060        0.000      0.0176  27.17
+#     R2-4088 line-shaft drive alone        0.233        0.210      0.1749  13.93
+#     R2-4088 assembly layer (sum)          0.237        0.211      0.1464  13.64
+#
+# The line shaft fails all three limbs of G-SUSTAIN on its own and drags the
+# layer's local dynamic range down by 13.5 dB. It holds a 2.65 s note and it
+# holds THREE AT ONCE over a fifth of the beat. It is a pad with a derivation
+# attached, and a pad is what the client heard the third time: "sounds like a
+# shitty musical".
+#
+# The bar it was built to clear -- G-HNR's +8 dB at beat 1 -- was RETIRED at
+# R2-4084, on the measurement that every negative in the corpus outscores every
+# positive on it. `percept.RETIRED` carries the numbers. This layer is not
+# aimed at it.
+#
+# WHAT IS ACTUALLY WRONG WITH BOTH, STATED ONCE. Neither version asked what an
+# assembly cell RADIATES. It radiates events. Every sound a cell makes is a
+# contact, a valve or a move that starts and stops, and the two things that
+# separate it from a hair dryer are both in the ENVELOPE: the events are dense,
+# and between them there is less. There is no continuous voice in a machine
+# shop at all -- what sounds continuous is a high enough event rate, which is a
+# RHYTHM, and rhythm is what the ear reads as "a machine working" rather than
+# as "a note".
+#
+# So this layer is built the way `audio/controls/synth.assembly_cell` is built,
+# from the same theory and NOT from its code (G-CONSTRUCT forbids the render
+# path importing the control corpus, and the exclusion is checked): traverses
+# that glide and stop, pneumatic exhausts, latch strikes, nut runners, and one
+# quiet rolling bed. Everything is bounded to a picture event; nothing holds.
+#
+# WHAT THIS LAYER CANNOT FIX, MEASURED RATHER THAN ASSUMED (R2-4141).
+#
+# Beat 1's twelve seat times are a perfect ladder -- 9.900, 10.945, 11.990, ...
+# at 1.045 s -- and it is picture-locked (R2-4080). G-MOD has read it as a
+# failure since R2-4064 and the client has ruled on it. G-NOVEL reads THE SAME
+# FACT, and R2-4141 spent three attempts believing it was reading the cell.
+#
+# The part impacts alone score r = 0.000 -- "no prominent local maximum: no
+# period, only trend" -- and that looks like proof the ladder is inaudible. It
+# is not. It is proof that the GAPS ARE EMPTY: with nothing between the seats
+# the per-band normalised envelope in the gaps is numerical floor rather than
+# signal, and there is nothing for the seats to correlate against. Put ANYTHING
+# in the gaps at the cell's own level and the ladder becomes legible:
+#
+#     added to the film's own impacts at one level      G-NOVEL r    at lag
+#     nothing                                               0.000       ---
+#     THIS CELL                                             0.578     1.040
+#     band-limited noise                                    0.610     1.040
+#     white noise                                           0.652     1.040
+#     a sustained tone                                      0.756     1.050
+#
+# The cell is the LOWEST of the four. There is no fill that scores better than
+# leaving beat 1 empty, and leaving beat 1 empty is the master the client
+# rejected as tubes. G-NOVEL at beat 1 is therefore a PICTURE failure in the
+# same sense G-MOD is, and this layer does not chase it: chasing it means
+# either silence or a drone, and both have already been delivered and rejected.
+# Recorded here, with the measurement, rather than left for the next rebuild to
+# re-derive.
+#
+# WHAT FILLS THE GAPS, WHICH IS WHY A BED EXISTED AT ALL. Beat 1's parts land
+# between film t 9.9 s and 21.4 s, so 9.9 s of presentation and 11.6 s of
+# clear-down have no impact in them, and the 1.0417 s seat ladder leaves a
+# second of naked reverb between clusters. The old answer was a sustained tone
+# across the whole 33 s. The answer here is MORE EVENTS: the valves, latches
+# and runners that a cell fires while it is moving parts about, on the
+# picture's own schedule, so the beat is dense everywhere and holds nothing
+# anywhere.
+
+# ---- the gantry drive ------------------------------------------------------
+# A rack-and-pinion gantry axis: module-4, 24-tooth pinion (pitch diameter
+# d = m*z = 96 mm, so travel per pinion revolution is pi*d = 0.3016 m) through a
+# planetary reducer. The reducer ratio is not a free parameter: a drive is
+# specified so the motor reaches its rated speed at the machine's own peak
+# commanded feed, and 3000 rpm is the standard rating for this class of servo.
+PINION_MODULE_M = 0.004
+PINION_TEETH = 24
+PINION_TRAVEL_PER_REV_M = np.pi * PINION_MODULE_M * PINION_TEETH   # 0.3016 m
+MOTOR_RATED_REV_S = 50.0          # 3000 rpm, the rating the ratio is solved for
 POLE_PAIRS = 4             # PMSM radial force is at 2 * f_electrical = 8 * shaft
-STATOR_SLOTS = 12
+STATOR_SLOTS = 24
+# 4 pole pairs in 24 slots is the standard fractional-slot wind for this frame
+# size. Slot passing then sits at N_z * shaft = 3 * (2 * p * shaft), i.e. on the
+# third order of the Maxwell radial-force fundamental.
+N_FORCE_ORDERS = 14        # to 2*p*shaft*14; above that the frame is not driven
+BALLSCREW_LEAD_M = 0.020   # retained: `master_report.json` has carried it since
+GEAR_TEETH = 23            # R2-4070 and removing a reported key breaks readers
+
+# THE ONE NUMBER THAT KEEPS A GLIDE FROM BEING A NOTE, AND IT IS ARITHMETIC.
+#
+# Every move here is a smoothstep in position, so the commanded rate is
+# v(u) = 6u(1-u) * reach/dur, peaking at u = 0.5. G-SUSTAIN calls a partial a
+# note if it stays inside +-25 cents for 0.6 s. A line at k*v is inside 25 cents
+# of its own peak while 6u(1-u) >= 1.5 / 2^(25/1200), i.e. while
+# (u-0.5)^2 <= 0.0036, i.e. over 0.120 of the move. So a smoothstep move holds a
+# pitch for 0.6 s only if it lasts 0.6/0.120 = 5.0 SECONDS. Cap every move
+# under that and no traverse in the film can be scored as a note, whatever its
+# level -- and the cap is checked at render time rather than assumed.
+# G_SUSTAIN.min_note_s, restated here because it is the number the cap is
+# DERIVED FROM. It is a copy and it is declared as one: if the gate's 0.60 s
+# moves, MOVE_MAX_S is no longer derived and the bench's printed margin is the
+# thing that will say so.
+G_SUSTAIN_MIN_NOTE_S = 0.60
+MOVE_HOLD_FRACTION = 0.120                     # see above; arithmetic, not tuned
+MOVE_NOTE_S = G_SUSTAIN_MIN_NOTE_S / MOVE_HOLD_FRACTION          # 5.00 s
+MOVE_MAX_S = 3.4           # 1.47x under the 5.0 s at which a glide becomes a note
+# The drive's own mechanical time constant. Rotor + reducer + rack inertia
+# against the torque limit is ~0.25 s for a 5 kW axis of this size; it is what
+# stops the commanded rate being followed exactly, and it is applied to the
+# RATE only, never to the envelope.
+DRIVE_TAU_S = 0.25
+
 # The actuator arm is a cantilever, so its first bending mode goes as 1/L^2.
 # `ARM_F1_AT_1M` is that mode for a 1 m arm of the section these rigs use; each
 # cluster's arm length is its own `explode_distance`, so fifteen clusters give
-# fifteen different structural frequencies with no common factor and no shared
-# period. This is what replaces `f_srv = 320 + 90*sin(2*pi*0.11*t)` -- ONE
-# global 9.09 s LFO running the entire showroom.
+# fifteen different structural frequencies with no common factor.
+#
+# R2-4141: THESE ARE RESONANCES, NOT OSCILLATORS, and that half of R2-4088 was
+# right and is kept. An arm is a passive structure: it does not generate a tone,
+# it answers one, at its own mode, when its own station is driven. What changed
+# is what drives it -- a move that starts and stops, not a line shaft that runs
+# for thirty-three seconds.
 ARM_F1_AT_1M = 620.0
+# Loss factor of a bolted, mass-loaded machine arm. eta 0.05 -> Q = 20: broad
+# enough that it colours rather than rings, which is what keeps these from being
+# the "fixed high-Q pipes" the client heard in round 1.
+ARM_ETA = 0.05
 # WHAT THIS STILL DOES NOT MODEL, TRIED AND REJECTED ON MEASUREMENT (R2-4079).
 # A cantilever's first mode is f1 = (1/2pi) sqrt(3EI/(L^3 m_eff)): it goes as
 # 1/L^2 at constant tip mass AND as 1/sqrt(m_eff) at constant length, and only
-# the length term is here. That matters, because `explode_distance` is 1.33 m
-# for ALL FOUR corners, so four of the fifteen actuators hold in unison at
-# 350 Hz. Adding the payload as f_arm * sqrt(V_ref/V_cluster) was implemented
-# and measured, and it was REVERTED: the bounding-box volume is a poor proxy for
-# the mass of an exploded cluster (mostly air), the spread it produces is
-# 0.27x to 7.8x, and it drove SW and MB BOTH onto the 1400 Hz clip ceiling --
-# putting two actuators in exact unison over film t 0-9.9 s, which is inside the
-# thirty seconds the client named. A correct version needs the arm's own mass
-# per unit length and an effective cluster density, i.e. two more declared
-# constants, and is not shipped on the strength of a prediction.
-# Position-loop bandwidth: the rate at which a servo holding a static load
-# hunts across its encoder's last count. 20-80 Hz is the normal range for a
-# stiff electric axis, and it is spread deterministically per cluster.
+# the first is modelled. Adding the second was measured and it made the spread
+# WORSE, because the heavy clusters are also the far ones and the two effects
+# cancel; the fifteen frequencies collapsed toward each other. The single-
+# variable form is kept because it is the one that separates the arms.
 DITHER_HZ = (22.0, 79.0)
 FLIGHT_S = 1.55            # `world/beat1_anim_anim.json` declares this
+BEAT1_END_S = 33.0         # `docs/beat_sheet.json` declares this
+# The arms have to be clear of the car before beat 2 moves it, and beat 2 starts
+# at film t 33.0 s. `CLEAR_BY_S` leaves the picture's last 1.5 s empty of
+# machinery, which is also the ring-down the showroom tail needs to be audible
+# under the launch.
+CLEAR_BY_S = 31.5
+RETRACT_FROM_S = 0.4       # after the last seat: the gripper opens, then goes
+
+# ---- levels ---------------------------------------------------------------
+# CELL_GAIN IS BRACKETED ON BOTH SIDES BY MEASUREMENTS, AND THE BRACKET IS THE
+# DERIVATION. It is not a taste knob and it is not a bar being chased.
+#
+#   TOO QUIET -- the 9.9 s before the first part lands and the 11.6 s after the
+#     last one go back to being empty, which is what a bed existed for and what
+#     the client heard the second time: "The Tubes over and over", isolated
+#     hits with nothing between them.
+#
+#   TOO LOUD -- the machine fills the gaps, and then two things fail at once
+#     and both are the same physical fact. G-EVENT's local dynamic range falls,
+#     because a filled gap is a raised p5. And G-RING's broadband decay stops
+#     being MEASURABLE: ISO 3382's T20 needs the level to fall 12 dB inside the
+#     gap, and it cannot fall 12 dB into a floor that is 10 dB down. A limb
+#     that goes from a number to `nan` is not a pass -- it is a limb that has
+#     gone blind -- and R2-4141 walked into exactly that once.
+#
+# `tools/r2_4141_gain_sweep.py`, on the film's own impacts, prints the cliff:
+#
+#     CELL_GAIN     0.008   0.012   0.016   0.022   0.030
+#     G-EVENT dB    23.40   13.51   13.48   13.27   12.98
+#     G-RING bbT60  0.8967    nan     nan     nan     nan
+#     G-RING ratio   1.292    ---     ---     ---     ---
+#
+# Between 0.008 and 0.012 the cell's floor crosses the level the showroom decays
+# THROUGH, and ten decibels of the beat's dynamic range go with it. 0.008 is the
+# loud side of that cliff.
+CELL_GAIN = 0.008
+# The rolling bed is the only continuous term in the layer and it is deliberately
+# tiny -- the same 3 % of the event sum the positive control uses. It is not
+# zero because a cell with a chain conveyor in it does radiate one, and a
+# machine with no floor at all is the over-correction the spec's section 6.4
+# warns about.
+BED_RATIO = 0.03
 
 
-def servo_bed(t_world, clusters, sr, launch_film_t, fps=24, seed=1235):
-    """B6 -- ONE SERVO PER CLUSTER, replacing one LFO for the whole showroom.
+def _smoothstep_move(sr, dur_s, reach_m):
+    """ONE COMMANDED MOVE: position 3u^2-2u^3, so rate and torque are both real.
 
-    WHAT WAS HERE, AND WHY IT IS THE "WIND BLOWER".
+    Returns (v, alpha) in m/s and m/s^2. The rate is zero at both ends and
+    integrates to exactly `reach_m`; the acceleration is +-max at the ends and
+    EXACTLY ZERO at mid-move, which is the fact the voice below is built on.
+    """
+    n = max(int(dur_s * sr), 16)
+    u = np.arange(n) / float(n)
+    v = 6.0 * u * (1.0 - u) * reach_m / dur_s
+    al = 6.0 * (1.0 - 2.0 * u) * reach_m / (dur_s * dur_s)
+    return v, al
 
-        f_srv = 320 + 90*sin(2*pi*0.11*t)
-        srv   = sin(ph)*0.5 + sin(2.7*ph)*0.2 + bp(white, 900, 6000)*0.6
 
-    Three separate defects in three lines. (1) The BROADBAND term is weighted
-    0.6, higher than both tonal terms combined (0.5 + 0.2), and it carries
-    22.2 % of all power over 0-13.5 s -- before the first impact exists. It is
-    the only thing in the film during the seconds the client described, and it
-    is band-passed white noise. (2) One global LFO at 0.11 Hz gives the entire
-    showroom a single 9.09 s period, measured in the delivered stem as a
-    231.6-409.2 Hz sweep with turning points 8.92 s apart. (3) 2.7x is not a
-    ratio of anything.
+def servo_traverse(sr, dur_s, reach_m, arm_hz, seed, creep_rev_s=2.0):
+    """ONE PICK-AND-PLACE MOVE, AND WHY IT CANNOT BE SCORED AS A NOTE.
 
-    WHAT REPLACES IT. Fifteen independent electric actuators, each one modelled
-    from the cluster it is carrying:
+    The shaft rate is the commanded feed divided by the travel per motor
+    revolution, so every line the drive radiates -- Maxwell radial force at
+    2*p*shaft, slot passing at N_z*shaft, pinion mesh at z*v/(pi*d) -- is a
+    multiple of a RATE THAT IS CHANGING for all but 12 % of the move.
 
-      * WHILE MOVING -- gear mesh at N_teeth * shaft, stator slot passing at
-        N_slots * shaft, and PMSM radial force at 2 * f_electrical =
-        2 * pole_pairs * shaft, where shaft = v / lead comes from that cluster's
-        OWN descent, which starts `FLIGHT_S` before its OWN seat frame. Fifteen
-        trajectories, fifteen start times, no global period.
-      * WHILE HOLDING -- the axis is under load and the position loop hunts, so
-        the arm's own first bending mode is struck at the loop's bandwidth.
-        f_arm = ARM_F1_AT_1M / L^2 with L the cluster's own reach, which gives
-        fifteen different pitches between roughly 70 and 620 Hz. THIS IS THE
-        LAYER THAT FILLS THE ~1.04 s OF NAKED REVERB BETWEEN BURSTS, and it is
-        tonal, which is what the gap needed.
-      * BEARING NOISE -- broadband, at 0.06 rather than 0.6, narrowed to the
-        1.5-4 kHz band where a rolling-element bearing's housing resonance
-        actually lies, and scaled by shaft rate so it exists only while the axis
-        is moving. A bearing at rest makes no noise; the shipped layer's hiss
-        ran at full level for thirty seconds with nothing turning.
+    THE LEVEL IS THE DRIVE TORQUE, AND THAT IS THE WHOLE TRICK. What a servo
+    axis radiates is its torque ripple, and torque is J*alpha + friction: it is
+    LARGEST while the axis is accelerating and SMALLEST while it is coasting.
+    A smoothstep's acceleration is exactly zero at mid-move -- which is exactly
+    where its rate is stationary. So the one instant at which this voice holds a
+    pitch is the one instant at which it is quietest, by physics rather than by
+    an envelope drawn to beat a gate. The friction term (0.2, proportional to
+    rate) is what stops that being a null.
+
+    Nothing here sustains: at u = 0 and u = 1 the rate is at creep and the
+    torque is zero, so the move fades in and out of nothing on its own terms.
+    """
+    v, al = _smoothstep_move(sr, dur_s, reach_m)
+    n = v.shape[0]
+    rng = np.random.default_rng(seed)
+    v_max = max(float(v.max()), 1e-9)
+
+    # rate, lagged by the drive's mechanical time constant (see DRIVE_TAU_S)
+    travel_per_rev = PINION_TRAVEL_PER_REV_M / max(
+        1.0, PINION_TRAVEL_PER_REV_M * MOTOR_RATED_REV_S / v_max)
+    shaft = creep_rev_s + v / travel_per_rev
+    shaft = dsp.onepole_lag(shaft, DRIVE_TAU_S, sr, init=creep_rev_s)
+    pinion = v / PINION_TRAVEL_PER_REV_M
+
+    # torque: inertial + viscous, normalised. See the docstring.
+    torque = 0.8 * np.abs(al) / max(float(np.abs(al).max()), 1e-9) \
+        + 0.2 * v / v_max
+
+    f_force = 2.0 * POLE_PAIRS * shaft
+    ph = dsp.integrate_phase(f_force, sr)
+    slot_order = int(round(STATOR_SLOTS / (2.0 * POLE_PAIRS)))
+    src = np.zeros(n)
+    for k in range(1, N_FORCE_ORDERS + 1):
+        fk = float(f_force.max()) * k
+        if fk > sr * 0.45:
+            break
+        # 1/k: the k-th radial-force order comes from the k-th spatial harmonic
+        # of the air-gap field, whose amplitude falls as 1/k.
+        a = 1.0 / k
+        if k in (slot_order, 2 * slot_order):
+            a *= 2.0
+        # THE MASS LAW, AND R2-4141 LEFT IT OUT ON THE FIRST BUILD.
+        # A radial force does not become sound in the air gap; it becomes sound
+        # by driving the structure it is bolted to. Above that structure's first
+        # resonance the response of a mass-controlled body to a force falls as
+        # 1/f^2 -- 12 dB per octave, and it is the mass law rather than a filter
+        # anyone chose. Without it the 14th order at peak feed put a
+        # full-amplitude/14 line in the mid kilohertz and held it there for the
+        # length of every move, which is what G-RING found: a 1/6-octave band at
+        # 5702 Hz decaying 1.75 s against a 1.02 s broadband, i.e. a band that
+        # never decayed because it was still being driven. It reads as an
+        # under-damped isolated mode and it was a missing roll-off.
+        a *= min(1.0, (arm_hz / max(fk, 1.0)) ** 2)
+        src += a * np.sin(k * ph + rng.uniform(0.0, 2.0 * np.pi))
+    # pinion mesh: a different ratio to the motor's, so the two families are not
+    # one comb even inside a single move
+    f_mesh = np.clip(pinion * PINION_TEETH, 0.0, sr * 0.44)
+    ph_m = dsp.integrate_phase(f_mesh, sr)
+    # same structure, same mass law (see above)
+    for h, amp in ((1.0, 0.5), (2.0, 0.18)):
+        g = min(1.0, (arm_hz / max(float(f_mesh.max()) * h, 1.0)) ** 2)
+        src += amp * g * np.sin(h * ph_m + rng.uniform(0.0, 2.0 * np.pi))
+
+    # the arm answers at its own cantilever mode, Q = 1/eta
+    b, a2 = _peak_biquad(arm_hz, 1.0 / ARM_ETA, sr)
+    src = 0.55 * src + 0.45 * _sig.lfilter(b, a2, src)
+
+    # derivation: a rolling-element bearing radiates through the resonance of
+    # its own outer ring and housing, which for the 20-40 mm bores an axis of
+    # this size uses sits at 1.5-4 kHz. The band is the HOUSING's; what varies
+    # with speed is the level, and a bearing at rest makes no noise.
+    bear = dsp.bp(dsp.white(n, seed + 17), 1500.0, 4000.0, sr, 2)
+    src = src + 0.22 * bear * (v / v_max)
+
+    # WHAT A TRAVERSE STILL DOES NOT CONTAIN, TRIED AND REJECTED ON MEASUREMENT.
+    # Every gantry carries its cables in an articulated drag chain, and as the
+    # carriage travels each link rolls through the bend radius and drops onto
+    # its own stop. It was built here -- 50 mm link pitch, so v/p gives 20-100
+    # Hz of articulation over this film's feeds, each one a Hertzian contact
+    # into the link's own plate modes -- on the reasoning that a moving machine
+    # is a TRAIN OF CONTACTS and that adding the train would move the cell's
+    # local dynamic range toward the positive control's. IT DID THE OPPOSITE,
+    # monotonically, at every level tried (`tools/r2_4141_chain_sweep.py`):
+    #
+    #     chain : drive      0     0.1    0.2   0.35    0.6   0.85
+    #     cell LDR (dB)   11.95  11.75  11.35  10.65   9.27   8.35
+    #
+    # The reason is the RATE. G-EVENT's short-term level is a 20 ms window, and
+    # at 20-100 Hz every such window already contains between half an
+    # articulation and two. A train that dense does not make the level
+    # fluctuate, it FILLS THE TROUGHS -- which is what a hair dryer does,
+    # reached from the opposite direction. DENSITY IN EVENTS AND DENSITY IN THE
+    # ENVELOPE ARE NOT THE SAME QUANTITY, and this is the measurement that
+    # separates them. The voice lives in the bench that rejected it.
+    return src * torque
+
+
+def valve_exhaust(sr, d_m, u_ms, plenum_hz, seed, blowdown_s):
+    """A PNEUMATIC EXHAUST: turbulent jet noise, structured and non-white.
+
+    Lighthill scaling puts the peak at Strouhal number St = f D / U ~ 0.2,
+    rising as f^2 below it and falling as f^-2 above it, so the SHAPE is the
+    structure and it MOVES with the orifice diameter and the supply velocity --
+    two exhausts of different bore never print the same spectrum, which is what
+    keeps a bank of them from summing into one bed. A 6 bar line through a 2-8
+    mm port is choked, so U is sonic or a little over; the plenum's own
+    Helmholtz resonance f_H = (c/2pi) sqrt(A/(V L)) is 180-900 Hz for the
+    0.05-0.5 L volumes on this size of cylinder and it is what gives the burst a
+    body instead of a hiss. The valve opens in 2 ms and the line empties
+    exponentially over its own blowdown time.
+    """
+    n = max(int(blowdown_s * 4.0 * sr), 64)
+    rng = np.random.default_rng(seed)
+    f = np.fft.rfftfreq(n, 1.0 / sr)
+    fp = 0.2 * u_ms / max(d_m, 1e-6)
+    r = np.where(f > 0, f / max(fp, 1e-6), 1e-6)
+    mag = r ** 2 / (1.0 + r ** 4)
+    # physics: the magnitude is the Lighthill shape above; the phase is what
+    # makes it a turbulent field rather than an impulse, and it is the only
+    # random quantity in the burst.
+    y = np.fft.irfft(mag * np.exp(1j * rng.uniform(0, 2 * np.pi, len(f))), n)
+    b, a = _peak_biquad(plenum_hz, 6.0, sr)        # Q ~ 6 for a lined plenum
+    y = y + 0.8 * _sig.lfilter(b, a, y)
+    t = np.arange(n) / sr
+    return y * (1.0 - np.exp(-t / 0.002)) * np.exp(-t / blowdown_s)
+
+
+def collar_ring_modes(a_m, h_m, c_bar, n_max=10):
+    """Flexural modes of a thin free ring -- a clamp collar's cross-section:
+
+        f_n = n(n^2-1)/sqrt(n^2+1) * (1/2pi) * sqrt(E I / (rho A a^4))
+
+    with I = h^3/12 and A = h per unit width (Love / Rayleigh thin-ring theory).
+    Written in the specific-stiffness form c_bar = sqrt(E/rho) that this file
+    already uses for `ASM_MATERIALS`, the leading constant is
+    c_bar*h/(2pi*a^2*sqrt(12)). The ratios are 1 : 2.83 : 5.42 : 8.73, which are
+    not small integers and never will be -- THIS IS WHY A STRUCK COLLAR IS NOT A
+    NOTE, and it is why a cell can be dense with metallic resonance and still
+    have no pitch: inharmonic partials do not fuse into one.
+    """
+    k = c_bar * h_m / (2.0 * np.pi * a_m * a_m * np.sqrt(12.0))
+    out = []
+    for n in range(2, n_max):
+        f = k * n * (n * n - 1) / np.sqrt(n * n + 1)
+        if 55.0 < f < 16000.0:
+            out.append((f, 1.0 / n))
+    return out
+
+
+def _ring_from(sr, modes, exc, eta, seed):
+    """Drive a mode set with an excitation that is already a signal.
+
+    eta is the loss factor of the joint the collar is bolted into, and this file
+    has already stated its range: bolted assemblies floor at eta 5e-3 to 2e-2
+    for the structure and reach 0.15 for a mass-loaded, gasketed clamp. T60 is
+    2.2/(eta*pi*f), i.e. tens to a couple of hundred milliseconds here, so
+    NOTHING RINGS INTO THE NEXT EVENT.
+    """
+    out = np.zeros(len(exc))
+    rng = np.random.default_rng(seed)
+    for f, w in modes:
+        if f >= sr * 0.45:
+            continue
+        b, a = _peak_biquad(f, 1.0 / max(eta, 1e-4), sr)
+        out += w * float(rng.uniform(0.85, 1.15)) * _sig.lfilter(b, a, exc)
+    return out
+
+
+def latch_strike(sr, a_m, h_m, c_bar, t_contact_s, eta, seed, dur_s=0.35):
+    """A CLAMP CLOSING: one Hertzian contact into a collar's ring modes."""
+    n = max(int(dur_s * sr), 64)
+    exc = np.zeros(n)
+    f = hertz_force(sr, t_contact_s)
+    exc[:min(len(f), n)] = f[:min(len(f), n)]
+    y = _ring_from(sr, collar_ring_modes(a_m, h_m, c_bar), exc, eta, seed)
+    y += _accel_noise(sr, t_contact_s, ACCEL_NOISE_RATIO * float(np.abs(y).max()), n)
+    return y
+
+
+def nut_runner(sr, dur_s, rate_hz, a_m, h_m, c_bar, seed):
+    """A SOCKET RUNNER: a train of pawl impacts, speeding up as the fastener
+    seats. RHYTHM WITHOUT PITCH, stated as a gesture -- a pneumatic impact
+    wrench runs 1100-2600 blows per minute, i.e. 18-43 Hz, which is an order of
+    magnitude below the lowest pitch G-SUSTAIN tracks (80 Hz), and the socket's
+    reply is a ring-mode set, which is inharmonic. Each blow raises the seating
+    torque, so the rate climbs ~0.8 % per blow until the clutch releases."""
+    n = max(int(dur_s * sr), 64)
+    rng = np.random.default_rng(seed)
+    exc = np.zeros(n)
+    t, k = 0.0, 0
+    while t < dur_s and k < 400:
+        i = int(t * sr)
+        f = hertz_force(sr, 2.0e-4) * float(rng.uniform(0.6, 1.0))
+        L = min(len(f), n - i)
+        if L > 2:
+            exc[i:i + L] += f[:L]
+        t += (1.0 / max(rate_hz, 1.0)) * float(rng.uniform(0.85, 1.15))
+        rate_hz *= 1.008
+        k += 1
+    y = _ring_from(sr, collar_ring_modes(a_m, h_m, c_bar), exc, 0.03, seed + 1)
+    return y, k
+
+
+def rolling_bed(n, sr, seed):
+    """THE ONLY CONTINUOUS TERM IN THE LAYER, and it has no pitch in it.
+
+    Rolling contact: surface roughness read through the Hertzian contact
+    compliance, which is a broad resonance in the low hundreds of Hz for a
+    loaded steel roller, amplitude-modulated at the roller passage rate. The
+    rate DRIFTS with the load, so the modulation is a rhythm and not a period --
+    which is also why it cannot put a line into G-MOD's modulation spectrum.
+    """
+    rng = np.random.default_rng(seed)
+    t = np.arange(n) / sr
+    # derivation: the Hertzian contact compliance of a loaded roller against a
+    # steel rail is a broad resonance at 150-800 Hz; the band is the CONTACT's,
+    # not a choice, and what the roughness does is drive it.
+    y = dsp.bp(dsp.white(n, seed), 150.0, 800.0, sr, 2)
+    rate = 9.0 + 1.6 * np.sin(2 * np.pi * 0.031 * t) + 0.9 * np.sin(2 * np.pi * 0.017 * t)
+    return y * (1.0 + 0.45 * np.sin(2 * np.pi * np.cumsum(rate) / sr))
+
+
+def _peak_biquad(f0, q, sr):
+    """One resonance of unit peak gain. `lfilter` is a legal consumer under
+    G-CONSTRUCT and the coefficients are the textbook constant-peak bandpass --
+    physics: f0 and Q are the structure's, not a filter designer's."""
+    w0 = 2.0 * np.pi * float(np.clip(f0, 1.0, sr * 0.45)) / sr
+    al = np.sin(w0) / (2.0 * max(q, 0.5))
+    b = np.array([al, 0.0, -al])
+    a = np.array([1.0 + al, -2.0 * np.cos(w0), 1.0 - al])
+    return b / a[0], a / a[0]
+
+
+def cell_moves(clusters, fps=24):
+    """THE MOVE LIST, EVERY ENTRY OF IT FROM THE PICTURE.
+
+    Three phases, and none of them is invented here:
+
+      * PRESENTATION. `docs/beat_sheet.json` gives each cluster a
+        `presented_t` .. `presented_until_t` window -- MB is held up for 1.58 s,
+        SW for 1.25 s, FW for 3.21 s. The manipulator carries that cluster out
+        over its own `explode_distance` in its own window, so the traverse speed
+        is reach/window and it is DIFFERENT FOR EVERY CLUSTER. Those windows run
+        0.71 s to 3.21 s and lie on no grid, which is why the cell has no
+        1.0417 s period even though the seats do.
+      * RELEASE. `FLIGHT_S` before its own seat frame the gripper opens and the
+        cluster GOES. There is no descent move, and R2-4141 shipped one for a
+        while before measuring what it did.
+
+        THE PART FALLS. `cluster_arrivals` -- the function every impact in this
+        beat is built from -- puts each part's arrival at t = sqrt(2h/g) from
+        its own release height, i.e. under gravity. A gantry that lowered each
+        cluster at a commanded feed would contradict the layer it is standing
+        next to. It would also, and this is what the measurement found, import
+        the picture's uniform ladder straight into the envelope: fifteen
+        identically-shaped 1.55 s swells starting 1.0417 s apart is a metronome
+        of identical gestures, which is what control C6 IS. Measured on the
+        sum, with the descent moves in: envelope autocorrelation r = 0.615 at
+        lag 1.040 s against G-NOVEL's 0.15 bar -- while the PART IMPACTS ON THE
+        SAME LADDER read r = 0.000, because every one of them has its own
+        geometry and its own material and no two sound alike. The impacts are
+        on the ladder and do not sound like it; the descent moves were the
+        ladder.
+
+        So the arm releases, and what that radiates is the gripper: the clamp's
+        air blowing off and its own detent letting go. One event, not a swell.
+      * RETRACT. The arms must be clear before beat 2 moves the car at film
+        t 33.0 s, so after the last seat every station withdraws, in reverse
+        presentation order -- a stack unloads the way it loaded.
+
+        THE FEED IS EACH STATION'S OWN PRESENTATION FEED, NOT SOME PEAK.
+        R2-4141 first wrote this as "the peak feed the picture already asked
+        of it" and that was wrong on measurement: the peak over all moves is
+        set by a DESCENT (5.89 m/s = reach/FLIGHT_S), and a descent is a
+        cluster FALLING, not a gantry being commanded. Retracting at 5.89 m/s
+        clamped every withdrawal to the 0.25 s floor and finished all fifteen
+        by film t 24 s, which left the last NINE SECONDS of the beat with
+        nothing in it but the rolling bed -- the exact hole the layer exists
+        to fill. It is the same arm covering the same reach it covered on the
+        way out, so it takes the same time, and the fifteen are SPREAD across
+        the window the picture leaves rather than crowded at its start,
+        because a cell with a deadline schedules against the deadline.
+
+    Every duration is capped at MOVE_MAX_S: see the derivation there. The cap is
+    RETURNED, not asserted, so the bench can print how close the longest move in
+    the film is to the 5.0 s at which a glide becomes a note.
+    """
+    rows, seats = [], []
+    order = []
+    v_present = 0.0
+    for name, c in sorted(clusters.items()):
+        reach = max(float(c.get("explode_distance", 0.0)), 0.25)
+        seat_t = (int(c["seat_frame"]) - 1) / float(fps)
+        seats.append(seat_t)
+        p0 = c.get("presented_t")
+        p1 = c.get("presented_until_t")
+        if p0 is not None:
+            # a cluster presented AS a group (the four corners) shares the
+            # group's window; `presented_until_t` is null there, so the window
+            # runs to its own descent.
+            p1 = float(p1) if p1 is not None else max(float(p0) + 0.5,
+                                                      seat_t - FLIGHT_S)
+            dur = float(np.clip(float(p1) - float(p0), 0.2, MOVE_MAX_S))
+            rows.append({"cluster": name, "phase": "present",
+                         "t0": float(p0), "dur": dur, "reach": reach})
+            v_present = max(v_present, reach / dur)
+            order.append((float(p0), name, reach, dur))
+        rows.append({"cluster": name, "phase": "release",
+                     "t0": seat_t - FLIGHT_S, "dur": 0.0, "reach": reach})
+    # RETRACT: each station over its own reach at its own presentation feed,
+    # spread across the window the picture leaves. See the docstring.
+    #
+    # THE SPACING IS THE PICTURE'S, AND R2-4141 GOT THIS WRONG ONCE. It was
+    # first written as an even slot -- (31.5 - 21.733)/15 = 0.651 s -- and the
+    # cell measured r = 0.416 of envelope autocorrelation AT LAG 0.650 s
+    # against G-NOVEL's 0.15 bar. A uniform sequence of withdrawals is a tiled
+    # loop with machinery in it, which is the second thing the client rejected,
+    # rebuilt by accident in the layer that was supposed to fix the third.
+    #
+    # The intervals here are the stations' OWN presentation windows, taken in
+    # reverse and scaled to the window the picture leaves: 0.50, 0.50, 0.50,
+    # 0.50, 2.71, 3.21, 1.21, 1.25, 1.50, 1.13, 0.71, 2.33, 1.00, 0.71, 1.58
+    # times k. It is the same arm covering the same reach it covered on the way
+    # out, so this is not a de-correlation trick -- it is the only spacing the
+    # picture actually implies, and it happens to have no period because the
+    # presentation schedule has none.
+    t0_ret = max(seats) + RETRACT_FROM_S
+    ret = sorted(order, reverse=True)
+    gaps = np.array([d for _p, _n, _r, d in ret], dtype=np.float64)
+    starts = np.concatenate([[0.0], np.cumsum(gaps)[:-1]]) if len(gaps) else \
+        np.zeros(0)
+    span = float(gaps.sum()) if len(gaps) else 1.0
+    k = (CLEAR_BY_S - t0_ret) / max(span, 1e-6)
+    for i, (_p0, name, reach, dur_present) in enumerate(ret):
+        dur = float(np.clip(dur_present * k, 0.25, MOVE_MAX_S))
+        rows.append({"cluster": name, "phase": "retract",
+                     "t0": t0_ret + float(starts[i]) * k, "dur": dur,
+                     "reach": reach})
+    return rows, {"peak_presentation_feed_ms": v_present,
+                  "retract_window_s": [round(t0_ret, 3), round(CLEAR_BY_S, 3)],
+                  "retract_time_scale": round(k, 4),
+                  "retract_gaps_s": [round(float(g) * k, 3) for g in gaps]}
+
+
+def cell_events(t_world, clusters, sr, launch_film_t, fps=24, seed=1235):
+    """B6, REBUILT AS EVENTS -- the cell, on the picture's own move list.
+
+    Per move: a traverse that glides and stops; the clamp's exhaust when the
+    gripper opens and its latch strike when it closes; per seat: the nut runner
+    that fastens what just landed. Under all of it, one quiet rolling bed.
+
+    Nothing in this function runs longer than a move, and no two stations share
+    a collar, an orifice or an arm mode -- every geometry is drawn once per
+    cluster from the cluster's own name via `_stable_unit`, so the same station
+    sounds the same in every render and no two sound alike.
     """
     n = t_world.shape[0]
-    tf = t_world + launch_film_t                     # film time, seconds
+    tf = t_world + launch_film_t
     out = np.zeros(n, dtype=np.float64)
-    info = []
-    for i, (name, c) in enumerate(sorted(clusters.items())):
-        seat_f = int(c["seat_frame"])
-        seat_t = (seat_f - 1) / float(fps)
-        reach = max(float(c.get("explode_distance", 0.0)), 0.25)
-        f_arm = float(np.clip(ARM_F1_AT_1M / reach ** 2, 60.0, 1400.0))
-        f_dither = DITHER_HZ[0] + (DITHER_HZ[1] - DITHER_HZ[0]) * _stable_unit(name, 7)
-        # ---- the descent, and the shaft rate it implies --------------------
-        u = np.clip((tf - (seat_t - FLIGHT_S)) / FLIGHT_S, 0.0, 1.0)
-        # smoothstep position: the animation eases in and out, so the carriage
-        # is at rest at both ends and fastest in the middle
-        dpos_du = 6.0 * u * (1.0 - u)                # d/du of 3u^2 - 2u^3
-        v = dpos_du * reach / FLIGHT_S               # m/s
-        shaft = v / BALLSCREW_LEAD_M                 # rev/s
-        moving = (u > 0.0) & (u < 1.0)
-        holding = (tf >= 0.0) & (tf < seat_t)
-        # ---- tones ---------------------------------------------------------
-        def tone(mult, amp):
-            f = np.clip(shaft * mult, 0.0, sr * 0.44)
-            return amp * np.sin(dsp.integrate_phase(f, sr)) * moving
-        mech = (tone(GEAR_TEETH, 0.55)
-                + tone(GEAR_TEETH * 2.0, 0.18)
-                + tone(STATOR_SLOTS, 0.30)
-                + tone(2.0 * POLE_PAIRS, 0.40))
-        # loading: a servo lifting is louder than one coasting
-        mech *= 0.35 + 0.65 * np.clip(shaft / max(float(shaft.max()), 1e-9), 0.0, 1.0)
-        # ---- the hold: the arm's own mode, struck by the position loop ------
-        dither = 0.5 * (1.0 - np.cos(2.0 * np.pi * f_dither * tf))
-        hold = np.sin(dsp.integrate_phase(np.full(n, f_arm), sr)) * (0.25 + 0.75 * dither ** 2)
-        hold = hold * holding * 0.45
-        # ---- bearing: broadband, but only while something is turning -------
-        # DERIVATION: a rolling-element bearing radiates through the resonance
-        # of its own outer ring and housing, which for the 20-40 mm bores an
-        # electric axis of this size uses sits at 1.5-4 kHz. The band is the
-        # HOUSING's, not a choice; what varies with speed is the level, below.
-        # derivation: the bearing housing's own resonance -- see above.
-        bear = dsp.bp(dsp.white(n, seed + 17 * i), 1500.0, 4000.0, sr, 2)
-        bear = bear * 0.06 * np.clip(shaft / 40.0, 0.0, 1.0) * moving
-        sig = (mech + hold + bear)
-        # each actuator switches off at its own seat frame: fifteen different
-        # stop times is the structural answer to "one global period"
-        sig *= np.clip((seat_t + 0.10 - tf) / 0.10, 0.0, 1.0) * (tf > -0.5)
-        out += sig * 0.012
-        info.append({"cluster": name, "arm_reach_m": round(reach, 3),
-                     "arm_mode_hz": round(f_arm, 1),
-                     "position_loop_hz": round(float(f_dither), 2),
-                     "peak_shaft_rev_s": round(float(shaft.max()), 1),
-                     "gear_mesh_hz_peak": round(float(shaft.max()) * GEAR_TEETH, 1),
-                     "seat_film_t_s": round(seat_t, 4)})
-    return out, {"voices": len(info), "ballscrew_lead_m": BALLSCREW_LEAD_M,
-                 "gear_teeth": GEAR_TEETH, "pole_pairs": POLE_PAIRS,
-                 "stator_slots": STATOR_SLOTS,
-                 "broadband_gain": 0.06, "broadband_band_hz": [1500.0, 4000.0],
-                 "replaces": ("f_srv = 320 + 90*sin(2*pi*0.11*t) with a 0.6 "
-                              "band-passed white-noise term -- one LFO and one "
-                              "hiss for the whole showroom"),
-                 "per_cluster": info}
+    # Only beat 1 has a cell in it. Synthesising it over the whole 124 s world
+    # grid is wasted work and it is also how a layer acquires content outside
+    # the beat it belongs to.
+    m = (tf >= -0.5) & (tf <= BEAT1_END_S + 0.5)
+    if not m.any():
+        return out, {"moves": 0, "why": "no beat-1 samples on this grid"}
+    i0 = int(np.argmax(m))
+    i1 = int(len(m) - np.argmax(m[::-1]))
+    tfb = tf[i0:i1]
+    nb = tfb.shape[0]
+    t_lo = float(tfb[0])
+    buf = np.zeros(nb)
 
+    moves, sched = cell_moves(clusters, fps=fps)
+    reach_of = {r["cluster"]: r["reach"] for r in moves}
+    arm_hz = {k: float(np.clip(ARM_F1_AT_1M / v ** 2, 60.0, 1400.0))
+              for k, v in reach_of.items()}
+
+    def place(y, t0, g):
+        i = int(round((t0 - t_lo) * sr))
+        if i >= nb or i + len(y) <= 0:
+            return 0
+        a = max(i, 0)
+        b = min(i + len(y), nb)
+        if b <= a:
+            return 0
+        buf[a:b] += g * y[a - i:b - i]
+        return 1
+
+    n_traverse = n_valve = n_latch = n_pawl = n_runner = 0
+    longest_move = 0.0
+    for mv in moves:
+        name, ph, t0, dur = mv["cluster"], mv["phase"], mv["t0"], mv["dur"]
+        longest_move = max(longest_move, dur)
+        u = _stable_unit(name, 3)
+        u2 = _stable_unit(name, 5)
+        # ---- the traverse -------------------------------------------------
+        if dur > 0.0:
+            y = servo_traverse(sr, dur, mv["reach"], arm_hz[name],
+                               seed + int(1013 * _stable_unit(name + ph, 2)) % 9973)
+            pk = float(np.abs(y).max())
+            if pk > 0:
+                # a loaded arm carries a cluster and is the louder move; a
+                # retract is unloaded, by the ratio of the two torques
+                g = {"present": 1.0, "retract": 0.55}[ph]
+                n_traverse += place(y / pk * g, t0, 1.0)
+        # ---- the gripper: exhaust when it opens, latch when it closes ------
+        # orifice 1.5-5 mm on a 6 bar line, so the port is choked: U is sonic
+        # (343 m/s at 20 C) and a little over for the underexpanded plume. The
+        # plenum's Helmholtz sits at 180-900 Hz for the 0.05-0.5 L volumes on
+        # this size of cylinder. Every station's port is its own, drawn once
+        # from its own name.
+        d_m = 0.0015 + 0.0035 * u
+        u_ms = 300.0 + 60.0 * u2
+        bd = 0.045 + 0.075 * u2
+        # a release is ONE event: the clamp blows off and lets go. A traverse is
+        # two: the gripper takes the cluster at the start and sets it at the end.
+        vt = ((t0, 0.62),) if dur <= 0.0 else ((t0 + 0.02, 0.55),
+                                               (t0 + dur - 0.06, 0.40))
+        for tv, gv in vt:
+            jy = valve_exhaust(sr, d_m, u_ms, 180.0 + 720.0 * u,
+                               seed + int(9871 * _stable_unit(name, 13)) % 9973 + int(tv * 97), bd)
+            jpk = float(np.abs(jy).max())
+            if jpk > 0:
+                n_valve += place(jy / jpk * gv * 0.5, tv, 1.0)
+        # the collar: a steel clamp ring, 20-60 mm radius, 3-8 mm wall
+        a_m, h_m = 0.020 + 0.040 * u, 0.003 + 0.005 * u2
+        ly = latch_strike(sr, a_m, h_m, ASM_MATERIALS["aluminium"][0],
+                          2.0e-4, 0.02 + 0.10 * u, seed + int(311 * _stable_unit(name, 17)) % 9973)
+        lpk = float(np.abs(ly).max())
+        if lpk > 0:
+            if dur <= 0.0:
+                n_latch += place(ly / lpk * 0.45, t0 + 0.012, 1.0)
+            else:
+                n_latch += place(ly / lpk * 0.62, t0 + dur - 0.02, 1.0)
+                n_latch += place(ly / lpk * 0.34, t0 - 0.03, 1.0)
+
+    # ---- the runners: what fastens each cluster once it is down ------------
+    for name, c in sorted(clusters.items()):
+        seat_t = (int(c["seat_frame"]) - 1) / float(fps)
+        u = _stable_unit(name, 11)
+        # the bigger the cluster the more fasteners, so the longer the burst
+        dur = 0.30 + 0.60 * min(float(c.get("n_parts", 10)) / 120.0, 1.0)
+        ry, npw = nut_runner(sr, dur, 19.0 + 25.0 * u,
+                             0.016 + 0.010 * u, 0.004,
+                             ASM_MATERIALS["titanium"][0], seed + int(6607 * _stable_unit(name, 19)) % 9973)
+        rpk = float(np.abs(ry).max())
+        if rpk > 0:
+            n_runner += place(ry / rpk * 0.5, seat_t + 0.18 + 0.5 * u, 1.0)
+            n_pawl += npw
+
+    # ---- the floor ---------------------------------------------------------
+    ev_rms = float(np.sqrt(np.mean(buf ** 2)))
+    bed = rolling_bed(nb, sr, seed + 5)
+    bed_rms = float(np.sqrt(np.mean(bed ** 2)))
+    if bed_rms > 0:
+        buf = buf + bed * (BED_RATIO * ev_rms / bed_rms)
+
+    # powered up before the shot, and clear of the car before beat 2 moves it
+    buf *= np.clip((tfb + 0.5) / 0.5, 0.0, 1.0) \
+        * np.clip((BEAT1_END_S - tfb) / 1.0, 0.0, 1.0)
+    # PEAK-NORMALISED, AND THAT IS A LIABILITY WORTH NAMING. CELL_GAIN is
+    # therefore a PEAK level, so a future change to the cell's crest factor
+    # changes its loudness without changing the constant -- which is exactly how
+    # R2-4141's mass-law fix silently made the layer louder and blinded G-RING.
+    # The bracket in `tools/r2_4141_gain_sweep.py` is the check: re-run it after
+    # any change to what this function synthesises, not only after a level edit.
+    pk = float(np.abs(buf).max())
+    if pk > 0:
+        buf = buf / pk
+    out[i0:i1] = buf * CELL_GAIN
+    return out, {
+        "architecture": ("events, not a drive: every voice is bounded to a "
+                         "move, a valve, a latch or a fastening, and the only "
+                         "continuous term is a rolling bed at %.0f %% of the "
+                         "event RMS" % (100.0 * BED_RATIO)),
+        "replaces": ("R2-4088's one line shaft, which measured note cover "
+                     "0.233 / chord cover 0.210 / held power 0.175 alone and "
+                     "fails all three limbs of G-SUSTAIN"),
+        "moves": len(moves), "traverses": n_traverse,
+        "valve_exhausts": n_valve, "latch_strikes": n_latch,
+        "nut_runners": n_runner, "pawl_impacts": n_pawl,
+        "events_total": n_traverse + n_valve + n_latch + n_pawl,
+        "longest_move_s": round(longest_move, 3),
+        "move_cap_s": MOVE_MAX_S,
+        "note_at_move_s": round(MOVE_NOTE_S, 2),
+        "margin_to_note_x": round(MOVE_NOTE_S / max(longest_move, 1e-6), 3),
+        "schedule": {k: (round(v, 3) if isinstance(v, float) else v)
+                     for k, v in sched.items()},
+        "pinion_module_m": PINION_MODULE_M, "pinion_teeth": PINION_TEETH,
+        "pinion_travel_per_rev_m": round(PINION_TRAVEL_PER_REV_M, 4),
+        "pole_pairs": POLE_PAIRS, "stator_slots": STATOR_SLOTS,
+        "arm_mode_hz": {k: round(v, 1) for k, v in sorted(arm_hz.items())},
+        "cell_gain": CELL_GAIN, "bed_ratio": BED_RATIO,
+        "ballscrew_lead_m": BALLSCREW_LEAD_M, "gear_teeth": GEAR_TEETH,
+        "per_move": [{k: (round(v, 4) if isinstance(v, float) else v)
+                      for k, v in r.items()} for r in moves],
+    }
 
 def assembly(t_world, clusters, sr, launch_film_t, fps=24, seed=1234):
     """Beat 1: servo whir plus one impact per cluster arrival.
@@ -1472,8 +2057,8 @@ def assembly(t_world, clusters, sr, launch_film_t, fps=24, seed=1234):
             ev.append((name, fr, float(f[0]), kind, mat, pinfo["kind"]))
     out = _sig.sosfilt(dsp.sos_band(45.0, 18000.0, sr, 2), out)
 
-    srv, srv_info = servo_bed(t_world, clusters, sr, launch_film_t, fps=fps,
-                              seed=seed + 1)
+    srv, srv_info = cell_events(t_world, clusters, sr, launch_film_t, fps=fps,
+                                seed=seed + 1)
     out += srv
     # WHAT THE PART-LEVEL CONSTRUCTION ACTUALLY PRODUCED, counted rather than
     # claimed: how many distinct mode series and materials each cluster emitted.

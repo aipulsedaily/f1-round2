@@ -16,23 +16,25 @@ still true.** It is written by dates that can be checked, not by memory.
 
 | file | cut | shows |
 |---|---|---|
-| **`PART2_THE_FILM_4K_ProRes422HQ.mov`** | **08-14 14:39** | **THE FILM. The whole of part 2, one unbroken 4K shot.** 3840x2160, 24 fps, **2,978 frames = 124.0833 s, zero cuts**, 512 spp, AgX / look None / exposure -3.628, SDR. ProRes 422 HQ, **11.25 GB**. Rendered from `render/film25_breach.blend` (sha16 **`1d2aa2d86533574e`**) on world `assembly15`, frames 1-2978 on three rented RTX 5090s over 2026-08-09 to 08-13. **AUDIO REBUILT 08-14** — carries `PART2_AUDIO_MASTER_R2-4079.wav`, muxed `-c:a copy`. **The picture is unchanged and that is proven, not assumed: the video stream's md5 is `c346a7a322a4a2a403727c1e85f17511` before and after the re-mux.** **This is the delivery master.** |
-| **`PART2_THE_FILM_4K_h265.mp4`** | **08-14 14:39** | **The viewing copy of the same film**, same 2,978 frames, same new audio. 3840x2160, 24 fps, 124.0833 s, H.265 `hvc1`, faststart, **880 MB**, AAC 192 kbps. Video stream md5 `235ef36e844a62b0e303e4138907b9fa`, identical before and after the re-mux. Use this to watch; use the ProRes to grade or cut. |
-| **`PART2_AUDIO_MASTER_R2-4079.wav`** | **08-14 13:30** | **The audio master the two films carry.** 124.083333 s, 48 kHz, 24-bit stereo, **-23.00 LUFS / -1.12 dBTP** (EBU R 128 — see below for why this is not -14). Built from commit `773008e`. The three earlier masters were rejected by the client; this is the fourth. |
+| **`PART2_THE_FILM_4K_ProRes422HQ.mov`** | **08-14 18:00** | **THE FILM. The whole of part 2, one unbroken 4K shot.** 3840x2160, 24 fps, **2,978 frames = 124.0833 s, zero cuts**, 512 spp, AgX / look None / exposure -3.628, SDR. ProRes 422 HQ, **11.25 GB**. Rendered from `render/film25_breach.blend` (sha16 **`1d2aa2d86533574e`**) on world `assembly15`, frames 1-2978 on three rented RTX 5090s over 2026-08-09 to 08-13. **AUDIO REBUILT 08-14 (R2-4141)** — carries `PART2_AUDIO_MASTER_R2-4141.wav`, muxed `-c:v copy -c:a copy`. **The picture is unchanged and that is proven, not assumed: the video stream's md5 is `c346a7a322a4a2a403727c1e85f17511` before and after the re-mux.** **This is the delivery master.** |
+| **`PART2_THE_FILM_4K_h265.mp4`** | **08-14 18:01** | **The viewing copy of the same film**, same 2,978 frames, same new audio. 3840x2160, 24 fps, 124.0833 s, H.265 `hvc1`, faststart, **880 MB**, AAC 192 kbps. Video stream md5 `235ef36e844a62b0e303e4138907b9fa`, identical before and after the re-mux. Use this to watch; use the ProRes to grade or cut. |
+| **`PART2_AUDIO_MASTER_R2-4141.wav`** | **08-14 17:50** | **The audio master the two films carry.** 124.083333 s, 48 kHz, 24-bit stereo, **-23.00 LUFS / -1.12 dBTP** (EBU R 128 — see below for why this is not -14), limiter gain reduction **-0.84 dB**, pre-mix short-term range **48.2 dB**. The fifth master. Its beat 1 is an assembly cell built from events; see the section below for what changed and what still fails. |
+| **`listen_2026-08-14/`** | **08-14 18:03** | **The A/B for this rebuild, and the thing to actually play.** Four clips, 1280x720, cut from the delivered H.265 with the two masters muxed against identical picture: `NEW_`/`OLD_beat1_showroom_34s.mp4` (film t 0-34 s) and `NEW_`/`OLD_breach_glass_14s.mp4` (t 34-48 s). **NEW is R2-4141, OLD is `audio/out/master.wav`** — the hair-blower master the films carried until today, kept as the permanent negative control. `CLIPS_OF.json` records both sha16s and the in-points, and each clip's audio was cross-correlated against the master it claims (r ≥ 0.9978). **No per-clip normalisation**: both masters are -23.0 LUFS integrated, so this is a comparison of content, not of gain. |
 | `AFTER_beat5_doppler_4s.mp4` | 08-08 08:20 | **R2-2161, the beat-5 framing fix.** f2340-2439 (t 97.5-101.6 s), 100 frames, 1280x720, 24 fps. The doppler pass. The car is placed **off-centre and travels across the frame**; beat 5's frame-offset is **0.754** against a 0.92 bound. Built from `render/r22161_after.blend`, whose camera path is bit-identical to the gated rig `7fc6d688…`. |
 | `BEFORE_beat5_doppler_4s.mp4` | 08-08 08:17 | its matched BEFORE, same 100 frames, same resolution, same 64 samples, same DOF. The shipped camera, which pins the car near **frame centre** the whole way — frame-offset **0.055**. From `render/film22.blend`, camera path `363e4e88…`, the sha `docs/LIVE-CAMERA.md` declares. |
 | `AFTER_opening_18s.mp4` | 08-08 01:36 | the opening tempo pass (R2-1606). The most recent camera deliverable. |
 | `BEFORE_opening_18s.mp4` | 08-07 17:52 | its matched BEFORE. Correctly named. |
 | `audio/` | 08-08 03:14 | re-cut from the master; `audio/INDEX.md` explains the earlier staleness and states it is fixed. |
 
-### THE AUDIO REBUILD OF 2026-08-14 — REJECTED AND REVERTED. Read this before reading the rest.
+### THE AUDIO REBUILD OF 2026-08-14 (R2-4141) — WHAT THE FILMS CARRY NOW
 
-**The films above carry `audio/out/master.wav` again.** The R2-4079 rebuild described below was
-muxed in, played to the client, and **judged WORSE than what it replaced**: *"ngl audio is worse,
-sounds like a shitty musical"*. It is parked at `rejected_audio_R2-4079/`. The video was never
-touched — md5 verified identical through both the mux and the revert.
+**The films above carry `PART2_AUDIO_MASTER_R2-4141.wav`.** The R2-4079 rebuild described further
+down was muxed in on 08-14, played to the client, judged *"ngl audio is worse, sounds like a shitty
+musical"*, and reverted; it is parked at `rejected_audio_R2-4079/`. This is the fifth master and it
+replaces `audio/out/master.wav`, which the films carried in the meantime. **The video has never been
+touched through any of it — md5 verified identical through every mux and the revert.**
 
-**The client's three rejections now trace an arc, and the middle of it is the target:**
+**The client's three rejections trace an arc, and the target is the middle of it:**
 
 ```
 "a wind blower"              no structure at all        TOO NOISY
@@ -40,11 +42,73 @@ touched — md5 verified identical through both the mux and the revert.
 "a shitty musical"           sustained pitch            TOO MUCH STRUCTURE
 ```
 
-**The rebuild overshot because the GATES POINT THE WRONG WAY.** `G-HNR` demands +8 dB of Boersma
-autocorrelation periodicity on beat 1 and `G-FLAT` demands a non-flat spectrum. Push both hard and
+**A machine is percussive, inharmonic, transient-dense and UNPITCHED — periodic in rhythm, never in
+pitch.** Beat 1's bed used to be a sustained voice: fifteen actuator oscillators (which summed to
+noise, the hair blower) and then, in an unshipped build, one geared line shaft (which summed to a
+drone, and measured note cover 0.233 / chord cover 0.210 on its own). Both are gone. The showroom is
+now **45 traverses that glide and stop, 90 pneumatic exhausts, 90 latch strikes, 15 nut runners and
+228 pawl impacts**, all on the picture's own move list out of `docs/beat_sheet.json`, plus one
+rolling bed at 3 % of the event level. Nothing in it runs longer than a move.
+
+**Beat 1, against the master the films carried this morning:**
+
+| gate at beat 1 | `master.wav` (was) | R2-4141 (now) | |
+|---|---|---|---|
+| **G-EVENT** — is it events or a bed | **FAIL** 13.25 dB | **PASS** 14.69 dB | the anti-hair-dryer instrument |
+| **G-GESTURE** — do the bursts differ | **FAIL** worst pair 0.808 | **PASS** | |
+| **G-BALANCE** protagonist margin | **FAIL** -0.57 dB | **PASS** +11.28 dB | the cell now leads the mix |
+| **G-RING** vs the room's Sabine RT60 | **FAIL** 3.35 s at 713 Hz | **PASS** | |
+| G-MOD | FAIL 16.71 dB | FAIL 12.14 dB | picture-locked, better by 4.6 dB |
+| G-ROOM(c) cepstral | FAIL 48.55x | FAIL 14.55x | instrument, better by 3.3x |
+| **G-SUSTAIN** — is anything holding a note | **pass** 0.158 | **FAIL 0.208** | see below |
+| G-NOVEL | FAIL r=0.343 | FAIL r=0.549 | picture-locked, and worse |
+
+**Ten gates fail on this master where eleven failed on the last one.**
+
+**THE TWO THINGS THAT GOT WORSE, STATED PLAINLY.**
+
+**G-SUSTAIN now fails, by one note.** It has three limbs and this master fails only the weakest:
+note cover 0.208 against 0.20, while **chord cover reads 0.000 against 0.05 and held power 0.00035
+against 0.15** — the two limbs that separate *musical* from merely *tonal*, both essentially zero
+(the master the client called a musical read 0.375 / 0.286). The ten partials responsible are at
+2.5-3.8 kHz, hold 0.68-0.90 s each, and carry 0.0002-0.005 of the beat's power; the assembly stem
+that produced them reads note cover **0.000** on its own. **They are the room, not the cell** — and
+the room's own tail is measurably longer than it is declared to be (below). One note fewer and this
+limb passes, which is exactly why nothing was tuned to remove one.
+
+**G-NOVEL got worse, and it is measuring the picture.** Beat 1's twelve seat times are a perfect
+1.045 s ladder in the delivered 4K frames. The part impacts alone score r = 0.000 — but that is not
+proof the ladder is inaudible, it is proof the GAPS ARE EMPTY. Put anything at all in them and the
+ladder becomes legible: this cell 0.578, band-limited noise 0.610, white noise 0.652, **a sustained
+tone 0.756**. The cell is the lowest fill measured and a drone is the worst. There is no fill that
+beats leaving beat 1 empty, and leaving beat 1 empty is the master the client rejected as *"The
+Tubes over and over"*.
+
+**ONE OPEN NUMBER THAT WOULD MOVE BOTH OF THOSE, AND IT IS NOT AUDIO.** `layers.showroom_tail`
+declares the showroom decays in **0.35 s above 4 kHz** against 2.4 s low. Measured on the reverb
+network's own impulse response — no film in the way, `tools/r2_4141_tail_hf.py` — it decays in
+**0.805 s**, 2.3x too long, and 1.825 s below 4 kHz against the declared 2.40. The cause is that
+`dsp.fdn_reverb`'s `wet_hf_hz` parameter **is in its signature and appears nowhere in its body**:
+the per-line damping is a one-pole whose only coefficient is a gain ratio, so its corner falls out
+as a side effect and lands near 10 kHz. R2-4045 moved this number and wrote "the FDN's per-line
+damping already implements this exactly"; it does not. **The obvious repair was built and measured
+and DID NOT WORK** — a first-order shelf placed at `wet_hf_hz` moved the high band from 0.805 s to
+0.878 s, i.e. the wrong way, because a first-order shelf only reaches its target at Nyquist. It was
+reverted rather than shipped. A 0.35 s tail at 4 kHz in this hall also implies a surface absorption
+of about 0.94, which is anechoic-grade, so **the declared number may itself be wrong**. Re-deriving
+the showroom's absorption is a pass of its own and is listed as open.
+
+---
+
+### THE AUDIO REBUILD OF 2026-08-14 (R2-4079) — REJECTED, AND WHY. Kept for the record.
+
+**The rebuild overshot because the GATES POINTED THE WRONG WAY.** `G-HNR` demanded +8 dB of Boersma
+autocorrelation periodicity on beat 1 and `G-FLAT` demanded a non-flat spectrum. Push both hard and
 the cheapest way to satisfy them is **sustained pitched material** — which is music. That +8 dB bar
 was flagged in R2-4062 as never validated against a signal that *should* pass it, and a positive
-control for it was never built. It was chased anyway.
+control for it was never built. It was chased anyway. **Both beat-1 bars were retired at R2-4084**,
+on the measurement that every negative control in the corpus outscores every positive on both at
+once; they remain live and unchanged at the engine beats, where holding a note is the physics.
 
 **A machine is periodic in RHYTHM and never in PITCH.** It is percussive, inharmonic, and
 transient-dense. Boersma HNR measures "does this hold a note", which is close to the opposite of what
@@ -105,7 +169,10 @@ the adversary reads", and a gate calibrated to the defect cannot fail the defect
 `superseded_audio_2026-08-13/PART2_THE_FILM_4K_h265.mp4` is the **rejected audio**, kept as the
 watchable before. Its ProRes twin was deleted: its video is bit-identical to the current master and
 its audio is `audio/out/master.wav`, retained separately as the permanent negative control — so it
-carried no unique information.
+carried no unique information. **As of R2-4141 that file is one of TWO rejected arms held on disk**:
+`rejected_audio_R2-4079/` holds the musical one, and `audio/out/master.wav` the hair blower. Both
+are permanent negative controls in `audio/controls/` and both must keep failing the suite; neither
+is ever to be edited.
 
 **What the beat-5 pair does and does not claim.** It claims the **subject now moves across the frame**. It does **not** claim the picture moves faster — the camera's path is nearly unchanged (max positional delta 0.264 m over the whole film, exactly zero outside beat 5), so whole-frame optical flow is essentially the same. Read it for *where the car sits and how it travels*, not for speed. The camera also moves and re-lenses very slightly as well as re-aiming (position ≤0.264 m at f2584, lens ≤1.41 mm at f2244, aim ≤12.045 deg at f2273, all inside f1195-f2677) — that is part of the change, not a regression.
 

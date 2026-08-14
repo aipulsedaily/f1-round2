@@ -54,6 +54,7 @@ import csv
 import json
 import math
 import os
+import sys
 
 import numpy as np
 from scipy.interpolate import PchipInterpolator
@@ -322,8 +323,35 @@ class CameraPath:
     EAR_HALF = 0.0875
 
     def __init__(self, path_json=None, fps=24):
-        path_json = path_json or os.path.join(ROOT, "world", "camera_rig_path.json")
-        d = json.load(open(path_json))
+        # R2-1705.  THE DEFAULT USED TO BE `world/camera_rig_path.json`, WHICH IS
+        # NOT THE FILM'S CAMERA.  That file is an orphan of a retired build
+        # script -- `anim/build_camera_rig.py` names its output
+        # `splitext(--out)[0] + "_path.json"`, so the name is a side effect of an
+        # argument and no build step owns it.  It sat byte-identical to
+        # `film16_path.json` for three days while the film had moved on, and
+        # `audio/master.py` built the LISTENER from it by calling CameraPath()
+        # with no argument at all.
+        #
+        # The listener being on the wrong camera is not a subtle error: over
+        # beat 1 the two paths differ by up to 9.866 m and 103.3 deg, which puts
+        # the binaural image on the WRONG EAR for 318 of 792 frames (azimuth
+        # error max 178.1 deg) and the level p50 2.19 dB out.  Beats 2-6 are
+        # unaffected -- the two curves converge to exactly zero at f754, which
+        # is beat 1's last camera key.
+        #
+        # `live_campath.load()` takes no path argument, so the wrong file is
+        # unreachable rather than merely detectable, and it checks the
+        # declaration's sha256 -- a rebuild that changes the camera without
+        # announcing it RAISES here instead of being adopted silently.
+        # An explicit `path_json` is still honoured for A/Bs and controls.
+        if path_json is None:
+            _tools = os.path.join(ROOT, "tools")
+            if _tools not in sys.path:
+                sys.path.insert(0, _tools)
+            from live_campath import load as _load_live
+            d = _load_live()
+        else:
+            d = json.load(open(path_json))
         self.frames = int(d["frames"])
         p = d["path"]
         self.P = np.array([q["p"] for q in p], dtype=np.float64)

@@ -153,7 +153,29 @@ TARGET_LUFS_S = {
     # density. Sitting it 1.5 dB under the foreground shards is a mix statement:
     # the fragments lead, the fines sit just beneath them.
     "debris": -10.5,
-    "reflect_garage": -22.0,
+    # R2-4081: -22.0 -> -27.0, ON ITS OWN TERMS AND WITH THE NUMBER IT MUST
+    # MOVE WRITTEN DOWN FIRST. This bus is the ENGINE'S OWN first-order specular
+    # reflection off the pit-garage facade at 20-40 m, low-passed at 6.5 kHz.
+    # At -22.0 it sat 10 dB under the direct sound it is a reflection OF, and a
+    # single bounce off a wall tens of metres away does not return 10 % of the
+    # source's power: the geometric spreading alone over the extra path is
+    # 20*log10(r_direct/r_image) and the facade's own absorption is on top of
+    # that. -27.0 puts it 15 dB under, which is still generous for one bounce.
+    #
+    # It is also 44.31 % of beat 4 and 9.21 % of beat 5 on R2-4079's own stems,
+    # at 0.975-0.99 x white, so it is the single largest near-white lever left
+    # in the film -- which is why R2-4076/4080 kept naming it.
+    #
+    # THE PREDICTION, MADE BEFORE THE RENDER, FROM THE STEM POWERS ALONE.
+    # A 5 dB cut multiplies its power by 0.3162, and G-BALANCE's margin is
+    # engine / (everything near-white that is not the engine):
+    #     beat 4  -4.58 -> -2.30 dB   (+2.28)
+    #     beat 5  -3.52 -> -3.10 dB   (+0.41)
+    # NEITHER REACHES THE +8 dB BAR AND THE SHARE LIMB DOES NOT MOVE AT ALL,
+    # because the share counts every near-white stem and lowering one does not
+    # make any of them tonal. This change is therefore NOT expected to flip a
+    # gate, and it is made anyway because the level was wrong on its own terms.
+    "reflect_garage": -27.0,   # was -22.0
     # R2-4050 (§3.4): DECIDE, DO NOT LEAVE THEM. Measured against the sum of all
     # other buses, `reflect_showroom` was 25 dB under the mix everywhere and
     # `aperture` 28 dB under -- two buses that cost full render time and existed
@@ -560,8 +582,18 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
          f"density {rep['structure']['modal_density_modes_per_hz']:.3f}/Hz")
 
     # ---------------------------------------------------------- the assembly --
+    # R2-4081: THE PRESENTATION WINDOWS COME IN WITH THE CLUSTERS.
+    # `docs/beat_sheet.json`'s beat-1 schedule gives each cluster the seconds it
+    # is held up for the camera -- 0.71 s to 3.21 s, on no grid at all. That is
+    # the picture telling the cell how fast to traverse, and `cell_events` needs
+    # it to build the line shaft's rate over the eight seconds BEFORE the first
+    # seat. It is merged here rather than loaded in `layers` because `master`
+    # already owns every file read on the render path.
+    present = {r["cluster"]: r for r in sheet.get("beat1", {}).get("schedule", [])}
     asm_w, asm_info = layers.assembly(
-        tw, {k: dict(explode["clusters"][k], **anim["clusters"][k])
+        tw, {k: dict(explode["clusters"][k], **anim["clusters"][k],
+                     **{f: present.get(k, {}).get(f)
+                        for f in ("presented_t", "presented_until_t")})
              for k in anim["clusters"] if k in explode["clusters"]},
         sr, clock.launch_film_t)
     rep["assembly"] = asm_info
