@@ -19,6 +19,10 @@
 *.wav
 *.flac
 *.mp4
+# R2-4023: `*.mov` was missing while `*.mp4` was here, so the 11.25 GB ProRes
+# delivery master sat untracked in watch/ with nothing but the never-`git add -A`
+# convention stopping it being committed permanently. A convention is not a rule.
+*.mov
 *.bphys
 # `render/*`, not `render/`: git will not descend into an excluded DIRECTORY,
 # so the battery source below could never be re-included while this said
