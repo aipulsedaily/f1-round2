@@ -1,0 +1,122 @@
+[
+ {
+  "rank": 1,
+  "joint": "FL/FR forward inboard suspension pads (upper-fwd x=1.955, lower-fwd x=1.975, track-rod/rack exit x=1.905) -> NOSE_Collar / NOSE_Shell",
+  "status": "interpenetrating_visibly",
+  "gap_mm": 0,
+  "visible_in_hero": true,
+  "fix_hint": "One root cause, six pads (3 per side): NOSE_Collar spans x 1.901-1.980 and its skin stands +7.81 mm proud of the nominal station surface, so the carbon runs straight through the titanium brackets - 1758+1014+688 Fittings/NOSE tri pairs plus 1646+788+434 Fasteners/NOSE pairs per corner. Pads are chopped mid-plate (only 55.6% / 64.5% / 76.0% of each footprint still reads as bracket) and the weave emerges from inside the titanium with a hard intersection curve. Fix: cut a local relief pocket in NOSE_Collar/NOSE_Shell around the three forward pickups, or move the collar band forward of x=1.90, or pull UP_F/LO_F/TR anchors aft to ~x=1.88. The pads' bites into the monocoque itself (578/1592/925 tri pairs, 10-12 mm sink) are CORRECT bracket-into-skin seating - do not change those."
+ },
+ {
+  "rank": 2,
+  "joint": "CI_seat + CI_seatpad -> SW_Shell / SW_GripL / SW_HubPlate (cockpit trim through steering wheel)",
+  "status": "interpenetrating_visibly",
+  "gap_mm": 0,
+  "visible_in_hero": true,
+  "fix_hint": "Hard rigid-into-rigid: SW_Shell x CI_seat 2117 pairs, x CI_seatpad 1666, SW_GripL x CI_seatpad 864, x CI_seat 890, SW_HubPlate x CI_seat 452 (42 SW_/CI_ object pairs in total). The pad surface slices through the left grip and rises across the lower face, burying a button - visible into the open cockpit from top-down ortho and any high front-quarter. Trim CI_seat (1573 faces fwd of x=0.44) and CI_seatpad (9185 faces out to x=0.614) back from x~0.46, or drop them below z~0.80; the wheel occupies x 0.44-0.55, |y|<=0.14, z 0.747-0.935."
+ },
+ {
+  "rank": 3,
+  "joint": "wheel_tyre_FL_AxleEnd -> wheel nut bore / wheel centre (front axle stub)",
+  "status": "floating",
+  "gap_mm": 2.291,
+  "visible_in_hero": true,
+  "fix_hint": "Zero overlapping triangles with ANY object - the only front-corner part with no sub-mm neighbour, and 147/300 rays from its tip escape the car, i.e. it sits dead-centre of the front wheel face in front-quarter and low-hero framing as a pale stub ringed by a dark eccentric crescent. Grow the stub radius ~2.4 mm to seat in the nut bore, or extend it inboard along -Y from y=0.973 to meet brake_assembly_FL_Hub at y=0.875. Check the FR mirror."
+ },
+ {
+  "rank": 4,
+  "joint": "pushrod_FL outboard clevis -> lower wishbone tube / upright pickup",
+  "status": "gap",
+  "gap_mm": 13.247,
+  "visible_in_hero": true,
+  "fix_hint": "The rod end and its bolt are fine (0.001-0.034 mm) but the whole clevis lands on nothing structural: 13.247 mm to the nearest lower-wishbone tube, 18.375 mm to its rod end, 100.816 mm to the upright. Its only sub-mm contacts are with the non-structural brake_assembly_FL_DrumBulk panel, so the bracket reads as pinned to a fairing. Partially masked by the drum shroud but it pokes out of the bulkhead cut-out on the shipped car. Move the clevis up ~13 mm in +Z/+Y so its plates clamp the lower-wishbone tube or rod-end body."
+ },
+ {
+  "rank": 5,
+  "joint": "toe_link_RL/RR inboard tube -> gearbox bracket rod end",
+  "status": "floating",
+  "gap_mm": 5.24,
+  "visible_in_hero": true,
+  "fix_hint": "Confirmed visible on the assembled car (full-car Cycles az158/az118): the carbon tube ends in a clean chamfered face with open background between it and the red jam nut, whose bore is visibly empty. Rod end itself is properly held (1.03 mm to bracket, 0.60 mm to pin); the tube just does not reach it - compare the front legs of the same wishbones at 0.00 mm with identical hardware. Extend the toe-link tube inboard ~6 mm to seat on the jam nut and engage the rod-end shank. Rear-quarter view."
+ },
+ {
+  "rank": 6,
+  "joint": "upper_wishbone_RL/RR rear leg inboard tube -> gearbox bracket rod end",
+  "status": "gap",
+  "gap_mm": 4.74,
+  "visible_in_hero": true,
+  "fix_hint": "Tube 4.74 mm short of the rod-end cluster at (-2.150,0.158,0.676); the jam nut is only 0.97 mm away so a dark line plus an open tube bore with a polished domed shank floating inside it shows in the full-car rear-quarter render (rc_uwbin_1). Internal control: the upper FRONT leg measures 0.00 mm with the identical 4-piece rod end, so 0 is the intended value. Push the tube end ~5 mm further inboard."
+ },
+ {
+  "rank": 7,
+  "joint": "SW_QRBody front face -> CI_column socket end face",
+  "status": "gap",
+  "gap_mm": 2.973,
+  "visible_in_hero": true,
+  "fix_hint": "A clean 1.999 mm AXIAL air gap (QRBody most-forward s=+34.723, column most-rearward s=+36.722) with nothing bridging it - the bare spline stands 2.20 mm proud and crosses the slot naked. Reads as an open dark slot with striped spline teeth in the cockpit; marginal in top-down ortho, obvious in any interior/driver's-eye pull. Translate CI_column 2.0 mm rearward along its axis (dX -1.85, dZ +0.75) or extend the QR body nose 2 mm forward. Do together with rank 8."
+ },
+ {
+  "rank": 8,
+  "joint": "SW_QRSpline (QR hub spline) -> CI_column bore",
+  "status": "floating",
+  "gap_mm": 1.225,
+  "visible_in_hero": true,
+  "fix_hint": "The entire steering wheel is mechanically floating: 0 triangle overlaps, 1.225 mm purely RADIAL separation, ray clearance 1.6-3.6 mm all round the clock over the full 15.2 mm of insertion, and this is the ONLY intended SW_-to-CI_column joint. Alignment is perfect (0.014 deg, 0.014 mm eccentricity) - it is simply ~1.0 mm undersize in radius. Grow tooth-tip radius from ~20.2 to >=21.2 mm, or shrink the bore from 21.17 to ~20.1 mm. Structurally the worst steering defect even though visually it is only an air annulus at the socket mouth."
+ },
+ {
+  "rank": 9,
+  "joint": "MB_chassis_fwd -> MB_nose butt joint outer skin (x ~1.996-2.002, under the FL lower-forward pad)",
+  "status": "gap",
+  "gap_mm": 6,
+  "visible_in_hero": true,
+  "fix_hint": "Dense scan along the lower-forward pad: chassis skin present to x=1.9950 (+4.42 mm), NO outer skin at all at x=1.9990 (only MB_backing at -4.55 mm), MB_nose resuming at x=2.0030 (+4.34 mm) - a ~6 mm wide, ~9 mm deep unskinned band at the module butt joint. The suspension pad currently plugs it locally, which is the only reason it has not been seen; sweep the full section perimeter before signing off, because anywhere the pad does not cover it this is an open recessed seam right on the front-quarter and top-down silhouette. Monocoque-group fix, not a suspension fix."
+ },
+ {
+  "rank": 10,
+  "joint": "driveshaft_RL/RR shaft tube -> outboard CV joint",
+  "status": "floating",
+  "gap_mm": 50,
+  "visible_in_hero": false,
+  "fix_hint": "Largest break in the car: exactly 50.00 mm of air between the shaft tube island (ends y=0.524) and the outboard CV island (starts y=0.574), zero overlaps, exact mirror on RR - a module-level fault. Nothing but the rubber boot spans it (boot 0.35 mm to shaft, 0.07 mm to CV), which is why the finished car looks continuous. Compare the inboard end of the same shaft: 30 mm of telescopic engagement. Extend the tube outboard from y=0.524 to y~0.604. Fix for correctness/animation even though no hero camera sees it."
+ },
+ {
+  "rank": 11,
+  "joint": "driveshaft_RL/RR outboard CV stub -> brake_assembly_RL/RR_Hub",
+  "status": "floating",
+  "gap_mm": 27.5,
+  "visible_in_hero": false,
+  "fix_hint": "CV stub (r=0.024-0.027) dead-ends with a cap at y=0.700; the hub spigot starts at y=0.727. Its nearest neighbour of any kind is the upright bore wall at 3.76 mm radial, i.e. the driveshaft drives nothing - the rear wheels are attached only through the hub/upright bearing. Lengthen the stub to y>=0.75 through the upright bore into the hub, or move the hub inboard. Fully enclosed by upright/hub/wheel in all four deliverable views."
+ },
+ {
+  "rank": 12,
+  "joint": "wheel_tyre_FL/FR_DrivePegs -> hub / disc-bell drive face",
+  "status": "wrong_side",
+  "gap_mm": 37.646,
+  "visible_in_hero": false,
+  "fix_hint": "A ROTATING part attached to a STATIC one and engaging nothing: pegs miss the hub by 37.646 mm, the bell by 36.071 mm, the disc by 37.826 mm (zero overlaps everywhere), while burying themselves in brake_assembly_FL_Upright with 147 overlapping triangles at 0.007 mm. Hidden (16/300 rays escape, blocked by WheelCentre/DrumBulk/Hub) so it costs nothing in the stills, but shift the pegs +0.045 in Y to y~0.79-0.81 to engage the bell flange at r=70 mm, or shorten them clear of the upright. Note the rear pegs are correct (they seat on the wheel centre)."
+ },
+ {
+  "rank": 13,
+  "joint": "brake_duct_drum shroud (Drum/Drum1-3/DrumBulk/DrumFast/Scoop/Vanes) -> upright, all four corners",
+  "status": "gap",
+  "gap_mm": 18.83,
+  "visible_in_hero": false,
+  "fix_hint": "Merged FL and RL findings - same inherited brake-module design. The eight shroud objects interpenetrate each other into one rigid shell (correct), but that shell never reaches the upright: 18.396 mm front, 18.83 mm rear, and DrumFast (the fastener set that should tie it down) is 32.6-52.1 mm away. It hangs entirely off the wishbone rod ends piercing DrumBulk (930 pairs at 0.002 mm front) plus, at the rear, a 0.01 mm touch on the rotating RimBarrel. Not visible - the legs pass cleanly into their cut-outs in every shipped view. Add 20-25 mm of bridging bobbins from DrumBulk to the upright body."
+ },
+ {
+  "rank": 14,
+  "joint": "toe_link_RL/RR outboard tube -> upright rod end",
+  "status": "floating",
+  "gap_mm": 5.66,
+  "visible_in_hero": false,
+  "fix_hint": "Other end of the same bar: 5.66 mm to the rod-end assembly, 6.44 mm to the jam nut. With rank 5 this makes the toe link a rigid bar attached at neither end - its only contacts are a pass-through into FD_Shell (261 tri pairs) and the brake line. The rod end is correctly bolted to the upright, so only the tube needs extending ~6.5 mm outboard. Sits inside the closed drum fairing, so invisible on the assembled car."
+ },
+ {
+  "rank": 15,
+  "joint": "lower_wishbone_RL/RR rear leg inboard tube -> gearbox bracket rod end",
+  "status": "gap",
+  "gap_mm": 3.67,
+  "visible_in_hero": false,
+  "fix_hint": "Tube 3.67 mm short of the rod-end cluster at (-2.095,0.205,0.532) but only 0.55 mm from the jam nut, which closes the seam optically - full-car renders read as connected. Lowest-priority of the four rear inboard shortfalls; extend the tube ~4 mm to the rod-end shoulder while fixing ranks 5, 6 and 14 in the same pass."
+ }
+]

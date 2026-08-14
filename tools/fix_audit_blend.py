@@ -41,6 +41,11 @@ import sys
 
 import bpy
 
+# The repository root -- `tools/` is one level down. `save_clean()` uses it to
+# decide what "outside this project" means, which is the question it was always
+# asking and previously answered by naming round 1's directory instead.
+R2 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # From circuit_spec.json: the single sun shared by the showroom interior and the
 # circuit, so Beat 1 and Beats 4-6 are lit by one physical source.
 SUN_DIR = (0.518, -0.828, 0.216)
@@ -164,11 +169,16 @@ if __name__ == "__main__":
     # Blender 5.2 returns 0 for a script that raised, so a crash was
     # indistinguishable from a pass. guard() makes it a status 2.
     #
-    # NOTE, found and NOT fixed: `save_clean()` below is defined AFTER this
-    # entry point and is called by nothing, here or anywhere in the tree. It
-    # is dead code, and its docstring claims a guarantee ("a blend that CANNOT
-    # carry an external asset dependency") that no run has ever exercised.
-    # Reported rather than deleted -- it is not this task's file.
+    # NOTE, RETRACTED 2026-08-14 (R2-4028). This used to say `save_clean()` is
+    # "dead code, called by nothing, here or anywhere in the tree", and that is
+    # false. `grep -rn save_clean` finds `anim/build_beat1_anim.py:214` -- the
+    # first step of the car chain -- plus `world/items/access_road_slab.py`,
+    # `gravel_bed_surface.py` and `asphalt_wearing_course.py`, three of which
+    # save the world libraries the film is built from. It was also exercised
+    # live during #168: it RAISED its refusal on a reconstituted scene, which
+    # is the opposite of never having run. Left in place, corrected, because a
+    # stale "this is dead" note is an invitation to delete a load-bearing
+    # function.
     gate_exit.guard(main, tool="fix_audit_blend")
 
 
@@ -197,7 +207,25 @@ def save_clean(out_path):
         ap = bpy.path.abspath(img.filepath or "")
         # anything outside this project cannot be mirrored to the instance, and
         # anything downloaded is forbidden by the brief regardless
-        if "opus5-car-render/assets" in ap or not os.path.exists(ap):
+        #
+        # R2-4028: THE RULE NOW MATCHES ITS OWN COMMENT.  It used to test the
+        # literal substring "opus5-car-render/assets", which is not "outside
+        # this project" -- it is "inside ROUND ONE", and it only worked because
+        # round 1 happens to live at that path.  So the one hard build-time
+        # coupling to round 1 (`anim/build_beat1_anim.py` opens
+        # `opus5-car-render/work/iter.blend`) had a second, quieter one hiding
+        # behind it: the stripper that removes round 1's HDRI is keyed to round
+        # 1's DIRECTORY NAME.  Rebuild the identical scene from round 1's own
+        # source anywhere else -- which `round1_source/reconstitute.sh` does,
+        # proven byte-for-byte on 919 meshes -- and the HDRI reference survives
+        # the drop, trips the refusal below, and the car chain will not save.
+        #
+        # BEHAVIOUR ON THE CURRENT LAYOUT IS UNCHANGED, and that is checkable
+        # rather than asserted: round 1 is outside this repository, so every
+        # path the old clause caught the new one catches too.  What changes is
+        # only the case the old clause could not express.
+        outside = os.path.relpath(ap, R2).startswith(os.pardir) if ap else True
+        if outside or not os.path.exists(ap):
             dropped.append(img.filepath)
             bpy.data.images.remove(img)
     bpy.ops.file.make_paths_absolute()

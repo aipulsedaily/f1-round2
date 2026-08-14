@@ -1,0 +1,571 @@
+{
+ "front_wing": {
+  "verdict": "NEEDS_WORK",
+  "polys": 434068,
+  "defects": [
+   {
+    "severity": "critical",
+    "region": "endplate laminate (FW_Endplate_L/R) \u2014 _sheet(), line 234",
+    "issue": "m.thickness_clamp = 1.0 silently collapses the declared 13 mm plate to 1.0-2.7 mm. Ray-cast through the plate: 1.02 mm at x=2.95, 1.41 at x=2.90, 2.38 at x=2.70, 2.67 at x=2.60 (declared EP_T=0.0130). Controlled test: setting thickness_clamp=0.0 restores exactly 13.00 mm everywhere. Cause is Blender's solidify Offset Clamp limiting thickness to the shortest adjacent edge \u2014 the 176x104 grid has ~0.14 mm v-spacing at the front of the plate. The real faces land at y=0.9801/0.9931, not the designed 0.9750/0.9880+curl. In renders the plate reads as knife-thin sheet, not a 13 mm carbon laminate."
+   },
+   {
+    "severity": "critical",
+    "region": "everything bolted/bonded to the endplate \u2014 34 objects per side, both sides",
+    "issue": "BVH overlap test returns ZERO shared triangles between FW_Endplate_L and every single thing that is supposed to attach to it: El_Main/Flap1/Flap2/Flap3, Fillet0-3, Pad0-3, Bolt0-3a/b, Rivet0-8, FPRivet0-7, DataPlate, DPRivet x4, Accent, AdjBoss, Strake0, Cascade0/1, Footplate. Every detail is placed at mid-surface \u00b1 (EP_T*0.5 + h) = \u00b16.5 mm (lines 376, 479, 498, 516, 529, 541, 654) while the real half-thickness is ~1.05 mm, so all of it hovers 4.3-7.4 mm off the plate. Measured: pads 4.7 mm, pad bolts 7.4 mm, data plate 4.7 mm, DP rivets 6.2 mm, TE rivets 4.8 mm, footplate rivets ~4.3 mm, adjuster boss ~5.4 mm. Plainly visible in the grazing render /tmp/vfy_fw_G1_pads_graze.png \u2014 the pads and bolt heads stand on nothing with open daylight underneath."
+   },
+   {
+    "severity": "critical",
+    "region": "element tips vs endplate inner face (all 4 elements, both sides)",
+    "issue": "Y_TIP = 0.9780 was chosen 3 mm inboard of the DESIGNED inner face (0.9750) so the elements would bury into the laminate. The real inner face is at 0.9804, so every element stops short: Main 2.62 mm, Flap1 2.24 mm, Flap2 2.14 mm, Flap3 6.44 mm. That leaves an open slot right round each element root and exposes the loft end caps, which are unbevelled flat 212-vertex n-gons. Confirmed visually in /tmp/vfy_fw_Z3_ep_inner.png (open V-gap between the top flap tip and the plate) and /tmp/vfy_fw_low3.png crop."
+   },
+   {
+    "severity": "major",
+    "region": "team accent stripe (FW_Accent_L/R)",
+    "issue": "_grid_offset(arows, EP_T*0.5 + 0.0004) at line 479 puts the 650 mm red ribbon 6.9 mm off the mid-surface; the plate face is only 1.05 mm out, so the whole stripe hovers ~5.0-5.6 mm in free air (y 0.9876-0.9991 vs face 0.9826-0.9925, zero overlapping tris). It is the single most conspicuous defect \u2014 in /tmp/vfy_fw_front0.png and /tmp/vfy_fw_G1_pads_graze.png it reads as a red wire suspended alongside the endplate, and at 0.9991 it is the second-widest object on the car."
+   },
+   {
+    "severity": "major",
+    "region": "root fillets (FW_Fillet0-3, _root_fillet, lines 398-399)",
+    "issue": "Built at y_face = EP_INNER = 0.9750, i.e. 5.3 mm inboard of the real inner face (0.9804); measured extent y[0.9703,0.9751], zero overlap with the plate. The stated purpose (D-fw-06: kill the raw 90 deg element/plate intersection) is defeated because there is no intersection at all \u2014 the fillet is a floating bulge 3 mm short of the element tip. Fillet2/Fillet3 additionally carry 88/82 zero-area faces and ~1870 sub-0.1 mm^2 faces each, which will speckle at hero zoom."
+   },
+   {
+    "severity": "major",
+    "region": "endplate outboard width / curl (EP_CURL, line 35)",
+    "issue": "Comment claims the curl takes the outer face to 1.0000. Measured maximum on the laminate is y = 0.9931 at (2.4657, 0.3188) \u2014 6.9 mm short per side, so the actual endplate span is 1.986 m, not 2.000 m. The overall bbox only reaches 1.9997 m because floating hardware (Bolt3a at y=0.9998, Accent at 0.9991) is wider than the plate itself. The curl also reads as almost nothing in the top-down and underside renders."
+   },
+   {
+    "severity": "major",
+    "region": "endplate surfaces (both faces, full 677 mm length)",
+    "issue": "65.2 % of the plate area (1791 of 2745 cm^2) is exactly planar \u2014 _ep_point holds y = EP_MID constant for all x whenever 0.17 < v < 0.70, giving a dead-flat ~600 x 100 mm panel per face with zero curvature. spec.py's own rule is 'a flat untextured face bigger than ~15 mm is a defect'. In /tmp/vfy_fw_under.png the outer face reads as a blank grey paddle; the four pads meant to break it up are the ones that float."
+   },
+   {
+    "severity": "major",
+    "region": "strakes and footplate (FW_Strake0-3, FW_Footplate_L/R)",
+    "issue": "Same thickness_clamp collapse: strakes measure 2.49-2.99 mm against the declared 4.2 mm, footplate 2.89-3.73 mm against the declared 5.0 mm. Strake0, documented as sitting on the endplate face, ends at y 0.9728-0.9762 and has zero overlap with the plate (4.2 mm gap). The footplate root at y=0.9841 pokes 1.5 mm out through the plate's real outer face (0.9826) instead of bonding to the inner face."
+   },
+   {
+    "severity": "major",
+    "region": "endplate mesh quality (FW_Endplate_L/R, FW_Accent_L/R)",
+    "issue": "111 zero-area faces and 1031 faces under 1e-8 m^2 (0.1 mm^2) on each endplate, 7/40 on each accent strip. Caused by a 3.4 mm bevel (bseg=4) applied to a plate that solidify has clamped to 1-2.7 mm \u2014 use_clamp_overlap then folds the bevel into degenerate slivers along the whole rim. These generate shading noise and denoiser artefacts at 4K close range."
+   },
+   {
+    "severity": "major",
+    "region": "pylon mounting flange (FW_PylonFlange_L/R, lines 756-766)",
+    "issue": "A raw 4-ring C.loft assigned Titanium with no bevel modifier at all \u2014 every edge of what is meant to be a machined saddle is mathematically sharp, including the flare steps at z=0.2155/0.2223 and both cap rims. spec.py requires chamfering every edge a machinist would break, and _frame_box/_cap_screw elsewhere in this module do exactly that. Visible as a hard-edged mushroom cap in /tmp/vfy_fw_front0.png and /tmp/vfy_fw_rear.png."
+   }
+  ]
+ },
+ "wheel_tyre": {
+  "verdict": "NEEDS_WORK",
+  "polys": 395272,
+  "defects": [
+   {
+    "severity": "critical",
+    "region": "tyre shoulder (all 8 flanks, front + rear) - _tyre_half() sh() line 178",
+    "issue": "The shoulder superellipse is inverted in z: `return (r2 + dr*a, hw - dz*b)` gives sh(0)=(tread_r, hw) and sh(1)=(R_MAXW, z_t), i.e. exactly backwards (should be z_t + dz*b). Result: there is NO shoulder blend at all. The tread runs out at constant r=360 mm and ends in a fold, and the shoulder curve is thrown backwards to form an OPEN annular gutter between tread and sidewall. Ray-cast down the axle, first surface hit: front r=296 mm -> 1.7 mm behind the widest point, r=299 mm -> 29.7 mm behind (a 28 mm cliff in 3 mm of radius); rear r=298 mm -> 1.3 mm, r=300 mm -> 38.4 mm. The recess is 62 mm wide radially (r 299..361) and 29.7 mm deep front / 38.4 mm deep rear. Visible in every render: a black crescent slot on the top-down, a hard step + recessed red ring in all 3/4 views, a knife-edged square tread edge in profile. The tyre reads as a machined rubber roller with a groove turned into it, not an F1 slick. Directly violates 'broad flat tread with defined shoulders (NOT a doughnut)'."
+   },
+   {
+    "severity": "critical",
+    "region": "tyre tread outer 26 mm (front) / 37 mm (rear) - section points 12->13 and 52->53",
+    "issue": "Two consequences of the inverted shoulder. (a) The tread edge is a razor fold, not an edge: section goes (0.3602,0.1238)->(0.36014,0.14980)->(0.35996,0.14811), a ~6 deg included fold, so the outer 26.0 mm (front) / 37.4 mm (rear) of tread is a shell tapering to ZERO thickness. Nothing is chamfered; it renders as a hard specular knife line around all four tyres. (b) Those are single unsubdivided quad bands: longest section segment is 28.1 mm front / 37.3 mm rear, plus the 26.0/37.4 mm tread-lip span - all far over spec.py's '>15 mm flat untextured face is a defect' rule, with no intermediate rings."
+   },
+   {
+    "severity": "major",
+    "region": "tyre sidewall compound band (r 300.5-322.5 mm)",
+    "issue": "The 0.9 mm relief step is genuinely present and correct in isolation (measured: 0.615 mm chamfer at r=299.9/323.1, full 0.900 mm across r=300.5..322.5), but because of the shoulder inversion it lands on the floor of the gutter, 27-28 mm (front) / 37 mm (rear) behind the sidewall plane. In every render it reads as a painted ring at the bottom of a machined groove instead of a raised compound band on the shoulder."
+   },
+   {
+    "severity": "major",
+    "region": "aero cover annulus - _cover_pads(), r 116-212 mm",
+    "issue": "The brief asks for 'a broad flat annulus with ONE step to the centre boss'. Six 4.5 mm-proud rounded-rect pads at +/-15 deg cover ~half the annulus, so the cover reads as a 6-spoke wheel face rather than a flat machined disc (clear in /tmp/vfy_wt_corner34.png). Combined with three turned grooves at r=233/107.5/70 mm plus the step at r=96 mm, the hub area shows four concentric rings at 8x zoom (/tmp/vfy_wt_z_hub.png) - not a speaker cone, but not the specified flat annulus either. Pad corner fillets are also elliptical, not circular (corner=0.0110 is applied as a fixed ANGULAR offset via /rm, so the fillet is 14.2 x 11.0 mm at r=212 and 7.8 x 11.0 mm at r=116)."
+   },
+   {
+    "severity": "major",
+    "region": "centre-lock nut retention clip - _centre_lock()",
+    "issue": "The clip is modelled (ring_r 36.4, wire_r 1.4 -> OD 37.8 mm) but the nut's collar above/below the groove is r=37.2-39.0 mm and the hex skirt is 40.6 mm across flats, so from any outboard view the clip is completely hidden except its two bent tails (bend adds up to 6.4 mm to rr). At 8x zoom (/tmp/vfy_wt_z_hub.png) those tails read as two stray bright metal shards floating on the hex face, not as a retention clip."
+   }
+  ]
+ },
+ "brake_assembly": {
+  "verdict": "NEEDS_WORK",
+  "polys": 390780,
+  "defects": [
+   {
+    "severity": "critical",
+    "region": "inboard brake pad (_pads, line 830), th 115.5-196.5 deg, ax 0.0311-0.0351",
+    "issue": "`fa = (a0 - PAD_T) if sgn > 0 else a1` puts the INBOARD friction block at ax 0.0316-0.0351, i.e. entirely INSIDE its backing plate (0.0311-0.0351). Verified by evaluated geometry: 3.50 mm overlap (= the full PAD_T) and 1074 BVH tri pairs PadPlate<->PadFriction. Consequences: (a) the inboard pad has no friction lining at all - its disc-facing surface is bare SteelFastener hovering 3.90 mm off the disc face at 0.0390, where it should be 0.4 mm; (b) the friction block's +ax face and the backing's +ax face are EXACTLY coplanar at ax=0.0351 over a ~66 cm2 annular sector, so MatteBlack and SteelFastener z-fight across the whole pad face - visible through the drum's open outboard end and the outlet slots. The outboard pad (fa = a0 - PAD_T) is correct, so the two sides do not match. Fix: `fa = a1 + PAD_T` for sgn < 0."
+   },
+   {
+    "severity": "major",
+    "region": "anti-rattle leaf springs (_pads, lines 850-862), r 0.1208-0.1328, both pad backs",
+    "issue": "The section `_rrect(0.0014/0.1268, 0.0060, 0.0005)` is fed as `_cyl(0.1268+dv, th+du, aback+...)`, so du is the ANGULAR half-width - which is the sweep direction - and dv is radial. Nothing ever sets an axial extent. Measured: axial spread of one ring = 0.0000 mm, radial extent 12.00 mm, section angular width 1.265 deg swept in 2.885 deg steps. The spring is therefore a zero-thickness 12 mm fin swept along its own 2.8 mm width, with near-coincident doubled skins. It also cuts straight through all six pistons (593 BVH tri pairs, r 0.1195-0.1333, ax 0.0183-0.0917) - visible as hard straight slices across the piston barrels in the close-up. The du/dv roles need transposing (du radial half-width, dv axial half-thickness)."
+   },
+   {
+    "severity": "major",
+    "region": "braided brake line vs inboard bulkhead (_brake_line p3/p4 line 965-966 vs _bulk_slots), th 187.6-197.4 deg, r 0.1127-0.1289",
+    "issue": "The hose crosses the bulkhead panel through solid carbon: 143 Line tri pairs + 43 LineFittings tri pairs intersect DrumBulk. The dedicated pass-through slot added for it at th 198-211 deg / r 0.086-0.122 is left completely empty. The render shows the red end crimp half-sunk in the panel with the hose sliced flat by the skin, and the empty slot sitting beside it. The control points need to be re-aimed at the slot (p3 is at 196 deg, and the catmull-rom crossing lands near 190-193 deg), or the slot moved to the actual crossing angle."
+   },
+   {
+    "severity": "major",
+    "region": "heat shield ends vs caliper end flare and upright caliper-mount bosses (_heat_shield drop curve), th 114-120 and 192-198 deg, r 0.1719-0.1849",
+    "issue": "`drop = 0.0150 * smoothstep(...)` pulls the shield down to r 0.1743-0.1849 exactly where the caliper's arc_beam end taper flares back out to r_hi = 0.1865 (`max(b, 1.0-end)`) and where the upright's caliper-arm boss reaches r 0.1846 at ax -0.008..0.000. Result: 170 Upright<->Shield tri pairs plus caliper/shield overlap beyond the standoff tabs. The close-up shows gold re-emerging on both sides of the black caliper and a black wedge cutting into the gold next to a shield rivet. The banjo body also pierces the shield (26 tri pairs at th 155-157 deg)."
+   },
+   {
+    "severity": "major",
+    "region": "brake bell / hub / upright junction (_bell vs _hub vs _upright), r 0.033-0.055, ax 0.018-0.032",
+    "issue": "The bell floats free of the hub and is mechanically attached to the wrong part. Bell bore r = 0.0330 against hub OD r = 0.0300 leaves a 3 mm annular gap and ZERO Bell<->Hub intersections, while Bell<->Upright shows 597 tri pairs (r 0.0440-0.0548, ax 0.0191-0.0318) - the bell's inner flange is buried ~11 mm inside the non-rotating upright and its r=0.0440 wall pierces the upright's flat ax=0.030 end face. The 12 blind bolt drillings in the bell (holes at profile index 3) therefore land on nothing. The disc carrier has no load path to the wheel."
+   },
+   {
+    "severity": "major",
+    "region": "inlet scoop bonding flange + 24 rivets (_scoop, line 1201) and drum/bulkhead rivet rings (_drum_fasteners)",
+    "issue": "The collar is seated on `DRUM_R + _bulge(...)`, i.e. the PRE-Solidify surface, but the shell offsets 3.2 mm OUTWARD (measured Drum r max 0.2156 vs authored 0.2107). So the scoop's whole bonding flange (w -0.0042..-0.0075) and all 24 flange rivets (top at r ~0.2055 against a skin at ~0.2112) sit inside the shell and never render - the mouth reads as a plain raised bezel with no fasteners, confirmed at 0.094 mm/px. Same root cause: the 10 inner-ring bulkhead rivets at rr=0.0790 are completely buried, the outer ring shows only 0.4 mm of a 1.7 mm dome, and the barrel rings show ~0.5 mm of a 3.0 mm dome so they render as flat 10-sided washers with a black centre - they read as drilled holes, not rivets."
+   },
+   {
+    "severity": "major",
+    "region": "braided brake hose surface (_hose, line 902), whole line",
+    "issue": "n=24 verts around the tube with nb=9 braid lobes = 2.7 samples per lobe. The braid aliases badly: at 0.037 mm/px the hose renders as a gnarled, knotted rope with an irregular lumpy silhouette rather than a stainless braid. Needs n >= 4*nb (or a bump-map braid instead of displaced geometry)."
+   },
+   {
+    "severity": "major",
+    "region": "drum barrel outer skin, top and bottom flanks (th ~45-135 and ~225-315 deg)",
+    "issue": "The `fore` object frame puts local +Z along car-forward, so on the barrel's upper and lower flanks the surface contains local Z and the 2x2 twill extrudes into stripes. The top-down and low-angle deep zooms show the whole barrel covered in fine parallel corduroy ripples instead of weave; near dead-ahead (mouth region) and near the outlet slots the twill reads correctly. This is the largest single surface in the part and it is what a top-down or low hero camera sees."
+   }
+  ]
+ },
+ "steering_wheel": {
+  "verdict": "NEEDS_WORK",
+  "polys": 144664,
+  "defects": [
+   {
+    "severity": "critical",
+    "region": "marshalling LED strip, top edge (_leds, lines 675 / 683 / 701)",
+    "issue": "Every one of the 16 LEDs is malformed. The lens, reflector-cup and die rings are built with MISMATCHED angular divisors: lens uses cos(TAU*j/28) with sin(TAU*j/36) over j in range(36); cup uses cos(TAU*j/24) with sin(TAU*j/32) over range(32); die uses cos(TAU*j/24) with sin(TAU*j/28) over range(28). None of these is a circle - they are self-crossing Lissajous curves. Computed radius on the 4.0 mm lens ring sweeps from 0.69 mm to 5.61 mm. Renders confirm it: each LED is a green teardrop/snail with a long pointed tail, the cups are one-sided crescents, and geometry self-intersects (SW_LedCups has 80 non-manifold edges; LedLenses x LedCups = 5505 overlapping triangle pairs). This is the single most prominent feature on the top edge of the wheel and it is unusable at any zoom - obvious even in the 1400px full-frame views."
+   },
+   {
+    "severity": "critical",
+    "region": "back plate fasteners (_back, SW_BackScrews)",
+    "issue": "12 of the 14 back-plate screws float in open air. They are placed at z_top = Z_BACK - 0.0115 with dn=-1, so each screw occupies local z = -0.0190..-0.0169, while the BackPlate rear face is at z = -0.0103 and the ribs only reach -0.0129. Measured per-screw nearest-surface gaps: 0.00660 m for ten of them, 0.00400 and 0.00464 m for two more. Only the two near the loom boot/block touch anything. Visible as detached bright specks in the side view and superimposed on the shift paddle in the back crop."
+   },
+   {
+    "severity": "major",
+    "region": "clutch paddles (_paddles, ClutchL/ClutchR)",
+    "issue": "Both clutch paddles are simultaneously floating and interpenetrating. The blade spans y = -0.0455..-0.0075 but its pivot boss and spindle sit at y = +0.0040, so the blade never reaches its hinge: measured min gaps ClutchL->PadBossL = 6.10 mm, ->PadPivotL = 9.20 mm, ->PadBracketL = 8.10 mm (identical on the right). At the same time the blade's inboard corner is buried inside the quick-release hub: ClutchL x QRBody = 414 overlapping triangle pairs, ClutchL x HubPlate = 179 pairs. The shift paddles by contrast are correctly seated (0.01-0.05 mm)."
+   },
+   {
+    "severity": "major",
+    "region": "quick-release hub pins (_hub, SW_QRPins)",
+    "issue": "The 6 QR pins are modelled but completely invisible. They sit at radius 0.0272 with r=0.0034 (reaching 0.0306) spanning z -0.0146..-0.0346, but the HubPlate (r 0.037-0.048), the QRBody (r 0.0296-0.0362) and the AnodisedRed knurled collar (r 0.0294-0.0359) enclose that entire span. 70.5% of pin vertices test as inside hub solids and the rest are covered; no pin is visible in any of the 8 hub-facing renders. The brief explicitly names 'the quick-release hub boss with its collar and pins' - boss and collar read well, pins render as nothing but wasted polys."
+   },
+   {
+    "severity": "major",
+    "region": "row A push buttons vs control panel and display bezel",
+    "issue": "The six 12.5 mm row-A buttons sit at ROW_A_Y = 0 with a collar OD of 9.45 mm, but the control panel's top edge is at y = +0.0060 (PLATE_Y1). Each collar therefore overhangs the panel by ~3.4 mm with a measured 0.60-0.74 mm open air gap down to the shell face beneath - a floating crescent under each of the six most-photographed buttons. The four inner collars also drive into the display bezel's lower wall: SW_Collars x SW_DispBezel = 270 overlapping triangle pairs."
+   }
+  ]
+ },
+ "floor_diffuser": {
+  "verdict": "NEEDS_WORK",
+  "polys": 332728,
+  "defects": [
+   {
+    "severity": "major",
+    "region": "Diffuser, x -1.78..-2.17, y = +/-0.30 (both sides): FD_JointStraps + FD_FloorRivets vs FD_DiffuserVanes",
+    "issue": "The f=0.400 diffuser joint strap and its 10-fastener rivet row run straight THROUGH separator vane 1. STRAPS entry (0.400,-1.30,-2.17) tracks y=0.3121->0.3082 while VANES[1] drifts y=0.2962->0.3179, so from x=-1.82 rearward the vane centreline is inside the 26.4mm-wide strap band (min separation 2.8mm at x=-2.083 vs a 13.2mm strap half-width). BVH triangle-overlap: 1108 strap<->vane and 232 rivet<->vane intersecting triangle pairs, region x[-2.173,-1.778] z[0.275,0.332]. Visually confirmed at 8x zoom (scratchpad/rev_fd/y_rivvane.png, p_strapvane.png): a row of countersunk rivet heads climbs the flank of a vane and one head renders as a half-disc sliced flat by the vane surface. This is the single most photographed region of the part."
+   },
+   {
+    "severity": "major",
+    "region": "Diffuser trailing edge, x -2.19..-2.228, keel at y=0 and all four vanes",
+    "issue": "The keel and the separator vanes break through the TOP surface of the floor at the exit. _build_vanes sets z_top = underside + 0.0035 (vanes) / +0.0040 (keel), but the KT taper thins the laminate to k*t at the exit, so the skin gap is only 2.0-3.4mm there. Measured protrusion above the shell's upper skin: keel +1.97mm, vane0 +1.01mm, vane3 +0.30mm, vane2 +0.06mm, vane1 +0.02mm. Ray-cast inside test: keel top points outside the shell 4/40, vane0 2/40. Top-down and high-rear renders (scratchpad/v_topdown.png, rev_fd/x_topTE.png, rev_fd/y_te.png) show a sawtooth of ~9 thin slivers projecting from the diffuser's upper surface and stair-stepping the TE silhouette."
+   },
+   {
+    "severity": "major",
+    "region": "Whole underside ride-height stack-up: FD_Fences (z_min 0.0120), FD_EdgeWing (0.0303), FD_WakeFins (0.0372) vs FD_Plank (0.0400) / FD_Skids (0.0389)",
+    "issue": "The plank/skid must be the lowest geometry on the car (it is the reference plane and the wear datum). Here the four floor fences hang to z=0.0120 -- 28.0mm BELOW the plank underside and 26.9mm below the titanium skid faces; the floor edge wing reaches 0.0303 (-9.7mm) and the wake fins 0.0372 (-2.8mm). With tyre contact at z=0 the car would be resting on its fences with the plank 28mm in the air. From the specified low hero angle the fences read as a row of white shark fangs hanging under everything else (scratchpad/v_frontlow.png, rev_fd/y_frontfence.png, rev_fd/x_sidefence.png). FENCES[*]['zb0'/'zb1'] need lifting by ~28-30mm (or the whole fence set re-datumed to PLANK_Z)."
+   }
+  ]
+ },
+ "suspension_rear": {
+  "verdict": "NEEDS_WORK",
+  "polys": 263326,
+  "defects": [
+   {
+    "severity": "critical",
+    "region": "_hex_socket() line 417-433 - EVERY socket-head fastener in the part (24 pad cap screws, 6 driveshaft flange screws, 3 tripod screws, 4 ARB gaiter screws, 2 saddle screws, 9 _fork_bolt heads, all outboard rod-end pin bolts, rocker pivot shaft)",
+    "issue": "The hex drive is modelled but is invisible and non-manifold. ring0 is built as (z=0, sc=0) -> n COINCIDENT vertices, which tube() bridges into a solid disc that CAPS the socket mouth; that disc is then placed exactly coplanar with the screw head's own solid end cap (measured on _cap_screw: head-top pole disc and socket mouth ring both at z=0.0042, 113 verts sharing that plane). Result: every fastener head renders as a blank domed pin with a random z-fighting scratch instead of a hex recess. Confirmed at 26x (z_capscrew.png: pad cap screw is a featureless disc) and 24x (z_forkbolt.png: the 22 mm fork-bolt head is a blank dark disc with two z-fight slivers). It is also the sole source of the module's non-manifold geometry - 60 boundary edges per instance, 2880 in Fasteners + 360 in RodEnds per corner. spec.py demands modelled fasteners at a 400 mm hero camera; this is the classic modelled-not-engineered tell and it appears on ~108 fasteners across the part."
+   },
+   {
+    "severity": "critical",
+    "region": "_corner() line 925-928 - rocker/bellcrank hub collar, s=-1 side",
+    "issue": "Coding bug: _spin(brak, ROCK_P + X*t0, X, [... abs(t1-t0) ...]) uses the SIGNED origin but an UNSIGNED axis. For s=-1 the collar is laid from dx -18.0 mm to -7.0 mm, i.e. inside the bellcrank plate gap and straight over the torsion boss (which occupies -18..+18 mm at r 19.8-20.6 mm), instead of onto the outer face of the -X plate at -29..-18 mm. Measured: 's=-1: plate occupies dx -29.0..-18.0 mm ; collar occupies dx -18.0..-7.0 mm'. So the -X bellcrank plate has no collar at all and a 53 mm ring floats in the middle of the pivot. z_rockerhub.png shows the pivot as a stack of mismatched washers instead of a symmetric bearing carrier - it is the single worst-reading feature in the part."
+   },
+   {
+    "severity": "major",
+    "region": "make_boot() line 1116-1133 - both driveshaft CV boots (inboard y 0.268-0.398, outboard y 0.482-0.596)",
+    "issue": "The boots do not read as rubber gaiters, they read as stacks of records. Convolution peak-to-valley is 28.3 mm over an axial pitch of only 15.2-17.3 mm, so each fold is almost twice as deep as it is long, and the abs(w)**0.62 shaping flattens the crest so every ridge renders as a thin flat-edged disc (see z_shaft.png). There are also unintended radius STEP discontinuities of 1.11 mm at s=0.10 and 0.88 mm at s=0.90 where the convoluted region starts and ends, giving a hard ring at each end. Both ends are closed with solid flat n-gons: the big end is a 95.6 mm-diameter flat black disc (7161 mm^2 planar patch) which is exposed as a ~15 mm-wide flat annulus around the tripod housing neck, and the small end is a flat 27.6 mm lid over a 19.4 mm shaft - the boot never seals onto anything."
+   },
+   {
+    "severity": "major",
+    "region": "_corner() lines 1033-1037 - ARB blade plate vs ARB tip boss at arb_end",
+    "issue": "Coincident cylindrical surfaces -> z-fighting. _plate(..., base_c=arb_end, r_base=0.0210, ...) spans y +/-0.0062 with its full-radius band at +/-0.0052, and _spin(brak, arb_end - Y*0.0080, Y, [(0,0),(0.0210,0),(0.0210,0.0160),(0,0.0160)]) puts a cylinder of EXACTLY the same 0.0210 radius over y +/-0.0080. The two surfaces are identical over a 10.4 mm band. z_arb.png shows irregular lens-shaped bright patches on the blade face where this fights. The same _spin is also a bare 42 mm x 16 mm cylinder with two sharp unchamfered flat end faces - a >15 mm flat untextured face by spec.py's own rule."
+   },
+   {
+    "severity": "major",
+    "region": "_corner() lines 1027-1032 - ARB casing seal gaiter, 4 flange cap screws",
+    "issue": "The gaiter flange screws stab through the rubber. Screws sit at r=23.6 mm, h=+2.6 mm with an 8 mm shank running +Y, straight through the first convolution which occupies h 5.2-10.4 mm at r 21.2-27.2 mm. Confirmed by BVH: Boots x Fasteners = 989 overlapping triangle pairs. z_arb.png shows silver screw shanks poking out of the gaiter folds. The heads meanwhile end up at h=-0.4 mm, i.e. buried below the flange on the casing side where they can never be seen."
+   },
+   {
+    "severity": "major",
+    "region": "_corner() web loop lines 864-897 (Arms mesh, upper outboard junction ~(-1.779, 0.594, 0.460)) and _bracket()/_pad()/_clevis() (Brackets mesh, ~(-1.876, 0.139, 0.406))",
+    "issue": "The docstring claims the web/leg union is 'a fillet rather than a step' and that the brackets are single castings, but nothing is unioned - these are separate overlapping closed shells. Measured self-intersection: Arms 540 triangle pairs, Brackets 7048, RodEnds 2805, Driveshaft 1233. The visual consequence at 11x (z_web.png) is a hard straight intersection crease and a visible step where the web crosses the leg fairing, plus a flat chisel-cut n-gon end cap on the web. Every machined titanium bracket junction (pad-to-web, web-to-clevis) is a hard crease with zero radius, which no machined part has."
+   },
+   {
+    "severity": "major",
+    "region": "_pad() line 761-798 - all 6 gearbox-side bracket pads per corner",
+    "issue": "The pads FLOAT 1.3 mm off the body skin (lift=0.0013), directly contradicting the module docstring's claim that 'every grid point resampled off the real station profile, so nothing floats and nothing sinks'. There is no geometry between the skin and the pad underside, so in the assembled car every pad shows a 1.3 mm open shadow slot all the way round its 86x64 mm footprint. The underside is additionally a single flat n-gon (cap0=True) of 5756 mm^2 spanning a curved footprint - a non-planar n-gon that triangulates arbitrarily."
+   },
+   {
+    "severity": "major",
+    "region": "clamp() lines 1135-1150 - all 4 driveshaft band clamps per corner plus the ARB gaiter collar",
+    "issue": "The band clamps are solid pucks, not bands. _spin(..., cap0=True, cap1=True) on a 4-point ring profile appends a full n-gon disc at each end, so each clamp gets a solid 95.6 mm (or 55.2 mm) flat disc face - 7154 mm^2 planar patches, the largest flat faces in the whole part - instead of an open annular strap. Their inner radius is also set exactly equal to the boot radius at that station (47.8 / 27.6 mm), so the surfaces are coincident: Boots x Clamps = 2021 overlapping triangle pairs. In z_shaft.png the clamps read as loose washers slid onto the boot."
+   },
+   {
+    "severity": "major",
+    "region": "_plate() line 536-570 - clevis cheeks, rocker arms, pedestal cheeks, ARB blade, drop-link cheeks",
+    "issue": "Two problems from the polar (star-shaped) resampling. (1) The chamfer is applied as a constant RADIAL inset from the bore centre (max(R[i]-ch, inner)) rather than along the outline normal, so the chamfer band varies in width all round each plate and nearly vanishes along the capsule flanks - clearly visible in z_capscrew.png. (2) n uniform angular rays give dense sampling near the bore and sparse sampling at the far base arc; at n=36-40 the 21 mm base arc gets ~10 samples, sagitta ~0.26 mm, which is a visibly faceted silhouette at the 400 mm hero distance spec.py specifies. z_capscrew.png and z_forkbolt.png both show straight-edged flats on plate outlines."
+   }
+  ]
+ },
+ "rear_wing": {
+  "verdict": "NEEDS_WORK",
+  "polys": 260572,
+  "defects": [
+   {
+    "severity": "critical",
+    "region": "Endplate upper louvre stack, both plates (x -2.460..-2.340, three slots at ZT-0.016..-0.027, -0.033..-0.044, -0.050..-0.061)",
+    "issue": "The louvre slots are NOT cut through the laminate - the brief's one capitalised requirement fails. _shell_from_grid makes each hole exactly one grid cell tall (11 mm: rows TOP_OFFS[3]/[4] etc.) and then wraps a rim band of radius EP_T/2 = 6.5 mm INTO the hole from both the top and bottom edges, so the two rolls meet and overlap in the middle and seal the slot. Rays fired along -Y at every offset from 0.0160 to 0.0270 below the top edge hit RW_Endplate_L twice and never pass through (y = 0.518/0.505 at the slot edges, closing to 0.514/0.509 at mid-slot); at x=-2.36 the ray returns four hits at coincident y (0.5142, 0.5142, 0.5088, 0.5088), i.e. the two rim rolls also interpenetrate each other inside the slot. Rendered straight-on and at 60/25 deg the three louvres read as smooth embossed ribs on a continuous surface with no opening behind the vane; on the assembled car nothing will show through them."
+   },
+   {
+    "severity": "major",
+    "region": "DRS actuator on the centreline - pod tail, pushrod and lever, x -2.508 to -2.541, y +-0.01, z 0.855..0.866",
+    "issue": "The pod and its pushrod interpenetrate the flap and the linkage reads as broken. 46 RW_DRSPod verts lie inside RW_Flap, max depth 3.8 mm at (-2.5078, 0.0089, 0.8594): the pod's flat tail cap dies inside the flap's leading-edge underside and leaves a hard straight boolean seam across the dome, clearly visible in the 8x crop. RW_PushRod has 13 verts inside the flap (max depth 4.0 mm) and its whole mid-span is swallowed by the flap, so from every rear/low angle the pod dead-ends into the flap and the two PodLever tabs plus the rod-end pin hang under the flap with no visible link to anything. No fillet or clearance anywhere in this junction."
+   },
+   {
+    "severity": "major",
+    "region": "Six DRS hinge brackets, y = +-0.115 / +-0.285 / +-0.455, x ~ -2.500, on the mainplane's LOWER (suction) skin just ahead of the TE",
+    "issue": "_hinge sinks the bracket foot 4.0 mm below the UPPER skin over ss 0.690..0.975, but the mainplane section is only ~3 mm thick at ss=0.975, so the titanium blade emerges through the suction surface: measured protrusion 1.4 mm at y=0.115 and 1.6 mm at y=0.455. A straight-down probe shows a teardrop-shaped metal tab sticking out of the underside of the wing at each of the six stations - and the underside is the one large, clean, dark surface a hero render from below will feature."
+   }
+  ]
+ },
+ "suspension_front": {
+  "verdict": "NEEDS_WORK",
+  "polys": 223634,
+  "defects": [
+   {
+    "severity": "critical",
+    "region": "_pin_bolt thread stub - every clevis joint (9 per corner / 18 total: 4 wishbone inboard, track-rod inboard, pushrod both ends, damper foot, rocker damper eye)",
+    "issue": "Line 548 builds the run-out thread with origin already offset by (B_NUT0+B_NUT_H+0.0043) AND axis -pin, so the stub occupies -31.6..-27.3 mm while the bolt shank ends at -23.0 mm. Measured occupancy bands prove a 4.30 mm void: the stub is a DETACHED FLOATING FRAGMENT hanging clear of the bolt. Plainly visible as an isolated threaded barrel in the 16x rocker crop (W2_rocker_slot2.png, top right) and the 12x gusset crop (W3_collar.png, bottom centre). Fix is one sign: pass +pin, or drop the +0.0043 from the origin."
+   },
+   {
+    "severity": "critical",
+    "region": "pushrod pickup clamp collar on the lower-rear wishbone leg, d = 0.0555..0.0901 m from the outboard ball (_pushrod_gusset)",
+    "issue": "The collar is a circular ring (bore r=11.8, outer r=14.7 mm) spun about the leg path, but what it is supposed to clamp is the end socket, whose round spigot axis is 5.1 mm off that path and whose section is a 30 mm-chord aerofoil. Measured: the socket reaches 24.54 mm from the collar axis, i.e. it protrudes 9.84 mm THROUGH the collar's outer wall (171 tri-pairs collar X socket, 99 tri-pairs collar X carbon blade), while on the other side the closest socket surface is 5.60 mm from the axis, leaving a 6.20 mm open crescent you can see straight through the bore. W3_collar.png shows the red jam nut and threaded shank sitting inside the collar bore with daylight around them, and Z4 shows a sawtooth stitch where the collar grazes the carbon."
+   },
+   {
+    "severity": "major",
+    "region": "track-rod inboard gaiter vs its own clevis ears (TR_ANCHOR, x=1.905)",
+    "issue": "The bellows is spun about the skin normal with a 19.2 mm base radius while the clevis ears occupy +/-16.8 mm in ea from -15.5 to +40 mm in eb: 404 intersecting tri-pairs. Z5_trackrod_gaiter.png shows the rubber convolutions sliced clean in half by two flat steel plates passing through them - the single most obviously broken thing in the part."
+   },
+   {
+    "severity": "major",
+    "region": "rocker arms, piv->ph and piv->pd webs (_rocker.web with slot=(0.0044,0.0095))",
+    "issue": "pd is placed 192 deg from ph, i.e. the two arms are nearly collinear, so the ph->pd tie (212.8 mm long, passing 11.1 mm from the pivot) lies down the middle of both arms' lightening slots. The tie's half-thickness is 5.8 mm and the slot half-gap g(s)=4.4..9.5 mm, so the two surfaces are exactly tangent at s=0.27 on both arms - grazing coincidence that combs. Ray casts through the slot measure 1.55-3.73 mm of open gap instead of the intended 8.8-19 mm, and Z3_rocker.png shows a clear sawtooth stitch line along the top of the arm. W1_rocker_slot.png at 16x reads as three stacked bars with two cracks, not a machined bellcrank."
+   },
+   {
+    "severity": "major",
+    "region": "end socket vs rod end - all 12 legs, both ends (_ring_from_sect / _socket)",
+    "issue": "_ring_from_sect morphs the aerofoil towards a circle about ca = 0.17*chord, so the round spigot's axis sits 5.10 mm aft of the ball/thread axis (c_end=30 mm). The rod-end thread (crest r=8.0 mm) therefore stands 1.80 mm outside the 11.3 mm socket over its last ~10 mm, and the socket end ring is visibly lopsided around the jam nut in Z6_rodend_thread.png. The tube a rod end screws into must be coaxial with the ball."
+   },
+   {
+    "severity": "major",
+    "region": "jam nut vs socket near cap - all 12 joints",
+    "issue": "The jam nut spans 45.2-53.0 mm from the ball while the socket's capped near end sits at 51.9 mm with r=10 mm: 1.1 mm of hard interpenetration. Z4 and Z6 both show the red anodised hex sliced by the socket's circular end, and Z4 leaves an isolated red triangular sliver floating clear of the nut body."
+   }
+  ]
+ },
+ "halo_assembly": {
+  "verdict": "NEEDS_WORK",
+  "polys": 117833,
+  "defects": [
+   {
+    "severity": "critical",
+    "region": "FairingFront / FairingRearL / FairingRearR / CrownVaneL+R \u2014 carbon weave mapping",
+    "issue": "The CarbonFibre material maps its twill from OBJECT coordinates with bands in X/Y, so any surface whose normal lies near the object XY plane renders as vertical corduroy instead of a 2x2 twill. Measured streaked area: FairingFront 32.0%, FairingRearL/R 31.6% each, CrownVanes 87.0%. Deep zoom on the front moulding flank (/tmp/halo_z_seam.png, ~90 mm field) shows pure vertical pinstripe with visible moire, and the low-angle/front views show concentric ripple artefacts on the fairing underside. The module already owns the fix (_reorient, docstring at line 172) and applies it to PillarFairing, PodShell and PodHatch \u2014 whose weave reads correctly in the same frame (/tmp/halo_z_loom.png) \u2014 but not to the three hoop mouldings, which are the largest carbon surfaces in the part (8021 cm2 total). A single Euler will not fix a doubly-curved hoop; this needs generated/UV or triplanar mapping."
+   },
+   {
+    "severity": "critical",
+    "region": "All six fairing terminations (arc s=+/-0.575 front, s=+/-0.640 and +/-1.044 rear) and both rear legs",
+    "issue": "The shell is turned inside out. _inner() clamps the inner loop to rmin = tube_r + GAP = 23.70 mm measured from the tube axis, but the moulded-end section (chord 0.062, ht 0.0270) has an outer-loop minimum radius of only 21.76 mm. So the inner skin protrudes up to 1.94 mm OUTSIDE the outer skin over 12 of 73 section points, with its faces wound inward. At the same time the tube is outside the outer skin at 4/186 front-piece stations and 47/66 rear-leg stations (worst -0.74 mm). Consequences visible at zoom (/tmp/halo_z_window.png, /tmp/halo_z_window2.png): the moulding ends as a razor-thin knife edge with no visible laminate thickness, the black MatteBlack Seal ring pokes out through the carbon as a crescent, and the aerofoil section is replaced by a constant-radius cylindrical band down each rear leg where the clamped inner skin becomes the outermost surface. 152 tri-pairs FairingFront x HoopTube, 759 tri-pairs FairingRearL x HoopTube."
+   },
+   {
+    "severity": "critical",
+    "region": "RearPedestalL / RearPedestalR and the hoop tube tails (x -0.123..-0.036, y +/-0.264..0.336, z 0.625..0.681)",
+    "issue": "The socket block is a hollow open shell, not a machined billet: 56 open-boundary edges each (no cap on the top ring), so the 47 mm bore rim renders as a zero-thickness knife edge with the interior visible (/tmp/halo_z_socketL.png, socketL2.png). The loft from the superellipse base to the circular bore also self-intersects \u2014 a sharp V-shaped 'sail' fold runs across the pedestal flank in /tmp/halo_z_padL.png, exactly the failure the code comment at line 1019 claims to have fixed. And the tube does not reach its socket: t_c = a0 + tdir*0.0090 overshoots the last path segment (length 0.0058), so the pedestal's top plane sits 3.24 mm BELOW the tube's end cap, leaving an open annular gap around the tube at both rear feet."
+   },
+   {
+    "severity": "major",
+    "region": "PillarFairing lower termination, z 0.678-0.695, x 0.813-0.936 (front centreline, above the clevis)",
+    "issue": "Same inverted-shell failure at the bottom of the pillar blade: the terminal blend to chord 0.062 / ht 0.0264 gives an outer-loop minimum radius of 20.65 mm against an assumed tube_r of 24.60 mm \u2014 a -3.95 mm breach. Radial probing at z=0.680 shows the outermost surface at +/-Y is the clamped inner skin at 25.7-25.8 mm while the intended outer surface is only 24.1 mm, so the blade's lower 17 mm carries a lumpy cylindrical bulge instead of the aerofoil, and the pillar tube penetrates the outer skin (176 tri-pairs, PillarFairing x PillarTube). This is dead centre at the front of the car."
+   },
+   {
+    "severity": "major",
+    "region": "Front clevis nut, (0.9050, -0.0252..-0.0334, 0.6340)",
+    "issue": "The M10 hex nut floats 2.6 mm clear of FrontEarBossR (boss outer face y = -0.02260, nut seating face y = -0.02520). /tmp/halo_z_nut.png shows the nut hanging in mid-air with its own drop shadow on the boss and daylight under it. The bolt shank ends at y = -0.02740, so it penetrates only 2.2 mm into an 8.2 mm nut \u2014 you look straight into an empty, unthreaded bore. The shank OD (5.2 mm) is also exactly equal to the nut bore ID, giving coincident cylinders and z-fighting inside the bore. On the opposite side the 1.6 mm washer is authored below the seating origin and is therefore entirely buried inside FrontEarBossL \u2014 invisible in /tmp/halo_z_clevis.png."
+   },
+   {
+    "severity": "major",
+    "region": "_prism() chamfer direction \u2014 FrontEarR, FrontEarBossR (and every mirrored prism)",
+    "issue": "_prism builds its end chamfer rings as [y0, y0+chamf, y1-chamf, y1] without regard to extrusion direction. When y1 < y0 (the right-hand mirror) the second ring steps BACK past the cap, producing an inverted, self-intersecting 0.9 mm lip. Result: FrontEarR spans y -0.0219..-0.0099 (12.0 mm thick) while FrontEarL spans +0.0106..+0.0212 (10.6 mm) \u2014 a 1.4 mm left/right asymmetry on a symmetric hero part; FrontEarBossR is 2.0 mm vs BossL 1.4 mm. The inverted lip also bites 0.7 mm into the pillar tube (FrontEarR x PillarTube, 145 tri-pairs at y -0.0100..-0.0178) creating coincident-surface speckle at the clevis inner face."
+   },
+   {
+    "severity": "major",
+    "region": "_flush_screw() \u2014 ~68 fasteners on all fairing parting lines, pod seams, pod hatches, fin base and halo cam",
+    "issue": "The hex socket is built on the wrong face. The hexring stack runs z +0.0004 down to -0.0022 and is capped at +0.0004, so the drive recess opens DOWNWARD into the panel while the visible top (z up to +0.0030) is a plain closed dome. Every one of these fasteners renders as a featureless 10.4 mm blister standing 3 mm proud \u2014 see the screw at the left edge of /tmp/halo_z_seam.png and the pod seam screws. They are also not countersunk/flush as the docstring claims. Compare _cap_screw, which is correct: the pad bolts in /tmp/halo_z_padL.png show proper sockets, washers and spotfaces."
+   },
+   {
+    "severity": "major",
+    "region": "FrontEarBossL/R and other low-segment revolves",
+    "issue": "Faceted in reflection. FrontEarBoss uses 28 segments for a 20.5 x 17.8 mm ellipse (12.9 deg/facet); its bright rim reads as an obvious polygon in /tmp/halo_z_nut.png and /tmp/halo_z_clevis.png at hero zoom. The hoop tube itself is 44 segments (8.18 deg/facet, 0.057 mm chord sag) and the pillar 48 (7.50 deg) \u2014 borderline for the spec's 'camera 400 mm away at 4K' standard."
+   },
+   {
+    "severity": "major",
+    "region": "Chamfer coverage \u2014 HoopTube, FairingFront/RearL/R, PillarTube, PillarFairing, RearFerruleL/R, CrownVaneL/R, PodHatchL/R, FinBlade, Seals",
+    "issue": "24 of 37 objects carry no bevel modifier, and unlike the fasteners (which chamfer in-profile) these terminate in raw 90-degree corners. The fairing end faces, the ferrule rims, the pedestal bore rim and the crown-vane trailing edges all render as razor edges (/tmp/halo_z_window.png, socketL.png, vane.png). spec.py: 'Chamfer every edge a machinist would break.'"
+   }
+  ]
+ },
+ "cockpit_interior": {
+  "verdict": "NEEDS_WORK",
+  "polys": 219905,
+  "defects": [
+   {
+    "severity": "critical",
+    "region": "CI_pedals / CI_footwell (x 0.88-1.07, z 0.184-0.23)",
+    "issue": "The pedal box hangs OUT of the bottom of the footwell tunnel. 212 of 6472 CI_pedals vertices lie below the tunnel's lower skin; deepest protrusion 59.1 mm at (0.882, 0.0805, 0.184). Analytic superellipse test: worst vertex is 1.51x the tunnel radius. Plainly visible in the low view (--az 205 --el 6) and at 8x zoom: the mounting plate, both rails and their cut rectangular ends float in free air under the tunnel belly with a clean intersection line where the tunnel skin passes through them."
+   },
+   {
+    "severity": "critical",
+    "region": "CI_dash footwell aperture (_dash_loops / _resample_by_angle)",
+    "issue": "The 'rolled footwell aperture' is malformed. _resample_by_angle() is called with centre cz=0.5245, which lies 36 mm ABOVE the hole outline (nominal slot z 0.4738-0.5042), so 77 of 128 samples find no intersection and fall back to the hard-coded r=0.05 constant. The actual opening is a 136 x 74 mm blob spanning z 0.5002-0.5745 with a perfectly circular 50 mm top arc; the designed 156 x 30 mm slot at z=0.489 is SOLID (ray +x at z=0.489 hits the panel at x=0.63). At 8x the hole reads as a big ragged round arch with open crescent gaps either side of the column bearing carrier (carrier r=0.0238 vs hole r=0.050)."
+   },
+   {
+    "severity": "major",
+    "region": "CI_dash switch panel / master switch / extinguisher / loom connectors / 14 perimeter screws",
+    "issue": "Every piece of dash furniture is on the wrong face. The driver faces +x and sees the panel's rear face at x=0.630, but the switch plates, buttons, master switch, T-handle, connectors and perimeter cap screws are all built at x >= 0.6466, i.e. on the forward face, pointing into the footwell tunnel and the nose. Confirmed by render: from az=168/el=42 (driver's eye) the bulkhead is a bare carbon disc with only the column stub; from az=-25 the whole switchgear array is visible from outside the car."
+   },
+   {
+    "severity": "major",
+    "region": "CI_column vs steering_wheel.py hub",
+    "issue": "The column stub cannot mate with the wheel. Column tip (0.5565, 0, 0.5003) with axis (-0.918, 0, -0.397), i.e. DESCENDING toward the driver at -23 deg. steering_wheel.py places its QR spline socket (local z -0.0478..-0.0652 through MW) at world (0.5443,0,0.4821)-(0.5604,0,0.4756), rising at +22 deg toward the driver. The two axes disagree by ~45 deg and the mating splines miss each other by ~25 mm in z. Brief asked for the column end clear at (0.50, 0, 0.50); the tip is 56 mm short in x and, extended, its axis reaches x=0.50 at z=0.476."
+   },
+   {
+    "severity": "major",
+    "region": "CI_seat harness slot bosses (u=0.860 q=+-0.40, u=0.320 q=+-0.26)",
+    "issue": "The harness slots are faked. Ray-cast down the slot centre hits the shell outer surface at -0.2 mm and the inner surface at -6.4 mm - the shell is never cut, so each 'slot' is a 5 mm blind pocket inside a raised boss. No webbing passes through any of them (the shoulder strap merely runs over the surface past the boss), so the four slot bosses are decoration. The boss tubes also leave 352 open (non-manifold) boundary edges on CI_seat."
+   },
+   {
+    "severity": "major",
+    "region": "CI_headrest vent bores (8 bores, x=-0.046..-0.036)",
+    "issue": "The 'grommeted vent bores' are still not holes (this is D-CI07 recurring in a new form). The bore solid is inserted into the pad but the pad's own front face is not cut: ray-cast at each bore centre hits the pad face at +0.04/+0.18 mm, then the blind cap 18.2 mm inside. At 8x zoom every bore renders as a flat crescent-moon moulding around a solid disc of pad - the whole crown reads as a row of Pac-Man shapes, not vents."
+   },
+   {
+    "severity": "major",
+    "region": "CI_harness_web shoulder strap upper ends (x=-0.058, y=+-0.0765, z=0.611)",
+    "issue": "Both shoulder straps stop in mid-air: the top control point sits 9.0 mm off the seat shell and 7.8 mm off the pad surface, 48 mm past the slot boss, with a cut end cap. The end is then buried inside the head restraint pad (340 CI_headrest x CI_harness_web face pairs), so the straps visibly dive into the headrest instead of threading a seat slot. D-CI22 was only fixed at the buckle end."
+   },
+   {
+    "severity": "major",
+    "region": "CI_column splined end vs CI_seatpad leg trough (0.5692, 0, 0.4866)",
+    "issue": "The steering column's splined end is buried 6.5 mm inside the leg-trough pad (104 CI_seatpad x CI_column face pairs). This is the exact spot the hero camera looks at when the steering wheel is fitted - a shaft sunk into the foam."
+   },
+   {
+    "severity": "major",
+    "region": "whole part vs current monocoque_b (tray floor Z_FLOOR=0.472)",
+    "issue": "The 'MEASURED, not guessed' landing in the module header is now stale. Ray-casting the currently-built monocoque_b: the cockpit throat no longer caps at z=0.4601 - it bottoms out on MB_cell_floor at z=0.3949 (chassis_cockpit at 0.3704). The tray floor therefore floats 77 mm above the real tub floor, and the interior now interpenetrates the monocoque: CI_footwell x MB_chassis_cockpit 742 face pairs, CI_dash x MB_chassis_cockpit 220, CI_fixings x MB_chassis_cockpit 80, CI_footwell x MB_cell_bulkhead 76. (Side walls still agree: 0.2063/0.2009/0.1875 measured vs 0.2067/0.2017/0.1887 documented.)"
+   }
+  ]
+ },
+ "nose_assembly": {
+  "verdict": "NEEDS_WORK",
+  "polys": 138579,
+  "defects": [
+   {
+    "severity": "critical",
+    "region": "underside pylon mounting bosses, NOSE_PylonBoss_L/R, x 2.872-2.990",
+    "issue": "The pad footprint is laid out in a constant arc-from-crown coordinate (s_ref sampled once at x_ref=2.940), but the section shrinks fast toward the tip (half-arc 0.2853 at x=2.872 -> 0.2430 at x=2.990), so the pad skews sideways along its length. Measured pad centreline: y=+72.2 mm at x=2.872, +47.7 mm at x=2.941, +30.2 mm at x=2.990 - a 42 mm lateral drift. Outboard edge climbs to y=86.4 mm (10 mm past the belly edge bw=76.2, onto the chine, where the slab is ~12 mm thick and stands clear of the belly in side elevation); inboard edge reaches y=6.7 mm at x=2.990, so the L and R pads all but meet on the car centreline (13 mm apart). Bottom plan render shows them as two skids converging in a V toward the tip. The docstring claims 'bosses at y = +-0.048'; that is true at exactly one station. They do not line up with front_wing's pylon, which is at y = 48 +- 19 mm over x 2.858-2.968. Fix: resolve s per station with _v_of_y(x, PYL_Y*side) instead of freezing s_ref."
+   },
+   {
+    "severity": "major",
+    "region": "pylon boss mating face vs front_wing pylon flange, x 2.858-2.968",
+    "issue": "The 'machined flat at z = 0.2235' underside is only at 0.2235 forward of x~2.93. Aft of that _smin(PYL_FACE_Z, skin_z, 0.0011) follows the skin down: zb = 0.2207 at x=2.878, 0.2190 at x=2.860 - up to 4.5 mm below the nominal mating plane, over roughly the aft half of the pad. front_wing's PylonFlange top face is a flat at z=0.2235 spanning x 2.858-2.968, so in the assembled car the two solids interpenetrate by up to 4.5 mm and the boss presents no flat mating face where the wing actually bolts on."
+   },
+   {
+    "severity": "major",
+    "region": "FIA crash-structure blunt tip face, x 2.9758-3.000",
+    "issue": "Brief asks for a slightly flattened blunt end ~150 mm wide x 130 mm tall. The mesh rim ring at x=2.9988 measures 104.4 x 80.7 mm (analytic 111.6 x 83.6 before the crown fillet) - 30-35 % under brief in both axes. The 157.6 x 121.9 mm quoted in the docstring as 'at its widest' is the roll shoulder at x=2.9758, 23 mm behind the tip, not the face. TIP_IN=6 mm pinch plus a 23 mm roll radius eat the face; nose-on render reads as a rounded bulbous toe rather than a flattened bluff crash structure. Not a needle, but the briefed dimensions are not delivered."
+   },
+   {
+    "severity": "major",
+    "region": "nose tip shell forward of x=2.962 (contract-surface violation)",
+    "issue": "_tip_shrink plus the roll pull the shell inside spec.body_surface_point rather than 3 mm proud of it: half-width vs spec is +3.04 mm at x=2.940, +0.04 mm at 2.9619, -2.96 mm at 2.9758, -7.87 mm at 2.990, -25.97 mm at the tip. The last ~38 mm of the cone is therefore below the contract skin. monocoque_b (the assembled monocoque, MONOCOQUE_CHOICE in s08_assemble) builds its own nose to X_TIP=3.000 with a 17 mm tip roll on that same surface, so the monocoque's blunt tip will protrude straight through this cone's tip in the assembled hero shot."
+   },
+   {
+    "severity": "major",
+    "region": "pitot rake probe roots / cross bar, x 2.567-2.598, z 0.425-0.438",
+    "issue": "D-na-05 is not fixed. At 10x the probe root bosses meet the bar as raw un-filleted intersections: each root leaves a razor-thin chisel sliver of the boss cone lying proud on the bar surface, and the outer probes' bosses (r=4.42 mm about z=0.4296, bar half-height 4.82 mm about z=0.4316) protrude 1.60 mm below the bar and 0.9 mm past its |y|=49.0 mm end cap, with a crescent of the boss hanging past the cap. Reads as a Boolean crash on the most eye-catching detail on the nose top."
+   },
+   {
+    "severity": "major",
+    "region": "nose/chassis joint collar, NOSE_Collar, x 1.900-1.980",
+    "issue": "At 10x the whole collar is covered in 1.5-3 mm vertical corduroy ribbing - it reads as corrugated plastic, not lacquered twill. Re-rendering the identical crop with every material replaced by a plain grey (FLATMAT diagnostic) removes the striping completely, confirming it is the shared s03_materials weave (Object-space X/Y wave bands with no Z dependence) degenerating on a large near-vertical carbon band, not geometry. The module dodged the same artefact on the pitot mast by switching it to MatteBlack but left it on the collar, which is the single largest carbon surface in the part."
+   },
+   {
+    "severity": "major",
+    "region": "NOSE_PylonInserts_L/R threaded inserts",
+    "issue": "The _gen_lathe profile is non-monotone: it ends (0.0074, -0.0009) -> (0.0074, +0.0016), i.e. the sleeve turns and runs back up at constant radius, and close_ends then caps it with an n-gon at h=+0.0016, r=0.0074 that slices through the r=0.0034 shank. Result: signed volume -5.04e-7 m3 and 368 self-intersecting triangle pairs per side. From below the insert renders as a plain flat disc with no thread, socket or chamfer detail."
+   }
+  ]
+ },
+ "barge_boards": {
+  "verdict": "NEEDS_WORK",
+  "polys": 268052,
+  "defects": [
+   {
+    "severity": "critical",
+    "region": "BB_RootStrips / BB_Struts / BB_Vanes / BB_UnderVanes vs the monocoque flank, x 1.03-1.32, y 0.30-0.34, z 0.29-0.40",
+    "issue": "Interpenetrates the monocoque, which the brief explicitly forbids. BVH nearest-surface test: 1264 BB_RootStrips vertices sit INSIDE monocoque_b by up to 4.83 mm (worst at 1.0286, 0.3268, 0.365) and 37 inside monocoque_a by up to 7.59 mm (1.3149, 0.304, 0.3375); the rear tie strut's chassis clevis has 79 verts inside monocoque_b by up to 5.57 mm (0.9949, 0.3272, 0.3834); 51 vane-root verts inside by up to 2.01 mm; the belly pad has 161 verts inside monocoque_b by up to 1.30 mm (1.7272, 0.172, 0.1307). Root cause: every chassis-side part is offset from spec.BODY_STATIONS (the contract skin) by only 1.4-4.6 mm, while the real monocoque skin sits several mm outboard of the contract in this band. The module docstring asserts everything is held '2.1 - 7.4 mm proud ... it never grows out of the inside of it' - that claim is measurably false. At assembly the top two mounting strips are half-swallowed by the tub."
+   },
+   {
+    "severity": "major",
+    "region": "BB_Vanes x BB_Slat - vane 1 leading edge through the forward slat, x 1.395-1.425, z 0.186, y 0.510-0.515",
+    "issue": "Vane 1's leading edge sweeps 30 mm forward of the slat's trailing edge (xle 1.395 + sweep 0.030) while its spanwise y sweeps straight through the slat panel. Measured: at span u=0.88 the vane's y is 0.5092 (inboard of the slat's 0.5106-0.5150 faces), at u=0.90 it is 0.5150 (outboard) - it crosses clean through. BVH confirms 468 crossing triangle pairs between BB_Vanes and BB_Slat. Two independent 4.4-5.0 mm panels form a raw X with no fillet, boss or joint; the vane nose emerges through the slat's outboard face."
+   },
+   {
+    "severity": "major",
+    "region": "BB_Vanes - all five chordwise flow fences, undersides of vanes 1-5 (10 places with the mirror)",
+    "issue": "Each fence path starts at (vane mid z - 1.9 mm) and _plate_loop then adds a rolled semicircular cap of half-thickness 1.6 mm below that, so the fence solid reaches mid - 3.50 mm. The vane's own lower surface is only at mid - 2.49 mm (V_HT 2.5 mm, swell 1.0 at every fence station). Every fence therefore protrudes 1.00 mm through the underside of its vane, along 185-344 mm of chord - ten raised welts, visible from any low camera. The docstring says the fence stands on the UPPER surface only."
+   },
+   {
+    "severity": "major",
+    "region": "BB_RootStrips - the five chassis mounting strips, x 1.13-1.30",
+    "issue": "Strip half-height is 22.5 mm falling to 19.0 mm, and _plate_loop adds a further 2.5 mm rolled cap, giving a 25.0 mm half-extent against a vane pitch that narrows to 43 mm at the top of the stack. Measured z-extents: strips 3/4 overlap by up to 2.7 mm over x 1.24-1.30 and strips 4/5 by up to 5.5 mm over x 1.13-1.27. The top three of the five 'small mounting strips' the brief asks for fuse into one continuous slab (clearly visible in the az 215 / el 26 view)."
+   }
+  ]
+ },
+ "sidepod": {
+  "verdict": "NEEDS_WORK",
+  "polys": 230776,
+  "defects": [
+   {
+    "severity": "critical",
+    "region": "SP_scoop tail, x = -0.186 to -0.238 at v = 0.170 (_build_scoop)",
+    "issue": "The MatteBlack throat-floor grid rises on a ramp (h = hb + 1.6 mm + 9.0*t^1.5) while the painted shell collapses (hgt = 24.0*(1-t)^0.62 + 0.4 mm). They cross at t = 0.82 and the floor finishes 11.13 mm PROUD of the shell. Rendered from behind-low (/tmp/rsp2/s_tail.png) a black delta bursts out through the painted skin, hangs clear of the bodywork and terminates in a hard unchamfered knife edge. Broken geometry, unmissable at 4K."
+   },
+   {
+    "severity": "critical",
+    "region": "louvre bank, SP_louvres over SP_shoulder trough, x = -0.735 to -0.052, v = 0.660 to 0.800",
+    "issue": "The 18 gills are NOT cut through, contrary to the brief's 'louvres cut through the upper shoulder'. 51 of 51 rays fired down the slots along the local surface normal land on the closed SP_shoulder pan 7.7-9.2 mm below. Looking straight down the normal (/tmp/rsp2/l_normal.png) every slot shows a brightly lit floor plus two of the three longitudinal rails. Blade root h = 18.23 mm vs pan h = 12.43 mm and rail crest 16.43 mm - only 2 mm of relief - so the bank reads as a decorative grille bonded to a solid tray, not as vents."
+   },
+   {
+    "severity": "critical",
+    "region": "SP_mirrorface (the reflector), material assignment in build()",
+    "issue": "The mirror glass is assigned 'SteelFastener' (Metallic 1.0, Roughness driven 0.19-0.32 by scale-900 noise - the bolt/rod-end material). Viewed from the driver's eye direction (/tmp/rsp2/m_glass.png) it is a flat matte grey card that reflects nothing. The brief requires 'real mirror-glass faces'; this is a blank plate. The 1.6 mm convex bulge over a 176 mm span is also imperceptible, so it reads dead flat."
+   },
+   {
+    "severity": "major",
+    "region": "SP_mirror housing tip, _build_mirror prof[-1] override",
+    "issue": "prof[-1] is hard-set to (0.115, 0.045, -0.0335) but prof[-2] is (0.0804, 0.0201): the section SHRINKS to 14.1 x 1.35 mm and then FLARES back out to 20.2 x 3.0 mm across only 0.108 mm of depth. That is a 3.05 mm back-facing flange at a 177.96 deg fold, closed by a 96-vertex n-gon with 0.48 mm vertex spacing - tighter than the 0.8 mm the module's own D-SP24 rejected as artifact-producing. SP_mirror's p99 dihedral is 172.6 deg / max 178.0 deg, by far the worst in the part."
+   },
+   {
+    "severity": "major",
+    "region": "downwash ramp, flank top edge aft of x = -0.30 (_h_flank gx term)",
+    "issue": "The only ramp geometry is a 2.8 mm gutter at v = 0.80 and a 4.4 mm lip at v = 0.948. For x in [-0.972, +0.196] the v = 0.80 gutter is buried under the 30 mm plinth plateau, so the gutter is exposed only over x in [-1.148, -0.972] (176 mm) and there at gx <= 0.61. Top-down and rear crops (/tmp/rsp/z_te.png, /tmp/rsp2/pod_te.png) show a plain unbroken gloss shell aft of the plinth. The brief's 'downwash ramp toward the rear' is not modelled - only a token 7 mm ripple in the last 18 cm."
+   },
+   {
+    "severity": "major",
+    "region": "mirror stalk root on the flank panel, x = 0.472, v = 0.870 (_build_mirror aerofoil stalk)",
+    "issue": "The stalk plunges into the gloss paint with no fillet, no boss and no visible flare (/tmp/rsp2/m_root.png). Of the four flare rings only the 1.28 and 1.13 scales sit above the panel skin: rings at dn = -0.0215 and -0.0120 land at h = -5.0 mm and +4.5 mm, below the flank's solidified skin at 8.7 mm. A razor-thin black trailing sliver lies flat on the paint. The four 'mirror mount shoe' bolts sit on bare paint holding nothing down. Stalk material is also MatteBlack (spec'd for 'rubber seals, interior, halo'), not carbon as the brief asks."
+   },
+   {
+    "severity": "major",
+    "region": "CarbonFibre weave on SP_mirror, SP_sis and the lower flank carbon band (v < 0.300)",
+    "issue": "The shared object-space weave map moires severely on these surfaces. The whole mirror housing renders as a wall of interference stripes (/tmp/rsp2/m_tail.png), the lower flank band shows chevron banding at grazing incidence (/tmp/rsp/z_lowlip.png) and the SIS blade the same (/tmp/rsp2/sis_tail.png). At 4K this shimmers rather than reading as twill; these regions need a different weave scale or a different material choice."
+   },
+   {
+    "severity": "major",
+    "region": "SP_scoop splitter bars, outer two bars at dv = +/-21.4 mm, x = 0.044 to 0.014",
+    "issue": "Bar top is computed from the CREST height (0.0240*(1-g)^0.62*0.92) but the bars sit 21.4 mm off centre where the arched shell is 2.16 mm lower. Both outer bars poke 2.16 mm out through the painted scoop lip."
+   },
+   {
+    "severity": "major",
+    "region": "SP_fixings quarter-turn slots, all 73 fasteners per side (_fastener)",
+    "issue": "The slot box top is at +1.10 mm but the minimum head-surface height over the slot footprint (r <= 4.6 mm) is +1.40 mm, so every slot box is entirely inside the head and never renders. Confirmed visually - fasteners read as plain domed buttons in z_mouth, z_louvre, z_trim and m_root. 146 dead boxes of geometry, and the module's claimed 'Dzus quarter-turn' read is lost."
+   },
+   {
+    "severity": "major",
+    "region": "SP_shoulder plinth outer perimeter, x = -0.972 to +0.196, v = 0.600 to 0.886",
+    "issue": "The plinth's outer flange sits only +0.27 to +0.30 mm proud of the flank's solidified outer skin along its entire 1.168 m x 2 outline (8580 near-tangential tri-pairs against SP_flank). The carbon/paint boundary is therefore essentially a decal edge with sub-pixel geometry - the same failure D-SP19 claims to have fixed on the flank - and the grazing intersection is an aliasing risk at 4K."
+   },
+   {
+    "severity": "major",
+    "region": "inlet duct interior, SP_front material bands (_build_front mats)",
+    "issue": "The comment (D-SP13) says the back half of the duct is gold heat-shield film, but the code assigns mat 2 (AnodisedGold) to every band past the lip roll: the whole 160 mm throat is gold from the aperture edge inward. Gold is visible immediately behind the rolled lip in /tmp/rsp/z_mouth.png and the duct's outer face is gold too, which is why the mouth reads as a gold trumpet in the az-55/el-78 and az-165/el-45 views."
+   }
+  ]
+ },
+ "engine_cover": {
+  "verdict": "NEEDS_WORK",
+  "polys": 186560,
+  "defects": [
+   {
+    "severity": "critical",
+    "region": "EC_fin root skirt, x=-0.66 to -2.10, both sides of the spine",
+    "issue": "The shark fin does not touch the bodywork. _fin_ring builds a section whose bottom edge is a FLAT line at z = crown-3mm, then multiplies the half-width by fil=1+1.05*exp(...) (up to 2.05x) to make a root fillet up to 36.9mm wide. Laid on a domed deck that has already fallen ~11.6mm at 28mm off the spine, the flare's outer corners lift clear. Vertical ray probes: at x=-0.700, y=+0.0257 the fin's underside is at 41.0mm and EC_shell at 49.7mm -> an open 8.7mm slot; x=-1.000 6.5mm; x=-1.400 5.4mm; x=-1.800 3.2mm. Worst corner burial -9.80mm at x=-0.660. This is a continuous see-through gap down both sides of the fin for its whole 1.7m length, and it is what makes the bright unbroken line along the fin base in c6_fin_tail.png."
+   },
+   {
+    "severity": "critical",
+    "region": "EC_fin / EC_hoop crest junction, x=-0.40 to -0.55, |y|<0.035",
+    "issue": "The fin's front 80mm is buried inside the crest fairing (fin top +4.1mm vs crest +10.4mm at x=-0.45) and breaks out of it at a very shallow angle. Ray-cast through the visible artefact in r3_finroot.png / c7_hoop_tcam.png: EC_fin at (-0.5345,-0.0236,+0.9043) with EC_hoop only 10.9mm behind, and at (-0.4079,-0.0344,+0.9280) with EC_hoop 5.7mm behind. The result renders as a thin, knife-edged, torn-looking membrane standing proud of the crest, right at the roll hoop - the single most photographed area of the car. Reads as corrupted geometry, not as a fin root."
+   },
+   {
+    "severity": "major",
+    "region": "EC_louvres, both banks (x=-0.94 and x=-1.705), all four apertures",
+    "issue": "The gills read as a solid ribbed rubber pad, not as slots cut through the cover. Each blade rises 9.1mm (lift = 0.0094*smoothstep(s)-0.0003) over an 8.1/7.3mm chord = a 49-52 deg blade, while the gap to the next blade is only 4.54/4.13mm. Every blade therefore occludes the slot behind it from any camera above the shoulder line. Confirmed at 9x from two normal hero angles (c2_louvresA.png az55/el30, c3_louvresB.png az62/el26): zero visible openings, zero glimpse of the 24.5mm-deep EC_pans behind them. The slots ARE open geometry (ray probes reach EC_pans at ~17mm depth) - they are just invisible, which is the defect the brief explicitly calls out."
+   },
+   {
+    "severity": "major",
+    "region": "EC_louvres blade layout, w-extremes of every bank",
+    "issue": "bwid = pitch*0.64 and the blade span is only 0.86*wh, so the blades cover +/-35.6mm of a 44.0mm half-aperture (bank A) and +/-32.3mm of 40.0mm (bank B). That leaves an UNLOUVRED open slot of 8.43mm (A) and 7.66mm (B) at BOTH edges of all four banks - roughly twice the 4.5/4.1mm inter-blade gap and ~300mm long. The only part of the aperture that reads open is the frame margin, so each bank looks like it is missing its outermost two gills. Visible as the dark unbroken band at the bottom of c3_louvresB.png."
+   },
+   {
+    "severity": "major",
+    "region": "EC_exhaust clamp band, x=-2.266 and x=-2.286 (inside the tailpipe bore)",
+    "issue": "acc.loft(band, 2, closed=True, cap_start=True, cap_end=True) caps a 64-point ring of radius R_PIPE+0.0005 = 36.5mm, i.e. it emits two SOLID AnodisedGold discs across the full bore (bore radius 33.4mm), 49mm inside the 72mm tip. Ray from behind at every z from 0.220 to 0.280 hits EC_exhaust at x=-2.2860. Rendered straight down the pipe at 10x (r1_pipe_bore.png) the tailpipe is a blind gold-bottomed cup. The 405mm of real bore and the MatteBlack plug behind it are dead geometry."
+   },
+   {
+    "severity": "major",
+    "region": "EC_tailliner floor vs EC_exhaust, x=-1.95 to approx x=-2.13",
+    "issue": "_liner_ring's chord floor sits above the pipe over the forward half of the duct: floor z 0.2524 vs pipe bottom 0.2024 at x=-1.960 (+50.0mm), +36.2mm at -2.000, +20.8mm at -2.050, +7.9mm at -2.100, clearing only by x=-2.150. BVH overlap EC_exhaust x EC_tailliner = 1933 triangles. The duct floor runs straight through the tailpipe with no fillet or fairing, inside the exact region the brief asks to show as 'visible internal ducting' - the crease is visible looking into the exit in c4_tail_exhaust.png. The annular heat-shield bulkhead that is supposed to seal around the pipe is 200mm further forward and irrelevant."
+   },
+   {
+    "severity": "major",
+    "region": "EC_fixings, cockpit coaming x=+0.070 / -0.048 / -0.166 and roll-hoop crest x=-0.324",
+    "issue": "Fastener placement is never validated against what is underneath. 14 of 176 studs are wrong: 4 at (+0.0700,+/-0.1743,+0.6140) and (-0.0480,+/-0.1783,+0.6280) have NO surface beneath them within 100mm - the deck panel does not start until X_DECK_F=-0.176, so they hang in the cockpit opening; 2 at (-0.1662,+/-0.1518,+0.6953) float 17.2mm above the bulkhead; 1 at (-0.3235,0,+0.9450) floats 3.1mm above the hoop band on the crest (directly beside the airbox, unmissable); and 7 are fully buried - 2 inside EC_tcam by 38.9/19.9mm, 3 inside EC_hoop, and 2 inside EC_fin by 23.2/31.3mm (the q=0 transverse-seam studs at x=-0.537/-0.583 sit on the spine where the fin is 25mm tall)."
+   },
+   {
+    "severity": "major",
+    "region": "EC_tcam, x=-0.372 to -0.428, z up to 0.9943",
+    "issue": "The onboard camera pod is a 537-poly featureless blob: a tapered carbon 'thumb' with a grey sphere shoved into its side, no housing, no lens bezel, no mount, and a hard unfilleted interpenetration where the lens meets the body (66 overlapping tris with EC_hoop as well). It is the highest point of the entire car (z=0.994, above ROLL_HOOP_TOP_Z=0.950) and sits dead centre of the airbox hero shot - see c7_hoop_tcam.png and r3_finroot.png at 8x."
+   }
+  ]
+ }
+}
