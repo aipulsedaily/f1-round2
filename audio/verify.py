@@ -40,6 +40,20 @@ PKG = os.path.dirname(os.path.abspath(__file__))
 # ratios (0.75 = one tooth over, 0.485 = the sub-octave), 480 cents and up, while
 # the worst genuine error either master shows is 30 cents. See `doppler_gate`.
 TRACK_MAX_CENTS = 200.0
+
+# THE FIRING ORDER, IN ONE PLACE, BECAUSE B7 MOVES IT.
+# Today's engine fires evenly on a 120-degree crank, so the fundamental is
+# engine order 3 (rpm/60*3). The spec's B7 adopts the FIA Art. 5.2.10 three-
+# journal geometry, which forces uneven 90/150 firing and moves the fundamental
+# to order 1.5 -- HALVING it. `doppler` is the only load-bearing gate the old
+# suite had, and a comb search handed the wrong fundamental locks an octave out
+# and reports a tracker failure fraction, not a Doppler failure. So the order
+# lives here, both gates read it, and porting B7 is one edit rather than a hunt.
+ENGINE_ORDER = 3.0
+DOPPLER_MIN_CLOSING_MS = 15.0
+# A pass worth measuring. Below ~15 m/s of closing speed the ratio moves by
+# under 0.8 semitones over the window and the measurement is inside its own
+# error bar, so the station is not manufactured -- it is skipped and said so.
 # frame rate comes from the beat sheet, which is the film's own declaration
 with open(os.path.join(ROOT, "docs", "beat_sheet.json")) as _fh:
     FPS = int(json.load(_fh)["fps"])
@@ -274,10 +288,103 @@ def seam_gate(x, sr, sheet, label="", half_ref_s=0.5):
     }
 
 
+def _d3_score_at(mono, sr, t, win_s=0.5):
+    """|3rd difference| peak in a +-25 ms window at `t`, over the local median
+    of the surrounding +-`win_s`."""
+    n = mono.shape[0]
+    i = int(t * sr)
+    a0, b0 = max(i - int(win_s * sr), 0), min(i + int(win_s * sr), n)
+    if b0 - a0 < 256:
+        return float("nan")
+    d3 = np.abs(np.diff(mono[a0:b0], n=3, prepend=[0.0, 0.0, 0.0]))
+    j = i - a0
+    lo, hi = max(j - int(0.025 * sr), 0), min(j + int(0.025 * sr), d3.shape[0])
+    med = float(np.median(d3))
+    if med <= 0 or hi <= lo:
+        return float("nan")
+    return float(d3[lo:hi].max() / med)
+
+
+def splice_scan(x, sr, win_s=0.5, top=12):
+    """THE SAME STATISTIC, FILM-WIDE, not only at the five beat boundaries.
+
+    `seam_gate` adjudicates 20 samples of 5,956,000 -- 0.0003 % of the film --
+    and that is measured, not estimated. It is why `swap_b1_loop.wav`, whose
+    beat 1 is a 2 s block tiled 16.5 times with sixteen splices inside it,
+    reported a seam percentile BIT-IDENTICAL to the delivered master's: every
+    one of its splices was inside a beat, and the gate only visits boundaries.
+
+    This walks the whole file and RANKS candidates. It deliberately does NOT
+    carry an absolute threshold: the breach is a real 562x local-median event
+    at 36.0 s and any global bar that failed it would be a bar demanding the
+    film not have a breach. What is gated is the gate's own SENSITIVITY, in
+    `main`, by injecting a splice mid-beat and measuring how far it stands out
+    from that location's own floor.
+    """
+    x = np.asarray(x, dtype=np.float64)
+    if x.ndim == 1:
+        x = x[:, None]
+    mono = x.mean(axis=1)
+    n = mono.shape[0]
+    d3 = np.abs(np.diff(mono, n=3, prepend=[0.0, 0.0, 0.0]))
+    half = int(win_s * sr)
+    step = max(half // 2, 1)
+    hits = []
+    for a0 in range(0, n - 1, step):
+        b0 = min(a0 + 2 * half, n)
+        seg = d3[a0:b0]
+        if seg.size < 64:
+            continue
+        # THE REFERENCE IS THE LOCAL MEDIAN, NOT A HIGH PERCENTILE. A 99.99th
+        # percentile of a 48,000-sample window is itself five samples from the
+        # top, so a real splice can only ever score 2x it -- the statistic
+        # saturates on exactly the event it exists to find.
+        med = float(np.median(seg))
+        j = int(np.argmax(seg))
+        if med <= 0:
+            continue
+        hits.append({"t_s": float((a0 + j) / sr), "d3": float(seg[j]),
+                     "local_median": med, "score": float(seg[j] / med)})
+    hits.sort(key=lambda h: -h["score"])
+    merged = []                      # one splice, one report
+    for h in hits:
+        if all(abs(h["t_s"] - m["t_s"]) > 0.05 for m in merged):
+            merged.append(h)
+    return {"statistic": ("|3rd difference| peak over the rolling local MEDIAN, "
+                          "over the WHOLE film"),
+            "windows_scanned": int((n - 1) // step + 1),
+            "coverage_fraction": 1.0,
+            "candidates": merged[:top],
+            "worst_score": merged[0]["score"] if merged else 0.0,
+            "no_absolute_threshold": (
+                "by design: the breach is a legitimate 562x event and a global "
+                "bar that failed it would be a bar demanding the film not have "
+                "a breach. Sensitivity is gated by injection instead.")}
+
+
 # ============================================================== level gate ====
+def _pyloudnorm_lufs(x, sr):
+    """ITU-R BS.1770-4 through `pyloudnorm` (MIT), the reference implementation.
+
+    The spec asks `levels` to swap its hand-rolled meter for this one. Both are
+    reported and their difference is gated: an in-repo K-weighting that
+    disagrees with the reference by more than 0.3 LU is a bug in the meter, and
+    a meter nobody cross-checks is how a level error ships.
+    """
+    try:
+        import pyloudnorm                                     # noqa: PLC0415
+    except ImportError:
+        return {"available": False}
+    m = pyloudnorm.Meter(sr)
+    return {"available": True, "integrated_lufs": float(m.integrated_loudness(x)),
+            "implementation": "pyloudnorm %s, ITU-R BS.1770-4" %
+                              getattr(pyloudnorm, "__version__", "?")}
+
+
 def level_gate(x, sr):
     L, st, st_t = dsp.loudness_lufs(x, sr)
     tp = dsp.true_peak_dbtp(x, sr)
+    pln = _pyloudnorm_lufs(x, sr)
     pk = float(np.abs(x).max())
     n1 = x.shape[0] // sr
     seg = x[:n1 * sr].reshape(n1, sr, -1)
@@ -292,7 +399,12 @@ def level_gate(x, sr):
         "short_term_range_db": float(st.max() - st.min()),
         "silent_1s_windows_below_-80dB": quiet,
         "channel_correlation": float(np.corrcoef(x[:, 0], x[:, 1])[0, 1]),
-        "PASS": bool(tp <= -1.0 and pk < 1.0 and abs(L + 14.0) <= 0.5 and quiet == 0),
+        "reference_meter": pln,
+        "reference_meter_delta_lu": (
+            float(L - pln["integrated_lufs"]) if pln.get("available") else None),
+        "PASS": bool(tp <= -1.0 and pk < 1.0 and abs(L + 14.0) <= 0.5 and quiet == 0
+                     and (not pln.get("available")
+                          or abs(L - pln["integrated_lufs"]) <= 0.3)),
     }
 
 
@@ -606,6 +718,21 @@ AUDIO_EXT = (".wav", ".aif", ".aiff", ".flac", ".mp3", ".ogg", ".m4a", ".opus",
 # opens the FINISHED MASTER to measure it. It contributes nothing to the render.
 ALLOW = {("verify.py", "sf.read")}
 
+# THE ONLY THIRD-PARTY LIBRARIES THIS PACKAGE MAY IMPORT, BY NAME.
+# Code libraries only. Every one of them is an ALGORITHM: pyroomacoustics
+# generates an impulse response from room dimensions, pyloudnorm implements
+# ITU-R BS.1770-4, parselmouth is a dev-only cross-check of the in-repo Boersma
+# HNR and is deliberately NOT in requirements.txt because it is GPL-3 and must
+# not enter the shipped package. NONE OF THEM SHIPS CONTENT. The ban on
+# recorded material is absolute and it is on CONTENT, not on code.
+ALLOWED_THIRD_PARTY = {"pyroomacoustics", "pyloudnorm", "parselmouth"}
+DEV_ONLY_THIRD_PARTY = {"parselmouth"}          # GPL-3: tools/ only, never audio/
+STDLIB_AND_CORE_OK = {"numpy", "scipy", "soundfile", "matplotlib", "json", "os",
+                      "sys", "math", "ast", "argparse", "dataclasses",
+                      "subprocess", "hashlib", "time", "collections",
+                      "itertools", "functools", "warnings", "typing", "re",
+                      "__future__", "audio", "tools"}
+
 
 def _dotted(node):
     parts = []
@@ -634,6 +761,15 @@ def scan_external(paths, render_only=False):
     for fp in sorted(files):
         base = os.path.basename(fp)
         if render_only and base == "verify.py":
+            continue
+        # DECLARED EXCEPTION, CHECKED RATHER THAN ASSERTED: `audio/controls/`
+        # is the permanent control corpus. It reads the DELIVERED MASTER, on
+        # purpose -- C4 is "the rejected master, retained permanently" and C1
+        # and C7 are built from it -- and it contributes nothing to the render.
+        # `percept.g_construct` fails if any render-path module ever imports it,
+        # and `main` re-checks the same thing here, so "not on the render path"
+        # cannot quietly stop being true.
+        if os.path.basename(os.path.dirname(fp)) == "controls":
             continue
         src = open(fp, encoding="utf-8", errors="ignore").read()
         try:
@@ -669,6 +805,41 @@ def scan_external(paths, render_only=False):
                 if v.endswith(AUDIO_EXT) and base not in ("master.py", "verify.py"):
                     hits.append({"file": fp, "line": nd.lineno,
                                  "what": f"audio-file literal {nd.value!r}"})
+        # NO AUDIO FILE MAY BE OPENED FOR READING ANYWHERE IN THIS PACKAGE.
+        # `sf.read` is already forbidden by name; this closes the plain
+        # `open(path, "rb")` route, which the call list could not see because
+        # `open` is legitimate for JSON and for logs.
+        for nd in ast.walk(tree):
+            if not (isinstance(nd, ast.Call) and _dotted(nd.func) == "open"):
+                continue
+            arg = nd.args[0] if nd.args else None
+            mode = nd.args[1].value if (len(nd.args) > 1
+                                        and isinstance(nd.args[1], ast.Constant)
+                                        and isinstance(nd.args[1].value, str)) else "r"
+            for kw in nd.keywords:
+                if kw.arg == "mode" and isinstance(kw.value, ast.Constant):
+                    mode = kw.value.value
+            looks_audio = (isinstance(arg, ast.Constant)
+                           and isinstance(arg.value, str)
+                           and arg.value.lower().endswith(AUDIO_EXT))
+            if looks_audio and "w" not in mode and "a" not in mode:
+                hits.append({"file": fp, "line": nd.lineno,
+                             "what": f"open({arg.value!r}, {mode!r}) -- an audio "
+                                     f"file opened for READING"})
+        # THE GPL FENCE. parselmouth is GPL-3 and is a dev-only cross-check; if
+        # it ever appears under audio/ the shipped package inherits GPL-3.
+        if os.path.basename(os.path.dirname(fp)) == "audio" or "audio/" in fp:
+            for nd in ast.walk(tree):
+                mods = []
+                if isinstance(nd, ast.Import):
+                    mods = [al.name.split(".")[0] for al in nd.names]
+                elif isinstance(nd, ast.ImportFrom):
+                    mods = [(nd.module or "").split(".")[0]]
+                for m in mods:
+                    if m in DEV_ONLY_THIRD_PARTY:
+                        hits.append({"file": fp, "line": nd.lineno,
+                                     "what": f"GPL-3 dev-only dependency {m!r} "
+                                             f"imported inside the shipped package"})
     return hits
 
 
@@ -741,634 +912,64 @@ def control_kerb(spec):
             "CONTROL_TRIGGERS_AS_EXPECTED": bool((f["kerb"] > 0.5).mean() > 0.8)}
 
 
-# ============================================ harmonic-to-noise (R2-1401) =====
-# THE GATE THAT SHOULD HAVE EXISTED FIRST.
+# ============================ WHAT USED TO BE HERE, AND WHY IT IS GONE ========
+# DELETED, 629 lines: `hnr_profile`, `harmonic_gate`, `control_harmonic`,
+# `_hairdryer_like`, the whole `BEAT_HNR_LIMITS` table and every HNR_* constant,
+# plus `pipe_modes`, `waveguide_gate`, `control_waveguide` and the WAVEGUIDE_*
+# constants. Per docs/audio-rebuild3/SPEC-ENGINE-AND-GATES.md section 2 these
+# were REPLACED, not recalibrated, and the reasons are numbers rather than
+# opinions:
 #
-# Every gate in this file passed a master the client described, in full, as
-# "audio is shit sounds like a hair blower". They were all correct: the levels
-# were legal, the seams were clean, the pitch tracked the telemetry to 1.3 cents
-# and the Doppler solved. Not one of them asked whether the sound was an ENGINE
-# rather than a fan, because that question is about the RATIO of line spectrum to
-# broadband -- and nothing measured it.
+#   `harmonic` / `hnr_profile`. Its own docstring said it worked "with NO f0
+#   estimate": it subtracted a 269.5 Hz running median and called whatever poked
+#   above it tonal. It never checked that the peaks fell on integer multiples of
+#   anything, and noise through any resonator makes peaks. Measured: a literal
+#   wind blower pointed into a rack of inharmonic tubes PASSED beat 1's limit
+#   with MORE margin than the delivered master (fraction-below 0.481 against the
+#   master's 0.708, limit 0.85), and at Q = 80 it scored +4.04 dB -- above this
+#   gate's own 2.0 dB ENGINE bar. The only signal it could fail was flat white
+#   noise, which is precisely the single adversary its thresholds were tuned
+#   against. And it is a per-window statistic aggregated by a fraction, so it is
+#   mathematically invariant to repetition: it scored a 2 s block tiled 63x at
+#   +43.8 dB, 5.4x the delivered film's best beat.
 #
-# A hair dryer is broadband noise shaped by a resonant cavity. An engine is a
-# line spectrum locked to a firing frequency. The difference is one number, and
-# these thresholds are where it goes.
-# THE THRESHOLDS ARE SET FROM BOTH MASTERS, MEASURED THE SAME WAY. Over the
-# flying lap, above 2.6 kHz: the rejected master reads -0.73 dB, this metric's
-# reading on PURE NOISE is -1.97 dB, and the rebuilt film reads about +6.7 dB.
-# The artefact the client rejected therefore sat 1.2 dB above a literal noise
-# generator. 3.0 dB is placed between them with margin on both sides.
+#   `BEAT_HNR_LIMITS`. Beat 1's bar was HNR_NOISE_FLOOR_DB = -1.0 dB, which this
+#   file's own comment defined as "one decibel above what this metric reads on
+#   something with no line spectrum at all", with 0.85 of windows permitted
+#   below even that. 76.5 % of the film (94.9 s of 124.1 s) was held to that
+#   noise floor or explicitly excused from the engine bar. Worse, the rule that
+#   produced every number in the table -- "the limit is the midpoint between
+#   what THIS master reads and what the adversary reads" -- derives the pass
+#   mark from the artefact under test, so a film can only fail by being worse
+#   than the film the limits were calibrated on. That rule is now BANNED IN
+#   WRITING: `audio/percept.py` requires every threshold to carry a
+#   machine-checked `source` in {physics, published, control-derived}, and
+#   `audit_thresholds()` rejects `source=artefact` by name.
 #
-# THE ABOVE-2.6 kHz NUMBER IS THE DISCRIMINATING ONE AND THE BROADBAND NUMBER IS
-# NOT, WHICH IS WORTH STATING PLAINLY. Across the whole band the two masters read
-# 3.49 dB and 3.89 dB -- barely separable -- because below 2.6 kHz the mix is
-# legitimately full of low-frequency bed content doing real work (wind buffet,
-# tyre cavity, the outdoor bed's weight). Gating hard on the broadband figure
-# would be gating on how much air the film has in it. The broadband threshold is
-# a floor against total collapse; it is not the test.
-HNR_MIN_DB = 2.0            # a floor, over the beats the engine drives
-HNR_HF_MIN_DB = 3.0         # THE test: above 2.6 kHz, where the defect lived
-
-# ============ R2-2221: THIS GATE SCORED THREE BEATS OF SIX, AND ON A MEDIAN ====
-# TWO DEFECTS, ONE STRUCTURAL AND ONE STATISTICAL, AND THE SECOND IS NOT THE ONE
-# IT LOOKS LIKE.
+#   `waveguide`. An algebraic root-solve of engine.py's constants at a
+#   hand-picked WAVEGUIDE_RPM = 11000, passing at median 4.852 against a limit
+#   of 5.0 -- a 3.0 % margin -- while the same gate FAILS at the film's own
+#   rpm_at_vmax of 13,143 (5.798). It never opened the wav, and it inspected
+#   only the three exhaust elements, so it could not see layers.assembly's 616
+#   inharmonic impacts or the showroom FDN, which is where the tube ringing
+#   actually was.
 #
-# (1) COVERAGE. `driven = ["2_launch", "4_transit", "5_lap"]` meant the breach and
-#     the ending were computed, printed into `per_beat`, and then not gated. The
-#     client spent 63 % of their listening time on exactly those two beats. A gate
-#     that scores half the film is not a gate on the film.
+# THE REPLACEMENTS ARE IN `audio/percept.py`, and they are three instruments
+# where there was one number, because collapsing them was the original mistake:
+#   G-FLAT   tilt-free per-band spectral flatness against white
+#   G-HNR    calibrated Boersma autocorrelation HNR, re-validated every run
+#   G-ORDER  comb tracking against TELEMETRY rpm, not against the audio
+#   G-RING   ring-through and modal decay on the RENDERED STEREO WAV, over all
+#            layers and the whole film, against the declared room's Sabine RT60
+# and the six with no predecessor at all: G-NOVEL, G-MOD, G-GESTURE, G-ROOM,
+# G-BALANCE, G-CONSTRUCT. `tools/percept_matrix.py` runs the permanent control
+# corpus FIRST and refuses to adjudicate any master if a control returns the
+# wrong verdict.
 #
-# (2) THE MEDIAN. A per-beat median says nothing whatever about the other half of
-#     the beat: 33.1 % of the flying lap sat below this gate's own 3.0 dB and it
-#     passed regardless.
-#
-# THE REPLACEMENT IS THE FRACTION BELOW THRESHOLD, WHICH IS THE PERCENTILE FLOOR
-# READ FROM THE OTHER END, AND IT IS THE END THAT CAN ACTUALLY BE GATED. Both
-# forms say the same thing -- "no more than F of this beat may sit below T" -- but
-# only one of them is decidable here, and that was measured rather than assumed:
-#
-#   * A PERCENTILE OF THE VALUE IS NOT ESTIMABLE ON A SHORT BEAT. Beat 2 is 3.0 s,
-#     which is 120 analysis windows at a 25 ms hop, and those windows overlap. A
-#     block bootstrap (200 ms blocks, 3000 resamples) puts the standard error of
-#     its 5th percentile at 2.69 dB and of its 20th at 1.51 dB. A floor placed on
-#     a number with a 2.7 dB error bar is not a floor. The separation available
-#     between this master and the one the client rejected, at those percentiles,
-#     is 0.58 and 1.42 dB -- smaller than the error bar on either.
-#   * THE FRACTION SEPARATES FAR BETTER, because the hair dryer's failure is that
-#     ALMOST EVERY window is noise-like, not that its median is low. Over the
-#     flying lap above 2.6 kHz: this master 0.331 of windows below 3.0 dB, the
-#     rejected master 0.911. Over the transit, 0.379 against 0.964. Its error is
-#     binomial on the effective sample count, so a short beat gets an honest error
-#     bar instead of a percentile estimated from six windows.
-#
-# Measured margins, in standard errors, of this master against its limit: worst
-# 3.52 (transit HF), best 29.5 (lap broadband). The value-percentile form could
-# not reach 3 sigma anywhere below its median.
-#
-# WHAT FRACTION IS PERMITTED, AND WHY THAT ONE. One rule, applied to every beat
-# and every limb and stated once: the limit is the midpoint between what THIS
-# master reads and what the adversary reads, rounded to the nearest 0.05.
-#   * On the above-2.6 kHz limb, THE TEST, the adversary is the tightest of the
-#     octave-matched hair dryer and the two masters the client rejected as one.
-#     That limb exists to catch a hair blower, so it is set against a hair blower.
-#   * On the broadband limb, THE FLOOR, the adversary is the octave-matched hair
-#     dryer alone. The rejected masters are not broadband failures and were never
-#     claimed to be (see the note above: 3.49 against 3.89 dB, barely separable),
-#     so setting the floor against them produces a limit tighter than the film
-#     itself -- measured, it lands at 0.05 with a 0.00-sigma margin. A floor is
-#     not the test and must not be set as though it were.
-#
-# THE LAP'S BOTTOM THIRD IS NOT A DEFECT, AND THAT WAS CHECKED RATHER THAN
-# ASSUMED. Correlation between a window's above-2.6 kHz ratio and its own level,
-# over the flying lap: +0.252. The low-scoring windows are the QUIET windows --
-# the car far away, pointing away, between passes. Restricting the lap to the
-# windows within 6 dB of its own 95th-percentile level (63.0 % of them) moves the
-# median from 5.84 to 8.03 dB. A film whose subject drives away from the camera
-# for part of a lap is required to have quiet windows; requiring 3 dB of
-# harmonic-to-noise inside them is requiring the car to be somewhere it is not.
-# That is why the permitted fraction is 0.60 on the lap and not 0.05.
-HNR_NOISE_FLOOR_DB = -1.0
-# One decibel above what this metric reads on something with no line spectrum at
-# all. Measured, per beat, on white noise wearing the master's own octave balance:
-# -1.95 to -2.10 dB above 2.6 kHz across all six beats, and on flat white noise
-# -1.98 to -2.01. It is the threshold for the beats the engine does not drive,
-# where 3.0 dB would be asking an empty showroom to sound like an engine.
-
-# THE APPLICABILITY TEST, AND WHY A GATE NEEDS ONE (R2-2221).
-# Extending this gate to all six beats immediately raises the question the old
-# `driven` list was silently answering: is this measurement MEANINGFUL in this
-# beat? Two ways it can fail to be, both measured from the audio, neither
-# declared by hand:
-#
-#   POWER -- can the metric tell this beat from a hair dryer at all? Measured as
-#   the difference in the gated statistic itself between the film and the
-#   octave-matched hair-dryer control. Below 0.20 there is nothing to gate.
-#
-#   AUDIBILITY -- would a change in the scored band be heard? The above-2.6 kHz
-#   limb scores a band; if that band carries almost none of the beat's energy,
-#   its harmonic-to-noise ratio is a ratio measured on nothing.
-#
-# These two numbers are what the old `driven` list was hiding, and they do not
-# agree with it. Assembly and the ending, both excluded before, are measurable on
-# both limbs and are gated here. The breach, also excluded before, fails BOTH
-# tests -- and fails them by two orders of magnitude, not marginally. See
-# `harmonic_gate` for the numbers and what covers the breach instead.
-HNR_POWER_MIN = 0.20        # fraction, film against the hair-dryer control
-HNR_HF_SHARE_MIN = 0.002    # of a beat's energy, above 2.6 kHz
-
-# (threshold dB, fraction of the beat permitted below it), per beat, per limb.
-# Produced by the one rule above; every endpoint and every margin is in the
-# staging note for R2-2221 and reproduced by `tools/audio_hnr_evidence.py`.
-BEAT_HNR_LIMITS = {
-    "1_assembly": {"hf": (HNR_NOISE_FLOOR_DB, 0.85), "bb": (HNR_NOISE_FLOOR_DB, 0.30)},
-    "2_launch":   {"hf": (HNR_HF_MIN_DB,      0.40), "bb": (HNR_MIN_DB,          0.50)},
-    "3_breach":   {"hf": (HNR_NOISE_FLOOR_DB, 0.65), "bb": (HNR_NOISE_FLOOR_DB, 0.55)},
-    "4_transit":  {"hf": (HNR_HF_MIN_DB,      0.65), "bb": (HNR_MIN_DB,          0.55)},
-    "5_lap":      {"hf": (HNR_HF_MIN_DB,      0.60), "bb": (HNR_MIN_DB,          0.60)},
-    "6_ending":   {"hf": (HNR_NOISE_FLOOR_DB, 0.65), "bb": (HNR_NOISE_FLOOR_DB, 0.30)},
-}
-# The beats whose threshold is the engine test rather than the noise floor. This
-# list is no longer the gate's coverage -- every beat is gated -- it only chooses
-# which of the two thresholds a beat is held to.
-HNR_ENGINE_BEATS = ("2_launch", "4_transit", "5_lap")
-
-# THE ONE DECLARED HOLE, AND EVERY NUMBER BEHIND IT.
-# `3_breach` is the only beat this metric cannot measure, and it fails both
-# applicability tests independently, each by about two orders of magnitude:
-#
-#   AUDIBILITY. The band above 2.6 kHz carries 0.020 % of the breach's energy --
-#   -47.7 dBFS, which is 31.5 dB below the flying lap's own RMS and 37 dB below
-#   the breach's. The next darkest beat in the film is the assembly at 1.02 %, so
-#   the breach is fifty times below anything else and the 0.20 % limit sits in a
-#   two-order-of-magnitude gap where no choice of it changes the answer. The
-#   +0.09 dB that this beat scores above 2.6 kHz is a ratio computed on one part
-#   in five thousand of what anybody hears.
-#
-#   POWER. On the broadband limb, where the breach's energy actually is, this
-#   metric scores the film 0.044 BELOW an octave-matched hair dryer -- the wrong
-#   sign. That is not a bug: the breach is 995 shard contacts and a laminated
-#   pane, and a median-filtered spectral floor cannot find a line spectrum in 995
-#   randomly-timed inharmonic rings because there is not one there. Breaking
-#   glass is broadband on purpose.
-#
-# WHAT COVERS THE BREACH INSTEAD, since "this gate cannot see it" is not the same
-# as "nothing does": `level_gate` for distortion and clipping (it is the film's
-# loudest event, -10.4 dBFS RMS), `seam_gate` at both its boundaries (it is also
-# the film's largest legitimate spectral jump, which is why the seam gate scores
-# a local percentile rather than an absolute step), and `edge_gate` on the master
-# that contains it.
-#
-# THIS IS A DECLARATION, NOT A SKIP. If any OTHER beat ever becomes unmeasurable
-# on both limbs it lands in `undeclared_unmeasurable` and the gate FAILS. And the
-# declaration cannot rot in the beat's favour: the two numbers above are
-# recomputed from the audio every run, so if a future edit puts high frequency
-# back into the breach, its share rises past 0.20 %, the limb becomes applicable
-# on its own, and the breach starts being gated with no edit to this file.
-HNR_DECLARED_UNMEASURABLE = ("3_breach",)
-
-
-def _hairdryer_like(x, sr, seed=1401):
-    """White noise wearing `x`'s own octave balance: the adversary, in one place.
-
-    This exact construction was already the strongest of `control_harmonic`'s
-    three controls -- it has the film's tonal balance and no line spectrum
-    anywhere, so anything it scores well on is being scored on brightness or
-    level rather than on harmonicity. R2-2221 promotes it from a control to the
-    reference the gate's own applicability and limits are measured against, so
-    that "can this metric see anything here" is a number from this run rather
-    than a judgement made once and written into a list.
-    """
-    rng = np.random.default_rng(seed)
-    nz = rng.standard_normal(x.shape[0])
-    out = np.zeros_like(nz)
-    edges = [31.25 * 2.0 ** k for k in range(10)]
-    for lo, hi in zip(edges[:-1], edges[1:]):
-        if hi >= sr * 0.49:
-            break
-        sos = _sig.butter(4, [lo, min(hi, sr * 0.45)], btype="bandpass",
-                          fs=sr, output="sos")
-        bx = _sig.sosfilt(sos, x)
-        bn = _sig.sosfilt(sos, nz)
-        out += bn * (np.sqrt(np.mean(bx ** 2))
-                     / max(np.sqrt(np.mean(bn ** 2)), 1e-12))
-    return out
-
-
-# ---------------------------------------------------------------- waveguide ---
-# WHY THIS GATE EXISTS (R2-2004). Every gate above passed a master the client described as
-# "a wind machine with someone banging on tubes", and the harmonic gate passed it
-# most emphatically of all -- HNR above 2.6 kHz went 3.2 -> 23.7 dB in the
-# rebuild that CAUSED the banging. That is not a bug in the harmonic gate. HNR
-# asks "is this tonal rather than noisy", and a struck tube is extremely tonal.
-# It scores well. Nothing we owned asked the other question: does the tone STOP
-# between firing events, or does it ring on into the next one.
-#
-# So this gate measures decay, not spectrum, and it does it on the synthesiser's
-# own constants rather than on the rendered wav -- the exhaust's mode structure is
-# fully determined by PRIMARY_L_CYL, the loop gains and the damping corners, so
-# solving it directly is exact, instant, and cannot be masked by the wind bed
-# sitting on top of it in the mix.
-#
-# The measurement. Each pipe is y[n] = x[n] -/+ g*LP(y[n-D]), whose denominator
-# is the polynomial (1 - c z^-1) -/+ g(1-c) z^-D. Its roots ARE the modes: the
-# angle of each root gives the mode frequency, the magnitude gives its decay, and
-# T60 = 60 / (-20 log10 |z|) samples. Compare that against the interval between
-# firing events, 20/rpm seconds for a V6 (three firings per revolution).
-#
-# The threshold, and why it is not 1.0. At 11,000 rpm a V6 fires every 1.82 ms
-# while one primary's acoustic round trip is 1.91 ms, so a real engine ALWAYS has
-# a previous pulse still in the pipe and a ratio below 1 is not physically
-# available. What separates an engine from a struck tube is the DEPTH of that
-# overlap. Measured on the two masters the client rejected, the median mode rang
-# for 7.5 firing intervals and the worst for 20.7; at 8.0 the gate would have
-# failed both. The rebuilt values sit at 3.0 median / 6.9 worst.
-WAVEGUIDE_RPM = 11000.0      # representative of the flying lap: rpm_at_vmax is 13,143
-WAVEGUIDE_MEDIAN_MAX = 5.0   # median mode T60, in firing intervals
-WAVEGUIDE_WORST_MAX = 9.0    # the longest-ringing mode below 9 kHz
-WAVEGUIDE_HARMONIC_MAX_PCT = 4.0   # see below
-
-
-def pipe_modes(length_m, loop_gain, damp_hz, c_gas, sr, invert):
-    """Exact mode frequencies and T60 of one `dsp.comb_pipe`, by root-solving.
-
-    Not an impulse-response estimate. A Schroeder decay on a band-filtered
-    impulse response measures the ANALYSIS FILTER's ringing as much as the
-    pipe's -- at 125 Hz a third-octave Butterworth has a T60 of 179 ms on its
-    own, which is longer than anything the pipe does. Root-solving has no such
-    floor and no such ambiguity.
-    """
-    D = max(int(round(2.0 * length_m / c_gas * sr)), 4)
-    c = float(np.exp(-2.0 * np.pi * min(damp_hz, sr * 0.45) / sr))
-    s = -1.0 if invert else 1.0
-    a = np.zeros(D + 1)
-    a[0], a[1] = 1.0, -c
-    a[D] -= s * loop_gain * (1.0 - c)
-    r = np.roots(a)
-    f = np.angle(r) / (2.0 * np.pi) * sr
-    keep = (f > 1.0) & (np.abs(r) < 1.0)
-    f, mag = f[keep], np.abs(r[keep])
-    t60 = 60.0 / np.maximum(-20.0 * np.log10(np.maximum(mag, 1e-12)), 1e-12) / sr
-    o = np.argsort(f)
-    return f[o], t60[o]
-
-
-def waveguide_gate(sr=96000):
-    """Does the exhaust get DRIVEN by the firing series, or STRUCK by it?"""
-    from audio import engine as _E
-    fire = 20.0 / WAVEGUIDE_RPM                     # V6: three firings per rev
-    out = {"rpm": WAVEGUIDE_RPM, "firing_interval_s": fire, "elements": []}
-    worst_ratio, medians = 0.0, []
-    worst_harm = 0.0
-    elems = [("primary_cyl%d" % i, L, _E.PIPE_LOOP_GAIN, _E.PIPE_DAMP_HZ, True)
-             for i, L in enumerate(_E.PRIMARY_L_CYL)]
-    elems += [("collector", _E.COLLECTOR_L, _E.COLLECTOR_LOOP_GAIN,
-               _E.COLLECTOR_DAMP_HZ, False),
-              ("tailpipe", _E.TAILPIPE_L, _E.PIPE_LOOP_GAIN * 0.8,
-               _E.PIPE_DAMP_HZ, False)]
-    for name, L, g, dh, inv in elems:
-        f, t = pipe_modes(L, g, dh, _E.C_EXHAUST, sr, inv)
-        sel = f < 9000.0
-        if sel.sum() < 3:
-            continue
-        f, t = f[sel], t[sel]
-        ratio = t / fire
-        # Harmonicity: an in-loop lowpass is dispersive, so damping the ring
-        # harder detunes the upper modes and turns the pipe INTO a bell. Whatever
-        # a future edit does to shorten the ring, it may not do it this way.
-        n = np.arange(1, len(f) + 1) * (2 if inv else 1) - (1 if inv else 0)
-        harm_pct = float(np.abs(f - f[0] * n).max() / (f[0] * n.max()) * 100.0)
-        medians.append(float(np.median(ratio)))
-        worst_ratio = max(worst_ratio, float(ratio.max()))
-        worst_harm = max(worst_harm, harm_pct)
-        out["elements"].append({
-            "name": name, "length_m": float(L), "loop_gain": float(g),
-            "f0_hz": float(f[0]), "modes_below_9k": int(len(f)),
-            "t60_at_f0_ms": float(t[0] * 1e3),
-            "q_at_f0": float(np.pi * f[0] * t[0] / 6.91),
-            "median_ring_through": float(np.median(ratio)),
-            "worst_ring_through": float(ratio.max()),
-            "max_harmonic_error_pct": harm_pct,
-        })
-    out["median_ring_through"] = float(np.max(medians)) if medians else float("inf")
-    out["worst_ring_through"] = worst_ratio
-    out["max_harmonic_error_pct"] = worst_harm
-    out["threshold_median"] = WAVEGUIDE_MEDIAN_MAX
-    out["threshold_worst"] = WAVEGUIDE_WORST_MAX
-    out["threshold_harmonic_pct"] = WAVEGUIDE_HARMONIC_MAX_PCT
-    out["PASS"] = bool(out["median_ring_through"] <= WAVEGUIDE_MEDIAN_MAX
-                       and worst_ratio <= WAVEGUIDE_WORST_MAX
-                       and worst_harm <= WAVEGUIDE_HARMONIC_MAX_PCT)
-    return out
-
-
-def control_waveguide(sr=96000):
-    """Positive controls: the gate must FAIL the values that produced the
-    complaint, and must FAIL the tempting wrong fix.
-
-    [0] the shipped 0.70/0.62 -- what the client called banging on tubes.
-    [1] 0.85: a nearly lossless pipe, worse still.
-    [2] a 3rd-order in-loop lowpass at 1200 Hz with the delay compensated back to
-        pitch. It shortens the ring beautifully (T60 at 3 kHz 18.5 -> 2.8 ms) and
-        it is the WRONG ANSWER: it stretches the mode series 20.5 % off the odd
-        c/4L harmonics, which is 323 cents, which is a tubular bell. If the
-        harmonicity limb of this gate ever gets deleted, this control passes.
-    [3] STATED NEGATIVE: the values actually shipped must PASS.
-    """
-    from audio import engine as _E
-    fire = 20.0 / WAVEGUIDE_RPM
-    L = _E.PRIMARY_L_CYL[0]
-    out = []
-    for label, g, dh, order in [
-            ("R2-1401 shipped: loop_gain 0.70, damp 3200 (the rejected master)",
-             0.70, 3200.0, 1),
-            ("near-lossless pipe: loop_gain 0.85", 0.85, 3200.0, 1),
-            ("3rd-order in-loop lowpass at 1200 Hz (short ring, INHARMONIC)",
-             0.44, 1200.0, 3),
-            ("STATED NEGATIVE: the shipped values", _E.PIPE_LOOP_GAIN,
-             _E.PIPE_DAMP_HZ, 1)]:
-        if order == 1:
-            f, t = pipe_modes(L, g, dh, _E.C_EXHAUST, sr, True)
-        else:
-            c = float(np.exp(-2.0 * np.pi * dh / sr))
-            f0 = _E.C_EXHAUST / (4.0 * L)
-            w = 2.0 * np.pi * f0 / sr
-            pd = -np.angle(((1 - c) / (1 - c * np.exp(-1j * w))) ** order) / w
-            D = max(int(round(2.0 * L / _E.C_EXHAUST * sr - pd)), 4)
-            num, den = np.array([1.0]), np.array([1.0])
-            for _ in range(order):
-                num = np.convolve(num, [1.0 - c])
-                den = np.convolve(den, [1.0, -c])
-            a = np.zeros(max(len(den), D + len(num)))
-            a[:len(den)] = den
-            a[D:D + len(num)] += g * num
-            r = np.roots(a)
-            f = np.angle(r) / (2.0 * np.pi) * sr
-            k = (f > 1.0) & (np.abs(r) < 1.0)
-            f, mag = f[k], np.abs(r[k])
-            t = 60.0 / np.maximum(-20.0 * np.log10(np.maximum(mag, 1e-12)),
-                                  1e-12) / sr
-            o = np.argsort(f)
-            f, t = f[o], t[o]
-        sel = f < 9000.0
-        f, t = f[sel], t[sel]
-        ratio = t / fire
-        n = np.arange(1, len(f) + 1) * 2 - 1
-        harm = float(np.abs(f - f[0] * n).max() / (f[0] * n.max()) * 100.0)
-        out.append({
-            "label": label,
-            "median_ring_through": float(np.median(ratio)),
-            "worst_ring_through": float(ratio.max()),
-            "max_harmonic_error_pct": harm,
-            "PASS": bool(np.median(ratio) <= WAVEGUIDE_MEDIAN_MAX
-                         and ratio.max() <= WAVEGUIDE_WORST_MAX
-                         and harm <= WAVEGUIDE_HARMONIC_MAX_PCT),
-        })
-    return out
-
-
-# 43 ms, NOT 93 ms. The source is a car whose pitch moves under both rpm and
-# Doppler: at the doppler station the ratio spans 1.29 to 0.81 over 7 s, so inside
-# a 93 ms window an 8 kHz partial sweeps ~48 Hz -- four analysis bins -- and
-# smears itself into the very noise floor it is being compared against. Measured
-# on the rebuilt engine bus alone over the lap, above 2.6 kHz:
-#     21 ms   4.52 dB   (too short: 46 Hz bins cannot resolve the series at all)
-#     43 ms  14.35 dB
-#     93 ms  10.38 dB
-#    186 ms   5.84 dB
-# 43 ms is long enough to resolve a 600 Hz firing series (23 Hz bins) and short
-# enough that the lines stay put inside it. THE REJECTED MASTER WAS RE-MEASURED AT
-# THE SAME WINDOW BEFORE THE THRESHOLDS ABOVE WERE CHOSEN, so the comparison is
-# like for like and the window was not picked to flatter the fix.
-def hnr_profile(x, sr, win_s=0.043, hop_s=0.025, fmin=60.0, fmax=16000.0,
-                hf_from=2600.0):
-    """Tonal-to-broadband ratio in dB, per window, with NO f0 estimate.
-
-    Taking a running median of the power spectrum over a 1/3-octave-wide span
-    gives the BROADBAND floor: a median is insensitive to the sparse narrow peaks
-    a harmonic series puts in a spectrum, and tracks the noise underneath them.
-    Energy above that floor is therefore the line spectrum, and the floor's own
-    energy is the noise. Their ratio is the measurement.
-
-    Why not track f0 and sum its harmonics: by the time the signal reaches the
-    master it has been through a moving Doppler shift, two facade reflections and
-    a 2.4 s room tail, so the lines are neither stationary nor exactly harmonic.
-    The median floor does not care -- it finds structure wherever the structure
-    is, which is what "does this sound like an engine" actually asks.
-    """
-    from scipy.ndimage import median_filter
-    n = 1 << int(np.ceil(np.log2(win_s * sr)))
-    hop = int(hop_s * sr)
-    w = np.hanning(n)
-    f = np.fft.rfftfreq(n, 1.0 / sr)
-    band = (f >= fmin) & (f <= fmax)
-    hb = band & (f >= hf_from)
-    med = max(int(round(0.26 * 1000.0 / (sr / n))), 5)
-    med += 1 - med % 2
-    starts = np.arange(0, x.shape[0] - n, hop)
-    hnr = np.empty(starts.shape[0])
-    hnr_hf = np.empty(starts.shape[0])
-    for i, a0 in enumerate(starts):
-        P = np.abs(np.fft.rfft(x[a0:a0 + n] * w)) ** 2
-        floor = median_filter(P, size=med, mode="nearest")
-        tonal = np.maximum(P - floor, 0.0)
-        hnr[i] = 10.0 * np.log10(max(tonal[band].sum(), 1e-30)
-                                 / max(floor[band].sum(), 1e-30))
-        hnr_hf[i] = 10.0 * np.log10(max(tonal[hb].sum(), 1e-30)
-                                    / max(floor[hb].sum(), 1e-30))
-    return starts / sr, hnr, hnr_hf
-
-
-def harmonic_gate(x, sr, sheet, label="", power_ref=None, applicability=None):
-    """Is the film's dominant voice a line spectrum or a noise band?
-
-    EVERY BEAT IS SCORED AND EVERY MEASURABLE BEAT IS GATED (R2-2221). The old
-    docstring said beat 1 is an empty showroom, beat 3 a breaking window and
-    beat 6 a distant idle, that none of them is supposed to be harmonic, and that
-    scoring them would measure the wrong thing. Two thirds of that was wrong, and
-    the wrong two thirds were the two beats the client spent most of their
-    listening time on.
-
-    The assembly and the ending ARE measurable -- against an octave-matched hair
-    dryer they separate by 0.245 and 0.661 in the gated statistic -- they are
-    simply not ENGINE beats, so they are held to a floor one decibel above a
-    noise generator instead of to the engine's 3.0 dB. Only the breach is
-    genuinely unmeasurable, and it is declared, with both of its numbers, at
-    `HNR_DECLARED_UNMEASURABLE`.
-
-    Which threshold a beat is held to is `HNR_ENGINE_BEATS`; that tuple is no
-    longer the gate's coverage.
-
-    MONO-SAFE, AND IT WAS NOT (R2-2006). `hnr_profile` windows with a 1-D Hann,
-    so a stereo argument raised `operands could not be broadcast (4096,2)
-    (4096,)`. `main()` passes the master, which is stereo, so **this gate threw
-    every time the suite ran it** -- and because the throw happened after the
-    six gates before it had already printed, the run looked healthy right up to
-    the point it died, and `verify_report.json` was simply never rewritten.
-    That is why the report on disk carries six gates and no `harmonic`: the
-    gate written to catch the hair dryer had never once run inside the suite.
-    It was only ever exercised standalone, on mono, which is why nobody saw it.
-    `control_harmonic` reduces its own control files to mono explicitly, so the
-    requirement was known -- it was just never applied to the master itself.
-    """
-    x = np.asarray(x)
-    if x.ndim > 1:
-        x = x.mean(axis=1)
-    t, h, hf = hnr_profile(x, sr)
-    if power_ref is None:
-        # the octave-matched hair dryer, built from THIS signal, is the adversary
-        # every applicability and limit number in this gate is measured against.
-        power_ref = _hairdryer_like(x, sr)
-    tr, hr, hfr = hnr_profile(power_ref, sr)
-    sos_hi = _sig.butter(6, 2600.0, btype="highpass", fs=sr, output="sos")
-    x_hf = _sig.sosfilt(sos_hi, x)
-
-    per_beat, fails, not_applicable = {}, [], []
-    for b in sheet["beats"]:
-        name = b["name"]
-        m = (t >= b["start_s"]) & (t < b["start_s"] + b["duration_s"])
-        mr = (tr >= b["start_s"]) & (tr < b["start_s"] + b["duration_s"])
-        if not m.any():
-            continue
-        s0 = int(round(b["start_s"] * sr))
-        s1 = int(round((b["start_s"] + b["duration_s"]) * sr))
-        e_all = float(np.mean(x[s0:s1] ** 2))
-        share = float(np.mean(x_hf[s0:s1] ** 2) / max(e_all, 1e-30))
-        lim = BEAT_HNR_LIMITS.get(name)
-        rec = {"hnr_db": float(np.median(h[m])),
-               "hnr_above_2k6_db": float(np.median(hf[m])),
-               "windows": int(m.sum()),
-               "engine_driven": name in HNR_ENGINE_BEATS,
-               "energy_share_above_2k6": share,
-               "band_level_above_2k6_dbfs":
-                   float(10.0 * np.log10(max(np.mean(x_hf[s0:s1] ** 2), 1e-30))),
-               "limbs": {}}
-        for limb, prof, prof_ref in (("hf", hf, hfr), ("bb", h, hr)):
-            thr, permitted = lim[limb]
-            frac = float((prof[m] < thr).mean())
-            frac_ref = float((prof_ref[mr] < thr).mean()) if mr.any() else 1.0
-            power = frac_ref - frac
-            why = None
-            if power < HNR_POWER_MIN:
-                why = ("no power: this metric scores the beat %+.3f against an "
-                       "octave-matched hair dryer on this limb, so there is "
-                       "nothing here to gate" % power)
-            elif limb == "hf" and share < HNR_HF_SHARE_MIN:
-                why = ("not audible: the band above 2.6 kHz carries %.4f%% of "
-                       "this beat's energy (limit %.2f%%), so its harmonic-to-"
-                       "noise ratio is a ratio measured on nothing"
-                       % (100.0 * share, 100.0 * HNR_HF_SHARE_MIN))
-            ok = why is None
-            # APPLICABILITY IS A PROPERTY OF THE FILM, NOT OF THE SIGNAL UNDER
-            # TEST, and conflating the two is a hole big enough to drive the
-            # whole gate through (R2-2221). Both applicability tests compare the
-            # signal against a hair dryer -- so when the signal IS a hair dryer,
-            # every limb reads zero power, every limb goes NOT APPLICABLE, and
-            # the control passes by having nothing left to fail. Measured on the
-            # first build of this gate: control (2) PASS=True with no failures,
-            # and the master the client rejected failed only one beat of three
-            # because the other two had "no power" against a copy of the defect
-            # they contain. A control is scored against the FILM's applicability,
-            # which `main` computes once from the master and hands down.
-            if applicability is not None:
-                ok = bool(applicability.get(name, {}).get(limb, False))
-                if not ok and why is None:
-                    why = ("not applicable on the master, and applicability is "
-                           "the master's property, not this signal's")
-            rec["limbs"][limb] = {
-                "threshold_db": thr,
-                "fraction_below": frac,
-                "fraction_permitted_below": permitted,
-                "fraction_below_on_hairdryer_control": frac_ref,
-                "power_vs_hairdryer": power,
-                "APPLICABLE": ok,
-                "not_applicable_because": why,
-                "PASS": bool(frac <= permitted) if ok else None,
-            }
-            if ok and frac > permitted:
-                fails.append("%s.%s %.3f > %.2f below %.1f dB"
-                             % (name, limb, frac, permitted, thr))
-            if not ok:
-                not_applicable.append("%s.%s: %s" % (name, limb, why))
-        per_beat[name] = rec
-
-    # A beat with no applicable limb is a hole, and it must be a DECLARED hole.
-    # `3_breach` is the only one and it is declared below; anything else that
-    # becomes unmeasurable fails the gate rather than falling quietly out of it.
-    uncovered = [n for n, r in per_beat.items()
-                 if not any(l["APPLICABLE"] for l in r["limbs"].values())]
-    undeclared = [n for n in uncovered if n not in HNR_DECLARED_UNMEASURABLE]
-    eng = [per_beat[k] for k in HNR_ENGINE_BEATS if k in per_beat]
-    return {
-        "label": label,
-        "method": ("median-filtered spectral floor; tonal energy above the floor "
-                   "against the floor's own energy, 60 Hz - 16 kHz, and again "
-                   "restricted to above 2.6 kHz. GATED ON THE FRACTION OF EACH "
-                   "BEAT BELOW ITS THRESHOLD, not on the beat's median, and on "
-                   "every beat rather than on the three the engine drives."),
-        "per_beat": per_beat,
-        "beats_scored": sorted(per_beat),
-        "beats_gated": sorted(n for n in per_beat if n not in uncovered),
-        "beats_unmeasurable": sorted(uncovered),
-        "declared_unmeasurable": sorted(HNR_DECLARED_UNMEASURABLE),
-        "undeclared_unmeasurable": sorted(undeclared),
-        "not_applicable": sorted(not_applicable),
-        "failures": sorted(fails),
-        "applicability": {n: {k: v["APPLICABLE"] for k, v in r["limbs"].items()}
-                          for n, r in per_beat.items()},
-        "applicability_source": "this signal" if applicability is None else "the master",
-        "engine_driven_beats": list(HNR_ENGINE_BEATS),
-        # kept so the numbers in every earlier report stay comparable
-        "worst_engine_beat_hnr_db": float(min(g["hnr_db"] for g in eng)),
-        "worst_engine_beat_hnr_above_2k6_db":
-            float(min(g["hnr_above_2k6_db"] for g in eng)),
-        "threshold_hnr_db": HNR_MIN_DB,
-        "threshold_hnr_above_2k6_db": HNR_HF_MIN_DB,
-        "PASS": bool(not fails and not undeclared),
-    }
-
-
-def control_harmonic(x, sr, sheet, applicability=None):
-    """Positive controls: things that ARE hair dryers must fail this gate.
-
-    1. The shipped R2-1400 master itself, if it is still on disk. This is the
-       strongest control available -- the artefact the client actually rejected,
-       scored by the gate written to catch it. Skipped, and said so, if absent.
-    2. A synthesised hair dryer: white noise through the SAME octave-band
-       envelope as the master, so it has the film's exact tonal balance and no
-       line spectrum at all. If the gate were secretly measuring brightness or
-       level rather than harmonicity, this would pass.
-    3. STATED NEGATIVE: the master with its top four octaves replaced by noise of
-       the same band energy. This is the R2-1401 defect reconstructed on top of a
-       fixed master, and it must fail on the HF threshold while still passing the
-       broadband one -- which is what makes those two thresholds separate numbers.
-
-    THE CONTROLS ARE SCORED AGAINST THE MASTER'S OWN APPLICABILITY (R2-2221).
-    Every call below is handed the SAME `power_ref` the real gate used -- the
-    hair dryer built from the master. If each control were allowed to build its
-    own reference, control (2) would be measured against a copy of itself, every
-    limb would read zero power, every limb would go NOT APPLICABLE, and a literal
-    hair dryer would pass this gate by having nothing left to fail. A control
-    must be held to the film's thresholds, not to its own.
-    """
-    # Same stereo trap as `harmonic_gate` (R2-2006), one step further in: controls
-    # 2 and 3 BUILD their signal out of `x`, so a stereo master produced a stereo
-    # band-split added to mono noise. Reduce once, here, and every control below
-    # is built from the same mono the gate itself scores.
-    x = np.asarray(x)
-    if x.ndim > 1:
-        x = x.mean(axis=1)
-    ref = _hairdryer_like(x, sr)
-    out = []
-    # kept deliberately: this exact file is the artefact the client rejected, and
-    # it is the only control here that was not constructed to fail.
-    old = os.path.join(ROOT, "audio", "out", "ab",
-                       "master_R2-1400_REJECTED_hairblower.wav")
-    if os.path.exists(old):
-        y, ysr = sf.read(old, dtype="float64")
-        if y.ndim > 1:
-            y = y.mean(axis=1)
-        out.append(harmonic_gate(y, ysr, sheet, power_ref=ref, applicability=applicability,
-                                 label="CONTROL: the R2-1400 master the client "
-                                       "rejected as a hair blower"))
-
-    # (2) noise with the master's own octave balance
-    out.append(harmonic_gate(ref, sr, sheet, power_ref=ref, applicability=applicability,
-                             label="CONTROL: white noise wearing the master's own "
-                                   "octave balance -- a literal hair dryer"))
-
-    # (3) the R2-1401 defect rebuilt on top of whatever `x` is
-    rng = np.random.default_rng(1402)
-    sos_hi = _sig.butter(4, 2600.0, btype="highpass", fs=sr, output="sos")
-    sos_lo = _sig.butter(4, 2600.0, btype="lowpass", fs=sr, output="sos")
-    hi = _sig.sosfilt(sos_hi, x)
-    nz2 = _sig.sosfilt(sos_hi, rng.standard_normal(x.shape[0]))
-    nz2 *= np.sqrt(np.mean(hi ** 2)) / max(np.sqrt(np.mean(nz2 ** 2)), 1e-12)
-    out.append(harmonic_gate(_sig.sosfilt(sos_lo, x) + nz2, sr, sheet, power_ref=ref, applicability=applicability,
-                             label="CONTROL, STATED NEGATIVE: the master's top four "
-                                   "octaves replaced by noise of equal band energy"))
-    return out
-
+# WHAT THIS FILE IS NOW: the things it was genuinely good at -- loudness, true
+# peak, the two frames no other gate visits, splice detection, the provenance
+# scan, and the Doppler solve, which was the only load-bearing gate in the old
+# suite. It no longer claims to judge whether the film sounds like an engine.
 
 # ================================================================== plots =====
 def spectrogram_png(x, sr, path, title, nfft=4096, fmax=20000, beats=None,
@@ -1472,6 +1073,43 @@ def main():
 
     # ------------------------------------------------------------------ seam --
     V["seam"] = seam_gate(x, sr, sheet, "master")
+    V["seam"]["CLASS"] = "advisory"
+    V["seam"]["ADVISORY_NOTE"] = (
+        "A PASS here proves almost nothing and that is measured, not modest: "
+        "this gate adjudicates 20 samples of 5,956,000 (0.0003 % of the film) "
+        "and its own 3 dB-step positive control PASSES on broadband material. "
+        "`swap_b1_loop.wav`, whose beat 1 is a 2 s block tiled 16.5 times, "
+        "reported a seam percentile BIT-IDENTICAL to the delivered master's, "
+        "because every one of its sixteen splices is inside a beat. A FAIL is "
+        "still informative and still stops the build; a PASS is advisory. "
+        "`splice_film_wide` below is the coverage fix.")
+    V["splice_film_wide"] = splice_scan(x, sr)
+    # POSITIVE CONTROL for the film-wide scan, inside a beat where the boundary
+    # gate cannot look: a 977-sample splice at 20 s, i.e. mid-beat-1.
+    _y = x.copy()
+    _i = int(20.0 * sr)
+    _y[_i:] = np.roll(_y[_i:], 977, axis=0)
+    _mono_o = x.mean(axis=1) if x.ndim > 1 else x
+    _mono_s = _y.mean(axis=1) if _y.ndim > 1 else _y
+    _base = _d3_score_at(_mono_o, sr, 20.0)
+    _ctlv = _d3_score_at(_mono_s, sr, 20.0)
+    V["splice_film_wide"]["CONTROL_mid_beat_splice_at_20s"] = {
+        "score_before_splice": _base, "score_after_splice": _ctlv,
+        "lift": float(_ctlv / _base) if _base and _base == _base else None,
+        "required_lift": 5.0,
+        "note": ("the boundary gate cannot see this splice at all -- it is "
+                 "13 s from the nearest beat boundary. This is the gate's own "
+                 "sensitivity, measured by injection, and it is what is gated "
+                 "-- not a number chosen by hand.")}
+    V["splice_film_wide"]["PASS"] = bool(
+        _base == _base and _ctlv == _ctlv and _ctlv >= 5.0 * _base)
+    del _y, _mono_s
+    print(f">> splice scan (film-wide): {V['splice_film_wide']['windows_scanned']} "
+          f"windows, 100 % coverage; worst candidate "
+          f"{V['splice_film_wide']['worst_score']:.0f}x local median at "
+          f"{V['splice_film_wide']['candidates'][0]['t_s']:.2f} s | SENSITIVITY "
+          f"control: a mid-beat splice lifts its own location from {_base:.1f}x "
+          f"to {_ctlv:.1f}x, PASS={V['splice_film_wide']['PASS']}")
     ctl = control_seam(x, sr, sheet)
     V["seam_controls"] = list(ctl)
     # the first two controls (splice, 3 dB step) MUST fail; the 0.5 dB step and
@@ -1495,8 +1133,37 @@ def main():
                                "MASTER, to measure it. It contributes nothing to "
                                "the render; `render_path_hits` excludes verify.py "
                                "and must be empty."),
+        "CLASS": "provenance",
+        "PROVENANCE_NOTE": (
+            "This gate never opens the wav. It is an AST scan of the source "
+            "tree, so it cannot distinguish any two audio files and it passed "
+            "100 % white noise. It is excluded from the quality verdict -- not "
+            "because it is unimportant, but because it answers a different "
+            "question."),
+        "controls_exclusion": {
+            "path": "audio/controls/",
+            "why": ("the permanent control corpus; it reads the delivered "
+                    "master because C4 IS the delivered master and C1/C7 are "
+                    "built from it, and it is not on the render path"),
+            "render_path_imports_it": sorted(
+                os.path.basename(f) for f in os.listdir(PKG)
+                if f.endswith(".py") and f not in ("verify.py", "percept.py")
+                and ("from .controls" in open(os.path.join(PKG, f),
+                                              encoding="utf-8",
+                                              errors="ignore").read()
+                     or "import controls" in open(os.path.join(PKG, f),
+                                                  encoding="utf-8",
+                                                  errors="ignore").read()))},
+        "allowed_third_party": sorted(ALLOWED_THIRD_PARTY),
+        "dev_only_third_party": sorted(DEV_ONLY_THIRD_PARTY),
         "PASS": len(hits_render) == 0 and len(hits_all) == 0}
     V["external_assets"].update(control_external(a.out))
+    if V["external_assets"]["controls_exclusion"]["render_path_imports_it"]:
+        V["external_assets"]["PASS"] = False
+        V["external_assets"]["EXCLUSION_NO_LONGER_TRUE"] = True
+    # the advisory/quality/provenance split needs seam's own splice coverage in
+    # the same place the seam gate is judged
+    V["seam"]["film_wide_PASS"] = V["splice_film_wide"]["PASS"]
     print(f">> external assets: {len(hits_render)} render-path hits, "
           f"{len(hits_all)} package hits; controls "
           f"{V['external_assets']['control_hits_per_case']}")
@@ -1527,7 +1194,7 @@ def main():
     tc = np.arange(1.0, float(tw[-1]) - 1.0, 0.25) - float(tw[0])
     f_meas, conf = track_f0(dry, se, tc)
     wt = tc + float(tw[0])
-    f_pred = np.interp(wt, tw, rpm) / 60.0 * 3.0
+    f_pred = np.interp(wt, tw, rpm) / 60.0 * ENGINE_ORDER
     v_at = np.interp(wt, tw, st["speed"])
     thr, _brake = eng_mod.throttle_from_spec(st["speed"], st["accel_long"], spec)
     th_at = np.interp(wt, tw, thr)
@@ -1553,6 +1220,16 @@ def main():
         }
 
     V["pitch"] = {
+        "CLASS": "provenance",
+        "PROVENANCE_NOTE": (
+            "RECLASSIFIED. This gate re-synthesises the dry engine from the "
+            "telemetry and measures THAT, so it never takes the delivered "
+            "master as an input and it passed 100 % white noise. It proves the "
+            "SOURCE tracks the telemetry, which is worth proving and is kept. "
+            "It does not and cannot say anything about the artefact, so it is "
+            "excluded from the quality verdict. What replaces it as a quality "
+            "test is G-ORDER in audio/percept.py, which tracks the firing comb "
+            "ON THE DELIVERED MASTER against the same telemetry."),
         "method": ("f0 measured from the DRY world-clock engine every 0.25 s of "
                    "world time and compared with rpm/60*3, where rpm is the "
                    "gearbox solution from the telemetry's v_world. Measured on "
@@ -1632,66 +1309,65 @@ def main():
                         "line, car at 313.2 km/h", nfft=4096, fmax=8000)
         _ = rep
 
-    # ------------------------------------------------------------ harmonic ----
-    V["harmonic"] = harmonic_gate(x, sr, sheet, label=os.path.basename(a.wav))
-    hctl = control_harmonic(x, sr, sheet,
-                            applicability=V["harmonic"]["applicability"])
-    V["harmonic_controls"] = hctl
-    V["harmonic"]["CONTROL_FAILS_AS_EXPECTED"] = bool(all(not c["PASS"] for c in hctl))
-    print(">> harmonic:", json.dumps(
-        {k: V["harmonic"][k] for k in
-         ("beats_scored", "beats_gated", "beats_unmeasurable",
-          "declared_unmeasurable", "undeclared_unmeasurable", "failures",
-          "PASS", "CONTROL_FAILS_AS_EXPECTED")}, indent=1))
-    print("   %-12s %5s %8s | %-28s | %-28s"
-          % ("beat", "wins", "HF share", "above 2.6 kHz", "broadband"))
-    for name, r in V["harmonic"]["per_beat"].items():
-        cells = []
-        for limb in ("hf", "bb"):
-            L = r["limbs"][limb]
-            cells.append("n/a %+.3f power" % L["power_vs_hairdryer"]
-                         if not L["APPLICABLE"] else
-                         "%.3f of %.2f below %+.1f dB %s"
-                         % (L["fraction_below"], L["fraction_permitted_below"],
-                            L["threshold_db"], "ok" if L["PASS"] else "FAIL"))
-        print("   %-12s %5d %7.3f%% | %-28s | %-28s"
-              % (name, r["windows"], 100.0 * r["energy_share_above_2k6"], *cells))
-    for w in V["harmonic"]["not_applicable"]:
-        print("   NOT APPLICABLE %s" % w)
-    for c in hctl:
-        print(f"   control {c['label'][:64]}: HNR {c['worst_engine_beat_hnr_db']:5.1f} "
-              f"/ HF {c['worst_engine_beat_hnr_above_2k6_db']:5.1f} PASS={c['PASS']} "
-              f"{'; '.join(c['failures'][:3])}")
+    # ================================================= THE VERDICT SPLIT ====
+    # TWO STRUCTURAL RULES, from the spec's section 2. Both fix a CLASS of
+    # defect rather than one gate:
+    #
+    # (1) Any gate that does not take the rendered stereo master as an input is
+    #     PROVENANCE and is excluded from the quality verdict. That alone
+    #     removes three of the old eight. `external_assets` is an AST scan of
+    #     the source tree. `pitch` re-synthesises the dry engine from telemetry
+    #     and measures THAT -- it passed 100 % white noise, and so did the other
+    #     two, on 5 of 5 degenerate inputs. They are still run, still reported,
+    #     still required to pass; they simply no longer answer the question
+    #     "does this master sound right", because they never could.
+    #
+    # (2) INAPPLICABLE is a distinct outcome from PASS and never counts toward
+    #     ALL_PASS. The old harmonic gate on pure noise reported `failures: []`
+    #     and tripped `undeclared_unmeasurable`: it said "I cannot measure
+    #     this", never "this is noise", and that read as green.
+    #
+    # And one more, stated plainly because the audit measured it: `seam`
+    # adjudicates 20 samples of 5,956,000 -- 0.0003 % of the film -- and its own
+    # 3 dB-step positive control PASSES on broadband material. Its PASS is
+    # ADVISORY. It can still fail the build on a real splice, because a failure
+    # there is informative even though a pass is not.
+    QUALITY_GATES = ("levels", "edges", "doppler")
+    PROVENANCE_GATES = ("external_assets", "pitch")
+    ADVISORY_GATES = ("seam",)
 
-    # ----------------------------------------------------------- waveguide ----
-    V["waveguide"] = waveguide_gate()
-    wctl = control_waveguide()
-    V["waveguide_controls"] = wctl
-    # [0..2] must FAIL, [3] -- the shipped values -- must PASS
-    V["waveguide"]["CONTROL_FAILS_AS_EXPECTED"] = bool(
-        all(not c["PASS"] for c in wctl[:3]) and wctl[3]["PASS"])
-    print(">> waveguide:", json.dumps(
-        {k: V["waveguide"][k] for k in
-         ("rpm", "median_ring_through", "worst_ring_through",
-          "max_harmonic_error_pct", "threshold_median", "threshold_worst",
-          "threshold_harmonic_pct", "PASS", "CONTROL_FAILS_AS_EXPECTED")}, indent=1))
-    for e in V["waveguide"]["elements"]:
-        print(f"   {e['name']:14s} f0 {e['f0_hz']:6.1f} Hz  Q {e['q_at_f0']:5.2f}  "
-              f"T60 {e['t60_at_f0_ms']:6.2f} ms  ring-through med "
-              f"{e['median_ring_through']:5.2f}x worst {e['worst_ring_through']:5.2f}x")
-    for c in wctl:
-        print(f"   control {c['label'][:62]:62s}: med {c['median_ring_through']:6.2f}x "
-              f"worst {c['worst_ring_through']:6.2f}x harm {c['max_harmonic_error_pct']:5.2f}% "
-              f"PASS={c['PASS']}")
+    quality = {k: V[k].get("PASS") for k in QUALITY_GATES if isinstance(V.get(k), dict)}
+    provenance = {k: V[k].get("PASS") for k in PROVENANCE_GATES
+                  if isinstance(V.get(k), dict)}
+    advisory = {k: V[k].get("PASS") for k in ADVISORY_GATES if isinstance(V.get(k), dict)}
 
-    passes = {k: V[k].get("PASS") for k in ("levels", "edges", "seam", "external_assets",
-                                            "pitch", "doppler", "harmonic", "waveguide")
-              if isinstance(V.get(k), dict)}
-    V["ALL_PASS"] = all(bool(v) for v in passes.values())
-    V["gate_summary"] = passes
+    V["gate_classes"] = {"quality": list(quality), "provenance": list(provenance),
+                         "advisory": list(advisory)}
+    V["gate_summary"] = {**quality, **provenance, **advisory}
+    V["quality_pass"] = all(bool(v) for v in quality.values())
+    V["provenance_pass"] = all(bool(v) for v in provenance.values())
+    # An advisory FAIL still stops the build. An advisory PASS proves nothing.
+    V["advisory_fail"] = any(v is False for v in advisory.values())
+    V["ALL_PASS"] = bool(V["quality_pass"] and V["provenance_pass"]
+                         and not V["advisory_fail"])
+    V["NOT_A_QUALITY_VERDICT"] = (
+        "This file no longer judges whether the film sounds like an engine. "
+        "Three masters passed all eight of its predecessors and all three were "
+        "rejected. The percept gates -- G-FLAT, G-HNR, G-ORDER, G-RING, "
+        "G-NOVEL, G-MOD, G-GESTURE, G-ROOM, G-BALANCE, G-CONSTRUCT -- live in "
+        "audio/percept.py and are adjudicated by tools/percept_matrix.py, "
+        "which runs a permanent control corpus FIRST and refuses to report a "
+        "verdict on any master if a control comes back wrong. AUDIO_VERIFY_OK "
+        "means the levels are legal, the edges are clean, no recorded asset "
+        "entered the render and the Doppler solves. It does not mean the "
+        "master is good.")
+
     with open(os.path.join(a.out, "verify_report.json"), "w") as fh:
         json.dump(V, fh, indent=1, default=float)
-    print(">> gates:", json.dumps(passes))
+    print(">> quality   :", json.dumps(quality))
+    print(">> provenance:", json.dumps(provenance), "(excluded from the quality verdict)")
+    print(">> advisory  :", json.dumps(advisory), "(a PASS here proves nothing)")
+    print(">> NOTE:", V["NOT_A_QUALITY_VERDICT"])
     print(">> STAGE RESULT:", "AUDIO_VERIFY_OK" if V["ALL_PASS"] else "AUDIO_VERIFY_FAIL")
     return 0 if V["ALL_PASS"] else 1
 
@@ -1776,7 +1452,7 @@ def doppler_gate(x, sr, spec, sheet, clock, tel, outdir, skip_plot=False):
     # apply it too or it is testing a different film.
     t_emit = np.interp(tc, t_a, t_ctrl)
     w_emit = clock.world_at_film(np.clip(t_emit, 0.0, clock.duration_s))
-    f_emit = np.interp(w_emit, wf, rpm_f) / 60.0 * 3.0
+    f_emit = np.interp(w_emit, wf, rpm_f) / 60.0 * ENGINE_ORDER
     thr_e = np.interp(w_emit, wf, thr_f)
 
     ratio_at = np.interp(tc, t_a, ratio)            # predicted, indexed by ARRIVAL
@@ -1925,6 +1601,112 @@ def doppler_gate(x, sr, spec, sheet, clock, tel, outdir, skip_plot=False):
         "CONTROL_null_static_source_and_static_ears_semitones": float(st_control / 100.0),
         "listener_motion_only_sweep_semitones": float(st_listener / 100.0),
     }
+    # ================= COVERAGE: EVERY BEAT WITH CAMERA-RELATIVE MOTION ====
+    # THE OLD GATE SAW 85 WINDOWS IN ONE 4.2 s SPAN, 3.38 % of the film, all of
+    # it inside beat 5. It was still the only load-bearing gate the suite had --
+    # it failed all three whole-file degenerates -- and it passed BOTH beat-1
+    # swaps with numbers bit-identical to the delivered master's, because its
+    # window lives somewhere else entirely.
+    #
+    # So the same measurement now runs at EVERY pass: every local maximum of
+    # closing speed in the retarded-time solve above DOPPLER_MIN_CLOSING_MS,
+    # anywhere in the film. Stations where the engine is not sounding, or where
+    # the tracker cannot lock, are reported INAPPLICABLE -- which is not a PASS
+    # and does not count toward the verdict.
+    def _station(t0):
+        tcs = np.arange(t0 - 3.0, t0 + 1.2, 0.05)
+        tcs = tcs[(tcs > 0.2) & (tcs < clock.duration_s - 0.2)]
+        if tcs.size < 20:
+            return None
+        te = np.interp(tcs, t_a, t_ctrl)
+        we = clock.world_at_film(np.clip(te, 0.0, clock.duration_s))
+        fe = np.interp(we, wf, rpm_f) / 60.0 * ENGINE_ORDER
+        rat = np.interp(tcs, t_a, ratio)
+        lg = np.abs(np.interp(we, tel.t, tel.col["accel_lat_ms2"])) / 9.81
+        fs_ = 780.0 + 90.0 * np.tanh(lg / 3.0)
+        us = lg > 2.0
+        re_, ce_ = doppler_ratio(x, sr, tcs, fe)
+        rs_, cs_ = doppler_ratio(x, sr, tcs, fs_)
+        rm = np.where(us, rs_, re_)
+        cf = np.where(us, cs_, ce_)
+        gd = np.isfinite(rm) & (cf > 2.0)
+        if gd.sum() < 8:
+            return {"film_t_s": float(t0), "usable_windows": int(gd.sum()),
+                    "OUTCOME": "INAPPLICABLE",
+                    "why": "fewer than 8 windows where the tracker locked -- "
+                           "no engine sounding here, or no tonal source to "
+                           "measure. INAPPLICABLE is not PASS."}
+        ec = 1200.0 * np.log2(np.maximum(rm[gd], 1e-6)
+                              / np.maximum(rat[gd], 1e-6))
+        trk = np.abs(ec) < TRACK_MAX_CENTS
+        ff = float(1.0 - trk.mean())
+        if trk.sum() <= 8:
+            # NOT A FAIL: the comb search never locked on a single window here,
+            # so there is no measured Doppler ratio to disagree with anything.
+            # Calling that a Doppler failure would be asserting a defect from a
+            # measurement that did not happen -- which is the same error as
+            # calling an unmeasurable beat a pass, pointed the other way.
+            return {"film_t_s": float(t0), "usable_windows": int(gd.sum()),
+                    "tracked_windows": int(trk.sum()),
+                    "tracker_failure_fraction": ff,
+                    "median_abs_error_cents": float(np.median(np.abs(ec))),
+                    "OUTCOME": "INAPPLICABLE",
+                    "why": ("the tracker locked on %d of %d windows; with no "
+                            "locked window there is no measured ratio. Most "
+                            "likely the engine is not the loudest tonal source "
+                            "at this range. INAPPLICABLE is not PASS."
+                            % (int(trk.sum()), int(gd.sum())))}
+        rc = float(np.corrcoef(rm[gd][trk], rat[gd][trk])[0, 1])
+        med = float(np.median(np.abs(ec)))
+        p90 = float(np.percentile(np.abs(ec), 90))
+        ok = bool(med < 100.0 and p90 < 150.0 and rc == rc and rc > 0.90
+                  and ff <= 0.15)
+        return {"film_t_s": float(t0), "usable_windows": int(gd.sum()),
+                "tracked_windows": int(trk.sum()),
+                "tracker_failure_fraction": ff,
+                "median_abs_error_cents": med, "p90_abs_error_cents": p90,
+                "corr_on_tracked_windows": rc,
+                "predicted_ratio_span_semitones": float(
+                    12.0 * np.log2(rat.max() / max(rat.min(), 1e-9))),
+                "OUTCOME": "PASS" if ok else "FAIL"}
+
+    drdt = np.gradient(rr, t_ctrl)
+    closing = -drdt
+    cand, _cp = _sig.find_peaks(closing, height=DOPPLER_MIN_CLOSING_MS,
+                                distance=int(5.0 * sp.CTRL_HZ))
+    stations = []
+    for ci in cand:
+        # the closest approach just after this closing peak
+        lo2 = int(ci)
+        hi2 = min(int(ci) + int(6.0 * sp.CTRL_HZ), rr.shape[0])
+        if hi2 - lo2 < 4:
+            continue
+        tst = float(t_ctrl[lo2 + int(np.argmin(rr[lo2:hi2]))])
+        if any(abs(tst - r["film_t_s"]) < 4.0 for r in stations):
+            continue
+        r = _station(tst)
+        if r is not None:
+            r["beat"] = next((b["name"] for b in reversed(sheet["beats"])
+                              if tst >= b["start_s"]), "?")
+            r["peak_closing_speed_ms"] = float(closing[ci])
+            stations.append(r)
+    out["coverage"] = {
+        "declared_station_only_time_fraction": 4.2 / clock.duration_s,
+        "stations": stations,
+        "beats_covered": sorted({r["beat"] for r in stations}),
+        "n_pass": sum(1 for r in stations if r["OUTCOME"] == "PASS"),
+        "n_fail": sum(1 for r in stations if r["OUTCOME"] == "FAIL"),
+        "n_inapplicable": sum(1 for r in stations
+                              if r["OUTCOME"] == "INAPPLICABLE"),
+        "min_closing_speed_ms": DOPPLER_MIN_CLOSING_MS,
+        "engine_order": ENGINE_ORDER,
+        "PORTING_NOTE": (
+            "B7 halves the firing fundamental to engine order 1.5. Change "
+            "ENGINE_ORDER at the top of this file BEFORE that render, or every "
+            "station here reports a tracker failure fraction that looks like a "
+            "broken Doppler and is not."),
+    }
+
     out["PASS"] = bool(
         abs(out["predicted_sweep_semitones_from_retarded_solve"]
             - out["predicted_sweep_semitones_from_closing_speeds"]) < 0.6
@@ -1939,7 +1721,10 @@ def doppler_gate(x, sr, spec, sheet, clock, tel, outdir, skip_plot=False):
         # those broken files (+0.953, +0.972) — it is this line and the two
         # error percentiles that fail them.
         and fail_frac == fail_frac and fail_frac <= 0.15
-        and out["usable_windows"] > 8)
+        and out["usable_windows"] > 8
+        # AND EVERY OTHER PASS IN THE FILM. An INAPPLICABLE station does not
+        # contribute either way; a FAIL anywhere fails the gate.
+        and out["coverage"]["n_fail"] == 0)
     out["CONTROL_FAILS_AS_EXPECTED"] = bool(
         out["CONTROL_null_static_source_and_static_ears_semitones"] < 0.01
         and perm_corr == perm_corr and perm_corr < 0.5)
