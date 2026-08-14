@@ -16,6 +16,8 @@ still true.** It is written by dates that can be checked, not by memory.
 
 | file | cut | shows |
 |---|---|---|
+| **`PART2_THE_FILM_4K_ProRes422HQ.mov`** | **08-14 02:29** | **THE FILM. The whole of part 2, one unbroken 4K shot.** 3840x2160, 24 fps, **2,978 frames = 124.0833 s, zero cuts**, 512 spp, AgX / look None / exposure -3.628, SDR. ProRes 422 HQ, **11.25 GB**. Rendered from `render/film25_breach.blend` (sha16 **`1d2aa2d86533574e`**) on world `assembly15`, frames 1-2978 on three rented RTX 5090s over 2026-08-09 to 08-13. Audio is `audio/out/master.wav` (md5 `d5087fd021b5f748f176ecb2b6c1de67`) **muxed losslessly, `-c:a copy`, and verified bit-identical in the finished file** — not rebuilt. **This is the delivery master.** |
+| **`PART2_THE_FILM_4K_h265.mp4`** | **08-14 04:22** | **The viewing copy of the same film**, from the same 2,978 frames and the same audio master. 3840x2160, 24 fps, 124.0833 s, H.265 `hvc1`, faststart, **880 MB**, AAC 192 kbps. Use this to watch; use the ProRes to grade or cut. |
 | `AFTER_beat5_doppler_4s.mp4` | 08-08 08:20 | **R2-2161, the beat-5 framing fix.** f2340-2439 (t 97.5-101.6 s), 100 frames, 1280x720, 24 fps. The doppler pass. The car is placed **off-centre and travels across the frame**; beat 5's frame-offset is **0.754** against a 0.92 bound. Built from `render/r22161_after.blend`, whose camera path is bit-identical to the gated rig `7fc6d688…`. |
 | `BEFORE_beat5_doppler_4s.mp4` | 08-08 08:17 | its matched BEFORE, same 100 frames, same resolution, same 64 samples, same DOF. The shipped camera, which pins the car near **frame centre** the whole way — frame-offset **0.055**. From `render/film22.blend`, camera path `363e4e88…`, the sha `docs/LIVE-CAMERA.md` declares. |
 | `AFTER_opening_18s.mp4` | 08-08 01:36 | the opening tempo pass (R2-1606). The most recent camera deliverable. |
@@ -50,38 +52,29 @@ f526 is the **positive** control and it fires loudly — the extra lamp is real 
 | `R2851_ending_CANDIDATE.mp4` / `R2851_ending_SHIPPED_A.mp4` | 08-07 07:25 | an ending A/B. Both arms predate the lap-down. |
 | `R2943_ending_LAPDOWN.mp4` | 08-07 14:12 | the lap-down ending. Beat 6 is under active work; check with its owner before treating this as final. **See the warning directly below — do not judge the ending on this file.** |
 
-> ### DO NOT JUDGE THE ENDING ON ANY FILE ABOVE (R2-3181, found 2026-08-08)
+> ### THE ENDING HAS NOW BEEN SEEN. THIS BANNER IS RETIRED (2026-08-14)
 >
-> **Every clip in this folder that shows beat 6 was rendered from a film whose
-> car is three days older than its camera, and in which THE CAR IS ABSENT FROM
-> THE FRAME FOR THE LAST 3.79 SECONDS — including the final frame.**
+> **`PART2_THE_FILM_4K_ProRes422HQ.mov` and `PART2_THE_FILM_4K_h265.mp4`
+> supersede every clip above, including the ending.**
 >
-> ```
-> world/car_anim.blend        built 2026-08-04 19:51
-> R2-943 lap-down landed      anim/carpath.py   2026-08-07 08:40
-> render/film22.blend         built 2026-08-08 04:51
-> render/film23_breach.blend  built 2026-08-08 07:09
-> ```
+> The banner that stood here from 2026-08-08 said that no file in this folder
+> could be used to judge the ending, because every clip showing beat 6 had been
+> rendered from a film whose car was three days older than its camera — the car
+> absent from frame for the last 3.79 seconds, including the final frame
+> (R2-3181).
 >
-> `tools/build_film_scene.py` **appends** the `CAR` collection and does not
-> re-key it, so both films carry a car authored before the lap-down while their
-> camera paths carry it. **The camera tracks a car that is not in the scene** —
-> 375.7 px @4K apart at f2760.
+> **That is fixed and the fix is in delivered pixels, not in a plan.** `f2978`
+> was rendered, fetched, hash-checked, decoded and looked at: the car is on the
+> main straight with kerbs, catch fencing, a populated grandstand and the
+> ground cover around it. All **2,978** frames were verified three independent
+> ways — coverage against the range 1-2978 (0 missing, 0 duplicated), every
+> frame's sha256 re-checked against the hash its broker recorded at fetch
+> (2978/2978), and every frame decoded from scratch (2,978 decoded, one
+> resolution 3840x2160, 0 failed, 0 flat, 0 black).
 >
-> On the delivered pixels: beat 6's car is **31.0 px @4K p50**, **95.8 % of
-> frames under 60 px**, and **wholly off frame for the last 91 frames**.
-> `work/r2-3181/beat6_tail.png` shows f2880/2900/2940/2978 — empty track in all
-> four.
->
-> **A rebuild of `car_anim.blend` from current source takes beat 6 to 81 px p50
-> and 0 frames off frame.** That rebuild is in progress. Until it lands and a
-> new ending clip is cut, **the ending has not been seen** — anything watched
-> here is a measurement of a stale artefact, not of the film.
->
-> This was found by repairing an instrument, not by looking. `lap_shotscale.py`
-> kept its own telemetry reader which **clamped** past the end of the data, so
-> it had been reporting beat 6's car up to 230.7 m from where it actually is.
-> The defect and the blindness to it arrived together.
+> **The clips above are still superseded and still must not be judged by** — but
+> the reason has changed. They are old cuts of a film that now exists in full.
+> Judge it by the two files at the top of this file.
 
 ## LINKS
 
