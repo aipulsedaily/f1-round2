@@ -7,6 +7,12 @@ do damage" is the point of the gates — it is not padding.
 Numbering: `R2-nnn`. Audio defects share the numbering with visual ones, as the
 brief requires ("log audio defects in the same defect log").
 
+**R2-4091…R2-4098, R2-4121…R2-4123, R2-4151…R2-4157 and R2-4181…R2-4189 are IN USE**
+and the whole of **R2-4091…R2-4189 is RESERVED** — do not allocate into it. Those
+numbers hold 27 entries moved on 2026-08-14 out of four blocks that had been
+allocated twice; see `docs/DUPLICATE-ID-SWEEP-R2.md`. Every one carries a
+`RENUMBERED` banner naming the number it used to have.
+
 ---
 
 ## R2-001 — the brief's explode axis is inverted for this car
@@ -31048,7 +31054,9 @@ built.
 precisely so a person can decide. **That is the one open item on the ending no
 further work here will settle.**
 
-## R2-1091 — R2-1052 IS WRONG: the focus fix used the film's own camera. I read a grep and called it a code path
+## R2-4091 — R2-1052 IS WRONG: the focus fix used the film's own camera. I read a grep and called it a code path
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1091.** Two writers allocated R2-1091 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1091 — THE BLAST RADIUS OF THE STALE CAMERA IS SMALL, AND IT IS ALL IN BEAT 1` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 I told the client their beat-1 focus note was **void** — that the fix had been
 derived from a camera the film does not have, and that the proxy render carried
@@ -31271,7 +31279,9 @@ worked. Over the ~$0.40 budgeted; the failed host and a 617 s scene push on a
 Credit **$62.66**. Broker 2 was not touched at any point and carried the
 client's beat-1 proxy throughout.
 
-## R2-1092 — THE ANSWER: eight brokers on eight single cards. Same money, one third of a day, zero code
+## R2-4092 — THE ANSWER: eight brokers on eight single cards. Same money, one third of a day, zero code
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1092.** Two writers allocated R2-1092 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1092 — THE BEAT-1 FOCUS FIX IS BEING ADJUDICATED ON A CAMERA THE FILM DOES NOT HAVE` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 Measured, probed, and it overturns everything anyone assumed - including the
 client's own offer and two of my models.
@@ -31298,7 +31308,9 @@ without touching them.
 so pointing today's broker at an 8-GPU box **silently rents eight cards and uses
 1.27 of them** - $512 for a master, by doing nothing wrong.
 
-## R2-1093 — the client's 2x5090 offer is a quarter-GPU share, and the market is mostly that
+## R2-4093 — the client's 2x5090 offer is a quarter-GPU share, and the market is mostly that
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1093.** Two writers allocated R2-1093 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1093 — THE 9.866 m REACHES THE MIX` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 Offer `46815699` reads *"2x RTX 5090, 48 cores of 192"*. It is **`gpu_frac
 0.25`** - the **R2-382 trap**, already measured at 1.64x slower with a
@@ -31312,7 +31324,9 @@ headline.
 Supply is thin besides: only **1x (20 offers) and 8x (11)** are deep. **2x is
 five offers and none cheaper. 3x and 6x do not exist.**
 
-## R2-1094 — sticker price is nearly worthless: width buys 8.8%, the host lottery costs 45%
+## R2-4094 — sticker price is nearly worthless: width buys 8.8%, the host lottery costs 45%
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1094.** Two writers allocated R2-1094 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1094 — WHAT SURVIVES, MEASURED RATHER THAN ASSUMED` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 ```
 Florida     1x  $0.4488/GPU-hr x 151.0 s = $0.01882/frame
@@ -31328,7 +31342,9 @@ $/frame.**
 thing available is **a good host, not a wide box** - and any procurement rule
 that sorts on $/hr is optimising the smaller term.
 
-## R2-1095 — the probe overturned one model by 3.5x, and confirmed the other
+## R2-4095 — the probe overturned one model by 3.5x, and confirmed the other
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1095.** Two writers allocated R2-1095 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1095 — A TOOL THAT NAMES THE STALE FILE `LIVE` AND CERTIFIES IT` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 Same frame, same `spec_hash 1983dced5cacabb6`, luminance identical to 6 dp
 across hosts:
@@ -31348,7 +31364,9 @@ shipping film it is **4.52 s (Florida) and 11.14 s (S. Africa)** - host
 dependent. The conclusion survives with room: at the *worst* host, eight workers
 leave the dispatch thread **42% busy.**
 
-## R2-1096 — THE MASTER IS $74.84 AND THE CREDIT IS $62.57. The gap is real now
+## R2-4096 — THE MASTER IS $74.84 AND THE CREDIT IS $62.57. The gap is real now
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1096.** Two writers allocated R2-1096 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1096 — THE DETECTION ALREADY EXISTED. NOTHING WAS WIRED TO IT.` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 **R2-980's 155.0 h used a flat mean of nine frames.** **Beat 5 is 58% of render
 time and only 2 of those 9 samples.** Beat-weighted:
@@ -31373,7 +31391,9 @@ margin for a beat-5 rate that is two samples wide.
 Probe spend **$1.90** against a $0.40 budget - $0.26 lost to a host whose own
 `apt-get` held the dpkg lock, and a 617 s scene push on a six-core uplink.
 
-## R2-1097 — the rebuild manifest AUDITED against the tree: all 19 artefacts present, the ceiling append is a live path, and the shipping bake is the right one
+## R2-4097 — the rebuild manifest AUDITED against the tree: all 19 artefacts present, the ceiling append is a live path, and the shipping bake is the right one
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1097.** Two writers allocated R2-1097 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1097 — ROOT CAUSE: THE PATH FILE'S NAME IS A SIDE EFFECT OF AN ARGUMENT` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 `docs/NEXT-REBUILD.md` is the gate to the master and had never been checked
 against the filesystem it describes. **It survives.**
@@ -31384,7 +31404,7 @@ cannot proceed without: `work/r2881/car_anim_driver_R2881_BOTH.blend`
 (101.91 MB).
 
 **The ceiling append was spot-checked as a CODE PATH, not a string** - the
-distinction I paid for an hour earlier in R2-1091. `tools/build_film_scene.py`
+distinction I paid for an hour earlier in R2-4091. `tools/build_film_scene.py`
 line 372 is inside `main()`, and what follows is a real
 `bpy.data.libraries.load` + `children.link`, fronted by **two hard refusals**:
 one if the library is missing, one if it lacks the expected collection. It then
@@ -31409,7 +31429,9 @@ Exactly the shape R2-092 describes: mullion 5 sheds `S00` and `S01`, and
 warning that `land_breach.sh` stage 1 can silently regenerate from whatever raw
 table sits in `sim/tmp/`.
 
-## R2-1098 — I nearly logged a broken guard that was my own namespace error
+## R2-4098 — I nearly logged a broken guard that was my own namespace error
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1098.** Two writers allocated R2-1098 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1098 — `tools/live_campath.py`: THE WRONG CAMERA IS UNAVAILABLE, NOT MERELY DETECTABL…` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 My first run of that check reported **`GUARD_OBJECT_ABSENT`** - `BF_MUL05_S02`
 is not in the bake. I was one step from recording "the guard that proves the
@@ -31780,7 +31802,9 @@ happened.** `slabcheck` is the only gate in the breach that joins a declaration
 to an outcome. Everything else in `wall()['breach_state']` is still an
 assertion nobody has checked.
 
-## R2-1151 — R2-1084's timeline is wrong. `docs/beat_sheet.json` was not edited at 05:03.
+## R2-4151 — R2-1084's timeline is wrong. `docs/beat_sheet.json` was not edited at 05:03.
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1151.** Two writers allocated R2-1151 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1151 — THE RENDER THAT KILLED THE FIX HAD A DISCONNECTED CHANNEL, and every conclusio…` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 The report says the sheet "was edited at 05:03" and thereby "reintroduced" a
 beat-1 failure that a 04:15 farm run had shown fixed. **Reproduced first, as
@@ -31829,11 +31853,13 @@ inverted.
 It returns nothing. **`docs/beat_sheet.json` is gitignored** —
 `.gitignore:37`. The sheet the entire film is built from is untracked, so a
 03:48 rewrite of it left no audit record at all, and the timeline in R2-1084 had
-to be reconstructed from mtimes and build logs. **See R2-1157.**
+to be reconstructed from mtimes and build logs. **See R2-4157.**
 
 ---
 
-## R2-1152 — ROOT CAUSE: the fix was generated into a candidate and never promoted.
+## R2-4152 — ROOT CAUSE: the fix was generated into a candidate and never promoted.
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1152.** Two writers allocated R2-1152 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1152 — THE MARK READS AT N ~ 1000, and my N=60 was wrong by value, not by kind` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 The failing sheet has **19** camera keys in beat 1. Every PASS in the 04:05–04:49
 window has **20**. Diffed whole-tree, `docs/beat_sheet.json` against
@@ -31890,7 +31916,9 @@ to a scratch path, then diffed.
 
 ---
 
-## R2-1153 — FIXED by promotion, and the pixels re-measured rather than assumed.
+## R2-4153 — FIXED by promotion, and the pixels re-measured rather than assumed.
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1153.** Two writers allocated R2-1153 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1153 — my longitudinal hypothesis was right in mechanism and wrong as the explanation` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
     cp docs/beat_sheet.json work/r21084/beat_sheet.BEFORE_R21084.json
     .venv/bin/python tools/build_beatsheet.py          # no override
@@ -31954,7 +31982,9 @@ before and after.
 
 ---
 
-## R2-1154 — THE DEFECT BEHIND THE DEFECT, and it is two defects.
+## R2-4154 — THE DEFECT BEHIND THE DEFECT, and it is two defects.
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1154.** Two writers allocated R2-1154 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1154 — THE REFUSAL WAS BUILT AND ITS FIRST RUN REFUSED ITS OWN AUTHOR'S HANDOVER` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 > A build that prints two verdicts and is judged on one is a build with an
 > unread verdict.
@@ -32063,7 +32093,9 @@ PASS"), the severity reductions, the no-verdict case and the CLI.
 
 ---
 
-## R2-1155 — the beat-1 PASS before 03:48 was a SATURATED metric, and it measured all 791 frames while doing it.
+## R2-4155 — the beat-1 PASS before 03:48 was a SATURATED metric, and it measured all 791 frames while doing it.
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1155.** Two writers allocated R2-1155 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1155 — "WHEN AN ARGUMENT HAS BEEN CORRECTED TWICE AND IS STILL ON THE SAME AXIS, THE…` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 Two logs in the window (`work/r2851/build.log` 03:33,
 `work/r2851/rekey_R2851.log` 04:28) show a beat 1 of **35** rig keys — the
@@ -32095,7 +32127,9 @@ the saturation caveat. **Flagged, not changed.**
 
 ---
 
-## R2-1156 — two things I did not touch, and why
+## R2-4156 — two things I did not touch, and why
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1156.** Two writers allocated R2-1156 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1156 — CLIENT, ON f2760: "anything 5 feet away from the main road and buildings have…` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 * **`world/camera_rig_path.json` is stale against both builds**, and was already
   so before this fix: worst Δposition **11.31 m** against the pre-fix build and
@@ -32110,14 +32144,16 @@ the saturation caveat. **Flagged, not changed.**
 
 ---
 
-## R2-1157 — the sheet the film is built from is untracked, and that is why none of this had a trail
+## R2-4157 — the sheet the film is built from is untracked, and that is why none of this had a trail
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1157.** Two writers allocated R2-1157 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1157 — `min_depth_m 4.577` WAS THE GRASS. It stopped two tree builds and `n_hosts: 93…` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 `.gitignore:37` excludes `docs/beat_sheet.json`. Consequences, all observed here:
 
 * `git log -p -- docs/beat_sheet.json` returns nothing, so the 03:48 rewrite has
   no author, no diff and no message. R2-1084's timeline had to be rebuilt from
   mtimes and logs, and it came out inverted.
-* **The fix in R2-1153 cannot be committed.** It exists on disk only. A
+* **The fix in R2-4153 cannot be committed.** It exists on disk only. A
   `git checkout` or a clean clone does not carry it, and the next agent to
   regenerate with `B1_SHEET_OUT` unset is the only thing that reproduces it.
 * Candidates *are* tracked (`docs/R2829_beat_sheet_CANDIDATE.json`,
@@ -32142,7 +32178,7 @@ beat-1 proxy render on broker 2 was not touched, not inspected and not jumped.
 
 | path | what |
 |---|---|
-| `docs/beat_sheet.json` | **FIXED** (regenerated; untracked — see R2-1157) |
+| `docs/beat_sheet.json` | **FIXED** (regenerated; untracked — see R2-4157) |
 | `anim/build_camera_rig.py` | FAIL now exits non-zero and propagates |
 | `tools/gate_exit.py` | `scan()`, `scan_report()`, CLI, rig tokens registered |
 | `tools/gate_exit_selftest.py` | §7, 11 new controls, 62 total |
@@ -33456,7 +33492,7 @@ after the fact: a frame picked afterwards can always be the one that flatters.
 
 So the focus position now stands on **two independent legs**: the **code path**
 (`apply_focus` reads film17's own camera; the stale `film16_path.json` appears
-only in `selftest()` and the CLI default - R2-1091), and a **prediction
+only in `selftest()` and the CLI default - R2-4091), and a **prediction
 registered in advance and met on delivered pixels.**
 
 ## R2-1112 — A CORRECT FIX CAN LEAVE THE COMPLAINT STANDING, because the complaint named a symptom with two causes
@@ -33536,7 +33572,7 @@ Fixed before it could bite: `--weights` on `plan`/`submit`, and `fleetctl
 record` fills `farm/hostrates.json` from the first frame per host, so a measured
 second pass sizes blocks by hardware.
 
-**This is the same finding as R2-1094 from the other side.** That one said the
+**This is the same finding as R2-4094 from the other side.** That one said the
 host lottery costs +/-45 % and sticker price is nearly worthless. **This one says
 the lottery does not stop at procurement - it continues inside the fleet, every
 hour, and scheduling has to answer it.**
@@ -33709,7 +33745,9 @@ room and both reflection buses are provably innocent - **removing all of them
 buys +0.12 dB.** That is what a measurement is for: it says where *not* to
 spend changes, and five buses were about to be blamed for 0.12 dB.
 
-## R2-1121 — the engine's mix trim was set by a three-second window inside the slow-motion breach
+## R2-4121 — the engine's mix trim was set by a three-second window inside the slow-motion breach
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1121.** Two writers allocated R2-1121 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1121 — BAYS 3 AND 6 STAY. The relabel was NOT free, and that is the finding.` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 `-10 LUFS-S` is spent on a **3-second window inside the slow-motion breach** - so
 **through the entire flying lap the engine runs 1.45 dB BELOW its own target**
@@ -33728,7 +33766,9 @@ to change first. **That is why the rebuild had to come before the balance**, and
 the agent is correctly holding the mix until the rebuilt engine renders rather
 than over-correcting against a number it has not yet measured.
 
-## R2-1122 — `scene.classify` calls 48 % of the flying lap "dais": the tyres are on a timber deck for 40 % of the lap
+## R2-4122 — `scene.classify` calls 48 % of the flying lap "dais": the tyres are on a timber deck for 40 % of the lap
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1122.** Two writers allocated R2-1122 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1122 — MULLIONS 4 AND 6 ARE DECLARED `destroyed` AND DO NOT MOVE. Same defect, not ra…` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 `f["asphalt"]` requires `x > 64.6`; **`f["dais"]` has no such guard.** So for
 roughly **40 % of the flying lap the tyre layer renders as a hollow timber
@@ -33744,7 +33784,9 @@ Two guards missing on one classifier, and only one of them is written down.
 **An unguarded branch in a mutually-exclusive set is not a default; it is a
 catch-all**, and it will absorb whatever the guarded branches reject.
 
-## R2-1123 — `tree_italian_cypress` IS NOT A CYPRESS, and 25 selftests including negative controls could not see it
+## R2-4123 — `tree_italian_cypress` IS NOT A CYPRESS, and 25 selftests including negative controls could not see it
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1123.** Two writers allocated R2-1123 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1123 — `land_breach.sh` STAGE 3 NOW GATES. It never has.` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 At 1:1 it reads as a **bay laurel**: spray length **~4x** oversize, width
 **~8x**, order-1 branch diameter **~7x**, and a hollow crown with sky visible
@@ -37626,7 +37668,9 @@ producing plausible numbers** - and it is the same family as `CameraPath.dist`
 discarding altitude and `GRASS_HERO_D` measuring to the path. **Four instruments
 this week whose answer depends on where the thing happens to be.**
 
-## R2-1181 — "OVERALL" WAS THE FINDING: 96.7 % of the film is flat, and the largest run is 85 UNBROKEN SECONDS
+## R2-4181 — "OVERALL" WAS THE FINDING: 96.7 % of the film is flat, and the largest run is 85 UNBROKEN SECONDS
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1181.** Two writers allocated R2-1181 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1181 — the +31.3 dB frame-1 defect REPRODUCES, exactly, and the fix holds` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 I sampled the opening because the client said *"4 seconds in."* **The opening is
 the smaller half.**
@@ -37645,7 +37689,9 @@ largest run: ONE UNBROKEN 85 SECONDS  (f938-2978, t 39 s -> last frame)
 
 **I asked to be told if the flatness was somewhere I had not looked. It is.**
 
-## R2-1182 — THE CHORD CANCELS: a minimax allocator GUARANTEES the uniformity it was added to fix
+## R2-4182 — THE CHORD CANCELS: a minimax allocator GUARANTEES the uniformity it was added to fix
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1182.** Two writers allocated R2-1182 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1182 — WHY it survived every gate: the seam gate cannot reach the film's edges` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 Proven from the code rather than observed from the output. For any
 transit-bound move, **`move_seconds` is proportional to chord** and `_allocate`
@@ -37661,7 +37707,9 @@ deep**, including **`speed_key` disabled for beat 5**, which leaves the key
 emitter **structurally blind to speed change** - **a precondition for any beat-5
 pass, not an optimisation.**
 
-## R2-1183 — R2-1144's NUMBERS ARE NOT REPRODUCIBLE, and the client may have judged a camera we already replaced
+## R2-4183 — R2-1144's NUMBERS ARE NOT REPRODUCIBLE, and the client may have judged a camera we already replaced
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1183.** Two writers allocated R2-1183 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1183 — the edge gate: `audio/verify.py::edge_gate`, wired into the suite` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 **Three pushbacks I asked for and got.**
 
@@ -37703,7 +37751,9 @@ exactly one STAGE RESULT line, no FAIL lines. Cost **$2.90**.
 against the sheet and re-pointing it touches the beat-6 workstream. **Correctly
 left as a decision rather than taken.**
 
-## R2-1184 — THE 42 m "CLIFF" WAS A BULGE: 340,645 clumps DELETED and every region went up or flat
+## R2-4184 — THE 42 m "CLIFF" WAS A BULGE: 340,645 clumps DELETED and every region went up or flat
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1184.** Two writers allocated R2-1184 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1184 — the gate caught something on its first outing: the A/B files click` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 `verge_band` now returns `tdraw` and `build_grass` crossfades on it. **On
 `tdraw` and not `f`**, because `outer` is capped to 0.75 R on the inside of a
@@ -37725,7 +37775,9 @@ the client's strip 5.12 → 5.30, verge 5.35 → 5.40, infield +1.9 %. **Removin
 material improved cover everywhere**, because the step was an excess on one side
 rather than a deficit on the other.
 
-## R2-1185 — R2-1824 fixed, MEASURED AS UNOBSERVABLE, and kept anyway with the reason stated
+## R2-4185 — R2-1824 fixed, MEASURED AS UNOBSERVABLE, and kept anyway with the reason stated
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1185.** Two writers allocated R2-1185 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1185 — `watch/audio/`: the listening pass, nine clips, about four minutes` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 Tier C now dissolves over 190 m instead of cutting dead at 1076 m. **Tier A and
 B identical to the unit, the 200 m and 520 m joins still sum to one, nothing on
@@ -37744,7 +37796,9 @@ and rendered it**: whole-frame **0.656 → 0.654**, mean |dL| **0.00041.**
 **Measuring whether a fix is visible before shipping it, and saying "no" out
 loud, is rarer than fixing it.**
 
-## R2-1186 — THE TAPER WAS WRONG TWICE, AND THE ASSERTION THAT CAUGHT THE SECOND WAS WRITTEN FOR THE FIRST
+## R2-4186 — THE TAPER WAS WRONG TWICE, AND THE ASSERTION THAT CAUGHT THE SECOND WAS WRITTEN FOR THE FIRST
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1186.** Two writers allocated R2-1186 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1186 — the class sweep: 91 sites, **0 leaks**, 7 bounded, and one dependency nobody h…` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 Arm C's first build reported in-corridor verge clumps at **-1.1 %** - **a count
 the taper has no business touching.** Chasing that number found **two** holes,
@@ -37783,7 +37837,9 @@ assembly is needed, and tier C is the number to check it by - it must come back
 LOWER (56,063) or the fixes were not picked up.** Cost **$0.374** across both
 passes.
 
-## R2-1187 — TWO INDEPENDENT GUARDS MET IN THE MIDDLE, and neither was sufficient alone
+## R2-4187 — TWO INDEPENDENT GUARDS MET IN THE MIDDLE, and neither was sufficient alone
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1187.** Two writers allocated R2-1187 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1187 — the three `scene.py` fixes: all VERIFIED, three stated numbers wrong` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 `assembly12` was refused **from the input side by its own guard**:
 
@@ -37824,7 +37880,9 @@ the near band is placed against **the same `GridZ` the woodland was.** Two
 refusals guard it — MODS order at parse time, and **an incomplete capture raises
 rather than building against objects terrain never made.**
 
-## R2-1188 — "I BUILT AN INSTRUMENT THAT REPORTS EMPTINESS AS SUCCESS ON THE WAY TO FIXING ONE"
+## R2-4188 — "I BUILT AN INSTRUMENT THAT REPORTS EMPTINESS AS SUCCESS ON THE WAY TO FIXING ONE"
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1188.** Two writers allocated R2-1188 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1188 — the three `engine.py` whole-film leaks: all three VERIFIED, to the sample` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 The first `assembly13` attempt printed:
 
@@ -37859,7 +37917,9 @@ sound world.** film19 was built on stale assembly11 and its breach failed on the
 bar **has never run to completion on any of them.** No master rendered, no cost
 committed.
 
-## R2-1189 — THE HANDOFF CHECK PASSED, PREDICTED IN ADVANCE AND MATCHED TO THE UNIT
+## R2-4189 — THE HANDOFF CHECK PASSED, PREDICTED IN ADVANCE AND MATCHED TO THE UNIT
+
+> **RENUMBERED 2026-08-14 (#170), was R2-1189.** Two writers allocated R2-1189 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1189 — two things the sweep found that the log gets WRONG, both still open` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 The terrain author said assembly13 would be the one to verify and **named the
 number to check it by before it existed**: tier C must come back **below
@@ -45924,7 +45984,7 @@ sha256 b7f6041d30560b44...  sim/out/breach_film_R2387.npz        <- NOT this one
 * **R2-513** applied the ship with `--film sim/out/breach_film_R6_SHIPPED.npz`
   explicitly, calling R2387 *"the trap next to the fix"*.
 * **R2-778** re-verified the shipping table byte-identical and untouched.
-* **R2-1097** — the most recent audit, and **after** R2-916 — certifies
+* **R2-4097** — the most recent audit, and **after** R2-916 — certifies
   *"the shipping bake is verifiably the right one"*, `MUL05_S02 0.1449 m`, and
   notes *"a wrong bake reads 55.35 m here"*. 55.35 m **is R2387**.
 * `docs/NEXT-REBUILD.md`'s verification bar demands
