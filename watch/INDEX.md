@@ -16,13 +16,65 @@ still true.** It is written by dates that can be checked, not by memory.
 
 | file | cut | shows |
 |---|---|---|
-| **`PART2_THE_FILM_4K_ProRes422HQ.mov`** | **08-14 02:29** | **THE FILM. The whole of part 2, one unbroken 4K shot.** 3840x2160, 24 fps, **2,978 frames = 124.0833 s, zero cuts**, 512 spp, AgX / look None / exposure -3.628, SDR. ProRes 422 HQ, **11.25 GB**. Rendered from `render/film25_breach.blend` (sha16 **`1d2aa2d86533574e`**) on world `assembly15`, frames 1-2978 on three rented RTX 5090s over 2026-08-09 to 08-13. Audio is `audio/out/master.wav` (md5 `d5087fd021b5f748f176ecb2b6c1de67`) **muxed losslessly, `-c:a copy`, and verified bit-identical in the finished file** — not rebuilt. **This is the delivery master.** |
-| **`PART2_THE_FILM_4K_h265.mp4`** | **08-14 04:22** | **The viewing copy of the same film**, from the same 2,978 frames and the same audio master. 3840x2160, 24 fps, 124.0833 s, H.265 `hvc1`, faststart, **880 MB**, AAC 192 kbps. Use this to watch; use the ProRes to grade or cut. |
+| **`PART2_THE_FILM_4K_ProRes422HQ.mov`** | **08-14 14:39** | **THE FILM. The whole of part 2, one unbroken 4K shot.** 3840x2160, 24 fps, **2,978 frames = 124.0833 s, zero cuts**, 512 spp, AgX / look None / exposure -3.628, SDR. ProRes 422 HQ, **11.25 GB**. Rendered from `render/film25_breach.blend` (sha16 **`1d2aa2d86533574e`**) on world `assembly15`, frames 1-2978 on three rented RTX 5090s over 2026-08-09 to 08-13. **AUDIO REBUILT 08-14** — carries `PART2_AUDIO_MASTER_R2-4079.wav`, muxed `-c:a copy`. **The picture is unchanged and that is proven, not assumed: the video stream's md5 is `c346a7a322a4a2a403727c1e85f17511` before and after the re-mux.** **This is the delivery master.** |
+| **`PART2_THE_FILM_4K_h265.mp4`** | **08-14 14:39** | **The viewing copy of the same film**, same 2,978 frames, same new audio. 3840x2160, 24 fps, 124.0833 s, H.265 `hvc1`, faststart, **880 MB**, AAC 192 kbps. Video stream md5 `235ef36e844a62b0e303e4138907b9fa`, identical before and after the re-mux. Use this to watch; use the ProRes to grade or cut. |
+| **`PART2_AUDIO_MASTER_R2-4079.wav`** | **08-14 13:30** | **The audio master the two films carry.** 124.083333 s, 48 kHz, 24-bit stereo, **-23.00 LUFS / -1.12 dBTP** (EBU R 128 — see below for why this is not -14). Built from commit `773008e`. The three earlier masters were rejected by the client; this is the fourth. |
 | `AFTER_beat5_doppler_4s.mp4` | 08-08 08:20 | **R2-2161, the beat-5 framing fix.** f2340-2439 (t 97.5-101.6 s), 100 frames, 1280x720, 24 fps. The doppler pass. The car is placed **off-centre and travels across the frame**; beat 5's frame-offset is **0.754** against a 0.92 bound. Built from `render/r22161_after.blend`, whose camera path is bit-identical to the gated rig `7fc6d688…`. |
 | `BEFORE_beat5_doppler_4s.mp4` | 08-08 08:17 | its matched BEFORE, same 100 frames, same resolution, same 64 samples, same DOF. The shipped camera, which pins the car near **frame centre** the whole way — frame-offset **0.055**. From `render/film22.blend`, camera path `363e4e88…`, the sha `docs/LIVE-CAMERA.md` declares. |
 | `AFTER_opening_18s.mp4` | 08-08 01:36 | the opening tempo pass (R2-1606). The most recent camera deliverable. |
 | `BEFORE_opening_18s.mp4` | 08-07 17:52 | its matched BEFORE. Correctly named. |
 | `audio/` | 08-08 03:14 | re-cut from the master; `audio/INDEX.md` explains the earlier staleness and states it is fixed. |
+
+### THE AUDIO REBUILD OF 2026-08-14 — what changed, and the one thing that did not
+
+The client rejected three successive audio masters — *"a wind blower"*, *"the first 30 seconds sound
+like the instrument The Tubes over and over"*, *"the sound even glass breaking is awful"* — while
+**all eight audio gates passed every time.** The gates were the first defect and have been replaced.
+
+**Measured, delivered master → this one:**
+
+| | delivered | now |
+|---|---:|---:|
+| breach spectral centroid | 51.5 Hz | **1372.1 Hz** |
+| breach energy below 100 Hz | 85.57 % | **1.88 %** |
+| limiter maximum gain reduction | −22.76 dB | **−0.83 dB** |
+| fraction of film pulled >1 dB | 20.65 % | **0.00 %** |
+| integrated loudness | −14 LUFS | **−23.00 LUFS** |
+
+**The causes were shared, not per-sound.** Three stages in series: the world-time warp was a
+**varispeed resampler**, transposing every world-attached source **6.51× down** at the breach — which
+is why the glass had no glass in it; gain-staging used a **K-weighted meter that is deaf below
+~50 Hz**, so it over-drove the impact bus by 23.6 dB; and the limiter then removed up to **22 dB while
+reporting 0.124 dB**, because it ran eight passes in a loop and only the last, gentlest one reached
+the report. A separate defect made the limiter **duck 161 ms *before* each transient** — its gain path
+used a zero-phase filter, which is symmetric in time.
+
+**Why −23 LUFS and not −14.** The mix's own peak-to-loudness ratio is 22.1 dB; −14 LUFS at −1 dBTP
+permits only 12.85 dB. −14 is a **streaming-music normalisation target**, wrong for a film containing
+an exploding glass wall. EBU R 128 asks −23.0 ±0.5 at −1 dBTP and the material lands at −23.13 — they
+agree to 0.13 LU, so the film now delivers with essentially no limiting at all.
+
+**ONE COMPLAINT IS ONLY HALF FIXED, BY THE CLIENT'S OWN DECISION.** *"The Tubes"* — a free-free
+metal-bar mode series at ratios 1 : 2.31 : 3.87 : 6.1, struck 616 times in 16 s — is **gone**.
+*"Over and over"* is **not**. Beat 1's cluster onsets sit on an exact 1.0417 s grid, and **those are
+the frames the 2,978 delivered 4K frames actually show**; moving them desyncs audio from picture.
+Fixing it needs ~800 frames re-rendered (~$29, ~1 day). **The client was offered that with costs on
+2026-08-14 and chose to ship.** So `G-MOD` fails at 11.96 dB @ exactly 1.000 Hz and is marked
+**picture-locked**. Successive clusters are now timbrally distinct — `G-NOVEL` and `G-GESTURE` pass —
+so the film is **measurably less repetitive in timbre and exactly as periodic in time.** Do not read
+that gate's failure as an oversight.
+
+**The gate suite now fails the film it is judging: 6 of 10, against 9 of 9 for the delivered master.**
+Most remaining failures are **instrument limits, not audio defects** — after the firing-order change
+the engine's harmonic comb is wider than a 1/3-octave band below ~1.5 kHz, so per-band flatness
+scores the loudest thing in the film as noise. `source=artefact` thresholds are now rejected by the
+suite **by name**: the old bars had been set at "the midpoint between what this master reads and what
+the adversary reads", and a gate calibrated to the defect cannot fail the defect.
+
+`superseded_audio_2026-08-13/PART2_THE_FILM_4K_h265.mp4` is the **rejected audio**, kept as the
+watchable before. Its ProRes twin was deleted: its video is bit-identical to the current master and
+its audio is `audio/out/master.wav`, retained separately as the permanent negative control — so it
+carried no unique information.
 
 **What the beat-5 pair does and does not claim.** It claims the **subject now moves across the frame**. It does **not** claim the picture moves faster — the camera's path is nearly unchanged (max positional delta 0.264 m over the whole film, exactly zero outside beat 5), so whole-frame optical flow is essentially the same. Read it for *where the car sits and how it travels*, not for speed. The camera also moves and re-lenses very slightly as well as re-aiming (position ≤0.264 m at f2584, lens ≤1.41 mm at f2244, aim ≤12.045 deg at f2273, all inside f1195-f2677) — that is part of the change, not a regression.
 
