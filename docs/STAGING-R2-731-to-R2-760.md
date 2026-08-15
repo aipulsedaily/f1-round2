@@ -1,7 +1,7 @@
 # STAGING — R2-731 … R2-760
 
 Findings staged here, not in `DEFECT-LOG-R2.md`. Everything below is a source
-change already landed in `/home/zany/f1-round2`, or a declined defect with its
+change already landed in `~/f1-round2`, or a declined defect with its
 reason.
 
 ---

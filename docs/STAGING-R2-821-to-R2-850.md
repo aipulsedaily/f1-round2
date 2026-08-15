@@ -3,9 +3,9 @@
 Owner: beat-1 pacing (camera position, rotation, lens, timing).
 Focus distance and f-stop are NOT touched here — another agent owns them.
 
-Baseline watched: `/home/zany/vast-render/out/seq/r2beat1/` (792 frames, 720p),
-encoded to `/home/zany/f1-round2/watch/BEFORE_beat1_33s.mp4`.
-Camera measured: `/home/zany/f1-round2/world/camera_rig_path.json`
+Baseline watched: `~/vast-render/out/seq/r2beat1/` (792 frames, 720p),
+encoded to `watch/BEFORE_beat1_33s.mp4`.
+Camera measured: `world/camera_rig_path.json`
 (byte-identical to `render/film16_path.json`, the current ship).
 
 ---
@@ -289,7 +289,7 @@ Nothing queued. Stated in advance:
   is roughly **$4-7**. This is the right verification spend and it is what I
   recommend.
 - **4K master of beat 1, 792 frames** — approximately **6-8× the proxy**, call it
-  **55-75 GPU-hours, $25-45** against a $73.33 balance. **Not to be spent until a
+  **55-75 GPU-hours, $25-45** against a $[redacted] balance. **Not to be spent until a
   proxy has been watched and the framing/focus candidates have been seen
   together.**
 
@@ -1059,7 +1059,7 @@ any comparison until it does — an instrument that cannot recover a known resul
 not evidence about a new one.
 
 ```
-REPRODUCING R2-823 on /home/zany/vast-render/out/seq/r2beat1
+REPRODUCING R2-823 on ~/vast-render/out/seq/r2beat1
   segment                   n  pub n     mean      pub   median      pub
   establishing wide        60     60    13.16    13.16    13.34    13.34  ok
   unreadable tour         571    571    20.27    20.27    19.83    19.83  ok
@@ -1535,7 +1535,7 @@ inside `apply_focus` from the OPENED BLEND, frame by frame through Blender's own
 evaluation, and its log says which blend:
 
 ```
->> read 792 frames of camera ONER from /home/zany/f1-round2/render/film17.blend
+>> read 792 frames of camera ONER from render/film17.blend
 >> subject/background depth MEASURED from work/r2840/depthgrid_R2842.json (386/396)
 >> GUARD: position 0.000e+00 m, rotation 0.000e+00, lens 0.000e+00 mm over 42 frames
 ```

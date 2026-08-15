@@ -1,7 +1,7 @@
 # STAGING — R2-621 to R2-650 · the showroom ceiling
 
 Findings staged here for `DEFECT-LOG-R2.md`. Nothing in this file edits the
-defect log. Work tree: `/home/zany/f1-round2`. Owner: the ceiling agent
+defect log. Work tree: `~/f1-round2`. Owner: the ceiling agent
 (R2-508 handback).
 
 Artefacts:

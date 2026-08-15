@@ -204,7 +204,7 @@ script that writes the file:
 render/film25_breach.blend
   <- world/car_anim.blend        (anim/build_car_anim.py)
   <- world/beat1_anim.blend      (anim/build_beat1_anim.py)
-  <- /home/zany/opus5-car-render/work/iter.blend      288 MB, 2026-07-26
+  <- ~/opus5-car-render/work/iter.blend      288 MB, 2026-07-26
 ```
 
 `anim/build_beat1_anim.py:2-3` names it as its input blend. **The entire round-2

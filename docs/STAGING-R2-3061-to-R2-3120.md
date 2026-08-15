@@ -307,7 +307,7 @@ blend that is seconds.
 **This roughly halves a two-job A/B and it applies to the 4K master**, which is
 a dozen-plus rentals. It is recorded here rather than in the broker's own docs
 because vast-render is another agent's ground on this project; **somebody who
-owns `/home/zany/vast-render/docs/operations.md` should fold it in there**,
+owns `~/vast-render/docs/operations.md` should fold it in there**,
 beside the cold-start row it is derived from.
 
 ---

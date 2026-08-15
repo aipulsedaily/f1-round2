@@ -170,10 +170,10 @@ that no amount of rebuilding changes.**
 `tools/r2366_roof_build.py` says so itself, in its own header:
 
 > *"The roof is NOT round-2 geometry. `Ceiling` is a literal cuboid emitted by
-> `/home/zany/opus5-car-render/build/s02_showroom.py:490` `build_shell()` — 8
+> `~/opus5-car-render/build/s02_showroom.py:490` `build_shell()` — 8
 > vertices, 6 quads, top face ONE QUAD OF 686 m². It reaches the film through
 > `tools/build_film_scene.py`'s append of `world/car_anim.blend`'s SHOWROOM
-> collection, at identity. `/home/zany/opus5-car-render` IS READ-ONLY (project
+> collection, at identity. `~/opus5-car-render` IS READ-ONLY (project
 > law 1), so the source cannot be corrected."*
 
 So the showroom shell enters the film **downstream of the assembly**, from the
@@ -345,7 +345,7 @@ still is not.
 This is a defect the camera fix **created**, and it is worth more than the fix
 was, because nothing would have looked for it.
 
-`/home/zany/opus5-car-render/build/s05_lighting_v2.py` states an assumption twice
+`~/opus5-car-render/build/s05_lighting_v2.py` states an assumption twice
 and builds on it:
 
 ```

@@ -131,7 +131,7 @@ plus `SKY_Sun`, with Key/Fill/Rim/Kick at exactly the diagnosed **15.6400 /
   (`R21701_car_anim_driver_CS.blend` carries `SHOWROOM, PROPS, LIGHTS, CAR,
   CAMERAS`, appended whole by `tools/build_film_scene.py:387`). **Nothing in
   `f1-round2` ever executes round 1's lighting stage.**
-  `/home/zany/opus5-car-render/build/s05_lighting_v2.py` has not been touched
+  `~/opus5-car-render/build/s05_lighting_v2.py` has not been touched
   since Jul 26 and its own docstring says it is "not wired into
   `rebuild_scene.py`" — a file that does not exist. **Editing
   `build_three_point` has no path to a frame**, which is precisely the defect
@@ -335,7 +335,7 @@ the question.
 
 Six frames, `film21` (BEFORE) against `film22` (AFTER), same camera `ONER`, same
 3840×2160, same 512 samples, same `--dof scene`, same exposure. Rendered on a
-rented RTX 5090 at $0.4538/hr; **total spend $0.30**, credit $54.36 → $54.04.
+rented RTX 5090 at $0.4538/hr; **total spend $0.30**, credit $[redacted] → $[redacted].
 
 ### Carbon, f599 — the client's "plain white bent sheet"
 

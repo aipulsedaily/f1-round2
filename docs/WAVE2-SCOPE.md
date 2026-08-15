@@ -561,7 +561,7 @@ Union over the 21 of 28 items with any build measurement: **median 89 s.**
 |---|---|---:|---:|---:|
 | whole gate wall | `render/gate_witness/_work/sweep2.log`, n = 26 | **155 s** | 256 s | 361 s |
 | broker round-trip (submit → PNG) | `render/gate_witness/_results/*/gate.json`, n = 28, all 512 samples | **43.2 s** | 154.3 s | 186.5 s |
-| **actual GPU render** | `/home/zany/vast-render/state/broker.db`, 196 witness jobs, read-only | **7.21 s** | 16.24 s | 80.19 s |
+| **actual GPU render** | `~/vast-render/state/broker.db`, 196 witness jobs, read-only | **7.21 s** | 16.24 s | 80.19 s |
 
 ```
 sum of render_sec over EVERY witness frame wave 1 ever produced:  2,089 s = 0.58 GPU-h

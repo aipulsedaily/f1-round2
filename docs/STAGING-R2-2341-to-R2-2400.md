@@ -461,7 +461,7 @@ The shipping world is `assembly14.blend` (`SHIPPING.md` line 3, promoted
 measured is `v122/placement_v122.json`, and its own stamp says:
 
 ```
-blend  /home/zany/f1-round2/render/world/assembly/r2/assembly7.blend  97d0a53094f67d8f
+blend  render/world/assembly/r2/assembly7.blend  97d0a53094f67d8f
 written 2026-08-03T04:59:59
 ```
 

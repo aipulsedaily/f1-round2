@@ -6,9 +6,9 @@ the car.** Nothing in round 2 builds from it. It exists so that the answer to
 rather than *"the hero asset is unrecoverable"*.
 
 ```
-round1_source/build/            <- /home/zany/opus5-car-render/build/        (minus __pycache__)
+round1_source/build/            <- ~/opus5-car-render/build/        (minus __pycache__)
 round1_source/tools/rebuild_scene.py
-                                <- /home/zany/opus5-car-render/tools/rebuild_scene.py
+                                <- ~/opus5-car-render/tools/rebuild_scene.py
 ```
 
 Copied 2026-08-14 (task #168, R2-4026..R2-4029). 2.4 MB, 46 Python files, all
@@ -25,7 +25,7 @@ merely historically:
 render/film25_breach.blend        the delivered master's scene
   <- world/car_anim.blend         anim/build_car_anim.py, run on beat1_anim.blend
   <- world/beat1_anim.blend       anim/build_beat1_anim.py, run on ...
-  <- /home/zany/opus5-car-render/work/iter.blend      288,254,978 B, 2026-07-26
+  <- ~/opus5-car-render/work/iter.blend      288,254,978 B, 2026-07-26
 ```
 
 `anim/build_beat1_anim.py` reads every part's seated transform straight out of
@@ -38,7 +38,7 @@ Three properties made that worth acting on:
 * **`f1-round2` tracks no blends** (`.gitignore:12 *.blend`, and `git ls-files`
   returns zero of them), so no on-disk artefact in this repo is a backup.
 * **Round 1 is not a git repository.** There is no `.git` anywhere under
-  `/home/zany/opus5-car-render`. It has no history to recover from.
+  `~/opus5-car-render`. It has no history to recover from.
 * **Round 1 is read-only to this project**, so round 2 cannot protect it in
   place.
 
@@ -131,7 +131,7 @@ six decimals but is gitignored, and transforms without meshes are not a car.
 ## Rules for this directory
 
 1. **Do not build from it.** The live chain runs on round 1, at
-   `/home/zany/opus5-car-render/work/iter.blend`, and should keep doing so while
+   `~/opus5-car-render/work/iter.blend`, and should keep doing so while
    round 1 exists. Two live copies of a build tree is a drift problem, and this
    copy exists precisely so there is never a question about which is canonical.
 2. **Do not edit it.** It is byte-faithful on purpose, so that while the

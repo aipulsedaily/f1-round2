@@ -8,7 +8,7 @@ limit. **The render never stopped.** State read, not inherited:
 | | |
 | --- | --- |
 | frames on disk | **1,376 / 2,978 (46.2%)** |
-| credit | $117.45 |
+| credit | $[redacted] |
 | blend | `film25_breach.blend` sha16 `1d2aa2d86533574e` on assembly15 |
 | burn | $1.0444/hr across the live cards, 112.5 h of runway |
 
@@ -22,11 +22,11 @@ which is cycle 3 in progress, not a fault.
 | when | what |
 | --- | --- |
 | 16:40:02 | f542 delivered normally |
-| 16:40:15 | tunnel to 47334620 refused; broker logs `UNKNOWN, not dead` and reopens |
+| 16:40:15 | tunnel to id-075 refused; broker logs `UNKNOWN, not dead` and reopens |
 | 16:40:16 | tunnel repair fails → `deploying onto existing instance (attempt 1/3)` |
 | 16:42:55 | 3 consecutive missed beats → reconcile → **instance does not exist on vast.ai** |
 | 16:44:16 | `SshNeverReady` on the dead endpoint → second confirmation it is gone |
-| 16:44:17 | offer 38597207 (machine 43130) rented, $0.468/hr, EXCLUSIVE |
+| 16:44:17 | offer id-008 (machine mach-06) rented, $0.468/hr, EXCLUSIVE |
 | 16:45:29 | reachable in 72 s |
 | 16:45:40 | blender bundle pushed, 10.7 s @ 45.15 MB/s |
 | 16:47:53 | **scene uploaded in 111.9 s @ 97.9 MB/s** |
@@ -91,11 +91,11 @@ a film with holes in it.
 | --- | --- |
 | 16:40:44 | f2416 delivered normally |
 | 16:41:27 | heartbeat 1/3, and the job socket hits `ConnectionDropped` mid-f2417 |
-| 16:43:28 | 3 consecutive misses → reconcile → instance 47334687 gone |
-| 16:56:44 | **offer 46937219 re-rented — machine 131197, the same machine it was retired off**, $0.455/hr, EXCLUSIVE, 838 Mbps up |
-| 16:57:31 | instance 47389166 provisioning; scene cache budget derived on the new card |
+| 16:43:28 | 3 consecutive misses → reconcile → instance id-076 gone |
+| 16:56:44 | **offer id-033 re-rented — machine mach-13, the same machine it was retired off**, $0.455/hr, EXCLUSIVE, 838 Mbps up |
+| 16:57:31 | instance id-078 provisioning; scene cache budget derived on the new card |
 
-The fleet is back to **three cards at $1.5200/hr ($36.48/day)** against $117.38
+The fleet is back to **three cards at $1.5200/hr ($36.48/day)** against $[redacted]
 of credit — **77.2 h of runway** for a tail that needs roughly 43. fleet04 is the
 expensive one at $0.5556/hr and is the card due to retire next, so if anything
 the blended rate is about to improve.
@@ -121,7 +121,7 @@ through `SshNeverReady` (240 s) plus the 3-beat reconcile instead of through
 `await_render`'s 900 s silence timer. **The grace is an upper bound on how long
 the broker will wait for a silent worker, not a fixed cost.**
 
-fleet04 re-rented onto machine 8449 at $0.535/hr in cycle 2 and its retirement
+fleet04 re-rented onto machine mach-01 at $0.535/hr in cycle 2 and its retirement
 at 17:01 is on schedule. **No host has been condemned this cycle** — the running
 total stays at 3 bad hosts in 14 rentals.
 
@@ -268,9 +268,9 @@ frame line appeared".
 
 | broker | went silent | `worker ready` | **down** | replacement | host condemned |
 | --- | --- | --- | ---: | --- | --- |
-| fleet03 | 16:40:15 | 16:48:13 | **7 m 58 s** | machine 43130, $0.468/hr | none |
-| fleet05 | 16:41:27 | 17:05:21 | **23 m 54 s** | machine 131197, $0.455/hr | none |
-| fleet04 | 17:01:18 | 17:24:44 | **23 m 26 s** | machine 44842, $0.455/hr | none |
+| fleet03 | 16:40:15 | 16:48:13 | **7 m 58 s** | machine mach-06, $0.468/hr | none |
+| fleet05 | 16:41:27 | 17:05:21 | **23 m 54 s** | machine mach-13, $0.455/hr | none |
+| fleet04 | 17:01:18 | 17:24:44 | **23 m 26 s** | machine mach-07, $0.455/hr | none |
 
 **The whole cycle cost 23 m 26 s of wall clock, not 35-70**, because the three
 cards retired 21 minutes apart rather than within 61 seconds of each other, so
@@ -325,8 +325,8 @@ differently, and the failure is silent until it isn't:
 | interpreter | numpy | PIL | usable |
 | --- | --- | --- | --- |
 | `python3` | yes | **no** | no |
-| `/home/zany/vast-render/.venv/bin/python` | **no** | — | no |
-| **`/home/zany/f1-round2/.venv/bin/python`** | **2.5.1** | **12.3.0** | **yes** |
+| `~/vast-render/.venv/bin/python` | **no** | — | no |
+| **`.venv/bin/python`** | **2.5.1** | **12.3.0** | **yes** |
 
 The tool's own docstring says `.venv/bin/python` relative to `f1-round2`, which
 is correct; it is only ambiguous if it is read from another directory. **Pinned
@@ -423,13 +423,13 @@ the wall clock without moving this number.
 the interesting part is not the bad host — it is *why the fleet bought it again*.
 
 ```
-state4  04:54:26 (08-10)  renting offer 46307220 (machine 142281)
-state4  05:00:04          machine 142281 refuses our ssh key -> blacklisted for this session
-state4  05:00:14          offer 46307220 blacklisted -- "still the cheapest, the next rent
+state4  04:54:26 (08-10)  renting offer id-023 (machine mach-17)
+state4  05:00:04          machine mach-17 refuses our ssh key -> blacklisted for this session
+state4  05:00:14          offer id-023 blacklisted -- "still the cheapest, the next rent
                           would buy it straight back"
-state5  05:02:17 (08-11)  renting offer 46307220 (machine 142281)      <-- same offer
-state5  05:06:57          machine 142281 refuses our ssh key -> blacklisted for this session
-state5  05:07:07          offer 46307220 blacklisted for this session
+state5  05:02:17 (08-11)  renting offer id-023 (machine mach-17)      <-- same offer
+state5  05:06:57          machine mach-17 refuses our ssh key -> blacklisted for this session
+state5  05:07:07          offer id-023 blacklisted for this session
 ```
 
 R2-3861 praised the double blacklist — machine *and* offer — as "the detail that
@@ -444,7 +444,7 @@ machine up to three times.
 than contradicting it. fleet04's verdict on 08-10 and fleet05's on 08-11 are the
 same machine, the same offer, the same failure — `sshd` completes the handshake
 and denies publickey, so `authorized_keys` was never written. It is a durable
-property of machine 142281, not a transient.
+property of machine mach-17, not a transient.
 
 **The discriminating signal again arrived long before the timeout.**
 `Permission denied` was in the log at **05:03:44, 55 s after renting**; the
@@ -456,7 +456,7 @@ middleware under a live render** — recorded for whoever tunes this next.
 
 **Base rate: 4 bad hosts in 19 rentals, ~21%**, unchanged from R2-3863's 3 in 14.
 
-**Exposure that remains:** fleet03 has never drawn machine 142281 and its
+**Exposure that remains:** fleet03 has never drawn machine mach-17 and its
 blacklist does not contain it. If it draws that offer on a future retirement it
 will pay the same ~5 min. There are 2-3 cycles left, so this is a small,
 bounded, known cost — not something to intervene over.
@@ -465,8 +465,8 @@ bounded, known cost — not something to intervene over.
 
 | broker | dropped | re-rented | note |
 | --- | --- | --- | --- |
-| fleet03 | 04:45:52 | 05:01:10 (predicted 05:00:52, **+18 s**) | took machine 131197, which fleet05 released 91 s earlier |
-| fleet05 | ~04:56 | 05:02:17 -> condemned -> re-renting | machine 142281 |
+| fleet03 | 04:45:52 | 05:01:10 (predicted 05:00:52, **+18 s**) | took machine mach-13, which fleet05 released 91 s earlier |
+| fleet05 | ~04:56 | 05:02:17 -> condemned -> re-renting | machine mach-17 |
 | fleet04 | due ~05:16 | — | at 11.75 h |
 
 **Cycle 3's helpful stagger is gone**: all three cards now retire inside ~30
@@ -546,7 +546,7 @@ passes it.
 | --- | --- | --- | ---: | --- |
 | fleet03 | 04:45:52 | 05:15:45 | **29 m 53 s** | deploy 831 s — uplink shared again |
 | fleet05 | 04:57:50 | 05:18:06 | **20 m 16 s** | *including* a condemned host and two rentals |
-| fleet04 | 05:17:04 | 05:41:29 | **24 m 25 s** | same machine 44842, $0.455/hr |
+| fleet04 | 05:17:04 | 05:41:29 | **24 m 25 s** | same machine mach-07, $0.455/hr |
 
 **Worst card 29 m 53 s, against a 35-70 min band.** Four cycles have now run and
 none has reached 35 minutes since cycle 2's 68.5. The stagger closed to ~30 min
@@ -589,19 +589,19 @@ The pulse announces changes, so this needs no further watching.
 
 ## R2-3910 — AN UNBUYABLE OFFER IS WALKING THE PRICE UP, AND fleet05 WILL HIT ITS CAP
 
-### Offer 46851284 is not a race. It is persistently unbuyable, and it is not blacklisted.
+### Offer id-032 is not a race. It is persistently unbuyable, and it is not blacklisted.
 
 I reported it at 17:17 as a lost race and said the listing was "evidently still
 live and the earlier 400 was a transient". **That was wrong, and the next
 re-rent disproved it twelve minutes later.**
 
 ```
-state3  17:17:35  renting offer 46851284 (machine 53711) — $0.455/hr
-state3  17:17:35  offer 46851284 could not be created (HTTPError: 400) — trying the next
-state3  17:17:35  renting offer 36318699 (machine 46633) — $0.529/hr      <- +16%
-state5  17:29:06  renting offer 46851284 (machine 53711) — $0.455/hr
-state5  17:29:07  offer 46851284 could not be created (HTTPError: 400) — trying the next
-state5  17:29:07  renting offer 46285754 (machine 34481) — $0.668/hr      <- +47%
+state3  17:17:35  renting offer id-032 (machine mach-10) — $0.455/hr
+state3  17:17:35  offer id-032 could not be created (HTTPError: 400) — trying the next
+state3  17:17:35  renting offer id-004 (machine mach-08) — $0.529/hr      <- +16%
+state5  17:29:06  renting offer id-032 (machine mach-10) — $0.455/hr
+state5  17:29:07  offer id-032 could not be created (HTTPError: 400) — trying the next
+state5  17:29:07  renting offer id-022 (machine mach-04) — $0.668/hr      <- +47%
 ```
 
 **Two brokers, twelve minutes apart, same offer, same 400.** If it were a race
@@ -692,7 +692,7 @@ condemnation is forgotten before the cycle that could use it.* No entry has ever
 survived to influence a later re-rent, and none can, in any broker, for any host.
 
 **This is the actual root cause of R2-3907, and my account there was incomplete.**
-I attributed fleet05 buying machine 142281 to the blacklist being per-broker
+I attributed fleet05 buying machine mach-17 to the blacklist being per-broker
 session state. That is true but insufficient: fleet04's entry was **24 h old**,
 so it had lapsed four times over, and fleet04 itself would have re-bought that
 machine just as readily. **Per-broker scope and a 6 h TTL are two independent
@@ -710,7 +710,7 @@ no instance (the 400), and a TTL shorter than the failure's recurrence interval
 means even what it does record is forgotten first.
 
 **Cost, bounded and accepted:** one rung up the price ladder per re-rent that
-draws offer 46851284. Two so far (+16% on fleet03, +47% on fleet05). With ~1-2
+draws offer id-032. Two so far (+16% on fleet03, +47% on fleet05). With ~1-2
 cycles left this is a few dollars, against the risk of poking a live broker
 mid-render. **Not worth it.**
 
@@ -789,8 +789,8 @@ and no frame is at risk.
 
 ### It was not the rentals. It was the uplink, and it was worse than cycle 2.
 
-fleet05 needed three attempts (a 400 on offer 46851284, a condemnation of
-machine 34481), but those cost only **~6 minutes total**; it had a good card at
+fleet05 needed three attempts (a 400 on offer id-032, a condemnation of
+machine mach-04), but those cost only **~6 minutes total**; it had a good card at
 **17:35:04**. The remaining **57 minutes were the deploy**:
 
 | stage | this cycle | normal | ratio |
@@ -836,11 +836,11 @@ the upper end whenever a condemnation storm overlaps a deploy.
 
 | broker | down | attempts | notes |
 | --- | ---: | ---: | --- |
-| fleet03 | 21 m 00 s | 2 | offer 46851284 400'd; landed $0.5502 |
-| fleet05 | **78 m 06 s** | 3 | 400 + machine 34481 condemned; deploy 3359.7 s |
-| fleet04 | in progress | 4 | 400 + machines 34481 and 31233 condemned; landed $0.455 |
+| fleet03 | 21 m 00 s | 2 | offer id-032 400'd; landed $0.5502 |
+| fleet05 | **78 m 06 s** | 3 | 400 + machine mach-04 condemned; deploy 3359.7 s |
+| fleet04 | in progress | 4 | 400 + machines mach-04 and mach-03 condemned; landed $0.455 |
 
-**Three separate hosts condemned in one cycle** (34481 twice, 31233 once),
+**Three separate hosts condemned in one cycle** (mach-04 twice, mach-03 once),
 against three in the whole render before it. **Base rate 6 bad in ~24 rentals,
 ~25%** — consistent with the 21% at R2-3863, so the market has not degraded; this
 cycle simply drew more rentals because each condemnation forces another.
@@ -862,10 +862,10 @@ did not check my claim against it.
 The log is unambiguous:
 
 ```
-17:48:50  deploying onto instance 47484025 (machine 34481)
-17:53:05  instance 47484025 refuses our ssh key            <- nothing between
-18:03:19  deploying onto instance 47484341 (machine 31233)
-18:07:32  instance 47484341 refuses our ssh key            <- nothing between
+17:48:50  deploying onto instance id-080 (machine mach-04)
+17:53:05  instance id-080 refuses our ssh key            <- nothing between
+18:03:19  deploying onto instance id-081 (machine mach-03)
+18:07:32  instance id-081 refuses our ssh key            <- nothing between
 ```
 
 A grep for any push line against either instance id returns **nothing**. The
@@ -923,9 +923,9 @@ meet the bar my tools do.
 
 | broker | down | attempts | notes |
 | --- | ---: | ---: | --- |
-| fleet03 | **21 m 00 s** | 2 | offer 46851284 400'd; landed $0.5502/hr |
-| fleet04 | **62 m 49 s** | 4 | 400 + machines 34481, 31233 condemned; landed $0.455/hr |
-| fleet05 | **78 m 06 s** | 3 | 400 + machine 34481 condemned; deploy 3359.7 s on a high-RTT path |
+| fleet03 | **21 m 00 s** | 2 | offer id-032 400'd; landed $0.5502/hr |
+| fleet04 | **62 m 49 s** | 4 | 400 + machines mach-04, mach-03 condemned; landed $0.455/hr |
+| fleet05 | **78 m 06 s** | 3 | 400 + machine mach-04 condemned; deploy 3359.7 s on a high-RTT path |
 
 Band widened to **35-80 min** with escalation above 80. Three condemnations in
 one cycle; base rate **6 bad hosts in ~24 rentals, ~25%**, consistent with the
@@ -1041,19 +1041,19 @@ and the one it was written to be able to reach. It will be re-run once fleet03's
 card is gone and its spend has settled, so the decision rests on measured
 numbers rather than these.
 
-Credit **$64.59 = 43.0 h of runway** against ~19.4 h of remaining work.
+Credit **$[redacted] = 43.0 h of runway** against ~19.4 h of remaining work.
 
 ## R2-3918 — HOST DEFECTS OUTLIVE THE BLACKLIST BY AN ORDER OF MAGNITUDE. #169, PROPERLY ARGUED THIS TIME.
 
-Cycle 6 condemned **machine 8512** on fleet05. The same machine, with the same
+Cycle 6 condemned **machine mach-02** on fleet05. The same machine, with the same
 failure, was condemned by fleet04 in **cycle 1**:
 
 ```
-state4:3255  16:37:06 (08-09)  instance 47286610 (machine 8512) refuses our ssh key
-state5:3649  05:56:27 (08-12)  instance 47523049 (machine 8512) refuses our ssh key
+state4:3255  16:37:06 (08-09)  instance id-073 (machine mach-02) refuses our ssh key
+state5:3649  05:56:27 (08-12)  instance id-082 (machine mach-02) refuses our ssh key
 ```
 
-**61 hours 19 minutes apart, still broken.** With machine 142281 (24 h) that is
+**61 hours 19 minutes apart, still broken.** With machine mach-17 (24 h) that is
 two independent measurements of the same thing: **`authorized_keys` failures are
 a durable property of a host, not a bad hour.**
 
@@ -1074,13 +1074,13 @@ Every machine each broker has condemned:
 
 | broker | condemned |
 | --- | --- |
-| fleet04 | 52271, 8512, 142281, 34481, 31233 |
-| fleet05 | 142281, 34481, 8512 |
+| fleet04 | mach-09, mach-02, mach-17, mach-04, mach-03 |
+| fleet05 | mach-17, mach-04, mach-02 |
 
 **Every single one of fleet05's condemnations is a host fleet04 had already
 condemned.** fleet05 has never independently discovered a bad host — it has only
 ever rediscovered fleet04's, at ~5 minutes each. And fleet05 has just rented
-**machine 31233**, which fleet04 condemned yesterday at 18:07:32.
+**machine mach-03**, which fleet04 condemned yesterday at 18:07:32.
 
 **This is the argument for #169, and it does not depend on the bandwidth claim I
 retracted at R2-3914.** It rests on two measured facts: the defects are durable
@@ -1097,12 +1097,12 @@ have prevented **every repeat condemnation in this render** — 3 of the 7, at
 | spent | $41.59 |
 | **remaining** | **$11.41** |
 | work left | **176 frames**, ~14.2 h |
-| current card | **$0.734/hr** (machine 31233, deploying) |
+| current card | **$0.734/hr** (machine mach-03, deploying) |
 | **needs** | **~$10.4** |
 | **headroom** | **~$1.0** |
 
-The price walk this cycle: $0.537 (create failed) -> $0.668 (machine 8512,
-condemned) -> **$0.734**. If machine 31233 is also condemned — and fleet04
+The price walk this cycle: $0.537 (create failed) -> $0.668 (machine mach-02,
+condemned) -> **$0.734**. If machine mach-03 is also condemned — and fleet04
 condemned it yesterday — the next rung likely breaches the cap.
 
 **fleet03 has $4.08 of cap sitting idle**, which is more than the shortfall.
@@ -1125,7 +1125,7 @@ I had already fetched.**
 
 ```
 05:08:18  idle 300s — stopping instance (disk kept)
-05:08:19  instance 47482165 stopped after 710.7 min running (~$6.271 gpu).
+05:08:19  instance id-079 stopped after 710.7 min running (~$6.271 gpu).
           disk keeps billing ~$0.037/hr; destroying in 240 min
 ```
 
@@ -1224,7 +1224,7 @@ achievable fleet spend *lower*, which is the safer direction and costs nothing.
 | --- | --- |
 | frames | **2,641 / 2,978 (88.7%)** |
 | cards | 2, $1.0044/hr |
-| credit | $60.45 = 60.2 h runway against ~20 h of work |
+| credit | $[redacted] = 60.2 h runway against ~20 h of work |
 | orphans | **[1766]** — fleet04's cycle-6 frame, deferred not lost |
 | projected total | ~$119 of the $150 ceiling |
 
@@ -1284,10 +1284,10 @@ empty todo list would be a self-inflicted cost.**
 fleetctl verify --manifest state/fleet/master4k.json --json work/r23901/hashes.json
 
 # check 3: decode and geometry — the one fleetctl structurally cannot do
-/home/zany/f1-round2/.venv/bin/python tools/r23841_verify_frames.py \
-    --dir /home/zany/vast-render/out3/seq/master4k \
-    --dir /home/zany/vast-render/out4/seq/master4k \
-    --dir /home/zany/vast-render/out5/seq/master4k \
+.venv/bin/python tools/r23841_verify_frames.py \
+    --dir ~/vast-render/out3/seq/master4k \
+    --dir ~/vast-render/out4/seq/master4k \
+    --dir ~/vast-render/out5/seq/master4k \
     --first 1 --last 2978 --res 3840 2160 \
     --json work/r23901/decode.json
 ```
@@ -1301,7 +1301,7 @@ fleetctl verify --manifest state/fleet/master4k.json --json work/r23901/hashes.j
 
 ```
 fleetctl down
-/home/zany/vast-render/.venv/bin/python -m vastctl.vastctl status
+~/vast-render/.venv/bin/python -m vastctl.vastctl status
 ```
 
 **`vastctl` is a package, not a script** — `./vastctl` is a directory and fails;
@@ -1386,7 +1386,7 @@ finding survives. The pattern claim does not.**
 
 ### 1. "fleet05 has never independently discovered a bad host" — falsified
 
-Machine **58073** was condemned by fleet05 at 18:22:57. It appears **nowhere** in
+Machine **mach-11** was condemned by fleet05 at 18:22:57. It appears **nowhere** in
 fleet03's or fleet04's logs — `grep -c` returns 0 in both. It is a bad host
 fleet05 found first.
 
@@ -1395,13 +1395,13 @@ than three samples support. **The fourth broke it.**
 
 ### 2. "fleet05 rediscovers fleet04's verdicts" — the direction was an artefact
 
-At 18:34:32 **fleet04 rented machine 58073**, which fleet05 had condemned
+At 18:34:32 **fleet04 rented machine mach-11**, which fleet05 had condemned
 **twelve minutes earlier**, and condemned it at 18:39:10 — 4 m 38 s later.
 
 ```
-18:22:57  fleet05  machine 58073 blacklisted for this session
-18:34:32  fleet04  renting offer 38769886 (machine 58073)
-18:39:10  fleet04  machine 58073 blacklisted for this session
+18:22:57  fleet05  machine mach-11 blacklisted for this session
+18:34:32  fleet04  renting offer id-010 (machine mach-11)
+18:39:10  fleet04  machine mach-11 blacklisted for this session
 ```
 
 **The gap is symmetric.** It was never a property of fleet05; fleet04 simply
@@ -1418,7 +1418,7 @@ independent of the TTL argument.
 ### What still stands, unchanged
 
 **The durability evidence**, which is what the #169 case actually rests on:
-machine 8512 refused the key across **61 h 19 min**, machine 142281 across
+machine mach-02 refused the key across **61 h 19 min**, machine mach-17 across
 **24 h**, against `BLACKLIST_TTL_SEC = 6 * 3600`. Nothing observed in this render
 has ever looked like a host having a bad hour.
 
@@ -1468,7 +1468,7 @@ pass. All three zero-progress passes were the same cause: a retirement
 immediately followed by a **condemned host**, so the replacement never deployed
 and the pass ended having rendered nothing.
 
-**This cycle it drew machine 58073, which fleet05 had condemned 12 minutes
+**This cycle it drew machine mach-11, which fleet05 had condemned 12 minutes
 earlier** (R2-3924). Had the blacklist been shared, fleet04 would have skipped
 that offer, deployed on its next choice, and the pass would not have been a
 zero. **#169 has now cost a job, not just a price rung.**
@@ -1530,7 +1530,7 @@ happened.
 
 ### The submission, and the result
 
-Run unchanged from R2-3922, from `/home/zany/f1-round2` so `--scene` resolves,
+Run unchanged from R2-3922, from `~/f1-round2` so `--scene` resolves,
 scene sha16 re-checked as **`1d2aa2d86533574e`** first:
 
 ```
@@ -1559,8 +1559,8 @@ predicted the recovery set to the frame.
 ### Three things the submission confirmed as side effects
 
 **1. An empty todo rents nothing (R2-3923).** fleet03 and fleet05 logged
-`nothing to do` and **rented no card**. Only fleet04 rented — offer 47033336,
-machine 36179, **$0.441/hr**, the cheapest card of the whole render. The `-n 3`
+`nothing to do` and **rented no card**. Only fleet04 rented — offer id-036,
+machine mach-05, **$0.441/hr**, the cheapest card of the whole render. The `-n 3`
 cost worry raised at R2-3922 was correctly dismissed.
 
 **2. The parameters were reproduced exactly.** Every block carries spec
@@ -1669,7 +1669,7 @@ Torn down with the broker's own supported command instead, `rq teardown` on
 fleet04, then proved against the API:
 
 ```
-credit $45.47   autobill=None
+credit $[redacted]   autobill=None
 no instances on this account (checked the vast.ai API, not a local state file)
 ```
 
@@ -1684,7 +1684,7 @@ no instances on this account (checked the vast.ai API, not a local state file)
 
 Less the **$8.49** of pre-existing banked spend the caps were set against
 (R2-3862): **$132.57 of the $150 ceiling — 11.6% margin, never breached, and no
-cap was ever moved.** Credit remaining **$45.47**.
+cap was ever moved.** Credit remaining **$[redacted]**.
 
 ### Untouched, as instructed
 

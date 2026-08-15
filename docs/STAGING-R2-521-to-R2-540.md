@@ -6,7 +6,7 @@ Owner: the hero-subject material block. `docs/DEFECT-LOG-R2.md` is not mine to e
 `EC_shell`, `MB_nose`, `MB_chassis_fwd`, `MB_chassis_cockpit`, `MB_sidepod_L/R`,
 `MB_engine_cover`, `MB_tail_fairing`, `MB_tail_cap`, `NOSE_Shell`, `SP_flank`,
 `SP_front`, `SP_mirror`, `SP_scoop`. Authored in round 1 as
-`/home/zany/opus5-car-render/build/s03_materials.py::livery_paint`, tier B.
+`~/opus5-car-render/build/s03_materials.py::livery_paint`, tier B.
 
 **The report:** the bodywork reads as translucent pale-blue glass —
 `r1full_000697.png` head-on, and (R2-543, an independent gate) across f643-f739

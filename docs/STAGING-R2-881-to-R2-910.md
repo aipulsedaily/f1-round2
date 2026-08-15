@@ -224,7 +224,7 @@ looking at the frame. That is the finding.
 
 The verdict rests on a 29 July artefact; the on-disk blend is 3 August and a
 fresh remote build (4 August 19:17,
-`/home/zany/vast-render/out/exec/da704fff70a8/driver_figure_test.blend`,
+`~/vast-render/out/exec/da704fff70a8/driver_figure_test.blend`,
 196,695,551 bytes) was sitting unclaimed. It is byte-identical to
 `render/driver_figure_FRESH.blend` already in the tree (md5
 `ad2a929dc6c40a214983d99a08ee1f2c` for both), so it needed no landing.

@@ -292,7 +292,7 @@ Everything above rests on one claim: **a region with no structure at 16–64 px 
 4K is empty for reasons more resolution cannot fix.** Until now that was argued
 from the sampling theorem. It is now measured.
 
-`/home/zany/vast-render/out*/seq/r22161_before/` holds **205 frames of the same
+`~/vast-render/out*/seq/r22161_before/` holds **205 frames of the same
 scene on the same declared camera at 1280×720**, rendered for the R2-2161 doppler
 A/B — a **1.33× resolution increase** over the proxy, overlapping it
 frame-for-frame. Bring the 1280 render down to 960 and measure the coarse band
@@ -378,4 +378,4 @@ work/r22881/crossres.log                the cross-resolution control (C9)
 Not touched: `docs/DEFECT-LOG-R2.md`, `docs/beat_sheet.json`,
 `tools/build_beatsheet.py`, `tools/author_beats2_5.py`,
 `tools/placement_gate.py`, `tools/item_placement_gate.py`, the verification bar,
-and everything under `/home/zany/opus5-car-render`.
+and everything under `~/opus5-car-render`.

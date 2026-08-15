@@ -157,9 +157,9 @@ rented, and all three clear it with room:
 
 | instance | broker | advertised RAM | cap at 96% | vs 64.5 GiB cgroup peak |
 | --- | --- | --- | --- | --- |
-| 47238557 | fleet03 | 124.9 GiB | 119.9 GiB | +55.4 GiB |
-| 47238586 | fleet04 | **91.4 GiB** | **87.7 GiB** | **+23.2 GiB** (worst case) |
-| 47238618 | fleet05 | 124.9 GiB | 119.9 GiB | +55.4 GiB |
+| id-067 | fleet03 | 124.9 GiB | 119.9 GiB | +55.4 GiB |
+| id-068 | fleet04 | **91.4 GiB** | **87.7 GiB** | **+23.2 GiB** (worst case) |
+| id-069 | fleet05 | 124.9 GiB | 119.9 GiB | +55.4 GiB |
 
 The 50.0 GB floor these brokers would have carried before the restart admits
 boxes at 60.5 and 62.7 GiB — under the 64.5 GiB the scene needs in the cgroup.
@@ -215,11 +215,11 @@ Rented at 04:06-04:07Z, three exclusive whole-machine RTX 5090s:
 
 | instance | offer | $/hr | geo | uplink |
 | --- | --- | --- | --- | --- |
-| 47238557 | 47033336 | 0.428 | South Korea | 594 Mbps |
-| 47238586 | 42272271 | 0.454 | Sweden | 746 Mbps |
-| 47238618 | 46937219 | 0.455 | South Korea | 805 Mbps |
+| id-067 | id-036 | 0.428 | South Korea | 594 Mbps |
+| id-068 | id-014 | 0.454 | Sweden | 746 Mbps |
+| id-069 | id-033 | 0.455 | South Korea | 805 Mbps |
 
-`$1.3881/hr` all-in including disk; credit $173.30 = **124.8 h of runway**.
+`$1.3881/hr` all-in including disk; credit $[redacted] = **124.8 h of runway**.
 
 ## R2-3848 — THE RUNBOOK'S SEVEN UN-WAIVABLE GATES, CHECKED ONE BY ONE
 
@@ -246,7 +246,7 @@ renders there are two more passes (`r2791_apply_focus`, then the breach), so the
 an inference, and gate 4 is un-waivable, so I ran the probe on the shipped file:
 
 ```
->> film   /home/zany/f1-round2/render/film25_breach.blend (10956580171 bytes)
+>> film   render/film25_breach.blend (10956580171 bytes)
 >> probe frames (1200, 2000, 2714, 2760, 2850, 2978)   tolerance 0.050 m
 >> CAR_ROOT found: 'CAR_ROOT', animation_data=True
 >> CAR KEYS: none - the appended CAR_ROOT matches anim/carrig to 0.0000 m over 6
@@ -736,7 +736,7 @@ State at the time of writing (04:45Z, 38 min in):
 | frames delivered | 16 of 2,978 |
 | spend on this batch | **$0.91** of the $150 ceiling |
 | projected total | **$102-114** against the ~$113 estimate (mean render 266.3 s/frame → 220 GPU-h; 296.6 s/frame → 245 GPU-h) |
-| credit | $172.63, 124 h of runway |
+| credit | $[redacted], 124 h of runway |
 | instances | 3, all `running`, all exclusive whole-machine RTX 5090s |
 | disk | 114.6 GB free; frames 23.5 GiB + ProRes 11.4 GB + H.265 0.86 GB ≈ 36 GB |
 
@@ -757,9 +757,9 @@ deploy, scene push and first-frame setup are all excluded:
 
 | broker | host IP | machine | mean of last 10 | its block |
 | --- | --- | --- | --- | --- |
-| fleet03 | host-A | 36179 | **204.9 s** | 1-993, showroom |
-| fleet05 | **host-A** | 131197 | **284.2 s** | 1987-2978, circuit |
-| fleet04 | host-B | 141468 | 300.8 s | 994-1986 |
+| fleet03 | host-A | mach-05 | **204.9 s** | 1-993, showroom |
+| fleet05 | **host-A** | mach-13 | **284.2 s** | 1987-2978, circuit |
+| fleet04 | host-B | mach-16 | 300.8 s | 994-1986 |
 
 **fleet03 and fleet05 are behind the same host IP and differ by 39%.** Two
 machines in the same facility, same GPU model, same spec hash, same scene — and
@@ -776,7 +776,7 @@ same fact showing up inside the master itself.
 each broker's measured s/frame, and `fleetctl submit --weights` exists to do
 exactly that. On these numbers that would hand fleet03 about 40% of the film —
 and it would be **wrong**, because fleet03's 204.9 s is a fact about frames
-1-993, not about machine 36179. Move fleet04's tail onto fleet03 and those
+1-993, not about machine mach-05. Move fleet04's tail onto fleet03 and those
 frames cost what circuit frames cost, not what showroom frames cost. The
 projected finish would be missed in the direction that hurts: too much work on
 one card, discovered at hour 70.
@@ -798,7 +798,7 @@ Projected on current rates, with each block scored at its own content cost:
 fleet03 idles ~26 h if nothing is done. A work-conserving rebalance at the
 moment it goes idle should bring the whole film in around **~72 h**, saving
 roughly 11 h. It cannot be done earlier with confidence, because until a card is
-free there is no way to price circuit frames on machine 36179.
+free there is no way to price circuit frames on machine mach-05.
 3. **Run the three frame checks in full** — `fleetctl verify --manifest`
    (coverage + hash against the brokers' own records) and
    `tools/r23841_verify_frames.py` (decode + geometry + blank). Both rehearsed.
@@ -946,13 +946,13 @@ rather than trust the gate once. Measured on all three:
 
 | instance | advertised | cap at 96% | over the 52.4 GiB resident scene |
 | --- | --- | --- | --- |
-| 47286201 (fleet03) | 124.9 GiB | 119.9 | **+67.5** |
-| 47286257 (fleet05) | 91.4 GiB | 87.7 | **+35.3** |
-| 47286610 (fleet04) | 251.3 GiB | 241.3 | **+188.9** |
+| id-071 (fleet03) | 124.9 GiB | 119.9 | **+67.5** |
+| id-072 (fleet05) | 91.4 GiB | 87.7 | **+35.3** |
+| id-073 (fleet04) | 251.3 GiB | 241.3 | **+188.9** |
 
 ### One of the three replacements was a broken host, and the broker knew why
 
-fleet04's first replacement (47286172, machine 52271, New Jersey, and the
+fleet04's first replacement (id-070, machine mach-09, New Jersey, and the
 **cheapest** offer at $0.3615/hr) completed the SSH handshake and then denied
 publickey auth, for 240 s. The diagnosis is exact and is the opposite of a
 retry loop:
@@ -965,8 +965,8 @@ retry loop:
 
 It then did three things in the right order:
 
-1. **Blacklisted machine 52271** for the session.
-2. **Blacklisted offer 46319510 as well** — *"it was just destroyed as unusable
+1. **Blacklisted machine mach-09** for the session.
+2. **Blacklisted offer id-024 as well** — *"it was just destroyed as unusable
    and is still the cheapest, so the next rent would buy it straight back."*
    Without that second blacklist a cheapest-first selector loops on a broken
    box forever. This is the detail that makes the recovery terminate.
@@ -974,7 +974,7 @@ It then did three things in the right order:
    it — it holds no worker and no frame, so there is nothing to lose"* —
    **confirmed gone, gpu $0.046 + disk $0.005 = $0.051.**
 
-Replacement 47286610 (machine 8512, $0.668/hr, 3375 Mbps) was rented 1 second
+Replacement id-073 (machine mach-02, $0.668/hr, 3375 Mbps) was rented 1 second
 later.
 
 ### TWO bad hosts in a row on fleet04, and what the blacklist costs
@@ -983,8 +983,8 @@ fleet04 drew **two consecutive hosts that never wrote `authorized_keys`**:
 
 | attempt | machine | $/hr | reachable in | outcome |
 | --- | --- | --- | --- | --- |
-| 1 | 52271 (New Jersey) | **$0.3615** | 225 s | key never installed → blacklisted, destroyed for $0.051 |
-| 2 | 8512 (Japan) | $0.6859 | 123 s | key never installed → blacklisted, destroyed for $0.076 |
+| 1 | mach-09 (New Jersey) | **$0.3615** | 225 s | key never installed → blacklisted, destroyed for $0.051 |
+| 2 | mach-02 (Japan) | $0.6859 | 123 s | key never installed → blacklisted, destroyed for $0.076 |
 | 3 | 56786 | **$0.801** | — | deploying |
 
 This is not our key: fleet03 and fleet05 authenticated on the **same key at the
@@ -1051,7 +1051,7 @@ new-spend ceiling at **exactly $150.00** — the number the brief set, unmoved.
 **The projection is now ~$139 of $150 — a 7.5% margin, down from the ~$113
 estimate.** The whole difference is fleet04's $0.801/hr card, which is a
 consequence of the two blacklisted bad hosts, not of the render. Credit is
-$154.87 = **89.3 h of runway against ~72 h needed**.
+$[redacted] = **89.3 h of runway against ~72 h needed**.
 
 **This is close enough that the next adverse event is worth surfacing rather
 than absorbing.** Specifically: each further retirement can blacklist more
@@ -1067,7 +1067,7 @@ machine — and R2-3859 is exactly the mistake of assuming you can.
 
 ## R2-3863 — THE KEY EITHER WORKS IN FOUR SECONDS OR IT NEVER WORKS
 
-Cycle 2 condemned a third host (`machine 142281`, instance 47335635), which was
+Cycle 2 condemned a third host (`machine mach-17`, instance id-077), which was
 the trigger I set at R2-3861 for investigating whether `SshNeverReady`'s 240 s
 cut-off was throwing away hosts that merely boot slowly. It is not. **Both of my
 hypotheses were wrong and the broker's diagnosis is exactly right.**
@@ -1076,17 +1076,17 @@ Every rental this render has made, by whether it ever pushed the Blender bundle:
 
 | instance | reachable in | first bundle push | outcome |
 | --- | --- | --- | --- |
-| 47088518 | 144 s | **+3 s** | OK |
-| 47146841 | 31 s | **+0 s** | OK |
-| 47238557 | 62 s | **+3 s** | OK |
-| 47238586 | 21 s | **+2 s** | OK |
-| 47238618 | 63 s | **+3 s** | OK |
-| 47286201 | 21 s | **+4 s** | OK |
-| 47287138 | **82 s** | **+2 s** | OK |
-| 47334620 | 32 s | **+2 s** | OK |
-| 47286172 | 225 s | *never* | CONDEMNED |
-| 47286610 | 123 s | *never* | CONDEMNED |
-| 47335635 | **82 s** | *never* | CONDEMNED |
+| id-046 | 144 s | **+3 s** | OK |
+| id-055 | 31 s | **+0 s** | OK |
+| id-067 | 62 s | **+3 s** | OK |
+| id-068 | 21 s | **+2 s** | OK |
+| id-069 | 63 s | **+3 s** | OK |
+| id-071 | 21 s | **+4 s** | OK |
+| id-074 | **82 s** | **+2 s** | OK |
+| id-075 | 32 s | **+2 s** | OK |
+| id-070 | 225 s | *never* | CONDEMNED |
+| id-073 | 123 s | *never* | CONDEMNED |
+| id-077 | **82 s** | *never* | CONDEMNED |
 
 **Two things fall out, and they kill both hypotheses.**
 
@@ -1095,9 +1095,9 @@ Every rental this render has made, by whether it ever pushed the Blender bundle:
    after a denial. So "it is a container-start race that will resolve" — which
    is what I said in cycle 1, and had to retract once already — is false. The
    condition is perfectly bimodal.
-2. **Reachability time does not predict it.** 47287138 was reachable in **82 s
-   and worked instantly**; 47335635 was reachable in **82 s and never worked**.
-   Meanwhile 47088518 took 144 s to become reachable and was fine. The
+2. **Reachability time does not predict it.** id-074 was reachable in **82 s
+   and worked instantly**; id-077 was reachable in **82 s and never worked**.
+   Meanwhile id-046 took 144 s to become reachable and was fine. The
    "slow-booting hosts get unfairly condemned" theory has a direct
    counterexample in its own data.
 

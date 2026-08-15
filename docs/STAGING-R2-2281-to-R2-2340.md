@@ -19,22 +19,22 @@ while `vastctl status` printed `no broker instances`:
 
 | id | label | GPU | gpu_frac | $/hr | state | uptime |
 |---|---|---|---|---|---|---|
-| 47107695 | ladderbroker-1786131099 | RTX 5090 | 1.0 | 0.4596 | running | 10.7h |
-| 47146841 | fleet03-1786167142 | RTX 5090 | 1.0 | 0.4702 | running | 0.71h |
-| 47146862 | fleet04-1786167168 | RTX 5090 | 1.0 | 0.3586 | running | 0.70h |
-| 47146896 | fleet05-1786167195 | RTX 5090 | 1.0 | 0.4607 | running | 0.69h |
-| 47146936 | fleet06-1786167227 | RTX 5090 | 1.0 | 0.4889 | running | 0.69h |
-| 47147007 | fleet07-1786167286 | RTX 5090 | 1.0 | 0.5022 | running | 0.67h |
-| 47147268 | fleet09-1786167557 | RTX 5090 | 1.0 | 0.5363 | running | 0.59h |
-| 47147465 | fleet08-1786167730 | RTX 5090 | 1.0 | 0.5544 | running | 0.55h |
-| 47148011 | fleet10-1786168261 | RTX 5090 | 1.0 | 0.4756 | running | 0.40h |
-| 47149575 | fleet11-1786169762 | RTX 5090 | 1.0 | 0.5556 | running | new |
+| id-051 | ladderbroker-1786131099 | RTX 5090 | 1.0 | 0.4596 | running | 10.7h |
+| id-055 | fleet03-LABEL | RTX 5090 | 1.0 | 0.4702 | running | 0.71h |
+| id-056 | fleet04-LABEL | RTX 5090 | 1.0 | 0.3586 | running | 0.70h |
+| id-057 | fleet05-LABEL | RTX 5090 | 1.0 | 0.4607 | running | 0.69h |
+| id-058 | fleet06-LABEL | RTX 5090 | 1.0 | 0.4889 | running | 0.69h |
+| id-059 | fleet07-LABEL | RTX 5090 | 1.0 | 0.5022 | running | 0.67h |
+| id-060 | fleet09-LABEL | RTX 5090 | 1.0 | 0.5363 | running | 0.59h |
+| id-061 | fleet08-LABEL | RTX 5090 | 1.0 | 0.5544 | running | 0.55h |
+| id-062 | fleet10-LABEL | RTX 5090 | 1.0 | 0.4756 | running | 0.40h |
+| id-063 | fleet11-LABEL | RTX 5090 | 1.0 | 0.5556 | running | new |
 
 Nine at first query; a tenth (`fleet11`) was rented mid-investigation and the
 fixed `status` picked it up unprompted, which is itself the check that the new
 enumeration is live rather than snapshotted.
 
-**Total $4.8620/hr = $116.69/day.** Credit $50.31 — 10.3 hours of runway. Every
+**Total $4.8620/hr = $116.69/day.** Credit $[redacted] — 10.3 hours of runway. Every
 card is `gpu_frac 1.0`, so no shared-card waste (the R2 `gpu_frac` defect is
 clean here). `vastctl status` reported **zero** of them.
 
@@ -145,12 +145,12 @@ are now account-wide.
    BEFORE (labelled_only=True, the old path):
        kill list: []   destroy calls: []   survivors: 10 at $4.8620/hr
    AFTER (the new default):
-       kill list:    [47107695, 47146841, 47146862, 47146896, 47146936,
-                      47147007, 47147268, 47147465, 47148011, 47149575]
+       kill list:    [id-051, id-055, id-056, id-057, id-058,
+                      id-059, id-060, id-061, id-062, id-063]
        destroy calls: same 10        survivors: 0
        ASSERT OK: every id the API reported was destroyed
    ```
-3. **`keep=` still exempts** — `keep=[47107695]` destroyed 9 of 10.
+3. **`keep=` still exempts** — `keep=[id-051]` destroyed 9 of 10.
 4. **Orphan path exercised** with `live_broker_labels` stubbed empty: all ten
    rows render `*** NO BROKER ***` and the waste banner lists every id.
 5. **474/474 offline broker tests pass** (`test_broker.run_offline()`), plus
@@ -203,7 +203,7 @@ ran it anyway on 2026-08-08, twice. **A warning is not a mechanism** — the sam
 conclusion `tools/gitguard.py` reached about path-scoped `git add`.
 
 No harm either time, and the reason matters: broker 1 is configured with
-`VASTRENDER_SCENE=/home/zany/vast-render/scene.blend`, **which has never
+`VASTRENDER_SCENE=~/vast-render/scene.blend`, **which has never
 existed** (`broker/config.py` says so in as many words: *"this one has run all
 week, `scene.blend` has never existed"*). Submits therefore fail inside the
 broker before anything is queued. Verified after each run: `depth: 0`, `counts`

@@ -8,7 +8,7 @@ DELIVERY** — after the asphalt shipped visibly blank while every instrument
 pointed at it passed. The cause was one line of selection logic:
 `build_surface.FILM_POSE_FRAMES` picks test frames **by sharpness**. This task
 asks how far that reaches. No render was commissioned and none is proposed;
-**$74.06 of credit is untouched.**
+**$[redacted] of credit is untouched.**
 
 ---
 
@@ -428,7 +428,7 @@ extra cameras in the same blend, in the same broker job.
 
 ## R2-3249 — SPEND
 
-**Nothing.** No render, no rental, no 4K frame. Credit is $74.06, unchanged. The
+**Nothing.** No render, no rental, no 4K frame. Credit is $[redacted], unchanged. The
 entire finding came off `work/r22161_proxy/`, `work/r22881/scan.npz` and
 `work/r23061/`, all already paid for. **No targeted 4K frame is requested**: the
 proxy resolved every candidate it could reach, and the one thing it cannot reach

@@ -8,7 +8,7 @@
 > being written.
 >
 > **So R2-971 through R2-982 each name two different things right now.** My
-> R2-974 is the internal-contrast instrument; theirs is "INSTANCE 47049525 IS
+> R2-974 is the internal-contrast instrument; theirs is "INSTANCE id-040 IS
 > BURNING STORAGE FOR NOTHING". The defect log's merge rule is *merge by
 > identity, never by position*, and that rule cannot survive two entries with the
 > same identity.

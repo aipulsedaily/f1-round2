@@ -223,11 +223,11 @@ to whoever next has a reason to re-bake. The take is right; the label is not.
 `adaptive_threshold 0.02` saves **7.3 %**, not the ~11 % once assumed.
 
 ```
-current card 47039886   $0.4488/hr   186.7 s/f   $70.06   short $1.96
-cheap card   42731684   $0.3999/hr   203.1 s/f   $67.95   clear  $0.15
+current card id-037   $0.4488/hr   186.7 s/f   $70.06   short $1.96
+cheap card   id-015   $0.3999/hr   203.1 s/f   $67.95   clear  $0.15
 ```
 
-**Credit is $68.10, so the master fits by fifteen cents and only on the cheaper
+**Credit is $[redacted], so the master fits by fifteen cents and only on the cheaper
 card** — and broker 2 still has queued jobs drawing on the same balance. **The
 ask to the client is ~$25.** 256 samples fits at ~$47 and is **not** taken: it
 is a look decision, not a budget one, and it was declined as one.

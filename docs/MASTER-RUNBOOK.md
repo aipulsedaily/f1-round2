@@ -7,7 +7,7 @@
 > world    assembly15                   0 of 94 source files drifted
 > fleet    3 fresh cards on 8762/8763/8764, RAM floor verified from /proc
 > ETA      ~82 h, around 2026-08-12
-> spend    ~$0.99 of a ~$102-113 projection, cap $150, credit $172.34
+> spend    ~$0.99 of a ~$102-113 projection, cap $150, credit $[redacted]
 > ```
 >
 > **The brokers are DETACHED — each is its own session leader with its own
@@ -254,7 +254,7 @@ are **73.10, 73.57, then nothing until 99.93 GiB**. The first offer is lost at
 the film's actual resident footprint against 73.0992 and nothing rounder.
 
 **THE RAM GATE FILTERS ON ADVERTISED RAM; THE SCENE LIVES IN THE CAP.**
-Measured on the rented knife-edge box (offer 42272271): advertised **91.374
+Measured on the rented knife-edge box (offer id-014): advertised **91.374
 GiB**, container `memory.max` = 94,187,290,624 B = **87.72 GiB**. That is
 **96.0% of what was sold**, and it reproduces an earlier independent
 observation (61.9 sold → 59.4 capped, also 96%).

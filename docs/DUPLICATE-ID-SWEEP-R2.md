@@ -61,7 +61,7 @@ was checked rather than assumed, because the file is not in chronological order.
 
 ## 3. THE SWEEP
 
-Every text file under `/home/zany/f1-round2` and `/home/zany/vast-render` was
+Every text file under `~/f1-round2` and `~/vast-render` was
 scanned for `R2-nnnn`, `R2_nnnn`, `R2 nnnn` and `r2nnnn` for all 27 numbers,
 filenames included. **204 hits.** Of those, 54 are the colliding headings
 themselves and 27 are staging-file copies of headings; the rest are citations.
@@ -173,7 +173,7 @@ the highest *reserved* by a staging filename is R2-4080
 finds nothing at or above 4081. The 2026-08-02 renumbering's first attempt
 created a **fifth** duplicate by moving entries into numbers that were already
 taken; the range here was checked against the log, against every staging file
-including the unmerged ones, and against `/home/zany/vast-render`.
+including the unmerged ones, and against `~/vast-render`.
 
 **R2-4091 … R2-4189 IS NOW RESERVED. Do not allocate into it.**
 

@@ -61,7 +61,7 @@ in flight throughout this task**, which is why free space fell from 67 GB to
 56 GB while measuring. Both landed intact afterwards:
 `film23_breach.blend` 10,439 MB, `r22161_after.blend` 9,545 MB.
 
-Also live and untouched: `work/r22161_proxy/`, `/home/zany/vast-render/out3…out11/`
+Also live and untouched: `work/r22161_proxy/`, `~/vast-render/out3…out11/`
 (whole-film proxy, 960×540), `render/r2401/`.
 
 ---

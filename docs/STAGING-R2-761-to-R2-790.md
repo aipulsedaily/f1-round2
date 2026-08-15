@@ -668,7 +668,7 @@ unmodified; the only edit to an existing file in this block is
 `fines_material()` builder and a `build_debris()` pass, and whose own selftest
 still reports **PASS, 0 failed**.
 
-`/home/zany/opus5-car-render` was read only, and `docs/DEFECT-LOG-R2.md` was not
+`~/opus5-car-render` was read only, and `docs/DEFECT-LOG-R2.md` was not
 edited.
 
 ---
@@ -879,9 +879,9 @@ interpolated across.
 special at rung 1, and the transmissive glass this beat is made of does not show
 up as a cost there.
 
-Also corrected: **credit is $72.39**, from `vastctl status`, not the $73.33 the
+Also corrected: **credit is $[redacted]**, from `vastctl status`, not the $[redacted] the
 task carried; and the two $150 per-broker caps are blind to each other, so they
-authorise $300 against $72 and protect nothing. Credit is the only real limit.
+authorise $300 against $[redacted] and protect nothing. Credit is the only real limit.
 
 ---
 
@@ -1192,7 +1192,7 @@ b129_ctrl_at02 f880 4K from film16_breach.blend, adaptive 0.02   } another
 **All three are submitted.** What remains is to LOOK at them:
 
 ```bash
-cd /home/zany/vast-render
+cd ~/vast-render
 VASTRENDER_URL=http://127.0.0.1:8761 ./rq status          # position in queue
 ls out2/seq/b129_ctrl/ out2/seq/b129_ctrl_at02/           # the 2x2 controls
 python3 -c "import sqlite3;c=sqlite3.connect('file:state2/broker.db?mode=ro',uri=True);\

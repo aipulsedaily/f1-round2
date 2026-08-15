@@ -6,7 +6,7 @@ number here was **measured** from the blend by `tools/inventory.py`, not recalle
 round-1 documentation. Where the docs and the blend disagreed, the blend won and the drift
 is recorded.
 
-Generated 2026-07-28 from `/home/zany/opus5-car-render/work/iter.blend`
+Generated 2026-07-28 from `~/opus5-car-render/work/iter.blend`
 (288,254,978 bytes, Blender 5.2). Raw data: `docs/inventory_iter.json`,
 `docs/explode_plan.json`.
 
@@ -223,11 +223,11 @@ they sit. Field length dropped 15.11 m → 9.84 m and the solve halved to 26 pas
 ## 9. Provenance and reproduction
 
 ```
-/opt/blender-5.2.0-linux-x64/blender -b /home/zany/opus5-car-render/work/iter.blend \
-    --factory-startup -P /home/zany/f1-round2/tools/inventory.py -- \
-    --out /home/zany/f1-round2/docs/inventory_iter.json
+/opt/blender-5.2.0-linux-x64/blender -b ~/opus5-car-render/work/iter.blend \
+    --factory-startup -P tools/inventory.py -- \
+    --out docs/inventory_iter.json
 
-python3 /home/zany/f1-round2/tools/explode_plan.py \
+python3 tools/explode_plan.py \
     --inv docs/inventory_iter.json --out docs/explode_plan.json
 ```
 

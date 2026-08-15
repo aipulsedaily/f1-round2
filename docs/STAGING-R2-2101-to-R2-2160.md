@@ -203,7 +203,7 @@ the same bound**, and is.
 **`build_three_point` has no path to a frame, and that was the real blocker.**
 Round 2 never runs round 1's lighting stage: the lamps reach the film as baked
 datablocks inside the car blend, appended whole by `tools/build_film_scene.py`.
-Writing the strip into `/home/zany/opus5-car-render/build/s05_lighting.py`
+Writing the strip into `~/opus5-car-render/build/s05_lighting.py`
 would be writing to a file nobody reads — **the film18 shape, third instance.**
 
 It is added instead from **`world/showroom_lighting.apply()`**, which is the

@@ -387,7 +387,7 @@ tripwire; there was nothing to compare its first reading against.**
 ### 9. What was deliberately NOT done
 
 **No module was authored. No `assembly16`. No `film26_breach`. No render, no
-GPU job, $0 spent.** Credit is untouched at $73.33.
+GPU job, $0 spent.** Credit is untouched at $[redacted].
 
 Proceeding would have meant: authoring four modules against a detail budget
 overstated 7.86× for the decisive one; gating four items on the 5090 (money, and
@@ -445,7 +445,7 @@ a `film26` that must still land the camera path at `9d055d63da724993`.
 ### 11. How to reproduce every number above
 
 ```bash
-cd /home/zany/f1-round2
+cd ~/f1-round2
 
 # the negative control, first
 python3 tools/socket_index_audit.py --blend render/film10.blend ; echo "rc=$?"
@@ -473,7 +473,7 @@ for r in d['items']:
 # the fingerprint, and what the 94 is made of
 python3 -c "
 import json,hashlib,os
-R2='/home/zany/f1-round2'
+R2='~/f1-round2'
 fp=json.load(open(R2+'/render/world/assembly/r2/assembly15_build.json'))['source_sha256']
 d=[r for r,s in sorted(fp.items()) if hashlib.sha256(open(os.path.join(R2,r),'rb').read()).hexdigest()!=s]
 print('fingerprint: %d file(s), %d differ'%(len(fp),len(d)))"

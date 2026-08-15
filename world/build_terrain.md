@@ -1,6 +1,6 @@
 # build_terrain.py — landform, treeline, undergrowth, grass
 
-`/home/zany/f1-round2/world/build_terrain.py` → collection `WORLD_TERRAIN`.
+`world/build_terrain.py` → collection `WORLD_TERRAIN`.
 Headless, idempotent:
 
 ```

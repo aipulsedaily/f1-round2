@@ -256,5 +256,5 @@ is what produced the original wrong verdict.
 * **Nothing in the tree was modified.** No bake, no render, no GPU, no spend.
   `sim/`, `world/`, `render/` and `tools/` are untouched; the only file written
   is this one. `docs/DEFECT-LOG-R2.md` was **not** edited.
-* `/home/zany/opus5-car-render` was not read from or written to.
+* `~/opus5-car-render` was not read from or written to.
 * Lease `r2-2461-aerofoil` holds `docs/STAGING-R2-2461-to-R2-2520.md` only.

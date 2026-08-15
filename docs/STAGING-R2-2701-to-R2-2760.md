@@ -85,7 +85,7 @@ frames. The world took the hidden branch.
 `work/r22161_proxy/` is 2,978 frames at 960×540 covering the whole film. All
 2,978 were rendered from `render/film22.blend` (broker job records across
 `state2…state11`, `seq = r22161_proxy`, `scene =
-/home/zany/f1-round2/render/film22.blend`), and `work/r22041/build_film22.log`
+render/film22.blend`), and `work/r22041/build_film22.log`
 line 1 reads
 
 ```

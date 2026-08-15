@@ -56,11 +56,11 @@ cold starts                                              0.8 h
 At the current card's $0.4444/hr: **$76.5**. At 512 / 0.01 with no threshold
 change: 186 h, **$82.7**.
 
-**Credit, read directly from the vast.ai account (not from `rq`): $69.52.**
+**Credit, read directly from the vast.ai account (not from `rq`): $[redacted].**
 
 In flight and not yet landed: 625 frames of 720p/64 on broker 2 (measured
 49.8 s/frame median, n=36) = 8.65 h = **~$3.8**, plus two exec builds. Broker 1's
-queue is empty. So realistic credit at the master's start is **~$65.7**.
+queue is empty. So realistic credit at the master's start is **~$[redacted]**.
 
 > **The gap on the current card is ~$11, not $1.81.**
 
@@ -70,8 +70,8 @@ Live market, 2026-08-07, `scripts/probe_offers.py` (which uses the real
 `vastctl.build_query`, so it lists only what the broker would actually rent):
 
 ```
-cheapest exclusive offer   37400096   $0.4547/hr
-what we already hold       47039886   $0.4444/hr   <- cheaper than the market
+cheapest exclusive offer   id-006   $0.4547/hr
+what we already hold       id-037   $0.4444/hr   <- cheaper than the market
 ```
 
 **Migrating under the current filter is strictly negative.** All nine exclusive
@@ -84,7 +84,7 @@ a co-tenant held 17,737 MiB while our Blender swung to 13,432 MiB against a
 32,607 MiB card, and **Cycles under VRAM exhaustion returns a zero-filled buffer
 that becomes a structurally perfect PNG** — right dimensions, right sha256, no
 picture. Shared cards also measured **1.64x slower per frame** (instance
-46780377). At 1.64x, $0.348/hr is $0.571/hr of work: the master would cost ~$99
+id-027). At 1.64x, $0.348/hr is $0.571/hr of work: the master would cost ~$99
 and take 12 days. **Not a candidate at any price.**
 
 ## R2-973 — THE CPU FLOOR IS A BUILD CONSTANT AND IT IS PRICING THE MASTER OUT
@@ -96,10 +96,10 @@ exclusive query returns whole machines at **$0.3356/hr**:
 
 | id | $/hr | gpu_frac | cpu | rel | disk | $/TB up,dn |
 |---|---|---|---|---|---|---|
-| `44173748` | **0.3356** | **1.0** | 16 | 0.995 | 533 GB | 2.60 / 2.60 |
-| `44173814` | 0.3356 | 1.0 | 16 | 0.991 | 388 GB | 2.60 / 2.60 |
-| `44499405` | 0.3747 | 1.0 | 28 | **0.998** | 1325 GB | 3.91 / 2.60 |
-| `47062871` | 0.4281 | 1.0 | 12 | 0.997 | 605 GB | 1.30 / 1.30 |
+| `id-017` | **0.3356** | **1.0** | 16 | 0.995 | 533 GB | 2.60 / 2.60 |
+| `id-018` | 0.3356 | 1.0 | 16 | 0.991 | 388 GB | 2.60 / 2.60 |
+| `id-019` | 0.3747 | 1.0 | 28 | **0.998** | 1325 GB | 3.91 / 2.60 |
+| `id-041` | 0.4281 | 1.0 | 12 | 0.997 | 605 GB | 1.30 / 1.30 |
 
 These are **`gpu_frac = 1.0`** — whole machines, verified, direct ports, inside
 the $4/TB bandwidth ceiling. They are not the shared trap. The only thing they
@@ -107,7 +107,7 @@ have less of is CPU.
 
 **A 4K master does not use CPU.** One Blender process, Cycles on the GPU,
 `denoise_gpu: true`, and under `persistent_data` the scene loads *once* across
-all 2,978 frames. Measured on 47039886: `load 341s` against `render 17730s` —
+all 2,978 frames. Measured on id-037: `load 341s` against `render 17730s` —
 **1.9 %**. Tripling the load phase on an 8-core host adds ~0.6 % to the master.
 
 **Bandwidth is a non-issue for this job specifically.** The master pulls
@@ -117,19 +117,19 @@ is **under $0.10 total**. The $4/TB ceiling exists for the *item campaign*
 
 ### The master costed against each candidate (172.2 h, 45 GB disk, incl. transfer)
 
-| card | $/hr | GPU | disk | net | **total** | vs $65.7 credit |
+| card | $/hr | GPU | disk | net | **total** | vs $[redacted] credit |
 |---|---|---|---|---|---|---|
-| `47039886` **current** | 0.4444 | 76.5 | incl. | 0.10 | **$76.6** | **short $10.9** |
-| `37400096` cheapest under filter | 0.4547 | 78.3 | 2.12 | 0.10 | **$80.5** | short $14.8 |
-| `44499405` rel 0.998, cpu 28 | 0.3747 | 64.5 | 2.12 | 0.10 | **$66.7** | short $1.0 |
-| `44173748` rel 0.995, cpu 16 | 0.3356 | 57.8 | 3.54 | 0.10 | **$61.4** | **fits, $4.3** |
+| `id-037` **current** | 0.4444 | 76.5 | incl. | 0.10 | **$76.6** | **short $10.9** |
+| `id-006` cheapest under filter | 0.4547 | 78.3 | 2.12 | 0.10 | **$80.5** | short $14.8 |
+| `id-019` rel 0.998, cpu 28 | 0.3747 | 64.5 | 2.12 | 0.10 | **$66.7** | short $1.0 |
+| `id-017` rel 0.995, cpu 16 | 0.3356 | 57.8 | 3.54 | 0.10 | **$61.4** | **fits, $4.3** |
 
-## R2-974 — INSTANCE 47049525 IS BURNING STORAGE FOR NOTHING
+## R2-974 — INSTANCE id-040 IS BURNING STORAGE FOR NOTHING
 
 Read straight from the vast.ai API:
 
 ```
-47049525  renderbroker-1786081905  actual_status = exited
+id-040  renderbroker-1786081905  actual_status = exited
           80 GB @ $0.20/GB/mo  =  $0.0219/hr  =  $0.53/day
 ```
 
@@ -159,7 +159,7 @@ are not alike:
 
 | | broker 1 (8760) | broker 2 (8761) |
 |---|---|---|
-| instance | 47049525 | 47039886 |
+| instance | id-040 | id-037 |
 | rate | $0.4844 (API) | **$0.4444** |
 | state | **exited**, 0 renders | running, 17,930 s up |
 | queue | empty | depth 13, 625 frames |
@@ -169,8 +169,8 @@ The `load 37s (100%) render 0s` card and "the current instance at $0.4627" are
 **the same machine** — broker 1's, the idle one. The card doing the work is the
 *cheaper* of the two.
 
-Note also that `rq` reports $0.4627/hr for 47049525 while the API says $0.4844,
-and $0.4403 for 47039886 against the API's $0.4444. **Cost the master off the
+Note also that `rq` reports $0.4627/hr for id-040 while the API says $0.4844,
+and $0.4403 for id-037 against the API's $0.4444. **Cost the master off the
 API, not off `rq status`.**
 
 ## R2-976 — CHANGE MADE, NOT DEPLOYED
@@ -211,8 +211,8 @@ R2-973 costed the master on the assumption that a cheaper exclusive 5090 renders
 at the same rate. **It does not.** Measured, not inferred:
 
 ```
-job fc737127a232  m4k_probe   instance 47039886  $0.4444/hr  32c  61.6 GB  Florida
-job 71fc8fd87ccf  m4k_cheap2  instance 47065580  $0.3888/hr  32c  63.4 GB  South Africa
+job fc737127a232  m4k_probe   instance id-037  $0.4444/hr  32c  61.6 GB  Florida
+job 71fc8fd87ccf  m4k_cheap2  instance id-043  $0.3888/hr  32c  63.4 GB  South Africa
 ```
 
 Same nine frames, same `.blend`, same `spec_hash` **`1983dced5cacabb6`** — which
@@ -246,8 +246,8 @@ Cost per frame is rate x time, so a 12.4 % cheaper card that is 9.0 % slower is
 
 ```
                      all-in $/hr   s/frame   master h   master $
-anchor 47039886         0.4488      186.7      155.0      $70.06
-probe  47065580         0.3999      203.1      168.6      $67.95
+anchor id-037         0.4488      186.7      155.0      $70.06
+probe  id-043         0.3999      203.1      168.6      $67.95
                                                           ------
                                                 saving     $2.11
 ```
@@ -257,7 +257,7 @@ figures are at `adaptive_threshold 0.02` and include per-frame overhead, cold
 starts at the 12 h `MAX_INSTANCE_HOURS` wall, and scene re-pushes — see R2-980
 for the derivation.
 
-**Credit at teardown: $68.10.** So the master is **$1.96 short on the current
+**Credit at teardown: $[redacted].** So the master is **$1.96 short on the current
 card and $0.15 clear on the cheap one** — and broker 2 still has 12 queued
 `film17_breach` jobs to pay for out of the same balance. R2-973's "$4.3
 headroom" does not exist at any price on this board.
@@ -299,7 +299,7 @@ carries the measurement — 22 GB resident for a 4.17 GB blend, **5.3x** — and
 refused this box on those grounds twice already (`ExecMemoryShort`); the render
 worker has no such gate.
 
-Measured on instance 47064284 (offer 39904635, $0.3356/hr, 30.5 GB): the worker
+Measured on instance id-042 (offer id-013, $0.3356/hr, 30.5 GB): the worker
 loaded the scene and reported ready in 308 s, the render started, and then
 
 ```
@@ -345,9 +345,9 @@ restarted, and neither should be restarted mid-queue.
 
 ```
 cpu_ram>=50, exclusive, all other production terms unchanged
-  42731684   $0.3888   32c   61.9 GB   rel 0.994   <- rented and measured
-  38694854   $0.4014   12c   62.6 GB   rel 0.998
-  38797209   $0.4547   24c   62.2 GB   rel 0.988
+  id-015   $0.3888   32c   61.9 GB   rel 0.994   <- rented and measured
+  id-009   $0.4014   12c   62.6 GB   rel 0.998
+  id-011   $0.4547   24c   62.2 GB   rel 0.988
 ```
 
 Cheapest viable is **$0.3888**, not $0.3356. The 26 % discount in R2-973 is
@@ -406,7 +406,7 @@ regardless of what it is doing. Each rental re-pushes the 7.97 GB scene: ~104 GB
 up and ~22 GB down across the master, **$0.49** at $3.91/TB — not the $0.10 in
 R2-973, which counted one push.
 
-## R2-981 — INSTANCE 47049525 IS NOT DEAD STORAGE, AND THE $3.9 IS NOT THERE
+## R2-981 — INSTANCE id-040 IS NOT DEAD STORAGE, AND THE $3.9 IS NOT THERE
 
 R2-974 recommended reclaiming broker 1's exited instance for ~$3.9 over the
 master's duration. **Verified before acting, and the premise does not hold.
@@ -416,11 +416,11 @@ Not reclaimed.** Three independent reasons, in ascending order of finality:
 defaults to 3600 and broker 1 does not override it. It says so on every stop:
 
 ```
-08:45:32  instance 47049525 stopped after 9.0 min running (~$0.535 gpu).
+08:45:32  instance id-040 stopped after 9.0 min running (~$0.535 gpu).
           disk keeps billing ~$0.037/hr; destroying in 60 min
 ```
 
-and the mechanism demonstrably fires — `46819442` stopped 06:06:31 and was
+and the mechanism demonstrably fires — `id-031` stopped 06:06:31 and was
 destroyed at 07:06:38, "hibernation expired, confirmed gone". A stopped
 instance on this broker has a **one-hour** lifetime, not a 7.2-day one. The
 maximum exposure is one window: **$0.022.**
@@ -467,8 +467,8 @@ What it does **not** establish:
 - **It is 9 frames out of 2,978 — 0.3 %.** The anchor's own beat coverage is
   the same nine frames. Two measurements drawn from the same nine-frame sample
   are not independent evidence about the other 2,969.
-- **It is one host per price point.** The 1.0902 is a property of 47039886
-  against 47065580. **Host-to-host variance across the 13-14 rentals a master
+- **It is one host per price point.** The 1.0902 is a property of id-037
+  against id-043. **Host-to-host variance across the 13-14 rentals a master
   needs is completely unmeasured**, and it is now the dominant risk — larger
   than the $2.11 the card choice is worth.
 - **Both measurements are of a scene that no longer ships.** The anchor and this
@@ -489,7 +489,7 @@ will run on, read off `frames.render_sec` rather than off a job total. That is
 rehearsal; it is the only measurement that has ever been asked for here and
 never taken.
 
-**And the headroom is the real finding.** At $68.10 credit the master costs
+**And the headroom is the real finding.** At $[redacted] credit the master costs
 $70.06 on the card we are on and $67.95 on the cheapest viable alternative.
 **There is no card on this market that makes a 512-spp 4K master comfortable.**
 The gap does not close on the card. It closes on credit, or it does not close.
@@ -566,7 +566,7 @@ Getting this backwards would make the filter exclude the box it exists to find.
 
 ### The client's own offer is the `gpu_frac` trap
 
-Offer `46815699` was described as *2x 5090, 48 cores of 192*. **48/192 = 0.25**,
+Offer `id-030` was described as *2x 5090, 48 cores of 192*. **48/192 = 0.25**,
 and a whole machine has `cpu_cores_effective == cpu_cores`. It had churned
 before it could be read directly, but the market says what it was: of **42**
 two-GPU 5090 listings, only **4** are `gpu_frac 1.0` — **28 are `gpu_frac
@@ -575,7 +575,7 @@ zero-filled-buffer failure mode, and it is not a candidate at any price.
 
 ## R2-985 — BOTH MULTI-GPU MODELS MEASURED: ONE RIGHT, ONE WRONG BY 3.5x
 
-Rented an 8x RTX 5090 box (`47083562`, offer `47031300`, California, EPYC
+Rented an 8x RTX 5090 box (`id-045`, offer `id-035`, California, EPYC
 192c/503 GB, `gpu_frac 1.0`, $2.71/hr all-in = **$0.339/GPU-hr**) and rendered
 **frame 30 of `film16_breach.blend`, `spec_hash 1983dced5cacabb6`** — the same
 frame, same spec, as the R2-978 comparison. Luminance identical to six decimal
@@ -703,5 +703,5 @@ The 8x probe cost **$1.90** — $0.26 on a first host that failed to deploy (its
 own `apt-get` still held the dpkg lock) and $1.64 on 36.4 min of the box that
 worked. Over the ~$0.40 budgeted; the failed host and a 617 s scene push on a
 6-core uplink are where it went. Both instances destroyed and confirmed gone.
-Credit **$62.66**. Broker 2 was not touched at any point and carried the
+Credit **$[redacted]**. Broker 2 was not touched at any point and carried the
 client's beat-1 proxy throughout.

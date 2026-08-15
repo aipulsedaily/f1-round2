@@ -312,7 +312,7 @@ film average**. Per-frame overhead is **4.8 s, not 31**.
 ```
 master @ 512 spp                    180.0 h    $79.99
 master @ adaptive_threshold 0.02    160.7 h    ~$71.40   <- visually free
-credit                                          $72.39
+credit                                          $[redacted]
 ```
 
 `adaptive_threshold 0.02` was measured against a frame: mean delta **0.06**,
@@ -328,8 +328,8 @@ rentals is fifteen chances to draw a slower host than the one measured.
 cold starts are 102 s on this class of host. It is purely wall clock: **7.5 days
 on one card, 3.8 on two, 2.5 on three.**
 
-**Both cards bill at $0.9239/hr combined** = ~78 h of runway against $72.39. The
-per-broker $150 caps are **blind to each other** - $300 nominal against $72 real
+**Both cards bill at $0.9239/hr combined** = ~78 h of runway against $[redacted]. The
+per-broker $150 caps are **blind to each other** - $300 nominal against $[redacted] real
 - so **credit is the binding constraint and the caps protect nothing.**
 
 ---
@@ -350,7 +350,7 @@ adaptive 0.02 saving  ~11 %              7.3 %   (frame 880, same card, 4 min ap
 ```
 
 Re-derived: **172.2 h, ~7.2 days, $76.5** at the current card's $0.4444/hr —
-**not $71.40.** Against $69.52 credit (read from the vast.ai account) less ~$3.8
+**not $71.40.** Against $[redacted] credit (read from the vast.ai account) less ~$3.8
 in flight, **the master is ~$11 short on the card we are on.**
 
 **This document has now been wrong about the master three times, in both

@@ -37,7 +37,7 @@ gate assembly15, and fix the `retire`-reports-OK defect.
 The failure, verbatim from `assembly15.log`:
 
 ```
-  File "/home/zany/f1-round2/world/build_dressing.py", line 747, in anchor
+  File "world/build_dressing.py", line 747, in anchor
     wx, wy, wz = float(wx), float(wy), float(wz)
                  ~~~~~^^^^
 TypeError: only 0-dimensional arrays can be converted to Python scalars

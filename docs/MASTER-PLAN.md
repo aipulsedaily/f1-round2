@@ -307,7 +307,7 @@ the naive 24-day projection exactly.
 ## 4. LAYOUT — where everything lives
 
 ```
-/home/zany/f1-round2/                  the round-2 project (part 1 is frozen, do not touch)
+                  the round-2 project (part 1 is frozen, do not touch)
   part2.md                             the brief, verbatim
   docs/
     MASTER-PLAN.md                     <- this file
@@ -385,7 +385,7 @@ the naive 24-day projection exactly.
   render/items/<id>/                   gate.json, macro.png per item
   telemetry/telemetry.csv              1,743 rows: the ONE source for motion + audio
 
-/home/zany/vast-render/                the render broker (NEVER touched by scene code)
+~/vast-render/                the render broker (NEVER touched by scene code)
   rq                                   agent CLI, stdlib only
   broker/  worker/  vastctl/  scripts/ panic.sh, brokerd.sh
   state/broker.db                      job queue
@@ -403,7 +403,7 @@ Rented: **23.04 CPUs, 90.5 GiB** (`cpu.max` 2304000/100000, `memory.max`
 remote build throughput plateaus near 160 items/h regardless of slot count.
 
 **Broker.** `./rq status` / `render` / `get` / `cancel` / `teardown`. Restart with
-`scripts/brokerd.sh start /home/zany/f1-round2/world/beat1_anim.blend` — **the scene is
+`scripts/brokerd.sh start world/beat1_anim.blend` — **the scene is
 a positional argument; omitting it silently switches the default scene.** Bandwidth is
 capped at **$4/TB both directions** (`MAX_INET_COST_PER_TB` in `vastctl.py`), enforced
 as a query filter *and* re-checked client-side. Stop the broker **before** destroying an
@@ -615,7 +615,7 @@ And three failures of *reasoning* rather than of instruments, worth the same sus
 
 ## 8. STANDING USER LAWS
 
-- **Never touch the live site.** `f1-opus5.aipulsedaily.ai` is part 1 and frozen.
+- **Never touch the live site.** The part-1 deployment is live and frozen.
 - **Always use the 5090.** Never the local 1070. Broker problems go to a subagent.
 - **No external assets. Everything hand-built.** Verified by grepping for
   `ShaderNodeTexImage` / `images.load` / `bpy.ops.import_*`.

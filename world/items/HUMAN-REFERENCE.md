@@ -438,7 +438,7 @@ into an already-`canceled` row.
 v5 frame sat queued for 41 minutes to do 13.6 s of rendering. I suspected the
 status line again — its counters looked stale — and I was wrong: two calls
 68.5 s apart moved `idle` by exactly 68.5 s. **The instance was real and
-genuinely stuck.** vast had created container 46695656, pulled the image
+genuinely stuck.** vast had created container id-025, pulled the image
 successfully, and then parked it: `actual_status='created'`,
 `intended_status='stopped'`. `vastctl.wait_ready()` had poll arms for
 `running`, `bad` and `gone` and **none for `cold`**, so a parked instance fell
@@ -1471,8 +1471,8 @@ always include running rows (not live until the next broker restart).
    A/B against the old `ROW.png` (same framing, 0.580 stops apart) and I did
    not get to it. To re-render anything, copy
    `world/items/spectator_crowd_test.blend` (644 MB) into a permitted scene
-   root -- `~/vast-render` will only accept `/home/zany/f1-round2/world`,
-   `/home/zany/f1-round2/render`, `/home/zany/opus5-car-render/work` or
+   root -- `~/vast-render` will only accept `world`,
+   `render`, `~/opus5-car-render/work` or
    `~/vast-render/scenes`, which is why the staged copy lived at
    `render/spx5.blend`.
 2. **Defect 1 is diagnosed and NOT fixed** (sec 00000.8). The next agent has a

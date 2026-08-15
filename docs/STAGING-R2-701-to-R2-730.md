@@ -158,7 +158,7 @@ reported on every run, clearly marked as not gated on.**
 
 ## R2-704 — the bake, and what it cost
 
-Both cells run on the rented 5090 instance (`46819442`, $0.5778/hr, already up
+Both cells run on the rented 5090 instance (`id-031`, $0.5778/hr, already up
 and shared with four other agents' jobs) via `rq exec --closure`, which derived
 a 9-module bundle from `sim/remote_bake.py` plus five data files — 5.5 MB, no
 scene push.  Two cells at ~1 slot each:
@@ -176,7 +176,7 @@ warrants it, is the same again.
 `Car.identity_ok()` REFUSED the local bake:
 
 ```
-REFUSING: /home/zany/f1-round2/world/car_anim.blend is 301667220 bytes,
+REFUSING: world/car_anim.blend is 301667220 bytes,
 was 300235801 when sampled.
 ```
 

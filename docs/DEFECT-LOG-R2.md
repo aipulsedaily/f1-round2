@@ -284,7 +284,7 @@ converts an unknown into false confidence.
 
 Looking at the broker log rather than escalating showed both causes were mine:
 
-    WARNING Image file /home/zany/opus5-car-render/assets/city.exr does not exist.
+    WARNING Image file ~/opus5-car-render/assets/city.exr does not exist.
     ERROR   Failed to load 1 image files
     [worker] prewarm: 19 cameras [...]
     worker not ready after 62s and 20 pings
@@ -5852,7 +5852,7 @@ kept unchanged; its tessellation is set by explicit section counts, not by the
 ## R2-242 — the fit, and the part of it that cannot be fixed
 
 Round 1's cockpit tub offers **0.249 m** of hip-to-headrest rise where a 1.78 m
-man needs **0.552 m**, and `/home/zany/opus5-car-render` is READ-ONLY.
+man needs **0.552 m**, and `~/opus5-car-render` is READ-ONLY.
 `driver_figure.PACKAGE['round1_note']` had already recorded this and recommended
 moving the CAR. The car cannot move, so the DRIVER is re-solved onto it:
 
@@ -6545,7 +6545,7 @@ Stated because the answer above is only as good as its coverage.
 
 `work/f1_exploded_posed_hq.blend` stores
 `//../../../../usr/share/blender/5.2/datafiles/assets/nodes/geometry_nodes_essentials.blend`.
-The instance has no `/usr/share/blender` (verified on 46712525) and the scene
+The instance has no `/usr/share/blender` (verified on id-026) and the scene
 is uploaded to `/workspace/scenes/<digest>/`, from which that relative path
 resolves to nothing. It still renders correctly.
 
@@ -6630,7 +6630,7 @@ be readable *on the instance*:
 * a `//`-relative reference that stays inside the scene's own directory and
   whose first component is a directory `sibling_dirs_for` uploads.
 
-Everything else is refused, naming each path. An absolute `/home/zany/...`
+Everything else is refused, naming each path. An absolute `/home/<user>/...`
 library can never resolve: nothing creates that tree on a rented box.
 
 ## R2-360 — the gate, at load
@@ -6647,7 +6647,7 @@ linked, all resolved`, or `MISSING LIBRARY: <path>` — so "no libraries" and
 the blank gate fell into.
 
 Blender's own bundled libraries are not special-cased in the worker and do not
-need to be: they resolve against the running installation, and 46712525 carries
+need to be: they resolve against the running installation, and id-026 carries
 `/workspace/blender/5.2/datafiles/assets/`.
 
 ## R2-361 — `missing_assets` now matches every way Blender says "not found"
@@ -6773,7 +6773,7 @@ alarms, two healthy boxes destroyed by the broker's own error classification, an
 Moved to `ssh_nomux`. **Proved in production: a 4.68 GB push ran 590 s and completed.**
 
 **A second, separate fault in the same area:** `host_at_fault` correctly declined to blame a
-host stuck pulling its image — but it **condemned only the OFFER**, so machine 73811 was
+host stuck pulling its image — but it **condemned only the OFFER**, so machine mach-12 was
 re-rented on a *second offer of the same machine* and burned another 900 s. Fixed with
 `stalled_machines`, deliberately kept **in memory** rather than added to the 24-hour-persisted
 `bad_machines`, because that would have re-broken the DNS-outage protection. **A guard acting at
@@ -6785,8 +6785,8 @@ the wrong granularity is a guard that fires and changes nothing.**
 content hash `20245107f4ef7a79`, **byte-identical both times**:
 
 ```
-instance 46712525   BLACK   mean 0.000323
-instance 46780377   OK      mean 0.3932, 189 levels
+instance id-026   BLACK   mean 0.000323
+instance id-027   OK      mean 0.3932, 189 levels
 ```
 
 Corroborated by `film14_breach_r6b.blend`, unchanged on disk, rendering **4 good frames then 4
@@ -6809,7 +6809,7 @@ then success on the seventh with nothing changed.**
 response.** That is worth stating plainly because the pressure next time will be to silence the
 alarm rather than read it.
 
-Instance replaced. **46780377 verified genuinely ours** — three samples 4 s apart, identical:
+Instance replaced. **id-027 verified genuinely ours** — three samples 4 s apart, identical:
 12,928 MiB used / 19,184 free, exactly one compute process at 12,918 MiB, our Blender accounting
 for all but 10 MiB of driver context. Total cost of the diagnosis: **$0.33** across four dud
 instances.
@@ -7431,7 +7431,7 @@ diagnostic can still change is the *attribution*, not the answer.
 Recorded because of how it was nearly misdiagnosed — by me — and because the
 broker's own gate is what stopped a bad frame becoming a result.
 
-Instance `46712525` degraded through three stages:
+Instance `id-026` degraded through three stages:
 
 1. **`Out of memory in CUDA queue enqueue (integrator_shade_volume)`** — three
    occurrences in the broker's entire history, all inside one 21-minute
@@ -8130,7 +8130,7 @@ Submitted four hours ago, to make a BEFORE frame of the film's empty stands:
 
 No `--scene`. `./rq status` reports
 
-    scene    default=/home/zany/f1-round2/world/beat1_anim.blend
+    scene    default=world/beat1_anim.blend
 
 and my own submission's stdout, read back at the end:
 
@@ -8243,7 +8243,7 @@ the aggregate would ever have said so. It took rendering the frame and looking.
 **Six 4K jobs would have come back looking finished and containing no
 grandstands.** `render/r2296_after.blend` and `render/r2296_before.blend` LINK
 the eight `ARCH_Grandstand_*` objects out of
-`/home/zany/f1-round2/render/world/assembly/r2/assembly9.blend` by absolute
+`render/world/assembly/r2/assembly9.blend` by absolute
 path. `~/vast-render` uploads the `.blend` plus sibling directories matching
 `blendcache_*|cache|caches|sim|sims|textures|tex|anim`, plus dirs named
 `assets`. `render/world/assembly/r2/` is none of those, and **the broker has no
@@ -10096,7 +10096,7 @@ the showroom's roof is a single flat brown-grey plane with zero detail — no pa
 seams, no plant, no gutter, no edge trim, no soiling — on the hero building.
 
 **It is not round-2 geometry.** The object is `Ceiling`, emitted by
-`/home/zany/opus5-car-render/build/s02_showroom.py:490` `build_shell()` as a
+`~/opus5-car-render/build/s02_showroom.py:490` `build_shell()` as a
 literal `C.box(...)`: **8 vertices, 6 quads, flat shaded, no bevel, no
 subdivision**, x −15.25…+15.25, y −11.25…+11.25, soffit z 6.200, **top z 6.500**.
 Its material is `CeilingMat` from `build/s03_materials.py:207` — a two-node
@@ -14796,10 +14796,10 @@ that no amount of rebuilding changes.**
 `tools/r2366_roof_build.py` says so itself, in its own header:
 
 > *"The roof is NOT round-2 geometry. `Ceiling` is a literal cuboid emitted by
-> `/home/zany/opus5-car-render/build/s02_showroom.py:490` `build_shell()` — 8
+> `~/opus5-car-render/build/s02_showroom.py:490` `build_shell()` — 8
 > vertices, 6 quads, top face ONE QUAD OF 686 m². It reaches the film through
 > `tools/build_film_scene.py`'s append of `world/car_anim.blend`'s SHOWROOM
-> collection, at identity. `/home/zany/opus5-car-render` IS READ-ONLY (project
+> collection, at identity. `~/opus5-car-render` IS READ-ONLY (project
 > law 1), so the source cannot be corrected."*
 
 So the showroom shell enters the film **downstream of the assembly**, from the
@@ -15213,7 +15213,7 @@ service during the window this opened.
 This is a defect the camera fix **created**, and it is worth more than the fix
 was, because nothing would have looked for it.
 
-`/home/zany/opus5-car-render/build/s05_lighting_v2.py` states an assumption twice
+`~/opus5-car-render/build/s05_lighting_v2.py` states an assumption twice
 and builds on it:
 
 ```
@@ -19549,8 +19549,8 @@ boundary frame is simply the next sample of that acceleration. **1.092x the loca
 median, +0.55 MADs — indistinguishable from its neighbours.**
 
 **And the test is stronger than it looks, because the two frames were rendered on
-DIFFERENT MACHINES.** f792 came from broker 1 (instance 46819442) and f793 from
-broker 2 (instance 46815452), hours apart, with `film16_breach` pushed separately
+DIFFERENT MACHINES.** f792 came from broker 1 (instance id-031) and f793 from
+broker 2 (instance id-029), hours apart, with `film16_breach` pushed separately
 to each host. Identical `scene_hash 1e8d5440c349fe51` and `spec_hash
 1dd9cdaf86a87876`, verified before the comparison was trusted.
 
@@ -19959,7 +19959,7 @@ reported on every run, clearly marked as not gated on.**
 
 ## R2-704 — the bake, and what it cost
 
-Both cells run on the rented 5090 instance (`46819442`, $0.5778/hr, already up
+Both cells run on the rented 5090 instance (`id-031`, $0.5778/hr, already up
 and shared with four other agents' jobs) via `rq exec --closure`, which derived
 a 9-module bundle from `sim/remote_bake.py` plus five data files — 5.5 MB, no
 scene push.  Two cells at ~1 slot each:
@@ -19977,7 +19977,7 @@ warrants it, is the same again.
 `Car.identity_ok()` REFUSED the local bake:
 
 ```
-REFUSING: /home/zany/f1-round2/world/car_anim.blend is 301667220 bytes,
+REFUSING: world/car_anim.blend is 301667220 bytes,
 was 300235801 when sampled.
 ```
 
@@ -21624,7 +21624,7 @@ reproduced at two stations (SW 0.013 m, MB 2.099 m); `n_for` inverts `coc_px`;
 
 ## R2-802 — RENDER SPEND
 
-Instance 47040457 at $0.4627/hr. 4K/64-sample frames measured at **~59 s each**,
+Instance id-038 at $0.4627/hr. 4K/64-sample frames measured at **~59 s each**,
 so single frames are ~$0.008 and the proxy-versus-master question does not arise
 at this scale. Recorded because the earlier estimate in this block was 390 s per
 4K frame — 6.6× too pessimistic — and it drove a plan to render the A/B at 720p
@@ -22065,7 +22065,7 @@ Nothing queued. Stated in advance:
   is roughly **$4-7**. This is the right verification spend and it is what I
   recommend.
 - **4K master of beat 1, 792 frames** — approximately **6-8× the proxy**, call it
-  **55-75 GPU-hours, $25-45** against a $73.33 balance. **Not to be spent until a
+  **55-75 GPU-hours, $25-45** against a $[redacted] balance. **Not to be spent until a
   proxy has been watched and the framing/focus candidates have been seen
   together.**
 
@@ -22905,7 +22905,7 @@ unmodified; the only edit to an existing file in this block is
 `fines_material()` builder and a `build_debris()` pass, and whose own selftest
 still reports **PASS, 0 failed**.
 
-`/home/zany/opus5-car-render` was read only, and `docs/DEFECT-LOG-R2.md` was not
+`~/opus5-car-render` was read only, and `docs/DEFECT-LOG-R2.md` was not
 edited.
 
 ## R2-839 — the orbit was turning the way the film does not go, and that is a reversal, not a kink
@@ -23388,9 +23388,9 @@ interpolated across.
 special at rung 1, and the transmissive glass this beat is made of does not show
 up as a cost there.
 
-Also corrected: **credit is $72.39**, from `vastctl status`, not the $73.33 the
+Also corrected: **credit is $[redacted]**, from `vastctl status`, not the $[redacted] the
 task carried; and the two $150 per-broker caps are blind to each other, so they
-authorise $300 against $72 and protect nothing. Credit is the only real limit.
+authorise $300 against $[redacted] and protect nothing. Credit is the only real limit.
 
 ---
 
@@ -23715,7 +23715,7 @@ any comparison until it does — an instrument that cannot recover a known resul
 not evidence about a new one.
 
 ```
-REPRODUCING R2-823 on /home/zany/vast-render/out/seq/r2beat1
+REPRODUCING R2-823 on ~/vast-render/out/seq/r2beat1
   segment                   n  pub n     mean      pub   median      pub
   establishing wide        60     60    13.16    13.16    13.34    13.34  ok
   unreadable tour         571    571    20.27    20.27    19.83    19.83  ok
@@ -24464,10 +24464,10 @@ b129_ctrl_at02 f880 4K from film16_breach.blend, adaptive 0.02   } another
 **To close it**, once the exec output exists:
 
 ```bash
-cp /home/zany/vast-render/out2/exec/48bfdeaa1f11/demo_fines_frost.blend \
-   /home/zany/f1-round2/render/
+cp ~/vast-render/out2/exec/48bfdeaa1f11/demo_fines_frost.blend \
+   render/
 
-cd /home/zany/vast-render
+cd ~/vast-render
 VASTRENDER_URL=http://127.0.0.1:8761 ./rq render \
     --cam ONER --res 3840 2160 --samples 512 --dof scene \
     --border 0.10 0.43 0.02 0.39 \
@@ -25148,7 +25148,7 @@ defects that were doing the actual damage.
 **1. `maybe_idle_down` destroyed a healthy box six seconds after it came up.**
 It read `instance_id` **outside** `Fleet.lock` and acted **inside** it. So a
 stale *"hibernation expired"* decision, formed about the **dead** instance,
-executed against the **freshly deployed replacement**. Instance 47048579 was
+executed against the **freshly deployed replacement**. Instance id-039 was
 destroyed 6 s after deployment. *"That is what actually kept killing my job."*
 Fixed with an `expect=<instance_id>` guard.
 
@@ -25584,8 +25584,8 @@ a render, and with all three absent it is still a refunded wait rather than a
 
 ```
 instance          memory.max    cpu.max     nproc   MemTotal
-47049525 (now)    58.1 GiB      30.72 CPUs  32      63.5 GB
-46819442 (doc's)  90.5 GiB      23.04 CPUs  96      188 GB
+id-040 (now)    58.1 GiB      30.72 CPUs  32      63.5 GB
+id-031 (doc's)  90.5 GiB      23.04 CPUs  96      188 GB
 ```
 
 **Same image, same price - more CPU and a third less memory.** `docs/protocol.md`
@@ -27013,10 +27013,10 @@ exclusive query returns whole machines at **$0.3356/hr**:
 
 | id | $/hr | gpu_frac | cpu | rel | disk | $/TB up,dn |
 |---|---|---|---|---|---|---|
-| `44173748` | **0.3356** | **1.0** | 16 | 0.995 | 533 GB | 2.60 / 2.60 |
-| `44173814` | 0.3356 | 1.0 | 16 | 0.991 | 388 GB | 2.60 / 2.60 |
-| `44499405` | 0.3747 | 1.0 | 28 | **0.998** | 1325 GB | 3.91 / 2.60 |
-| `47062871` | 0.4281 | 1.0 | 12 | 0.997 | 605 GB | 1.30 / 1.30 |
+| `id-017` | **0.3356** | **1.0** | 16 | 0.995 | 533 GB | 2.60 / 2.60 |
+| `id-018` | 0.3356 | 1.0 | 16 | 0.991 | 388 GB | 2.60 / 2.60 |
+| `id-019` | 0.3747 | 1.0 | 28 | **0.998** | 1325 GB | 3.91 / 2.60 |
+| `id-041` | 0.4281 | 1.0 | 12 | 0.997 | 605 GB | 1.30 / 1.30 |
 
 These are **`gpu_frac = 1.0`** — whole machines, verified, direct ports, inside
 the $4/TB bandwidth ceiling. They are not the shared trap. The only thing they
@@ -27024,7 +27024,7 @@ have less of is CPU.
 
 **A 4K master does not use CPU.** One Blender process, Cycles on the GPU,
 `denoise_gpu: true`, and under `persistent_data` the scene loads *once* across
-all 2,978 frames. Measured on 47039886: `load 341s` against `render 17730s` —
+all 2,978 frames. Measured on id-037: `load 341s` against `render 17730s` —
 **1.9 %**. Tripling the load phase on an 8-core host adds ~0.6 % to the master.
 
 **Bandwidth is a non-issue for this job specifically.** The master pulls
@@ -27034,19 +27034,19 @@ is **under $0.10 total**. The $4/TB ceiling exists for the *item campaign*
 
 ### The master costed against each candidate (172.2 h, 45 GB disk, incl. transfer)
 
-| card | $/hr | GPU | disk | net | **total** | vs $65.7 credit |
+| card | $/hr | GPU | disk | net | **total** | vs $[redacted] credit |
 |---|---|---|---|---|---|---|
-| `47039886` **current** | 0.4444 | 76.5 | incl. | 0.10 | **$76.6** | **short $10.9** |
-| `37400096` cheapest under filter | 0.4547 | 78.3 | 2.12 | 0.10 | **$80.5** | short $14.8 |
-| `44499405` rel 0.998, cpu 28 | 0.3747 | 64.5 | 2.12 | 0.10 | **$66.7** | short $1.0 |
-| `44173748` rel 0.995, cpu 16 | 0.3356 | 57.8 | 3.54 | 0.10 | **$61.4** | **fits, $4.3** |
+| `id-037` **current** | 0.4444 | 76.5 | incl. | 0.10 | **$76.6** | **short $10.9** |
+| `id-006` cheapest under filter | 0.4547 | 78.3 | 2.12 | 0.10 | **$80.5** | short $14.8 |
+| `id-019` rel 0.998, cpu 28 | 0.3747 | 64.5 | 2.12 | 0.10 | **$66.7** | short $1.0 |
+| `id-017` rel 0.995, cpu 16 | 0.3356 | 57.8 | 3.54 | 0.10 | **$61.4** | **fits, $4.3** |
 
-## R2-974 — INSTANCE 47049525 IS BURNING STORAGE FOR NOTHING
+## R2-974 — INSTANCE id-040 IS BURNING STORAGE FOR NOTHING
 
 Read straight from the vast.ai API:
 
 ```
-47049525  renderbroker-1786081905  actual_status = exited
+id-040  renderbroker-1786081905  actual_status = exited
           80 GB @ $0.20/GB/mo  =  $0.0219/hr  =  $0.53/day
 ```
 
@@ -27076,7 +27076,7 @@ are not alike:
 
 | | broker 1 (8760) | broker 2 (8761) |
 |---|---|---|
-| instance | 47049525 | 47039886 |
+| instance | id-040 | id-037 |
 | rate | $0.4844 (API) | **$0.4444** |
 | state | **exited**, 0 renders | running, 17,930 s up |
 | queue | empty | depth 13, 625 frames |
@@ -27086,8 +27086,8 @@ The `load 37s (100%) render 0s` card and "the current instance at $0.4627" are
 **the same machine** — broker 1's, the idle one. The card doing the work is the
 *cheaper* of the two.
 
-Note also that `rq` reports $0.4627/hr for 47049525 while the API says $0.4844,
-and $0.4403 for 47039886 against the API's $0.4444. **Cost the master off the
+Note also that `rq` reports $0.4627/hr for id-040 while the API says $0.4844,
+and $0.4403 for id-037 against the API's $0.4444. **Cost the master off the
 API, not off `rq status`.**
 
 ## R2-976 — CHANGE MADE, NOT DEPLOYED
@@ -27130,7 +27130,7 @@ is a lesson and not a false alarm.
 
 | I said | measured | source of my error |
 |---|---|---|
-| credit $69.59 | **$69.52** | `rq status`, not the account API |
+| credit $[redacted] | **$[redacted]** | `rq status`, not the account API |
 | 196.5 s/frame @4K | **219.3** (11% low) | RENDER-LADDER, n=9 vs my n unstated |
 | adaptive 0.02 saves ~11% | **7.3%** | a saving nothing in this project measures |
 | gap $1.81 | **~$11** | all of the above, compounding one way |
@@ -27190,7 +27190,7 @@ and only one of those was ever the problem.**
 
 ## R2-981 — an exited instance is not a free instance
 
-Instance 47049525 is `exited`, has served **zero renders**, holds an empty
+Instance id-040 is `exited`, has served **zero renders**, holds an empty
 queue - and holds **80 GB at $0.20/GB/month = $0.53/day.** Across the master's
 duration that is **~$3.9**, against $4.3 of projected headroom. **Nearly all the
 margin on the film's final render was being spent on a machine doing nothing.**
@@ -29647,9 +29647,9 @@ The measured comparison, paired, same 9 frames, same `spec_hash`, luminance
 matching the anchor to full precision:
 
 ```
-                  $/hr all-in   s/frame   master        vs $68.10 credit
-current 47039886     0.4488      186.7    155.0 h  $70.06   short $1.96
-cheap   42731684     0.3999      203.1    168.6 h  $67.95   clear $0.15
+                  $/hr all-in   s/frame   master        vs $[redacted] credit
+current id-037     0.4488      186.7    155.0 h  $70.06   short $1.96
+cheap   id-015     0.3999      203.1    168.6 h  $67.95   clear $0.15
 ```
 
 **The cheap card is 9.0% slower**, so a 12.4% cheaper card is **2.2% cheaper per
@@ -29682,12 +29682,12 @@ read off `frames.render_sec` - 11-17 h and **$5-7**.
 
 ## R2-1058 — the $3.9 of dead storage did not exist, and the instance was busy when I would have destroyed it
 
-I authorised reclaiming instance 47049525's 80 GB as *"~$3.9 over the master,
+I authorised reclaiming instance id-040's 80 GB as *"~$3.9 over the master,
 against $4.3 of headroom - nearly all the margin, spent on a machine doing
 nothing."* **Every part of that is wrong.**
 
 `HIBERNATE_SEC` is **3600**, broker 1 announces *"destroying in 60 min"* on every
-stop, and the mechanism demonstrably fires - instance 46819442 was destroyed on
+stop, and the mechanism demonstrably fires - instance id-031 was destroyed on
 schedule. **Maximum exposure is one window: $0.022.**
 
 **And it was not idle.** Other agents woke it at 07:31, 08:35 and 09:35, and at
@@ -31131,7 +31131,7 @@ inside `apply_focus` from the OPENED BLEND, frame by frame through Blender's own
 evaluation, and its log says which blend:
 
 ```
->> read 792 frames of camera ONER from /home/zany/f1-round2/render/film17.blend
+>> read 792 frames of camera ONER from render/film17.blend
 >> subject/background depth MEASURED from work/r2840/depthgrid_R2842.json (386/396)
 >> GUARD: position 0.000e+00 m, rotation 0.000e+00, lens 0.000e+00 mm over 42 frames
 ```
@@ -31276,7 +31276,7 @@ The 8x probe cost **$1.90** — $0.26 on a first host that failed to deploy (its
 own `apt-get` still held the dpkg lock) and $1.64 on 36.4 min of the box that
 worked. Over the ~$0.40 budgeted; the failed host and a 617 s scene push on a
 6-core uplink are where it went. Both instances destroyed and confirmed gone.
-Credit **$62.66**. Broker 2 was not touched at any point and carried the
+Credit **$[redacted]**. Broker 2 was not touched at any point and carried the
 client's beat-1 proxy throughout.
 
 ## R2-4092 — THE ANSWER: eight brokers on eight single cards. Same money, one third of a day, zero code
@@ -31312,7 +31312,7 @@ so pointing today's broker at an 8-GPU box **silently rents eight cards and uses
 
 > **RENUMBERED 2026-08-14 (#170), was R2-1093.** Two writers allocated R2-1093 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1093 — THE 9.866 m REACHES THE MIX` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
-Offer `46815699` reads *"2x RTX 5090, 48 cores of 192"*. It is **`gpu_frac
+Offer `id-030` reads *"2x RTX 5090, 48 cores of 192"*. It is **`gpu_frac
 0.25`** - the **R2-382 trap**, already measured at 1.64x slower with a
 zero-filled-buffer failure mode.
 
@@ -31364,7 +31364,7 @@ shipping film it is **4.52 s (Florida) and 11.14 s (S. Africa)** - host
 dependent. The conclusion survives with room: at the *worst* host, eight workers
 leave the dispatch thread **42% busy.**
 
-## R2-4096 — THE MASTER IS $74.84 AND THE CREDIT IS $62.57. The gap is real now
+## R2-4096 — THE MASTER IS $74.84 AND THE CREDIT IS $[redacted]. The gap is real now
 
 > **RENUMBERED 2026-08-14 (#170), was R2-1096.** Two writers allocated R2-1096 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1096 — THE DETECTION ALREADY EXISTED. NOTHING WAS WIRED TO IT.` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
@@ -31373,7 +31373,7 @@ time and only 2 of those 9 samples.** Beat-weighted:
 
 ```
 211.80 s/frame  ->  166.8 h  ->  $74.84      (+7.8% on the flat mean)
-credit                              $62.57
+credit                              $[redacted]
                                  ---------
                                  SHORT $12.27
 ```
@@ -32870,9 +32870,9 @@ rendered path are the same path.
 ## R2-1212 — on the deck, the ramp and the showroom floor there is no rubber at all, and there never was
 
 `FloorPolished` (round 1,
-`/home/zany/opus5-car-render/build/s03_materials.py:15-71`) is eleven nodes: a
+`~/opus5-car-render/build/s03_materials.py:15-71`) is eleven nodes: a
 base speckle, a two-octave roughness break-up, one bump. No rubber, skid,
-deposit or scuff term. `grep -rn FloorPolished /home/zany/f1-round2` returns
+deposit or scuff term. `grep -rn FloorPolished ~/f1-round2` returns
 **zero hits** — round 2 never re-authors it; it arrives as an appended datablock
 via `tools/build_film_scene.py:316-333`. `A_ConcApron` and `A_ForecourtSlab`
 (`build_architecture.py:1302 mat_slab`) have no rubber term either. Neither does
@@ -33070,9 +33070,9 @@ mark does neither.
   world-locked mark to the rotated three without re-basing.
 - `work/bisect.py` shadows the stdlib `bisect` for anything run with `work/` on
   `sys.path`; it breaks `PIL`. Run tooling from outside `work/`.
-- `/home/zany/f1-round2/watch/seq1/` symlinks are **off by one**
+- `watch/seq1/` symlinks are **off by one**
   (`f000860.png -> r2full_000861.png`). Measure against
-  `/home/zany/vast-render/out2/seq/r2full/`.
+  `~/vast-render/out2/seq/r2full/`.
 
 ## Verified clean
 
@@ -33621,11 +33621,11 @@ are both now filtered at source rather than watched for.
 ## R2-1117 — nothing ever read `start_instance`'s response body, so a refusal was invisible and the waiter sat out 900 s twice
 
 Broker 1's instance was hibernated at 14:22 by design (5 min idle, $0 GPU).
-Machine 138180's GPUs were let to other tenants in the meantime, so the stopped
+Machine mach-15's GPUs were let to other tenants in the meantime, so the stopped
 container **cannot** restart. The API says so plainly:
 
 ```
-start_instance(47049525) -> {'success': False,
+start_instance(id-040) -> {'success': False,
                              'error': 'resources_unavailable',
                              'msg': 'state change queued.'}
 ```
@@ -33650,16 +33650,16 @@ natural restart.
 
 **Verified independently rather than relayed.** At 15:26 UTC broker 1 reads
 `gpu resuming, up=0.0s`, exactly as described; broker 2 is `ready` at 40,279 s
-uptime with the client's beat-1 render **untouched at 737/792**; credit $61.74.
+uptime with the client's beat-1 render **untouched at 737/792**; credit $[redacted].
 
-**And the recovery is proven on this exact hardware today**: instance 47040457
+**And the recovery is proven on this exact hardware today**: instance id-038
 failed resume at 05:19:55 and 05:34:57, was destroyed at 05:35:03, and a
 replacement was rendering by 05:52. `fleet.ensure_ready` destroys the stranded
 instance and rents a replacement **inside the same claim** — the job is not lost.
 
 ## R2-1118 — a peer was denied a destroy, refused to route it through me, and was right
 
-The peer session's permission classifier denied `vastctl destroy 47049525`. It
+The peer session's permission classifier denied `vastctl destroy id-040`. It
 did not ask me to run it. It wrote: *"a peer asking cannot authorise what the
 user's permission settings declined."*
 
@@ -34031,7 +34031,7 @@ violation of it.
 ## R2-1218 — the verification plan, and what it costs
 
 **Every frame needed for the diagnostic pass already exists at 720p on disk**
-(`/home/zany/vast-render/out2/seq/r2full/`). Looking at the current state costs
+(`~/vast-render/out2/seq/r2full/`). Looking at the current state costs
 **$0**, and it was done: at f965, f973, f981 and f1030 the sunlit apron is
 visibly clean behind a car that has just launched through it. The complaint
 reproduces by eye in exactly the frames the client watched.
@@ -34053,7 +34053,7 @@ Costs, measured, not estimated:
 | **apron-only A/B** (4 frames × 2) | **≈ $0.35** |
 | full 12-frame A/B (24 renders) | ≈ $0.75, worst case $0.91 |
 | same via `--zoom` crops | ≈ $0.55 |
-| credit | **$60.56** (was $62.46 earlier in this same block) |
+| credit | **$[redacted]** (was $[redacted] earlier in this same block) |
 | **the 4K master itself** | **$74 – 81 — more than the account holds** |
 
 **That last line is the one to act on, and the gap is widening.** Credit fell
@@ -34068,9 +34068,9 @@ job runs — last seen **774/792**, `VERIFIED — every frame present, complete,
 consistent, and not blank`, confirmed untouched.
 
 Two things moved mid-block and invalidate any cached command line. **Broker 1
-swapped cards**: `47049525` was destroyed and replaced by **`47090933`** at
+swapped cards**: `id-040` was destroyed and replaced by **`id-050`** at
 $0.4147–0.436/hr on a *direct IP* (`host-A:PORT`) rather than a
-`*.vast.ai` relay. And the per-frame seconds above were measured on `47039886`.
+`*.vast.ai` relay. And the per-frame seconds above were measured on `id-037`.
 **Host lottery on this market is ± 45 % on speed**, so treat the timings as
 indicative until one frame confirms them on whatever card is live; the dollar
 conclusion is unaffected. Note also that `vastctl status` lists **only broker
@@ -34147,9 +34147,9 @@ mark does neither.
   world-locked mark to the rotated three without re-basing.
 - `work/bisect.py` shadows the stdlib `bisect` for anything run with `work/` on
   `sys.path`; it breaks `PIL`. Run tooling from outside `work/`.
-- `/home/zany/f1-round2/watch/seq1/` symlinks are **off by one**
+- `watch/seq1/` symlinks are **off by one**
   (`f000860.png -> r2full_000861.png`). Measure against
-  `/home/zany/vast-render/out2/seq/r2full/`.
+  `~/vast-render/out2/seq/r2full/`.
 
 ## Verified clean
 
@@ -35574,7 +35574,7 @@ repaired, sixty seconds apart, and reported it as tidying up after myself.
 before it finished, the result landed on disk:
 
 ```
-/home/zany/vast-render/out/064b88b666c9.png
+~/vast-render/out/064b88b666c9.png
   valid PNG, 3840 x 2160, 33,893,524 bytes, written 15:37
 ```
 
@@ -35712,8 +35712,8 @@ resolved only by checking the state afterwards.
 
 **Recovered rather than re-bought.** Two completed renders survived on disk
 despite their rows being cancelled:
-`/home/zany/vast-render/out/064b88b666c9.png` (3840×2160, 33,893,524 B,
-`access_road_slab`) and `/home/zany/vast-render/out/650d03fabe40.png`
+`~/vast-render/out/064b88b666c9.png` (3840×2160, 33,893,524 B,
+`access_road_slab`) and `~/vast-render/out/650d03fabe40.png`
 (2,036,855 B, `armco_w_beam`). `item_gate.py --from-png` scores a delivered PNG
 without re-rendering.
 
@@ -36925,7 +36925,7 @@ re-probed **canopy tops** after realising the point cloud stores **trunk bases**
 (35.13 -> 32.92 m, 6 %, conclusion unchanged).
 
 **And a briefing error of mine it flagged:** the working directory it was handed
-is **Round 1**. All round-2 work is in `/home/zany/f1-round2`, and **none of the
+is **Round 1**. All round-2 work is in `~/f1-round2`, and **none of the
 paths in my brief resolve under the former.** Every brief today has carried that
 cwd with a READ-ONLY warning; it should carry the round-2 root as well.
 
@@ -39088,8 +39088,8 @@ statement about the shot, not about the module.
 
 | | |
 |---|---:|
-| credit before | **$59.01** |
-| credit when the last job of this section landed | **$57.52** |
+| credit before | **$[redacted]** |
+| credit when the last job of this section landed | **$[redacted]** |
 | farm-wide drop over that window (includes broker 2's own agent) | $1.49 |
 | **broker 1's card, billed across this section** | **$0.3123 → $1.5829 = $1.27**, of which an idle share belongs to whoever comes next |
 | net attributable to this section | **≈ $1.05 – $1.27** |
@@ -41747,7 +41747,7 @@ wall for the pair) but need the 11 GB box, which is currently at **0 GB availabl
 assembly11 rebuild   PID 1835390, 5.5 GB RSS, render/world/assembly/r2/assemble.py
                      -> assembly11.blend. Owns world/, the box's memory, and the
                      answer to whether R2-1701's four stale generators reach a frame
-broker 8761          instance 47107695, $0.4387/hr, up 2.9 h, spend $1.37,
+broker 8761          instance id-051, $0.4387/hr, up 2.9 h, spend $1.37,
                      film18_breach.blend loaded, running r21601_open frame 203,
                      depth 4. ANOTHER AGENT'S. Not touched
 broker 8760          GPU down, depth 0, idle 69 min. Not touched, not torn down
@@ -42020,7 +42020,7 @@ edge.
 ## R2-1902 — COST AND STATE
 
 ```
-broker 8760, instance 47123266, $0.4601/hr
+broker 8760, instance id-053, $0.4601/hr
   spend when I started 00:34   $0.1218
   spend when I finished 00:47  $0.2504
   MY SHARE                     $0.129   of $1.20 authorised
@@ -42703,7 +42703,7 @@ plus `SKY_Sun`, with Key/Fill/Rim/Kick at exactly the diagnosed **15.6400 /
   (`R21701_car_anim_driver_CS.blend` carries `SHOWROOM, PROPS, LIGHTS, CAR,
   CAMERAS`, appended whole by `tools/build_film_scene.py:387`). **Nothing in
   `f1-round2` ever executes round 1's lighting stage.**
-  `/home/zany/opus5-car-render/build/s05_lighting_v2.py` has not been touched
+  `~/opus5-car-render/build/s05_lighting_v2.py` has not been touched
   since Jul 26 and its own docstring says it is "not wired into
   `rebuild_scene.py`" — a file that does not exist. **Editing
   `build_three_point` has no path to a frame**, which is precisely the defect
@@ -42905,7 +42905,7 @@ the question.
 
 Six frames, `film21` (BEFORE) against `film22` (AFTER), same camera `ONER`, same
 3840×2160, same 512 samples, same `--dof scene`, same exposure. Rendered on a
-rented RTX 5090 at $0.4538/hr; **total spend $0.30**, credit $54.36 → $54.04.
+rented RTX 5090 at $0.4538/hr; **total spend $0.30**, credit $[redacted] → $[redacted].
 
 ### Carbon, f599 — the client's "plain white bent sheet"
 
@@ -43201,7 +43201,7 @@ the same bound**, and is.
 **`build_three_point` has no path to a frame, and that was the real blocker.**
 Round 2 never runs round 1's lighting stage: the lamps reach the film as baked
 datablocks inside the car blend, appended whole by `tools/build_film_scene.py`.
-Writing the strip into `/home/zany/opus5-car-render/build/s05_lighting.py`
+Writing the strip into `~/opus5-car-render/build/s05_lighting.py`
 would be writing to a file nobody reads — **the film18 shape, third instance.**
 
 It is added instead from **`world/showroom_lighting.apply()`**, which is the
@@ -44418,22 +44418,22 @@ while `vastctl status` printed `no broker instances`:
 
 | id | label | GPU | gpu_frac | $/hr | state | uptime |
 |---|---|---|---|---|---|---|
-| 47107695 | ladderbroker-1786131099 | RTX 5090 | 1.0 | 0.4596 | running | 10.7h |
-| 47146841 | fleet03-1786167142 | RTX 5090 | 1.0 | 0.4702 | running | 0.71h |
-| 47146862 | fleet04-1786167168 | RTX 5090 | 1.0 | 0.3586 | running | 0.70h |
-| 47146896 | fleet05-1786167195 | RTX 5090 | 1.0 | 0.4607 | running | 0.69h |
-| 47146936 | fleet06-1786167227 | RTX 5090 | 1.0 | 0.4889 | running | 0.69h |
-| 47147007 | fleet07-1786167286 | RTX 5090 | 1.0 | 0.5022 | running | 0.67h |
-| 47147268 | fleet09-1786167557 | RTX 5090 | 1.0 | 0.5363 | running | 0.59h |
-| 47147465 | fleet08-1786167730 | RTX 5090 | 1.0 | 0.5544 | running | 0.55h |
-| 47148011 | fleet10-1786168261 | RTX 5090 | 1.0 | 0.4756 | running | 0.40h |
-| 47149575 | fleet11-1786169762 | RTX 5090 | 1.0 | 0.5556 | running | new |
+| id-051 | ladderbroker-1786131099 | RTX 5090 | 1.0 | 0.4596 | running | 10.7h |
+| id-055 | fleet03-LABEL | RTX 5090 | 1.0 | 0.4702 | running | 0.71h |
+| id-056 | fleet04-LABEL | RTX 5090 | 1.0 | 0.3586 | running | 0.70h |
+| id-057 | fleet05-LABEL | RTX 5090 | 1.0 | 0.4607 | running | 0.69h |
+| id-058 | fleet06-LABEL | RTX 5090 | 1.0 | 0.4889 | running | 0.69h |
+| id-059 | fleet07-LABEL | RTX 5090 | 1.0 | 0.5022 | running | 0.67h |
+| id-060 | fleet09-LABEL | RTX 5090 | 1.0 | 0.5363 | running | 0.59h |
+| id-061 | fleet08-LABEL | RTX 5090 | 1.0 | 0.5544 | running | 0.55h |
+| id-062 | fleet10-LABEL | RTX 5090 | 1.0 | 0.4756 | running | 0.40h |
+| id-063 | fleet11-LABEL | RTX 5090 | 1.0 | 0.5556 | running | new |
 
 Nine at first query; a tenth (`fleet11`) was rented mid-investigation and the
 fixed `status` picked it up unprompted, which is itself the check that the new
 enumeration is live rather than snapshotted.
 
-**Total $4.8620/hr = $116.69/day.** Credit $50.31 — 10.3 hours of runway. Every
+**Total $4.8620/hr = $116.69/day.** Credit $[redacted] — 10.3 hours of runway. Every
 card is `gpu_frac 1.0`, so no shared-card waste (the R2 `gpu_frac` defect is
 clean here). `vastctl status` reported **zero** of them.
 
@@ -44544,12 +44544,12 @@ are now account-wide.
    BEFORE (labelled_only=True, the old path):
        kill list: []   destroy calls: []   survivors: 10 at $4.8620/hr
    AFTER (the new default):
-       kill list:    [47107695, 47146841, 47146862, 47146896, 47146936,
-                      47147007, 47147268, 47147465, 47148011, 47149575]
+       kill list:    [id-051, id-055, id-056, id-057, id-058,
+                      id-059, id-060, id-061, id-062, id-063]
        destroy calls: same 10        survivors: 0
        ASSERT OK: every id the API reported was destroyed
    ```
-3. **`keep=` still exempts** — `keep=[47107695]` destroyed 9 of 10.
+3. **`keep=` still exempts** — `keep=[id-051]` destroyed 9 of 10.
 4. **Orphan path exercised** with `live_broker_labels` stubbed empty: all ten
    rows render `*** NO BROKER ***` and the waste banner lists every id.
 5. **474/474 offline broker tests pass** (`test_broker.run_offline()`), plus
@@ -45277,7 +45277,7 @@ ran it anyway on 2026-08-08, twice. **A warning is not a mechanism** — the sam
 conclusion `tools/gitguard.py` reached about path-scoped `git add`.
 
 No harm either time, and the reason matters: broker 1 is configured with
-`VASTRENDER_SCENE=/home/zany/vast-render/scene.blend`, **which has never
+`VASTRENDER_SCENE=~/vast-render/scene.blend`, **which has never
 existed** (`broker/config.py` says so in as many words: *"this one has run all
 week, `scene.blend` has never existed"*). Submits therefore fail inside the
 broker before anything is queued. Verified after each run: `depth: 0`, `counts`
@@ -46109,7 +46109,7 @@ is what produced the original wrong verdict.
 * **Nothing in the tree was modified.** No bake, no render, no GPU, no spend.
   `sim/`, `world/`, `render/` and `tools/` are untouched; the only file written
   is this one. `docs/DEFECT-LOG-R2.md` was **not** edited.
-* `/home/zany/opus5-car-render` was not read from or written to.
+* `~/opus5-car-render` was not read from or written to.
 * Lease `r2-2461-aerofoil` holds `docs/STAGING-R2-2461-to-R2-2520.md` only.
 
 ## R2-2108 — my own two instruments printed two verdicts each, in the files written to prevent that
@@ -46544,7 +46544,7 @@ in flight throughout this task**, which is why free space fell from 67 GB to
 56 GB while measuring. Both landed intact afterwards:
 `film23_breach.blend` 10,439 MB, `r22161_after.blend` 9,545 MB.
 
-Also live and untouched: `work/r22161_proxy/`, `/home/zany/vast-render/out3…out11/`
+Also live and untouched: `work/r22161_proxy/`, `~/vast-render/out3…out11/`
 (whole-film proxy, 960×540), `render/r2401/`.
 
 ---
@@ -46735,7 +46735,7 @@ $ cp tools/gitguard_selftest.py $SCRATCH/
 $ cd $SCRATCH && python3 gitguard_selftest.py
 >> STAGE RESULT: FAIL (22 failures of 62 checks)
 
-$ cd /home/zany/f1-round2 && python3 tools/gitguard_selftest.py
+$ cd ~/f1-round2 && python3 tools/gitguard_selftest.py
 >> STAGE RESULT: OK (0 failures of 62 checks)
 ```
 
@@ -47086,7 +47086,7 @@ frames. The world took the hidden branch.
 `work/r22161_proxy/` is 2,978 frames at 960×540 covering the whole film. All
 2,978 were rendered from `render/film22.blend` (broker job records across
 `state2…state11`, `seq = r22161_proxy`, `scene =
-/home/zany/f1-round2/render/film22.blend`), and `work/r22041/build_film22.log`
+render/film22.blend`), and `work/r22041/build_film22.log`
 line 1 reads
 
 ```
@@ -47346,11 +47346,11 @@ it cannot get past `read_rig()`. Measured, verbatim:
 ```
 $ python3 tools/rig_preflight.py
 Traceback (most recent call last):
-  File "/home/zany/f1-round2/tools/rig_preflight.py", line 252, in <module>
+  File "tools/rig_preflight.py", line 252, in <module>
     main()
-  File "/home/zany/f1-round2/tools/rig_preflight.py", line 230, in main
+  File "tools/rig_preflight.py", line 230, in main
     rig = read_rig()
-  File "/home/zany/f1-round2/tools/rig_preflight.py", line 130, in read_rig
+  File "tools/rig_preflight.py", line 130, in read_rig
     import bpy
 ModuleNotFoundError: No module named 'bpy'
 python3 rc=1
@@ -47379,7 +47379,7 @@ It has been a rumour since the day it was written.
 ```
 $ /opt/blender-5.2.0-linux-x64/blender -b world/surface_test_filmpose.blend \
       --factory-startup -noaudio -P tools/rig_preflight.py -- --json rig_real.json
->> RIG   /home/zany/f1-round2/world/surface_test_filmpose.blend
+>> RIG   world/surface_test_filmpose.blend
 >> SUN   rig (0.0, 0.976407, 0.215939)
 >> SUN   film (0.517854, -0.827767, 0.215939)
 >> GRADE rig -3.0480 / AgX / look None   film -3.628 / AgX / look None
@@ -47957,7 +47957,7 @@ Everything above rests on one claim: **a region with no structure at 16–64 px 
 4K is empty for reasons more resolution cannot fix.** Until now that was argued
 from the sampling theorem. It is now measured.
 
-`/home/zany/vast-render/out*/seq/r22161_before/` holds **205 frames of the same
+`~/vast-render/out*/seq/r22161_before/` holds **205 frames of the same
 scene on the same declared camera at 1280×720**, rendered for the R2-2161 doppler
 A/B — a **1.33× resolution increase** over the proxy, overlapping it
 frame-for-frame. Bring the 1280 render down to 960 and measure the coarse band
@@ -48042,7 +48042,7 @@ work/r22881/crossres.log                the cross-resolution control (C9)
 Not touched: `docs/DEFECT-LOG-R2.md`, `docs/beat_sheet.json`,
 `tools/build_beatsheet.py`, `tools/author_beats2_5.py`,
 `tools/placement_gate.py`, `tools/item_placement_gate.py`, the verification bar,
-and everything under `/home/zany/opus5-car-render`.
+and everything under `~/opus5-car-render`.
 
 ## R2-2941..R2-2949 — the trees were never within 74 metres, and the ranking that put them first was measuring their host
 
@@ -48394,8 +48394,8 @@ drawn from it: trees are, if anything, worse than 22.7 px/m.
 
 ## R2-3001 — the probe, and what it cost
 
-One exclusive RTX 5090 (`gpu_frac=1.000`), offer `43255050`, instance
-`47189253`, **$0.3689/hr** — the cheapest exclusive card the default filter
+One exclusive RTX 5090 (`gpu_frac=1.000`), offer `id-016`, instance
+`id-066`, **$0.3689/hr** — the cheapest exclusive card the default filter
 returns. The batch cap on the bulk broker was set to `spent + $5.00` **before**
 the job was submitted, so the $5 ceiling is a mechanism and not an intention:
 
@@ -48470,7 +48470,7 @@ project has ever made, across all eleven broker logs:
 and the failures do not fail late. Twenty of the twenty-two died in **0.3 s to
 37.1 s** — connection refused, banner-exchange timeout, a torn mux — i.e.
 before there was anything to resume. The only two that died deep were both on
-instance `46712525` at **167.4 s and 181.4 s**, and those are the documented
+instance `id-026` at **167.4 s and 181.4 s**, and those are the documented
 180 s multiplexed-SSH ceiling, which was fixed by moving the push to
 `ssh_nomux`. **Since that fix there is not one recorded mid-stream scene-push
 failure.** Resumability would have saved, in the entire history of this project,
@@ -48478,7 +48478,7 @@ about six minutes.
 
 ### What it actually costs is the single stream on a distant host
 
-The push made for this task is the measurement. Instance `47189253`, taken by
+The push made for this task is the measurement. Instance `id-066`, taken by
 the broker's own cheapest-exclusive filter:
 
 ```
@@ -48510,8 +48510,8 @@ by a transport number measured on one host and quoted as a constant.
 **carries `geolocation`** and nothing reads it:
 
 ```
-47033336  'South Korea, KR'    31499018  'Texas, US'       47165035  'Sweden, SE'
-38769886  'Massachusetts, US'  38304383  'Mexico, MX'      45922064  'Japan, JP'
+id-036  'South Korea, KR'    id-003  'Texas, US'       id-064  'Sweden, SE'
+id-010  'Massachusetts, US'  id-007  'Mexico, MX'      id-021  'Japan, JP'
 ```
 
 `inet_up` says 734 Mbps for the machine we rented. Its RTT is 254 ms. **The
@@ -48612,11 +48612,11 @@ memory pressure with 374 MB free.
 
 ## R2-3004 — the deploy, timed to the second
 
-Every number below is from `state2/broker.log` for instance `47189253`, a cold
+Every number below is from `state2/broker.log` for instance `id-066`, a cold
 rental of the cheapest exclusive 5090 the default filter returns.
 
 ```
-15:48:30  credit checked, offer 43255050 chosen ($0.369/hr, EXCLUSIVE)
+15:48:30  credit checked, offer id-016 chosen ($0.369/hr, EXCLUSIVE)
 15:48:31  instance created
 15:49:02  ssh reachable                                        31.0 s
 15:49:07  blender bundle push begins
@@ -48722,16 +48722,16 @@ it. Live snapshot, 16:21 today, the production filter (`gpu_frac>=0.99`,
 
 ```
  $/hr        id  geolocation           up Mbps   cpu
-0.4414  46937219  South Korea, KR           784   Ryzen 9 7950X 16C
-0.4685  47165035  Sweden, SE                631   Xeon E5-2696 v3
-0.4694  31499018  Texas, US                 841   Ryzen 9 7945HX
-0.4923  38769886  Massachusetts, US         815   Core i9-14900K
-0.5347  31275126  Washington, US            565   EPYC 7452 32C
-0.5614  38304383  Mexico, MX                479   Ryzen 9 7950X 16C
-0.5614  47075581  Sweden, SE               9158   EPYC-Milan
-0.6681  25192047  Spain, ES                 782   Ryzen 9 9950X3D 16C
-0.7343  46790746  Japan, JP                4190   —
-0.8014  45111654  France, FR               6480   Ryzen 9 9950X 16C
+0.4414  id-033  South Korea, KR           784   Ryzen 9 7950X 16C
+0.4685  id-064  Sweden, SE                631   Xeon E5-2696 v3
+0.4694  id-003  Texas, US                 841   Ryzen 9 7945HX
+0.4923  id-010  Massachusetts, US         815   Core i9-14900K
+0.5347  id-002  Washington, US            565   EPYC 7452 32C
+0.5614  id-007  Mexico, MX                479   Ryzen 9 7950X 16C
+0.5614  id-044  Sweden, SE               9158   EPYC-Milan
+0.6681  id-001  Spain, ES                 782   Ryzen 9 9950X3D 16C
+0.7343  id-028  Japan, JP                4190   —
+0.8014  id-020  France, FR               6480   Ryzen 9 9950X 16C
 ```
 
 | fleet width | mean $/GPU-hr | vs one card |
@@ -48749,7 +48749,7 @@ master it is roughly **$27**. It is the single largest term in the difference
 between "the master on one card" and "the master in a day", and no budget on
 this project has carried it.
 
-*(The card this probe is on, offer `43255050` at $0.3689/hr, was the cheapest
+*(The card this probe is on, offer `id-016` at $0.3689/hr, was the cheapest
 exclusive on the market when it was taken at 15:48 and is below everything on
 the 16:21 list. The market moves; treat the table as a shape, not as prices.)*
 
@@ -49722,7 +49722,7 @@ a further rebuild lands more of the item campaign — 49 of 435 item modules
 exist — the per-frame cost goes **up**, not down.
 
 **2. One card, one host, one hour.** Every per-frame number is from instance
-`47189253`, an exclusive RTX 5090 on a Ryzen 9 7950X. The published spread on
+`id-066`, an exclusive RTX 5090 on a Ryzen 9 7950X. The published spread on
 *exclusive single* 5090s is **1.21x** (the project's own corrected figure, after
 an earlier ±45 % claim had to be withdrawn for folding an 8-GPU box's per-GPU
 rate into it). So read the totals with a ±10 % host band, not as a point.
@@ -49886,7 +49886,7 @@ from an empty disk.
 ### Does $74.82 cover it? No.
 
 ```
-credit at 17:00                          $74.34
+credit at 17:00                          $[redacted]
 cheapest configuration (1 card, 10.5 d)  $110.69
 SHORTFALL                                 $36.35    at the slowest option
 SHORTFALL                                 $40.97    at 3 cards / 3.5 days
@@ -50478,7 +50478,7 @@ blend that is seconds.
 **This roughly halves a two-job A/B and it applies to the 4K master**, which is
 a dozen-plus rentals. It is recorded here rather than in the broker's own docs
 because vast-render is another agent's ground on this project; **somebody who
-owns `/home/zany/vast-render/docs/operations.md` should fold it in there**,
+owns `~/vast-render/docs/operations.md` should fold it in there**,
 beside the cold-start row it is derived from.
 
 ---
@@ -50540,7 +50540,7 @@ threshold gives back nothing on the frames that cost the most.
 
 ```
 fleetctl plan   -n 3 --frames 1-2978 --sec-per-frame 283 --push-sec 817
-fleetctl up     -n 3 --scene /home/zany/f1-round2/render/<master>.blend
+fleetctl up     -n 3 --scene render/<master>.blend
 fleetctl submit -n 3 --name master4k --frames 1-2978 \
                 --cam ONER --res 3840 2160 --samples 512
 fleetctl verify --manifest state/fleet/master4k.json
@@ -50594,7 +50594,7 @@ budget ceiling set BEFORE submitting anything, on the broker that would rent:
     ladderbroker cap  $150.00 -> $23.80   ( = spent $18.79 + $5.00 )
     renderbroker cap  $150.00 -> $36.40   ( = spent $31.40 + $5.00 )
 
-one exclusive RTX 5090, offer 43255050, instance 47189253, $0.3689/hr GPU
+one exclusive RTX 5090, offer id-016, instance id-066, $0.3689/hr GPU
                                                            $0.3897/hr with disk
 
   deploy + 14 master-spec frames + 3 adaptive A/B frames
@@ -50625,7 +50625,7 @@ available — the container cap is /sys/fs/cgroup/memory.max, not the host's
 `free`. The build was never started
 ```
 
-Measured on instance `47189253` while it was serving the scene:
+Measured on instance `id-066` while it was serving the scene:
 
 ```
 /sys/fs/cgroup/memory.max       63,803,752,448   =  59.4 GiB
@@ -50691,13 +50691,13 @@ the same 245.5 GPU-hours of work against the live market at **17:46** with
 
 ```
  $/hr        id  geolocation          RAM GiB  cpu
-0.4001  47185127  Thailand, TH            62.7  EPYC 9554 64-Core
-0.4414  46937219  South Korea, KR        124.9  Ryzen 9 7950X 16-Core
-0.4881  46307220  Estonia, EE            247.3  EPYC 7402 24-Core
-0.4923  38769886  Massachusetts, US      125.2  Core i9-14900K
-0.5347  31275126  Washington, US         125.7  EPYC 7452 32-Core
-0.6014  47107854  Taiwan, TW             125.5  EPYC 9124 16-Core
-0.7343  46790746  Japan, JP              251.4  —
+0.4001  id-065  Thailand, TH            62.7  EPYC 9554 64-Core
+0.4414  id-033  South Korea, KR        124.9  Ryzen 9 7950X 16-Core
+0.4881  id-023  Estonia, EE            247.3  EPYC 7402 24-Core
+0.4923  id-010  Massachusetts, US      125.2  Core i9-14900K
+0.5347  id-002  Washington, US         125.7  EPYC 7452 32-Core
+0.6014  id-052  Taiwan, TW             125.5  EPYC 9124 16-Core
+0.7343  id-028  Japan, JP              251.4  —
 ```
 
 | cards | $/GPU-hr | deploys | wall clock | **TOTAL** |
@@ -50733,7 +50733,7 @@ watched doing its job:
 | `rq budget --set` as a spend ceiling | set to `spent + $5.00` **before** the job was submitted, and printed `remaining $4.9984`; restored to $150 on both brokers at 17:47 |
 | `tools/buildlock.sh` | took the lock, **queued my build behind eleven others for 22 minutes**, ran it, released it, printed `BUILDLOCK RELEASED ... rc=0` |
 | the exec idle-timer clause | `16:46:39 idle 301s by the render queue, but 12 exec job(s) are in flight — NOT stopping the instance` |
-| the broker's idle-down | `17:56:49 idle 300s — stopping instance (disk kept)` / `17:56:50 instance 47189253 stopped after 128.3 min running (~$0.789 gpu)` |
+| the broker's idle-down | `17:56:49 idle 300s — stopping instance (disk kept)` / `17:56:50 instance id-066 stopped after 128.3 min running (~$0.789 gpu)` |
 
 And one that **failed loudly and cost nothing**, which is the point: the first
 26 `rq exec` submissions died on `argument --arg: expected one argument`
@@ -50743,7 +50743,7 @@ created, zero dollars. Fixed with `--arg=--item` and resubmitted.
 ### State left behind
 
 ```
-instance 47189253   STOPPED at 17:56:50 (GPU meter off), disk billing $0.037/hr
+instance id-066   STOPPED at 17:56:50 (GPU meter off), disk billing $0.037/hr
                     broker destroys it automatically at 21:56 unless used
                     -> film23_breach.blend stays staged, so a master started
                        on this card in the next 4 h skips a 13.6 min push
@@ -51704,7 +51704,7 @@ $ grep -a  "STAGE RESULT" work/r22101/materials_film23_breach.log
 
 $ python3 -c "import json; d=json.load(open('work/r22101/materials_film23_breach.json')); \
               print(d['file'], d['failures'], len(d['rows']))"
-/home/zany/f1-round2/render/film23_breach.blend 0 19
+render/film23_breach.blend 0 19
 ```
 
 **Exactly one verdict**, and that is not an accident of formatting. The 07:57
@@ -52053,7 +52053,7 @@ reason: that one guards a term the API might ignore, this one guards a term the
 API honours *in units we did not mean*.
 
 A third gap the check absorbs: **the advertised figure is not the container's
-cap.** Offer `43255050` sells 61.9 GiB; the container it produced reported
+cap.** Offer `id-016` sells 61.9 GiB; the container it produced reported
 `memory.max` = **59.4 GiB**, 96 % of what was sold.
 
 ### The refusal, observed firing
@@ -52073,9 +52073,9 @@ CONTROL 2  working set 400 GiB,
            query floor 50 GB      -> REFUSED                      PASS
    | REFUSING TO RENT: no exclusive RTX 5090 offer carries enough RAM ...
    |   need    400.0 GiB resident x 1.25 headroom = 500.0 GiB per GPU
-   |   measured on instance 47189253 ... 50.6 GiB resident, on a 59.4 GiB
+   |   measured on instance id-066 ... 50.6 GiB resident, on a 59.4 GiB
    |   cgroup cap running at 91 %
-   |   rejected 30 offer(s): 43255050 (61.9 GiB, $0.3592/hr), ...
+   |   rejected 30 offer(s): id-016 (61.9 GiB, $0.3592/hr), ...
    |   NOTE: the exclusive market is bimodal ... nine is not purchasable
 ```
 
@@ -52089,9 +52089,9 @@ render).
 
 ```
 id         $/hr   rel    net Mbps   RAM GiB  disk$/GB  est 8h   geo                CPU
-46979969   0.428  0.997  7082/14067 137.5    0.1333    $3.46    California, US     EPYC 9655 96-Core
-46937219   0.441  0.981  784/649    124.9    0.2000    $3.89    South Korea, KR    Ryzen 9 7950X
-46307220   0.488  0.995  926/968    247.3    0.2000    $4.00    Estonia, EE        EPYC 7402 24-Core
+id-034   0.428  0.997  7082/14067 137.5    0.1333    $3.46    California, US     EPYC 9655 96-Core
+id-033   0.441  0.981  784/649    124.9    0.2000    $3.89    South Korea, KR    Ryzen 9 7950X
+id-023   0.488  0.995  926/968    247.3    0.2000    $4.00    Estonia, EE        EPYC 7402 24-Core
 ...
 RAM floor 63.2 GiB/GPU (50.6 GiB measured resident x 1.25); 8 offer(s) cleared it.
 ```
@@ -52604,7 +52604,7 @@ extra cameras in the same blend, in the same broker job.
 
 ## R2-3249 — SPEND
 
-**Nothing.** No render, no rental, no 4K frame. Credit is $74.06, unchanged. The
+**Nothing.** No render, no rental, no 4K frame. Credit is $[redacted], unchanged. The
 entire finding came off `work/r22161_proxy/`, `work/r22881/scan.npz` and
 `work/r23061/`, all already paid for. **No targeted 4K frame is requested**: the
 proxy resolved every candidate it could reach, and the one thing it cannot reach
@@ -53098,7 +53098,7 @@ PID 2879465  alive 02:24   grep -E "grass library:|TOTAL|^VEG |CHAIN2 DONE|..."
 ```
 
 **Every agent in this session is a child of the same process and writes to the
-same scratchpad directory** — `/tmp/claude-0/…/262f2abe-…/scratchpad/` is
+same scratchpad directory** — `SCRATCHPAD/` is
 session-scoped, not agent-scoped. So:
 
 * **"it is a child of my claude PID" is NOT an ownership test.** A PID sweep of
@@ -55415,7 +55415,7 @@ also the wrong question.**
 | `work/r23421/probe.blend` | the 30 MB verge probe the ladder is rendered from |
 | `work/r23421/` | every measurement, log and control band |
 
-**$0 spent.** No render was commissioned; credit is untouched at $73.72.
+**$0 spent.** No render was commissioned; credit is untouched at $[redacted].
 
 ## R2-3369 — THE FULL BAR ON film24. `FILM_BAR_PASS`, 40 of 40, judged against film24's own prediction
 
@@ -56077,7 +56077,7 @@ unrentable?
 ### What the 50.6 GiB actually is — and one correction
 
 Traced to its origin: it is **not** a repo tool's output. It is a hand reading of
-`/proc` and cgroup files taken over ssh on vast.ai instance `47189253` on
+`/proc` and cgroup files taken over ssh on vast.ai instance `id-066` on
 2026-08-08, recorded at `docs/STAGING-R2-3001-to-R2-3060.md:966-973`, and baked
 into `vast-render` at `vastctl/vastctl.py:465` as
 `SCENE_WORKING_SET_GIB = 50.6`. The refusal string carries its own provenance.
@@ -56096,16 +56096,16 @@ The gate the market applies is not 50.6 but **50.6 × `RAM_HEADROOM` 1.25 =
 
 | id | RAM GiB | $/hr |
 | --- | --- | --- |
-| 46937219 | 124.9 | 0.441 |
-| 38597207 | 125.7 | 0.468 |
-| **42272271** | **91.4** | 0.454 |
-| 38769886 | 125.2 | 0.492 |
-| 47128201 | 125.7 | 0.532 |
-| 45922064 | 188.3 | 0.535 |
-| **37096027** | **93.4** | 0.536 |
-| 47107854 | 125.5 | 0.601 |
+| id-033 | 124.9 | 0.441 |
+| id-008 | 125.7 | 0.468 |
+| **id-014** | **91.4** | 0.454 |
+| id-010 | 125.2 | 0.492 |
+| id-054 | 125.7 | 0.532 |
+| id-021 | 188.3 | 0.535 |
+| **id-005** | **93.4** | 0.536 |
+| id-052 | 125.5 | 0.601 |
 
-and dropped under the floor: `47185127` 62.7, `39675447` 60.5, `25192047` 60.4.
+and dropped under the floor: `id-065` 62.7, `id-012` 60.5, `id-001` 60.4.
 
 **The distribution has a hole, and that hole is the whole answer.** Today's rungs
 run `60.4, 60.5, 62.7 | 91.4, 93.4, 124.9, 125.2, 125.5, 125.7, 125.7, 188.3` —
@@ -56443,7 +56443,7 @@ cover is worth its triangles.**
 The failure, verbatim from `assembly15.log`:
 
 ```
-  File "/home/zany/f1-round2/world/build_dressing.py", line 747, in anchor
+  File "world/build_dressing.py", line 747, in anchor
     wx, wy, wz = float(wx), float(wy), float(wz)
                  ~~~~~^^^^
 TypeError: only 0-dimensional arrays can be converted to Python scalars
@@ -58143,7 +58143,7 @@ tripwire; there was nothing to compare its first reading against.**
 ### 9. What was deliberately NOT done
 
 **No module was authored. No `assembly16`. No `film26_breach`. No render, no
-GPU job, $0 spent.** Credit is untouched at $73.33.
+GPU job, $0 spent.** Credit is untouched at $[redacted].
 
 Proceeding would have meant: authoring four modules against a detail budget
 overstated 7.86× for the decisive one; gating four items on the 5090 (money, and
@@ -58199,7 +58199,7 @@ a `film26` that must still land the camera path at `9d055d63da724993`.
 ### 11. How to reproduce every number above
 
 ```bash
-cd /home/zany/f1-round2
+cd ~/f1-round2
 
 # the negative control, first
 python3 tools/socket_index_audit.py --blend render/film10.blend ; echo "rc=$?"
@@ -58227,7 +58227,7 @@ for r in d['items']:
 # the fingerprint, and what the 94 is made of
 python3 -c "
 import json,hashlib,os
-R2='/home/zany/f1-round2'
+R2='~/f1-round2'
 fp=json.load(open(R2+'/render/world/assembly/r2/assembly15_build.json'))['source_sha256']
 d=[r for r,s in sorted(fp.items()) if hashlib.sha256(open(os.path.join(R2,r),'rb').read()).hexdigest()!=s]
 print('fingerprint: %d file(s), %d differ'%(len(fp),len(d)))"
@@ -58366,9 +58366,9 @@ rented, and all three clear it with room:
 
 | instance | broker | advertised RAM | cap at 96% | vs 64.5 GiB cgroup peak |
 | --- | --- | --- | --- | --- |
-| 47238557 | fleet03 | 124.9 GiB | 119.9 GiB | +55.4 GiB |
-| 47238586 | fleet04 | **91.4 GiB** | **87.7 GiB** | **+23.2 GiB** (worst case) |
-| 47238618 | fleet05 | 124.9 GiB | 119.9 GiB | +55.4 GiB |
+| id-067 | fleet03 | 124.9 GiB | 119.9 GiB | +55.4 GiB |
+| id-068 | fleet04 | **91.4 GiB** | **87.7 GiB** | **+23.2 GiB** (worst case) |
+| id-069 | fleet05 | 124.9 GiB | 119.9 GiB | +55.4 GiB |
 
 The 50.0 GB floor these brokers would have carried before the restart admits
 boxes at 60.5 and 62.7 GiB — under the 64.5 GiB the scene needs in the cgroup.
@@ -58424,11 +58424,11 @@ Rented at 04:06-04:07Z, three exclusive whole-machine RTX 5090s:
 
 | instance | offer | $/hr | geo | uplink |
 | --- | --- | --- | --- | --- |
-| 47238557 | 47033336 | 0.428 | South Korea | 594 Mbps |
-| 47238586 | 42272271 | 0.454 | Sweden | 746 Mbps |
-| 47238618 | 46937219 | 0.455 | South Korea | 805 Mbps |
+| id-067 | id-036 | 0.428 | South Korea | 594 Mbps |
+| id-068 | id-014 | 0.454 | Sweden | 746 Mbps |
+| id-069 | id-033 | 0.455 | South Korea | 805 Mbps |
 
-`$1.3881/hr` all-in including disk; credit $173.30 = **124.8 h of runway**.
+`$1.3881/hr` all-in including disk; credit $[redacted] = **124.8 h of runway**.
 
 ## R2-3848 — THE RUNBOOK'S SEVEN UN-WAIVABLE GATES, CHECKED ONE BY ONE
 
@@ -58455,7 +58455,7 @@ renders there are two more passes (`r2791_apply_focus`, then the breach), so the
 an inference, and gate 4 is un-waivable, so I ran the probe on the shipped file:
 
 ```
->> film   /home/zany/f1-round2/render/film25_breach.blend (10956580171 bytes)
+>> film   render/film25_breach.blend (10956580171 bytes)
 >> probe frames (1200, 2000, 2714, 2760, 2850, 2978)   tolerance 0.050 m
 >> CAR_ROOT found: 'CAR_ROOT', animation_data=True
 >> CAR KEYS: none - the appended CAR_ROOT matches anim/carrig to 0.0000 m over 6
@@ -58959,7 +58959,7 @@ State at the time of writing (04:45Z, 38 min in):
 | frames delivered | 16 of 2,978 |
 | spend on this batch | **$0.91** of the $150 ceiling |
 | projected total | **$102-114** against the ~$113 estimate (mean render 266.3 s/frame → 220 GPU-h; 296.6 s/frame → 245 GPU-h) |
-| credit | $172.63, 124 h of runway |
+| credit | $[redacted], 124 h of runway |
 | instances | 3, all `running`, all exclusive whole-machine RTX 5090s |
 | disk | 114.6 GB free; frames 23.5 GiB + ProRes 11.4 GB + H.265 0.86 GB ≈ 36 GB |
 
@@ -58994,7 +58994,7 @@ State at the time of writing (04:45Z, 38 min in):
 
 ### One transient, recorded rather than smoothed over
 
-At 04:44:22Z fleet05's heartbeat to instance 47238618 failed once
+At 04:44:22Z fleet05's heartbeat to instance id-069 failed once
 (`ssh: connect ... Connection timed out`, 1 in a row) and did not recur; the
 instance stayed `ready` and the job it was running completed and verified two
 minutes later. This is the documented transient class — the in-container
@@ -59009,9 +59009,9 @@ deploy, scene push and first-frame setup are all excluded:
 
 | broker | host IP | machine | mean of last 10 | its block |
 | --- | --- | --- | --- | --- |
-| fleet03 | host-A | 36179 | **204.9 s** | 1-993, showroom |
-| fleet05 | **host-A** | 131197 | **284.2 s** | 1987-2978, circuit |
-| fleet04 | host-B | 141468 | 300.8 s | 994-1986 |
+| fleet03 | host-A | mach-05 | **204.9 s** | 1-993, showroom |
+| fleet05 | **host-A** | mach-13 | **284.2 s** | 1987-2978, circuit |
+| fleet04 | host-B | mach-16 | 300.8 s | 994-1986 |
 
 **fleet03 and fleet05 are behind the same host IP and differ by 39%.** Two
 machines in the same facility, same GPU model, same spec hash, same scene — and
@@ -59028,7 +59028,7 @@ same fact showing up inside the master itself.
 each broker's measured s/frame, and `fleetctl submit --weights` exists to do
 exactly that. On these numbers that would hand fleet03 about 40% of the film —
 and it would be **wrong**, because fleet03's 204.9 s is a fact about frames
-1-993, not about machine 36179. Move fleet04's tail onto fleet03 and those
+1-993, not about machine mach-05. Move fleet04's tail onto fleet03 and those
 frames cost what circuit frames cost, not what showroom frames cost. The
 projected finish would be missed in the direction that hurts: too much work on
 one card, discovered at hour 70.
@@ -59050,7 +59050,7 @@ Projected on current rates, with each block scored at its own content cost:
 fleet03 idles ~26 h if nothing is done. A work-conserving rebalance at the
 moment it goes idle should bring the whole film in around **~72 h**, saving
 roughly 11 h. It cannot be done earlier with confidence, because until a card is
-free there is no way to price circuit frames on machine 36179.
+free there is no way to price circuit frames on machine mach-05.
 3. **Run the three frame checks in full** — `fleetctl verify --manifest`
    (coverage + hash against the brokers' own records) and
    `tools/r23841_verify_frames.py` (decode + geometry + blank). Both rehearsed.
@@ -59198,13 +59198,13 @@ rather than trust the gate once. Measured on all three:
 
 | instance | advertised | cap at 96% | over the 52.4 GiB resident scene |
 | --- | --- | --- | --- |
-| 47286201 (fleet03) | 124.9 GiB | 119.9 | **+67.5** |
-| 47286257 (fleet05) | 91.4 GiB | 87.7 | **+35.3** |
-| 47286610 (fleet04) | 251.3 GiB | 241.3 | **+188.9** |
+| id-071 (fleet03) | 124.9 GiB | 119.9 | **+67.5** |
+| id-072 (fleet05) | 91.4 GiB | 87.7 | **+35.3** |
+| id-073 (fleet04) | 251.3 GiB | 241.3 | **+188.9** |
 
 ### One of the three replacements was a broken host, and the broker knew why
 
-fleet04's first replacement (47286172, machine 52271, New Jersey, and the
+fleet04's first replacement (id-070, machine mach-09, New Jersey, and the
 **cheapest** offer at $0.3615/hr) completed the SSH handshake and then denied
 publickey auth, for 240 s. The diagnosis is exact and is the opposite of a
 retry loop:
@@ -59217,8 +59217,8 @@ retry loop:
 
 It then did three things in the right order:
 
-1. **Blacklisted machine 52271** for the session.
-2. **Blacklisted offer 46319510 as well** — *"it was just destroyed as unusable
+1. **Blacklisted machine mach-09** for the session.
+2. **Blacklisted offer id-024 as well** — *"it was just destroyed as unusable
    and is still the cheapest, so the next rent would buy it straight back."*
    Without that second blacklist a cheapest-first selector loops on a broken
    box forever. This is the detail that makes the recovery terminate.
@@ -59226,7 +59226,7 @@ It then did three things in the right order:
    it — it holds no worker and no frame, so there is nothing to lose"* —
    **confirmed gone, gpu $0.046 + disk $0.005 = $0.051.**
 
-Replacement 47286610 (machine 8512, $0.668/hr, 3375 Mbps) was rented 1 second
+Replacement id-073 (machine mach-02, $0.668/hr, 3375 Mbps) was rented 1 second
 later.
 
 ### TWO bad hosts in a row on fleet04, and what the blacklist costs
@@ -59235,8 +59235,8 @@ fleet04 drew **two consecutive hosts that never wrote `authorized_keys`**:
 
 | attempt | machine | $/hr | reachable in | outcome |
 | --- | --- | --- | --- | --- |
-| 1 | 52271 (New Jersey) | **$0.3615** | 225 s | key never installed → blacklisted, destroyed for $0.051 |
-| 2 | 8512 (Japan) | $0.6859 | 123 s | key never installed → blacklisted, destroyed for $0.076 |
+| 1 | mach-09 (New Jersey) | **$0.3615** | 225 s | key never installed → blacklisted, destroyed for $0.051 |
+| 2 | mach-02 (Japan) | $0.6859 | 123 s | key never installed → blacklisted, destroyed for $0.076 |
 | 3 | 56786 | **$0.801** | — | deploying |
 
 This is not our key: fleet03 and fleet05 authenticated on the **same key at the
@@ -59303,7 +59303,7 @@ new-spend ceiling at **exactly $150.00** — the number the brief set, unmoved.
 **The projection is now ~$139 of $150 — a 7.5% margin, down from the ~$113
 estimate.** The whole difference is fleet04's $0.801/hr card, which is a
 consequence of the two blacklisted bad hosts, not of the render. Credit is
-$154.87 = **89.3 h of runway against ~72 h needed**.
+$[redacted] = **89.3 h of runway against ~72 h needed**.
 
 **This is close enough that the next adverse event is worth surfacing rather
 than absorbing.** Specifically: each further retirement can blacklist more
@@ -59319,7 +59319,7 @@ machine — and R2-3859 is exactly the mistake of assuming you can.
 
 ## R2-3863 — THE KEY EITHER WORKS IN FOUR SECONDS OR IT NEVER WORKS
 
-Cycle 2 condemned a third host (`machine 142281`, instance 47335635), which was
+Cycle 2 condemned a third host (`machine mach-17`, instance id-077), which was
 the trigger I set at R2-3861 for investigating whether `SshNeverReady`'s 240 s
 cut-off was throwing away hosts that merely boot slowly. It is not. **Both of my
 hypotheses were wrong and the broker's diagnosis is exactly right.**
@@ -59328,17 +59328,17 @@ Every rental this render has made, by whether it ever pushed the Blender bundle:
 
 | instance | reachable in | first bundle push | outcome |
 | --- | --- | --- | --- |
-| 47088518 | 144 s | **+3 s** | OK |
-| 47146841 | 31 s | **+0 s** | OK |
-| 47238557 | 62 s | **+3 s** | OK |
-| 47238586 | 21 s | **+2 s** | OK |
-| 47238618 | 63 s | **+3 s** | OK |
-| 47286201 | 21 s | **+4 s** | OK |
-| 47287138 | **82 s** | **+2 s** | OK |
-| 47334620 | 32 s | **+2 s** | OK |
-| 47286172 | 225 s | *never* | CONDEMNED |
-| 47286610 | 123 s | *never* | CONDEMNED |
-| 47335635 | **82 s** | *never* | CONDEMNED |
+| id-046 | 144 s | **+3 s** | OK |
+| id-055 | 31 s | **+0 s** | OK |
+| id-067 | 62 s | **+3 s** | OK |
+| id-068 | 21 s | **+2 s** | OK |
+| id-069 | 63 s | **+3 s** | OK |
+| id-071 | 21 s | **+4 s** | OK |
+| id-074 | **82 s** | **+2 s** | OK |
+| id-075 | 32 s | **+2 s** | OK |
+| id-070 | 225 s | *never* | CONDEMNED |
+| id-073 | 123 s | *never* | CONDEMNED |
+| id-077 | **82 s** | *never* | CONDEMNED |
 
 **Two things fall out, and they kill both hypotheses.**
 
@@ -59347,9 +59347,9 @@ Every rental this render has made, by whether it ever pushed the Blender bundle:
    after a denial. So "it is a container-start race that will resolve" — which
    is what I said in cycle 1, and had to retract once already — is false. The
    condition is perfectly bimodal.
-2. **Reachability time does not predict it.** 47287138 was reachable in **82 s
-   and worked instantly**; 47335635 was reachable in **82 s and never worked**.
-   Meanwhile 47088518 took 144 s to become reachable and was fine. The
+2. **Reachability time does not predict it.** id-074 was reachable in **82 s
+   and worked instantly**; id-077 was reachable in **82 s and never worked**.
+   Meanwhile id-046 took 144 s to become reachable and was fine. The
    "slow-booting hosts get unfairly condemned" theory has a direct
    counterexample in its own data.
 
@@ -59522,7 +59522,7 @@ limit. **The render never stopped.** State read, not inherited:
 | | |
 | --- | --- |
 | frames on disk | **1,376 / 2,978 (46.2%)** |
-| credit | $117.45 |
+| credit | $[redacted] |
 | blend | `film25_breach.blend` sha16 `1d2aa2d86533574e` on assembly15 |
 | burn | $1.0444/hr across the live cards, 112.5 h of runway |
 
@@ -59536,11 +59536,11 @@ which is cycle 3 in progress, not a fault.
 | when | what |
 | --- | --- |
 | 16:40:02 | f542 delivered normally |
-| 16:40:15 | tunnel to 47334620 refused; broker logs `UNKNOWN, not dead` and reopens |
+| 16:40:15 | tunnel to id-075 refused; broker logs `UNKNOWN, not dead` and reopens |
 | 16:40:16 | tunnel repair fails → `deploying onto existing instance (attempt 1/3)` |
 | 16:42:55 | 3 consecutive missed beats → reconcile → **instance does not exist on vast.ai** |
 | 16:44:16 | `SshNeverReady` on the dead endpoint → second confirmation it is gone |
-| 16:44:17 | offer 38597207 (machine 43130) rented, $0.468/hr, EXCLUSIVE |
+| 16:44:17 | offer id-008 (machine mach-06) rented, $0.468/hr, EXCLUSIVE |
 | 16:45:29 | reachable in 72 s |
 | 16:45:40 | blender bundle pushed, 10.7 s @ 45.15 MB/s |
 | 16:47:53 | **scene uploaded in 111.9 s @ 97.9 MB/s** |
@@ -59605,11 +59605,11 @@ a film with holes in it.
 | --- | --- |
 | 16:40:44 | f2416 delivered normally |
 | 16:41:27 | heartbeat 1/3, and the job socket hits `ConnectionDropped` mid-f2417 |
-| 16:43:28 | 3 consecutive misses → reconcile → instance 47334687 gone |
-| 16:56:44 | **offer 46937219 re-rented — machine 131197, the same machine it was retired off**, $0.455/hr, EXCLUSIVE, 838 Mbps up |
-| 16:57:31 | instance 47389166 provisioning; scene cache budget derived on the new card |
+| 16:43:28 | 3 consecutive misses → reconcile → instance id-076 gone |
+| 16:56:44 | **offer id-033 re-rented — machine mach-13, the same machine it was retired off**, $0.455/hr, EXCLUSIVE, 838 Mbps up |
+| 16:57:31 | instance id-078 provisioning; scene cache budget derived on the new card |
 
-The fleet is back to **three cards at $1.5200/hr ($36.48/day)** against $117.38
+The fleet is back to **three cards at $1.5200/hr ($36.48/day)** against $[redacted]
 of credit — **77.2 h of runway** for a tail that needs roughly 43. fleet04 is the
 expensive one at $0.5556/hr and is the card due to retire next, so if anything
 the blended rate is about to improve.
@@ -59635,7 +59635,7 @@ through `SshNeverReady` (240 s) plus the 3-beat reconcile instead of through
 `await_render`'s 900 s silence timer. **The grace is an upper bound on how long
 the broker will wait for a silent worker, not a fixed cost.**
 
-fleet04 re-rented onto machine 8449 at $0.535/hr in cycle 2 and its retirement
+fleet04 re-rented onto machine mach-01 at $0.535/hr in cycle 2 and its retirement
 at 17:01 is on schedule. **No host has been condemned this cycle** — the running
 total stays at 3 bad hosts in 14 rentals.
 
@@ -59976,7 +59976,7 @@ script that writes the file:
 render/film25_breach.blend
   <- world/car_anim.blend        (anim/build_car_anim.py)
   <- world/beat1_anim.blend      (anim/build_beat1_anim.py)
-  <- /home/zany/opus5-car-render/work/iter.blend      288 MB, 2026-07-26
+  <- ~/opus5-car-render/work/iter.blend      288 MB, 2026-07-26
 ```
 
 `anim/build_beat1_anim.py:2-3` names it as its input blend. **The entire round-2
@@ -60229,9 +60229,9 @@ frame line appeared".
 
 | broker | went silent | `worker ready` | **down** | replacement | host condemned |
 | --- | --- | --- | ---: | --- | --- |
-| fleet03 | 16:40:15 | 16:48:13 | **7 m 58 s** | machine 43130, $0.468/hr | none |
-| fleet05 | 16:41:27 | 17:05:21 | **23 m 54 s** | machine 131197, $0.455/hr | none |
-| fleet04 | 17:01:18 | 17:24:44 | **23 m 26 s** | machine 44842, $0.455/hr | none |
+| fleet03 | 16:40:15 | 16:48:13 | **7 m 58 s** | machine mach-06, $0.468/hr | none |
+| fleet05 | 16:41:27 | 17:05:21 | **23 m 54 s** | machine mach-13, $0.455/hr | none |
+| fleet04 | 17:01:18 | 17:24:44 | **23 m 26 s** | machine mach-07, $0.455/hr | none |
 
 **The whole cycle cost 23 m 26 s of wall clock, not 35-70**, because the three
 cards retired 21 minutes apart rather than within 61 seconds of each other, so
@@ -60286,8 +60286,8 @@ differently, and the failure is silent until it isn't:
 | interpreter | numpy | PIL | usable |
 | --- | --- | --- | --- |
 | `python3` | yes | **no** | no |
-| `/home/zany/vast-render/.venv/bin/python` | **no** | — | no |
-| **`/home/zany/f1-round2/.venv/bin/python`** | **2.5.1** | **12.3.0** | **yes** |
+| `~/vast-render/.venv/bin/python` | **no** | — | no |
+| **`.venv/bin/python`** | **2.5.1** | **12.3.0** | **yes** |
 
 The tool's own docstring says `.venv/bin/python` relative to `f1-round2`, which
 is correct; it is only ambiguous if it is read from another directory. **Pinned
@@ -60384,13 +60384,13 @@ the wall clock without moving this number.
 the interesting part is not the bad host — it is *why the fleet bought it again*.
 
 ```
-state4  04:54:26 (08-10)  renting offer 46307220 (machine 142281)
-state4  05:00:04          machine 142281 refuses our ssh key -> blacklisted for this session
-state4  05:00:14          offer 46307220 blacklisted -- "still the cheapest, the next rent
+state4  04:54:26 (08-10)  renting offer id-023 (machine mach-17)
+state4  05:00:04          machine mach-17 refuses our ssh key -> blacklisted for this session
+state4  05:00:14          offer id-023 blacklisted -- "still the cheapest, the next rent
                           would buy it straight back"
-state5  05:02:17 (08-11)  renting offer 46307220 (machine 142281)      <-- same offer
-state5  05:06:57          machine 142281 refuses our ssh key -> blacklisted for this session
-state5  05:07:07          offer 46307220 blacklisted for this session
+state5  05:02:17 (08-11)  renting offer id-023 (machine mach-17)      <-- same offer
+state5  05:06:57          machine mach-17 refuses our ssh key -> blacklisted for this session
+state5  05:07:07          offer id-023 blacklisted for this session
 ```
 
 R2-3861 praised the double blacklist — machine *and* offer — as "the detail that
@@ -60405,7 +60405,7 @@ machine up to three times.
 than contradicting it. fleet04's verdict on 08-10 and fleet05's on 08-11 are the
 same machine, the same offer, the same failure — `sshd` completes the handshake
 and denies publickey, so `authorized_keys` was never written. It is a durable
-property of machine 142281, not a transient.
+property of machine mach-17, not a transient.
 
 **The discriminating signal again arrived long before the timeout.**
 `Permission denied` was in the log at **05:03:44, 55 s after renting**; the
@@ -60417,7 +60417,7 @@ middleware under a live render** — recorded for whoever tunes this next.
 
 **Base rate: 4 bad hosts in 19 rentals, ~21%**, unchanged from R2-3863's 3 in 14.
 
-**Exposure that remains:** fleet03 has never drawn machine 142281 and its
+**Exposure that remains:** fleet03 has never drawn machine mach-17 and its
 blacklist does not contain it. If it draws that offer on a future retirement it
 will pay the same ~5 min. There are 2-3 cycles left, so this is a small,
 bounded, known cost — not something to intervene over.
@@ -60426,8 +60426,8 @@ bounded, known cost — not something to intervene over.
 
 | broker | dropped | re-rented | note |
 | --- | --- | --- | --- |
-| fleet03 | 04:45:52 | 05:01:10 (predicted 05:00:52, **+18 s**) | took machine 131197, which fleet05 released 91 s earlier |
-| fleet05 | ~04:56 | 05:02:17 -> condemned -> re-renting | machine 142281 |
+| fleet03 | 04:45:52 | 05:01:10 (predicted 05:00:52, **+18 s**) | took machine mach-13, which fleet05 released 91 s earlier |
+| fleet05 | ~04:56 | 05:02:17 -> condemned -> re-renting | machine mach-17 |
 | fleet04 | due ~05:16 | — | at 11.75 h |
 
 **Cycle 3's helpful stagger is gone**: all three cards now retire inside ~30
@@ -60507,7 +60507,7 @@ passes it.
 | --- | --- | --- | ---: | --- |
 | fleet03 | 04:45:52 | 05:15:45 | **29 m 53 s** | deploy 831 s — uplink shared again |
 | fleet05 | 04:57:50 | 05:18:06 | **20 m 16 s** | *including* a condemned host and two rentals |
-| fleet04 | 05:17:04 | 05:41:29 | **24 m 25 s** | same machine 44842, $0.455/hr |
+| fleet04 | 05:17:04 | 05:41:29 | **24 m 25 s** | same machine mach-07, $0.455/hr |
 
 **Worst card 29 m 53 s, against a 35-70 min band.** Four cycles have now run and
 none has reached 35 minutes since cycle 2's 68.5. The stagger closed to ~30 min
@@ -60550,19 +60550,19 @@ The pulse announces changes, so this needs no further watching.
 
 ## R2-3910 — AN UNBUYABLE OFFER IS WALKING THE PRICE UP, AND fleet05 WILL HIT ITS CAP
 
-### Offer 46851284 is not a race. It is persistently unbuyable, and it is not blacklisted.
+### Offer id-032 is not a race. It is persistently unbuyable, and it is not blacklisted.
 
 I reported it at 17:17 as a lost race and said the listing was "evidently still
 live and the earlier 400 was a transient". **That was wrong, and the next
 re-rent disproved it twelve minutes later.**
 
 ```
-state3  17:17:35  renting offer 46851284 (machine 53711) — $0.455/hr
-state3  17:17:35  offer 46851284 could not be created (HTTPError: 400) — trying the next
-state3  17:17:35  renting offer 36318699 (machine 46633) — $0.529/hr      <- +16%
-state5  17:29:06  renting offer 46851284 (machine 53711) — $0.455/hr
-state5  17:29:07  offer 46851284 could not be created (HTTPError: 400) — trying the next
-state5  17:29:07  renting offer 46285754 (machine 34481) — $0.668/hr      <- +47%
+state3  17:17:35  renting offer id-032 (machine mach-10) — $0.455/hr
+state3  17:17:35  offer id-032 could not be created (HTTPError: 400) — trying the next
+state3  17:17:35  renting offer id-004 (machine mach-08) — $0.529/hr      <- +16%
+state5  17:29:06  renting offer id-032 (machine mach-10) — $0.455/hr
+state5  17:29:07  offer id-032 could not be created (HTTPError: 400) — trying the next
+state5  17:29:07  renting offer id-022 (machine mach-04) — $0.668/hr      <- +47%
 ```
 
 **Two brokers, twelve minutes apart, same offer, same 400.** If it were a race
@@ -60653,7 +60653,7 @@ condemnation is forgotten before the cycle that could use it.* No entry has ever
 survived to influence a later re-rent, and none can, in any broker, for any host.
 
 **This is the actual root cause of R2-3907, and my account there was incomplete.**
-I attributed fleet05 buying machine 142281 to the blacklist being per-broker
+I attributed fleet05 buying machine mach-17 to the blacklist being per-broker
 session state. That is true but insufficient: fleet04's entry was **24 h old**,
 so it had lapsed four times over, and fleet04 itself would have re-bought that
 machine just as readily. **Per-broker scope and a 6 h TTL are two independent
@@ -60671,7 +60671,7 @@ no instance (the 400), and a TTL shorter than the failure's recurrence interval
 means even what it does record is forgotten first.
 
 **Cost, bounded and accepted:** one rung up the price ladder per re-rent that
-draws offer 46851284. Two so far (+16% on fleet03, +47% on fleet05). With ~1-2
+draws offer id-032. Two so far (+16% on fleet03, +47% on fleet05). With ~1-2
 cycles left this is a few dollars, against the risk of poking a live broker
 mid-render. **Not worth it.**
 
@@ -60750,8 +60750,8 @@ and no frame is at risk.
 
 ### It was not the rentals. It was the uplink, and it was worse than cycle 2.
 
-fleet05 needed three attempts (a 400 on offer 46851284, a condemnation of
-machine 34481), but those cost only **~6 minutes total**; it had a good card at
+fleet05 needed three attempts (a 400 on offer id-032, a condemnation of
+machine mach-04), but those cost only **~6 minutes total**; it had a good card at
 **17:35:04**. The remaining **57 minutes were the deploy**:
 
 | stage | this cycle | normal | ratio |
@@ -60797,11 +60797,11 @@ the upper end whenever a condemnation storm overlaps a deploy.
 
 | broker | down | attempts | notes |
 | --- | ---: | ---: | --- |
-| fleet03 | 21 m 00 s | 2 | offer 46851284 400'd; landed $0.5502 |
-| fleet05 | **78 m 06 s** | 3 | 400 + machine 34481 condemned; deploy 3359.7 s |
-| fleet04 | in progress | 4 | 400 + machines 34481 and 31233 condemned; landed $0.455 |
+| fleet03 | 21 m 00 s | 2 | offer id-032 400'd; landed $0.5502 |
+| fleet05 | **78 m 06 s** | 3 | 400 + machine mach-04 condemned; deploy 3359.7 s |
+| fleet04 | in progress | 4 | 400 + machines mach-04 and mach-03 condemned; landed $0.455 |
 
-**Three separate hosts condemned in one cycle** (34481 twice, 31233 once),
+**Three separate hosts condemned in one cycle** (mach-04 twice, mach-03 once),
 against three in the whole render before it. **Base rate 6 bad in ~24 rentals,
 ~25%** — consistent with the 21% at R2-3863, so the market has not degraded; this
 cycle simply drew more rentals because each condemnation forces another.
@@ -60823,10 +60823,10 @@ did not check my claim against it.
 The log is unambiguous:
 
 ```
-17:48:50  deploying onto instance 47484025 (machine 34481)
-17:53:05  instance 47484025 refuses our ssh key            <- nothing between
-18:03:19  deploying onto instance 47484341 (machine 31233)
-18:07:32  instance 47484341 refuses our ssh key            <- nothing between
+17:48:50  deploying onto instance id-080 (machine mach-04)
+17:53:05  instance id-080 refuses our ssh key            <- nothing between
+18:03:19  deploying onto instance id-081 (machine mach-03)
+18:07:32  instance id-081 refuses our ssh key            <- nothing between
 ```
 
 A grep for any push line against either instance id returns **nothing**. The
@@ -60884,9 +60884,9 @@ meet the bar my tools do.
 
 | broker | down | attempts | notes |
 | --- | ---: | ---: | --- |
-| fleet03 | **21 m 00 s** | 2 | offer 46851284 400'd; landed $0.5502/hr |
-| fleet04 | **62 m 49 s** | 4 | 400 + machines 34481, 31233 condemned; landed $0.455/hr |
-| fleet05 | **78 m 06 s** | 3 | 400 + machine 34481 condemned; deploy 3359.7 s on a high-RTT path |
+| fleet03 | **21 m 00 s** | 2 | offer id-032 400'd; landed $0.5502/hr |
+| fleet04 | **62 m 49 s** | 4 | 400 + machines mach-04, mach-03 condemned; landed $0.455/hr |
+| fleet05 | **78 m 06 s** | 3 | 400 + machine mach-04 condemned; deploy 3359.7 s on a high-RTT path |
 
 Band widened to **35-80 min** with escalation above 80. Three condemnations in
 one cycle; base rate **6 bad hosts in ~24 rentals, ~25%**, consistent with the
@@ -61002,19 +61002,19 @@ and the one it was written to be able to reach. It will be re-run once fleet03's
 card is gone and its spend has settled, so the decision rests on measured
 numbers rather than these.
 
-Credit **$64.59 = 43.0 h of runway** against ~19.4 h of remaining work.
+Credit **$[redacted] = 43.0 h of runway** against ~19.4 h of remaining work.
 
 ## R2-3918 — HOST DEFECTS OUTLIVE THE BLACKLIST BY AN ORDER OF MAGNITUDE. #169, PROPERLY ARGUED THIS TIME.
 
-Cycle 6 condemned **machine 8512** on fleet05. The same machine, with the same
+Cycle 6 condemned **machine mach-02** on fleet05. The same machine, with the same
 failure, was condemned by fleet04 in **cycle 1**:
 
 ```
-state4:3255  16:37:06 (08-09)  instance 47286610 (machine 8512) refuses our ssh key
-state5:3649  05:56:27 (08-12)  instance 47523049 (machine 8512) refuses our ssh key
+state4:3255  16:37:06 (08-09)  instance id-073 (machine mach-02) refuses our ssh key
+state5:3649  05:56:27 (08-12)  instance id-082 (machine mach-02) refuses our ssh key
 ```
 
-**61 hours 19 minutes apart, still broken.** With machine 142281 (24 h) that is
+**61 hours 19 minutes apart, still broken.** With machine mach-17 (24 h) that is
 two independent measurements of the same thing: **`authorized_keys` failures are
 a durable property of a host, not a bad hour.**
 
@@ -61035,13 +61035,13 @@ Every machine each broker has condemned:
 
 | broker | condemned |
 | --- | --- |
-| fleet04 | 52271, 8512, 142281, 34481, 31233 |
-| fleet05 | 142281, 34481, 8512 |
+| fleet04 | mach-09, mach-02, mach-17, mach-04, mach-03 |
+| fleet05 | mach-17, mach-04, mach-02 |
 
 **Every single one of fleet05's condemnations is a host fleet04 had already
 condemned.** fleet05 has never independently discovered a bad host — it has only
 ever rediscovered fleet04's, at ~5 minutes each. And fleet05 has just rented
-**machine 31233**, which fleet04 condemned yesterday at 18:07:32.
+**machine mach-03**, which fleet04 condemned yesterday at 18:07:32.
 
 **This is the argument for #169, and it does not depend on the bandwidth claim I
 retracted at R2-3914.** It rests on two measured facts: the defects are durable
@@ -61058,12 +61058,12 @@ have prevented **every repeat condemnation in this render** — 3 of the 7, at
 | spent | $41.59 |
 | **remaining** | **$11.41** |
 | work left | **176 frames**, ~14.2 h |
-| current card | **$0.734/hr** (machine 31233, deploying) |
+| current card | **$0.734/hr** (machine mach-03, deploying) |
 | **needs** | **~$10.4** |
 | **headroom** | **~$1.0** |
 
-The price walk this cycle: $0.537 (create failed) -> $0.668 (machine 8512,
-condemned) -> **$0.734**. If machine 31233 is also condemned — and fleet04
+The price walk this cycle: $0.537 (create failed) -> $0.668 (machine mach-02,
+condemned) -> **$0.734**. If machine mach-03 is also condemned — and fleet04
 condemned it yesterday — the next rung likely breaches the cap.
 
 **fleet03 has $4.08 of cap sitting idle**, which is more than the shortfall.
@@ -61086,7 +61086,7 @@ I had already fetched.**
 
 ```
 05:08:18  idle 300s — stopping instance (disk kept)
-05:08:19  instance 47482165 stopped after 710.7 min running (~$6.271 gpu).
+05:08:19  instance id-079 stopped after 710.7 min running (~$6.271 gpu).
           disk keeps billing ~$0.037/hr; destroying in 240 min
 ```
 
@@ -61185,7 +61185,7 @@ achievable fleet spend *lower*, which is the safer direction and costs nothing.
 | --- | --- |
 | frames | **2,641 / 2,978 (88.7%)** |
 | cards | 2, $1.0044/hr |
-| credit | $60.45 = 60.2 h runway against ~20 h of work |
+| credit | $[redacted] = 60.2 h runway against ~20 h of work |
 | orphans | **[1766]** — fleet04's cycle-6 frame, deferred not lost |
 | projected total | ~$119 of the $150 ceiling |
 
@@ -61245,10 +61245,10 @@ empty todo list would be a self-inflicted cost.**
 fleetctl verify --manifest state/fleet/master4k.json --json work/r23901/hashes.json
 
 # check 3: decode and geometry — the one fleetctl structurally cannot do
-/home/zany/f1-round2/.venv/bin/python tools/r23841_verify_frames.py \
-    --dir /home/zany/vast-render/out3/seq/master4k \
-    --dir /home/zany/vast-render/out4/seq/master4k \
-    --dir /home/zany/vast-render/out5/seq/master4k \
+.venv/bin/python tools/r23841_verify_frames.py \
+    --dir ~/vast-render/out3/seq/master4k \
+    --dir ~/vast-render/out4/seq/master4k \
+    --dir ~/vast-render/out5/seq/master4k \
     --first 1 --last 2978 --res 3840 2160 \
     --json work/r23901/decode.json
 ```
@@ -61262,7 +61262,7 @@ fleetctl verify --manifest state/fleet/master4k.json --json work/r23901/hashes.j
 
 ```
 fleetctl down
-/home/zany/vast-render/.venv/bin/python -m vastctl.vastctl status
+~/vast-render/.venv/bin/python -m vastctl.vastctl status
 ```
 
 **`vastctl` is a package, not a script** — `./vastctl` is a directory and fails;
@@ -61347,7 +61347,7 @@ finding survives. The pattern claim does not.**
 
 ### 1. "fleet05 has never independently discovered a bad host" — falsified
 
-Machine **58073** was condemned by fleet05 at 18:22:57. It appears **nowhere** in
+Machine **mach-11** was condemned by fleet05 at 18:22:57. It appears **nowhere** in
 fleet03's or fleet04's logs — `grep -c` returns 0 in both. It is a bad host
 fleet05 found first.
 
@@ -61356,13 +61356,13 @@ than three samples support. **The fourth broke it.**
 
 ### 2. "fleet05 rediscovers fleet04's verdicts" — the direction was an artefact
 
-At 18:34:32 **fleet04 rented machine 58073**, which fleet05 had condemned
+At 18:34:32 **fleet04 rented machine mach-11**, which fleet05 had condemned
 **twelve minutes earlier**, and condemned it at 18:39:10 — 4 m 38 s later.
 
 ```
-18:22:57  fleet05  machine 58073 blacklisted for this session
-18:34:32  fleet04  renting offer 38769886 (machine 58073)
-18:39:10  fleet04  machine 58073 blacklisted for this session
+18:22:57  fleet05  machine mach-11 blacklisted for this session
+18:34:32  fleet04  renting offer id-010 (machine mach-11)
+18:39:10  fleet04  machine mach-11 blacklisted for this session
 ```
 
 **The gap is symmetric.** It was never a property of fleet05; fleet04 simply
@@ -61379,7 +61379,7 @@ independent of the TTL argument.
 ### What still stands, unchanged
 
 **The durability evidence**, which is what the #169 case actually rests on:
-machine 8512 refused the key across **61 h 19 min**, machine 142281 across
+machine mach-02 refused the key across **61 h 19 min**, machine mach-17 across
 **24 h**, against `BLACKLIST_TTL_SEC = 6 * 3600`. Nothing observed in this render
 has ever looked like a host having a bad hour.
 
@@ -61429,7 +61429,7 @@ pass. All three zero-progress passes were the same cause: a retirement
 immediately followed by a **condemned host**, so the replacement never deployed
 and the pass ended having rendered nothing.
 
-**This cycle it drew machine 58073, which fleet05 had condemned 12 minutes
+**This cycle it drew machine mach-11, which fleet05 had condemned 12 minutes
 earlier** (R2-3924). Had the blacklist been shared, fleet04 would have skipped
 that offer, deployed on its next choice, and the pass would not have been a
 zero. **#169 has now cost a job, not just a price rung.**
@@ -61491,7 +61491,7 @@ happened.
 
 ### The submission, and the result
 
-Run unchanged from R2-3922, from `/home/zany/f1-round2` so `--scene` resolves,
+Run unchanged from R2-3922, from `~/f1-round2` so `--scene` resolves,
 scene sha16 re-checked as **`1d2aa2d86533574e`** first:
 
 ```
@@ -61520,8 +61520,8 @@ predicted the recovery set to the frame.
 ### Three things the submission confirmed as side effects
 
 **1. An empty todo rents nothing (R2-3923).** fleet03 and fleet05 logged
-`nothing to do` and **rented no card**. Only fleet04 rented — offer 47033336,
-machine 36179, **$0.441/hr**, the cheapest card of the whole render. The `-n 3`
+`nothing to do` and **rented no card**. Only fleet04 rented — offer id-036,
+machine mach-05, **$0.441/hr**, the cheapest card of the whole render. The `-n 3`
 cost worry raised at R2-3922 was correctly dismissed.
 
 **2. The parameters were reproduced exactly.** Every block carries spec
@@ -61630,7 +61630,7 @@ Torn down with the broker's own supported command instead, `rq teardown` on
 fleet04, then proved against the API:
 
 ```
-credit $45.47   autobill=None
+credit $[redacted]   autobill=None
 no instances on this account (checked the vast.ai API, not a local state file)
 ```
 
@@ -61645,7 +61645,7 @@ no instances on this account (checked the vast.ai API, not a local state file)
 
 Less the **$8.49** of pre-existing banked spend the caps were set against
 (R2-3862): **$132.57 of the $150 ceiling — 11.6% margin, never breached, and no
-cap was ever moved.** Credit remaining **$45.47**.
+cap was ever moved.** Credit remaining **$[redacted]**.
 
 ### Untouched, as instructed
 

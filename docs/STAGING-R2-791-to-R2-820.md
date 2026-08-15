@@ -375,7 +375,7 @@ reproduced at two stations (SW 0.013 m, MB 2.099 m); `n_for` inverts `coc_px`;
 
 ## R2-802 — RENDER SPEND
 
-Instance 47040457 at $0.4627/hr. 4K/64-sample frames measured at **~59 s each**,
+Instance id-038 at $0.4627/hr. 4K/64-sample frames measured at **~59 s each**,
 so single frames are ~$0.008 and the proxy-versus-master question does not arise
 at this scale. Recorded because the earlier estimate in this block was 390 s per
 4K frame — 6.6× too pessimistic — and it drove a plan to render the A/B at 720p

@@ -19,11 +19,11 @@ it cannot get past `read_rig()`. Measured, verbatim:
 ```
 $ python3 tools/rig_preflight.py
 Traceback (most recent call last):
-  File "/home/zany/f1-round2/tools/rig_preflight.py", line 252, in <module>
+  File "tools/rig_preflight.py", line 252, in <module>
     main()
-  File "/home/zany/f1-round2/tools/rig_preflight.py", line 230, in main
+  File "tools/rig_preflight.py", line 230, in main
     rig = read_rig()
-  File "/home/zany/f1-round2/tools/rig_preflight.py", line 130, in read_rig
+  File "tools/rig_preflight.py", line 130, in read_rig
     import bpy
 ModuleNotFoundError: No module named 'bpy'
 python3 rc=1
@@ -52,7 +52,7 @@ It has been a rumour since the day it was written.
 ```
 $ /opt/blender-5.2.0-linux-x64/blender -b world/surface_test_filmpose.blend \
       --factory-startup -noaudio -P tools/rig_preflight.py -- --json rig_real.json
->> RIG   /home/zany/f1-round2/world/surface_test_filmpose.blend
+>> RIG   world/surface_test_filmpose.blend
 >> SUN   rig (0.0, 0.976407, 0.215939)
 >> SUN   film (0.517854, -0.827767, 0.215939)
 >> GRADE rig -3.0480 / AgX / look None   film -3.628 / AgX / look None
@@ -81,7 +81,7 @@ A guard that refuses everything is not a control either. Run against
 ```
 $ /opt/blender-5.2.0-linux-x64/blender -b render/film23_breach.blend \
       --factory-startup -noaudio -P tools/rig_preflight.py
->> RIG   /home/zany/f1-round2/render/film23_breach.blend
+>> RIG   render/film23_breach.blend
 >> SUN   rig (0.517854, -0.827767, 0.215939)
 >> SUN   film (0.517854, -0.827767, 0.215939)
 >> GRADE rig -3.6280 / AgX / look None   film -3.628 / AgX / look None

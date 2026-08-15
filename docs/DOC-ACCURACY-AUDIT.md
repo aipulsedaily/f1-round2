@@ -18,7 +18,7 @@ treating anything here as an all-clear.**
 
 ### 1.1 `watch/INDEX.md` says the delivery masters carry R2-4152 audio. They do not.
 
-**Where:** `/home/zany/f1-round2/watch/INDEX.md`, the **CURRENT** table, rows for
+**Where:** `watch/INDEX.md`, the **CURRENT** table, rows for
 `PART2_THE_FILM_4K_ProRes422HQ.mov` (line 19), `PART2_THE_FILM_4K_h265.mp4`
 (line 20) and `PART2_AUDIO_MASTER_R2-4152.wav` (line 21).
 
@@ -61,14 +61,14 @@ Also stale by the same decision, same file:
 
 ### 1.2 `vast-render/README.md` states no GPU has ever been rented. ~$216 and 2,764 jobs say otherwise.
 
-**Where:** `/home/zany/vast-render/README.md` §Status (lines 192–212), §Credentials
+**Where:** `~/vast-render/README.md` §Status (lines 192–212), §Credentials
 (228–239), §Next: calibrate (214–226), §Open questions (316–319).
 
 **What it says:**
-> **No instance has ever been rented — $25.00 credit untouched.**
+> **No instance has ever been rented — $[redacted] credit untouched.**
 > **Untested until first rental:** provisioning on a real instance, the 5090
 > render path, and cold-start timing.
-> Account 627622. **Credit $25.00, balance $0**
+> Account 627622. **Credit $[redacted], balance $[redacted]**
 > Calibration render on a real 5090 to replace the 2–8 min/frame estimate
 > range with a measured number. ~$0.05.
 
@@ -95,7 +95,7 @@ sets the wrong prior for every cost figure downstream.
 
 ### 1.3 `SHIPPING.md` — the file designated as THE answer for the world — names the wrong assembly.
 
-**Where:** `/home/zany/f1-round2/render/world/assembly/r2/SHIPPING.md` line 3.
+**Where:** `render/world/assembly/r2/SHIPPING.md` line 3.
 
 **What it says:** *"`assembly14.blend` — built 2026-08-07 22:40 … PROMOTED
 2026-08-07 under R2-1701 as THE STALENESS REBUILD"*.
@@ -202,7 +202,7 @@ right now. This may already be in hand.
 | `vast-render/README.md` | 330 | `tools/item_build.py` | **no** |
 | `vast-render/docs/agents.md` | 540 | `tools/build_item.py` | **no** |
 
-Checked against `/home/zany/f1-round2/tools/`. The real command is
+Checked against `tools/`. The real command is
 **`tools/item_build_cmd.py`**, and it does take `--item`:
 
 ```
@@ -221,7 +221,7 @@ exits 0"* — so a wrong entry path here is not a benign typo in this codebase.
 
 ### 1.7 `operations.md`'s environment-variable table gives two wrong defaults.
 
-Checked line by line against `/home/zany/vast-render/broker/config.py`.
+Checked line by line against `~/vast-render/broker/config.py`.
 
 | var | operations.md says | `config.py` actually | verdict |
 |---|---|---|---|
@@ -248,19 +248,19 @@ Downstream of the `DISK_GB` error: `agents.md` line 572 — *"The instance has
 
 ### 1.8 `MASTER-RUNBOOK.md` opens with a LIVE banner for a render that finished three days ago.
 
-**Where:** `/home/zany/f1-round2/docs/MASTER-RUNBOOK.md` lines 3–55.
+**Where:** `docs/MASTER-RUNBOOK.md` lines 3–55.
 
 **What it says:**
 > ## LIVE: THE MASTER IS RENDERING. Launched 2026-08-09 ~04:30Z.
 > ETA ~82 h, around 2026-08-12
-> spend ~$0.99 of a ~$102-113 projection, cap $150, credit $172.34
+> spend ~$0.99 of a ~$102-113 projection, cap $150, credit $[redacted]
 > **1. WATCH THE FIRST 12-HOUR RETIREMENT — do not assume the resume worked.**
 > Due **16:06:32 / 16:07:02 / 16:07:33Z**. It has **never fired on this project**
 
 **What is actually true:** the master completed; the ProRes and H.265 masters
 were delivered and filed (`watch/INDEX.md`; git commits `7badbf7`, `5ab6969`).
 The three master brokers rented 39 distinct instances over the run, so the 12 h
-retirement path was exercised many times. Credit is **$45.23**, not $172.34.
+retirement path was exercised many times. Credit is **$[redacted]**, not $172.34.
 
 The whole file is a launch-eve document — gates, a live spend line, "read this
 before touching anything", "the brokers are DETACHED". It is the most
@@ -270,9 +270,9 @@ the banner are still valuable and should be kept.
 
 ---
 
-### 1.9 `README.md` and `operations.md` both present $25.00 credit as the current safe posture.
+### 1.9 `README.md` and `operations.md` both present $[redacted] credit as the current safe posture.
 
-* `README.md` line 239: *"**Credit $25.00, balance $0, autobilling appears off**
+* `README.md` line 239: *"**Credit $[redacted], balance $[redacted], autobilling appears off**
   — which is the correct safe posture: prepaid credit is the only hard spend
   ceiling vast.ai offers."*
 * `operations.md` lines 903–905: *"The only real ceilings are **prepaid credit
@@ -296,7 +296,7 @@ requirement, which operations.md itself says costs about 8%.
 | file | dated | describes | reality |
 |---|---|---|---|
 | `docs/RESUME-HERE.md` | 2026-08-04 | ship candidate `film16_breach.blend`; two renders in flight; "**Landed in SOURCE but NOT in any film** — the next rebuild must carry all three" | film25_breach shipped; all three landed |
-| `docs/SESSION-HOLD.md` | 2026-08-07 | encoder PID 1083726 live, brokers 8760/8761 holding instances, **"Credit $63.91"**, "**TWO BLOCKERS before any master**" | master rendered and delivered |
+| `docs/SESSION-HOLD.md` | 2026-08-07 | encoder PID 1083726 live, brokers 8760/8761 holding instances, **"Credit $[redacted]"**, "**TWO BLOCKERS before any master**" | master rendered and delivered |
 | `docs/NEXT-REBUILD.md` | 2026-08-07 | "**The 4K master cannot start until one rebuild carries all of this.** Anything rendered before it is superseded by construction." | the rebuild happened; the master started, finished and shipped |
 
 None carries a supersede banner (`grep -iE 'SUPERSEDED\|OBSOLETE\|HISTORICAL\|ARCHIVED'`:
@@ -306,7 +306,7 @@ internal prose, not a header).
 These are the highest-risk unmarked files because all three are written as
 *entry points* — "RESUME HERE", "read these first, in this order". They are
 where a stranger starts, and they hand out live-sounding instructions
-(`rq teardown` on two brokers, "DO NOT CLOBBER — 12 modified files", a $63.91
+(`rq teardown` on two brokers, "DO NOT CLOBBER — 12 modified files", a $[redacted]
 credit figure, two open blockers) about a state that ended a week ago.
 
 ---
@@ -343,7 +343,7 @@ I am **not** adjudicating the actual final spend — see UNRESOLVED §U1.
 
 ### 1.12 `watch/audio/INDEX.md` tells the client the breach was measured and is not defective. It was defective.
 
-**Where:** `/home/zany/f1-round2/watch/audio/INDEX.md`, §"Why we thought the
+**Where:** `watch/audio/INDEX.md`, §"Why we thought the
 ending was broken, and why it is not".
 
 **What it says (client-facing):**
@@ -481,7 +481,7 @@ only narrows with `labelled_only=True`; the CLI is
 accurate and the hazard is closed.**
 
 **C6. The README's "Known constraints in the scene code" are all still true.**
-Read `/home/zany/opus5-car-render/tools/render.py` directly: it sets
+Read `~/opus5-car-render/tools/render.py` directly: it sets
 `cam.data.dof.use_dof = False` (line 98) with no restore, and sets
 `scene.cycles.denoiser` (line 87) with no `denoising_use_gpu`. Both
 `tools/render.py` and `tools/exploded.py` still exist at the paths quoted.

@@ -37,7 +37,7 @@ $ cp tools/gitguard_selftest.py $SCRATCH/
 $ cd $SCRATCH && python3 gitguard_selftest.py
 >> STAGE RESULT: FAIL (22 failures of 62 checks)
 
-$ cd /home/zany/f1-round2 && python3 tools/gitguard_selftest.py
+$ cd ~/f1-round2 && python3 tools/gitguard_selftest.py
 >> STAGE RESULT: OK (0 failures of 62 checks)
 ```
 

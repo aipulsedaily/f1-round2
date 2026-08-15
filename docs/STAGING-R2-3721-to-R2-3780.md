@@ -943,7 +943,7 @@ filename would have passed every other arm and still missed the defect.
 ### How to reproduce every number above
 
 ```bash
-cd /home/zany/f1-round2
+cd ~/f1-round2
 # 1. the camera diff, R2-3243's metric and the R2-103-safe one side by side
 python3 work/r23721_item2/camdiff.py
 

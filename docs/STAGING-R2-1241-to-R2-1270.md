@@ -242,10 +242,10 @@ file and comparing it to itself proves nothing.
 
 | broker | instance | machine | API $/hr | hours | $ |
 |---|---|---|---|---|---|
-| 3 | 47088518 | 144732 | 0.4237 | 1.112 | 0.4713 |
-| 4 | 47088546 | 127280 | 0.4356 | 1.103 | 0.4802 |
-| 5 | 47088573 | 137580 | 0.4741 | 1.095 | 0.5190 |
-| 6 | 47088605 | 43130 | 0.4889 | 1.087 | 0.5313 |
+| 3 | id-046 | mach-18 | 0.4237 | 1.112 | 0.4713 |
+| 4 | id-047 | 127280 | 0.4356 | 1.103 | 0.4802 |
+| 5 | id-048 | mach-14 | 0.4741 | 1.095 | 0.5190 |
+| 6 | id-049 | mach-06 | 0.4889 | 1.087 | 0.5313 |
 | | | | | | **$2.0019** |
 
 `show_instances` stops returning an instance the moment it is destroyed, and
@@ -262,13 +262,13 @@ the range and at the slow end, because the hosts drawn were slower than the
 ```
 0 fleet instances alive — verified against the vast.ai API
 2 NON-FLEET instance(s) still billing, LEFT ALONE:
-   47039886  ladderbroker-...  broker 2 (protected)
-   47090933  renderbroker-...  broker 1 (protected)
+   id-037  ladderbroker-...  broker 2 (protected)
+   id-050  renderbroker-...  broker 1 (protected)
 ```
 
 Independently re-checked afterwards: two instances on the account, both the
 protected live brokers; two `broker.app` processes, both the live ones. Credit
-$62.57 → $59.79.
+$[redacted] → $59.79.
 
 ### The serial broker work, and why the dispatch-thread worry does not apply
 
@@ -285,7 +285,7 @@ cannot saturate, at any N.
 
 ### The multi-GPU guard, live on a rented card
 
-`enable_gpu()`'s new line, read off instance 47088573 by SSH mid-run:
+`enable_gpu()`'s new line, read off instance id-048 by SSH mid-run:
 
 ```
 [worker] device=OPTIX [NVIDIA GeForce RTX 5090]  (1 of 1 OPTIX device(s) on this instance)
@@ -357,13 +357,13 @@ frames each:
 
 | machine | API $/hr | measured s/frame | **$/frame** |
 |---|---|---|---|
-| 144732 | 0.4237 | 248.3 | **0.02922** ← cheapest per frame |
+| mach-18 | 0.4237 | 248.3 | **0.02922** ← cheapest per frame |
 | 127280 | 0.4356 | 249.7 | 0.03021 |
-| 137580 | **0.4741** | **233.4** ← fastest | 0.03074 |
-| 43130 | 0.4889 | 282.9 | 0.03843 |
+| mach-14 | **0.4741** | **233.4** ← fastest | 0.03074 |
+| mach-06 | 0.4889 | 282.9 | 0.03843 |
 
-**The fastest card is not the cheapest per frame.** Machine 137580 renders 6 %
-faster than 144732 and costs 12 % more, so it is **5 % dearer per frame** — the
+**The fastest card is not the cheapest per frame.** Machine mach-14 renders 6 %
+faster than mach-18 and costs 12 % more, so it is **5 % dearer per frame** — the
 exact shape this module was built for, now observed on cards we actually held
 rather than inferred across separate sessions.
 

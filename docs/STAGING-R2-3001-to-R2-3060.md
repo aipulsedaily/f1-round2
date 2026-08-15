@@ -15,8 +15,8 @@ contradiction is measured rather than argued.
 
 ## R2-3001 — the probe, and what it cost
 
-One exclusive RTX 5090 (`gpu_frac=1.000`), offer `43255050`, instance
-`47189253`, **$0.3689/hr** — the cheapest exclusive card the default filter
+One exclusive RTX 5090 (`gpu_frac=1.000`), offer `id-016`, instance
+`id-066`, **$0.3689/hr** — the cheapest exclusive card the default filter
 returns. The batch cap on the bulk broker was set to `spent + $5.00` **before**
 the job was submitted, so the $5 ceiling is a mechanism and not an intention:
 
@@ -94,10 +94,10 @@ i.e. before there was anything to resume:
 
 ```
 0.3 1.2 1.2 1.4 3.0 3.0 5.9 5.9 7.2 7.2 11.4 17.6 17.6 19.1 20.0 20.1 24.0 30.5 37.1
-167.4 181.4 181.4     <- all three on instance 46712525, one host, one hour
+167.4 181.4 181.4     <- all three on instance id-026, one host, one hour
 ```
 
-The only three that died deep were all on **instance `46712525`**, at 167.4 s
+The only three that died deep were all on **instance `id-026`**, at 167.4 s
 and 181.4 s twice — the documented **180 s multiplexed-SSH ceiling**, fixed by
 moving the push to `ssh_nomux`. **Since that fix there is not one recorded
 mid-stream scene-push failure anywhere in the logs.** Resumability would have
@@ -107,7 +107,7 @@ resumability at all.
 
 ### What it actually costs is the single stream on a distant host
 
-The push made for this task is the measurement. Instance `47189253`, taken by
+The push made for this task is the measurement. Instance `id-066`, taken by
 the broker's own cheapest-exclusive filter:
 
 ```
@@ -148,8 +148,8 @@ as a constant.
 **carries `geolocation`** and nothing reads it:
 
 ```
-47033336  'South Korea, KR'    31499018  'Texas, US'       47165035  'Sweden, SE'
-38769886  'Massachusetts, US'  38304383  'Mexico, MX'      45922064  'Japan, JP'
+id-036  'South Korea, KR'    id-003  'Texas, US'       id-064  'Sweden, SE'
+id-010  'Massachusetts, US'  id-007  'Mexico, MX'      id-021  'Japan, JP'
 ```
 
 `inet_up` says 734 Mbps for the machine we rented. Its RTT is 254 ms. **The
@@ -203,7 +203,7 @@ so the fleet push is neither line-limited nor free.
 ### The direct A/B, because the bundle comparison was still two different files
 
 Both transports already exist in `broker/remote.py`. Run back to back against
-instance `47189253` at 16:46-16:49 on **the same 400 MB file** — deliberately
+instance `id-066` at 16:46-16:49 on **the same 400 MB file** — deliberately
 incompressible (`/dev/urandom`), so zstd's ratio cannot differ between the arms
 and this measures the transport and nothing else:
 
@@ -292,11 +292,11 @@ memory pressure with 374 MB free.
 
 ## R2-3004 — the deploy, timed to the second
 
-Every number below is from `state2/broker.log` for instance `47189253`, a cold
+Every number below is from `state2/broker.log` for instance `id-066`, a cold
 rental of the cheapest exclusive 5090 the default filter returns.
 
 ```
-15:48:30  credit checked, offer 43255050 chosen ($0.369/hr, EXCLUSIVE)
+15:48:30  credit checked, offer id-016 chosen ($0.369/hr, EXCLUSIVE)
 15:48:31  instance created
 15:49:02  ssh reachable                                        31.0 s
 15:49:07  blender bundle push begins
@@ -419,16 +419,16 @@ it. Live snapshot, 16:21 today, the production filter (`gpu_frac>=0.99`,
 
 ```
  $/hr        id  geolocation           up Mbps   cpu
-0.4414  46937219  South Korea, KR           784   Ryzen 9 7950X 16C
-0.4685  47165035  Sweden, SE                631   Xeon E5-2696 v3
-0.4694  31499018  Texas, US                 841   Ryzen 9 7945HX
-0.4923  38769886  Massachusetts, US         815   Core i9-14900K
-0.5347  31275126  Washington, US            565   EPYC 7452 32C
-0.5614  38304383  Mexico, MX                479   Ryzen 9 7950X 16C
-0.5614  47075581  Sweden, SE               9158   EPYC-Milan
-0.6681  25192047  Spain, ES                 782   Ryzen 9 9950X3D 16C
-0.7343  46790746  Japan, JP                4190   —
-0.8014  45111654  France, FR               6480   Ryzen 9 9950X 16C
+0.4414  id-033  South Korea, KR           784   Ryzen 9 7950X 16C
+0.4685  id-064  Sweden, SE                631   Xeon E5-2696 v3
+0.4694  id-003  Texas, US                 841   Ryzen 9 7945HX
+0.4923  id-010  Massachusetts, US         815   Core i9-14900K
+0.5347  id-002  Washington, US            565   EPYC 7452 32C
+0.5614  id-007  Mexico, MX                479   Ryzen 9 7950X 16C
+0.5614  id-044  Sweden, SE               9158   EPYC-Milan
+0.6681  id-001  Spain, ES                 782   Ryzen 9 9950X3D 16C
+0.7343  id-028  Japan, JP                4190   —
+0.8014  id-020  France, FR               6480   Ryzen 9 9950X 16C
 ```
 
 | fleet width | mean $/GPU-hr | vs one card |
@@ -446,7 +446,7 @@ master it is roughly **$27**. It is the single largest term in the difference
 between "the master on one card" and "the master in a day", and no budget on
 this project has carried it.
 
-*(The card this probe is on, offer `43255050` at $0.3689/hr, was the cheapest
+*(The card this probe is on, offer `id-016` at $0.3689/hr, was the cheapest
 exclusive on the market when it was taken at 15:48 and is below everything on
 the 16:21 list. The market moves; treat the table as a shape, not as prices.)*
 
@@ -635,7 +635,7 @@ a further rebuild lands more of the item campaign — 49 of 435 item modules
 exist — the per-frame cost goes **up**, not down.
 
 **2. One card, one host, one hour.** Every per-frame number is from instance
-`47189253`, an exclusive RTX 5090 on a Ryzen 9 7950X. The published spread on
+`id-066`, an exclusive RTX 5090 on a Ryzen 9 7950X. The published spread on
 *exclusive single* 5090s is **1.21x** (the project's own corrected figure, after
 an earlier ±45 % claim had to be withdrawn for folding an 8-GPU box's per-GPU
 rate into it). So read the totals with a ±10 % host band, not as a point.
@@ -802,7 +802,7 @@ from an empty disk.
 ### Does $74.82 cover it? No.
 
 ```
-credit at 17:00                          $74.34
+credit at 17:00                          $[redacted]
 cheapest configuration (1 card, 10.5 d)  $110.69
 SHORTFALL                                 $36.35    at the slowest option
 SHORTFALL                                 $40.97    at 3 cards / 3.5 days
@@ -871,7 +871,7 @@ master needs and the current filter does not ask for.
 
 ```
 fleetctl plan   -n 3 --frames 1-2978 --sec-per-frame 283 --push-sec 817
-fleetctl up     -n 3 --scene /home/zany/f1-round2/render/<master>.blend
+fleetctl up     -n 3 --scene render/<master>.blend
 fleetctl submit -n 3 --name master4k --frames 1-2978 \
                 --cam ONER --res 3840 2160 --samples 512
 fleetctl verify --manifest state/fleet/master4k.json
@@ -931,7 +931,7 @@ budget ceiling set BEFORE submitting anything, on the broker that would rent:
     ladderbroker cap  $150.00 -> $23.80   ( = spent $18.79 + $5.00 )
     renderbroker cap  $150.00 -> $36.40   ( = spent $31.40 + $5.00 )
 
-one exclusive RTX 5090, offer 43255050, instance 47189253, $0.3689/hr GPU
+one exclusive RTX 5090, offer id-016, instance id-066, $0.3689/hr GPU
                                                            $0.3897/hr with disk
 
   deploy + 14 master-spec frames + 3 adaptive A/B frames
@@ -964,7 +964,7 @@ available — the container cap is /sys/fs/cgroup/memory.max, not the host's
 `free`. The build was never started
 ```
 
-Measured on instance `47189253` while it was serving the scene:
+Measured on instance `id-066` while it was serving the scene:
 
 ```
 /sys/fs/cgroup/memory.max       63,803,752,448   =  59.4 GiB
@@ -1031,13 +1031,13 @@ the same 245.5 GPU-hours of work against the live market at **17:46** with
 
 ```
  $/hr        id  geolocation          RAM GiB  cpu
-0.4001  47185127  Thailand, TH            62.7  EPYC 9554 64-Core
-0.4414  46937219  South Korea, KR        124.9  Ryzen 9 7950X 16-Core
-0.4881  46307220  Estonia, EE            247.3  EPYC 7402 24-Core
-0.4923  38769886  Massachusetts, US      125.2  Core i9-14900K
-0.5347  31275126  Washington, US         125.7  EPYC 7452 32-Core
-0.6014  47107854  Taiwan, TW             125.5  EPYC 9124 16-Core
-0.7343  46790746  Japan, JP              251.4  —
+0.4001  id-065  Thailand, TH            62.7  EPYC 9554 64-Core
+0.4414  id-033  South Korea, KR        124.9  Ryzen 9 7950X 16-Core
+0.4881  id-023  Estonia, EE            247.3  EPYC 7402 24-Core
+0.4923  id-010  Massachusetts, US      125.2  Core i9-14900K
+0.5347  id-002  Washington, US         125.7  EPYC 7452 32-Core
+0.6014  id-052  Taiwan, TW             125.5  EPYC 9124 16-Core
+0.7343  id-028  Japan, JP              251.4  —
 ```
 
 | cards | $/GPU-hr | deploys | wall clock | **TOTAL** |
@@ -1074,7 +1074,7 @@ watched doing its job:
 | `rq budget --set` as a spend ceiling | set to `spent + $5.00` **before** the job was submitted, and printed `remaining $4.9984`; restored to $150 on both brokers at 17:47 |
 | `tools/buildlock.sh` | took the lock, **queued my build behind eleven others for 22 minutes**, ran it, released it, printed `BUILDLOCK RELEASED ... rc=0` |
 | the exec idle-timer clause | `16:46:39 idle 301s by the render queue, but 12 exec job(s) are in flight — NOT stopping the instance` |
-| the broker's idle-down | `17:56:49 idle 300s — stopping instance (disk kept)` / `17:56:50 instance 47189253 stopped after 128.3 min running (~$0.789 gpu)` |
+| the broker's idle-down | `17:56:49 idle 300s — stopping instance (disk kept)` / `17:56:50 instance id-066 stopped after 128.3 min running (~$0.789 gpu)` |
 
 And one that **failed loudly and cost nothing**, which is the point: the first
 26 `rq exec` submissions died on `argument --arg: expected one argument`
@@ -1084,7 +1084,7 @@ created, zero dollars. Fixed with `--arg=--item` and resubmitted.
 ### State left behind
 
 ```
-instance 47189253   STOPPED at 17:56:50 (GPU meter off), disk billing $0.037/hr
+instance id-066   STOPPED at 17:56:50 (GPU meter off), disk billing $0.037/hr
                     broker destroys it automatically at 21:56 unless used
                     -> film23_breach.blend stays staged, so a master started
                        on this card in the next 4 h skips a 13.6 min push
@@ -1145,7 +1145,7 @@ reason: that one guards a term the API might ignore, this one guards a term the
 API honours *in units we did not mean*.
 
 A third gap the check absorbs: **the advertised figure is not the container's
-cap.** Offer `43255050` sells 61.9 GiB; the container it produced reported
+cap.** Offer `id-016` sells 61.9 GiB; the container it produced reported
 `memory.max` = **59.4 GiB**, 96 % of what was sold.
 
 ### The refusal, observed firing
@@ -1165,9 +1165,9 @@ CONTROL 2  working set 400 GiB,
            query floor 50 GB      -> REFUSED                      PASS
    | REFUSING TO RENT: no exclusive RTX 5090 offer carries enough RAM ...
    |   need    400.0 GiB resident x 1.25 headroom = 500.0 GiB per GPU
-   |   measured on instance 47189253 ... 50.6 GiB resident, on a 59.4 GiB
+   |   measured on instance id-066 ... 50.6 GiB resident, on a 59.4 GiB
    |   cgroup cap running at 91 %
-   |   rejected 30 offer(s): 43255050 (61.9 GiB, $0.3592/hr), ...
+   |   rejected 30 offer(s): id-016 (61.9 GiB, $0.3592/hr), ...
    |   NOTE: the exclusive market is bimodal ... nine is not purchasable
 ```
 
@@ -1181,9 +1181,9 @@ render).
 
 ```
 id         $/hr   rel    net Mbps   RAM GiB  disk$/GB  est 8h   geo                CPU
-46979969   0.428  0.997  7082/14067 137.5    0.1333    $3.46    California, US     EPYC 9655 96-Core
-46937219   0.441  0.981  784/649    124.9    0.2000    $3.89    South Korea, KR    Ryzen 9 7950X
-46307220   0.488  0.995  926/968    247.3    0.2000    $4.00    Estonia, EE        EPYC 7402 24-Core
+id-034   0.428  0.997  7082/14067 137.5    0.1333    $3.46    California, US     EPYC 9655 96-Core
+id-033   0.441  0.981  784/649    124.9    0.2000    $3.89    South Korea, KR    Ryzen 9 7950X
+id-023   0.488  0.995  926/968    247.3    0.2000    $4.00    Estonia, EE        EPYC 7402 24-Core
 ...
 RAM floor 63.2 GiB/GPU (50.6 GiB measured resident x 1.25); 8 offer(s) cleared it.
 ```
@@ -1298,7 +1298,7 @@ PID 2879465  alive 02:24   grep -E "grass library:|TOTAL|^VEG |CHAIN2 DONE|..."
 ```
 
 **Every agent in this session is a child of the same process and writes to the
-same scratchpad directory** — `/tmp/claude-0/…/262f2abe-…/scratchpad/` is
+same scratchpad directory** — `SCRATCHPAD/` is
 session-scoped, not agent-scoped. So:
 
 * **"it is a child of my claude PID" is NOT an ownership test.** A PID sweep of

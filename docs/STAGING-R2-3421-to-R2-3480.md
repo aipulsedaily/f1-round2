@@ -515,4 +515,4 @@ also the wrong question.**
 | `work/r23421/probe.blend` | the 30 MB verge probe the ladder is rendered from |
 | `work/r23421/` | every measurement, log and control band |
 
-**$0 spent.** No render was commissioned; credit is untouched at $73.72.
+**$0 spent.** No render was commissioned; credit is untouched at $[redacted].

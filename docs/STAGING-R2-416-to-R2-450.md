@@ -1771,8 +1771,8 @@ boundary frame is simply the next sample of that acceleration. **1.092x the loca
 median, +0.55 MADs — indistinguishable from its neighbours.**
 
 **And the test is stronger than it looks, because the two frames were rendered on
-DIFFERENT MACHINES.** f792 came from broker 1 (instance 46819442) and f793 from
-broker 2 (instance 46815452), hours apart, with `film16_breach` pushed separately
+DIFFERENT MACHINES.** f792 came from broker 1 (instance id-031) and f793 from
+broker 2 (instance id-029), hours apart, with `film16_breach` pushed separately
 to each host. Identical `scene_hash 1e8d5440c349fe51` and `spec_hash
 1dd9cdaf86a87876`, verified before the comparison was trusted.
 

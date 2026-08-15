@@ -100,7 +100,7 @@ $ grep -a  "STAGE RESULT" work/r22101/materials_film23_breach.log
 >> STAGE RESULT: FILM_MATERIALS_OK (0 failures)
 
 $ python3 -c "…json.load('materials_film23_breach.json')…"
-/home/zany/f1-round2/render/film23_breach.blend   failures 0   rows 19
+render/film23_breach.blend   failures 0   rows 19
 ```
 
 **Exactly one verdict**, and that is not an accident of formatting. The 07:57

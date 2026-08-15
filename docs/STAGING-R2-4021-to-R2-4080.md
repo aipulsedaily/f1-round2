@@ -258,7 +258,7 @@ coordinator's.
 
 ## R2-4026 — IT IS READ AT BUILD TIME. THIS IS NOT A NULL.
 
-The question was whether `/home/zany/opus5-car-render/work/iter.blend` is
+The question was whether `~/opus5-car-render/work/iter.blend` is
 actually an input to a round-2 build or merely historically upstream. **It is an
 input**, and the reason a filename grep is the wrong instrument here is that
 **the dependency is not in any code path — it is in the command line.**
@@ -267,7 +267,7 @@ input**, and the reason a filename grep is the wrong instrument here is that
 render/film25_breach.blend      the delivered master's scene
   <- world/car_anim.blend       anim/build_car_anim.py   run ON beat1_anim.blend
   <- world/beat1_anim.blend     anim/build_beat1_anim.py run ON iter.blend
-  <- /home/zany/opus5-car-render/work/iter.blend   288,254,978 B, 2026-07-26
+  <- ~/opus5-car-render/work/iter.blend   288,254,978 B, 2026-07-26
 ```
 
 `tools/build_film_scene.py` defaults `--car` to `world/car_anim.blend` and
@@ -297,7 +297,7 @@ EXIT=1
 Blender exits before the script runs. The chain does not degrade, warn or fall
 back — and **`f1-round2` tracks no blends at all** (`.gitignore:12 *.blend`;
 `git ls-files | grep -c .blend` = 0), so no artefact in this repo is a backup.
-`/home/zany/opus5-car-render` **is not a git repository** — no `.git` anywhere
+`~/opus5-car-render` **is not a git repository** — no `.git` anywhere
 under it — so it has no history to recover from either.
 
 ## R2-4027 — AND IT IS FULLY REGENERABLE. THE SWEEP'S "NOTHING CAN REBUILD IT" IS HALF WRONG.
@@ -309,7 +309,7 @@ that command today reproduces the shipped scene exactly.**
 
 ```
 PYTHONDONTWRITEBYTECODE=1 /opt/blender-5.2.0-linux-x64/blender -b --factory-startup \
-    -P /home/zany/opus5-car-render/tools/rebuild_scene.py -- --out work/t168/r1_fresh.blend
+    -P ~/opus5-car-render/tools/rebuild_scene.py -- --out work/t168/r1_fresh.blend
 >> s08_assemble  127.0s  4,354,204 polys, 15 parts, failed=[]
 >> scene: 919 meshes, 4,598,601 polys, 23 lamps
 >> wrote ... in 109.8s total
@@ -346,7 +346,7 @@ then **refused at the last line**:
 ```
 >> seat check: worst deviation 0.0000 mm over 616 parts, 0 stragglers
 REFUSING TO SAVE: blend still references external images
-  ['/home/zany/f1-round2/work/t168/recon_work/assets/city.exr'].
+  ['work/t168/recon_work/assets/city.exr'].
 ```
 
 `build/s01_base.py:154` calls `bpy.data.images.load()` on
@@ -430,7 +430,7 @@ first artefact came out the same size from a tree that had never seen round 1.
 
 ### Round 1 was never written to, and that was verified rather than intended
 
-A full `find /home/zany/opus5-car-render -printf '%T@ %s %p\n' | sort` snapshot
+A full `find ~/opus5-car-render -printf '%T@ %s %p\n' | sort` snapshot
 was taken before the first run and re-diffed after every run, including the ones
 that **import round 1's modules** — `PYTHONDONTWRITEBYTECODE=1` throughout, so
 not even a `.pyc` landed in its `build/__pycache__`. All 1,331 entries identical
