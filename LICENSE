@@ -1,0 +1,85 @@
+PLACEHOLDER — NO LICENCE HAS BEEN CHOSEN YET. THIS IS A DECISION FOR THE OWNER.
+
+Until this file is replaced with a real licence, the default applies:
+ALL RIGHTS RESERVED. Nobody may copy, modify or redistribute this work.
+
+Publishing a repository without a licence does NOT make it open source. A
+public repository with no licence is "all rights reserved" by default: readers
+may view it, but they have no legal right to use, fork, modify or redistribute
+any of it. That may be exactly what you intend — plenty of work is published to
+be read and not to be reused — but it should be a decision, not an oversight.
+State it either way, because silence reads as an oversight.
+
+--------------------------------------------------------------------------------
+WHAT THIS REPOSITORY CONTAINS, WHICH IS WHY ONE LICENCE MAY NOT FIT ALL OF IT
+--------------------------------------------------------------------------------
+
+Three quite different kinds of work live here:
+
+  1. SOFTWARE — several hundred Python modules that build geometry, materials,
+     simulation and audio, plus shell tooling and gates.
+
+  2. A CREATIVE WORK — the film itself, and the artistic decisions embodied in
+     the beat sheet, camera path, grade and audio design. The rendered master
+     is not in this repository, but the recipe that produces it is.
+
+  3. A WRITTEN RECORD — docs/, above all docs/DEFECT-LOG-R2.md: ~62,000 lines
+     of engineering narrative that is arguably the most valuable artefact here
+     and is prose, not code.
+
+It is normal and reasonable to license these differently — for example, code
+under a software licence and documentation plus film under a Creative Commons
+licence. If you do that, say so explicitly here and name which paths each
+licence covers.
+
+--------------------------------------------------------------------------------
+A CONSTRAINT THAT MUST BE RESOLVED BEFORE CHOOSING: BLENDER AND THE GPL
+--------------------------------------------------------------------------------
+
+This is not a formality; it is the one genuine legal constraint on this
+repository, and it points away from a permissive licence for the code.
+
+Blender is GPL-licensed. The Blender Foundation's stated position is that
+Python scripts which use the `bpy` API and are distributed publicly are treated
+as derivative works of Blender and must be released under a GPL-compatible
+licence. Nearly all the code here is exactly that: modules executed inside
+Blender through `bpy`.
+
+Consequences to weigh:
+
+  * Licensing this code MIT or BSD would, on the Blender Foundation's reading,
+    be inconsistent with that position. GPL-3.0-or-later (or GPL-2.0-or-later,
+    matching Blender itself) is the conservative choice.
+
+  * The film's RENDERED OUTPUT is not affected. Blender's licence explicitly
+    does not claim the images you produce with it; those are yours, and you may
+    license them however you like — including all rights reserved.
+
+  * The documentation is not `bpy` code and is not constrained by this at all.
+
+If any of this matters commercially, get an actual legal opinion. Nothing here
+is legal advice.
+
+--------------------------------------------------------------------------------
+RECOMMENDATION, TO BE ACCEPTED OR REJECTED BY THE OWNER
+--------------------------------------------------------------------------------
+
+A defensible default, if you want the work to be readable and reusable:
+
+    code (world/, tools/, sim/, audio/, render/, anim/, telemetry/)
+        GPL-3.0-or-later          — consistent with the bpy constraint above
+
+    documentation (docs/, README.md, watch/)
+        CC BY-SA 4.0              — attribution preserved on the written record
+
+    the film and any rendered frames
+        CC BY-NC-ND 4.0, or all rights reserved — your call; this is the
+        artistic deliverable and the most likely thing to be reused without
+        credit
+
+If instead you want this published to be READ but not reused, replace this file
+with a short, explicit notice saying so. That is a perfectly legitimate choice
+and it is much better stated than left implied.
+
+DO NOT PUBLISH WITH THIS PLACEHOLDER STILL IN PLACE without at least deciding
+that "all rights reserved" is what you want.

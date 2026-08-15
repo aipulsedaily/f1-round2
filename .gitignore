@@ -43,6 +43,98 @@ __pycache__/
 *.pyc
 .venv/
 
+# WHY THE ~210 UNTRACKED FILES BELOW `audio/out/`, `sim/out/`, `docs/` AND
+# `tools/` ARE **NOT** IGNORED HERE, AND MUST NOT BE "FIXED" WITH A BLANKET RULE.
+#
+# A publication audit counted 212 files that are untracked AND unignored, and
+# the obvious reflex — ignore `audio/out/`, `sim/out/`, `docs/*.json` — is
+# WRONG in this repository. Measured before writing this comment:
+#
+#     audio/out/*        65 TRACKED files        sim/out/*      74 TRACKED
+#     docs/*.json        27 TRACKED              docs/*.log      9 TRACKED
+#     tools/*.py        251 TRACKED              world/items/*.py  45 TRACKED
+#
+# Every one of those classes is a class this project DELIBERATELY TRACKS. The
+# evidence JSON and the run logs under `audio/out/` and `sim/out/` are promoted
+# selectively, by hand, because they are the record of the run that produced a
+# verdict — the same reasoning the `render/items/*/gate.json` block below is
+# written on. A blanket ignore would not untrack them, but it would silently
+# stop the NEXT one from ever being promoted, which is how the evidence trail
+# dies quietly.
+#
+# And the split is not even mostly scratch: of the 212, **86 are `.py`/`.sh`/
+# `.md` SOURCE** — item modules under `world/items/`, probes under `tools/`,
+# sim code — several of which are referenced by `docs/item_manifest.json`.
+# Ignoring those would hide files the manifest already points at, turning a
+# "not committed yet" problem into a "structurally invisible" one. That is the
+# exact failure this file's header is about.
+#
+# So the untracked set is an OWNER DECISION PASS — commit the source, delete or
+# promote the evidence — and not an ignore-rule problem. What actually protects
+# this tree is the rule that has always protected it: **`git add` is
+# path-scoped, never `git add -A`, never `git add .`**. The blocks in this file
+# cover the classes that are unambiguous (locks, credentials, cross-repo
+# symlinks, artefacts); they deliberately stop short of the classes where
+# ignoring would destroy the record.
+
+# CREDENTIALS. This file matched NO secret file class at all until now.
+#
+# A secrets audit put `git check-ignore` against `.env`, `.env.local`, `.envrc`,
+# `.netrc`, `*.pem`, `id_rsa`, `secrets.json`, `credentials.yml`, `api_key.txt`
+# and `token.json`: every one came back NOT IGNORED. The audit also found no
+# credential anywhere in this repository's history, so this block is preventive
+# rather than remedial — and preventive is the only useful kind, because the
+# remedy for a committed key is rotating it, not deleting it.
+#
+# It is easy to assume a render project has no credentials to leak. This tree
+# drives a broker that rents billable hardware and reaches rented instances over
+# SSH, so the keys are one careless `>` away at any time. `id_*` is wide on
+# purpose: it catches `id_rsa`, `id_ed25519` and the `id_vast_render` key.
+#
+# Verified against `git ls-files` when added — no tracked file matches any
+# pattern here. Re-check that before extending the list.
+.env
+.env.*
+.envrc
+.netrc
+*.pem
+*.key
+id_*
+*api_key*
+*secret*
+*token*
+credentials*
+
+# Build locks. Zero-byte mutexes held by whichever assembly is running, created
+# and removed by the build itself -- pure machine state carrying no information
+# at all, and they were untracked AND unignored, which is the R2-2233 shape one
+# directory up: a file nobody would ever choose to commit, sitting in the dirty
+# set waiting for the one `git add` that is not path-scoped. `.buildlock.q/` is
+# a directory and git ignores empty ones, but it is named here so the rule does
+# not quietly stop covering it the moment something lands inside.
+.buildlock
+.buildlock.*
+
+# CROSS-REPO SYMLINKS INTO THE BROKER'S OUTPUT, AND WHY THEY MUST NOT SHIP.
+#
+# `watch/r2943_4k` and `watch/r2943b6_frames` are not directories. They are
+# ABSOLUTE symlinks into /home/zany/vast-render/out/seq/, which is a different
+# repository whose `out/` is itself gitignored as regenerable 12 GB of frames.
+#
+# Git does not descend a symlink, so the *.png rule above never applied to
+# them: they sat untracked and unignored as links, and committing one stores
+# the LINK -- a blob containing an absolute path that exists on exactly one
+# machine in the world. A clone gets a dangling pointer into a tree it does not
+# have, which is worse than getting nothing, because a dangling link still
+# looks like a delivered artefact until something tries to read it.
+#
+# The frames themselves are the broker's output and are regenerable there. If a
+# specific frame needs to be kept as evidence, COPY it into the repo under a
+# name that says what it proves; do not leave a link to somebody else's
+# scratch directory standing in for it.
+watch/r2943_4k
+watch/r2943b6_frames
+
 # Large generated data. The DOCS in docs/ are tracked; these are not.
 docs/screen_presence*.json
 docs/screen_presence*_objects.json
