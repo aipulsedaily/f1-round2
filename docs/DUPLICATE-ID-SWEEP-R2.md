@@ -207,3 +207,232 @@ citations (`31387`, `33459`, `33539`, `45927` → spine; `31832`, `32120`,
 `docs/STAGING-R2-1151-to-R2-1180.md` — one banner at the top.
 
 **No source file changes. No dirty file is staged.**
+
+---
+---
+
+# THE SECOND SWEEP (2026-08-15): THE RESERVATION WAS BREACHED, AND THE FIX IS NOT THE OBVIOUS ONE
+
+**Measured 2026-08-15, before anything was renumbered.** Same discipline as the
+first sweep and for the same reason: after a renumbering there is no way to
+recover which of two entries a citation meant. This half is committed *first*,
+on its own, so the mapping survives if the renumbering has to be redone.
+
+## 7. WHAT WAS MEASURED
+
+Every `## R2-nnnn — ` heading in `docs/DEFECT-LOG-R2.md` and in **all 81 staging
+files**, merged and unmerged, plus a full-tree token sweep of `~/f1-round2` and
+`~/vast-render` for `R2-nnnn`, `R2_nnnn`, `R2 nnnn` and `r2nnnn`, filenames
+included, and every commit message in the repository.
+
+```
+1,212  entry headings in DEFECT-LOG-R2.md   (1,181 plain + 31 letter-suffixed)
+    0  IDs duplicated INSIDE the log        <-- task #170 is clean
+```
+
+**The log itself has no duplicates.** The #170 renumbering did what it said it
+did. Everything below is a staging-vs-log or staging-internal collision, i.e. a
+merge hazard, not an existing defect in the log.
+
+### 7.1 The true collision set
+
+| # | ID | occurrence A | occurrence B |
+|---|---|---|---|
+| 1 | `R2-4151` | `DEFECT-LOG-R2.md:31805` — *"R2-1084's timeline is wrong"* (moved here by #170, was R2-1151) | `STAGING-R2-4141-to-R2-4200.md:1371` — *"THE MIX. THE 8.38 dB IS NOT IN THE CEILING"* |
+| 2 | `R2-4152` | `DEFECT-LOG-R2.md:31860` — *"ROOT CAUSE: the fix was generated into a candidate and never promoted"* (was R2-1152) | `STAGING-R2-4141-to-R2-4200.md:1859` — *"THE ENGINE. THE FILM WAS DELIVERING 6.5x THE WORLD'S ENGINE ENERGY"* |
+| 3–19 | `R2-4039` … `R2-4055` (**17**) | `STAGING-R2-4021-to-R2-4080.md:669–1113` — the **gates** pass | `STAGING-R2-4021-to-R2-4080.md:1115–1917` — the **chain-and-glass** pass |
+
+**Three corrections to the account this task was given.**
+
+* **The internal duplicate count is 17, not 13.** The brief said *"`R2-4039`,
+  `R2-4044…R2-4055`"*. It missed **`R2-4040`, `R2-4041`, `R2-4042`, `R2-4043`**,
+  which collide too — the chain pass files them under the *combined* headings
+  `## R2-4040/4041 — THE SHARDS` (line 1158) and `## R2-4042/4043 — THE BREACH
+  AS FIVE LAYERS` (line 1215). A heading regex anchored on `^## R2-\d+ — `
+  does not match those, so a count taken that way reads 13 and is wrong by four.
+  **This is the same class of instrument defect this project has spent weeks
+  cataloguing: the count was not of the thing, it was of the thing's usual
+  spelling.** All four are cited from `audio/layers.py`.
+* **`R2-4141`…`R2-4150` do NOT collide with anything.** They are inside the
+  reserved band and were allocated in breach of it, but #170 only ever used
+  `4091–4098 / 4121–4123 / 4151–4157 / 4181–4189` within that band. Ten
+  heavily-cited IDs therefore need no move at all — see §10.
+* **Two further staging-internal duplicates exist and are out of scope**:
+  `STAGING-R2-1881-to-R2-1980.md` has `R2-1898` twice (lines 818 and 913), and
+  `STAGING-R2-821-to-R2-850.md` has `R2-840` twice (lines 780 and 851). Both
+  files are already merged and the log resolved both at merge time (the log
+  carries `R2-840a`…`R2-840r`). Recorded here so the next sweep does not think
+  it found something new.
+
+## 8. THE DECISION, AND WHY IT INVERTS THE BRIEF
+
+The task directed that the **audio** entries move. **Measurement says the
+opposite, and the project's own rule — set at the 2026-08-02 renumbering and
+re-applied at #170 — decides it: *the entry that external code and briefs
+already cite keeps the number; the other one moves.***
+
+### 8.1 `R2-4151` / `R2-4152`
+
+| | log side (#170's block C) | audio side (rebuild 4) |
+|---|---|---|
+| live source files citing it | **0** | **8** for R2-4151, **7** for R2-4152 — chiefly `audio/master.py` (22 sites) and `audio/layers.py` (5), plus `tools/` |
+| tool files named for it | 0 | **9** — `tools/r2_4151_*.py` ×3, `tools/r2_4152_*.py` ×6 |
+| on-disk artefacts named for it | 0 | **13** — `audio/out/r2_4151/master_R2-4151.wav`, `…/r2_4152/master_R2-4152.wav`, matrices, stems |
+| files in `watch/` citing it | 0 | **3**, including the delivered master **`watch/PART2_AUDIO_MASTER_R2-4152.wav`** — *the ID is in the filename* |
+| files this task MAY NOT EDIT citing it | 1 (`docs/README.md`, describing this very collision) | **5** — `watch/INDEX.md`, `watch/listen_2026-08-14/CLIPS_OF.json`, `docs/README.md`, `docs/READING-LIST.md`, `docs/DOC-ACCURACY-AUDIT.md` |
+| commit messages citing it | 1 (`613342a`) | **4** (`6270825`, `bfa01ab`, `3438c44`, `75d3edf`) |
+
+`R2-4153`, `R2-4154`, `R2-4155`, `R2-4156` appear in **exactly one file in
+either tree** — the log itself. Block C is cited by nothing outside the three
+documents that record its own renumbering, exactly as §3 of this file found when
+it called block C *"cited by nothing but its own staging file and its own three
+internal cross-references"*.
+
+**Moving the audio entries is not merely more expensive — this task's own
+constraints make it impossible to do correctly.** It is forbidden to edit
+`watch/`, `docs/README.md`, `docs/READING-LIST.md` and
+`docs/DOC-ACCURACY-AUDIT.md`; five of them cite the audio `R2-4151`/`R2-4152`,
+and one of them **is a delivered `.wav` whose filename carries the number**. The
+renumbering would leave the client-facing index and a shipped artefact pointing
+at a number that no longer exists, and would be forbidden from repairing them.
+That is not resolving an ambiguity, it is relocating it somewhere it cannot be
+reached.
+
+**And it fragments the wrong block.** Moving audio `4151/4152` splits the audio
+rebuild into `4141–4150` + two strays; moving log block C leaves **both** blocks
+contiguous — `4141…4152` for the audio rebuild, `4201…4207` for block C. §4's
+*"blocks are moved whole"* is satisfiable only one way round.
+
+The cost of moving block C a second time is real and is not hidden: those seven
+entries will carry a two-hop trail, `R2-1151 → R2-4151 → R2-4201`. Each banner
+states both hops. It is the smaller cost by roughly a factor of six, it touches
+no source file and no delivered artefact, and it is what the project's own rule
+requires.
+
+### 8.2 `R2-4039` … `R2-4055`
+
+Two passes wrote into `STAGING-R2-4021-to-R2-4080.md`:
+
+* **the chain-and-glass pass** — `R2-4030…R2-4063`, commit `08634c2`, at lines
+  461–659 and 1115–1917. Its numbering is contiguous across both stretches.
+* **the gates pass** — `R2-4039…R2-4055`, commit `ce369f2`, at lines 669–1113.
+  A parallel agent; §7's line 1945 calls it *"a parallel agent"* in so many words.
+
+| | chain-and-glass pass | gates pass |
+|---|---|---|
+| live source citations | **~35** — `audio/layers.py` (20), `audio/master.py` (10), `tools/r2_4030_breach_bench.py`, `tools/r2_4141_tail_hf.py`, `tools/r2_4151_landing.patch` | **1** — `audio/percept.py:165` |
+| artefacts named for it | **5** — `audio/out/bench_R2-4043.json`, `audio/out/r2_4021/*_R2-4051.*` ×4 | 0 |
+| files this task MAY NOT EDIT citing it | 0 | **1** — `docs/BROKEN-INSTRUMENTS.md` (3 citations) |
+| would moving it fragment the pass? | **yes** — splits a contiguous `4030…4063` | no — `4039…4055` moves whole |
+
+**The gates pass moves.** One source citation against thirty-five, and it is a
+comment line this task is permitted to correct.
+
+## 9. THE MAPPING
+
+**`R2-4201 … R2-4260` was checked free** against the log, against all 81 staging
+files including the unmerged ones, against `~/vast-render`, and against every
+filename in both trees. The highest ID in use anywhere is `R2-4189`; the highest
+*reserved* by a staging filename is `R2-4200`. Nothing exists at or above 4201.
+This is the check the 2026-08-02 renumbering's first attempt skipped, and it is
+why that attempt created a fifth duplicate.
+
+### 9.1 Log block C — the #170 island, second hop
+
+| was (round 1) | was (#170) | **is now** | entry |
+|---|---|---|---|
+| R2-1151 | R2-4151 | **R2-4201** | R2-1084's timeline is wrong |
+| R2-1152 | R2-4152 | **R2-4202** | ROOT CAUSE: generated into a candidate, never promoted |
+| R2-1153 | R2-4153 | **R2-4203** | FIXED by promotion |
+| R2-1154 | R2-4154 | **R2-4204** | THE DEFECT BEHIND THE DEFECT |
+| R2-1155 | R2-4155 | **R2-4205** | the beat-1 PASS before 03:48 was a SATURATED metric |
+| R2-1156 | R2-4156 | **R2-4206** | two things I did not touch, and why |
+| R2-1157 | R2-4157 | **R2-4207** | the sheet the film is built from is untracked |
+
+`new = old + 50`. The block moves whole.
+
+### 9.2 The gates pass in `STAGING-R2-4021-to-R2-4080.md`
+
+| was | **is now** | entry |
+|---|---|---|
+| R2-4039 | **R2-4239** | THE HEADLINE, WITH THE NUMBER THAT MATTERS |
+| R2-4040 | **R2-4240** | DELETED: 629 LINES, NOT RECALIBRATED |
+| R2-4041 | **R2-4241** | THE SELF-REFERENTIAL CALIBRATION RULE IS NOW BANNED IN CODE |
+| R2-4042 | **R2-4242** | THREE INSTRUMENTS WHERE THERE WAS ONE NUMBER |
+| R2-4043 | **R2-4243** | THE INSTRUMENTS RE-VALIDATE THEMSELVES ON EVERY INVOCATION |
+| R2-4044 | **R2-4244** | G-RING REPLACES `waveguide`, ON THE WAV, AGAINST SABINE |
+| R2-4045 | **R2-4245** | SIX GATES WITH NO PREDECESSOR |
+| R2-4046 | **R2-4246** | INAPPLICABLE IS A DISTINCT OUTCOME AND NEVER COUNTS AS PASS |
+| R2-4047 | **R2-4247** | `verify.py` NO LONGER CLAIMS A QUALITY VERDICT |
+| R2-4048 | **R2-4248** | SPLICE DETECTION IS NOW FILM-WIDE |
+| R2-4049 | **R2-4249** | THE DOPPLER GATE IS EXTENDED, AND PORTABLE BEFORE B7 |
+| R2-4050 | **R2-4250** | THE PERMANENT CONTROL CORPUS: NINE CONTROLS |
+| R2-4051 | **R2-4251** | EVERY GATE WATCHED TO FIRE: 12 OF 12 MUTATIONS |
+| R2-4052 | **R2-4252** | G-CONSTRUCT ON THE CURRENT TREE: 35 VIOLATIONS |
+| R2-4053 | **R2-4253** | DEVIATIONS FROM THE SPEC, DECLARED RATHER THAN QUIET |
+| R2-4054 | **R2-4254** | SIX INSTRUMENT BUGS FOUND BY THE POSITIVE CONTROLS |
+| R2-4055 | **R2-4255** | HOW TO RUN IT |
+
+`new = old + 200`. The block moves whole. **The chain-and-glass pass keeps
+`R2-4039…R2-4055` unchanged**, and so does every source citation of them.
+
+## 10. STALE COMMIT MESSAGES — HOW TO READ THEM
+
+**Commit messages cannot be rewritten and several are now wrong.** This is the
+table to resolve them by.
+
+| commit | its message says | it actually means |
+|---|---|---|
+| `ce369f2` | *"R2-4039..4055: replace the eight gates that passed three rejected masters"* | **R2-4239…R2-4255** — the gates pass |
+| `08634c2` | *"R2-4030..4063: the shared chain and the glass breach"* | unchanged — the chain pass keeps its numbers |
+| `613342a` | *"#170: 27 duplicated IDs resolved -- R2-4091..4098/4121..4123/**4151..4157**/4181..4189"* | the `4151..4157` clause now reads **R2-4201…R2-4207** |
+| `1910065` | *"#170: the two staging citations the renumbering left pointing at the wrong entry"* | one of the two is block C's, now **R2-4201…R2-4207** |
+| `6270825` | *"R2-4151: the 8.38 dB was never in the mix"* | **unchanged** — the audio entry keeps R2-4151 |
+| `bfa01ab` | *"R2-4152: the engine was delivering 6.5x…"* | **unchanged** — the audio entry keeps R2-4152 |
+| `3438c44`, `75d3edf` | R2-4152 clip manifest / `watch/INDEX` | **unchanged** |
+
+**Rule of thumb for a reader hitting a stale reference:** a commit dated
+2026-08-14 or later that says `R2-4151`/`R2-4152` means the **audio** entry,
+which still carries that number. A reference to `R2-4151..4157` as a *block*
+means the seven log entries now at `R2-4201…R2-4207`.
+
+## 11. WHAT THIS SWEEP DELIBERATELY DOES NOT TOUCH
+
+* **`R2-4141` … `R2-4150` stay exactly where they are.** They sit inside the
+  band §4 reserved, and that was a real breach of the reservation — but they
+  collide with nothing, and they are cited by 5 files in `watch/`, 4 files this
+  task may not edit, 20+ source files, 24 tool filenames and 5 commit messages.
+  **Moving ten uncontested IDs to tidy a reservation would manufacture the exact
+  ambiguity the reservation exists to prevent.** The reservation is corrected in
+  the log header instead, to record that they are legitimately held.
+* **`docs/BROKEN-INSTRUMENTS.md`** cites the **gates** pass at three places —
+  `:53` (R2-4039 → now R2-4239), `:383` (R2-4041 → now R2-4241), `:438` (R2-4040
+  → now R2-4240), and a range row at `:1517` (*"R2-4030 – R2-4043"*, which spans
+  both passes and was already ambiguous). Another agent owns that file and holds
+  a live lease on it. **Reported, not edited.**
+* **`docs/README.md`, `docs/READING-LIST.md`, `docs/DOC-ACCURACY-AUDIT.md`.**
+  `README.md` §"Navigation hazards" describes this collision as an open problem
+  and cites `R2-4151`/`R2-4152`/`R2-4157`; its `R2-4151`/`R2-4152` references
+  remain correct for the audio entries, its `R2-4157` reference now reads
+  `R2-4207`, and the hazard itself is now closed. `READING-LIST.md`'s
+  `R2-4151`/`R2-4152` citations are the audio entries and remain correct.
+  **Reported, not edited.**
+* **The other staging files' headings.** Historical, as in §5.
+
+## 12. THE EDIT SET THIS AUTHORISES
+
+`docs/DEFECT-LOG-R2.md` — 7 headings and their banners; internal citations at
+`31856`, `32156`, `32181`; the reservation note in the header.
+
+`docs/STAGING-R2-4021-to-R2-4080.md` — 17 headings in lines 669–1113, the
+section header at `669`, and 7 resolved citations from the engine pass at
+`1945`, `2091`, `2400`, `2458`, `2588`, `2654`, `2684`. **Citations at `2019`,
+`2382`, `2386`, `2926`, `2937` mean the chain pass and are left alone**; each
+was resolved from the citing sentence's own content, not from position.
+
+`docs/STAGING-R2-1151-to-R2-1180.md` — its banner, updated to the second hop.
+
+`audio/percept.py` — one comment citation, line 165.
+
+**One source file changes, by one comment line. No dirty file is staged. No
+file in `watch/` is touched.**
