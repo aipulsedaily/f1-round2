@@ -173,7 +173,64 @@ gate battery in `render/`, the film bar's two measurement probes in `work/`,
 the item gate verdicts — it is re-included one directory at a time, and each of
 those blocks carries the incident that motivated it.
 
+## Working on this, and one thing to set before your first commit
+
+**Set your git identity to a noreply address before you commit.** This
+repository's `.git/config` is preconfigured with
+
+```
+user.email = noreply@users.noreply.github.com
+```
+
+which keeps a personal address out of future commits. The generic form works,
+but GitHub will not attribute the commits to you. Replace it with your own — the
+numeric ID is on `https://api.github.com/users/<username>`:
+
+```bash
+git config user.email 'ID+username@users.noreply.github.com'
+git config user.name  'Your Name'
+```
+
+This is local configuration only, and it changes nothing already committed. The
+existing history still carries personal addresses on most of its ~635 commits,
+and **rewriting it is not an option here**: the documentation cites roughly
+4,100 commit SHAs, and every one of them would de-reference. Publishing with the
+history, or publishing a single fresh commit and losing the provenance, is the
+owner's choice — `tools/publication/make_fresh_init.sh` builds the second option
+so it can be compared rather than imagined.
+
+Before publishing, re-run `tools/publication/sanitise_docs.py`. Its README says
+why "once, and then trusted" is not good enough for a corpus that is still
+moving.
+
 ## Licence
 
-**Not yet chosen — see `LICENSE`.** Until one is added, default copyright
-applies and all rights are reserved.
+Three kinds of work live here and they are licensed differently. `LICENSE` is
+the authority; this is the summary.
+
+**Code — GPL-3.0-or-later.** Not a preference. Blender is GPL, and the Blender
+Foundation's *stated position* is that publicly distributed scripts using the
+`bpy` API are derivative works of Blender and must be GPL-compatible. Nearly
+everything here is `bpy` code, so a permissive licence would be inconsistent
+with that position. Worth being precise about the strength of the claim: this is
+the Foundation's stated interpretation, not settled case law — it is adopted
+because it is the conservative reading, and because being wrong in the other
+direction is the more expensive mistake.
+
+**Documentation — CC BY-SA 4.0**, full text in `LICENSE-DOCS`. `docs/` is the
+headline artefact of this repository and is prose, not `bpy` code, so the
+constraint above does not reach it. Share-alike keeps attribution attached and
+keeps derived versions open.
+
+**The film is not covered by either.** `watch/*.mov`, `watch/*.mp4`, the
+rendered frames and the audio masters are **all rights reserved** and are not
+licensed for reuse. They are gitignored and are not published with this
+repository, which is exactly why it is said out loud: nobody should infer a
+grant over the film from a licence that covers the code that produces it.
+Renders *you* make by running this code are yours.
+
+**The owner can change any of this before publishing.** These licences were
+applied so the repository would not go public in the no-licence, therefore
+all-rights-reserved default that makes public code unusable. After the first
+public copy the position is asymmetric: future versions can be relicensed,
+copies already released cannot be recalled.
