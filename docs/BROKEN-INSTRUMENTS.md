@@ -1170,7 +1170,7 @@ is the second one. The primary cause is **scope**: the list of condemned machine
 lived in one process's memory and nothing published it. Across a seven-cycle
 render, **4 of 10 condemnations were one process rediscovering another's
 verdict.** The incident that cost a job has a 12-minute gap between one process
-condemning machine 58073 and a sibling renting it — *far inside any TTL.*
+condemning machine mach-11 and a sibling renting it — *far inside any TTL.*
 **Scoping alone caused it.**
 
 The list did prevent things: `state3/bad_hosts.json` contains an entry written
