@@ -31,6 +31,9 @@ Entries above `R2-4023` are not yet merged and are cited by staging file.
 ## 1. Instruments that could not detect the thing they existed to detect
 
 This is the log's largest class and its reason for existing.
+[`BROKEN-INSTRUMENTS.md`](BROKEN-INSTRUMENTS.md) treats the same material as an
+essay, grouped by mechanism and written for a reader who knows nothing about
+this project; the table below is an index into the log itself.
 
 | entry | why |
 |---|---|

@@ -27,6 +27,7 @@ master).
 |---|---|
 | **the film, and what it is** | [`THE-BRIEF-ROUND2.md`](THE-BRIEF-ROUND2.md) (the client's brief) → [`../watch/INDEX.md`](../watch/INDEX.md) (which artefact is current and which is stale) → [`beat_sheet.md`](beat_sheet.md) (the six beats) |
 | **the interesting failures** | [`READING-LIST.md`](READING-LIST.md) — a curated ~60 entries out of 1,226, grouped by theme, each with a line on why it is worth opening. There is a ten-minute list at the top. |
+| **the single defect this project kept finding** | [`BROKEN-INSTRUMENTS.md`](BROKEN-INSTRUMENTS.md) — one failure catalogued twenty-six times across subsystems that share no code, grouped by mechanism rather than by subsystem. It needs no knowledge of films, audio or render farms. `READING-LIST.md` §1 is the same territory as an index into the log; this is the essay. |
 | **the rendering pipeline and what it cost** | [`MASTER-RUNBOOK.md`](MASTER-RUNBOOK.md) (the spec, the seven un-waivable gates, the measured per-beat cost) → `READING-LIST.md` §5 (the fleet campaign) → [`RENDER-LADDER.md`](RENDER-LADDER.md) (why nothing goes straight to 4K — but see the staleness warning below) |
 | **the verification philosophy** | `READING-LIST.md` §8 (the laws the project generalised), then §1 (the instruments that failed, which is where the laws came from) |
 | **the world and how it was built** | [`MASTER-PLAN.md`](MASTER-PLAN.md) → [`circuit_spec.md`](circuit_spec.md) → `READING-LIST.md` §4 |
@@ -111,6 +112,8 @@ measurement behind a superseded decision is usually still the useful part.
 | `STAGING-R2-*.md` | in-flight entries; the 4021+ files hold the unmerged tail. |
 | `DUPLICATE-ID-SWEEP-R2.md` | the numbering authority and the reserved ranges. |
 | `THE-BRIEF-ROUND2.md` | the client's brief. The film is judged against this. |
+| `BROKEN-INSTRUMENTS.md` | the twenty-six-case catalogue of guards that could not fire, grouped by mechanism. Written to be readable with no knowledge of this project. |
+| `DOC-ACCURACY-AUDIT.md` | a pre-publication audit hunting one class — a claim that was true when written and is false now, and a correction that never propagated. **Read it before quoting a number out of any planning document in here**, including the ones this file marks live. Several of its severity-1 findings have already been fixed in the files they name; check the file, not the audit, for the current text. |
 | `../watch/INDEX.md` | **the only place that says which artefact is current.** Every file in `watch/` is a claim about the film whether it was meant as one or not; twice a client judgement was formed against an artefact that was out of date. Updated 2026-08-15 with the audio decision. |
 | `MASTER-RUNBOOK.md` | the 4K master: spec, the seven un-waivable gates, the measured per-beat cost. Its `LIVE: THE MASTER IS RENDERING` banner describes 2026-08-09; **the render finished 2026-08-13** (`R2-3927`). Read the gates and the cost tables; read the banner as history. |
 | `LIVE-CAMERA.md` | declares `render/film24_path.json` (sha256 `9d055d63…`) as the live camera. Verified: `render/film25_path.json`, the path of the blend the master rendered from, is **byte-identical** to it, so the declaration covers the delivered film. |
