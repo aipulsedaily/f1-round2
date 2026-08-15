@@ -390,6 +390,7 @@ table to resolve them by.
 | `6270825` | *"R2-4151: the 8.38 dB was never in the mix"* | **unchanged** — the audio entry keeps R2-4151 |
 | `bfa01ab` | *"R2-4152: the engine was delivering 6.5x…"* | **unchanged** — the audio entry keeps R2-4152 |
 | `3438c44`, `75d3edf` | R2-4152 clip manifest / `watch/INDEX` | **unchanged** |
+| `59827f6` | *"**24 duplicated IDs** resolved -- log block C to R2-4201..4207, the gates pass to R2-4239..4255"* | **24 is the count of entries MOVED, not of IDs duplicated. 19 IDs were duplicated** (2 log-vs-staging + 17 staging-internal); 24 entries moved, because block C was moved whole and five of its seven members had not collided. Written wrong in my own commit message an hour after this file was committed to prevent exactly that; left standing because it cannot be rewritten, and recorded here because that is what this table is for |
 
 **Rule of thumb for a reader hitting a stale reference:** a commit dated
 2026-08-14 or later that says `R2-4151`/`R2-4152` means the **audio** entry,
