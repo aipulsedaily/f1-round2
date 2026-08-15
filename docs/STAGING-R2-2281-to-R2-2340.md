@@ -34,7 +34,7 @@ Nine at first query; a tenth (`fleet11`) was rented mid-investigation and the
 fixed `status` picked it up unprompted, which is itself the check that the new
 enumeration is live rather than snapshotted.
 
-**Total $4.8620/hr = $116.69/day.** Credit $[redacted] — 10.3 hours of runway. Every
+**Total $4.8620/hr = $116.69/day.** Credit $[redacted] — under half a day of runway. Every
 card is `gpu_frac 1.0`, so no shared-card waste (the R2 `gpu_frac` defect is
 clean here). `vastctl status` reported **zero** of them.
 
@@ -136,7 +136,7 @@ are now account-wide.
 ### How the fix was verified — not by reading it
 
 1. **Live `status` against the real account** now lists all ten instances,
-   $4.8620/hr, $116.69/day, 10.3h runway, correct owning pid per card, and it
+   $4.8620/hr, $116.69/day, hours of runway, correct owning pid per card, and it
    picked up `fleet11` the moment it was rented.
 2. **`reap` proven end-to-end with a recording stub** — real API rows, a client
    whose `destroy_instance` records instead of calling vast.ai. Nothing was

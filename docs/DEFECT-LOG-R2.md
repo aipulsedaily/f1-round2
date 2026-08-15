@@ -44433,7 +44433,7 @@ Nine at first query; a tenth (`fleet11`) was rented mid-investigation and the
 fixed `status` picked it up unprompted, which is itself the check that the new
 enumeration is live rather than snapshotted.
 
-**Total $4.8620/hr = $116.69/day.** Credit $[redacted] — 10.3 hours of runway. Every
+**Total $4.8620/hr = $116.69/day.** Credit $[redacted] — under half a day of runway. Every
 card is `gpu_frac 1.0`, so no shared-card waste (the R2 `gpu_frac` defect is
 clean here). `vastctl status` reported **zero** of them.
 
@@ -44535,7 +44535,7 @@ are now account-wide.
 ### How the fix was verified — not by reading it
 
 1. **Live `status` against the real account** now lists all ten instances,
-   $4.8620/hr, $116.69/day, 10.3h runway, correct owning pid per card, and it
+   $4.8620/hr, $116.69/day, hours of runway, correct owning pid per card, and it
    picked up `fleet11` the moment it was rented.
 2. **`reap` proven end-to-end with a recording stub** — real API rows, a client
    whose `destroy_instance` records instead of calling vast.ai. Nothing was
@@ -58428,7 +58428,7 @@ Rented at 04:06-04:07Z, three exclusive whole-machine RTX 5090s:
 | id-068 | id-014 | 0.454 | Sweden | 746 Mbps |
 | id-069 | id-033 | 0.455 | South Korea | 805 Mbps |
 
-`$1.3881/hr` all-in including disk; credit $[redacted] = **124.8 h of runway**.
+`$1.3881/hr` all-in including disk.
 
 ## R2-3848 — THE RUNBOOK'S SEVEN UN-WAIVABLE GATES, CHECKED ONE BY ONE
 
@@ -58959,7 +58959,7 @@ State at the time of writing (04:45Z, 38 min in):
 | frames delivered | 16 of 2,978 |
 | spend on this batch | **$0.91** of the $150 ceiling |
 | projected total | **$102-114** against the ~$113 estimate (mean render 266.3 s/frame → 220 GPU-h; 296.6 s/frame → 245 GPU-h) |
-| credit | $[redacted], 124 h of runway |
+| credit | $[redacted] — not the binding constraint at this projection |
 | instances | 3, all `running`, all exclusive whole-machine RTX 5090s |
 | disk | 114.6 GB free; frames 23.5 GiB + ProRes 11.4 GB + H.265 0.86 GB ≈ 36 GB |
 
@@ -59303,7 +59303,7 @@ new-spend ceiling at **exactly $150.00** — the number the brief set, unmoved.
 **The projection is now ~$139 of $150 — a 7.5% margin, down from the ~$113
 estimate.** The whole difference is fleet04's $0.801/hr card, which is a
 consequence of the two blacklisted bad hosts, not of the render. Credit is
-$[redacted] = **89.3 h of runway against ~72 h needed**.
+$154.87 = **89.3 h of runway against ~72 h needed**.
 
 **This is close enough that the next adverse event is worth surfacing rather
 than absorbing.** Specifically: each further retirement can blacklist more
@@ -59524,7 +59524,7 @@ limit. **The render never stopped.** State read, not inherited:
 | frames on disk | **1,376 / 2,978 (46.2%)** |
 | credit | $[redacted] |
 | blend | `film25_breach.blend` sha16 `1d2aa2d86533574e` on assembly15 |
-| burn | $1.0444/hr across the live cards, 112.5 h of runway |
+| burn | $1.0444/hr across the live cards |
 
 `fleetctl status` at 16:55Z showed **two** cards running and fleet05 with none —
 which is cycle 3 in progress, not a fault.
@@ -59610,7 +59610,7 @@ a film with holes in it.
 | 16:57:31 | instance id-078 provisioning; scene cache budget derived on the new card |
 
 The fleet is back to **three cards at $1.5200/hr ($36.48/day)** against $[redacted]
-of credit — **77.2 h of runway** for a tail that needs roughly 43. fleet04 is the
+of credit, which is not the binding constraint for a tail that needs roughly 43 h. fleet04 is the
 expensive one at $0.5556/hr and is the card due to retire next, so if anything
 the blended rate is about to improve.
 
@@ -61002,7 +61002,7 @@ and the one it was written to be able to reach. It will be re-run once fleet03's
 card is gone and its spend has settled, so the decision rests on measured
 numbers rather than these.
 
-Credit **$[redacted] = 43.0 h of runway** against ~19.4 h of remaining work.
+Credit $[redacted], comfortably ahead of the ~19.4 h of remaining work.
 
 ## R2-3918 — HOST DEFECTS OUTLIVE THE BLACKLIST BY AN ORDER OF MAGNITUDE. #169, PROPERLY ARGUED THIS TIME.
 
@@ -61185,7 +61185,7 @@ achievable fleet spend *lower*, which is the safer direction and costs nothing.
 | --- | --- |
 | frames | **2,641 / 2,978 (88.7%)** |
 | cards | 2, $1.0044/hr |
-| credit | $[redacted] = 60.2 h runway against ~20 h of work |
+| credit | $[redacted], comfortably ahead of the ~20 h of work remaining |
 | orphans | **[1766]** — fleet04's cycle-6 frame, deferred not lost |
 | projected total | ~$119 of the $150 ceiling |
 

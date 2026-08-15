@@ -10,7 +10,7 @@ limit. **The render never stopped.** State read, not inherited:
 | frames on disk | **1,376 / 2,978 (46.2%)** |
 | credit | $[redacted] |
 | blend | `film25_breach.blend` sha16 `1d2aa2d86533574e` on assembly15 |
-| burn | $1.0444/hr across the live cards, 112.5 h of runway |
+| burn | $1.0444/hr across the live cards |
 
 `fleetctl status` at 16:55Z showed **two** cards running and fleet05 with none —
 which is cycle 3 in progress, not a fault.
@@ -96,7 +96,7 @@ a film with holes in it.
 | 16:57:31 | instance id-078 provisioning; scene cache budget derived on the new card |
 
 The fleet is back to **three cards at $1.5200/hr ($36.48/day)** against $[redacted]
-of credit — **77.2 h of runway** for a tail that needs roughly 43. fleet04 is the
+of credit, which is not the binding constraint for a tail that needs roughly 43 h. fleet04 is the
 expensive one at $0.5556/hr and is the card due to retire next, so if anything
 the blended rate is about to improve.
 
@@ -1041,7 +1041,7 @@ and the one it was written to be able to reach. It will be re-run once fleet03's
 card is gone and its spend has settled, so the decision rests on measured
 numbers rather than these.
 
-Credit **$[redacted] = 43.0 h of runway** against ~19.4 h of remaining work.
+Credit $[redacted], comfortably ahead of the ~19.4 h of remaining work.
 
 ## R2-3918 — HOST DEFECTS OUTLIVE THE BLACKLIST BY AN ORDER OF MAGNITUDE. #169, PROPERLY ARGUED THIS TIME.
 
@@ -1224,7 +1224,7 @@ achievable fleet spend *lower*, which is the safer direction and costs nothing.
 | --- | --- |
 | frames | **2,641 / 2,978 (88.7%)** |
 | cards | 2, $1.0044/hr |
-| credit | $[redacted] = 60.2 h runway against ~20 h of work |
+| credit | $[redacted], comfortably ahead of the ~20 h of work remaining |
 | orphans | **[1766]** — fleet04's cycle-6 frame, deferred not lost |
 | projected total | ~$119 of the $150 ceiling |
 

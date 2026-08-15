@@ -328,7 +328,7 @@ rentals is fifteen chances to draw a slower host than the one measured.
 cold starts are 102 s on this class of host. It is purely wall clock: **7.5 days
 on one card, 3.8 on two, 2.5 on three.**
 
-**Both cards bill at $0.9239/hr combined** = ~78 h of runway against $[redacted]. The
+**Both cards bill at $0.9239/hr combined.** The
 per-broker $150 caps are **blind to each other** - $300 nominal against $[redacted] real
 - so **credit is the binding constraint and the caps protect nothing.**
 

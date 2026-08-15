@@ -219,7 +219,7 @@ Rented at 04:06-04:07Z, three exclusive whole-machine RTX 5090s:
 | id-068 | id-014 | 0.454 | Sweden | 746 Mbps |
 | id-069 | id-033 | 0.455 | South Korea | 805 Mbps |
 
-`$1.3881/hr` all-in including disk; credit $[redacted] = **124.8 h of runway**.
+`$1.3881/hr` all-in including disk.
 
 ## R2-3848 — THE RUNBOOK'S SEVEN UN-WAIVABLE GATES, CHECKED ONE BY ONE
 
@@ -736,7 +736,7 @@ State at the time of writing (04:45Z, 38 min in):
 | frames delivered | 16 of 2,978 |
 | spend on this batch | **$0.91** of the $150 ceiling |
 | projected total | **$102-114** against the ~$113 estimate (mean render 266.3 s/frame → 220 GPU-h; 296.6 s/frame → 245 GPU-h) |
-| credit | $[redacted], 124 h of runway |
+| credit | $[redacted] — not the binding constraint at this projection |
 | instances | 3, all `running`, all exclusive whole-machine RTX 5090s |
 | disk | 114.6 GB free; frames 23.5 GiB + ProRes 11.4 GB + H.265 0.86 GB ≈ 36 GB |
 
@@ -1051,7 +1051,7 @@ new-spend ceiling at **exactly $150.00** — the number the brief set, unmoved.
 **The projection is now ~$139 of $150 — a 7.5% margin, down from the ~$113
 estimate.** The whole difference is fleet04's $0.801/hr card, which is a
 consequence of the two blacklisted bad hosts, not of the render. Credit is
-$[redacted] = **89.3 h of runway against ~72 h needed**.
+$154.87 = **89.3 h of runway against ~72 h needed**.
 
 **This is close enough that the next adverse event is worth surfacing rather
 than absorbing.** Specifically: each further retirement can blacklist more

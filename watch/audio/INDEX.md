@@ -1,29 +1,30 @@
 # The listening pass
 
-You have told us the audio is bad twice. Both notes were right, both defects are
-fixed, and both were in the **flying lap** — which is the beat you spent **none**
-of your listening time on. **63 % of it went on the breach and the ending.**
+Two notes have been returned against this audio. Both were right, both defects
+are fixed, and both were in the **flying lap** — the beat that draws **none** of
+the review listening. **63 % of it goes to the breach and the ending**, which are
+the film's two loudest events and the two it is easiest to form a verdict on.
 
 So this round we went and measured those two, expecting to find a third defect.
 
 **We did not find one, and this page is us showing our work rather than asking
-you to take that on trust.**
+for that to be taken on trust.**
 
 ---
 
-## If you only have twenty-three seconds
+## If there are only twenty-three seconds
 
 Play **`21_ending_AB_one_press.wav`**.
 
-The last eleven seconds of the film as you first heard it → three quarters of a
+The last eleven seconds of the film as first delivered → three quarters of a
 second of silence → the same eleven seconds as they stand now.
 
 **Listen for the car underneath the crowd, not for the crowd.** Measured in
 octave bands over the final idle, with the overall loudness taken out: the car's
 own note is **+3.9 dB** across 250 Hz–1 kHz, where an idling V6's beat actually
 lives, and the hiss above 4 kHz is **7 to 8 dB quieter**. If the second half does
-not have more engine in it than the first, our measurement is wrong and we need
-to know.
+not have more engine in it than the first, our measurement is wrong and we want
+to hear so.
 
 ---
 
@@ -32,7 +33,7 @@ to know.
 Our own instrument scored the breach at **+0.09 dB** and the ending at
 **+0.16 dB** on a tonal-versus-noise measure where **a literal noise generator
 reads −2.0 dB**. Those were the two worst numbers in the film, they were the two
-beats you actually listened to, and the instrument was not even checking them.
+beats the review listening went to, and the instrument was not even checking them.
 
 We checked them. Both numbers are real and neither is about the car.
 
@@ -44,8 +45,8 @@ correctly: crowds are noise. The engine on its own, in that same stretch, scores
 sounds thin, that is distance and a rising camera, and it is meant to be.
 
 **The breach.** Above 2.6 kHz the breach carries **0.02 % of its own energy** —
-that is **31.5 dB below the flying lap**, one part in five thousand of what you
-hear. The +0.09 dB is a ratio computed on almost nothing. Below that band the
+that is **31.5 dB below the flying lap**, one part in five thousand of what is
+audible. The +0.09 dB is a ratio computed on almost nothing. Below that band the
 measure scores the breach *worse than a hair dryer*, because a breach is 995
 pieces of glass hitting things and there is no engine note in it to find. There
 never was. **Breaking glass is broadband; that is what breaking glass is.**
@@ -69,16 +70,16 @@ six beats and it scored each one on a median, which says nothing about the other
 half of a beat. It now scores all six, it gates five of them on *what fraction of
 the beat* falls below the line rather than on the middle of it, and for the sixth
 — the breach — it states in the report that it cannot measure it, and prints both
-numbers proving why. It still fails both masters you rejected.
+numbers proving why. It still fails both rejected masters.
 
 ---
 
 
 ## What "banging on tubes" turned out to be
 
-When you said *"hair blower"*, the exhaust was rebuilt from scratch as a physical
-model of six pipes. That fixed the hiss. **It also gave the pipes almost no
-damping**, and that is what you heard the second time.
+When the note came back as *"hair blower"*, the exhaust was rebuilt from scratch
+as a physical model of six pipes. That fixed the hiss. **It also gave the pipes
+almost no damping**, and that is what the second note heard.
 
 We can put numbers on it. A V6 at 11,000 rpm fires every **1.82 ms**:
 
@@ -110,16 +111,16 @@ losses, not their filtering.
 
 ---
 
-## Before you start
+## Before listening
 
-- **Do not change your volume between clips.** Nothing is normalised per clip;
+- **Do not change playback volume between clips.** Nothing is normalised per clip;
   every clip keeps the master's own absolute level, so one setting is right for
   all of them. A loud clip is loud because the film is.
 - **These are WAVs on purpose.** MP3/AAC encoders insert ~25 ms of silence at the
-  start of a file, which would shift the exact thing clips 01–03 ask you to
-  judge.
-- Every clip fades in over 5 ms at the cut, so the *edit* never makes a click you
-  might mistake for a defect. **Clips 01, 02 and 03 are the exception** — they
+  start of a file, which would shift the exact thing clips 01–03 exist to
+  show.
+- Every clip fades in over 5 ms at the cut, so the *edit* never makes a click that
+  could be mistaken for a defect. **Clips 01, 02 and 03 are the exception** — they
   begin at the film's own sample 0, and fading them would fade out the defect
   they exist to show.
 
@@ -131,7 +132,7 @@ losses, not their filtering.
 
 | # | File | Listen **for** |
 |---|---|---|
-| 19 | `19_ending_BEFORE_rejected.wav` | The last eleven seconds as you first heard them. |
+| 19 | `19_ending_BEFORE_rejected.wav` | The last eleven seconds as first delivered. |
 | 20 | `20_ending_AFTER_delivered.wav` | The same eleven seconds as delivered. |
 | **21** | **`21_ending_AB_one_press.wav`** | **Both, one press. Start here.** The car under the crowd, not the crowd. |
 
@@ -139,7 +140,7 @@ losses, not their filtering.
 
 | # | File | Listen **for** |
 |---|---|---|
-| 16 | `16_lap_BEFORE_tubes.wav` | The lap at 73.5 s, as you heard it. The ringing metal sitting on top of the engine. |
+| 16 | `16_lap_BEFORE_tubes.wav` | The lap at 73.5 s, as delivered. The ringing metal sitting on top of the engine. |
 | 17 | `17_lap_AFTER_damped.wav` | The same six seconds, damped. |
 | **18** | **`18_lap_AB_one_press.wav`** | **Both, one press. Start here.** |
 
@@ -150,11 +151,11 @@ the breach, so half of it is breaking glass and the comparison would be unfair.
 
 ### The wind
 
-Your first complaint was the broadband noise, and that fix is in this master. Over
+The first complaint was the broadband noise, and that fix is in this master. Over
 the flying lap the tonal-to-noise ratio above 2.6 kHz went from **−0.72 dB to
 +6.69 dB** — the engine now leads the air by 7.4 dB where it used to lose to it.
 
-**One correction to what we told you last time.** We said the breach and the
+**One correction to what this page said last time.** We said the breach and the
 ending were "much worse than the lap" on this measure and that we would go and
 fix them. We went, and the sentence was wrong: on the breach and the ending that
 measure is not reading the car at all — 86 % of the ending's top end is crowd and
@@ -165,7 +166,7 @@ A third of the lap does still sit below where we would like it. That third is th
 **quiet** third — the car far away, pointing away, between passes; we checked, and
 a window's score tracks its own loudness at +0.25 correlation. A film whose
 subject drives away from the camera is required to have quiet windows. If the
-wind is still wrong to you, say so; we know where to go next.
+wind is still wrong, we know where to go next.
 
 | # | File | Listen **for** |
 |---|---|---|
@@ -175,7 +176,7 @@ wind is still wrong to you, say so; we know where to go next.
 (Two files share the number `12` — a naming collision in our cutter, not a
 missing clip — and there is no `15`. All 21 files are listed on this page.)
 
-### The rest — unchanged since last time, still worth your ears
+### The rest — unchanged since last time, still worth hearing
 
 | # | File | Listen **for** |
 |---|---|---|
@@ -185,29 +186,29 @@ missing clip — and there is no `15`. All 21 files are listed on this page.)
 | 06 | `06_ending_seam_f2715.wav` | The injectors cut. Any **bump or gear-change glitch** as the engine goes off-throttle. |
 | 07 | `07_ending_A_no_lapdown.wav` | **Ending A** — the car does not slow; the lap simply ends. |
 | 08 | `08_ending_B_lapdown.wav` | **Ending B** — seven downshifts, then the car stops and idles. |
-| 09 | `09_final_idle_last2s.wav` | An idling engine has **a pulse you can count**. Confirm it idles rather than coasting. |
+| 09 | `09_final_idle_last2s.wav` | An idling engine has **a countable pulse**. Confirm it idles rather than coasting. |
 
 **Clips 07 and 08 were the worst offenders in the stale set** — they were being
 cut from two orphaned files that no part of our pipeline had written in weeks, so
-they were older than everything else on the page. If you made the A/B ending
-decision last time, please make it again; what you were played was not current.
+they were older than everything else on the page. If the A/B ending decision was
+made last time, it needs making again; what was played then was not current.
 
-**We have stopped asking you to trust that.** The tool that cuts this page now
+**That is no longer something anyone is asked to take on trust.** The tool that cuts this page now
 records, for every clip, which file it came from, that file's checksum, and the
 exact samples taken — and then reads each clip back off disk and compares it
 against its source sample for sample before it will write the page. Ten of the
 twenty-one are the delivered master, proved bit-exact, clip 08 among them. Clip
 07 is the one deliberate exception: **Ending A is a different render** — that is
-the choice you are being asked to make — and it now says so in its own record
+the choice on offer — and it now says so in its own record
 instead of quietly not being the film.
 
 We also found and fixed a **click at the very end of the film** — the master was
 being cut off mid-note on its final sample, the mirror of the frame-1 bang in
-clips 01–03. It was in the version you were played.
+clips 01–03. It was in the version that was played.
 
 ---
 
-## The one decision only you can make
+## The one decision that is not ours to make
 
 **Clips 07 and 08 are a creative choice, not a defect hunt.** A and B are the same
 film until 113.1 s and differ only in whether the car winds down. Both are
@@ -217,10 +218,12 @@ correct; pick one.
 
 ## What a gate cannot tell us
 
-**Every automated check we own passed the master you called complete shit** — and
-the one built to catch the hair dryer passed it most confidently of all. It was
-asking "is this tonal rather than noisy", and a struck tube is extremely tonal.
-It scores beautifully. Nothing we had asked whether the tone *stops*.
+**Every automated check we own passed the master that came back as *"complete
+shit"*** — and the one built to catch the hair dryer passed it most confidently
+of all. It was asking "is this tonal rather than noisy", and a struck tube is
+extremely tonal. It scores beautifully. Nothing we had asked whether the tone
+*stops*.
 
-There is now a check that does, and it fails both masters you rejected. But that
-is us catching up to you, not getting ahead of you. **You have been right twice.**
+There is now a check that does, and it fails both rejected masters. But that is
+us catching up to the ear, not getting ahead of it. **The ear has been right
+twice.**
