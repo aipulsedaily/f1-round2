@@ -666,14 +666,14 @@ signed off.
 
 ---
 
-# THE GATE REPLACEMENT — R2-4039 to R2-4050
+# THE GATE REPLACEMENT — R2-4239 to R2-4250
 
 > Implements the gate half of `docs/audio-rebuild3/SPEC-ENGINE-AND-GATES.md`.
 > The synthesis half (`master.py`, `layers.py`, `dsp.py`) belongs to a parallel
 > agent and **was not touched**. Files owned here: `audio/verify.py`,
 > new `audio/percept.py`, new `audio/controls/`, new `tools/percept_matrix.py`.
 
-## R2-4039 — THE HEADLINE, WITH THE NUMBER THAT MATTERS
+## R2-4239 — THE HEADLINE, WITH THE NUMBER THAT MATTERS
 
 `tools/percept_matrix.py --adjudicate`, on `audio/out/master.wav`:
 
@@ -702,7 +702,7 @@ measured independently:
 | G-ORDER | `4_transit: 0.234 of 300–4000 Hz energy on telemetry-predicted lines` | new measurement |
 | G-GESTURE | `worst pair 0.808` | ≈0.95 |
 
-## R2-4040 — DELETED: 629 LINES, NOT RECALIBRATED
+## R2-4240 — DELETED: 629 LINES, NOT RECALIBRATED
 
 `audio/verify.py` loses `hnr_profile`, `harmonic_gate`, `control_harmonic`,
 `_hairdryer_like`, the whole `BEAT_HNR_LIMITS` table and every `HNR_*`
@@ -717,7 +717,7 @@ against 0.85), and the same gate scored a 2 s tiled loop at **+43.8 dB**, 5.4x
 the film's best beat. An instrument that reads the same whether the defect is
 present or absent cannot be fixed by moving its threshold.
 
-## R2-4041 — THE SELF-REFERENTIAL CALIBRATION RULE IS NOW BANNED IN CODE
+## R2-4241 — THE SELF-REFERENTIAL CALIBRATION RULE IS NOW BANNED IN CODE
 
 `verify.py:816`'s rule — *"the limit is the midpoint between what THIS master
 reads and what the adversary reads"* — is the defect in its purest form. Every
@@ -742,7 +742,7 @@ A second rule fires too: a threshold with no derivation note is a violation —
 Current registry: **25 thresholds, 0 violations** — 8 `physics`, 1 `published`,
 16 `control-derived`.
 
-## R2-4042 — THREE INSTRUMENTS WHERE THERE WAS ONE NUMBER
+## R2-4242 — THREE INSTRUMENTS WHERE THERE WAS ONE NUMBER
 
 Collapsing flatness, harmonicity and order structure into one median was the
 original mistake, so they are three gates with three thresholds and three
@@ -765,7 +765,7 @@ verdicts.
   own retarded-time solve. Carries its own wrong-fundamental control in every
   row. Source: **control-derived** + **physics**.
 
-## R2-4043 — THE INSTRUMENTS RE-VALIDATE THEMSELVES ON EVERY INVOCATION
+## R2-4243 — THE INSTRUMENTS RE-VALIDATE THEMSELVES ON EVERY INVOCATION
 
 `calibrate_hnr()` and `calibrate_flat()` run inside the gates, on synthetic
 mixtures of a 145 Hz comb and bandpassed noise at **known** aperiodic fraction,
@@ -807,7 +807,7 @@ arithmetic, not Praat**: the mixture's true HNR is 10·log10((1−f)/f) by
 construction and the in-repo implementation tracks it to ≤ 0.40 dB. Praat is
 reported in full and is not treated as ground truth.
 
-## R2-4044 — G-RING REPLACES `waveguide`, ON THE WAV, AGAINST SABINE
+## R2-4244 — G-RING REPLACES `waveguide`, ON THE WAV, AGAINST SABINE
 
 `waveguide` root-solved `engine.py`'s constants at a hand-picked
 `WAVEGUIDE_RPM = 11000` (passing at 4.852 against a 5.0 limit — a 3.0 % margin,
@@ -827,7 +827,7 @@ compares it to:
 On the delivered master: broadband T60 3.29 s, worst band **3.35 s at 713 Hz**,
 against a 3.00 s limit. FAIL.
 
-## R2-4045 — SIX GATES WITH NO PREDECESSOR
+## R2-4245 — SIX GATES WITH NO PREDECESSOR
 
 * **G-NOVEL** — envelope autocorrelation of the 40-band, per-band normalised
   log-spectrum envelope, lags 0.3–16 s. Only **prominent local maxima** count:
@@ -851,7 +851,7 @@ against a 3.00 s limit. FAIL.
   an event scheduler or a physically-parameterised filter carrying a derivation
   comment.
 
-## R2-4046 — INAPPLICABLE IS A DISTINCT OUTCOME AND NEVER COUNTS AS PASS
+## R2-4246 — INAPPLICABLE IS A DISTINCT OUTCOME AND NEVER COUNTS AS PASS
 
 The old `harmonic` gate on pure noise reported `failures: []` and tripped
 `undeclared_unmeasurable`: it said *"I cannot measure this"*, never *"this is
@@ -869,7 +869,7 @@ silence between its partials — it read 113 dB); G-ROOM(a) stands down below si
 fixed lines (with no fixed reply there is no room comb); G-ORDER stands down on
 beats with no telemetry rpm on throttle.
 
-## R2-4047 — `verify.py` NO LONGER CLAIMS A QUALITY VERDICT
+## R2-4247 — `verify.py` NO LONGER CLAIMS A QUALITY VERDICT
 
 Three of the old eight gates never opened the wav and all three passed 100 %
 white noise on 5 of 5 degenerate inputs. They are now labelled and separated:
@@ -894,7 +894,7 @@ broadband material. A seam FAIL still stops the build.
 −14.001 LUFS in-repo vs −14.044 reference, Δ **0.043 LU**. A meter nobody
 cross-checks is how a level error ships.
 
-## R2-4048 — SPLICE DETECTION IS NOW FILM-WIDE, WITH ITS TEETH FROM AN INJECTION
+## R2-4248 — SPLICE DETECTION IS NOW FILM-WIDE, WITH ITS TEETH FROM AN INJECTION
 
 `splice_scan` walks the whole file (497 windows, 100 % coverage) and ranks
 candidates by |3rd difference| peak over the **rolling local median**. It
@@ -907,7 +907,7 @@ at t = 20.0 s — 13 s from the nearest beat boundary, where the boundary gate
 cannot look at all — lifts its own location from **4.5x to 38.5x**, an 8.5x
 lift against a required 5x.
 
-## R2-4049 — THE DOPPLER GATE IS EXTENDED, AND PORTABLE BEFORE B7
+## R2-4249 — THE DOPPLER GATE IS EXTENDED, AND PORTABLE BEFORE B7
 
 `doppler` was the only load-bearing gate in the old suite (it failed all three
 whole-file degenerates) and it saw **85 windows in one 4.2 s span**, 3.38 % of
@@ -945,7 +945,7 @@ windows, so it is a partial lock with real disagreement, not a non-measurement.
 It is reported per station with window counts so the question is answerable, and
 it is not quietly excluded.
 
-## R2-4050 — THE PERMANENT CONTROL CORPUS: NINE CONTROLS, ALL CORRECT
+## R2-4250 — THE PERMANENT CONTROL CORPUS: NINE CONTROLS, ALL CORRECT
 
 `audio/controls/` — **synthesised only, no recordings, ever**. Deliberately
 self-contained: it does not import `layers.py` or `dsp.py`, because a control
@@ -979,7 +979,7 @@ per-cluster servo bed carrying the tonal content between arrivals.
 `percept_matrix` runs the corpus **FIRST** and, if any control returns the wrong
 verdict, reports the master as **`UNDEFINED` and unreported**.
 
-## R2-4051 — EVERY GATE WATCHED TO FIRE: 12 OF 12 MUTATIONS
+## R2-4251 — EVERY GATE WATCHED TO FIRE: 12 OF 12 MUTATIONS
 
 *A guard is not fixed until it has been watched to fire.* Each gate's own defect
 is deliberately re-injected into a signal that otherwise passes.
@@ -1010,7 +1010,7 @@ filtering a periodic source through a resonator leaves a periodic source. The
 mutation was fixed to inject the actual defect (noise through the pipes), not
 the gate.
 
-## R2-4052 — G-CONSTRUCT ON THE CURRENT TREE: 35 VIOLATIONS
+## R2-4252 — G-CONSTRUCT ON THE CURRENT TREE: 35 VIOLATIONS
 
 The law — *no `white()`/`pink()`/`brown()` output may reach a bus without an
 event scheduler or a physically-parameterised filter carrying a derivation
@@ -1031,7 +1031,7 @@ rebuilt by the parallel agent under B2–B7; these 35 lines are its worklist.
 exclusion is **checked, not asserted** — G-CONSTRUCT fails if any render-path
 module ever imports it, and `verify.external_assets` re-checks the same thing.
 
-## R2-4053 — DEVIATIONS FROM THE SPEC, DECLARED RATHER THAN QUIET
+## R2-4253 — DEVIATIONS FROM THE SPEC, DECLARED RATHER THAN QUIET
 
 Three. Each is written into the threshold's own `note`, so it is in the report
 and not only in this file.
@@ -1073,7 +1073,7 @@ has order-1.5 amplitude identically 0.0000, so the gate would be a row that can
 only fail. It belongs with B7 and is listed there rather than shipped as a
 guaranteed-red light.
 
-## R2-4054 — SIX INSTRUMENT BUGS FOUND BY THE POSITIVE CONTROLS
+## R2-4254 — SIX INSTRUMENT BUGS FOUND BY THE POSITIVE CONTROLS
 
 Every one of these would have been a false FAIL on a good master, and every one
 was found because the suite has a signal that is *required to pass*. Recorded
@@ -1100,7 +1100,7 @@ measuring its own floor.
 6. **A T60 guard of `slope < -0.5 dB/s`** turned a sustained tone inside a
    broadband gap into *"T60 = 115.25 s at 400 Hz"*.
 
-## R2-4055 — HOW TO RUN IT
+## R2-4255 — HOW TO RUN IT
 
 ```
 python -m tools.percept_matrix                      # corpus + mutations
@@ -1942,7 +1942,7 @@ its remaining term is the engine's.**
 > Implements the engine half of `docs/audio-rebuild3/SPEC-ENGINE-AND-GATES.md`
 > (B5b, B6, B7, G-IDENTITY) plus the two items R2-4063 listed as next, and B2/B4
 > from the chain-and-glass spec. The gate suite that judges this work was built
-> by a parallel agent at R2-4039..4055 and its verdicts on this build are at
+> by a parallel agent at R2-4239..4255 and its verdicts on this build are at
 > R2-4070. Files changed here: `audio/engine.py`, `audio/master.py`,
 > `audio/layers.py`, `audio/dsp.py`, `audio/percept.py` (G-IDENTITY only),
 > `audio/controls/synth.py` (C8 only), `audio/verify.py` (two declared
@@ -2088,7 +2088,7 @@ publisher returned 403.** Hence the weight, hence the default, and hence
 G-IDENTITY's bars being marked DERIVED-NOT-MEASURED.
 
 **`ENGINE_ORDER` in `verify.py` is ported on its own line, deliberately**, which
-is what R2-4049 built that constant for. It is the only edit made to that file
+is what R2-4249 built that constant for. It is the only edit made to that file
 other than the delivery loudness (R2-4068), and both are declared constants with
 their derivations, not gate logic.
 
@@ -2397,7 +2397,7 @@ next pass, with the number it must move.
 
 ## R2-4072 — G-IDENTITY: SPECIFIED, ABSENT, NOW IMPLEMENTED — AND THE RENDER AGREES WITH THE ALGEBRA TO 0.19 dB
 
-R2-4053 declared G-IDENTITY unimplemented and said why: it gates the order-1.5
+R2-4253 declared G-IDENTITY unimplemented and said why: it gates the order-1.5
 line and the order-6 notch, both of which exist only once `half_order_weight`
 does, so it would have been a row that could only ever fail. B7 landed at
 R2-4065, so it lands here. **A specified-but-absent gate is the exact failure
@@ -2455,7 +2455,7 @@ control that IS the render path is not a control.
 
 ## R2-4073 — G-CONSTRUCT: 33 VIOLATIONS TO 17, AND WHAT THE OTHER 17 ARE
 
-R2-4052 measured 35 and called them the render path's worklist. On this tree, at
+R2-4252 measured 35 and called them the render path's worklist. On this tree, at
 the start of this session, 33. After B7's deletions and after writing the
 derivation down where one exists: **17**, and the residual is characterised
 rather than left as a count.
@@ -2585,7 +2585,7 @@ margin is the engine measured against itself and **cannot exceed 0 dB whatever
 the mix does**. That is why 95.97 % of a beat reads −0.04 dB.
 
 Why the engine reads near-white at all is the more interesting half, and **it is
-a direct consequence of B7**. R2-4053 already recorded that a 1/3-octave band at
+a direct consequence of B7**. R2-4253 already recorded that a 1/3-octave band at
 500 Hz is 116 Hz wide, so a comb whose spacing exceeds that band cannot be
 scored as tonal. B7 HALVES the firing fundamental from order 3 to order 1.5,
 i.e. from rpm/20 to rpm/40 — 275–360 Hz across this film — so the engine's comb
@@ -2651,7 +2651,7 @@ moved and the bed was not inflated to close 0.75 of a percentage point.
 
 ## R2-4077 — PORTING `ENGINE_ORDER` WAS NECESSARY AND IS NOT SUFFICIENT, AND THE GATE SAID SO
 
-R2-4049 built `verify.ENGINE_ORDER` as the one line B7 must change and warned
+R2-4249 built `verify.ENGINE_ORDER` as the one line B7 must change and warned
 that leaving it at 3.0 would make every Doppler station report a tracker failure
 that looks like a broken Doppler and is not. It was ported to 1.5 before this
 render, deliberately and on its own line — and the gate came back with the same
@@ -2681,7 +2681,7 @@ physical quantity with no ambiguity. That is gate logic rather than a declared
 constant, so it is written down here for whoever owns `verify.py` rather than
 done from this workflow.
 
-The station at t = 106.76 s was already failing before B7 and R2-4049 flagged it
+The station at t = 106.76 s was already failing before B7 and R2-4249 flagged it
 as new coverage never measured against a known-good master. It still fails, now
 with corr 0.591 over a **predicted span of only 1.41 semitones** — a station
 with very little Doppler in it to measure. That question is still open and is

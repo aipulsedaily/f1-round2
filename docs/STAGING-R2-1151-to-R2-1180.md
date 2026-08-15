@@ -1,6 +1,6 @@
 # STAGING — R2-1151 to R2-1180 · R2-1084 re-opened: the sheet did not regress
 
-> ## MERGED, THEN RENUMBERED — THESE ENTRIES ARE NOW R2-4151 … R2-4157
+> ## MERGED, THEN RENUMBERED — THESE ENTRIES ARE NOW R2-4201 … R2-4207
 >
 > **2026-08-14, #170.** The range check below was honest and still wrong: the
 > main thread was writing R2-1151…R2-1157 into the log at the same time, from a
@@ -13,7 +13,7 @@
 > `tools/r2_1821_ground_detail.py`, `render/world/assembly/r2/SHIPPING.md` —
 > means the main thread's entries, and nothing outside cites these.
 >
-> **Add 3000 to read the log: R2-1151→R2-4151 … R2-1157→R2-4157.** The headings
+> **Add 3050 to read the log: R2-1151→R2-4201 … R2-1157→R2-4207.** (They were briefly R2-4151…R2-4157, from 2026-08-14 to 2026-08-15; that range collided a second time, with the audio rebuild, and these seven moved again. A citation of R2-4151/R2-4152 written after 2026-08-14 means the AUDIO entry, not one of these.) The headings
 > below are left at their staged numbers as the historical record of what was
 > staged under what. **Do not cite R2-1151…R2-1157 from this file.** Full
 > account: `docs/DUPLICATE-ID-SWEEP-R2.md`.

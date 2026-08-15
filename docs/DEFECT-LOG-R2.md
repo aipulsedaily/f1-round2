@@ -7,7 +7,7 @@ do damage" is the point of the gates — it is not padding.
 Numbering: `R2-nnn`. Audio defects share the numbering with visual ones, as the
 brief requires ("log audio defects in the same defect log").
 
-**R2-4091…R2-4098, R2-4121…R2-4123, R2-4151…R2-4157 and R2-4181…R2-4189 are IN USE**
+**R2-4091…R2-4098, R2-4121…R2-4123, R2-4181…R2-4189 and R2-4201…R2-4207 are IN USE**
 and the whole of **R2-4091…R2-4189 is RESERVED** — do not allocate into it. Those
 numbers hold 27 entries moved on 2026-08-14 out of four blocks that had been
 allocated twice; see `docs/DUPLICATE-ID-SWEEP-R2.md`. Every one carries a
@@ -31802,9 +31802,9 @@ happened.** `slabcheck` is the only gate in the breach that joins a declaration
 to an outcome. Everything else in `wall()['breach_state']` is still an
 assertion nobody has checked.
 
-## R2-4151 — R2-1084's timeline is wrong. `docs/beat_sheet.json` was not edited at 05:03.
+## R2-4201 — R2-1084's timeline is wrong. `docs/beat_sheet.json` was not edited at 05:03.
 
-> **RENUMBERED 2026-08-14 (#170), was R2-1151.** Two writers allocated R2-1151 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1151 — THE RENDER THAT KILLED THE FIX HAD A DISCONNECTED CHANNEL, and every conclusio…` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
+> **RENUMBERED TWICE — was R2-1151, then R2-4151 (2026-08-14, #170), now R2-4201 (2026-08-15).** Two writers allocated R2-1151 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1151 — THE RENDER THAT KILLED THE FIX HAD A DISCONNECTED CHANNEL, and every conclusio…` — and this one moved. **It moved a second time because R2-4151 was allocated again, by the audio rebuild in `docs/STAGING-R2-4141-to-R2-4200.md`, which cites it from live source, from tool and artefact filenames and from a delivered master. The same rule sent this entry on again.** Method, dates and both mappings: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 The report says the sheet "was edited at 05:03" and thereby "reintroduced" a
 beat-1 failure that a 04:15 farm run had shown fixed. **Reproduced first, as
@@ -31853,13 +31853,13 @@ inverted.
 It returns nothing. **`docs/beat_sheet.json` is gitignored** —
 `.gitignore:37`. The sheet the entire film is built from is untracked, so a
 03:48 rewrite of it left no audit record at all, and the timeline in R2-1084 had
-to be reconstructed from mtimes and build logs. **See R2-4157.**
+to be reconstructed from mtimes and build logs. **See R2-4207.**
 
 ---
 
-## R2-4152 — ROOT CAUSE: the fix was generated into a candidate and never promoted.
+## R2-4202 — ROOT CAUSE: the fix was generated into a candidate and never promoted.
 
-> **RENUMBERED 2026-08-14 (#170), was R2-1152.** Two writers allocated R2-1152 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1152 — THE MARK READS AT N ~ 1000, and my N=60 was wrong by value, not by kind` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
+> **RENUMBERED TWICE — was R2-1152, then R2-4152 (2026-08-14, #170), now R2-4202 (2026-08-15).** Two writers allocated R2-1152 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1152 — THE MARK READS AT N ~ 1000, and my N=60 was wrong by value, not by kind` — and this one moved. **It moved a second time because R2-4152 was allocated again, by the audio rebuild in `docs/STAGING-R2-4141-to-R2-4200.md`, which cites it from live source, from tool and artefact filenames and from a delivered master. The same rule sent this entry on again.** Method, dates and both mappings: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 The failing sheet has **19** camera keys in beat 1. Every PASS in the 04:05–04:49
 window has **20**. Diffed whole-tree, `docs/beat_sheet.json` against
@@ -31916,9 +31916,9 @@ to a scratch path, then diffed.
 
 ---
 
-## R2-4153 — FIXED by promotion, and the pixels re-measured rather than assumed.
+## R2-4203 — FIXED by promotion, and the pixels re-measured rather than assumed.
 
-> **RENUMBERED 2026-08-14 (#170), was R2-1153.** Two writers allocated R2-1153 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1153 — my longitudinal hypothesis was right in mechanism and wrong as the explanation` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
+> **RENUMBERED TWICE — was R2-1153, then R2-4153 (2026-08-14, #170), now R2-4203 (2026-08-15).** Two writers allocated R2-1153 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1153 — my longitudinal hypothesis was right in mechanism and wrong as the explanation` — and this one moved. **It moved a second time because its BLOCK moved. R2-4151 and R2-4152 were allocated again by the audio rebuild in `docs/STAGING-R2-4141-to-R2-4200.md`, which cites them from live source, from tool and artefact filenames and from a delivered master; R2-4153 itself never collided, and moves only so that the block is not left split across two number bases.** Method, dates and both mappings: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
     cp docs/beat_sheet.json work/r21084/beat_sheet.BEFORE_R21084.json
     .venv/bin/python tools/build_beatsheet.py          # no override
@@ -31982,9 +31982,9 @@ before and after.
 
 ---
 
-## R2-4154 — THE DEFECT BEHIND THE DEFECT, and it is two defects.
+## R2-4204 — THE DEFECT BEHIND THE DEFECT, and it is two defects.
 
-> **RENUMBERED 2026-08-14 (#170), was R2-1154.** Two writers allocated R2-1154 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1154 — THE REFUSAL WAS BUILT AND ITS FIRST RUN REFUSED ITS OWN AUTHOR'S HANDOVER` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
+> **RENUMBERED TWICE — was R2-1154, then R2-4154 (2026-08-14, #170), now R2-4204 (2026-08-15).** Two writers allocated R2-1154 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1154 — THE REFUSAL WAS BUILT AND ITS FIRST RUN REFUSED ITS OWN AUTHOR'S HANDOVER` — and this one moved. **It moved a second time because its BLOCK moved. R2-4151 and R2-4152 were allocated again by the audio rebuild in `docs/STAGING-R2-4141-to-R2-4200.md`, which cites them from live source, from tool and artefact filenames and from a delivered master; R2-4154 itself never collided, and moves only so that the block is not left split across two number bases.** Method, dates and both mappings: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 > A build that prints two verdicts and is judged on one is a build with an
 > unread verdict.
@@ -32093,9 +32093,9 @@ PASS"), the severity reductions, the no-verdict case and the CLI.
 
 ---
 
-## R2-4155 — the beat-1 PASS before 03:48 was a SATURATED metric, and it measured all 791 frames while doing it.
+## R2-4205 — the beat-1 PASS before 03:48 was a SATURATED metric, and it measured all 791 frames while doing it.
 
-> **RENUMBERED 2026-08-14 (#170), was R2-1155.** Two writers allocated R2-1155 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1155 — "WHEN AN ARGUMENT HAS BEEN CORRECTED TWICE AND IS STILL ON THE SAME AXIS, THE…` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
+> **RENUMBERED TWICE — was R2-1155, then R2-4155 (2026-08-14, #170), now R2-4205 (2026-08-15).** Two writers allocated R2-1155 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1155 — "WHEN AN ARGUMENT HAS BEEN CORRECTED TWICE AND IS STILL ON THE SAME AXIS, THE…` — and this one moved. **It moved a second time because its BLOCK moved. R2-4151 and R2-4152 were allocated again by the audio rebuild in `docs/STAGING-R2-4141-to-R2-4200.md`, which cites them from live source, from tool and artefact filenames and from a delivered master; R2-4155 itself never collided, and moves only so that the block is not left split across two number bases.** Method, dates and both mappings: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 Two logs in the window (`work/r2851/build.log` 03:33,
 `work/r2851/rekey_R2851.log` 04:28) show a beat 1 of **35** rig keys — the
@@ -32127,9 +32127,9 @@ the saturation caveat. **Flagged, not changed.**
 
 ---
 
-## R2-4156 — two things I did not touch, and why
+## R2-4206 — two things I did not touch, and why
 
-> **RENUMBERED 2026-08-14 (#170), was R2-1156.** Two writers allocated R2-1156 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1156 — CLIENT, ON f2760: "anything 5 feet away from the main road and buildings have…` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
+> **RENUMBERED TWICE — was R2-1156, then R2-4156 (2026-08-14, #170), now R2-4206 (2026-08-15).** Two writers allocated R2-1156 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1156 — CLIENT, ON f2760: "anything 5 feet away from the main road and buildings have…` — and this one moved. **It moved a second time because its BLOCK moved. R2-4151 and R2-4152 were allocated again by the audio rebuild in `docs/STAGING-R2-4141-to-R2-4200.md`, which cites them from live source, from tool and artefact filenames and from a delivered master; R2-4156 itself never collided, and moves only so that the block is not left split across two number bases.** Method, dates and both mappings: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 * **`world/camera_rig_path.json` is stale against both builds**, and was already
   so before this fix: worst Δposition **11.31 m** against the pre-fix build and
@@ -32144,16 +32144,16 @@ the saturation caveat. **Flagged, not changed.**
 
 ---
 
-## R2-4157 — the sheet the film is built from is untracked, and that is why none of this had a trail
+## R2-4207 — the sheet the film is built from is untracked, and that is why none of this had a trail
 
-> **RENUMBERED 2026-08-14 (#170), was R2-1157.** Two writers allocated R2-1157 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1157 — `min_depth_m 4.577` WAS THE GRASS. It stopped two tree builds and `n_hosts: 93…` — and this one moved. Method, dates and the full citation sweep: `docs/DUPLICATE-ID-SWEEP-R2.md`.
+> **RENUMBERED TWICE — was R2-1157, then R2-4157 (2026-08-14, #170), now R2-4207 (2026-08-15).** Two writers allocated R2-1157 hours apart, neither able to see the other, and it named two different entries from that day on. The number stayed with the entry that external code and briefs already cite — `## R2-1157 — `min_depth_m 4.577` WAS THE GRASS. It stopped two tree builds and `n_hosts: 93…` — and this one moved. **It moved a second time because its BLOCK moved. R2-4151 and R2-4152 were allocated again by the audio rebuild in `docs/STAGING-R2-4141-to-R2-4200.md`, which cites them from live source, from tool and artefact filenames and from a delivered master; R2-4157 itself never collided, and moves only so that the block is not left split across two number bases.** Method, dates and both mappings: `docs/DUPLICATE-ID-SWEEP-R2.md`.
 
 `.gitignore:37` excludes `docs/beat_sheet.json`. Consequences, all observed here:
 
 * `git log -p -- docs/beat_sheet.json` returns nothing, so the 03:48 rewrite has
   no author, no diff and no message. R2-1084's timeline had to be rebuilt from
   mtimes and logs, and it came out inverted.
-* **The fix in R2-4153 cannot be committed.** It exists on disk only. A
+* **The fix in R2-4203 cannot be committed.** It exists on disk only. A
   `git checkout` or a clean clone does not carry it, and the next agent to
   regenerate with `B1_SHEET_OUT` unset is the only thing that reproduces it.
 * Candidates *are* tracked (`docs/R2829_beat_sheet_CANDIDATE.json`,
@@ -32178,7 +32178,7 @@ beat-1 proxy render on broker 2 was not touched, not inspected and not jumped.
 
 | path | what |
 |---|---|
-| `docs/beat_sheet.json` | **FIXED** (regenerated; untracked — see R2-4157) |
+| `docs/beat_sheet.json` | **FIXED** (regenerated; untracked — see R2-4207) |
 | `anim/build_camera_rig.py` | FAIL now exits non-zero and propagates |
 | `tools/gate_exit.py` | `scan()`, `scan_report()`, CLI, rig tokens registered |
 | `tools/gate_exit_selftest.py` | §7, 11 new controls, 62 total |

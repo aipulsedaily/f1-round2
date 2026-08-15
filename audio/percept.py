@@ -162,7 +162,7 @@ _T("G_ORDER.line_tolerance_pct", 1.5, "percent of line frequency", "physics",
    "window. Set by the measurement's own resolution, not by any film's score.")
 
 # ------------------------------------------------------------ G-IDENTITY ----
-# SPECIFIED IN THE SPEC AND ABSENT FROM THE SUITE UNTIL NOW, and R2-4053 said
+# SPECIFIED IN THE SPEC AND ABSENT FROM THE SUITE UNTIL NOW, and R2-4253 said
 # so rather than shipping it as a row that could only fail: it gates the
 # order-1.5 line and the order-6 notch, and both exist only once B7's
 # `half_order_weight` does. B7 landed at R2-4066, so it lands here.
