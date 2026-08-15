@@ -78,21 +78,44 @@ Four conventions matter, and each exists because of a specific incident:
    recover which of two entries a citation meant. 27 entries moved on
    2026-08-14; each carries a `RENUMBERED` banner naming its old number.
 
-### Navigation hazards, current as of 2026-08-15
+### Navigation hazards — RESOLVED 2026-08-15, kept because the resolution matters
 
-These are stated, not fixed — this file changes nothing.
+**Both hazards below are now CLOSED.** They are left here because how they were
+counted is more instructive than that they existed, and because six git commit
+messages still name the old numbers.
 
-- **`R2-4151` and `R2-4152` each name two different entries right now.** The
-  merged log has them at `DEFECT-LOG-R2.md:31805` and `:31860` (the beat-1
-  camera / beat-sheet-promotion block moved there by the sweep). `STAGING-R2-4141-to-R2-4200.md:1371`
-  and `:1859` have them as the audio rebuild's mix and engine entries. The
-  sweep declared `R2-4091 … R2-4189` reserved; the audio pass allocated
-  `R2-4141 … R2-4152` inside it. Recent git commit messages
-  ("R2-4152: the engine was delivering 6.5x the world's energy") mean the
-  **staging** entries.
-- **`STAGING-R2-4021-to-R2-4080.md` carries 13 internally duplicated IDs** —
-  `R2-4039` and `R2-4044 … R2-4055` — because two different audio passes wrote
-  into the same file.
+- **~~`R2-4151` and `R2-4152` each name two different entries~~ — FIXED.** The
+  **log** block moved to `R2-4201 … R2-4207`; the **audio** entries kept their
+  numbers. That direction was the opposite of what was first instructed, and the
+  measurement decided it: the audio entries are cited by **27 live source sites**,
+  9 tool files, 13 artefacts, and — decisively — a **delivered artefact**,
+  `watch/PART2_AUDIO_MASTER_R2-4152.wav`. Moving them would have stranded a
+  shipped file and the client-facing index on a dead number. The log block was
+  cited by **nothing but the log itself**.
+- **~~13 internally duplicated IDs~~ — it was 17, and the undercount is the
+  lesson.** `R2-4040`–`R2-4043` collide too, but the second pass filed them under
+  *combined* headings — `## R2-4040/4041` — which the pattern `^## R2-\d+ — `
+  does not match. **The count was not of the thing, it was of the thing's usual
+  spelling.** Resolved by moving the *gates* pass to `R2-4239 … R2-4255`.
+- **The blanket reservation `R2-4091 … R2-4189` is RETIRED.** It was allocated
+  into twice — once by the audio rebuild, and once by the very sweep that
+  declared it. It is replaced by a single rule: **the next free number is
+  `R2-4256`**, with a table in `DUPLICATE-ID-SWEEP-R2.md`. `R2-4153 … R2-4157`
+  are marked **VACATED — DO NOT REUSE**; they were live for one day and
+  reallocating them would rebuild the ambiguity a third time.
+- **Six commit messages now name stale IDs**, including the fixing commit's own
+  subject. Git history cannot be rewritten here without de-referencing ~4,100 SHA
+  citations, so the mapping is recorded in `DUPLICATE-ID-SWEEP-R2.md` §10 instead.
+  **A stale commit message resolved by a table beats a rewritten history that
+  breaks every citation in the corpus.**
+
+**And the merge that lands staging into the log no longer deduplicates by ID.**
+Dedup-by-identity would have silently skipped the audio entries as "already
+present" and reported success — the exact instrument-that-reads-the-same-either-way
+failure this corpus is a catalogue of. It now appends and proves the result three
+independent ways: arithmetic (1,212 + 90 = 1,302), a string search for all 90
+staged headings, and a byte-level proof that the pre-merge log is an exact prefix
+of the result.
 - **`R2-4024 … R2-4152` are not in the merged log yet.** They are the delivery
   finish and the four audio rebuilds, and they live only in
   `STAGING-R2-4021-to-R2-4080.md`, `STAGING-R2-4081-to-R2-4140.md` and
