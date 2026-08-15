@@ -45,7 +45,7 @@ level-2 heading:
 ```
 
 IDs are **not zero-padded to a fixed width** — the earliest are `R2-001`, the
-latest `R2-4157` — so sort them numerically, not as strings, and grep for
+latest `R2-4255` — so sort them numerically, not as strings, and grep for
 `'^## R2-374 '` rather than `R2-0374`. Audio defects share the numbering with
 visual ones; the brief requires it.
 
