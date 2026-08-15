@@ -28,7 +28,37 @@ still true.** It is written by dates that can be checked, not by memory.
 | `BEFORE_opening_18s.mp4` | 08-07 17:52 | its matched BEFORE. Correctly named. |
 | `audio/` | 08-08 03:14 | re-cut from the master; `audio/INDEX.md` explains the earlier staleness and states it is fixed. |
 
-### THE AUDIO OF 2026-08-15 (R2-4152) — WHAT THE FILMS CARRY NOW
+### CLIENT DECISION 2026-08-15: THE FILMS CARRY THE ORIGINAL AUDIO. Read this first.
+
+**Both films above carry `audio/out/master.wav` (md5 `d5087fd021b5f748f176ecb2b6c1de67`) — the audio
+that shipped with the render.** The client heard the rebuilds and ruled: *"orginal audio was better
+go back to orgininal audio"*. Done, and **not to be re-litigated by a later pass.**
+
+**Five rebuilt masters exist and none is in the delivery:**
+
+| master | client verdict |
+|---|---|
+| **`audio/out/master.wav`** | **DELIVERED — the client's choice** |
+| R2-4079 — `rejected_audio_R2-4079/` | *"worse, sounds like a shitty musical"* |
+| R2-4141 — `PART2_AUDIO_MASTER_R2-4141.wav` | *"beat 1 i dont hear anything until the tubes play"* |
+| R2-4147 — `PART2_AUDIO_MASTER_R2-4147.wav` | superseded before judgement |
+| R2-4152 — `PART2_AUDIO_MASTER_R2-4152.wav` | heard; the original preferred |
+
+**The video was never touched through any of it.** Every mux and every revert re-verified the video
+stream md5 — ProRes `c346a7a322a4a2a403727c1e85f17511`, H.265 `235ef36e844a62b0e303e4138907b9fa` —
+and both read those values now. The 2,978 delivered frames are unchanged since the render.
+
+**The rebuilds and their measurements are KEPT, not deleted.** Several findings below are
+load-bearing for any future attempt: the varispeed warp transposing the breach 6.51x down, the
+K-weighted gain meter deaf to the frequencies the mix was made of, the limiter removing 22 dB while
+reporting 0.124, the limiter ducking 161 ms *before* each transient, and the four separate stages
+that each independently pushed the film toward smooth.
+
+**But the single most important finding in this file is this: five successive rebuilds each measured
+better than the last, and the client rejected every one by ear.** Any future pass should treat that
+as the primary evidence — not as a reason to try a sixth with the same instruments.
+
+### THE AUDIO OF 2026-08-15 (R2-4152) — SUPERSEDED BY THE DECISION ABOVE, KEPT FOR THE RECORD
 
 **THE BREACH WAS THE FILM'S LARGEST REMAINING AUDIO DEFECT AND TWO PASSES BUILT THE FIX AND
 REFUSED TO SHIP IT** — R2-4150 and R2-4151 both improved their gate score and both measured
