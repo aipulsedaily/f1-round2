@@ -1853,3 +1853,617 @@ ones, again.**
 8. Carried unchanged: G-RING's ratio bar under its own null; G-RING's Sabine
    limb un-anchored; AMI's and G-EVENT's shared hole; G-ROOM(c)'s two bars
    under their nulls; **G-MOD and G-NOVEL at beat 1 remain PICTURE.**
+
+---
+
+## R2-4152 — THE ENGINE. THE FILM WAS DELIVERING 6.5× THE WORLD'S ENGINE ENERGY AND THE WORLD'S GLASS, AND THAT IS ARITHMETIC ON R2-4064'S OWN RULE.
+
+R2-4151 ended with a complete, measured breach fix withheld for one reason —
+*"the delivered glass is 6.9 dB quieter than the master it would replace and the
+engine becomes 79 % of the beat"* — and two OPEN items it could not close: a
+headroom budget in place of a ceiling, and the engine.
+
+**Both were the same item.** The film's premix peak sits at film t = 40.377 s
+and it is **51.1 % `shards` and 44.4 % `engine`**. The bus that had to get
+louder and the bus that had to get quieter were competing for one sample.
+
+---
+
+### R2-4152(1) — THE ENGINE'S DEFECT IS A MISSING CLAUSE IN A RULE THIS FILE ALREADY RELIES ON. `tools/r2_4152_engine_ramp.py`
+
+R2-4064's rule is *"slow motion stretches the SCHEDULE and leaves the PITCH
+alone"*, and `master.py` applies it to two classes of world-attached source in
+the same eight seconds without ever saying what it does to their **LEVEL**:
+
+* **IMPULSIVE** (R2-4035: `impact`, `shards`, `debris`). Each contact is placed
+  at `to_film(t_world)` and rendered at its true duration. The events are **the
+  same events**, so their energy in the window is whatever the world contains
+  and their mean POWER falls by the clock scale. Nobody chose that; it is what
+  "re-time the events" means.
+* **CONTINUOUS** (R2-4064: `engine`, `tyres`). The operating point is mapped
+  through `to_film` and the carrier is rendered at true frequency, so the engine
+  emits at its true instantaneous power for **eight seconds of screen where the
+  world contains 1.60** — and its energy in the window is multiplied by
+  **1/scale = 6.5054**.
+
+**THE SAME RULE MOVES THE TWO CLASSES' RELATIVE MEAN POWER BY 1/scale.** On the
+delivered stems, over 36–44 s:
+
+| | R2-4147 stems | R2-4151 stems |
+|---|---:|---:|
+| continuous / impulsive, as delivered | **−0.35 dB** | **+7.21 dB** |
+| the same with the level clause applied | −8.17 dB | −0.61 dB |
+| the excess, energy-weighted under the engine's own power | **7.82 dB** | 7.82 dB |
+| the excess at the ramp floor | 8.13 dB | 8.13 dB |
+| **the excess anywhere else in the film** | **0.00 dB** | **0.00 dB** |
+
+**WHICH CLASS IS RIGHT, AND WHY IT IS NOT A PREFERENCE.** The impulsive class is
+right *by construction*: an event is indivisible, so re-timing can neither
+create nor destroy any of one. The continuous class has no events, so nothing
+forced its energy to be conserved and **nothing in the file ever said what
+should.** The invariant that makes the two consistent is the one the picture
+already claims — *the window contains the world's own event, more slowly.* Slow
+motion shows you the same 1.6 seconds; it does not show you five extra cars.
+
+Under that invariant a continuous source rendered at true pitch on the film grid
+carries `sqrt(scale)` in amplitude, because
+
+    ∫_film p(τ)·scale(τ) dτ  ==  ∫_world p(w) dw        (dw = scale·dτ)
+
+is a **CHANGE OF VARIABLES**, exact rather than approximate, **with no free
+parameter in it.** At scale 1 it is 0.000 dB, and `clock.scale` is exactly 1.0
+outside film t 35.983–43.968 s, so **it is bit-exact silent across the whole of
+beat 1.**
+
+**THE PREMISE THE CHANGE OF VARIABLES NEEDS, CHECKED AGAINST R2-4064'S OWN
+WITNESS** rather than assumed: that the film-grid engine's power at film τ *is*
+the world engine's at w(τ). `audio/out/witness_engine_grid.json` measures the
+rpm schedule agreeing to **0.0039 rpm** and the two grids' RMS agreeing to
+**0.02 dB in all four of its windows** (breach, ramp core, after the ramp, lap).
+
+---
+
+### R2-4152(2) — WHAT IT IS WORTH, AND THE COINCIDENCE IS STATED RATHER THAN ENJOYED
+
+R2-4150(1)'s attribution and R2-4150(2)'s ORACLE bound, recomputed on the
+delivered stems with the clause applied and nothing else changed:
+
+| on the R2-4147 stems | as delivered | clause, SHIPPING FORM |
+|---|---:|---:|
+| **beat AMI** | **0.1421** | **0.1801** |
+| engine share of the beat | 44.73 % | **11.91 %** |
+| shards share | 36.27 % | 58.53 % |
+
+| on the R2-4151 stems (the withheld patch) | as delivered | clause, SHIPPING FORM |
+|---|---:|---:|
+| **beat AMI** | **0.1810** | **0.3270** |
+| engine share of the beat | **75.37 %** | 34.37 % |
+| shards share | 11.29 % | 31.19 % |
+
+*"Shipping form" means the clause on `engine` and `tyres` alone — see
+R2-4152(2a). With the derived buses corrected too it reads 0.1839 and 0.3642,
+and that version is not shippable.*
+
+**AND THE FEASIBILITY BOUND MOVES WITH IT.** R2-4150(2) substituted the corpus
+positive's own shower for the film's glass at the same delivered energy — an
+ORACLE layer — and got **0.3031 against a 0.50 bar**, which is the measurement
+that has said for three passes that *no glass layer clears the bar through this
+engine.* With the clause on all of engine, tyres and the derived buses it reads
+**0.4999**.
+
+**THAT COINCIDENCE IS STATED RATHER THAN ENJOYED.** There is no free parameter
+in `10·log10(clock.scale)` to have landed it on the bar; **the direction of
+R2-4150(2)'s conclusion is unchanged** — a perfect glass layer still does not
+clear 0.50 — and the number would be identical if the bar were 0.20.
+
+**THE CORRECTED ORACLE BOUND LANDS AT 0.4999 AGAINST A 0.50 BAR AND THAT IS
+SAID OUT LOUD RATHER THAN ENJOYED.** There is no free parameter in
+`10·log10(clock.scale)` to have landed it there; **the direction of R2-4150(2)'s
+conclusion is unchanged** — a perfect glass layer still does not clear the bar
+through this mix — and the number would be identical if the bar were 0.20.
+
+**AND THE COST, WHICH IS THE HALF THAT DECIDES.** On the R2-4151 stems the beat
+RMS falls **5.69 dB** and the 4–8 kHz band **2.47 dB**. The engine was 44.7 % of
+a beat it reads AMI 0.069 on, so the loss is not paid by the glass — but it is
+paid, and **on its own it would have made R2-4151's artefact problem worse, not
+better.** That is what R2-4152(3) is for.
+
+---
+
+### R2-4152(3) — THE SECOND INSTRUMENT. `BUS_PEAK_CEILING` WAS NEVER COMPARED TO G14, AND THE FILM WAS THROWING AWAY 2.89 dB OF ITS OWN DECLARED BUDGET. `tools/r2_4152_headroom.py`
+
+R2-4151 left this: *"whoever takes this needs a headroom BUDGET across buses,
+measured against G14's +6 dBFS and G1's 3 dB"*, and *"the real defect is that a
+3-second short-term meter is the wrong instrument for a bus whose event is
+0.16 ms, and there is no second instrument."*
+
+**`BUS_PEAK_CEILING` IS NOT A BUDGET AND NEVER WAS.** It is a per-bus constant,
+**it has never once been compared to G14 anywhere in this file**, and nothing in
+the report has ever been able to answer *how much peak headroom does this film
+have left*. The ledger answers it. Every bus's true peak as it enters the sum,
+against G14's declared +6.0 dBFS premix bound:
+
+| | R2-4147 | R2-4151 |
+|---|---:|---:|
+| arithmetic sum of the bus true peaks (every bus peaking on one sample) | +17.25 | +17.25 dBFS |
+| **delivered premix true peak** | **+3.21** | **+3.21 dBTP** |
+| coincidence κ = delivered / worst case | 0.1986 | (−14.04 dB) |
+| **G14's budget left UNSPENT** | **+2.79 dB** | **+2.79 dB** |
+| buses ON the ceiling | `engine`, `impact`, `shards` | same three |
+| **the common ceiling G14 actually supports, SOLVED by bisection** | — | **1.3940 = +2.89 dBFS** |
+
+**THE MIX REALISES A FIFTH OF ITS OWN WORST CASE**, so the budget is *not*
+divisible by a bus count — that would be as arbitrary as the 1.0 it replaces,
+in the other direction — and it has to be **solved**, which is what the limiter's
+own makeup already does in this file.
+
+**AND EXACTLY THREE BUSES SIT ON THE CEILING: `engine`, `impact`, `shards`.**
+None of them makes a sound in beat 1 — the engine's ignition is at world
+t = −2.30 s, i.e. film 31.7 s — so **raising the ceiling cannot move beat 1**,
+and the render proves it rather than the argument.
+
+**THE CRITERION IS ALSO MOVED INTO THE TRUE-PEAK DOMAIN**, which is the domain
+of the thing it protects: G14, the delivery ceiling and the limiter are all true
+peak, and a sample-domain ceiling on a 0.16 ms Hertzian contact under-reads the
+inter-sample peak and over-reads nothing. Both numbers are logged per bus.
+
+**THE VALIDATION OPEN #2 ASKS FOR — and R2-4034's own derivation names the
+number.** Its text reads: *"That bus entered the sum at a linear peak of 7.50,
+i.e. **+17.5 dBFS**"*. At the solved ceiling:
+
+| case, at the level its own target asks for | PLR | TP dBTP | over budget | |
+|---|---:|---:|---:|---|
+| **a bus entering the sum at +17.5 dBFS** | 32.31 | +17.53 | **+14.61 dB** | **FAIL — the protection is intact** |
+| `impact` where its own 3 s target puts it (linear 19.5) | 32.31 | +25.83 | +22.95 dB | **FAIL — still stopped** |
+| `synth.glass_breach`, the validated positive, at the budget | 27.14 | +2.89 | 0.00 | **PASS** |
+
+**AND THE CORPUS POSITIVE IS NO LONGER TAXED FOR BEING THE RIGHT ANSWER.**
+R2-4151(2)'s indictment was that the old criterion would tax `synth.glass_breach`
+**18.14 dB against 11.71 dB for the film's own bus — 6.4 dB harder on the
+reference answer.** At a COMMON peak budget that asymmetry is not a penalty on
+either: both land on the **same delivered true peak**, and the 4.4 dB between
+them is just their raw peaks at matched loudness. **The peak criterion is not
+what stops the reference answer from working. What stops it is the SIZE of the
+budget, and the budget is G14, and G14 is declared and is not moved.**
+
+**WHAT A PEAK CRITERION STILL CANNOT DO, STATED RATHER THAN GLOSSED.** A peak
+carries no information about how long a bus was making a sound, so no threshold
+in this domain can tell a shower of 8401 contacts from one event in 124 s of
+silence — **which is the defect OPEN #2 actually named.** The instrument for
+*that* is BS.1770-4's own second window:
+
+    U  =  (max 400 ms MOMENTARY)  −  (max 3 s SHORT-TERM)
+
+parameter-free, because both windows are the standard's and neither is this
+file's, and **independent of crest**: two buses with the same PLR and different
+temporal concentration get different U, which is the separation the peak
+criterion cannot make at any threshold. Measured on the R2-4151 stems:
+
+| bus | U | |
+|---|---:|---|
+| **`impact`** | **8.46 dB** | **the largest in the film, and R2-4034's own case** |
+| `structure` | 7.68 dB | the pane, one 40 ms world event |
+| `room` | 5.69 dB | |
+| `assembly` | **4.53 dB** | **beat 1's own bus** |
+| `shards` | 4.14 dB | a shower of 8401 contacts |
+| `engine` | 1.59 dB | continuous, as it should be |
+| `bed` | 0.19 dB | |
+
+**`impact` AND `shards` HAVE THE SAME PLR TO 0.5 dB AND THE INSTRUMENT SEPARATES
+THEM BY 4.32 dB.** That is the separation `BUS_PEAK_CEILING` cannot make at any
+threshold — and it is a *partial* instrument, said plainly: 400 ms is itself long
+against a 0.16 ms contact, so U under-reads `impact` by construction and 8.46 dB
+is a floor on its mis-metering, not the size of it.
+
+**IT IS MEASURED HERE AND DELIBERATELY NOT APPLIED**, for a reason the table
+itself gives: **`assembly` reads 4.53 dB**, so subtracting U from every bus's
+target would move **beat 1**, and beat 1 is picture-locked. It is the next pass's
+tool and it now has its numbers.
+
+---
+
+### R2-4152(2a) — WHERE THE CLAUSE GOES IN THE CHAIN, AND THE TRAP THAT DECIDED IT
+
+Physically the clause is emission-side and belongs on `eng_f` before
+propagation. **It is applied AFTER the bus trim instead, and the reason is a
+measurement.**
+
+`add()` re-normalises every bus to its declared `TARGET_LUFS_S` measured on that
+bus's **own loudest 3 s window**. For every bus whose loudest window is inside
+the ramp, that renormalisation **hands the clause straight back and pays for it
+OUTSIDE the ramp.** Measured on the R2-4151 stems, what the trim would have
+compensated:
+
+| bus | max short-term, delivered | with the clause | the trim would give back |
+|---|---:|---:|---:|
+| `aperture` | −24.00 @ 37.5 s | −32.13 | **+8.13 dB** |
+| `reflect_showroom` | −23.00 @ 38.0 s | −31.13 | **+8.13 dB** |
+| **`room`** | **−31.00 @ 35.0 s** | **−36.57** | **+5.57 dB** |
+| `structure` | −30.00 @ 34.5 s | −31.27 | +1.27 dB |
+| `reflect_garage` | −27.00 @ 47.5 s | −27.00 | 0.00 dB |
+
+**`room` IS BEAT 1's OWN REVERB.** Applying the clause to the excitation would
+have left the breach almost unchanged and made **beat 1's showroom tail 5.57 dB
+louder** — a picture-locked beat moved by a beat-3 fix, silently, by exactly the
+mechanism R2-4151(5) caught at `debris`.
+
+So the clause is applied post-trim to **the two buses that are continuous
+world-attached sources, `engine` and `tyres`**, and the buses DERIVED from them
+are left alone with the reason recorded: **their absolute entries in
+`TARGET_LUFS_S` are relationships declared as absolutes** — a room tail is a
+fraction of what excites it — which is R2-4151(5)'s defect in a second place.
+Declaring them with `RELATIVE_TARGET_LUFS_S` against their exciters is the next
+pass's item; guessing at it inside an engine fix is not. **This costs the beat:
+the full clause reads 0.3642 and the shipping form 0.3270.**
+
+The delivered PEAK is unaffected either way — `engine` peaks at film t = 109.15 s
+and `tyres` at 109.34 s, both outside the ramp — so the headroom ledger is exact.
+
+---
+
+### R2-4152(4) — WHAT WAS BUILT
+
+Five changes, and the first four are `tools/r2_4151_landing.patch` applied
+unmodified — the withheld build, landing behind the engine work exactly as
+R2-4151 said it should.
+
+1. **`layers.shard_modes`** — `GLASS_LAMINATE_ETA = 0.030` replaces Q = 800–1500.
+   R2-4150(3)'s derivation, swept across the whole published band.
+2. **`layers.picture_fragments` / `shard_ballistics`** — the population is read
+   from `sim/out/breach_sim.json`, the partition the 4K frames came from.
+3. **`layers.debris_bed`** — density is a declared TOTAL.
+4. **`layers.render_shards`** — the acceleration transient references the ring's
+   own peak. **`master.RELATIVE_TARGET_LUFS_S`** — `debris` 4.0 dB under
+   `shards`'s DELIVERED level.
+5. **`master.BUS_RAMP_LEVEL_CLAUSE`** — `sqrt(clock.scale)`, post-trim, on
+   `engine` and `tyres`. R2-4152(1). **No free parameter.**
+6. **`master.BUS_PEAK_CEILING` 1.0 → 1.60**, SOLVED against G14 and G1 with a
+   declared 1.03 dB margin, and moved into the **true-peak** domain. The
+   report now carries a `headroom_ledger` block: what each bus claims of G14's
+   budget, the coincidence, and how much is left.
+
+**NOT CHANGED, EACH FOR A STATED REASON:** G14 (+6.0 dBFS) and G1 (3 dB) — both
+declared, both the things the budget is solved against, neither moved; the
+meter-validity limb U — measured, not applied, because `assembly` reads 4.53 dB
+and beat 1 is picture-locked; the contact-time law (R2-4151(1)); `part_impacts`'
+`amp.sum()` reference (beat 1); `audio/verify.py` and `tools/percept_matrix.py`;
+`TARGET_LUFS_S`'s entries; `reflect_showroom`/`aperture`'s levels (R2-4151 OPEN
+#6, still nobody's).
+
+---
+
+### R2-4152(5) — THE PREDICTIONS, WRITTEN DOWN BEFORE THE RENDER WAS ADJUDICATED
+
+Recorded before `tools/percept_matrix.py` was run on the new master. Every one
+has a number. **The last two passes reported four wrong and one partly, with the
+headline wrong both times.**
+
+1. **`shards` delivered LUFS-S −12.89 (R2-4147) / −19.77 (R2-4151) → −15.9
+   ± 0.5**, still peak-criterion-won, still about 6.9 dB short of its −9.0
+   target. **`debris` → −19.9 ± 0.5** (R2-4147: −14.12).
+2. **`engine` becomes LUFS-LIMITED FOR THE FIRST TIME and reaches its declared
+   −10.0 LUFS-S**, because the clause is post-trim so its meter still reads the
+   breach. Trim +17.91 → **+19.46 dB**; delivered engine **−6.3 ± 0.5 dB in the
+   breach** and **+1.55 dB on the flying lap** against R2-4147.
+3. **Premix true peak +4.8 to +5.3 dBFS, G14 PASS with at least 0.7 dB of
+   margin; limiter GR −0.6 to −1.0 dB, G1 PASS.** The offline chain said +4.97
+   and −0.75, and the true-peak criterion is slightly tighter than the sample
+   one, so the render should land at or under that.
+4. **G-PRESENCE `3_breach` AMI 0.1409 (R2-4147) / 0.1710 (R2-4151) → 0.28–0.38,
+   AND STILL FAIL.** The stem bench in shipping form reads 0.3270 and the
+   ceiling is common-mode across `engine`, `shards`, `debris` and `impact`, so
+   the delivered number should sit near it. **A PASS here would mean the bench
+   is wrong, not that the build is good.**
+5. **G-BALANCE `3_breach` protagonist margin +4.13 (R2-4147) / −0.14 (R2-4151)
+   → +6 to +10 dB, AND IT MAY PASS THE +8.0 BAR FOR THE FIRST TIME.** `3_breach`'s
+   protagonists are declared as `shards`, `structure`, `impact` — **not the
+   engine** — so this pass raises the protagonist 4.08 dB and drops the largest
+   thing that was not one by 6.3 dB. This is the limb R2-4151 predicted would
+   not recover and was judged on.
+6. **G-BALANCE `3_breach` near-white share: the line stays GONE.**
+   `reflect_showroom` and `aperture` are the near-white background, they are
+   NOT corrected and NOT raised, and the protagonist is +4.08 dB.
+7. **G-EVENT `3_breach` 2.71 (R2-4147) / 3.27 (R2-4151) → 4.5–7.0 dB, still far
+   under the 13.7 bar.** The engine was filling the troughs.
+8. **THE BREACH'S 4–8 kHz BAND: R2-4151 was 3.60 dB DARKER than R2-4147 and
+   that is why it was withheld. → −0.5 to +1.5 dB.** `debris` follows `shards`
+   up 4.08 dB and the bed is unchanged.
+9. **BEAT 1 IS IDENTICAL — a pure gain, residual at least 80 dB down.** No bus
+   that sounds in beat 1 is peak-limited, so the ceiling cannot reach it, and
+   `clock.scale` is exactly 1.0 across the whole of it, so the clause is
+   bit-exact 0.000 dB. **If this one is wrong the pass is over.**
+10. **BEATS 4–6: the engine is +1.55 dB and `debris_p80_x_m` moves 30.15 →
+    23.14 m.** `4_transit` and `5_lap` declare the ENGINE as protagonist, so
+    their G-BALANCE margins should IMPROVE. **I predict `4_transit` stays better
+    than R2-4147 on all three of G-BALANCE, G-FLAT and G-HNR.**
+11. **NO GATE'S FILM-LEVEL VERDICT FLIPS**, and no failure line appears that was
+    not there in R2-4147.
+
+---
+
+### R2-4152(6) — THE RENDER
+
+`audio/out/r2_4152/master_R2-4152.wav`, **−23.00 LUFS / −1.10 dBTP, limiter GR
+−2.65 dB, premix true peak +4.49 dBTP, `AUDIO_MASTER_OK`.** G14 PASS with
+**1.51 dB of its budget left**; G1 PASS with 0.35 dB of margin.
+`tools/percept_matrix.py` returns `PERCEPT_MATRIX_OK`, 40 thresholds, 0
+provenance violations, G-CONSTRUCT unchanged at its 17 pre-existing violations
+with none in the new code.
+
+**EVERY BUS IN THE FILM IS BIT-IDENTICAL TO R2-4147 EXCEPT FOUR.**
+
+| bus | R2-4147 | R2-4151 | **R2-4152** | |
+|---|---:|---:|---:|---|
+| `engine` | −11.54 | −11.54 | **−10.00** | **LUFS-limited for the first time — it reaches its declared target** |
+| `shards` | −12.88 | −19.77 | **−15.69** | peak-limited, now by 6.69 dB instead of 10.77 |
+| `debris` | −14.12 | −23.77 | **−19.69** | follows `shards` at −4.0 |
+| `impact` | −32.31 | −32.31 | **−28.25** | +4.06, the ceiling |
+| every other bus | — | — | **identical trim, to 0.01 dB** | |
+
+**THE ENGINE CAME OFF THE CEILING**, which is the mechanism R2-4152(5)#2
+predicted: with the clause applied post-trim its meter still reads the breach,
+so it asks for +19.46 dB, and at a ceiling of 1.60 the peak criterion no longer
+undercuts that. `buses_on_the_ceiling` is now **`impact`, `shards`** — the two
+event buses, and nothing else.
+
+**AND `audio/verify.py` RETURNS `AUDIO_VERIFY_FAIL`, WHICH IT ALSO DOES ON THE
+SHIPPED MASTER.** The failing limb is the Doppler station at film t = 106.76 s
+(1 PASS / 1 FAIL / 1 INAPPLICABLE). **Re-run on `master_R2-4147.wav` this pass,
+read-only, it returns the identical 1/1/1 and the identical `doppler: false`.**
+It is pre-existing, it is not caused by this pass, and it is not fixed by it.
+
+---
+
+### R2-4152(7) — THE ADJUDICATION. `tools/r2_4150_matrix_diff.py`, R2-4147 AGAINST R2-4152
+
+**NO GATE'S FILM-LEVEL VERDICT MOVED. FOUR FAILURE LINES AND TWO
+INAPPLICABLE-FOR-NO-COVERAGE LINES DISAPPEARED; ONE INAPPLICABLE APPEARED.**
+
+| | R2-4147 | R2-4151 | **R2-4152** | |
+|---|---:|---:|---:|---|
+| **G-PRESENCE `3_breach` AMI** | **0.1409** | 0.1710 | **0.3769** | **2.67×**, bar 0.50 |
+| **G-EVENT `3_breach`** | **2.71 dB** | 3.27 | **7.62 dB** | **2.81×**, bar 13.7 |
+| G-ROOM `3_breach`(c) cepstral 23.26× | FAIL | GONE | **GONE** | the rings are gone |
+| G-ROOM `3_breach`(c) ripple 12.40 dB | FAIL | GONE | **GONE** | |
+| G-ROOM `3_breach`(b) 0 usable bursts | INAPPL | — | **GONE** | **coverage GAINED** |
+| G-GESTURE `3_breach` 0 bursts | INAPPL | — | **GONE** | **coverage GAINED** |
+| G-RING `5_lap` 1796 Hz rings 1.51× | FAIL | — | **GONE** | |
+| **G-BALANCE `3_breach` margin** | **+4.13** | −0.14 | **+3.06 dB** | **1.07 dB WORSE** |
+| **G-BALANCE `3_breach` near-white share** | **0.474** | GONE | **0.660** | **WORSE, and the line is back** |
+| G-BALANCE `4_transit` | −2.30 | −0.93 | **+0.43 dB** | +2.73 |
+| G-BALANCE `5_lap` | −3.10 | — | **−1.55 dB** | +1.55 |
+| G-BALANCE `6_ending` | −22.04 | — | **−20.49 dB** | +1.55 |
+| G-FLAT `4_transit` | 0.700 | 0.662 | **0.627** | |
+| G-HNR `4_transit` | 0.675 | 0.624 | **0.497** | |
+| G-HNR `5_lap` | 0.697 | — | **0.651** | |
+| G-ORDER `4_transit` / `5_lap` | 0.194 / 0.187 | — | **0.208 / 0.194** | |
+| G-ROOM `5_lap`(c) cepstral | 6.09× | — | **5.71×** | |
+| G-NOVEL `1_assembly` | r 0.413 | — | **r 0.408** | the only beat-1 line, and see (8) |
+
+**THE ONE NEW LINE** is `G-ROOM 3_breach(c ripple): 0 usable decay tails` — the
+same INAPPLICABLE R2-4151 produced, and for the same reason: **it replaces two
+FAILURES with a loss of coverage, because a fragment at the laminate's own loss
+factor does not ring for 0.6 s any more and there is no decay tail left to
+measure.** G-ROOM(c)'s two bars sit below their own nulls and are OPEN
+(R2-4149); this pass does not tune to them and does not claim the change as a
+win.
+
+**THE TWO REGRESSIONS ARE REAL AND THEY ARE THE SAME REGRESSION.** With the
+engine 6.59 dB down in the beat, what is LEFT is more near-white than it was —
+the share limb is mechanical and it says so, 0.474 → 0.660. And the margin limb
+falls 1.07 dB because `shards`, its dominant protagonist, is still 2.80 dB below
+where R2-4147 had it. **R2-4151 OPEN #6 named the cause and nobody has acted on
+it**: `reflect_showroom` and `aperture` are 61 % of that background, R2-4054
+wrote the rule for them — *"if they still measure more than 15 dB under the mix
+after this, they should be deleted rather than raised again"* — and they are
+untouched by this pass, deliberately, because a level change to two background
+buses inside an engine fix is exactly the confound this file keeps catching.
+
+---
+
+### R2-4152(8) — THE ARTEFACT TEST, WHICH IS WHAT DECIDES. `tools/r2_4152_artefact.py`
+
+R2-4151 improved its adjudication and was withheld anyway, on three measured
+statements about the film rather than about the gate. **THE SAME THREE, IN THE
+SAME UNITS, ON THE DELIVERED MASTERS:**
+
+| R2-4151's indictment | R2-4151 | **R2-4152** |
+|---|---:|---:|
+| **the breach, 4–8 kHz, against the master it replaces** | **−3.64 dB** | **−0.27 dB** |
+| the breach, 8–16 kHz | −1.77 dB | **+0.57 dB** |
+| **the glass** (`shards` delivered LUFS-S) | **−6.88 dB** | **−2.80 dB** |
+| **the engine's share of the beat** (44.73 % as shipped) | **79 %** | **28.06 %** |
+
+**THE BAND THE CLIENT HAS REJECTED A MASTER OVER IS NOT DOWN.** And the
+breach's SPECTRAL BALANCE — each band against that beat's own broadband, which
+is the measure of "darker" that survives a level change:
+
+| relative to the beat's own broadband | R2-4147 | R2-4151 | **R2-4152** |
+|---|---:|---:|---:|
+| 1–4 kHz | −4.13 | −3.26 | −4.45 dB |
+| **4–8 kHz** | **−12.56** | −15.36 | **−10.19 dB** — **2.37 dB brighter than shipped** |
+| **8–16 kHz** | **−21.77** | −22.71 | **−18.57 dB** — **3.20 dB brighter** |
+
+**WHAT IS DOWN IS THE MIDDLE, AND THAT IS THE POWER UNIT LEAVING.** 200 Hz–4 kHz
+falls about 3 dB in absolute terms, which is where a firing comb at 690 Hz and
+its orders live. 0–200 Hz is +0.70 dB.
+
+**THE BEAT LEVELS, WHOLE FILM, DELIVERED** (dBFS RMS):
+
+| beat | R2-4147 | R2-4151 | **R2-4152** |
+|---|---:|---:|---:|
+| `1_assembly` | −35.17 | −34.88 | **−35.08** |
+| `2_launch` | −21.79 | −21.51 | −20.99 |
+| **`3_breach`** | **−22.05** | −22.84 | **−24.52** |
+| `4_transit` | −35.30 | −34.90 | **−32.32** |
+| `5_lap` | −29.63 | −28.97 | **−28.58** |
+| `6_ending` | −36.53 | −36.23 | −37.23 |
+
+**THE BREACH IS 2.47 dB QUIETER AND THAT IS THE COST, STATED PLAINLY.** It is
+paid by a bus that was 44.7 % of a beat it reads AMI 0.069 on, and it buys the
+2.67× on articulation and the 2.81× on eventfulness. Beats 4 and 5 are
+**2.98 dB and 1.05 dB LOUDER**, because the film's own programme gain no longer
+has to cut 3.04 dB to hold a breach that was delivering 6.5× the world's engine
+energy — `program_gain.min_db` moves −3.04 → **−1.54 dB**.
+
+**AND BEAT 1, WHICH IS PICTURE-LOCKED.** Block by block, NEW against OLD:
+
+    film t  0 - 31 s      +0.043 dB, CONSTANT TO THREE DECIMALS IN EVERY BLOCK
+    film t 31 - 33 s      +0.43 to +1.54 dB
+    film t 33 - 36 s      +1.58 to +0.08 dB   (beat 2, the launch)
+
+**BEAT 1'S ASSEMBLY CELL IS A PURE GAIN OF +0.043 dB FOR 31.7 OF ITS 33
+SECONDS**, and every beat-1 bus's trim is identical to R2-4147's to 0.01 dB. The
+last 1.3 s is not: **the engine's ignition is at world t = −2.30 s, i.e. film
+t = 31.70 s**, and the engine is +1.55 dB because it reached its declared target.
+That is a real change inside beat 1's declared span and it is **the engine
+starting, not the cell.** One beat-1 gate number moves with it — G-NOVEL
+`1_assembly` r 0.413 → 0.408, in the improving direction — and no beat-1 verdict
+changes. **`world/beat1_anim_anim.json` was not opened and no video was
+re-rendered.**
+
+**THE VERDICT: THIS SHIPS.** Not because three gate lines went — R2-4151 had
+that and was withheld — but because the three things the film was withheld ON
+are answered: **the top end is level-to-brighter, the glass is 2.80 dB down
+instead of 6.88 and it is a completely different bus (its own AMI 0.2565 →
+1.1107, its energy above 4 kHz 0.15 % → 6.46 %), and the engine is 28 % of the
+breach against 44.7 % in the master it replaces.**
+
+---
+
+### R2-4152(9) — THE PREDICTIONS FROM R2-4152(5), SCORED
+
+**Six right, three wrong, two partly — and one of the wrong ones is the limb the
+previous pass was judged on, for the third consecutive pass.**
+
+1. **`shards` → −15.9 ± 0.5, `debris` → −19.9 ± 0.5. RIGHT** — −15.69 and
+   −19.69, both inside the band.
+2. **`engine` becomes LUFS-limited, reaches −10.0, trim +17.91 → +19.46, and is
+   −6.3 dB in the breach / +1.55 dB on the lap. RIGHT, exactly** — trim +19.46,
+   delivered −10.00, engine LUFS-S in the breach −11.54 → −18.13 (−6.59 dB).
+3. **Premix +4.8 to +5.3 dBFS, GR −0.6 to −1.0 dB, both PASS. PARTLY RIGHT AND
+   THE GR IS BADLY WRONG** — premix **+4.49 dBTP** (0.31 dB outside, in the safe
+   direction) and GR **−2.65 dB** against a predicted −0.75. **THE OFFLINE
+   CHAIN REPRODUCES THE PREMIX PEAK TO 0.5 dB AND THE LIMITER'S GAIN REDUCTION
+   TO ONLY 1.9 dB.** Both thresholds PASS and G1 had 0.35 dB left, but **a
+   0.35 dB margin on a declared threshold was not what the sweep promised**, and
+   the sweep is what the ceiling was chosen from. That is a third instrument in
+   this chain that mis-sized an effect it was built to size.
+4. **G-PRESENCE `3_breach` AMI 0.28–0.38, AND STILL FAIL. RIGHT** — 0.3769,
+   inside the band, and it still fails the 0.50 bar.
+5. **G-BALANCE `3_breach` margin +6 to +10 dB and it may PASS. WRONG, AND
+   WRONG IN DIRECTION** — **+3.06 dB**, i.e. 1.07 dB WORSE than R2-4147 rather
+   than 2 to 6 dB better. The reasoning named the right mechanism (the engine is
+   not a protagonist of this beat) and missed that the engine is not in the
+   BACKGROUND set either, so removing it does nothing for the ratio — while
+   `shards`, the protagonist that matters, is still 2.80 dB below R2-4147.
+6. **Near-white share: the line stays GONE. WRONG, AND IT IS THE WORST NUMBER IN
+   THE PASS** — 0.474 → **0.660**. Same error as #5, in the denominator: taking
+   6.59 dB out of the one large bus that is NOT near-white raises the near-white
+   share of what is left, mechanically. **I predicted a limb would stay clear on
+   a mechanism I had not checked the definition of.**
+7. **G-EVENT `3_breach` 4.5–7.0 dB. WRONG, AND BETTER THAN PREDICTED** —
+   **7.62 dB** against R2-4147's 2.71.
+8. **The breach's 4–8 kHz −0.5 to +1.5 dB. RIGHT ON THE DELIVERED MASTER**
+   (−0.27 dB) **AND WRONG ON THE STEM SUM** (−3.96 dB). The two disagree by
+   3.7 dB because the stem sum is pre-limiter and pre-programme-gain. **The
+   delivered master is what the client hears and it is the one that decides**,
+   and this pass is only entitled to say that because it measured both and said
+   which. R2-4151's −3.60 dB was a delivered-master number, so the comparison in
+   R2-4152(8) is like for like.
+9. **BEAT 1 IS IDENTICAL — a pure gain, residual ≥ 80 dB down. PARTLY RIGHT, AND
+   THE PART THAT IS WRONG IS STATED RATHER THAN ROUNDED AWAY.** A single
+   best-fit gain over 0–33 s leaves a residual only **30.1 dB** down, which by
+   the test I wrote would have ended the pass. Block by block it is **+0.043 dB,
+   constant to three decimals, for 0–31 s** — and then +0.43 to +1.54 dB over
+   31–33 s, because **the engine's ignition is at film t = 31.70 s** and the
+   engine is +1.55 dB. The assembly cell is untouched, every beat-1 bus trim is
+   identical to 0.01 dB, and the one beat-1 gate number moves 0.413 → 0.408. **A
+   whole-beat residual test could not tell "beat 1 moved" from "beat 2 starts
+   1.3 s inside beat 1", and it took a block-wise measurement to say which.**
+10. **BEATS 4–6 improve on G-BALANCE, G-FLAT and G-HNR at `4_transit`. RIGHT** —
+    −2.30 → +0.43 dB, 0.700 → 0.627, 0.675 → 0.497, and `5_lap` and `6_ending`
+    improve too. Beats 4 and 5 are also 2.98 dB and 1.05 dB LOUDER.
+11. **No verdict flips, no new failure line. RIGHT ON THE VERDICTS AND WRONG ON
+    THE LINES** — G-BALANCE `3_breach`'s near-white line, which R2-4151 had
+    cleared, is back.
+
+---
+
+### DELIVERY
+
+**`PART2_AUDIO_MASTER_R2-4152.wav` IS THE DELIVERY.** Both films re-muxed
+`-c:v copy`, **video stream md5s taken before and after and verified
+byte-identical by the landing script, which refuses if either moves**: ProRes
+`c346a7a322a4a2a403727c1e85f17511`, H.265 `235ef36e844a62b0e303e4138907b9fa`.
+Both 124.083333 s. `watch/INDEX.md` updated. `watch/listen_2026-08-14/` re-cut
+with **NEW = R2-4152, OLD = R2-4147** — the breach clip is the pass and the
+beat-1 clip is the control arm — and every clip's audio was cross-correlated
+against the master it claims (r ≥ 0.9978). `CLIPS_OF.json` is accurate.
+
+**`audio/out/master.wav` and `watch/rejected_audio_R2-4079/` are untouched and
+both still fail.** `audio/verify.py` and `tools/percept_matrix.py` are untouched.
+`world/beat1_anim_anim.json` was not opened and no video was re-rendered.
+
+**ONE FILE IS WRITTEN AND NOT STAGED:** `watch/listen_2026-08-14/CLIPS_OF.json`
+is held by a live `gitguard` lease belonging to `r2-4147-audio-presence`. The
+file on disk is correct and the clips are correct; the commit does not contain
+it, because taking another agent's leased path is the thing the guard exists to
+stop and there is no `--force`. Whoever holds that lease should stage it.
+
+---
+
+## OPEN, AFTER R2-4152
+
+1. **G-BALANCE `3_breach` IS NOW THE BREACH'S WORST LIMB AND ITS CAUSE HAS BEEN
+   NAMED FOR TWO PASSES.** Near-white share 0.660 against a 0.25 bar, margin
+   +3.06 against +8.0. `reflect_showroom` and `aperture` are 61 % of that
+   background and sit 14.8 and 15.1 dB under the beat; **R2-4054 wrote the rule
+   — *"if they still measure more than 15 dB under the mix after this, they
+   should be deleted rather than raised again"* — and nobody has applied it.**
+   Applying it is a mix change and belongs in its own pass, with the A/B.
+2. **THE OFFLINE CHAIN MIS-SIZED THE LIMITER BY 1.9 dB.**
+   `tools/r2_4152_headroom.chain` reproduces `master.py`'s post-premix chain and
+   predicted GR −0.75 where the render delivered −2.65. G1 passed with 0.35 dB
+   to spare and the ceiling was chosen off that sweep. **Anyone raising
+   `BUS_PEAK_CEILING` further must fix the reproduction first**, because the
+   next dB is inside the error bar. G14 the sweep got right to 0.5 dB.
+3. **THE METER-VALIDITY LIMB IS BUILT, MEASURED AND NOT APPLIED.**
+   `U = maxMomentary(400 ms) − maxShortTerm(3 s)`, parameter-free, crest-
+   independent, and it separates `impact` (8.46 dB, one event in a 124 s film)
+   from `shards` (4.14 dB, a shower of 8401 contacts) which no peak threshold
+   can. **It is not applied because `assembly` reads 4.53 dB and beat 1 is
+   picture-locked.** It is also a PARTIAL instrument: 400 ms is long against a
+   0.16 ms contact, so 8.46 dB is a floor on `impact`'s mis-metering.
+4. **`TARGET_LUFS_S` HAS MORE RELATIONSHIPS DECLARED AS ABSOLUTES.** R2-4151(5)
+   found `debris` and fixed it with `RELATIVE_TARGET_LUFS_S`. R2-4152(2a) found
+   four more by measurement: `aperture`, `reflect_showroom`, `room` and
+   `structure` are the room's and the facades' response to sources, and their
+   absolute targets renormalise any change to those sources straight back —
+   **+8.13, +8.13, +5.57 and +1.27 dB.** That is why the ramp clause could not
+   be applied to them, and it is worth 0.3270 against 0.3642 on the beat.
+5. **`mix_trim_db` AND THEREFORE G15's LIST MOVED BY 4.08 dB AND IT IS AN
+   ARTEFACT OF THE CEILING.** `mix_trim_db = g_db − g_peak` is defined against a
+   version of the bus normalised to `BUS_PEAK_CEILING`, so raising the ceiling
+   shifted every bus's number by the same 4.08 dB and put four more buses on
+   G15's list. **G15 is `asserted: False`, report-only, and cannot fail a
+   build**, so nothing is hidden by this — but the metric should be defined
+   against 0 dBFS, which is what its own comment says it means. One line.
+6. **THE ENGINE'S REPORTED `delivered_lufs_s` DOES NOT INCLUDE THE RAMP CLAUSE.**
+   `add()` records `meas + trim`, and the clause is applied after. The STEMS do
+   include it, so every measurement in this entry is of the real thing, but the
+   report's number for `engine` reads −10.00 where the breach delivers −18.13.
+7. **`audio/verify.py`'s DOPPLER GATE FAILS ON THE SHIPPED MASTER AND ON THIS
+   ONE**, identically: 1 PASS / 1 FAIL / 1 INAPPLICABLE, the failing station at
+   film t = 106.76 s where the predicted Doppler span is only 1.41 semitones.
+   Measured read-only on `master_R2-4147.wav` this pass. Pre-existing, untouched,
+   and nobody's.
+8. **THE CONTACT-TIME LAW IS STILL WRONG BY 3.4× AND STILL WORTH NO LEVEL**
+   (R2-4151(4)); **the audio still throws its debris six times too far**
+   (R2-4150(6)); **`ACCEL_NOISE_RATIO` is still the one underived number in the
+   shard synthesiser** (R2-4151(5)).
+9. Carried unchanged: G-RING's ratio bar under its own null; G-RING's Sabine
+   limb un-anchored; AMI's and G-EVENT's shared hole; G-ROOM(c)'s two bars under
+   their nulls — **and G-ROOM(c) at `3_breach` is now INAPPLICABLE for want of a
+   decay tail, which is a loss of coverage and is not claimed as a win**;
+   **G-MOD and G-NOVEL at beat 1 remain PICTURE.**

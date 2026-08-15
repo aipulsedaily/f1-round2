@@ -16,18 +16,52 @@ still true.** It is written by dates that can be checked, not by memory.
 
 | file | cut | shows |
 |---|---|---|
-| **`PART2_THE_FILM_4K_ProRes422HQ.mov`** | **08-14 18:00** | **THE FILM. The whole of part 2, one unbroken 4K shot.** 3840x2160, 24 fps, **2,978 frames = 124.0833 s, zero cuts**, 512 spp, AgX / look None / exposure -3.628, SDR. ProRes 422 HQ, **11.25 GB**. Rendered from `render/film25_breach.blend` (sha16 **`1d2aa2d86533574e`**) on world `assembly15`, frames 1-2978 on three rented RTX 5090s over 2026-08-09 to 08-13. **AUDIO REBUILT 08-14, TWICE — now R2-4147** — carries `PART2_AUDIO_MASTER_R2-4147.wav`, muxed `-c:v copy`. **The picture is unchanged and that is proven, not assumed: the video stream's md5 is `c346a7a322a4a2a403727c1e85f17511` before and after the re-mux.** **This is the delivery master.** |
-| **`PART2_THE_FILM_4K_h265.mp4`** | **08-14 18:01** | **The viewing copy of the same film**, same 2,978 frames, same new audio. 3840x2160, 24 fps, 124.0833 s, H.265 `hvc1`, faststart, **880 MB**, AAC 192 kbps. Video stream md5 `235ef36e844a62b0e303e4138907b9fa`, identical before and after the re-mux. Use this to watch; use the ProRes to grade or cut. |
-| **`PART2_AUDIO_MASTER_R2-4147.wav`** | **08-14 19:45** | **The audio master the two films carry.** 124.083333 s, 48 kHz, 24-bit stereo, **-23.00 LUFS / -1.12 dBTP** (EBU R 128 — see below for why this is not -14), limiter gain reduction **-0.85 dB**. The **sixth** master. Its beat 1 is an assembly cell built from events **that you can actually hear** — R2-4141's was 14.0 dB below the threshold of hearing in a quiet room and the client said so. See the section below. |
+| **`PART2_THE_FILM_4K_ProRes422HQ.mov`** | **08-15 00:32** | **THE FILM. The whole of part 2, one unbroken 4K shot.** 3840x2160, 24 fps, **2,978 frames = 124.0833 s, zero cuts**, 512 spp, AgX / look None / exposure -3.628, SDR. ProRes 422 HQ, **11.25 GB**. Rendered from `render/film25_breach.blend` (sha16 **`1d2aa2d86533574e`**) on world `assembly15`, frames 1-2978 on three rented RTX 5090s over 2026-08-09 to 08-13. **AUDIO REBUILT 08-15 — now R2-4152** — carries `PART2_AUDIO_MASTER_R2-4152.wav`, muxed `-c:v copy`. **The picture is unchanged and that is proven, not assumed: the video stream's md5 is `c346a7a322a4a2a403727c1e85f17511` before and after the re-mux.** **This is the delivery master.** |
+| **`PART2_THE_FILM_4K_h265.mp4`** | **08-15 00:32** | **The viewing copy of the same film**, same 2,978 frames, same new audio. 3840x2160, 24 fps, 124.0833 s, H.265 `hvc1`, faststart, **880 MB**, AAC 192 kbps. Video stream md5 `235ef36e844a62b0e303e4138907b9fa`, identical before and after the re-mux. Use this to watch; use the ProRes to grade or cut. |
+| **`PART2_AUDIO_MASTER_R2-4152.wav`** | **08-15 00:32** | **The audio master the two films carry.** 124.083333 s, 48 kHz, 24-bit stereo, **-23.00 LUFS / -1.10 dBTP** (EBU R 128), limiter gain reduction **-2.65 dB**. The **seventh** master. **What changed is the BREACH and only the breach.** The showroom's glazing is laminated — 5 mm HS / 1.5 mm PVB / 5 mm HS, declared in `sim/out/fracture_wall.json` — and the audio had been ringing every fragment of it at a loss factor BELOW monolithic float glass, 995 contacts a second each ringing 0.6 s, which is a wash and not a shatter. The fragments are now the picture's own 3,216 shards read out of the same fracture the 4K frames were rendered from, median 21 mm against the 351 pieces of median 321 mm the audio was inventing. And the power unit stops outweighing what it is destroying: the shot is 1.6 s of world over 8 s of screen, and a continuous source rendered at true pitch on the film grid was delivering 6.5x the world's energy while the glass delivered the world's. **Beat 1 is a pure gain of +0.043 dB and its cell is untouched.** See the section below. |
+| `PART2_AUDIO_MASTER_R2-4147.wav` | 08-14 19:45 | **SUPERSEDED, kept as the arm of the current A/B.** The sixth master. Its beat 1 is the assembly cell the client can hear, and that cell is CARRIED FORWARD UNCHANGED into R2-4152 — this arm exists so the breach can be compared against it. -23.00 LUFS / -1.12 dBTP. |
 | `PART2_AUDIO_MASTER_R2-4141.wav` | 08-14 17:50 | **SUPERSEDED, kept as the arm of the current A/B.** The fifth master, rejected on hearing: *"now beat 1 i dont hear anything until the tubes play"*. Measured cause: between the part impacts its beat 1 reached 26.4 dB SPL at domestic playback, **0 of 29 third-octave bands over threshold**. |
-| **`listen_2026-08-14/`** | **08-14 19:50** | **The A/B for this rebuild, and the thing to actually play.** Four clips, 1280x720, cut from the delivered H.265 with the two masters muxed against identical picture: `NEW_`/`OLD_beat1_showroom_34s.mp4` (film t 0-34 s) and `NEW_`/`OLD_breach_glass_14s.mp4` (t 34-48 s). **NEW is R2-4147, OLD is R2-4141** — the master the client heard as *"i dont hear anything until the tubes play"*, so the A/B is pointed straight at the complaint. `CLIPS_OF.json` records both sha16s and the in-points, and each clip's audio was cross-correlated against the master it claims (r ≥ 0.9978). **No per-clip normalisation**: both masters are -23.0 LUFS integrated, so this is a comparison of content, not of gain. |
+| **`listen_2026-08-14/`** | **08-15 00:37** | **The A/B for this rebuild, and the thing to actually play.** Four clips, 1280x720, cut from the delivered H.265 with the two masters muxed against identical picture: `NEW_`/`OLD_beat1_showroom_34s.mp4` (film t 0-34 s) and `NEW_`/`OLD_breach_glass_14s.mp4` (t 34-48 s). **NEW is R2-4152, OLD is R2-4147.** **The breach clip is the pass**; the beat-1 clip is the CONTROL ARM and the two should be indistinguishable there. `CLIPS_OF.json` records both sha16s and the in-points, and each clip's audio was cross-correlated against the master it claims (r >= 0.9978). **No per-clip normalisation**: both masters are -23.0 LUFS integrated, so this is a comparison of content, not of gain. |
 | `AFTER_beat5_doppler_4s.mp4` | 08-08 08:20 | **R2-2161, the beat-5 framing fix.** f2340-2439 (t 97.5-101.6 s), 100 frames, 1280x720, 24 fps. The doppler pass. The car is placed **off-centre and travels across the frame**; beat 5's frame-offset is **0.754** against a 0.92 bound. Built from `render/r22161_after.blend`, whose camera path is bit-identical to the gated rig `7fc6d688…`. |
 | `BEFORE_beat5_doppler_4s.mp4` | 08-08 08:17 | its matched BEFORE, same 100 frames, same resolution, same 64 samples, same DOF. The shipped camera, which pins the car near **frame centre** the whole way — frame-offset **0.055**. From `render/film22.blend`, camera path `363e4e88…`, the sha `docs/LIVE-CAMERA.md` declares. |
 | `AFTER_opening_18s.mp4` | 08-08 01:36 | the opening tempo pass (R2-1606). The most recent camera deliverable. |
 | `BEFORE_opening_18s.mp4` | 08-07 17:52 | its matched BEFORE. Correctly named. |
 | `audio/` | 08-08 03:14 | re-cut from the master; `audio/INDEX.md` explains the earlier staleness and states it is fixed. |
 
-### THE AUDIO OF 2026-08-14 (R2-4147) — WHAT THE FILMS CARRY NOW
+### THE AUDIO OF 2026-08-15 (R2-4152) — WHAT THE FILMS CARRY NOW
+
+**THE BREACH WAS THE FILM'S LARGEST REMAINING AUDIO DEFECT AND TWO PASSES BUILT THE FIX AND
+REFUSED TO SHIP IT** — R2-4150 and R2-4151 both improved their gate score and both measured
+that the film would have SOUNDED WORSE, because the mix threw the improved glass 8.4 dB away
+and the power unit ended up 79 % of the beat. R2-4152 found why, and it was not a mix taste:
+
+* **THE GLAZING IS LAMINATED AND NO LINE OF THE AUDIO HAD READ THAT.** A 5 mm / 1.5 mm PVB /
+  5 mm section is a constrained-layer damping sandwich, which is the entire acoustic reason
+  laminated glazing is specified. The audio rang it at Q = 800-1500. At the laminate's own
+  published loss factor the shard layer's articulation index goes **0.2565 -> 1.1107** against
+  a validated physics positive's 0.7857, and its energy above 4 kHz goes **0.15 % -> 6.46 %**.
+* **THE FRAGMENTS ARE NOW THE PICTURE'S.** `sim/out/breach_sim.json` is the partition the 4K
+  frames were rendered from — 3,216 shards, median 21 mm. The audio was drawing its own: 351
+  pieces, median 321 mm, minimum 40 mm. An order of magnitude out in count AND in size, in
+  both directions at once.
+* **AND THE POWER UNIT WAS DELIVERING 6.5x THE WORLD'S ENERGY.** Beat 3 spends 8 s of screen
+  on 1.6 s of world. A shower of impacts re-timed by that map keeps its energy and loses
+  power, because the events are the same events. A continuous source rendered at true pitch
+  does not — it plays for eight seconds. The same rule moved the two apart by **7.82 dB**, and
+  the correction is `sqrt(clock.scale)`, a change of variables with no free parameter, which
+  is **exactly 0.000 dB everywhere outside 36-44 s.**
+
+**WHAT IT IS WORTH, ON THE DELIVERED MASTERS.** The breach's articulation index **0.1409 ->
+0.3769**; its eventfulness **2.71 -> 7.62 dB**; the engine **44.7 % -> 28.1 %** of the beat.
+Four failure lines gone and none added. **The 4-8 kHz band the client has rejected a master
+over is 0.27 dB down in absolute terms and 2.37 dB UP relative to the beat**, and 8-16 kHz is
+up on both measures. Beats 4 and 5 are 2.98 dB and 1.05 dB LOUDER, because the film's own
+programme gain no longer has to cut 3 dB to hold that breach down. The breach itself is
+2.47 dB quieter and that is the cost, paid by the bus that was 44.7 % of a beat it reads 0.069
+on. **`docs/STAGING-R2-4141-to-R2-4200.md` R2-4152 has every number and every prediction that
+was wrong.**
+
+### THE AUDIO OF 2026-08-14 (R2-4147) — THE BEAT-1 REBUILD, CARRIED FORWARD UNCHANGED
 
 **R2-4141 was rejected by ear within hours of shipping: _"now beat 1 i dont hear anything
 until the tubes play"_. It was the fourth rejection and the second one caused by a gate.**

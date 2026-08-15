@@ -152,7 +152,25 @@ TARGET_LUFS_S = {
     # 0.2%). It is also the layer the spec designates to carry the fines'
     # density. Sitting it 1.5 dB under the foreground shards is a mix statement:
     # the fragments lead, the fines sit just beneath them.
-    "debris": -10.5,
+    #
+    # R2-4151: THAT PREMISE IS NOW FALSE BY MEASUREMENT, SO THE RAISE IT BOUGHT
+    # IS REVERTED AND THE STATEMENT IS MADE RELATIVE. With the laminate's own
+    # loss factor and the picture's own fragment population, the `shards` bus
+    # carries 6.46 % of its energy above 4 kHz against the 0.15 % R2-4060
+    # measured -- 43x -- so "the only bus in the breach with any top end" is not
+    # true of anything any more, and the 2.5 dB it bought goes back. The offset
+    # returns to R2-4044's own words, "it sits UNDER the foreground shards
+    # rather than beside them", i.e. the -13.0 that was in this table before
+    # R2-4060, which is 4.0 dB under `shards`.
+    #
+    # AND IT IS DECLARED AS AN OFFSET, WHICH IS THE ACTUAL FIX. See
+    # `RELATIVE_TARGET_LUFS_S` below: an absolute -10.5 beside an absolute -9.0
+    # is a relationship only for as long as both buses reach their numbers, and
+    # `shards` does not -- the peak criterion holds it 11.71 dB short, at which
+    # point the declared "1.5 dB under" was DELIVERED as 10.2 dB OVER. The mix
+    # statement was inverted by 11.7 dB by a trim, silently, and every gate that
+    # reads the breach read the inversion. See R2-4151(5).
+    "debris": -10.5,          # superseded by RELATIVE_TARGET_LUFS_S["debris"]
     # R2-4081: -22.0 -> -27.0, ON ITS OWN TERMS AND WITH THE NUMBER IT MUST
     # MOVE WRITTEN DOWN FIRST. This bus is the ENGINE'S OWN first-order specular
     # reflection off the pit-garage facade at 20-40 m, low-passed at 6.5 kHz.
@@ -261,11 +279,165 @@ BUS_HF_SHELF = {}
 # (b) whatever keeps its linear peak at or below BUS_PEAK_CEILING. A bus that
 # needs (b) is a bus whose loudness target cannot be met without spending
 # headroom on something the meter cannot hear, and it says so in the report.
-BUS_PEAK_CEILING = 1.0
+BUS_PEAK_CEILING = 1.60      # R2-4152: SOLVED against G14. See below.
+
+# ===== R2-4151: THE PEAK CRITERION RE-DERIVED, AND LEFT AT 1.0 ANYWAY ========
+# The paragraph above is the derivation, and it is measurably obsolete. What it
+# says is that the K-weighted meter cannot hear the breach's buses. That was
+# true of the build it was written against and it is true of NO BUS IN THIS
+# FILM, because R2-4035 -- in the same rebuild -- moved the transient
+# world-attached sources onto the film grid and took the `impact` bus's energy
+# below 30 Hz from 92.99 % to 3.09 %.
+#
+# MEASURED, EVERY BUS, ON BOTH SHIPPED STEM SETS (`tools/r2_4151_peak_scope.py`)
+# as the gap between the same 3 s short-term measure taken K-weighted and taken
+# UNWEIGHTED -- which is exactly "how much of this bus is under the meter's own
+# rolloff":
+#
+#     the three buses the peak criterion wins on:
+#       engine  -1.62 dB     impact  +0.07 dB     shards  -1.04 dB
+#     the largest deafness anywhere in the film: assembly, +2.27 dB
+#
+# THE METER CAN HEAR ALL OF THEM. R2-4034's `impact` bus read +0.82 dBFS
+# unweighted against -13.26 K-weighted, a 14.09 dB gap; today that same bus
+# reads +0.07. So the criterion is no longer doing the job it was derived for.
+#
+# WHAT IT IS DOING INSTEAD, AND WHY IT STAYS. `g_peak < g_lufs` reduces exactly
+# to `PLR > -target`, where PLR is the bus's peak-to-loudness ratio -- so the
+# criterion is a CREST TAX with a threshold nobody chose, and a bus is punished
+# for being eventful. But it is still load-bearing, for a reason R2-4034 does
+# not state: `impact` is ONE event in a 124 s film, its 3 s short-term meter
+# reads -27.63 LUFS, and its -6.5 target therefore asks for +21.13 dB. Without
+# the ceiling that bus enters the sum at a linear peak of 19.5. THE CEILING IS
+# NOT DISABLED AND NOT MOVED.
+#
+# AND IT IS NOT THE 8.38 dB BLOCKER THE OPEN ITEM SAID IT WAS. Measured on the
+# R2-4150 stems by summing them and running the real chain offline:
+#     `shards` +4.05 dB -> premix peak +6.00 dBFS, i.e. G14 binds there
+#     `shards` +8.20 dB -> limiter gain reduction -3.0 dB, i.e. G1 binds there
+# The ceiling is worth at most 4 dB of the 11.71 before a DECLARED film-level
+# threshold stops it, and neither of those may be moved to make a master pass.
+# The 8.38 dB is therefore not available in the mix at all, and this pass takes
+# 2.96 dB of it out of the SOURCE instead -- see `layers.render_shards`'s
+# acceleration-transient reference, which delivered a median 0.76 of the ring's
+# peak while declaring 0.45 and varied 3x from contact to contact on a random
+# integer. THE REST IS OPEN AND IT IS A HEADROOM BUDGET, NOT A CEILING.
+
+# ========== R2-4152: IT IS A HEADROOM BUDGET, AND HERE IT IS ================
+# R2-4151 ended with "whoever takes this needs a headroom BUDGET across buses,
+# measured against G14's +6 dBFS and G1's 3 dB". `BUS_PEAK_CEILING` was never a
+# budget. It is a per-bus constant, it has never once been compared to G14, and
+# NOBODY HAS EVER BEEN ABLE TO ANSWER "how much peak headroom does this film
+# have left". `tools/r2_4152_headroom.py` is the ledger that answers it, and the
+# answer on the shipped master is that the film was throwing away 2.89 dB of its
+# own declared budget on every bus that the criterion was winning on.
+#
+# THE LEDGER, ON THE SHIPPED R2-4147 AND ON R2-4151:
+#   * the arithmetic sum of the bus true peaks (every bus peaking on one
+#     sample) is +17.25 dBFS; the delivered premix true peak is +3.21 dBTP, so
+#     the mix realises 19.9 % of its own worst case. The budget is therefore
+#     NOT divisible by a bus count -- that would be as arbitrary as the 1.0 it
+#     replaces, in the other direction -- and it has to be SOLVED.
+#   * exactly three buses sit ON the ceiling: `engine`, `impact`, `shards`.
+#     Raising it moves those three and nothing else. None of them makes a sound
+#     in beat 1 (the engine's ignition is at world t -2.30, i.e. film 31.7 s),
+#     which is why this is not a beat-1 change and the render proves it.
+#   * SOLVED, by bisection on the delivered stems: G14's +6.0 dBFS premix bound
+#     is met up to a common ceiling of 1.3940 = +2.89 dBFS with the engine as
+#     R2-4151 delivered it, and further once the ramp's level clause is applied,
+#     because THE FILM'S PREMIX PEAK IS AT t = 40.377 s AND IT IS 51.1 %
+#     `shards` AND 44.4 % `engine`. Those two are the same headroom, which is
+#     why the engine's eight held seconds and the shard bus's 11.71 dB of trim
+#     were always one problem and not two.
+#
+# AND IT IS IN THE TRUE-PEAK DOMAIN NOW, WHICH IS THE DOMAIN THE THING IT
+# PROTECTS IS MEASURED IN. G14, the delivery ceiling and the limiter are all
+# true peak; a sample-domain ceiling on a 0.16 ms Hertzian contact under-reads
+# the inter-sample peak and over-reads nothing, so the old rule was protecting
+# the wrong quantity as well as at the wrong threshold.
+#
+# WHAT IT IS STILL FOR, AND THE VALIDATION. R2-4034's own derivation names the
+# number it exists to stop: "that bus entered the sum at a linear peak of 7.50,
+# i.e. +17.5 dBFS". At the solved ceiling a bus at +17.5 dBFS FAILS BY 14.61 dB,
+# and `impact` where its own 3 s target puts it (+25.83 dBTP, linear 19.5) fails
+# by 22.95 dB. The protection is intact. `synth.glass_breach`, the validated
+# physics positive for this event at PLR 27.14 dB, passes at the budget and is
+# not taxed for its crest: at a COMMON peak ceiling it and the film's own shard
+# bus land on the same delivered true peak, and R2-4151(2)'s indictment -- that
+# the old criterion would tax the reference answer 6.4 dB HARDER than the defect
+# -- is exactly the two signals' raw peaks and not a penalty on either.
+#
+# WHAT IT STILL CANNOT DO, STATED RATHER THAN GLOSSED. A peak criterion carries
+# no information about how long a bus was making a sound, so it cannot tell a
+# shower of 8401 contacts from one event in 124 s of silence -- which is the
+# defect OPEN #2 actually named. The instrument for THAT is BS.1770-4's own
+# second window: U = (max 400 ms momentary) - (max 3 s short-term), parameter-
+# free because both windows are the standard's. It is MEASURED in
+# `tools/r2_4152_headroom.py` and DELIBERATELY NOT APPLIED, because subtracting
+# it from every bus's target moves every bus in the film and beat 1 is
+# picture-locked. It is the next pass's tool and it now has its numbers.
+# R2-4152: the two CONTINUOUS world-attached buses. `master.build()` applies
+# `sqrt(clock.scale)` to these after their trim; see the long block at
+# `engine.synth`, and `tools/r2_4152_engine_ramp.py` for the derivation.
+BUS_RAMP_LEVEL_CLAUSE = ("engine", "tyres")
+
+#
+# THE VALUE, AND THE MARGIN, WHICH IS DECLARED AND NOT HIDDEN. The R2-4151 stems
+# with the ramp level clause applied, summed and put through master.py's real
+# post-premix chain (`tools/r2_4152_headroom.py --budget`), with `debris`
+# following `shards` as `RELATIVE_TARGET_LUFS_S` makes it:
+#
+#     ceiling   shards   premix peak   G14    limiter GR   G1
+#      1.00     +0.00 dB   +1.57 dBFS  PASS     -0.99 dB   PASS
+#      1.45     +3.23 dB   +4.23 dBFS  PASS     -0.79 dB   PASS
+#     *1.60*    +4.08 dB   +4.97 dBFS  PASS     -0.75 dB   PASS
+#      1.80     +5.11 dB   ~+6.0 dBFS  BINDS
+#      1.90     +5.58 dB   +6.45 dBFS  FAIL     -0.72 dB   PASS
+#
+# G14 IS THE BINDING CONSTRAINT AND IT BINDS AT ABOUT 1.80. G1 is never close --
+# the limiter does LESS work as the ceiling rises, because the ramp clause takes
+# more out of the breach than the ceiling puts back. 1.60 is chosen to leave
+# 1.03 dB of G14 margin: the offline chain is a REPRODUCTION of the render's
+# chain and not the render, and a declared film-level threshold is not a thing
+# to sit on the edge of. That margin costs the shard bus 1.03 dB and the cost is
+# stated here rather than discovered later.
+BUS_PEAK_CEILING_SOLVED_AGAINST = {
+    "G14_premix_true_peak_dbfs": 6.0,
+    "G1_limiter_gain_reduction_db": 3.0,
+    "solver": "tools/r2_4152_headroom.py --budget",
+    "binds_at_ceiling": 1.80,
+    "chosen": 1.60,
+    "g14_margin_db": 1.03,
+    "note": ("both are DECLARED thresholds and NEITHER IS MOVED. The ceiling is "
+             "the largest value at which the delivered premix still satisfies "
+             "them, less a declared margin."),
+}
 
 # G15: a trim this large is a source-level bug being papered over by one
 # broadband number, not a mix. Reported per bus and aggregated into `build_ok`.
 BUS_TRIM_LIMIT_DB = 12.0
+
+# ===================== R2-4151: RELATIVE MIX STATEMENTS ======================
+# `{bus: (reference_bus, offset_db)}`. A bus listed here is trimmed to the
+# DELIVERED short-term loudness of its reference plus the offset, instead of to
+# its own absolute entry in TARGET_LUFS_S.
+#
+# WHY THIS EXISTS. The table above is a set of absolute numbers, and two of them
+# are a RELATIONSHIP: R2-4060's comment on `debris` says in so many words
+# "sitting it 1.5 dB under the foreground shards is a mix statement". An
+# absolute pair only expresses that relationship for as long as both buses
+# actually reach their numbers. `shards` does not. The peak criterion held it
+# 11.71 dB short of -9.0 on R2-4150, `debris` reached -10.5 exactly, and the
+# delivered relationship came out as debris 10.21 dB OVER shards -- the mix
+# statement inverted by 11.7 dB, by a trim, with nothing in the report saying
+# so. The breach's articulate layer fell to 6.36 % of the beat and an unchanged
+# wash took 31.55 % of it.
+#
+# The reference bus must be summed BEFORE the dependent one; `build()` adds
+# `shards` and then `debris` and asserts it.
+RELATIVE_TARGET_LUFS_S = {
+    "debris": ("shards", -4.0),
+}
 
 
 def hf_shelf(x, db, fc, sr):
@@ -477,7 +649,112 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     eng_f, rpm_f, gear_f, eng_info = engine.synth(
         tw, st["speed"], st["accel_long"], st["slip"], st["wheel_w"], spec, sr,
         to_film=grid.to_film, t_world_film=t_world_film)
+    # ============ R2-4152: THE TIME RAMP'S MISSING LEVEL CLAUSE ==============
+    # R2-4064's rule is "slow motion stretches the SCHEDULE and leaves the PITCH
+    # alone", and this file applies it to two classes of world-attached source
+    # in the same eight seconds without ever saying what it does to their LEVEL:
+    #
+    #   IMPULSIVE (R2-4035: `impact`, `shards`, `debris`). Each contact is
+    #     placed at `to_film(t_world)` and rendered at its true duration. The
+    #     events are THE SAME EVENTS, so their energy in the window is whatever
+    #     the world contains and their mean POWER falls by the clock scale.
+    #     Nobody chose that; it is what "re-time the events" means.
+    #
+    #   CONTINUOUS (R2-4064: `engine`, `tyres`). The operating point is mapped
+    #     through `to_film` and the carrier is rendered at true frequency, so
+    #     the engine emits at its true instantaneous power for EIGHT seconds of
+    #     screen where the world contains 1.60 -- and its energy in the window is
+    #     multiplied by 1/scale = 6.5054.
+    #
+    # THE SAME RULE MOVES THE TWO CLASSES' RELATIVE MEAN POWER BY 1/scale, which
+    # is 7.82 dB under the engine's own power in this window and 8.13 dB at the
+    # ramp floor. That is arithmetic on the project's own map, not a mix
+    # opinion, and it is why beat 3 is the one beat where the car outweighs what
+    # it is destroying: R2-4150(1) measured the engine at 44.73 % of the breach
+    # at AMI 0.069, and R2-4150(2)'s ORACLE bound -- a PERFECT glass layer
+    # reaching only 0.3031 against a 0.50 bar -- was measured through it.
+    #
+    # THE INVARIANT THAT MAKES THE TWO CONSISTENT is the one the picture already
+    # claims: the window contains THE WORLD'S OWN EVENT, more slowly. Slow
+    # motion shows you the same 1.6 seconds; it does not show you five extra
+    # cars. Under it a continuous source carries `sqrt(scale)` in amplitude, so
+    #
+    #     int_film p(tau) scale(tau) dtau  ==  int_world p(w) dw    (dw = scale dtau)
+    #
+    # which is a CHANGE OF VARIABLES and exact, not an approximation. There is
+    # no free parameter in it. `tools/r2_4152_engine_ramp.py` measures every
+    # limb: the map, R2-4064's own witness that the film-grid engine's power IS
+    # the world engine's at w(tau) (rpm agreement 0.0039 rpm, RMS agreement
+    # 0.02 dB on all four windows), the asymmetry bus by bus, and what it costs.
+    #
+    # WHERE IT APPLIES. `clock.scale` is EXACTLY 1.0 outside 35.983-43.968 s, so
+    # this gain is bit-exact 0.000 dB across the whole of beat 1 (0-33 s), beat
+    # 2, and beats 4-6. Beat 1 cannot move, and that is checked rather than
+    # asserted. The three warped buses (assembly, brakes, suspension) carry no
+    # energy inside the ramp and are left alone; the pane, the two facade
+    # reflections and the showroom tail are DERIVED from `eng_f`/`tyre_f` below
+    # and inherit it, which is correct -- a reflection of a corrected source is
+    # corrected once.
+    #
+    # WHERE IN THE CHAIN IT IS APPLIED, AND WHY THAT IS NOT WHERE IT LOOKS LIKE
+    # IT BELONGS. Physically the clause is emission-side and belongs on `eng_f`
+    # before propagation. IT IS APPLIED AFTER THE BUS TRIM INSTEAD, because
+    # `add()` re-normalises every bus to its declared LUFS-S target measured on
+    # the bus's OWN LOUDEST 3 s WINDOW -- and for every bus whose loudest window
+    # is inside the ramp, that renormalisation gives the clause straight back
+    # and pays for it OUTSIDE the ramp. Measured on the R2-4151 stems, what the
+    # trim would have compensated:
+    #
+    #     aperture         +8.13 dB     reflect_showroom  +8.13 dB
+    #     room             +5.57 dB     structure         +1.27 dB
+    #     engine (peak-limited, so it does NOT compensate)  0.00 dB
+    #
+    # `room` IS BEAT 1's OWN REVERB. Applying the clause to the excitation would
+    # have left the breach unchanged and made beat 1's showroom tail 5.57 dB
+    # louder, which is a picture-locked beat moved by a beat-3 fix. So the
+    # clause is applied post-trim to the TWO BUSES THAT ARE CONTINUOUS
+    # WORLD-ATTACHED SOURCES, and the buses DERIVED from them are left alone
+    # with the reason recorded: their absolute targets in `TARGET_LUFS_S` are
+    # relationships (a room tail is a fraction of what excites it) declared as
+    # absolutes, which is the R2-4151(5) defect in a second place. Declaring
+    # them with `RELATIVE_TARGET_LUFS_S` against their exciters is the next
+    # pass's item; guessing at it inside an engine fix is not.
+    #
+    # The delivered PEAK is unaffected either way: `engine`'s peak is at film
+    # t = 109.15 s and `tyres`' at 109.34 s, both outside the ramp, so the
+    # headroom ledger below is exact.
+    ramp_g = np.sqrt(clock.scale).astype(np.float32)[:, None]
+    _e0 = float(np.abs(eng_f).max())
+    rep["ramp_level_clause"] = {
+        "gain": "sqrt(clock.scale), per sample, applied AFTER the bus trim",
+        "applies_to": list(BUS_RAMP_LEVEL_CLAUSE),
+        "not_applied_to_and_why": {
+            "structure/room/aperture/reflect_*": (
+                "derived from the corrected sources, but their absolute "
+                "TARGET_LUFS_S entries would renormalise the clause away and "
+                "pay for it outside the ramp -- measured +8.13 dB on aperture "
+                "and reflect_showroom and +5.57 dB on `room`, which is beat 1's "
+                "own reverb. R2-4151(5)'s defect in a second place."),
+        },
+        "scale_min": float(clock.scale.min()),
+        "gain_min_db": float(10.0 * np.log10(clock.scale.min())),
+        "gain_db_outside_ramp": float(10.0 * np.log10(clock.scale.max())),
+        "samples_where_gain_is_not_unity": int((clock.scale < 1.0).sum()),
+        "film_t_support_s": [float(clock.film_t[clock.scale < 0.999][0]),
+                             float(clock.film_t[clock.scale < 0.999][-1])],
+        "engine_dry_peak": _e0,
+        "note": ("the level clause missing from R2-4064's rule: an impulsive "
+                 "source's energy is invariant under the film map because its "
+                 "events are the same events, and a continuous source's is "
+                 "multiplied by 1/scale unless it carries sqrt(scale). "
+                 "tools/r2_4152_engine_ramp.py"),
+    }
     rep["engine"] = eng_info
+    mark("ramp level clause: engine x sqrt(clock.scale), floor %+.3f dB, "
+         "0.000 dB outside %.3f-%.3f s"
+         % (10.0 * np.log10(clock.scale.min()),
+            rep["ramp_level_clause"]["film_t_support_s"][0],
+            rep["ramp_level_clause"]["film_t_support_s"][1]))
     mark(f"engine: {eng_info['upshifts']} upshifts, {eng_info['downshifts']} "
          f"downshifts, {eng_info['rpm_max']:.0f} rpm max, rendered on the "
          f"{eng_info['rendered_on']}, half_order_weight "
@@ -515,6 +792,12 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
               for k in surf_c}
     st_f = {k: grid.to_film(st[k]) for k in st}
     tyre_f, tyre_info = layers.tyres(t_world_film, st_f, surf_f, spec, sr)
+    # R2-4152: the ramp's level clause. The tyres are the second CONTINUOUS
+    # world-attached bus R2-4064 moved to the film grid and they carry the same
+    # 1/scale energy excess the engine does -- measured at 7.35 dB in the breach
+    # window on the delivered stems. Same gain, same reason, same 0.000 dB
+    # everywhere outside 36-44 s. See the block at `engine.synth` above.
+    tyre_info["ramp_level_clause"] = "x sqrt(clock.scale), post-trim -- R2-4152"
     tyre_info["rendered_on"] = "film grid"
     tyre_info["surface_time_fraction_while_moving"] = _surf_frac
     del surf_f, st_f
@@ -717,6 +1000,10 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
     # ============================================================ PROPAGATE ===
     master = np.zeros((n, 2), dtype=np.float32)
     bus_log = {}
+    # delivered short-term loudness per bus, so RELATIVE_TARGET_LUFS_S can be
+    # resolved against what a reference bus ACTUALLY got rather than what it
+    # asked for. That distinction is the whole point of the mechanism.
+    delivered_lufs_s = {}
 
     # R2-2221: OPTIONAL STEM DUMP, AND WHY IT IS EXACTLY HERE.
     # The wind diagnosis that fixed the flying lap ("wind delivered -22.48 dBFS
@@ -756,12 +1043,25 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
         ceiling, sum it, log all of it. See BUS_PEAK_CEILING (R2-4034)."""
         key = name if name in TARGET_LUFS_S else name.rstrip("0123456789")
         target = TARGET_LUFS_S[key]
+        rel = RELATIVE_TARGET_LUFS_S.get(key)
+        if rel is not None:
+            ref, off = rel
+            if ref not in delivered_lufs_s:
+                raise RuntimeError(
+                    "bus %r declares its level relative to %r, which has not "
+                    "been summed yet -- a relative target must follow its "
+                    "reference in build()" % (name, ref))
+            target = delivered_lufs_s[ref] + float(off)
         meas = dsp.max_short_term_lufs(stereo, sr)
         raw_peak = float(np.abs(stereo).max())
         g_lufs = target - meas if np.isfinite(meas) else -200.0
         g_lufs = float(np.clip(g_lufs, -80.0, 80.0))
-        # the second, unweighted criterion
-        g_peak = float(20.0 * np.log10(BUS_PEAK_CEILING / max(raw_peak, 1e-12)))
+        # the second criterion, IN THE TRUE-PEAK DOMAIN (R2-4152). G14, the
+        # delivery ceiling and the limiter are all true peak; a sample-domain
+        # ceiling under-reads the inter-sample peak of a 0.16 ms contact and
+        # over-reads nothing. Both are logged so the change is auditable.
+        raw_tp = (dsp.true_peak_dbtp(stereo, sr) if raw_peak > 1e-12 else -200.0)
+        g_peak = float(20.0 * np.log10(BUS_PEAK_CEILING) - raw_tp)
         g_db = float(min(g_lufs, g_peak))
         peak_limited = bool(g_peak < g_lufs - 1e-9)
         trimmed = (stereo * (10.0 ** (g_db / 20.0))).astype(np.float32)
@@ -771,15 +1071,32 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
         shelf = BUS_HF_SHELF.get(key)
         if shelf is not None:
             trimmed = hf_shelf(trimmed, shelf[0], shelf[1], sr)
+        # R2-4152: THE TIME RAMP'S LEVEL CLAUSE, applied here and not at the
+        # source. See the block at `engine.synth`: this is the only place it can
+        # go without the bus's own renormalisation handing it straight back and
+        # charging beat 1 for it.
+        if key in BUS_RAMP_LEVEL_CLAUSE:
+            trimmed = (trimmed * ramp_g).astype(np.float32)
         master[:] += trimmed
+        delivered_lufs_s[key] = float(meas + g_db) if np.isfinite(meas) else -200.0
         bus_log[name] = {"measured_max_short_term_lufs": meas,
-                         "target_lufs": target, "trim_db": g_db,
+                         "target_lufs": target,
+                         "target_declared_relative_to": (list(rel) if rel else None),
+                         "delivered_lufs_s": delivered_lufs_s[key],
+                         "trim_db": g_db,
                          "trim_db_from_lufs_target": g_lufs,
                          "trim_db_from_peak_ceiling": g_peak,
                          "peak_criterion_won": peak_limited,
                          "lufs_target_missed_by_db": float(g_lufs - g_db),
                          "raw_peak": raw_peak,
+                         "raw_true_peak_dbtp": raw_tp,
                          "peak_entering_sum": float(np.abs(trimmed).max()),
+                         # R2-4152: the bus's CLAIM on the film's declared peak
+                         # budget, which is the quantity G14 is about and which
+                         # nothing in this report has ever stated.
+                         "tp_entering_sum_dbtp": float(raw_tp + g_db),
+                         "share_of_g14_budget_pct": float(
+                             100.0 * 10.0 ** ((raw_tp + g_db - 6.0) / 20.0)),
                          # G15 SPLIT INTO ITS TWO HALVES. A layer generator's
                          # output is in its own units -- the shard bus is a sum
                          # of m*v momenta and peaks in the hundreds, the pane
@@ -1052,6 +1369,36 @@ def build(out_wav, sr=96000, report_path=None, speed_source="v_world",
                                                    - np.percentile(st_raw, 5))}
     mark(f"pre-mix: peak {raw_peak:.3f}, {L_raw:.2f} LUFS, "
          f"short-term range {rep['mix_pre']['short_term_range_db']:.1f} dB")
+
+    # ============ R2-4152: THE HEADROOM LEDGER, IN THE REPORT ================
+    # The one number nobody has ever been able to read off this file: how much
+    # of G14's declared +6.0 dBFS premix budget the mix actually spent, and who
+    # spent it. Reported here rather than left to a tool, because a budget that
+    # is not in the report is not a budget.
+    _pre_tp = dsp.true_peak_dbtp(master, sr)
+    _claims = {k: v["tp_entering_sum_dbtp"] for k, v in bus_log.items()
+               if np.isfinite(v["tp_entering_sum_dbtp"])
+               and v["tp_entering_sum_dbtp"] > -100.0}
+    _worst = 20.0 * np.log10(max(sum(10.0 ** (t / 20.0)
+                                     for t in _claims.values()), 1e-12))
+    rep["headroom_ledger"] = {
+        "g14_premix_true_peak_bound_dbfs": 6.0,
+        "premix_true_peak_dbtp": float(_pre_tp),
+        "headroom_left_db": float(6.0 - _pre_tp),
+        "worst_case_if_every_bus_peaked_together_dbfs": float(_worst),
+        "coincidence_kappa_db": float(_pre_tp - _worst),
+        "bus_peak_ceiling": BUS_PEAK_CEILING,
+        "bus_peak_ceiling_dbfs": float(20.0 * np.log10(BUS_PEAK_CEILING)),
+        "buses_on_the_ceiling": sorted(
+            k for k, v in bus_log.items() if v["peak_criterion_won"]),
+        "claim_dbtp_by_bus": {k: float(v) for k, v in
+                              sorted(_claims.items(), key=lambda a: -a[1])},
+        "solved_against": BUS_PEAK_CEILING_SOLVED_AGAINST,
+    }
+    mark("headroom ledger: premix %+.2f dBTP against G14 %+.2f, %.2f dB left; "
+         "ceiling %+.2f dBFS; on the ceiling: %s"
+         % (_pre_tp, 6.0, 6.0 - _pre_tp, 20.0 * np.log10(BUS_PEAK_CEILING),
+            ", ".join(rep["headroom_ledger"]["buses_on_the_ceiling"]) or "none"))
 
     # ---------------------------------------------- 30 Hz, BEFORE THE GAIN ----
     # R2-4036: NOTHING HIGH-PASSED THIS FILM ABOVE 12 Hz.
