@@ -37,14 +37,17 @@ master).
 
 ## How the numbering works
 
-Every defect gets an entry with an ID of the form **`R2-nnnn`**, written as a
+Every defect gets an entry with an ID of the form **`R2-nnn`**, written as a
 level-2 heading:
 
 ```
-## R2-0374 — the shared A/B image reader byte-swaps every 16-bit pixel …
+## R2-374 — the shared A/B image reader byte-swaps every 16-bit pixel …
 ```
 
-Audio defects share the numbering with visual ones — the brief requires it.
+IDs are **not zero-padded to a fixed width** — the earliest are `R2-001`, the
+latest `R2-4157` — so sort them numerically, not as strings, and grep for
+`'^## R2-374 '` rather than `R2-0374`. Audio defects share the numbering with
+visual ones; the brief requires it.
 
 **The two files that hold entries:**
 
