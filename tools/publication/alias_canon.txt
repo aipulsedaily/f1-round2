@@ -1,3 +1,18 @@
+# alias_canon.txt — the canonical, APPEND-ONLY alias map.
+#
+# One rented-host identifier per line. THE ALIAS IS THE LINE NUMBER: line 1 is
+# id-001, line 82 is id-082. Blank lines and #-comments do not count.
+#
+# NEVER sort this file. NEVER remove a line, even if the document that mentioned
+# the identifier is deleted. Only ever append. Renumbering silently breaks the
+# one property the aliases exist to preserve — that id-016 means the same offer
+# in every document, so "the same machine refused our key 61 h apart" can still
+# be stated.
+#
+# Lines 1-82 are the identifiers present at c18c9f4~1, the tree as it stood
+# before the first sanitisation commit. Check that, do not trust it:
+#     python3 tools/publication/sanitise_docs.py --verify-canon
+# Anything below line 82 was appended by a later run of the sanitiser.
 25192047
 31275126
 31499018
