@@ -79,7 +79,7 @@ Also stale by the same decision, same file:
 |---|---|
 | jobs across 12 brokers | **2,764** |
 | cumulative `meta.spend_usd` | **$215.75** |
-| vast.ai credit, most recent sample | **$45.2304** |
+| vast.ai credit, most recent sample | **$[redacted]** |
 | distinct instances in the three master brokers alone | 39 (state3 8, state4 16, state5 15) |
 | delivered | a 2,978-frame 4K master, verified present frame 1–2978, 0 missing |
 
@@ -276,12 +276,12 @@ the banner are still valuable and should be kept.
   — which is the correct safe posture: prepaid credit is the only hard spend
   ceiling vast.ai offers."*
 * `operations.md` lines 903–905: *"The only real ceilings are **prepaid credit
-  with autobilling off** (currently $25.00, autobill `None` — correct)."*
+  with autobilling off** (currently $[redacted], autobill `None` — correct)."*
 
 Actual credit, from `meta.credit` across brokers, most recent sample:
-**$45.2304**. The project has spent ~$215.75 through this ceiling, which means
+**$[redacted]**. The project has spent ~$215.75 through this ceiling, which means
 credit has been topped up repeatedly. A reader deciding whether a run is
-affordable against "$25 untouched" is reasoning from a number three top-ups old.
+affordable against "$[redacted] untouched" is reasoning from a number three top-ups old.
 
 Also in this family, unmarked: `README.md` line 18 *"Cost: **$0.326/hr**"*. The
 exclusive-card market this project actually rents on is documented at

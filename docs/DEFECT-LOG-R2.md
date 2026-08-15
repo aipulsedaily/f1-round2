@@ -59320,7 +59320,7 @@ new-spend ceiling at **exactly $150.00** — the number the brief set, unmoved.
 **The projection is now ~$139 of $150 — a 7.5% margin, down from the ~$113
 estimate.** The whole difference is fleet04's $0.801/hr card, which is a
 consequence of the two blacklisted bad hosts, not of the render. Credit is
-$154.87 = **89.3 h of runway against ~72 h needed**.
+$[redacted] = **89.3 h of runway against ~72 h needed**.
 
 **This is close enough that the next adverse event is worth surfacing rather
 than absorbing.** Specifically: each further retirement can blacklist more
