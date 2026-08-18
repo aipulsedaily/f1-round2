@@ -536,7 +536,7 @@ MEASURED, `docs/STAGING-R2-3901-to-R2-3960.md:1602`:
 |---|---|---|
 | delivered master | **231.6 GPU-hours** | DERIVED: 280.0 s × 2,978 = 833,840 s |
 | hardware | 3 exclusive whole-machine RTX 5090s on vast.ai, $0.428 / $0.454 / $0.455 per hour | frames split 993 / 993 / 992, coverage exact |
-| wall clock | ~**97.3 h**, 2026-08-09 ~04:06-04:30Z to 2026-08-13 05:45:19Z | GPU utilisation ~79 % over ~292 machine-hours |
+| wall clock | **97.3-97.7 h** (midpoint 97.5, approximate), launched 2026-08-09 ~04:06-04:30Z, complete 2026-08-13 05:45:19Z | the range is the launch-time uncertainty, not measurement noise. GPU utilisation ~79 % over ~292 machine-hours |
 | cost of the master | **$132.57** | against a $150 ceiling. `docs/READING-LIST.md:140`, `docs/QUICKSTART.md:291`. **Treat as an upper bound** — `docs/DOC-ACCURACY-AUDIT.md:554-564` (§UNRESOLVED, U1) lists the master's isolated cost as UNRESOLVED, because the brokers' cumulative $141.06 covers their whole life including non-master work, and says explicitly **do not publish $141.06**. $132.57 is $141.06 less $8.49 of pre-existing banked spend. Cross-check: $132.57 / ~292 machine-hours = $0.454/machine-hour against quoted rates of $0.428-$0.455, agreeing to ~2 %. |
 | everything else — every test, probe, calibration and retry | **161.9 GPU-hours** | MEASURED: `SUM(COALESCE(render_sec, exec_sec, 0))` over the jobs table of all twelve **local** `vast-render` broker databases; 2,764 jobs, 10,954 frame records |
 | **project total** | **393.5 GPU-hours** | DERIVED: 161.9 + 231.6, two **disjoint** sets |
