@@ -13,7 +13,14 @@ samples       512
 grade         AgX, look None, exposure -3.628
 renderer      Blender 5.2.0 LTS / Cycles / OptiX
 render        3 rented RTX 5090s, 2026-08-09 -> 08-13, $132.57
+triangles     17,707,774,735 evaluated per frame   (52.7 trillion across the film)
+              138,073,595 unique, resident once -- instanced 128x
 ```
+
+Those two triangle figures are different quantities and are not interchangeable;
+[`docs/SCALE.md`](docs/SCALE.md) defines all four of them, gives the source line
+for every number in this file, and records the one measurement disagreement that
+is still open.
 
 The camera starts inside a showroom, flies through a wall as it is breached, out
 onto an access road, and away around a 3,675 m circuit — as a single continuous
@@ -35,11 +42,19 @@ This is the second hard rule after the single take, and it is meant literally:
 - **no AI-generated images, video, audio or geometry** anywhere in the pipeline
 
 What that produced, by the numbers: a **3,675 m circuit**; a vegetation library
-of **33.26 M base-library triangles** placing **26,641 trees** (**27,969** woody
-objects in the assembled world, alongside 38,847 shrubs and 4.9 M ground-cover
-instances); ~45 individually-gated item modules; a crowd; and a soundtrack —
-all from scripts in this tree. Every one of those numbers has an entry behind it
-in `docs/DEFECT-LOG-R2.md`, usually because someone got it wrong first.
+of **33.62 M base-library triangles** over **1,432** unique meshes, placing
+**27,969 woody objects** (24,646 woodland + 3,299 hedgerow + 24 avenue) alongside
+38,847 shrubs and ~4.86 M ground-cover instances; ~45 individually-gated item
+modules; a crowd; and a soundtrack — all from scripts in this tree. Every one of
+those numbers has an entry behind it in `docs/DEFECT-LOG-R2.md`, usually because
+someone got it wrong first.
+
+*(Those are the **shipped** world's figures, measured from
+`render/world/assembly/r2/assembly15_build.json`. This paragraph previously read
+"33.26 M … 26,641 trees", which was `assembly5`-era — the same superseded-terrain
+chain [`docs/SCALE.md`](docs/SCALE.md) §9 is about. `docs/README.md:173` still
+quotes the old pair while describing a historical document; that instance is left
+as written.)*
 
 The only thing carried in from the previous round is a 2.4 MB build *recipe*
 under `round1_source/` (see its `PROVENANCE.md`) — deliberately the recipe and
@@ -54,6 +69,7 @@ not the 288 MB artefact it produces.
 | **five minutes, and no interest in films** | [`docs/BROKEN-INSTRUMENTS.md`](docs/BROKEN-INSTRUMENTS.md) — twenty-six cases of a check that passed while the thing it guarded was broken. Written for a reader who knows nothing about this project. |
 | **ten minutes** | [`docs/READING-LIST.md`](docs/READING-LIST.md) — sixty entries out of ~1,300, each with a line on why it is worth opening. There is a ten-minute list at the top. |
 | **an afternoon** | [`docs/README.md`](docs/README.md) — how the engineering log is organised, which documents are live and which are historical, and a glossary. |
+| **to know how big this thing is** | [`docs/SCALE.md`](docs/SCALE.md) — the film in measured triangles: the four definitions, the four census layers, the per-module breakdown, the render settings and the GPU bill. Every figure with its source line. |
 | **to find one specific thing** | [`docs/INDEX.md`](docs/INDEX.md) — every file in `docs/`, one line each. |
 | **twenty seconds and a terminal** | [Run something](#run-something-in-twenty-seconds), below. |
 

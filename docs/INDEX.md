@@ -1,13 +1,19 @@
 # `docs/INDEX.md` — every file in this directory, one line each
 
-`docs/` holds **144 tracked files: 106 markdown and 38 data artefacts**, about
+`docs/` holds **145 tracked files: 107 markdown and 38 data artefacts**, about
 **142,100 lines of prose**. This page exists so that nobody has to open all of
 them to find the shape of the thing.
 
 *Measured 2026-08-18 against the tracked tree, after this page, `QUICKSTART.md`
 and `GITHUB-PAGE.md` were added — the first draft said 141/103 and was made
 stale by its own commit, which is a small demonstration of why every count on
-this page ships with the command that re-derives it.*
+this page ships with the command that re-derives it. It then said 144/106 and was
+made stale again by the commit that added `SCALE.md`, which is the same
+demonstration a second time.*
+
+```bash
+git ls-files docs/ | wc -l; git ls-files docs/ | grep -c '\.md$'
+```
 
 **This is the inventory. Three other pages are the route in:**
 
@@ -17,6 +23,7 @@ this page ships with the command that re-derives it.*
 | [`README.md`](README.md) | how the log is organised, live-vs-historical, glossary, timeline |
 | [`READING-LIST.md`](READING-LIST.md) | ~60 curated entries out of 1,295, with a ten-minute list at the top |
 | [`BROKEN-INSTRUMENTS.md`](BROKEN-INSTRUMENTS.md) | the one essay to read if you read nothing else |
+| [`SCALE.md`](SCALE.md) | how big the film actually is, in measured triangles — the answer to "how many polygons is this" |
 
 ---
 
@@ -30,6 +37,7 @@ Documents written to be read by someone who was not here.
 | [`READING-LIST.md`](READING-LIST.md) | 191 | A curated route through the defect log: a ten-minute list, then nine themed sections (broken instruments, retractions, fixes correctly not shipped, the world, the render farm, multi-agent collisions, the audio, the generalised laws, where the film is actually proven). |
 | [`README.md`](README.md) | 209 | How `docs/` works: the `R2-nnn` numbering rules and their four conventions, which documents are live and which are historical, a glossary of the project's vocabulary, and a dated timeline. |
 | [`DEFECT-LOG-R2.md`](DEFECT-LOG-R2.md) | 67,640 | **The log itself.** 1,316 entry headings, 1,295 distinct IDs, `R2-001` … `R2-4255`, appended in merge order rather than numeric order. Do not start at line 1. |
+| [`SCALE.md`](SCALE.md) | — | **How big the film is, measured.** The four definitions of "polygon count" and why conflating them broke seven published figures; the four census layers of the shipped world; the per-module and per-collection breakdown; the car; the vegetation populations; the render settings and the 393.5 GPU-hours. **Every figure carries its definition, its class and its source line.** Also §8, a 10.7 % disagreement between two instruments that is explained but not closed, and §9, a generator's number going stale four times while staying quotable. |
 | [`THE-BRIEF-ROUND2.md`](THE-BRIEF-ROUND2.md) | 151 | The client's brief, verbatim, including the one-shot law and the no-downloaded-assets rule. **The film is judged against this file.** |
 | [`DOC-ACCURACY-AUDIT.md`](DOC-ACCURACY-AUDIT.md) | 646 | A pre-publication audit hunting one class: a claim that was true when written and is false now, and a correction that never propagated. **Read it before quoting a number out of any planning document here.** Some of its severity-1 findings have since been fixed in the files they name — check the file, not the audit. |
 | [`MASTER-RUNBOOK.md`](MASTER-RUNBOOK.md) | 328 | The 4K master: the spec as a ceiling, the seven un-waivable gates, measured per-beat cost, and the fleet-size table. Its `LIVE: THE MASTER IS RENDERING` banner describes 2026-08-09; the render finished 2026-08-13 (`R2-3927`). Read the gates and the cost tables; read the banner as history. |
