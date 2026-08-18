@@ -194,18 +194,87 @@ for i, n in enumerate(NEW_IDS):
     ID_MAP[n] = "id-%03d" % (len(CANON_IDS) + i + 1)   # appended, never inserted
 
 # ------------------------------------------------------------- machine aliases
-# Frozen in allocation order.  NOT sorted at runtime: sorting means that adding
-# one machine below the current minimum silently shifts every alias above it.
-# Append new machines to the END of this list and nowhere else.
-MACHINES = ["8449", "8512", "31233", "34481", "36179", "43130", "44842",
-            "46633", "52271", "53711", "58073", "73811", "131197", "137580",
-            "138180", "141468", "142281", "144732"]
+#
+# 2026-08-18 — THE VALUES USED TO BE LITERALS RIGHT HERE, AND THAT WAS THE
+# WHOLE LEAK.
+#
+# `docs/PUBLICATION-AUDIT.md` §4 is titled "The one real finding: the sanitiser
+# ships its own de-aliasing table", and this was it. Eighteen real vast.ai
+# machine ids and THREE REAL ROUTABLE IP ADDRESSES of rented third-party GPU
+# hosts sat in this file as source literals. The documentation was correctly
+# sanitised — the corpus says `mach-11` and `host-A` — but **this file is
+# tracked, so shipping the sanitiser shipped the lookup table that undoes it.**
+# Anyone with the published repository could reverse every alias in every
+# document by reading two lines of Python. The redaction was cosmetic.
+#
+# The sibling repository had already caught the identical shape and written it
+# into its own `.gitignore`, about `farm/hostrates.json`:
+#
+#     "Anyone holding both files joins them on those values and recovers every
+#      identifier the aliasing was for. While this file was tracked, the docs'
+#      redaction was cosmetic."
+#
+# It also fixed it the same way this does — `d056d4ba` over there is literally
+# "untrack the table that de-aliases the docs".
+#
+# THE VALUES NOW LIVE IN AN UNTRACKED LOCAL FILE and the ALIASES stay here.
+# `tools/publication/host_canon.txt` is gitignored, so a clone gets the method,
+# the reasoning and the alias vocabulary — everything that makes this file worth
+# reading — and gets no way to invert any of it.
+#
+# WHY THIS IS SAFE TO LOSE, WHICH IS THE ONLY QUESTION THAT MATTERS.
+# The map is needed to SUBSTITUTE, not to DETECT. Without it:
+#   * every existing document is unaffected; the corpus is already sanitised;
+#   * `MACH_SHAPE` and `IP_SHAPE` below still fire on any machine id or any
+#     non-benign address in the corpus, and still report it as unknown — which
+#     is the check that actually protects a NEW document, and the check that
+#     caught a planted 203.0.113.77 canary going through a full run untouched;
+#   * only the automatic rewrite of a NEW occurrence is unavailable, and it
+#     fails LOUD rather than silently doing nothing.
+# So the failure mode of losing the map is "you are told to alias it by hand",
+# not "it is silently published in the clear".
+#
+# Frozen in allocation order. NOT sorted at runtime, and NOT sorted in the file:
+# sorting means that adding one machine below the current minimum silently
+# shifts every alias above it. Append to the END and nowhere else — the same
+# append-only charter `alias_canon.txt` carries, for the same reason.
+HOST_CANON = os.path.join(PUBDIR, "host_canon.txt")
+
+
+def read_host_canon():
+    """Load the untracked machine-id and IP alias values.
+
+    Returns (machines, ips). Missing file is NOT fatal — see the block above:
+    detection survives without it and substitution is what degrades.
+    """
+    machines, ips = [], {}
+    if not os.path.isfile(HOST_CANON):
+        return machines, ips
+    with open(HOST_CANON, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.split("#", 1)[0].strip()
+            if not line:
+                continue
+            kind, _, value = line.partition(":")
+            if kind.strip() == "machine":
+                machines.append(value.strip())
+            elif kind.strip() == "ip":
+                real, _, alias = value.partition("=")
+                ips[real.strip()] = alias.strip()
+    return machines, ips
+
+
+MACHINES, IPS = read_host_canon()
 assert len(set(MACHINES)) == len(MACHINES), "duplicate machine id"
 MACH_MAP = {n: "mach-%02d" % (i + 1) for i, n in enumerate(MACHINES)}
 
-IPS = {"host-A": "host-A",
-       "host-B": "host-B",
-       "host-C": "host-C"}
+if not MACHINES and not IPS:
+    print("NOTE: %s is absent, so machine ids and host IPs will be DETECTED "
+          "and reported but NOT substituted." % os.path.relpath(HOST_CANON, ROOT),
+          file=sys.stderr)
+    print("      That file is deliberately untracked — it is the table that "
+          "de-aliases the corpus, and publishing it would make the aliasing "
+          "cosmetic. See docs/PUBLICATION-AUDIT.md §4.", file=sys.stderr)
 
 counts = Counter()
 

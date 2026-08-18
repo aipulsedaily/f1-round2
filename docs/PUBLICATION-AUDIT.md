@@ -8,7 +8,37 @@ one `refs/notes/commits` note and the 228 uncommitted working-tree changes.
 
 ---
 
-## 0. THE BLOCKER THAT NO SCAN CAN CLEAR
+## 0. THE BLOCKER THAT NO SCAN CAN CLEAR — CLEARED 2026-08-18
+
+> ## RESOLVED: the account owner reports the vast.ai API key was **revoked** on 2026-08-18, along with an SSH key.
+>
+> **Revocation is stronger than the rotation this section demanded.** A rotated
+> key leaves the old one alive until it is deleted server-side; a revoked key
+> cannot authenticate at all. The eight-character fragment in the sibling
+> repository's history therefore describes a credential that no longer exists.
+>
+> **Two qualifications, and neither is a formality.**
+>
+> 1. **CLIENT-REPORTED, not measured.** Revocation was deliberately *not*
+>    verified by calling the vast.ai API, because there is no read-only way to
+>    ask whether a key is dead that does not involve presenting it — the test
+>    would be the exposure, performed to check whether the exposure had closed.
+>    Confirm it visually instead: console → Account → API keys, and the old key
+>    is **absent from the list**.
+> 2. **This does not mean the key was never exposed.** It sat in plaintext on
+>    disk. That happened, and nothing below is retracted. Revocation is what
+>    makes the disclosure harmless, not what makes it untrue.
+>
+> **This repository never contained the key or any fragment of it** — §1's scan
+> covers that, and it was already true. This section was here because the two
+> repositories share one account, and a live disclosed credential is a reason
+> not to publish *anything* that advertises the account. That reason is gone.
+>
+> **The blocker as it stood while the key was live is kept verbatim below**, on
+> the same principle as everything else in this document: the argument for why
+> plaintext means disclosed is the argument that got the key revoked.
+
+### The blocker as written (— 2026-08-18)
 
 > ## The vast.ai API key must be rotated by the account owner before either repository is published.
 >
@@ -213,6 +243,55 @@ gitignore `sanitise_docs.py` itself, or replace the real addresses with the
 RFC 5737 documentation-range placeholders the file already uses elsewhere
 (`203.0.113.77`, `198.51.100.4` — those are reserved-for-documentation and are
 correctly *not* a leak).
+
+> ### APPLIED, 2026-08-18 — the first option, and here is why not the third.
+>
+> The values — both the three addresses **and** the eighteen real vast.ai
+> machine ids beside them, which this section did not count — now live in
+> `tools/publication/host_canon.txt`, which is **gitignored**. The aliases stay
+> in `sanitise_docs.py`. A clone gets the method, the reasoning and the alias
+> vocabulary, which is everything that makes that file worth reading, and no way
+> to invert any of it. This is the same fix, for the same reason, that the
+> sibling repository applied in its `d056d4ba` — a commit whose subject is
+> literally *"untrack the table that de-aliases the docs"*.
+>
+> **Not the placeholder option**, which was tempting and is worse. Substituting
+> RFC 5737 addresses into `IPS` leaves a table that still *looks* authoritative
+> and silently maps nothing — every future lookup missing, every alias quietly
+> not applied, while the tool still reports success. That is precisely the
+> failure `.gitignore` reasons about for `farm/hostrates.json` in the sibling
+> repo: "the machine id IS the lookup key, so opaque labels would not break the
+> leak, they would break the TABLE". **Absence is legible; a wrong table is not.**
+>
+> **Losing the file is safe, and that is the only thing that makes ignoring it
+> defensible.** The map is needed to SUBSTITUTE, never to DETECT. With it gone,
+> `MACH_SHAPE` and `IP_SHAPE` still fire on any unknown machine id or non-benign
+> address and still report it — the check that actually protects a *new*
+> document, and the one that caught a planted `203.0.113.77` canary going
+> through a full run untouched. The tool says so on stderr and declines to
+> rewrite. Verified both ways: with the map present, `18 machine aliases`,
+> 0 files changed of 141 prose and 0 of 1049 code/records, `no unknown machine
+> ids or IP addresses in the corpus`; with the map moved away, `0 machine
+> aliases`, the same clean corpus, and the notice printed.
+>
+> **`alias_canon.txt` was deliberately left tracked**, and that is a different
+> judgement, not an oversight. It holds 8-digit vast.ai *offer and instance*
+> ids: opaque integers in one vendor's database, identifying nothing to anyone
+> outside that account, routing nowhere. An IP address is *reachable* — that is
+> the entire difference, and it is the same line drawn in the sibling repo's
+> §4 about machine ids. `--verify-canon` also re-derives those 82 ids from
+> `c18c9f4~1`, so untracking the file would not remove them from a clone
+> anyway; it would only break the verification.
+>
+> **What this does NOT fix: history.** These three addresses still appear
+> un-aliased in earlier blobs of `docs/DEFECT-LOG-R2.md` and
+> `docs/STAGING-R2-3841-to-R2-3900.md` (130, 26 and 16 occurrences), and the
+> pre-sanitisation tree at `c18c9f4~1` still holds every identifier in the
+> clear. Fixing the current tree closes the *decoder ring* — the docs can no
+> longer be inverted by reading a tracked file — but anyone willing to walk the
+> history can still recover the addresses directly. **That is a live residual
+> exposure and it is an Option B decision (`--replace-text`), not something a
+> tree edit can reach.** See §6.
 
 These are third-party hosts' addresses, not the owner's. The severity is
 "discloses which machines were rented", not "grants access".

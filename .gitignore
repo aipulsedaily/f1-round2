@@ -320,3 +320,35 @@ world/items/grandstand_seats.json
 # has always protected this tree: **`git add` is path-scoped, never
 # `git add -A`, never `git add .`** -- now enforced by `tools/gitguard.py`
 # rather than only asserted.
+
+# THE DE-ALIASING TABLE. THE ONE FILE IN THIS TREE THAT MUST NEVER BE TRACKED.
+#
+# docs/PUBLICATION-AUDIT.md §4 -- "The one real finding: the sanitiser ships its
+# own de-aliasing table" -- found THREE REAL ROUTABLE IP ADDRESSES of rented
+# third-party GPU hosts, plus eighteen real vast.ai machine ids, sitting as
+# source literals in tools/publication/sanitise_docs.py. That file is tracked.
+# The documentation was correctly aliased to `host-A` and `mach-NN`, and it did
+# not matter: shipping the sanitiser shipped the lookup table that undoes it,
+# and anyone with the repository could invert every alias in every document by
+# reading two lines of Python.
+#
+# The sibling repository had already caught the identical shape, about
+# farm/hostrates.json: "Anyone holding both files joins them on those values and
+# recovers every identifier the aliasing was for. While this file was tracked,
+# the docs' redaction was cosmetic." It fixed it the same way -- its d056d4ba is
+# literally "untrack the table that de-aliases the docs".
+#
+# So the VALUES moved here and the ALIASES stayed in the tool. A clone gets the
+# method, the reasoning and the vocabulary, and no way to invert any of it.
+#
+# UNTRACKED RATHER THAN GENERICISED, deliberately: replacing the addresses with
+# placeholders in the tool would leave a map that still looks authoritative and
+# silently maps nothing. Absence is legible; a wrong table is not.
+#
+# Losing this file is safe, which is the only thing that makes ignoring it
+# defensible. The sanitiser needs it to SUBSTITUTE, not to DETECT: MACH_SHAPE
+# and IP_SHAPE still fire on any unknown machine id or non-benign address and
+# still report it, which is the check that protects a NEW document and the one
+# that caught a planted 203.0.113.77 canary. Without the map the tool says so on
+# stderr and declines to rewrite; it does not quietly pass anything through.
+tools/publication/host_canon.txt
