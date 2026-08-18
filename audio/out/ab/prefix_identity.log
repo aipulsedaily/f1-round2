@@ -6,10 +6,10 @@
   heading     before t_end: bit-identical=True (worst 0.000e+00)   after: 4.189
   s_m         before t_end: bit-identical=True (worst 0.000e+00)   after: 883.9
   track_s     before t_end: bit-identical=True (worst 0.000e+00)   after: 883.9
-  eng         before t_end: bit-identical=False (worst 1.102e-01)   after: 0.4478
+  eng         before t_end: bit-identical=True (worst 0.000e+00)   after: 0.419
   rpm         before t_end: bit-identical=True (worst 0.000e+00)   after: 8595
   gear        before t_end: bit-identical=True (worst 0.000e+00)   after: 7
-  tyre        before t_end: bit-identical=True (worst 0.000e+00)   after: 7.172
+  tyre        before t_end: bit-identical=True (worst 0.000e+00)   after: 6.923
   pos         before t_end: bit-identical=True (worst 0.000e+00)   after: 625.9
->> ALL_BIT_IDENTICAL_BEFORE_T_END = False
+>> ALL_BIT_IDENTICAL_BEFORE_T_END = True
 >> /home/zany/f1-round2/audio/out/ab/prefix_identity.json

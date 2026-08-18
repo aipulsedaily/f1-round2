@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-08-07T09:59:47Z",
+ "generated_utc": "2026-08-08T02:51:23Z",
  "sr_internal": 96000,
  "sr_out": 48000,
  "bit_depth": 24,
@@ -78,8 +78,8 @@
  "camera": {
   "frames": 2978,
   "peak_speed_ms": 101.94569283123813,
-  "mean_speed_ms": 35.234070121460796,
-  "min_camera_car_m": 1.9957299754025797,
+  "mean_speed_ms": 35.273994274597605,
+  "min_camera_car_m": 2.5239704886805256,
   "max_camera_car_m": 1000.1466979432674,
   "ear_separation_m": 0.175
  },
@@ -105,6 +105,36 @@
   "debris_surface_end_x_m": 30.15042082529262
  },
  "engine": {
+  "component_rms_on_throttle": {
+   "exhaust": 0.08940733064609466,
+   "rasp": 0.0055942620385461585,
+   "pump": 1.8595146739894509e-06,
+   "pops": 3.7105787044066614e-62,
+   "turbo": 0.00964906610535242,
+   "mguh": 0.006385915392938647,
+   "mguk": 0.009260937963854783,
+   "crack": 0.002609264953030643,
+   "starter": 0.0
+  },
+  "harmonic_over_broadband_db": 23.37278752210541,
+  "primary_lengths_m": [
+   0.6572,
+   0.62,
+   0.5834199999999999,
+   0.69828,
+   0.65802,
+   0.6237
+  ],
+  "primary_quarter_wave_per_cylinder_hz": [
+   261.18008557556897,
+   276.8508907101031,
+   294.2092356111617,
+   245.81479097248086,
+   260.8546126869456,
+   275.20851730040715
+  ],
+  "exhaust_topmost_mode_hz": 43200.0,
+  "exhaust_synthesis": "digital waveguide: six per-cylinder quarter-wave primaries into a shared half-wave collector and tailpipe, mode series complete to Nyquist",
   "rpm_min_running": 4299.999868475319,
   "rpm_max": 14351.180395573447,
   "gear_min": 0,
@@ -130,7 +160,7 @@
    260.0720488488847
   ],
   "collector_half_wave_hz": 298.5174821569808,
-  "turbo_shaft_rpm_max": 121358.171875,
+  "turbo_shaft_rpm_max": 121414.4230097614,
   "overrun_fraction": 0.0965067624560102,
   "throttle_mean": 0.6271269986349395,
   "clutch_lock_at_t0": 0.029089356289559474
@@ -276,180 +306,203 @@
  ],
  "propagation": {
   "engine": {
-   "min_range_m": 1.8822673559188843,
-   "max_range_m": 805.5414428710938,
-   "arrival_monotonic_min_dt_s": 0.0008067730862819644,
+   "min_range_m": 2.1753153800964355,
+   "max_range_m": 805.48095703125,
+   "arrival_monotonic_min_dt_s": 0.0008067694817555093,
    "max_itd_us": 565.2449951171875
   },
   "tyres": {
-   "min_range_m": 1.9525763988494873,
-   "max_range_m": 806.6700439453125,
-   "arrival_monotonic_min_dt_s": 0.0008076435112798208,
+   "min_range_m": 2.3443105220794678,
+   "max_range_m": 806.6095581054688,
+   "arrival_monotonic_min_dt_s": 0.0008076399837477766,
    "max_itd_us": 511.409423828125
   },
   "assembly": {
-   "min_range_m": 1.994938850402832,
-   "max_range_m": 806.8514404296875,
-   "arrival_monotonic_min_dt_s": 0.0008077794721259579,
+   "min_range_m": 2.50459885597229,
+   "max_range_m": 806.7909545898438,
+   "arrival_monotonic_min_dt_s": 0.0008077760668783185,
    "max_itd_us": 491.0752258300781
   },
   "glass_pane": {
    "min_range_m": 2.037132501602173,
    "max_range_m": 981.9259033203125,
-   "arrival_monotonic_min_dt_s": 0.0008179853226835121,
+   "arrival_monotonic_min_dt_s": 0.000817985325824111,
    "max_itd_us": 511.77606201171875
   },
   "impact": {
-   "min_range_m": 2.1554620265960693,
+   "min_range_m": 2.1554622650146484,
    "max_range_m": 981.9195556640625,
-   "arrival_monotonic_min_dt_s": 0.0008180065297693773,
+   "arrival_monotonic_min_dt_s": 0.0008180065328531327,
    "max_itd_us": 511.77606201171875
   },
   "shards0": {
    "min_range_m": 8.537141799926758,
    "max_range_m": 985.5597534179688,
-   "arrival_monotonic_min_dt_s": 0.0008146994634756766,
+   "arrival_monotonic_min_dt_s": 0.0008146994660336304,
    "max_itd_us": 511.77606201171875
   },
   "shards1": {
-   "min_range_m": 6.016377925872803,
+   "min_range_m": 6.0163774490356445,
    "max_range_m": 981.8646850585938,
-   "arrival_monotonic_min_dt_s": 0.0008149521923996872,
+   "arrival_monotonic_min_dt_s": 0.0008149521951281713,
    "max_itd_us": 511.77606201171875
   },
   "shards2": {
    "min_range_m": 3.5079238414764404,
    "max_range_m": 976.819580078125,
-   "arrival_monotonic_min_dt_s": 0.0008158325335330119,
+   "arrival_monotonic_min_dt_s": 0.0008158325364178154,
    "max_itd_us": 511.77606201171875
   },
   "shards3": {
    "min_range_m": 5.14214563369751,
    "max_range_m": 973.1767578125,
-   "arrival_monotonic_min_dt_s": 0.0008161927430592186,
+   "arrival_monotonic_min_dt_s": 0.0008161927461998175,
    "max_itd_us": 511.77606201171875
   },
   "reflect_garage": {
    "min_range_m": 12.871173858642578,
-   "max_range_m": 1300.17333984375,
-   "arrival_monotonic_min_dt_s": 0.0007567339447405175,
+   "max_range_m": 1300.173095703125,
+   "arrival_monotonic_min_dt_s": 0.0007567339372087645,
    "max_itd_us": 599.7487182617188
   },
   "reflect_showroom": {
    "min_range_m": 2.9295201301574707,
    "max_range_m": 1264.40771484375,
-   "arrival_monotonic_min_dt_s": 0.0007188348474613804,
+   "arrival_monotonic_min_dt_s": 0.0007188348473903261,
    "max_itd_us": 612.0613403320312
   },
   "aperture": {
    "min_range_m": 1.9294592142105103,
    "max_range_m": 981.9249267578125,
-   "arrival_monotonic_min_dt_s": 0.0008179866371875733,
+   "arrival_monotonic_min_dt_s": 0.0008179866403139613,
    "max_itd_us": 511.77606201171875
   },
   "crowd0": {
    "min_range_m": 47.8206901550293,
    "max_range_m": 985.5191650390625,
-   "arrival_monotonic_min_dt_s": 0.0008129743927298705,
+   "arrival_monotonic_min_dt_s": 0.0008129743956999391,
    "max_itd_us": 511.77606201171875
   },
   "crowd1": {
    "min_range_m": 46.95852279663086,
-   "max_range_m": 1026.3604736328125,
-   "arrival_monotonic_min_dt_s": 0.0008102607135640483,
+   "max_range_m": 1014.6630859375,
+   "arrival_monotonic_min_dt_s": 0.0008102607041280407,
    "max_itd_us": 511.77606201171875
   },
   "fence": {
-   "min_range_m": 4.406111240386963,
-   "max_range_m": 806.6828002929688,
-   "arrival_monotonic_min_dt_s": 0.0008187510765651496,
+   "min_range_m": 2.5664262771606445,
+   "max_range_m": 806.6240844726562,
+   "arrival_monotonic_min_dt_s": 0.0008187500638996426,
    "max_itd_us": 523.51708984375
   }
  },
  "buses": {
   "engine": {
-   "measured_max_short_term_lufs": -37.820880441363784,
+   "measured_max_short_term_lufs": -34.9942043204111,
    "target_lufs": -10.0,
-   "trim_db": 27.820880441363784,
-   "raw_peak": 0.054225195199251175
+   "trim_db": 24.9942043204111,
+   "raw_peak": 0.0888359472155571,
+   "hf_shelf_db_hz": null
   },
   "tyres": {
-   "measured_max_short_term_lufs": -10.418375113236662,
+   "measured_max_short_term_lufs": -10.41837040252463,
    "target_lufs": -19.0,
-   "trim_db": -8.581624886763338,
-   "raw_peak": 1.3961663246154785
+   "trim_db": -8.58162959747537,
+   "raw_peak": 1.3961665630340576,
+   "hf_shelf_db_hz": [
+    -12.0,
+    2000.0
+   ]
   },
   "assembly": {
-   "measured_max_short_term_lufs": -31.46092936860424,
+   "measured_max_short_term_lufs": -33.7877359043046,
    "target_lufs": -27.0,
-   "trim_db": 4.460929368604241,
-   "raw_peak": 0.17428597807884216
+   "trim_db": 6.787735904304597,
+   "raw_peak": 0.13123252987861633,
+   "hf_shelf_db_hz": null
   },
   "structure": {
-   "measured_max_short_term_lufs": -85.7892306337758,
+   "measured_max_short_term_lufs": -82.38566756866216,
    "target_lufs": -30.0,
-   "trim_db": 55.7892306337758,
-   "raw_peak": 0.0003617356705944985
+   "trim_db": 52.38566756866216,
+   "raw_peak": 0.000646275351755321,
+   "hf_shelf_db_hz": null
   },
   "impact": {
-   "measured_max_short_term_lufs": -30.142805899542292,
+   "measured_max_short_term_lufs": -30.142805460170848,
    "target_lufs": -6.5,
-   "trim_db": 23.642805899542292,
-   "raw_peak": 0.49318501353263855
+   "trim_db": 23.642805460170848,
+   "raw_peak": 0.4931851923465729,
+   "hf_shelf_db_hz": null
   },
   "shards": {
-   "measured_max_short_term_lufs": 37.12323423469778,
+   "measured_max_short_term_lufs": 37.12323417262163,
    "target_lufs": -9.0,
-   "trim_db": -46.12323423469778,
-   "raw_peak": 547.343017578125
+   "trim_db": -46.12323417262163,
+   "raw_peak": 547.343017578125,
+   "hf_shelf_db_hz": null
   },
   "reflect_garage": {
-   "measured_max_short_term_lufs": -37.66818338944446,
+   "measured_max_short_term_lufs": -37.613086255936786,
    "target_lufs": -22.0,
-   "trim_db": 15.668183389444458,
-   "raw_peak": 0.0576695054769516
+   "trim_db": 15.613086255936786,
+   "raw_peak": 0.05767286568880081,
+   "hf_shelf_db_hz": null
   },
   "reflect_showroom": {
-   "measured_max_short_term_lufs": -32.98897029631093,
+   "measured_max_short_term_lufs": -32.8850700505323,
    "target_lufs": -25.0,
-   "trim_db": 7.9889702963109315,
-   "raw_peak": 0.325297087430954
+   "trim_db": 7.885070050532299,
+   "raw_peak": 0.3241863548755646,
+   "hf_shelf_db_hz": null
   },
   "room": {
-   "measured_max_short_term_lufs": -18.014931695494656,
+   "measured_max_short_term_lufs": -17.739874428196305,
    "target_lufs": -23.0,
-   "trim_db": -4.985068304505344,
-   "raw_peak": 1.075856328010559
+   "trim_db": -5.2601255718036946,
+   "raw_peak": 1.1215077638626099,
+   "hf_shelf_db_hz": null
   },
   "aperture": {
-   "measured_max_short_term_lufs": -27.294415624740807,
+   "measured_max_short_term_lufs": -27.109998073835502,
    "target_lufs": -27.0,
-   "trim_db": 0.2944156247408074,
-   "raw_peak": 0.28712382912635803
+   "trim_db": 0.1099980738355022,
+   "raw_peak": 0.3217671811580658,
+   "hf_shelf_db_hz": null
   },
   "wind": {
-   "measured_max_short_term_lufs": -15.329118787888481,
-   "target_lufs": -18.0,
-   "trim_db": -2.670881212111519,
-   "raw_peak": 0.789847731590271
+   "measured_max_short_term_lufs": -15.32911878789542,
+   "target_lufs": -23.0,
+   "trim_db": -7.670881212104581,
+   "raw_peak": 0.789847731590271,
+   "hf_shelf_db_hz": [
+    -12.0,
+    2000.0
+   ]
   },
   "bed": {
-   "measured_max_short_term_lufs": -46.569201465781,
+   "measured_max_short_term_lufs": -46.56920146578581,
    "target_lufs": -31.0,
-   "trim_db": 15.569201465781,
-   "raw_peak": 0.015325339511036873
+   "trim_db": 15.56920146578581,
+   "raw_peak": 0.015325339511036873,
+   "hf_shelf_db_hz": [
+    -12.0,
+    2000.0
+   ]
   },
   "crowd": {
-   "measured_max_short_term_lufs": -18.357279156455885,
+   "measured_max_short_term_lufs": -18.23087268419673,
    "target_lufs": -27.0,
-   "trim_db": -8.642720843544115,
-   "raw_peak": 0.5932210087776184
+   "trim_db": -8.76912731580327,
+   "raw_peak": 0.5932208895683289,
+   "hf_shelf_db_hz": null
   },
   "fence": {
-   "measured_max_short_term_lufs": -66.6186550191729,
+   "measured_max_short_term_lufs": -66.61865546082615,
    "target_lufs": -31.0,
-   "trim_db": 35.618655019172905,
-   "raw_peak": 0.0022293750662356615
+   "trim_db": 35.61865546082615,
+   "raw_peak": 0.002229374833405018,
+   "hf_shelf_db_hz": null
   }
  },
  "target_lufs_s_table": {
@@ -463,22 +516,22 @@
   "reflect_showroom": -25.0,
   "room": -23.0,
   "aperture": -27.0,
-  "wind": -18.0,
+  "wind": -23.0,
   "bed": -31.0,
   "crowd": -27.0,
   "fence": -31.0
  },
  "mix_pre": {
-  "peak": 7.396238803863525,
-  "integrated_lufs": -13.880258420825735,
-  "short_term_lufs_p05": -43.106627995888466,
-  "short_term_lufs_p95": -6.975409005219403,
-  "short_term_range_db": 36.13121899066906
+  "peak": 7.699405193328857,
+  "integrated_lufs": -13.583300710794393,
+  "short_term_lufs_p05": -42.53220657343054,
+  "short_term_lufs_p95": -7.122047787464803,
+  "short_term_range_db": 35.41015878596574
  },
  "program_gain": {
-  "min_db": -3.1015249445336988,
-  "max_db": 7.119379823776584,
-  "range_db": 10.220904768310284,
+  "min_db": -3.118270753015856,
+  "max_db": 7.129997901317245,
+  "range_db": 10.248268654333101,
   "attack_s": 6.0,
   "release_s": 12.0,
   "max_boost_db": 7.0,
@@ -487,23 +540,24 @@
  },
  "limiter": {
   "ceiling_dbtp": -1.15,
-  "max_gain_reduction_db": -0.10391154951345394,
+  "max_gain_reduction_db": -0.11793054810231626,
   "loudness_iterations_lufs": [
-   -16.142709934720386,
-   -17.258607026836405,
-   -15.444534872585093,
-   -14.657543718112988,
-   -14.3496012792643,
-   -14.180022287028693,
-   -14.100513264165956,
-   -14.048918806995944
+   -15.978578829562814,
+   -17.814962473796736,
+   -16.11838902038041,
+   -15.088273707250535,
+   -14.621961810453655,
+   -14.379758684037201,
+   -14.214373392436064,
+   -14.114051000389795
   ]
  },
  "mix_internal": {
-  "integrated_lufs": -14.048918806995944,
+  "integrated_lufs": -14.068189170512284,
   "peak": 0.8759738206863403,
-  "true_peak_dbtp": -1.1499997555950772
+  "true_peak_dbtp": -1.1499996442653244
  },
+ "tail_fade_ms": 12.0,
  "master": {
   "samples": 5956000,
   "duration_s": 124.08333333333333,
@@ -511,50 +565,50 @@
   "sample_rate": 48000,
   "bit_depth": 24,
   "channels": 2,
-  "integrated_lufs": -14.03306727812296,
+  "integrated_lufs": -14.04728285132685,
   "target_lufs": -14.0,
-  "true_peak_dbtp": -1.0973092954737353,
-  "sample_peak": 0.8804222997325444,
-  "sample_peak_dbfs": -1.1061793194627907,
-  "dc_offset_l": -4.6440841128639915e-06,
-  "dc_offset_r": -4.399699589859202e-06,
-  "short_term_lufs_min": -29.297222512357127,
-  "short_term_lufs_max": -8.951689989849521,
-  "short_term_range_db": 20.345532522507604,
+  "true_peak_dbtp": -1.1297952727280896,
+  "sample_peak": 0.8771121758926255,
+  "sample_peak_dbfs": -1.1388972032436433,
+  "dc_offset_l": -2.0673226066701813e-05,
+  "dc_offset_r": -2.0061907491164863e-05,
+  "short_term_lufs_min": -27.33873366454598,
+  "short_term_lufs_max": -9.631230798043765,
+  "short_term_range_db": 17.707502866502217,
   "clipped_samples": 0,
   "silent_1s_windows": 0,
   "limiter_gr_db": [
-   -0.10391154951345394,
+   -0.11793054810231626,
    0.0,
    0.0
   ],
   "loudness_iterations_48k_lufs": [
-   -14.03306727812296
+   -14.04728285132685
   ]
  },
  "output_wav": "audio/out/ab/master_A_nolapdown.wav",
- "wall_clock_s": 1551.570140361786,
+ "wall_clock_s": 1343.3805665969849,
  "log": [
   "[    3.3s] world grid 11520001 samples, -35.0..85.0 s world",
-  "[    8.6s] surfaces classified",
-  "[   36.4s] engine: 31 upshifts, 24 downshifts, 14351 rpm max",
-  "[   46.5s] tyres",
-  "[   49.4s] glass pane: 351 modes, f11 = 7.48 Hz",
-  "[   54.4s] assembly: 616 part impacts",
-  "[   59.0s] breach: 995 shard contacts in 3.15 s of world time",
-  "[   71.9s] warped world -> film",
-  "[  133.9s] engine propagated",
-  "[  248.6s] tyres propagated",
-  "[ 1019.7s] breach propagated",
-  "[ 1111.6s] garage reflection",
-  "[ 1208.2s] showroom reflection",
-  "[ 1281.0s] showroom acoustic",
-  "[ 1291.3s] wind + bed",
-  "[ 1410.9s] crowd",
-  "[ 1482.3s] fence",
-  "[ 1488.2s] pre-mix: peak 7.396, -13.88 LUFS, short-term range 36.1 dB",
-  "[ 1490.0s] program gain",
-  "[ 1543.2s] internal: -14.05 LUFS, tp -1.15 dBTP",
-  "[ 1551.6s] WROTE audio/out/ab/master_A_nolapdown.wav  124.083 s  -14.03 LUFS  -1.10 dBTP"
+  "[   14.7s] surfaces classified",
+  "[   65.0s] engine: 31 upshifts, 24 downshifts, 14351 rpm max",
+  "[   75.0s] tyres",
+  "[   79.4s] glass pane: 351 modes, f11 = 7.48 Hz",
+  "[   84.4s] assembly: 616 part impacts",
+  "[   88.7s] breach: 995 shard contacts in 3.15 s of world time",
+  "[  101.6s] warped world -> film",
+  "[  158.0s] engine propagated",
+  "[  216.7s] tyres propagated",
+  "[  839.7s] breach propagated",
+  "[  927.5s] garage reflection",
+  "[ 1018.8s] showroom reflection",
+  "[ 1083.9s] showroom acoustic",
+  "[ 1096.9s] wind + bed",
+  "[ 1207.2s] crowd",
+  "[ 1273.6s] fence",
+  "[ 1279.1s] pre-mix: peak 7.699, -13.58 LUFS, short-term range 35.4 dB",
+  "[ 1280.9s] program gain",
+  "[ 1335.6s] internal: -14.07 LUFS, tp -1.15 dBTP",
+  "[ 1343.4s] WROTE audio/out/ab/master_A_nolapdown.wav  124.083 s  -14.05 LUFS  -1.13 dBTP"
  ]
 }

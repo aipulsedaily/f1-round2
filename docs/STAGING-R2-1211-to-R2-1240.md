@@ -11,7 +11,39 @@ Nothing here is written into `docs/DEFECT-LOG-R2.md`; that file has one owner.
 is painted across 34 metres of apron where the tyres never slip, while the only
 place they do slip is a 24 cm patch on the turntable deck that nothing marks.**
 
-> ## ⚠ THE PROPOSED APRON FIX WAS TESTED IN THE FILM AND DOES NOT WORK
+> ## ✅ RESOLVED IN R2-1226 — THE FIX WORKS, AT N ≈ 1000, AND THE MISSING INGREDIENT WAS OPTICAL THICKNESS
+>
+> **Read this before the section below, which it supersedes.** The apron mark
+> was tested in the film at four values of `Traffic Passes` and measured **along**
+> its own axis as well as across:
+>
+> | arm | SNR across | SNR **along** | L to reach SNR 5 | reads? |
+> |---|---:|---:|---:|---|
+> | A, existing paint | 0.94 | 4.16 | never | as mottle |
+> | B, N=60 | 0.41 | 1.60 | never | **no** |
+> | B, N=300 | 1.52 | 8.21 | 0.85 m | faintly |
+> | **B, N=1000** | **2.54** | **13.90** | **0.40 m** | **plainly** |
+>
+> At **N = 1000** the mark measures **−17.97 % / −14.04 %** — 3.2× the existing
+> paint — is **one unbroken segment, 0.924-coherent, 98.3 % longitudinal**, and
+> **adds no crushed black** (+0.00078 pp against a control that already carries
+> 0.00216 % from the car's own shadow; its darkest band pixel comes back
+> *brighter*). **The client's complaint is answerable.**
+>
+> **The N = 60 null was an artefact of the value, not of the approach** — exactly
+> as R2-1229 predicted from the two saturation curves. At N = 60 the mark
+> **breaks into 14 segments with 16 sign flips, and its two tracks carry OPPOSITE
+> SIGNS (−2.36 % / +2.36 %)**. That is the correct rendering of a gloss-only
+> film and it is not a tyre mark.
+>
+> **The deck patches read too**, at **+9.29 %** over 3,476 px at f837 — pale, as
+> predicted, and **9× stronger on the shadowed patch (+33.99 % vs +3.82 %)**,
+> which confirms the conductor→dielectric mechanism by its own gradient. Not the
+> +23.2 % the synthetic gate claimed; that number was replica-inflated (R2-1233).
+>
+> ---
+>
+> ## ⚠ SUPERSEDED — the record of how it was got wrong first
 >
 > **R2-1225.** A matched A/B at f981 — one blend, one process, one camera, one
 > sun, one seed, three link states of a single material — refutes the claim this
@@ -93,7 +125,22 @@ place they do slip is a 24 cm patch on the turntable deck that nothing marks.**
 > **The falsifiable claims:** (1) the control's correlation length is short and
 > roughly isotropic; (2) along-track integrated SNR rises as √L for the mottle
 > and faster for a coherent mark; (3) at least one arm crosses a detection
-> threshold at some L ≤ 34 m. **If the marks do not survive unbroken along x —
+> threshold at some L ≤ 34 m.
+>
+> **SCORED (R2-1226): (1) HALF WRONG — short, but NOT isotropic. The concrete
+> decorrelates 1/e at 0.128 m along x against 0.183 m across, i.e. 1.43× FASTER
+> along the mark than across it, and only 16.6 % of its power is longitudinal.
+> The anisotropy runs the helpful way, which I did not anticipate. (2) WEAKER
+> THAN √L — the fitted exponent is −0.39, not −0.50, and essentially all the
+> gain is earned inside the first 2 m; the ~18× I estimated is not available,
+> 4–5× is. (3) TRUE — N=300 crosses at 0.85 m and N=1000 at 0.40 m.**
+>
+> **So the mechanism is real and was not the explanation.** Measuring along the
+> axis is worth **4.4×** on the existing paint (SNR 0.94 across → 4.16 along),
+> which is why a 5.7 % wash is visible at all — but it is not enough on its own.
+> **What was actually missing was optical thickness**, which R2-1229 identified
+> from the saturation curves rather than from any coherence argument. Both
+> corrections were needed; only one of them was the answer. **If the marks do not survive unbroken along x —
 > if the substrate chops them into segments — the mechanism fails and no amount
 > of amplitude or edge fixes it.** In that case the honest answer to the client
 > is about the **concrete**, its mottle amplitude and correlation length, and not
@@ -277,9 +324,9 @@ rendered path are the same path.
 ## R2-1212 — on the deck, the ramp and the showroom floor there is no rubber at all, and there never was
 
 `FloorPolished` (round 1,
-`/home/zany/opus5-car-render/build/s03_materials.py:15-71`) is eleven nodes: a
+`~/opus5-car-render/build/s03_materials.py:15-71`) is eleven nodes: a
 base speckle, a two-octave roughness break-up, one bump. No rubber, skid,
-deposit or scuff term. `grep -rn FloorPolished /home/zany/f1-round2` returns
+deposit or scuff term. `grep -rn FloorPolished ~/f1-round2` returns
 **zero hits** — round 2 never re-authors it; it arrives as an appended datablock
 via `tools/build_film_scene.py:316-333`. `A_ConcApron` and `A_ForecourtSlab`
 (`build_architecture.py:1302 mat_slab`) have no rubber term either. Neither does
@@ -580,7 +627,7 @@ violation of it.
 ## R2-1218 — the verification plan, and what it costs
 
 **Every frame needed for the diagnostic pass already exists at 720p on disk**
-(`/home/zany/vast-render/out2/seq/r2full/`). Looking at the current state costs
+(`~/vast-render/out2/seq/r2full/`). Looking at the current state costs
 **$0**, and it was done: at f965, f973, f981 and f1030 the sunlit apron is
 visibly clean behind a car that has just launched through it. The complaint
 reproduces by eye in exactly the frames the client watched.
@@ -602,7 +649,7 @@ Costs, measured, not estimated:
 | **apron-only A/B** (4 frames × 2) | **≈ $0.35** |
 | full 12-frame A/B (24 renders) | ≈ $0.75, worst case $0.91 |
 | same via `--zoom` crops | ≈ $0.55 |
-| credit | **$60.56** (was $62.46 earlier in this same block) |
+| credit | **$[redacted]** (was $[redacted] earlier in this same block) |
 | **the 4K master itself** | **$74 – 81 — more than the account holds** |
 
 **That last line is the one to act on, and the gap is widening.** Credit fell
@@ -617,9 +664,9 @@ job runs — last seen **774/792**, `VERIFIED — every frame present, complete,
 consistent, and not blank`, confirmed untouched.
 
 Two things moved mid-block and invalidate any cached command line. **Broker 1
-swapped cards**: `47049525` was destroyed and replaced by **`47090933`** at
+swapped cards**: `id-040` was destroyed and replaced by **`id-050`** at
 $0.4147–0.436/hr on a *direct IP* (`host-A:PORT`) rather than a
-`*.vast.ai` relay. And the per-frame seconds above were measured on `47039886`.
+`*.vast.ai` relay. And the per-frame seconds above were measured on `id-037`.
 **Host lottery on this market is ± 45 % on speed**, so treat the timings as
 indicative until one frame confirms them on whatever card is live; the dollar
 conclusion is unaffected. Note also that `vastctl status` lists **only broker
@@ -730,9 +777,9 @@ the repo is **R2-1224**.
   world-locked mark to the rotated three without re-basing.
 - `work/bisect.py` shadows the stdlib `bisect` for anything run with `work/` on
   `sys.path`; it breaks `PIL`. Run tooling from outside `work/`.
-- `/home/zany/f1-round2/watch/seq1/` symlinks are **off by one**
+- `watch/seq1/` symlinks are **off by one**
   (`f000860.png -> r2full_000861.png`). Measure against
-  `/home/zany/vast-render/out2/seq/r2full/`.
+  `~/vast-render/out2/seq/r2full/`.
 
 ## Verified clean
 
@@ -1087,7 +1134,7 @@ Pw = _vt.outputs["Vector"]
 # The field.
 fld = g.n("ShaderNodeGroup", node_tree=bpy.data.node_groups[TDP.FIELD_GROUP])
 g.set(fld.inputs["World Position"], Pw)
-g.set(fld.inputs["Traffic Passes"], 60.0)          # art decision -- see below
+g.set(fld.inputs["Traffic Passes"], 1000.0)        # SIGNED OFF -- see below
 frontx = TDP.front_x_value_node(g)                 # _G-compatible
 g.set(fld.inputs["Front X"], frontx.outputs[0])
 
@@ -1156,12 +1203,25 @@ directly: **max density 0.0 and 0 lit pixels before frame 818.**
 
 ### `Traffic Passes` — an art decision, correctly labelled
 
-**`passes=60.0`.** The coordinator decided it and it is not derivable: one launch
-pass transfers ≈ 10.6 nm of rubber over 0.34 % coverage, changes no albedo, and
-measures **+0.71 % with a p50 of −0.91 %** — it straddles zero. The film opens
-on a working pit lane, so a used apron is the honest subject. **Do not re-derive
-this number and do not present it as physics.** It is exposed as a group input
-precisely so it stays visible as a choice.
+**`passes=1000.0`, signed off.** Not derivable, and deliberately not derived:
+one launch pass transfers ≈ 10.6 nm of rubber over 0.34 % coverage, changes no
+albedo, and measures **+0.71 % with a p50 of −0.91 %** — it straddles zero.
+**N = 1000 says this pit exit has been run all season, and that is what makes it
+black.** The film opens on a working circuit; a delivery-bay apron would be the
+wrong subject regardless of what one launch deposits.
+
+**Measured in the film at N = 1000** (R2-1226): **−17.97 % / −14.04 %**, 3.2× the
+paint it replaces, **one unbroken segment, 0.924-coherent, 98.3 % longitudinal**,
+crossing SNR 5 within **0.40 m** of along-track integration, and adding
+**+0.00078 pp** of pure black against a control that already carries 0.00216 %
+from the car's own shadow.
+
+**60 was the first answer and it was an order of magnitude short** — and worse
+than short, it was the *worst available value*: at N = 60 the interface term is
+99.7 % saturated (all the brightening) and coverage only 18.6 % (almost none of
+the darkening), so the mark broke into **14 segments with 16 sign flips and its
+two tracks carried opposite signs**. **Do not present N as physics, and do not
+re-derive it — but do not read the N = 60 null as evidence about the approach.**
 
 > ### ⚠ `Traffic Passes` IS PER-SURFACE. **NEVER SET IT GLOBALLY.**
 >
@@ -1212,8 +1272,11 @@ R2-1219:
 | density before frame 818 | **0 lit px** (`--bindtest`) | live |
 | `--selftest` | 25 checks, 0 failures | live |
 | `tools/r2_1222_verify_handover.py` | `>> STAGE RESULT: OK (0 failures)` | live |
-| lateral gradient p99.5, N=60 | ~~≈ 1.605 %/mm~~ — **in-film: 0.319 vs the paint's 0.324** | **REFUTED, R2-1225** |
-| mean tone, N=60 | ≈ −4.21 % (N=1: +1.575 %) | re-confirmed |
+| **`K.assert_wired(dep, [...])`** | **must pass — see below** | **REQUIRED** |
+| mean tone, **N=1000**, in film | **−17.97 % / −14.04 %** | R2-1226 |
+| along-track SNR, N=1000 | **13.90**, SNR 5 by **0.40 m** | R2-1226 |
+| continuity, N=1000 | **1 unbroken segment, 0.924 coherent** | R2-1226 |
+| ~~lateral gradient p99.5~~ | ~~1.605 %/mm~~ — **not the discriminator** | **withdrawn, R2-1233** |
 | Roughness | 0.8002 → 0.6664 (−16.7 %) | re-confirmed |
 | **Specular IOR Level** | **+3.6 %** (was a spurious +31.4 %; existing: **+0.0000**) | re-measured |
 | Height Coarse sd | −15.2 % at N=1, −28.2 % at N=60 (existing: 0.0 %) | re-confirmed |
@@ -1227,7 +1290,46 @@ R2-1219:
 > claimed, and it is now moved *toward* rather than away from. Anyone raising
 > `Traffic Passes` is raising the albedo dim and must re-check it.
 
-**The claim being gated is the edge, not the amplitude.** The existing paint is
+### The wiring assertion is not optional
+
+**Add this immediately after the graft, before anything renders:**
+
+```python
+# Exemptions typed on purpose: `Specular IOR Level` and `Traffic Passes` are
+# CONSTANTS BY DESIGN, not forgotten links. The substrate's specular is a
+# literal 0.32 (build_surface.py:2897 — there is no node to link), and
+# Traffic Passes is the art knob. Everything else is fed from a real chain.
+K.assert_wired(dep, ["Base Color", "Roughness", "Height Micro",
+                     "Height Coarse", "World Position",
+                     "Coverage", "Wetting", "Grain"],
+               what="the apron deposit graft")
+K.assert_wired(fld, ["World Position", "Front X"], what="the deposit field")
+```
+
+> **THIS GUARD CAUGHT A DEFECT IN THIS HANDOVER ON ITS FIRST RUN.** The list
+> above originally included `Specular IOR Level`, and `assert_wired` refused:
+> *"Specular IOR Level = 0.3199999928474426 … NOT LINKED and silently using a
+> default"*. The **graft** was right — the substrate's specular genuinely is a
+> constant — and the **declaration** was wrong. That is the guard doing exactly
+> its job: it does not know which unlinked sockets are deliberate, and it forces
+> the author to say. **"Constant on purpose" and "forgot to link" are
+> indistinguishable in a built node**, and telling them apart is the whole of
+> R2-1226.
+>
+> Note the shape of the correct answer: **constant 0.32 in, varying out.** The
+> deposit *adds* a specular channel the substrate never had — which is why an
+> unlinked `Interface` was invisible and fatal at the same time.
+
+**R2-1226: an A/B arm was grafted with `Interface` — the Specular IOR Level
+channel, the exact channel this deposit wins on — left unlinked.** Nothing
+failed. The socket fell back to its default, the render completed, the numbers
+looked ordinary, and the verdict *"the fix does not work"* was reported to the
+client. **An unlinked socket does not render black; it renders something
+plausible.** `assert_wired` raises and names the value that was silently
+standing in, because "Interface unlinked" and "Interface silently 0.0" read very
+differently to whoever has to judge the result.
+
+~~**The claim being gated is the edge, not the amplitude.**~~ The existing paint is
 *stronger* in mean tone (−18.79 %) and still does not read, because a 640 mm
 feathered wash at 0.243 %/mm is mottle on a surface whose bay hash swings
 ± 14.5 %. R2-1221 tests that claim in the film.
@@ -1953,8 +2055,8 @@ was not crushed (−0.12 % relative on A, zero on B).**
 
 | | |
 |---|---:|
-| credit before | **$59.49** |
-| credit after | **$59.01** |
+| credit before | **$[redacted]** |
+| credit after | **$[redacted]** |
 | farm-wide drop (includes broker 2's own job) | $0.48 |
 | **broker 1's card, total billed** | **$0.3061** |
 | of which attributable to this section | **≈ $0.20–0.25** |
@@ -2630,6 +2732,23 @@ this block spent more effort correcting its measurements than making them.
 | R2-1225 | the block owner's **axis** | every measurement taken across the mark, none along it | a null result in the film |
 | R2-1213 | the block owner's **estimator** | a 0.9 m trend filter absorbing a 640 mm feature — reported −5.73 % for a −18.82 % mark | a matched A/B |
 | R2-1211 | the block owner's **rolling radius** | 0.378 from pairing a forward-difference ω with a point speed; the true value is 0.360 | re-derivation against three sources |
+| R2-1226 | R2-1225's **graft** | **arm B rendered with `Interface` unlinked — the Specular IOR Level channel was DEAD.** The A/B that killed the fix was testing a deposit with a disconnected channel | the next agent, on the built socket |
+| R2-1226 | the measurer's own **detrend** | a quadratic lateral fit leaves 3.3 % curvature standing *at the band*, which does not average down and reads as a substrate noise floor — **it manufactured a null** | its own author, before publishing |
+
+**The seventh entry is the sharpest of all**, and it lands on the measurement
+this block treated as decisive. **R2-1225 was the render that "killed the fix" —
+and its treatment arm had a dead specular channel.** Every conclusion drawn from
+it, including the boxed verdict at the top of this document as originally
+written, rested on an arm that was not the thing it claimed to be. It was caught
+the same way R2-1220 was: by asserting on the **built socket** rather than on
+the code that was supposed to have built it.
+
+**The eighth is the counter-example that proves the rule.** The same agent's own
+first estimator manufactured a null too — but it was caught **before**
+publication, by calibrating the estimator against a model-free amplitude instead
+of trusting it. That is the only instrument failure in this table that cost
+nothing, and the difference was checking the instrument against something
+outside itself.
 
 **Not one of these was an error about rubber.** Every one was an error about the
 *environment the measurement was taken in* — what else was in the scene, what
@@ -2969,8 +3088,8 @@ statement about the shot, not about the module.
 
 | | |
 |---|---:|
-| credit before | **$59.01** |
-| credit when the last job of this section landed | **$57.52** |
+| credit before | **$[redacted]** |
+| credit when the last job of this section landed | **$[redacted]** |
 | farm-wide drop over that window (includes broker 2's own agent) | $1.49 |
 | **broker 1's card, billed across this section** | **$0.3123 → $1.5829 = $1.27**, of which an idle share belongs to whoever comes next |
 | net attributable to this section | **≈ $1.05 – $1.27** |
@@ -3012,3 +3131,61 @@ flag to raise it.
     work/r2_1226/measure_long.py the longitudinal instrument
     work/r2_1226/measure_deck.py the deck instrument
     work/r2_1226/plates.py       the pictures
+
+---
+
+# R2-1235 — a chain of corrections can each be an improvement without any of them being the explanation
+
+This block produced three answers to the client's complaint, in order:
+
+1. **"The mark is too weak."** Wrong. It measures −18.82 %, which is strong.
+2. **"The mark has no edge."** Wrong. Its lateral gradient is 0.324 %/mm against
+   the deposit's 0.319 — no difference — and the concrete's own is 4.272 %/mm,
+   **13× either mark**. Neither has an edge and neither can.
+3. **"The mark has no longitudinal coherence."** Also wrong — or rather, real
+   and not the cause. Measuring along the axis is worth **4.4×** (SNR 0.94
+   across → 4.16 along), which is why a wash is visible at all. It is not enough
+   on its own, and it was never what was missing.
+
+The actual answer was **optical thickness**, and it did not come from any of
+those three lines of reasoning. It came from reading the module's own saturation
+curves and noticing that at N = 60 the *interface* term is 99.7 % saturated
+while *coverage* is 18.6 % — all of the brightening, almost none of the
+darkening, which is why the two nearly cancelled at −0.20 %.
+
+**Each correction was a real improvement and none of them was the explanation.**
+That is the thing worth carrying, because from the inside a chain like this
+feels exactly like converging on an answer. It is not. Corrections 1 → 2 → 3
+were three increasingly careful statements *about the same cross-section*, and
+**a correction inherits the axis of the thing it corrects**. Re-measuring more
+rigorously on an axis you have already chosen feels like rigour and structurally
+cannot find an error in the choice of axis.
+
+What broke the chain was not better reasoning about marks. It was **an
+instrument change** — rendering four values of N and measuring along the track
+as well as across it — which made a quantity visible that none of the three
+answers had a name for. **The corrections did not converge on the cause; they
+were superseded by a measurement that could see it.**
+
+Two sharper corollaries, both paid for in this block:
+
+- **Every one of the three answers was defensible when it was given, and two of
+  them were reported upward.** The second was reported to the client as *"the
+  fix does not work"* — and the render behind it had a dead channel (R2-1226).
+  A confident wrong answer and a confident right one are produced by the same
+  process and feel identical from inside it.
+- **The correction that finally worked was cheaper than the ones that did not.**
+  N = 300 and N = 1000 cost about a dollar. The three rounds of reasoning cost
+  most of a day. When an argument has been corrected twice and is still on the
+  same axis, **the next move is an instrument, not a third argument.**
+
+## And the guard written to prevent this caught it once more, immediately
+
+`K.assert_wired` was added to `itemkit` because R2-1226's dead channel would
+have been caught by asserting on the built socket. **Its first run refused this
+document's own handover** — `Specular IOR Level = 0.3199999928474426, NOT
+LINKED`. The graft was right (the substrate's specular genuinely is a constant)
+and the *declaration* was wrong. The guard cannot tell "constant on purpose"
+from "forgot to link" in a built node — **nobody can, which is the entire point**
+— so it refuses and makes the author say which. That is the ninth instrument
+finding in this block and the first one caught before it cost anything.

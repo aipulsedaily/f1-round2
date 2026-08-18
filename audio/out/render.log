@@ -1,23 +1,23 @@
-[    3.5s] world grid 11520001 samples, -35.0..85.0 s world
-[    8.5s] surfaces classified
-[   35.3s] engine: 31 upshifts, 31 downshifts, 14351 rpm max
-[   46.1s] tyres
-[   49.0s] glass pane: 351 modes, f11 = 7.48 Hz
-[   53.9s] assembly: 616 part impacts
-[   58.4s] breach: 995 shard contacts in 3.15 s of world time
-[   71.1s] warped world -> film
-[  127.9s] engine propagated
-[  185.1s] tyres propagated
-[  813.3s] breach propagated
-[  903.6s] garage reflection
-[  993.4s] showroom reflection
-[ 1059.6s] showroom acoustic
-[ 1068.9s] wind + bed
-[ 1182.5s] crowd
-[ 1250.5s] fence
-[ 1256.0s] pre-mix: peak 7.396, -13.88 LUFS, short-term range 36.2 dB
-[ 1257.8s] program gain
-[ 1313.3s] internal: -14.03 LUFS, tp -1.15 dBTP
-[ 1321.3s] WROTE audio/out/ab/master_B_lapdown.wav  124.083 s  -14.02 LUFS  -1.10 dBTP
->> report audio/out/ab/report_B_lapdown.json
->> STAGE RESULT: AUDIO_MASTER_OK -14.02 LUFS -1.10 dBTP
+[    3.7s] world grid 11520001 samples, -35.0..85.0 s world
+[   19.5s] surfaces classified
+[   75.1s] engine: 31 upshifts, 31 downshifts, 14351 rpm max
+[   85.6s] tyres
+[   88.9s] glass pane: 351 modes, f11 = 7.48 Hz
+[   93.9s] assembly: 616 part impacts
+[   99.0s] breach: 995 shard contacts in 3.15 s of world time
+[  112.9s] warped world -> film
+[  173.3s] engine propagated
+[  235.9s] tyres propagated
+[  976.0s] breach propagated
+[ 1079.2s] garage reflection
+[ 1199.0s] showroom reflection
+[ 1297.1s] showroom acoustic
+[ 1342.1s] wind + bed
+[ 1476.1s] crowd
+[ 1552.7s] fence
+[ 1558.7s] pre-mix: peak 7.699, -13.59 LUFS, short-term range 35.5 dB
+[ 1560.6s] program gain
+[ 1617.5s] internal: -14.07 LUFS, tp -1.15 dBTP
+[ 1631.3s] WROTE audio/out/master.wav  124.083 s  -14.00 LUFS  -1.10 dBTP
+>> report audio/out/master_report.json
+>> STAGE RESULT: AUDIO_MASTER_OK -14.00 LUFS -1.10 dBTP

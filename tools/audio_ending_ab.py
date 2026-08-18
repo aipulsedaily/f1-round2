@@ -217,7 +217,19 @@ def main():
 
     for x, lab in ((A, la), (B, lb)):
         a = (args.first_frame - 1) * sr // FPS
-        sf.write(os.path.join(args.out, f"ending_{lab}.wav"), x[a:], sr, subtype="PCM_24")
+        # 5 ms FADE AT THE IN-POINT (R2-1401). `x[a:]` is a hard cut into the
+        # middle of a 313 km/h flying lap, so every one of these extracts opened
+        # on a step transient that is an artefact of the extraction and not of
+        # the film. Measured on the previous pair: a +0.89 dB opening step with a
+        # 0.089 sample-to-sample jump inside the first 2 ms. Anyone auditioning
+        # these hears a click before they hear the ending, and on this project a
+        # click at the top of a review clip has already been mistaken for a
+        # defect in the master once. The out-point is the film's own last sample
+        # and is left alone.
+        y = x[a:].copy()
+        nf = min(int(0.005 * sr), y.shape[0])
+        y[:nf] *= np.linspace(0.0, 1.0, nf)[:, None]
+        sf.write(os.path.join(args.out, f"ending_{lab}.wav"), y, sr, subtype="PCM_24")
         rep[f"profile_{lab}"] = frame_profile(x, sr, args.first_frame, args.last_frame)
         rep[f"transients_{lab}"] = transients(x, sr, args.first_frame, args.last_frame)
 

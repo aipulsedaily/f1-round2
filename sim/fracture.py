@@ -971,9 +971,10 @@ def build_wall_plan(seed=20260803, verbose=False):
         y0, y1 = pk["cut_rect_world"]["y"]
         z0, z1 = pk["cut_rect_world"]["z"]
         s0, s1 = bs[m0], bs[m1]
-        # a pane whose BOTH mullions are gone falls; one gone = retained by the
-        # surviving jamb and the PVB; neither = intact, but still pre-fractured
-        # so the wall is one system and nothing has to be swapped in later.
+        # HOW HARD IS THIS PANE HIT -- not what becomes of it.  See the note on
+        # `outcome_of` below: `role` is an INPUT to `fracture_pane` (it picks
+        # n_radial, 15 against 7) and it is NOT the plan's claim about whether
+        # the bay leaves.  Reading it as one is R2-1049.
         gone = sum(1 for s in (s0, s1) if s == "destroyed")
         bent = sum(1 for s in (s0, s1) if s == "bent_stub")
         if gone == 2 or (gone == 1 and bent == 1):
@@ -992,6 +993,66 @@ def build_wall_plan(seed=20260803, verbose=False):
                 n_panes=len(panes),
                 n_shards=sum(len(p.shards) for p in panes))
     return panes, meta
+
+
+# --------------------------------------------------------------------------- #
+#  4b.  WHAT THE PLAN ASSERTS EACH BAY WILL DO — which is NOT `Pane.role`.
+# --------------------------------------------------------------------------- #
+#  R2-1049 failed because ONE WORD WAS DOING TWO JOBS, and the two jobs
+#  disagree.
+#
+#    * `role` is a FRACTURE-DENSITY INPUT.  `fracture_pane` reads it and
+#      nothing else does: `n_radial` is 15 for "destroyed" and 7 for
+#      "retained".  It is a statement about how hard the pane is hit.
+#    * the OUTCOME is what the plan claims the bay does — leaves, or stays.
+#      Nothing declared it, so `slabcheck` read `role` instead, and a bay
+#      that is heavily fractured *and* stays had no way to say so.
+#
+#  R2-1121 measured what "just relabel bays 3 and 6 retained" actually costs,
+#  because it looks free and is not.  Re-deriving `role` with `bent_stub`
+#  treated as retaining, and re-fracturing:
+#
+#      bay 3   202 shards -> 198        every polygon different
+#      bay 6   200 shards -> 178        every polygon different
+#      bays 0,1,2,4,5,7,8,9            byte-identical
+#
+#  Different polygons mean different `GS_bNN_NNNNN` names, which means the
+#  20 MB bake table no longer addresses the shards, which means a RE-BAKE —
+#  the same bill as making the bays leave.  Relabelling is only free if the
+#  two facts are separated first, which is what this section does.
+#
+#  THE RULE, and it is a statement about laminated glass, not about this film:
+#  a pane is captured on FOUR edges — head, sill, and two jambs.  It goes when
+#  BOTH JAMBS GO.  A `bent_stub` is a jamb that deformed and stayed: on the
+#  shipping bake `MUL03_S*` and `MUL07_S*` travel 0.000 m for the whole take,
+#  every segment.  One jamb gone and one bent leaves a pane hanging from three
+#  edges and the PVB interlayer.  It crazes.  It does not leave.
+#
+#  NOT MEASURED FROM THE BAKE, DELIBERATELY.  A gate whose expectation is read
+#  out of the thing it is checking cannot fail.  This reads the WALL SPEC's
+#  own `beat3` declaration and nothing else; the bake is the other side of the
+#  comparison.
+
+LEAVES, STAYS, INTACT = "LEAVES", "STAYS", "INTACT"
+
+
+def outcome_of(s0, s1):
+    """What the plan asserts a bay between two mullions in states s0/s1 does."""
+    gone = sum(1 for s in (s0, s1) if s == "destroyed")
+    if gone == 2:
+        return LEAVES
+    if gone or any(s == "bent_stub" for s in (s0, s1)):
+        return STAYS
+    return INTACT
+
+
+def bay_outcomes():
+    """{bay: LEAVES|STAYS|INTACT} from the wall's own beat-3 declaration."""
+    W = wall()
+    bs = {b["uid"]: b["beat3"] for b in W["breach_state"]}
+    return {int(pk["bay"]): outcome_of(bs[pk["between"][0]],
+                                       bs[pk["between"][1]])
+            for pk in W["glazing_pockets"]}
 
 
 # --------------------------------------------------------------------------- #

@@ -82,12 +82,20 @@ $PY sim/verify_breach.py --swap 2>&1 | tail -6 | grep "STAGE RESULT" \
   || die "swap check printed no verdict"
 
 say "3.  does the wall un-break?  (the f0866 prediction)"
+# R2-1121: THIS NOW GATES.  It used to be `... 2>&1 | tail -3` with no `|| die`,
+# so the pipeline's status was tail's and slabcheck's exit code went in the bin
+# -- which is how a bay declared to leave and reading DID_NOT_MOVE survived
+# even after R2-1049 taught the tool to fail on it.  The verification bar says
+# "slabcheck MUST exit 0"; something has to actually read it.  `set -u` is on
+# but `pipefail` is not, so the status is taken without a pipe.
 $PY sim/slabcheck.py --film sim/out/breach_film.npz \
-    --out sim/out/slab_NEW.json 2>&1 | tail -3
+    --out sim/out/slab_NEW.json > sim/tmp/slab_stage.txt 2>&1 \
+    || { tail -3 sim/tmp/slab_stage.txt; die "slabcheck"; }
+tail -3 sim/tmp/slab_stage.txt
 
 say "3b. does the wall un-break?  asked of the ALUMINIUM  (R2-601)"
-# STAGE 3 ABOVE HAS NEVER GATED ON ANYTHING -- it prints slabcheck's tail and
-# the script carries on regardless -- and slabcheck asks the question of the
+# STAGE 3 ABOVE GATED ON NOTHING UNTIL R2-1121 -- it printed slabcheck's tail
+# and the script carried on regardless -- and slabcheck asks the question of the
 # GLASS, which is the half that has not failed since bond went to 100.  The
 # half that fails is the frame: in the shipped table 62 of 66 deflected frame
 # bodies end up back at home, MUL05_S02 peaking at 157 mm and ending at 0.7 mm.

@@ -8,6 +8,17 @@ CIRCUIT SPEC ALREADY SAYS IT GOES.
     python3 tools/r2731_pont_camera_candidate.py \
         --out docs/beat_sheet_R2731_PONT_CAMERA_CANDIDATE.json
 
+*** SUPERSEDED.  DO NOT RUN THIS AGAINST THE CURRENT SHEET.  R2-1701. ***
+`docs/beat_sheet.json` already carries this displacement: `tools/author_beats2_5.py`
+applies it as `pont_offset()` inside `emit_keys`' sampler, so it is regenerated
+from source rather than patched in afterwards.  Running this on today's sheet
+DOUBLE-APPLIES it — 40 m inboard and 15 m down, through the parapet — and the
+selftest below cannot see that, because it only checks that a bounded number of
+keys moved by no more than one offset length.  It also used the WRONG RAMPS: the
+22-frame lateral out-ramp below costs 91.2 m/s^2 (9.29 g), and R2-1004 widened
+it to 32 frames for 47.7.  Kept as the record of where the displacement came
+from, not as a tool to run.
+
 WHAT IT DOES
 ------------
 Rewrites the `world` position of beat 5's camera keys inside the bridge window

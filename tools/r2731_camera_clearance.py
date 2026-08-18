@@ -73,7 +73,14 @@ def build(mods):
     bpy.context.view_layer.update()
 
 
-def world_bvh():
+def world_bvh(owner_out=None):
+    """Build the world BVH.
+
+    ADDITIVE (R2-971): if `owner_out` is a list it is filled with one owner
+    object NAME per emitted triangle, parallel to the triangle list, so a
+    nearest hit can be attributed to the object it came from.  Passing nothing
+    keeps the original two-value return and the original behaviour.
+    """
     dg = bpy.context.evaluated_depsgraph_get()
     verts, tris = [], []
     n = 0
@@ -92,6 +99,8 @@ def world_bvh():
             L = list(poly.vertices)
             for k in range(1, len(L) - 1):
                 tris.append((base + L[0], base + L[k], base + L[k + 1]))
+                if owner_out is not None:
+                    owner_out.append(ob.name)
         ev.to_mesh_clear()
         n += 1
     log("bvh over %d objects, %d verts, %d tris" % (n, len(verts), len(tris)))
@@ -101,6 +110,25 @@ def world_bvh():
 def nearest(bvh, p):
     loc, _nrm, _i, d = bvh.find_nearest(Vector(p))
     return (float(d) if loc is not None else float("inf"))
+
+
+def nearest_named(bvh, p, owners):
+    """ADDITIVE (R2-971): nearest distance AND the name of the object the
+    winning triangle came from.  `owners[i]` is the owner of triangle i."""
+    loc, _nrm, i, d = bvh.find_nearest(Vector(p))
+    if loc is None:
+        return float("inf"), "?"
+    nm = owners[i] if (owners and i is not None and 0 <= i < len(owners)) else "?"
+    return float(d), nm
+
+
+def load_path_json(fn):
+    """ADDITIVE (R2-971): read a `{"path":[{f,p,q,lens}, ...]}` file (or a bare
+    list of the same entries) into {frame: entry}."""
+    with open(fn) as fh:
+        doc = json.load(fh)
+    rows = doc["path"] if isinstance(doc, dict) else doc
+    return {int(e["f"]): e for e in rows}
 
 
 def selftest():
@@ -150,26 +178,49 @@ def main():
     mods = opt("--mods", "barriers,architecture").split(",")
     out = opt("--out", "render/r2731/cam_clearance.json")
 
+    # ADDITIVE (R2-971): --cand / --base point the two curves at explicit path
+    # JSON files.  Omitting them reproduces the original defaults exactly:
+    # candidate = r2731_pont_camera_apply.candidate_path(),
+    # base      = world/camera_rig_path.json.
+    cand_fn = opt("--cand", opt("--path", None))
+    base_fn = opt("--base", None)
+
     bpy.ops.wm.read_factory_settings(use_empty=True)
     build(mods)
-    bvh, nobj = world_bvh()
+    owners = []
+    bvh, nobj = world_bvh(owners)
 
-    import r2731_pont_camera_apply as CA
-    cand = {int(e["f"]): e for e in CA.candidate_path()}
-    base = {int(e["f"]): e for e in json.load(open(
-        os.path.join(ROOT, "world", "camera_rig_path.json")))["path"]}
+    if cand_fn:
+        cand = load_path_json(os.path.join(ROOT, cand_fn)
+                              if not os.path.isabs(cand_fn) else cand_fn)
+        log("candidate curve <- %s (%d frames)" % (cand_fn, len(cand)))
+    else:
+        import r2731_pont_camera_apply as CA
+        cand = {int(e["f"]): e for e in CA.candidate_path()}
+        log("candidate curve <- r2731_pont_camera_apply.candidate_path()")
+    base_fn = base_fn or os.path.join("world", "camera_rig_path.json")
+    base = load_path_json(os.path.join(ROOT, base_fn)
+                          if not os.path.isabs(base_fn) else base_fn)
+    log("shipped curve   <- %s (%d frames)" % (base_fn, len(base)))
 
     rows = []
     for f in range(lo, hi + 1):
-        rows.append(dict(f=f,
-                         shipped=round(nearest(bvh, base[f]["p"]), 4),
-                         candidate=round(nearest(bvh, cand[f]["p"]), 4)))
+        ds, ns = nearest_named(bvh, base[f]["p"], owners)
+        dc, nc = nearest_named(bvh, cand[f]["p"], owners)
+        rows.append(dict(f=f, shipped=round(ds, 4), candidate=round(dc, 4),
+                         shipped_obj=ns, candidate_obj=nc))
     ws = min(rows, key=lambda r: r["shipped"])
     wc = min(rows, key=lambda r: r["candidate"])
     tight = [r for r in rows if r["candidate"] < 1.20]
-    log("shipped   min %.3f m at f%d" % (ws["shipped"], ws["f"]))
-    log("candidate min %.3f m at f%d" % (wc["candidate"], wc["f"]))
+    log("shipped   min %.3f m at f%d  (%s)"
+        % (ws["shipped"], ws["f"], ws.get("shipped_obj", "?")))
+    log("candidate min %.3f m at f%d  (%s)"
+        % (wc["candidate"], wc["f"], wc.get("candidate_obj", "?")))
     log("frames where the candidate is inside the 1.20 m sphere: %d" % len(tight))
+    for k, r in enumerate(sorted(rows, key=lambda x: x["candidate"])[:10]):
+        log("  worst%3d: f%d  cand %.3f m (%s)   shipped %.3f m (%s)"
+            % (k + 1, r["f"], r["candidate"], r.get("candidate_obj", "?"),
+               r["shipped"], r.get("shipped_obj", "?")))
     os.makedirs(os.path.dirname(os.path.join(ROOT, out)), exist_ok=True)
     with open(os.path.join(ROOT, out), "w") as fh:
         json.dump(dict(meta=dict(tool="tools/r2731_camera_clearance.py",

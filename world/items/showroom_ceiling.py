@@ -169,6 +169,28 @@ Z_PERIM_SOFFIT = 5.780
 X_IN = ROOM_X - PERIM_GAP - PERIM_W   # 14.640, inner face of the bulkhead
 Y_IN = ROOM_Y - PERIM_GAP - PERIM_W   # 10.640
 
+#: R2-840.  THE PERIMETER REVEAL'S UNDERSIDE, and why it is not one number.
+#:
+#: The reveal backs the shadow gap at the wall head.  On the two SOLID walls it
+#: drops to 6.030 as designed and nothing is behind it.  On the two GLAZED walls
+#: there IS something behind it: the curtain wall's glazing pocket, the 24 mm
+#: channel the panes sit in, which tops out at z 6.1120 (`POCKET_HI` in
+#: `sim/apply_breach.py`).  A backing plate reaching 6.030 sits 82 mm INSIDE that
+#: channel -- ceiling trim occupying the slot the glass lives in.  That is an
+#: overlap, not a design.
+#:
+#: It survived because nothing looks there: the reveal's own vertices are metres
+#: away around the perimeter and only its FACES cross, so a vertex or bounding-box
+#: test reads clear.  `apply_breach`'s triangle test (R2-125, built for exactly
+#: this) found 3 faces of `R2C_PerimeterReveal` inside the breach aperture's clear
+#: opening over bays 4-5 and refused the apply.
+#:
+#: Both glazed walls are lifted, not just the east one: the south wall carries the
+#: identical overlap and only escaped notice because the breach does not open
+#: there.  Fixing one and leaving the other would be fixing the symptom.
+Z_REVEAL_BOT = 6.030                  # solid walls, unchanged
+Z_REVEAL_BOT_GLAZED = 6.115           # 3.0 mm clear of the pocket head, 6.1120
+
 # ---- the concentric feature, radius by radius --------------------------- #
 # every radius below is derived from an emitter it must clear, or from the
 # radius before it.  the two SLOT bands are the only open ones.
@@ -723,12 +745,14 @@ def build(coll=None, report=True):
     # and it is what gives the wall/ceiling junction a line with a depth.
     a = Acc()
     xo, yo = ROOM_X - PERIM_GAP, ROOM_Y - PERIM_GAP
-    for (x0, x1, y0, y1) in ((-ROOM_X, ROOM_X, yo, ROOM_Y),
-                             (-ROOM_X, ROOM_X, -ROOM_Y, -yo),
-                             (-ROOM_X, -xo, -yo, yo),
-                             (xo, ROOM_X, -yo, yo)):
+    #                x0       x1      y0       y1      underside   wall
+    for (x0, x1, y0, y1, zb) in (
+            (-ROOM_X, ROOM_X, yo, ROOM_Y, Z_REVEAL_BOT),           # N  solid
+            (-ROOM_X, ROOM_X, -ROOM_Y, -yo, Z_REVEAL_BOT_GLAZED),  # S  GW_Front_*
+            (-ROOM_X, -xo, -yo, yo, Z_REVEAL_BOT),                 # W  solid
+            (xo, ROOM_X, -yo, yo, Z_REVEAL_BOT_GLAZED)):           # E  curtain wall
         a.new_island()
-        a.box(x0, x1, y0, y1, 6.030, Z_DECK + DECK_T)
+        a.box(x0, x1, y0, y1, zb, Z_DECK + DECK_T)
     made["deck"] = _emit(a, PFX + "PerimeterReveal", c, M["deck"],
                          smooth_deg=25.0)
 

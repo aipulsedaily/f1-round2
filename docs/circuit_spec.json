@@ -2254,7 +2254,7 @@
      61.43,
      98.8
     ],
-    "lens_mm": 19.5,
+    "lens_mm": 22.0,
     "speed": 44.3
    },
    {
@@ -2264,7 +2264,7 @@
      30.78,
      128.0
     ],
-    "lens_mm": 18.75,
+    "lens_mm": 30.0,
     "speed": 27.0
    },
    {
@@ -2297,7 +2297,12 @@
    52
   ],
   "wound_enters_frame_t": 6.0,
-  "sightline_clearance_m": 29.4
+  "sightline_clearance_m": 29.4,
+  "aim_keying": {
+   "max_stride_frames": 2,
+   "max_bearing_deg": 5.0,
+   "why": "R2-859. The default stride of 8 frames never gets shortened on a smoothly-tracked beat 6, because the 5 deg bearing test cannot fire when the whole beat only moves the aim 2.9 deg. That under-keys the rotation exactly where the car rounds T1 and the required pan accelerates 7x, and the car oscillates +-27 px about frame centre over the last 10 frames."
+  }
  },
  "sun": {
   "direction_to_sun": [

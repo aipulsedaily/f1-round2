@@ -10,10 +10,10 @@ it.
 |---|---|---|
 | **Beat-1 encoder** | PID 1083726, `nohup setsid work/r2840/encode_when_ready.sh` | 48 h window, detached. Fires on 792/792, runs `rq seq verify` + an independent missing-frame-number check, aborts rather than encode short. Output -> `watch/AFTER_beat1_33s.mp4` |
 | **Beat-1 render** | broker 2 (8761), `film17_breach.blend` | **624 of 792 frames done.** Killing it wastes ~$2.6 already spent and it answers two of the client's three beat-1 notes |
-| **Broker 1** (8760) | instance 47049525, $0.4627/hr | **IDLE, depth 0.** `HIBERNATE_SEC` is 3600, so it self-destroys within the hour. No action needed |
-| **Broker 2** (8761) | instance 47039886, $0.4403/hr | depth 6, 3 running |
+| **Broker 1** (8760) | instance id-040, $0.4627/hr | **IDLE, depth 0.** `HIBERNATE_SEC` is 3600, so it self-destroys within the hour. No action needed |
+| **Broker 2** (8761) | instance id-037, $0.4403/hr | depth 6, 3 running |
 
-**Credit $63.91.** Spend continues while the beat-1 render finishes — roughly
+**Credit $[redacted].** Spend continues while the beat-1 render finishes — roughly
 $1.50 more. To stop all spend: `./rq teardown` on both brokers, and accept
 losing 624 frames.
 
@@ -43,17 +43,23 @@ agents' work into the wrong commit twice.
 2. **`docs/RESUME-HERE.md`** — open threads. Two landmines removed today.
 3. **`docs/DEFECT-LOG-R2.md`** — 685 entries.
 
-## THREE BLOCKERS before any master
+## ~~THREE~~ TWO BLOCKERS before any master
 
 1. **The beat sheet reintroduces a beat-1 camera failure** (R2-1084).
    `CAMERA_RIG_FAIL 1_assembly: 1.155 of the half-frame at f431`. Fixed at
    04:15, reintroduced by a sheet edit at 05:03. It is printed as the *first* of
    two STAGE RESULT lines and the second is a pass — **anything reading the last
    line sees a clean run.**
-2. **`slabcheck` exits 1** (R2-1049). Bays 3 and 6 are role `destroyed` and read
-   DID_NOT_MOVE. A look call, not a correctness one — provisional read at 720p
-   says re-label them `retained` (R2-1080), but it needs a 4K look.
-3. **Budget.** Master is 155.0 h; it fits $68 credit *by fifteen cents* and only
+2. ~~**`slabcheck` exits 1** (R2-1049).~~ **CLOSED — R2-1121. It exits 0.**
+   Bays 3 and 6 STAY; judged at 4K/1:1, not at 720p. **No geometry and no bake
+   changed**, and `BF_MUL05_S02 = 0.1449 m` still holds. The "re-label is free"
+   option was **false, and was measured**: `role` picks `n_radial` (15 vs 7),
+   so relabelling re-fractures bay 3 202→198 shards and bay 6 200→178 and costs
+   the same re-bake as making them leave. The fix separates the
+   fracture-density input from the plan's outcome claim. Selftest 16 → 22
+   controls, all green. See `docs/STAGING-R2-1121-to-R2-1150.md`, and R2-1122
+   in it for the same defect one level up (mullions 4 and 6, not fixed).
+3. **Budget.** Master is 155.0 h; it fits $[redacted] credit *by fifteen cents* and only
    on a cheaper card. **The client's ask is ~$25.** Supply survey found 1x and 8x
    are the only deep markets and the 1x->8x price gap (8.8 %) is *smaller than
    host-to-host speed variance* (9.0 %) — so width buys wall-clock, not money.

@@ -70,7 +70,10 @@ def main():
         ctl = control_edge(x, sr)
         cok = True
         for i, c in enumerate(ctl):
-            must_fail = i < 3
+            # 0,1,2 inject loud material at an edge; 4 wraps the film's own ending
+            # onto frame 1, which since R2-954's running idle is the same defect
+            # (see control_edge). 3 is the stated sensitivity limit and must pass.
+            must_fail = i in (0, 1, 2, 4)
             good = (not c["PASS"]) if must_fail else bool(c["PASS"])
             cok = cok and good
             ce = c["edges"]

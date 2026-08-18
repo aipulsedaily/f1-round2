@@ -358,7 +358,55 @@ def _piece_is_outward_solid(Pw, T, pc, p):
     return vol > 0.0
 
 
-def _material_between(Pw, T, lo, hi, n_probe=5):
+def _column(Pw, T):
+    """Precompute what every ray in this mesh needs. Hoisted out of the probe
+    loop because `Pw[T]` on a 4.8 M triangle deck is 350 MB a call."""
+    tri = Pw[T]
+    x = tri[:, :, 0]
+    y = tri[:, :, 1]
+    # the ray only ever hits a triangle with area in plan
+    ar2 = ((x[:, 1] - x[:, 0]) * (y[:, 2] - y[:, 0])
+           - (x[:, 2] - x[:, 0]) * (y[:, 1] - y[:, 0]))
+    return (tri, x.min(1), x.max(1), y.min(1), y.max(1),
+            np.abs(ar2) > 1e-12)
+
+
+def _ray_crossings(col, px, py):
+    """Every z at which the vertical line through (px, py) meets the mesh.
+
+    ONE implementation, so the controls in `sheet_facing_selftest` count with
+    exactly the arithmetic the audit uses and cannot drift away from it.
+
+    NOTE THE INCLUSIVE `>= 0`: a hit landing on an edge shared by two
+    triangles satisfies it for BOTH and is counted twice. That is not
+    hypothetical -- it is what makes `hospitality_deck` report an odd
+    crossing count on a mesh with zero boundary edges. Left as it is here
+    because changing it changes every live gate verdict at once; the count
+    is now reported rather than diagnosed. See `_material_between`.
+    """
+    tri, xmin, xmax, ymin, ymax, live = col
+    m = live & (xmin <= px) & (px <= xmax) & (ymin <= py) & (py <= ymax)
+    idx = np.flatnonzero(m)
+    if not len(idx):
+        return np.zeros(0)
+    tt = tri[idx]
+    x0, y0 = tt[:, 0, 0], tt[:, 0, 1]
+    x1, y1 = tt[:, 1, 0], tt[:, 1, 1]
+    x2, y2 = tt[:, 2, 0], tt[:, 2, 1]
+    d = (y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2)
+    ok = np.abs(d) > 1e-15
+    a = np.where(ok, ((y1 - y2) * (px - x2) + (x2 - x1) * (py - y2))
+                 / np.where(ok, d, 1.0), -1.0)
+    b = np.where(ok, ((y2 - y0) * (px - x2) + (x0 - x2) * (py - y2))
+                 / np.where(ok, d, 1.0), -1.0)
+    c = 1.0 - a - b
+    hit = ok & (a >= 0) & (b >= 0) & (c >= 0)
+    if not hit.any():
+        return np.zeros(0)
+    return (a * tt[:, 0, 2] + b * tt[:, 1, 2] + c * tt[:, 2, 2])[hit]
+
+
+def _material_between(Pw, T, lo, hi, n_probe=5, note=None):
     """Is there SOLID between these two facets, or is it a groove?
 
     THE FALSE POSITIVE THIS EXISTS TO KILL. "Upper facet faces down, lower
@@ -385,43 +433,45 @@ def _material_between(Pw, T, lo, hi, n_probe=5):
     a closure test on the pair's own welded component before trusting an
     answer -- see `_piece_is_outward_solid` and `sheet_facing`. This
     returns `None` when its own probes disagree or cannot find the column.
+
+    AND IT SAYS WHICH, into `note`, BECAUSE THE THREE CAUSES NEED OPPOSITE
+    FIXES AND THE VERDICT USED TO NAME A FOURTH THAT IS NOT MEASURED HERE.
+    Until R2-1861 the `UNDECIDED` line reported every abstention as "sit on
+    self-intersecting geometry where no inside/outside answer exists", which
+    this function never looks for and which CANNOT produce the abstention:
+    parity's crossing count is a mod-2 invariant, so two interpenetrating
+    CLOSED solids still cross a ray an even number of times.  Measured, with
+    this counter, in the controls below: a self-intersection gives 4
+    crossings and a WRONG answer, never an odd count.
+
+    THE REASONS ARE NAMED FOR WHAT WAS COUNTED, NOT FOR A CAUSE, which is the
+    whole lesson.  `ODD_CROSSING_COUNT` is deliberately not called "not
+    watertight": measured on `hospitality_deck`, the five pairs that set it
+    are on meshes with **0 boundary edges and 0 edges used an odd number of
+    times** -- mod-2 closed, so no generic ray can cross them an odd number
+    of times.  What happens instead is that the probe lands exactly on a
+    shared triangle edge, where `a >= 0 and b >= 0 and c >= 0` is true for
+    BOTH adjacent triangles and one crossing is counted twice.  Move the ray
+    0.5 mm and 12 of 12 jittered rays counted 6 where the probe counted 7.
+
+        DECIDED                  parity ruled
+        ODD_CROSSING_COUNT       odd count on most probes -- a hit counted
+                                 twice, or a surface that really is open;
+                                 this arm does not distinguish them
+        PROBES_DISAGREE          probes split evenly, inside vs outside
+        NO_PROBE_FOUND_A_COLUMN  no probe found any triangle to cross
     """
     zq = 0.5 * (lo["z"] + hi["z"])
-    tri = Pw[T]
-    x = tri[:, :, 0]
-    y = tri[:, :, 1]
-    xmin, xmax = x.min(1), x.max(1)
-    ymin, ymax = y.min(1), y.max(1)
-    # the ray only ever hits a triangle with area in plan
-    ar2 = ((x[:, 1] - x[:, 0]) * (y[:, 2] - y[:, 0])
-           - (x[:, 2] - x[:, 0]) * (y[:, 1] - y[:, 0]))
-    live = np.abs(ar2) > 1e-12
+    col = _column(Pw, T)
     inside = outside = leaky = 0
     ups = hi["tris"]
     step = max(1, len(ups) // n_probe)
     probes = ups[::step][:n_probe]
     for t in probes:
         p = Pw[T[t]].mean(0)                      # centroid of a real facet tri
-        px, py = float(p[0]), float(p[1])
-        m = live & (xmin <= px) & (px <= xmax) & (ymin <= py) & (py <= ymax)
-        idx = np.flatnonzero(m)
-        if not len(idx):
+        zh = _ray_crossings(col, float(p[0]), float(p[1]))
+        if not len(zh):
             continue
-        tt = tri[idx]
-        x0, y0 = tt[:, 0, 0], tt[:, 0, 1]
-        x1, y1 = tt[:, 1, 0], tt[:, 1, 1]
-        x2, y2 = tt[:, 2, 0], tt[:, 2, 1]
-        d = (y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2)
-        ok = np.abs(d) > 1e-15
-        a = np.where(ok, ((y1 - y2) * (px - x2) + (x2 - x1) * (py - y2))
-                     / np.where(ok, d, 1.0), -1.0)
-        b = np.where(ok, ((y2 - y0) * (px - x2) + (x0 - x2) * (py - y2))
-                     / np.where(ok, d, 1.0), -1.0)
-        c = 1.0 - a - b
-        hit = ok & (a >= 0) & (b >= 0) & (c >= 0)
-        if not hit.any():
-            continue
-        zh = (a * tt[:, 0, 2] + b * tt[:, 1, 2] + c * tt[:, 2, 2])[hit]
         if len(zh) % 2:
             leaky += 1                 # not watertight along this ray
             continue
@@ -429,10 +479,20 @@ def _material_between(Pw, T, lo, hi, n_probe=5):
             inside += 1
         else:
             outside += 1
+    if note is not None:
+        note.update(inside=inside, outside=outside, leaky=leaky,
+                    probes=int(len(probes)))
     if leaky > inside + outside:
+        if note is not None:
+            note["reason"] = "ODD_CROSSING_COUNT"
         return None
     if inside == outside:
+        if note is not None:
+            note["reason"] = ("NO_PROBE_FOUND_A_COLUMN" if inside == 0
+                              else "PROBES_DISAGREE")
         return None
+    if note is not None:
+        note["reason"] = "DECIDED"
     return inside > outside
 
 
@@ -578,6 +638,7 @@ def sheet_facing(objs, cos_flat=0.99, min_area=0.05):
             suspect = bool(hi["mean_nz"] < 0 and lo["mean_nz"] > 0)
             solid = True
             enclosed = False
+            note = {"reason": "NOT_SUSPECT"}
             if suspect:
                 ent = mesh[a["object"]]
                 # IF THE FACETS BELONG TO A CLOSED SOLID THAT VOLUME ALREADY
@@ -606,9 +667,11 @@ def sheet_facing(objs, cos_flat=0.99, min_area=0.05):
                 wc = ent[3]
                 enclosed = _piece_is_outward_solid(
                     Pw, T, wc, int(wc[hi["tris"][0]]))
-                if not enclosed:
-                    solid = _material_between(Pw, T, lo, hi)
-            pairs.append({"object": a["object"],
+                if enclosed:
+                    note["reason"] = "INSIDE_AN_OUTWARD_SOLID"
+                else:
+                    solid = _material_between(Pw, T, lo, hi, note=note)
+            pairs.append({"object": a["object"], "parity": note,
                           "lower_piece": lo["piece"], "upper_piece": hi["piece"],
                           "z_lower": lo["z"], "z_upper": hi["z"],
                           "area_m2": round(a["area_m2"], 5),
@@ -632,8 +695,16 @@ def sheet_facing(objs, cos_flat=0.99, min_area=0.05):
     undec = [p for p in pairs if p.get("suspect") and not p["inverted"]
              and not p["inside_outward_solid"]
              and p["material_between"] is None]
+    # WHY EACH ABSTENTION HAPPENED, COUNTED. `undecidable_pairs: 6` with no
+    # cause attached is what let the verdict line invent one -- see
+    # `_material_between`. These are the reasons the arm itself recorded.
+    reasons = {}
+    for p in undec:
+        r = p.get("parity", {}).get("reason", "UNRECORDED")
+        reasons[r] = reasons.get(r, 0) + 1
     out = {"groove_pairs_cleared": len(slots),
            "undecidable_pairs": len(undec),
+           "undecidable_reasons": reasons,
            "undecidable_area_m2": round(sum(p["area_m2"] for p in undec)
                                         * 2.0, 4),
            "undecidable": sorted(undec, key=lambda p: -p["area_m2"])[:20],
@@ -761,6 +832,86 @@ def sheet_facing_selftest():
         bpy.data.objects.remove(ob, do_unlink=True)
         bpy.data.meshes.remove(me)
 
+    # WHAT AN ABSTENTION MEANS, AND WHAT IT IS NOT (R2-1861). The verdict
+    # line used to report every `UNDECIDED` as "sit on self-intersecting
+    # geometry where no inside/outside answer exists" -- a cause
+    # `_material_between` never measures, and one that CANNOT produce an
+    # abstention: ray-crossing parity is a mod-2 invariant, so two
+    # interpenetrating CLOSED solids cross a ray an even number of times and
+    # the arm answers (wrongly) rather than abstaining.
+    #
+    # Three columns, hand counted, driven straight into the parity arm so no
+    # tessellation choice can move them. The pair is a plate at z 0.40 facing
+    # up under a plate at z 0.44 facing down, inside a 1 m box:
+    #
+    #   A  box with NO LID      floor, 0.40, 0.44                  = 3, ODD
+    #                           -> abstains, ODD_CROSSING_COUNT
+    #   B  box CLOSED           floor, 0.40, 0.44, lid             = 4, even
+    #                           -> DECIDED
+    #   C  box CLOSED, with a second CLOSED BOX DRIVEN THROUGH ITS LID, on
+    #      the probe line -- a textbook self-intersection --
+    #                           floor, 0.40, 0.44, 0.60, lid, 1.40 = 6, even
+    #                           -> DECIDED
+    #
+    # C is the arm that matters: it is exactly the geometry the old message
+    # blamed, and it does not produce the verdict the old message explained.
+    # A is the arm that fires. An abstention may never again be reported as a
+    # self-intersection without one of these three moving.
+    def _quads(qs):
+        t = []
+        for a, b, c, d in qs:
+            t += [(a, b, c), (a, c, d)]
+        return t
+
+    def _prism(x0, y0, x1, y1, z0, z1, lid=True):
+        V = [(x0, y0, z0), (x1, y0, z0), (x1, y1, z0), (x0, y1, z0),
+             (x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1)]
+        q = [(0, 3, 2, 1), (0, 1, 5, 4), (1, 2, 6, 5),
+             (2, 3, 7, 6), (3, 0, 4, 7)]
+        if lid:
+            q.append((4, 5, 6, 7))
+        return V, _quads(q)
+
+    for tag, lid, intruder, want_reason, want_n in (
+            ("plate pair in a box with NO LID", False, False,
+             "ODD_CROSSING_COUNT", 3),
+            ("plate pair in a CLOSED box", True, False, "DECIDED", 4),
+            ("...and a CLOSED BOX DRIVEN THROUGH IT (self-intersecting)",
+             True, True, "DECIDED", 6)):
+        V, T = [], []
+
+        def add(vt):
+            o = len(V)
+            V.extend(vt[0])
+            T.extend([(a + o, b + o, c + o) for a, b, c in vt[1]])
+        add(_prism(0.0, 0.0, 1.0, 1.0, 0.0, 1.0, lid=lid))
+        # the lower plate is deliberately NOT congruent with the upper one.
+        # Congruent rectangles put the upper triangle's centroid exactly on
+        # the lower one's diagonal, where `a >= 0 and b >= 0 and c >= 0` is
+        # true for BOTH adjacent triangles and one crossing is counted twice
+        # -- which is the real fault behind `hospitality_deck`'s six pairs,
+        # and would silently make this control count 4 where it says 3.
+        add(([(0.15, 0.20, 0.40), (0.85, 0.20, 0.40),
+              (0.85, 0.80, 0.40), (0.15, 0.80, 0.40)], _quads([(0, 1, 2, 3)])))
+        base = len(T)
+        add(([(0.20, 0.20, 0.44), (0.80, 0.20, 0.44),
+              (0.80, 0.80, 0.44), (0.20, 0.80, 0.44)], _quads([(0, 3, 2, 1)])))
+        if intruder:
+            add(_prism(0.30, 0.30, 0.70, 0.70, 0.60, 1.40))
+        Pw = np.array(V, float)
+        Ti = np.array(T, np.int64)
+        hi = {"z": 0.44, "tris": np.array([base, base + 1])}
+        note = {}
+        got = _material_between(Pw, Ti, {"z": 0.40}, hi, note=note)
+        n = len(_ray_crossings(_column(Pw, Ti), 0.6, 0.4))
+        good = note.get("reason") == want_reason and n == want_n \
+            and (got is None) == (want_reason == "ODD_CROSSING_COUNT")
+        print("   CONTROL %-56s -> %d crossings (want %d), reason %-18s "
+              "(want %-18s) %s"
+              % (tag, n, want_n, note.get("reason"), want_reason,
+                 "ok" if good else "FAIL"))
+        ok = ok and good
+
     # THE THRESHOLDS, STATED RATHER THAN ASSUMED. `cos_flat` and `min_area`
     # are the two ways a real deck can be excluded without a word being
     # printed, so both are exercised on either side of their own bound. This
@@ -886,13 +1037,22 @@ def main():
         elif sf["inverted_pairs"]:
             verdict, why_txt = "DIRTY", "upper facet faces the ground"
         elif sf["undecidable_pairs"]:
-            # NOT a pass. The pairs look like the defect and the geometry is
-            # not watertight enough for the parity arm to rule either way.
+            # NOT a pass. The pairs look like the defect and the parity arm
+            # would not rule either way. IT NOW SAYS WHY IT WOULD NOT, in its
+            # own words. This line used to assert "self-intersecting geometry
+            # where no inside/outside answer exists" for every abstention --
+            # a cause `_material_between` never measures and, worse, one that
+            # cannot produce an abstention at all: a ray through two
+            # interpenetrating CLOSED solids crosses 4 faces, which is even,
+            # so parity answers (wrongly) rather than abstaining. Both arms
+            # are controls below. Reported as UNDECIDED_*, never diagnosed.
             verdict = "UNDECIDED"
-            why_txt = ("%d pair(s), %.3f m2, look inverted but sit on "
-                       "self-intersecting geometry where no inside/outside "
-                       "answer exists; %d groove pair(s) cleared"
+            why_txt = ("%d pair(s), %.3f m2, look inverted and the parity arm "
+                       "abstained -- %s; %d groove pair(s) cleared"
                        % (sf["undecidable_pairs"], sf["undecidable_area_m2"],
+                          ", ".join("%s x%d" % kv for kv in
+                                    sorted(sf["undecidable_reasons"].items()))
+                          or "no reason recorded",
                           sf["groove_pairs_cleared"]))
         else:
             verdict = "OK"

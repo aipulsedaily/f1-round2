@@ -1,64 +1,64 @@
 >> audio/out/master.wav: 5956000 samples, 124.0833 s, 2978.00 frames
 >> levels: {
- "integrated_lufs": -14.019460989461997,
- "true_peak_dbtp": -1.0972656922657427,
- "sample_peak": 0.8804222345352173,
- "sample_peak_dbfs": -1.106179962673224,
+ "integrated_lufs": -14.000888362647274,
+ "true_peak_dbtp": -1.0999990422413173,
+ "sample_peak": 0.881030797958374,
+ "sample_peak_dbfs": -1.1001781961269612,
  "clipped_samples": 0,
  "dc_offset": [
-  -4.596894883404969e-06,
-  -4.341093084009963e-06
+  -2.0894750382293384e-05,
+  -2.0274311524257314e-05
  ],
- "short_term_lufs_min": -29.331890097890902,
- "short_term_lufs_max": -8.941752492478741,
- "short_term_range_db": 20.39013760541216,
+ "short_term_lufs_min": -27.390762639903496,
+ "short_term_lufs_max": -9.58301575535173,
+ "short_term_range_db": 17.80774688455177,
  "silent_1s_windows_below_-80dB": 0,
- "channel_correlation": 0.7981577177388536,
+ "channel_correlation": 0.7585821126510749,
  "PASS": true
 }
->> ffmpeg: {'integrated_lufs': -14.0, 'loudness_range_lu': 14.0, 'true_peak_dbfs': -1.1}
->> edges: frame 1 crest +8.53 dB step -12.28 dB | last frame crest +10.99 dB step +2.40 dB | limits crest +21.11 step +3.00 PASS=True
+>> ffmpeg: {'integrated_lufs': -14.0, 'loudness_range_lu': 13.1, 'true_peak_dbfs': -1.1}
+>> edges: frame 1 crest +8.33 dB step -12.47 dB | last frame crest +10.79 dB step -212.76 dB | limits crest +21.67 step +3.00 PASS=True
    control CONTROL: R2-960's signature -- the film's loudest 11.3 ms ar: PASS=False
    control CONTROL: the same energy arriving on the LAST 11.3 ms (prove: PASS=False
    control CONTROL: a single -9.6 dBFS sample at index 0, the step the : PASS=False
    control CONTROL: a -40 dBFS sample at index 0 (below the gate's sens: PASS=True
-   control CONTROL, STATED NEGATIVE: circularly rolling the FINISHED ma: PASS=True
->> seam: worst d3 local percentile 80.567 PASS=True
-   control CONTROL: 977-sample splice at beat 4: d3 p99.994 PASS=False
+   control CONTROL, STATED NEGATIVE: circularly rolling the FINISHED ma: PASS=False
+>> seam: worst d3 local percentile 85.910 PASS=True
+   control CONTROL: 977-sample splice at beat 4: d3 p99.996 PASS=False
    control CONTROL: 3 dB level step at beat 4: d3 p99.954 PASS=False
-   control CONTROL: 40 ms crossfade to elsewhere at beat 4: d3 p96.460 PASS=True
-   control CONTROL: 0.5 dB level step at beat 4 (below the gate's sensitivity, stated): d3 p89.456 PASS=True
+   control CONTROL: 40 ms crossfade to elsewhere at beat 4: d3 p98.452 PASS=True
+   control CONTROL: 0.5 dB level step at beat 4 (below the gate's sensitivity, stated): d3 p97.106 PASS=True
 >> external assets: 0 render-path hits, 0 package hits; controls {'sf_read': 1, 'librosa': 3, 'download': 3}
 >> kerb control: {'kerb_fraction_on_control_track': 1.0, 'CONTROL_TRIGGERS_AS_EXPECTED': True}
 >> pitch: {
  "method": "f0 measured from the DRY world-clock engine every 0.25 s of world time and compared with rpm/60*3, where rpm is the gearbox solution from the telemetry's v_world. Measured on the dry voice because 'the engine pitch tracks the telemetry' is a claim about the SOURCE; what the ears hear is that times the Doppler ratio, which the doppler gate tests separately.",
  "firing": {
   "n_windows": 221,
-  "corr_measured_f0_vs_predicted_f0": 0.9975411507829847,
-  "corr_measured_f0_vs_v_world": 0.4086363840617019,
-  "median_abs_error_cents": 1.2884211991115897,
-  "p95_abs_error_cents": 14.102194499759657,
+  "corr_measured_f0_vs_predicted_f0": 0.997313506731642,
+  "corr_measured_f0_vs_v_world": 0.4070026446467413,
+  "median_abs_error_cents": 1.2266353336328721,
+  "p95_abs_error_cents": 13.211356984769784,
   "within_50_cents_fraction": 0.9864253393665159
  },
  "overrun": {
   "n_windows": 66,
-  "corr_measured_f0_vs_predicted_f0": -0.31562801861284434,
-  "corr_measured_f0_vs_v_world": -0.05199752690910729,
-  "median_abs_error_cents": 7.082733875716236,
-  "p95_abs_error_cents": 2769.049504543353,
-  "within_50_cents_fraction": 0.5757575757575758
+  "corr_measured_f0_vs_predicted_f0": 0.9964290830320153,
+  "corr_measured_f0_vs_v_world": 0.5821452993357733,
+  "median_abs_error_cents": 1.9034166821961445,
+  "p95_abs_error_cents": 15.489054757043442,
+  "within_50_cents_fraction": 0.9848484848484849
  },
  "all": {
   "n_windows": 287,
-  "corr_measured_f0_vs_predicted_f0": 0.25897439742659595,
-  "corr_measured_f0_vs_v_world": 0.2890832336635267,
-  "median_abs_error_cents": 1.5347950786131697,
-  "p95_abs_error_cents": 2390.396373880033,
-  "within_50_cents_fraction": 0.89198606271777
+  "corr_measured_f0_vs_predicted_f0": 0.9971211264215649,
+  "corr_measured_f0_vs_v_world": 0.4472348902463976,
+  "median_abs_error_cents": 1.3381481504410304,
+  "p95_abs_error_cents": 13.49773491160346,
+  "within_50_cents_fraction": 0.9860627177700348
  },
  "overrun_note": "with the injectors cut there is no combustion and therefore no firing fundamental to find; the tracker reports the pumping and turbo content instead. The overrun rows are listed, not hidden, and they are NOT part of the pass criterion.",
  "CONTROL_tracker_on_known_chirp_max_err_cents": 4.818573074656553,
- "CONTROL_constant_speed_corr_vs_v_world": 0.0939622920601648,
+ "CONTROL_constant_speed_corr_vs_v_world": 0.09968686406985759,
  "PASS": true,
  "CONTROL_FAILS_AS_EXPECTED": true
 }
@@ -77,42 +77,102 @@
  "measured_car_speed_kph": 312.7992980738193,
  "measured_camera_speed_ms": 1.0954486818465428,
  "speed_of_sound_ms": 342.041837354473,
- "measured_approach_closing_speed_ms": 77.11087614434655,
+ "measured_approach_closing_speed_ms": 77.11205747549684,
  "measured_recession_speed_ms": 61.81699960087644,
- "predicted_sweep_semitones_from_closing_speeds": 7.298815840686906,
- "ratio_max_from_retarded_solve": 1.291060266370992,
+ "predicted_sweep_semitones_from_closing_speeds": 7.298893036846277,
+ "ratio_max_from_retarded_solve": 1.2910660232604652,
  "ratio_min_from_retarded_solve": 0.8469341414769064,
- "predicted_sweep_semitones_from_retarded_solve": 7.298815840445373,
- "measured_sweep_semitones_in_master": 11.37127750411795,
- "measured_ratio_span_semitones_in_master": 8.093326809318368,
- "measured_ratio_max": 1.288751222142106,
- "measured_ratio_min": 0.8074976100301996,
- "corr_measured_ratio_vs_predicted_ratio": 0.9176306597314824,
- "corr_on_tracked_windows": 0.9967211079023198,
+ "predicted_sweep_semitones_from_retarded_solve": 7.298893036693386,
+ "measured_sweep_semitones_in_master": 10.989688683062395,
+ "measured_ratio_span_semitones_in_master": 8.48569502314832,
+ "measured_ratio_max": 1.3737814751016648,
+ "measured_ratio_min": 0.8414860637008478,
+ "corr_measured_ratio_vs_predicted_ratio": 0.912421337137376,
+ "corr_on_tracked_windows": 0.993737780781049,
  "tracked_windows": 80,
  "tracker_failure_windows": 5,
  "tracker_failure_fraction": 0.05882352941176472,
  "tracker_failure_definition_cents": 200.0,
- "median_abs_error_vs_prediction_cents": 5.209144864515906,
- "p90_abs_error_vs_prediction_cents": 59.69211038492525,
+ "median_abs_error_vs_prediction_cents": 4.568912590847167,
+ "p90_abs_error_vs_prediction_cents": 91.05076367856773,
  "usable_windows": 85,
  "window_film_t_s": [
   91.62291666666667,
   95.82291666666643
  ],
- "emission_lead_at_window_start_s": 0.6605297723025387,
+ "emission_lead_at_window_start_s": 0.6549380105260951,
  "emission_lead_at_closest_approach_s": 0.08049860003623621,
  "windows_on_throttle": 63,
  "windows_on_overrun": 22,
  "windows_measured_on_engine_comb": 61,
  "windows_measured_on_tyre_scrub_comb": 24,
- "max_lateral_g_in_window": 4.510670898434509,
- "CONTROL_estimator_on_wrong_f_emit_median_ratio": 0.846084416589151,
- "CONTROL_permuted_windows_corr": -0.11442704965238504,
+ "max_lateral_g_in_window": 4.510669932555392,
+ "CONTROL_estimator_on_wrong_f_emit_median_ratio": 0.8480369680662414,
+ "CONTROL_permuted_windows_corr": -0.11861432168416748,
  "CONTROL_null_static_source_and_static_ears_semitones": 2.519277112229843e-10,
- "listener_motion_only_sweep_semitones": 3.076089296262526,
+ "listener_motion_only_sweep_semitones": 2.9355083580297507,
  "PASS": true,
  "CONTROL_FAILS_AS_EXPECTED": true
 }
->> gates: {"levels": true, "edges": true, "seam": true, "external_assets": true, "pitch": true, "doppler": true}
+>> harmonic: {
+ "worst_engine_beat_hnr_db": 4.941158444889874,
+ "worst_engine_beat_hnr_above_2k6_db": 3.913371602553841,
+ "threshold_hnr_db": 2.0,
+ "threshold_hnr_above_2k6_db": 3.0,
+ "per_beat": {
+  "1_assembly": {
+   "hnr_db": 2.617220573721589,
+   "hnr_above_2k6_db": -1.4164978797125207
+  },
+  "2_launch": {
+   "hnr_db": 14.655201949624217,
+   "hnr_above_2k6_db": 8.058556120249213
+  },
+  "3_breach": {
+   "hnr_db": -1.320966343854748,
+   "hnr_above_2k6_db": 0.050615328199484305
+  },
+  "4_transit": {
+   "hnr_db": 4.981857545811172,
+   "hnr_above_2k6_db": 3.913371602553841
+  },
+  "5_lap": {
+   "hnr_db": 4.941158444889874,
+   "hnr_above_2k6_db": 5.83536116298461
+  },
+  "6_ending": {
+   "hnr_db": 0.6127112408999529,
+   "hnr_above_2k6_db": 0.13275920791926876
+  }
+ },
+ "PASS": true,
+ "CONTROL_FAILS_AS_EXPECTED": true
+}
+   control CONTROL: the R2-1400 master the client rejected as a hair blower: HNR   3.5 / HF  -0.7 PASS=False
+   control CONTROL: white noise wearing the master's own octave balance -- : HNR  -1.2 / HF  -2.1 PASS=False
+   control CONTROL, STATED NEGATIVE: the master's top four octaves replaced: HNR   4.3 / HF  -1.6 PASS=False
+>> waveguide: {
+ "rpm": 11000.0,
+ "median_ring_through": 4.8523856902560585,
+ "worst_ring_through": 7.293219729813871,
+ "max_harmonic_error_pct": 1.744105614443748,
+ "threshold_median": 5.0,
+ "threshold_worst": 9.0,
+ "threshold_harmonic_pct": 4.0,
+ "PASS": true,
+ "CONTROL_FAILS_AS_EXPECTED": true
+}
+   primary_cyl0   f0  254.8 Hz  Q  1.45  T60  12.52 ms  ring-through med  4.58x worst  6.89x
+   primary_cyl1   f0  270.5 Hz  Q  1.45  T60  11.79 ms  ring-through med  4.31x worst  6.48x
+   primary_cyl2   f0  286.7 Hz  Q  1.45  T60  11.12 ms  ring-through med  4.07x worst  6.12x
+   primary_cyl3   f0  240.7 Hz  Q  1.45  T60  13.26 ms  ring-through med  4.85x worst  7.29x
+   primary_cyl4   f0  254.8 Hz  Q  1.45  T60  12.52 ms  ring-through med  4.58x worst  6.89x
+   primary_cyl5   f0  269.0 Hz  Q  1.45  T60  11.86 ms  ring-through med  4.34x worst  6.52x
+   collector      f0  293.1 Hz  Q  1.59  T60  11.94 ms  ring-through med  4.79x worst  6.57x
+   tailpipe       f0  606.0 Hz  Q  2.38  T60   8.63 ms  ring-through med  3.31x worst  4.75x
+   control R2-1401 shipped: loop_gain 0.70, damp 3200 (the rejected maste: med   8.34x worst  20.71x harm  1.41% PASS=False
+   control near-lossless pipe: loop_gain 0.85                            : med  10.70x worst  44.97x harm  1.40% PASS=False
+   control 3rd-order in-loop lowpass at 1200 Hz (short ring, INHARMONIC) : med   1.27x worst   8.20x harm 20.52% PASS=False
+   control STATED NEGATIVE: the shipped values                           : med   4.58x worst   6.89x harm  1.45% PASS=True
+>> gates: {"levels": true, "edges": true, "seam": true, "external_assets": true, "pitch": true, "doppler": true, "harmonic": true, "waveguide": true}
 >> STAGE RESULT: AUDIO_VERIFY_OK

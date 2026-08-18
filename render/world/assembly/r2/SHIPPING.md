@@ -1,12 +1,49 @@
 # WHICH ASSEMBLY IS THE SHIPPING WORLD
 
-**`assembly10.blend` — built 2026-08-04 15:46, `world_contract` 1.2.1. PROMOTED
-2026-08-04 under R2-508 as THE BATCHED REBUILD; `assembly9.blend` is its
+**`assembly14.blend` — built 2026-08-07 22:40, `world_contract` 1.2.1. PROMOTED
+2026-08-07 under R2-1701 as THE STALENESS REBUILD; assembly10.blend is its
 immediate predecessor.**
 
-`render/film16.blend`, the film scene built on it, is the first film in this
-project that has a driver in the car and the first with anything from
-`world/items/` in it at all.
+## R2-1701 — why assembly11 exists
+
+Because assembly10 was **three days behind four of its own generators**, and the
+film build cannot see that. `tools/build_film_scene.py` appends
+CAR/SHOWROOM/PROPS/LIGHTS/CEILING onto a prebuilt world; it does not rebuild the
+world, so a landed change to a world module reaches no frame until someone runs
+`assemble.py`. It printed the warning on every film build and the warning is
+explicitly "NOT a refusal":
+
+```
+world/build_architecture.py   newer by 60.4 h    beat-4 pit annexe
+world/build_surface.py        newer by 65.9 h    asphalt relief re-budget
+world/build_terrain.py        newer by 74.3 h    R2-1661 ground/sward pass
+world/build_dressing.py       newer by 59.8 h
+```
+
+So `render/film18_breach.blend` — the newest film at the time of writing — has
+neither the beat-4 pit annexe fix nor the asphalt relief re-budget in it, and
+every gate it ran passed, because they all measure the film against itself.
+
+| | assembly10 | assembly11 |
+|---|---|---|
+| objects | 30,488 | **30,698** (+210) |
+| build time | 1,372 s | 2,118 s |
+| terrain | 797.5 s | **1,144.3 s** (the sward layer) |
+| dressing | 125.6 s | 313.2 s |
+| items | 136.4 s | 275.2 s |
+
+The `+210` objects are the ground pass, not new dressing: terrain goes 28,535 ->
+28,745 scene objects at its own stage boundary.
+
+**No item registry row changed and no item was added** — `world/build_items.py`
+and `world/items/PLACEMENT.json` are both older than assembly10 and were already
+in it. `world/itemkit.py` IS newer (the R2-1154 `assert_wired` addition), but
+that function is selftest-only and not on the build path, which is why this
+build was allowed to proceed while another agent was still editing the file.
+
+`render/film16.blend` was the film scene built on assembly10, and was the first
+film in this project that had a driver in the car and the first with anything
+from `world/items/` in it at all.
 
 Unlike every promotion before it, this one does NOT move one object. It is the
 batched rebuild — six landed source changes plus four registry rows going

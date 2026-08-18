@@ -131,38 +131,98 @@ def report_world_staleness(src):
     by-name socket setters dropping writes silently). So the declared ship was
     already stale against its own generator within the day.
 
-    This WARNS and does not refuse. A refusal here would block every film build
-    for as long as any world module is being worked on, which on this project is
-    always, and a guard that must be routinely overridden teaches people to
-    override guards. The staleness is printed so it lands in the build log and
-    in whatever reads it -- and, unlike the levelling, a stale world is visible
-    to `tools/socket_index_audit.py --blend` on the finished film.
+    R2-1822: THIS NOW REFUSES. It used to warn, for a reason worth preserving:
+    "a refusal here would block every film build for as long as any world module
+    is being worked on, which on this project is always, and a guard that must be
+    routinely overridden teaches people to override guards." That argument is
+    correct about MTIME staleness and it is why this check stayed a warning --
+    but the warning was then printed on every film build and read as noise, and
+    `film18_breach.blend` shipped without FOUR landed world changes while every
+    other gate passed. A warning nobody can act on is not weaker than a refusal;
+    it is a refusal that has been pre-overridden for everyone, permanently.
+
+    What makes refusing affordable is that the check is now about CONTENT, not
+    timestamps. `assemble.py` records the sha256 of every generator module it
+    read, at read time, in `<blend>_build.json` and in the scene itself. So:
+
+      * re-saving a module without changing it does not fire -- the hash is
+        equal, and mtime staleness of that kind was most of the false alarms
+      * a module edited DURING the assembly build DOES fire, which mtime cannot
+        see at all: assembly11 read build_terrain.py at 22:06, the file changed
+        at 22:25, the blend saved at 22:40, and save-time > module-mtime reported
+        FRESH on a world built from a source state that no longer existed
+      * the answer travels with the artefact, so it is still true if the sidecar
+        is lost or the blend is moved
+
+    Assemblies built before R2-1822 carry no fingerprint. For those this falls
+    back to the old mtime comparison and STILL refuses, because the alternative
+    is the film18 outcome; the message says which check spoke, since the mtime
+    arm has false positives the hash arm does not.
+
+    `--world-override REASON` overrides deliberately, and the reason is printed
+    into the build log.
     """
+    fresh, why = _world_source_state(src)
+    if fresh:
+        print(">> WORLD STALENESS: none — %s" % why)
+        return []
+    print(">> WORLD STALENESS: %s" % why)
+    return [why]
+
+
+def _world_source_state(src):
+    """(is_fresh, human_reason). Hash arm when available, mtime arm otherwise."""
+    import hashlib
+    recorded = None
+    sidecar = src.replace(".blend", "_build.json")
+    if os.path.exists(sidecar):
+        try:
+            with open(sidecar) as fh:
+                recorded = json.load(fh).get("source_sha256")
+        except Exception:
+            recorded = None
+
+    wdir = os.path.join(R2, "world")
+    if recorded:
+        differ = []
+        for rel, want in sorted(recorded.items()):
+            p = os.path.join(R2, rel)
+            try:
+                with open(p, "rb") as fh:
+                    got = hashlib.sha256(fh.read()).hexdigest()
+            except OSError:
+                got = None
+            if got != want:
+                differ.append(rel)
+        if differ:
+            return False, ("%s was built from a DIFFERENT source state. %d "
+                           "module(s) differ by content: %s. A rebuilt assembly "
+                           "would not be this file."
+                           % (os.path.basename(src), len(differ),
+                              ", ".join(differ[:6])))
+        return True, ("%s matches its recorded source fingerprint over %d "
+                      "module(s) [content check]" % (os.path.basename(src),
+                                                     len(recorded)))
+
     try:
         w_mtime = os.path.getmtime(src)
     except OSError:
-        return []
-    wdir = os.path.join(R2, "world")
+        return True, "no assembly to check"
     newer = []
     for fn in sorted(os.listdir(wdir)):
         if not (fn.startswith("build_") and fn.endswith(".py")):
             continue
-        p = os.path.join(wdir, fn)
-        m = os.path.getmtime(p)
+        m = os.path.getmtime(os.path.join(wdir, fn))
         if m > w_mtime:
-            newer.append((fn, m - w_mtime))
+            newer.append((fn, (m - w_mtime) / 3600.0))
     if newer:
-        print(">> WORLD STALENESS: %s predates %d of its own generator "
-              "module(s). A rebuilt assembly would not be this file."
-              % (os.path.basename(src), len(newer)))
-        for fn, dt in newer:
-            print("   world/%-28s newer by %.1f h" % (fn, dt / 3600.0))
-        print("   NOT a refusal — see report_world_staleness.__doc__. Check the "
-              "built film with tools/socket_index_audit.py --blend.")
-    else:
-        print(">> WORLD STALENESS: none — %s is newer than every world/build_*.py"
-              % os.path.basename(src))
-    return newer
+        return False, ("%s predates %d of its own generator module(s) "
+                       "[mtime check -- this assembly predates R2-1822 and "
+                       "carries no source fingerprint]: %s"
+                       % (os.path.basename(src), len(newer),
+                          ", ".join("world/%s +%.1fh" % (f, d) for f, d in newer[:6])))
+    return True, ("%s is newer than every world/build_*.py [mtime check -- no "
+                  "source fingerprint recorded]" % os.path.basename(src))
 
 
 def refuse_unless_levelled(scene):
@@ -228,7 +288,19 @@ def main():
     # 200 km/h. The check below is the softer one: the right world, or a stated
     # reason for a different one.
     refuse_unless_world_is_declared(src, a.world_override)
-    report_world_staleness(src)
+    stale = report_world_staleness(src)
+    if stale:
+        if a.world_override:
+            print(">> WORLD STALENESS OVERRIDDEN deliberately: %s" % a.world_override)
+        else:
+            raise SystemExit(
+                "REFUSING: the world this film would be built on is not what its "
+                "own source would produce, so landed changes would be absent from "
+                "every frame while every other gate passed -- which is exactly "
+                "what happened to film18 (R2-1701). Rebuild the assembly with\n"
+                "    render/world/assembly/r2/v126/build_assembly12.sh\n"
+                "or, if this is deliberate (a control, an A/B, a historical "
+                "re-measurement), pass --world-override with the reason.")
 
     scene = bpy.context.scene
     sheet = json.load(open(a.sheet))

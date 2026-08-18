@@ -27,6 +27,19 @@ def main():
     ap.add_argument("--objects", default=os.path.join(R2, "docs/screen_presence_objects.json"))
     ap.add_argument("--out", required=True)
     ap.add_argument("--tiers", required=True)
+    # THE CONTROL ARM, and the only reason it exists. Without a way to run the
+    # pre-R2-1385 resolution, "SELF_HOST_MISSED is 0" is unfalsifiable: it
+    # would be 0 both when the fix works and when the guard is vacuous. With
+    # it, the same guard on the same npz reports 4 and then 0, which is what
+    # makes the 0 mean something. See work/w2_0b/ctl_self_hosts.sh.
+    ap.add_argument("--no-self-hosts", action="store_true",
+                    help="CONTROL: resolve hosts the pre-R2-1385 way, ignoring "
+                         "each item's own declared geometry. The audit still "
+                         "runs and is expected to REFUSE.")
+    ap.add_argument("--allow-self-host-missed", action="store_true",
+                    help="do not exit non-zero when SELF_HOST_MISSED is "
+                         "non-empty. For the control arm, which needs the "
+                         "output written so the two runs can be diffed.")
     a = ap.parse_args()
 
     z = np.load(a.npz, allow_pickle=True)
@@ -46,13 +59,34 @@ def main():
     man = json.load(open(a.manifest))
     items = man["items"]
 
-    dead, unmapped = HOSTS.audit(items, names)
+    # The ledger is read ONCE, here, and the same dict is handed to both the
+    # resolver and the audit -- so the guard cannot be checking a different
+    # ledger than the measurement used.
+    ledger = HOSTS.placement_prefixes()
+    self_px = None if a.no_self_hosts else ledger
+    if a.no_self_hosts:
+        print("[IP] CONTROL ARM: --no-self-hosts, resolving the pre-R2-1385 way")
+    print("[IP] ledger %s: %d ids declare a prefix, read %s"
+          % (os.path.relpath(HOSTS.PLACEMENT, R2), len(ledger),
+             __import__("time").strftime("%Y-%m-%dT%H:%M:%S", __import__("time").localtime(
+                 os.path.getmtime(HOSTS.PLACEMENT)))))
+
+    dead, unmapped, census = HOSTS.audit(items, names, self_px)
     print(f"[IP] host patterns matching nothing: {dead}")
     print(f"[IP] items with no host at all: {len(unmapped)} {unmapped[:20]}")
+    print("[IP] measured as THEMSELVES: %d   against a class host: %d   "
+          "ledger row present but geometry absent: %d"
+          % (census["items_measured_against_own_geometry"],
+             census["items_measured_against_a_class_host"],
+             census["items_with_a_ledger_row_whose_geometry_is_absent"]))
+    for m in census["SELF_HOST_MISSED"]:
+        print("[IP] SELF_HOST_MISSED %-24s %5d objects of %s measured against "
+              "%s %s" % (m["item"], m["own_objects"], m["declared_prefixes"],
+                         m["measured_against_instead"], m["hosts"][:3]))
 
     recs = []
     for it in items:
-        h, tier = HOSTS.hosts_for(it, names)
+        h, tier = HOSTS.hosts_for(it, names, self_px)
         hidx = [nidx[n] for n in h]
         # The SAME dimension the manifest's own px formula uses, so the two
         # numbers are comparable. For 42 items that is an IN-PLANE size (paint,
@@ -67,6 +101,7 @@ def main():
                          "manifest_nearest_camera_m": it["nearest_camera_m"],
                          "manifest_onscreen_px_4k": it["onscreen_px_4k"],
                          "host_tier": "UNMAPPED", "hosts": [], "n_hosts": 0,
+                         "measured_as_self": False,
                          "measured": None})
             continue
         A = of_any[hidx].max(axis=0)
@@ -102,6 +137,12 @@ def main():
             "manifest_nearest_camera_m": it["nearest_camera_m"],
             "manifest_onscreen_px_4k": it["onscreen_px_4k"],
             "host_tier": tier, "n_hosts": len(h),
+            # THE FIELD A READER HAS TO CHECK BEFORE QUOTING A NUMBER. True =
+            # this is the item. False = this is an UPPER BOUND on the item,
+            # taken from whatever it sits on, and `mullion_intact` reporting
+            # 1,053 px off forecourt paving while the showroom is not in the
+            # world at all is what that is worth.
+            "measured_as_self": tier == "SELF",
             "size_is_in_plane": flat,
             "hosts": h if len(h) <= 12 else h[:12] + [f"...+{len(h)-12} more"],
             "measured": {
@@ -160,7 +201,9 @@ def main():
         r["proposed_tier"] = tier_of(r)
 
     counts = collections.Counter(r["proposed_tier"] for r in recs)
+    host_counts = collections.Counter(r["host_tier"] for r in recs)
     print("[IP] proposed tiers:", dict(counts))
+    print("[IP] host tiers:", dict(host_counts))
 
     # WHAT THIS RUN ACTUALLY READ, taken from the measurement rather than
     # asserted in prose. METHOD below is a fixed description of the technique
@@ -201,7 +244,15 @@ def main():
         "frames": nframes,
         "host_patterns_matching_nothing": dead,
         "items_with_no_host": unmapped,
+        # BOTH OF THE TWO ABOVE WERE [] ON THE 08-04 RUN, on a file where 435
+        # of 435 items were measured against the wrong geometry. They are not
+        # wrong; they answer a question nobody was failing. The census below is
+        # the one that answers the question that was failing.
+        "self_host_census": census,
+        "resolution_mode": ("PRE_R2_1385_CONTROL (--no-self-hosts)"
+                            if a.no_self_hosts else "SELF_PREFERRED"),
         "tier_counts": dict(counts),
+        "host_tier_counts": dict(host_counts),
         "items": recs,
     }, open(a.out, "w"), indent=1)
     print(f"[IP] wrote {a.out}")
@@ -237,6 +288,22 @@ def main():
                "groups": {t: sorted(v, key=lambda g: g["family"]) for t, v in by_tier.items()}},
               open(a.tiers, "w"), indent=1)
     print(f"[IP] wrote {a.tiers}: " + json.dumps(plan))
+
+    # ---- the verdict -----------------------------------------------------
+    # This is the instrument R2-1277 found missing. It is deliberately NOT
+    # "did the resolver assign SELF" -- that would be the fix marking its own
+    # homework. It asks the ledger and the name list directly: is there an
+    # item whose own geometry is in this world and which this run measured
+    # against something else. On the 08-04 inputs, unfixed, that is 4. Fixed,
+    # on the same npz, it is 0.
+    n = census["SELF_HOST_MISSED_n"]
+    if n and not a.allow_self_host_missed:
+        print("[IP] %d item(s) have their own geometry in this world and were "
+              "measured against a class host anyway. Every tier verdict on "
+              "them is an upper bound on a thing that is standing right there."
+              % n)
+        return gate_exit.verdict("ITEM_PRESENCE_SELF_HOST_MISSED")
+    return gate_exit.verdict("ITEM_PRESENCE_OK")
 
 
 METHOD = {

@@ -86,10 +86,40 @@ def _load_surface(path=None):
     The module is loaded under its own name from an explicit path, so nothing in
     the worktree is stashed, checked out or moved -- six other agents are live in
     this repository and a `git stash` here would take their files with it.
+
+    THE COPY MUST LIVE IN `world/`, AND THIS REFUSES OTHERWISE.
+    ----------------------------------------------------------
+    `build_surface.py` computes its own dependencies from its own location:
+
+        _HERE = os.path.dirname(os.path.abspath(__file__))
+        _ROOT = os.path.dirname(_HERE)
+        ...
+        sys.path.insert(0, _items)          # -> <_HERE>/items, for tyre_deposit
+
+    Loaded out of a scratchpad, `_HERE` is the scratchpad, `<_HERE>/items` does
+    not exist, and `_apply_tyre_deposit` dies on `import tyre_deposit` -- which
+    is exactly what happened on the first run, **and Blender exited 0 while
+    writing no blend**, so the wrapper reported `rc=0` on a total failure. The
+    only thing that caught it was counting `STAGE RESULT` lines.
+
+    Putting the file's own directory on `sys.path` would NOT fix this: the
+    module resolves `items/` relative to itself, not to `sys.path`. The copy has
+    to be in `world/` so that every path it derives is the real one. Refusing is
+    better than a partial workaround, because a BEFORE arm that silently loses
+    the tyre deposit would produce a difference this A/B would report as the
+    material change.
     """
     if not path:
         import build_surface as B                     # noqa: PLC0415
         return B, os.path.join(R2, "world/build_surface.py")
+    want = os.path.join(R2, "world")
+    if os.path.dirname(os.path.abspath(path)) != want:
+        raise SystemExit(
+            "REFUSING: --surface-module must live in %s, got %s. "
+            "build_surface resolves world/items/ from its own __file__, so a "
+            "copy anywhere else loses tyre_deposit and builds a DIFFERENT "
+            "material -- which this A/B would then report as the change under "
+            "test. Copy it into world/ under a temporary name instead." % (want, path))
     import importlib.util                             # noqa: PLC0415
     spec = importlib.util.spec_from_file_location("build_surface", path)
     mod = importlib.util.module_from_spec(spec)

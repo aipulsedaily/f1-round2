@@ -2,7 +2,7 @@
  "item": "pont_girder",
  "version": "1.0.0",
  "frame": {
-  "note": "bridge-local: +X ALONG THE SPAN (x=-15 is contract u=+15, LEFT of the racing direction; x=+15 is u=-15); +Y is the RACING DIRECTION at s=2410; +Z is WORLD z.",
+  "note": "bridge-local: +X ALONG THE SPAN (x=-15 is contract u=+15, LEFT of the racing direction; x=+15 is u=-15); +Y is the RACING DIRECTION at s=2410.0; +Z is WORLD z.",
   "station_s": 2410.0,
   "R_local_to_world": [
    [
@@ -80,8 +80,8 @@
    "gauge": 0.11
   },
   "track_headroom_m": 2.8683013845024967,
-  "headroom_flag": "SOFFIT_Z 6.800 leaves 2.868 m over the racing surface at s=2410 (ground_z = 3.932).  That is LOW for a bridge over a circuit and is flagged for whoever owns circuit_spec; it is not something this item may fix by moving a bridge the whole camera corridor was derived from.",
-  "placement_gate_measured": "MEASURED, not assumed: tools/placement_gate.py returns PLACEMENT_CLEAN on world/items/pont_girder_test.blend.  Note WHY, because it is a gate limitation rather than a pass this item earned: the road-corridor keep-out is a band in ABSOLUTE world z (zlo -0.5, zhi ROAD_CLEAR_H 4.50), and at s=2410 the racing surface is at z=3.935, so the protected volume ends 0.565 m above the tarmac and cannot see anything bridging it. Nothing is allow-listed."
+  "headroom_flag": "SOFFIT_Z 6.800 leaves 2.868 m over the racing surface at s=2410.0 (ground_z = 3.932).  That is LOW for a bridge over a circuit and is flagged for whoever owns circuit_spec; it is not something this item may fix by moving a bridge the whole camera corridor was derived from.",
+  "placement_gate_measured": "MEASURED, not assumed: tools/placement_gate.py returns PLACEMENT_CLEAN on world/items/pont_girder_test.blend.  Note WHY, because it is a gate limitation rather than a pass this item earned: the road-corridor keep-out is a band in ABSOLUTE world z (zlo -0.5, zhi ROAD_CLEAR_H 4.50), and at this station the racing surface is well above z=0, so the protected volume ends under a metre over the tarmac and cannot see anything bridging it. Nothing is allow-listed."
  },
  "girders": {
   "A": {

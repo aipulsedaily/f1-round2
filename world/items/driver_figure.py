@@ -1160,11 +1160,47 @@ def mat_paint():
                    detail=3.0, rough=0.45)
     scratch = g.wave(g.vmath('MULTIPLY', p, (1.0, 1.0, 1.0)), scale=740.0,
                      dist=13.0, detail=5.0, band='DIAGONAL', prof='SAW')
+
+    # R2-881.  THE LIVERY IS SPRAYED, SO IT HAS A THICKNESS.
+    #
+    # Every band above is composited into `col` and into NOTHING ELSE: the four
+    # `liv` SDF channels never reached the bump chain and never reached
+    # Roughness, so each colour break was a step in albedo across a surface
+    # that stayed perfectly, continuously smooth.  That is a decal, and on a
+    # shell 826 px wide in the film's near-overhead cockpit frame it reads as
+    # one -- which is half of what the client was pointing at.
+    #
+    # A real livery is masked and sprayed in stages: base, colour, clear.  The
+    # edge of each masked band stands proud by the film it added.  Two colour
+    # coats plus clear is ~0.09 mm, and that is a PHYSICAL number, not a
+    # radiance target -- which is why it is not taken from itemkit's relief law
+    # (that law sizes a sinusoid to a modulation; this is a step whose height
+    # is set by how much paint is on the helmet).  0.30 mm of transition at
+    # 0.0075 channel units, the same convention the colour ramps above use.
+    lip = None
+    for ch in (0, 1, 2):
+        e_ = g.ramp(g.math('ABSOLUTE', g.math('SUBTRACT', (lA, ch), 0.5)),
+                    [(0.0, (1, 1, 1)), (0.0075, (0, 0, 0))])
+        lip = e_ if lip is None else g.math('ADD', lip, e_)
+
+    # decode the signed shell relief (see `build_helmet`): 0.5 is flat, and
+    # x1.6 keeps the coat's response the size it was at the old x0.8 on a
+    # half-range channel, now with the sign the surface actually has.
+    seam_s = g.math('MULTIPLY', g.math('SUBTRACT', seam, 0.5), 1.6)
+
     h = g.math('ADD', g.math('MULTIPLY', peel, 1.0),
                g.math('MULTIPLY', g.math('MULTIPLY', scratch, abr), 0.55))
-    h = g.math('ADD', h, g.math('MULTIPLY', seam, 0.8))
+    h = g.math('ADD', h, seam_s)
+    h = g.math('ADD', h, g.math('MULTIPLY', lip, 0.90))
     g.set(b, "Coat Normal", g.bump(h, 0.16, 0.0022))
-    g.set(b, "Normal", g.bump(g.math('MULTIPLY', peel, 0.4), 0.06, 0.0022))
+    # the base lobe was seeing peel x 0.4 and nothing else -- a mirror under a
+    # textured clear coat that is only 0.36 weight, so most of the response
+    # came off a perfect surface.  It gets the paint edge and the shell relief
+    # too, because both are BELOW the clear coat in a real paint stack.
+    hb = g.math('ADD', g.math('MULTIPLY', peel, 0.4),
+                g.math('ADD', g.math('MULTIPLY', lip, 1.0),
+                       g.math('MULTIPLY', seam_s, 0.55)))
+    g.set(b, "Normal", g.bump(hb, 0.075, 0.0022))
     return m
 
 
@@ -4165,11 +4201,69 @@ def _helm_rim_z(phi):
             + 0.0090 * np.clip(-c, 0, 1))
 
 
+def _pchip(x, xk, yk):
+    """Monotone cubic Hermite (Fritsch-Carlson) through the keys.
+
+    R2-881.  THIS WAS `np.interp`, AND THE CLIENT SAW THE RESULT.  A helmet
+    profile through 11 keys, interpolated piecewise-LINEARLY and then smooth-
+    shaded, has a tangent break at every key.  Near the crown the breaks are
+    savage: the segment (0.1520, 0.0180) -> (0.1400, 0.0520) runs at
+    dR/dZ = 2.83 and the next at 1.60, so the surface normal jumps 12.6 deg
+    across one mesh row.  On a shell 826 px wide -- which is what the film's
+    near-overhead cockpit frame (f2635, 2.34 m, 32 mm, 1459 px/m) makes of it
+    -- that prints as a hard CONICAL CREASE RING round the crown, one row wide
+    and therefore aliased.  Three of them, at z = 0.140, 0.120 and 0.090.
+
+    Fritsch-Carlson rather than Catmull-Rom (which this file already has, at
+    `catmull`): the profile half-widths are not monotone in z -- `a` peaks at
+    z = -0.04 -- and an unlimited cubic overshoots at the turn, which would put
+    a bulge in the shell where the reference has none.  Fritsch-Carlson limits
+    the end slopes to the secants and cannot overshoot, so the curve stays
+    inside the keys it was given.  C1 everywhere, exact at every key, so the
+    shell below the crown does not move by more than the curvature it was
+    always meant to have.
+    """
+    x = np.asarray(x, float)
+    xk = np.asarray(xk, float)
+    yk = np.asarray(yk, float)
+    n = len(xk)
+    h = np.diff(xk)
+    dl = np.diff(yk) / h                      # secant slopes
+    m = np.zeros(n)
+    # interior: harmonic mean, zeroed at any sign change (a local extremum)
+    w1 = 2.0 * h[1:] + h[:-1]
+    w2 = h[1:] + 2.0 * h[:-1]
+    same = dl[:-1] * dl[1:] > 0
+    with np.errstate(divide='ignore', invalid='ignore'):
+        hm = (w1 + w2) / (w1 / np.where(same, dl[:-1], 1.0)
+                          + w2 / np.where(same, dl[1:], 1.0))
+    m[1:-1] = np.where(same, hm, 0.0)
+    # ends: one-sided three-point formula, clamped so it cannot overshoot
+    def _end(d0, d1, h0, h1):
+        e = ((2.0 * h0 + h1) * d0 - h0 * d1) / (h0 + h1)
+        if e * d0 <= 0.0:
+            return 0.0
+        if abs(e) > 3.0 * abs(d0):
+            return 3.0 * d0
+        return e
+    m[0] = _end(dl[0], dl[1], h[0], h[1])
+    m[-1] = _end(dl[-1], dl[-2], h[-1], h[-2])
+
+    i = np.clip(np.searchsorted(xk, x) - 1, 0, n - 2)
+    t = (x - xk[i]) / h[i]
+    t2, t3 = t * t, t * t * t
+    return ((2 * t3 - 3 * t2 + 1) * yk[i]
+            + (t3 - 2 * t2 + t) * h[i] * m[i]
+            + (-2 * t3 + 3 * t2) * yk[i + 1]
+            + (t3 - t2) * h[i] * m[i + 1])
+
+
 def _helm_profile(z):
     K = np.array(HELM_KEYS, float)
     zk = K[::-1, 0]
-    return (np.interp(z, zk, K[::-1, 1]), np.interp(z, zk, K[::-1, 2]),
-            np.interp(z, zk, K[::-1, 3]), np.interp(z, zk, K[::-1, 4]))
+    z = np.clip(z, zk[0], zk[-1])
+    return (_pchip(z, zk, K[::-1, 1]), _pchip(z, zk, K[::-1, 2]),
+            _pchip(z, zk, K[::-1, 3]), _pchip(z, zk, K[::-1, 4]))
 
 
 def helm_surface(PHI, SS, off=0.0):
@@ -4177,7 +4271,18 @@ def helm_surface(PHI, SS, off=0.0):
     to the driver's left; SS runs 0 at the crown to 1 at the bottom rim."""
     zc = 0.1520
     zr = _helm_rim_z(PHI)
-    g = 0.5 - 0.5 * np.cos(math.pi * np.clip(SS, 0, 1))
+    t = np.clip(SS, 0, 1)
+    g = 0.5 - 0.5 * np.cos(math.pi * t)
+    # R2-881.  The raised cosine has ZERO slope at both ends, so it crowded 39
+    # of the 264 rows into the top 20 mm: row 0 to row 1 was 0.0209 mm against
+    # an azimuthal step of 0.2209 mm -- 512 quads at 10.6 : 1, ringing the
+    # crown.  Degenerate slivers are where implicit vertex normals go noisy,
+    # and this ring is dead centre of the driver in the shot the client
+    # complained about.  Blending 12 % of a linear ramp in takes the crown step
+    # to ~0.145 mm (about 1 : 2 against the azimuth) and moves NOTHING
+    # elsewhere: both curves pass through (0,0), (0.5,0.5) and (1,1), so the
+    # rim end and the mid-shell are sampled exactly where they were.
+    g = 0.88 * g + 0.12 * t
     g = g ** 0.94
     Z = zc + (zr - zc) * g
     a, b, e, ox = _helm_profile(Z)
@@ -4331,7 +4436,28 @@ def build_helmet(acc, skel, an=DRIVER, uid=0):
     A, B, Cc = _livery_sdf(PHI, Z)
     liv = np.stack([_liv_ch(A), _liv_ch(B), _liv_ch(Cc),
                     np.zeros_like(A)], -1).reshape(-1, 4)
-    aux = np.stack([np.clip(np.abs(d) * 120.0, 0, 1),
+    # R2-881.  THIS WAS `clip(abs(d) * 120, 0, 1)` AND BOTH HALVES WERE WRONG.
+    #
+    # `abs` threw the SIGN away, so the +5.2 mm duct fairing and the -11.0 mm
+    # slot at its leading edge encoded identically, and the shader put the same
+    # bright edge on both.  That is the literal mechanism behind the item
+    # gate's verdict on this module -- "the features on this surface are
+    # single-value marks: they have no sunward lip and no lee shadow, which is
+    # how a printed decal behaves and not how a physical object does".
+    #
+    # `* 120` then saturated at |d| > 8.33 mm, so the +14 mm rear spoiler and
+    # the -11 mm slot both became FLAT 1.0 PLATEAUS.  A constant has no
+    # gradient, and a Bump node reads gradients, so across the interior of the
+    # two largest relief features on the helmet the shader contributed exactly
+    # nothing.  Single value, in the most literal sense.
+    #
+    # Now signed about 0.5 at 25 units per metre, which is the encoding this
+    # file already documents and uses for the four `liv` channels (see
+    # `mat_paint`): one channel unit is 40 mm, so d in [-11, +14] mm lands in
+    # [0.225, 0.850] with headroom at both ends and nothing clipped.
+    # `mat_paint` and `wall()` below decode it; `mat_foam` on the liner sees a
+    # constant and is therefore unaffected.
+    aux = np.stack([np.clip(0.5 + d * 25.0, 0, 1),
                     np.full_like(d, 0.4),
                     np.clip(sstep(0.05, 0.16, Z) * 0.0 + (Z > 0.075) * 1.0, 0, 1),
                     np.full_like(d, uid)], -1).reshape(-1, 4)
@@ -4351,6 +4477,81 @@ def build_helmet(acc, skel, an=DRIVER, uid=0):
     Q = np.stack([IDX[:-1, :], IDX[:-1, j1], IDX[1:, j1], IDX[1:, :]], -1)
     acc.quads(Q[ok], MAT_PAINT, True)
 
+    # ---- THE CROWN.  R2-881, AND THE CLIENT FOUND IT BY EYE. --------------
+    #
+    # `HELM_KEYS[0]` is (z 0.1520, a 0.0180, b 0.0200), i.e. row 0 is a real
+    # ring of 512 distinct vertices and NOT a degenerate point, and faces are
+    # only ever built BETWEEN rows.  So the shell shipped with a 36 x 40 mm
+    # HOLE IN THE TOP OF IT.  Nothing capped it: there is no `acc.cap` and no
+    # `acc.fan` anywhere else in this function.
+    #
+    # It was invisible for as long as nobody looked down on the car.  The film
+    # looks down on the car exactly once -- f2633..f2639, the only near-
+    # overhead frames in 2,978 with the driver present, peaking at f2635 at
+    # 80.4 deg above the aperture plane, 2.34 m, 1459 px/m -- and there the
+    # hole is a 53 px black disc in the middle of the helmet, which is itself
+    # 91.6 % of every driver pixel in that frame.  The client watched the film
+    # and said the driver looked wrong.  This is what they were looking at.
+    #
+    # Capped as a real crown rather than a lid: an ellipsoid-of-revolution
+    # dome that meets the shell TANGENTIALLY, so no crease is traded for the
+    # hole.  a(z) = a0 * (1 - (z-z0)/h)^(1/m) has da/dz = -a0/(m*h) at the base
+    # -- set equal to the shell's own -2.833 (lateral) and -3.083 (fore-aft) --
+    # and da/dz -> -inf at the apex, which is what a sphere does at its pole,
+    # so the top is round and not a spike.  Rings step down geometrically to
+    # 0.3 mm before the fan closes them, so the fan itself spans 0.9 px at the
+    # framing above and cannot read as a pole.
+    CROWN_H = 0.00268                            # 2.68 mm of dome
+    _ca, _cb = HELM_KEYS[0][1], HELM_KEYS[0][2]
+    _cz, _cox = HELM_KEYS[0][0], HELM_KEYS[0][4]
+    _ma = _ca / (CROWN_H * 2.833)                # exponent from the base slope
+    _mb = _cb / (CROWN_H * 3.083)
+    NC = 13
+    frac = 0.711 ** np.arange(1, NC + 1)         # 18 mm -> 0.30 mm
+    rings, capP, capAux, capWear, capLiv, capUV = [], [], [], [], [], []
+    for k, fr in enumerate(frac):
+        tt = 1.0 - fr ** _ma                     # invert a(z) for this radius
+        zk = _cz + CROWN_H * tt
+        ak = _ca * fr
+        bk = _cb * (1.0 - tt) ** (1.0 / _mb)
+        TH = math.pi * 0.5 - phi
+        R = superellipse(TH, ak, bk, HELM_KEYS[0][3])
+        Xk = R * np.sin(TH) + _cox
+        Yk = R * np.cos(TH)
+        Zk = np.full(N, zk)
+        # carry the shell's own relief up and taper it out at the apex, so the
+        # cap is C0 with the displaced row 0 rather than with the ideal surface
+        dk = d[0, :] * (1.0 - tt)
+        nk = unit(np.stack([Xk, Yk, Zk], -1) - ctr.reshape(1, 3))
+        Pk = np.stack([Xk, Yk, Zk], -1) + nk * dk[:, None]
+        capP.append(Pk)
+        Ak, Bk, Ck = _livery_sdf(phi, Zk)
+        capLiv.append(np.stack([_liv_ch(Ak), _liv_ch(Bk), _liv_ch(Ck),
+                                np.zeros_like(Ak)], -1))
+        capAux.append(np.stack([np.clip(0.5 + dk * 25.0, 0, 1),
+                                np.full(N, 0.4), np.ones(N),
+                                np.full(N, uid)], -1))
+        capWear.append(np.stack([np.full(N, 0.10), np.full(N, 0.14),
+                                 np.full(N, 0.05), np.full(N, 0.18)], -1))
+        capUV.append(np.stack([phi * 0.13, Zk], -1))
+    for k in range(NC):
+        Wk = to_world(capP[k][:, 0], capP[k][:, 1], capP[k][:, 2])
+        rings.append(acc.verts(Wk, uv=capUV[k],
+                               base=(*srgb(LIVERY["shell"]), 0.0),
+                               aux=capAux[k], wear=capWear[k], liv=capLiv[k]))
+    prev = IDX[0]
+    for k in range(NC):
+        cur = rings[k] + np.arange(N)
+        acc.quads(np.stack([prev, prev[j1], cur[j1], cur], -1), MAT_PAINT, True)
+        prev = cur
+    apex = np.array([[_cox, 0.0, _cz + CROWN_H]])
+    acc.cap(prev, MAT_PAINT, True, P=to_world(apex[:, 0], apex[:, 1],
+                                              apex[:, 2]).reshape(1, 3),
+            uv=np.array([[0.0, _cz + CROWN_H]]),
+            base=(*srgb(LIVERY["shell"]), 0.0),
+            aux=(0.5, 0.4, 1.0, uid), wear=(0.10, 0.14, 0.05, 0.18),
+            liv=tuple(capLiv[-1].mean(0)))
+
     # ---- the shell wall at every cut edge and at the bottom rim -----------
     def wall(mask, matid, depth=SHELL_T, inward=0.0):
         """Extrude the boundary of `mask` inward to make a real edge."""
@@ -4369,7 +4570,10 @@ def build_helmet(acc, skel, an=DRIVER, uid=0):
         Win = to_world(Pin[..., 0], Pin[..., 1], Pin[..., 2])
         i1 = acc.verts(Win[rows, cols], uv=uv.reshape(S, N, 2)[rows, cols],
                        base=(0.010, 0.010, 0.011, 0.0),
-                       aux=(0.0, 0.2, 0.0, uid), wear=(0.3, 0.2, 0.0, 0.0))
+                       # 0.5 is FLAT in the signed encoding above.  At 0.0 the
+                       # wall quads would have carried a half-unit step across
+                       # them -- 20 mm of phantom relief round every aperture.
+                       aux=(0.5, 0.2, 0.0, uid), wear=(0.3, 0.2, 0.0, 0.0))
         lut = -np.ones((S, N), np.int64)
         lut[rows, cols] = i1 + np.arange(len(rows))
         # quads between adjacent boundary cells, in both grid directions

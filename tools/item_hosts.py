@@ -37,8 +37,43 @@ Two tiers, and which one an item got is recorded per item in the output:
 An item that resolves to NOTHING is reported as `unmapped` rather than assigned
 a default.  On this project an instrument that quietly falls through to a
 weaker answer is R2-019, and it passed a mannequin crowd.
+
+THE THIRD TIER, ADDED R2-1385: SELF
+-----------------------------------
+Everything above was written when the sentence "not one of them is a manifest
+item" was TRUE.  It stopped being true when `assembly10` placed the first four
+item modules, and **nothing here noticed**, because the whole table maps an item
+to somebody ELSE'S geometry and there was no rule that could prefer the item's
+own.  Measured (R2-1277): 1,700 item objects were in the point cloud and were
+being measured perfectly well as objects, while `timing_stand` the ITEM resolved
+to `ARCH_PitWall` and `catch_fence_post` to `BR_FenceStruct_*`.  **0 of 435 items
+resolved to a host list containing their own datablock, including the four that
+were physically in the ship.**
+
+And no instrument fired.  `audit()` reported `dead=[]` and `unmapped=[]` and both
+were TRUE: every item did resolve to *a* host.  It resolved to the wrong one.
+That is this project's most-logged defect shape -- a guard that cannot fire --
+and the reason the census below is returned whether or not anything is wrong.
+
+  SELF    the item's OWN declared prefix has geometry in the world, so the item
+          is measured as itself.  This is not an upper bound; it is the item.
+          The prefix is NOT guessed from the id -- guessing a convention is
+          R2-180 -- it is read from `world/items/PLACEMENT.json`, which
+          establishes `collection` and `prefix` per row by AST from each
+          module's own top-level constants (see its `how_a_row_is_established`).
+
+SELF beats NAMED beats ZONE.  A row whose prefix matches nothing in the world
+falls through to the class host exactly as before, so a HOLD row -- and there
+are 38 of them -- costs nothing and needs no special case.  **Presence of
+geometry decides, not the `state` field**, which is what keeps this correct
+while `world/items/` is being written underneath the measurement.
 """
+import json
+import os
 import re
+
+R2 = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PLACEMENT = os.path.join(R2, "world", "items", "PLACEMENT.json")
 
 # --------------------------------------------------------------------------
 # ZONE -> host object name patterns.  Regexes against the object name.
@@ -170,9 +205,50 @@ NAMED = [
 NAMED = [(re.compile(a), b) for a, b in NAMED]
 
 
-def hosts_for(item, all_names):
-    """-> (list of object names, tier) where tier is NAMED / ZONE / UNMAPPED."""
+def placement_prefixes(registry=PLACEMENT):
+    """-> {manifest item id: [declared object-name prefixes]}.
+
+    Read from the ledger, never derived from the id.  Several ids carry more
+    than one row (`spectator_seated` has three: two HOLD probes and the PLACE
+    row, declaring `SPECX_` and `SPECSEAT_`), so the prefixes are UNIONED --
+    the question being asked is "is any geometry this item declares present",
+    and answering it from one arbitrarily-chosen row would be a guess.
+
+    Six ledger rows (`human_clay`, `human_peep`, ...) are probes with no
+    manifest id and no prefix; they simply never match.
+
+    RAISES if the ledger is unreadable.  A measurement that silently degrades
+    to "no item owns any geometry" is precisely the state R2-1277 found, and it
+    looked exactly like success.
+    """
+    reg = json.load(open(registry))
+    out = {}
+    for r in reg["items"]:
+        px, iid = r.get("prefix"), r.get("item")
+        if px and iid:
+            out.setdefault(iid, [])
+            if px not in out[iid]:
+                out[iid].append(px)
+    return out
+
+
+def self_hosts(iid, all_names, self_prefixes):
+    """-> the item's OWN objects in the world, by its declared prefix."""
+    pats = (self_prefixes or {}).get(iid) or []
+    return [n for n in all_names if any(n.startswith(p) for p in pats)]
+
+
+def hosts_for(item, all_names, self_prefixes=None):
+    """-> (list of object names, tier), tier SELF / NAMED / ZONE / UNMAPPED.
+
+    `self_prefixes` omitted reproduces the pre-R2-1385 behaviour exactly, which
+    is what the control in `item_presence.py --no-self-hosts` runs.
+    """
     iid = item["id"]
+    if self_prefixes:
+        got = self_hosts(iid, all_names, self_prefixes)
+        if got:
+            return got, "SELF"
     for rx, pats in NAMED:
         if rx.search(iid):
             got = [n for n in all_names if any(re.search(p, n) for p in pats)]
@@ -185,12 +261,58 @@ def hosts_for(item, all_names):
     return [], "UNMAPPED"
 
 
-def audit(items, all_names):
-    """Every pattern that matches nothing, and every item that maps to nothing."""
+def audit(items, all_names, self_prefixes=None):
+    """-> (dead patterns, unmapped ids, the SELF census).
+
+    THE CENSUS IS RETURNED WHETHER OR NOT ANYTHING IS WRONG.  `dead` and
+    `unmapped` are both routinely `[]` on a file where every one of 435 items
+    is mis-hosted, because "resolved to nothing" and "resolved to the wrong
+    thing" are different failures and only the first had an instrument.
+
+    `self_available_but_not_used` is the one that matters: an item whose own
+    declared geometry IS in the world and which was nonetheless measured
+    against somebody else's.  It is computed from the ledger and the name list
+    DIRECTLY -- not from the tier that was assigned -- so it fires no matter
+    which resolution path ran, including the old one.
+    """
     dead = []
     for pats in list(ZONE_HOSTS.values()) + [p for _, p in NAMED]:
         for p in pats:
             if not any(re.search(p, n) for n in all_names):
                 dead.append(p)
-    unmapped = [it["id"] for it in items if hosts_for(it, all_names)[1] == "UNMAPPED"]
-    return sorted(set(dead)), unmapped
+
+    px = self_prefixes if self_prefixes is not None else placement_prefixes()
+    unmapped, missed, used, absent = [], [], [], []
+    for it in items:
+        iid = it["id"]
+        h, tier = hosts_for(it, all_names, self_prefixes)
+        if tier == "UNMAPPED":
+            unmapped.append(iid)
+        own = self_hosts(iid, all_names, px)
+        if own and tier != "SELF":
+            missed.append({"item": iid, "own_objects": len(own),
+                           "declared_prefixes": px.get(iid),
+                           "measured_against_instead": tier,
+                           "hosts": h[:6]})
+        elif own:
+            used.append({"item": iid, "own_objects": len(own),
+                         "declared_prefixes": px.get(iid)})
+        elif iid in px:
+            absent.append(iid)
+
+    census = {
+        "WHAT_THIS_COUNTS":
+            "How each item was measured. SELF = against its own declared "
+            "geometry, which is the item. NAMED/ZONE = against a class host, "
+            "which is an UPPER BOUND on the item and nothing more.",
+        "ledger": os.path.relpath(PLACEMENT, R2),
+        "ledger_rows_with_a_prefix": len(px),
+        "items_measured_against_own_geometry": len(used),
+        "items_measured_against_a_class_host": len(items) - len(used) - len(unmapped),
+        "items_with_a_ledger_row_whose_geometry_is_absent": len(absent),
+        "SELF_HOST_MISSED": missed,
+        "SELF_HOST_MISSED_n": len(missed),
+        "measured_as_self": sorted(used, key=lambda d: -d["own_objects"]),
+        "ledger_row_geometry_absent": sorted(absent),
+    }
+    return sorted(set(dead)), unmapped, census

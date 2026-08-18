@@ -503,9 +503,11 @@ def build(args):
     C_shard = bpy.data.collections.new("BREACH_Shards")
     C_pane = bpy.data.collections.new("BREACH_Panes")
     C_frame = bpy.data.collections.new("BREACH_Frame")
-    for c in (C_shard, C_pane, C_frame):
+    C_fines = bpy.data.collections.new("BREACH_Fines")
+    for c in (C_shard, C_pane, C_frame, C_fines):
         root.children.link(c)
 
+    do_frost = bool(getattr(args, "fracture_faces", False))
     mat = bpy.data.materials.get(args.glass_material)
     if mat is None:
         mat = bpy.data.materials.new(args.glass_material)
@@ -517,6 +519,9 @@ def build(args):
             b.inputs["Transmission Weight"].default_value = 1.0
         if "IOR" in b.inputs:
             b.inputs["IOR"].default_value = 1.52
+
+    if do_frost:
+        log("--fracture-faces: %s" % json.dumps(frost_glass_material(mat)))
 
     # -- which shards are hero? --------------------------------------------- #
     path = camera_polyline()
@@ -647,6 +652,19 @@ def build(args):
         ob.animation_data.action = act
         ob.animation_data.action_slot = slot
 
+    if do_frost:
+        _st = stamp_fracture_props(plan)
+        log("--fracture-faces: stamped fx_energy/fx_size on %d shards "
+            "(%d missing)" % (_st["stamped"], _st["missing"]))
+        stats["frost"] = _st
+        if _st["stamped"] < 3000:
+            raise SystemExit(
+                "REFUSING: only %d shards took the fracture properties; the "
+                "material would read 0 for the rest and render them clear"
+                % _st["stamped"])
+    else:
+        stats["frost"] = dict(skipped=True)
+
     # -- the frame bodies (mullion segments, transoms) ------------------------ #
     # THIS LOOP USED TO COUNT THEM AND WRITE NOTHING.  R2-266.
     frame = build_frame(args, film, C_frame)
@@ -654,9 +672,534 @@ def build(args):
     stats["keys"] += frame["keys"]
     stats["frame"] = frame
 
+    # -- the fines (task #129) ------------------------------------------------ #
+    # OFF BY DEFAULT AND SAID SO IN THE REPORT.  Every apply this project has
+    # run so far produced 3,845 objects and 278,864 tris; a pass that silently
+    # multiplied both would make every historical comparison a lie about a
+    # different scene.  `--debris <table>` opts in; `stats["fines"]["skipped"]`
+    # is what a reader checks.
+    lib = getattr(args, "fines_lib", "")
+    if lib and args.debris:
+        raise SystemExit("REFUSING: --fines-lib and --debris both given.  One "
+                         "appends the field, the other builds it; doing both "
+                         "puts two copies of 260,000 chips in the wound.")
+    if lib:
+        stats["fines"], C_lib = append_fines_library(lib, root)
+        stats["objects"] += stats["fines"]["puffs"]
+        stats["tris"] += stats["fines"]["tris"]
+        # The appended collection REPLACES the empty one, and is returned in its
+        # place, because `main()` puts whatever comes back through
+        # `prove_curves` -- and the curves that need proving are the appended
+        # ones.  Removing the placeholder and returning it would have handed the
+        # gate a freed datablock.
+        #
+        # R2-2101.  THIS USED TO RE-FIND THE APPENDED COLLECTION BY NAME, AND
+        # THE NAME IT LOOKED FOR NEVER EXISTED.  The placeholder above is
+        # already called `BREACH_Fines`, so Blender's append disambiguates the
+        # incoming one to `BREACH_Fines.001` -- and freeing the placeholder does
+        # NOT rename the survivor back.  `bpy.data.collections["BREACH_Fines"]`
+        # therefore raised `KeyError` on every correct run, AFTER the 102 MB
+        # read and 1,234 s of work, which is why `film21_breach.blend` does not
+        # exist.
+        #
+        # The library's own `--verify` could not have caught it: it runs the
+        # same three append lines in a scene wiped to FACTORY SETTINGS, where
+        # there is no placeholder and so no name collision to have.  A verifier
+        # that reproduces the mechanism but not the CONTEXT proves the mechanism
+        # only.
+        #
+        # The fix carries the datablock through instead of looking it up, and
+        # takes the placeholder's name back afterwards so every downstream
+        # reader still finds `BREACH_Fines` where it expects it.
+        bpy.data.collections.remove(C_fines)
+        C_lib.name = "BREACH_Fines"
+        if C_lib.name != "BREACH_Fines":
+            raise SystemExit(
+                "REFUSING: the appended fines collection could not take the "
+                "name BREACH_Fines (it is %r); something else in this file "
+                "still holds it." % C_lib.name)
+        C_fines = C_lib
+    elif args.debris:
+        fines = build_debris(args, C_fines)
+        stats["objects"] += fines["puffs"]
+        stats["tris"] += fines["tris"]
+        stats["keys"] += fines["keys"]
+        stats["fines"] = fines
+    else:
+        stats["fines"] = dict(skipped=True, puffs=0, chips=0, tris=0, keys=0,
+                              why="neither --fines-lib nor --debris given")
+
     log("built %d objects, %d tris, %d keys"
         % (stats["objects"], stats["tris"], stats["keys"]))
-    return stats, C_shard, C_pane, C_frame
+    return stats, C_shard, C_pane, C_frame, C_fines
+
+
+# --------------------------------------------------------------------------- #
+#  THE FINES.  Task #129.
+# --------------------------------------------------------------------------- #
+
+def frost_glass_material(mat):
+    """Make `BREACH_Glass` distinguish a PLY face from a FRACTURE face.
+
+    THE DEFECT.  `BREACH_Glass` is one Principled BSDF at roughness 0.02 with
+    transmission 1.0, applied to every face of all 3,796 shards.  0.02 is a
+    polished float-glass surface.  It is correct for the two ply faces and it is
+    wrong for every other square millimetre of a shard, because THE REST OF A
+    SHARD'S SURFACE IS FRACTURE.  R2-546 photographed the consequence and called
+    it correctly: "large flat panes with perfectly straight edges ... no
+    thickness reads, no edge refraction ... they look like intersecting quads."
+    The f878 A/B control renders it again -- the shards are thin edge-lit lines
+    with no body -- and that is a MATERIAL failure, not a geometry one.
+
+    WHICH FACES ARE WHICH, WITHOUT AN ATTRIBUTE OR A UV.
+    A shard is a prism between x = 14.955 and 14.9665, and `shardmesh.prism`
+    writes its verts RELATIVE TO ITS OWN ORIGIN on the laminate mid-plane.  So
+    in OBJECT space the two ply faces are the only ones whose normal is parallel
+    to local X.  |N_object.x| is therefore an exact, procedural, per-face
+    classifier:
+
+        |n.x| ~ 1     the float surface        -> roughness 0.02, polished
+        |n.x| ~ 0     the crack face           -> hackle
+        |n.x| ~ 0.7   the 0.6 mm arris chamfer -> hackle, and rightly so: a
+                                                  chamfer here MODELS a chipped
+                                                  edge, which is the most
+                                                  damaged surface on the piece.
+
+    `Geometry > Normal` is world space and every shard is rotated by the bake,
+    so it must go through `Vector Transform` (World -> Object) first.  Reading
+    it in world space would have classified faces by which way the shard happens
+    to be tumbling.
+
+    HOW ROUGH.  Past the mirror radius -- tens of microns at these stress levels
+    -- a glass crack goes through mist into hackle, RMS 1-20 um over correlation
+    lengths of order 10-100 um.  In GGX that is 0.30-0.50, not 0.02.
+
+    COMMINUTION WHITENING, and it is driven by the fracture model's own data.
+    Where the plate was crushed rather than cleanly cracked, the crack density
+    is high, the piece is small, and the glass goes MILKY -- thousands of
+    internal fracture surfaces per centimetre scatter what a clear pane
+    transmits.  That is the single most characteristic thing about laminated
+    glass that has been hit, and it is absent.  `build()` stamps `fx_energy`
+    (the impact field at the shard's centroid) and `fx_size` (its own equivalent
+    side) as object properties; an `Attribute` node in OBJECT mode reads them.
+    So the whitening is not painted on: it is the same energy field that decided
+    the shard's SIZE deciding its OPACITY, and the two cannot disagree.
+
+    Kept deliberately subtle -- transmission floors at 0.82, not at 0.4 -- for
+    the project's calibration rule: if a viewer can point at it, it is too
+    strong.  The crushed shards are numerous but small (32 kg of 2,255), so the
+    contact region reads milky and the big slabs stay clear, which is the
+    correct picture and not a global haze.
+    """
+    mat.use_nodes = True
+    nt = mat.node_tree
+    b = nt.nodes.get("Principled BSDF")
+    if b is None:
+        return dict(ok=False, why="no Principled BSDF")
+    # start from the shipped values so a re-run is idempotent
+    b.inputs["Base Color"].default_value = (0.90, 0.94, 0.92, 1.0)
+    if "IOR" in b.inputs:
+        b.inputs["IOR"].default_value = 1.52
+    for lk in list(nt.links):
+        if lk.to_node is b and lk.to_socket.name in ("Roughness",
+                                                     "Transmission Weight"):
+            nt.links.remove(lk)
+    for n in [n for n in nt.nodes if n.name.startswith("FX_")]:
+        nt.nodes.remove(n)
+
+    def mk(kind, nm, x, y):
+        n = nt.nodes.new(kind)
+        n.name = n.label = "FX_" + nm
+        n.location = (x, y)
+        return n
+
+    geo = mk("ShaderNodeNewGeometry", "geo", -1500, 200)
+    vt = mk("ShaderNodeVectorTransform", "toobj", -1300, 200)
+    vt.vector_type = "NORMAL"
+    vt.convert_from = "WORLD"
+    vt.convert_to = "OBJECT"
+    nt.links.new(geo.outputs["Normal"], vt.inputs["Vector"])
+    sep = mk("ShaderNodeSeparateXYZ", "sep", -1120, 200)
+    nt.links.new(vt.outputs["Vector"], sep.inputs["Vector"])
+    ab = mk("ShaderNodeMath", "abs", -960, 200)
+    ab.operation = "ABSOLUTE"
+    nt.links.new(sep.outputs["X"], ab.inputs[0])
+    # ply-ness -> frac-ness.  SMOOTHSTEP, so the transition across the chamfer
+    # is not a hard line at a threshold nobody chose on purpose.
+    fr = mk("ShaderNodeMapRange", "fracness", -790, 200)
+    fr.interpolation_type = "SMOOTHSTEP"
+    fr.inputs["From Min"].default_value = 0.82
+    fr.inputs["From Max"].default_value = 0.995
+    fr.inputs["To Min"].default_value = 1.0
+    fr.inputs["To Max"].default_value = 0.0
+    fr.clamp = True
+    nt.links.new(ab.outputs[0], fr.inputs["Value"])
+
+    # the shard's own fracture data
+    ae = mk("ShaderNodeAttribute", "energy", -1500, -160)
+    ae.attribute_type = "OBJECT"
+    ae.attribute_name = '["fx_energy"]'
+    az = mk("ShaderNodeAttribute", "size", -1500, -360)
+    az.attribute_type = "OBJECT"
+    az.attribute_name = '["fx_size"]'
+    small = mk("ShaderNodeMapRange", "small", -1300, -360)
+    small.inputs["From Min"].default_value = 0.012
+    small.inputs["From Max"].default_value = 0.045
+    small.inputs["To Min"].default_value = 1.0
+    small.inputs["To Max"].default_value = 0.0
+    small.clamp = True
+    nt.links.new(az.outputs["Fac"], small.inputs["Value"])
+    comm = mk("ShaderNodeMath", "comminution", -1100, -260)
+    comm.operation = "MULTIPLY"
+    nt.links.new(ae.outputs["Fac"], comm.inputs[0])
+    nt.links.new(small.outputs["Result"], comm.inputs[1])
+
+    # micro variation ALONG a crack face.  Object space is per-object, but here
+    # that is exactly right and not the R2-773 trap: a shard is 20-400 mm, so a
+    # 6 mm noise varies ACROSS one shard's own face, which is what Wallner lines
+    # and mist/hackle banding do.  (The trap was a 0.29 m noise on 50 mm puffs.)
+    co = mk("ShaderNodeTexCoord", "co", -1500, 460)
+    nz = mk("ShaderNodeTexNoise", "hackle", -1300, 460)
+    nz.inputs["Scale"].default_value = 165.0
+    nz.inputs["Detail"].default_value = 3.0
+    nz.inputs["Roughness"].default_value = 0.62
+    nt.links.new(co.outputs["Object"], nz.inputs["Vector"])
+    nzr = mk("ShaderNodeMapRange", "hackle_amt", -1100, 460)
+    nzr.inputs["From Min"].default_value = 0.30
+    nzr.inputs["From Max"].default_value = 0.70
+    nzr.inputs["To Min"].default_value = -0.09
+    nzr.inputs["To Max"].default_value = 0.09
+    nzr.clamp = True
+    nt.links.new(nz.outputs["Fac"], nzr.inputs["Value"])
+
+    # fracture roughness = 0.32 + 0.15 * comminution + hackle noise
+    cw = mk("ShaderNodeMath", "commrough", -900, -260)
+    cw.operation = "MULTIPLY"
+    cw.inputs[1].default_value = 0.15
+    nt.links.new(comm.outputs[0], cw.inputs[0])
+    r1 = mk("ShaderNodeMath", "rbase", -720, -260)
+    r1.operation = "ADD"
+    r1.inputs[1].default_value = 0.32
+    nt.links.new(cw.outputs[0], r1.inputs[0])
+    r2 = mk("ShaderNodeMath", "rnoise", -560, -260)
+    r2.operation = "ADD"
+    nt.links.new(r1.outputs[0], r2.inputs[0])
+    nt.links.new(nzr.outputs["Result"], r2.inputs[1])
+    rc = mk("ShaderNodeClamp", "rclamp", -400, -260)
+    rc.inputs["Min"].default_value = 0.12
+    rc.inputs["Max"].default_value = 0.62
+    nt.links.new(r2.outputs[0], rc.inputs["Value"])
+
+    # blend polished ply <-> hackle by frac-ness
+    rm = mk("ShaderNodeMix", "roughmix", -220, 100)
+    rm.data_type = "FLOAT"
+    rm.inputs[2].default_value = 0.02              # A: the ply face, unchanged
+    nt.links.new(fr.outputs["Result"], rm.inputs["Factor"])
+    nt.links.new(rc.outputs["Result"], rm.inputs[3])
+    nt.links.new(rm.outputs[0], b.inputs["Roughness"])
+
+    # comminution whitening: a BULK property, so NOT gated by frac-ness
+    tw = mk("ShaderNodeMapRange", "milky", -220, -300)
+    tw.inputs["From Min"].default_value = 0.0
+    tw.inputs["From Max"].default_value = 1.0
+    tw.inputs["To Min"].default_value = 1.0
+    tw.inputs["To Max"].default_value = 0.82
+    tw.clamp = True
+    nt.links.new(comm.outputs[0], tw.inputs["Value"])
+    if "Transmission Weight" in b.inputs:
+        nt.links.new(tw.outputs["Result"], b.inputs["Transmission Weight"])
+    return dict(ok=True, nodes=len([n for n in nt.nodes
+                                    if n.name.startswith("FX_")]))
+
+
+def stamp_fracture_props(plan, coll=None):
+    """Put each shard's own fracture data on its object, for the material.
+
+    `fx_energy` is `fracture.Impact.energy` at the shard's centroid -- the same
+    field that set its target area -- and `fx_size` is its equivalent side in
+    metres.  Both already exist in `sim/out/fracture_wall.npz`; nothing is
+    invented here and nothing is measured twice.
+    """
+    n = 0
+    miss = 0
+    for bay in sorted(plan["panes"]):
+        for s in plan["panes"][bay]:
+            ob = bpy.data.objects.get("GS_b%02d_%05d" % (bay, s["id"]))
+            if ob is None:
+                miss += 1
+                continue
+            ob["fx_energy"] = float(s["energy"])
+            ob["fx_size"] = float(math.sqrt(max(s["area"], 1e-12)))
+            n += 1
+    return dict(stamped=n, missing=miss)
+
+
+def fines_material(name="BREACH_Fines"):
+    """The material for a 2-6 mm flake of fractured glass.
+
+    NOT the shard material with a smaller mesh on it, and the difference is
+    physical rather than decorative.
+
+    * EVERY face of a chip is a fracture surface.  Past the mirror radius a
+      glass crack goes through mist into hackle and the surface is rough at
+      1-20 um, so a chip is FROSTED on all six faces.  `BREACH_Glass` is
+      roughness 0.02 -- a polished float face -- which is right for the pane
+      and wrong for every square millimetre of a chip.
+    * A 0.4 mm flake frosted on both faces does not transmit an image; it
+      scatters.  Light entering it meets a rough interface within half a
+      millimetre and again on the way out, and what leaves is diffuse.  So the
+      transmission weight is 0.55 and not 1.0, and the remainder is a
+      near-white scatter.  That is why broken glass grit reads WHITE in
+      sunlight and a window pane does not.
+    * A perfectly smooth chip has a delta-function highlight: at any instant
+      three chips in the field are pointing at the sun and the other 259,997
+      are black.  A frosted chip glints over a wide lobe, so the field
+      sparkles continuously.  The look follows from the physics here rather
+      than being arranged on top of it.
+
+    Procedural, hand-built, no image texture: an Object-space noise at 4-8 mm
+    drives roughness, so roughness varies BETWEEN chips inside one puff mesh
+    and along a single chip's faces.  A constant roughness would make every
+    flake in a puff fire its highlight on the same frame.
+    """
+    m = bpy.data.materials.get(name)
+    if m is not None:
+        return m
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    nt = m.node_tree
+    b = nt.nodes.get("Principled BSDF")
+    b.inputs["Base Color"].default_value = (0.93, 0.95, 0.94, 1.0)
+    if "IOR" in b.inputs:
+        b.inputs["IOR"].default_value = 1.52
+    if "Transmission Weight" in b.inputs:
+        b.inputs["Transmission Weight"].default_value = 0.55
+    b.inputs["Metallic"].default_value = 0.0
+
+    co = nt.nodes.new("ShaderNodeTexCoord")
+    co.location = (-900, 0)
+    # scale 260 -> ~3.8 mm features, which is the chip size itself: the point
+    # is variation ACROSS a puff and along one chip, not a texture on it.
+    n1 = nt.nodes.new("ShaderNodeTexNoise")
+    n1.location = (-700, 0)
+    n1.inputs["Scale"].default_value = 260.0
+    n1.inputs["Detail"].default_value = 2.0
+    n1.inputs["Roughness"].default_value = 0.5
+    nt.links.new(co.outputs["Object"], n1.inputs["Vector"])
+
+    # ...and a PER-PUFF term, so the field is not uniformly gritty: some spall
+    # sites shed cleaner flakes than others, which is what a crack running out
+    # of the crushed zone into the folding far field does.
+    #
+    # THIS MUST NOT BE A SECOND NOISE ON THE OBJECT COORDINATES.  Object space
+    # is per-object and every puff's chips live inside the same 50 mm ball about
+    # its own origin, so a coarse Object-space noise samples the SAME patch for
+    # all 11,551 puffs and is a constant, not a variation.  `Object Info >
+    # Random` is a real per-object draw and is the only thing here that is.
+    oi = nt.nodes.new("ShaderNodeObjectInfo")
+    oi.location = (-700, -260)
+
+    mix = nt.nodes.new("ShaderNodeMix")
+    mix.data_type = "FLOAT"
+    mix.location = (-480, 0)
+    mix.inputs["Factor"].default_value = 0.35
+    nt.links.new(n1.outputs["Fac"], mix.inputs[2])
+    nt.links.new(oi.outputs["Random"], mix.inputs[3])
+
+    rr = nt.nodes.new("ShaderNodeMapRange")
+    rr.location = (-280, 0)
+    rr.inputs["From Min"].default_value = 0.25
+    rr.inputs["From Max"].default_value = 0.75
+    rr.inputs["To Min"].default_value = 0.10
+    rr.inputs["To Max"].default_value = 0.42
+    rr.clamp = True
+    nt.links.new(mix.outputs[0], rr.inputs["Value"])
+    nt.links.new(rr.outputs["Result"], b.inputs["Roughness"])
+
+    # the frostier a flake is, the less of an image it passes.  One node, and
+    # it is the same physical statement as the roughness: they must not be
+    # independent knobs or a chip can end up smooth and opaque.
+    tw = nt.nodes.new("ShaderNodeMapRange")
+    tw.location = (-280, -240)
+    tw.inputs["From Min"].default_value = 0.10
+    tw.inputs["From Max"].default_value = 0.42
+    tw.inputs["To Min"].default_value = 0.70
+    tw.inputs["To Max"].default_value = 0.38
+    tw.clamp = True
+    nt.links.new(rr.outputs["Result"], tw.inputs["Value"])
+    if "Transmission Weight" in b.inputs:
+        nt.links.new(tw.outputs["Result"], b.inputs["Transmission Weight"])
+    return m
+
+
+def append_fines_library(path, root):
+    """Bring `BREACH_Fines` in from `world/breach_fines.blend` instead of
+    building it.
+
+    WHY THIS AND NOT `--debris`.  Building the field costs 260,000 chip solids
+    and ~3 minutes; appending costs a 102 MB read.  More importantly it is the
+    shape `world/showroom_ceiling.blend` established after a post-build tool
+    that opened the 7.9 GB film, edited it and saved it was killed three times
+    locally and could not be moved to the farm either: SHIP THE DEFINITION, NOT
+    THE ARTEFACT.  The applier already opens the film once, so the append lands
+    inside the pass that was happening anyway and the fines end up INSIDE
+    `BREACH` where they belong, rather than as a sibling collection some later
+    tool has to know about.
+
+    `--debris` stays, and is how the library is regenerated
+    (`sim/build_fines_lib.py`).  This is how the film consumes it.
+
+    ROUND-TRIPPED, NOT ASSUMED.  11,246 animated objects on 2,844,012 slotted
+    keys is not `showroom_ceiling.blend`'s 21 static ones, so
+    `build_fines_lib.py --verify` wipes to factory settings, appends the file it
+    just wrote with these same three lines, and diffs 64 puffs' evaluated WORLD
+    positions against the table at f866/880/900/930/1200/2978.  Worst error
+    1.7e-6 m, zero visibility mismatches, key count exact.
+    """
+    if not os.path.exists(path):
+        raise SystemExit(
+            "REFUSING: no fines library at %s.  Build it with\n"
+            "  blender -b --factory-startup -P sim/build_fines_lib.py -- "
+            "--out world/breach_fines.blend" % path)
+    before = set(bpy.data.objects.keys())
+    with bpy.data.libraries.load(path, link=False) as (src, dst):
+        if "BREACH_Fines" not in src.collections:
+            raise SystemExit("REFUSING: %s has no BREACH_Fines collection; "
+                             "got %s" % (path, list(src.collections)[:8]))
+        dst.collections = ["BREACH_Fines"]
+    lib = dst.collections[0]
+    # MEASURED off the appended datablocks, not quoted from the library's own
+    # report.  R2-517: a library that printed a figure from its own constants
+    # was wrong by 190 mm.  A number read back from the datablocks cannot
+    # disagree with the datablocks.
+    objs = list(lib.all_objects)
+    stats = dict(source=path, bytes=os.path.getsize(path),
+                 puffs=len(objs),
+                 animated=sum(1 for o in objs
+                              if o.animation_data and o.animation_data.action),
+                 tris=sum(sum(len(pl.vertices) - 2 for pl in o.data.polygons)
+                          for o in objs if o.type == "MESH"),
+                 new_objects=len(set(bpy.data.objects.keys()) - before),
+                 appended=True)
+    if stats["animated"] != stats["puffs"]:
+        raise SystemExit(
+            "REFUSING: %d of %d appended puffs carry no action.  The fines are "
+            "the breach sim's own timing; unanimated they would sit at the wall "
+            "for 2,978 frames." % (stats["puffs"] - stats["animated"],
+                                   stats["puffs"]))
+    root.children.link(lib)
+    log("fines: appended %d puffs / %d tris from %s (%.1f MB) as %r"
+        % (stats["puffs"], stats["tris"], path, stats["bytes"] / 1e6, lib.name))
+    # R2-2101: the DATABLOCK, not its name.  The caller used to re-find this by
+    # name and the name it looked for was taken by the placeholder it was about
+    # to free.  See the call site.
+    return stats, lib
+
+
+def build_debris(args, coll):
+    """The fines field: one object per PUFF, one unique solid per CHIP.
+
+    The table comes from `sim/debris.py`, which does not touch
+    `sim/out/breach_film.npz` and does not re-bake anything.  Every chip's
+    geometry is generated here from its own seed -- there is no chip asset and
+    nothing is instanced -- so the 260,000 flakes are 260,000 different solids.
+
+    A puff is keyed as one rigid body because a kilogram of millimetre glass is
+    three quarters of a million flakes and they cannot each be an animated
+    object; `sim/debris.py`'s module docstring states the approximation and its
+    cost.  Chips are binned by SIZE inside a puff, because drag on a flake goes
+    as 1/d and a puff of mixed sizes could not be rigid.
+    """
+    import debris as DB
+    import debrismesh as DM
+
+    tab = DB.load(args.debris)
+    mat = fines_material(args.fines_material)
+    n_puff = tab["n_puffs"]
+    cp, cs, co = tab["chip_puff"], tab["chip_size"], tab["chip_off"]
+    order = np.argsort(cp, kind="stable")
+    cp, cs, co = cp[order], cs[order], co[order]
+    bounds = np.searchsorted(cp, np.arange(n_puff + 1))
+    meta = tab["puff_meta"]
+
+    stats = dict(puffs=0, chips=0, tris=0, keys=0, mass_kg=0.0,
+                 verts=0, skipped_empty=0)
+    for j in range(n_puff):
+        a, b = int(bounds[j]), int(bounds[j + 1])
+        if b <= a:
+            stats["skipped_empty"] += 1
+            continue
+        V, F = [], []
+        base = 0
+        for q in range(a, b):
+            # THE SEED IS THE CHIP'S IDENTITY.  Two chips share a solid only if
+            # two 64-bit seeds collide.  This is the project's "no repeated
+            # assets" line met by construction, not by assertion.
+            v, f = DM.chip(np.uint64(j) * np.uint64(1000003) + np.uint64(q),
+                           float(cs[q]))
+            V.append(v + co[q])
+            F.extend([[i + base for i in ff] for ff in f])
+            base += len(v)
+        V = np.vstack(V)
+        nm = "DB_p%05d" % j
+        me = bpy.data.meshes.new(nm)
+        me.from_pydata([tuple(x) for x in V], [], F)
+        me.validate(verbose=False)
+        me.update()
+        me.materials.append(mat)
+        ob = bpy.data.objects.new(nm, me)
+        coll.objects.link(ob)
+        ob.rotation_mode = "QUATERNION"
+        stats["puffs"] += 1
+        stats["chips"] += b - a
+        stats["verts"] += len(V)
+        stats["tris"] += sum(len(f) - 2 for f in F)
+        stats["mass_kg"] += float(meta[j][5])
+
+        fk, kl, kq = tab["keys_of"](j)
+        act, slot, fcs = make_action(
+            "DBR_%s" % nm,
+            [("location", 0), ("location", 1), ("location", 2),
+             ("rotation_quaternion", 0), ("rotation_quaternion", 1),
+             ("rotation_quaternion", 2), ("rotation_quaternion", 3)])
+        for c in range(3):
+            key_linear(fcs[c], fk, kl[:, c])
+        for c in range(4):
+            key_linear(fcs[3 + c], fk, kq[:, c])
+        stats["keys"] += 7 * len(fk)
+        # A flake does not exist before the crack that freed it opens.  Same
+        # discipline as the shards' bay swap (R2-098): hidden until its birth
+        # frame, and CONSTANT after its last key, so the fines lie where they
+        # landed for beats 4, 5 and 6 at no further cost.
+        r = int(meta[j][0])
+        if r > 1:
+            fv = act.layers[0].strips[0].channelbag(slot).fcurves
+            for dp in ("hide_render", "hide_viewport"):
+                fc = fv.new(dp, index=0)
+                key_constant(fc, [1, r - 1, r], [1.0, 1.0, 0.0])
+                stats["keys"] += 3
+        ob.animation_data_create()
+        ob.animation_data.action = act
+        ob.animation_data.action_slot = slot
+        if j % 2000 == 0:
+            log("  puff %d/%d" % (j, n_puff))
+
+    # The sibling report is PROVENANCE, not geometry.  Making it a hard
+    # dependency meant a bundle that carried the 23 MB table but not its 3 KB
+    # JSON killed the whole build after the meshes were made -- and Blender
+    # exited 0 on it, so only the broker's `--output` check turned that into a
+    # failure rather than a silent success.  Absence is now recorded, not fatal.
+    _rp = args.debris.replace(".npz", ".json")
+    try:
+        with open(_rp) as _fh:
+            stats["report"] = json.load(_fh)
+    except (OSError, ValueError) as _e:
+        stats["report"] = dict(unavailable=str(_e), path=_rp)
+        log("NOTE: no sibling report at %s -- geometry is unaffected, "
+            "provenance is not recorded in this build" % _rp)
+    log("fines: %d puffs, %d chips, %.4f kg, %d tris"
+        % (stats["puffs"], stats["chips"], stats["mass_kg"], stats["tris"]))
+    return stats
 
 
 # --------------------------------------------------------------------------- #
@@ -1134,6 +1677,22 @@ def parse_args():
     p.add_argument("--report",
                    default=os.path.join(R2, "sim/out/apply_breach.json"))
     p.add_argument("--glass-material", default="BREACH_Glass")
+    p.add_argument("--fines-material", default="BREACH_Fines")
+    p.add_argument("--fracture-faces", action="store_true",
+                   help="frost BREACH_Glass's fracture faces and stamp each "
+                        "shard's fx_energy/fx_size (R2-546).  OFF unless "
+                        "given, and INDEPENDENT of --debris so either can be "
+                        "reverted alone.")
+    p.add_argument("--fines-lib", default="",
+                   help="append BREACH_Fines from a library built by "
+                        "sim/build_fines_lib.py (normally "
+                        "world/breach_fines.blend).  This is how the FILM "
+                        "consumes the fines; --debris is how the library is "
+                        "made.  Mutually exclusive with --debris.")
+    p.add_argument("--debris", default="",
+                   help="path to sim/out/breach_debris.npz.  Adds the fines "
+                        "field (task #129).  OFF unless given, so an apply "
+                        "without it is bit-comparable to every previous one.")
     p.add_argument("--hero-m", type=float, default=6.0)
     p.add_argument("--detail-hero", type=int, default=2)
     p.add_argument("--detail-bulk", type=int, default=1)
@@ -1178,13 +1737,19 @@ def main():
             "requirements (see %s).  Writing into it would produce a scene "
             "that looks right and is not.  --force to override deliberately."
             % rq)
-    stats, C_shard, C_pane, C_frame = build(a)
+    stats, C_shard, C_pane, C_frame, C_fines = build(a)
     proof = prove_curves(C_shard)
     log("curve proof: %s" % json.dumps(proof))
     if proof["flags"]["other"] or not proof["control_fires"] or \
             proof["max_linear_eval_err"] > 1e-4:
         raise SystemExit("REFUSING: the applied curves are not LINEAR by "
                          "evaluation: %s" % proof)
+    dproof = prove_curves(C_fines) if len(C_fines.objects) else None
+    if dproof is not None:
+        log("fines curve proof: %s" % json.dumps(dproof))
+        if dproof["flags"]["other"] or dproof["max_linear_eval_err"] > 1e-4:
+            raise SystemExit("REFUSING: the fines curves are not LINEAR by "
+                             "evaluation: %s" % dproof)
     fproof = prove_curves(C_frame) if len(C_frame.objects) else None
     if fproof is not None:
         log("frame curve proof: %s" % json.dumps(fproof))
@@ -1255,7 +1820,8 @@ def main():
             % (east["panes_missing"], east["panes_hidden_at_frame"],
                east["round1_planes_still_present"]))
     bpy.ops.wm.save_as_mainfile(filepath=a.out)
-    rep = dict(stats=stats, proof=proof, frame_proof=fproof, preflight=pre,
+    rep = dict(stats=stats, proof=proof, frame_proof=fproof,
+               fines_proof=dproof, preflight=pre,
                east_wall=east, east_frame=fcen, out=a.out,
                bytes=os.path.getsize(a.out), origin_rule=SM.ORIGIN_RULE)
     with open(a.report, "w") as fh:

@@ -167,4 +167,11 @@ except SystemExit as exc:
 print(json.dumps(rep, indent=1, default=str))
 if out:
     json.dump(rep, open(out, "w"), indent=1, default=str)
-print("STAGE RESULT: FILM_EXTRA_MEASURED")
+# R2-3121: THE `>>` IS NOT DECORATION.  This line spelled the verdict with no
+# `>>` for its whole life, and every reader in this project requires it:
+# `gate_exit._VERDICT_RE`, and the `grep -aE "^>> STAGE RESULT"` in every
+# verify script.  So this stage's verdict was invisible to the entire harness
+# on punctuation alone -- the same disease as a check that is printed and
+# judged by nobody, one layer down.  `tools/film_bar.py` reads both spellings
+# so a stage cannot hide behind punctuation; this makes the convention single.
+print(">> STAGE RESULT: FILM_EXTRA_MEASURED")
