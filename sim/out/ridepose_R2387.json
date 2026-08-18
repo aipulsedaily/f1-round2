@@ -1,0 +1,2509 @@
+{
+ "table": "breach_film_R2387.npz",
+ "n_bodies": 152,
+ "frames": [
+  940,
+  1060
+ ],
+ "still_px": 3.0,
+ "still_frames": 12,
+ "ratio": 0.25,
+ "bodies": [
+  {
+   "name": "MUL00_S00",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL00_S00_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL01_S00",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL01_S00_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL02_S00",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL02_S00_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S00",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S00_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S01",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S01_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S02",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S02_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S03",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S03_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S04",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S04_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S05",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S05_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S06",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S06_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S07",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL03_S07_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S00",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S00_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S01",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S01_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S02",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S02_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S03",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S03_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S04",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S04_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S05",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S05_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S06",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S06_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S07",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL04_S07_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL05_S00",
+   "frames_aboard": 27,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 6
+   },
+   "aboard_rel_px_median": 10.223338788190294,
+   "aboard_abs_px_median": 20.59502175400287,
+   "aboard_carlocal_z": 2.3247537027672918,
+   "aboard_across": 0.6825168284858066,
+   "own_motion_ratio": 0.5072666559920914,
+   "ratio_frames": 27
+  },
+  {
+   "name": "MUL05_S00_P",
+   "frames_aboard": 23,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 4
+   },
+   "aboard_rel_px_median": 10.476099787059027,
+   "aboard_abs_px_median": 18.06907056625065,
+   "aboard_carlocal_z": 2.3240055821435153,
+   "aboard_across": 0.6736056365491712,
+   "own_motion_ratio": 0.5946307577113614,
+   "ratio_frames": 23
+  },
+  {
+   "name": "MUL05_S01",
+   "frames_aboard": 83,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 6,
+    "10.0": 22
+   },
+   "aboard_rel_px_median": 10.452611477329564,
+   "aboard_abs_px_median": 39.54962035603319,
+   "aboard_carlocal_z": 1.9629562817619184,
+   "aboard_across": 0.7257490997676073,
+   "own_motion_ratio": 0.23233000178350394,
+   "ratio_frames": 83
+  },
+  {
+   "name": "MUL05_S01_P",
+   "frames_aboard": 81,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 12,
+    "10.0": 22
+   },
+   "aboard_rel_px_median": 10.556072270802924,
+   "aboard_abs_px_median": 40.17317622336112,
+   "aboard_carlocal_z": 1.9473758704687048,
+   "aboard_across": 0.7286414748989657,
+   "own_motion_ratio": 0.205036438792498,
+   "ratio_frames": 81
+  },
+  {
+   "name": "MUL05_S02",
+   "frames_aboard": 102,
+   "longest_still_run": 3,
+   "run_films": [
+    965.0,
+    967.0
+   ],
+   "sweep": {
+    "0.5": 0,
+    "1.0": 1,
+    "2.0": 2,
+    "3.0": 3,
+    "5.0": 9,
+    "10.0": 44
+   },
+   "run_rel_px_mean": 1.672251082180984,
+   "run_rel_px_max": 2.435044648176508,
+   "run_abs_px_mean": 74.02046773110357,
+   "run_depth_m": 3.604951405603412,
+   "run_carlocal": [
+    -2.002253408963471,
+    0.04820318395892779,
+    1.5232528367592486
+   ],
+   "run_across": 0.7424015970864316,
+   "aboard_rel_px_median": 6.2313142605555765,
+   "aboard_abs_px_median": 39.92103620917475,
+   "aboard_carlocal_z": 1.544087133390809,
+   "aboard_across": 0.7003455822911399,
+   "own_motion_ratio": 0.16561602331167954,
+   "ratio_frames": 102
+  },
+  {
+   "name": "MUL05_S02_P",
+   "frames_aboard": 101,
+   "longest_still_run": 5,
+   "run_films": [
+    954.0,
+    958.0
+   ],
+   "sweep": {
+    "0.5": 1,
+    "1.0": 1,
+    "2.0": 2,
+    "3.0": 5,
+    "5.0": 18,
+    "10.0": 44
+   },
+   "run_rel_px_mean": 2.3548137244027414,
+   "run_rel_px_max": 2.9560358860407816,
+   "run_abs_px_mean": 45.568420196799494,
+   "run_depth_m": 3.802184420302737,
+   "run_carlocal": [
+    -2.145267803225228,
+    0.08367663845419884,
+    1.5105099749485702
+   ],
+   "run_across": 0.6709577485554108,
+   "aboard_rel_px_median": 5.899374580258513,
+   "aboard_abs_px_median": 40.113169485711666,
+   "aboard_carlocal_z": 1.5201823242795196,
+   "aboard_across": 0.7017891763356533,
+   "own_motion_ratio": 0.14121084720648952,
+   "ratio_frames": 101
+  },
+  {
+   "name": "MUL05_S03",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL05_S03_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL05_S04",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL05_S04_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL05_S05",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL05_S05_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL05_S06",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL05_S06_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL05_S07",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL05_S07_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S00",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S00_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S01",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S01_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S02",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S02_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S03",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S03_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S04",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S04_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S05",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S05_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S06",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S06_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S07",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL06_S07_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S00",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S00_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S01",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S01_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S02",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S02_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S03",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S03_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S04",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S04_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S05",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S05_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S06",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S06_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S07",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL07_S07_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL08_S00",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL08_S00_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL09_S00",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL09_S00_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL10_S00",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "MUL10_S00_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b00",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b00_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b01",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b01_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b02",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b02_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b03",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b03_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b04",
+   "frames_aboard": 52,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 8,
+    "10.0": 25
+   },
+   "aboard_rel_px_median": 11.823431234731627,
+   "aboard_abs_px_median": 56.164804714424136,
+   "aboard_carlocal_z": 1.3133360957508171,
+   "aboard_across": 0.8115398515089699,
+   "own_motion_ratio": 0.20479246711293564,
+   "ratio_frames": 52
+  },
+  {
+   "name": "TRN_z0_b04_P",
+   "frames_aboard": 51,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 7,
+    "10.0": 25
+   },
+   "aboard_rel_px_median": 10.793284076636269,
+   "aboard_abs_px_median": 57.30220702424509,
+   "aboard_carlocal_z": 1.382617551096643,
+   "aboard_across": 0.8100015025020566,
+   "own_motion_ratio": 0.21067809948249844,
+   "ratio_frames": 51
+  },
+  {
+   "name": "TRN_z0_b05",
+   "frames_aboard": 42,
+   "longest_still_run": 12,
+   "run_films": [
+    947.0,
+    958.0
+   ],
+   "sweep": {
+    "0.5": 0,
+    "1.0": 7,
+    "2.0": 7,
+    "3.0": 12,
+    "5.0": 22,
+    "10.0": 25
+   },
+   "run_rel_px_mean": 1.4422597401566497,
+   "run_rel_px_max": 2.9739532375024664,
+   "run_abs_px_mean": 53.88102570812706,
+   "run_depth_m": 3.822530110097969,
+   "run_carlocal": [
+    -2.424452764639675,
+    1.0895110269387562,
+    0.8221589299504856
+   ],
+   "run_across": 0.42220712998725635,
+   "aboard_rel_px_median": 4.204017555902942,
+   "aboard_abs_px_median": 59.297617040503084,
+   "aboard_carlocal_z": 0.842446882986429,
+   "aboard_across": 0.4097160840032351,
+   "own_motion_ratio": 0.07561712922429645,
+   "ratio_frames": 42
+  },
+  {
+   "name": "TRN_z0_b05_P",
+   "frames_aboard": 55,
+   "longest_still_run": 12,
+   "run_films": [
+    948.0,
+    959.0
+   ],
+   "sweep": {
+    "0.5": 0,
+    "1.0": 1,
+    "2.0": 7,
+    "3.0": 12,
+    "5.0": 22,
+    "10.0": 26
+   },
+   "run_rel_px_mean": 1.4747412263100454,
+   "run_rel_px_max": 2.913140871939378,
+   "run_abs_px_mean": 55.44056049483164,
+   "run_depth_m": 3.7086751009398964,
+   "run_carlocal": [
+    -2.4860728724640864,
+    1.0791540443897247,
+    0.8923732236409244
+   ],
+   "run_across": 0.42017012328727293,
+   "aboard_rel_px_median": 6.359161572495126,
+   "aboard_abs_px_median": 73.20249375228791,
+   "aboard_carlocal_z": 0.9210134917192642,
+   "aboard_across": 0.4137657369160591,
+   "own_motion_ratio": 0.0844005935510377,
+   "ratio_frames": 55
+  },
+  {
+   "name": "TRN_z0_b06",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b06_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b07",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b07_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b08",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b08_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b09",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z0_b09_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b00",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b00_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b01",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b01_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b02",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b02_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b03",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b03_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b04",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b04_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b05",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b05_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b06",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b06_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b07",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b07_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b08",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b08_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b09",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z1_b09_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b00",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b00_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b01",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b01_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b02",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b02_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b03",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b03_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b04",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b04_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b05",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b05_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b06",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b06_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b07",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b07_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b08",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b08_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b09",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  },
+  {
+   "name": "TRN_z2_b09_P",
+   "frames_aboard": 0,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 0,
+    "10.0": 0
+   }
+  }
+ ],
+ "worst": {
+  "name": "TRN_z0_b05_P",
+  "frames_aboard": 55,
+  "longest_still_run": 12,
+  "run_films": [
+   948.0,
+   959.0
+  ],
+  "sweep": {
+   "0.5": 0,
+   "1.0": 1,
+   "2.0": 7,
+   "3.0": 12,
+   "5.0": 22,
+   "10.0": 26
+  },
+  "run_rel_px_mean": 1.4747412263100454,
+  "run_rel_px_max": 2.913140871939378,
+  "run_abs_px_mean": 55.44056049483164,
+  "run_depth_m": 3.7086751009398964,
+  "run_carlocal": [
+   -2.4860728724640864,
+   1.0791540443897247,
+   0.8923732236409244
+  ],
+  "run_across": 0.42017012328727293,
+  "aboard_rel_px_median": 6.359161572495126,
+  "aboard_abs_px_median": 73.20249375228791,
+  "aboard_carlocal_z": 0.9210134917192642,
+  "aboard_across": 0.4137657369160591,
+  "own_motion_ratio": 0.0844005935510377,
+  "ratio_frames": 55
+ },
+ "n_aboard": 10,
+ "n_rated": 10,
+ "n_carried": 8,
+ "min_ratio": 0.07561712922429645,
+ "carried": [
+  {
+   "name": "TRN_z0_b05",
+   "frames_aboard": 42,
+   "longest_still_run": 12,
+   "run_films": [
+    947.0,
+    958.0
+   ],
+   "sweep": {
+    "0.5": 0,
+    "1.0": 7,
+    "2.0": 7,
+    "3.0": 12,
+    "5.0": 22,
+    "10.0": 25
+   },
+   "run_rel_px_mean": 1.4422597401566497,
+   "run_rel_px_max": 2.9739532375024664,
+   "run_abs_px_mean": 53.88102570812706,
+   "run_depth_m": 3.822530110097969,
+   "run_carlocal": [
+    -2.424452764639675,
+    1.0895110269387562,
+    0.8221589299504856
+   ],
+   "run_across": 0.42220712998725635,
+   "aboard_rel_px_median": 4.204017555902942,
+   "aboard_abs_px_median": 59.297617040503084,
+   "aboard_carlocal_z": 0.842446882986429,
+   "aboard_across": 0.4097160840032351,
+   "own_motion_ratio": 0.07561712922429645,
+   "ratio_frames": 42
+  },
+  {
+   "name": "TRN_z0_b05_P",
+   "frames_aboard": 55,
+   "longest_still_run": 12,
+   "run_films": [
+    948.0,
+    959.0
+   ],
+   "sweep": {
+    "0.5": 0,
+    "1.0": 1,
+    "2.0": 7,
+    "3.0": 12,
+    "5.0": 22,
+    "10.0": 26
+   },
+   "run_rel_px_mean": 1.4747412263100454,
+   "run_rel_px_max": 2.913140871939378,
+   "run_abs_px_mean": 55.44056049483164,
+   "run_depth_m": 3.7086751009398964,
+   "run_carlocal": [
+    -2.4860728724640864,
+    1.0791540443897247,
+    0.8923732236409244
+   ],
+   "run_across": 0.42017012328727293,
+   "aboard_rel_px_median": 6.359161572495126,
+   "aboard_abs_px_median": 73.20249375228791,
+   "aboard_carlocal_z": 0.9210134917192642,
+   "aboard_across": 0.4137657369160591,
+   "own_motion_ratio": 0.0844005935510377,
+   "ratio_frames": 55
+  },
+  {
+   "name": "MUL05_S02_P",
+   "frames_aboard": 101,
+   "longest_still_run": 5,
+   "run_films": [
+    954.0,
+    958.0
+   ],
+   "sweep": {
+    "0.5": 1,
+    "1.0": 1,
+    "2.0": 2,
+    "3.0": 5,
+    "5.0": 18,
+    "10.0": 44
+   },
+   "run_rel_px_mean": 2.3548137244027414,
+   "run_rel_px_max": 2.9560358860407816,
+   "run_abs_px_mean": 45.568420196799494,
+   "run_depth_m": 3.802184420302737,
+   "run_carlocal": [
+    -2.145267803225228,
+    0.08367663845419884,
+    1.5105099749485702
+   ],
+   "run_across": 0.6709577485554108,
+   "aboard_rel_px_median": 5.899374580258513,
+   "aboard_abs_px_median": 40.113169485711666,
+   "aboard_carlocal_z": 1.5201823242795196,
+   "aboard_across": 0.7017891763356533,
+   "own_motion_ratio": 0.14121084720648952,
+   "ratio_frames": 101
+  },
+  {
+   "name": "MUL05_S02",
+   "frames_aboard": 102,
+   "longest_still_run": 3,
+   "run_films": [
+    965.0,
+    967.0
+   ],
+   "sweep": {
+    "0.5": 0,
+    "1.0": 1,
+    "2.0": 2,
+    "3.0": 3,
+    "5.0": 9,
+    "10.0": 44
+   },
+   "run_rel_px_mean": 1.672251082180984,
+   "run_rel_px_max": 2.435044648176508,
+   "run_abs_px_mean": 74.02046773110357,
+   "run_depth_m": 3.604951405603412,
+   "run_carlocal": [
+    -2.002253408963471,
+    0.04820318395892779,
+    1.5232528367592486
+   ],
+   "run_across": 0.7424015970864316,
+   "aboard_rel_px_median": 6.2313142605555765,
+   "aboard_abs_px_median": 39.92103620917475,
+   "aboard_carlocal_z": 1.544087133390809,
+   "aboard_across": 0.7003455822911399,
+   "own_motion_ratio": 0.16561602331167954,
+   "ratio_frames": 102
+  },
+  {
+   "name": "TRN_z0_b04",
+   "frames_aboard": 52,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 8,
+    "10.0": 25
+   },
+   "aboard_rel_px_median": 11.823431234731627,
+   "aboard_abs_px_median": 56.164804714424136,
+   "aboard_carlocal_z": 1.3133360957508171,
+   "aboard_across": 0.8115398515089699,
+   "own_motion_ratio": 0.20479246711293564,
+   "ratio_frames": 52
+  },
+  {
+   "name": "MUL05_S01_P",
+   "frames_aboard": 81,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 12,
+    "10.0": 22
+   },
+   "aboard_rel_px_median": 10.556072270802924,
+   "aboard_abs_px_median": 40.17317622336112,
+   "aboard_carlocal_z": 1.9473758704687048,
+   "aboard_across": 0.7286414748989657,
+   "own_motion_ratio": 0.205036438792498,
+   "ratio_frames": 81
+  },
+  {
+   "name": "TRN_z0_b04_P",
+   "frames_aboard": 51,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 7,
+    "10.0": 25
+   },
+   "aboard_rel_px_median": 10.793284076636269,
+   "aboard_abs_px_median": 57.30220702424509,
+   "aboard_carlocal_z": 1.382617551096643,
+   "aboard_across": 0.8100015025020566,
+   "own_motion_ratio": 0.21067809948249844,
+   "ratio_frames": 51
+  },
+  {
+   "name": "MUL05_S01",
+   "frames_aboard": 83,
+   "longest_still_run": 0,
+   "run_films": null,
+   "sweep": {
+    "0.5": 0,
+    "1.0": 0,
+    "2.0": 0,
+    "3.0": 0,
+    "5.0": 6,
+    "10.0": 22
+   },
+   "aboard_rel_px_median": 10.452611477329564,
+   "aboard_abs_px_median": 39.54962035603319,
+   "aboard_carlocal_z": 1.9629562817619184,
+   "aboard_across": 0.7257490997676073,
+   "own_motion_ratio": 0.23233000178350394,
+   "ratio_frames": 83
+  }
+ ],
+ "n_still_runs": 2,
+ "PASS": false,
+ "VERDICT": "FAIL",
+ "tag": "R2387",
+ "track": "sim/out/oner_camera_track.json"
+}

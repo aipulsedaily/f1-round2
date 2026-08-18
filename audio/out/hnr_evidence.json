@@ -1,0 +1,251 @@
+{
+ "wav": "audio/out/master.wav",
+ "beats": {
+  "1_assembly": {
+   "share": 0.010191405020676069,
+   "band_dbfs": -39.25910769125131,
+   "rms_dbfs": -19.341448305273428,
+   "limbs": {
+    "hf": {
+     "threshold_db": -1.0,
+     "fraction_below": 0.7068181818181818,
+     "se": 0.02239459950224911,
+     "adversary_fraction": 0.9515151515151515,
+     "limit_by_rule": 0.8500000000000001,
+     "limit_in_verify_py": 0.85,
+     "power": 0.24469696969696975,
+     "APPLICABLE": true,
+     "margin_sigma": 6.393586907747035
+    },
+    "bb": {
+     "threshold_db": -1.0,
+     "fraction_below": 0.045454545454545456,
+     "se": 0.009028848770971218,
+     "adversary_fraction": 0.5151515151515151,
+     "limit_by_rule": 0.30000000000000004,
+     "limit_in_verify_py": 0.3,
+     "power": 0.46969696969696967,
+     "APPLICABLE": true,
+     "margin_sigma": 28.192459637140814
+    }
+   },
+   "invariance_spread_db": 0.0678465417465719
+  },
+  "2_launch": {
+   "share": 0.023348719487956627,
+   "band_dbfs": -30.955877209677073,
+   "rms_dbfs": -14.638507885437665,
+   "limbs": {
+    "hf": {
+     "threshold_db": 3.0,
+     "fraction_below": 0.15833333333333333,
+     "se": 0.061120986512686055,
+     "adversary_fraction": 0.6583333333333333,
+     "limit_by_rule": 0.4,
+     "limit_in_verify_py": 0.4,
+     "power": 0.8416666666666667,
+     "APPLICABLE": true,
+     "margin_sigma": 3.9539065132155096
+    },
+    "bb": {
+     "threshold_db": 2.0,
+     "fraction_below": 0.05,
+     "se": 0.030115062778829457,
+     "adversary_fraction": 1.0,
+     "limit_by_rule": 0.5,
+     "limit_in_verify_py": 0.5,
+     "power": 0.95,
+     "APPLICABLE": true,
+     "margin_sigma": 14.94268842488832
+    }
+   },
+   "invariance_spread_db": 6.786205304813881
+  },
+  "3_breach": {
+   "share": 0.00018277866244501462,
+   "band_dbfs": -47.73702663616268,
+   "rms_dbfs": -10.356281584972978,
+   "limbs": {
+    "hf": {
+     "threshold_db": -1.0,
+     "fraction_below": 0.359375,
+     "se": 0.06030568001704075,
+     "adversary_fraction": 0.959375,
+     "limit_by_rule": 0.65,
+     "limit_in_verify_py": 0.65,
+     "power": 0.6,
+     "APPLICABLE": false,
+     "margin_sigma": 4.819197792278891
+    },
+    "bb": {
+     "threshold_db": -1.0,
+     "fraction_below": 0.565625,
+     "se": 0.03959220646162575,
+     "adversary_fraction": 0.521875,
+     "limit_by_rule": 0.55,
+     "limit_in_verify_py": 0.55,
+     "power": -0.04375000000000007,
+     "APPLICABLE": false,
+     "margin_sigma": -0.3946483764461154
+    }
+   },
+   "invariance_spread_db": 1.4367696500576794
+  },
+  "4_transit": {
+   "share": 0.03548042584008995,
+   "band_dbfs": -29.796548785344363,
+   "rms_dbfs": -15.296437021769716,
+   "limbs": {
+    "hf": {
+     "threshold_db": 3.0,
+     "fraction_below": 0.3794642857142857,
+     "se": 0.07488358594087094,
+     "adversary_fraction": 0.9642857142857143,
+     "limit_by_rule": 0.65,
+     "limit_in_verify_py": 0.65,
+     "power": 0.6205357142857143,
+     "APPLICABLE": true,
+     "margin_sigma": 3.6127505231831827
+    },
+    "bb": {
+     "threshold_db": 2.0,
+     "fraction_below": 0.09375,
+     "se": 0.02343576576161299,
+     "adversary_fraction": 0.9955357142857143,
+     "limit_by_rule": 0.55,
+     "limit_in_verify_py": 0.55,
+     "power": 0.9017857142857143,
+     "APPLICABLE": true,
+     "margin_sigma": 19.46810719312285
+    }
+   },
+   "invariance_spread_db": 4.506399118213353
+  },
+  "5_lap": {
+   "share": 0.02588578142566432,
+   "band_dbfs": -32.05948560569752,
+   "rms_dbfs": -16.190098403273268,
+   "limbs": {
+    "hf": {
+     "threshold_db": 3.0,
+     "fraction_below": 0.33070866141732286,
+     "se": 0.022825438756916665,
+     "adversary_fraction": 0.9106299212598425,
+     "limit_by_rule": 0.6000000000000001,
+     "limit_in_verify_py": 0.6,
+     "power": 0.6692913385826771,
+     "APPLICABLE": true,
+     "margin_sigma": 11.797860336904817
+    },
+    "bb": {
+     "threshold_db": 2.0,
+     "fraction_below": 0.18228346456692912,
+     "se": 0.013829918928037607,
+     "adversary_fraction": 0.9933070866141732,
+     "limit_by_rule": 0.6000000000000001,
+     "limit_in_verify_py": 0.6,
+     "power": 0.8110236220472441,
+     "APPLICABLE": true,
+     "margin_sigma": 30.203831100284162
+    }
+   },
+   "invariance_spread_db": 7.40072791154566
+  },
+  "6_ending": {
+   "share": 0.040188227295053086,
+   "band_dbfs": -37.92406448673817,
+   "rms_dbfs": -23.965052985345288,
+   "limbs": {
+    "hf": {
+     "threshold_db": -1.0,
+     "fraction_below": 0.3073394495412844,
+     "se": 0.055582258435335284,
+     "adversary_fraction": 0.9678899082568807,
+     "limit_by_rule": 0.65,
+     "limit_in_verify_py": 0.65,
+     "power": 0.6605504587155964,
+     "APPLICABLE": true,
+     "margin_sigma": 6.164926724907533
+    },
+    "bb": {
+     "threshold_db": -1.0,
+     "fraction_below": 0.1353211009174312,
+     "se": 0.025036431104960167,
+     "adversary_fraction": 0.49770642201834864,
+     "limit_by_rule": 0.30000000000000004,
+     "limit_in_verify_py": 0.3,
+     "power": 0.3623853211009175,
+     "APPLICABLE": true,
+     "margin_sigma": 6.577570836361855
+    }
+   },
+   "invariance_spread_db": 0.2669772769888412
+  }
+ },
+ "verdicts": {
+  "THE FILM  master.wav": {
+   "PASS": true,
+   "failures": []
+  },
+  "ADVERSARY octave-matched hair dryer": {
+   "PASS": false,
+   "failures": [
+    "assem.hf 0.95>0.85",
+    "assem.bb 0.52>0.30",
+    "launc.hf 1.00>0.40",
+    "launc.bb 1.00>0.50",
+    "trans.hf 1.00>0.65",
+    "trans.bb 1.00>0.55",
+    "lap.hf 1.00>0.60",
+    "lap.bb 0.99>0.60",
+    "endin.hf 0.97>0.65",
+    "endin.bb 0.50>0.30"
+   ]
+  },
+  "CONTROL top four octaves -> noise": {
+   "PASS": false,
+   "failures": [
+    "assem.hf 0.99>0.85",
+    "launc.hf 0.94>0.40",
+    "trans.hf 1.00>0.65",
+    "lap.hf 0.93>0.60",
+    "endin.hf 0.99>0.65"
+   ]
+  },
+  "CONTROL flat white noise": {
+   "PASS": false,
+   "failures": [
+    "assem.hf 1.00>0.85",
+    "assem.bb 1.00>0.30",
+    "launc.hf 1.00>0.40",
+    "launc.bb 1.00>0.50",
+    "trans.hf 1.00>0.65",
+    "trans.bb 1.00>0.55",
+    "lap.hf 1.00>0.60",
+    "lap.bb 1.00>0.60",
+    "endin.hf 1.00>0.65",
+    "endin.bb 1.00>0.30"
+   ]
+  },
+  "REJECTED R2-1400 (hair blower)": {
+   "PASS": false,
+   "failures": [
+    "launc.hf 0.67>0.40",
+    "trans.hf 0.96>0.65",
+    "lap.hf 0.91>0.60"
+   ]
+  },
+  "SHIPPED 2 Aug (same defect, one build earlier)": {
+   "PASS": false,
+   "failures": [
+    "launc.hf 0.66>0.40",
+    "trans.hf 0.96>0.65",
+    "lap.hf 0.91>0.60"
+   ]
+  },
+  "REJECTED R2-2001 (tubular bells)": {
+   "PASS": true,
+   "failures": []
+  }
+ }
+}

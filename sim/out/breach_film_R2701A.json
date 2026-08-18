@@ -1,0 +1,21 @@
+{
+ "bodies": 3948,
+ "film_frames": 207,
+ "keys_full": 817236,
+ "keys_kept": 506462,
+ "ratio": 0.6197255138050698,
+ "max_pos_err_m": 0.0014999411693432997,
+ "max_ang_err_deg": 0.34990665422019285,
+ "pos_tol_m": 0.0015,
+ "ang_tol_deg": 0.35,
+ "measured_on": 400,
+ "release_reference_frame": 859,
+ "bytes": 12937246,
+ "release_min": 860,
+ "release_max": 908,
+ "never_released": 79,
+ "film_span": [
+  845,
+  1051
+ ]
+}

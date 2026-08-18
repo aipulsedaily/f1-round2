@@ -1,0 +1,119 @@
+{
+ "C8b physical showroom (must PASS)": {
+  "inapplicable": true,
+  "n_bursts": 0
+ },
+ "NEW  moving room, per-burst IR (must PASS)": {
+  "inapplicable": true,
+  "n_bursts": 1
+ },
+ "M-ROOMb DRONE bank, as shipped (must FAIL)": {
+  "must": "FAIL",
+  "single": {
+   "recurrence": 0.046875,
+   "chance": 0.053515625,
+   "chance_sd": 0.045539236066104306,
+   "excess": -0.006640624999999997,
+   "z": -0.14582205530107117,
+   "n_observations": 64,
+   "n_bursts": 8
+  },
+  "centroid": {
+   "recurrence": 0.046875,
+   "chance": 0.04296875,
+   "chance_sd": 0.043603269569924455,
+   "excess": 0.00390625,
+   "z": 0.08958617182905827,
+   "n_observations": 64,
+   "n_bursts": 8
+  }
+ },
+ "NEW  STRUCK fixed bank (must FAIL)": {
+  "inapplicable": true,
+  "n_bursts": 2
+ },
+ "M-ROOMa 8-tap FDN no diffusion (must FAIL)": {
+  "must": "FAIL",
+  "single": {
+   "recurrence": 0.3984375,
+   "chance": 0.194140625,
+   "chance_sd": 0.05739795420121152,
+   "excess": 0.204296875,
+   "z": 3.5593058645230915,
+   "n_observations": 128,
+   "n_bursts": 16
+  },
+  "centroid": {
+   "recurrence": 0.328125,
+   "chance": 0.1572265625,
+   "chance_sd": 0.04916873388739885,
+   "excess": 0.1708984375,
+   "z": 3.4757542850579384,
+   "n_observations": 128,
+   "n_bursts": 16
+  }
+ },
+ "R2-4079 (this master)": {
+  "must": null,
+  "single": {
+   "recurrence": 0.6,
+   "chance": 0.47166666666666657,
+   "chance_sd": 0.03864232351537193,
+   "excess": 0.1283333333333334,
+   "z": 3.3210563356078304,
+   "n_observations": 240,
+   "n_bursts": 30
+  },
+  "centroid": {
+   "recurrence": 0.5916666666666667,
+   "chance": 0.4039583333333333,
+   "chance_sd": 0.037545689758538794,
+   "excess": 0.18770833333333337,
+   "z": 4.999464240516289,
+   "n_observations": 240,
+   "n_bursts": 30
+  }
+ },
+ "R2-4069 (before per-part timbre)": {
+  "must": null,
+  "single": {
+   "recurrence": 0.525,
+   "chance": 0.47166666666666657,
+   "chance_sd": 0.03864232351537193,
+   "excess": 0.053333333333333455,
+   "z": 1.3801792563565034,
+   "n_observations": 240,
+   "n_bursts": 30
+  },
+  "centroid": {
+   "recurrence": 0.5083333333333333,
+   "chance": 0.4039583333333333,
+   "chance_sd": 0.037545689758538794,
+   "excess": 0.104375,
+   "z": 2.7799462647043955,
+   "n_observations": 240,
+   "n_bursts": 30
+  }
+ },
+ "C4 delivered master": {
+  "must": "FAIL",
+  "single": {
+   "recurrence": 0.6120689655172413,
+   "chance": 0.4479525862068966,
+   "chance_sd": 0.039732256180377123,
+   "excess": 0.16411637931034473,
+   "z": 4.130557765591931,
+   "n_observations": 232,
+   "n_bursts": 29
+  },
+  "centroid": {
+   "recurrence": 0.5818965517241379,
+   "chance": 0.3769396551724138,
+   "chance_sd": 0.04251702376402065,
+   "excess": 0.2049568965517241,
+   "z": 4.820584283821992,
+   "n_observations": 232,
+   "n_bursts": 29
+  }
+ }
+}

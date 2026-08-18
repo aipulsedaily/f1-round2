@@ -1,0 +1,180 @@
+[
+ {
+  "label": "impacts alone (CELL_GAIN = 0)",
+  "seconds": 33.5,
+  "hnr_median_db": 1.0352513794189249,
+  "hnr_p25_db": -2.4500537178747432,
+  "hnr_fraction_below_0db": 0.419672131147541,
+  "hnr_windows": 1220,
+  "sfm_median_ratio_of_white": 0.9876555195758735,
+  "sfm_worst_ratio_of_white": 1.0163504433962771,
+  "rms": 0.025639765299760607,
+  "BARS": {
+   "hnr_median_db": 8.0,
+   "hnr_fraction_below_0db": 0.1,
+   "sfm_median_ratio_of_white": 0.45,
+   "sfm_worst_ratio_of_white": 0.55
+  }
+ },
+ {
+  "label": "the line shaft alone",
+  "seconds": 33.5,
+  "hnr_median_db": 29.075313588545907,
+  "hnr_p25_db": 20.849958723868255,
+  "hnr_fraction_below_0db": 0.0020939276099311995,
+  "hnr_windows": 3343,
+  "sfm_median_ratio_of_white": 0.28683771947687575,
+  "sfm_worst_ratio_of_white": 0.35506147473689914,
+  "rms": 0.05492006938936126,
+  "BARS": {
+   "hnr_median_db": 8.0,
+   "hnr_fraction_below_0db": 0.1,
+   "sfm_median_ratio_of_white": 0.45,
+   "sfm_worst_ratio_of_white": 0.55
+  }
+ },
+ {
+  "label": "layers.assembly, CELL_GAIN x 0.1 = 0.0055",
+  "seconds": 33.5,
+  "hnr_median_db": 22.451918015987545,
+  "hnr_p25_db": 2.9845201718595327,
+  "hnr_fraction_below_0db": 0.15663372267145853,
+  "hnr_windows": 3339,
+  "sfm_median_ratio_of_white": 0.35506189135694405,
+  "sfm_worst_ratio_of_white": 0.5217432457258973,
+  "rms": 0.026228572365890733,
+  "BARS": {
+   "hnr_median_db": 8.0,
+   "hnr_fraction_below_0db": 0.1,
+   "sfm_median_ratio_of_white": 0.45,
+   "sfm_worst_ratio_of_white": 0.55
+  },
+  "cell_gain": 0.0055000000000000005
+ },
+ {
+  "label": "layers.assembly, CELL_GAIN x 0.25 = 0.01375",
+  "seconds": 33.5,
+  "hnr_median_db": 22.731217599225637,
+  "hnr_p25_db": 2.719601147871794,
+  "hnr_fraction_below_0db": 0.15794196829195334,
+  "hnr_windows": 3343,
+  "sfm_median_ratio_of_white": 0.35506164141113533,
+  "sfm_worst_ratio_of_white": 0.501947860733116,
+  "rms": 0.02910080239025489,
+  "BARS": {
+   "hnr_median_db": 8.0,
+   "hnr_fraction_below_0db": 0.1,
+   "sfm_median_ratio_of_white": 0.45,
+   "sfm_worst_ratio_of_white": 0.55
+  },
+  "cell_gain": 0.01375
+ },
+ {
+  "label": "layers.assembly, CELL_GAIN x 0.5 = 0.0275",
+  "seconds": 33.5,
+  "hnr_median_db": 23.004418567207505,
+  "hnr_p25_db": 4.534586147456321,
+  "hnr_fraction_below_0db": 0.13161830690996112,
+  "hnr_windows": 3343,
+  "sfm_median_ratio_of_white": 0.3550615580783848,
+  "sfm_worst_ratio_of_white": 0.49293860742542706,
+  "rms": 0.03759444889346103,
+  "BARS": {
+   "hnr_median_db": 8.0,
+   "hnr_fraction_below_0db": 0.1,
+   "sfm_median_ratio_of_white": 0.45,
+   "sfm_worst_ratio_of_white": 0.55
+  },
+  "cell_gain": 0.0275
+ },
+ {
+  "label": "layers.assembly, CELL_GAIN x 1 = 0.055",
+  "seconds": 33.5,
+  "hnr_median_db": 23.318659947747513,
+  "hnr_p25_db": 7.23587214416778,
+  "hnr_fraction_below_0db": 0.07657792402034101,
+  "hnr_windows": 3343,
+  "sfm_median_ratio_of_white": 0.3550615164087342,
+  "sfm_worst_ratio_of_white": 0.47419778987266553,
+  "rms": 0.060641525553414524,
+  "BARS": {
+   "hnr_median_db": 8.0,
+   "hnr_fraction_below_0db": 0.1,
+   "sfm_median_ratio_of_white": 0.45,
+   "sfm_worst_ratio_of_white": 0.55
+  },
+  "cell_gain": 0.055
+ },
+ {
+  "label": "layers.assembly, CELL_GAIN x 2 = 0.11",
+  "seconds": 33.5,
+  "hnr_median_db": 24.731280894932716,
+  "hnr_p25_db": 11.228503423074788,
+  "hnr_fraction_below_0db": 0.03769069697876159,
+  "hnr_windows": 3343,
+  "sfm_median_ratio_of_white": 0.3550614955730883,
+  "sfm_worst_ratio_of_white": 0.4378839524135653,
+  "rms": 0.1128265027452706,
+  "BARS": {
+   "hnr_median_db": 8.0,
+   "hnr_fraction_below_0db": 0.1,
+   "sfm_median_ratio_of_white": 0.45,
+   "sfm_worst_ratio_of_white": 0.55
+  },
+  "cell_gain": 0.11
+ },
+ {
+  "label": "drive report",
+  "drive": {
+   "voices": 1,
+   "architecture": "one line shaft, fifteen geared stations: ONE fundamental, fifteen resonances",
+   "replaces": "fifteen independent actuator fundamentals (R2-4070/B6), measured at +0.30 dB Boersma HNR together against +5.9..+32.8 dB one at a time",
+   "pinion_module_m": 0.004,
+   "pinion_teeth": 24,
+   "pole_pairs": 4,
+   "stator_slots": 24,
+   "slot_order_of_force_fundamental": 3,
+   "force_orders": 26,
+   "peak_path_feed_ms": 8.836,
+   "travel_per_motor_rev_m": 0.17671,
+   "motor_rev_s_range": [
+    10.0,
+    47.62
+   ],
+   "force_fundamental_hz_range": [
+    80.0,
+    381.0
+   ],
+   "frame_span_m": 5.36,
+   "frame_modes_hz": [
+    86.7,
+    195.0,
+    346.7,
+    541.7,
+    780.1,
+    1061.8,
+    1386.8,
+    1755.2,
+    2166.9,
+    2621.9,
+    3120.3,
+    3662.0,
+    4247.0
+   ],
+   "frame_q": 33.3,
+   "arm_q": 20.0,
+   "retract_film_t_s": [
+    21.733,
+    33.0
+   ],
+   "bearing_gain": 0.02,
+   "bearing_band_hz": [
+    1500.0,
+    4000.0
+   ],
+   "cell_gain": 0.055,
+   "ballscrew_lead_m": 0.02,
+   "gear_teeth": 23
+  }
+ }
+]

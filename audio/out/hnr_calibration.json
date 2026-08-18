@@ -1,0 +1,70 @@
+{
+ "sample_rate": 48000,
+ "window_s": 0.08,
+ "f0_range_hz": [
+  70.0,
+  600.0
+ ],
+ "rows": [
+  {
+   "noise_fraction": 0.02,
+   "truth_db": 16.901960800285135,
+   "in_repo_db": 17.02523137481698,
+   "in_repo_error_db": 0.12327057453184409,
+   "praat_db": 7.786304350182944,
+   "praat_error_db": -9.11565645010219,
+   "in_repo_minus_praat_db": 9.238927024634034
+  },
+  {
+   "noise_fraction": 0.05,
+   "truth_db": 12.787536009528289,
+   "in_repo_db": 12.890752846074784,
+   "in_repo_error_db": 0.10321683654649583,
+   "praat_db": 8.196242597575072,
+   "praat_error_db": -4.591293411953217,
+   "in_repo_minus_praat_db": 4.6945102484997125
+  },
+  {
+   "noise_fraction": 0.1,
+   "truth_db": 9.542425094393248,
+   "in_repo_db": 9.663990059198696,
+   "in_repo_error_db": 0.12156496480544732,
+   "praat_db": 8.968763681902216,
+   "praat_error_db": -0.5736614124910329,
+   "in_repo_minus_praat_db": 0.6952263772964802
+  },
+  {
+   "noise_fraction": 0.25,
+   "truth_db": 4.771212547196624,
+   "in_repo_db": 4.973501986751725,
+   "in_repo_error_db": 0.20228943955510115,
+   "praat_db": 5.33023009144377,
+   "praat_error_db": 0.5590175442471459,
+   "in_repo_minus_praat_db": -0.35672810469204475
+  },
+  {
+   "noise_fraction": 0.5,
+   "truth_db": 0.0,
+   "in_repo_db": 0.4021295325174293,
+   "in_repo_error_db": 0.4021295325174293,
+   "praat_db": 1.13239125439681,
+   "praat_error_db": 1.13239125439681,
+   "in_repo_minus_praat_db": -0.7302617218793808
+  },
+  {
+   "noise_fraction": 0.75,
+   "truth_db": -4.771212547196625,
+   "in_repo_db": -3.8258864336870286,
+   "in_repo_error_db": 0.9453261135095965,
+   "praat_db": -2.45620283442785,
+   "praat_error_db": 2.315009712768775,
+   "in_repo_minus_praat_db": -1.3696835992591785
+  }
+ ],
+ "in_repo_max_abs_error_db_over_gated_range": 0.4021295325174293,
+ "limit_db": 0.5,
+ "praat_available": true,
+ "praat_divergence_note": "MEASURED, AND IT DOES NOT MEAN WHAT IT LOOKS LIKE. At low noise fractions Praat's DEFAULT configuration reads far below the arithmetic truth (+7.79 dB where the truth is +16.90), because `to_harmonicity_ac` defaults to a 70 Hz minimum pitch with 4.5 periods per window and a silence threshold tuned for speech, and the median is taken over a track that includes its own edge frames. THE ARBITER IS THE ARITHMETIC, not Praat: the mixture's true HNR is 10*log10((1-f)/f) by construction, and the in-repo implementation tracks it to <=0.40 dB across the whole gated range. Praat is a third opinion, reported in full, and it is not the ground truth.",
+ "praat_note": "praat-parselmouth is GPL-3 and DEV-ONLY. It is not in any requirements file and audio/verify.py fails if it is ever imported under audio/.",
+ "PASS": true
+}

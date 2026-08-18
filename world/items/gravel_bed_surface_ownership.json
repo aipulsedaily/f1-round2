@@ -1,0 +1,57 @@
+{
+ "schema": "f1-round2/item_interface/1.0",
+ "item": "gravel_bed_surface",
+ "kind": "OWNERSHIP_STUB",
+ "not_to_be_confused_with": "world/items/<id>_interface.json, where one exists, is the MODULE's own published contract -- datums, sockets, constants. This file is the CAMPAIGN's ownership decision about the same item and does not replace it.",
+ "why": "WAVE2-SCOPE 3.3. This item is a FLOOR: the world already builds the surface at class level and the item's value to a dependant is the datum, not a silhouette. The class keeps the geometry; this file is what the module would otherwise have shipped.",
+ "decided_in": "R2-331",
+ "class_owner": {
+  "module": "world/build_barriers.py",
+  "objects": [
+   "BR_Trap_apex_L_1532",
+   "BR_Trap_apex_L_1736",
+   "BR_Trap_apex_L_2129",
+   "BR_Trap_apex_L_2281",
+   "BR_Trap_apex_L_242",
+   "BR_Trap_apex_L_2687",
+   "BR_Trap_apex_L_2788",
+   "BR_Trap_apex_L_3010",
+   "BR_Trap_apex_R_1188",
+   "BR_Trap_apex_R_1632",
+   "BR_Trap_apex_R_1907",
+   "BR_Trap_apex_R_2884",
+   "BR_Trap_apex_R_706",
+   "BR_Trap_outer_L_647",
+   "BR_Trap_outer_R_1672",
+   "BR_Trap_outer_R_2055",
+   "BR_Trap_outer_R_2579",
+   "BR_Trap_outer_R_259",
+   "BR_Trap_outer_R_854"
+  ],
+  "objects_in_assembly9": 19,
+  "vertices_in_assembly9": 886159,
+  "counter": "stones",
+  "counter_value": 240000,
+  "world_bbox_xyz": [
+   -714.9,
+   -244.1,
+   -4.6,
+   623.1,
+   981.4,
+   8.0
+  ]
+ },
+ "read_this_instead": "build_barriers' bed() closure -- ONE definition used by both the surface grid and the scattered stones, 'so a stone can never float above or sink under its own bed'. Read the bed, not BR_Stones_*.",
+ "measured_overlap_with_the_module": {
+  "probe": "work/r2331/own_gravel_bed_surface.json",
+  "item_units_built": 43,
+  "host_frac_in_unit_boxes": 0.966767,
+  "host_frac_in_unit_cores": 0.273665,
+  "control_host": "BR_Armco_*",
+  "control_host_frac": 0.225403,
+  "note": "A containment fraction is an UPPER bound -- a bed's bounding box swallows whatever stands on it. The control is printed beside it for that reason: where the control reads high, the subject's high reading means less."
+ },
+ "argument": "The row cites 'welded_in BR_Trap_*, counter stones, n 240000' and that pairing is wrong in the source: the 240,000 stones are scattered into BR_Stones_* -- five SEPARATE objects with their own material -- while BR_Trap_* is 20 objects of bed surface only, one add_grid each, nothing welded in. So the item's real counterpart is the bed, not the stones, and the two are already separable. It stays class: the item holds 43 objects on ITEM_REJECTED, and platform_z sinks a sub-base basin up to 0.62 m under every gravel programme, so removing the beds exposes BR_Subbase_*.",
+ "module_on_disk": "world/items/gravel_bed_surface.py",
+ "module_state": "HOLD -- not placed; see world/items/PLACEMENT.json"
+}

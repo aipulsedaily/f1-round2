@@ -1,0 +1,172 @@
+{
+ "tag": "base",
+ "blend": "world/car_anim_driver.blend",
+ "frames": {
+  "2635": {
+   "lens": 32.0,
+   "groups": {
+    "all": {
+     "px": 172468,
+     "objects": [
+      "DRV_Balaclava",
+      "DRV_Extras",
+      "DRV_Glove_L",
+      "DRV_Glove_R",
+      "DRV_HANS",
+      "DRV_Harness",
+      "DRV_Helmet",
+      "DRV_Suit"
+     ],
+     "png": "render/r2401/pm_base_f2635_all.png",
+     "bbox": [
+      1179,
+      2187,
+      667,
+      1407
+     ]
+    },
+    "none": {
+     "px": 0,
+     "objects": [],
+     "png": "render/r2401/pm_base_f2635_none.png"
+    },
+    "helmet": {
+     "px": 157999,
+     "objects": [
+      "DRV_Helmet",
+      "DRV_Balaclava"
+     ],
+     "png": "render/r2401/pm_base_f2635_helmet.png",
+     "bbox": [
+      1704,
+      2187,
+      909,
+      1347
+     ]
+    },
+    "arms": {
+     "px": 11157,
+     "objects": [
+      "DRV_Glove_L",
+      "DRV_Glove_R"
+     ],
+     "png": "render/r2401/pm_base_f2635_arms.png",
+     "bbox": [
+      1179,
+      1414,
+      667,
+      1053
+     ]
+    },
+    "torso": {
+     "px": 40392,
+     "objects": [
+      "DRV_Suit",
+      "DRV_HANS",
+      "DRV_Harness",
+      "DRV_Extras"
+     ],
+     "png": "render/r2401/pm_base_f2635_torso.png",
+     "bbox": [
+      1696,
+      2138,
+      903,
+      1407
+     ]
+    }
+   },
+   "sum_of_groups": 209548,
+   "overlap_excess_px": 37080
+  },
+  "2632": {
+   "lens": 32.0,
+   "groups": {
+    "all": {
+     "px": 132155,
+     "objects": [
+      "DRV_Balaclava",
+      "DRV_Extras",
+      "DRV_Glove_L",
+      "DRV_Glove_R",
+      "DRV_HANS",
+      "DRV_Harness",
+      "DRV_Helmet",
+      "DRV_Suit"
+     ],
+     "png": "render/r2401/pm_base_f2632_all.png",
+     "bbox": [
+      1409,
+      2172,
+      676,
+      1375
+     ]
+    },
+    "none": {
+     "px": 0,
+     "objects": [],
+     "png": "render/r2401/pm_base_f2632_none.png"
+    },
+    "helmet": {
+     "px": 122442,
+     "objects": [
+      "DRV_Helmet",
+      "DRV_Balaclava"
+     ],
+     "png": "render/r2401/pm_base_f2632_helmet.png",
+     "bbox": [
+      1738,
+      2151,
+      947,
+      1368
+     ]
+    },
+    "arms": {
+     "px": 8174,
+     "objects": [
+      "DRV_Glove_L",
+      "DRV_Glove_R"
+     ],
+     "png": "render/r2401/pm_base_f2632_arms.png",
+     "bbox": [
+      1434,
+      1784,
+      676,
+      901
+     ]
+    },
+    "torso": {
+     "px": 13044,
+     "objects": [
+      "DRV_Suit",
+      "DRV_HANS",
+      "DRV_Harness",
+      "DRV_Extras"
+     ],
+     "png": "render/r2401/pm_base_f2632_torso.png",
+     "bbox": [
+      1409,
+      2172,
+      828,
+      1375
+     ]
+    }
+   },
+   "sum_of_groups": 143660,
+   "overlap_excess_px": 11505
+  }
+ },
+ "authored_render": [
+  "DRV_Balaclava",
+  "DRV_Extras",
+  "DRV_Glove_L",
+  "DRV_Glove_R",
+  "DRV_HANS",
+  "DRV_Harness",
+  "DRV_Helmet",
+  "DRV_Suit"
+ ],
+ "authored_excluded": [
+  "DRV_Boot_L",
+  "DRV_Boot_R"
+ ]
+}

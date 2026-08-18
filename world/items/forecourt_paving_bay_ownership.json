@@ -1,0 +1,39 @@
+{
+ "schema": "f1-round2/item_interface/1.0",
+ "item": "forecourt_paving_bay",
+ "kind": "OWNERSHIP_STUB",
+ "not_to_be_confused_with": "world/items/<id>_interface.json, where one exists, is the MODULE's own published contract -- datums, sockets, constants. This file is the CAMPAIGN's ownership decision about the same item and does not replace it.",
+ "why": "WAVE2-SCOPE 3.3. This item is a FLOOR: the world already builds the surface at class level and the item's value to a dependant is the datum, not a silhouette. The class keeps the geometry; this file is what the module would otherwise have shipped.",
+ "decided_in": "R2-331",
+ "class_owner": {
+  "module": "world/build_architecture.py",
+  "objects": [
+   "ARCH_Paving_Forecourt"
+  ],
+  "objects_in_assembly9": 1,
+  "vertices_in_assembly9": 18672,
+  "counter": "paving_bays",
+  "counter_value": 5491,
+  "world_bbox_xyz": [
+   -27.5,
+   -22.5,
+   -0.4,
+   26.5,
+   22.5,
+   1.0
+  ]
+ },
+ "read_this_instead": "build_architecture's published r1_floor_interface, and APRON_Z for the finished slab. Note the forecourt also casts the formation the round-1 pavilion floor sits on; a dependant that reads only the bay tops will miss it.",
+ "measured_overlap_with_the_module": {
+  "probe": "work/r2331/own_forecourt_paving_bay.json",
+  "item_units_built": 450,
+  "host_frac_in_unit_boxes": 0.412704,
+  "host_frac_in_unit_cores": 0.027849,
+  "control_host": "ARCH_Paving_Paddock",
+  "control_host_frac": 0.008621,
+  "note": "A containment fraction is an UPPER bound -- a bed's bounding box swallows whatever stands on it. The control is printed beside it for that reason: where the control reads high, the subject's high reading means less."
+ },
+ "argument": "ARCH_Paving_Forecourt is not paving bays. It also casts the formation slab the round-1 pavilion floor sits on -- build_architecture publishes that as r1_floor_interface with the note that without it 'the mouth reads as a 100 mm formation step -- ground, not a hole' -- plus the granite sett bands, the bedding, the perimeter edge band and slot drain, and the bollard line protecting the glass frontage. verify_contract ray-casts 40,000 columns over it and requires 97 % to land on the finished slab. The item holds 450 of a declared 1,400. Class.",
+ "module_on_disk": "world/items/forecourt_paving_bay.py",
+ "module_state": "HOLD -- not placed; see world/items/PLACEMENT.json"
+}

@@ -1,0 +1,203 @@
+{
+ "bar_db": 8.0,
+ "sweep": [
+  {
+   "dry_gain": 0.13,
+   "tone_power_share": 0.9833808634083981,
+   "n_contacts": 206,
+   "hnr_median_db": 32.21356965804051,
+   "fraction_below_0db": 0.006377163680534467
+  },
+  {
+   "dry_gain": 0.3,
+   "tone_power_share": 0.9174311926605504,
+   "n_contacts": 206,
+   "hnr_median_db": 30.71756307506898,
+   "fraction_below_0db": 0.02611600364409353
+  },
+  {
+   "dry_gain": 0.6,
+   "tone_power_share": 0.7352941176470588,
+   "n_contacts": 206,
+   "hnr_median_db": 29.017789014645693,
+   "fraction_below_0db": 0.08745824476161555
+  },
+  {
+   "dry_gain": 1.0,
+   "tone_power_share": 0.5000000000000001,
+   "n_contacts": 206,
+   "hnr_median_db": 26.759182777912393,
+   "fraction_below_0db": 0.12572122684482234
+  },
+  {
+   "dry_gain": 1.8,
+   "tone_power_share": 0.23584905660377362,
+   "n_contacts": 206,
+   "hnr_median_db": 24.632836196370313,
+   "fraction_below_0db": 0.17522016398420892
+  },
+  {
+   "dry_gain": 3.0,
+   "tone_power_share": 0.1,
+   "n_contacts": 206,
+   "hnr_median_db": 23.951174642905777,
+   "fraction_below_0db": 0.1958700273307015
+  },
+  {
+   "dry_gain": 6.0,
+   "tone_power_share": 0.02702702702702703,
+   "n_contacts": 206,
+   "hnr_median_db": 22.98068516462395,
+   "fraction_below_0db": 0.20315821439416945
+  },
+  {
+   "dry_gain": 12.0,
+   "tone_power_share": 0.006896551724137931,
+   "n_contacts": 206,
+   "hnr_median_db": 22.44505478786141,
+   "fraction_below_0db": 0.2104464014576374
+  },
+  {
+   "dry_gain": 25.0,
+   "tone_power_share": 0.0015974440894568694,
+   "n_contacts": 206,
+   "hnr_median_db": 21.605940918008038,
+   "fraction_below_0db": 0.2171272395991497
+  }
+ ],
+ "film": {
+  "stem_sum_beat1": {
+   "median_db": 0.633369793942446,
+   "fraction_below_0db": 0.4366838748861221,
+   "windows": 3293,
+   "outcome": "FAIL",
+   "p25_db": -1.8788116727416382,
+   "beat1_median_limit_db": 8.0
+  },
+  "stem_power_share": {
+   "aperture": 0.0,
+   "assembly": 0.9158724929314546,
+   "bed": 0.0,
+   "brakes": 0.0,
+   "crowd": 1.1273914378915778e-05,
+   "debris": 0.0,
+   "engine": 0.023460404534050582,
+   "fence": 0.0,
+   "impact": 0.0,
+   "reflect_garage": 0.0,
+   "reflect_showroom": 0.0,
+   "room": 0.06008917224791844,
+   "shards": 0.0,
+   "structure": 0.0005666563721222267,
+   "suspension": 0.0,
+   "tyres": 0.0,
+   "wind": 7.521341407151671e-14
+  },
+  "assembly": {
+   "median_db": -0.24930343163695876,
+   "fraction_below_0db": 0.5341312056737588,
+   "windows": 2256,
+   "outcome": "FAIL",
+   "p25_db": -2.4325885384824404,
+   "beat1_median_limit_db": 8.0
+  },
+  "room": {
+   "median_db": 1.8638092148177574,
+   "fraction_below_0db": 0.3346492559975706,
+   "windows": 3293,
+   "outcome": "FAIL",
+   "p25_db": -1.0987671057682595,
+   "beat1_median_limit_db": 8.0
+  },
+  "engine": {
+   "median_db": 4.705275215130146,
+   "fraction_below_0db": 0.2546583850931677,
+   "windows": 161,
+   "outcome": "FAIL",
+   "p25_db": -0.214026352877367,
+   "beat1_median_limit_db": 8.0
+  },
+  "crowd": {
+   "median_db": -4.939315854560736,
+   "fraction_below_0db": 0.9717357910906298,
+   "windows": 3255,
+   "outcome": "FAIL",
+   "p25_db": -6.013518185830534,
+   "beat1_median_limit_db": 8.0
+  },
+  "bed": null
+ },
+ "density_sweep": [
+  {
+   "parts_scale": 1.0,
+   "n_contacts": 206,
+   "tone_power_share": 0.9833808634083981,
+   "hnr_median_db": 32.21356965804051,
+   "fraction_below_0db": 0.006377163680534467
+  },
+  {
+   "parts_scale": 2.0,
+   "n_contacts": 412,
+   "tone_power_share": 0.983380863408398,
+   "hnr_median_db": 27.469364165712985,
+   "fraction_below_0db": 0.0
+  },
+  {
+   "parts_scale": 3.5,
+   "n_contacts": 724,
+   "tone_power_share": 0.9833808634083981,
+   "hnr_median_db": 26.44675093346391,
+   "fraction_below_0db": 0.0
+  },
+  {
+   "parts_scale": 5.0,
+   "n_contacts": 1030,
+   "tone_power_share": 0.9833808634083981,
+   "hnr_median_db": 31.76908941412417,
+   "fraction_below_0db": 0.0
+  },
+  {
+   "parts_scale": 6.5,
+   "n_contacts": 1336,
+   "tone_power_share": 0.9833808634083981,
+   "hnr_median_db": 26.058933151000975,
+   "fraction_below_0db": 0.0
+  },
+  {
+   "parts_scale": 9.0,
+   "n_contacts": 1854,
+   "tone_power_share": 0.983380863408398,
+   "hnr_median_db": 23.528072862768713,
+   "fraction_below_0db": 0.012450652900091102
+  },
+  {
+   "parts_scale": 13.0,
+   "n_contacts": 2678,
+   "tone_power_share": 0.9833808634083981,
+   "hnr_median_db": 26.50883898768543,
+   "fraction_below_0db": 0.004858791375645309
+  }
+ ],
+ "density_sweep_dry": [
+  {
+   "parts_scale": 1.0,
+   "n_contacts": 206,
+   "hnr_median_db": -0.011358365420724544
+  },
+  {
+   "parts_scale": 3.5,
+   "n_contacts": 724,
+   "hnr_median_db": -2.4822717528632996
+  },
+  {
+   "parts_scale": 6.5,
+   "n_contacts": 1336,
+   "hnr_median_db": -3.6679044217127754
+  },
+  {
+   "parts_scale": 13.0,
+   "n_contacts": 2678,
+   "hnr_median_db": -4.641313293682421
+  }
+ ]
+}

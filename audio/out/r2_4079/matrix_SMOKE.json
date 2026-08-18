@@ -1,0 +1,3122 @@
+{
+ "generated_at": "2026-08-14T13:01:16",
+ "spec": "docs/audio-rebuild3/SPEC-ENGINE-AND-GATES.md",
+ "threshold_audit": {
+  "n_thresholds": 30,
+  "sources_allowed": [
+   "physics",
+   "published",
+   "control-derived"
+  ],
+  "by_source": {
+   "physics": [
+    "G_CONSTRUCT.max_unscheduled_noise_sources",
+    "G_HNR.fraction_below_zero_max",
+    "G_IDENTITY.half_order_max_db_rel_order3",
+    "G_IDENTITY.half_order_min_db_rel_order3",
+    "G_IDENTITY.min_order6_notch_db",
+    "G_NOVEL.lag_max_s",
+    "G_NOVEL.lag_min_s",
+    "G_NOVEL.min_peak_prominence",
+    "G_ORDER.line_tolerance_pct",
+    "G_RING.narrowband_vs_broadband_max_ratio",
+    "G_RING.t60_vs_sabine_max_ratio"
+   ],
+   "published": [
+    "G_HNR.calibration_max_error_db"
+   ],
+   "control-derived": [
+    "G_BALANCE.max_near_white_power_share",
+    "G_BALANCE.min_protagonist_margin_db",
+    "G_BALANCE.near_white_ratio_of_white",
+    "G_FLAT.beat1_median_max_ratio_of_white",
+    "G_FLAT.slice_max_ratio_of_white",
+    "G_GESTURE.max_mean_pairwise_similarity",
+    "G_GESTURE.max_worst_pairwise_similarity",
+    "G_HNR.beat1_median_min_db",
+    "G_IDENTITY.line_present_db_over_floor",
+    "G_IDENTITY.min_windows",
+    "G_MOD.max_peak_over_local_median_db",
+    "G_NOVEL.max_envelope_autocorrelation",
+    "G_ORDER.min_energy_on_predicted_lines",
+    "G_ROOM.max_cepstral_peak_over_median",
+    "G_ROOM.max_fixed_line_comb_regularity",
+    "G_ROOM.max_peak_recurrence",
+    "G_ROOM.max_ripple_p95_minus_p5_db",
+    "G_ROOM.min_band_occupancy"
+   ]
+  },
+  "violations": [],
+  "PASS": true
+ },
+ "thresholds": {
+  "G_BALANCE.max_near_white_power_share": {
+   "key": "G_BALANCE.max_near_white_power_share",
+   "value": 0.25,
+   "units": "fraction of beat power",
+   "source": "control-derived",
+   "note": "Beat 1 of the delivered master ran 92.6 %. Summing two decorrelated near-white stems is what takes a mix from ~82 % to 98.6 % of white -- the MIX is the final flattening step, which is why this is measured on stems and not on the master."
+  },
+  "G_BALANCE.min_protagonist_margin_db": {
+   "key": "G_BALANCE.min_protagonist_margin_db",
+   "value": 8.0,
+   "units": "dB",
+   "source": "control-derived",
+   "note": "Measured, every run, as the stem-level margin at which a synthesised protagonist-plus-noise mixture still meets the G-FLAT bar. Not a taste judgement and not read from any master. Delivered: -12.01 / +0.11 / +0.03 dB on beats 1 / 4 / 5."
+  },
+  "G_BALANCE.near_white_ratio_of_white": {
+   "key": "G_BALANCE.near_white_ratio_of_white",
+   "value": 0.6,
+   "units": "SFM / SFM(white)",
+   "source": "control-derived",
+   "note": "A stem at >=0.6 of white per-band flatness is a noise generator by measurement. Same synthetic mixture calibration as G-FLAT."
+  },
+  "G_CONSTRUCT.max_unscheduled_noise_sources": {
+   "key": "G_CONSTRUCT.max_unscheduled_noise_sources",
+   "value": 0.0,
+   "units": "count",
+   "source": "physics",
+   "note": "THE LAW: no white()/pink()/brown() output may reach a bus without passing an event scheduler or a physically-parameterised filter carrying a derivation comment. Every source is an excitation driving a resonator whose modes come from a geometry. Zero is the only defensible count and it is not a calibration."
+  },
+  "G_FLAT.beat1_median_max_ratio_of_white": {
+   "key": "G_FLAT.beat1_median_max_ratio_of_white",
+   "value": 0.45,
+   "units": "SFM / SFM(white)",
+   "source": "control-derived",
+   "note": "The showroom is held tighter than the film average because it has no engine to carry it. Same two-sided anchor, per-beat medians: C8b 0.389, blower-into-tubes 0.639, tiled loop 0.669, octave-matched noise 0.700, the DELIVERED MASTER 0.922. NOT zero -- a real showroom has air, HVAC and contact noise, and over-correction is a named failure mode in the spec. SPEC DEVIATION, DECLARED: the spec asserts 0.30; the tightest a legitimate tonal showroom bed can measure on this estimator is ~0.39, because a 1/3-octave band at 500 Hz is 116 Hz wide and a servo comb at f0 > 115 Hz has at most one harmonic inside it. G-FLAT is the hiss instrument; periodicity is G-HNR's job (the same bed reads +45 dB there) and comb structure is G-ORDER's. This bar MOVED IN THE LOOSENING DIRECTION, which is the direction that shipped three masters, so: it was moved by a synthesised control, the rejected artefact still fails it by 2.4x, and every degenerate in the corpus still fails it."
+  },
+  "G_FLAT.slice_max_ratio_of_white": {
+   "key": "G_FLAT.slice_max_ratio_of_white",
+   "value": 0.55,
+   "units": "SFM / SFM(white)",
+   "source": "control-derived",
+   "note": "TWO-SIDED, from synthesised controls only, all measured per 3 s slice on the shipped estimator: physical construction C8b worst slice 0.496; octave-matched noise 0.721; blower-into-tubes 0.661; tiled loop 0.700; the delivered master 0.973. 0.55 clears the positive by 11 % and sits 14 % under the nearest negative. SPEC DEVIATION, DECLARED: the spec asserts 0.45. That number was never measured against a signal that should pass -- there was no such signal when it was written -- and 0.45 fails a construction that follows the spec's own B3/B4/B6 prescriptions. It is moved here by a SYNTHESISED POSITIVE CONTROL and never by any master."
+  },
+  "G_GESTURE.max_mean_pairwise_similarity": {
+   "key": "G_GESTURE.max_mean_pairwise_similarity",
+   "value": 0.55,
+   "units": "Pearson r",
+   "source": "control-derived",
+   "note": "Burst-to-burst timbral distinctness. Anchored between a synthesised identical-gesture control (r -> 1) and a synthesised distinct-gesture control (independent modal sets per burst)."
+  },
+  "G_GESTURE.max_worst_pairwise_similarity": {
+   "key": "G_GESTURE.max_worst_pairwise_similarity",
+   "value": 0.8,
+   "units": "Pearson r",
+   "source": "control-derived",
+   "note": "No two bursts in the film may be near-copies of each other even if the mean is respectable."
+  },
+  "G_HNR.beat1_median_min_db": {
+   "key": "G_HNR.beat1_median_min_db",
+   "value": 8.0,
+   "units": "dB",
+   "source": "control-derived",
+   "note": "10*log10(0.85/0.15) = 7.53 dB is the point where the aperiodic fraction falls below 15 % on the calibrated mixtures; 8.0 dB is that rounded up. Derived from the mixture coefficients, not from any master."
+  },
+  "G_HNR.calibration_max_error_db": {
+   "key": "G_HNR.calibration_max_error_db",
+   "value": 0.5,
+   "units": "dB",
+   "source": "published",
+   "note": "Boersma 1993 (IFA Proc. 17:97-110). The published method is exact on a harmonic-plus-noise mixture; 0.5 dB is the tolerance this implementation must hold against truths computed from the mixture coefficients. The diagnosis measured <=0.22 dB, so this is a loose guard on the INSTRUMENT, not on any film."
+  },
+  "G_HNR.fraction_below_zero_max": {
+   "key": "G_HNR.fraction_below_zero_max",
+   "value": 0.1,
+   "units": "fraction of windows",
+   "source": "physics",
+   "note": "0 dB is equal harmonic and aperiodic power -- the definition, not a calibration. A window below it carries more noise than signal. The delivered master ran 42.1 % of beat 1 below this line."
+  },
+  "G_IDENTITY.half_order_max_db_rel_order3": {
+   "key": "G_IDENTITY.half_order_max_db_rel_order3",
+   "value": 6.0,
+   "units": "dB re order 3",
+   "source": "physics",
+   "note": "The other side, and it is the one that matters for a false pass: a half order LOUDER than the main order is not a 90/150 V6, it is a V6 firing three times per two revolutions, i.e. a broken engine or an octave error in whatever produced it. Derived value -5.34 dB, so this is 11.3 dB of headroom above the algebra. DERIVED-NOT-MEASURED."
+  },
+  "G_IDENTITY.half_order_min_db_rel_order3": {
+   "key": "G_IDENTITY.half_order_min_db_rel_order3",
+   "value": -12.0,
+   "units": "dB re order 3",
+   "source": "physics",
+   "note": "The half order must be PRESENT. Derived value is -5.34 dB from 20*log10(cos(0.375*pi)/cos(0.75*pi)); the bar sits 6.7 dB below it because a shared turbine collector genuinely attenuates the half order (engine.py's own `_collector_tail` argues this) and the pipe response at order 1.5 is not the pipe response at order 3. An evenly-fired engine reads MINUS INFINITY here -- its order-1.5 amplitude is identically 0.0000, verified to 1e-12 -- so this bar separates the two geometries and nothing else. DERIVED-NOT-MEASURED."
+  },
+  "G_IDENTITY.line_present_db_over_floor": {
+   "key": "G_IDENTITY.line_present_db_over_floor",
+   "value": 6.0,
+   "units": "dB over the local floor",
+   "source": "control-derived",
+   "note": "A reference order that is not itself a line cannot anchor a ratio. 6 dB of excess over the median of a +-25 % neighbourhood is the point at which the band carries four times its own floor's power, which the synthesised constant-rpm control clears by more than 50 dB and filtered noise cannot reach at all. Applied to orders 3 / 4.5 / 7.5 only: order 6 is REQUIRED to be absent and gating on its presence would invert the test."
+  },
+  "G_IDENTITY.min_order6_notch_db": {
+   "key": "G_IDENTITY.min_order6_notch_db",
+   "value": 6.0,
+   "units": "dB below the mean of orders 4.5/7.5",
+   "source": "physics",
+   "note": "The order-6 null is EXACT in the algebra -- A(6) = |cos(1.5*pi)| = 0 -- and it is the one feature no static EQ can fake, because the notch frequency is 6*rpm/60 and slides with the crank. It cannot be infinitely deep in a real render: 1-2 % per-cylinder timing and charge dispersion fills it in, the analysis window has finite resolution, and the neighbouring orders leak. 6 dB is the depth that survives all three and is still unambiguous against a comb that has no notch at all, where the ratio is 0 dB by construction. DERIVED-NOT-MEASURED."
+  },
+  "G_IDENTITY.min_windows": {
+   "key": "G_IDENTITY.min_windows",
+   "value": 8.0,
+   "units": "windows",
+   "source": "control-derived",
+   "note": "Fewer than eight 0.5 s windows on throttle with a telemetry rpm is not a measurement, and asserting an identity defect from a measurement that did not happen is the same error as calling an unmeasurable beat a pass. Below this the beat is INAPPLICABLE, which is not PASS."
+  },
+  "G_MOD.max_peak_over_local_median_db": {
+   "key": "G_MOD.max_peak_over_local_median_db",
+   "value": 6.0,
+   "units": "dB",
+   "source": "control-derived",
+   "note": "Modulation-spectrum peak-to-local-median over 0.2-3 Hz. The bar must sit ABOVE the jittered-gesture anti-cheat control (C6, which must PASS G-MOD and fail only G-GESTURE) and BELOW the exact tiled loop (C2). Both anchors are synthesised and both are re-measured every run; if they ever cross, the gate reports a calibration failure instead of a verdict. The spec's provisional 4 dB was raised to 6 dB by that measurement -- documented, not quietly retuned, and moved by a CONTROL, never by a master."
+  },
+  "G_NOVEL.lag_max_s": {
+   "key": "G_NOVEL.lag_max_s",
+   "value": 16.0,
+   "units": "s",
+   "source": "physics",
+   "note": "Half the shortest gated beat, so every reported lag has at least two cycles inside the beat."
+  },
+  "G_NOVEL.lag_min_s": {
+   "key": "G_NOVEL.lag_min_s",
+   "value": 0.3,
+   "units": "s",
+   "source": "physics",
+   "note": "Below 0.3 s an envelope correlation is measuring a single event's own shape, not a repeat of it."
+  },
+  "G_NOVEL.max_envelope_autocorrelation": {
+   "key": "G_NOVEL.max_envelope_autocorrelation",
+   "value": 0.15,
+   "units": "Pearson r",
+   "source": "control-derived",
+   "note": "40-band log-spectrum envelope at 100 Hz, per-band normalised, lags 0.3-16 s. Anchored on two SYNTHESISED endpoints measured every run: filtered noise (no repetition) and a 2 s block tiled to length (pure repetition). The bar sits near the noise anchor, not at the midpoint -- midpoint placement is the banned rule."
+  },
+  "G_NOVEL.min_peak_prominence": {
+   "key": "G_NOVEL.min_peak_prominence",
+   "value": 0.05,
+   "units": "Pearson r",
+   "source": "physics",
+   "note": "A correlation maximum that is not a LOCAL maximum is a trend, not a period. Slow drift makes r decay monotonically from lag 0, and reading max(r) over the range then returns r(lag_min) -- 0.726 on a constant-rpm power unit with nothing repeating in it. Only prominent local maxima are candidates; a signal with none scores zero by definition, not by threshold."
+  },
+  "G_ORDER.line_tolerance_pct": {
+   "key": "G_ORDER.line_tolerance_pct",
+   "value": 1.5,
+   "units": "percent of line frequency",
+   "source": "physics",
+   "note": "+-1.5 % is 26 cents, under a quarter of a semitone, and comfortably wider than the 0.5 % rpm resolution of the telemetry solve across one analysis window. Set by the measurement's own resolution, not by any film's score."
+  },
+  "G_ORDER.min_energy_on_predicted_lines": {
+   "key": "G_ORDER.min_energy_on_predicted_lines",
+   "value": 0.6,
+   "units": "fraction of 300-4000 Hz energy",
+   "source": "control-derived",
+   "note": "The predicted comb is f = order*k*rpm/60 with rpm from TELEMETRY, which is independent ground truth, Doppler-shifted by the same retarded-time solve the mix was rendered with. Anchored between a synthesised constant-rpm power unit (which must clear it) and noise through fixed inharmonic pipes (which must not, because its peaks do not move with rpm)."
+  },
+  "G_RING.narrowband_vs_broadband_max_ratio": {
+   "key": "G_RING.narrowband_vs_broadband_max_ratio",
+   "value": 1.5,
+   "units": "ratio",
+   "source": "physics",
+   "note": "A diffuse field decays uniformly across frequency. A 1/6-octave band that decays slower than the broadband envelope is by definition an under-damped isolated mode -- a pipe, not a room. 1.5 is measurement tolerance; the physics bar is 1.0."
+  },
+  "G_RING.t60_vs_sabine_max_ratio": {
+   "key": "G_RING.t60_vs_sabine_max_ratio",
+   "value": 1.25,
+   "units": "ratio",
+   "source": "physics",
+   "note": "Sabine RT60 = 0.161*V/(S*alpha) for the DECLARED showroom (30 x 22 x 6.5 m, V = 4290 m3, S = 1996 m2) at the absorption the design declares. No band may ring longer than the room it claims to be. 1.25 is measurement tolerance on a backward-integrated decay slope. The delivered master rang at T60 3.0-4.6 s against a declared 2.4 s -- ratio 1.25-1.92."
+  },
+  "G_ROOM.max_cepstral_peak_over_median": {
+   "key": "G_ROOM.max_cepstral_peak_over_median",
+   "value": 1.5,
+   "units": "ratio",
+   "source": "control-derived",
+   "note": "Ripple, quefrency 1-30 ms. Summing a signal with a delayed copy of itself prints a cepstral peak AT the delay; absent one the cepstrum is flat and the ratio is ~1. Anchored on a synthesised pair, comb and no-comb."
+  },
+  "G_ROOM.max_fixed_line_comb_regularity": {
+   "key": "G_ROOM.max_fixed_line_comb_regularity",
+   "value": 0.4,
+   "units": "fraction over chance",
+   "source": "control-derived",
+   "note": "Modal density, measured the only way a rendered mix permits. Weyl's law gives 4*pi*V*f^2/c^3 = 1336 modes/Hz at 1 kHz for V = 4290 m3, which no audio analysis can COUNT -- at 1 Hz FFT resolution the ceiling is ~0.5 resolvable peaks/Hz. The executable equivalent: a delay-line bank's fixed lines are HARMONICS OF A DELAY LENGTH (the delivered master's thirteen strongest matched to 0.01-0.93 %), and a diffuse field has no such structure. Two-sided anchor: an 8-tap FDN scores near 1 and five inharmonic pipes -- also fixed, also narrow -- score at chance. DEVIATION FROM SPEC, DECLARED: the spec's '20 dB of Weyl' bar is not measurable on a mix; the Weyl number is reported for reference and this is what is gated."
+  },
+  "G_ROOM.max_peak_recurrence": {
+   "key": "G_ROOM.max_peak_recurrence",
+   "value": 0.35,
+   "units": "fraction of peak observations",
+   "source": "control-derived",
+   "note": "Mobility. Whatever you strike, the room must not reply at the same pitches. Per-burst top-8 peaks, recurrence at 1 % tolerance across >=3 bursts. Anchored between a synthesised position-varying room (scatters) and a synthesised fixed high-Q resonator bank (does not)."
+  },
+  "G_ROOM.max_ripple_p95_minus_p5_db": {
+   "key": "G_ROOM.max_ripple_p95_minus_p5_db",
+   "value": 8.0,
+   "units": "dB",
+   "source": "control-derived",
+   "note": "1/12-octave log-spectrum ripple over 0.4-6 kHz. The delivered master read 17.60 dB L / 16.51 dB R. Anchored on the same synthesised comb/no-comb pair as the cepstral limb."
+  },
+  "G_ROOM.min_band_occupancy": {
+   "key": "G_ROOM.min_band_occupancy",
+   "value": 0.75,
+   "units": "fraction of 1/12-oct bands",
+   "source": "control-derived",
+   "note": "APPLICABILITY, measured from the audio rather than declared. A ripple statistic is a statement about a broadband field; on a sparse line spectrum most 1/12-octave bands are empty and the 'ripple' measures the gaps between partials (a physics-true tonal bed read 113 dB). Below this occupancy the ripple limb reports INAPPLICABLE -- which is not a pass, and limbs (a) and (b) and G-RING are unaffected."
+  }
+ },
+ "corpus": [
+  {
+   "control": "C1_octave_matched_noise",
+   "what": "octave-matched filtered noise -- the literal hair dryer",
+   "required": "FAIL",
+   "got": "FAIL",
+   "failing_gates": [
+    "G-FLAT",
+    "G-HNR",
+    "G-ROOM"
+   ],
+   "must_trip": [
+    "G-FLAT",
+    "G-HNR"
+   ],
+   "missing_trips": [],
+   "must_pass": [],
+   "wrong_passes": [],
+   "inapplicable": [
+    "G-BALANCE",
+    "G-IDENTITY",
+    "G-ORDER",
+    "G-RING"
+   ],
+   "stem_provenance": {
+    "telemetry_kind": null,
+    "stems_dir": null,
+    "used": false,
+    "why": "this signal declares no film telemetry, so it has no stem run; G-BALANCE is INAPPLICABLE, which is not PASS"
+   },
+   "CORRECT": true,
+   "seconds": 3.9,
+   "verdicts": {
+    "G-FLAT": "FAIL",
+    "G-HNR": "FAIL",
+    "G-NOVEL": "PASS",
+    "G-MOD": "PASS",
+    "G-GESTURE": "PASS",
+    "G-ROOM": "FAIL",
+    "G-RING": "INAPPLICABLE",
+    "G-ORDER": "INAPPLICABLE",
+    "G-IDENTITY": "INAPPLICABLE",
+    "G-BALANCE": "INAPPLICABLE"
+   },
+   "detail": {
+    "G-FLAT": [
+     "1_assembly: worst 3 s slice 0.721*W > 0.55*W",
+     "1_assembly: median 0.700*W > 0.45*W"
+    ],
+    "G-HNR": [
+     "1_assembly: 0.393 of windows below 0 dB > 0.10",
+     "1_assembly: median +0.47 dB < +8.0 dB"
+    ],
+    "G-ROOM": [
+     "1_assembly(b mobility): 0.756 of peak observations recur in >=3 bursts > 0.35"
+    ]
+   }
+  },
+  {
+   "control": "C2_tiled_loop",
+   "what": "one 2.000 s block tiled to length",
+   "required": "FAIL",
+   "got": "FAIL",
+   "failing_gates": [
+    "G-FLAT",
+    "G-GESTURE",
+    "G-MOD",
+    "G-NOVEL",
+    "G-ROOM"
+   ],
+   "must_trip": [
+    "G-NOVEL",
+    "G-MOD",
+    "G-GESTURE"
+   ],
+   "missing_trips": [],
+   "must_pass": [],
+   "wrong_passes": [],
+   "inapplicable": [
+    "G-BALANCE",
+    "G-IDENTITY",
+    "G-ORDER",
+    "G-RING"
+   ],
+   "stem_provenance": {
+    "telemetry_kind": null,
+    "stems_dir": null,
+    "used": false,
+    "why": "this signal declares no film telemetry, so it has no stem run; G-BALANCE is INAPPLICABLE, which is not PASS"
+   },
+   "CORRECT": true,
+   "seconds": 3.7,
+   "verdicts": {
+    "G-FLAT": "FAIL",
+    "G-HNR": "PASS",
+    "G-NOVEL": "FAIL",
+    "G-MOD": "FAIL",
+    "G-GESTURE": "FAIL",
+    "G-ROOM": "FAIL",
+    "G-RING": "INAPPLICABLE",
+    "G-ORDER": "INAPPLICABLE",
+    "G-IDENTITY": "INAPPLICABLE",
+    "G-BALANCE": "INAPPLICABLE"
+   },
+   "detail": {
+    "G-FLAT": [
+     "1_assembly: worst 3 s slice 0.700*W > 0.55*W",
+     "1_assembly: median 0.669*W > 0.45*W"
+    ],
+    "G-GESTURE": [
+     "1_assembly: mean pairwise similarity 0.777 > 0.55",
+     "1_assembly: worst pair 1.000 > 0.80"
+    ],
+    "G-MOD": [
+     "1_assembly: 41.83 dB peak at 2.545 Hz > 6.0 dB"
+    ],
+    "G-NOVEL": [
+     "1_assembly: r=0.999 at lag 2.000 s > 0.15"
+    ],
+    "G-ROOM": [
+     "1_assembly(b mobility): 0.988 of peak observations recur in >=3 bursts > 0.35"
+    ]
+   }
+  },
+  {
+   "control": "C3_blower_plus_tubes",
+   "what": "noise through high-Q inharmonic pipes -- the client's exact words",
+   "required": "FAIL",
+   "got": "FAIL",
+   "failing_gates": [
+    "G-FLAT",
+    "G-GESTURE",
+    "G-HNR",
+    "G-ORDER",
+    "G-ROOM"
+   ],
+   "must_trip": [
+    "G-ORDER",
+    "G-ROOM"
+   ],
+   "missing_trips": [],
+   "must_pass": [],
+   "wrong_passes": [],
+   "inapplicable": [
+    "G-BALANCE",
+    "G-IDENTITY"
+   ],
+   "stem_provenance": {
+    "telemetry_kind": "constant_rpm",
+    "stems_dir": null,
+    "used": false,
+    "why": "this signal declares no film telemetry, so it has no stem run; G-BALANCE is INAPPLICABLE, which is not PASS"
+   },
+   "CORRECT": true,
+   "seconds": 3.6,
+   "verdicts": {
+    "G-FLAT": "FAIL",
+    "G-HNR": "FAIL",
+    "G-NOVEL": "PASS",
+    "G-MOD": "PASS",
+    "G-GESTURE": "FAIL",
+    "G-ROOM": "FAIL",
+    "G-RING": "PASS",
+    "G-ORDER": "FAIL",
+    "G-IDENTITY": "INAPPLICABLE",
+    "G-BALANCE": "INAPPLICABLE"
+   },
+   "detail": {
+    "G-FLAT": [
+     "5_lap: worst 3 s slice 0.661*W > 0.55*W"
+    ],
+    "G-GESTURE": [
+     "5_lap: mean pairwise similarity 0.758 > 0.55",
+     "5_lap: worst pair 0.907 > 0.80"
+    ],
+    "G-HNR": [
+     "5_lap: 0.705 of windows below 0 dB > 0.10"
+    ],
+    "G-ORDER": [
+     "5_lap: 0.180 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.063)"
+    ],
+    "G-ROOM": [
+     "5_lap(b mobility): 0.550 of peak observations recur in >=3 bursts > 0.35",
+     "5_lap(c ripple): cepstral peak 274.66x median at 2.854 ms > 1.5x",
+     "5_lap(c ripple): 1/12-oct ripple 20.18 dB > 8.0 dB"
+    ]
+   }
+  },
+  {
+   "control": "C4_delivered_master",
+   "what": "THE DELIVERED, REJECTED MASTER, retained permanently",
+   "required": "FAIL",
+   "got": "FAIL",
+   "failing_gates": [
+    "G-BALANCE",
+    "G-FLAT",
+    "G-GESTURE",
+    "G-HNR",
+    "G-MOD",
+    "G-NOVEL",
+    "G-ORDER",
+    "G-RING",
+    "G-ROOM"
+   ],
+   "must_trip": [
+    "G-NOVEL",
+    "G-MOD",
+    "G-GESTURE",
+    "G-ROOM",
+    "G-FLAT"
+   ],
+   "missing_trips": [],
+   "must_pass": [],
+   "wrong_passes": [],
+   "inapplicable": [
+    "G-IDENTITY"
+   ],
+   "stem_provenance": {
+    "telemetry_kind": "film",
+    "stems_dir": "audio/out/stems",
+    "used": true,
+    "manifest": null,
+    "stems_of": null,
+    "manifest_note": "this stem run predates STEMS_OF.json and cannot name the master it was rendered with; its provenance is the directory it sits in",
+    "n_stems": 14,
+    "stems": [
+     "aperture",
+     "assembly",
+     "bed",
+     "crowd",
+     "engine",
+     "fence",
+     "impact",
+     "reflect_garage",
+     "reflect_showroom",
+     "room",
+     "shards",
+     "structure",
+     "tyres",
+     "wind"
+    ]
+   },
+   "CORRECT": true,
+   "seconds": 32.0,
+   "verdicts": {
+    "G-FLAT": "FAIL",
+    "G-HNR": "FAIL",
+    "G-NOVEL": "FAIL",
+    "G-MOD": "FAIL",
+    "G-GESTURE": "FAIL",
+    "G-ROOM": "FAIL",
+    "G-RING": "FAIL",
+    "G-ORDER": "FAIL",
+    "G-IDENTITY": "INAPPLICABLE",
+    "G-BALANCE": "FAIL"
+   },
+   "detail": {
+    "G-BALANCE": [
+     "1_assembly: near-white stems carry 1.000 of beat power > 0.25",
+     "1_assembly: protagonist assembly leads the near-white background (crowd+engine+room+structure) by -0.57 dB < +8.0 dB",
+     "3_breach: near-white stems carry 1.000 of beat power > 0.25",
+     "4_transit: near-white stems carry 0.651 of beat power > 0.25"
+    ],
+    "G-FLAT": [
+     "1_assembly: worst 3 s slice 0.973*W > 0.55*W",
+     "1_assembly: median 0.922*W > 0.45*W",
+     "3_breach: worst 3 s slice 0.926*W > 0.55*W",
+     "4_transit: worst 3 s slice 0.583*W > 0.55*W"
+    ],
+    "G-GESTURE": [
+     "1_assembly: worst pair 0.808 > 0.80"
+    ],
+    "G-HNR": [
+     "1_assembly: 0.461 of windows below 0 dB > 0.10",
+     "1_assembly: median +0.26 dB < +8.0 dB",
+     "4_transit: 0.298 of windows below 0 dB > 0.10",
+     "6_ending: 0.274 of windows below 0 dB > 0.10"
+    ],
+    "G-MOD": [
+     "1_assembly: 16.71 dB peak at 0.727 Hz > 6.0 dB"
+    ],
+    "G-NOVEL": [
+     "1_assembly: r=0.343 at lag 1.380 s > 0.15"
+    ],
+    "G-ORDER": [
+     "4_transit: 0.252 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.208)",
+     "5_lap: 0.190 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.075)"
+    ],
+    "G-RING": [
+     "1_assembly: worst band T60 3.35 s at 713 Hz > 3.00 s (Sabine 2.40 s x 1.25)"
+    ],
+    "G-ROOM": [
+     "1_assembly(b mobility): 0.612 of peak observations recur in >=3 bursts > 0.35",
+     "1_assembly(c ripple): cepstral peak 48.55x median at 11.292 ms > 1.5x",
+     "5_lap(c ripple): cepstral peak 28.10x median at 1.583 ms > 1.5x",
+     "5_lap(c ripple): 1/12-oct ripple 14.52 dB > 8.0 dB"
+    ]
+   }
+  },
+  {
+   "control": "C5_swap_b1_loop",
+   "what": "the file that passes all eight OLD gates, ALL_PASS=True, exit 0",
+   "required": "FAIL",
+   "got": "FAIL",
+   "failing_gates": [
+    "G-FLAT",
+    "G-GESTURE",
+    "G-HNR",
+    "G-MOD",
+    "G-NOVEL",
+    "G-ORDER",
+    "G-ROOM"
+   ],
+   "must_trip": [
+    "G-NOVEL"
+   ],
+   "missing_trips": [],
+   "must_pass": [],
+   "wrong_passes": [],
+   "inapplicable": [
+    "G-BALANCE",
+    "G-IDENTITY"
+   ],
+   "stem_provenance": {
+    "telemetry_kind": "film",
+    "stems_dir": null,
+    "used": false,
+    "why": "this signal declares no film telemetry, so it has no stem run; G-BALANCE is INAPPLICABLE, which is not PASS"
+   },
+   "CORRECT": true,
+   "seconds": 10.9,
+   "verdicts": {
+    "G-FLAT": "FAIL",
+    "G-HNR": "FAIL",
+    "G-NOVEL": "FAIL",
+    "G-MOD": "FAIL",
+    "G-GESTURE": "FAIL",
+    "G-ROOM": "FAIL",
+    "G-RING": "PASS",
+    "G-ORDER": "FAIL",
+    "G-IDENTITY": "INAPPLICABLE",
+    "G-BALANCE": "INAPPLICABLE"
+   },
+   "detail": {
+    "G-FLAT": [
+     "3_breach: worst 3 s slice 0.926*W > 0.55*W",
+     "4_transit: worst 3 s slice 0.583*W > 0.55*W",
+     "5_lap: worst 3 s slice 0.900*W > 0.55*W",
+     "6_ending: worst 3 s slice 0.950*W > 0.55*W"
+    ],
+    "G-GESTURE": [
+     "1_assembly: mean pairwise similarity 0.836 > 0.55",
+     "1_assembly: worst pair 0.978 > 0.80"
+    ],
+    "G-HNR": [
+     "1_assembly: median +4.18 dB < +8.0 dB",
+     "4_transit: 0.298 of windows below 0 dB > 0.10",
+     "6_ending: 0.274 of windows below 0 dB > 0.10"
+    ],
+    "G-MOD": [
+     "1_assembly: 17.21 dB peak at 0.727 Hz > 6.0 dB"
+    ],
+    "G-NOVEL": [
+     "1_assembly: r=0.712 at lag 2.750 s > 0.15"
+    ],
+    "G-ORDER": [
+     "4_transit: 0.252 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.208)",
+     "5_lap: 0.190 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.075)"
+    ],
+    "G-ROOM": [
+     "1_assembly(a density): 0.75 of the 24 fixed lines are harmonics of 240.95 Hz (0.43 over chance) > 0.40 -- the tail is a delay-line bank, not a field",
+     "1_assembly(b mobility): 0.923 of peak observations recur in >=3 bursts > 0.35",
+     "5_lap(c ripple): cepstral peak 28.10x median at 1.583 ms > 1.5x",
+     "5_lap(c ripple): 1/12-oct ripple 14.52 dB > 8.0 dB"
+    ]
+   }
+  },
+  {
+   "control": "C6_jittered_identical_gestures",
+   "what": "ANTI-CHEAT: same gesture, jittered grid -- must PASS G-MOD",
+   "required": "FAIL",
+   "got": "FAIL",
+   "failing_gates": [
+    "G-GESTURE",
+    "G-HNR",
+    "G-NOVEL",
+    "G-ROOM"
+   ],
+   "must_trip": [
+    "G-GESTURE"
+   ],
+   "missing_trips": [],
+   "must_pass": [
+    "G-MOD"
+   ],
+   "wrong_passes": [],
+   "inapplicable": [
+    "G-BALANCE",
+    "G-IDENTITY",
+    "G-ORDER",
+    "G-RING"
+   ],
+   "stem_provenance": {
+    "telemetry_kind": null,
+    "stems_dir": null,
+    "used": false,
+    "why": "this signal declares no film telemetry, so it has no stem run; G-BALANCE is INAPPLICABLE, which is not PASS"
+   },
+   "CORRECT": true,
+   "seconds": 3.5,
+   "verdicts": {
+    "G-FLAT": "PASS",
+    "G-HNR": "FAIL",
+    "G-NOVEL": "FAIL",
+    "G-MOD": "PASS",
+    "G-GESTURE": "FAIL",
+    "G-ROOM": "FAIL",
+    "G-RING": "INAPPLICABLE",
+    "G-ORDER": "INAPPLICABLE",
+    "G-IDENTITY": "INAPPLICABLE",
+    "G-BALANCE": "INAPPLICABLE"
+   },
+   "detail": {
+    "G-GESTURE": [
+     "1_assembly: worst pair 1.000 > 0.80"
+    ],
+    "G-HNR": [
+     "1_assembly: median +5.24 dB < +8.0 dB"
+    ],
+    "G-NOVEL": [
+     "1_assembly: r=0.578 at lag 3.790 s > 0.15"
+    ],
+    "G-ROOM": [
+     "1_assembly(b mobility): 0.846 of peak observations recur in >=3 bursts > 0.35"
+    ]
+   }
+  },
+  {
+   "control": "C7_master_plus_tilt",
+   "what": "ANTI-CHEAT: delivered master + a broad spectral tilt",
+   "required": "FAIL",
+   "got": "FAIL",
+   "failing_gates": [
+    "G-FLAT",
+    "G-HNR",
+    "G-MOD",
+    "G-NOVEL",
+    "G-ROOM"
+   ],
+   "must_trip": [
+    "G-FLAT"
+   ],
+   "missing_trips": [],
+   "must_pass": [],
+   "wrong_passes": [],
+   "inapplicable": [
+    "G-BALANCE",
+    "G-IDENTITY",
+    "G-ORDER"
+   ],
+   "stem_provenance": {
+    "telemetry_kind": null,
+    "stems_dir": null,
+    "used": false,
+    "why": "this signal declares no film telemetry, so it has no stem run; G-BALANCE is INAPPLICABLE, which is not PASS"
+   },
+   "CORRECT": true,
+   "seconds": 4.1,
+   "verdicts": {
+    "G-FLAT": "FAIL",
+    "G-HNR": "FAIL",
+    "G-NOVEL": "FAIL",
+    "G-MOD": "FAIL",
+    "G-GESTURE": "PASS",
+    "G-ROOM": "FAIL",
+    "G-RING": "PASS",
+    "G-ORDER": "INAPPLICABLE",
+    "G-IDENTITY": "INAPPLICABLE",
+    "G-BALANCE": "INAPPLICABLE"
+   },
+   "detail": {
+    "G-FLAT": [
+     "1_assembly: worst 3 s slice 0.967*W > 0.55*W",
+     "1_assembly: median 0.909*W > 0.45*W"
+    ],
+    "G-HNR": [
+     "1_assembly: median +7.76 dB < +8.0 dB"
+    ],
+    "G-MOD": [
+     "1_assembly: 15.69 dB peak at 0.727 Hz > 6.0 dB"
+    ],
+    "G-NOVEL": [
+     "1_assembly: r=0.341 at lag 1.380 s > 0.15"
+    ],
+    "G-ROOM": [
+     "1_assembly(b mobility): 0.672 of peak observations recur in >=3 bursts > 0.35",
+     "1_assembly(c ripple): cepstral peak 38.30x median at 11.292 ms > 1.5x",
+     "1_assembly(c ripple): 1/12-oct ripple 9.53 dB > 8.0 dB"
+    ]
+   }
+  },
+  {
+   "control": "C8_constant_rpm_pu",
+   "what": "physics-true positive: a power unit at constant rpm",
+   "required": "PASS",
+   "got": "PASS",
+   "failing_gates": [],
+   "must_trip": [],
+   "missing_trips": [],
+   "must_pass": [],
+   "wrong_passes": [],
+   "inapplicable": [
+    "G-BALANCE",
+    "G-GESTURE",
+    "G-RING"
+   ],
+   "stem_provenance": {
+    "telemetry_kind": "constant_rpm",
+    "stems_dir": null,
+    "used": false,
+    "why": "this signal declares no film telemetry, so it has no stem run; G-BALANCE is INAPPLICABLE, which is not PASS"
+   },
+   "CORRECT": true,
+   "seconds": 3.8,
+   "verdicts": {
+    "G-FLAT": "PASS",
+    "G-HNR": "PASS",
+    "G-NOVEL": "PASS",
+    "G-MOD": "PASS",
+    "G-GESTURE": "INAPPLICABLE",
+    "G-ROOM": "PASS",
+    "G-RING": "INAPPLICABLE",
+    "G-ORDER": "PASS",
+    "G-IDENTITY": "PASS",
+    "G-BALANCE": "INAPPLICABLE"
+   },
+   "detail": {}
+  },
+  {
+   "control": "C8b_physical_showroom_beat",
+   "what": "physics-true positive: a beat 1 built the way the spec says to",
+   "required": "PASS",
+   "got": "PASS",
+   "failing_gates": [],
+   "must_trip": [],
+   "missing_trips": [],
+   "must_pass": [],
+   "wrong_passes": [],
+   "inapplicable": [
+    "G-BALANCE",
+    "G-GESTURE",
+    "G-IDENTITY",
+    "G-ORDER",
+    "G-RING"
+   ],
+   "stem_provenance": {
+    "telemetry_kind": null,
+    "stems_dir": null,
+    "used": false,
+    "why": "this signal declares no film telemetry, so it has no stem run; G-BALANCE is INAPPLICABLE, which is not PASS"
+   },
+   "CORRECT": true,
+   "seconds": 12.7,
+   "verdicts": {
+    "G-FLAT": "PASS",
+    "G-HNR": "PASS",
+    "G-NOVEL": "PASS",
+    "G-MOD": "PASS",
+    "G-GESTURE": "INAPPLICABLE",
+    "G-ROOM": "PASS",
+    "G-RING": "INAPPLICABLE",
+    "G-ORDER": "INAPPLICABLE",
+    "G-IDENTITY": "INAPPLICABLE",
+    "G-BALANCE": "INAPPLICABLE"
+   },
+   "detail": {}
+  }
+ ],
+ "corpus_correct": true,
+ "mutations_correct": null,
+ "g_construct": {
+  "gate": "G-CONSTRUCT",
+  "kind": "provenance",
+  "measures": "AST: every white()/pink()/brown() must be consumed by an event scheduler or a physically-parameterised filter and must carry a derivation comment",
+  "scanned": [
+   "__init__.py",
+   "clock.py",
+   "dsp.py",
+   "engine.py",
+   "layers.py",
+   "master.py",
+   "scene.py",
+   "spatial.py"
+  ],
+  "excluded_files": [
+   "verify.py",
+   "percept.py"
+  ],
+  "excluded_dirs": [
+   "controls"
+  ],
+  "hits": [
+   {
+    "file": "dsp.py",
+    "line": 187,
+    "what": "white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "w = white(n, seed)"
+   },
+   {
+    "file": "dsp.py",
+    "line": 197,
+    "what": "white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "w = white(n, seed)"
+   },
+   {
+    "file": "dsp.py",
+    "line": 159,
+    "what": "standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "return np.random.default_rng(seed).standard_normal(n).astype(np.float32)"
+   },
+   {
+    "file": "engine.py",
+    "line": 790,
+    "what": "standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "pops[a:a + L] += r.standard_normal(L) * env * r.uniform(0.25, 1.0)"
+   },
+   {
+    "file": "engine.py",
+    "line": 592,
+    "what": "standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "crack[b - ncr:b] += (_ev_rng(1, i).standard_normal(ncr) * env * 0.40).astype(np.float32)"
+   },
+   {
+    "file": "engine.py",
+    "line": 599,
+    "what": "standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "crack[a:a + ncr] += (_ev_rng(2, i).standard_normal(ncr) * env * 0.5).astype(np.float32)"
+   },
+   {
+    "file": "layers.py",
+    "line": 170,
+    "what": "brown() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "base = dsp.brown(n, seed, 25.0, sr)"
+   },
+   {
+    "file": "layers.py",
+    "line": 171,
+    "what": "pink() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "mid = dsp.pink(n, seed + 1, sr)"
+   },
+   {
+    "file": "layers.py",
+    "line": 172,
+    "what": "white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "hiss = dsp.white(n, seed + 2)"
+   },
+   {
+    "file": "layers.py",
+    "line": 363,
+    "what": "white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "src = dsp.white(n, seed)"
+   },
+   {
+    "file": "layers.py",
+    "line": 1921,
+    "what": "standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "x = rng.standard_normal(n)"
+   },
+   {
+    "file": "layers.py",
+    "line": 1953,
+    "what": "standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "x = rng.standard_normal(n_space)"
+   },
+   {
+    "file": "layers.py",
+    "line": 2286,
+    "what": "brown() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "cr = dsp.brown(L3, seed + 1, 20.0, sr) * np.exp(-np.arange(L3) / sr / 0.10)"
+   },
+   {
+    "file": "layers.py",
+    "line": 2292,
+    "what": "pink() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "dust = dsp.pink(L4, seed + 2, sr) * (t4 / 0.25 * np.exp(1.0 - t4 / 0.25))"
+   },
+   {
+    "file": "layers.py",
+    "line": 210,
+    "what": "white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "stones = dsp.white(n, seed + 3) * (rng.random(n) < 0.004)"
+   },
+   {
+    "file": "layers.py",
+    "line": 217,
+    "what": "white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "crack = dsp.white(n, seed + 4) * (rng.random(n) < 0.02)"
+   },
+   {
+    "file": "layers.py",
+    "line": 717,
+    "what": "white() reaches a bus with no scheduler and no physically-parameterised filter",
+    "src": "src = hits + dsp.white(n, seed) * 0.05"
+   }
+  ],
+  "n_hits": 17,
+  "limit": 0.0,
+  "failures": [
+   "dsp.py:187 white() reaches a bus with no scheduler and no physically-parameterised filter",
+   "dsp.py:197 white() reaches a bus with no scheduler and no physically-parameterised filter",
+   "dsp.py:159 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+   "engine.py:790 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+   "engine.py:592 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+   "engine.py:599 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+   "layers.py:170 brown() reaches a bus with no scheduler and no physically-parameterised filter",
+   "layers.py:171 pink() reaches a bus with no scheduler and no physically-parameterised filter",
+   "layers.py:172 white() reaches a bus with no scheduler and no physically-parameterised filter",
+   "layers.py:363 white() reaches a bus with no scheduler and no physically-parameterised filter",
+   "layers.py:1921 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+   "layers.py:1953 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter",
+   "layers.py:2286 brown() reaches a bus with no scheduler and no physically-parameterised filter",
+   "layers.py:2292 pink() reaches a bus with no scheduler and no physically-parameterised filter",
+   "layers.py:210 white() reaches a bus with no scheduler and no physically-parameterised filter",
+   "layers.py:217 white() reaches a bus with no scheduler and no physically-parameterised filter",
+   "layers.py:717 white() reaches a bus with no scheduler and no physically-parameterised filter"
+  ],
+  "inapplicable": [],
+  "verdict": "FAIL"
+ },
+ "adjudication": {
+  "wav": "audio/out/r2_4079/smoke.wav",
+  "stem_provenance": {
+   "telemetry_kind": "film",
+   "stems_dir": "audio/out/r2_4079/stems_smoke",
+   "used": true,
+   "manifest": {
+    "master_wav": "audio/out/r2_4079/smoke.wav",
+    "generated_utc": "2026-08-14T12:52:16Z",
+    "sr_internal": 48000,
+    "note": "the buses as they enter the sum, after the LUFS-S trim and the declared HF shelf, before the program gain and the limiter"
+   },
+   "stems_of": "audio/out/r2_4079/smoke.wav",
+   "n_stems": 17,
+   "stems": [
+    "aperture",
+    "assembly",
+    "bed",
+    "brakes",
+    "crowd",
+    "debris",
+    "engine",
+    "fence",
+    "impact",
+    "reflect_garage",
+    "reflect_showroom",
+    "room",
+    "shards",
+    "structure",
+    "suspension",
+    "tyres",
+    "wind"
+   ]
+  },
+  "quality_verdicts": {
+   "G-FLAT": "FAIL",
+   "G-HNR": "FAIL",
+   "G-NOVEL": "FAIL",
+   "G-MOD": "FAIL",
+   "G-GESTURE": "PASS",
+   "G-ROOM": "FAIL",
+   "G-RING": "FAIL",
+   "G-ORDER": "FAIL",
+   "G-IDENTITY": "PASS",
+   "G-BALANCE": "FAIL"
+  },
+  "provenance_verdicts": {},
+  "failing_gates": [
+   "G-BALANCE",
+   "G-FLAT",
+   "G-HNR",
+   "G-MOD",
+   "G-NOVEL",
+   "G-ORDER",
+   "G-RING",
+   "G-ROOM"
+  ],
+  "verdict": "FAIL",
+  "report": {
+   "gates": {
+    "G-FLAT": {
+     "gate": "G-FLAT",
+     "kind": "quality",
+     "measures": "spectral flatness computed inside each 1/3-octave band then averaged, 500-3000 Hz, per 3 s slice, as a ratio of white noise through the identical pipeline",
+     "white_reference_sfm": 0.6307760274551062,
+     "calibration": {
+      "white_reference_sfm": 0.6336589271994677,
+      "rows": [
+       {
+        "noise_fraction": 0.0,
+        "sfm": 0.04496403568206343,
+        "ratio_of_white": 0.07095936591754089
+       },
+       {
+        "noise_fraction": 0.15,
+        "sfm": 0.46073727544946597,
+        "ratio_of_white": 0.7271061065702177
+       },
+       {
+        "noise_fraction": 0.25,
+        "sfm": 0.5204144798716783,
+        "ratio_of_white": 0.821284854569497
+       },
+       {
+        "noise_fraction": 0.35,
+        "sfm": 0.5554800857185055,
+        "ratio_of_white": 0.8766231514696983
+       },
+       {
+        "noise_fraction": 0.5,
+        "sfm": 0.5881409103469857,
+        "ratio_of_white": 0.9281663764232686
+       },
+       {
+        "noise_fraction": 0.75,
+        "sfm": 0.6164734860254908,
+        "ratio_of_white": 0.9728790356510402
+       },
+       {
+        "noise_fraction": 1.0,
+        "sfm": 0.628739714473635,
+        "ratio_of_white": 0.9922368130319353
+       }
+      ],
+      "noise_fraction_implied_by_slice_bar": 0.10951223356057943,
+      "noise_fraction_implied_by_beat1_bar": 0.08665149362140159,
+      "monotone": true,
+      "note": "Per-band SFM saturates FAST: a pure harmonic comb reads 0.126*W and 15 % added noise already reads 0.554*W. So 0.45*W is not 'half noise' -- it is about 11 % aperiodic energy in 500-3000 Hz, and 0.30*W is about 6 %. The mapping is recomputed here every run so the bar's meaning is read off the report and not off a comment.",
+      "PASS": true
+     },
+     "per_beat": {
+      "1_assembly": {
+       "median_ratio_of_white": 0.7692473486516198,
+       "worst_slice_ratio_of_white": 1.0027307950273143,
+       "n_slices": 11,
+       "limit": 0.55,
+       "outcome": "FAIL",
+       "beat1_median_limit": 0.45
+      },
+      "2_launch": {
+       "median_ratio_of_white": 0.5575974936509158,
+       "worst_slice_ratio_of_white": 0.5575974936509158,
+       "n_slices": 1,
+       "limit": 0.55,
+       "outcome": "FAIL"
+      },
+      "3_breach": {
+       "median_ratio_of_white": 0.5317315592356231,
+       "worst_slice_ratio_of_white": 0.5754119796107063,
+       "n_slices": 2,
+       "limit": 0.55,
+       "outcome": "FAIL"
+      },
+      "4_transit": {
+       "median_ratio_of_white": 0.6992224710588574,
+       "worst_slice_ratio_of_white": 0.6992224710588574,
+       "n_slices": 1,
+       "limit": 0.55,
+       "outcome": "FAIL"
+      },
+      "5_lap": {
+       "median_ratio_of_white": 0.8307157361058102,
+       "worst_slice_ratio_of_white": 0.9556735467407705,
+       "n_slices": 21,
+       "limit": 0.55,
+       "outcome": "FAIL"
+      },
+      "6_ending": {
+       "median_ratio_of_white": 0.955760684704468,
+       "worst_slice_ratio_of_white": 0.9747824378626458,
+       "n_slices": 3,
+       "limit": 0.55,
+       "outcome": "FAIL"
+      }
+     },
+     "failures": [
+      "1_assembly: worst 3 s slice 1.003*W > 0.55*W",
+      "1_assembly: median 0.769*W > 0.45*W",
+      "2_launch: worst 3 s slice 0.558*W > 0.55*W",
+      "3_breach: worst 3 s slice 0.575*W > 0.55*W",
+      "4_transit: worst 3 s slice 0.699*W > 0.55*W",
+      "5_lap: worst 3 s slice 0.956*W > 0.55*W",
+      "6_ending: worst 3 s slice 0.975*W > 0.55*W"
+     ],
+     "inapplicable": [],
+     "verdict": "FAIL"
+    },
+    "G-HNR": {
+     "gate": "G-HNR",
+     "kind": "quality",
+     "measures": "Boersma (1993) autocorrelation HNR: the normalised autocorrelation of the windowed signal divided by the autocorrelation of the window, peak over f0 60-800 Hz. A PERIODICITY test, so noise through a high-Q resonator scores near 0 dB however narrow its peaks are.",
+     "calibration": {
+      "rows": [
+       {
+        "noise_fraction": 0.02,
+        "truth_db": 16.901960800285135,
+        "measured_db": 17.02523137481698,
+        "error_db": 0.12327057453184409,
+        "gated": true
+       },
+       {
+        "noise_fraction": 0.05,
+        "truth_db": 12.787536009528289,
+        "measured_db": 12.890752846074784,
+        "error_db": 0.10321683654649583,
+        "gated": true
+       },
+       {
+        "noise_fraction": 0.1,
+        "truth_db": 9.542425094393248,
+        "measured_db": 9.663990059198696,
+        "error_db": 0.12156496480544732,
+        "gated": true
+       },
+       {
+        "noise_fraction": 0.25,
+        "truth_db": 4.771212547196624,
+        "measured_db": 4.973501986751725,
+        "error_db": 0.20228943955510115,
+        "gated": true
+       },
+       {
+        "noise_fraction": 0.5,
+        "truth_db": 0.0,
+        "measured_db": 0.4021295325174293,
+        "error_db": 0.4021295325174293,
+        "gated": true
+       },
+       {
+        "noise_fraction": 0.75,
+        "truth_db": -4.771212547196625,
+        "measured_db": -3.8258864336870286,
+        "error_db": 0.9453261135095965,
+        "gated": false
+       }
+      ],
+      "max_abs_error_db": 0.4021295325174293,
+      "limit_db": 0.5,
+      "bias_direction_note": "The residual error is POSITIVE at every point and grows with noise fraction (peak-of-N-lags bias). It is +0.12 dB at the +8 dB bar and +0.40 dB at the 0 dB bar, and it makes the instrument read HIGH -- i.e. LENIENT -- never strict. A lenient bias cannot manufacture a failure, so no signal is failed by this gate because of it. The 0.75 row (+0.95 dB) is far below both bars and is reported, not gated.",
+      "PASS": true
+     },
+     "per_beat": {
+      "1_assembly": {
+       "median_db": 0.4757968570188767,
+       "fraction_below_0db": 0.4627998785302156,
+       "windows": 3293,
+       "outcome": "FAIL",
+       "p25_db": -2.0991412787759947,
+       "beat1_median_limit_db": 8.0
+      },
+      "2_launch": {
+       "median_db": 9.825271984119775,
+       "fraction_below_0db": 0.027303754266211604,
+       "windows": 293,
+       "outcome": "PASS",
+       "p25_db": 8.625326364826567
+      },
+      "3_breach": {
+       "median_db": 2.4872717568741156,
+       "fraction_below_0db": 0.44640605296343,
+       "windows": 793,
+       "outcome": "FAIL",
+       "p25_db": -3.2555753837073835
+      },
+      "4_transit": {
+       "median_db": -2.3855877999458603,
+       "fraction_below_0db": 0.6292947558770343,
+       "windows": 553,
+       "outcome": "FAIL",
+       "p25_db": -4.423524276979524
+      },
+      "5_lap": {
+       "median_db": -2.7326661258927363,
+       "fraction_below_0db": 0.6787009301592306,
+       "windows": 6343,
+       "outcome": "FAIL",
+       "p25_db": -5.642444344272425
+      },
+      "6_ending": {
+       "median_db": -6.5442465938437255,
+       "fraction_below_0db": 1.0,
+       "windows": 1091,
+       "outcome": "FAIL",
+       "p25_db": -7.344720205363695
+      }
+     },
+     "failures": [
+      "1_assembly: 0.463 of windows below 0 dB > 0.10",
+      "1_assembly: median +0.48 dB < +8.0 dB",
+      "3_breach: 0.446 of windows below 0 dB > 0.10",
+      "4_transit: 0.629 of windows below 0 dB > 0.10",
+      "5_lap: 0.679 of windows below 0 dB > 0.10",
+      "6_ending: 1.000 of windows below 0 dB > 0.10"
+     ],
+     "inapplicable": [],
+     "verdict": "FAIL"
+    },
+    "G-NOVEL": {
+     "gate": "G-NOVEL",
+     "kind": "quality",
+     "measures": "max envelope autocorrelation of the 40-band, per-band normalised log-spectrum envelope over lags 0.3-16 s",
+     "per_beat": {
+      "1_assembly": {
+       "r_max": 0.4955249551942096,
+       "lag_s": 2.09,
+       "n_frames": 3297,
+       "prominence": 0.051980130406710345,
+       "n_candidate_peaks": 5,
+       "ladder": [
+        {
+         "lag_s": 2.09,
+         "r": 0.4955249551942096
+        },
+        {
+         "lag_s": 4.18,
+         "r": 0.3037559384711463
+        },
+        {
+         "lag_s": 6.27,
+         "r": 0.12220588651359661
+        },
+        {
+         "lag_s": 8.36,
+         "r": -0.1547042327264668
+        }
+       ],
+       "limit": 0.15,
+       "outcome": "FAIL"
+      },
+      "3_breach": {
+       "r_max": 0.0,
+       "lag_s": NaN,
+       "n_frames": 797,
+       "prominence": 0.0,
+       "n_candidate_peaks": 0,
+       "note": "no prominent local maximum: no period, only trend",
+       "limit": 0.15,
+       "outcome": "PASS"
+      },
+      "4_transit": {
+       "r_max": 0.0,
+       "lag_s": NaN,
+       "n_frames": 557,
+       "prominence": 0.0,
+       "n_candidate_peaks": 0,
+       "note": "no prominent local maximum: no period, only trend",
+       "limit": 0.15,
+       "outcome": "PASS"
+      },
+      "5_lap": {
+       "r_max": 0.0,
+       "lag_s": NaN,
+       "n_frames": 6347,
+       "prominence": 0.0,
+       "n_candidate_peaks": 0,
+       "note": "no prominent local maximum: no period, only trend",
+       "limit": 0.15,
+       "outcome": "PASS"
+      },
+      "6_ending": {
+       "r_max": 0.0,
+       "lag_s": NaN,
+       "n_frames": 1095,
+       "prominence": 0.0,
+       "n_candidate_peaks": 0,
+       "note": "no prominent local maximum: no period, only trend",
+       "limit": 0.15,
+       "outcome": "PASS"
+      }
+     },
+     "failures": [
+      "1_assembly: r=0.496 at lag 2.090 s > 0.15"
+     ],
+     "inapplicable": [
+      "2_launch: shorter than 4 s"
+     ],
+     "verdict": "FAIL"
+    },
+    "G-MOD": {
+     "gate": "G-MOD",
+     "kind": "quality",
+     "measures": "peak-to-local-median of the 150-8000 Hz envelope's own spectrum over 0.2-3 Hz",
+     "per_beat": {
+      "1_assembly": {
+       "peak_over_local_median_db": 12.041094880836042,
+       "peak_hz": 1.0,
+       "welch_segments": 7,
+       "resolution_hz": 0.09090909090909091,
+       "baseline_scatter_p95_db": 2.4009901369407727,
+       "modulation_period_s": 1.0,
+       "limit_db": 6.0,
+       "outcome": "FAIL"
+      },
+      "5_lap": {
+       "peak_over_local_median_db": 1.7046540423229635,
+       "peak_hz": 0.5,
+       "welch_segments": 13,
+       "resolution_hz": 0.08333333333333333,
+       "baseline_scatter_p95_db": 1.6126841916147772,
+       "modulation_period_s": 2.0,
+       "limit_db": 6.0,
+       "outcome": "PASS"
+      }
+     },
+     "failures": [
+      "1_assembly: 12.04 dB peak at 1.000 Hz > 6.0 dB"
+     ],
+     "inapplicable": [
+      "2_launch: shorter than 8 s, 0.2 Hz is unresolvable",
+      "3_breach: modulation spectrum unmeasurable",
+      "4_transit: shorter than 8 s, 0.2 Hz is unresolvable",
+      "6_ending: modulation spectrum unmeasurable"
+     ],
+     "verdict": "FAIL"
+    },
+    "G-GESTURE": {
+     "gate": "G-GESTURE",
+     "kind": "quality",
+     "measures": "pairwise correlation of per-burst 24-band x 6-subframe log-spectra with each burst's own mean removed",
+     "per_beat": {
+      "1_assembly": {
+       "n": 29,
+       "mean": 0.0037724432513616688,
+       "max": 0.76554637390454,
+       "p90": 0.385033320018276,
+       "limit_mean": 0.55,
+       "limit_max": 0.8,
+       "outcome": "PASS"
+      }
+     },
+     "failures": [],
+     "inapplicable": [
+      "2_launch: 0 bursts, fewer than 5",
+      "3_breach: 0 bursts, fewer than 5",
+      "4_transit: 1 bursts, fewer than 5",
+      "5_lap: 2 bursts, fewer than 5",
+      "6_ending: 1 bursts, fewer than 5"
+     ],
+     "verdict": "PASS"
+    },
+    "G-ROOM": {
+     "gate": "G-ROOM",
+     "kind": "quality",
+     "measures": "(a) diffuseness of the tail as frequency-domain autocorrelation, (b) recurrence of spectral peaks across bursts, (c) cepstral and 1/12-octave ripple",
+     "reference": {
+      "sabine": {
+       "volume_m3": 4290.0,
+       "surface_m2": 1996.0,
+       "implied_alpha": 0.14418211422845695,
+       "rt60_s": 2.3999999999999995
+      },
+      "schroeder_frequency_hz": 47.30499167912661,
+      "weyl_modes_per_hz_at_1khz": 1335.9333636668675,
+      "weyl_note": "reported, not gated: 1336 modes/Hz cannot be COUNTED at any audio analysis resolution. Limb (a) gates the equivalent Schroeder diffuseness condition instead. DEVIATION FROM SPEC, DECLARED."
+     },
+     "interior_beats": [
+      "1_assembly",
+      "2_launch",
+      "3_breach"
+     ],
+     "per_beat": {
+      "1_assembly": {
+       "outcome": "FAIL",
+       "limbs": {
+        "a_density": {
+         "score": 0.782608695652174,
+         "spacing_hz": 49.85000000000042,
+         "chance_level": 0.4834537580131697,
+         "excess_over_chance": 0.29915493763900425,
+         "n_lines": 23,
+         "limit": 0.4,
+         "n_tail_regions": 6,
+         "outcome": "PASS"
+        },
+        "b_mobility": {
+         "n_bursts": 29,
+         "n_observations": 232,
+         "recurrence": 0.47413793103448276,
+         "distinct_frequencies": 111,
+         "top_recurring": [
+          {
+           "f_hz": 1341.064453125,
+           "bursts": 8,
+           "spread_hz": 23.4375
+          },
+          {
+           "f_hz": 4098.214285714285,
+           "bursts": 6,
+           "spread_hz": 70.3125
+          },
+          {
+           "f_hz": 1398.046875,
+           "bursts": 5,
+           "spread_hz": 11.71875
+          },
+          {
+           "f_hz": 1450.78125,
+           "bursts": 5,
+           "spread_hz": 5.859375
+          },
+          {
+           "f_hz": 351.5625,
+           "bursts": 4,
+           "spread_hz": 0.0
+          },
+          {
+           "f_hz": 1208.49609375,
+           "bursts": 4,
+           "spread_hz": 17.578125
+          },
+          {
+           "f_hz": 1895.9263392857142,
+           "bursts": 4,
+           "spread_hz": 64.453125
+          },
+          {
+           "f_hz": 2080.078125,
+           "bursts": 4,
+           "spread_hz": 41.015625
+          },
+          {
+           "f_hz": 677.734375,
+           "bursts": 3,
+           "spread_hz": 5.859375
+          },
+          {
+           "f_hz": 865.234375,
+           "bursts": 3,
+           "spread_hz": 5.859375
+          },
+          {
+           "f_hz": 1173.828125,
+           "bursts": 3,
+           "spread_hz": 5.859375
+          },
+          {
+           "f_hz": 1296.875,
+           "bursts": 3,
+           "spread_hz": 11.71875
+          },
+          {
+           "f_hz": 1603.515625,
+           "bursts": 3,
+           "spread_hz": 5.859375
+          },
+          {
+           "f_hz": 2001.953125,
+           "bursts": 3,
+           "spread_hz": 17.578125
+          },
+          {
+           "f_hz": 2197.265625,
+           "bursts": 3,
+           "spread_hz": 11.71875
+          },
+          {
+           "f_hz": 2349.609375,
+           "bursts": 3,
+           "spread_hz": 46.875
+          },
+          {
+           "f_hz": 2830.078125,
+           "bursts": 3,
+           "spread_hz": 11.71875
+          },
+          {
+           "f_hz": 3237.890625,
+           "bursts": 3,
+           "spread_hz": 164.0625
+          },
+          {
+           "f_hz": 4335.9375,
+           "bursts": 3,
+           "spread_hz": 29.296875
+          },
+          {
+           "f_hz": 5145.786830357143,
+           "bursts": 3,
+           "spread_hz": 316.40625
+          },
+          {
+           "f_hz": 5394.53125,
+           "bursts": 3,
+           "spread_hz": 17.578125
+          },
+          {
+           "f_hz": 5762.6953125,
+           "bursts": 3,
+           "spread_hz": 52.734375
+          },
+          {
+           "f_hz": 5970.703125,
+           "bursts": 3,
+           "spread_hz": 64.453125
+          }
+         ],
+         "limit": 0.35,
+         "outcome": "FAIL"
+        },
+        "c_ripple": {
+         "cepstral_peak_over_median": 16.947050304340998,
+         "cepstral_quefrency_ms": 1.3541666666666667,
+         "ripple_p95_minus_p5_db": 10.49784891914469,
+         "band_occupancy": 1.0,
+         "limit_cepstral": 1.5,
+         "limit_ripple_db": 8.0,
+         "min_occupancy": 0.75,
+         "n_tail_regions": 6,
+         "outcome": "FAIL"
+        }
+       }
+      },
+      "3_breach": {
+       "outcome": "PASS",
+       "limbs": {
+        "a_density": {
+         "score": NaN,
+         "spacing_hz": NaN,
+         "n_lines": 0,
+         "why": "fewer than 6 fixed lines",
+         "limit": 0.4,
+         "n_tail_regions": 0,
+         "outcome": "INAPPLICABLE"
+        },
+        "b_mobility": {
+         "n_bursts": 0,
+         "recurrence": NaN,
+         "n_observations": 0,
+         "limit": 0.35,
+         "outcome": "INAPPLICABLE"
+        },
+        "c_ripple": {
+         "cepstral_peak_over_median": NaN,
+         "cepstral_quefrency_ms": NaN,
+         "ripple_p95_minus_p5_db": NaN,
+         "band_occupancy": NaN,
+         "limit_cepstral": 1.5,
+         "limit_ripple_db": 8.0,
+         "min_occupancy": 0.75,
+         "n_tail_regions": 0,
+         "outcome": "INAPPLICABLE"
+        }
+       }
+      },
+      "5_lap": {
+       "outcome": "FAIL",
+       "limbs": {
+        "a_density": {
+         "score": NaN,
+         "spacing_hz": NaN,
+         "n_lines": 0,
+         "why": "fewer than 6 fixed lines",
+         "limit": 0.4,
+         "n_tail_regions": 13,
+         "outcome": "INAPPLICABLE"
+        },
+        "b_mobility": {
+         "n_bursts": 2,
+         "recurrence": NaN,
+         "n_observations": 0,
+         "limit": 0.35,
+         "outcome": "INAPPLICABLE"
+        },
+        "c_ripple": {
+         "cepstral_peak_over_median": 6.457341142611569,
+         "cepstral_quefrency_ms": 10.291666666666666,
+         "ripple_p95_minus_p5_db": 6.480070074610911,
+         "band_occupancy": 1.0,
+         "limit_cepstral": 1.5,
+         "limit_ripple_db": 8.0,
+         "min_occupancy": 0.75,
+         "n_tail_regions": 13,
+         "outcome": "FAIL"
+        }
+       }
+      },
+      "6_ending": {
+       "outcome": "FAIL",
+       "limbs": {
+        "a_density": {
+         "score": NaN,
+         "spacing_hz": NaN,
+         "n_lines": 0,
+         "why": "fewer than 6 fixed lines",
+         "limit": 0.4,
+         "n_tail_regions": 1,
+         "outcome": "INAPPLICABLE"
+        },
+        "b_mobility": {
+         "n_bursts": 1,
+         "recurrence": NaN,
+         "n_observations": 0,
+         "limit": 0.35,
+         "outcome": "INAPPLICABLE"
+        },
+        "c_ripple": {
+         "cepstral_peak_over_median": 5.678923387724549,
+         "cepstral_quefrency_ms": 17.8125,
+         "ripple_p95_minus_p5_db": 2.191113885381428,
+         "band_occupancy": 1.0,
+         "limit_cepstral": 1.5,
+         "limit_ripple_db": 8.0,
+         "min_occupancy": 0.75,
+         "n_tail_regions": 1,
+         "outcome": "FAIL"
+        }
+       }
+      }
+     },
+     "failures": [
+      "1_assembly(b mobility): 0.474 of peak observations recur in >=3 bursts > 0.35",
+      "1_assembly(c ripple): cepstral peak 16.95x median at 1.354 ms > 1.5x",
+      "1_assembly(c ripple): 1/12-oct ripple 10.50 dB > 8.0 dB",
+      "5_lap(c ripple): cepstral peak 6.46x median at 10.292 ms > 1.5x",
+      "6_ending(c ripple): cepstral peak 5.68x median at 17.812 ms > 1.5x"
+     ],
+     "inapplicable": [
+      "2_launch: shorter than 6 s",
+      "3_breach(a density): 0 fixed lines, fewer than 6 -- with no fixed reply there is no room comb to measure",
+      "3_breach(b mobility): 0 usable bursts",
+      "3_breach(c ripple): 0 usable decay tails",
+      "4_transit: shorter than 6 s",
+      "5_lap(a density): 0 fixed lines, fewer than 6 -- with no fixed reply there is no room comb to measure",
+      "5_lap(b mobility): 2 usable bursts",
+      "6_ending(a density): 0 fixed lines, fewer than 6 -- with no fixed reply there is no room comb to measure",
+      "6_ending(b mobility): 1 usable bursts"
+     ],
+     "verdict": "FAIL"
+    },
+    "G-RING": {
+     "gate": "G-RING",
+     "kind": "quality",
+     "measures": "per-1/6-octave T60 from backward decay slopes in the film's own inter-event gaps, against the Sabine RT60 of the declared showroom and against the broadband decay over the same gaps",
+     "reference": {
+      "sabine": {
+       "volume_m3": 4290.0,
+       "surface_m2": 1996.0,
+       "implied_alpha": 0.14418211422845695,
+       "rt60_s": 2.3999999999999995
+      }
+     },
+     "per_beat": {
+      "1_assembly": {
+       "broadband_t60_s": 1.5006877332556483,
+       "median_band_t60_s": 1.0635486723862386,
+       "worst_band_t60_s": 1.3623805122579817,
+       "n_bands": 26,
+       "n_decay_regions": 6,
+       "outcome": "PASS",
+       "worst_band_hz": 712.7189745122714,
+       "narrowband_over_broadband": 0.9078374415058237,
+       "limit_narrowband_ratio": 1.5,
+       "sabine_rt60_s": 2.3999999999999995,
+       "t60_limit_s": 2.999999999999999
+      },
+      "5_lap": {
+       "broadband_t60_s": 2.827868745666565,
+       "median_band_t60_s": 1.9136091313471897,
+       "worst_band_t60_s": 4.567460595218241,
+       "n_bands": 30,
+       "n_decay_regions": 14,
+       "outcome": "FAIL",
+       "worst_band_hz": 5079.683366298239,
+       "narrowband_over_broadband": 1.615160039594282,
+       "limit_narrowband_ratio": 1.5
+      }
+     },
+     "failures": [
+      "5_lap: a 1/6-oct band at 5080 Hz rings 1.62x the broadband decay > 1.50x -- an under-damped isolated mode, not a room"
+     ],
+     "inapplicable": [
+      "2_launch: 1 usable decay regions",
+      "3_breach: 0 usable decay regions",
+      "4_transit: 0 usable decay regions",
+      "6_ending: 1 usable decay regions"
+     ],
+     "verdict": "FAIL"
+    },
+    "G-ORDER": {
+     "gate": "G-ORDER",
+     "kind": "quality",
+     "measures": "fraction of 300-4000 Hz energy within +-1.5% of f = 1.5*k*rpm/60, rpm from TELEMETRY, Doppler-shifted by the render's own retarded-time solve",
+     "engine_order": 1.5,
+     "per_beat": {
+      "4_transit": {
+       "median_energy_on_lines": 0.19183553679100193,
+       "windows": 10,
+       "CONTROL_wrong_fundamental_median": 0.07244427065845233,
+       "limit": 0.6,
+       "line_tolerance_pct": 1.5,
+       "outcome": "FAIL"
+      },
+      "5_lap": {
+       "median_energy_on_lines": 0.1784089430099114,
+       "windows": 91,
+       "CONTROL_wrong_fundamental_median": 0.07483492052911132,
+       "limit": 0.6,
+       "line_tolerance_pct": 1.5,
+       "outcome": "FAIL"
+      }
+     },
+     "failures": [
+      "4_transit: 0.192 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.072)",
+      "5_lap: 0.178 of 300-4000 Hz energy on lines predicted from telemetry rpm < 0.60 (wrong-fundamental control 0.075)"
+     ],
+     "inapplicable": [
+      "1_assembly: not an engine beat by declaration (engine beats: ['2_launch', '4_transit', '5_lap'])",
+      "2_launch: 3 windows on throttle with a telemetry rpm",
+      "3_breach: not an engine beat by declaration (engine beats: ['2_launch', '4_transit', '5_lap'])",
+      "6_ending: not an engine beat by declaration (engine beats: ['2_launch', '4_transit', '5_lap'])"
+     ],
+     "verdict": "FAIL"
+    },
+    "G-IDENTITY": {
+     "gate": "G-IDENTITY",
+     "kind": "quality",
+     "measures": "order-1.5 level relative to order 3, and the depth of the order-6 null, both on lines predicted from TELEMETRY rpm and therefore both sliding with the crank -- no static EQ can produce either",
+     "engine_order": 1.5,
+     "derivation": "A(m) = |cos(pi*m/4)| from two firing sub-trains a quarter revolution apart. DERIVED-NOT-MEASURED: no F1 spectrum was obtainable to corroborate it.",
+     "per_beat": {
+      "5_lap": {
+       "windows": 34,
+       "order_line_level_db": {
+        "1.5": 28.04984065875467,
+        "3.0": 33.55667620696574,
+        "4.5": 32.89526755658005,
+        "6.0": 17.745073119243482,
+        "7.5": 31.18821324390199
+       },
+       "order_line_db_over_local_floor": {
+        "1.5": 12.521669456356868,
+        "3.0": 18.146451129374043,
+        "4.5": 15.937879448255595,
+        "6.0": 1.0766986904717037,
+        "7.5": 13.438090978855524
+       },
+       "order1p5_minus_order3_db": -5.506835548211072,
+       "order6_notch_db_below_mean_of_4p5_and_7p5": 14.296667280997543,
+       "derived_order1p5_minus_order3_db": -5.34,
+       "limits": {
+        "half_rel_db": [
+         -12.0,
+         6.0
+        ],
+        "notch_db": 6.0
+       },
+       "outcome": "PASS"
+      }
+     },
+     "failures": [],
+     "inapplicable": [
+      "1_assembly: not an engine beat by declaration",
+      "2_launch: 0 windows with orders 3/4.5/7.5 standing more than 6 dB clear of their own local floor, out of a required 8",
+      "3_breach: not an engine beat by declaration",
+      "4_transit: 3 windows with orders 3/4.5/7.5 standing more than 6 dB clear of their own local floor, out of a required 8",
+      "6_ending: not an engine beat by declaration"
+     ],
+     "verdict": "PASS"
+    },
+    "G-BALANCE": {
+     "gate": "G-BALANCE",
+     "kind": "quality",
+     "measures": "per-beat stem power share of stems measuring >=0.6 of white per-band flatness, and the protagonist's margin over their sum",
+     "per_beat": {
+      "1_assembly": {
+       "near_white_power_share": 0.0831093050731358,
+       "protagonist": [
+        "assembly"
+       ],
+       "protagonist_margin_db": 10.425014784899965,
+       "limit_share": 0.25,
+       "limit_margin_db": 8.0,
+       "outcome": "PASS",
+       "near_white_background_stems": [
+        "engine",
+        "room"
+       ],
+       "near_white_stems_including_protagonist": [
+        "engine",
+        "room"
+       ],
+       "protagonist_counted_near_white": [],
+       "margin_note": "the denominator is the near-white stems that are NOT the protagonist; the share limb above still counts every near-white stem including the protagonist",
+       "instrument_limit": "per-band SFM cannot score a comb whose spacing exceeds a 1/3-octave bandwidth: w(f) = 0.2316*f, so a comb of spacing df is resolvable only above 4.318*df. Each stem's own measured spacing and the resulting unresolved fraction of the 500-3000 Hz window are reported per stem. NOTHING GATES ON THEM -- they say which near-white verdicts this instrument is entitled to.",
+       "stems": {
+        "aperture": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 1.6130301651215665e-86,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "assembly": {
+         "sfm_ratio_of_white": 0.537071522315373,
+         "comb_spacing_hz": 93.75,
+         "comb_autocorr_r": 0.1134420781729694,
+         "sfm_resolvable_above_hz": 404.81249999999994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.9165393796563182,
+         "is_protagonist": true,
+         "near_white": false
+        },
+        "bed": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "brakes": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "crowd": {
+         "sfm_ratio_of_white": 0.9743234176127703,
+         "comb_spacing_hz": 93.75,
+         "comb_autocorr_r": 0.0950323912944778,
+         "sfm_resolvable_above_hz": 404.81249999999994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 2.5176583673208358e-05,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "debris": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "engine": {
+         "sfm_ratio_of_white": 0.8424403773338783,
+         "comb_spacing_hz": 205.078125,
+         "comb_autocorr_r": 0.17063683724758483,
+         "sfm_resolvable_above_hz": 885.5273437499999,
+         "sfm_unresolved_band_fraction": 0.15421093749999995,
+         "power_share": 0.02569297365978964,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "fence": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "impact": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "reflect_garage": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "reflect_showroom": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "room": {
+         "sfm_ratio_of_white": 0.8949543901894802,
+         "comb_spacing_hz": 90.8203125,
+         "comb_autocorr_r": 0.2298860146013335,
+         "sfm_resolvable_above_hz": 392.16210937499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.05741633141334616,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "shards": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "structure": {
+         "sfm_ratio_of_white": 0.5708599397318407,
+         "comb_spacing_hz": 93.75,
+         "comb_autocorr_r": 0.18716592657080347,
+         "sfm_resolvable_above_hz": 404.81249999999994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.0003261386868189667,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "suspension": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "tyres": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "wind": {
+         "sfm_ratio_of_white": 0.900907580066065,
+         "comb_spacing_hz": 108.3984375,
+         "comb_autocorr_r": 0.11651281229745405,
+         "sfm_resolvable_above_hz": 468.06445312499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 5.384935656254673e-14,
+         "is_protagonist": false,
+         "near_white": false
+        }
+       }
+      },
+      "2_launch": {
+       "near_white_power_share": 0.008910306663643458,
+       "protagonist": [
+        "engine"
+       ],
+       "protagonist_margin_db": 20.327854542432103,
+       "limit_share": 0.25,
+       "limit_margin_db": 8.0,
+       "outcome": "PASS",
+       "near_white_background_stems": [
+        "bed",
+        "room",
+        "tyres"
+       ],
+       "near_white_stems_including_protagonist": [
+        "bed",
+        "room",
+        "tyres"
+       ],
+       "protagonist_counted_near_white": [],
+       "margin_note": "the denominator is the near-white stems that are NOT the protagonist; the share limb above still counts every near-white stem including the protagonist",
+       "instrument_limit": "per-band SFM cannot score a comb whose spacing exceeds a 1/3-octave bandwidth: w(f) = 0.2316*f, so a comb of spacing df is resolvable only above 4.318*df. Each stem's own measured spacing and the resulting unresolved fraction of the 500-3000 Hz window are reported per stem. NOTHING GATES ON THEM -- they say which near-white verdicts this instrument is entitled to.",
+       "stems": {
+        "aperture": {
+         "sfm_ratio_of_white": 0.7416233440728244,
+         "comb_spacing_hz": 96.6796875,
+         "comb_autocorr_r": 0.21195178796026065,
+         "sfm_resolvable_above_hz": 417.46289062499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 2.5077850658271627e-05,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "assembly": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "bed": {
+         "sfm_ratio_of_white": 0.9520616742505499,
+         "comb_spacing_hz": 102.5390625,
+         "comb_autocorr_r": 0.14663291872353712,
+         "sfm_resolvable_above_hz": 442.76367187499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.0005740528550802829,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "brakes": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "crowd": {
+         "sfm_ratio_of_white": 0.9723608245771146,
+         "comb_spacing_hz": 178.7109375,
+         "comb_autocorr_r": 0.11683152423650604,
+         "sfm_resolvable_above_hz": 771.6738281249999,
+         "sfm_unresolved_band_fraction": 0.10866953124999995,
+         "power_share": 3.474812308835695e-05,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "debris": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 3.08527419480884e-29,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "engine": {
+         "sfm_ratio_of_white": 0.5443742070797996,
+         "comb_spacing_hz": 477.5390625,
+         "comb_autocorr_r": 0.2301891437836771,
+         "sfm_resolvable_above_hz": 2062.013671875,
+         "sfm_unresolved_band_fraction": 0.62480546875,
+         "power_share": 0.9608998056292579,
+         "is_protagonist": true,
+         "near_white": false
+        },
+        "fence": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "impact": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": 38.0859375,
+         "comb_autocorr_r": 0.6162822081978201,
+         "sfm_resolvable_above_hz": 164.45507812499997,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 3.216032671470513e-13,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "reflect_garage": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "reflect_showroom": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "room": {
+         "sfm_ratio_of_white": 0.7754655121921907,
+         "comb_spacing_hz": 90.8203125,
+         "comb_autocorr_r": 0.23379691445032472,
+         "sfm_resolvable_above_hz": 392.16210937499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.005382185307126145,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "shards": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 6.978389722677035e-29,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "structure": {
+         "sfm_ratio_of_white": 0.37313619274930315,
+         "comb_spacing_hz": 389.6484375,
+         "comb_autocorr_r": 0.179672628827325,
+         "sfm_resolvable_above_hz": 1682.5019531249998,
+         "sfm_unresolved_band_fraction": 0.4730007812499999,
+         "power_share": 0.03013006172630313,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "suspension": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "tyres": {
+         "sfm_ratio_of_white": 0.9755001187820173,
+         "comb_spacing_hz": 82.03125,
+         "comb_autocorr_r": 0.10810304907932775,
+         "sfm_resolvable_above_hz": 354.21093749999994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.0029540685014370293,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "wind": {
+         "sfm_ratio_of_white": 0.9074865534590413,
+         "comb_spacing_hz": 108.3984375,
+         "comb_autocorr_r": 0.15334066680026753,
+         "sfm_resolvable_above_hz": 468.06445312499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 6.727211326691001e-12,
+         "is_protagonist": false,
+         "near_white": false
+        }
+       }
+      },
+      "3_breach": {
+       "near_white_power_share": 0.46494369077212533,
+       "protagonist": [
+        "shards",
+        "structure",
+        "impact"
+       ],
+       "protagonist_margin_db": 3.727029760385453,
+       "limit_share": 0.25,
+       "limit_margin_db": 8.0,
+       "outcome": "FAIL",
+       "near_white_background_stems": [
+        "aperture",
+        "bed",
+        "crowd",
+        "debris",
+        "reflect_showroom",
+        "room",
+        "tyres"
+       ],
+       "near_white_stems_including_protagonist": [
+        "aperture",
+        "bed",
+        "crowd",
+        "debris",
+        "impact",
+        "reflect_showroom",
+        "room",
+        "shards",
+        "tyres"
+       ],
+       "protagonist_counted_near_white": [
+        "impact",
+        "shards"
+       ],
+       "margin_note": "the denominator is the near-white stems that are NOT the protagonist; the share limb above still counts every near-white stem including the protagonist",
+       "instrument_limit": "per-band SFM cannot score a comb whose spacing exceeds a 1/3-octave bandwidth: w(f) = 0.2316*f, so a comb of spacing df is resolvable only above 4.318*df. Each stem's own measured spacing and the resulting unresolved fraction of the 500-3000 Hz window are reported per stem. NOTHING GATES ON THEM -- they say which near-white verdicts this instrument is entitled to.",
+       "stems": {
+        "aperture": {
+         "sfm_ratio_of_white": 0.7008213323127089,
+         "comb_spacing_hz": 93.75,
+         "comb_autocorr_r": 0.19481773958434792,
+         "sfm_resolvable_above_hz": 404.81249999999994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.01719602483190827,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "assembly": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "bed": {
+         "sfm_ratio_of_white": 0.9460673308110602,
+         "comb_spacing_hz": 108.3984375,
+         "comb_autocorr_r": 0.12911766751948522,
+         "sfm_resolvable_above_hz": 468.06445312499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.0038929413240219894,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "brakes": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "crowd": {
+         "sfm_ratio_of_white": 0.9798690810582735,
+         "comb_spacing_hz": 96.6796875,
+         "comb_autocorr_r": 0.08643039344009087,
+         "sfm_resolvable_above_hz": 417.46289062499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.0010352681544605388,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "debris": {
+         "sfm_ratio_of_white": 0.9948304023502235,
+         "comb_spacing_hz": 281.25,
+         "comb_autocorr_r": 0.15250626644668033,
+         "sfm_resolvable_above_hz": 1214.4375,
+         "sfm_unresolved_band_fraction": 0.285775,
+         "power_share": 0.09114431745093848,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "engine": {
+         "sfm_ratio_of_white": 0.24410677079166646,
+         "comb_spacing_hz": 413.0859375,
+         "comb_autocorr_r": 0.209435010764884,
+         "sfm_resolvable_above_hz": 1783.7050781249998,
+         "sfm_unresolved_band_fraction": 0.5134820312499999,
+         "power_share": 0.5313414030411009,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "fence": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "impact": {
+         "sfm_ratio_of_white": 0.9987554543363926,
+         "comb_spacing_hz": 108.3984375,
+         "comb_autocorr_r": 0.2649253618736298,
+         "sfm_resolvable_above_hz": 468.06445312499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.0038559650158135335,
+         "is_protagonist": true,
+         "near_white": true
+        },
+        "reflect_garage": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "reflect_showroom": {
+         "sfm_ratio_of_white": 0.7069049068373632,
+         "comb_spacing_hz": 454.1015625,
+         "comb_autocorr_r": 0.23370815536845754,
+         "sfm_resolvable_above_hz": 1960.8105468749998,
+         "sfm_unresolved_band_fraction": 0.58432421875,
+         "power_share": 0.014198701479038131,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "room": {
+         "sfm_ratio_of_white": 0.7090514225199753,
+         "comb_spacing_hz": 366.2109375,
+         "comb_autocorr_r": 0.19317975452168293,
+         "sfm_resolvable_above_hz": 1581.2988281249998,
+         "sfm_unresolved_band_fraction": 0.4325195312499999,
+         "power_share": 0.002535604444451918,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "shards": {
+         "sfm_ratio_of_white": 0.6174450194006121,
+         "comb_spacing_hz": 392.578125,
+         "comb_autocorr_r": 0.1474094261883015,
+         "sfm_resolvable_above_hz": 1695.1523437499998,
+         "sfm_unresolved_band_fraction": 0.4780609374999999,
+         "power_share": 0.32155884307717514,
+         "is_protagonist": true,
+         "near_white": true
+        },
+        "structure": {
+         "sfm_ratio_of_white": 0.39207545192468163,
+         "comb_spacing_hz": 93.75,
+         "comb_autocorr_r": 0.22374707277975434,
+         "sfm_resolvable_above_hz": 404.81249999999994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.0037149060146002707,
+         "is_protagonist": true,
+         "near_white": false
+        },
+        "suspension": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "tyres": {
+         "sfm_ratio_of_white": 0.9754041869536207,
+         "comb_spacing_hz": 90.8203125,
+         "comb_autocorr_r": 0.1525500070356454,
+         "sfm_resolvable_above_hz": 392.16210937499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.009526024994317338,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "wind": {
+         "sfm_ratio_of_white": 0.9025112801156041,
+         "comb_spacing_hz": 102.5390625,
+         "comb_autocorr_r": 0.08661200236289658,
+         "sfm_resolvable_above_hz": 442.76367187499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 1.721736112096701e-10,
+         "is_protagonist": false,
+         "near_white": false
+        }
+       }
+      },
+      "4_transit": {
+       "near_white_power_share": 0.7129842325261332,
+       "protagonist": [
+        "engine"
+       ],
+       "protagonist_margin_db": -3.9517416988643994,
+       "limit_share": 0.25,
+       "limit_margin_db": 8.0,
+       "outcome": "FAIL",
+       "near_white_background_stems": [
+        "aperture",
+        "bed",
+        "crowd",
+        "debris",
+        "reflect_garage",
+        "reflect_showroom",
+        "shards",
+        "tyres",
+        "wind"
+       ],
+       "near_white_stems_including_protagonist": [
+        "aperture",
+        "bed",
+        "crowd",
+        "debris",
+        "reflect_garage",
+        "reflect_showroom",
+        "shards",
+        "tyres",
+        "wind"
+       ],
+       "protagonist_counted_near_white": [],
+       "margin_note": "the denominator is the near-white stems that are NOT the protagonist; the share limb above still counts every near-white stem including the protagonist",
+       "instrument_limit": "per-band SFM cannot score a comb whose spacing exceeds a 1/3-octave bandwidth: w(f) = 0.2316*f, so a comb of spacing df is resolvable only above 4.318*df. Each stem's own measured spacing and the resulting unresolved fraction of the 500-3000 Hz window are reported per stem. NOTHING GATES ON THEM -- they say which near-white verdicts this instrument is entitled to.",
+       "stems": {
+        "aperture": {
+         "sfm_ratio_of_white": 0.8497674605282023,
+         "comb_spacing_hz": 90.8203125,
+         "comb_autocorr_r": 0.20748785510270856,
+         "sfm_resolvable_above_hz": 392.16210937499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.004795877051505148,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "assembly": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "bed": {
+         "sfm_ratio_of_white": 0.9529287766346776,
+         "comb_spacing_hz": 108.3984375,
+         "comb_autocorr_r": 0.12173269431237917,
+         "sfm_resolvable_above_hz": 468.06445312499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.05100728785817866,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "brakes": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "crowd": {
+         "sfm_ratio_of_white": 0.9967413703349152,
+         "comb_spacing_hz": 125.9765625,
+         "comb_autocorr_r": 0.1029470388769021,
+         "sfm_resolvable_above_hz": 543.966796875,
+         "sfm_unresolved_band_fraction": 0.01758671875,
+         "power_share": 0.06107842754665235,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "debris": {
+         "sfm_ratio_of_white": 1.0076709460257118,
+         "comb_spacing_hz": 219.7265625,
+         "comb_autocorr_r": 0.11674085153099915,
+         "sfm_resolvable_above_hz": 948.7792968749999,
+         "sfm_unresolved_band_fraction": 0.17951171874999997,
+         "power_share": 0.04714715178692306,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "engine": {
+         "sfm_ratio_of_white": 0.18752131387232418,
+         "comb_spacing_hz": 102.5390625,
+         "comb_autocorr_r": 0.2949747887005232,
+         "sfm_resolvable_above_hz": 442.76367187499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.28701576747386504,
+         "is_protagonist": true,
+         "near_white": false
+        },
+        "fence": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 4.179794402293188e-31,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "impact": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "reflect_garage": {
+         "sfm_ratio_of_white": 0.9701578459472644,
+         "comb_spacing_hz": 489.2578125,
+         "comb_autocorr_r": 0.08957279474056697,
+         "sfm_resolvable_above_hz": 2112.615234375,
+         "sfm_unresolved_band_fraction": 0.64504609375,
+         "power_share": 0.408106634382018,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "reflect_showroom": {
+         "sfm_ratio_of_white": 0.6108438608053358,
+         "comb_spacing_hz": 96.6796875,
+         "comb_autocorr_r": 0.11683732137286387,
+         "sfm_resolvable_above_hz": 417.46289062499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.002763489831422899,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "room": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "shards": {
+         "sfm_ratio_of_white": 0.6654738034537437,
+         "comb_spacing_hz": 84.9609375,
+         "comb_autocorr_r": 0.12936962655737674,
+         "sfm_resolvable_above_hz": 366.86132812499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.10187414925925616,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "structure": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "suspension": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": 38.0859375,
+         "comb_autocorr_r": 0.6162822081978201,
+         "sfm_resolvable_above_hz": 164.45507812499997,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 1.8226888481830544e-15,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "tyres": {
+         "sfm_ratio_of_white": 0.9513459775293975,
+         "comb_spacing_hz": 96.6796875,
+         "comb_autocorr_r": 0.15588471605849907,
+         "sfm_resolvable_above_hz": 417.46289062499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.02036872968607384,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "wind": {
+         "sfm_ratio_of_white": 0.9389297702584388,
+         "comb_spacing_hz": 193.359375,
+         "comb_autocorr_r": 0.13999066079678021,
+         "sfm_resolvable_above_hz": 834.9257812499999,
+         "sfm_unresolved_band_fraction": 0.13397031249999997,
+         "power_share": 0.01584248512410306,
+         "is_protagonist": false,
+         "near_white": true
+        }
+       }
+      },
+      "5_lap": {
+       "near_white_power_share": 0.6560762512923274,
+       "protagonist": [
+        "engine"
+       ],
+       "protagonist_margin_db": -2.8049215154342444,
+       "limit_share": 0.25,
+       "limit_margin_db": 8.0,
+       "outcome": "FAIL",
+       "near_white_background_stems": [
+        "aperture",
+        "bed",
+        "brakes",
+        "crowd",
+        "fence",
+        "reflect_garage",
+        "reflect_showroom",
+        "suspension",
+        "tyres",
+        "wind"
+       ],
+       "near_white_stems_including_protagonist": [
+        "aperture",
+        "bed",
+        "brakes",
+        "crowd",
+        "fence",
+        "reflect_garage",
+        "reflect_showroom",
+        "suspension",
+        "tyres",
+        "wind"
+       ],
+       "protagonist_counted_near_white": [],
+       "margin_note": "the denominator is the near-white stems that are NOT the protagonist; the share limb above still counts every near-white stem including the protagonist",
+       "instrument_limit": "per-band SFM cannot score a comb whose spacing exceeds a 1/3-octave bandwidth: w(f) = 0.2316*f, so a comb of spacing df is resolvable only above 4.318*df. Each stem's own measured spacing and the resulting unresolved fraction of the 500-3000 Hz window are reported per stem. NOTHING GATES ON THEM -- they say which near-white verdicts this instrument is entitled to.",
+       "stems": {
+        "aperture": {
+         "sfm_ratio_of_white": 0.8913691725460997,
+         "comb_spacing_hz": 84.9609375,
+         "comb_autocorr_r": 0.24825820766404172,
+         "sfm_resolvable_above_hz": 366.86132812499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.002699442632050053,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "assembly": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "bed": {
+         "sfm_ratio_of_white": 0.9480476841403684,
+         "comb_spacing_hz": 108.3984375,
+         "comb_autocorr_r": 0.11783284155300898,
+         "sfm_resolvable_above_hz": 468.06445312499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.08109520926055705,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "brakes": {
+         "sfm_ratio_of_white": 0.8422958450761734,
+         "comb_spacing_hz": 228.515625,
+         "comb_autocorr_r": 0.13481912513148397,
+         "sfm_resolvable_above_hz": 986.7304687499999,
+         "sfm_unresolved_band_fraction": 0.19469218749999995,
+         "power_share": 0.20463655835381775,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "crowd": {
+         "sfm_ratio_of_white": 0.9794066475548558,
+         "comb_spacing_hz": 105.46875,
+         "comb_autocorr_r": 0.13292461113303738,
+         "sfm_resolvable_above_hz": 455.41406249999994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.015849968039418027,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "debris": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "engine": {
+         "sfm_ratio_of_white": 0.2608927074764389,
+         "comb_spacing_hz": 114.2578125,
+         "comb_autocorr_r": 0.2912484640299962,
+         "sfm_resolvable_above_hz": 493.36523437499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.34392374870767256,
+         "is_protagonist": true,
+         "near_white": false
+        },
+        "fence": {
+         "sfm_ratio_of_white": 0.7215988621541157,
+         "comb_spacing_hz": 164.0625,
+         "comb_autocorr_r": 0.07915337572523932,
+         "sfm_resolvable_above_hz": 708.4218749999999,
+         "sfm_unresolved_band_fraction": 0.08336874999999995,
+         "power_share": 0.006434229784078468,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "impact": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "reflect_garage": {
+         "sfm_ratio_of_white": 0.9875857267419926,
+         "comb_spacing_hz": 331.0546875,
+         "comb_autocorr_r": 0.10662589179465405,
+         "sfm_resolvable_above_hz": 1429.4941406249998,
+         "sfm_unresolved_band_fraction": 0.3717976562499999,
+         "power_share": 0.09240517703338802,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "reflect_showroom": {
+         "sfm_ratio_of_white": 1.0793573521474094,
+         "comb_spacing_hz": 84.9609375,
+         "comb_autocorr_r": 0.12356957399318466,
+         "sfm_resolvable_above_hz": 366.86132812499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.00013045423413394222,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "room": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "shards": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "structure": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "suspension": {
+         "sfm_ratio_of_white": 1.1388583232001848,
+         "comb_spacing_hz": 471.6796875,
+         "comb_autocorr_r": 0.3666952383494084,
+         "sfm_resolvable_above_hz": 2036.7128906249998,
+         "sfm_unresolved_band_fraction": 0.6146851562499999,
+         "power_share": 0.035558647426675395,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "tyres": {
+         "sfm_ratio_of_white": 0.9516012745386888,
+         "comb_spacing_hz": 134.765625,
+         "comb_autocorr_r": 0.15576931046273343,
+         "sfm_resolvable_above_hz": 581.91796875,
+         "sfm_unresolved_band_fraction": 0.0327671875,
+         "power_share": 0.13147555260885593,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "wind": {
+         "sfm_ratio_of_white": 0.9478571868615453,
+         "comb_spacing_hz": 108.3984375,
+         "comb_autocorr_r": 0.12890817186926395,
+         "sfm_resolvable_above_hz": 468.06445312499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.08579101191935269,
+         "is_protagonist": false,
+         "near_white": true
+        }
+       }
+      },
+      "6_ending": {
+       "near_white_power_share": 0.9936794390137415,
+       "protagonist": [
+        "engine",
+        "assembly"
+       ],
+       "protagonist_margin_db": -21.96868674456921,
+       "limit_share": 0.25,
+       "limit_margin_db": 8.0,
+       "outcome": "FAIL",
+       "near_white_background_stems": [
+        "aperture",
+        "bed",
+        "brakes",
+        "crowd",
+        "reflect_garage",
+        "tyres",
+        "wind"
+       ],
+       "near_white_stems_including_protagonist": [
+        "aperture",
+        "bed",
+        "brakes",
+        "crowd",
+        "reflect_garage",
+        "tyres",
+        "wind"
+       ],
+       "protagonist_counted_near_white": [],
+       "margin_note": "the denominator is the near-white stems that are NOT the protagonist; the share limb above still counts every near-white stem including the protagonist",
+       "instrument_limit": "per-band SFM cannot score a comb whose spacing exceeds a 1/3-octave bandwidth: w(f) = 0.2316*f, so a comb of spacing df is resolvable only above 4.318*df. Each stem's own measured spacing and the resulting unresolved fraction of the 500-3000 Hz window are reported per stem. NOTHING GATES ON THEM -- they say which near-white verdicts this instrument is entitled to.",
+       "stems": {
+        "aperture": {
+         "sfm_ratio_of_white": 0.8572539861940544,
+         "comb_spacing_hz": 87.890625,
+         "comb_autocorr_r": 0.16769221155255293,
+         "sfm_resolvable_above_hz": 379.51171874999994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.0025759230752635757,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "assembly": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": true,
+         "near_white": false
+        },
+        "bed": {
+         "sfm_ratio_of_white": 0.9528512632218514,
+         "comb_spacing_hz": 108.3984375,
+         "comb_autocorr_r": 0.1119074256213755,
+         "sfm_resolvable_above_hz": 468.06445312499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.41340665635291296,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "brakes": {
+         "sfm_ratio_of_white": 0.8012092560520682,
+         "comb_spacing_hz": 471.6796875,
+         "comb_autocorr_r": 0.12929543032349236,
+         "sfm_resolvable_above_hz": 2036.7128906249998,
+         "sfm_unresolved_band_fraction": 0.6146851562499999,
+         "power_share": 0.08348529573813855,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "crowd": {
+         "sfm_ratio_of_white": 0.9873061902459507,
+         "comb_spacing_hz": 96.6796875,
+         "comb_autocorr_r": 0.13029720469294673,
+         "sfm_resolvable_above_hz": 417.46289062499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.30641923189159465,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "debris": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "engine": {
+         "sfm_ratio_of_white": 0.5212154206497126,
+         "comb_spacing_hz": 278.3203125,
+         "comb_autocorr_r": 0.6981818923770476,
+         "sfm_resolvable_above_hz": 1201.787109375,
+         "sfm_unresolved_band_fraction": 0.28071484375,
+         "power_share": 0.006315062151329598,
+         "is_protagonist": true,
+         "near_white": false
+        },
+        "fence": {
+         "sfm_ratio_of_white": 0.9090911571908958,
+         "comb_spacing_hz": 123.046875,
+         "comb_autocorr_r": 0.11213346382553312,
+         "sfm_resolvable_above_hz": 531.31640625,
+         "sfm_unresolved_band_fraction": 0.0125265625,
+         "power_share": 5.498834928977494e-06,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "impact": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "reflect_garage": {
+         "sfm_ratio_of_white": 0.9811758083181064,
+         "comb_spacing_hz": 158.203125,
+         "comb_autocorr_r": 0.10337522115698825,
+         "sfm_resolvable_above_hz": 683.1210937499999,
+         "sfm_unresolved_band_fraction": 0.07324843749999996,
+         "power_share": 0.17351015496022576,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "reflect_showroom": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "room": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "shards": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "structure": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "suspension": {
+         "sfm_ratio_of_white": NaN,
+         "comb_spacing_hz": NaN,
+         "comb_autocorr_r": NaN,
+         "sfm_resolvable_above_hz": NaN,
+         "sfm_unresolved_band_fraction": NaN,
+         "power_share": 0.0,
+         "is_protagonist": false,
+         "near_white": false
+        },
+        "tyres": {
+         "sfm_ratio_of_white": 0.9822187144760468,
+         "comb_spacing_hz": 102.5390625,
+         "comb_autocorr_r": 0.1079499535500436,
+         "sfm_resolvable_above_hz": 442.76367187499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.003737219015525654,
+         "is_protagonist": false,
+         "near_white": true
+        },
+        "wind": {
+         "sfm_ratio_of_white": 0.9405728749838042,
+         "comb_spacing_hz": 108.3984375,
+         "comb_autocorr_r": 0.12297018296533782,
+         "sfm_resolvable_above_hz": 468.06445312499994,
+         "sfm_unresolved_band_fraction": 0.0,
+         "power_share": 0.010544957980080248,
+         "is_protagonist": false,
+         "near_white": true
+        }
+       }
+      }
+     },
+     "failures": [
+      "3_breach: near-white stems carry 0.465 of beat power > 0.25",
+      "3_breach: protagonist shards+structure+impact leads the near-white background (aperture+bed+crowd+debris+reflect_showroom+room+tyres) by +3.73 dB < +8.0 dB",
+      "4_transit: near-white stems carry 0.713 of beat power > 0.25",
+      "4_transit: protagonist engine leads the near-white background (aperture+bed+crowd+debris+reflect_garage+reflect_showroom+shards+tyres+wind) by -3.95 dB < +8.0 dB",
+      "5_lap: near-white stems carry 0.656 of beat power > 0.25",
+      "5_lap: protagonist engine leads the near-white background (aperture+bed+brakes+crowd+fence+reflect_garage+reflect_showroom+suspension+tyres+wind) by -2.80 dB < +8.0 dB",
+      "6_ending: near-white stems carry 0.994 of beat power > 0.25",
+      "6_ending: protagonist engine+assembly leads the near-white background (aperture+bed+brakes+crowd+reflect_garage+tyres+wind) by -21.97 dB < +8.0 dB"
+     ],
+     "inapplicable": [],
+     "verdict": "FAIL"
+    }
+   },
+   "quality_verdicts": {
+    "G-FLAT": "FAIL",
+    "G-HNR": "FAIL",
+    "G-NOVEL": "FAIL",
+    "G-MOD": "FAIL",
+    "G-GESTURE": "PASS",
+    "G-ROOM": "FAIL",
+    "G-RING": "FAIL",
+    "G-ORDER": "FAIL",
+    "G-IDENTITY": "PASS",
+    "G-BALANCE": "FAIL"
+   },
+   "provenance_verdicts": {},
+   "any_fail": true,
+   "no_fail": false,
+   "quality_pass": false,
+   "inapplicable_gates": [],
+   "rule": "INAPPLICABLE is not PASS and never counts toward a verdict. Provenance gates are excluded from the quality verdict because they do not take the rendered master as an input.",
+   "stem_provenance": {
+    "telemetry_kind": "film",
+    "stems_dir": "audio/out/r2_4079/stems_smoke",
+    "used": true,
+    "manifest": {
+     "master_wav": "audio/out/r2_4079/smoke.wav",
+     "generated_utc": "2026-08-14T12:52:16Z",
+     "sr_internal": 48000,
+     "note": "the buses as they enter the sum, after the LUFS-S trim and the declared HF shelf, before the program gain and the limiter"
+    },
+    "stems_of": "audio/out/r2_4079/smoke.wav",
+    "n_stems": 17,
+    "stems": [
+     "aperture",
+     "assembly",
+     "bed",
+     "brakes",
+     "crowd",
+     "debris",
+     "engine",
+     "fence",
+     "impact",
+     "reflect_garage",
+     "reflect_showroom",
+     "room",
+     "shards",
+     "structure",
+     "suspension",
+     "tyres",
+     "wind"
+    ]
+   }
+  }
+ }
+}

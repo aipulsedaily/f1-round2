@@ -1,0 +1,94 @@
+{
+ "search_range": [
+  0.7993917295999275,
+  1.3678616174478233
+ ],
+ "stations": {
+  "94.642": {
+   "predicted_span_semitones": 7.266348228349402,
+   "master": {
+    "usable": 61,
+    "tracked": 38,
+    "tracker_failure_fraction": 0.3770491803278688,
+    "median_abs_error_cents": 108.20144956901974,
+    "median_signed_error_cents": -55.60293992445722,
+    "p90_abs_error_cents": 315.7300053622353,
+    "corr_on_tracked_windows": 0.9815558060423083,
+    "OUTCOME": "FAIL"
+   },
+   "CONTROL_exact_predicted_sweep": {
+    "usable": 85,
+    "tracked": 85,
+    "tracker_failure_fraction": 0.0,
+    "median_abs_error_cents": 2.662641849613884,
+    "median_signed_error_cents": -0.1492768564740368,
+    "p90_abs_error_cents": 14.039160741804714,
+    "corr_on_tracked_windows": 0.9985345453511134,
+    "OUTCOME": "PASS"
+   },
+   "CONTROL_no_doppler_must_fail": {
+    "usable": 85,
+    "tracked": 19,
+    "tracker_failure_fraction": 0.7764705882352941,
+    "median_abs_error_cents": 281.4528422993171,
+    "median_signed_error_cents": -234.11831984690693,
+    "p90_abs_error_cents": 421.7439062162358,
+    "corr_on_tracked_windows": 0.2094530980998332,
+    "OUTCOME": "FAIL"
+   },
+   "CONTROL_reversed_sweep_must_fail": {
+    "usable": 85,
+    "tracked": 37,
+    "tracker_failure_fraction": 0.5647058823529412,
+    "median_abs_error_cents": 348.5098295342867,
+    "median_signed_error_cents": 11.913366777568214,
+    "p90_abs_error_cents": 492.64878536677446,
+    "corr_on_tracked_windows": 0.4044871942799565,
+    "OUTCOME": "FAIL"
+   }
+  },
+  "106.760": {
+   "predicted_span_semitones": 1.4073806770322381,
+   "master": {
+    "usable": 85,
+    "tracked": 83,
+    "tracker_failure_fraction": 0.02352941176470591,
+    "median_abs_error_cents": 2.5833928694794355,
+    "median_signed_error_cents": -1.0296287130012507,
+    "p90_abs_error_cents": 35.30720420921773,
+    "corr_on_tracked_windows": 0.8607670704572824,
+    "OUTCOME": "FAIL"
+   },
+   "CONTROL_exact_predicted_sweep": {
+    "usable": 85,
+    "tracked": 85,
+    "tracker_failure_fraction": 0.0,
+    "median_abs_error_cents": 1.3547988349812736,
+    "median_signed_error_cents": -0.3872873138464865,
+    "p90_abs_error_cents": 12.436339636750509,
+    "corr_on_tracked_windows": 0.9230378520866602,
+    "OUTCOME": "PASS"
+   },
+   "CONTROL_no_doppler_must_fail": {
+    "usable": 85,
+    "tracked": 85,
+    "tracker_failure_fraction": 0.0,
+    "median_abs_error_cents": 30.962957728804394,
+    "median_signed_error_cents": -30.71481845388616,
+    "p90_abs_error_cents": 119.50351458590762,
+    "corr_on_tracked_windows": 0.023532095733439222,
+    "OUTCOME": "FAIL"
+   },
+   "CONTROL_reversed_sweep_must_fail": {
+    "usable": 85,
+    "tracked": 85,
+    "tracker_failure_fraction": 0.0,
+    "median_abs_error_cents": 82.57358083511795,
+    "median_signed_error_cents": -3.312657413484596,
+    "p90_abs_error_cents": 115.20212975278935,
+    "corr_on_tracked_windows": -0.6295102983331854,
+    "OUTCOME": "FAIL"
+   }
+  }
+ }
+}

@@ -1,0 +1,592 @@
+{
+ "R2-4079 (this master)": {
+  "result": {
+   "single": {
+    "recurrence": 0.6,
+    "n_observations": 240,
+    "n_bursts": 30,
+    "n_clusters": 86,
+    "widest_pct": 6.037952846463485,
+    "recurrence_from_overwide_clusters": 0.5166666666666667,
+    "top": [
+     {
+      "f_hz": 5822.544642857143,
+      "bursts": 8,
+      "spread_hz": 351.5625,
+      "spread_pct": 6.037952846463485,
+      "n": 21
+     },
+     {
+      "f_hz": 3301.025390625,
+      "bursts": 5,
+      "spread_hz": 82.03125,
+      "spread_pct": 2.4850232970934103,
+      "n": 8
+     },
+     {
+      "f_hz": 5025.87890625,
+      "bursts": 5,
+      "spread_hz": 158.203125,
+      "spread_pct": 3.1477703293500436,
+      "n": 12
+     },
+     {
+      "f_hz": 1371.09375,
+      "bursts": 4,
+      "spread_hz": 76.171875,
+      "spread_pct": 5.555555555555555,
+      "n": 16
+     },
+     {
+      "f_hz": 1461.9140625,
+      "bursts": 4,
+      "spread_hz": 52.734375,
+      "spread_pct": 3.6072144288577155,
+      "n": 14
+     },
+     {
+      "f_hz": 1541.015625,
+      "bursts": 4,
+      "spread_hz": 23.4375,
+      "spread_pct": 1.520912547528517,
+      "n": 4
+     }
+    ]
+   },
+   "centroid": {
+    "recurrence": 0.5916666666666667,
+    "n_observations": 240,
+    "n_bursts": 30,
+    "n_clusters": 110,
+    "widest_pct": 1.69512651128007,
+    "recurrence_from_overwide_clusters": 0.32083333333333336,
+    "top": [
+     {
+      "f_hz": 1447.265625,
+      "bursts": 8,
+      "spread_hz": 11.71875,
+      "spread_pct": 0.8097165991902834,
+      "n": 8
+     },
+     {
+      "f_hz": 1398.4375,
+      "bursts": 6,
+      "spread_hz": 5.859375,
+      "spread_pct": 0.41899441340782123,
+      "n": 6
+     },
+     {
+      "f_hz": 4979.4921875,
+      "bursts": 6,
+      "spread_hz": 64.453125,
+      "spread_pct": 1.2943714453814474,
+      "n": 6
+     },
+     {
+      "f_hz": 5759.033203125,
+      "bursts": 6,
+      "spread_hz": 82.03125,
+      "spread_pct": 1.4243927254228665,
+      "n": 8
+     },
+     {
+      "f_hz": 5876.220703125,
+      "bursts": 6,
+      "spread_hz": 99.609375,
+      "spread_pct": 1.69512651128007,
+      "n": 8
+     },
+     {
+      "f_hz": 3325.1953125,
+      "bursts": 5,
+      "spread_hz": 29.296875,
+      "spread_pct": 0.881057268722467,
+      "n": 4
+     }
+    ]
+   }
+  },
+  "must": null
+ },
+ "R2-4069 (before per-part timbre)": {
+  "result": {
+   "single": {
+    "recurrence": 0.525,
+    "n_observations": 240,
+    "n_bursts": 30,
+    "n_clusters": 112,
+    "widest_pct": 2.6442638754992425,
+    "recurrence_from_overwide_clusters": 0.3,
+    "top": [
+     {
+      "f_hz": 1452.4739583333333,
+      "bursts": 8,
+      "spread_hz": 29.296875,
+      "spread_pct": 2.0170327207530256,
+      "n": 9
+     },
+     {
+      "f_hz": 1304.1294642857142,
+      "bursts": 7,
+      "spread_hz": 11.71875,
+      "spread_pct": 0.8985879332477535,
+      "n": 7
+     },
+     {
+      "f_hz": 1402.064732142857,
+      "bursts": 7,
+      "spread_hz": 5.859375,
+      "spread_pct": 0.41791044776119407,
+      "n": 7
+     },
+     {
+      "f_hz": 4502.511160714285,
+      "bursts": 7,
+      "spread_hz": 52.734375,
+      "spread_pct": 1.1712214166201897,
+      "n": 7
+     },
+     {
+      "f_hz": 1351.5625,
+      "bursts": 6,
+      "spread_hz": 11.71875,
+      "spread_pct": 0.8670520231213872,
+      "n": 6
+     },
+     {
+      "f_hz": 351.5625,
+      "bursts": 5,
+      "spread_hz": 0.0,
+      "spread_pct": 0.0,
+      "n": 5
+     }
+    ]
+   },
+   "centroid": {
+    "recurrence": 0.5083333333333333,
+    "n_observations": 240,
+    "n_bursts": 30,
+    "n_clusters": 121,
+    "widest_pct": 2.0170327207530256,
+    "recurrence_from_overwide_clusters": 0.21666666666666667,
+    "top": [
+     {
+      "f_hz": 1452.4739583333333,
+      "bursts": 8,
+      "spread_hz": 29.296875,
+      "spread_pct": 2.0170327207530256,
+      "n": 9
+     },
+     {
+      "f_hz": 1304.1294642857142,
+      "bursts": 7,
+      "spread_hz": 11.71875,
+      "spread_pct": 0.8985879332477535,
+      "n": 7
+     },
+     {
+      "f_hz": 1402.064732142857,
+      "bursts": 7,
+      "spread_hz": 5.859375,
+      "spread_pct": 0.41791044776119407,
+      "n": 7
+     },
+     {
+      "f_hz": 4502.511160714285,
+      "bursts": 7,
+      "spread_hz": 52.734375,
+      "spread_pct": 1.1712214166201897,
+      "n": 7
+     },
+     {
+      "f_hz": 1351.5625,
+      "bursts": 6,
+      "spread_hz": 11.71875,
+      "spread_pct": 0.8670520231213872,
+      "n": 6
+     },
+     {
+      "f_hz": 351.5625,
+      "bursts": 5,
+      "spread_hz": 0.0,
+      "spread_pct": 0.0,
+      "n": 5
+     }
+    ]
+   }
+  },
+  "must": null
+ },
+ "C4 delivered master (must FAIL)": {
+  "result": {
+   "single": {
+    "recurrence": 0.6120689655172413,
+    "n_observations": 232,
+    "n_bursts": 29,
+    "n_clusters": 92,
+    "widest_pct": 6.625315247767706,
+    "recurrence_from_overwide_clusters": 0.46551724137931033,
+    "top": [
+     {
+      "f_hz": 2934.2447916666665,
+      "bursts": 7,
+      "spread_hz": 58.59375,
+      "spread_pct": 1.9968937208786335,
+      "n": 9
+     },
+     {
+      "f_hz": 4531.808035714285,
+      "bursts": 7,
+      "spread_hz": 76.171875,
+      "spread_pct": 1.6808274842999633,
+      "n": 7
+     },
+     {
+      "f_hz": 1901.3671875,
+      "bursts": 6,
+      "spread_hz": 17.578125,
+      "spread_pct": 0.9244992295839755,
+      "n": 6
+     },
+     {
+      "f_hz": 2369.140625,
+      "bursts": 5,
+      "spread_hz": 46.875,
+      "spread_pct": 1.9785655399835118,
+      "n": 6
+     },
+     {
+      "f_hz": 3286.1328125,
+      "bursts": 5,
+      "spread_hz": 41.015625,
+      "spread_pct": 1.2481426448736999,
+      "n": 6
+     },
+     {
+      "f_hz": 4775.716145833333,
+      "bursts": 5,
+      "spread_hz": 316.40625,
+      "spread_pct": 6.625315247767706,
+      "n": 18
+     }
+    ]
+   },
+   "centroid": {
+    "recurrence": 0.5818965517241379,
+    "n_observations": 232,
+    "n_bursts": 29,
+    "n_clusters": 109,
+    "widest_pct": 1.7008352315869402,
+    "recurrence_from_overwide_clusters": 0.2629310344827586,
+    "top": [
+     {
+      "f_hz": 4531.808035714285,
+      "bursts": 7,
+      "spread_hz": 76.171875,
+      "spread_pct": 1.6808274842999633,
+      "n": 7
+     },
+     {
+      "f_hz": 4822.998046875,
+      "bursts": 7,
+      "spread_hz": 82.03125,
+      "spread_pct": 1.7008352315869402,
+      "n": 8
+     },
+     {
+      "f_hz": 1901.3671875,
+      "bursts": 6,
+      "spread_hz": 17.578125,
+      "spread_pct": 0.9244992295839755,
+      "n": 6
+     },
+     {
+      "f_hz": 2919.921875,
+      "bursts": 6,
+      "spread_hz": 23.4375,
+      "spread_pct": 0.8026755852842808,
+      "n": 6
+     },
+     {
+      "f_hz": 3280.078125,
+      "bursts": 5,
+      "spread_hz": 11.71875,
+      "spread_pct": 0.35727045373347627,
+      "n": 5
+     },
+     {
+      "f_hz": 2390.625,
+      "bursts": 4,
+      "spread_hz": 0.0,
+      "spread_pct": 0.0,
+      "n": 2
+     }
+    ]
+   }
+  },
+  "must": "FAIL"
+ },
+ "C8b physical showroom (must PASS)": {
+  "result": {
+   "inapplicable": "0 usable bursts"
+  },
+  "must": "PASS"
+ },
+ "M-ROOMb fixed resonator bank (must FAIL)": {
+  "result": {
+   "single": {
+    "recurrence": 0.046875,
+    "n_observations": 64,
+    "n_bursts": 8,
+    "n_clusters": 46,
+    "widest_pct": 1.157556270096463,
+    "recurrence_from_overwide_clusters": 0.046875,
+    "top": [
+     {
+      "f_hz": 3037.109375,
+      "bursts": 3,
+      "spread_hz": 35.15625,
+      "spread_pct": 1.157556270096463,
+      "n": 3
+     }
+    ]
+   },
+   "centroid": {
+    "recurrence": 0.046875,
+    "n_observations": 64,
+    "n_bursts": 8,
+    "n_clusters": 49,
+    "widest_pct": 1.157556270096463,
+    "recurrence_from_overwide_clusters": 0.046875,
+    "top": [
+     {
+      "f_hz": 3037.109375,
+      "bursts": 3,
+      "spread_hz": 35.15625,
+      "spread_pct": 1.157556270096463,
+      "n": 3
+     }
+    ]
+   }
+  },
+  "must": "FAIL"
+ },
+ "M-ROOMa 8-tap FDN, no diffusion (must FAIL)": {
+  "result": {
+   "single": {
+    "recurrence": 0.3984375,
+    "n_observations": 128,
+    "n_bursts": 16,
+    "n_clusters": 69,
+    "widest_pct": 5.626272912423625,
+    "recurrence_from_overwide_clusters": 0.375,
+    "top": [
+     {
+      "f_hz": 1110.3515625,
+      "bursts": 4,
+      "spread_hz": 17.578125,
+      "spread_pct": 1.58311345646438,
+      "n": 4
+     },
+     {
+      "f_hz": 4267.427884615385,
+      "bursts": 4,
+      "spread_hz": 152.34375,
+      "spread_pct": 3.569919729615547,
+      "n": 13
+     },
+     {
+      "f_hz": 2042.96875,
+      "bursts": 3,
+      "spread_hz": 29.296875,
+      "spread_pct": 1.4340344168260037,
+      "n": 3
+     },
+     {
+      "f_hz": 2095.703125,
+      "bursts": 3,
+      "spread_hz": 29.296875,
+      "spread_pct": 1.3979496738117427,
+      "n": 3
+     },
+     {
+      "f_hz": 3540.8653846153848,
+      "bursts": 3,
+      "spread_hz": 199.21875,
+      "spread_pct": 5.626272912423625,
+      "n": 13
+     },
+     {
+      "f_hz": 4435.546875,
+      "bursts": 3,
+      "spread_hz": 0.0,
+      "spread_pct": 0.0,
+      "n": 3
+     }
+    ]
+   },
+   "centroid": {
+    "recurrence": 0.328125,
+    "n_observations": 128,
+    "n_bursts": 16,
+    "n_clusters": 78,
+    "widest_pct": 1.5192437542201216,
+    "recurrence_from_overwide_clusters": 0.1875,
+    "top": [
+     {
+      "f_hz": 4217.578125,
+      "bursts": 5,
+      "spread_hz": 58.59375,
+      "spread_pct": 1.3892747985551541,
+      "n": 5
+     },
+     {
+      "f_hz": 4298.583984375,
+      "bursts": 5,
+      "spread_hz": 58.59375,
+      "spread_pct": 1.3630942238882262,
+      "n": 8
+     },
+     {
+      "f_hz": 3471.09375,
+      "bursts": 4,
+      "spread_hz": 52.734375,
+      "spread_pct": 1.5192437542201216,
+      "n": 5
+     },
+     {
+      "f_hz": 3584.47265625,
+      "bursts": 4,
+      "spread_hz": 29.296875,
+      "spread_pct": 0.8173273395995097,
+      "n": 4
+     },
+     {
+      "f_hz": 1107.421875,
+      "bursts": 3,
+      "spread_hz": 11.71875,
+      "spread_pct": 1.0582010582010581,
+      "n": 3
+     },
+     {
+      "f_hz": 2095.703125,
+      "bursts": 3,
+      "spread_hz": 29.296875,
+      "spread_pct": 1.3979496738117427,
+      "n": 3
+     }
+    ]
+   }
+  },
+  "must": "FAIL"
+ },
+ "M-GEST one gesture repeated": {
+  "result": {
+   "single": {
+    "recurrence": 0.8461538461538461,
+    "n_observations": 312,
+    "n_bursts": 39,
+    "n_clusters": 78,
+    "widest_pct": 2.538531278331823,
+    "recurrence_from_overwide_clusters": 0.15384615384615385,
+    "top": [
+     {
+      "f_hz": 621.875,
+      "bursts": 15,
+      "spread_hz": 5.859375,
+      "spread_pct": 0.9422110552763818,
+      "n": 15
+     },
+     {
+      "f_hz": 544.921875,
+      "bursts": 13,
+      "spread_hz": 0.0,
+      "spread_pct": 0.0,
+      "n": 13
+     },
+     {
+      "f_hz": 914.0625,
+      "bursts": 12,
+      "spread_hz": 0.0,
+      "spread_pct": 0.0,
+      "n": 12
+     },
+     {
+      "f_hz": 667.96875,
+      "bursts": 11,
+      "spread_hz": 0.0,
+      "spread_pct": 0.0,
+      "n": 11
+     },
+     {
+      "f_hz": 1652.34375,
+      "bursts": 11,
+      "spread_hz": 0.0,
+      "spread_pct": 0.0,
+      "n": 11
+     },
+     {
+      "f_hz": 234.375,
+      "bursts": 10,
+      "spread_hz": 0.0,
+      "spread_pct": 0.0,
+      "n": 10
+     }
+    ]
+   },
+   "centroid": {
+    "recurrence": 0.8461538461538461,
+    "n_observations": 312,
+    "n_bursts": 39,
+    "n_clusters": 80,
+    "widest_pct": 1.770152505446623,
+    "recurrence_from_overwide_clusters": 0.10256410256410256,
+    "top": [
+     {
+      "f_hz": 621.875,
+      "bursts": 15,
+      "spread_hz": 5.859375,
+      "spread_pct": 0.9422110552763818,
+      "n": 15
+     },
+     {
+      "f_hz": 544.921875,
+      "bursts": 13,
+      "spread_hz": 0.0,
+      "spread_pct": 0.0,
+      "n": 13
+     },
+     {
+      "f_hz": 914.0625,
+      "bursts": 12,
+      "spread_hz": 0.0,
+      "spread_pct": 0.0,
+      "n": 12
+     },
+     {
+      "f_hz": 667.96875,
+      "bursts": 11,
+      "spread_hz": 0.0,
+      "spread_pct": 0.0,
+      "n": 11
+     },
+     {
+      "f_hz": 1652.34375,
+      "bursts": 11,
+      "spread_hz": 0.0,
+      "spread_pct": 0.0,
+      "n": 11
+     },
+     {
+      "f_hz": 234.375,
+      "bursts": 10,
+      "spread_hz": 0.0,
+      "spread_pct": 0.0,
+      "n": 10
+     }
+    ]
+   }
+  },
+  "must": null
+ }
+}

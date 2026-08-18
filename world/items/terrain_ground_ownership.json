@@ -1,0 +1,39 @@
+{
+ "schema": "f1-round2/item_interface/1.0",
+ "item": "terrain_ground",
+ "kind": "OWNERSHIP_STUB",
+ "not_to_be_confused_with": "world/items/<id>_interface.json, where one exists, is the MODULE's own published contract -- datums, sockets, constants. This file is the CAMPAIGN's ownership decision about the same item and does not replace it.",
+ "why": "WAVE2-SCOPE 3.3. This item is a FLOOR: the world already builds the surface at class level and the item's value to a dependant is the datum, not a silhouette. The class keeps the geometry; this file is what the module would otherwise have shipped.",
+ "decided_in": "R2-331",
+ "class_owner": {
+  "module": "world/build_terrain.py",
+  "objects": [
+   "TER_Ground"
+  ],
+  "objects_in_assembly9": 1,
+  "vertices_in_assembly9": 599872,
+  "counter": null,
+  "counter_value": null,
+  "world_bbox_xyz": [
+   -10906.9,
+   -10486.9,
+   -12.8,
+   10826.9,
+   11216.9,
+   364.5
+  ]
+ },
+ "read_this_instead": "world_contract.world_ground_z(x, y) -- the analytic field. TER_Ground is the MESH of that field and every class builder already reads the field, not the mesh. A dependant must do the same: the mesh is cut away inside the road corridor and the platform, so a ray-cast against it returns nothing exactly where most items stand.",
+ "measured_overlap_with_the_module": {
+  "probe": "work/r2331/own_terrain_ground.json",
+  "item_units_built": 10,
+  "host_frac_in_unit_boxes": 0.013625,
+  "host_frac_in_unit_cores": 0.00146,
+  "control_host": "ARCH_PitWall",
+  "control_host_frac": 0.0,
+  "note": "A containment fraction is an UPPER bound -- a bed's bounding box swallows whatever stands on it. The control is printed beside it for that reason: where the control reads high, the subject's high reading means less."
+ },
+ "argument": "The clearest CLASS verdict in the set, and the one that most needed measuring rather than reading. TER_Ground is a single 638,365-vertex graded grid running x -10,907 to +10,827 and y -10,487 to +11,217 -- 21.7 km square. It is the film's horizon. The item is a ten-object hero patch of the same material. Superseding a horizon with a patch is the hole this exercise exists to prevent, and it would strand 24,646 trees, 2.98 M grass clumps and 1.62 M grit pieces on air. This is also WAVE2-SCOPE 3.3's case exactly -- geometry that exists so other items can read its z -- so the class keeps the geometry and the item becomes an interface stub.",
+ "module_on_disk": "world/items/terrain_ground.py",
+ "module_state": "HOLD -- not placed; see world/items/PLACEMENT.json"
+}

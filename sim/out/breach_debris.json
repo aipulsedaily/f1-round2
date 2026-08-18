@@ -1,0 +1,102 @@
+{
+ "budget": {
+  "crush": {
+   "E_CRUSH": 0.9,
+   "footprint_m2": 0.7245895587290574,
+   "fractured_glass_m2": 78.44550000000008,
+   "footprint_frac": 0.009236853085633422,
+   "outer_ply_in_footprint_kg": 9.057369484113218,
+   "f_spall": 0.12,
+   "crush_spall_kg": 1.0868843380935862
+  },
+  "ledger": {
+   "n_shards": 3796,
+   "mass_cells_kg": 2255.308124999968,
+   "mass_after_kerf_kg": 2240.9093683407714,
+   "mass_built_kg": 2239.923317166559,
+   "kerf_kg": 14.398756659196806,
+   "chamfer_kg": 0.9860511742122071,
+   "deleted_kg": 15.384807833409013,
+   "deleted_frac": 0.006821599081238281,
+   "detail": 1,
+   "kerf_in_crush_kg": 1.741033842112815,
+   "kerf_far_field_kg": 12.657722817083991,
+   "note": "kerf_kg is a CEILING set by a numerical choice (Bullet's collision margin), not a physical dust mass: a real crack in soda-lime glass has a kerf of microns.  kerf_far_field_kg is fracture-surface roughness that stays ON the shard and its correct rendering is a frosted thickness band, not a particle."
+  },
+  "crush_spall_kg": 1.0868843380935862,
+  "arris_spall_kg": 0.9860511742122071,
+  "free_kg": 2.0729355123057935,
+  "ceiling_kg": 15.384807833409013,
+  "frac_of_ceiling": 0.13473912282506983,
+  "PASS": true,
+  "free_frac_of_wall": 0.0009191362764703482
+ },
+ "n_sites": 12756,
+ "n_puffs": 16753,
+ "n_chips": 671564,
+ "site_cap": 160,
+ "dropped_sites_never_released": 1,
+ "mass_emitted_kg": 1.3470537701638816,
+ "d_emitted_mm": {
+  "p05": 2.1482720560188406,
+  "p50": 2.810490780683077,
+  "p95": 5.15505489946091,
+  "dmin": 2.0607265464512197
+ },
+ "mass_emitted_frac_of_budget": 0.6498290767692575,
+ "grade": {
+  "px_min": 1.6,
+  "budget_chips": 260000,
+  "chips_total": 671564,
+  "chips_built": 260000,
+  "mass_total_kg": 1.3470537701638818,
+  "mass_built_kg": 0.8836476712762216,
+  "px_p50_built": 3.2376755282351874,
+  "px_p95_built": 9.021725918240932,
+  "px_max": 265.67143077255093,
+  "closest_approach_m_p05": 0.8780224862187981,
+  "puffs_built": 11246
+ },
+ "powder": {
+  "d_split_mm": 1.5,
+  "powder_kg": 0.27172108452339655,
+  "powder_count": 710986698.6437706,
+  "powder_proj_area_m2": 3.0261199778106667,
+  "extinction_cross_section_m2": 6.052239955621333,
+  "tau_at_birth": 8.352645829229264,
+  "tau_after_0.3_s": 0.23188658833798215,
+  "tau_after_1.0_s": 0.04034826637080889,
+  "verdict": "dense for a few frames at the contact and a thin veil thereafter.  This is the 'dust burst' R2-546 asked for and it is optical depth, not geometry: as particles it is 1e7 sub-pixel solids.  It is NOT built by this module.  Building it means a Cycles volume the camera flies through at f899-908 and that is a render-cost decision for the coordinator, not a side effect of a geometry pass."
+ },
+ "law": {
+  "mass_kg": 2.0729355123057935,
+  "d_bot_mm": 0.05,
+  "d_top_mm": 6.0,
+  "b": 1.0,
+  "bands": [
+   {
+    "d_lo_mm": 0.05,
+    "d_hi_mm": 0.5,
+    "count": 1343946402.8701606,
+    "mass_kg": 0.15547016342293452,
+    "proj_area_m2": 3.907261304333084
+   },
+   {
+    "d_lo_mm": 0.5,
+    "d_hi_mm": 5.0,
+    "count": 13439464.028701609,
+    "mass_kg": 1.5547016342293452,
+    "proj_area_m2": 3.907261304333084
+   },
+   {
+    "d_lo_mm": 5.0,
+    "d_hi_mm": 6.0,
+    "count": 41479.82724907904,
+    "mass_kg": 0.34548925205096553,
+    "proj_area_m2": 0.30938181871076137
+   }
+  ],
+  "total_count": 1357427346.7261112,
+  "total_proj_area_m2": 8.12390442737693
+ }
+}

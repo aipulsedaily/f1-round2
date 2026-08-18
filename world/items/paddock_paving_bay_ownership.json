@@ -1,0 +1,39 @@
+{
+ "schema": "f1-round2/item_interface/1.0",
+ "item": "paddock_paving_bay",
+ "kind": "OWNERSHIP_STUB",
+ "not_to_be_confused_with": "world/items/<id>_interface.json, where one exists, is the MODULE's own published contract -- datums, sockets, constants. This file is the CAMPAIGN's ownership decision about the same item and does not replace it.",
+ "why": "WAVE2-SCOPE 3.3. This item is a FLOOR: the world already builds the surface at class level and the item's value to a dependant is the datum, not a silhouette. The class keeps the geometry; this file is what the module would otherwise have shipped.",
+ "decided_in": "R2-331",
+ "class_owner": {
+  "module": "world/build_architecture.py",
+  "objects": [
+   "ARCH_Paving_Paddock"
+  ],
+  "objects_in_assembly9": 1,
+  "vertices_in_assembly9": 104741,
+  "counter": "paving_bays",
+  "counter_value": 5491,
+  "world_bbox_xyz": [
+   -112.2,
+   -107.7,
+   -0.6,
+   380.0,
+   322.2,
+   0.1
+  ]
+ },
+ "read_this_instead": "APRON_Z, the paddock platform datum. The bays are 5.0 x 6.0 m on that plane with per-bay stain and level jitter.",
+ "measured_overlap_with_the_module": {
+  "probe": "work/r2331/own_paddock_paving_bay.json",
+  "item_units_built": 78,
+  "host_frac_in_unit_boxes": 0.041006,
+  "host_frac_in_unit_cores": 0.011027,
+  "control_host": "ARCH_Paving_Forecourt",
+  "control_host_frac": 0.0,
+  "note": "A containment fraction is an UPPER bound -- a bed's bounding box swallows whatever stands on it. The control is printed beside it for that reason: where the control reads high, the subject's high reading means less."
+ },
+ "argument": "As forecourt_paving_bay, and worse on population: 78 units built against a declared 5,560. _paving_region welds bays, manhole and duct-pit recesses, saw-joint weeds, a two-layer closed sub-base, cast-in slot drains and cable ducts into one mesh. Class.",
+ "module_on_disk": "world/items/paddock_paving_bay.py",
+ "module_state": "HOLD -- not placed; see world/items/PLACEMENT.json"
+}

@@ -1,0 +1,70 @@
+{
+ "R2-4079 (this master)": {
+  "single": {
+   "recurrence": 0.6,
+   "chance": 0.47166666666666657,
+   "chance_sd": 0.03864232351537193,
+   "excess": 0.1283333333333334
+  },
+  "centroid": {
+   "recurrence": 0.5916666666666667,
+   "chance": 0.4039583333333333,
+   "chance_sd": 0.037545689758538794,
+   "excess": 0.18770833333333337
+  }
+ },
+ "R2-4069 (before per-part timbre)": {
+  "single": {
+   "recurrence": 0.525,
+   "chance": 0.47166666666666657,
+   "chance_sd": 0.03864232351537193,
+   "excess": 0.053333333333333455
+  },
+  "centroid": {
+   "recurrence": 0.5083333333333333,
+   "chance": 0.4039583333333333,
+   "chance_sd": 0.037545689758538794,
+   "excess": 0.104375
+  }
+ },
+ "C4 delivered master": {
+  "single": {
+   "recurrence": 0.6120689655172413,
+   "chance": 0.4479525862068966,
+   "chance_sd": 0.039732256180377123,
+   "excess": 0.16411637931034473
+  },
+  "centroid": {
+   "recurrence": 0.5818965517241379,
+   "chance": 0.3769396551724138,
+   "chance_sd": 0.04251702376402065,
+   "excess": 0.2049568965517241
+  }
+ },
+ "C8b physical showroom  (must PASS)": {
+  "ON": null,
+  "OFF": null
+ },
+ "M-ROOMb fixed resonator bank (must FAIL)": {
+  "ON": {
+   "recurrence": 0.046875,
+   "n_bursts": 8
+  },
+  "OFF": {
+   "recurrence": 0.296875,
+   "n_bursts": 8
+  },
+  "chance_OFF": 0.053515625
+ },
+ "M-ROOMa 8-tap FDN no diffusion (must FAIL)": {
+  "ON": {
+   "recurrence": 0.3984375,
+   "n_bursts": 16
+  },
+  "OFF": {
+   "recurrence": 0.5859375,
+   "n_bursts": 16
+  },
+  "chance_OFF": 0.194140625
+ }
+}

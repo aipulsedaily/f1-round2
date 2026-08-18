@@ -1,0 +1,39 @@
+{
+ "schema": "f1-round2/item_interface/1.0",
+ "item": "asphalt_wearing_course",
+ "kind": "OWNERSHIP_STUB",
+ "not_to_be_confused_with": "world/items/<id>_interface.json, where one exists, is the MODULE's own published contract -- datums, sockets, constants. This file is the CAMPAIGN's ownership decision about the same item and does not replace it.",
+ "why": "WAVE2-SCOPE 3.3. This item is a FLOOR: the world already builds the surface at class level and the item's value to a dependant is the datum, not a silhouette. The class keeps the geometry; this file is what the module would otherwise have shipped.",
+ "decided_in": "R2-331",
+ "class_owner": {
+  "module": "world/build_surface.py",
+  "objects": [
+   "SURF_Track"
+  ],
+  "objects_in_assembly9": 1,
+  "vertices_in_assembly9": 524262,
+  "counter": "road_quads",
+  "counter_value": 516664,
+  "world_bbox_xyz": [
+   -644.6,
+   -224.2,
+   -3.9,
+   566.1,
+   951.3,
+   8.1
+  ]
+ },
+ "read_this_instead": "world_contract.ground_z(s, u) for the driving surface. There is no separate wearing course to read: SURF_Track is one welded sheet with no binder, base or sub-base, and every line marking is procedural shader paint rather than geometry.",
+ "measured_overlap_with_the_module": {
+  "probe": "work/r2331/own_asphalt_wearing_course.json",
+  "item_units_built": 5,
+  "host_frac_in_unit_boxes": 0.07147,
+  "host_frac_in_unit_cores": 0.005215,
+  "control_host": "ARCH_Paving_Paddock",
+  "control_host_frac": 0.0,
+  "note": "A containment fraction is an UPPER bound -- a bed's bounding box swallows whatever stands on it. The control is printed beside it for that reason: where the control reads high, the subject's high reading means less."
+ },
+ "argument": "There is no separable wearing course to own. SURF_Track is one welded cyclic sheet of 516,664 quads and the wearing course IS the road body: no binder, no base, no sub-base, and every line marking is procedural shader paint, not geometry. The item is five objects. WAVE2-SCOPE 3.3: interface stub, not a module.",
+ "module_on_disk": "world/items/asphalt_wearing_course.py",
+ "module_state": "HOLD -- not placed; see world/items/PLACEMENT.json"
+}

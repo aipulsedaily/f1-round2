@@ -1,0 +1,39 @@
+{
+ "schema": "f1-round2/item_interface/1.0",
+ "item": "access_road_slab",
+ "kind": "OWNERSHIP_STUB",
+ "not_to_be_confused_with": "world/items/<id>_interface.json, where one exists, is the MODULE's own published contract -- datums, sockets, constants. This file is the CAMPAIGN's ownership decision about the same item and does not replace it.",
+ "why": "WAVE2-SCOPE 3.3. This item is a FLOOR: the world already builds the surface at class level and the item's value to a dependant is the datum, not a silhouette. The class keeps the geometry; this file is what the module would otherwise have shipped.",
+ "decided_in": "R2-331",
+ "class_owner": {
+  "module": "world/build_surface.py",
+  "objects": [
+   "SURF_AccessRoad"
+  ],
+  "objects_in_assembly9": 1,
+  "vertices_in_assembly9": 36765,
+  "counter": "access_quads",
+  "counter_value": 35904,
+  "world_bbox_xyz": [
+   15.0,
+   -6.3,
+   -0.1,
+   226.7,
+   97.3,
+   0.0
+  ]
+ },
+ "read_this_instead": "world_contract.access_route_point(t) and access_edges(t). The ribbon runs from the breach plane at world x = 15.0 for 244.6 m at half-width 6.0 m, tapering onto the pit straight over the last 90 m.",
+ "measured_overlap_with_the_module": {
+  "probe": "work/r2331/own_access_road_slab.json",
+  "item_units_built": 459,
+  "host_frac_in_unit_boxes": 0.636013,
+  "host_frac_in_unit_cores": 0.269006,
+  "control_host": "ARCH_PitWall",
+  "control_host_frac": 0.006568,
+  "note": "A containment fraction is an UPPER bound -- a bed's bounding box swallows whatever stands on it. The control is printed beside it for that reason: where the control reads high, the subject's high reading means less."
+ },
+ "argument": "SURF_AccessRoad is exactly the access ribbon -- 816 rows x 44 columns = 35,904 quads from the breach plane at world x 15.0 out 244.6 m, plus its two 0.30 m sawn edge strips -- and the car drives on it through the Beat 3-to-4 hinge. The item is 459 slabs at ITEM_REJECTED. A floor the film drives across is not something to swap on a rejected gate. Interface stub.",
+ "module_on_disk": "world/items/access_road_slab.py",
+ "module_state": "HOLD -- not placed; see world/items/PLACEMENT.json"
+}

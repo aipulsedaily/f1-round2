@@ -1,0 +1,1376 @@
+{
+ "tag": "AFTER_R2881",
+ "blend": "work/r2881/driver_R2881.blend",
+ "px_per_m_film_f2635": 1458.9,
+ "px_per_m_gate_manifest": 746.7,
+ "objects": {
+  "DRV_Balaclava": {
+   "tris": 65720,
+   "verts": 33792,
+   "size_m": [
+    0.2166,
+    0.1965,
+    0.3166
+   ],
+   "diag_m": 0.431,
+   "smooth_shaded": true,
+   "materials": [
+    "DRV_Nomex",
+    "DRV_Knit",
+    "DRV_Leather",
+    "DRV_Grip",
+    "DRV_Paint",
+    "DRV_Visor",
+    "DRV_Tearoff",
+    "DRV_Carbon",
+    "DRV_Webbing",
+    "DRV_Hardware",
+    "DRV_Foam",
+    "DRV_Rubber",
+    "DRV_Embroidery",
+    "DRV_Silicone"
+   ],
+   "edges": {
+    "n_edges": 66028,
+    "p10_m": 0.0023752029114858016,
+    "median_m": 0.002874861612190296,
+    "p90_m": 0.004515128112497746
+   },
+   "pole": {
+    "verts": 33792,
+    "median_valence": 4.0,
+    "max_valence": 4,
+    "n_high_valence": 0,
+    "poles": []
+   },
+   "median_edge_px_film": 4.194,
+   "median_edge_px_gate": 2.147,
+   "diag_px_film": 628.8
+  },
+  "DRV_Boot_L": {
+   "tris": 22486,
+   "verts": 11616,
+   "size_m": [
+    0.2268,
+    0.1165,
+    0.3273
+   ],
+   "diag_m": 0.4149,
+   "smooth_shaded": true,
+   "materials": [
+    "DRV_Nomex",
+    "DRV_Knit",
+    "DRV_Leather",
+    "DRV_Grip",
+    "DRV_Paint",
+    "DRV_Visor",
+    "DRV_Tearoff",
+    "DRV_Carbon",
+    "DRV_Webbing",
+    "DRV_Hardware",
+    "DRV_Foam",
+    "DRV_Rubber",
+    "DRV_Embroidery",
+    "DRV_Silicone"
+   ],
+   "edges": {
+    "n_edges": 22858,
+    "p10_m": 0.0019561876843023126,
+    "median_m": 0.003389416183303507,
+    "p90_m": 0.005352777690606356
+   },
+   "pole": {
+    "verts": 11616,
+    "median_valence": 4.0,
+    "max_valence": 4,
+    "n_high_valence": 0,
+    "poles": []
+   },
+   "median_edge_px_film": 4.945,
+   "median_edge_px_gate": 2.531,
+   "diag_px_film": 605.3
+  },
+  "DRV_Boot_R": {
+   "tris": 22486,
+   "verts": 11616,
+   "size_m": [
+    0.3076,
+    0.1222,
+    0.2622
+   ],
+   "diag_m": 0.4222,
+   "smooth_shaded": true,
+   "materials": [
+    "DRV_Nomex",
+    "DRV_Knit",
+    "DRV_Leather",
+    "DRV_Grip",
+    "DRV_Paint",
+    "DRV_Visor",
+    "DRV_Tearoff",
+    "DRV_Carbon",
+    "DRV_Webbing",
+    "DRV_Hardware",
+    "DRV_Foam",
+    "DRV_Rubber",
+    "DRV_Embroidery",
+    "DRV_Silicone"
+   ],
+   "edges": {
+    "n_edges": 22858,
+    "p10_m": 0.001963891128329512,
+    "median_m": 0.0033894372975089024,
+    "p90_m": 0.00535425640616372
+   },
+   "pole": {
+    "verts": 11616,
+    "median_valence": 4.0,
+    "max_valence": 4,
+    "n_high_valence": 0,
+    "poles": []
+   },
+   "median_edge_px_film": 4.945,
+   "median_edge_px_gate": 2.531,
+   "diag_px_film": 615.9
+  },
+  "DRV_Extras": {
+   "tris": 38060,
+   "verts": 19244,
+   "size_m": [
+    0.6617,
+    0.5187,
+    0.6225
+   ],
+   "diag_m": 1.0461,
+   "smooth_shaded": true,
+   "materials": [
+    "DRV_Nomex",
+    "DRV_Knit",
+    "DRV_Leather",
+    "DRV_Grip",
+    "DRV_Paint",
+    "DRV_Visor",
+    "DRV_Tearoff",
+    "DRV_Carbon",
+    "DRV_Webbing",
+    "DRV_Hardware",
+    "DRV_Foam",
+    "DRV_Rubber",
+    "DRV_Embroidery",
+    "DRV_Silicone"
+   ],
+   "edges": {
+    "n_edges": 38554,
+    "p10_m": 0.00034804551364202275,
+    "median_m": 0.0021859846467219457,
+    "p90_m": 0.0057620517088063155
+   },
+   "pole": {
+    "verts": 19244,
+    "median_valence": 4.0,
+    "max_valence": 40,
+    "n_high_valence": 24,
+    "poles": [
+     {
+      "vert": 3600,
+      "valence": 40,
+      "co_local": [
+       0.14178,
+       0.10564,
+       0.26754
+      ]
+     },
+     {
+      "vert": 3601,
+      "valence": 40,
+      "co_local": [
+       -0.04049,
+       0.14549,
+       -0.30674
+      ]
+     },
+     {
+      "vert": 10444,
+      "valence": 40,
+      "co_local": [
+       0.28129,
+       -0.1501,
+       -0.03498
+      ]
+     },
+     {
+      "vert": 10445,
+      "valence": 40,
+      "co_local": [
+       -0.04048,
+       -0.19451,
+       -0.30674
+      ]
+     },
+     {
+      "vert": 6100,
+      "valence": 24,
+      "co_local": [
+       0.013,
+       0.21621,
+       0.12915
+      ]
+     },
+     {
+      "vert": 6101,
+      "valence": 24,
+      "co_local": [
+       -0.00741,
+       0.23277,
+       0.13989
+      ]
+     },
+     {
+      "vert": 5762,
+      "valence": 24,
+      "co_local": [
+       0.01549,
+       0.21952,
+       0.12876
+      ]
+     },
+     {
+      "vert": 5763,
+      "valence": 24,
+      "co_local": [
+       -0.00493,
+       0.23609,
+       0.1395
+      ]
+     },
+     {
+      "vert": 6439,
+      "valence": 24,
+      "co_local": [
+       -0.0099,
+       0.22946,
+       0.14028
+      ]
+     },
+     {
+      "vert": 6438,
+      "valence": 24,
+      "co_local": [
+       0.01052,
+       0.2129,
+       0.12954
+      ]
+     },
+     {
+      "vert": 12607,
+      "valence": 24,
+      "co_local": [
+       0.12311,
+       -0.21729,
+       -0.02239
+      ]
+     },
+     {
+      "vert": 12606,
+      "valence": 24,
+      "co_local": [
+       0.12846,
+       -0.21463,
+       -0.05016
+      ]
+     }
+    ]
+   },
+   "median_edge_px_film": 3.189,
+   "median_edge_px_gate": 1.632,
+   "diag_px_film": 1526.2
+  },
+  "DRV_Glove_L": {
+   "tris": 52200,
+   "verts": 26323,
+   "size_m": [
+    0.3831,
+    0.1775,
+    0.654
+   ],
+   "diag_m": 0.7784,
+   "smooth_shaded": true,
+   "materials": [
+    "DRV_Nomex",
+    "DRV_Knit",
+    "DRV_Leather",
+    "DRV_Grip",
+    "DRV_Paint",
+    "DRV_Visor",
+    "DRV_Tearoff",
+    "DRV_Carbon",
+    "DRV_Webbing",
+    "DRV_Hardware",
+    "DRV_Foam",
+    "DRV_Rubber",
+    "DRV_Embroidery",
+    "DRV_Silicone"
+   ],
+   "edges": {
+    "n_edges": 52778,
+    "p10_m": 0.0007511104030012427,
+    "median_m": 0.0017327684723549815,
+    "p90_m": 0.0025504215913654846
+   },
+   "pole": {
+    "verts": 26323,
+    "median_valence": 4.0,
+    "max_valence": 96,
+    "n_high_valence": 11,
+    "poles": [
+     {
+      "vert": 7104,
+      "valence": 96,
+      "co_local": [
+       0.00384,
+       -0.0758,
+       -0.28753
+      ]
+     },
+     {
+      "vert": 7105,
+      "valence": 96,
+      "co_local": [
+       -0.18667,
+       -0.0758,
+       -0.28753
+      ]
+     },
+     {
+      "vert": 10370,
+      "valence": 34,
+      "co_local": [
+       -0.00804,
+       -0.01084,
+       -0.26121
+      ]
+     },
+     {
+      "vert": 10371,
+      "valence": 34,
+      "co_local": [
+       -0.02325,
+       -0.07341,
+       -0.25413
+      ]
+     },
+     {
+      "vert": 13636,
+      "valence": 34,
+      "co_local": [
+       -0.02063,
+       -0.00855,
+       -0.28036
+      ]
+     },
+     {
+      "vert": 13637,
+      "valence": 34,
+      "co_local": [
+       -0.01956,
+       -0.07452,
+       -0.27843
+      ]
+     },
+     {
+      "vert": 16902,
+      "valence": 34,
+      "co_local": [
+       -0.01108,
+       -0.0106,
+       -0.29991
+      ]
+     },
+     {
+      "vert": 16903,
+      "valence": 34,
+      "co_local": [
+       -0.02446,
+       -0.07319,
+       -0.30321
+      ]
+     },
+     {
+      "vert": 20168,
+      "valence": 34,
+      "co_local": [
+       0.00673,
+       -0.02548,
+       -0.31872
+      ]
+     },
+     {
+      "vert": 20169,
+      "valence": 34,
+      "co_local": [
+       -0.03311,
+       -0.07105,
+       -0.32699
+      ]
+     },
+     {
+      "vert": 22686,
+      "valence": 34,
+      "co_local": [
+       0.01369,
+       -0.03511,
+       -0.25904
+      ]
+     }
+    ]
+   },
+   "median_edge_px_film": 2.528,
+   "median_edge_px_gate": 1.294,
+   "diag_px_film": 1135.6
+  },
+  "DRV_Glove_R": {
+   "tris": 52424,
+   "verts": 26463,
+   "size_m": [
+    0.483,
+    0.2631,
+    0.3897
+   ],
+   "diag_m": 0.674,
+   "smooth_shaded": true,
+   "materials": [
+    "DRV_Nomex",
+    "DRV_Knit",
+    "DRV_Leather",
+    "DRV_Grip",
+    "DRV_Paint",
+    "DRV_Visor",
+    "DRV_Tearoff",
+    "DRV_Carbon",
+    "DRV_Webbing",
+    "DRV_Hardware",
+    "DRV_Foam",
+    "DRV_Rubber",
+    "DRV_Embroidery",
+    "DRV_Silicone"
+   ],
+   "edges": {
+    "n_edges": 53030,
+    "p10_m": 0.0007492844718333828,
+    "median_m": 0.0017325695718159871,
+    "p90_m": 0.002553578694445649
+   },
+   "pole": {
+    "verts": 26463,
+    "median_valence": 4.0,
+    "max_valence": 96,
+    "n_high_valence": 11,
+    "poles": [
+     {
+      "vert": 7104,
+      "valence": 96,
+      "co_local": [
+       -0.04346,
+       0.04815,
+       -0.15537
+      ]
+     },
+     {
+      "vert": 7105,
+      "valence": 96,
+      "co_local": [
+       -0.23398,
+       0.04815,
+       -0.15537
+      ]
+     },
+     {
+      "vert": 10370,
+      "valence": 34,
+      "co_local": [
+       -0.05534,
+       0.11311,
+       -0.12905
+      ]
+     },
+     {
+      "vert": 10371,
+      "valence": 34,
+      "co_local": [
+       -0.07055,
+       0.05054,
+       -0.12196
+      ]
+     },
+     {
+      "vert": 13636,
+      "valence": 34,
+      "co_local": [
+       -0.06793,
+       0.1154,
+       -0.1482
+      ]
+     },
+     {
+      "vert": 13637,
+      "valence": 34,
+      "co_local": [
+       -0.06686,
+       0.04943,
+       -0.14627
+      ]
+     },
+     {
+      "vert": 16902,
+      "valence": 34,
+      "co_local": [
+       -0.05839,
+       0.11335,
+       -0.16774
+      ]
+     },
+     {
+      "vert": 16903,
+      "valence": 34,
+      "co_local": [
+       -0.07177,
+       0.05076,
+       -0.17104
+      ]
+     },
+     {
+      "vert": 20168,
+      "valence": 34,
+      "co_local": [
+       -0.04058,
+       0.09847,
+       -0.18656
+      ]
+     },
+     {
+      "vert": 20169,
+      "valence": 34,
+      "co_local": [
+       -0.08042,
+       0.0529,
+       -0.19483
+      ]
+     },
+     {
+      "vert": 22686,
+      "valence": 34,
+      "co_local": [
+       -0.03362,
+       0.08884,
+       -0.12688
+      ]
+     }
+    ]
+   },
+   "median_edge_px_film": 2.528,
+   "median_edge_px_gate": 1.294,
+   "diag_px_film": 983.3
+  },
+  "DRV_HANS": {
+   "tris": 45476,
+   "verts": 22912,
+   "size_m": [
+    0.3014,
+    0.3486,
+    0.1434
+   ],
+   "diag_m": 0.4826,
+   "smooth_shaded": true,
+   "materials": [
+    "DRV_Nomex",
+    "DRV_Knit",
+    "DRV_Leather",
+    "DRV_Grip",
+    "DRV_Paint",
+    "DRV_Visor",
+    "DRV_Tearoff",
+    "DRV_Carbon",
+    "DRV_Webbing",
+    "DRV_Hardware",
+    "DRV_Foam",
+    "DRV_Rubber",
+    "DRV_Embroidery",
+    "DRV_Silicone"
+   ],
+   "edges": {
+    "n_edges": 45784,
+    "p10_m": 0.0015915948048600705,
+    "median_m": 0.0023331402537264847,
+    "p90_m": 0.0030521825205981562
+   },
+   "pole": {
+    "verts": 22912,
+    "median_valence": 4.0,
+    "max_valence": 56,
+    "n_high_valence": 6,
+    "poles": [
+     {
+      "vert": 16800,
+      "valence": 56,
+      "co_local": [
+       0.11918,
+       0.10989,
+       0.05644
+      ]
+     },
+     {
+      "vert": 16801,
+      "valence": 56,
+      "co_local": [
+       0.12901,
+       -0.1055,
+       0.04288
+      ]
+     },
+     {
+      "vert": 20508,
+      "valence": 40,
+      "co_local": [
+       0.07982,
+       0.12537,
+       0.04429
+      ]
+     },
+     {
+      "vert": 20509,
+      "valence": 40,
+      "co_local": [
+       -0.04054,
+       0.13467,
+       -0.00755
+      ]
+     },
+     {
+      "vert": 22910,
+      "valence": 40,
+      "co_local": [
+       -0.02816,
+       -0.13646,
+       -0.02462
+      ]
+     },
+     {
+      "vert": 22911,
+      "valence": 40,
+      "co_local": [
+       0.09115,
+       -0.12285,
+       0.02867
+      ]
+     }
+    ]
+   },
+   "median_edge_px_film": 3.404,
+   "median_edge_px_gate": 1.742,
+   "diag_px_film": 704.1
+  },
+  "DRV_Harness": {
+   "tris": 365224,
+   "verts": 183870,
+   "size_m": [
+    0.6395,
+    0.491,
+    0.6821
+   ],
+   "diag_m": 1.0561,
+   "smooth_shaded": true,
+   "materials": [
+    "DRV_Nomex",
+    "DRV_Knit",
+    "DRV_Leather",
+    "DRV_Grip",
+    "DRV_Paint",
+    "DRV_Visor",
+    "DRV_Tearoff",
+    "DRV_Carbon",
+    "DRV_Webbing",
+    "DRV_Hardware",
+    "DRV_Foam",
+    "DRV_Rubber",
+    "DRV_Embroidery",
+    "DRV_Silicone"
+   ],
+   "edges": {
+    "n_edges": 369402,
+    "p10_m": 0.0001381552864898123,
+    "median_m": 0.001894917644392849,
+    "p90_m": 0.0034176940603363706
+   },
+   "pole": {
+    "verts": 183870,
+    "median_valence": 4.0,
+    "max_valence": 148,
+    "n_high_valence": 98,
+    "poles": [
+     {
+      "vert": 35520,
+      "valence": 148,
+      "co_local": [
+       0.18904,
+       0.02938,
+       -0.06379
+      ]
+     },
+     {
+      "vert": 35521,
+      "valence": 148,
+      "co_local": [
+       -0.18076,
+       0.10834,
+       0.05191
+      ]
+     },
+     {
+      "vert": 76262,
+      "valence": 148,
+      "co_local": [
+       0.18904,
+       -0.03062,
+       -0.06379
+      ]
+     },
+     {
+      "vert": 76263,
+      "valence": 148,
+      "co_local": [
+       -0.18076,
+       -0.12767,
+       0.05191
+      ]
+     },
+     {
+      "vert": 100524,
+      "valence": 112,
+      "co_local": [
+       0.18505,
+       0.02138,
+       -0.09379
+      ]
+     },
+     {
+      "vert": 100525,
+      "valence": 112,
+      "co_local": [
+       0.1103,
+       0.21501,
+       -0.21949
+      ]
+     },
+     {
+      "vert": 123380,
+      "valence": 112,
+      "co_local": [
+       0.18505,
+       -0.02262,
+       -0.09379
+      ]
+     },
+     {
+      "vert": 123381,
+      "valence": 112,
+      "co_local": [
+       0.1103,
+       -0.21501,
+       -0.21949
+      ]
+     },
+     {
+      "vert": 141756,
+      "valence": 112,
+      "co_local": [
+       0.17904,
+       0.01138,
+       -0.10379
+      ]
+     },
+     {
+      "vert": 141757,
+      "valence": 112,
+      "co_local": [
+       0.2403,
+       0.05,
+       -0.31748
+      ]
+     },
+     {
+      "vert": 160132,
+      "valence": 112,
+      "co_local": [
+       0.17904,
+       -0.01262,
+       -0.10379
+      ]
+     },
+     {
+      "vert": 160133,
+      "valence": 112,
+      "co_local": [
+       0.2403,
+       -0.05,
+       -0.31748
+      ]
+     }
+    ]
+   },
+   "median_edge_px_film": 2.764,
+   "median_edge_px_gate": 1.415,
+   "diag_px_film": 1540.7
+  },
+  "DRV_Helmet": {
+   "tris": 593476,
+   "verts": 310569,
+   "size_m": [
+    0.3484,
+    0.3165,
+    0.3568
+   ],
+   "diag_m": 0.5906,
+   "smooth_shaded": true,
+   "materials": [
+    "DRV_Nomex",
+    "DRV_Knit",
+    "DRV_Leather",
+    "DRV_Grip",
+    "DRV_Paint",
+    "DRV_Visor",
+    "DRV_Tearoff",
+    "DRV_Carbon",
+    "DRV_Webbing",
+    "DRV_Hardware",
+    "DRV_Foam",
+    "DRV_Rubber",
+    "DRV_Embroidery",
+    "DRV_Silicone"
+   ],
+   "edges": {
+    "n_edges": 599624,
+    "p10_m": 0.0007018344478982813,
+    "median_m": 0.0015394861933108804,
+    "p90_m": 0.001869306821382909
+   },
+   "pole": {
+    "verts": 310569,
+    "median_valence": 4.0,
+    "max_valence": 512,
+    "n_high_valence": 15,
+    "poles": [
+     {
+      "vert": 141824,
+      "valence": 512,
+      "co_local": [
+       0.01675,
+       -0.02878,
+       0.17756
+      ]
+     },
+     {
+      "vert": 308949,
+      "valence": 20,
+      "co_local": [
+       0.13837,
+       0.03143,
+       -0.13365
+      ]
+     },
+     {
+      "vert": 309191,
+      "valence": 20,
+      "co_local": [
+       0.13442,
+       0.0449,
+       -0.1317
+      ]
+     },
+     {
+      "vert": 308950,
+      "valence": 20,
+      "co_local": [
+       0.14826,
+       0.02702,
+       -0.0962
+      ]
+     },
+     {
+      "vert": 309192,
+      "valence": 20,
+      "co_local": [
+       0.14363,
+       0.04139,
+       -0.09413
+      ]
+     },
+     {
+      "vert": 309433,
+      "valence": 20,
+      "co_local": [
+       0.12943,
+       0.05784,
+       -0.12974
+      ]
+     },
+     {
+      "vert": 309675,
+      "valence": 20,
+      "co_local": [
+       0.12413,
+       0.07054,
+       -0.12779
+      ]
+     },
+     {
+      "vert": 309434,
+      "valence": 20,
+      "co_local": [
+       0.13819,
+       0.05519,
+       -0.09204
+      ]
+     },
+     {
+      "vert": 309918,
+      "valence": 20,
+      "co_local": [
+       0.12652,
+       0.08233,
+       -0.08784
+      ]
+     },
+     {
+      "vert": 310159,
+      "valence": 20,
+      "co_local": [
+       0.11163,
+       0.09546,
+       -0.12382
+      ]
+     },
+     {
+      "vert": 309676,
+      "valence": 20,
+      "co_local": [
+       0.13252,
+       0.06876,
+       -0.08996
+      ]
+     },
+     {
+      "vert": 309917,
+      "valence": 20,
+      "co_local": [
+       0.11843,
+       0.08318,
+       -0.12583
+      ]
+     }
+    ]
+   },
+   "median_edge_px_film": 2.246,
+   "median_edge_px_gate": 1.15,
+   "diag_px_film": 861.6
+  },
+  "DRV_Suit": {
+   "tris": 363798,
+   "verts": 184594,
+   "size_m": [
+    1.2442,
+    0.686,
+    0.8122
+   ],
+   "diag_m": 1.6365,
+   "smooth_shaded": true,
+   "materials": [
+    "DRV_Nomex",
+    "DRV_Knit",
+    "DRV_Leather",
+    "DRV_Grip",
+    "DRV_Paint",
+    "DRV_Visor",
+    "DRV_Tearoff",
+    "DRV_Carbon",
+    "DRV_Webbing",
+    "DRV_Hardware",
+    "DRV_Foam",
+    "DRV_Rubber",
+    "DRV_Embroidery",
+    "DRV_Silicone"
+   ],
+   "edges": {
+    "n_edges": 366810,
+    "p10_m": 0.0015897457673443786,
+    "median_m": 0.00303272944631784,
+    "p90_m": 0.005478187405022996
+   },
+   "pole": {
+    "verts": 184594,
+    "median_valence": 4.0,
+    "max_valence": 72,
+    "n_high_valence": 2,
+    "poles": [
+     {
+      "vert": 176016,
+      "valence": 72,
+      "co_local": [
+       -0.55883,
+       -0.09289,
+       0.04644
+      ]
+     },
+     {
+      "vert": 176017,
+      "valence": 72,
+      "co_local": [
+       -0.56476,
+       0.03654,
+       0.05443
+      ]
+     }
+    ]
+   },
+   "median_edge_px_film": 4.424,
+   "median_edge_px_gate": 2.265,
+   "diag_px_film": 2387.5
+  }
+ },
+ "materials": {
+  "DRV_Carbon": {
+   "name": "DRV_Carbon",
+   "nodes": 67,
+   "proc_tex": 6,
+   "image_tex": 0,
+   "bump_nodes": 1,
+   "normal_socket": "Principled BSDF: Normal <- Bump <- Math",
+   "kinds": {
+    "BsdfPrincipled": 1,
+    "OutputMaterial": 1,
+    "Attribute": 4,
+    "SeparateColor": 2,
+    "TexCoord": 1,
+    "UVMap": 1,
+    "SeparateXYZ": 4,
+    "Math": 36,
+    "CombineXYZ": 4,
+    "TexWave": 3,
+    "ValToRGB": 2,
+    "MixRGB": 4,
+    "TexNoise": 1,
+    "VectorMath": 1,
+    "TexVoronoi": 1,
+    "Bump": 1
+   }
+  },
+  "DRV_Embroidery": {
+   "name": "DRV_Embroidery",
+   "nodes": 43,
+   "proc_tex": 4,
+   "image_tex": 0,
+   "bump_nodes": 1,
+   "normal_socket": "Principled BSDF: Normal <- Bump <- Math",
+   "kinds": {
+    "BsdfPrincipled": 1,
+    "OutputMaterial": 1,
+    "Attribute": 4,
+    "SeparateColor": 2,
+    "TexCoord": 1,
+    "UVMap": 1,
+    "SeparateXYZ": 2,
+    "Math": 20,
+    "CombineXYZ": 2,
+    "TexWave": 1,
+    "TexNoise": 1,
+    "VectorMath": 1,
+    "TexVoronoi": 1,
+    "MixRGB": 4,
+    "Bump": 1
+   }
+  },
+  "DRV_Foam": {
+   "name": "DRV_Foam",
+   "nodes": 30,
+   "proc_tex": 4,
+   "image_tex": 0,
+   "bump_nodes": 1,
+   "normal_socket": "Principled BSDF: Normal <- Bump <- Math",
+   "kinds": {
+    "BsdfPrincipled": 1,
+    "OutputMaterial": 1,
+    "Attribute": 4,
+    "SeparateColor": 2,
+    "TexCoord": 1,
+    "UVMap": 1,
+    "VectorMath": 3,
+    "TexVoronoi": 2,
+    "TexNoise": 1,
+    "Math": 10,
+    "MixRGB": 3,
+    "Bump": 1
+   }
+  },
+  "DRV_Grip": {
+   "name": "DRV_Grip",
+   "nodes": 28,
+   "proc_tex": 3,
+   "image_tex": 0,
+   "bump_nodes": 1,
+   "normal_socket": "Principled BSDF: Normal <- Bump <- Math",
+   "kinds": {
+    "BsdfPrincipled": 1,
+    "OutputMaterial": 1,
+    "Attribute": 4,
+    "SeparateColor": 2,
+    "TexCoord": 1,
+    "UVMap": 1,
+    "VectorMath": 2,
+    "TexNoise": 1,
+    "TexVoronoi": 1,
+    "ValToRGB": 1,
+    "Math": 9,
+    "MixRGB": 3,
+    "Bump": 1
+   }
+  },
+  "DRV_Hardware": {
+   "name": "DRV_Hardware",
+   "nodes": 49,
+   "proc_tex": 5,
+   "image_tex": 0,
+   "bump_nodes": 1,
+   "normal_socket": "Principled BSDF: Normal <- Bump <- Math",
+   "kinds": {
+    "BsdfPrincipled": 1,
+    "OutputMaterial": 1,
+    "Attribute": 4,
+    "SeparateColor": 2,
+    "TexCoord": 1,
+    "UVMap": 1,
+    "VectorMath": 4,
+    "TexWave": 1,
+    "TexVoronoi": 2,
+    "ValToRGB": 3,
+    "TexNoise": 1,
+    "MixRGB": 4,
+    "Math": 23,
+    "Bump": 1
+   }
+  },
+  "DRV_Knit": {
+   "name": "DRV_Knit",
+   "nodes": 59,
+   "proc_tex": 6,
+   "image_tex": 0,
+   "bump_nodes": 1,
+   "normal_socket": "Principled BSDF: Normal <- Bump <- Math",
+   "kinds": {
+    "BsdfPrincipled": 1,
+    "OutputMaterial": 1,
+    "Attribute": 4,
+    "SeparateColor": 2,
+    "TexCoord": 1,
+    "UVMap": 1,
+    "SeparateXYZ": 3,
+    "Math": 29,
+    "CombineXYZ": 3,
+    "TexWave": 3,
+    "VectorMath": 2,
+    "TexNoise": 1,
+    "TexVoronoi": 1,
+    "MixRGB": 6,
+    "Bump": 1
+   }
+  },
+  "DRV_Leather": {
+   "name": "DRV_Leather",
+   "nodes": 44,
+   "proc_tex": 4,
+   "image_tex": 0,
+   "bump_nodes": 1,
+   "normal_socket": "Principled BSDF: Normal <- Bump <- Math",
+   "kinds": {
+    "BsdfPrincipled": 1,
+    "OutputMaterial": 1,
+    "Attribute": 4,
+    "SeparateColor": 2,
+    "TexCoord": 1,
+    "UVMap": 1,
+    "VectorMath": 3,
+    "TexVoronoi": 2,
+    "TexNoise": 1,
+    "Math": 21,
+    "ValToRGB": 1,
+    "MixRGB": 5,
+    "Bump": 1
+   }
+  },
+  "DRV_Nomex": {
+   "name": "DRV_Nomex",
+   "nodes": 84,
+   "proc_tex": 8,
+   "image_tex": 0,
+   "bump_nodes": 1,
+   "normal_socket": "Principled BSDF: Normal <- Bump <- Math",
+   "kinds": {
+    "BsdfPrincipled": 1,
+    "OutputMaterial": 1,
+    "Attribute": 4,
+    "SeparateColor": 2,
+    "TexCoord": 1,
+    "UVMap": 1,
+    "SeparateXYZ": 4,
+    "Math": 45,
+    "CombineXYZ": 4,
+    "TexWave": 3,
+    "TexNoise": 3,
+    "VectorMath": 3,
+    "MixRGB": 9,
+    "ValToRGB": 1,
+    "TexVoronoi": 1,
+    "Bump": 1
+   }
+  },
+  "DRV_Paint": {
+   "name": "DRV_Paint",
+   "nodes": 78,
+   "proc_tex": 6,
+   "image_tex": 0,
+   "bump_nodes": 2,
+   "normal_socket": "Principled BSDF: Normal <- Bump <- Math",
+   "kinds": {
+    "BsdfPrincipled": 1,
+    "OutputMaterial": 1,
+    "Attribute": 4,
+    "SeparateColor": 3,
+    "TexCoord": 1,
+    "UVMap": 1,
+    "SeparateXYZ": 1,
+    "Math": 38,
+    "MixRGB": 7,
+    "ValToRGB": 9,
+    "VectorMath": 5,
+    "TexVoronoi": 1,
+    "TexNoise": 3,
+    "TexWave": 1,
+    "Bump": 2
+   }
+  },
+  "DRV_Rubber": {
+   "name": "DRV_Rubber",
+   "nodes": 36,
+   "proc_tex": 4,
+   "image_tex": 0,
+   "bump_nodes": 1,
+   "normal_socket": "Principled BSDF: Normal <- Bump <- Math",
+   "kinds": {
+    "BsdfPrincipled": 1,
+    "OutputMaterial": 1,
+    "Attribute": 4,
+    "SeparateColor": 2,
+    "TexCoord": 1,
+    "UVMap": 1,
+    "VectorMath": 3,
+    "TexNoise": 1,
+    "TexWave": 1,
+    "TexVoronoi": 1,
+    "Math": 14,
+    "MixRGB": 5,
+    "Bump": 1
+   }
+  },
+  "DRV_Silicone": {
+   "name": "DRV_Silicone",
+   "nodes": 21,
+   "proc_tex": 3,
+   "image_tex": 0,
+   "bump_nodes": 1,
+   "normal_socket": "Principled BSDF: Normal <- Bump <- Math",
+   "kinds": {
+    "BsdfPrincipled": 1,
+    "OutputMaterial": 1,
+    "Attribute": 4,
+    "SeparateColor": 2,
+    "TexCoord": 1,
+    "UVMap": 1,
+    "VectorMath": 2,
+    "TexNoise": 1,
+    "TexVoronoi": 1,
+    "ValToRGB": 1,
+    "Math": 5,
+    "Bump": 1
+   }
+  },
+  "DRV_Tearoff": {
+   "name": "DRV_Tearoff",
+   "nodes": 30,
+   "proc_tex": 4,
+   "image_tex": 0,
+   "bump_nodes": 1,
+   "normal_socket": "Principled BSDF: Normal <- Bump <- Math",
+   "kinds": {
+    "BsdfPrincipled": 1,
+    "OutputMaterial": 1,
+    "Attribute": 4,
+    "SeparateColor": 2,
+    "TexCoord": 1,
+    "UVMap": 1,
+    "VectorMath": 3,
+    "TexNoise": 1,
+    "TexWave": 1,
+    "TexVoronoi": 1,
+    "ValToRGB": 1,
+    "Math": 12,
+    "Bump": 1
+   }
+  },
+  "DRV_Visor": {
+   "name": "DRV_Visor",
+   "nodes": 30,
+   "proc_tex": 4,
+   "image_tex": 0,
+   "bump_nodes": 1,
+   "normal_socket": "Principled BSDF: Normal <- Bump <- Math",
+   "kinds": {
+    "BsdfPrincipled": 1,
+    "OutputMaterial": 1,
+    "Attribute": 4,
+    "SeparateColor": 2,
+    "TexCoord": 1,
+    "UVMap": 1,
+    "VectorMath": 3,
+    "TexNoise": 1,
+    "TexWave": 1,
+    "TexVoronoi": 1,
+    "ValToRGB": 1,
+    "Math": 12,
+    "Bump": 1
+   }
+  },
+  "DRV_Webbing": {
+   "name": "DRV_Webbing",
+   "nodes": 60,
+   "proc_tex": 5,
+   "image_tex": 0,
+   "bump_nodes": 1,
+   "normal_socket": "Principled BSDF: Normal <- Bump <- Math",
+   "kinds": {
+    "BsdfPrincipled": 1,
+    "OutputMaterial": 1,
+    "Attribute": 4,
+    "SeparateColor": 2,
+    "TexCoord": 1,
+    "UVMap": 1,
+    "SeparateXYZ": 3,
+    "Math": 32,
+    "CombineXYZ": 3,
+    "TexWave": 2,
+    "TexNoise": 1,
+    "VectorMath": 1,
+    "TexVoronoi": 1,
+    "MixRGB": 6,
+    "Bump": 1
+   }
+  }
+ }
+}

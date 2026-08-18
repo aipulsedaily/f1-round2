@@ -1,0 +1,337 @@
+{
+ "item": "tree_italian_cypress",
+ "written": "2026-08-07T15:25:36",
+ "contract": {
+  "ground_z": "world_contract.world_ground_z(x, y)",
+  "base_embed_m": 0.02,
+  "view_transform": "AgX"
+ },
+ "collection": "W_Item_TreeItalianCypress",
+ "library_collection": "W_Item_TreeItalianCypress/Library",
+ "object_prefix": "TIC_",
+ "materials": {
+  "foliage": "TIC_MAT_Foliage",
+  "bark": "TIC_MAT_Bark"
+ },
+ "vertex_attributes": {
+  "cy_tip": "0 at a spray's base, 1 at its tip",
+  "cy_edge": "0 foliage, 2 cone, 3 dead twig",
+  "cy_up": "height fraction of the tree",
+  "cy_rad": "0 on the leader axis, 1 at the crown envelope",
+  "cy_var": "per-tree constant in [0,1)"
+ },
+ "framing": {
+  "stated_gate_distance_m": 14.0,
+  "stated_gate_px_per_m": 266.6666666666667,
+  "built_for_range_m": [
+   6.0,
+   45.0
+  ],
+  "lens_mm": 35.0,
+  "why_14m": "the manifest's own nearest_camera_m for every other PADDOCK tree (tree_london_plane, paddock_avenue_tree, planter_shrub); this item is declared '14 % of the paddock mix'; 1.43x closer than this item's own manifest 20.0 m, and it keeps check 8 in scope, which 20.0 m would not (5 mm = 0.93 px there)",
+  "manifest_nearest_camera_m": 20.0,
+  "manifest_hero": false,
+  "host_bound_min_depth_m": 4.577,
+  "host_bound_peak_px_4k": 2160.0,
+  "HOST_BOUND_CAVEAT": "screen_presence.json's own presence_unverified_2026_08_04 block: these are HOST upper bounds, and 'a HERO verdict on an item listed ABSENT in the census must not be quoted without the qualifier'. This item's 93 hosts are VEG_shrub_*, VEG_sapling, VEG_fern and 81 more; all five tree species report the identical min_depth_m 4.577, which is one shared host approach and not five measurements. Gated at 4.577 m as a SECOND run and reported as a host bound.",
+  "what_would_settle_it": "screen_presence.json's own `to_clear`: place the item modules into the assembled world and re-derive with tools/retier.sh. SHIPPING.md says assembly10.blend is the first assembly carrying anything from world/items/. Until this module is in an assembly and re-swept, 4.577 m belongs to the ferns."
+ },
+ "population": {
+  "declared_instances": 1400,
+  "distinct_sources": 44,
+  "emission": "real objects for the sources + a GeometryNodes Instance-on-Points field for the rest, so item_gate's STRONG variety path applies",
+  "heights_m": [
+   11.858,
+   14.267,
+   9.643,
+   10.699,
+   13.876,
+   9.732,
+   10.782,
+   9.863,
+   12.82,
+   9.866,
+   9.652,
+   12.641,
+   10.24,
+   11.299,
+   13.129,
+   9.79,
+   10.499,
+   14.339,
+   12.749,
+   10.15,
+   12.976,
+   9.515,
+   11.354,
+   10.367,
+   12.223,
+   14.111,
+   10.491,
+   13.244,
+   13.817,
+   13.703,
+   13.441,
+   10.774,
+   13.866,
+   12.713,
+   11.691,
+   13.205,
+   10.895,
+   8.905,
+   10.656,
+   9.798,
+   10.962,
+   12.728,
+   13.357,
+   11.396
+  ],
+  "ages": [
+   0.428,
+   0.427,
+   0.122,
+   0.782,
+   0.654,
+   0.103,
+   0.76,
+   0.589,
+   0.391,
+   0.15,
+   0.036,
+   0.698,
+   0.529,
+   0.589,
+   0.611,
+   0.457,
+   0.932,
+   0.99,
+   0.593,
+   0.277,
+   0.693,
+   0.352,
+   0.551,
+   0.424,
+   0.28,
+   0.662,
+   0.422,
+   0.468,
+   0.798,
+   0.351,
+   0.515,
+   0.529,
+   0.809,
+   0.402,
+   0.615,
+   0.431,
+   0.318,
+   0.02,
+   0.911,
+   0.272,
+   0.184,
+   0.511,
+   0.338,
+   0.669
+  ],
+  "crown_r_m": [
+   0.674,
+   0.822,
+   0.518,
+   0.626,
+   0.81,
+   0.501,
+   0.687,
+   0.518,
+   0.673,
+   0.507,
+   0.487,
+   0.762,
+   0.623,
+   0.583,
+   0.685,
+   0.572,
+   0.695,
+   0.991,
+   0.738,
+   0.523,
+   0.779,
+   0.483,
+   0.672,
+   0.507,
+   0.703,
+   0.762,
+   0.625,
+   0.74,
+   0.881,
+   0.729,
+   0.694,
+   0.527,
+   0.811,
+   0.599,
+   0.67,
+   0.632,
+   0.572,
+   0.388,
+   0.684,
+   0.503,
+   0.566,
+   0.693,
+   0.718,
+   0.661
+  ]
+ },
+ "lod": {
+  "0": "as gated; ~185 k quads / tree; the film's ladder inside 45 m",
+  "1": "lobe count x0.42 on a 7x6 spray grid; ~33 k quads",
+  "2": "lobe count x0.14 on a 4x4 spray grid, no sprig fringe",
+  "note": "1,400 instances of LOD 0 is ~520 M triangles. The world module owns the ladder; this module is judged at LOD 0."
+ },
+ "relief": {
+  "sun_elev_deg": 12.47061,
+  "sun_amplifier": 4.52168362969103,
+  "stages": [
+   {
+    "stage": "geo_branchlet_ridge",
+    "wavelength_m": 0.03,
+    "amp_mm_pp": 6.336277141026289,
+    "band": "hard_feature"
+   },
+   {
+    "stage": "geo_spray_surface",
+    "wavelength_m": 0.07,
+    "amp_mm_pp": 2.856643313196756,
+    "band": "geometry_fold"
+   },
+   {
+    "stage": "geo_trunk_flute",
+    "wavelength_m": 0.055,
+    "amp_mm_pp": 2.3438046708032085,
+    "band": "geometry_fold"
+   },
+   {
+    "stage": "geo_bark_fissure",
+    "wavelength_m": 0.026,
+    "amp_mm_pp": 3.1310602424860643,
+    "band": "hard_feature"
+   },
+   {
+    "stage": "shd_branchlet_groove",
+    "wavelength_m": 0.014,
+    "amp_mm_pp": 0.19730279200650114,
+    "band": "isotropic_micro"
+   },
+   {
+    "stage": "shd_leaf_rank",
+    "wavelength_m": 0.0025,
+    "amp_mm_pp": 0.024650530210061264,
+    "band": "isotropic_micro"
+   },
+   {
+    "stage": "shd_bark_fibre",
+    "wavelength_m": 0.0035,
+    "amp_mm_pp": 0.03697842042783636,
+    "band": "isotropic_micro"
+   },
+   {
+    "stage": "shd_bark_plate",
+    "wavelength_m": 0.022,
+    "amp_mm_pp": 0.4812352004617192,
+    "band": "isotropic_macro"
+   },
+   {
+    "stage": "shd_cone_scale",
+    "wavelength_m": 0.007,
+    "amp_mm_pp": 0.13576423274701835,
+    "band": "isotropic_macro"
+   }
+  ],
+  "pixel_footprint": [
+   {
+    "stage": "geo_branchlet_ridge",
+    "wavelength_mm": 30.0,
+    "amplitude_mm_pp": 6.336277141026289,
+    "band": "hard_feature",
+    "px_at_14.000m": 8.0,
+    "px_at_4.577m": 24.4701769718156,
+    "px_at_20.000m": 5.6000000000000005
+   },
+   {
+    "stage": "geo_spray_surface",
+    "wavelength_mm": 70.0,
+    "amplitude_mm_pp": 2.856643313196756,
+    "band": "geometry_fold",
+    "px_at_14.000m": 18.66666666666667,
+    "px_at_4.577m": 57.09707960090307,
+    "px_at_20.000m": 13.06666666666667
+   },
+   {
+    "stage": "geo_trunk_flute",
+    "wavelength_mm": 55.0,
+    "amplitude_mm_pp": 2.3438046708032085,
+    "band": "geometry_fold",
+    "px_at_14.000m": 14.666666666666668,
+    "px_at_4.577m": 44.86199111499527,
+    "px_at_20.000m": 10.266666666666667
+   },
+   {
+    "stage": "geo_bark_fissure",
+    "wavelength_mm": 26.0,
+    "amplitude_mm_pp": 3.1310602424860643,
+    "band": "hard_feature",
+    "px_at_14.000m": 6.933333333333334,
+    "px_at_4.577m": 21.207486708906853,
+    "px_at_20.000m": 4.8533333333333335
+   },
+   {
+    "stage": "shd_branchlet_groove",
+    "wavelength_mm": 14.0,
+    "amplitude_mm_pp": 0.19730279200650114,
+    "band": "isotropic_micro",
+    "px_at_14.000m": 3.733333333333334,
+    "px_at_4.577m": 11.419415920180613,
+    "px_at_20.000m": 2.6133333333333337
+   },
+   {
+    "stage": "shd_leaf_rank",
+    "wavelength_mm": 2.5,
+    "amplitude_mm_pp": 0.024650530210061264,
+    "band": "isotropic_micro",
+    "px_at_14.000m": 0.6666666666666667,
+    "px_at_4.577m": 2.0391814143179667,
+    "px_at_20.000m": 0.46666666666666673
+   },
+   {
+    "stage": "shd_bark_fibre",
+    "wavelength_mm": 3.5,
+    "amplitude_mm_pp": 0.03697842042783636,
+    "band": "isotropic_micro",
+    "px_at_14.000m": 0.9333333333333335,
+    "px_at_4.577m": 2.8548539800451533,
+    "px_at_20.000m": 0.6533333333333334
+   },
+   {
+    "stage": "shd_bark_plate",
+    "wavelength_mm": 22.0,
+    "amplitude_mm_pp": 0.4812352004617192,
+    "band": "isotropic_macro",
+    "px_at_14.000m": 5.866666666666667,
+    "px_at_4.577m": 17.944796445998104,
+    "px_at_20.000m": 4.1066666666666665
+   },
+   {
+    "stage": "shd_cone_scale",
+    "wavelength_mm": 7.0,
+    "amplitude_mm_pp": 0.13576423274701835,
+    "band": "isotropic_macro",
+    "px_at_14.000m": 1.866666666666667,
+    "px_at_4.577m": 5.709707960090307,
+    "px_at_20.000m": 1.3066666666666669
+   }
+  ],
+  "where_the_law_stops": "slope_for_modulation refuses m > 2/tan(e) = 9.04 and says why: more than that is a shadow, which is geometry, not relief. The crown's lobe FORM (0.18-2.05 m) is form and casts real shadow; geometry_relief_report reads it well over the bands and that is correct. The law governs every shader bump and the surface texture OF a spray or of the bark, and those are all in-band."
+ },
+ "placement": {
+  "ground": "world_contract.world_ground_z(x, y); paddock apron",
+  "base_embed_m": 0.02,
+  "origin": "mesh emitted with the tree BASE at its own local origin, NOT bbox-recentred -- see tree_arrays()"
+ }
+}

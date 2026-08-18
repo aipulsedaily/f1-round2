@@ -1,0 +1,50 @@
+{
+ "a": "render/breach/r2607_A_repaired_f870.png",
+ "b": "render/breach/r2607_B_bent_f870.png",
+ "res": [
+  3840,
+  2160
+ ],
+ "threshold": 8,
+ "rows": [
+  {
+   "window": "WOUND",
+   "px": 652505,
+   "changed_gt_8_pct": 15.0894,
+   "changed_gt_2_pct": 19.4323,
+   "max_delta": 183,
+   "mean_delta": 8.5636,
+   "box": [
+    336,
+    1603,
+    351,
+    866
+   ]
+  },
+  {
+   "window": "CONTROL_mirrored",
+   "px": 652505,
+   "changed_gt_8_pct": 2.8119,
+   "changed_gt_2_pct": 4.5888,
+   "max_delta": 108,
+   "mean_delta": 0.9149,
+   "box": [
+    2237,
+    3504,
+    351,
+    866
+   ]
+  },
+  {
+   "window": "WHOLE_FRAME",
+   "px": 8294400,
+   "changed_gt_8_pct": 5.6295,
+   "changed_gt_2_pct": 8.367,
+   "max_delta": 204,
+   "mean_delta": 2.6027,
+   "box": null
+  }
+ ],
+ "wound_over_control": 5.4,
+ "VISIBLE": false
+}

@@ -1,0 +1,59 @@
+[
+ {
+  "tag": "R6",
+  "table": "breach_film_R6_SHIPPED.npz",
+  "aboard": 0,
+  "carried": 0,
+  "rated": 0,
+  "min_ratio": null,
+  "verdict": "VACUOUS",
+  "worst": "MUL05_S01_P",
+  "tray_top": [
+   15,
+   "MUL05_S01_P"
+  ],
+  "tray_frames": 15,
+  "peak_z": 0.3090178401865677,
+  "peak_above_car": -0.6829821598134322,
+  "peak_air_below": 0.02050864218100396,
+  "peak_glass_below": 60.27272727272727
+ },
+ {
+  "tag": "R2281",
+  "table": "breach_film_R2281_REBAKE.npz",
+  "aboard": 8,
+  "carried": 0,
+  "rated": 8,
+  "min_ratio": 0.33665157604255846,
+  "verdict": "PASS",
+  "worst": "MUL05_S00",
+  "tray_top": [
+   32,
+   "MUL05_S00"
+  ],
+  "tray_frames": 32,
+  "peak_z": 1.0664993061095946,
+  "peak_above_car": 0.07449930610959465,
+  "peak_air_below": 0.02038696850750635,
+  "peak_glass_below": 720.3636363636364
+ },
+ {
+  "tag": "R2387",
+  "table": "breach_film_R2387.npz",
+  "aboard": 10,
+  "carried": 8,
+  "rated": 10,
+  "min_ratio": 0.07561712922429645,
+  "verdict": "FAIL",
+  "worst": "TRN_z0_b05",
+  "tray_top": [
+   108,
+   "MUL05_S02_P"
+  ],
+  "tray_frames": 108,
+  "peak_z": 0.8617247250689367,
+  "peak_above_car": -0.13027527493106328,
+  "peak_air_below": 0.14067653587031817,
+  "peak_glass_below": 2.1818181818181817
+ }
+]

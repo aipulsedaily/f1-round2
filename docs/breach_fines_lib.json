@@ -1,0 +1,51 @@
+{
+ "built": {
+  "puffs": 11246,
+  "chips": 260000,
+  "tris": 4679872,
+  "keys": 2844012,
+  "mass_kg": 1.00226292355175,
+  "verts": 2859936,
+  "skipped_empty": 0
+ },
+ "curve_proof": {
+  "objects_checked": 40,
+  "flags": {
+   "LINEAR": 9814,
+   "CONSTANT": 240,
+   "other": 0
+  },
+  "max_linear_eval_err": 9.5367431640625e-07,
+  "bezier_control_err": 0.038336753845214844,
+  "control_fires": true
+ },
+ "bytes": 101909192,
+ "out": "out/breach_fines_lib.blend",
+ "debris": "/workspace/exec/ccd9c5a06a99/bundle/sim/out/breach_debris.npz",
+ "round_trip": {
+  "objects": 11246,
+  "objects_expected": 11246,
+  "animated": 11246,
+  "keys": 2844012,
+  "keys_expected": 2844012,
+  "hide_curves": 22492,
+  "tris_expected": 4679872,
+  "worst_pos_err_m": 1.6982105920819701e-06,
+  "worst_pos_at": [
+   "DB_p05600",
+   866
+  ],
+  "frames_checked": [
+   866,
+   880,
+   900,
+   930,
+   1200,
+   2978
+  ],
+  "puffs_checked": 64,
+  "visibility_mismatches": [],
+  "n_visibility_mismatches": 0,
+  "PASS": true
+ }
+}

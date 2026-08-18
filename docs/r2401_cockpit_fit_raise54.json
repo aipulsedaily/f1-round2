@@ -1,0 +1,572 @@
+{
+ "frame": 1200,
+ "interior_offset_m": 1.305944924213618e-05,
+ "drv_bounds": {
+  "DRV_Balaclava": {
+   "min": [
+    -0.14092254638671875,
+    -0.09024167060852051,
+    0.5862594246864319
+   ],
+   "max": [
+    0.06477103382349014,
+    0.08687524497509003,
+    0.8969261050224304
+   ],
+   "verts": 33792,
+   "faces": 32860,
+   "hide_render": false
+  },
+  "DRV_Boot_L": {
+   "min": [
+    -400.7060852050781,
+    81.56548309326172,
+    0.23295781016349792
+   ],
+   "max": [
+    -400.5030517578125,
+    81.7354507446289,
+    0.48744699358940125
+   ],
+   "verts": 9172,
+   "faces": 8816,
+   "hide_render": true
+  },
+  "DRV_Boot_R": {
+   "min": [
+    -400.7165222167969,
+    81.55268096923828,
+    0.23128707706928253
+   ],
+   "max": [
+    -400.5028381347656,
+    81.76628112792969,
+    0.42964068055152893
+   ],
+   "verts": 7841,
+   "faces": 7463,
+   "hide_render": true
+  },
+  "DRV_Extras": {
+   "min": [
+    -0.07299633324146271,
+    -0.3125874400138855,
+    0.38333407044410706
+   ],
+   "max": [
+    0.4572068154811859,
+    0.31573575735092163,
+    0.7733761668205261
+   ],
+   "verts": 15157,
+   "faces": 15166,
+   "hide_render": false
+  },
+  "DRV_Glove_L": {
+   "min": [
+    0.12438797950744629,
+    2.3707527361693792e-05,
+    0.20522098243236542
+   ],
+   "max": [
+    0.5387897491455078,
+    0.269646018743515,
+    0.5308010578155518
+   ],
+   "verts": 26320,
+   "faces": 26233,
+   "hide_render": false
+  },
+  "DRV_Glove_R": {
+   "min": [
+    0.12440606951713562,
+    -0.26769301295280457,
+    0.21759472787380219
+   ],
+   "max": [
+    0.5412833094596863,
+    0.06726935505867004,
+    0.5236738920211792
+   ],
+   "verts": 26459,
+   "faces": 26306,
+   "hide_render": false
+  },
+  "DRV_HANS": {
+   "min": [
+    -0.2050936073064804,
+    -0.16593262553215027,
+    0.549466609954834
+   ],
+   "max": [
+    0.06652052700519562,
+    0.16437625885009766,
+    0.6862528324127197
+   ],
+   "verts": 22912,
+   "faces": 22880,
+   "hide_render": false
+  },
+  "DRV_Harness": {
+   "min": [
+    -0.2240300327539444,
+    -0.16337665915489197,
+    0.3836384117603302
+   ],
+   "max": [
+    0.23000018298625946,
+    0.16223879158496857,
+    0.737811267375946
+   ],
+   "verts": 90924,
+   "faces": 91946,
+   "hide_render": false
+  },
+  "DRV_Helmet": {
+   "min": [
+    -0.18848462402820587,
+    -0.14262084662914276,
+    0.5787382125854492
+   ],
+   "max": [
+    0.1216331496834755,
+    0.13815803825855255,
+    0.9309999942779541
+   ],
+   "verts": 303902,
+   "faces": 291367,
+   "hide_render": false
+  },
+  "DRV_Suit": {
+   "min": [
+    -0.17786961793899536,
+    -0.3806993365287781,
+    0.30644041299819946
+   ],
+   "max": [
+    1.0347973108291626,
+    0.3817816972732544,
+    0.6705706715583801
+   ],
+   "verts": 134824,
+   "faces": 132751,
+   "hide_render": false
+  }
+ },
+ "shoulder": {
+  "L": {
+   "n": 10138,
+   "top": [
+    -0.026627419516444206,
+    0.18700091540813446,
+    0.6561165452003479
+   ],
+   "z_top": 0.6561165452003479
+  },
+  "R": {
+   "n": 10074,
+   "top": [
+    -0.020893873646855354,
+    -0.1876581311225891,
+    0.6572873592376709
+   ],
+   "z_top": 0.6572873592376709
+  }
+ },
+ "part_top_z": {
+  "DRV_HANS": 0.6862528324127197,
+  "DRV_Harness": 0.737811267375946,
+  "DRV_Balaclava": 0.8969261050224304,
+  "DRV_Helmet": 0.9309999942779541
+ },
+ "CI_seal_global": {
+  "min": [
+   -0.1619901806116104,
+   -0.19850878417491913,
+   0.584908127784729
+  ],
+  "max": [
+   0.6260098218917847,
+   0.19852600991725922,
+   0.7297557592391968
+  ]
+ },
+ "rim_at_shoulder": {
+  "L": {
+   "n": 875,
+   "z_top": 0.6688991785049438,
+   "z_mean": 0.6275452993256705
+  },
+  "R": {
+   "n": 875,
+   "z_top": 0.6688991785049438,
+   "z_mean": 0.6275452993256705
+  }
+ },
+ "rim_profile_x_ztop": [
+  [
+   -0.15,
+   14,
+   0.6689
+  ],
+  [
+   -0.1,
+   308,
+   0.6645
+  ],
+  [
+   -0.05,
+   336,
+   0.631
+  ],
+  [
+   -0.0,
+   308,
+   0.6311
+  ],
+  [
+   0.05,
+   308,
+   0.6304
+  ],
+  [
+   0.1,
+   336,
+   0.6279
+  ],
+  [
+   0.15,
+   308,
+   0.6241
+  ],
+  [
+   0.2,
+   308,
+   0.6224
+  ],
+  [
+   0.25,
+   336,
+   0.6204
+  ],
+  [
+   0.3,
+   308,
+   0.6177
+  ],
+  [
+   0.35,
+   308,
+   0.6149
+  ],
+  [
+   0.4,
+   336,
+   0.6121
+  ],
+  [
+   0.45,
+   308,
+   0.6089
+  ],
+  [
+   0.5,
+   336,
+   0.6052
+  ],
+  [
+   0.55,
+   308,
+   0.6001
+  ],
+  [
+   0.6,
+   308,
+   0.5957
+  ]
+ ],
+ "crown_local": [
+  -0.054410938173532486,
+  -0.0027349693700671196,
+  0.9309999942779541
+ ],
+ "ceiling_bvh_objects": [
+  "BB_Deflector",
+  "BB_Fasteners",
+  "BB_Rivets",
+  "BB_RootStrips",
+  "BB_Spacers",
+  "BB_Struts",
+  "BB_Vanes",
+  "CI_column",
+  "CI_dash",
+  "CI_fixings",
+  "CI_footwell",
+  "CI_harness_hw",
+  "CI_harness_web",
+  "CI_headrest",
+  "CI_liner",
+  "CI_lines",
+  "CI_pedals",
+  "CI_seal",
+  "CI_seat",
+  "CI_seatpad",
+  "CI_sidehead",
+  "CI_sip",
+  "EC_bulkhead",
+  "EC_duct",
+  "EC_fin",
+  "EC_fixings",
+  "EC_hoop",
+  "EC_louvres",
+  "EC_pans",
+  "EC_seams",
+  "EC_shell",
+  "EC_tcam",
+  "FD_FloorRivets",
+  "FD_JointStraps",
+  "FD_Shell",
+  "MB_backing",
+  "MB_cell_bulkhead",
+  "MB_cell_fixings",
+  "MB_cell_floor",
+  "MB_cell_stringer",
+  "MB_chassis_cockpit",
+  "MB_chassis_fwd",
+  "MB_engine_cover",
+  "MB_fasteners",
+  "MB_sidepod_L",
+  "MB_sidepod_R",
+  "SP_fixings",
+  "SP_flank",
+  "SP_front",
+  "SP_louvres",
+  "SP_mirror",
+  "SP_mirrorface",
+  "SP_mirrorsilver",
+  "SP_rad",
+  "SP_scoop",
+  "SP_shoulder",
+  "SP_trim",
+  "SP_vane",
+  "SW_BackPlate",
+  "SW_BackRibs",
+  "SW_BackScrews",
+  "SW_CapsAnodisedGold",
+  "SW_CapsAnodisedRed",
+  "SW_CapsDisplayGlass",
+  "SW_CapsMatteBlack",
+  "SW_ClutchL",
+  "SW_ClutchR",
+  "SW_Collars",
+  "SW_DispBezel",
+  "SW_DispData",
+  "SW_DispFace",
+  "SW_DispGlass",
+  "SW_DispLit",
+  "SW_DispOff",
+  "SW_DispScrews",
+  "SW_DispTrim",
+  "SW_GripL",
+  "SW_GripPlateL",
+  "SW_GripPlateR",
+  "SW_GripR",
+  "SW_GripScrewsL",
+  "SW_GripScrewsR",
+  "SW_HubPlate",
+  "SW_HubScrews",
+  "SW_LedCarrier",
+  "SW_LedCups",
+  "SW_LedHood",
+  "SW_LedLenses",
+  "SW_LedLip",
+  "SW_LedLit",
+  "SW_LedOff",
+  "SW_Legends",
+  "SW_Lit0",
+  "SW_Lit1",
+  "SW_Lit2",
+  "SW_LoomBlock",
+  "SW_LoomBoot",
+  "SW_LoomCables",
+  "SW_LoomClamp",
+  "SW_LoomPins",
+  "SW_LoomTies",
+  "SW_Marks",
+  "SW_PadBossL",
+  "SW_PadBossR",
+  "SW_PadBracketL",
+  "SW_PadBracketR",
+  "SW_PadPivotL",
+  "SW_PadPivotR",
+  "SW_PadScrewsL",
+  "SW_PadScrewsR",
+  "SW_Panel",
+  "SW_PanelScrews",
+  "SW_Plate0",
+  "SW_Plate1",
+  "SW_PlateEtch",
+  "SW_PlateRivets",
+  "SW_QRBody",
+  "SW_QRCollar",
+  "SW_QRPins",
+  "SW_QRSpline",
+  "SW_Shell",
+  "SW_ShiftL",
+  "SW_ShiftR",
+  "halo_assembly_CrownVaneL",
+  "halo_assembly_CrownVaneR",
+  "halo_assembly_FairingFrontLAl",
+  "halo_assembly_FairingFrontLAu",
+  "halo_assembly_FairingFrontLNl",
+  "halo_assembly_FairingFrontLNu",
+  "halo_assembly_FairingFrontRAl",
+  "halo_assembly_FairingFrontRAu",
+  "halo_assembly_FairingFrontRNl",
+  "halo_assembly_FairingFrontRNu",
+  "halo_assembly_FairingRearLAl",
+  "halo_assembly_FairingRearLAu",
+  "halo_assembly_FairingRearLNl",
+  "halo_assembly_FairingRearLNu",
+  "halo_assembly_FairingRearRAl",
+  "halo_assembly_FairingRearRAu",
+  "halo_assembly_FairingRearRNl",
+  "halo_assembly_FairingRearRNu",
+  "halo_assembly_Fasteners",
+  "halo_assembly_FinBase",
+  "halo_assembly_FinBlade",
+  "halo_assembly_FrontEarBossL",
+  "halo_assembly_FrontEarBossR",
+  "halo_assembly_FrontEarL",
+  "halo_assembly_FrontEarR",
+  "halo_assembly_FrontPad",
+  "halo_assembly_HaloCamBarrel",
+  "halo_assembly_HaloCamBody",
+  "halo_assembly_HaloCamLens",
+  "halo_assembly_HoopTube",
+  "halo_assembly_Loom",
+  "halo_assembly_LoomClip",
+  "halo_assembly_LoomGrommet",
+  "halo_assembly_MountDetail",
+  "halo_assembly_PillarFairingAl",
+  "halo_assembly_PillarFairingAu",
+  "halo_assembly_PillarFairingNl",
+  "halo_assembly_PillarFairingNu",
+  "halo_assembly_PillarTube",
+  "halo_assembly_PodCamBarrel",
+  "halo_assembly_PodCamHood",
+  "halo_assembly_PodCamLens",
+  "halo_assembly_PodHatchL",
+  "halo_assembly_PodHatchR",
+  "halo_assembly_PodSaddle",
+  "halo_assembly_PodShell",
+  "halo_assembly_RearFerruleL",
+  "halo_assembly_RearFerruleR",
+  "halo_assembly_RearPadL",
+  "halo_assembly_RearPadR",
+  "halo_assembly_RearPedestalL",
+  "halo_assembly_RearPedestalR",
+  "halo_assembly_Seals"
+ ],
+ "cap_points": 4000,
+ "cap_rays_hit": 0,
+ "ceiling_min": null,
+ "vertical_clearance_per_drv": {
+  "DRV_Balaclava": {
+   "clearance_m": 2.3134251023293473e-05,
+   "owner": "CI_seatpad",
+   "from": [
+    -0.05167773738503456,
+    0.059383004903793335,
+    0.6124125123023987
+   ]
+  },
+  "DRV_Extras": {
+   "clearance_m": 4.1178095671057235e-06,
+   "owner": "CI_sip",
+   "from": [
+    0.06076505780220032,
+    0.14335499703884125,
+    0.49044814705848694
+   ]
+  },
+  "DRV_Glove_L": {
+   "clearance_m": 1.1197861340406234e-06,
+   "owner": "SW_GripPlateR",
+   "from": [
+    0.4754520654678345,
+    0.08841115981340408,
+    0.4633888304233551
+   ]
+  },
+  "DRV_Glove_R": {
+   "clearance_m": 2.326347748748958e-05,
+   "owner": "MB_cell_floor",
+   "from": [
+    0.49733003973960876,
+    -0.12118262052536011,
+    0.4244227111339569
+   ]
+  },
+  "DRV_HANS": {
+   "clearance_m": 1.9071572978646145e-06,
+   "owner": "CI_sidehead",
+   "from": [
+    0.002185860415920615,
+    0.13242179155349731,
+    0.6255289912223816
+   ]
+  },
+  "DRV_Harness": {
+   "clearance_m": 7.687729521421716e-06,
+   "owner": "CI_sidehead",
+   "from": [
+    -0.04907732084393501,
+    0.1514192521572113,
+    0.6386657953262329
+   ]
+  },
+  "DRV_Helmet": {
+   "clearance_m": 0.00010084348468808457,
+   "owner": "CI_headrest",
+   "from": [
+    -0.04912016913294792,
+    0.11665214598178864,
+    0.672192394733429
+   ]
+  },
+  "DRV_Suit": {
+   "clearance_m": 1.0955748621199746e-05,
+   "owner": "EC_bulkhead",
+   "from": [
+    -0.15470761060714722,
+    0.06085176393389702,
+    0.5989683270454407
+   ]
+  }
+ },
+ "max_rigid_rise_m": 1.1197861340406234e-06,
+ "max_rigid_rise_blocker": [
+  "DRV_Glove_L",
+  "SW_GripPlateR"
+ ],
+ "halo_bounds": {
+  "min": [
+   -0.10295771807432175,
+   -0.37582919001579285,
+   0.6410817503929138
+  ],
+  "max": [
+   0.9124358296394348,
+   0.37583598494529724,
+   0.8824734091758728
+  ]
+ },
+ "halo_centre_span": {
+  "n": 2214,
+  "z_min": 0.8351070284843445,
+  "z_max": 0.8824734091758728,
+  "x_min": 0.8283011317253113,
+  "x_max": 0.9124358296394348
+ }
+}

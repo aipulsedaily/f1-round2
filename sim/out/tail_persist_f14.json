@@ -1,0 +1,416 @@
+{
+ "blend": "render/film14_breach.blend",
+ "frame_end": 2978,
+ "collections": {
+  "BREACH_Shards": 3796,
+  "BREACH_Panes": 10,
+  "BREACH_Frame": 0
+ },
+ "A_breach_static_audit": {
+  "objects": 3806,
+  "animated": 3802,
+  "fcurves": 34176,
+  "last_key_frame": 1165.0,
+  "non_constant_extrap": [],
+  "fcurve_modifiers": [],
+  "parented": [],
+  "constrained": [],
+  "modified": [],
+  "drivers": [],
+  "delta_transform": [],
+  "unanimated": [
+   "GP_b00",
+   "GP_b01",
+   "GP_b08",
+   "GP_b09"
+  ],
+  "parented_n": 0,
+  "constrained_n": 0,
+  "modified_n": 0,
+  "drivers_n": 0,
+  "delta_transform_n": 0,
+  "non_constant_extrap_n": 0,
+  "fcurve_modifiers_n": 0,
+  "unanimated_n": 4
+ },
+ "span_end": 1165,
+ "tail_frames": 1813,
+ "A_PASS": true,
+ "NEG1_animated_past_span_end": {
+  "n": 10,
+  "examples": [
+   [
+    "ONER",
+    2978.0
+   ],
+   [
+    "CAR_ROOT",
+    2978.0
+   ],
+   [
+    "CARRIG_STEER_FL",
+    2978.0
+   ],
+   [
+    "CARRIG_SPIN_FL",
+    2978.0
+   ],
+   [
+    "CARRIG_STEER_FR",
+    2978.0
+   ],
+   [
+    "CARRIG_SPIN_FR",
+    2978.0
+   ],
+   [
+    "CARRIG_STEER_RL",
+    2978.0
+   ],
+   [
+    "CARRIG_SPIN_RL",
+    2978.0
+   ]
+  ],
+  "scanned": 626
+ },
+ "NEG1_PASS": true,
+ "rows": [
+  {
+   "frame": 1,
+   "shards_visible": 0,
+   "shards_hidden": 3796,
+   "gone": 0,
+   "WOUND_vacated_m2": 0.0,
+   "WOUND_hole_bridged_m2": 0.0,
+   "WOUND_w_m": 0.0,
+   "WOUND_h_m": 0.0,
+   "CONTROL_intact_bays_vacated_m2": 0.0,
+   "CONTROL_intact_bays_hole_m2": 0.0,
+   "panes_hidden": [],
+   "panes_visible": [
+    "GP_b00",
+    "GP_b01",
+    "GP_b02",
+    "GP_b03",
+    "GP_b04",
+    "GP_b05",
+    "GP_b06",
+    "GP_b07",
+    "GP_b08",
+    "GP_b09"
+   ]
+  },
+  {
+   "frame": 400,
+   "shards_visible": 0,
+   "shards_hidden": 3796,
+   "gone": 0,
+   "WOUND_vacated_m2": 0.0,
+   "WOUND_hole_bridged_m2": 0.0,
+   "WOUND_w_m": 0.0,
+   "WOUND_h_m": 0.0,
+   "CONTROL_intact_bays_vacated_m2": 0.0,
+   "CONTROL_intact_bays_hole_m2": 0.0,
+   "panes_hidden": [],
+   "panes_visible": [
+    "GP_b00",
+    "GP_b01",
+    "GP_b02",
+    "GP_b03",
+    "GP_b04",
+    "GP_b05",
+    "GP_b06",
+    "GP_b07",
+    "GP_b08",
+    "GP_b09"
+   ]
+  },
+  {
+   "frame": 859,
+   "shards_visible": 0,
+   "shards_hidden": 3796,
+   "gone": 0,
+   "WOUND_vacated_m2": 0.0,
+   "WOUND_hole_bridged_m2": 0.0,
+   "WOUND_w_m": 0.0,
+   "WOUND_h_m": 0.0,
+   "CONTROL_intact_bays_vacated_m2": 0.0,
+   "CONTROL_intact_bays_hole_m2": 0.0,
+   "panes_hidden": [],
+   "panes_visible": [
+    "GP_b00",
+    "GP_b01",
+    "GP_b02",
+    "GP_b03",
+    "GP_b04",
+    "GP_b05",
+    "GP_b06",
+    "GP_b07",
+    "GP_b08",
+    "GP_b09"
+   ]
+  },
+  {
+   "frame": 860,
+   "shards_visible": 3796,
+   "shards_hidden": 0,
+   "gone": 391,
+   "WOUND_vacated_m2": 0.25,
+   "WOUND_hole_bridged_m2": 0.145,
+   "WOUND_w_m": 0.3,
+   "WOUND_h_m": 0.75,
+   "CONTROL_intact_bays_vacated_m2": 0.0,
+   "CONTROL_intact_bays_hole_m2": 0.0,
+   "panes_hidden": [
+    "GP_b02",
+    "GP_b03",
+    "GP_b04",
+    "GP_b05",
+    "GP_b06",
+    "GP_b07"
+   ],
+   "panes_visible": [
+    "GP_b00",
+    "GP_b01",
+    "GP_b08",
+    "GP_b09"
+   ]
+  },
+  {
+   "frame": 900,
+   "shards_visible": 3796,
+   "shards_hidden": 0,
+   "gone": 2767,
+   "WOUND_vacated_m2": 13.1475,
+   "WOUND_hole_bridged_m2": 11.6575,
+   "WOUND_w_m": 2.15,
+   "WOUND_h_m": 6.0,
+   "CONTROL_intact_bays_vacated_m2": 0.0,
+   "CONTROL_intact_bays_hole_m2": 0.0,
+   "panes_hidden": [
+    "GP_b02",
+    "GP_b03",
+    "GP_b04",
+    "GP_b05",
+    "GP_b06",
+    "GP_b07"
+   ],
+   "panes_visible": [
+    "GP_b00",
+    "GP_b01",
+    "GP_b08",
+    "GP_b09"
+   ]
+  },
+  {
+   "frame": 1000,
+   "shards_visible": 3796,
+   "shards_hidden": 0,
+   "gone": 2941,
+   "WOUND_vacated_m2": 25.15,
+   "WOUND_hole_bridged_m2": 12.4825,
+   "WOUND_w_m": 2.15,
+   "WOUND_h_m": 6.0,
+   "CONTROL_intact_bays_vacated_m2": 0.0,
+   "CONTROL_intact_bays_hole_m2": 0.0,
+   "panes_hidden": [
+    "GP_b02",
+    "GP_b03",
+    "GP_b04",
+    "GP_b05",
+    "GP_b06",
+    "GP_b07"
+   ],
+   "panes_visible": [
+    "GP_b00",
+    "GP_b01",
+    "GP_b08",
+    "GP_b09"
+   ]
+  },
+  {
+   "frame": 1165,
+   "shards_visible": 3796,
+   "shards_hidden": 0,
+   "gone": 2962,
+   "WOUND_vacated_m2": 26.6925,
+   "WOUND_hole_bridged_m2": 12.4825,
+   "WOUND_w_m": 2.15,
+   "WOUND_h_m": 6.0,
+   "CONTROL_intact_bays_vacated_m2": 0.0,
+   "CONTROL_intact_bays_hole_m2": 0.0,
+   "panes_hidden": [
+    "GP_b02",
+    "GP_b03",
+    "GP_b04",
+    "GP_b05",
+    "GP_b06",
+    "GP_b07"
+   ],
+   "panes_visible": [
+    "GP_b00",
+    "GP_b01",
+    "GP_b08",
+    "GP_b09"
+   ]
+  },
+  {
+   "frame": 1166,
+   "shards_visible": 3796,
+   "shards_hidden": 0,
+   "gone": 2962,
+   "WOUND_vacated_m2": 26.6925,
+   "WOUND_hole_bridged_m2": 12.4825,
+   "WOUND_w_m": 2.15,
+   "WOUND_h_m": 6.0,
+   "CONTROL_intact_bays_vacated_m2": 0.0,
+   "CONTROL_intact_bays_hole_m2": 0.0,
+   "panes_hidden": [
+    "GP_b02",
+    "GP_b03",
+    "GP_b04",
+    "GP_b05",
+    "GP_b06",
+    "GP_b07"
+   ],
+   "panes_visible": [
+    "GP_b00",
+    "GP_b01",
+    "GP_b08",
+    "GP_b09"
+   ]
+  },
+  {
+   "frame": 1500,
+   "shards_visible": 3796,
+   "shards_hidden": 0,
+   "gone": 2962,
+   "WOUND_vacated_m2": 26.6925,
+   "WOUND_hole_bridged_m2": 12.4825,
+   "WOUND_w_m": 2.15,
+   "WOUND_h_m": 6.0,
+   "CONTROL_intact_bays_vacated_m2": 0.0,
+   "CONTROL_intact_bays_hole_m2": 0.0,
+   "panes_hidden": [
+    "GP_b02",
+    "GP_b03",
+    "GP_b04",
+    "GP_b05",
+    "GP_b06",
+    "GP_b07"
+   ],
+   "panes_visible": [
+    "GP_b00",
+    "GP_b01",
+    "GP_b08",
+    "GP_b09"
+   ]
+  },
+  {
+   "frame": 2000,
+   "shards_visible": 3796,
+   "shards_hidden": 0,
+   "gone": 2962,
+   "WOUND_vacated_m2": 26.6925,
+   "WOUND_hole_bridged_m2": 12.4825,
+   "WOUND_w_m": 2.15,
+   "WOUND_h_m": 6.0,
+   "CONTROL_intact_bays_vacated_m2": 0.0,
+   "CONTROL_intact_bays_hole_m2": 0.0,
+   "panes_hidden": [
+    "GP_b02",
+    "GP_b03",
+    "GP_b04",
+    "GP_b05",
+    "GP_b06",
+    "GP_b07"
+   ],
+   "panes_visible": [
+    "GP_b00",
+    "GP_b01",
+    "GP_b08",
+    "GP_b09"
+   ]
+  },
+  {
+   "frame": 2500,
+   "shards_visible": 3796,
+   "shards_hidden": 0,
+   "gone": 2962,
+   "WOUND_vacated_m2": 26.6925,
+   "WOUND_hole_bridged_m2": 12.4825,
+   "WOUND_w_m": 2.15,
+   "WOUND_h_m": 6.0,
+   "CONTROL_intact_bays_vacated_m2": 0.0,
+   "CONTROL_intact_bays_hole_m2": 0.0,
+   "panes_hidden": [
+    "GP_b02",
+    "GP_b03",
+    "GP_b04",
+    "GP_b05",
+    "GP_b06",
+    "GP_b07"
+   ],
+   "panes_visible": [
+    "GP_b00",
+    "GP_b01",
+    "GP_b08",
+    "GP_b09"
+   ]
+  },
+  {
+   "frame": 2978,
+   "shards_visible": 3796,
+   "shards_hidden": 0,
+   "gone": 2962,
+   "WOUND_vacated_m2": 26.6925,
+   "WOUND_hole_bridged_m2": 12.4825,
+   "WOUND_w_m": 2.15,
+   "WOUND_h_m": 6.0,
+   "CONTROL_intact_bays_vacated_m2": 0.0,
+   "CONTROL_intact_bays_hole_m2": 0.0,
+   "panes_hidden": [
+    "GP_b02",
+    "GP_b03",
+    "GP_b04",
+    "GP_b05",
+    "GP_b06",
+    "GP_b07"
+   ],
+   "panes_visible": [
+    "GP_b00",
+    "GP_b01",
+    "GP_b08",
+    "GP_b09"
+   ]
+  }
+ ],
+ "C_PASS": true,
+ "C_wound_m2_at_span_end": 12.4825,
+ "C_wound_m2_tail": [
+  12.4825,
+  12.4825,
+  12.4825,
+  12.4825,
+  12.4825
+ ],
+ "D_PASS": true,
+ "D_control_vacated_m2_max": 0.0,
+ "POS_PASS": true,
+ "POS_wound_m2_at_f1": 0.0,
+ "E_frame_persistence": {
+  "pieces": 0,
+  "deflected": 0,
+  "RECOVERED": 0,
+  "stayed": 0,
+  "worst": [],
+  "recovered": [],
+  "max_recovered_peak_m": 0.0,
+  "gate_m": 0.025,
+  "rule": "deflected: peak > 0.010 m.  RECOVERED: end < 10 % of its own peak -- it sprang back to the intact rest pose, which in a take with no cuts is the wall repairing itself on camera.  REFUSED when the largest such recovery clears 0.025 m.",
+  "pct_recovered": 0.0
+ },
+ "E_PASS": true,
+ "PASS": true
+}
