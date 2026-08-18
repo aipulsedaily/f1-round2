@@ -415,9 +415,72 @@ machine this was built on and a clone into `~/f1-round2` works too. See
 
 ## 6. What remains exposed under each of the three publishing options
 
-The choice of publishing strategy is the owner's. This audit does not make it,
-and **no history was rewritten in producing this document.** Here is what each
-option actually leaves behind.
+The choice of publishing strategy is the owner's. This audit did not make it,
+and **no history was rewritten in producing this document** — but history *has*
+been rewritten since, and the update below records it. Here is what each option
+actually leaves behind.
+
+> ### UPDATE, 2026-08-18 — OPTION B WAS CHOSEN AND EXECUTED. This section is now history, not a menu.
+>
+> Every commit's **author and committer** were rewritten to
+> `SuperComboGamer <36320904+SuperComboGamer@users.noreply.github.com>` with
+> `git filter-repo` 2.47.0. `%ae%` and `%ce%` were identical throughout, so
+> rewriting only the author would have left the address in every commit.
+>
+> **`git log --all --format='%an <%ae>%n%cn <%ce>' | sort -u` now returns exactly
+> one line.** Commit counts are unchanged, no `refs/original` remains, no remote
+> exists, and nothing was pushed. A verified `git bundle` of the pre-rewrite
+> history was taken first.
+>
+> **THE ONE THING THAT ALMOST GOT AWAY — read this before trusting any similar
+> job.** A default `git filter-repo` run **does not touch `refs/notes/commits`**.
+> Not a flag anyone forgot: it is deliberate, and the reason is in the tool's own
+> source —
+>
+> ```python
+> # refs/notes/ put commit-message-related material in blobs, and name their
+> # files according to the hash of other commits.  That totally messes with
+> # all normal callbacks; ...
+> if commit.branch.startswith(b'refs/notes/'):
+>   self._imported_refs.add(commit.branch)
+>   commit.dump(self._output)
+>   return          # <- dumped BEFORE any name/email callback runs
+> ```
+>
+> This repository has exactly one note. Its notes commit was authored **and**
+> committed by the personal Gmail, and `git rev-list --count HEAD` never sees it
+> — which is why this repository's commit count reads 654 one way and 655 the
+> other. So a filter-repo run that reported complete success left the personal
+> address in a repository that every check so far had certified clean, and the
+> only reason it was caught is that the run was **rehearsed on a throwaway mirror
+> clone and the notes ref was checked by name**. `git clone` does not copy
+> `refs/notes` either, so the rehearsal had to be a `--mirror`.
+>
+> The notes ref was therefore rebuilt by hand, and it needed three separate
+> repairs, none of which any tool does for you:
+>
+> 1. the notes **commit** re-created with the correct identity, original dates
+>    preserved;
+> 2. the note **re-attached** — a note's *filename* is the SHA of the commit it
+>    annotates, so after the rewrite it was hanging off a commit that no longer
+>    existed and `git notes show` returned nothing;
+> 3. the note's **body** repointed: it cites two commits in prose, inside a git
+>    object that no `git ls-files` scan can see. One of them, `e4d1d90`, was
+>    **unreachable** — it survived only in the reflog, filter-repo did not carry
+>    it over, and the note's instruction to run `git show e4d1d90` is now
+>    impossible. The note says so rather than pointing at a dead hash.
+>
+> **Citations were repointed too**: 272 occurrences of 93 distinct commits across
+> 46 files, including a live code constant (`CANON_BASE_COMMIT` in
+> `sanitise_docs.py`) and 18 cross-references to the sibling repository, which
+> was rewritten in the same round. Verified against the pre-rewrite object
+> database restored from the bundle: **zero stale citations.**
+>
+> What Option B did **not** fix, and what §4 and the options below still describe
+> accurately: the rewrite changed identities, not content. Third-party IP
+> addresses and rented-host identifiers remain in historical blobs. That needs
+> `--replace-text` and is still an open decision.
+
 
 ### Option A — publish as-is, with full history
 
