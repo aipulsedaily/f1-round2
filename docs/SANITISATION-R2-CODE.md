@@ -173,7 +173,7 @@ nothing about the 1,197 occurrences that were not in one.
 
 ## A GitHub account id is also eight digits
 
-`36320904+name@users.noreply.github.com` — the leading number is a GitHub
+`<8-digit-id>+name@users.noreply.github.com` — the leading number is a GitHub
 account id, nothing to do with a rented host. The 8-digit rule aliased it to
 `id-083` and **appended it to `alias_canon.txt`**, which by its own charter can
 never drop an entry again. It corrupted the one document that tells the owner
