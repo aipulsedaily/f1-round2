@@ -276,9 +276,14 @@ fault:
 |---|---:|---:|---|
 | the non-instanced, object-level layer | 1,256,842,384 | 1,255,116,620 | **−0.137 %** |
 | instance **counts** | 4,966,913 | 4,955,784 | **−0.224 %** |
-| triangles **per instance** | 3,308.8 | 3,697.7 | **+11.50 %** |
+| triangles **per instance** | 3,308.8 | 3,697.7 | **+11.75 %** |
 
 So the entire gap is triangles-per-instance. Nothing else moves.
+
+*(The per-instance gap is +11.75 %, not the +11.50 % of the total: instance
+counts differ by −0.224 % as well, and the two compose. The reconciliation record
+quotes +11.50 % on this row; recomputed here, 3,697.7 / 3,308.8 = 1.1175. It
+changes nothing about the argument and is corrected rather than carried.)*
 
 ### The suspect that was named, and what happened to it
 
