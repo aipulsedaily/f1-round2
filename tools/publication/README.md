@@ -34,7 +34,7 @@ past — those identifiers are being left in the clear.
 
 ### The alias map, and why it is append-only
 
-**The map is rebuilt from `fea18b4~1`** — the tree as it stood before the first
+**The map is rebuilt from `6970fdc~1`** — the tree as it stood before the first
 sanitisation commit. `alias_canon.txt` is that map. Rebuilding it from a later
 tree renumbers every existing alias, which silently breaks the one property the
 aliases exist to preserve: that `mach-11` means the same host in every document
@@ -47,7 +47,7 @@ That used to be a rule you had to remember. It is now a property of the code:
 - `alias_canon.txt` **is** the map, in allocation order; the alias is the line
   number. New identifiers are **appended** and take the next free number. The
   file is never sorted and nothing is ever removed from it.
-- `--verify-canon` re-derives the first 82 entries from `fea18b4~1` and checks
+- `--verify-canon` re-derives the first 82 entries from `6970fdc~1` and checks
   them in order. It passes today. **Run it rather than trusting this sentence.**
 - The machine-id list in the script is likewise frozen in allocation order, with
   a comment saying to append and not insert.
@@ -105,7 +105,7 @@ The previous version of this file argued that `R2-3868` should keep its
 because it implies a protection that does not exist.**
 
 That reasoning was sound when it was written and is no longer true. Commit
-`76a4a36` coarsened every other runway number in the corpus precisely so that
+`f1ac39a` coarsened every other runway number in the corpus precisely so that
 `burn × runway` stops reconstructing anything. Once that landed, the exception
 lost the premise it stood on: the figure was no longer recoverable, so leaving it
 was no longer a statement about arithmetic, just a balance in the clear.

@@ -35,9 +35,9 @@ craze 303.0 mm, ravel 454.5 mm.
 
 The record agrees once you look at the right record. `assembly14_build.json`
 records `world/build_surface.py` at sha256 `678fdb3fa6a7…`, which is the blob at
-commit `3b8372f`; `git merge-base --is-ancestor ab1c593 3b8372f` confirms the
+commit `4554353`; `git merge-base --is-ancestor ab1c593 4554353` confirms the
 R2-1031 re-budget commit is an ancestor of it. The **only** difference between
-that state and HEAD is `e241b2f`, which replaces four retyped car-box literals
+that state and HEAD is `298ab63`, which replaces four retyped car-box literals
 with `C.CAR_BODY_*` and is inert by its own measurement.
 
 > ### CORRECTION FOR WHOEVER PLANS THE REBUILD
@@ -523,7 +523,7 @@ but the fix authored for it did not move it.
 
 ### DISPOSITION: REVERTED
 
-`world/build_surface.py` is restored to `9b5d6fb26e33…`, the blob at `e241b2f`,
+`world/build_surface.py` is restored to `9b5d6fb26e33…`, the blob at `298ab63`,
 byte-for-byte. **An additive change that adds no measurable contrast and darkens
 the surface 1.5 % is not neutral, and it should not ride into a 2,978-frame
 master on the strength of the argument that produced it.** The instruments, the

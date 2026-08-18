@@ -281,7 +281,7 @@ C4 is the single most important line in this spec: **a gate that passes the arte
    },
    {
     "claim": "PROVENANCE WARNING before anyone \"fixes\" this by rebuilding: the delivered master was rendered against the 33-frame (1.375 s) beat-1 schedule, but the schedule now on disk is 25 frames (1.0417 s). A rebuild today makes the metronome FASTER, not absent.",
-    "evidence": "audio/out/master.wav is dated Aug 8 02:48; world/beat1_anim_anim.json was rewritten Aug 8 18:10. git 19a55b3 (contract 1.2.1) has seat frames 333..696 at 33-frame spacing = 1.375 s \u2014 this reproduces all 12 measured onsets. git 6e0b37e (current HEAD) has seat frames 238..513 at 25-frame spacing = 1.0417 s, which predicts bursts at 9.875-21.333 s; the file has no impact energy before 13.5 s and plenty at 29 s, so HEAD's schedule is NOT what is in the delivered master. Impact count is 616 and cluster count 15 in both, matching master_report.json assembly = {impacts: 616, clusters: 15}, so the count check cannot tell the two schedules apart either.",
+    "evidence": "audio/out/master.wav is dated Aug 8 02:48; world/beat1_anim_anim.json was rewritten Aug 8 18:10. git 19a55b3 (contract 1.2.1) has seat frames 333..696 at 33-frame spacing = 1.375 s \u2014 this reproduces all 12 measured onsets. git d556a60 (current HEAD) has seat frames 238..513 at 25-frame spacing = 1.0417 s, which predicts bursts at 9.875-21.333 s; the file has no impact energy before 13.5 s and plenty at 29 s, so HEAD's schedule is NOT what is in the delivered master. Impact count is 616 and cluster count 15 in both, matching master_report.json assembly = {impacts: 616, clusters: 15}, so the count check cannot tell the two schedules apart either.",
     "explains_which_percept": "tubes"
    }
   ],

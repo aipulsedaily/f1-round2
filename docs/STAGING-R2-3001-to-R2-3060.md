@@ -1105,7 +1105,7 @@ branch.
 
 ---
 
-## R2-3021 — the RAM floor is IN (`vast-render` `6beb5c9`)
+## R2-3021 — the RAM floor is IN (`vast-render` `9fc984c`)
 
 Landed in `vastctl/vastctl.py`, committed **path-scoped** — `git commit -F ... --
 vastctl/vastctl.py` — because that repo's index holds another agent's 3,635
@@ -1256,7 +1256,7 @@ fleet11       pid 1985431  started  Sat Aug 8 05:53:18
 Every one predates the edit by hours or days. What they imported, from git:
 
 ```
-6beb5c9^  MIN_CPU_RAM_GB = float(... or 50.0)     <- what all live brokers hold
+9fc984c^  MIN_CPU_RAM_GB = float(... or 50.0)     <- what all live brokers hold
 HEAD      MIN_CPU_RAM_GB = float(... or 72.0)     <- what a NEW process gets
           fresh import -> MIN_CPU_RAM_GB=72.0, floor=63.2 GiB/GPU
 ```

@@ -382,7 +382,7 @@ Evidence logs: `tmp/r2_1381_prefix.log`, `tmp/r2_1381_postfix.log`,
 ### R2-2950 — the false accept, watched passing the guard as shipped
 
 The control harness loads the gate under test from a git revision
-(`--gate git:0bbfdaf`), so "the guard as shipped" is not a story about a file
+(`--gate git:94153e0`), so "the guard as shipped" is not a story about a file
 that no longer exists — the run is repeatable today and in a year. Built:
 
 > **4,500 plain objects, drawn round-robin from TWO source meshes, each with a
@@ -390,7 +390,7 @@ that no longer exists — the run is repeatable today and in a year. Built:
 > times, at slightly different sizes. Nothing else.
 
 ```
->> gate under test: git 0bbfdaf (186066 bytes)
+>> gate under test: git 94153e0 (186066 bytes)
 >> variation_verdict present: False
 >>   declared 4500, objects measured 4500, gn_instanced=False
 >>   cv_size 0.11691  distinct_topologies 2
@@ -636,7 +636,7 @@ decide what "a source" means when there is no instancer to group by.
 ```
 bash tools/buildlock.sh r2-1381-PREFIX  /opt/blender-5.2.0-linux-x64/blender \
   -b -noaudio --factory-startup --python tools/r2_1381_variety_control.py -- \
-  --n 4500 --sources 40 --gate git:0bbfdaf        # C1 must print True
+  --n 4500 --sources 40 --gate git:94153e0        # C1 must print True
 bash tools/buildlock.sh r2-1381-POSTFIX /opt/blender-5.2.0-linux-x64/blender \
   -b -noaudio --factory-startup --python tools/r2_1381_variety_control.py -- \
   --n 4500 --sources 40                           # CONTROLS ALL PASS
@@ -656,7 +656,7 @@ about this one.
 > objects only for `cv_size >= 0.03` and `distinct_topologies >= 2`. Watched
 > failing before it was fixed: 4,500 plain objects from 2 source meshes at
 > random uniform scale measured `cv_size 0.11691`, `distinct_topologies 2`, and
-> the guard as shipped (`0bbfdaf`) returned **true**. The plain-object path now
+> the guard as shipped (`94153e0`) returned **true**. The plain-object path now
 > fingerprints each object's evaluated mesh with `_shape_signature` — the same
 > function the realized path uses — and applies the same
 > `need_distinct_shapes(n)` and `top_share_limit(n)`, both now shared rather

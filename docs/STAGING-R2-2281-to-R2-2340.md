@@ -328,4 +328,4 @@ That `[FAIL]` is defect (a), stated plainly, for the first time.
 would sweep their unfinished work into my commit, which is defect #115 with
 extra steps. The R2-2282/R2-2283 edits are therefore **in the working tree and
 uncommitted**, and whoever lands that file should take them along. Everything
-in R2-2281 (`vastctl/`) was committed cleanly as `696560f`.
+in R2-2281 (`vastctl/`) was committed cleanly as `7ea9f36`.

@@ -258,7 +258,7 @@ Downstream of the `DISK_GB` error: `agents.md` line 572 — *"The instance has
 > Due **16:06:32 / 16:07:02 / 16:07:33Z**. It has **never fired on this project**
 
 **What is actually true:** the master completed; the ProRes and H.265 masters
-were delivered and filed (`watch/INDEX.md`; git commits `2a9fa30`, `f43a6fa`).
+were delivered and filed (`watch/INDEX.md`; git commits `b02a59d`, `226cd5e`).
 The three master brokers rented 39 distinct instances over the run, so the 12 h
 retirement path was exercised many times. Credit is **$[redacted]**, not $172.34.
 
@@ -321,7 +321,7 @@ Every one of these is presented as a current measured projection in its own file
 | `f1-round2/docs/RENDER-LADDER.md` | **322 h / 13.4 days / $131** | per-beat weighting of 60.2 s and 510.5 s |
 | `vast-render/docs/fleet.md` line 143 | *"against a master of **~$82**"* | unstated |
 | `f1-round2/docs/MASTER-RUNBOOK.md` | **245.5 GPU-h / 3.5 days / $112.88** at 3 cards | 283.3 s/frame on `film23_breach` at delivery spec |
-| git commit `cb0b761` (vast-render) | *"the master is 180 h and $80 … not 322 h and $146"* | — |
+| git commit `5d3edb2` (vast-render) | *"the master is 180 h and $80 … not 322 h and $146"* | — |
 
 **`multi-gpu.md` already adjudicates this and the adjudication did not
 propagate.** Its correction section says:
@@ -385,7 +385,7 @@ next to a delivered master that measures 85.57 % of the breach's energy below
 byte-identical at `d5087fd021b5f748f176ecb2b6c1de67` … -14.00 LUFS, -1.10 dBTP,
 all 8 gates green."* The hash and the loudness are **correct** (I measured
 −14.0 LUFS on `audio/out/master.wav`), but "all 8 gates green" was retracted:
-commit `6453650` is *"replace the eight gates that passed three rejected
+commit `6dc9667` is *"replace the eight gates that passed three rejected
 masters"*, and `watch/INDEX.md` records *"all eight audio gates passed every
 time. **The gates were the first defect and have been replaced.**"* The runbook's
 "AUDIO — done" framing also predates five rebuilds and a client reversal.
@@ -570,7 +570,7 @@ this — but the two are 8 % apart and I did not determine why (likely a differe
 subset, or `du` block accounting vs `stat` bytes).
 
 **U3. Whether the `watch/INDEX.md` R2-4152 rows are mid-edit.** The client
-decision landed at commit `c6df1be` and the film mtimes are 01:00 today. The
+decision landed at commit `630d68e` and the film mtimes are 01:00 today. The
 table may be seconds from being fixed by another agent. I did not touch it. The
 finding stands until someone confirms the table reads `audio/out/master.wav`.
 

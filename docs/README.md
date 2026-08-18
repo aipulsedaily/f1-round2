@@ -130,7 +130,7 @@ staged headings, and a byte-level proof that the pre-merge log is an exact prefi
 of the result.
 - **~~`R2-4024 … R2-4152` are not in the merged log yet~~ — MERGED, and this
   line was stale.** They are the delivery finish and the four audio rebuilds.
-  Commit `50f7861` merged them; verified 2026-08-18 by taking the distinct IDs
+  Commit `ab4cadc` merged them; verified 2026-08-18 by taking the distinct IDs
   in all 71 tracked staging files and subtracting the log's — **zero remain**.
   The command is in [`INDEX.md`](INDEX.md) under "Re-deriving the counts", and
   it is worth running rather than believing, because "the log is behind staging"

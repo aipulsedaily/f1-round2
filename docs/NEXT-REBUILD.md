@@ -34,9 +34,9 @@ rendered before it is superseded by construction. Written 2026-08-07.
 > ```
 >
 > `assembly14_build.json` records `world/build_surface.py` at `678fdb3fa6a7…`,
-> which is the blob at `3b8372f`, and `git merge-base --is-ancestor ab1c593
-> 3b8372f` confirms the re-budget commit is an ancestor of it. The only delta
-> between that state and HEAD before R2-3061 was `e241b2f`, which replaces four
+> which is the blob at `4554353`, and `git merge-base --is-ancestor ab1c593
+> 4554353` confirms the re-budget commit is an ancestor of it. The only delta
+> between that state and HEAD before R2-3061 was `298ab63`, which replaces four
 > retyped car-box literals with `C.CAR_BODY_*` and is inert by its own
 > measurement.
 >

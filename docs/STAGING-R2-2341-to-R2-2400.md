@@ -673,14 +673,14 @@ $ R2_AGENT=r2-2341-placement-determinism python3 tools/gitguard.py claim tools/p
 
 I have **not** released it and have **not** set `R2_AGENT` to that owner. The
 file at `HEAD` was clean when I started (`git status` empty for it, last commit
-`de3a1aa`), so nothing uncommitted was clobbered by editing it in the working
+`cc993bc`), so nothing uncommitted was clobbered by editing it in the working
 tree — but the commit is held pending the lease.
 
 Claimed and mine: `tools/placement_determinism_control.py`,
 `tools/placement_entropy_probe.py`, `docs/STAGING-R2-2341-to-R2-2400.md`.
 
 `tools/_r2341_gate_HEAD.py` is the pinned experiment copy and is **not** for
-committing — it is `git show de3a1aa:tools/placement_gate.py` and is
+committing — it is `git show cc993bc:tools/placement_gate.py` and is
 regenerated with that command.
 
 ### 8. FILES

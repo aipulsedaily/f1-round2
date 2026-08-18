@@ -320,7 +320,7 @@ for those nine minutes reads as a transport incident. It was a memory incident.
 ### The fix, committed
 
 `vastctl/vastctl.py` (path-scoped; the ~10 uncommitted files from other agents
-were not touched), commit `88b7c63`:
+were not touched), commit `a191737`:
 
 ```python
 MIN_CPU_RAM_GB = float(os.environ.get("VASTRENDER_MIN_RAM_GB") or 50.0)
@@ -533,7 +533,7 @@ machine**, which is why `docs/multi-gpu.md` had to source its offers by hand.
 Third one in the same file, identical shape: `MIN_CPU_CORES_EFFECTIVE` hid the
 cheap exclusive stock (R2-973), the missing RAM floor hid that the cheap stock
 is a 32 GB desktop (R2-979), `num_gpus=1` hid multi-GPU entirely. Fixed in
-`c3cf38c`; **at `num_gpus=1` the emitted query is byte-identical to before.**
+`9533751`; **at `num_gpus=1` the emitted query is byte-identical to before.**
 
 ### What scales with width and what does not
 

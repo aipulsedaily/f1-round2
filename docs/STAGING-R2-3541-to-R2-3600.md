@@ -110,7 +110,7 @@ checkable rather than hopeful.
 ## R2-3542 — THE BUILDABILITY PROOF, BOTH ARMS, RE-OBSERVED
 
 The R2-3482 probe re-run today, same script, same Blender 5.2.0
-(`fbe6228777e7`), HEAD extracted fresh via `git archive` at `8981a46`:
+(`fbe6228777e7`), HEAD extracted fresh via `git archive` at `b51d90a`:
 
 ```
 >> STAGE RESULT: WORKTREE SOURCE_BUILDABLE   (0 of 5 probes failed: none)

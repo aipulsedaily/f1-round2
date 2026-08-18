@@ -232,7 +232,7 @@ cheapest.
 
 **GATE 7 CAUGHT A LIVE ONE, AND IT WOULD HAVE BEEN BILLED TO THIS RENDER.**
 The broker `rq anim` actually routes to was **101 hours stale** — started before
-`6beb5c9` introduced the working-set gate — so it carried **no working-set check
+`9fc984c` introduced the working-set gate — so it carried **no working-set check
 at all** and would have rented against a **50 GB floor for a film projected at
 ~59.3 GiB.** Restarted, `rq drift` clean, 478/478 selftest, nothing rented.
 **Fleet brokers 8762-8770 are STILL STALE and must be restarted before any

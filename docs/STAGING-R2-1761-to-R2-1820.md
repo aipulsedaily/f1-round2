@@ -765,7 +765,7 @@ the more expensive half of this entry.**
 line now reports the reason the parity arm recorded, with three new hand-counted
 controls and the verdict token `SHEET_FACING_UNDECIDED` unchanged so nothing
 downstream re-gates. `world/items/hospitality_deck.py` is clean and needs no
-repair. My earlier commit `01d7f45` stands in history with its wrong mechanism;
+repair. My earlier commit `7771717` stands in history with its wrong mechanism;
 this is a **correcting commit, not an amend** — which is the remedy R2-234 asked
 for and the one my own guard enforces.
 

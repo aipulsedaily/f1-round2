@@ -118,7 +118,7 @@ not a check.** Third instance in this task, first one that cost wall clock.
 
 **`docs/STAGING-R2-3961-to-R2-4020.md` already existed with 451 lines of another
 agent's work — the task #164 gitignored-build-input sweep — and I destroyed it
-with a `Write`.** Nothing was lost: it was committed at `c1b97ae`, recovered
+with a `Write`.** Nothing was lost: it was committed at `10811f6`, recovered
 with `git show HEAD~1:<path>`, and the file is now **byte-identical to its
 pre-overwrite state** (`git diff HEAD~1` returns empty).
 
@@ -2271,7 +2271,7 @@ should not be in this beat at all.
 AROUND.** The spec regenerates `world/beat1_anim_anim.json` with non-uniform
 seat frames on a geometric contraction. Those 15 seat frames are the frames at
 which the **2,978 delivered 4K frames show each cluster arriving** — commit
-6e0b37e rewrote that file specifically to re-sync it with the promoted
+d556a60 rewrote that file specifically to re-sync it with the promoted
 `beat1_anim.blend` after it had desynced on 15 of 15 clusters — so moving them
 desynchronises the audio from a picture that is delivered and is not being
 re-rendered. **The 25-frame (1.041667 s) cluster ladder survives**, its envelope
@@ -2913,7 +2913,7 @@ therefore: **a genuine limit, now measured per stem instead of argued.**
 
 **B5(a) still cannot land and nothing here pretends otherwise.** The 15 cluster
 seat frames in `world/beat1_anim_anim.json` are the frames the 2,978 delivered
-4K frames show; commit `6e0b37e` rewrote that file specifically to re-sync it
+4K frames show; commit `d556a60` rewrote that file specifically to re-sync it
 with the promoted blend. **No frame moved and no picture was re-rendered.** The
 25-frame (1.0417 s) ladder is in the audio because it is in the picture.
 

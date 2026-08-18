@@ -252,7 +252,7 @@ correctly *not* a leak).
 > in `sanitise_docs.py`. A clone gets the method, the reasoning and the alias
 > vocabulary, which is everything that makes that file worth reading, and no way
 > to invert any of it. This is the same fix, for the same reason, that the
-> sibling repository applied in its `3ffea4c4` — a commit whose subject is
+> sibling repository applied in its `04648a38` — a commit whose subject is
 > literally *"untrack the table that de-aliases the docs"*.
 >
 > **Not the placeholder option**, which was tempting and is worse. Substituting
@@ -280,18 +280,38 @@ correctly *not* a leak).
 > outside that account, routing nowhere. An IP address is *reachable* — that is
 > the entire difference, and it is the same line drawn in the sibling repo's
 > §4 about machine ids. `--verify-canon` also re-derives those 82 ids from
-> `fea18b4~1`, so untracking the file would not remove them from a clone
+> `6970fdc~1`, so untracking the file would not remove them from a clone
 > anyway; it would only break the verification.
 >
 > **What this does NOT fix: history.** These three addresses still appear
 > un-aliased in earlier blobs of `docs/DEFECT-LOG-R2.md` and
 > `docs/STAGING-R2-3841-to-R2-3900.md` (130, 26 and 16 occurrences), and the
-> pre-sanitisation tree at `fea18b4~1` still holds every identifier in the
+> pre-sanitisation tree at `6970fdc~1` still holds every identifier in the
 > clear. Fixing the current tree closes the *decoder ring* — the docs can no
 > longer be inverted by reading a tracked file — but anyone willing to walk the
 > history can still recover the addresses directly. **That is a live residual
 > exposure and it is an Option B decision (`--replace-text`), not something a
 > tree edit can reach.** See §6.
+
+> ### RESOLVED, 2026-08-18 — the history is done too.
+>
+> Appended, not merged: the block above was accurate when written and "this does
+> not fix history" is exactly the kind of admission that should survive being
+> fixed. **A second `filter-repo` pass removed all three addresses from history**
+> — 190 occurrences across 66 blobs, six tracked paths and one commit message,
+> replaced with the same `host-A`/`host-B`/`host-C` aliases the corpus uses, so
+> history and the sanitised tree now agree instead of contradicting each other.
+>
+> Two numbers in the paragraph above were also wrong and are corrected here
+> rather than edited away. The occurrence counts "130, 26 and 16" are per-file
+> counts of the current blobs; **across every object in the database the real
+> figures are 139, 31 and 20** — 190 in total, of which four are in a *commit
+> message*, which no blob-level count can see. The two-file list is short as
+> well: `docs/STAGING-R2-1211-to-R2-1240.md`,
+> `docs/STAGING-R2-3901-to-R2-3960.md` and **this audit file itself** also
+> carried them, alongside the `sanitise_docs.py` table §4 is about — six paths,
+> not two. The full method, the backup, the
+> `refs/notes` re-check and the gate results are in §6, "UPDATE 2".
 
 These are third-party hosts' addresses, not the owner's. The severity is
 "discloses which machines were rented", not "grants access".
@@ -363,8 +383,8 @@ in commit metadata: `git grep` found them in **zero tracked files**.
 > repository's history:
 >
 > ```
-> c9cac9546807cbc31abaad555da0f0d89e36ee2e   docs: full-history secret audit…
-> 3822585db3b02c9bfc6a7aed222cd77288145270   docs: correct the commit-identity…
+> fb4f23145734aeae0362b1202030b3ec928a8fd2   docs: full-history secret audit…
+> 40ba8b62680e0b3884a3e47e3ae4b39fedb86fa5   docs: correct the commit-identity…
 > ```
 >
 > History was **not** rewritten to remove them, because rewriting is the
@@ -480,6 +500,96 @@ actually leaves behind.
 > accurately: the rewrite changed identities, not content. Third-party IP
 > addresses and rented-host identifiers remain in historical blobs. That needs
 > `--replace-text` and is still an open decision.
+
+> ### UPDATE 2, 2026-08-18 — HISTORY WAS REWRITTEN A SECOND TIME, for the IPs.
+>
+> The paragraph directly above closes with "that needs `--replace-text` and is
+> still an open decision". It has been decided and executed. This is appended
+> rather than merged into the entry above it because **there were two rewrites**,
+> and anyone holding a clone taken between them holds a third set of SHAs.
+>
+> **What was removed and why.** The three real, globally routable IPv4 addresses
+> of **rented vast.ai hosts — other people's machines**, which §4 identified and
+> which a tree edit could not reach. They are the last third-party data in this
+> repository.
+>
+> | | count |
+> |---|---|
+> | distinct routable addresses | **3** |
+> | total occurrences | **190** |
+> | distinct blobs carrying at least one | 66 |
+> | commit **messages** carrying at least one | 1 (4 occurrences in it) |
+> | tracked paths ever involved | 6 |
+> | occurrences in **unreachable** objects | 0 |
+> | occurrences inside **binary** blobs | 0 |
+>
+> The last two rows are not decoration. `filter-repo --replace-text` **skips any
+> blob with a NUL in its first 8 KiB**, so an address inside a `.blend` or a
+> rendered frame could not have been removed this way and would have had to be
+> reported as unremovable rather than clean. There were none — checked, not
+> assumed.
+>
+> **The substitution is the alias the tree already used**, so history and the
+> sanitised corpus now say the same thing: `host-A`, `host-B`, `host-C`, and the
+> `<addr>:21104` form as `host-A:PORT`, exactly as `sanitise_docs.py` writes them.
+> The real values remain only in the **untracked, gitignored**
+> `tools/publication/host_canon.txt`; §4's fix and this one are the same fix
+> applied at two depths.
+>
+> **Method.** `git filter-repo` 2.47.0, `--replace-text` **and**
+> `--replace-message` with the same map — both, because one of the occurrences
+> was in a commit message and `--replace-text` cannot see those. Rehearsed on a
+> throwaway `--mirror` clone and verified there before the real run, which
+> reproduced the rehearsal's `HEAD` exactly.
+>
+> **Backup.** `git bundle --all` to `~/f1-round2-pre-ip-scrub.bundle`, verified
+> with `git bundle verify`, and it carries `refs/notes/commits` as well as
+> `master`. The earlier `~/f1-round2-prerewrite.bundle` is the *pre-identity*
+> state and was **not** overwritten — it is the only copy of that state.
+>
+> **`refs/notes/commits`, checked again rather than assumed.** The trap above is
+> real and it was re-tested: `filter-repo` still returns before its callbacks for
+> anything under `refs/notes/`. This time it needed **no repair**, and the reason
+> is worth recording because it is luck and not design — this rewrite's first
+> changed commit is late enough that **402 of the 656 commits kept their SHAs**,
+> including both the commit the note annotates and the commit its body cites, so
+> the note was still correctly attached and still resolved. That was *verified*
+> — `git notes show`, plus resolving every hash in the note body — not inferred
+> from the tool reporting success. A controlled experiment first confirmed the
+> failure mode is still live: in a throwaway repository whose annotated commit
+> *did* change, the note came out of `filter-repo` hanging off a commit that no
+> longer existed.
+>
+> **State after.** 656 commits on `master` (unchanged) plus the notes commit,
+> **254 of 656 SHAs changed**, one identity across all refs, no tags, no
+> `refs/original`, no remote, `git fsck` clean, nothing pushed. The 36 untracked
+> run artefacts under `audio/out/` are untouched and still untracked.
+>
+> **Citations repointed: 237 occurrences of 93 distinct commits across 34 files**
+> — fewer than last round's 272 only because 402 commits kept their SHAs. That
+> includes the live code constant **`CANON_BASE_COMMIT`**, now `6970fdc~1`, and
+> the same SHA quoted in `tools/publication/README.md` and in the header comment
+> of `alias_canon.txt`; miss any one of those and `--verify-canon` stops being
+> able to re-derive the alias map. It also includes the cross-repository
+> citations of `vast-render` commits — that repository was rewritten in the same
+> round, and both maps have to be in hand before either repository's citations
+> can be repointed, because `.gitignore` and `docs/DEFECT-LOG-R2.md` cite it.
+> Verified against the pre-rewrite object database restored from the new bundle:
+> all 656 map pairs agree on author, committer, both dates and subject.
+>
+> **A trap worth writing down.** `.git/filter-repo/commit-map` in an
+> already-filtered repository is keyed by the **original** pre-first-rewrite
+> SHAs, not by the ones the documents currently cite; using it directly repoints
+> almost nothing and rewrites prose *about* the first rewrite. The usable map is
+> the one from filtering a **fresh clone**. Separately, `filter-repo` repoints
+> abbreviated SHAs inside **commit messages** on its own — 27 messages here — so
+> the citation pass only has to handle tracked files.
+>
+> **Gate after: `sanitise_docs.py --verify-canon` → PASS on 82 entries, exit 0.**
+> A full-object-database scan of every blob, every commit message and the note,
+> testing every dotted quad with `ipaddress.is_global`, reports **zero** routable
+> third-party addresses. `5.2.0.1` still appears and is still the Blender version
+> in a comment, not an address.
 
 
 ### Option A — publish as-is, with full history

@@ -37650,7 +37650,7 @@ report any artefact number** until someone resolves it.
   never checked whether the abstention branch had anything to do with its
   geometric story.
 
-**And the fixes are correcting commits, not amends** - `01d7f45` stands in
+**And the fixes are correcting commits, not amends** - `7771717` stands in
 history carrying its wrong mechanism. **That is the remedy R2-234 asked for and
 what its own guard enforces.** A corrected record that hides the correction
 teaches nothing.
@@ -43906,7 +43906,7 @@ people's work, and neither was forced.
    intact and reflected in the shipped sheet.
 
 The generator change therefore sits in the working tree, committed nowhere,
-while `tools/camera_tempo.py`, `watch/INDEX.md` and this note are in `e038ec3`.
+while `tools/camera_tempo.py`, `watch/INDEX.md` and this note are in `4d88678`.
 **That is the desync this project has been bitten by before and it is named here
 rather than left to be discovered.** It closes with one lease release and one
 regeneration; a follow-up agent is holding the sequence and will not overwrite
@@ -44413,7 +44413,7 @@ people's work, and neither was forced.
    intact and reflected in the shipped sheet.
 
 The generator change therefore sits in the working tree, committed nowhere,
-while `tools/camera_tempo.py`, `watch/INDEX.md` and this note are in `e038ec3`.
+while `tools/camera_tempo.py`, `watch/INDEX.md` and this note are in `4d88678`.
 **That is the desync this project has been bitten by before and it is named here
 rather than left to be discovered.** It closes with one lease release and one
 regeneration; a follow-up agent is holding the sequence and will not overwrite
@@ -45419,7 +45419,7 @@ That `[FAIL]` is defect (a), stated plainly, for the first time.
 would sweep their unfinished work into my commit, which is defect #115 with
 extra steps. The R2-2282/R2-2283 edits are therefore **in the working tree and
 uncommitted**, and whoever lands that file should take them along. Everything
-in R2-2281 (`vastctl/`) was committed cleanly as `696560f`.
+in R2-2281 (`vastctl/`) was committed cleanly as `7ea9f36`.
 
 ## R2-2176 — HALF the hazard is closed. The other half is named, and it is not mine to close
 
@@ -45428,7 +45428,7 @@ machine". That is now half true, and leaving the old wording to be read as
 current would be this project's own recurring failure.**
 
 The lease on `tools/author_beats2_5.py` was legitimately retired, so the artefact
-and its generator landed in **one commit, `c5501c3`**. Verified before and after:
+and its generator landed in **one commit, `f061434`**. Verified before and after:
 
 ```
                        worktree   HEAD(before)   HEAD(after)
@@ -46729,9 +46729,9 @@ needed. Recommending them is the correct output; deleting them is not.
 
 | | |
 |---|---|
-| `8eb3c40` | `tools/gitguard.py`, `tools/gitguard_selftest.py` — the guard repairs |
-| `6e8be7c` | `tools/placement_gate.py` — the R2-2341 determinism work, sha `93af5324216fe2e9` |
-| — | the contract work (`_car_box()` from the contract) was **already committed** at `e241b2f` |
+| `eccf27f` | `tools/gitguard.py`, `tools/gitguard_selftest.py` — the guard repairs |
+| `ab078e1` | `tools/placement_gate.py` — the R2-2341 determinism work, sha `93af5324216fe2e9` |
+| — | the contract work (`_car_box()` from the contract) was **already committed** at `298ab63` |
 | **NOT DONE** | `gitguard.py install`. `tools/githooks/` is still leased by `r2-1761-debt`. |
 
 **The live hook is still the old one — but only in its bypass branch.** See
@@ -46771,7 +46771,7 @@ What the 22 cover: `retire` (C16–C16n), per-path `claim` returning `PARTIAL`
 (C15 family), the separable seed TTL (C17–C17c), and the `BYPASSED` result line
 (C18–C18g).
 
-Committed as **`8eb3c40`**.
+Committed as **`eccf27f`**.
 
 ---
 
@@ -46814,14 +46814,14 @@ Zero `FAIL` rows in all three runs of the fixed gate.
 
 Logs: `work/r2-2641/selftest_{HEAD,verify,postcommit}.log`.
 
-Committed as **`6e8be7c`**.
+Committed as **`ab078e1`**.
 
 ### The end-to-end exit-3 control, reproduced against the committed gate
 
 `tools/placement_determinism_control.py` wraps `placement_gate.measure` so the
 second pass returns one changed `closest_approach` object name, runs the gate's
 own `main()`, and requires a refusal — then removes the perturbation and
-requires a verdict. Against the gate as committed at `6e8be7c`:
+requires a verdict. Against the gate as committed at `ab078e1`:
 
 ```
    PASS  a deliberately non-deterministic measure() is REFUSED   got=PLACEMENT_NONDETERMINISTIC_REFUSED  exit code 3
@@ -46923,11 +46923,11 @@ tools/placement_gate.py:1566:  rows[-1]["shipped_car_box_worst_delta_m"] = was_w
 
 The function lives in `world/build_surface.py`, which is leased by
 `r2-2521-contract-leftovers` — and that agent committed it itself, at
-**`e241b2f`**, together with its evidence in
+**`298ab63`**, together with its evidence in
 `docs/STAGING-R2-2521-to-R2-2580.md` (the 48 024 IEEE-754 doubles, and the
 2001/2001 poses that move 0.3400 m under the historical fault). `git status`
 is empty for `world/build_surface.py`. The earlier half —
-`world/world_contract.py` and `world/build_dressing.py` — landed at `de3a1aa`.
+`world/world_contract.py` and `world/build_dressing.py` — landed at `cc993bc`.
 
 Nothing to land. **Recording it because a handover that names three innocent
 files as carrying stranded work is how a later agent ends up "re-landing" a
@@ -46937,8 +46937,8 @@ committed nothing to them.
 The same is true of five of the eleven released paths: `tools/provenance.py`,
 `tools/report_repro.py`, `tools/report_repro_selftest.py`,
 `tools/placement_depth.py` and `tools/selfintersect_audit.py` are all clean
-against `HEAD` — `r2-1761-debt` had already committed them at `4d4ba35` and
-`2cc018d` before its lease outlived it. Of the eleven paths released, **three
+against `HEAD` — `r2-1761-debt` had already committed them at `3a75d86` and
+`712ee64` before its lease outlived it. Of the eleven paths released, **three
 carried uncommitted work; eight were already landed.**
 
 ---
@@ -46971,7 +46971,7 @@ files against the committed templates:
 
 Everything the hook does on a normal commit is one line — `python3
 tools/gitguard.py check` — and `tools/gitguard.py` is now the repaired one, as
-of `8eb3c40`. So **R1/R2/R3, `PARTIAL`, `retire`, the seed TTL and the
+of `eccf27f`. So **R1/R2/R3, `PARTIAL`, `retire`, the seed TTL and the
 `check`-side bypass announcement are all live right now.** Verified against the
 live tree, read-only:
 
@@ -47018,8 +47018,8 @@ only `pre-commit` will show a diff.
 
 - `tools/_r2641_gate_HEAD.py` is the pinned `HEAD` gate used for the 26-control
   control. It is **not for committing** and is regenerated with
-  `git show ca942f5:tools/placement_gate.py` (the commit that was `HEAD` before
-  `8eb3c40`; naming the hash rather than `HEAD~2` because `HEAD` moves under
+  `git show 4471b45:tools/placement_gate.py` (the commit that was `HEAD` before
+  `eccf27f`; naming the hash rather than `HEAD~2` because `HEAD` moves under
   you here). Deleted after use.
 - `docs/DEFECT-LOG-R2.md` deliberately untouched; the coordinator merges it.
 - Every commit was made with `R2_AGENT` set **in the environment of the `git
@@ -47284,7 +47284,7 @@ change.
    16,685 violations** — and 1,202 was the small half of it
 
 Said loudly and early, as the task asked. `render/film23_breach.blend`, gate at
-`HEAD` (`6e8be7c`), live camera path, frozen spec/telemetry/sheet
+`HEAD` (`ab078e1`), live camera path, frozen spec/telemetry/sheet
 (`work/r22701/gate_film23_breach_HEAD.{log,json}`):
 
 ```
@@ -47344,7 +47344,7 @@ tools/placement_gate.py              CLASH (r2-2641-land-debt) -> waited -> CLAI
 ```
 
 `tools/placement_gate.py` was clashing when this task began. It was **not**
-forced. `r2-2641-land-debt` landed it at `6e8be7c` and released; the claim was
+forced. `r2-2641-land-debt` landed it at `ab078e1` and released; the claim was
 retried and granted, and the edit is on top of their committed version, not on a
 stale copy.
 
@@ -49005,7 +49005,7 @@ again after regenerating:
 | `frame_v` | 47 | **47** |
 | `_frame_offset_world` | 2 | **2** |
 
-`git log` names the commit that closed it: **`c5501c3` "R2-2176: the beat-5
+`git log` names the commit that closed it: **`f061434` "R2-2176: the beat-5
 framing generator and the sheet it produces, committed together"**. The sheet on
 disk, the sheet at HEAD and the promoted `d8825d84d88ae6f92ceb6dab7da80ee4476bfa1e3caf0b6b0de27dea3ab33364`
 are the same bytes. **A fresh clone would now reproduce beat 5, and the zero-diff
@@ -49193,7 +49193,7 @@ Evidence logs: `tmp/r2_1381_prefix.log`, `tmp/r2_1381_postfix.log`,
 ### R2-2950 — the false accept, watched passing the guard as shipped
 
 The control harness loads the gate under test from a git revision
-(`--gate git:0bbfdaf`), so "the guard as shipped" is not a story about a file
+(`--gate git:94153e0`), so "the guard as shipped" is not a story about a file
 that no longer exists — the run is repeatable today and in a year. Built:
 
 > **4,500 plain objects, drawn round-robin from TWO source meshes, each with a
@@ -49201,7 +49201,7 @@ that no longer exists — the run is repeatable today and in a year. Built:
 > times, at slightly different sizes. Nothing else.
 
 ```
->> gate under test: git 0bbfdaf (186066 bytes)
+>> gate under test: git 94153e0 (186066 bytes)
 >> variation_verdict present: False
 >>   declared 4500, objects measured 4500, gn_instanced=False
 >>   cv_size 0.11691  distinct_topologies 2
@@ -49447,7 +49447,7 @@ decide what "a source" means when there is no instancer to group by.
 ```
 bash tools/buildlock.sh r2-1381-PREFIX  /opt/blender-5.2.0-linux-x64/blender \
   -b -noaudio --factory-startup --python tools/r2_1381_variety_control.py -- \
-  --n 4500 --sources 40 --gate git:0bbfdaf        # C1 must print True
+  --n 4500 --sources 40 --gate git:94153e0        # C1 must print True
 bash tools/buildlock.sh r2-1381-POSTFIX /opt/blender-5.2.0-linux-x64/blender \
   -b -noaudio --factory-startup --python tools/r2_1381_variety_control.py -- \
   --n 4500 --sources 40                           # CONTROLS ALL PASS
@@ -49463,7 +49463,7 @@ python3 tools/r2_1381_rescore.py                  # no Blender, no render
 > objects only for `cv_size >= 0.03` and `distinct_topologies >= 2`. Watched
 > failing before it was fixed: 4,500 plain objects from 2 source meshes at
 > random uniform scale measured `cv_size 0.11691`, `distinct_topologies 2`, and
-> the guard as shipped (`0bbfdaf`) returned **true**. The plain-object path now
+> the guard as shipped (`94153e0`) returned **true**. The plain-object path now
 > fingerprints each object's evaluated mesh with `_shape_signature` — the same
 > function the realized path uses — and applies the same
 > `need_distinct_shapes(n)` and `top_share_limit(n)`, both now shared rather
@@ -49967,9 +49967,9 @@ craze 303.0 mm, ravel 454.5 mm.
 
 The record agrees once you look at the right record. `assembly14_build.json`
 records `world/build_surface.py` at sha256 `678fdb3fa6a7…`, which is the blob at
-commit `3b8372f`; `git merge-base --is-ancestor ab1c593 3b8372f` confirms the
+commit `4554353`; `git merge-base --is-ancestor ab1c593 4554353` confirms the
 R2-1031 re-budget commit is an ancestor of it. The **only** difference between
-that state and HEAD is `e241b2f`, which replaces four retyped car-box literals
+that state and HEAD is `298ab63`, which replaces four retyped car-box literals
 with `C.CAR_BODY_*` and is inert by its own measurement.
 
 > ### CORRECTION FOR WHOEVER PLANS THE REBUILD
@@ -50453,7 +50453,7 @@ peer's denied command.
    once the lease clears, and commit it *with* `tools/build_beatsheet.py` in one
    commit — **after** separating R2-1701's two beat-6 hunks, which belong to
    whoever wrote them and not to this ticket. Verify `frame_u`/`frame_v`/`_frame_offset_world` read 47/47/2 in the
-   worktree **and at HEAD** before and after — they do today, and `c5501c3` is
+   worktree **and at HEAD** before and after — they do today, and `f061434` is
    why.
 2. **The same-sheet rebuild control** (R2-2766). It was queued and the build lock
    was held by other agents for the rest of my window. If it returns a
@@ -52030,7 +52030,7 @@ reproduces the same vacuous pass in a new costume.
 hold at 22.7–35.7 px/m by two independent methods. The corrected ratio is
 11×–19×.
 
-## R2-3021 — the RAM floor is IN (`vast-render` `6beb5c9`)
+## R2-3021 — the RAM floor is IN (`vast-render` `9fc984c`)
 
 Landed in `vastctl/vastctl.py`, committed **path-scoped** — `git commit -F ... --
 vastctl/vastctl.py` — because that repo's index holds another agent's 3,635
@@ -52180,7 +52180,7 @@ fleet11       pid 1985431  started  Sat Aug 8 05:53:18
 Every one predates the edit by hours or days. What they imported, from git:
 
 ```
-6beb5c9^  MIN_CPU_RAM_GB = float(... or 50.0)     <- what all live brokers hold
+9fc984c^  MIN_CPU_RAM_GB = float(... or 50.0)     <- what all live brokers hold
 HEAD      MIN_CPU_RAM_GB = float(... or 72.0)     <- what a NEW process gets
           fresh import -> MIN_CPU_RAM_GB=72.0, floor=63.2 GiB/GPU
 ```
@@ -52647,7 +52647,7 @@ Same blend as the finding, same frozen inputs, live camera path, fixed gate
 >> STAGE RESULT: PLACEMENT_CLEAN  [+1159 hidden findings on 894 non-rendering mesh(es)]
 ```
 
-| | gate of record (`6e8be7c`) | fixed gate |
+| | gate of record (`ab078e1`) | fixed gate |
 |---|---|---|
 | verdict | **`PLACEMENT_FAIL`, 1,202** | **`PLACEMENT_CLEAN`, 0** |
 | where the 1,202 went | — | 1,159 `hidden_findings`, listed in full with reasons |
@@ -52754,7 +52754,7 @@ but the fix authored for it did not move it.
 
 ### DISPOSITION: REVERTED
 
-`world/build_surface.py` is restored to `9b5d6fb26e33…`, the blob at `e241b2f`,
+`world/build_surface.py` is restored to `9b5d6fb26e33…`, the blob at `298ab63`,
 byte-for-byte. **An additive change that adds no measurable contrast and darkens
 the surface 1.5 % is not neutral, and it should not ride into a 2,978-frame
 master on the strength of the argument that produced it.** The instruments, the
@@ -55696,7 +55696,7 @@ tree:
 | `world/build_dressing.py` | `f5d4cc5d` | `f5d4cc5d` | `f5d4cc5d` | match |
 | `world/build_sky.py` | `1fbe8ff6` | `1fbe8ff6` | `1fbe8ff6` | match |
 | `world/world_contract.py` | `dd4acd11` | `dd4acd11` | `dd4acd11` | match |
-| `world/build_surface.py` | `678fdb3f` | `9b5d6fb2` | `9b5d6fb2` | **DRIFT** — HEAD ahead, 29+/3−, a14's state is committed at `3b8372f6` |
+| `world/build_surface.py` | `678fdb3f` | `9b5d6fb2` | `9b5d6fb2` | **DRIFT** — HEAD ahead, 29+/3−, a14's state is committed at `45543535` |
 | `world/build_terrain.py` | `991b15a0` | `d09ac2a8` | `d09ac2a8` | **DRIFT** — a14's state is in **no commit and nowhere on disk** |
 | `world/build_barriers.py` | `2d435466` | `9adcb1d9` | `2d435466` | **DRIFT** — **HEAD is BEHIND**; a14 == worktree, 16+/1− uncommitted |
 | `world/build_items.py` | `fbf7bc1e` | `0fbb6e94` | `fbf7bc1e` | **DRIFT** — **HEAD is BEHIND**; 287+/11− uncommitted |
@@ -55704,7 +55704,7 @@ tree:
 | `world/build_nearband.py` | `3fa0729a` | *absent* | `3fa0729a` | **DRIFT** — **untracked; there is no committed source** |
 
 `world/build_rig_filmpose.py` is stamped by HEAD's rule but not by a14: it
-postdates the build (`6b0583a`).
+postdates the build (`d9c160d`).
 
 **The fingerprint is trustworthy, and that was checked rather than assumed.** A
 chunked byte scan of `assembly14.blend` finds `world_source_sha256`,
@@ -55730,7 +55730,7 @@ work on those three; it would *throw away* the class-feature-ownership arm
 `991b15a0…` was searched for across all 4 commits that touch the file on every
 ref, and across all 3,829 python files under the repo. **Not found.** The other
 five a14 states are all still recoverable (four in the worktree, `surface` at
-`3b8372f6`). Terrain is not.
+`45543535`). Terrain is not.
 
 `assembly13` read the *same* terrain source and its terrain summary is identical
 to a14's on every key but `build_s`, so the two ships cannot be differenced to
@@ -55820,7 +55820,7 @@ its grit is smooth-shaded with no cleavage planes.** `film24_breach` is built on
 that world, so the delivered film does not contain the ground-cover pass either.
 
 This also settles the provenance question: a14's lost `991b15a0` is a
-**pre-ground-cover** terrain, and `28081a3`'s 1,101-line landing is (at least)
+**pre-ground-cover** terrain, and `9bfd9a5`'s 1,101-line landing is (at least)
 the pass a14 never saw.
 
 ### The triangle cost is more than double the figure on the ticket
@@ -55863,7 +55863,7 @@ numbers forward under a new name:
 
 | gate | assembly14 (baseline) | assembly15 |
 | --- | --- | --- |
-| `placement_gate` | `PLACEMENT_CLEAN, 0` (`SHIPPING.md:512`, after `a651c3b`/`ef83d6d`) | **NOT RUN — no world** |
+| `placement_gate` | `PLACEMENT_CLEAN, 0` (`SHIPPING.md:512`, after `2247a4d`/`ea54e51`) | **NOT RUN — no world** |
 | variety | 1,569 sources / 4,966,913 instances / top 2.03 % | **NOT RUN — no world** |
 | triangle budget | 15.12 G instanced, 16.31 G evaluated | **NOT RUN** (predicted ~19.6 G, R2-3483) |
 | z-fight / winding / socket | passed | **NOT RUN — no world** |
@@ -55877,11 +55877,11 @@ on a measured gate; the finding is one level below that.
 
 For beat 6's comparison against `film24_breach`:
 
-1. **`build_surface` +29/−3** (`e241b2f`, `690023f`, `69f545e`) — the R2-3061
+1. **`build_surface` +29/−3** (`298ab63`, `95abe8c`, `12104cf`) — the R2-3061
    asphalt re-budget and the R2-3066 octave revert. a14 predates all three.
    **This changes the asphalt shader under every frame** and is not the ground
    cover.
-2. **`build_terrain`, unbounded and unknowable.** `28081a3` landed 1,101
+2. **`build_terrain`, unbounded and unknowable.** `9bfd9a5` landed 1,101
    insertions / 71 deletions. a14 sat somewhere inside that range and its exact
    state is gone, so **the terrain delta between a14 and HEAD cannot be
    bounded** — only the ground-cover part of it has been identified, from the
@@ -56025,7 +56025,7 @@ checkable rather than hopeful.
 ## R2-3542 — THE BUILDABILITY PROOF, BOTH ARMS, RE-OBSERVED
 
 The R2-3482 probe re-run today, same script, same Blender 5.2.0
-(`fbe6228777e7`), HEAD extracted fresh via `git archive` at `8981a46`:
+(`fbe6228777e7`), HEAD extracted fresh via `git archive` at `b51d90a`:
 
 ```
 >> STAGE RESULT: WORKTREE SOURCE_BUILDABLE   (0 of 5 probes failed: none)
@@ -56952,7 +56952,7 @@ it afterwards:
  create mode 100644 world/build_nearband.py
  create mode 100644 world/items/spectator_crowd_world.py
  create mode 100644 world/items/tyre_deposit.py
-[master ee16043]
+[master a3bbf9b]
 ```
 
 `R2_AGENT` was set in the environment of the `git commit` itself, and gitguard
@@ -56963,7 +56963,7 @@ HEAD's failures were `ModuleNotFoundError` rather than `AttributeError`.
 
 ## R2-3663 — THE PROBE THAT GREEN-LIT THE BUILD THAT FAILED
 
-`tools/source_buildable.py` (new, committed at `14eafcd`) replaces the
+`tools/source_buildable.py` (new, committed at `aec8281`) replaces the
 uncommitted scratchpad probe. The old one stopped at `build_surface`. The
 assembler's order is
 
@@ -56988,9 +56988,9 @@ of the world contract.
 | tree | binary | numpy | probe 6 | verdict |
 | --- | --- | :-: | --- | --- |
 | **worktree** | `/opt` (ref) | 2.3.4 | PASS, 24/24 posts | **`SOURCE_BUILDABLE` 0 of 7** |
-| **HEAD before `ee16043`** | `/opt` (ref) | 2.3.4 | PASS | `SOURCE_UNBUILDABLE` **6 of 7** |
-| pre-fix tree (`f876ea8~1`) | `/usr/bin` | **2.5.1** | **FAIL** | `SOURCE_UNBUILDABLE` 7 of 7 |
-| pre-fix tree (`f876ea8~1`) | `/opt` (ref) | **2.3.4** | **FAIL** | `SOURCE_UNBUILDABLE` 7 of 7 |
+| **HEAD before `a3bbf9b`** | `/opt` (ref) | 2.3.4 | PASS | `SOURCE_UNBUILDABLE` **6 of 7** |
+| pre-fix tree (`3e95300~1`) | `/usr/bin` | **2.5.1** | **FAIL** | `SOURCE_UNBUILDABLE` 7 of 7 |
+| pre-fix tree (`3e95300~1`) | `/opt` (ref) | **2.3.4** | **FAIL** | `SOURCE_UNBUILDABLE` 7 of 7 |
 | `--selftest` | `/opt` (ref) | 2.3.4 | **fires** | `SELFTEST OK` |
 
 The verbatim catch, on the tree and interpreter that cost two days:
@@ -57093,14 +57093,14 @@ in the artefact and not in the repository.
 
 ---
 
-## R2-3666 — THE BROKER THAT RENTS THE MASTER WAS RUNNING PRE-`6beb5c9` CODE
+## R2-3666 — THE BROKER THAT RENTS THE MASTER WAS RUNNING PRE-`9fc984c` CODE
 
 Found while preparing the cost probe, before anything was rented. **This one
 would have been paid for out of the master's budget.**
 
 `rq anim` auto-routes to the *bulk* broker on `127.0.0.1:8761`. That process was
 **pid 677451, started 2026-08-04 20:20 — 101 hours old — with 14 stale files**,
-`vastctl/vastctl.py` among them. Commit `6beb5c9` ("The RAM floor and the
+`vastctl/vastctl.py` among them. Commit `9fc984c` ("The RAM floor and the
 requirement were the same number", 2026-08-08 18:05) is what introduced
 `SCENE_WORKING_SET_GIB`, `RAM_HEADROOM` and `_meets_scene_working_set`, and
 raised `MIN_CPU_RAM_GB` from 50.0 to 72.0. `config.py`, `fleet.py` and
@@ -57131,7 +57131,7 @@ not on the probe path. **Restart them the same way before any `fleetctl up`.**
 
 A long-lived daemon is a **snapshot of the code as it was when it started**. Ten
 commits later every reader of the repository sees the fix and the process does
-not. Nothing in the landing of `6beb5c9` was wrong; the gap is that landing a
+not. Nothing in the landing of `9fc984c` was wrong; the gap is that landing a
 constant does not deploy it. `./rq drift` can see this and nobody was running it.
 
 ---
@@ -57665,7 +57665,7 @@ Sha taken before and re-taken after, and a difference fails the build:
 
 `work/r23661/PREDICTION_film25_20260809T012914Z.log`, written **01:29:14Z**;
 `render/film25.blend`'s build began **01:34:05Z**. Five minutes. The log is
-committed (`195e809`, force-added past `work/*`) so the ordering is checkable in
+committed (`fc753d5`, force-added past `work/*`) so the ordering is checkable in
 history rather than asserted here.
 
 `FILM25` in `tools/film_bar.py` is its own literal, re-derived from
@@ -58328,7 +58328,7 @@ were listening, and all three were stale by the launch rule's own test:
 pid 1974220  fleet03  started Sat Aug  8 05:31:20 2026
 pid 1974254  fleet04  started Sat Aug  8 05:31:23 2026
 pid 1974323  fleet05  started Sat Aug  8 05:31:26 2026
-commit 6beb5c9 "The RAM floor and the requirement were the same number"
+commit 9fc984c "The RAM floor and the requirement were the same number"
                                  Sat Aug  8 18:05:46 2026
 ```
 
@@ -58369,7 +58369,7 @@ checked — `/proc/<pid>/environ` of each broker actually listening:
 
 Two things to note.
 
-**The working set was raised above what shipped.** `6beb5c9` set
+**The working set was raised above what shipped.** `9fc984c` set
 `SCENE_WORKING_SET_GIB = 50.6`, measured on `film23_breach.blend`. The scene
 being rendered is `film25_breach.blend` and the brief's measurement is
 **52.4 GiB worker / 64.5 GiB cgroup**. I pinned 52.4 explicitly rather than
@@ -61785,7 +61785,7 @@ not a check.** Third instance in this task, first one that cost wall clock.
 
 **`docs/STAGING-R2-3961-to-R2-4020.md` already existed with 451 lines of another
 agent's work — the task #164 gitignored-build-input sweep — and I destroyed it
-with a `Write`.** Nothing was lost: it was committed at `c1b97ae`, recovered
+with a `Write`.** Nothing was lost: it was committed at `10811f6`, recovered
 with `git show HEAD~1:<path>`, and the file is now **byte-identical to its
 pre-overwrite state** (`git diff HEAD~1` returns empty).
 
@@ -63940,7 +63940,7 @@ should not be in this beat at all.
 AROUND.** The spec regenerates `world/beat1_anim_anim.json` with non-uniform
 seat frames on a geometric contraction. Those 15 seat frames are the frames at
 which the **2,978 delivered 4K frames show each cluster arriving** — commit
-6e0b37e rewrote that file specifically to re-sync it with the promoted
+d556a60 rewrote that file specifically to re-sync it with the promoted
 `beat1_anim.blend` after it had desynced on 15 of 15 clusters — so moving them
 desynchronises the audio from a picture that is delivered and is not being
 re-rendered. **The 25-frame (1.041667 s) cluster ladder survives**, its envelope
@@ -64582,7 +64582,7 @@ therefore: **a genuine limit, now measured per stem instead of argued.**
 
 **B5(a) still cannot land and nothing here pretends otherwise.** The 15 cluster
 seat frames in `world/beat1_anim_anim.json` are the frames the 2,978 delivered
-4K frames show; commit `6e0b37e` rewrote that file specifically to re-sync it
+4K frames show; commit `d556a60` rewrote that file specifically to re-sync it
 with the promoted blend. **No frame moved and no picture was re-rendered.** The
 25-frame (1.0417 s) ladder is in the audio because it is in the picture.
 

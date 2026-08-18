@@ -133,7 +133,7 @@ swap_free_mb() { awk '/SwapFree/{print int($2/1024)}' /proc/meminfo; }
 # would hold the head of the line forever.
 # R2-3066d: ALSO DROP TICKETS THAT DO NOT MATCH THE CURRENT SCHEMA.
 #
-# This file was rewritten twice in three minutes (5256293 17:37:13, fe87ec6
+# This file was rewritten twice in three minutes (c7e9f21 17:37:13, 257325c
 # 17:40:20) and an agent registered in the window between them.  v1 wrote
 # `<stamp>-<pid>.q`; v2 prefixed a priority, `<prio>-<stamp>-<pid>.q`.  The
 # queue is ordered by `ls | sort`, and '-' (0x2D) sorts BEFORE '7' (0x37) --
