@@ -1,7 +1,8 @@
 """Downscaled A/B peeps -- LOOK at the artefact, not only at the number."""
+import os
 import sys, json
 import numpy as np
-sys.path.insert(0, "/home/zany/f1-round2/world/items")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/world/items"))
 import human_png as PNG
 
 def down(a, k):
@@ -21,13 +22,13 @@ def peep(tag, before, after, occ_json, frame, item, pad=90, k=2):
         c = img[y0:y1, x0:x1, :3]
         while max(c.shape[0], c.shape[1]) > 1100:
             c = down(c, 2)
-        PNG.write("/home/zany/f1-round2/work/r2226/peep_%s_%s.png" % (tag, nm), c)
+        PNG.write(os.path.expanduser("~/f1-round2/work/r2226/peep_%s_%s.png") % (tag, nm), c)
         print("   wrote peep_%s_%s.png  %s" % (tag, nm, c.shape))
 
-peep("f654_crew", "/home/zany/f1-round2/work/r2226/f654_before.png",
-     "/home/zany/f1-round2/work/r2226/f654_after.png",
-     "/home/zany/f1-round2/work/r2226/after_verify.json", 654, "crew_figure")
-peep("f1126_ts", "/home/zany/f1-round2/work/r2226/f1126_before.png",
-     "/home/zany/f1-round2/work/r2226/f1126_after.png",
-     "/home/zany/f1-round2/work/r2226/after_verify.json", 1126, "timing_stand")
+peep("f654_crew", os.path.expanduser("~/f1-round2/work/r2226/f654_before.png"),
+     os.path.expanduser("~/f1-round2/work/r2226/f654_after.png"),
+     os.path.expanduser("~/f1-round2/work/r2226/after_verify.json"), 654, "crew_figure")
+peep("f1126_ts", os.path.expanduser("~/f1-round2/work/r2226/f1126_before.png"),
+     os.path.expanduser("~/f1-round2/work/r2226/f1126_after.png"),
+     os.path.expanduser("~/f1-round2/work/r2226/after_verify.json"), 1126, "timing_stand")
 print(">> STAGE RESULT: PEEP_OK")

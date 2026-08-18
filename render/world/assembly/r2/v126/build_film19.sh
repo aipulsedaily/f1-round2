@@ -31,7 +31,7 @@
 #       consulted.
 set -u
 CAR=${1:?usage: build_film19.sh <car-blend>}
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 W=work/r21701
 D=render/world/assembly/r2
 ASM=$D/assembly11.blend

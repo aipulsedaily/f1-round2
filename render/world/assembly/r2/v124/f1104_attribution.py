@@ -17,6 +17,7 @@ Two Cycles renders of the SAME scene at the same settings do not have to agree
 bit-for-bit, so "5 % of the frame changed" is not a finding until you know what
 0 % looks like on this farm.  film13 rendered twice is that number.
 """
+import os
 import json
 import math
 import sys
@@ -24,7 +25,7 @@ import sys
 import numpy as np
 from PIL import Image
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 sys.path.insert(0, R2 + "/world")
 import world_contract as WC                                       # noqa: E402
 

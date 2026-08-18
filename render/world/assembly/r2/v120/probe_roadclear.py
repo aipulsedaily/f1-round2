@@ -38,7 +38,8 @@ VEGETATION is excluded from the per-vertex sweep and reported separately: the
 by construction, by probeC's P1/P9 ray sweep over the racing surface.  Saying
 so here rather than silently dropping them.
 """
-exec(open("/home/zany/f1-round2/render/world/assembly/r2/lib_probe.py").read())
+import os
+exec(open(os.path.expanduser("~/f1-round2/render/world/assembly/r2/lib_probe.py")).read())
 
 # Was `sys.argv[-1] if ... else "probe_roadclear.json"` (fixed 2026-08-02): it
 # read the LAST argument whatever it was, and given nothing usable it silently
@@ -52,7 +53,7 @@ print("[RC] output ->", OUT)
 # Printed ROADCLEAR_FAIL and exited 0 until 2026-08-03. Blender 5.2 also returns
 # 0 for a script that raised, so a probe that died halfway through was
 # indistinguishable from a clean corridor. install() closes both.
-sys.path.insert(0, "/home/zany/f1-round2/tools")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/tools"))
 import gate_exit                                                 # noqa: E402
 gate_exit.install(tool="probe_roadclear")
 

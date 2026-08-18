@@ -50,7 +50,7 @@
 # explicit --out under this version's own directory.
 set -u
 B=/opt/blender-5.2.0-linux-x64/blender
-R2=/home/zany/f1-round2
+R2=$HOME/f1-round2
 D=$R2/render/world/assembly/r2
 V0=$D/v120
 V=$D/v121

@@ -3,12 +3,13 @@
 Pure numpy, no bpy.  Blender camera convention: -Z forward, +Y up, +X right,
 sensor 36 mm AUTO fit on 3840x2160 (so the horizontal axis is the fit axis).
 """
+import os
 import json
 import sys
 
 import numpy as np
 
-TRACK = "/home/zany/f1-round2/sim/out/oner_camera_track_film14_breach.json"
+TRACK = os.path.expanduser("~/f1-round2/sim/out/oner_camera_track_film14_breach.json")
 SENSOR = 36.0
 RES = (3840, 2160)
 

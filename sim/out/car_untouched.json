@@ -1,6 +1,6 @@
 {
  "car_root": "CAR_ROOT",
- "measured_blend": "/home/zany/f1-round2/world/car_anim.blend",
+ "measured_blend": "world/car_anim.blend",
  "frames_compared": 79,
  "max_abs_delta_m": 0.0,
  "samples": [

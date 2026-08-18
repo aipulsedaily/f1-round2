@@ -2,11 +2,11 @@
 handed to ffmpeg as a single continuous input.
 
     .venv/bin/python tools/r23841_build_framelist.py \
-        /home/zany/vast-render/out3/seq/master4k \
-        /home/zany/vast-render/out4/seq/master4k \
-        /home/zany/vast-render/out5/seq/master4k \
+        ~/vast-render/out3/seq/master4k \
+        ~/vast-render/out4/seq/master4k \
+        ~/vast-render/out5/seq/master4k \
         --first 1 --last 2978 --fps 24 \
-        --out /home/zany/f1-round2/tmp/r23841_master4k.ffconcat
+        --out tmp/r23841_master4k.ffconcat
 
 WHY IT EXISTS: the film is one unbroken shot, but it renders on a three-card
 farm, so the frames land in three blocks in three directories. `-i name_%06d.png`

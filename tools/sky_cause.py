@@ -31,7 +31,7 @@ import json, math, os, sys
 import numpy as np
 import bmesh, bpy
 
-ROOT = "/home/zany/f1-round2"
+ROOT = os.path.expanduser("~/f1-round2")
 sys.path.insert(0, os.path.join(ROOT, "world"))
 import build_sky as BS                                            # noqa: E402
 import world_contract as C                                        # noqa: E402

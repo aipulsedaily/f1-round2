@@ -8,7 +8,7 @@
 WHY THIS FILE EXISTS
 --------------------
 `LiveryPaint` is round-1 geometry's material, authored in
-`/home/zany/opus5-car-render/build/s03_materials.py::livery_paint`, and that tree
+`~/opus5-car-render/build/s03_materials.py::livery_paint`, and that tree
 is READ-ONLY (project law 1).  Round 2 therefore retro-fits the car's materials
 from its own side, exactly as `tools/imperfections.py` already does for the
 imperfection layer.  This module is that file's sibling: `imperfections.py` owns

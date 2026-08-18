@@ -1,4 +1,4 @@
-00:00.691  blend            | Read blend: "/home/zany/f1-round2/render/world/assembly/assembly.blend"
+00:00.691  blend            | Read blend: "render/world/assembly/assembly.blend"
 >> road corridor volume: 904 stations, radius 7.00-8.50 m (per-station)
 >> car path volume: 581 stations
 >> camera path volume: 25 keys

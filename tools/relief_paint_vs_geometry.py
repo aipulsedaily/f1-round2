@@ -74,7 +74,7 @@ import bpy
 if os.path.dirname(os.path.abspath(__file__)) not in sys.path:
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 
 # The 8 modules whose relief check PASSED, from render/items/*/gate.json.
 PASSING = ["armco_post", "catch_fence_post", "crew_figure", "gantry_truss",

@@ -8,7 +8,7 @@
 # between THIS output and the v120 baseline is the instrument.
 set -u
 B=/opt/blender-5.2.0-linux-x64/blender
-D=/home/zany/f1-round2/render/world/assembly/r2
+D=$HOME/f1-round2/render/world/assembly/r2
 V=$D/v121
 OLD=$D/assembly5.blend
 for p in A B D E G; do

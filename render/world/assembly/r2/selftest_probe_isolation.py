@@ -55,7 +55,7 @@ import sys
 import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 BLENDER = "/opt/blender-5.2.0-linux-x64/blender"
 OUT_DIR = HERE                      # lib_probe.OUT_DIR, the old destination
 LETTERS = "ABCDEFGHIJK"

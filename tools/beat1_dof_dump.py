@@ -27,7 +27,7 @@ import bpy
 from mathutils import Vector
 
 ARGS = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 
 
 def arg(name, default=None):

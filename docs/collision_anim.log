@@ -1,4 +1,4 @@
-00:00.433  blend            | Read blend: "/home/zany/f1-round2/world/beat1_anim.blend"
+00:00.433  blend            | Read blend: "world/beat1_anim.blend"
 >> 15 clusters, 303 environment objects, frames [1, 80, 160, 240, 320, 400, 480, 560, 640, 700, 760, 792]
 >> frame     1: 4 INTERSECTIONS
      environment  CORNER_RL        x Turntable_Deck               202 triangle pairs

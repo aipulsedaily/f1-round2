@@ -1,7 +1,7 @@
 """WHICH PATH FILE IS THE LIVE CAMERA — read from the ONE file that declares it.
 
     from live_campath import load, declared_campath
-    declared_campath()  -> "/home/zany/f1-round2/render/film17_path.json"
+    declared_campath()  -> "render/film17_path.json"
     load()              -> {"frames": 2978, "path": [...]}       the LIVE camera
     load(byframe=True)  -> {1: {...}, 2: {...}, ...}             keyed by frame
 

@@ -42,7 +42,7 @@ import argparse
 
 import numpy as np
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 sys.path.insert(0, os.path.join(R2, "tools"))
 import screen_presence as SP                                    # noqa: E402
 

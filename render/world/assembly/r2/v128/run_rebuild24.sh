@@ -34,7 +34,7 @@
 # Blender 5.2 exits 0 on an uncaught exception, so `$?` is not evidence -- and
 # every stage checked for the two-verdict trap.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 W=work/r23361
 V7=render/world/assembly/r2/v127
 V8=render/world/assembly/r2/v128
@@ -200,11 +200,14 @@ echo ">> render/film24_path.json sha16 = $P24"
   echo ">> STAGE RESULT: REBUILD24_FAIL (the camera path is film22/film23's -- the rig did not read the live sheet)"
   exit 13; }
 python3 - <<'PY'
-import json, math, sys
-sys.path.insert(0, "/home/zany/f1-round2/tools")
+import json, math, os, sys
+# <<'PY' is the QUOTED heredoc form, so the shell expands nothing in here and
+# $HOME would arrive at Python as four literal characters. Expand it in Python.
+R2 = os.path.expanduser("~/f1-round2")
+sys.path.insert(0, R2 + "/tools")
 import lap_shotscale as LS
-a = LS.load_path("/home/zany/f1-round2/render/film23_path.json")
-b = LS.load_path("/home/zany/f1-round2/render/film24_path.json")
+a = LS.load_path(R2 + "/render/film23_path.json")
+b = LS.load_path(R2 + "/render/film24_path.json")
 print(">> film24's camera vs film23's, per beat:")
 moved = 0
 for nm, lo, hi in LS.BEATS:

@@ -11,7 +11,7 @@
 # NO --world-override is passed.  SHIPPING.md must declare assembly9 before this
 # runs, or the build must fail -- and that failure would be the guard working.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 W=work/r2148
 D=render/world/assembly/r2
 ASM=$D/assembly9.blend

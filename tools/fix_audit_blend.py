@@ -8,7 +8,7 @@ TWO PROBLEMS, BOTH MINE
 The first deploy of this blend to the render farm failed, and the broker log named
 both causes:
 
-    WARNING Image file /home/zany/opus5-car-render/assets/city.exr does not exist.
+    WARNING Image file ~/opus5-car-render/assets/city.exr does not exist.
     ERROR   Failed to load 1 image files
     [worker] prewarm: 19 cameras [...]
     worker on ... not ready after 62s and 20 pings

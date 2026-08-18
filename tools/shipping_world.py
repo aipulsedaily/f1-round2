@@ -2,7 +2,7 @@
 
     from shipping_world import declared_shipping_world, declared_shipping_path
     declared_shipping_world()   -> "assembly8.blend"
-    declared_shipping_path()    -> "/home/zany/f1-round2/render/world/assembly/r2/assembly8.blend"
+    declared_shipping_path()    -> "render/world/assembly/r2/assembly8.blend"
 
 WHY THIS IS ITS OWN MODULE
 --------------------------

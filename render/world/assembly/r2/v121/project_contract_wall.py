@@ -16,7 +16,7 @@ import bpy
 import numpy as np
 from bpy_extras.object_utils import world_to_camera_view
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 sys.path.insert(0, os.path.join(R2, "world"))
 import world_contract as WC   # noqa: E402
 
@@ -25,7 +25,7 @@ import world_contract as WC   # noqa: E402
 # then overwrites the script with its own JSON output -- reproduced 2026-08-02
 # on a copy, which destroyed itself in one run.  resolve_out() takes only the
 # args after `--`, resolves to an absolute path, and refuses when told nothing.
-_LIB = "/home/zany/f1-round2/render/world/assembly/r2/lib_probe.py"
+_LIB = os.path.expanduser("~/f1-round2/render/world/assembly/r2/lib_probe.py")
 _BLK = re.search(r"^# --- BEGIN resolve_out.*?^# --- END resolve_out.*?$",
                  open(_LIB).read(), re.S | re.M)
 if not _BLK:

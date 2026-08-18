@@ -33,7 +33,7 @@ CONTROLS, both in the same run:
 
 THE FIX, AND WHY IT IS A LOCAL-Z SCALE AND NOT A REBUILD
 --------------------------------------------------------
-`WallSign_Word` is built by `/home/zany/opus5-car-render/build/s07_props.py`,
+`WallSign_Word` is built by `~/opus5-car-render/build/s07_props.py`,
 which is READ-ONLY (project law 1), so the glyph run cannot be re-extruded at
 source.  Its depth is `2*extrude(0.022) + 2*bevel(0.004) = 52.0 mm` and it is
 stacked 46.3 mm above the strapline: THE DEPTH EXCEEDS THE GAP, which is the
@@ -133,7 +133,7 @@ for o in bpy.data.objects:
 strap.hide_render = False
 word.is_holdout = True
 
-TMP = "/tmp/claude-0/-home-zany-opus5-car-render/262f2abe-1dfb-4a32-9544-52393037f67a/scratchpad/r2511.png"
+TMP = "/tmp/f1-round2-scratch/r2511.png"
 os.makedirs(os.path.dirname(TMP), exist_ok=True)
 
 

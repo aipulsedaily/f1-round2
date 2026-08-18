@@ -46,7 +46,7 @@ import numpy as np
 
 import bpy
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 for _p in ("sim",):
     _q = os.path.join(R2, _p)
     if _q not in sys.path:

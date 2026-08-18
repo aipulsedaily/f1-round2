@@ -31,7 +31,7 @@ import json
 import math
 import os
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 
 BEATS = [
     ("1_assembly", 1, 792),

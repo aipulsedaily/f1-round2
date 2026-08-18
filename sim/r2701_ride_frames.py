@@ -1,6 +1,6 @@
 """R2-701 — the peak of the deck ride, rendered from TWO breach tables in ONE job.
 
-    ~/vast-render/rq exec --root /home/zany/f1-round2 --closure \
+    ~/vast-render/rq exec --root ~/f1-round2 --closure \
         --include 'sim/out/fracture_wall.npz' \
         --include 'sim/out/breach_film_R2387.npz' \
         --include 'sim/out/breach_film_R2701A.npz' \

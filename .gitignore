@@ -118,7 +118,7 @@ credentials*
 # CROSS-REPO SYMLINKS INTO THE BROKER'S OUTPUT, AND WHY THEY MUST NOT SHIP.
 #
 # `watch/r2943_4k` and `watch/r2943b6_frames` are not directories. They are
-# ABSOLUTE symlinks into /home/zany/vast-render/out/seq/, which is a different
+# ABSOLUTE symlinks into ~/vast-render/out/seq/, which is a different
 # repository whose `out/` is itself gitignored as regenerable 12 GB of frames.
 #
 # Git does not descend a symlink, so the *.png rule above never applied to

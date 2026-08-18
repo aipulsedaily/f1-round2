@@ -1,7 +1,8 @@
+import os
 import json, math, sys
-sys.path.insert(0,"/home/zany/f1-round2/tools")
+sys.path.insert(0,os.path.expanduser("~/f1-round2/tools"))
 from beat1_focus_track import cam_axes, blur_px
-D=json.load(open("/home/zany/f1-round2/work/b1dof/dump.json"))
+D=json.load(open(os.path.expanduser("~/f1-round2/work/b1dof/dump.json")))
 cams={e["f"]:e for e in D["frames"]}; geom=D["cluster_bbox"]
 gfr=sorted(int(k) for k in geom); px=D["res"][0]/D["sensor_width"]
 rows=[]

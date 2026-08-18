@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 for it in crew_figure timing_stand armco_post catch_fence_post tyre_wall_tyre gantry_truss pont_girder heras_fence_panel spectator_crowd terrain_ground forecourt_paving_bay pit_wall_unit; do
   b=world/items/${it}_test.blend
   [ -f "$b" ] || { echo "MISSING $b"; continue; }

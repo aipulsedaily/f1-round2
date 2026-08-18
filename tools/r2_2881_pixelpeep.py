@@ -69,7 +69,7 @@ import time
 
 import numpy as np
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 sys.path.insert(0, R2)
 
 PROXY = os.path.join(R2, "work/r22161_proxy/r22161_proxy_%06d.png")
@@ -1184,7 +1184,7 @@ FINDING_PAIRS = [
 ]
 
 
-HIRES_GLOB = "/home/zany/vast-render/out*/seq/r22161_before/*.png"
+HIRES_GLOB = os.path.expanduser("~/vast-render/out*/seq/r22161_before/*.png")
 
 
 def crossres():

@@ -40,7 +40,7 @@ import re
 import sys
 import json
 
-VR = "/home/zany/vast-render"
+VR = os.path.expanduser("~/vast-render")
 NAME = "master4k"
 FIRST, LAST = 1, 2978
 
@@ -231,7 +231,7 @@ def main():
             "duplicated": dupes,
             "outside_range": outside,
         }
-        path = "/home/zany/f1-round2/work/r23901/orphan_ledger.json"
+        path = os.path.expanduser("~/f1-round2/work/r23901/orphan_ledger.json")
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w") as fh:
             json.dump(out, fh, indent=2)

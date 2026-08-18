@@ -14,6 +14,7 @@ Measured on the round-1 showroom: `visible_camera` is False on all 23
 practicals and on SKY_Sun, so the answer is clean.  Kept because that is a
 negative worth being able to re-take -- see R2-623.
 """
+import os
 import math, sys, json
 import bpy
 from mathutils import Vector
@@ -62,7 +63,7 @@ for r in sorted(rows, key=lambda d: (not d["in_frame_1"], d["name"])):
           % (r["name"], r["type"], r["visible_camera"], r["size"][0],
              r["size"][1], r["in_frame_1"], r["az_deg"], r["el_deg"],
              r["dist_m"]))
-json.dump(rows, open("/home/zany/f1-round2/work/ceiling/lampvis.json", "w"), indent=1)
+json.dump(rows, open(os.path.expanduser("~/f1-round2/work/ceiling/lampvis.json"), "w"), indent=1)
 print(">> %d large AREA lamp(s) both camera-visible AND inside frame 1: %s"
       % (len(bad), [r["name"] for r in bad]))
 print(">> STAGE RESULT: %s" % ("LAMPVIS_NAKED_SOURCE_IN_FRAME" if bad

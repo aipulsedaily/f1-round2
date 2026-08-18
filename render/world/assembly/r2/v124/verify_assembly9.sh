@@ -20,7 +20,7 @@
 # Every arm carries its control in the same run.  A "0 moved" from a script
 # that cannot report a move is not a result.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 B=/opt/blender-5.2.0-linux-x64/blender
 D=render/world/assembly/r2
 V0=$D/v120
@@ -40,7 +40,7 @@ python3 $V0/fp_diff.py --selftest
 
 echo; echo "=== 1a vertex fingerprint: assembly9 ==="
 $B -b -noaudio $A9 --factory-startup -P $V0/vertex_fingerprint.py -- \
-    /home/zany/f1-round2/$W/fp_assembly9.json 2>&1 | grep -Ev "^(Blender|\[ALSOFT])" | tail -5
+    $HOME/f1-round2/$W/fp_assembly9.json 2>&1 | grep -Ev "^(Blender|\[ALSOFT])" | tail -5
 
 echo; echo "=== 1b fp_diff assembly8 -> assembly9   (DECLARED: exactly 1 moved) ==="
 python3 $V0/fp_diff.py $D/v123/fp_assembly8.json $W/fp_assembly9.json --expect-moved 1

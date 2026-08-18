@@ -3,7 +3,7 @@
 # 1080p first, then zoom crops. Never straight to 4K.
 set -u
 B=/opt/blender-5.2.0-linux-x64/blender
-D=/home/zany/f1-round2/render/world/assembly/r2
+D=$HOME/f1-round2/render/world/assembly/r2
 V=$D/v120
 S=$D/assembly5.blend
 
@@ -14,7 +14,7 @@ echo "########## setup exit=$? $(date +%T)"
 tail -3 $V/render_setup5.log
 ls -l $D/render5.blend
 
-cd /home/zany/vast-render
+cd $HOME/vast-render
 SCENE=$D/render5.blend
 try () {  # cam W H samples outfile [extra...]
   local cam="$1" w="$2" h="$3" sm="$4" of="$5"; shift 5

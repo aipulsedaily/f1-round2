@@ -145,24 +145,24 @@
   }
  },
  "witness": {
-  "blend": "/home/zany/f1-round2/render/gate_witness/spectator_seated/witness.blend",
-  "png": "/home/zany/f1-round2/render/gate_witness/spectator_seated_wave1/witness.png",
-  "spec": "/home/zany/f1-round2/render/gate_witness/spectator_seated_wave1/witness_spec.json",
+  "blend": "render/gate_witness/spectator_seated/witness.blend",
+  "png": "render/gate_witness/spectator_seated_wave1/witness.png",
+  "spec": "render/gate_witness/spectator_seated_wave1/witness_spec.json",
   "render": {
    "backend": "vast-5090 via rq",
    "seconds": 242.4,
    "samples": 512,
    "denoiser": "OPENIMAGEDENOISE",
-   "rq_tail": "913b3f84  queued (depth 2) scene=gate_witness/spectator_seated/witness.blend\n8c8a913b3f84  done in 5.352s -> /home/zany/vast-render/out/8c8a913b3f84.png\n          image     OK  mean 0.0364  sd 0.1344  range 0.000-0.871  218 levels\n          saved /home/zany/f1-round2/render/gate_witness/spectator_seated_wave1/witness.png (1.8 MB)\n  queued... 60s\n  queued... 120s\n  queued... 180s\n  running... 240s\n",
+   "rq_tail": "913b3f84  queued (depth 2) scene=gate_witness/spectator_seated/witness.blend\n8c8a913b3f84  done in 5.352s -> ~/vast-render/out/8c8a913b3f84.png\n          image     OK  mean 0.0364  sd 0.1344  range 0.000-0.871  218 levels\n          saved render/gate_witness/spectator_seated_wave1/witness.png (1.8 MB)\n  queued... 60s\n  queued... 120s\n  queued... 180s\n  running... 240s\n",
    "flip": {
     "backend": "vast-5090 via rq",
     "seconds": 439.5,
     "samples": 512,
     "denoiser": "OPENIMAGEDENOISE",
-    "rq_tail": "d/witness_flip.blend\n6ae2ff965a14  done in 5.374s -> /home/zany/vast-render/out/6ae2ff965a14.png\n          image     OK  mean 0.0296  sd 0.1126  range 0.000-0.918  213 levels\n          saved /home/zany/f1-round2/render/gate_witness/spectator_seated_wave1/witness_flip.png (1.6 MB)\n  queued... 60s\n  queued... 120s\n  queued... 180s\n  queued... 240s\n  queued... 300s\n  queued... 360s\n  running... 420s\n",
-    "png": "/home/zany/f1-round2/render/gate_witness/spectator_seated_wave1/witness_flip.png"
+    "rq_tail": "d/witness_flip.blend\n6ae2ff965a14  done in 5.374s -> ~/vast-render/out/6ae2ff965a14.png\n          image     OK  mean 0.0296  sd 0.1126  range 0.000-0.918  213 levels\n          saved render/gate_witness/spectator_seated_wave1/witness_flip.png (1.6 MB)\n  queued... 60s\n  queued... 120s\n  queued... 180s\n  queued... 240s\n  queued... 300s\n  queued... 360s\n  running... 420s\n",
+    "png": "render/gate_witness/spectator_seated_wave1/witness_flip.png"
    },
-   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/spectator_seated_wave1/witness_flip.png"
+   "flip_png_used": "render/gate_witness/spectator_seated_wave1/witness_flip.png"
   },
   "render_error": null,
   "image": {
@@ -322,7 +322,7 @@
     "px_flip_lit": 16572,
     "px_chosen_lit_core": 16669,
     "alpha_agreement": 0.999979,
-    "flip_png": "/home/zany/f1-round2/render/gate_witness/spectator_seated_wave1/witness_flip.png",
+    "flip_png": "render/gate_witness/spectator_seated_wave1/witness_flip.png",
     "sun_screen_direction_rowcol_flip": [
      -0.015506272758819006,
      0.9998797705250012
@@ -365,7 +365,7 @@
   "written_at": 1785790759.696,
   "tool": {
    "role": "tool",
-   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "path": "tools/item_gate.py",
    "status": "OK",
    "mtime": 1785783024.902,
    "mtime_iso": "2026-08-03T18:50:24",
@@ -381,7 +381,7 @@
   "inputs": [
    {
     "role": "blend",
-    "path": "/home/zany/f1-round2/world/items/spectator_seated_test.blend",
+    "path": "world/items/spectator_seated_test.blend",
     "status": "OK",
     "mtime": 1785788707.303,
     "mtime_iso": "2026-08-03T20:25:07",
@@ -391,7 +391,7 @@
    },
    {
     "role": "manifest",
-    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "path": "docs/item_manifest.json",
     "status": "OK",
     "mtime": 1785264294.872,
     "mtime_iso": "2026-07-28T18:44:54",
@@ -411,7 +411,7 @@
   "describes": [
    {
     "role": "witness_blend",
-    "path": "/home/zany/f1-round2/render/gate_witness/spectator_seated/witness.blend",
+    "path": "render/gate_witness/spectator_seated/witness.blend",
     "status": "OK",
     "mtime": 1785790027.785,
     "mtime_iso": "2026-08-03T20:47:07",
@@ -420,7 +420,7 @@
    },
    {
     "role": "witness_png",
-    "path": "/home/zany/f1-round2/render/gate_witness/spectator_seated_wave1/witness.png",
+    "path": "render/gate_witness/spectator_seated_wave1/witness.png",
     "status": "OK",
     "mtime": 1785790270.299,
     "mtime_iso": "2026-08-03T20:51:10",
@@ -429,7 +429,7 @@
    },
    {
     "role": "witness_spec",
-    "path": "/home/zany/f1-round2/render/gate_witness/spectator_seated_wave1/witness_spec.json",
+    "path": "render/gate_witness/spectator_seated_wave1/witness_spec.json",
     "status": "OK",
     "mtime": 1785790027.969,
     "mtime_iso": "2026-08-03T20:47:07",
@@ -440,7 +440,7 @@
   "also_hash": [
    {
     "role": "itemkit",
-    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "path": "world/itemkit.py",
     "status": "OK",
     "mtime": 1785786939.014,
     "mtime_iso": "2026-08-03T19:55:39",
@@ -449,7 +449,7 @@
    },
    {
     "role": "world_contract",
-    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "path": "world/world_contract.py",
     "status": "OK",
     "mtime": 1785684602.475,
     "mtime_iso": "2026-08-02T15:30:02",
@@ -476,8 +476,8 @@
    "--out",
    "work/r2116/spectator_seated_gate_R2116.json"
   ],
-  "cwd": "/home/zany/f1-round2",
-  "host": "zed",
+  "cwd": "~/f1-round2",
+  "host": "workstation",
   "python": "3.13.13"
  }
 }

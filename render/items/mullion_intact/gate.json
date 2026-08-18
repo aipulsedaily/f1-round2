@@ -104,12 +104,12 @@
  },
  "witness": {
   "blend": null,
-  "png": "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness.png",
-  "spec": "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness_spec.json",
+  "png": "render/gate_witness/mullion_intact/witness.png",
+  "spec": "render/gate_witness/mullion_intact/witness_spec.json",
   "render": {
    "backend": "supplied PNG (--from-png)",
-   "png": "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness.png",
-   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness_flip.png"
+   "png": "render/gate_witness/mullion_intact/witness.png",
+   "flip_png_used": "render/gate_witness/mullion_intact/witness_flip.png"
   },
   "render_error": null,
   "image": {
@@ -136,7 +136,7 @@
   "written_at": 1785766643.958,
   "tool": {
    "role": "tool",
-   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "path": "tools/item_gate.py",
    "status": "OK",
    "mtime": 1785757608.739,
    "mtime_iso": "2026-08-03T11:46:48",
@@ -152,7 +152,7 @@
   "inputs": [
    {
     "role": "blend",
-    "path": "/home/zany/f1-round2/world/items/mullion_intact_test.blend",
+    "path": "world/items/mullion_intact_test.blend",
     "status": "OK",
     "mtime": 1785324466.989,
     "mtime_iso": "2026-07-29T11:27:46",
@@ -162,7 +162,7 @@
    },
    {
     "role": "manifest",
-    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "path": "docs/item_manifest.json",
     "status": "OK",
     "mtime": 1785264294.872,
     "mtime_iso": "2026-07-28T18:44:54",
@@ -171,7 +171,7 @@
    },
    {
     "role": "from_png",
-    "path": "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness.png",
+    "path": "render/gate_witness/mullion_intact/witness.png",
     "status": "OK",
     "mtime": 1785766458.05,
     "mtime_iso": "2026-08-03T14:14:18",
@@ -191,7 +191,7 @@
    },
    {
     "role": "witness_png",
-    "path": "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness.png",
+    "path": "render/gate_witness/mullion_intact/witness.png",
     "status": "OK",
     "mtime": 1785766458.05,
     "mtime_iso": "2026-08-03T14:14:18",
@@ -200,7 +200,7 @@
    },
    {
     "role": "witness_spec",
-    "path": "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness_spec.json",
+    "path": "render/gate_witness/mullion_intact/witness_spec.json",
     "status": "OK",
     "mtime": 1785760539.993,
     "mtime_iso": "2026-08-03T12:35:39",
@@ -211,7 +211,7 @@
   "also_hash": [
    {
     "role": "itemkit",
-    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "path": "world/itemkit.py",
     "status": "OK",
     "mtime": 1785741347.142,
     "mtime_iso": "2026-08-03T07:15:47",
@@ -220,7 +220,7 @@
    },
    {
     "role": "world_contract",
-    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "path": "world/world_contract.py",
     "status": "OK",
     "mtime": 1785684602.475,
     "mtime_iso": "2026-08-02T15:30:02",
@@ -231,23 +231,23 @@
   "argv": [
    "/opt/blender-5.2.0-linux-x64/blender",
    "-b",
-   "/home/zany/f1-round2/world/items/mullion_intact_test.blend",
+   "world/items/mullion_intact_test.blend",
    "--factory-startup",
    "-P",
-   "/home/zany/f1-round2/tools/item_gate.py",
+   "tools/item_gate.py",
    "--",
    "--item",
    "mullion_intact",
    "--out",
-   "/home/zany/f1-round2/work/r2061/gate/mullion_intact/gate.json",
+   "work/r2061/gate/mullion_intact/gate.json",
    "--samples",
    "512",
    "--always-render",
    "--from-png",
-   "/home/zany/f1-round2/render/gate_witness/mullion_intact/witness.png"
+   "render/gate_witness/mullion_intact/witness.png"
   ],
-  "cwd": "/home/zany/f1-round2",
-  "host": "zed",
+  "cwd": "~/f1-round2",
+  "host": "workstation",
   "python": "3.13.13"
  }
 }

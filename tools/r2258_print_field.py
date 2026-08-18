@@ -10,14 +10,14 @@ rain streaks, edge grime) are keyed the same way they are on the real object.
 import os
 import sys
 
-sys.path.insert(0, "/home/zany/f1-round2/world")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/world"))
 import numpy as np
 import bpy
 import build_dressing as BD
 
 W_M, H_M = 44.0, 1.60
 MPP = 0.005
-OUT = "/home/zany/f1-round2/work/r2256"
+OUT = os.path.expanduser("~/f1-round2/work/r2256")
 AUX = (0.2783, 0.3578, 0.5, 0.6985)          # the real unit's age/dirt/variant/uid
 
 bpy.ops.wm.read_factory_settings(use_empty=True)

@@ -1,7 +1,7 @@
 #!/bin/bash
 # R2-3721 item 2: every arm through the SAME chain, and every comparison named.
 set -u
-R2=/home/zany/f1-round2
+R2=$HOME/f1-round2
 OUT=$R2/work/r23721_item2
 cd "$R2" || exit 1
 BASE9=$OUT/a9_orphan14_item_presence.json

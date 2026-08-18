@@ -46,7 +46,8 @@ found a further 32 m2 the coarse grid could not see.  A 0.26 m mean gap width is
 INVISIBLE to a 1.0 m sample.  Every number here is a physical area or a depth in
 metres, and every hole is reported with the two objects that bound it.
 """
-exec(open("/home/zany/f1-round2/render/world/assembly/r2/lib_probe.py").read())
+import os
+exec(open(os.path.expanduser("~/f1-round2/render/world/assembly/r2/lib_probe.py")).read())
 
 # Resolved BEFORE the expensive work: a run that cannot write must die in the
 # first second, not after twenty minutes of ray casting.

@@ -252,7 +252,7 @@
  ],
  "n_pinned": 30,
  "n_left": 9,
- "source": "/home/zany/f1-round2/render/film14_breach_r6.blend",
+ "source": "render/film14_breach_r6.blend",
  "written": "render/r2607_unbend_BENT_DO_NOT_SHIP.blend",
  "note": "B half of the un-bend A/B.  A is film14_breach_r6.blend, unmodified.  Render the SAME frame from both."
 }

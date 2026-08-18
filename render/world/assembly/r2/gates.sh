@@ -2,7 +2,7 @@
 # The three shipped gates, run on the reassembled world.
 set -u
 B=/opt/blender-5.2.0-linux-x64/blender
-R2=/home/zany/f1-round2
+R2=$HOME/f1-round2
 D=$R2/render/world/assembly/r2
 SCENE=${1:-$D/assembly2.blend}
 

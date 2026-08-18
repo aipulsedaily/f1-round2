@@ -20,7 +20,7 @@
 # --uniform-shutter on every arm: retier.sh's header and screen_presence.py's
 # own --uniform-shutter help both say it is THE SHIPPING MODE since R2-037.
 set -u
-R2=/home/zany/f1-round2
+R2=$HOME/f1-round2
 SCR=${SCR:-$R2/work/r23721_item2}   # where make_ctl.py wrote the control camera paths
 OUT=$R2/work/r23721_item2
 mkdir -p "$OUT"

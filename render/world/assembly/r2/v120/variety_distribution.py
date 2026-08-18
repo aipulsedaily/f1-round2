@@ -36,7 +36,7 @@ import bpy
 # lib_probe.py.  This script has no other reason to load lib_probe -- doing so
 # would drag in world_contract -- so it execs ONLY the marked resolver block,
 # keeping one source of truth for output paths.
-_LIB = "/home/zany/f1-round2/render/world/assembly/r2/lib_probe.py"
+_LIB = os.path.expanduser("~/f1-round2/render/world/assembly/r2/lib_probe.py")
 _BLK = re.search(r"^# --- BEGIN resolve_out.*?^# --- END resolve_out.*?$",
                  open(_LIB).read(), re.S | re.M)
 if not _BLK:
@@ -141,7 +141,7 @@ R["secs"] = round(time.time() - T0, 1)
 # Which assembly was this distribution measured on? `variety_distribution_v120.json`
 # and `..._v121.json` are compared to each other; a comparison between two files
 # that cannot name their input is a comparison of two anecdotes.
-sys.path.insert(0, "/home/zany/f1-round2/tools")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/tools"))
 import provenance as _prov                                       # noqa: E402
 R = dict([(_prov.STAMP_KEY, _prov.stamp(
     tool_file=__file__, tool_version="variety_distribution",

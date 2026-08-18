@@ -20,7 +20,7 @@
 # film22.blend is therefore a PROOF ARTEFACT for these two fixes, not a ship
 # candidate; the ship candidate needs the breach bug fixed first.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 W=work/r22041
 V=render/world/assembly/r2/v126
 CAR=world/R22041_car_anim_driver_CS.blend

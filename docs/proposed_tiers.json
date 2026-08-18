@@ -1,15 +1,15 @@
 {
  "generated": "2026-08-04T01:49:37",
- "SOURCE": "/home/zany/f1-round2/work/w2_0/retier_a9/item_presence.json -- measured, not assigned. This file is a PROPOSAL; docs/item_manifest.json is deliberately untouched, because changing the manifest is a decision and this is a measurement.",
+ "SOURCE": "work/w2_0/retier_a9/item_presence.json -- measured, not assigned. This file is a PROPOSAL; docs/item_manifest.json is deliberately untouched, because changing the manifest is a decision and this is a measurement.",
  "RULE": "HERO = >=300 px, sharp, unoccluded, on >=24 frames (1.0 s) in total. MID = >=150 px on >=12 frames. BULK = on screen but never both big and sharp for long enough. NEVER = not in frustum on any of the 2,978 frames. Only NEVER is a fact rather than a threshold.",
  "INPUT_IDENTITY": {
   "stamped_at": "2026-08-04T01:42:17",
-  "host": "zed",
+  "host": "workstation",
   "WHY": "Defect #97: a report changed on an unchanged blend because the telemetry and camera were rebuilt underneath it and nothing recorded it. sha256 is the load-bearing field; mtime and the declared version are context. A result that cannot be told apart from a stale one is not a result.",
   "inputs": [
    {
     "role": "world",
-    "path": "/home/zany/f1-round2/render/world/assembly/r2/assembly9.blend",
+    "path": "render/world/assembly/r2/assembly9.blend",
     "bytes": 4214604334,
     "mtime": "2026-08-03T23:09:36",
     "mtime_epoch": 1785798576,
@@ -18,7 +18,7 @@
    },
    {
     "role": "camera_path",
-    "path": "/home/zany/f1-round2/world/camera_rig_path.json",
+    "path": "world/camera_rig_path.json",
     "bytes": 335752,
     "mtime": "2026-08-03T23:30:49",
     "mtime_epoch": 1785799849,
@@ -27,7 +27,7 @@
    },
    {
     "role": "telemetry",
-    "path": "/home/zany/f1-round2/telemetry/telemetry.csv",
+    "path": "telemetry/telemetry.csv",
     "bytes": 246441,
     "mtime": "2026-08-02T13:54:11",
     "mtime_epoch": 1785678851,
@@ -36,7 +36,7 @@
    },
    {
     "role": "beat_sheet",
-    "path": "/home/zany/f1-round2/docs/beat_sheet.json",
+    "path": "docs/beat_sheet.json",
     "bytes": 155494,
     "mtime": "2026-08-03T23:30:08",
     "mtime_epoch": 1785799808,
@@ -45,7 +45,7 @@
    },
    {
     "role": "item_manifest",
-    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "path": "docs/item_manifest.json",
     "bytes": 299660,
     "mtime": "2026-07-28T18:44:54",
     "mtime_epoch": 1785264294,
@@ -54,7 +54,7 @@
    },
    {
     "role": "world_contract",
-    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "path": "world/world_contract.py",
     "bytes": 230216,
     "mtime": "2026-08-03T22:41:03",
     "mtime_epoch": 1785796863,
@@ -1194,7 +1194,7 @@
   ]
  },
  "comparison": {
-  "against": "/home/zany/f1-round2/docs/proposed_tiers.json",
+  "against": "docs/proposed_tiers.json",
   "against_generated": "2026-08-03T03:58:55",
   "previous": {
    "tier_counts": {

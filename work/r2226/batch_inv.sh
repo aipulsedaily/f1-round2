@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 run () { # item coll prefix
   /opt/blender-5.2.0-linux-x64/blender -b world/items/$1_test.blend --factory-startup -noaudio \
     -P work/r2226/inventory_item.py -- --collection "$2" --prefix "$3" --out work/r2226/inv_$1.json \

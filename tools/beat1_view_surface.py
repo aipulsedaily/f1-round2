@@ -176,7 +176,7 @@ def main():
     # ----------------------------------------------- reproduction assertion --
     ref_p = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(a.out))),
                          "docs", "presentation_normals.json")
-    ref_p = "/home/zany/f1-round2/docs/presentation_normals.json"
+    ref_p = os.path.expanduser("~/f1-round2/docs/presentation_normals.json")
     bad = []
     if os.path.exists(ref_p):
         ref = json.load(open(ref_p))

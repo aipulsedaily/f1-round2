@@ -1,6 +1,6 @@
 """Beat 1 — animate 616 parts from the exploded field onto the car.
 
-    /opt/blender-5.2.0-linux-x64/blender -b /home/zany/opus5-car-render/work/iter.blend \
+    /opt/blender-5.2.0-linux-x64/blender -b ~/opus5-car-render/work/iter.blend \
         --factory-startup -P anim/build_beat1_anim.py -- \
         --plan docs/explode_plan.json --sheet docs/beat_sheet.json \
         --out world/beat1_anim.blend

@@ -6,7 +6,8 @@ s 3436-3512 on side +1 at u 11-13 m, i.e. the strip between the track edge
 (verge_edge 10.5) and the pit wall (C.PIT_WALL_Y = +11.5) over the pit exit.
 This maps it at 0.5 m x 0.10 m and names what bounds it.
 """
-exec(open("/home/zany/f1-round2/render/world/assembly/r2/lib_probe.py").read())
+import os
+exec(open(os.path.expanduser("~/f1-round2/render/world/assembly/r2/lib_probe.py")).read())
 
 # ------------------------------------------------- WHERE THIS PROBE WRITES --
 # Was `save("probeF.json", ...)`. `save()` joins its argument onto
@@ -27,7 +28,7 @@ print("[F] output ->", OUT)
 # Blender 5.2 returns 0 for a script that raised, so a probe that died halfway
 # was indistinguishable from one that finished.  install() arms sys.excepthook
 # and an atexit sentinel; done() on the last line disarms it.
-sys.path.insert(0, "/home/zany/f1-round2/tools")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/tools"))
 import gate_exit                                                 # noqa: E402
 gate_exit.install(tool="probeF")
 

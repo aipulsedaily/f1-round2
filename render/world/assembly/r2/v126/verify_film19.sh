@@ -21,7 +21,7 @@
 # on which this one is known to report 27 findings.  Keep it.  If film10 ever
 # comes back PASS the instrument is broken, and every PASS above it is vacuous.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 FILM=${1:-render/film19_breach.blend}
 NAME=$(basename "$FILM" .blend)
 B=/opt/blender-5.2.0-linux-x64/blender

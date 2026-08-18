@@ -124,7 +124,7 @@ import bpy
 from mathutils import Vector
 from mathutils.kdtree import KDTree
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 # Imported by path, not by package: this runs inside Blender's interpreter with
 # whatever cwd the caller happened to have.
 if os.path.dirname(os.path.abspath(__file__)) not in sys.path:

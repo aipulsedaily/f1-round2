@@ -107,7 +107,7 @@ def report(name, d, marks, fps=24.0):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--before", default="/home/zany/vast-render/out/seq/r2beat1")
+    p.add_argument("--before", default=os.path.expanduser("~/vast-render/out/seq/r2beat1"))
     p.add_argument("--after")
     p.add_argument("--selftest", action="store_true")
     a = p.parse_args()

@@ -29,7 +29,7 @@ import time
 
 import bpy
 
-sys.path.insert(0, "/home/zany/opus5-car-render/build")
+sys.path.insert(0, os.path.expanduser("~/opus5-car-render/build"))
 
 # (module, [entry functions], description). Not every module exposes build():
 # s03_materials has build_showroom_materials/build_car_materials, and calling the
@@ -133,7 +133,7 @@ def main():
     print(f">> scene: {len(meshes)} meshes, {polys:,} polys, {lamps} lamps, "
           f"cameras {cams}")
     # Blender relativises external paths on save (the "Relative Paths" pref), so
-    # an absolute /home/zany/opus5-car-render/assets/city.exr becomes
+    # an absolute ~/opus5-car-render/assets/city.exr becomes
     # //../assets/city.exr, which the remote deploy resolves to /assets/city.exr
     # and cannot find. The render then proceeds with NO environment lighting and
     # looks plausible but wrong - caught only because the broker now warns.

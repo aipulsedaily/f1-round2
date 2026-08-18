@@ -23,6 +23,7 @@ TWO CONTROLS, and neither is optional:
               second, independent floor on "how much does a re-render of the
               same frame differ from itself".
 """
+import os
 import json
 import math
 import sys
@@ -31,7 +32,7 @@ import bpy
 import numpy as np
 from mathutils import Quaternion, Vector
 
-sys.path.insert(0, "/home/zany/f1-round2/world")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/world"))
 import world_contract as WC                                       # noqa: E402
 
 argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
@@ -44,9 +45,9 @@ def opt(name, default=None, n=1):
     return default
 
 
-PATH = opt("path", "/home/zany/f1-round2/render/film14_path.json")
+PATH = opt("path", os.path.expanduser("~/f1-round2/render/film14_path.json"))
 RES = [int(x) for x in opt("res", ["3840", "2160"], n=2)]
-OUT = opt("out", "/home/zany/f1-round2/work/r2148/f1104_masks.npz")
+OUT = opt("out", os.path.expanduser("~/f1-round2/work/r2148/f1104_masks.npz"))
 FRAME = int(opt("frame", "1104"))
 W, H = RES
 

@@ -3,7 +3,7 @@
 # 11 GB box and thrash; the parallel attempt ran the engine synthesis 12x slower
 # than the serial one.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 rm -f audio/out/ab/CHAINDONE
 F1_LAPDOWN=0 .venv/bin/python -m audio.master \
   --out audio/out/ab/master_A_nolapdown.wav \

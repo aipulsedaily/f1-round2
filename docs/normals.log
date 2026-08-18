@@ -1,4 +1,4 @@
-00:00.576  blend            | Read blend: "/home/zany/opus5-car-render/work/iter.blend"
+00:00.576  blend            | Read blend: "~/opus5-car-render/work/iter.blend"
 >> cluster           proj m2 mats  margin   direction
    FD                 7.5687    3  0.0085   [0.10193, 0.0, 0.99479]
    MB                 5.1153    3  0.0015   [0.10193, 0.0, 0.99479]

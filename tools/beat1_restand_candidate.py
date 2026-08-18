@@ -25,7 +25,7 @@ import math
 import os
 import sys
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 SENSOR_W = 36.0
 RES = (3840, 2160)
 SENSOR_H = SENSOR_W * RES[1] / RES[0]

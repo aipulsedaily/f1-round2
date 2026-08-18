@@ -5,7 +5,8 @@ explode_plan.json vs the SHOWROOM/PROPS/LIGHTS collections) and is vacuous on a
 world-only assembly.  This is the same question asked of the world: does any
 module's solid pass through another module's solid where they meet?
 """
-exec(open("/home/zany/f1-round2/render/world/assembly/r2/lib_probe.py").read())
+import os
+exec(open(os.path.expanduser("~/f1-round2/render/world/assembly/r2/lib_probe.py")).read())
 
 # ------------------------------------------------- WHERE THIS PROBE WRITES --
 # Was `save("probeD.json", ...)`. `save()` joins its argument onto
@@ -27,7 +28,7 @@ print("[D] output ->", OUT)
 # Blender 5.2 returns 0 for a script that raised, so a probe that died halfway
 # was indistinguishable from one that finished.  install() arms sys.excepthook
 # and an atexit sentinel; done() on the last line disarms it.
-sys.path.insert(0, "/home/zany/f1-round2/tools")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/tools"))
 import gate_exit                                                 # noqa: E402
 gate_exit.install(tool="probeD")
 

@@ -1,4 +1,4 @@
-00:00.519  blend            | Read blend: "/home/zany/f1-round2/world/beat1_anim.blend"
+00:00.519  blend            | Read blend: "world/beat1_anim.blend"
 >> sky model: MULTIPLE_SCATTERING  (available: ['HOSEK_WILKIE', 'MULTIPLE_SCATTERING', 'PREETHAM', 'SINGLE_SCATTERING'])
    (skip: TexSky has no 'dust_density' in this Blender)
 Info: Total files 0 | Changed 0 | Failed 0
@@ -8,7 +8,7 @@ Info: Saved as "camera_rig.blend"
 >> ONER camera: 24 keys over 2978 frames (124.1 s)
 >> worst position jump     4.001 m at frame 2748 (limit 12.0)
 >> worst rotation step     5.723 deg (limit 45.0)
->> saved /home/zany/f1-round2/world/camera_rig.blend
+>> saved world/camera_rig.blend
 >> STAGE RESULT: CAMERA_RIG_CONTINUOUS
 Blender 5.2.0 LTS (hash fbe6228777e7 built 2026-07-14 01:32:04)
 

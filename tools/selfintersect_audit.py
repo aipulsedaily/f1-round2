@@ -29,6 +29,7 @@ The controls gate the artefact run, so it refuses rather than reporting one.
 
 Judge only on the printed `>> STAGE RESULT:` line.
 """
+import os
 import sys
 import json
 import time
@@ -181,8 +182,8 @@ if not all(c["pass"] for c in ctrl):
     raise SystemExit(0)
 print(">> controls pass: 'within' distinguishes assembly contact from a folded shell\n")
 
-bpy.ops.wm.open_mainfile(filepath="/home/zany/f1-round2/world/items/"
-                                  "hospitality_deck_test.blend")
+bpy.ops.wm.open_mainfile(filepath=os.path.expanduser("~/f1-round2/world/items/"
+                                  "hospitality_deck_test.blend"))
 dg = bpy.context.evaluated_depsgraph_get()
 
 TARGETS = ["HD_Deck_1_Versant", "HD_Deck_2_Ardent", "HD_Deck_3_Zephyr",

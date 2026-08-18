@@ -4,10 +4,11 @@
 Camera model: 3840x2160, sensor 36 mm, lens per key. Blender camera looks -Z,
 up +Y, in the camera's own frame; the path stores a quaternion (w,x,y,z).
 """
+import os
 import json, sys, math
 import numpy as np
 
-ROOT = "/home/zany/f1-round2"
+ROOT = os.path.expanduser("~/f1-round2")
 RES_X, RES_Y, SENSOR = 3840, 2160, 36.0
 
 def quat_to_mat(q):

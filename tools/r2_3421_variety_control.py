@@ -62,7 +62,7 @@ import numpy as np
 import bpy
 from mathutils import Vector
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 _HERE = os.path.dirname(os.path.abspath(__file__))
 for p in (_HERE, os.path.join(R2, "world")):
     if p not in sys.path:

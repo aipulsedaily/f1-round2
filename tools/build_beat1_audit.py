@@ -1,6 +1,6 @@
 """Bake Beat 1's exploded field into a blend, with one macro camera per cluster.
 
-    /opt/blender-5.2.0-linux-x64/blender -b /home/zany/opus5-car-render/work/iter.blend \
+    /opt/blender-5.2.0-linux-x64/blender -b ~/opus5-car-render/work/iter.blend \
         --factory-startup -P tools/build_beat1_audit.py -- \
         --plan docs/explode_plan.json --out world/beat1_audit.blend --dist 1.2
 
@@ -182,7 +182,7 @@ def main():
     # These used to live in a separate tools/fix_audit_blend.py that had to be
     # run afterwards. It got forgotten exactly once — a rebuild for a collision
     # test skipped it — and the blend silently went back to round 1's
-    # `ShowroomWorld`, which references /home/zany/opus5-car-render/assets/
+    # `ShowroomWorld`, which references ~/opus5-car-render/assets/
     # city.exr by absolute path. That file exists locally so nothing complained
     # here; on the render farm the asset tree is not mirrored and the frame
     # rendered with NO ENVIRONMENT LIGHT. The farm reported it; I did not.

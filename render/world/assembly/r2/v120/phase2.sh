@@ -14,7 +14,7 @@
 # Then the #76 re-gate.
 set -u
 B=/opt/blender-5.2.0-linux-x64/blender
-D=/home/zany/f1-round2/render/world/assembly/r2
+D=$HOME/f1-round2/render/world/assembly/r2
 V=$D/v120
 
 while ! grep -q "BATTERY DONE" $V/battery.log 2>/dev/null; do sleep 30; done

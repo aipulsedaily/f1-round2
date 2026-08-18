@@ -122,7 +122,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 if "--outdir" in _argv:
     HERE = os.path.abspath(_argv[_argv.index("--outdir") + 1])
     os.makedirs(HERE, exist_ok=True)
-WORLD = "/home/zany/f1-round2/world"
+WORLD = os.path.expanduser("~/f1-round2/world")
 if WORLD not in sys.path:
     sys.path.insert(0, WORLD)
 

@@ -1,7 +1,7 @@
 {
  "generated": "2026-08-03T03:44:06",
- "camera_source": "/home/zany/f1-round2/world/camera_rig_path.json",
- "beat_sheet": "/home/zany/f1-round2/docs/beat_sheet.json",
+ "camera_source": "world/camera_rig_path.json",
+ "beat_sheet": "docs/beat_sheet.json",
  "frames": 2978,
  "bands": {
   "speed_ms_edges": [

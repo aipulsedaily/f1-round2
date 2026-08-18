@@ -126,7 +126,7 @@
       x = rng.standard_normal(n)
    layers.py:2880 standard_normal() reaches a bus with no scheduler and no physically-parameterised filter
       x = rng.standard_normal(n_space)
->> stems for adjudication: /home/zany/f1-round2/audio/out/r2_4147/stems (used, 17 stems)
+>> stems for adjudication: audio/out/r2_4147/stems (used, 17 stems)
 >> adjudication audio/out/r2_4147/master_R2-4147.wav: FAIL fails ['G-BALANCE', 'G-EVENT', 'G-FLAT', 'G-HNR', 'G-MOD', 'G-NOVEL', 'G-ORDER', 'G-PRESENCE', 'G-RING', 'G-ROOM', 'G-SUSTAIN']
->> wrote /home/zany/f1-round2/audio/out/percept_matrix.json
+>> wrote audio/out/percept_matrix.json
 >> STAGE RESULT: PERCEPT_MATRIX_OK

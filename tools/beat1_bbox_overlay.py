@@ -4,11 +4,12 @@ If the framing arithmetic in beat1_present_gate / build_beatsheet is right, the
 box lands on the part. If it is wrong, this shows it immediately, in the only
 currency this project accepts.
 """
+import os
 import json, math, sys
-sys.path.insert(0,"/home/zany/f1-round2/tools")
+sys.path.insert(0,os.path.expanduser("~/f1-round2/tools"))
 from beat1_focus_track import cam_axes
 from PIL import Image, ImageDraw
-D=json.load(open("/home/zany/f1-round2/work/b1dof/dump.json"))
+D=json.load(open(os.path.expanduser("~/f1-round2/work/b1dof/dump.json")))
 cams={e["f"]:e for e in D["frames"]}; geom=D["cluster_bbox"]
 gfr=sorted(int(k) for k in geom); RX,RY=D["res"]; SW=D["sensor_width"]
 px=RX/SW

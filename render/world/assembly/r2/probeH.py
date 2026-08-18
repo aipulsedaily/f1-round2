@@ -6,7 +6,8 @@ other joint in the same frame reads as a thin grey line.  This casts the camera
 ray through those pixels and reports the object, the joint's width and its depth
 so the finding is a measurement and not an impression.
 """
-exec(open("/home/zany/f1-round2/render/world/assembly/r2/lib_probe.py").read())
+import os
+exec(open(os.path.expanduser("~/f1-round2/render/world/assembly/r2/lib_probe.py")).read())
 
 # ------------------------------------------------- WHERE THIS PROBE WRITES --
 # Was `save("probeH.json", ...)`. `save()` joins its argument onto
@@ -27,7 +28,7 @@ print("[H] output ->", OUT)
 # Blender 5.2 returns 0 for a script that raised, so a probe that died halfway
 # was indistinguishable from one that finished.  install() arms sys.excepthook
 # and an atexit sentinel; done() on the last line disarms it.
-sys.path.insert(0, "/home/zany/f1-round2/tools")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/tools"))
 import gate_exit                                                 # noqa: E402
 gate_exit.install(tool="probeH")
 
@@ -88,7 +89,7 @@ def shoot(px, py):
 # the dark pixels, precomputed from the render (Blender's python has no PIL)
 dark = []
 try:
-    dj = json.load(open("/home/zany/f1-round2/render/world/assembly/r2/darkpx.json"))
+    dj = json.load(open(os.path.expanduser("~/f1-round2/render/world/assembly/r2/darkpx.json")))
     dark = [tuple(p) for p in dj["pts"]]
     print("[H] %d dark pixels total, %d sampled" % (dj["n"], len(dark)))
     R["dark_pixels_below_0.02"] = dj["n"]

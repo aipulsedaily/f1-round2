@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # The frames that have to answer for #46, #47 and #48, on the rented 5090.
 set -u
-cd /home/zany/vast-render
-D=/home/zany/f1-round2/render/world/assembly/r2
+cd $HOME/vast-render
+D=$HOME/f1-round2/render/world/assembly/r2
 SCENE=$D/render3.blend
 try () {  # cam W H samples outfile
   local cam="$1" w="$2" h="$3" sm="$4" of="$5"

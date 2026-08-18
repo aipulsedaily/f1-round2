@@ -54,7 +54,7 @@
 # is judged on $? alone: every stage's STAGE RESULT / verdict line is stored and
 # read back from the artefact it claims to have produced.
 set -u
-ROOT=/home/zany/f1-round2
+ROOT=$HOME/f1-round2
 W=$ROOT/work/r2116
 SCRATCH=$W/scratch
 BL=/opt/blender-5.2.0-linux-x64/blender

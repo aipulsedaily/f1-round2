@@ -26,7 +26,7 @@ import numpy as np
 import bpy
 from mathutils import Quaternion, Vector
 
-ROOT = "/home/zany/f1-round2"
+ROOT = os.path.expanduser("~/f1-round2")
 sys.path.insert(0, os.path.join(ROOT, "world"))
 import film_exposure as FX                                        # noqa: E402
 

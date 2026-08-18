@@ -1293,7 +1293,7 @@ def build_groups():
 #
 # These are REDUCED replicas of three materials this module does not own:
 # `M_Surf_Concrete` (world/build_surface.py), `TurntableTop` and `FloorPolished`
-# (/home/zany/opus5-car-render/build/s03_materials.py, read-only). They carry
+# (~/opus5-car-render/build/s03_materials.py, read-only). They carry
 # the same Principled parameters and the same measured self-variation -- in
 # particular the concrete's +-14.5 % per-bay tone hash, because THAT is the
 # number the deposit's % deviation has to beat -- so a delta measured here is

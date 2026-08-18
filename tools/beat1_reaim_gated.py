@@ -40,7 +40,7 @@ import os
 import subprocess
 import sys
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 CARRIED = "does not FIT its own presentation frame"   # R2-317, not this block's
 
 

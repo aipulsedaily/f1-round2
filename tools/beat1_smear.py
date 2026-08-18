@@ -7,7 +7,7 @@ about a part that is flying. Every cluster measured here is still parked.
 """
 import json, math, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, "/home/zany/f1-round2/tools")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/tools"))
 from beat1_focus_track import cam_axes
 
 
@@ -60,7 +60,7 @@ def _selftest():
 if "--selftest" in sys.argv:
     sys.exit(_selftest())
 
-D = json.load(open("/home/zany/f1-round2/work/b1dof/dump.json"))
+D = json.load(open(os.path.expanduser("~/f1-round2/work/b1dof/dump.json")))
 cams = {e["f"]: e for e in D["frames"]}
 geom = D["cluster_bbox"]
 gfr = sorted(int(k) for k in geom)

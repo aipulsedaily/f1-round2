@@ -36,6 +36,6 @@
 [ 1711.7s]   G14_premix_peak_le_plus6dbfs     PASS  3.192305427125995
 [ 1711.7s]   G15_bus_trim                     PASS  ['bed', 'reflect_garage', 'room', 'structure', 'suspension', 'wind']
 [archive] master_rt45.wav reproduced byte for byte, nothing superseded
-[ 1712.0s] WROTE /home/zany/f1-round2/audio/out/r2_4149/master_rt45.wav  124.083 s  -23.00 LUFS  -1.12 dBTP
->> report /home/zany/f1-round2/audio/out/r2_4149/master_rt45.json
+[ 1712.0s] WROTE audio/out/r2_4149/master_rt45.wav  124.083 s  -23.00 LUFS  -1.12 dBTP
+>> report audio/out/r2_4149/master_rt45.json
 >> STAGE RESULT: AUDIO_MASTER_OK -23.00 LUFS -1.12 dBTP

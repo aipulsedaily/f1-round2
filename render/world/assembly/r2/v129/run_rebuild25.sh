@@ -38,7 +38,7 @@
 # Blender 5.2 exits 0 on an uncaught exception, so `$?` is not evidence -- and
 # every stage checked for the two-verdict trap.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 W=work/r23661
 V7=render/world/assembly/r2/v127
 V9=render/world/assembly/r2/v129
@@ -70,7 +70,8 @@ echo; echo "######## 0/5  the world: assembly15's own build verdict and fingerpr
 # the build that silently lost 247 objects.  Assert all seven, not the summary.
 python3 - <<'PY'
 import json, hashlib, os, sys
-R2 = "/home/zany/f1-round2"
+# <<'PY' expands nothing, so this cannot be $HOME; expand it in Python.
+R2 = os.path.expanduser("~/f1-round2")
 d = json.load(open(os.path.join(
     R2, "render/world/assembly/r2/assembly15_build.json")))
 ok = True
@@ -211,10 +212,12 @@ else
 fi
 python3 - <<'PY'
 import json, math, sys, os
-sys.path.insert(0, "/home/zany/f1-round2/tools")
+# <<'PY' expands nothing, so this cannot be $HOME; expand it in Python.
+R2 = os.path.expanduser("~/f1-round2")
+sys.path.insert(0, R2 + "/tools")
 import lap_shotscale as LS
-a = LS.load_path("/home/zany/f1-round2/render/film24_path.json")
-b = LS.load_path("/home/zany/f1-round2/render/film25_path.json")
+a = LS.load_path(R2 + "/render/film24_path.json")
+b = LS.load_path(R2 + "/render/film25_path.json")
 print(">> film25's camera vs film24's, per beat:")
 moved = 0
 for nm, lo, hi in LS.BEATS:

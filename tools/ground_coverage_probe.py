@@ -34,11 +34,12 @@ A metric that reads the same whether the thing is present or absent is not a
 measurement, so `--selftest` is not optional decoration: it is the proof that a
 zero from this probe means "covered" and not "not looking".
 """
+import os
 import bpy, bmesh, sys, math, json, argparse
 import numpy as np
 from mathutils import Vector
 
-sys.path.insert(0, '/home/zany/f1-round2/world')
+sys.path.insert(0, os.path.expanduser('~/f1-round2/world'))
 import world_contract as WC
 
 

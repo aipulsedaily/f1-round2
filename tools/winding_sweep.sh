@@ -3,7 +3,7 @@
 #   tools/winding_sweep.sh witness   # the gate's witness subjects (fast)
 #   tools/winding_sweep.sh test      # the full test scenes (slow, big)
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 MODE="${1:-witness}"
 OUT="render/items/_winding/${MODE}"
 mkdir -p "$OUT"

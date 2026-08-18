@@ -2,7 +2,7 @@
 # READ film14 BACK, from the saved blend, and put film13 through the SAME
 # instruments on the way past.  Same harness as work/r2127/verify_film13.sh.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 B=/opt/blender-5.2.0-linux-x64/blender
 W=work/r2148
 

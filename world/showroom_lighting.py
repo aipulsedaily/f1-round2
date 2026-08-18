@@ -12,7 +12,7 @@
 
 WHY THIS FILE EXISTS
 --------------------
-The showroom's light rig is round 1's — `/home/zany/opus5-car-render/build/
+The showroom's light rig is round 1's — `~/opus5-car-render/build/
 s05_lighting_v2.py`, baked into `f1_showroom.blend` and carried forward through
 `beat1_anim.blend` -> `car_anim.blend` -> the film scene, where
 `tools/build_film_scene.py` appends its `LIGHTS` collection whole.
@@ -111,7 +111,7 @@ LIFT_STOPS = round(-FX.FILM_EXPOSURE, 3)                          # +3.628
 LIFT = 2.0 ** LIFT_STOPS                                          # 12.363
 
 #: The round-1 pavilion shell, MEASURED, quoted by `build_architecture.R1_SHELL`
-#: from `/home/zany/opus5-car-render/f1_showroom.blend`.  x, y from the walls;
+#: from `~/opus5-car-render/f1_showroom.blend`.  x, y from the walls;
 #: z from the floor soffit (-0.060) and the wall head (6.200), with 0.30 m of
 #: slack at each end so a cove fixture pushed into the ceiling void or a floor
 #: emitter recessed into the slab is still counted as being in the room.

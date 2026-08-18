@@ -20,10 +20,10 @@
 # It was edited 21:20 today (K.assert_wired, R2-1154) -- that addition is
 # selftest-only and not on the build path, which is why this build may proceed.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 D=work/r21701
 mkdir -p $D
-OUT=/home/zany/f1-round2/render/world/assembly/r2/assembly11.blend
+OUT=$HOME/f1-round2/render/world/assembly/r2/assembly11.blend
 
 {
   echo "=== INPUTS, hashed at $(date -Is) ==="
@@ -31,8 +31,8 @@ OUT=/home/zany/f1-round2/render/world/assembly/r2/assembly11.blend
             world/build_architecture.py world/build_terrain.py world/build_dressing.py \
             world/build_items.py world/itemkit.py world/items/PLACEMENT.json \
             render/world/assembly/r2/assemble.py telemetry/telemetry.csv
-  git -C /home/zany/f1-round2 rev-parse HEAD
-  git -C /home/zany/f1-round2 status --short
+  git -C $HOME/f1-round2 rev-parse HEAD
+  git -C $HOME/f1-round2 status --short
 } > $D/inputs_assembly11.txt 2>&1
 
 START=$(date +%s)

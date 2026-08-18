@@ -5,7 +5,7 @@ WHY THIS FILE EXISTS
 `Ceiling` is a literal cuboid: 8 vertices, 6 quads, whose top and bottom faces
 are ONE QUAD OF 686.25 m^2 each. It is emitted by
 
-    /home/zany/opus5-car-render/build/s02_showroom.py:490  build_shell()
+    ~/opus5-car-render/build/s02_showroom.py:490  build_shell()
 
 which is part 1, shipped, and READ-ONLY. It reaches the film downstream of the
 world assembly, through `tools/build_film_scene.py`'s append of

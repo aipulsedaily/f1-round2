@@ -2,8 +2,8 @@
 # v1.1.1 verification chain: re-measure BEFORE with the new instruments, then AFTER.
 set -u
 B=/opt/blender-5.2.0-linux-x64/blender
-D=/home/zany/f1-round2/render/world/assembly/r2
-R2=/home/zany/f1-round2
+D=$HOME/f1-round2/render/world/assembly/r2
+R2=$HOME/f1-round2
 # wait for the assembly to finish saving
 while ! grep -q '"blend_mb"' $D/assemble4.log 2>/dev/null; do sleep 20; done
 sleep 10

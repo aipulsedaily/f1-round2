@@ -1,6 +1,6 @@
 {
  "M1 hair blower": {
-  "wav": "/home/zany/f1-round2/audio/out/master.wav",
+  "wav": "audio/out/master.wav",
   "complaint": "TOO NOISY -- 'a wind blower', 'hair blower'",
   "verdicts": {
    "G-FLAT": "FAIL",
@@ -474,7 +474,7 @@
   ]
  },
  "M2 tubes": {
-  "wav": "/home/zany/f1-round2/audio/out/ab/master_R2-2001_REJECTED_tubes.wav",
+  "wav": "audio/out/ab/master_R2-2001_REJECTED_tubes.wav",
   "complaint": "WRONG STRUCTURE -- 'banging on tubes', 'The Tubes over and over'",
   "verdicts": {
    "G-FLAT": "FAIL",
@@ -767,7 +767,7 @@
   ]
  },
  "M3 musical": {
-  "wav": "/home/zany/f1-round2/audio/out/r2_4079/master_R2-4079.wav",
+  "wav": "audio/out/r2_4079/master_R2-4079.wav",
   "complaint": "TOO MUCH STRUCTURE -- 'ngl audio is worse, sounds like a shitty musical'",
   "verdicts": {
    "G-FLAT": "FAIL",

@@ -24,7 +24,7 @@
 # other's witness.  R2-061 avoided that collision on purpose; pass it by name
 # and back the directory up first if you really want it.
 set -u
-ROOT=/home/zany/f1-round2
+ROOT=$HOME/f1-round2
 BL=/opt/blender-5.2.0-linux-x64/blender
 W=$ROOT/work/r2116
 mkdir -p "$W/logs"

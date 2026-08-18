@@ -12,12 +12,13 @@ are its controls, and they are the strong ones:
   * the repeat render of film13 against itself is the floor everything is read
     against.
 """
+import os
 import sys
 
 import numpy as np
 from PIL import Image
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 NPZ = R2 + "/work/r2148/f1104_unocc.npz"
 BEFORE = R2 + "/work/r2148/f1104_film13.png"
 REPEAT = R2 + "/work/r2148/f1104_film13_REPEAT.png"

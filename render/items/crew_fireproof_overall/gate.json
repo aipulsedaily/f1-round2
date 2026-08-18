@@ -87,12 +87,12 @@
  },
  "witness": {
   "blend": null,
-  "png": "/home/zany/f1-round2/render/gate_witness/crew_fireproof_overall/witness.png",
-  "spec": "/home/zany/f1-round2/render/gate_witness/crew_fireproof_overall/witness_spec.json",
+  "png": "render/gate_witness/crew_fireproof_overall/witness.png",
+  "spec": "render/gate_witness/crew_fireproof_overall/witness_spec.json",
   "render": {
    "backend": "supplied PNG (--from-png)",
-   "png": "/home/zany/f1-round2/render/gate_witness/crew_fireproof_overall/witness.png",
-   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/crew_fireproof_overall/witness_flip.png"
+   "png": "render/gate_witness/crew_fireproof_overall/witness.png",
+   "flip_png_used": "render/gate_witness/crew_fireproof_overall/witness_flip.png"
   },
   "render_error": null,
   "image": {
@@ -276,7 +276,7 @@
     "px_flip_lit": 59929,
     "px_chosen_lit_core": 57274,
     "alpha_agreement": 0.999979,
-    "flip_png": "/home/zany/f1-round2/render/gate_witness/crew_fireproof_overall/witness_flip.png",
+    "flip_png": "render/gate_witness/crew_fireproof_overall/witness_flip.png",
     "sun_screen_direction_rowcol_flip": [
      -0.01550619459722769,
      0.9998797717371388
@@ -390,7 +390,7 @@
   "written_at": 1785765053.972,
   "tool": {
    "role": "tool",
-   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "path": "tools/item_gate.py",
    "status": "OK",
    "mtime": 1785757608.739,
    "mtime_iso": "2026-08-03T11:46:48",
@@ -406,7 +406,7 @@
   "inputs": [
    {
     "role": "blend",
-    "path": "/home/zany/f1-round2/world/items/crew_fireproof_overall_test.blend",
+    "path": "world/items/crew_fireproof_overall_test.blend",
     "status": "OK",
     "mtime": 1785699077.896,
     "mtime_iso": "2026-08-02T19:31:17",
@@ -416,7 +416,7 @@
    },
    {
     "role": "manifest",
-    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "path": "docs/item_manifest.json",
     "status": "OK",
     "mtime": 1785264294.872,
     "mtime_iso": "2026-07-28T18:44:54",
@@ -425,7 +425,7 @@
    },
    {
     "role": "from_png",
-    "path": "/home/zany/f1-round2/render/gate_witness/crew_fireproof_overall/witness.png",
+    "path": "render/gate_witness/crew_fireproof_overall/witness.png",
     "status": "OK",
     "mtime": 1785764831.771,
     "mtime_iso": "2026-08-03T13:47:11",
@@ -445,7 +445,7 @@
    },
    {
     "role": "witness_png",
-    "path": "/home/zany/f1-round2/render/gate_witness/crew_fireproof_overall/witness.png",
+    "path": "render/gate_witness/crew_fireproof_overall/witness.png",
     "status": "OK",
     "mtime": 1785764831.771,
     "mtime_iso": "2026-08-03T13:47:11",
@@ -454,7 +454,7 @@
    },
    {
     "role": "witness_spec",
-    "path": "/home/zany/f1-round2/render/gate_witness/crew_fireproof_overall/witness_spec.json",
+    "path": "render/gate_witness/crew_fireproof_overall/witness_spec.json",
     "status": "OK",
     "mtime": 1785759865.435,
     "mtime_iso": "2026-08-03T12:24:25",
@@ -465,7 +465,7 @@
   "also_hash": [
    {
     "role": "itemkit",
-    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "path": "world/itemkit.py",
     "status": "OK",
     "mtime": 1785741347.142,
     "mtime_iso": "2026-08-03T07:15:47",
@@ -474,7 +474,7 @@
    },
    {
     "role": "world_contract",
-    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "path": "world/world_contract.py",
     "status": "OK",
     "mtime": 1785684602.475,
     "mtime_iso": "2026-08-02T15:30:02",
@@ -485,23 +485,23 @@
   "argv": [
    "/opt/blender-5.2.0-linux-x64/blender",
    "-b",
-   "/home/zany/f1-round2/world/items/crew_fireproof_overall_test.blend",
+   "world/items/crew_fireproof_overall_test.blend",
    "--factory-startup",
    "-P",
-   "/home/zany/f1-round2/tools/item_gate.py",
+   "tools/item_gate.py",
    "--",
    "--item",
    "crew_fireproof_overall",
    "--out",
-   "/home/zany/f1-round2/work/r2061/gate/crew_fireproof_overall/gate.json",
+   "work/r2061/gate/crew_fireproof_overall/gate.json",
    "--samples",
    "512",
    "--always-render",
    "--from-png",
-   "/home/zany/f1-round2/render/gate_witness/crew_fireproof_overall/witness.png"
+   "render/gate_witness/crew_fireproof_overall/witness.png"
   ],
-  "cwd": "/home/zany/f1-round2",
-  "host": "zed",
+  "cwd": "~/f1-round2",
+  "host": "workstation",
   "python": "3.13.13"
  }
 }

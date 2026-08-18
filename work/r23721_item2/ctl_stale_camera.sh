@@ -20,9 +20,9 @@
 #           which is the check that already failed once (R2-1007's file was
 #           sitting under the most innocent name in the tree).
 #
-# Nothing under /home/zany/f1-round2 is written; --out and --npz go to scratch.
+# Nothing under $HOME/f1-round2 is written; --out and --npz go to scratch.
 set -u
-R2=/home/zany/f1-round2
+R2=$HOME/f1-round2
 SCR=${SCR:-$R2/work/r23721_item2}
 T=${T:-$(mktemp -d /tmp/sp_camera_ctl.XXXXXX)}
 rm -rf "$T"; mkdir -p "$T"

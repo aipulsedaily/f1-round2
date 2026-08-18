@@ -44,7 +44,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--frames", default="2000,2635,2900")
 ap.add_argument("--res", type=int, default=480)
 ap.add_argument("--samples", type=int, default=24)
-ap.add_argument("--out", default="/home/zany/f1-round2/work/r2500/items_in_frame.json")
+ap.add_argument("--out", default=os.path.expanduser("~/f1-round2/work/r2500/items_in_frame.json"))
 a = ap.parse_args(argv)
 
 FAMILIES = [("CFP_", 1, "catch_fence_post"), ("CRF_", 2, "crew_figure"),
@@ -99,7 +99,7 @@ sc.render.image_settings.file_format = "PNG"
 sc.render.image_settings.color_mode = "RGBA"
 
 _LAST_TOTAL = 0
-TMP = "/tmp/claude-0/-home-zany-opus5-car-render/262f2abe-1dfb-4a32-9544-52393037f67a/scratchpad/items.png"
+TMP = "/tmp/f1-round2-scratch/items.png"
 os.makedirs(os.path.dirname(TMP), exist_ok=True)
 _BY_PREFIX = {}
 for pref, idx, label in FAMILIES:

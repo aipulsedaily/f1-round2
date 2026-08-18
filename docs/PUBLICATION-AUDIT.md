@@ -138,7 +138,7 @@ repository contains 676 of them, 171 distinct. **Every one is a content hash,
 and none is the key.**
 
 ```
-$ python3 triage.py /home/zany/f1-round2
+$ python3 triage.py ~/f1-round2
 hex64 occurrences (full history) = 676
 hex64 DISTINCT values            = 171
 live key present among distinct hex64? False
@@ -165,8 +165,8 @@ above 4.4 bits/byte; **every single one** classified as a filesystem path or a
 multi-word identifier, with **zero residue**:
 
 ```
-$ python3 entropy_full.py /home/zany/f1-round2
-repo=/home/zany/f1-round2  total high-entropy tokens=5466
+$ python3 entropy_full.py ~/f1-round2
+repo=~/f1-round2  total high-entropy tokens=5466
      4911  filesystem-path
       555  identifier/prose
   DISTINCT RESIDUE VALUES = 0
@@ -227,11 +227,31 @@ Everything else IP-shaped is clean: `127.0.0.1`, `0.0.0.0`, `1.1.1.1`,
 it is the Blender version in the sanitiser's own comment explaining that
 version-shaped strings are excluded.
 
-**No LAN/private-range IPs, no machine hostnames, and no references to the
-private `f1-site-part2` website appear anywhere in the tracked tree** (`git grep
--l "f1-site-part2"` → 0 files). Three references to the *part-1* domain
-`f1-opus5.aipulsedaily.ai` exist in `docs/MASTER-PLAN.md`; that site is already
-public, so this is disclosure of nothing.
+**No LAN/private-range IPs and no MAC addresses appear anywhere in the tracked
+tree**, and no reference to the owner's private companion website does either.
+
+**Two claims that stood here were wrong, and are corrected rather than quietly
+edited**, because a publication audit that overstates its own coverage is worth
+less than no audit:
+
+- *"no machine hostnames"* was **false**. 46 tracked records stamped the
+  authoring workstation's real hostname beside the run timestamp, as
+  `"host": "<name>"` — 33 item-gate verdicts under `render/items/`, plus the
+  tiering inputs and the placement records. Not one of them contains a home
+  directory, so every check aimed at `/home/` walked straight past all 46. They
+  are now aliased to `"host": "workstation"`, which is what the field was
+  saying: measured on the local box rather than on a rented one. The sanitiser
+  now surveys every value the field takes and prints the distinct set, so the
+  next value it grows cannot pass in silence.
+- *"three references to the part-1 domain in `docs/MASTER-PLAN.md`"* is **no
+  longer true**: that file now contains zero. Whether it ever did is not
+  re-checkable from here, and the number is repeated rather than re-derived,
+  which is how a stale figure survives an audit.
+
+The private site is deliberately not named again anywhere in this repository —
+this file was the last tracked place it appeared, and naming it at all
+discloses that it exists. Whether that matters is the owner's call, not the
+sanitiser's.
 
 ---
 
@@ -299,9 +319,18 @@ value above is the state at the time of writing. Re-check it with
 `git config --show-origin --get user.email` before publishing rather than
 trusting this document.)*
 
-Also present in tracked files, and not personal but identifying of the build
-machine: **322 tracked files contain the literal string `/home/zany`**. That is
-a username in a path, not a credential.
+Also present in tracked files when this audit was written, and identifying of
+the build machine: **322 tracked files contained the owner's home directory** —
+1,200 occurrences, of which only 3 were in a `.md` and the other 1,197 were in
+Python, shell, JSON and logs, where the prose sanitiser never looked. That is a
+username in a path, not a credential.
+
+**That figure is now 0 tracked files and 0 occurrences.** `sanitise_docs.py`
+grew a second pass with a per-language policy — `os.path.expanduser("~/…")` in
+Python, `$HOME/…` in shell, repo-relative in the records, which is the more
+useful form for reading a verdict — so the resolved path is unchanged on the
+machine this was built on and a clone into `~/f1-round2` works too. See
+`docs/SANITISATION-R2-CODE.md` for the before/after and the verification.
 
 ---
 
@@ -321,15 +350,25 @@ Still exposed:
   permanently, in a form GitHub displays on every commit page.
 - Three real vast.ai host IPs, in the current `sanitise_docs.py` **and** in
   historical versions of two docs.
-- `/home/zany` in 322 tracked files.
+- **The home directory and the workstation's hostname, in HISTORY.** The
+  working tree is now clean — 0 tracked files, down from 322 — but the
+  sanitisation is a commit, not a rewrite, so every blob before it still holds
+  all 1,200 occurrences and all 46 hostname stamps. `git log -p` and every
+  GitHub "view file at commit" page still shows them. **This is the one class
+  where cleaning the tree does not clean the option**, and it is easy to read
+  the 322 → 0 result as if it did.
 - **No credentials.** The key is not here in any form.
 
 ### Option B — `git filter-repo` rewrite (mailmap + IP replacement)
 
 Ships: all 638 commits with rewritten identities and scrubbed blobs.
 
-Fixes: the Gmail addresses in every commit; the historical IP occurrences; the
-`/home/zany` paths if a blob-content replacement is included.
+Fixes: the Gmail addresses in every commit; the historical IP occurrences; and
+the historical home-directory and hostname occurrences **if** a blob-content
+replacement is included. `git filter-repo --replace-text` takes a file of
+`literal:…==>…` lines; the two that matter are the home directory and the
+hostname, and both are one line each. Without that flag a rewrite fixes the
+identities and leaves 1,200 paths in the history untouched.
 
 Cost, measured rather than assumed:
 
@@ -364,9 +403,16 @@ what turned out to be wrong, this is the option that destroys the most value.
 The in-doc SHA citations become references to commits that no longer exist
 anywhere, which is worse than B's stale-but-mappable references.
 
-Still exposed after C: the three IPs in `sanitise_docs.py`, since they are in
-the current tree — Option C does not fix a present-tense leak. Fix §4 first
-regardless of which option is chosen.
+Still exposed after C: the three IPs in `sanitise_docs.py` and the alias map
+beside it, since they are in the current tree — Option C does not fix a
+present-tense leak. Fix §4 first regardless of which option is chosen.
+
+What C now DOES fix for free, which it did not when this section was written:
+the home directory and the hostname are gone from the tree, so a fresh init
+from `HEAD` carries neither. That is the one respect in which the code
+sanitisation changes the balance between the options — it makes C and a
+`--replace-text` B equivalent on this class, and leaves A the only option that
+still ships all 1,200 occurrences.
 
 ### A hazard that applies to all three: how the repository is copied
 

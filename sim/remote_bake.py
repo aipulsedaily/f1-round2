@@ -1,6 +1,6 @@
 """REMOTE BAKE — build, bake, export, resample and verify, in one exec job.
 
-    ~/vast-render/rq exec --root /home/zany/f1-round2 \
+    ~/vast-render/rq exec --root ~/f1-round2 \
         --include 'sim/*.py' --include 'sim/out/fracture_wall.npz' \
         --include 'sim/out/car_identity.json' --include 'anim/filmtime.py' \
         --include 'docs/beat_sheet.json' \

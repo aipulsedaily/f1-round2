@@ -1121,7 +1121,7 @@ def _runs(idx):
     return out
 
 
-def auto_boundaries(seq_name, db="/home/zany/vast-render/state/broker.db"):
+def auto_boundaries(seq_name, db=os.path.expanduser("~/vast-render/state/broker.db")):
     """Frames where the rendering JOB changed -- the exact places a batch seam
     can exist. Testing those specifically is far more powerful than scanning."""
     if not os.path.exists(db):
@@ -1731,7 +1731,7 @@ def main():
 
     seq = a.seq
     if not seq and a.name:
-        seq = f"/home/zany/vast-render/out/seq/{a.name}"
+        seq = os.path.expanduser(f"~/vast-render/out/seq/{a.name}")
     if not seq:
         ap.error("need --seq or --name")
 

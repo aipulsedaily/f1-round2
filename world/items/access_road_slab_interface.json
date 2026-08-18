@@ -2,7 +2,7 @@
  "item": "access_road_slab",
  "version": "1.0",
  "seed": 20260729,
- "module": "/home/zany/f1-round2/world/items/access_road_slab.py",
+ "module": "world/items/access_road_slab.py",
  "collection": "W_Item_AccessRoadSlab",
  "object_prefix": "ARS_",
  "material_prefix": "M_ARS_",

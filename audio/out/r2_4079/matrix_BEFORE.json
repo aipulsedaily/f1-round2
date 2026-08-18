@@ -480,7 +480,7 @@
    ],
    "stem_provenance": {
     "telemetry_kind": "film",
-    "stems_dir": "/home/zany/f1-round2/audio/out/stems",
+    "stems_dir": "audio/out/stems",
     "used": true,
     "manifest": null,
     "stems_of": null,
@@ -1156,7 +1156,7 @@
   "wav": "audio/out/r2_4064/master_R2-4069.wav",
   "stem_provenance": {
    "telemetry_kind": "film",
-   "stems_dir": "/home/zany/f1-round2/audio/out/r2_4064/stems",
+   "stems_dir": "audio/out/r2_4064/stems",
    "used": true,
    "manifest": null,
    "stems_of": null,
@@ -2620,7 +2620,7 @@
    "rule": "INAPPLICABLE is not PASS and never counts toward a verdict. Provenance gates are excluded from the quality verdict because they do not take the rendered master as an input.",
    "stem_provenance": {
     "telemetry_kind": "film",
-    "stems_dir": "/home/zany/f1-round2/audio/out/r2_4064/stems",
+    "stems_dir": "audio/out/r2_4064/stems",
     "used": true,
     "manifest": null,
     "stems_of": null,

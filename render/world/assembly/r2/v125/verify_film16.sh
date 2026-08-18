@@ -13,7 +13,7 @@
 #     camera ONER clip     0.05 / 200000
 #     socket_index_audit   PASS, against film10's standing 27-finding FAIL
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 B=/opt/blender-5.2.0-linux-x64/blender
 W=work/r2500
 

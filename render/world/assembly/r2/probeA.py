@@ -7,7 +7,8 @@
   D5  BR_Concrete_L13 (and anything else) standing in the Beat-4 pit-exit road
   P4  barrier feet vs the ground they stand on  (baseline p50 -10.8 mm)
 """
-exec(open("/home/zany/f1-round2/render/world/assembly/r2/lib_probe.py").read())
+import os
+exec(open(os.path.expanduser("~/f1-round2/render/world/assembly/r2/lib_probe.py")).read())
 
 # ------------------------------------------------- WHERE THIS PROBE WRITES --
 # Was `save("probeA.json", ...)`. `save()` joins its argument onto
@@ -33,7 +34,7 @@ print("[A] output ->", OUT)
 # Blender 5.2 returns 0 for a script that raised, so a probe that died halfway
 # was indistinguishable from one that finished.  install() arms sys.excepthook
 # and an atexit sentinel; done() on the last line disarms it.
-sys.path.insert(0, "/home/zany/f1-round2/tools")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/tools"))
 import gate_exit                                                 # noqa: E402
 gate_exit.install(tool="probeA")
 
@@ -184,7 +185,7 @@ write_out(sidecar(OUT, "partial"), R)
 # anything standing above the road on the Beat-4 transit route
 t = time.time()
 import csv as _csv
-TEL = "/home/zany/f1-round2/telemetry/telemetry.csv"
+TEL = os.path.expanduser("~/f1-round2/telemetry/telemetry.csv")
 rows = []
 if os.path.exists(TEL):
     with open(TEL) as f:

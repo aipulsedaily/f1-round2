@@ -7,7 +7,7 @@ import sys, os, json
 import numpy as np
 from PIL import Image
 
-OUT = "/home/zany/f1-round2/render/world/assembly/r2"
+OUT = os.path.expanduser("~/f1-round2/render/world/assembly/r2")
 
 
 def load(p):

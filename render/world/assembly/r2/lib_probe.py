@@ -8,12 +8,12 @@ import numpy as np
 import bpy
 from mathutils import Vector
 
-WORLD = "/home/zany/f1-round2/world"
+WORLD = os.path.expanduser("~/f1-round2/world")
 if WORLD not in sys.path:
     sys.path.insert(0, WORLD)
 import world_contract as C
 
-OUT_DIR = "/home/zany/f1-round2/render/world/assembly/r2"
+OUT_DIR = os.path.expanduser("~/f1-round2/render/world/assembly/r2")
 LAP = C.LAP
 
 # ---------------------------------------------------------------- roles ----
@@ -317,7 +317,7 @@ def sidecar(out, suffix):
 # The .blend is hashed in full: a few seconds on a 4 GB assembly against a probe
 # run measured in minutes. There is deliberately no opt-out, because a truncated
 # hash is a hash that agrees across two different files.
-_TOOLS = "/home/zany/f1-round2/tools"
+_TOOLS = os.path.expanduser("~/f1-round2/tools")
 if _TOOLS not in sys.path:
     sys.path.insert(0, _TOOLS)
 import provenance as _prov                                       # noqa: E402
@@ -328,7 +328,7 @@ import provenance as _prov                                       # noqa: E402
 # file. Getting that wrong would file the wrong hash under the label
 # "lib_probe", which is precisely the quiet mislabelling this block exists to
 # stop.
-_LIB_PROBE_PY = "/home/zany/f1-round2/render/world/assembly/r2/lib_probe.py"
+_LIB_PROBE_PY = os.path.expanduser("~/f1-round2/render/world/assembly/r2/lib_probe.py")
 
 
 def _stamped(obj):

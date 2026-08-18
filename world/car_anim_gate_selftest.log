@@ -1,5 +1,5 @@
->> measured /home/zany/f1-round2/world/car_anim_measured.json
->> blend /home/zany/f1-round2/world/car_anim.blend  300235801 bytes  mtime 1785729448.672049  (2978 frames, 955 objects, CAR_ROOT has 510 children)
+>> measured world/car_anim_measured.json
+>> blend world/car_anim.blend  300235801 bytes  mtime 1785729448.672049  (2978 frames, 955 objects, CAR_ROOT has 510 children)
 --- NEGATIVE  the built rig  [expect PASS]
     A  2978 frames, total 14026.0 rad (2232.3 rev); min step +0.000e+00 rad at f2; 0 backwards
        F-curve vs hub local matrix 1.17e-07 rad; witness tyre rigid to its hub to 1.45e-04 over 2186 frames (float32 floor 2.44e-04); tyre vs F-curve 0.0421 rad over 745 samples (the suspension can explain 0.0524); corner spread 0.00e+00 rad

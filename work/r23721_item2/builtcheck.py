@@ -27,7 +27,7 @@ import json
 import os
 import sys
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 
 
 def built_ids():

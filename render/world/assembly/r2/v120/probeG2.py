@@ -17,7 +17,8 @@ caller's CWD.  It now goes through lib_probe.resolve_out(), which resolves to an
 absolute path and refuses rather than guessing.  A bare positional OUT.json is
 still accepted for v120/battery.sh and v121/battery.sh.
 """
-exec(open("/home/zany/f1-round2/render/world/assembly/r2/lib_probe.py").read())
+import os
+exec(open(os.path.expanduser("~/f1-round2/render/world/assembly/r2/lib_probe.py")).read())
 from mathutils.bvhtree import BVHTree
 
 OUT = resolve_out(sys.argv, blend_path=(bpy.data.filepath or None), tool="probeG2")

@@ -10,7 +10,7 @@ import bpy
 
 import common as C
 
-PROJ = "/home/zany/opus5-car-render"
+PROJ = os.path.expanduser("~/opus5-car-render")
 # D124: interior.exr showed a flat tan wall through the curtain glass, which read
 # as a beige backdrop rather than an outside. city.exr puts a plausible urban
 # exterior behind the glass in the rear-quarter frame.

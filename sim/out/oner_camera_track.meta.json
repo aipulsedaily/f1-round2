@@ -1,5 +1,5 @@
 {
- "blend": "/home/zany/f1-round2/render/film14.blend",
+ "blend": "render/film14.blend",
  "blend_bytes": 4530665076,
  "camera": "ONER",
  "n_cameras_in_scene": 1,

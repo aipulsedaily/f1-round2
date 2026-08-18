@@ -28,7 +28,7 @@
 # with a static-geometry guarantee, its FAIL_ALREADY_APPLIED guard keys on
 # `r2cs` (which R2829 does not carry), and --out refuses to overwrite its input.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 W=work/r21701
 mkdir -p $W
 B=/opt/blender-5.2.0-linux-x64/blender

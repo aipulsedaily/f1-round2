@@ -5,7 +5,7 @@
   "written_at": 1785811243.613,
   "tool": {
    "role": "tool",
-   "path": "/home/zany/f1-round2/tools/placement_gate.py",
+   "path": "tools/placement_gate.py",
    "status": "OK",
    "mtime": 1785729563.37,
    "mtime_iso": "2026-08-03T03:59:23",
@@ -21,7 +21,7 @@
   "inputs": [
    {
     "role": "blend",
-    "path": "/home/zany/f1-round2/render/world/assembly/r2/v120/ctl_place_neg.blend",
+    "path": "render/world/assembly/r2/v120/ctl_place_neg.blend",
     "status": "OK",
     "mtime": 1785787465.881,
     "mtime_iso": "2026-08-03T20:04:25",
@@ -30,7 +30,7 @@
    },
    {
     "role": "spec",
-    "path": "/home/zany/f1-round2/docs/circuit_spec.json",
+    "path": "docs/circuit_spec.json",
     "status": "OK",
     "mtime": 1785220238.261,
     "mtime_iso": "2026-07-28T06:30:38",
@@ -39,7 +39,7 @@
    },
    {
     "role": "telemetry",
-    "path": "/home/zany/f1-round2/telemetry/telemetry.csv",
+    "path": "telemetry/telemetry.csv",
     "status": "OK",
     "mtime": 1785678851.466,
     "mtime_iso": "2026-08-02T13:54:11",
@@ -48,7 +48,7 @@
    },
    {
     "role": "beat_sheet",
-    "path": "/home/zany/f1-round2/docs/beat_sheet.json",
+    "path": "docs/beat_sheet.json",
     "status": "OK",
     "mtime": 1785799808.887,
     "mtime_iso": "2026-08-03T23:30:08",
@@ -57,7 +57,7 @@
    },
    {
     "role": "camera_path",
-    "path": "/home/zany/f1-round2/world/camera_rig_path.json",
+    "path": "world/camera_rig_path.json",
     "status": "OK",
     "mtime": 1785799849.842,
     "mtime_iso": "2026-08-03T23:30:49",
@@ -69,7 +69,7 @@
   "also_hash": [
    {
     "role": "itemkit",
-    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "path": "world/itemkit.py",
     "status": "OK",
     "mtime": 1785786939.014,
     "mtime_iso": "2026-08-03T19:55:39",
@@ -78,7 +78,7 @@
    },
    {
     "role": "world_contract",
-    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "path": "world/world_contract.py",
     "status": "OK",
     "mtime": 1785796863.209,
     "mtime_iso": "2026-08-03T22:41:03",
@@ -98,8 +98,8 @@
    "--out",
    "work/r2226/keepout_ctl_place_neg.json"
   ],
-  "cwd": "/home/zany/f1-round2",
-  "host": "zed",
+  "cwd": "~/f1-round2",
+  "host": "workstation",
   "python": "3.13.13"
  },
  "violations": [],

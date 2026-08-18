@@ -20,7 +20,7 @@
 # between entry points (fixed, resample.release_for_film), and the applier must
 # be pointed at the CURRENT film scene, which has moved three times in a day.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 B="${1:-sim/tmp/breach_full_m1.npz}"
 J="${2:-sim/tmp/breach_full_m1.json}"
 FILM="${3:-}"

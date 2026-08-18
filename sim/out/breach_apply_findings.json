@@ -2,7 +2,7 @@
  "written_by": "sim/ owner, applying the breach into the film scene",
  "date": "2026-08-03",
  "applied_scene": {
-  "path": "/home/zany/f1-round2/render/film9_breach.blend",
+  "path": "render/film9_breach.blend",
   "bytes": 5217977841,
   "source": "render/film9.blend (4,765,023,615 bytes)",
   "objects_added": 3806,

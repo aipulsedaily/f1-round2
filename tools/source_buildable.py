@@ -72,7 +72,7 @@ def flag(name):
     return ("--%s" % name) in ARGV
 
 
-TREE = os.path.abspath(opt("tree", "/home/zany/f1-round2"))
+TREE = os.path.abspath(opt("tree", os.path.expanduser("~/f1-round2")))
 LABEL = opt("label", os.path.basename(TREE))
 
 RESULTS = []

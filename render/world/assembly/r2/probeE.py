@@ -10,7 +10,8 @@ dressing and vegetation are excluded from the search.
   and the same nodes' Armco top vs the ground it stands on (baseline: 1.020 /
   1.014 m of a 1.012 m Armco showing).
 """
-exec(open("/home/zany/f1-round2/render/world/assembly/r2/lib_probe.py").read())
+import os
+exec(open(os.path.expanduser("~/f1-round2/render/world/assembly/r2/lib_probe.py")).read())
 
 # ------------------------------------------------- WHERE THIS PROBE WRITES --
 # Was `save("probeE.json", ...)`. `save()` joins its argument onto
@@ -32,7 +33,7 @@ print("[E] output ->", OUT)
 # Blender 5.2 returns 0 for a script that raised, so a probe that died halfway
 # was indistinguishable from one that finished.  install() arms sys.excepthook
 # and an atexit sentinel; done() on the last line disarms it.
-sys.path.insert(0, "/home/zany/f1-round2/tools")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/tools"))
 import gate_exit                                                 # noqa: E402
 gate_exit.install(tool="probeE")
 

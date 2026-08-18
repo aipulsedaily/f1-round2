@@ -23,6 +23,7 @@ and nothing else.  That is a narrower question than "is anything in the way",
 and it is the right one: an occluder outside that list would have shown up in
 R2-140's blocker census, which named every object it hit.
 """
+import os
 import json
 import math
 import sys
@@ -31,7 +32,7 @@ import bpy
 import numpy as np
 from mathutils import Vector
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 sys.path.insert(0, R2 + "/world")
 import world_contract as WC                                       # noqa: E402
 

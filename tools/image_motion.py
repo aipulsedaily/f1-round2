@@ -578,11 +578,11 @@ def _dsn(x):
 # answer printed beside the new one on every synthetic case.
 # ---------------------------------------------------------------------------
 
-IDIOM_SEQ = "/home/zany/vast-render/out/seq/seam_after"
+IDIOM_SEQ = os.path.expanduser("~/vast-render/out/seq/seam_after")
 IDIOM_PREFIX = "seam_after"
-IDIOM_PATH = "/home/zany/f1-round2/work/seam/prev_after_path.json"
+IDIOM_PATH = os.path.expanduser("~/f1-round2/work/seam/prev_after_path.json")
 IDIOM_LO, IDIOM_HI = 748, 832
-BREACH_DIR = "/home/zany/f1-round2/render/breach_f9"
+BREACH_DIR = os.path.expanduser("~/f1-round2/render/breach_f9")
 
 
 def _quat_matrix(q):

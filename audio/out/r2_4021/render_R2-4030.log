@@ -36,13 +36,13 @@
 Traceback (most recent call last):
   File "<frozen runpy>", line 203, in _run_module_as_main
   File "<frozen runpy>", line 88, in _run_code
-  File "/home/zany/f1-round2/audio/master.py", line 978, in <module>
+  File "audio/master.py", line 978, in <module>
     "sample_peak": float(np.abs(out).max()),
                  ^^^^^^
-  File "/home/zany/f1-round2/audio/master.py", line 960, in main
+  File "audio/master.py", line 960, in main
     # downstream can scale the endpoint back off zero. At 24 fps that is 0.29 of
     # one frame, and against a 215 Hz idle (4.65 ms period) it is 2.6 cycles --
-  File "/home/zany/f1-round2/audio/master.py", line 917, in build
+  File "audio/master.py", line 917, in build
     if out.shape[0] < want:
     
 TypeError: list indices must be integers or slices, not str

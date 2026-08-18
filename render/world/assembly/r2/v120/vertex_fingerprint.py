@@ -25,7 +25,7 @@ import numpy as np
 # comparing a file with itself.  See the note in lib_probe.py.  It execs ONLY
 # the marked resolver block: this script must keep running on standalone item
 # blends that know nothing about world_contract.
-_LIB = "/home/zany/f1-round2/render/world/assembly/r2/lib_probe.py"
+_LIB = os.path.expanduser("~/f1-round2/render/world/assembly/r2/lib_probe.py")
 _BLK = re.search(r"^# --- BEGIN resolve_out.*?^# --- END resolve_out.*?$",
                  open(_LIB).read(), re.S | re.M)
 if not _BLK:
@@ -70,7 +70,7 @@ for ob in bpy.data.objects:
 # builds of the same filename". That distinction is the whole point of a
 # before/after -- on 2026-08-02 four before/after pairs on this project turned
 # out not to be frames of the same object at all.
-sys.path.insert(0, "/home/zany/f1-round2/tools")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/tools"))
 import provenance as _prov                                       # noqa: E402
 R = {_prov.STAMP_KEY: _prov.stamp(
         tool_file=__file__, tool_version="vertex_fingerprint",

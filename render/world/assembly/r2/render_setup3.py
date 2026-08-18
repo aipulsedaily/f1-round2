@@ -15,7 +15,7 @@ import bpy
 import numpy as np
 from mathutils import Vector
 
-sys.path.insert(0, "/home/zany/f1-round2/world")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/world"))
 import world_contract as C
 import film_exposure as FX          # THE film's exposure, derived from C, one place
 
@@ -29,7 +29,7 @@ def opt(n, d=None):
     return d
 
 
-OUT = opt("out", "/home/zany/f1-round2/render/world/assembly/r2/render3.blend")
+OUT = opt("out", os.path.expanduser("~/f1-round2/render/world/assembly/r2/render3.blend"))
 # NOT A LITERAL ANY MORE.  This file used to hardcode -3.628 with no comment
 # while world_contract derived -3.048, and nothing could notice the 0.580-stop
 # disagreement because the two numbers never met.  `world/film_exposure.py` is
@@ -115,7 +115,7 @@ mk("CAM_APRON_EDGE", P(3232.0, e_ap + 0.75, +1, 0.55),
 rep["apron_verge_edge"] = round(e_ap, 4)
 
 # 5. THE DOPPLER HOVER — the beat sheet's own station, 4K, for the grass crop
-bs = json.load(open("/home/zany/f1-round2/docs/beat_sheet.json"))
+bs = json.load(open(os.path.expanduser("~/f1-round2/docs/beat_sheet.json")))
 dp = bs["doppler"]
 dcam = Vector(dp["camera_world"])
 dtgt = P(float(dp["station_s"]), 0.0, +1, 0.6)

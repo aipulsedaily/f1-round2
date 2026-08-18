@@ -1,6 +1,6 @@
 """place_driver -- put `world/items/driver_figure.py` into the car's cockpit.
 
-R2-241.  The car is round-1 geometry and `/home/zany/opus5-car-render` is
+R2-241.  The car is round-1 geometry and `~/opus5-car-render` is
 READ-ONLY, so nothing here modifies the car.  It ADDS `DRV_*` objects to the
 `CAR` collection of a COPY of `world/car_anim.blend` and writes
 `world/car_anim_driver.blend`.  `tools/build_film_scene.py` already takes the

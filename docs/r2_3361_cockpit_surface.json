@@ -3,8 +3,8 @@
  "frame": 2635,
  "px_per_m": 1416.4,
  "sharp_keep_deg": 60.0,
- "in": "/home/zany/f1-round2/world/car_anim_driver_R2_3361.blend",
- "out": "/home/zany/f1-round2/world/R2_3361_car_anim_driver_CS.blend",
+ "in": "world/car_anim_driver_R2_3361.blend",
+ "out": "world/R2_3361_car_anim_driver_CS.blend",
  "materials": {
   "CarbonMatte": {
    "pitch_before_mm": 1.6534698176788385,

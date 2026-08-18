@@ -550,7 +550,7 @@
    ],
    "stem_provenance": {
     "telemetry_kind": "film",
-    "stems_dir": "/home/zany/f1-round2/audio/out/stems",
+    "stems_dir": "audio/out/stems",
     "used": true,
     "manifest": null,
     "stems_of": null,

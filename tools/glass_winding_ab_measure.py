@@ -17,7 +17,7 @@ import json, os, sys
 import numpy as np
 from PIL import Image
 
-ROOT = "/home/zany/f1-round2"
+ROOT = os.path.expanduser("~/f1-round2")
 R = os.path.join(ROOT, "render/glass_ab/renders")
 W, H, SENSOR = 1600, 900, 36.0
 F_SOUTH, F_EAST = 645, 863

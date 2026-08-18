@@ -110,7 +110,7 @@ import math
 import os
 import sys
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 for _p in (R2, os.path.join(R2, "anim"), os.path.join(R2, "world")):
     if _p not in sys.path:
         sys.path.insert(0, _p)

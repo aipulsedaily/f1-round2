@@ -149,17 +149,32 @@ plant a known string and check that it fires.
 
 ### The plant-and-prove procedure, written down so it is repeated and not improvised
 
+Note the **unquoted** heredoc: `$HOME` is expanded when the canary is planted,
+so the file on disk carries the real home directory while this document does
+not. Writing the literal here is what left the author's login in the one file
+that claims to remove it, through a complete and otherwise clean run.
+
 ```sh
-cat > docs/ZZ-CANARY.md <<'EOF'
-Path leak: /home/zany/f1-round2/world/build_sky.py
+cat > docs/ZZ-CANARY.md <<EOF
+Path leak: $HOME/f1-round2/world/build_sky.py
+Bare home leak: $HOME
 IP leak: 203.0.113.77 and also 198.51.100.4:21104
 Secret leak: api_key=CANARY0123
 Machine leak: machine 99999 condemned
 Vast id leak: instance 41234567
-Balance leak: credit $12.34 remaining
+Balance leak: credit \$12.34 remaining
+Code path leak, .py: ROOT = "$HOME/f1-round2/world"
+Code path leak, .sh: cd $HOME/f1-round2
 EOF
 cp docs/ZZ-CANARY.md watch/ZZ-CANARY.md   # prove BOTH trees are reached
+cp docs/ZZ-CANARY.md docs/ZZ_CANARY.py    # prove PASS 2 is reached as well
+cp docs/ZZ-CANARY.md docs/ZZ_CANARY.sh
 ```
+
+The `.py` and `.sh` copies are not decoration. Pass 1 and pass 2 are different
+code on different file types, and a canary that only ever lands in a `.md`
+proves nothing about the 1,197 occurrences that were in Python, shell, JSON and
+logs. Delete `docs/ZZ_CANARY.py` before running with `--apply`.
 
 Run all three greps and the sanitiser dry run. **Every one must report the
 canary.** Then delete both copies, re-run, and only now is a clean result worth

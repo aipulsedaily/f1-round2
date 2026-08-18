@@ -62,7 +62,7 @@ if os.path.dirname(os.path.abspath(__file__)) not in sys.path:
 import gate_exit                                                 # noqa: E402
 import report_repro as _repro                                   # noqa: E402
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 
 # Objects whose job is to define the track edge. These are EXPECTED to measure
 # an intrusion near zero; that is them being correctly placed, not a defect.

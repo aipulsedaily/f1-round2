@@ -82,7 +82,7 @@ bodies, and that is measured in `measure_variation()`.
 USE
 ---
     import sys, os
-    sys.path.insert(0, "/home/zany/f1-round2/world")
+    sys.path.insert(0, "world")
     import itemkit as K
     import humankit as HK
 

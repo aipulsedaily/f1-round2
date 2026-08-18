@@ -63,7 +63,7 @@ import math
 import os
 import sys
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 sys.path.insert(0, R2)
 import importlib.util                                              # noqa: E402
 

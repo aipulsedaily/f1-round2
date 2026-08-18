@@ -1,7 +1,7 @@
 """STEP ZERO — enumerate what round 1 actually produced.
 
     /opt/blender-5.2.0-linux-x64/blender -b <blend> --factory-startup \
-        -P /home/zany/f1-round2/tools/inventory.py -- --out <out.json>
+        -P tools/inventory.py -- --out <out.json>
 
 WHY THIS EXISTS
 ---------------

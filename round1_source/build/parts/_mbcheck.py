@@ -1,7 +1,8 @@
 """Deviation + sanity check for monocoque_b."""
+import os
 import sys, math, time
-sys.path.insert(0, '/home/zany/opus5-car-render/build')
-sys.path.insert(0, '/home/zany/opus5-car-render/build/parts')
+sys.path.insert(0, os.path.expanduser('~/opus5-car-render/build'))
+sys.path.insert(0, os.path.expanduser('~/opus5-car-render/build/parts'))
 import bpy, bmesh, importlib
 from mathutils.bvhtree import BVHTree
 from mathutils import Vector

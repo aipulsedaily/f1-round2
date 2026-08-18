@@ -1,7 +1,8 @@
 """build() twice in one session must give an identical scene -- build_dressing's
 rule, and the reason R2_Items is purged before a rebuild."""
+import os
 import bpy, sys, json
-sys.path.insert(0, "/home/zany/f1-round2/world")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/world"))
 import build_items as BI
 
 def sig():

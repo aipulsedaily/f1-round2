@@ -6,7 +6,7 @@
 # stages film19 proved: scene -> focus -> breach(+fines) -> verify.  Every stage
 # is judged only on its printed token; Blender 5.2 exits 0 on exceptions.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 W=work/r21701
 V=render/world/assembly/r2/v126
 CAR=world/R21701_car_anim_driver_CS.blend

@@ -12,7 +12,7 @@ import os
 import re
 import sys
 
-ROOT = "/home/zany/f1-round2"
+ROOT = os.path.expanduser("~/f1-round2")
 W = os.path.join(ROOT, "work", "r2116")
 
 ORDER = ["spectator_seated", "driver_figure", "tyre_blanket",

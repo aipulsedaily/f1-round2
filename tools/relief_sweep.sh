@@ -37,7 +37,7 @@
 # Exit codes (tools/gate_exit.py's scheme): 0 all rows current, 1 a row failed,
 # 2 could not run.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 BL=/opt/blender-5.2.0-linux-x64/blender
 OUT="render/items/_relief"
 mkdir -p "$OUT"

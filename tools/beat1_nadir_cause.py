@@ -27,7 +27,7 @@ import json
 import math
 import os
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 
 # world/build_architecture.py:134-135 -- the room the camera is flying inside
 ROOM_Z_CEIL = 6.200

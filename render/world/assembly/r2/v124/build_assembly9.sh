@@ -4,10 +4,10 @@
 # The ONLY source difference from assembly8 is 54dd6b8 (build_architecture,
 # the pit-exit apron cut) and 412d2e2 (world_contract selftest text only).
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 D=work/r2148
 mkdir -p $D
-OUT=/home/zany/f1-round2/render/world/assembly/r2/assembly9.blend
+OUT=$HOME/f1-round2/render/world/assembly/r2/assembly9.blend
 
 others () {
   ps -eo rss,args --no-headers \
@@ -30,8 +30,8 @@ echo "$(date +%T) STARTING BUILD, other blender RSS = $(others) MB" >> $D/wait.l
             world/build_architecture.py world/build_terrain.py world/build_dressing.py \
             render/world/assembly/r2/assemble.py telemetry/telemetry.csv
   ls -la --time-style=+%F_%T world/build_*.py world/world_contract.py
-  git -C /home/zany/f1-round2 rev-parse HEAD
-  git -C /home/zany/f1-round2 status --short
+  git -C $HOME/f1-round2 rev-parse HEAD
+  git -C $HOME/f1-round2 status --short
 } > $D/inputs_assembly9.txt 2>&1
 
 START=$(date +%s)

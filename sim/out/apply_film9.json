@@ -47,7 +47,7 @@
   "meshes_scanned": 29387,
   "pocket_aabb_candidates": 79
  },
- "out": "/home/zany/f1-round2/render/film9_breach.blend",
+ "out": "render/film9_breach.blend",
  "bytes": 5217977841,
  "origin_rule": "shard origin = (0.5*(x_in+x_out), centroid_u, centroid_v) in WORLD metres; mesh verts are stored relative to it"
 }

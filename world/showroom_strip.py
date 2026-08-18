@@ -74,7 +74,7 @@ THE NUMBERS, AND WHY EACH ONE
 
 WHERE IT IS ADDED, AND WHY NOT UPSTREAM
 ---------------------------------------
-`build_three_point` in `/home/zany/opus5-car-render/build/s05_lighting.py` is
+`build_three_point` in `~/opus5-car-render/build/s05_lighting.py` is
 where the four lamps are authored, and EDITING IT HAS NO PATH TO A FRAME: round
 2 never runs round 1's lighting stage.  The lamps reach the film as baked
 datablocks inside the car blend, appended whole by `tools/build_film_scene.py`.
@@ -152,7 +152,7 @@ UNTOUCHED = {
 def luma(c):
     """Round 1's `_luma`, reproduced so this file does not import round 1.
 
-    `/home/zany/opus5-car-render` is READ-ONLY round-1 material and importing
+    `~/opus5-car-render` is READ-ONLY round-1 material and importing
     from it at film-build time would make the film depend on a tree nothing
     else in round 2 executes.
     """

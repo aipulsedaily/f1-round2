@@ -1,6 +1,6 @@
 """From which direction is each cluster MOST LEGIBLE? Measured, by sampling.
 
-    /opt/blender-5.2.0-linux-x64/blender -b /home/zany/opus5-car-render/work/iter.blend \
+    /opt/blender-5.2.0-linux-x64/blender -b ~/opus5-car-render/work/iter.blend \
         --factory-startup -P tools/presentation_normals.py -- \
         --plan docs/explode_plan.json --out docs/presentation_normals.json
 

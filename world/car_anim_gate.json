@@ -169,7 +169,7 @@
  "F_before": {
   "worst_m": 0.0,
   "where": null,
-  "blend": "/home/zany/f1-round2/world/beat1_anim.blend",
+  "blend": "world/beat1_anim.blend",
   "parts": 25
  },
  "E_road_worst_m": 0.003589866361622951,

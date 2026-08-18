@@ -37,7 +37,7 @@
 # east_wall both PASS.  That census is asserted below; if it ever reports an
 # intruder over the wound this build must fail regardless of this flag.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 W=work/r21701
 B=/opt/blender-5.2.0-linux-x64/blender
 IN=render/film19.blend

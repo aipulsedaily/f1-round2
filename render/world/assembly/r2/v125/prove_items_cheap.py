@@ -59,7 +59,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--frame", type=int, default=2978)
 ap.add_argument("--res", type=int, default=3840)
 ap.add_argument("--samples", type=int, default=4)
-ap.add_argument("--out", default="/home/zany/f1-round2/work/r2500/items_cheap.json")
+ap.add_argument("--out", default=os.path.expanduser("~/f1-round2/work/r2500/items_cheap.json"))
 a = ap.parse_args(argv)
 
 FAMILIES = [("CFP_", "catch_fence_post"), ("CRF_", "crew_figure"),
@@ -87,8 +87,7 @@ sc.render.image_settings.file_format = "PNG"
 sc.render.image_settings.color_mode = "RGBA"
 sc.frame_set(a.frame)
 
-TMP = ("/tmp/claude-0/-home-zany-opus5-car-render/"
-       "262f2abe-1dfb-4a32-9544-52393037f67a/scratchpad/itemscheap.png")
+TMP = ("/tmp/f1-round2-scratch/itemscheap.png")
 os.makedirs(os.path.dirname(TMP), exist_ok=True)
 
 BY = {p: [o for o in bpy.data.objects if o.name.startswith(p)]

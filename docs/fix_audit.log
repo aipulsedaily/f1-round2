@@ -1,5 +1,5 @@
-00:00.451  blend            | Read blend: "/home/zany/f1-round2/world/beat1_audit.blend"
-/home/zany/f1-round2/tools/fix_audit_blend.py:63: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+00:00.451  blend            | Read blend: "world/beat1_audit.blend"
+tools/fix_audit_blend.py:63: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
   w.use_nodes = True
 >> removed 4 non-macro cameras: ['CAM_FrontQuarter', 'CAM_HeroLow', 'CAM_RearQuarter', 'CAM_TopDown']
 >> 15 macro cameras remain
@@ -8,7 +8,7 @@
 >> world replaced with procedural Nishita sky (elev 12.5 deg, bearing -58.0 deg)
 Info: Total files 1 | Changed 0 | Failed 0
 Info: Saved as "beat1_audit.blend"
->> saved /home/zany/f1-round2/world/beat1_audit.blend (275.0 MB)
+>> saved world/beat1_audit.blend (275.0 MB)
 >> external images still missing: none
 >> STAGE RESULT: AUDIT_BLEND_FIXED
 Blender 5.2.0 LTS (hash fbe6228777e7 built 2026-07-14 01:32:04)

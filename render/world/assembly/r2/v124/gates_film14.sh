@@ -2,7 +2,7 @@
 # Every camera gate on film14, each with BOTH controls, and the path self-null
 # run FIRST so a clean diff means something (R2-103).
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 W=work/r2148
 P=render/film14_path.json
 

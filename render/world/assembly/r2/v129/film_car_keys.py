@@ -30,7 +30,7 @@ import sys
 
 import bpy
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 sys.path.insert(0, os.path.join(R2, "tools"))
 sys.path.insert(0, os.path.join(R2, "anim"))
 

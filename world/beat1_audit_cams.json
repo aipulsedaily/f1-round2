@@ -1,6 +1,6 @@
 {
- "source": "/home/zany/opus5-car-render/work/iter.blend",
- "blend": "/home/zany/f1-round2/world/beat1_audit.blend",
+ "source": "~/opus5-car-render/work/iter.blend",
+ "blend": "world/beat1_audit.blend",
  "dist": 1.2,
  "lens": 50.0,
  "fstop": 2.8,

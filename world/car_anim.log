@@ -1,4 +1,4 @@
-00:00.451  blend            | Read blend: "/home/zany/f1-round2/world/beat1_anim.blend"
+00:00.451  blend            | Read blend: "world/beat1_anim.blend"
 >> time map: ramp 3_breach frames [865, 1056], floor 0.15372, world 1.6000 s == 1.6
 >> unparented 16 Vitrine_* clones from CAR_ROOT (they are showroom furniture, not car parts)
 >> reparented 76 parts onto the spin hubs and 34 onto the steer hubs

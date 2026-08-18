@@ -409,7 +409,7 @@
    ]
   ]
  },
- "out": "/home/zany/f1-round2/render/film14_breach_r6.blend",
+ "out": "render/film14_breach_r6.blend",
  "bytes": 4993186256,
  "origin_rule": "shard origin = (0.5*(x_in+x_out), centroid_u, centroid_v) in WORLD metres; mesh verts are stored relative to it"
 }

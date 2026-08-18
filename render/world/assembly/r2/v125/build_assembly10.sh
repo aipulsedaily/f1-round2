@@ -10,10 +10,10 @@
 #   world/build_items.py         the class-feature ownership arm + the stage
 #   world/items/PLACEMENT.json   4 rows HOLD -> PLACE (this is task #121)
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 D=work/r2500
 mkdir -p $D
-OUT=/home/zany/f1-round2/render/world/assembly/r2/assembly10.blend
+OUT=$HOME/f1-round2/render/world/assembly/r2/assembly10.blend
 
 {
   echo "=== INPUTS, hashed at $(date -Is) ==="
@@ -21,8 +21,8 @@ OUT=/home/zany/f1-round2/render/world/assembly/r2/assembly10.blend
             world/build_architecture.py world/build_terrain.py world/build_dressing.py \
             world/build_items.py world/items/PLACEMENT.json \
             render/world/assembly/r2/assemble.py telemetry/telemetry.csv
-  git -C /home/zany/f1-round2 rev-parse HEAD
-  git -C /home/zany/f1-round2 status --short
+  git -C $HOME/f1-round2 rev-parse HEAD
+  git -C $HOME/f1-round2 status --short
 } > $D/inputs_assembly10.txt 2>&1
 
 START=$(date +%s)

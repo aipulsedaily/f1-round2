@@ -5,7 +5,7 @@
 #
 # This is the thing that makes `round1_source/` more than a backup: it proves,
 # by running, that the vendored copy is SUFFICIENT.  Nothing it executes reads
-# /home/zany/opus5-car-render -- the script asserts that, by grepping its own
+# $HOME/opus5-car-render -- the script asserts that, by grepping its own
 # working tree for the string and refusing if it finds one.
 #
 # WHY A WORKING COPY AND NOT A DIRECT RUN.  `round1_source/build/` is a
@@ -15,7 +15,7 @@
 # to run standalone, so the rewrite happens on a throwaway copy instead of on
 # the vendored tree:
 #
-#   build/s01_base.py       PROJ = "/home/zany/opus5-car-render"
+#   build/s01_base.py       PROJ = "$HOME/opus5-car-render"
 #   tools/rebuild_scene.py  sys.path.insert(0, ".../build")
 #
 # THE HDRI.  `s01_base.world_hdri()` calls `bpy.data.images.load()` on
@@ -67,12 +67,12 @@ img.save()
 " >/dev/null 2>&1
 [ -s "$WORK/assets/city.exr" ] || { echo "REFUSING: HDRI stub was not generated"; exit 1; }
 
-sed -i "s#/home/zany/opus5-car-render#$WORK#g" \
+sed -i "s#$HOME/opus5-car-render#$WORK#g" \
     "$WORK/build/s01_base.py" "$WORK/tools/rebuild_scene.py"
 # The scratch part modules (underscore-prefixed, never assembled) also carry the
 # old root; rewrite them too so the assertion below can be absolute.
-grep -rl "/home/zany/opus5-car-render" "$WORK" 2>/dev/null \
-    | while read -r f; do sed -i "s#/home/zany/opus5-car-render#$WORK#g" "$f"; done
+grep -rl "$HOME/opus5-car-render" "$WORK" 2>/dev/null \
+    | while read -r f; do sed -i "s#$HOME/opus5-car-render#$WORK#g" "$f"; done
 
 if grep -rq "opus5-car-render" "$WORK"; then
     echo "REFUSING: the working tree still references round 1:"

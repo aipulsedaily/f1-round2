@@ -35,7 +35,7 @@
 # of 260,000 chips in the wound.
 # `--fracture-faces` is NOT passed: off by default, still a pending probe.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 W=work/r23661
 B=/opt/blender-5.2.0-linux-x64/blender
 IN=${1:-render/film25.blend}

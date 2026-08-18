@@ -12,4 +12,4 @@
   tyre        before t_end: bit-identical=True (worst 0.000e+00)   after: 6.923
   pos         before t_end: bit-identical=True (worst 0.000e+00)   after: 625.9
 >> ALL_BIT_IDENTICAL_BEFORE_T_END = True
->> /home/zany/f1-round2/audio/out/ab/prefix_identity.json
+>> audio/out/ab/prefix_identity.json

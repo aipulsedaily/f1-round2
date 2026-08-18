@@ -1,4 +1,4 @@
-00:00.384  blend            | Read blend: "/home/zany/f1-round2/world/beat1_audit.blend"
+00:00.384  blend            | Read blend: "world/beat1_audit.blend"
 >> 15 clusters, 303 environment objects, frames [1]
 >> frame     1: CLEAN
 >> wrote docs/collision_report.json

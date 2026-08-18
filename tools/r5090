@@ -25,7 +25,7 @@ OUT=$(readlink -f "${3:?out.png}")
 SAMPLES="${4:-512}"
 W="${5:-3840}"; H="${6:-2160}"
 mkdir -p "$(dirname "$OUT")"
-cd /home/zany/vast-render
+cd $HOME/vast-render
 echo ">> 5090: $(basename "$SCENE") cam=$CAM ${W}x${H} @${SAMPLES}"
 ./rq render --scene "$SCENE" --cam "$CAM" --res "$W" "$H" \
             --samples "$SAMPLES" --wait -o "$OUT"

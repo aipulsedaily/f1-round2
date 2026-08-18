@@ -5,7 +5,7 @@
 
 WHY THIS IS A POST-APPEND TOOL AND NOT A SOURCE FIX OR A WORLD REBUILD
 ======================================================================
-`Ceiling` is emitted by `/home/zany/opus5-car-render/build/s02_showroom.py:490`
+`Ceiling` is emitted by `~/opus5-car-render/build/s02_showroom.py:490`
 `build_shell()` as a literal cuboid whose top and bottom faces are ONE QUAD OF
 686.25 m^2. That tree is part 1, shipped and live, and READ-ONLY, so the source
 cannot be corrected. It reaches the film through `tools/build_film_scene.py`'s

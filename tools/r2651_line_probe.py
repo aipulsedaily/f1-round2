@@ -30,7 +30,7 @@ prediction that is 400 m away is measuring the road's own shading, not rubber,
 and this project has shipped exactly that class of detector before.
 
     .venv/bin/python tools/r2651_line_probe.py \
-        --frame 2000 --png /home/zany/vast-render/out/seq/r1full/r1full_002000.png
+        --frame 2000 --png ~/vast-render/out/seq/r1full/r1full_002000.png
     .venv/bin/python tools/r2651_line_probe.py --selftest
 """
 import argparse
@@ -243,7 +243,7 @@ def selftest():
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--frame", type=int, default=2000)
-    ap.add_argument("--png", default="/home/zany/vast-render/out/seq/r1full/r1full_002000.png")
+    ap.add_argument("--png", default=os.path.expanduser("~/vast-render/out/seq/r1full/r1full_002000.png"))
     ap.add_argument("--json", default="")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args()

@@ -22,10 +22,10 @@
 # build (the floor under the BEFORE image) and one of the new build (the floor
 # under the AFTER image).
 set -u
-cd /home/zany/f1-round2
-NEW="${1:-/home/zany/f1-round2/render/film14_breach_r6b.blend}"
-OLD=/home/zany/f1-round2/render/film14_breach_r6.blend
-RQ=/home/zany/vast-render/rq
+cd $HOME/f1-round2
+NEW="${1:-$HOME/f1-round2/render/film14_breach_r6b.blend}"
+OLD=$HOME/f1-round2/render/film14_breach_r6.blend
+RQ=$HOME/vast-render/rq
 A=r2281
 D=render/r2281
 mkdir -p $D

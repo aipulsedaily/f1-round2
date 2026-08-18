@@ -39,7 +39,7 @@ import sys
 import numpy as np
 from PIL import Image
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 PEEP = os.path.join(R2, "docs/peep/r2581")
 
 # the zooms R2-588 actually rendered, from variant A's focal at that frame

@@ -7,7 +7,7 @@ artefact that establishes it.
 """
 import json, os, time
 
-ROOT = "/home/zany/f1-round2"
+ROOT = os.path.expanduser("~/f1-round2")
 facts = json.load(open(os.path.join(ROOT, "work/r2226/registry_facts.json")))
 
 # --------------------------------------------------------------------------

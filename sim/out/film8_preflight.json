@@ -70,5 +70,5 @@
    "why": "the keys are absolute world transforms, not local"
   }
  },
- "scene": "/home/zany/f1-round2/render/film8.blend"
+ "scene": "render/film8.blend"
 }

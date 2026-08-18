@@ -1186,11 +1186,11 @@
   }
  },
  "surface_model": {
-  "note": "Object and material names MEASURED off the builds by a source sweep. x < 15 is ROUND-1 showroom geometry that lives in the READ-ONLY repo /home/zany/opus5-car-render (build/s02_showroom.py + s03_materials.py) and is film14-only; x >= 15 is this repo's world/build_surface.py.",
+  "note": "Object and material names MEASURED off the builds by a source sweep. x < 15 is ROUND-1 showroom geometry that lives in the READ-ONLY repo ~/opus5-car-render (build/s02_showroom.py + s03_materials.py) and is film14-only; x >= 15 is this repo's world/build_surface.py.",
   "dais_deck": {
    "object": "Turntable_Deck",
    "material": "TurntableTop",
-   "built_by": "/home/zany/opus5-car-render/build/s02_showroom.py:702",
+   "built_by": "~/opus5-car-render/build/s02_showroom.py:702",
    "centre": [
     0.0,
     0.0
@@ -20860,7 +20860,7 @@
    "verdict": "CONFIRMED, and it is the headline. Slip velocity over the entire painted span is EXACTLY 0.0 m/s -- not small, zero: the rig makes rolling contact exact by construction outside the launch window (carrig.spin = ground_distance/0.36 + slip, and slip is flat there). The car passes x = 15 at 16.214 m/s and x = 49 at 31.395 m/s with the wheels fully hooked up. 0.0 of the deposit lies at x >= 15; 100 % of it lies on the turntable deck at x = -1.793 ..-1.558. The existing paint covers 34 m where no rubber is laid, and nothing paints the 0.24 m where all of it is."
   },
   "q3_width": {
-   "source": "/home/zany/opus5-car-render/build/spec.py + s04_car.tyre_profile (READ ONLY). TYRE_R = 0.360 -- which independently confirms the rolling radius from the mesh. REAR_TYRE_Y = 1.000 - 0.2025 = 0.79750, exactly carrig.HALF_TRACK_REAR, so the track figures ARE the tyre centre planes.",
+   "source": "~/opus5-car-render/build/spec.py + s04_car.tyre_profile (READ ONLY). TYRE_R = 0.360 -- which independently confirms the rolling radius from the mesh. REAR_TYRE_Y = 1.000 - 0.2025 = 0.79750, exactly carrig.HALF_TRACK_REAR, so the track figures ARE the tyre centre planes.",
    "patch": {
     "rear": {
      "section_width_m": 0.405,

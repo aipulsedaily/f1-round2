@@ -17,10 +17,10 @@
 # this build has to prove it carried the new fix AND did not regress the last
 # one.  That is the check assembly11 did not have (R2-1826).
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 D=work/r22041
 mkdir -p $D
-OUT=/home/zany/f1-round2/render/world/assembly/r2/assembly14.blend
+OUT=$HOME/f1-round2/render/world/assembly/r2/assembly14.blend
 SRC="world/world_contract.py world/build_surface.py world/build_barriers.py
      world/build_architecture.py world/build_terrain.py world/build_dressing.py
      world/build_items.py world/itemkit.py world/items/PLACEMENT.json
@@ -39,8 +39,8 @@ waitmem () {
 
 sha256sum $SRC > $D/inputs_assembly14_BEFORE.txt 2>&1
 { echo "=== INPUTS, hashed at $(date -Is) ==="; cat $D/inputs_assembly14_BEFORE.txt
-  git -C /home/zany/f1-round2 rev-parse HEAD
-  git -C /home/zany/f1-round2 status --short; } > $D/inputs_assembly14.txt 2>&1
+  git -C $HOME/f1-round2 rev-parse HEAD
+  git -C $HOME/f1-round2 status --short; } > $D/inputs_assembly14.txt 2>&1
 
 waitmem assemble || exit 90
 START=$(date +%s)

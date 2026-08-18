@@ -124,7 +124,7 @@ if os.path.dirname(os.path.abspath(__file__)) not in sys.path:
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gate_exit                                                 # noqa: E402
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 
 SUN_ELEV_DEG = 12.5
 SUN_BEARING_DEG = -58.0

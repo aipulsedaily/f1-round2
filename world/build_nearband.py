@@ -89,7 +89,7 @@ RUN IT
     B=/opt/blender-5.2.0-linux-x64/blender
     $B -b --factory-startup -noaudio -P build_nearband.py -- --selftest
     $B -b --factory-startup -noaudio -P build_nearband.py -- --full \\
-        --save /home/zany/f1-round2/world/nearband.blend --stats nb.json
+        --save world/nearband.blend --stats nb.json
 
 `--full` runs `build_terrain.build()` first so the no-cliff evidence is measured
 against the REAL woodland tier and not against a model of it.  `--terrain-only`

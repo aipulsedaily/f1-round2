@@ -1,8 +1,8 @@
 """Collect every result of the #53 battery into one printout."""
 import json, os, glob, sys
 
-V = "/home/zany/f1-round2/render/world/assembly/r2/v120"
-D = "/home/zany/f1-round2/render/world/assembly/r2"
+V = os.path.expanduser("~/f1-round2/render/world/assembly/r2/v120")
+D = os.path.expanduser("~/f1-round2/render/world/assembly/r2")
 
 
 def j(p):
@@ -37,7 +37,7 @@ for tag, p in (("assembly2 (1.0.1)", D + "/assembly2_build.json"),
         print("      %-14s %7.1fs  tris %s" % (m, r["s"], tri[m]))
 
 hdr("PLACEMENT GATE")
-for tag, p in (("v1.1.1 assembly4 (baseline)", "/home/zany/f1-round2/docs/placement_after_46.json"),
+for tag, p in (("v1.1.1 assembly4 (baseline)", os.path.expanduser("~/f1-round2/docs/placement_after_46.json")),
                ("v1.2.0 assembly5 default", V + "/placement_v120.json"),
                ("v1.2.0 assembly5 +ground", V + "/placement_v120_ground.json"),
                ("CONTROL positive", V + "/ctl_place_pos.json"),

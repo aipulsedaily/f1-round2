@@ -92,7 +92,7 @@ if _HERE not in sys.path:
 import placement_gate as PG                                       # noqa: E402
 import gate_exit                                                  # noqa: E402
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 
 
 def _run_gate(argv_tail):

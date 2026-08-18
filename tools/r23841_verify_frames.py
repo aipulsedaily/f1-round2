@@ -1,9 +1,9 @@
 """CHECK 3 OF THE MASTER'S THREE FRAME CHECKS: DECODE AND GEOMETRY.
 
     .venv/bin/python tools/r23841_verify_frames.py \
-        --dir /home/zany/vast-render/out3/seq/master4k \
-        --dir /home/zany/vast-render/out4/seq/master4k \
-        --dir /home/zany/vast-render/out5/seq/master4k \
+        --dir ~/vast-render/out3/seq/master4k \
+        --dir ~/vast-render/out4/seq/master4k \
+        --dir ~/vast-render/out5/seq/master4k \
         --first 1 --last 2978 --res 3840 2160 \
         --json work/r23841/decode.json
 

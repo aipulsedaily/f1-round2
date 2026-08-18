@@ -1,6 +1,6 @@
 {
  "frame": 866,
- "track": "/home/zany/f1-round2/sim/out/oner_camera_track_film14_breach.json",
+ "track": "sim/out/oner_camera_track_film14_breach.json",
  "after": {
   "table": "breach_film.npz",
   "n_pieces": 50,

@@ -580,7 +580,7 @@
    ],
    "stem_provenance": {
     "telemetry_kind": "film",
-    "stems_dir": "/home/zany/f1-round2/audio/out/stems",
+    "stems_dir": "audio/out/stems",
     "used": true,
     "manifest": null,
     "stems_of": null,
@@ -1397,15 +1397,15 @@
   "wav": "audio/out/r2_4149/master_rt45.wav",
   "stem_provenance": {
    "telemetry_kind": "film",
-   "stems_dir": "/home/zany/f1-round2/audio/out/r2_4149/stems",
+   "stems_dir": "audio/out/r2_4149/stems",
    "used": true,
    "manifest": {
-    "master_wav": "/home/zany/f1-round2/audio/out/r2_4149/master_rt45.wav",
+    "master_wav": "audio/out/r2_4149/master_rt45.wav",
     "generated_utc": "2026-08-14T20:05:59Z",
     "sr_internal": 96000,
     "note": "the buses as they enter the sum, after the LUFS-S trim and the declared HF shelf, before the program gain and the limiter"
    },
-   "stems_of": "/home/zany/f1-round2/audio/out/r2_4149/master_rt45.wav",
+   "stems_of": "audio/out/r2_4149/master_rt45.wav",
    "n_stems": 17,
    "stems": [
     "aperture",
@@ -3557,15 +3557,15 @@
    "rule": "INAPPLICABLE is not PASS and never counts toward a verdict. Provenance gates are excluded from the quality verdict because they do not take the rendered master as an input.",
    "stem_provenance": {
     "telemetry_kind": "film",
-    "stems_dir": "/home/zany/f1-round2/audio/out/r2_4149/stems",
+    "stems_dir": "audio/out/r2_4149/stems",
     "used": true,
     "manifest": {
-     "master_wav": "/home/zany/f1-round2/audio/out/r2_4149/master_rt45.wav",
+     "master_wav": "audio/out/r2_4149/master_rt45.wav",
      "generated_utc": "2026-08-14T20:05:59Z",
      "sr_internal": 96000,
      "note": "the buses as they enter the sum, after the LUFS-S trim and the declared HF shelf, before the program gain and the limiter"
     },
-    "stems_of": "/home/zany/f1-round2/audio/out/r2_4149/master_rt45.wav",
+    "stems_of": "audio/out/r2_4149/master_rt45.wav",
     "n_stems": 17,
     "stems": [
      "aperture",

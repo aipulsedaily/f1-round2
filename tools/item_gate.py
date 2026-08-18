@@ -210,7 +210,7 @@ import bpy
 import numpy as np
 from mathutils import Vector
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 # The provenance stamp lives beside this file. Imported by path rather than by
 # package, because item_gate runs inside Blender's interpreter with whatever
 # cwd the caller happened to have.
@@ -220,7 +220,7 @@ import provenance as _prov                                       # noqa: E402
 import gate_exit                                                 # noqa: E402
 import socket_blend_scan as _sockets                             # noqa: E402
 
-RQ = "/home/zany/vast-render/rq"
+RQ = os.path.expanduser("~/vast-render/rq")
 # The broker resolves symlinks and `..` and then requires the scene to sit
 # inside one of its roots -- a client-supplied scene path becomes a filesystem
 # path on the rented instance too, so it is a traversal vector and is checked

@@ -10,7 +10,7 @@
 # interesting arms are (a) that the items actually ARRIVED, which has never
 # happened before (task #121), and (b) that the things NOT touched did not move.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 B=/opt/blender-5.2.0-linux-x64/blender
 D=render/world/assembly/r2
 V0=$D/v120
@@ -30,7 +30,7 @@ python3 $V0/fp_diff.py --selftest 2>&1 | tail -6
 
 echo; echo "=== 1a vertex fingerprint: assembly10 ==="
 $B -b -noaudio $A10 --factory-startup -P $V0/vertex_fingerprint.py -- \
-    /home/zany/f1-round2/$W/fp_assembly10.json 2>&1 \
+    $HOME/f1-round2/$W/fp_assembly10.json 2>&1 \
     | grep -Ev "^(Blender|\[ALSOFT])" | tail -5
 
 echo; echo "=== 1b fp_diff assembly9 -> assembly10  (the batched rebuild) ==="
@@ -57,7 +57,7 @@ import bpy, json
 # go on asserting the old ones the moment a row changed -- reporting what was
 # intended when this script was written instead of what the registry now says.
 import json
-_reg = json.load(open('/home/zany/f1-round2/world/items/PLACEMENT.json'))
+_reg = json.load(open('$HOME/f1-round2/world/items/PLACEMENT.json'))
 want = {r['prefix']: r['expect_objects'] for r in _reg['items']
         if r.get('state') == 'PLACE'}
 print('   wants READ from PLACEMENT.json: %s' % want)

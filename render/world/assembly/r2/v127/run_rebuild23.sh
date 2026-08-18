@@ -22,7 +22,7 @@
 # FAIL and then a later PASS has an unread verdict, so the FAIL tokens are
 # grepped for explicitly rather than only the PASS ones.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 W=work/r22101
 V=render/world/assembly/r2/v127
 CAR=world/R22041_car_anim_driver_CS.blend

@@ -87,12 +87,12 @@
  },
  "witness": {
   "blend": null,
-  "png": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness.png",
-  "spec": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness_spec.json",
+  "png": "render/gate_witness/gravel_bed_surface/witness.png",
+  "spec": "render/gate_witness/gravel_bed_surface/witness_spec.json",
   "render": {
    "backend": "supplied PNG (--from-png)",
-   "png": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness.png",
-   "flip_png_used": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness_flip.png"
+   "png": "render/gate_witness/gravel_bed_surface/witness.png",
+   "flip_png_used": "render/gate_witness/gravel_bed_surface/witness_flip.png"
   },
   "render_error": null,
   "image": {
@@ -295,7 +295,7 @@
     "px_flip_lit": 7093297,
     "px_chosen_lit_core": 2827316,
     "alpha_agreement": 1.0,
-    "flip_png": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness_flip.png",
+    "flip_png": "render/gate_witness/gravel_bed_surface/witness_flip.png",
     "sun_screen_direction_rowcol_flip": [
      -0.015508972958323335,
      -0.9998797286462897
@@ -419,7 +419,7 @@
   "written_at": 1785766116.304,
   "tool": {
    "role": "tool",
-   "path": "/home/zany/f1-round2/tools/item_gate.py",
+   "path": "tools/item_gate.py",
    "status": "OK",
    "mtime": 1785757608.739,
    "mtime_iso": "2026-08-03T11:46:48",
@@ -435,7 +435,7 @@
   "inputs": [
    {
     "role": "blend",
-    "path": "/home/zany/f1-round2/world/items/gravel_bed_surface_test.blend",
+    "path": "world/items/gravel_bed_surface_test.blend",
     "status": "OK",
     "mtime": 1785328029.225,
     "mtime_iso": "2026-07-29T12:27:09",
@@ -445,7 +445,7 @@
    },
    {
     "role": "manifest",
-    "path": "/home/zany/f1-round2/docs/item_manifest.json",
+    "path": "docs/item_manifest.json",
     "status": "OK",
     "mtime": 1785264294.872,
     "mtime_iso": "2026-07-28T18:44:54",
@@ -454,7 +454,7 @@
    },
    {
     "role": "from_png",
-    "path": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness.png",
+    "path": "render/gate_witness/gravel_bed_surface/witness.png",
     "status": "OK",
     "mtime": 1785765855.965,
     "mtime_iso": "2026-08-03T14:04:15",
@@ -474,7 +474,7 @@
    },
    {
     "role": "witness_png",
-    "path": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness.png",
+    "path": "render/gate_witness/gravel_bed_surface/witness.png",
     "status": "OK",
     "mtime": 1785765855.965,
     "mtime_iso": "2026-08-03T14:04:15",
@@ -483,7 +483,7 @@
    },
    {
     "role": "witness_spec",
-    "path": "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness_spec.json",
+    "path": "render/gate_witness/gravel_bed_surface/witness_spec.json",
     "status": "OK",
     "mtime": 1785760206.34,
     "mtime_iso": "2026-08-03T12:30:06",
@@ -494,7 +494,7 @@
   "also_hash": [
    {
     "role": "itemkit",
-    "path": "/home/zany/f1-round2/world/itemkit.py",
+    "path": "world/itemkit.py",
     "status": "OK",
     "mtime": 1785741347.142,
     "mtime_iso": "2026-08-03T07:15:47",
@@ -503,7 +503,7 @@
    },
    {
     "role": "world_contract",
-    "path": "/home/zany/f1-round2/world/world_contract.py",
+    "path": "world/world_contract.py",
     "status": "OK",
     "mtime": 1785684602.475,
     "mtime_iso": "2026-08-02T15:30:02",
@@ -514,23 +514,23 @@
   "argv": [
    "/opt/blender-5.2.0-linux-x64/blender",
    "-b",
-   "/home/zany/f1-round2/world/items/gravel_bed_surface_test.blend",
+   "world/items/gravel_bed_surface_test.blend",
    "--factory-startup",
    "-P",
-   "/home/zany/f1-round2/tools/item_gate.py",
+   "tools/item_gate.py",
    "--",
    "--item",
    "gravel_bed_surface",
    "--out",
-   "/home/zany/f1-round2/work/r2061/gate/gravel_bed_surface/gate.json",
+   "work/r2061/gate/gravel_bed_surface/gate.json",
    "--samples",
    "512",
    "--always-render",
    "--from-png",
-   "/home/zany/f1-round2/render/gate_witness/gravel_bed_surface/witness.png"
+   "render/gate_witness/gravel_bed_surface/witness.png"
   ],
-  "cwd": "/home/zany/f1-round2",
-  "host": "zed",
+  "cwd": "~/f1-round2",
+  "host": "workstation",
   "python": "3.13.13"
  }
 }

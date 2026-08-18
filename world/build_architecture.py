@@ -128,7 +128,7 @@ APRON_JOINT_DEPTH_M = float(getattr(WC, "APRON_JOINT_DEPTH_M", 0.005))
 # --------------------------------------------------------------------------- #
 #  THE ROUND-1 PAVILION  —  MEASURED, not assumed                               #
 # --------------------------------------------------------------------------- #
-# /home/zany/opus5-car-render/f1_showroom.blend, world frame, identity transform:
+# ~/opus5-car-render/f1_showroom.blend, world frame, identity transform:
 #
 #   Floor            x -15.000..15.000  y -11.000..11.000  z -0.060..0.000
 #   Wall_BackX       x -15.250..-15.000 y -11.250..11.250  z  0.000..6.200
@@ -5984,7 +5984,7 @@ BEAT6_KEYS = [(-3.0, (129.84, 2.37, 2.8)), (-1.0, (255.52, 75.07, 14.8)),
 def _centreline_pt(s):
     """World point at station s, walked from the spec's element table."""
     try:
-        with open("/home/zany/f1-round2/docs/circuit_spec.json") as fh:
+        with open(os.path.expanduser("~/f1-round2/docs/circuit_spec.json")) as fh:
             els = json.load(fh)['elements']
     except Exception:
         return None
@@ -6900,7 +6900,7 @@ def build(verify=True):
 # --------------------------------------------------------------------------- #
 #  12. TEST SCENE + RENDERS   (nothing here is part of build())                 #
 # --------------------------------------------------------------------------- #SUN_DIR = Vector(WC.SUN_DIR).normalized()
-RENDER_DIR = "/home/zany/f1-round2/render/world/architecture"
+RENDER_DIR = os.path.expanduser("~/f1-round2/render/world/architecture")
 
 
 def _contract_proxies(showroom=True, r1floor=False):
@@ -7250,7 +7250,7 @@ if __name__ == "__main__":
     if "--save" in argv:
         i = argv.index("--save")
         path = (argv[i + 1] if len(argv) > i + 1 and not argv[i + 1].startswith("-")
-                else "/home/zany/f1-round2/world/architecture_test.blend")
+                else os.path.expanduser("~/f1-round2/world/architecture_test.blend"))
         cams = ('beat4_route', 'paddock_eye', 'aerial')
         if "--cams" in argv:
             cams = tuple(argv[argv.index("--cams") + 1].split(","))

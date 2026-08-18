@@ -1,4 +1,4 @@
-00:00.393  blend            | Read blend: "/home/zany/opus5-car-render/work/iter.blend"
+00:00.393  blend            | Read blend: "~/opus5-car-render/work/iter.blend"
 >> seat check: worst deviation 0.0000 mm over 616 parts, 0 stragglers
 Info: Total files 1 | Changed 0 | Failed 0
 Info: Saved as "beat1_anim.blend"
@@ -19,7 +19,7 @@ Info: Saved as "beat1_anim.blend"
    CORNER_FR         41 parts  land f696-704
    CORNER_RL         44 parts  land f696-704
    CORNER_RR         44 parts  land f696-704
->> saved /home/zany/f1-round2/world/beat1_anim.blend (277.7 MB)
+>> saved world/beat1_anim.blend (277.7 MB)
 >> STAGE RESULT: BEAT1_ANIM_OK
 Blender 5.2.0 LTS (hash fbe6228777e7 built 2026-07-14 01:32:04)
 

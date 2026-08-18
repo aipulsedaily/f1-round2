@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 B=/opt/blender-5.2.0-linux-x64/blender
 # 1. items alone, into an empty scene
 $B -b --factory-startup -noaudio -P world/build_items.py -- \

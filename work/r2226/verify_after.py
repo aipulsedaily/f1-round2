@@ -23,8 +23,8 @@ import numpy as np
 from mathutils import Vector, Quaternion
 from mathutils.bvhtree import BVHTree
 
-sys.path.insert(0, "/home/zany/f1-round2/tools")
-sys.path.insert(0, "/home/zany/f1-round2/world")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/tools"))
+sys.path.insert(0, os.path.expanduser("~/f1-round2/world"))
 
 argv = sys.argv[sys.argv.index("--")+1:] if "--" in sys.argv else []
 def opt(n, d=None): return argv[argv.index(n)+1] if n in argv else d
@@ -38,7 +38,7 @@ rep = {"blend": bpy.data.filepath, "frames": {}}
 import item_placement_gate as G
 print("=" * 70); print("PLACEMENT GATE on the blend about to be rendered")
 rc = G.run(rows_wanted=["crew_figure", "timing_stand"],
-           out="/home/zany/f1-round2/work/r2226/gate_after.json")
+           out=os.path.expanduser("~/f1-round2/work/r2226/gate_after.json"))
 rep["placement_gate_rc"] = rc
 print("=" * 70)
 
@@ -92,7 +92,7 @@ for it, cn in ITEMS.items():
             "c": [sum(v[k] for v in cs) / 8.0 for k in range(3)],
             "corners": [[v.x, v.y, v.z] for v in cs]})
 
-path = json.load(open("/home/zany/f1-round2/render/film14_path.json"))["path"]
+path = json.load(open(os.path.expanduser("~/f1-round2/render/film14_path.json")))["path"]
 byf = {k["f"]: k for k in path}
 
 def quat_mat(q):

@@ -40,30 +40,30 @@
 Traceback (most recent call last):
   File "<frozen runpy>", line 203, in _run_module_as_main
   File "<frozen runpy>", line 88, in _run_code
-  File "/home/zany/f1-round2/audio/master.py", line 1075, in <module>
+  File "audio/master.py", line 1075, in <module>
     raise SystemExit(main())
                      ~~~~^^
-  File "/home/zany/f1-round2/audio/master.py", line 1057, in main
+  File "audio/master.py", line 1057, in main
     rep = build(a.out, sr=a.sr, report_path=a.report, speed_source=a.speed_source,
                 stems_dir=a.stems)
-  File "/home/zany/f1-round2/audio/master.py", line 1019, in build
+  File "audio/master.py", line 1019, in build
     sf.write(out_wav + ".new", out, SR_OUT, subtype="PCM_24")
     ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/zany/f1-round2/.venv/lib/python3.14/site-packages/soundfile.py", line 375, in write
+  File ".venv/lib/python3.14/site-packages/soundfile.py", line 375, in write
     with SoundFile(file, 'w', samplerate, channels,
          ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                    subtype, endian, format, closefd,
                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                    compression_level, bitrate_mode) as f:
                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/zany/f1-round2/.venv/lib/python3.14/site-packages/soundfile.py", line 706, in __init__
+  File ".venv/lib/python3.14/site-packages/soundfile.py", line 706, in __init__
     self._info = _create_info_struct(file, mode, samplerate, channels,
                  ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                                      format, subtype, endian)
                                      ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/zany/f1-round2/.venv/lib/python3.14/site-packages/soundfile.py", line 1570, in _create_info_struct
+  File ".venv/lib/python3.14/site-packages/soundfile.py", line 1570, in _create_info_struct
     format = _get_format_from_filename(file, mode)
-  File "/home/zany/f1-round2/.venv/lib/python3.14/site-packages/soundfile.py", line 1611, in _get_format_from_filename
+  File ".venv/lib/python3.14/site-packages/soundfile.py", line 1611, in _get_format_from_filename
     raise TypeError(f"No format specified and unable to get format from "
                     f"file extension: {file!r}")
 TypeError: No format specified and unable to get format from file extension: 'audio/out/r2_4021/smoke48.wav.new'

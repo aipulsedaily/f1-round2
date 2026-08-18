@@ -6,7 +6,8 @@ Probe F found 35 vegetation instances inside the round-1 `Floor` footprint
 the signature of a source/library object rather than a scattered instance.  The
 world origin is the showroom floor, and Beats 1-3 are shot inside it.
 """
-exec(open("/home/zany/f1-round2/render/world/assembly/r2/lib_probe.py").read())
+import os
+exec(open(os.path.expanduser("~/f1-round2/render/world/assembly/r2/lib_probe.py")).read())
 
 # ------------------------------------------------- WHERE THIS PROBE WRITES --
 # Was `save("probeI.json", ...)`. `save()` joins its argument onto
@@ -27,7 +28,7 @@ print("[I] output ->", OUT)
 # Blender 5.2 returns 0 for a script that raised, so a probe that died halfway
 # was indistinguishable from one that finished.  install() arms sys.excepthook
 # and an atexit sentinel; done() on the last line disarms it.
-sys.path.insert(0, "/home/zany/f1-round2/tools")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/tools"))
 import gate_exit                                                 # noqa: E402
 gate_exit.install(tool="probeI")
 

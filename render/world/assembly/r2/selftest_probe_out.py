@@ -22,7 +22,7 @@ import json, os, re, sys, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 LIB = os.path.join(HERE, "lib_probe.py")
 PROBE = os.path.join(HERE, "probe_pitexit.py")
-OLD_OUT_DIR = "/home/zany/f1-round2/render/world/assembly/r2"   # lib_probe.OUT_DIR
+OLD_OUT_DIR = os.path.expanduser("~/f1-round2/render/world/assembly/r2")   # lib_probe.OUT_DIR
 
 # ---------------------------------------------------------------- the code --
 m = re.search(r"^# --- BEGIN resolve_out.*?^# --- END resolve_out.*?$",
@@ -57,7 +57,7 @@ TMP = tempfile.mkdtemp(prefix="pitexit_out_ctl_")
 # nothing. `old_out` never writes -- it only computes the path the old code
 # WOULD have used -- so no run of this file can touch the assembly root.
 os.chdir(TMP)
-BLEND = "/home/zany/f1-round2/render/world/assembly/r2/assembly5.blend"
+BLEND = os.path.expanduser("~/f1-round2/render/world/assembly/r2/assembly5.blend")
 BASE = ["blender", "-b", BLEND, "--factory-startup", "-P", PROBE, "--"]
 
 want_deep = os.path.join(TMP, "nested", "dir", "explicit.json")
@@ -109,7 +109,7 @@ for label, args, want in CASES:
 print()
 print("POSITIVE CONTROL -- the old idiom, run on the case the battery actually")
 print("used, reproduces the reported defect (file lands in the assembly root):")
-batt = "/home/zany/f1-round2/render/world/assembly/r2/v120/pitexit_v120.json"
+batt = os.path.expanduser("~/f1-round2/render/world/assembly/r2/v120/pitexit_v120.json")
 argv = BASE + [batt]
 old = old_out(argv)
 new = resolve_out(argv, blend_path=BLEND)

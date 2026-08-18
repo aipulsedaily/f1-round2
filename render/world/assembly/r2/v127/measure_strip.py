@@ -15,7 +15,7 @@ import json
 import os
 import sys
 
-sys.path.insert(0, "/home/zany/f1-round2/world")
+sys.path.insert(0, os.path.expanduser("~/f1-round2/world"))
 
 argv = sys.argv
 argv = argv[argv.index("--") + 1:] if "--" in argv else []

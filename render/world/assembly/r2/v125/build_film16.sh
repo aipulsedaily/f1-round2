@@ -23,7 +23,7 @@
 # this runs, or the build must fail -- and that failure would be the guard
 # working.
 set -u
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 W=work/r2500
 D=render/world/assembly/r2
 ASM=$D/assembly10.blend

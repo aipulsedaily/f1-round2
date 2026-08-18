@@ -7,7 +7,7 @@ disk (sha256, mtime) and, where one was run, the inventory probe.
 """
 import ast, hashlib, json, os, re, sys
 
-ROOT = "/home/zany/f1-round2"
+ROOT = os.path.expanduser("~/f1-round2")
 ITEMS = os.path.join(ROOT, "world", "items")
 GATES = os.path.join(ROOT, "render", "items")
 INV = os.path.join(ROOT, "work", "r2226")

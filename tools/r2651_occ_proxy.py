@@ -14,8 +14,9 @@ STILL A PROXY, NOT A RAYCAST: a point cloud has gaps, so it UNDER-reads, and it
 cannot tell a see-through catch fence from concrete. The fence channel is
 therefore reported separately and never folded into the solid count.
 """
+import os
 import json, sys, collections, numpy as np
-R='/home/zany/f1-round2/'
+R=os.path.expanduser('~/f1-round2/')
 z=np.load(R+'docs/screen_presence_points.npz',allow_pickle=True)
 P=z['pts'].astype(np.float64); OBJ=z['obj']; names=np.asarray(z['names'])
 GROUND=('SURF_','TER_','ARCH_Paving','ARCH_Apron','ARCH_Forecourt')

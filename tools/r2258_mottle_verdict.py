@@ -27,6 +27,7 @@ coarser (0.6 cyc/m) and 3x finer (5.4 cyc/m).  If the statistic cannot tell
 those from the authored 1.8 cyc/m, it is measuring nothing and its verdict on
 the delivered frame is worthless.
 """
+import os
 import math
 import subprocess
 
@@ -41,7 +42,7 @@ BX, Z0, H_M, W_M = -452.055, 8.92, 1.60, 44.0
 V0, V1 = 0.20, 0.38
 PXM = 65.4                      # delivered px per metre on the banner
 SMEAR_ALONG, SMEAR_ACROSS = 8, 15    # delivered px, from the camera path
-HERE = "/home/zany/f1-round2/work/r2256/"
+HERE = os.path.expanduser("~/f1-round2/work/r2256/")
 
 
 def c2w(cx, cy, cz):
@@ -111,7 +112,7 @@ def show(tag, frac):
 
 print("=" * 84)
 print("A.  THE DELIVERED FRAME  2972abcb3fa1.png")
-img = gray("/home/zany/vast-render/out/2972abcb3fa1.png", W_PX, H_PX)
+img = gray(os.path.expanduser("~/vast-render/out/2972abcb3fa1.png"), W_PX, H_PX)
 top, bot = project(c2w(BX, 2.0, Z0 + H_M)), project(c2w(BX, 2.0, Z0))
 print("    banner depth               %.2f m      <- the review's premise was 180 m"
       % bot[2])

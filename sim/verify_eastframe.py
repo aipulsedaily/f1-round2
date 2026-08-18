@@ -32,7 +32,7 @@ import bpy
 import numpy as np
 from mathutils import Vector
 
-R2 = "/home/zany/f1-round2"
+R2 = os.path.expanduser("~/f1-round2")
 sys.path.insert(0, os.path.join(R2, "sim"))
 import eastframe as EF                                            # noqa: E402
 

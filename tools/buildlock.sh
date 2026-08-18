@@ -107,7 +107,7 @@ for _a in "$@"; do
     exit 4
 done
 
-ROOT=/home/zany/f1-round2
+ROOT=$HOME/f1-round2
 LOCK="$ROOT/.buildlock"
 SMALL_LOCK="$ROOT/.buildlock.small"
 QDIR="$ROOT/.buildlock.q"

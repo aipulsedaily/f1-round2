@@ -10,7 +10,7 @@ import sys, os, time, json, gc
 
 import bpy
 
-WORLD = "/home/zany/f1-round2/world"
+WORLD = os.path.expanduser("~/f1-round2/world")
 if WORLD not in sys.path:
     sys.path.insert(0, WORLD)
 
@@ -24,7 +24,7 @@ def opt(name, default=None):
     return default
 
 
-OUT = opt("out", "/home/zany/f1-round2/render/world/assembly/assembly.blend")
+OUT = opt("out", os.path.expanduser("~/f1-round2/render/world/assembly/assembly.blend"))
 # `items` runs LAST and deliberately so: an item may SUPERSEDE class-level
 # geometry, and it can only take out what has already been built.  Before it
 # existed, 0 of 41 item modules reached the ship -- see world/build_items.py and

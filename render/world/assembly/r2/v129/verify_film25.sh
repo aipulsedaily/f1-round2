@@ -44,7 +44,7 @@
 # VACUOUS -- stop and say so, do not report the bar.
 set -u
 set -o pipefail
-cd /home/zany/f1-round2
+cd $HOME/f1-round2
 FILM=${1:-render/film25_breach.blend}
 NAME=$(basename "$FILM" .blend)
 B=/opt/blender-5.2.0-linux-x64/blender

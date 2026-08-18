@@ -146,11 +146,14 @@ Related documents: `docs/MASTER-PLAN.md` (the plan), `docs/THE-BRIEF-ROUND2.md`
 
 Stated plainly rather than discovered later:
 
-- **Absolute paths are hardcoded.** Roughly 130 tracked Python files and 60 shell
-  scripts contain `/home/zany/…`, including `assemble.py`, which sets its module
-  search path to `/home/zany/f1-round2/world`. Running any of this elsewhere
-  means changing those paths. There is no configuration layer that does it for
-  you.
+- **Paths assume the repository sits at `~/f1-round2`.** 135 Python files and 64
+  shell scripts used to carry the author's absolute home directory. They now use
+  `os.path.expanduser("~/f1-round2/…")` in Python and `$HOME/f1-round2/…` in
+  shell, so a clone into `~/f1-round2` runs unchanged and a clone anywhere else
+  does not. There is still no configuration layer; there is now a convention,
+  and it is one line to see: `grep -rn 'expanduser("~/f1-round2' tools/`.
+  Records under `docs/`, `render/` and `audio/out/` quote the same paths
+  **repo-relative**, which is what you want when reading a verdict.
 - **The rendered outputs are not here.** `render/`, `work/`, `world/` bakes and
   `watch/` are gitignored — several hundred gigabytes of blends, frames, caches
   and the delivered master. The repository is source and reasoning only.
