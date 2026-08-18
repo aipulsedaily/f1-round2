@@ -575,6 +575,52 @@ gives 76,845. That is the origin of this document's standing rule:
 
 ---
 
+## 14. Which of these sources a clone will actually have
+
+A citation you cannot open is not a source. **Checked against the tracked tree on
+2026-08-18**, and stated here rather than discovered later:
+
+**In the repository — you can follow these:**
+
+| | |
+|---|---|
+| `docs/DEFECT-LOG-R2.md` | the four census layers of §3, at `:56794-56801` |
+| `docs/STAGING-R2-3601-to-R2-3660.md` | the same table at `:371-377` |
+| `docs/STAGING-R2-3841-to-R2-3900.md`, `docs/STAGING-R2-3901-to-R2-3960.md` | the render spec and the per-frame timing of §12 |
+| `world/build_terrain.md` | the 12.58 G row of §9, at `:1026` |
+| `tools/poly_census.py`, `tools/instance_variety.py` | the instruments |
+| `docs/beat_sheet.md`, `docs/explode_plan.json` | the car's `MB_` monocoque figure |
+| `docs/DOC-ACCURACY-AUDIT.md`, `docs/QUICKSTART.md`, `docs/READING-LIST.md` | the cost caveats |
+
+**Gitignored — present on the authoring machine, absent from a clone:**
+
+| | what it carried here |
+|---|---|
+| `render/world/assembly/r2/assembly15_build.json` | **the whole of §7**, the generator figures of §8, and the shipped end of §9's chain |
+| `render/world/assembly/r2/assembly2..14_build.json` | the rest of §9's chain |
+| `work/r23661/build_film25.log`, `breach25.log`, `measured_film25_breach.json` | the film-only additions of §4, the sky, the texture count |
+| `work/nearband/stats.json`, `work/nearband/full.log`, `world/build_nearband.md` | the 16.16 G row of §9 |
+| `docs/STAGING-R2-3541-to-R2-3600.md` | the defective `assembly15` of §3 and the ~9 % gap flagged on `assembly14` |
+| `docs/inventory_iter.json`, `docs/instance_variety.json` | the car decomposition; the instance-variety split |
+| every `.blend` | so no figure here can be re-measured from a clone alone |
+
+**So: §3's headline census is followable in a clone; §7 and most of §9 are not.**
+Everything in the ignored column is a build record or a log, not source — this
+repository tracks source and reasoning and does not track artefacts (see the
+`.gitignore` header for why). The figures were transcribed here **because** the
+records they came from will not travel, and every one of them was read from the
+file named beside it on 2026-08-18. Promoting the `*_build.json` records into the
+tracked tree would close the gap and is a deliberate decision for the owner, not
+one this document took.
+
+**Line numbers versus entry IDs.** `docs/DEFECT-LOG-R2.md` is append-only and
+**line numbers move**; entry IDs do not. The stable citations for §3 are
+**`R2-3605`** (the rebuild) and **`R2-3606`** (the gates re-measured on both
+worlds). The `:56794` style line numbers throughout this document are as of
+2026-08-18 — use them to find the entry, then trust the ID.
+
+---
+
 ## See also
 
 * `docs/DEFECT-LOG-R2.md:56720-56805` — `R2-3605` / `R2-3606`, the rebuild of
