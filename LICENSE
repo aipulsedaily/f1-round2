@@ -18,7 +18,8 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 Covers all code: `world/`, `tools/`, `sim/`, `audio/`, `render/`, `anim/`,
 `telemetry/`, `work/`, `round1_source/`, and every `.py`, `.sh`, `.json` build
-input and configuration file in the repository, wherever it sits.
+input and configuration file in the repository, wherever it sits — EXCEPT the
+files section 2 names, which are documentation.
 
 The full text of the GPL-3.0 follows this header, below the line marked
 "=== GNU GENERAL PUBLIC LICENSE, VERSION 3 ===". "or later" means you may also
@@ -51,8 +52,12 @@ Nothing in this file is legal advice.
 SPDX-License-Identifier: CC-BY-SA-4.0
 
 Covers the prose: `docs/` (including `docs/DEFECT-LOG-R2.md`), `watch/*.md`,
-`README.md`, `round2_inventory.md`, and the `.md` files scattered beside the
-modules they describe.
+`README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `round2_inventory.md`,
+`.github/` (the issue and pull-request templates), and the `.md` files scattered
+beside the modules they describe.
+
+In short: **every `.md` file in the repository is CC BY-SA 4.0 wherever it
+sits**, and so is `.github/`. Everything else is section 1.
 
 The full text is in the file `LICENSE-DOCS` beside this one; the canonical copy
 is at https://creativecommons.org/licenses/by-sa/4.0/legalcode .
@@ -89,6 +94,25 @@ it.
 Running the code in this repository produces new renders. Those are yours, not
 covered by this reservation, and subject only to the GPL obligations that attach
 to the code you ran.
+
+
+4. THERE ARE NO PER-FILE LICENCE HEADERS, AND THAT IS DELIBERATE
+--------------------------------------------------------------------------------
+
+Not one of the 493 tracked Python files carries a licence header. THIS FILE IS
+THE AUTHORITY for any file that does not say otherwise: sections 1 and 2 name
+the covered directories and file types explicitly, so no file is ambiguous.
+
+Why not add them. A header is a claim repeated 493 times, and a claim repeated
+mechanically is one this repository has learned to distrust — the relicensing
+decision in section 1 is genuinely open (see below), and 493 copies of a wrong
+SPDX line is a worse outcome than one authoritative file. If the owner settles
+the licence and wants headers, the mechanical add is
+
+    SPDX-License-Identifier: GPL-3.0-or-later
+
+as the second line of each `.py`, after the shebang. Do it after the decision,
+not before it.
 
 
 A NOTE ON WHAT THE GPL DOES AND DOES NOT REQUIRE OF YOU

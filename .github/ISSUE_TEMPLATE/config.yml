@@ -1,0 +1,17 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Read the engineering log first
+    url: https://github.com/OWNER/f1-round2/blob/main/docs/READING-LIST.md
+    about: >-
+      About 1,300 numbered entries record what was tried and what turned out to
+      be wrong. If the thing you found looks like a bug, there is a fair chance
+      it is already in there with the measurement that found it.
+  - name: Broken instruments — the catalogue
+    url: https://github.com/OWNER/f1-round2/blob/main/docs/BROKEN-INSTRUMENTS.md
+    about: >-
+      Twenty-six cases of a check that passed while the thing it guarded was
+      broken. Start here if you want the point of this repository rather than
+      the film.
+  - name: Which file covers what
+    url: https://github.com/OWNER/f1-round2/blob/main/docs/INDEX.md
+    about: Every file in docs/, one line each.

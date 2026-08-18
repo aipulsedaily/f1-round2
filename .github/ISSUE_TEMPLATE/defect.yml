@@ -1,0 +1,70 @@
+name: Defect
+description: Something is wrong, and you can say how you know.
+title: "[defect] "
+labels: ["defect"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This project's house rule is that **a finding carries its measurement**.
+        You do not need to be certain, and you do not need to have a fix — but
+        a report that says what you measured is worth ten that say something
+        looks off.
+
+        If you found a *check that passes while the thing it guards is broken*,
+        say so explicitly. That is the defect class this repository exists to
+        catalogue and it is treated as more serious than a wrong picture.
+
+  - type: textarea
+    id: finding
+    attributes:
+      label: The finding, in one sentence
+      description: State the finding, not the file. "The variety gate cannot see linked duplicates" rather than "problem in build_terrain.py".
+    validations:
+      required: true
+
+  - type: textarea
+    id: measured
+    attributes:
+      label: What you measured
+      description: >-
+        The command you ran, its output, and what you expected instead.
+        Paste the `>> STAGE RESULT:` line if a gate produced one.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: could-fail
+    attributes:
+      label: Could your measurement have come out differently?
+      description: >-
+        Optional, and the most useful box on this form. What input would have
+        made your check say the opposite? If you cannot name one, say that —
+        it is still a report, and it is honest about its own strength.
+    validations:
+      required: false
+
+  - type: input
+    id: entry
+    attributes:
+      label: Related log entry
+      description: "An `R2-nnnn` id if you found one that covers this, or `none found`."
+      placeholder: "R2-1129"
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: >-
+        Blender version (this project pins **5.2.0 LTS**), OS, GPU, and where
+        you cloned the repository — paths assume `~/f1-round2`.
+      value: |
+        Blender:
+        OS:
+        GPU:
+        Clone path:
+    validations:
+      required: false

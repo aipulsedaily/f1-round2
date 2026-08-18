@@ -26,7 +26,9 @@ master).
 | you want | read, in order |
 |---|---|
 | **the film, and what it is** | [`THE-BRIEF-ROUND2.md`](THE-BRIEF-ROUND2.md) (the client's brief) → [`../watch/INDEX.md`](../watch/INDEX.md) (which artefact is current and which is stale) → [`beat_sheet.md`](beat_sheet.md) (the six beats) |
-| **the interesting failures** | [`READING-LIST.md`](READING-LIST.md) — a curated ~60 entries out of 1,226, grouped by theme, each with a line on why it is worth opening. There is a ten-minute list at the top. |
+| **the interesting failures** | [`READING-LIST.md`](READING-LIST.md) — a curated ~60 entries out of 1,295, grouped by theme, each with a line on why it is worth opening. There is a ten-minute list at the top. |
+| **one specific file** | [`INDEX.md`](INDEX.md) — every one of the 141 tracked files in this directory, one line each, plus the module documentation that lives outside `docs/`. |
+| **something to run** | [`QUICKSTART.md`](QUICKSTART.md) — what works in a fresh clone with no GPU and no film, and the measured verdict of every item selftest including the ones that fail. |
 | **the single defect this project kept finding** | [`BROKEN-INSTRUMENTS.md`](BROKEN-INSTRUMENTS.md) — one failure catalogued twenty-six times across subsystems that share no code, grouped by mechanism rather than by subsystem. It needs no knowledge of films, audio or render farms. `READING-LIST.md` §1 is the same territory as an index into the log; this is the essay. |
 | **the rendering pipeline and what it cost** | [`MASTER-RUNBOOK.md`](MASTER-RUNBOOK.md) (the spec, the seven un-waivable gates, the measured per-beat cost) → `READING-LIST.md` §5 (the fleet campaign) → [`RENDER-LADDER.md`](RENDER-LADDER.md) (why nothing goes straight to 4K — but see the staleness warning below) |
 | **the verification philosophy** | `READING-LIST.md` §8 (the laws the project generalised), then §1 (the instruments that failed, which is where the laws came from) |
@@ -53,8 +55,8 @@ visual ones; the brief requires it.
 
 | | |
 |---|---|
-| **`DEFECT-LOG-R2.md`** | the merged log. **1,226 entries, 61,810 lines, 3.2 MB.** Appended chronologically, in merge order rather than numeric order. |
-| **`STAGING-R2-<lo>-to-R2-<hi>.md`** | **81 files, 941 headings, 887 distinct IDs.** Agents write here; the coordinator merges into the log by identity, never by position. **74 of those IDs have not been merged yet** — see below. |
+| **`DEFECT-LOG-R2.md`** | the merged log. **1,295 distinct entries, 1,316 headings, 67,640 lines, 3.41 MB** *(measured 2026-08-18; the figures 1,226 / 61,810 / 3.2 MB were true on 2026-08-15 and are left here so the growth is visible rather than overwritten)*. Appended chronologically, in merge order rather than numeric order. |
+| **`STAGING-R2-<lo>-to-R2-<hi>.md`** | **71 tracked files, 828 headings, 794 distinct IDs** (81 files exist on the authoring machine; ten are untracked — [`INDEX.md`](INDEX.md) §6 names them and measures what is lost). Agents write here; the coordinator merges into the log by identity, never by position. **All 794 tracked staging IDs are now merged** — see below. |
 
 Four conventions matter, and each exists because of a specific incident:
 
@@ -104,10 +106,20 @@ messages still name the old numbers.
   are marked **VACATED — DO NOT REUSE**; they were live for one day and
   reallocating them would rebuild the ambiguity a third time.
 - **Six commit messages now name stale IDs**, including the fixing commit's own
-  subject. Git history cannot be rewritten here without de-referencing ~4,100 SHA
-  citations, so the mapping is recorded in `DUPLICATE-ID-SWEEP-R2.md` §10 instead.
-  **A stale commit message resolved by a table beats a rewritten history that
-  breaks every citation in the corpus.**
+  subject. The mapping is recorded in `DUPLICATE-ID-SWEEP-R2.md` §10 rather than
+  fixed by a rewrite. **A stale commit message resolved by a table beats a
+  rewritten history that breaks every citation in the corpus.**
+
+  **CORRECTION, 2026-08-18.** The reason originally given here was that a
+  rewrite would de-reference *~4,100 SHA citations*. That number was wrong, and
+  the way it was wrong is the usual way: it was a real count of the wrong thing.
+  4,100 is the scale of the **`R2-NNNN` entry-ID** citations, which a history
+  rewrite does not touch at all. Measured against this repository's own object
+  store, the corpus cites **83 distinct commit SHAs in 218 places**. The
+  conclusion above still stands on other grounds, but it no longer stands on
+  that number — and a rewrite is a live third option, priced in
+  [`PUBLICATION-AUDIT.md`](PUBLICATION-AUDIT.md) §6. The original sentence is
+  left visible rather than edited away, per rule 1 below.
 
 **And the merge that lands staging into the log no longer deduplicates by ID.**
 Dedup-by-identity would have silently skipped the audio entries as "already
@@ -116,10 +128,14 @@ failure this corpus is a catalogue of. It now appends and proves the result thre
 independent ways: arithmetic (1,212 + 90 = 1,302), a string search for all 90
 staged headings, and a byte-level proof that the pre-merge log is an exact prefix
 of the result.
-- **`R2-4024 … R2-4152` are not in the merged log yet.** They are the delivery
-  finish and the four audio rebuilds, and they live only in
-  `STAGING-R2-4021-to-R2-4080.md`, `STAGING-R2-4081-to-R2-4140.md` and
-  `STAGING-R2-4141-to-R2-4200.md`.
+- **~~`R2-4024 … R2-4152` are not in the merged log yet~~ — MERGED, and this
+  line was stale.** They are the delivery finish and the four audio rebuilds.
+  Commit `8c8d601` merged them; verified 2026-08-18 by taking the distinct IDs
+  in all 71 tracked staging files and subtracting the log's — **zero remain**.
+  The command is in [`INDEX.md`](INDEX.md) under "Re-deriving the counts", and
+  it is worth running rather than believing, because "the log is behind staging"
+  is exactly the sort of claim that stays true-sounding long after it stops
+  being true.
 - **Line numbers drift.** `READING-LIST.md` quotes them for convenience; the
   reliable lookup is `grep -n '^## R2-1401' docs/DEFECT-LOG-R2.md`.
 
@@ -154,7 +170,7 @@ measurement behind a superseded decision is usually still the useful part.
 | `SESSION-HOLD.md` | state at 2026-08-07, when the log had 685 entries. Its blocker list is closed. |
 | `NEXT-REBUILD.md` | the manifest for the rebuild that became `assembly15` / `film25_breach.blend`. That rebuild happened and shipped. Its asphalt-re-budget row is marked **WRONG** in place by `R2-3061`, and `R2-3066` reverted the octave authored for it. |
 | `RENDER-LADDER.md` | the argument for stills-plus-sequences is sound and still applies. **Its costings are not.** `R2-1057` records it wrong for the fourth time with a fifth error already staged; `R2-784` records it quoting a different scene's rate. Use `MASTER-RUNBOOK.md`'s measured tables. |
-| `WAVE2-SCOPE.md`, `WAVE2-RANKING.md` | the item campaign's scoping. `WAVE2-RANKING.md` supersedes `WAVE2-SCOPE.md` §3 by its own header; both are then superseded on trees by `R2-1883` and `R2-1887` — the tree tier was declared unbuildable while a 33.26 M-triangle vegetation library with 26,641 trees was already shipping in the film. |
+| `WAVE2-SCOPE.md`, `WAVE2-RANKING.md` | **`WAVE2-RANKING.md` is not tracked and will not be in a clone** — see [`INDEX.md`](INDEX.md) §6. The item campaign's scoping. `WAVE2-RANKING.md` supersedes `WAVE2-SCOPE.md` §3 by its own header; both are then superseded on trees by `R2-1883` and `R2-1887` — the tree tier was declared unbuildable while a 33.26 M-triangle vegetation library with 26,641 trees was already shipping in the film. |
 | `WAVE1-PEEP-SYNTHESIS.md` | six adversarial reviews, zero SHIP. Some of its amplitude verdicts are unsafe: `R2-020` found the frames were rendered at 1920×1080 while the gate scored them at 3840. The absent-feature findings stand. |
 | `ITEM-PRESENCE-CENSUS.md`, `R2-042-DECISION.md`, `HUMAN-FIGURE-BRIEF.md`, `ITEM-CAMPAIGN-BRIEF.md`, `PLAN-scope-optimisation.md`, `PLAN-throughput-optimisation.md` | single-question documents, each answering a question that was live on its own date. Each states its date at the top. |
 | `*_SUPERSEDED_*.json`, `*_CANDIDATE.json` | deliberately kept and deliberately named. A candidate sheet is not the shipped sheet — `R2-1099` cost ten hours to a fix that was generated into a candidate and never promoted. |

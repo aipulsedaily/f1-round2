@@ -1,0 +1,46 @@
+name: Question — how does this work, or how do I run it
+description: You tried to run something, or read something, and got stuck.
+title: "[question] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ask. "The documentation assumes something I do not have" is a defect in
+        the documentation, not in you — this repository was written by people
+        who already knew the answer, which is the worst possible condition for
+        noticing what is missing.
+
+        Quick pointers before you do:
+
+        - [`docs/QUICKSTART.md`](../../blob/main/docs/QUICKSTART.md) — what runs
+          in a fresh clone with no GPU and no film.
+        - [`docs/INDEX.md`](../../blob/main/docs/INDEX.md) — every file in
+          `docs/`, one line each.
+        - **Reproducing the film needs rented GPUs.** The 4K master took ~84 h
+          across three RTX 5090s for $132.57. The broker that did it is the
+          companion repository, `vast-render`.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: The question
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you ran, and what happened
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: looked
+    attributes:
+      label: Where you already looked
+      description: >-
+        So the answer can be put where you looked, instead of only in the reply.
+    validations:
+      required: false

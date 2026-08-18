@@ -1,0 +1,61 @@
+name: Documentation — a claim that is wrong, stale, or unclear
+description: A number that no longer holds, a link that lands in the wrong place, or a passage nobody outside the project could follow.
+title: "[docs] "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        `docs/DOC-ACCURACY-AUDIT.md` hunts exactly one class: **a claim that was
+        true when written and is false now, and a correction that never
+        propagated.** This form is that audit, left open.
+
+        Two things worth knowing before you file:
+
+        - **Corrections are appended, not applied in place.** The fix for a
+          wrong number here is usually a dated correction beside it, not a
+          silent edit. Say if you think a case deserves an exception.
+        - **Line-number links into the defect log drift.** Before reporting one,
+          run `python3 tools/docs_relink.py` — it re-derives every anchor and
+          exits non-zero if any has moved.
+
+  - type: input
+    id: file
+    attributes:
+      label: File and line
+      placeholder: "docs/RENDER-LADDER.md:118"
+    validations:
+      required: true
+
+  - type: textarea
+    id: claim
+    attributes:
+      label: What it says now
+      description: Quote it.
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: why-wrong
+    attributes:
+      label: Why that is wrong, stale or unclear
+      description: >-
+        If it is a number, say what the number is now and how you got it —
+        a command someone else can run is ideal.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - A number or claim that has gone stale
+        - A correction that was made somewhere and never propagated here
+        - A link that lands in the wrong place
+        - A passage that assumes project knowledge a reader will not have
+        - A file referenced that is not in the repository
+        - Other
+    validations:
+      required: true

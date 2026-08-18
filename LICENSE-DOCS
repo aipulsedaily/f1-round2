@@ -7,8 +7,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 This file carries the full legal code of the Creative Commons
 Attribution-ShareAlike 4.0 International licence, which covers the DOCUMENTATION
-in this repository: docs/, watch/*.md, README.md, round2_inventory.md and the
-.md files sitting beside the modules they describe.
+in this repository: docs/, watch/*.md, README.md, CONTRIBUTING.md,
+CODE_OF_CONDUCT.md, round2_inventory.md, .github/ and the .md files sitting
+beside the modules they describe. In short, every .md file wherever it sits,
+plus .github/.
 
 It does NOT cover the code — that is GPL-3.0-or-later, see LICENSE — and it does
 NOT cover the film, the rendered frames or the audio masters, which are not
