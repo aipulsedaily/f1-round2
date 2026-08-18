@@ -27,7 +27,7 @@ master).
 |---|---|
 | **the film, and what it is** | [`THE-BRIEF-ROUND2.md`](THE-BRIEF-ROUND2.md) (the client's brief) → [`../watch/INDEX.md`](../watch/INDEX.md) (which artefact is current and which is stale) → [`beat_sheet.md`](beat_sheet.md) (the six beats) |
 | **the interesting failures** | [`READING-LIST.md`](READING-LIST.md) — a curated ~60 entries out of 1,295, grouped by theme, each with a line on why it is worth opening. There is a ten-minute list at the top. |
-| **one specific file** | [`INDEX.md`](INDEX.md) — every one of the 141 tracked files in this directory, one line each, plus the module documentation that lives outside `docs/`. |
+| **one specific file** | [`INDEX.md`](INDEX.md) — every one of the 144 tracked files in this directory, one line each, plus the module documentation that lives outside `docs/`. |
 | **something to run** | [`QUICKSTART.md`](QUICKSTART.md) — what works in a fresh clone with no GPU and no film, and the measured verdict of every item selftest including the ones that fail. |
 | **the single defect this project kept finding** | [`BROKEN-INSTRUMENTS.md`](BROKEN-INSTRUMENTS.md) — one failure catalogued twenty-six times across subsystems that share no code, grouped by mechanism rather than by subsystem. It needs no knowledge of films, audio or render farms. `READING-LIST.md` §1 is the same territory as an index into the log; this is the essay. |
 | **the rendering pipeline and what it cost** | [`MASTER-RUNBOOK.md`](MASTER-RUNBOOK.md) (the spec, the seven un-waivable gates, the measured per-beat cost) → `READING-LIST.md` §5 (the fleet campaign) → [`RENDER-LADDER.md`](RENDER-LADDER.md) (why nothing goes straight to 4K — but see the staleness warning below) |

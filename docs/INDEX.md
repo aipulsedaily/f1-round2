@@ -1,11 +1,13 @@
 # `docs/INDEX.md` — every file in this directory, one line each
 
-`docs/` holds **141 tracked files: 103 markdown and 38 data artefacts**, about
-**141,300 lines of prose**. This page exists so that nobody has to open all of
+`docs/` holds **144 tracked files: 106 markdown and 38 data artefacts**, about
+**142,100 lines of prose**. This page exists so that nobody has to open all of
 them to find the shape of the thing.
 
-*Measured 2026-08-18 against the tracked tree. The log is append-only, so the
-counts grow; the command that re-derives each one is given beside it.*
+*Measured 2026-08-18 against the tracked tree, after this page, `QUICKSTART.md`
+and `GITHUB-PAGE.md` were added — the first draft said 141/103 and was made
+stale by its own commit, which is a small demonstration of why every count on
+this page ships with the command that re-derives it.*
 
 **This is the inventory. Three other pages are the route in:**
 
