@@ -54,7 +54,7 @@ again.**
 
 Regenerate end to end with `bash tools/retier.sh` — it now resolves the camera
 through `tools/live_campath.py` rather than the stale orphan
-`world/camera_rig_path.json` (fixed and committed today, `7744d84`; the
+`world/camera_rig_path.json` (fixed and committed today, `2eab0c8`; the
 control `work/w2_0/ctl_retier_campath.sh` prints `RETIER_CAMPATH_CTL_OK`, 6/6,
 and includes a discrimination arm proving the weaker resolver does **not**
 refuse). All 2,978 frames, uniform 180° shutter, 1 m voxel point cloud capped at

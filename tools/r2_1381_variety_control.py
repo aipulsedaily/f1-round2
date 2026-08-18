@@ -3,7 +3,7 @@
 
     blender -b -noaudio --python tools/r2_1381_variety_control.py -- [--n 4500]
     blender -b -noaudio --python tools/r2_1381_variety_control.py -- \
-            --gate git:cea0e57            # the guard AS SHIPPED, before the fix
+            --gate git:0bbfdaf            # the guard AS SHIPPED, before the fix
 
 WHAT THIS IS FOR.  `item_gate.per_instance_variation` is the guard whose entire
 purpose is the user's named failure -- "one tree spammed 100 times".  It had

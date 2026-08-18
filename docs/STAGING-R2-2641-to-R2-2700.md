@@ -14,9 +14,9 @@ the handover flagged: the live `pre-commit` hook.
 
 | | |
 |---|---|
-| `a6acf3c` | `tools/gitguard.py`, `tools/gitguard_selftest.py` — the guard repairs |
-| `7e8a808` | `tools/placement_gate.py` — the R2-2341 determinism work, sha `93af5324216fe2e9` |
-| — | the contract work (`_car_box()` from the contract) was **already committed** at `76a685b` |
+| `8eb3c40` | `tools/gitguard.py`, `tools/gitguard_selftest.py` — the guard repairs |
+| `6e8be7c` | `tools/placement_gate.py` — the R2-2341 determinism work, sha `93af5324216fe2e9` |
+| — | the contract work (`_car_box()` from the contract) was **already committed** at `e241b2f` |
 | **NOT DONE** | `gitguard.py install`. `tools/githooks/` is still leased by `r2-1761-debt`. |
 
 **The live hook is still the old one — but only in its bypass branch.** See
@@ -56,7 +56,7 @@ What the 22 cover: `retire` (C16–C16n), per-path `claim` returning `PARTIAL`
 (C15 family), the separable seed TTL (C17–C17c), and the `BYPASSED` result line
 (C18–C18g).
 
-Committed as **`a6acf3c`**.
+Committed as **`8eb3c40`**.
 
 ---
 
@@ -99,14 +99,14 @@ Zero `FAIL` rows in all three runs of the fixed gate.
 
 Logs: `work/r2-2641/selftest_{HEAD,verify,postcommit}.log`.
 
-Committed as **`7e8a808`**.
+Committed as **`6e8be7c`**.
 
 ### The end-to-end exit-3 control, reproduced against the committed gate
 
 `tools/placement_determinism_control.py` wraps `placement_gate.measure` so the
 second pass returns one changed `closest_approach` object name, runs the gate's
 own `main()`, and requires a refusal — then removes the perturbation and
-requires a verdict. Against the gate as committed at `7e8a808`:
+requires a verdict. Against the gate as committed at `6e8be7c`:
 
 ```
    PASS  a deliberately non-deterministic measure() is REFUSED   got=PLACEMENT_NONDETERMINISTIC_REFUSED  exit code 3
@@ -208,11 +208,11 @@ tools/placement_gate.py:1566:  rows[-1]["shipped_car_box_worst_delta_m"] = was_w
 
 The function lives in `world/build_surface.py`, which is leased by
 `r2-2521-contract-leftovers` — and that agent committed it itself, at
-**`76a685b`**, together with its evidence in
+**`e241b2f`**, together with its evidence in
 `docs/STAGING-R2-2521-to-R2-2580.md` (the 48 024 IEEE-754 doubles, and the
 2001/2001 poses that move 0.3400 m under the historical fault). `git status`
 is empty for `world/build_surface.py`. The earlier half —
-`world/world_contract.py` and `world/build_dressing.py` — landed at `f88878b`.
+`world/world_contract.py` and `world/build_dressing.py` — landed at `de3a1aa`.
 
 Nothing to land. **Recording it because a handover that names three innocent
 files as carrying stranded work is how a later agent ends up "re-landing" a
@@ -222,8 +222,8 @@ committed nothing to them.
 The same is true of five of the eleven released paths: `tools/provenance.py`,
 `tools/report_repro.py`, `tools/report_repro_selftest.py`,
 `tools/placement_depth.py` and `tools/selfintersect_audit.py` are all clean
-against `HEAD` — `r2-1761-debt` had already committed them at `61297db` and
-`7bdea46` before its lease outlived it. Of the eleven paths released, **three
+against `HEAD` — `r2-1761-debt` had already committed them at `4d4ba35` and
+`2cc018d` before its lease outlived it. Of the eleven paths released, **three
 carried uncommitted work; eight were already landed.**
 
 ---
@@ -256,7 +256,7 @@ files against the committed templates:
 
 Everything the hook does on a normal commit is one line — `python3
 tools/gitguard.py check` — and `tools/gitguard.py` is now the repaired one, as
-of `a6acf3c`. So **R1/R2/R3, `PARTIAL`, `retire`, the seed TTL and the
+of `8eb3c40`. So **R1/R2/R3, `PARTIAL`, `retire`, the seed TTL and the
 `check`-side bypass announcement are all live right now.** Verified against the
 live tree, read-only:
 
@@ -303,8 +303,8 @@ only `pre-commit` will show a diff.
 
 - `tools/_r2641_gate_HEAD.py` is the pinned `HEAD` gate used for the 26-control
   control. It is **not for committing** and is regenerated with
-  `git show 86ba887:tools/placement_gate.py` (the commit that was `HEAD` before
-  `a6acf3c`; naming the hash rather than `HEAD~2` because `HEAD` moves under
+  `git show ca942f5:tools/placement_gate.py` (the commit that was `HEAD` before
+  `8eb3c40`; naming the hash rather than `HEAD~2` because `HEAD` moves under
   you here). Deleted after use.
 - `docs/DEFECT-LOG-R2.md` deliberately untouched; the coordinator merges it.
 - Every commit was made with `R2_AGENT` set **in the environment of the `git

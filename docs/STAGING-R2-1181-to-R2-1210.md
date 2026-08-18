@@ -15,8 +15,8 @@ Artefacts available for this, and why the verification is cheap:
     audio/out/master.wav                   the POST-FIX master
     audio/out/ab/master_A_nolapdown.wav    post-fix, lap-down off
     audio/out/ab/master_B_lapdown.wav      post-fix, lap-down on
-    git 2675a06                            pre-fix audio/ source
-    git 8dd28dc                            the fix commit (audio/ clean in tree)
+    git 19a55b3                            pre-fix audio/ source
+    git ac359e4                            the fix commit (audio/ clean in tree)
 
 No render-farm time was used. No GPU was used. Total cost of this pass: CPU only.
 
@@ -367,9 +367,9 @@ content-dependent global scalar is applied to the master.**
 
 Every defect number was reconstructed and reproduced before the fix was checked.
 
-**A method note that matters:** the pre-fix tree at `2675a06` is *not* the defect
+**A method note that matters:** the pre-fix tree at `19a55b3` is *not* the defect
 state — it is the pre-lap-down baseline. R2-943's defective audio edit was never
-committed on its own; `8dd28dc` contains both the lap-down and its fixes. The
+committed on its own; `ac359e4` contains both the lap-down and its fixes. The
 defect state and the author's own rejected first fix were therefore reconstructed
 from the description before anything could be measured.
 
@@ -462,7 +462,7 @@ different measurement path — returns strongest lines at **215.0, 214.6, 608.3,
 
 ## R2-1188 — the three `engine.py` whole-film leaks: all three VERIFIED, to the sample
 
-Every figure reproduced exactly against the literal pre-fix commit `2675a06`.
+Every figure reproduced exactly against the literal pre-fix commit `19a55b3`.
 
 **First, why they looked unreproducible.** R2-1088 says "sample 42 of **960,000**",
 which reads as the first half's length. It is the length of the **whole** bench,

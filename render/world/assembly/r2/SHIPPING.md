@@ -90,7 +90,7 @@ second copy. Change the line above.**
 ## why assembly9 is the ship, and exactly what moved
 
 R2-071's rule again, and this time it is the entry that earned it being paid
-off: **`world/build_architecture.py` was fixed at `54dd6b8` (22:06) and no
+off: **`world/build_architecture.py` was fixed at `10442cd` (22:06) and no
 vertex had moved in `assembly8` (built 19:38).** R2-132's own last line says so:
 *"A WORLD REBUILD IS OWED."* `film12` and `film13` are both built on the
 defective world. This is that rebuild, read back.
@@ -103,8 +103,8 @@ building), so what follows is a prediction met and not a story told afterwards.
 
 | commit | file | can it move a vertex? |
 |---|---|---|
-| `54dd6b8` 22:06 | `world/build_architecture.py` | **yes — this is the point** |
-| `412d2e2` 22:42 | `world/world_contract.py` | **no** — every changed line is inside `selftest()` or is a comment (R2-141/142/143). `__version__` is `1.2.1` on both sides and `assemble.py` never calls `selftest()`. |
+| `10442cd` 22:06 | `world/build_architecture.py` | **yes — this is the point** |
+| `29105eb` 22:42 | `world/world_contract.py` | **no** — every changed line is inside `selftest()` or is a comment (R2-141/142/143). `__version__` is `1.2.1` on both sides and `assemble.py` never calls `selftest()`. |
 
 `build_surface`, `build_barriers`, `build_terrain` and `build_dressing` are
 **byte-identical to the files assembly8 was built from.** They still ran, in
@@ -150,7 +150,7 @@ and it is recorded as wrong.**
     [apron] grid u 6.05 .. 47.55  (platform_edge max 40.56; the declared
                                    platform reaches 44.55)
 
-Note also that `54dd6b8`'s own commit message says a `max(platform_edge)+3` grid
+Note also that `10442cd`'s own commit message says a `max(platform_edge)+3` grid
 "would silently truncate the slab at u ~ 23.9 while the declared apron runs to
 u ~ 40.4". **In the full assembly those two numbers are 43.56 and 44.55.** The
 module test build it was measured on is not the assembly; the fix is the same
@@ -236,7 +236,7 @@ not, every fingerprint comparison this project has ever made would be void.
 
 ## assembly8, the immediate predecessor — kept for the record
 
-`assembly8.blend` is not dangerous, only stale: it predates `54dd6b8`, so its
+`assembly8.blend` is not dangerous, only stale: it predates `10442cd`, so its
 pit-exit apron is 390 m² short. It is the control this promotion was measured
 against and the world `film13` is built on, and it stays. Everything below was
 written when it was the ship.
@@ -278,7 +278,7 @@ sums + sum of squares + bbox + a 0.1 µm order-independent hash.
                                                           over 599 872 verts
 
 **Why, in one line of source.** `world/build_terrain.py` gained `far_horizon()`
-and the `HORIZON_*` block in commit fe87552 at 09:07 — **five hours after
+and the `HORIZON_*` block in commit ba170b7 at 09:07 — **five hours after
 assembly7 was built at 04:45.** It raises the far field from `HORIZON_RISE_M`
 3 600 m to a crest of `HORIZON_Z_M` 300 m at 9 500 m, plus three octaves of
 relief (118 / 46 / 14 m). Its own note says it "changes z on vertices that
@@ -320,7 +320,7 @@ from a script that had never been run before, so the 0 above is a measurement
 and not a blind spot.
 
 **This was predicted.** `build_architecture` and `build_dressing` were touched
-only by 8c2f5dc (R2-072/R2-073), which turns a silently-dropped socket write
+only by ac9a336 (R2-072/R2-073), which turns a silently-dropped socket write
 into a raise. R2-073 measured 342 runtime calls across all 22 material entry
 points with **0 dropped**, so a guard that fires zero times writes the same
 graph. It fired zero times.

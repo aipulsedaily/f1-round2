@@ -32,7 +32,7 @@ moves between documents.
 
 So the alias map is APPEND-ONLY. `alias_canon.txt` holds the identifiers in
 allocation order and the alias is the line number. Its first 82 lines are the
-set present at `c18c9f4~1`, the tree as it stood before the first sanitisation
+set present at `fea18b4~1`, the tree as it stood before the first sanitisation
 commit, and `--verify-canon` re-derives them from that commit and checks them.
 New identifiers are appended and take the next free number. Nothing is ever
 re-sorted, and no identifier is ever removed, even if the document that
@@ -56,7 +56,7 @@ from collections import Counter
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PUBDIR = os.path.join(ROOT, "tools", "publication")
 CANON = os.path.join(PUBDIR, "alias_canon.txt")
-CANON_BASE_COMMIT = "c18c9f4~1"
+CANON_BASE_COMMIT = "fea18b4~1"
 
 ap = argparse.ArgumentParser(add_help=True)
 ap.add_argument("--apply", action="store_true",
@@ -214,7 +214,7 @@ for i, n in enumerate(NEW_IDS):
 #      identifier the aliasing was for. While this file was tracked, the docs'
 #      redaction was cosmetic."
 #
-# It also fixed it the same way this does — `d056d4ba` over there is literally
+# It also fixed it the same way this does — `3ffea4c4` over there is literally
 # "untrack the table that de-aliases the docs".
 #
 # THE VALUES NOW LIVE IN AN UNTRACKED LOCAL FILE and the ALIASES stay here.

@@ -96,7 +96,7 @@ AND 6** — which is a far stronger statement about the beat sheet than any diff
 
 ```
 world/car_anim.blend            built  2026-08-04 19:51
-R2-943 lap-down lands in git    commit f69e5b9, 2026-08-07 08:35   <- 2.5 days LATER
+R2-943 lap-down lands in git    commit 4acc22f, 2026-08-07 08:35   <- 2.5 days LATER
 render/film22_path.json         built  2026-08-08 04:42            <- WITH the lap-down
 render/film22.blend             built  2026-08-08 04:51
 ```

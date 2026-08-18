@@ -612,7 +612,7 @@ the delivered file.
 **The one confound in reusing the 08-04 baseline npz was checked, not assumed.**
 The baseline arm reuses `work/w2_0/retier_a9/sp_points.npz` as it was written on
 2026-08-04, so if the sweep code had changed since, "camera-only" would be false.
-`git show 2675a06:tools/screen_presence.py` and `git show 68f94cc~1:…` hash
+`git show 19a55b3:tools/screen_presence.py` and `git show e52684f~1:…` hash
 identically (`a166a669…`) — the measurement half of the tool did not change
 between the baseline sweep and today's arms. `item_presence.py` and
 `item_hosts.py` **have** changed since, which is why both arms were re-derived
@@ -933,7 +933,7 @@ the lead against the final committed state of the tools:
 The fourth arm is the one that arrived last and matters most: `KNOWN_STALE`
 originally named only the *film16* generation of the orphan, and **the bytes
 that actually contaminated `docs/screen_presence*.json` are film13/film14's**
-(commit `ab0239d`). A guard that named the wrong generation of the same defect
+(commit `b63c6ad`). A guard that named the wrong generation of the same defect
 would have passed every other arm here.
 
 The third arm is the one that earns its place: R2-1007's file was already

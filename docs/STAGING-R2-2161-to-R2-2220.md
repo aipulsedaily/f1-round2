@@ -662,7 +662,7 @@ machine". That is now half true, and leaving the old wording to be read as
 current would be this project's own recurring failure.**
 
 The lease on `tools/author_beats2_5.py` was legitimately retired, so the artefact
-and its generator landed in **one commit, `3ec8b6a`**. Verified before and after:
+and its generator landed in **one commit, `c5501c3`**. Verified before and after:
 
 ```
                        worktree   HEAD(before)   HEAD(after)
@@ -929,7 +929,7 @@ people's work, and neither was forced.
    intact and reflected in the shipped sheet.
 
 The generator change therefore sits in the working tree, committed nowhere,
-while `tools/camera_tempo.py`, `watch/INDEX.md` and this note are in `b3f811a`.
+while `tools/camera_tempo.py`, `watch/INDEX.md` and this note are in `e038ec3`.
 **That is the desync this project has been bitten by before and it is named here
 rather than left to be discovered.** It closes with one lease release and one
 regeneration; a follow-up agent is holding the sequence and will not overwrite

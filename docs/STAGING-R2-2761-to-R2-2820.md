@@ -612,7 +612,7 @@ that a file-granular guard can never supply.
    once the lease clears, and commit it *with* `tools/build_beatsheet.py` in one
    commit — **after** separating R2-1701's two beat-6 hunks, which belong to
    whoever wrote them and not to this ticket. Verify `frame_u`/`frame_v`/`_frame_offset_world` read 47/47/2 in the
-   worktree **and at HEAD** before and after — they do today, and `3ec8b6a` is
+   worktree **and at HEAD** before and after — they do today, and `c5501c3` is
    why.
 2. **The same-sheet rebuild control** (R2-2766). It was queued and the build lock
    was held by other agents for the rest of my window. If it returns a

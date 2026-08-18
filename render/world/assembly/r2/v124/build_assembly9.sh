@@ -1,8 +1,8 @@
 #!/bin/bash
 # Build assembly9 from source -- R2-148.  Same script shape as
 # work/r2100/build_assembly8.sh, so the two builds are comparable.
-# The ONLY source difference from assembly8 is 54dd6b8 (build_architecture,
-# the pit-exit apron cut) and 412d2e2 (world_contract selftest text only).
+# The ONLY source difference from assembly8 is 10442cd (build_architecture,
+# the pit-exit apron cut) and 29105eb (world_contract selftest text only).
 set -u
 cd $HOME/f1-round2
 D=work/r2148

@@ -266,7 +266,7 @@ change.
    16,685 violations** — and 1,202 was the small half of it
 
 Said loudly and early, as the task asked. `render/film23_breach.blend`, gate at
-`HEAD` (`7e8a808`), live camera path, frozen spec/telemetry/sheet
+`HEAD` (`6e8be7c`), live camera path, frozen spec/telemetry/sheet
 (`work/r22701/gate_film23_breach_HEAD.{log,json}`):
 
 ```
@@ -477,7 +477,7 @@ Same blend as the finding, same frozen inputs, live camera path, fixed gate
 >> STAGE RESULT: PLACEMENT_CLEAN  [+1159 hidden findings on 894 non-rendering mesh(es)]
 ```
 
-| | gate of record (`7e8a808`) | fixed gate |
+| | gate of record (`6e8be7c`) | fixed gate |
 |---|---|---|
 | verdict | **`PLACEMENT_FAIL`, 1,202** | **`PLACEMENT_CLEAN`, 0** |
 | where the 1,202 went | — | 1,159 `hidden_findings`, listed in full with reasons |
@@ -511,6 +511,6 @@ tools/placement_gate.py              CLASH (r2-2641-land-debt) -> waited -> CLAI
 ```
 
 `tools/placement_gate.py` was clashing when this task began. It was **not**
-forced. `r2-2641-land-debt` landed it at `7e8a808` and released; the claim was
+forced. `r2-2641-land-debt` landed it at `6e8be7c` and released; the claim was
 retried and granted, and the edit is on top of their committed version, not on a
 stale copy.

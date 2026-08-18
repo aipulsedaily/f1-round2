@@ -947,7 +947,7 @@ since:
 | input | what happened | when |
 |---|---|---|
 | `world/camera_rig_path.json` | 710 of 2,978 frames moved, worst 9.206 m at f1; the changed frames are f1-716 (beats 1-2), contiguous but for six single-frame gaps | uncommitted, mtime 2026-08-03 21:06 |
-| `docs/beat_sheet.json` | rewritten | commit 2e13c12, 2026-08-07 04:57 |
+| `docs/beat_sheet.json` | rewritten | commit 9af9c3d, 2026-08-07 04:57 |
 | `docs/circuit_spec.json` | rewritten | same commit |
 
 The camera rig IS the listener (`audio/scene.py:CameraPath`) and the beat sheet

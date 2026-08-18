@@ -520,7 +520,7 @@ authority. It is not.**
 `world/build_architecture.py:3589-3593`, `PB_ANNEXE_X = -218.0`,
 `PB_Z_ANNEXE = 9.40` -- under the heading its own source carries:
 *"R2-731 / R2-666. THE WEST END IS AN ANNEXE, AND THAT IS THE BEAT-4 FIX."*
-The commit is `2e13c12 "R2-731..760: ... and beat 4 is closed"`.
+The commit is `9af9c3d "R2-731..760: ... and beat 4 is closed"`.
 
 Verified four ways, all on unchanged defaults before anything was touched:
 

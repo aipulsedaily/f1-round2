@@ -382,7 +382,7 @@ Evidence logs: `tmp/r2_1381_prefix.log`, `tmp/r2_1381_postfix.log`,
 ### R2-2950 — the false accept, watched passing the guard as shipped
 
 The control harness loads the gate under test from a git revision
-(`--gate git:cea0e57`), so "the guard as shipped" is not a story about a file
+(`--gate git:0bbfdaf`), so "the guard as shipped" is not a story about a file
 that no longer exists — the run is repeatable today and in a year. Built:
 
 > **4,500 plain objects, drawn round-robin from TWO source meshes, each with a
@@ -390,7 +390,7 @@ that no longer exists — the run is repeatable today and in a year. Built:
 > times, at slightly different sizes. Nothing else.
 
 ```
->> gate under test: git cea0e57 (186066 bytes)
+>> gate under test: git 0bbfdaf (186066 bytes)
 >> variation_verdict present: False
 >>   declared 4500, objects measured 4500, gn_instanced=False
 >>   cv_size 0.11691  distinct_topologies 2
@@ -636,7 +636,7 @@ decide what "a source" means when there is no instancer to group by.
 ```
 bash tools/buildlock.sh r2-1381-PREFIX  /opt/blender-5.2.0-linux-x64/blender \
   -b -noaudio --factory-startup --python tools/r2_1381_variety_control.py -- \
-  --n 4500 --sources 40 --gate git:cea0e57        # C1 must print True
+  --n 4500 --sources 40 --gate git:0bbfdaf        # C1 must print True
 bash tools/buildlock.sh r2-1381-POSTFIX /opt/blender-5.2.0-linux-x64/blender \
   -b -noaudio --factory-startup --python tools/r2_1381_variety_control.py -- \
   --n 4500 --sources 40                           # CONTROLS ALL PASS
@@ -656,7 +656,7 @@ about this one.
 > objects only for `cv_size >= 0.03` and `distinct_topologies >= 2`. Watched
 > failing before it was fixed: 4,500 plain objects from 2 source meshes at
 > random uniform scale measured `cv_size 0.11691`, `distinct_topologies 2`, and
-> the guard as shipped (`cea0e57`) returned **true**. The plain-object path now
+> the guard as shipped (`0bbfdaf`) returned **true**. The plain-object path now
 > fingerprints each object's evaluated mesh with `_shape_signature` — the same
 > function the realized path uses — and applies the same
 > `need_distinct_shapes(n)` and `top_share_limit(n)`, both now shared rather
@@ -1694,7 +1694,7 @@ something.
 
 ### R2-2961 — #1 "paint over void — 7.10 m²" — CLOSED, first confirmation on the ship
 
-**10.534 m² → 0.031 m²**, whole world, by `54dd6b8`. R2-132's 7.10 m² was its own
+**10.534 m² → 0.031 m²**, whole world, by `10442cd`. R2-132's 7.10 m² was its own
 sub-window (`s 3360–3500 × u 10–42`) on `assembly8`; over the whole world the
 same defect is 10.534 m², and on the ship it is **0.031 m²** — three hundredths
 of a square metre of paint with no paving under it, at the instrument's own
@@ -1719,7 +1719,7 @@ substrate  -0.13918     the built ARCH_Paving_ApronPlatform
 **Fixing #1 is what made #2 visible**, and that is now measured on both worlds
 rather than argued: the area of finished apron bay sitting more than 20 mm below
 its own declared datum goes **0.62 m² on `assembly8` → 42.81 m² on the ship, a
-69× increase**, because `54dd6b8` released the outboard cut and laid 540 m² of
+69× increase**, because `10442cd` released the outboard cut and laid 540 m² of
 new slab on exactly the ground where the two datums disagree.
 
 ### R2-2963 — B: which side of the 139 mm is wrong. **The slab.**
@@ -1976,7 +1976,7 @@ waiters and one holder ran 55 minutes. Nothing in the repository was modified.
 
 ### PROPOSED — "paint over void — 7.10 m²" (R2-132) — CLOSED, confirmed on the ship
 
-**CLOSED by `54dd6b8`, and this is the first confirmation on a world that
+**CLOSED by `10442cd`, and this is the first confirmation on a world that
 carries the fix.** Every previous number was `assembly8` or `assembly10`; the
 ship is `assembly14.blend`, resolved through `tools/shipping_world.py`,
 contract 1.2.1.
@@ -2049,7 +2049,7 @@ changes nothing. It is the slab that should be calling `sit_w`.
 
 **FIXING #1 IS WHAT MADE #2 VISIBLE**, measured on both worlds by one binary:
 finished apron bay more than 20 mm below its declared datum goes **0.62 m²
-(`assembly8`) → 42.81 m² (ship), 69×**, because `54dd6b8` released the outboard
+(`assembly8`) → 42.81 m² (ship), 69×**, because `10442cd` released the outboard
 cut and laid ~540 m² of new slab on exactly the ground where the two datums
 disagree.
 

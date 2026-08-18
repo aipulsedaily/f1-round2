@@ -56,7 +56,7 @@ stood:
 | **`anim/build_camera_rig.py`** | **05:03:06** |
 
 The thing edited at 05:03 was **the rig builder**, committed at 05:06 as
-`21777cd` — *"beat 6: R2-859..R2-861 — aim keying, the post levers, and a moved
+`0d3ae18` — *"beat 6: R2-859..R2-861 — aim keying, the post levers, and a moved
 sheet"*. Its only code change is beat 6's aim-keying stride, made sheet-driven
 with the historical constants as defaults and stated bit-identical by default.
 It cannot touch beat 1.

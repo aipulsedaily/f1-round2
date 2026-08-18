@@ -27,7 +27,7 @@ tree:
 | `world/build_dressing.py` | `f5d4cc5d` | `f5d4cc5d` | `f5d4cc5d` | match |
 | `world/build_sky.py` | `1fbe8ff6` | `1fbe8ff6` | `1fbe8ff6` | match |
 | `world/world_contract.py` | `dd4acd11` | `dd4acd11` | `dd4acd11` | match |
-| `world/build_surface.py` | `678fdb3f` | `9b5d6fb2` | `9b5d6fb2` | **DRIFT** — HEAD ahead, 29+/3−, a14's state is committed at `244ff167` |
+| `world/build_surface.py` | `678fdb3f` | `9b5d6fb2` | `9b5d6fb2` | **DRIFT** — HEAD ahead, 29+/3−, a14's state is committed at `3b8372f6` |
 | `world/build_terrain.py` | `991b15a0` | `d09ac2a8` | `d09ac2a8` | **DRIFT** — a14's state is in **no commit and nowhere on disk** |
 | `world/build_barriers.py` | `2d435466` | `9adcb1d9` | `2d435466` | **DRIFT** — **HEAD is BEHIND**; a14 == worktree, 16+/1− uncommitted |
 | `world/build_items.py` | `fbf7bc1e` | `0fbb6e94` | `fbf7bc1e` | **DRIFT** — **HEAD is BEHIND**; 287+/11− uncommitted |
@@ -35,7 +35,7 @@ tree:
 | `world/build_nearband.py` | `3fa0729a` | *absent* | `3fa0729a` | **DRIFT** — **untracked; there is no committed source** |
 
 `world/build_rig_filmpose.py` is stamped by HEAD's rule but not by a14: it
-postdates the build (`d829a4f`).
+postdates the build (`6b0583a`).
 
 **The fingerprint is trustworthy, and that was checked rather than assumed.** A
 chunked byte scan of `assembly14.blend` finds `world_source_sha256`,
@@ -61,7 +61,7 @@ work on those three; it would *throw away* the class-feature-ownership arm
 `991b15a0…` was searched for across all 4 commits that touch the file on every
 ref, and across all 3,829 python files under the repo. **Not found.** The other
 five a14 states are all still recoverable (four in the worktree, `surface` at
-`244ff167`). Terrain is not.
+`3b8372f6`). Terrain is not.
 
 `assembly13` read the *same* terrain source and its terrain summary is identical
 to a14's on every key but `build_s`, so the two ships cannot be differenced to
@@ -151,7 +151,7 @@ its grit is smooth-shaded with no cleavage planes.** `film24_breach` is built on
 that world, so the delivered film does not contain the ground-cover pass either.
 
 This also settles the provenance question: a14's lost `991b15a0` is a
-**pre-ground-cover** terrain, and `bf628cb`'s 1,101-line landing is (at least)
+**pre-ground-cover** terrain, and `28081a3`'s 1,101-line landing is (at least)
 the pass a14 never saw.
 
 ### The triangle cost is more than double the figure on the ticket
@@ -194,7 +194,7 @@ numbers forward under a new name:
 
 | gate | assembly14 (baseline) | assembly15 |
 | --- | --- | --- |
-| `placement_gate` | `PLACEMENT_CLEAN, 0` (`SHIPPING.md:512`, after `f86ba9f`/`40628fb`) | **NOT RUN — no world** |
+| `placement_gate` | `PLACEMENT_CLEAN, 0` (`SHIPPING.md:512`, after `a651c3b`/`ef83d6d`) | **NOT RUN — no world** |
 | variety | 1,569 sources / 4,966,913 instances / top 2.03 % | **NOT RUN — no world** |
 | triangle budget | 15.12 G instanced, 16.31 G evaluated | **NOT RUN** (predicted ~19.6 G, R2-3483) |
 | z-fight / winding / socket | passed | **NOT RUN — no world** |
@@ -208,11 +208,11 @@ on a measured gate; the finding is one level below that.
 
 For beat 6's comparison against `film24_breach`:
 
-1. **`build_surface` +29/−3** (`76a685b`, `1c8638f`, `3fa4531`) — the R2-3061
+1. **`build_surface` +29/−3** (`e241b2f`, `690023f`, `69f545e`) — the R2-3061
    asphalt re-budget and the R2-3066 octave revert. a14 predates all three.
    **This changes the asphalt shader under every frame** and is not the ground
    cover.
-2. **`build_terrain`, unbounded and unknowable.** `bf628cb` landed 1,101
+2. **`build_terrain`, unbounded and unknowable.** `28081a3` landed 1,101
    insertions / 71 deletions. a14 sat somewhere inside that range and its exact
    state is gone, so **the terrain delta between a14 and HEAD cannot be
    bounded** — only the ground-cover part of it has been identified, from the

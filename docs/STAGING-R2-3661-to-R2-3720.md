@@ -8,7 +8,7 @@ cover is in.
 
 **Read this first:**
 
-1. **The eight landed as one commit, `82c36ca`.** All eight were free — the
+1. **The eight landed as one commit, `ee16043`.** All eight were free — the
    previous agent's lease had been released. Nothing else went in with them:
    `git diff --cached --name-only | wc -l` read **8** before the commit.
 2. **The old `SOURCE_BUILDABLE` probe was worse than nothing and is replaced.**
@@ -55,7 +55,7 @@ it afterwards:
  create mode 100644 world/build_nearband.py
  create mode 100644 world/items/spectator_crowd_world.py
  create mode 100644 world/items/tyre_deposit.py
-[master 82c36ca]
+[master ee16043]
 ```
 
 `R2_AGENT` was set in the environment of the `git commit` itself, and gitguard
@@ -66,7 +66,7 @@ HEAD's failures were `ModuleNotFoundError` rather than `AttributeError`.
 
 ## R2-3663 — THE PROBE THAT GREEN-LIT THE BUILD THAT FAILED
 
-`tools/source_buildable.py` (new, committed at `bdca980`) replaces the
+`tools/source_buildable.py` (new, committed at `14eafcd`) replaces the
 uncommitted scratchpad probe. The old one stopped at `build_surface`. The
 assembler's order is
 
@@ -91,9 +91,9 @@ of the world contract.
 | tree | binary | numpy | probe 6 | verdict |
 | --- | --- | :-: | --- | --- |
 | **worktree** | `/opt` (ref) | 2.3.4 | PASS, 24/24 posts | **`SOURCE_BUILDABLE` 0 of 7** |
-| **HEAD before `82c36ca`** | `/opt` (ref) | 2.3.4 | PASS | `SOURCE_UNBUILDABLE` **6 of 7** |
-| pre-fix tree (`73792cb~1`) | `/usr/bin` | **2.5.1** | **FAIL** | `SOURCE_UNBUILDABLE` 7 of 7 |
-| pre-fix tree (`73792cb~1`) | `/opt` (ref) | **2.3.4** | **FAIL** | `SOURCE_UNBUILDABLE` 7 of 7 |
+| **HEAD before `ee16043`** | `/opt` (ref) | 2.3.4 | PASS | `SOURCE_UNBUILDABLE` **6 of 7** |
+| pre-fix tree (`f876ea8~1`) | `/usr/bin` | **2.5.1** | **FAIL** | `SOURCE_UNBUILDABLE` 7 of 7 |
+| pre-fix tree (`f876ea8~1`) | `/opt` (ref) | **2.3.4** | **FAIL** | `SOURCE_UNBUILDABLE` 7 of 7 |
 | `--selftest` | `/opt` (ref) | 2.3.4 | **fires** | `SELFTEST OK` |
 
 The verbatim catch, on the tree and interpreter that cost two days:
@@ -139,9 +139,9 @@ probe found every gap, one at a time, each on a clean checkout:
 | after | verdict | what was still missing |
 | --- | --- | --- |
 | *(before the landing)* | `SOURCE_UNBUILDABLE` **6 of 7** | the eight paths |
-| `82c36ca` the eight | `SOURCE_UNBUILDABLE` **2 of 7** | two gaps nobody knew about |
-| `a86c8cf` + `grandstand_seats.py` | `SOURCE_UNBUILDABLE` **1 of 7** | the ground-truth data file |
-| `e8adb46` + `r2_1211_rubber_tracks.json` | **`SOURCE_BUILDABLE` 0 of 7** | — |
+| `ee16043` the eight | `SOURCE_UNBUILDABLE` **2 of 7** | two gaps nobody knew about |
+| `195e809` + `grandstand_seats.py` | `SOURCE_UNBUILDABLE` **1 of 7** | the ground-truth data file |
+| `491be93` + `r2_1211_rubber_tracks.json` | **`SOURCE_BUILDABLE` 0 of 7** | — |
 
 **Landing the eight was necessary and not sufficient, and only a probe that
 reaches stage 6 could tell the difference.** The old probe reported the tree
@@ -150,10 +150,10 @@ buildable at every one of these four states.
 ### The two gaps the eight-path landing did not close
 
 **1. `world/items/grandstand_seats.py` was untracked** while
-`world/items/spectator_crowd_world.py` — landed in `82c36ca` — imports it at
+`world/items/spectator_crowd_world.py` — landed in `ee16043` — imports it at
 module scope, and so does `world/build_architecture.py`. A committed importer
 with an uncommitted import is the same defect one file down. Landed in
-`a86c8cf` once the coordinator retired the seed hold; I held rather than
+`195e809` once the coordinator retired the seed hold; I held rather than
 retiring a lease I did not own.
 
 **2. `work/r2_1211_rubber_tracks.json` was excluded by `.gitignore:122`
@@ -167,7 +167,7 @@ ground truth — read, never retyped", and twelve constants are parsed straight
 out of it (`HALF_TRACK_REAR`, `ROLLING_R`, `DECK_Z`, the launch-mark geometry).
 
 A 254 KB irreplaceable stage-1 input was one `rm -rf work/` away from making the
-world permanently unbuildable. Force-added past the ignore rule in `e8adb46`.
+world permanently unbuildable. Force-added past the ignore rule in `491be93`.
 
 ---
 
@@ -242,14 +242,14 @@ in the artefact and not in the repository.
 
 ---
 
-## R2-3666 — THE BROKER THAT RENTS THE MASTER WAS RUNNING PRE-`280f49a` CODE
+## R2-3666 — THE BROKER THAT RENTS THE MASTER WAS RUNNING PRE-`6beb5c9` CODE
 
 Found while preparing the cost probe, before anything was rented. **This one
 would have been paid for out of the master's budget.**
 
 `rq anim` auto-routes to the *bulk* broker on `127.0.0.1:8761`. That process was
 **pid 677451, started 2026-08-04 20:20 — 101 hours old — with 14 stale files**,
-`vastctl/vastctl.py` among them. Commit `280f49a` ("The RAM floor and the
+`vastctl/vastctl.py` among them. Commit `6beb5c9` ("The RAM floor and the
 requirement were the same number", 2026-08-08 18:05) is what introduced
 `SCENE_WORKING_SET_GIB`, `RAM_HEADROOM` and `_meets_scene_working_set`, and
 raised `MIN_CPU_RAM_GB` from 50.0 to 72.0. `config.py`, `fleet.py` and
@@ -280,7 +280,7 @@ not on the probe path. **Restart them the same way before any `fleetctl up`.**
 
 A long-lived daemon is a **snapshot of the code as it was when it started**. Ten
 commits later every reader of the repository sees the fix and the process does
-not. Nothing in the landing of `280f49a` was wrong; the gap is that landing a
+not. Nothing in the landing of `6beb5c9` was wrong; the gap is that landing a
 constant does not deploy it. `./rq drift` can see this and nobody was running it.
 
 ---
@@ -429,7 +429,7 @@ Sha taken before and re-taken after, and a difference fails the build:
 
 `work/r23661/PREDICTION_film25_20260809T012914Z.log`, written **01:29:14Z**;
 `render/film25.blend`'s build began **01:34:05Z**. Five minutes. The log is
-committed (`a86c8cf`, force-added past `work/*`) so the ordering is checkable in
+committed (`195e809`, force-added past `work/*`) so the ordering is checkable in
 history rather than asserted here.
 
 `FILM25` in `tools/film_bar.py` is its own literal, re-derived from

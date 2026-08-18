@@ -385,16 +385,16 @@ the check says once the band is moved.
 All 31 `render/items/*/PROVENANCE.json` record the same instrument:
 
 ```
-item_gate  sha256 3b9d0704…  170,986 B  mtime 2026-08-03T11:46:48   (commit b63676e)
+item_gate  sha256 3b9d0704…  170,986 B  mtime 2026-08-03T11:46:48   (commit fbe14bc)
 ```
 
 `tools/item_gate.py` today is `563d1c88…`, **186,066 B**, mtime 2026-08-04
 19:38. Three commits land in between, two of which move verdicts:
 
-* `6b71ea9` **R2-635** — the spectral-balance clause `ok_bal = (foc is None or
+* `af669ef` **R2-635** — the spectral-balance clause `ok_bal = (foc is None or
   focc is None or foc >= focc)` **passed when it could not be measured**. It can
   now fail, so check 5 can newly reject.
-* `84e1037` **R2-637** — a transport failure was reported as `ITEM_REJECTED`.
+* `6c83aec` **R2-637** — a transport failure was reported as `ITEM_REJECTED`.
   There is now a third verdict, `ITEM_UNMEASURABLE`.
 
 The current gate cannot emit the baseline's vocabulary, and the baseline's gate
@@ -409,8 +409,8 @@ reason, and reports `BASE→C` (the gate) separately from `C→M` (the framing).
 witness at `gate_witness/spectator_seated_wave1/`, so I first recorded it as a
 wave-1 artefact left in place. It is not. It carries a
 `relief_wiring_reaches_the_shader` key, and that key **does not exist** in the
-R2-061 gate — `grep` finds nothing in `b63676e:tools/item_gate.py`. It was added
-by `df8b335` (R2-072) at 2026-08-03 **18:50**, and this report's mtime is
+R2-061 gate — `grep` finds nothing in `fbe14bc:tools/item_gate.py`. It was added
+by `3b76733` (R2-072) at 2026-08-03 **18:50**, and this report's mtime is
 **21:00**. So it was produced by a gate *newer* than the one that produced the
 other 31, though older than today's: it predates R2-635 and R2-637 and carries no
 two-light note.

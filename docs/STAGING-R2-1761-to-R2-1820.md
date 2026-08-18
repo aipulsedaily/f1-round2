@@ -430,7 +430,7 @@ gap max                    370.02 mm                146.67 mm
 float > 50 mm               36.971 m2               40.971 m2
 ```
 
-**#1 ALREADY CLOSED** — 9.498 → 0.032 m², by `54dd6b8`, which landed **2 h 28 m
+**#1 ALREADY CLOSED** — 9.498 → 0.032 m², by `10442cd`, which landed **2 h 28 m
 after assembly8 was built** and was promoted in assembly9/10. The residual is one
 ≤50 mm sliver at lap **s 3447.66–3447.70** — which is `PIT_WALL_S0 = 3447.71`,
 the declared apron/wall boundary — at the instrument's own quantisation floor.
@@ -765,7 +765,7 @@ the more expensive half of this entry.**
 line now reports the reason the parity arm recorded, with three new hand-counted
 controls and the verdict token `SHEET_FACING_UNDECIDED` unchanged so nothing
 downstream re-gates. `world/items/hospitality_deck.py` is clean and needs no
-repair. My earlier commit `bae69b3` stands in history with its wrong mechanism;
+repair. My earlier commit `01d7f45` stands in history with its wrong mechanism;
 this is a **correcting commit, not an amend** — which is the remedy R2-234 asked
 for and the one my own guard enforces.
 

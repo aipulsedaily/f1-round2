@@ -22,7 +22,7 @@ looked at. **The crowd item closes.**
 field anywhere in this item** (`use_dof = False` on all eight datablocks, and the
 fix it implies would have made the frame *worse* — §R2-2402), and the subject is
 at **112.50 m, not 148 m**. The gate is **8/8, not 6/8**. Item #100 already has a
-comment-only commit from 2026-08-07 (`f4509e9`) that refutes the premise; this
+comment-only commit from 2026-08-07 (`593bfeb`) that refutes the premise; this
 staging note does not repeat it, it does the four things that commit did not:
 measures the pixels independently, opens the frames, tests the instruments
 against a null, and answers the attention question.

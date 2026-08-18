@@ -2,7 +2,7 @@
 
 Agent `r2-2521-contract-leftovers`. Task #78.
 
-**The headline is that #78 was already done**, in commit `f88878b` by
+**The headline is that #78 was already done**, in commit `de3a1aa` by
 `r2-1761-debt`, roughly eight hours before this task was issued. Rather than
 redo it, this pass did what the block-camera task did: **read the artefact, not
 the record of the artefact** — verified the three fixes by execution, then went
@@ -68,7 +68,7 @@ kills the module outright. So the fallbacks are unreachable *by the contract's
 namespace*, which is redundancy by design, not a corpse propped up by a broken
 guard.
 
-Contract selftest `[19]` (added by `f88878b`) asserts exactly the right thing —
+Contract selftest `[19]` (added by `de3a1aa`) asserts exactly the right thing —
 not that the literals agree, but that **every name a consumer falls back on is
 still exported**, so every fallback stays unreachable. Run and observed:
 
@@ -124,7 +124,7 @@ The car-path z band therefore stopped at 1.592 m where it should reach 1.932 m.
 directly over the driven line never reached the distance test: invisible to
 `violations` **and** to `closest_approach`.
 
-`f88878b` corrected the literal and added a six-quantity diff against the
+`de3a1aa` corrected the literal and added a six-quantity diff against the
 contract. Baseline run, this pass:
 
 ```
@@ -156,7 +156,7 @@ The guard is live and correctly wired: the injection moves the measured band
 ### 3b. Which verdicts does the 340 mm slice invalidate? **46 of 48 reports on disk.**
 
 Every placement-gate report in the tree, keyed on `clearances.car_band_top`
-(the field `f88878b` added — absent means the run predates the fix):
+(the field `de3a1aa` added — absent means the run predates the fix):
 
 | | count |
 |---|---:|
@@ -266,7 +266,7 @@ carries its own directional assertion). Not applied — the file is leased by
 
 ## 4. THE FINDING THE FIX MISSED — **there are seven copies of the car box, not two, and one has diverged now**
 
-`f88878b` fixed the copy it was pointed at. Sweeping for the numbers rather than
+`de3a1aa` fixed the copy it was pointed at. Sweeping for the numbers rather than
 for the name:
 
 | # | location | box | status |
@@ -423,9 +423,9 @@ compare. The box's bit-identity **is** the identity result, and it is exact.
 
 | item | was it a defect? | outcome |
 |---|---|---|
-| stale pads | yes, latent | **already fixed** in `f88878b`; verified; no action |
+| stale pads | yes, latent | **already fixed** in `de3a1aa`; verified; no action |
 | unreachable fallbacks | **no** | redundant by design, guarded by `[19]` with two firing controls. A defended null |
-| the gate's private car box | **yes, and it was live** | fixed in `f88878b`; guard **observed to fail** here; 46 of 48 reports on disk are suspect; the copy should still be deleted, not merely corrected |
+| the gate's private car box | **yes, and it was live** | fixed in `de3a1aa`; guard **observed to fail** here; 46 of 48 reports on disk are suspect; the copy should still be deleted, not merely corrected |
 | **(new)** a 7th copy in `build_surface._car_box` | yes | **fixed here**, bit-identical, controls fire |
 | **(new)** `beat_sheet.json` car box | **yes, diverged now** | −2.5 mm/side in Y, −2 mm in Z, unsafe direction; handed over |
 | **(new)** `beat_sheet.json` `measured_on` | **yes** | a provenance field asserting a measurement the code never performs; handed over |

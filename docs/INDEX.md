@@ -148,7 +148,7 @@ under what number, and are not rewritten when the log is later corrected.
    2026-08-18: of the 794 distinct IDs across the 71 tracked staging files,
    **zero** are missing from `DEFECT-LOG-R2.md`. `docs/README.md` still carries a
    line saying `R2-4024 … R2-4152` are unmerged; that was true when written and
-   was closed by commit `8c8d601`. Corrected in place there, and stated here so
+   was closed by commit `50f7861`. Corrected in place there, and stated here so
    the correction is not only in one file.
 
 **Ten staging files are not tracked** and will not be in a clone:

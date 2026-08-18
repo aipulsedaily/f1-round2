@@ -252,7 +252,7 @@ correctly *not* a leak).
 > in `sanitise_docs.py`. A clone gets the method, the reasoning and the alias
 > vocabulary, which is everything that makes that file worth reading, and no way
 > to invert any of it. This is the same fix, for the same reason, that the
-> sibling repository applied in its `d056d4ba` — a commit whose subject is
+> sibling repository applied in its `3ffea4c4` — a commit whose subject is
 > literally *"untrack the table that de-aliases the docs"*.
 >
 > **Not the placeholder option**, which was tempting and is worse. Substituting
@@ -280,13 +280,13 @@ correctly *not* a leak).
 > outside that account, routing nowhere. An IP address is *reachable* — that is
 > the entire difference, and it is the same line drawn in the sibling repo's
 > §4 about machine ids. `--verify-canon` also re-derives those 82 ids from
-> `c18c9f4~1`, so untracking the file would not remove them from a clone
+> `fea18b4~1`, so untracking the file would not remove them from a clone
 > anyway; it would only break the verification.
 >
 > **What this does NOT fix: history.** These three addresses still appear
 > un-aliased in earlier blobs of `docs/DEFECT-LOG-R2.md` and
 > `docs/STAGING-R2-3841-to-R2-3900.md` (130, 26 and 16 occurrences), and the
-> pre-sanitisation tree at `c18c9f4~1` still holds every identifier in the
+> pre-sanitisation tree at `fea18b4~1` still holds every identifier in the
 > clear. Fixing the current tree closes the *decoder ring* — the docs can no
 > longer be inverted by reading a tracked file — but anyone willing to walk the
 > history can still recover the addresses directly. **That is a live residual
@@ -363,8 +363,8 @@ in commit metadata: `git grep` found them in **zero tracked files**.
 > repository's history:
 >
 > ```
-> 1936f22b002f297e5dc58f947a484dbb4f0711c5   docs: full-history secret audit…
-> f7348f9dad171993ded70e2d6758a13de7141260   docs: correct the commit-identity…
+> c9cac9546807cbc31abaad555da0f0d89e36ee2e   docs: full-history secret audit…
+> 3822585db3b02c9bfc6a7aed222cd77288145270   docs: correct the commit-identity…
 > ```
 >
 > History was **not** rewritten to remove them, because rewriting is the

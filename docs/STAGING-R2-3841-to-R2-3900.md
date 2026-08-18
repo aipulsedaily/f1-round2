@@ -24,7 +24,7 @@ finished audio, and file them in `watch/` with the stale ending-banner removed.
    and printed the same 16, on all three cards. (R2-3843)
 4. **Every broker that was running was stale and none of them is in the fleet.**
    The nine on ports 8762-8770 started 2026-08-08 05:31-05:53, which is
-   **before** the RAM-floor fix `280f49a` was committed at 2026-08-08 18:05:46.
+   **before** the RAM-floor fix `6beb5c9` was committed at 2026-08-08 18:05:46.
    They therefore still held `MIN_CPU_RAM_GB = 50.0` against a scene that is
    52.4 GiB resident. (R2-3844)
 5. **The floor in force is proved from the kernel's record of the running
@@ -102,7 +102,7 @@ were listening, and all three were stale by the launch rule's own test:
 pid 1974220  fleet03  started Sat Aug  8 05:31:20 2026
 pid 1974254  fleet04  started Sat Aug  8 05:31:23 2026
 pid 1974323  fleet05  started Sat Aug  8 05:31:26 2026
-commit 280f49a "The RAM floor and the requirement were the same number"
+commit 6beb5c9 "The RAM floor and the requirement were the same number"
                                  Sat Aug  8 18:05:46 2026
 ```
 
@@ -143,7 +143,7 @@ checked — `/proc/<pid>/environ` of each broker actually listening:
 
 Two things to note.
 
-**The working set was raised above what shipped.** `280f49a` set
+**The working set was raised above what shipped.** `6beb5c9` set
 `SCENE_WORKING_SET_GIB = 50.6`, measured on `film23_breach.blend`. The scene
 being rendered is `film25_breach.blend` and the brief's measurement is
 **52.4 GiB worker / 64.5 GiB cgroup**. I pinned 52.4 explicitly rather than

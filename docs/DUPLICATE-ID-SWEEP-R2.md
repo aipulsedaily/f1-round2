@@ -9,7 +9,7 @@ a renumbering there is no way to recover which of two entries a citation meant.
 
 ## 1. WHAT WAS MEASURED
 
-`docs/DEFECT-LOG-R2.md`, at `d5521ea`:
+`docs/DEFECT-LOG-R2.md`, at `9453bbe`:
 
 ```
 1,181  entry headings of the form  "## R2-nnn — ..."
@@ -49,10 +49,10 @@ Dated from `git log -S` on each heading:
 
 | block | island landed | spine landed |
 |---|---|---|
-| A R2-1091…1098 | 08-07 10:32 `281fa13` | 08-07 14:27–14:45 `7b6e135`/`67d164f`/`c2089e7` |
-| B R2-1121…1123 | 08-07 14:56 `f330e9c` | 08-07 15:49 `51f3fdf` |
-| C R2-1151…1157 | 08-07 14:56 `f330e9c` | 08-07 21:18–22:01 `9c84382`/`9f27e08`/`f18faf7` |
-| D R2-1181…1189 | 08-07 14:56 `f330e9c` | 08-08 01:40–02:03 `59b0805`/`3ea8a6f`/`00afd9e`/`f0d4d04` |
+| A R2-1091…1098 | 08-07 10:32 `9483e50` | 08-07 14:27–14:45 `3951e84`/`8485743`/`c497dde` |
+| B R2-1121…1123 | 08-07 14:56 `342189f` | 08-07 15:49 `647eaa6` |
+| C R2-1151…1157 | 08-07 14:56 `342189f` | 08-07 21:18–22:01 `09046ea`/`b2e0cdb`/`d6c726f` |
+| D R2-1181…1189 | 08-07 14:56 `342189f` | 08-08 01:40–02:03 `04996a8`/`69dd883`/`a869ae8`/`12cc394` |
 
 **In all four blocks the island is the earlier allocation and the spine is the
 later one.** File order and clock order agree, so "the earlier occurrence in the
@@ -280,7 +280,7 @@ already cite keeps the number; the other one moves.***
 | on-disk artefacts named for it | 0 | **13** — `audio/out/r2_4151/master_R2-4151.wav`, `…/r2_4152/master_R2-4152.wav`, matrices, stems |
 | files in `watch/` citing it | 0 | **3**, including the delivered master **`watch/PART2_AUDIO_MASTER_R2-4152.wav`** — *the ID is in the filename* |
 | files this task MAY NOT EDIT citing it | 1 (`docs/README.md`, describing this very collision) | **5** — `watch/INDEX.md`, `watch/listen_2026-08-14/CLIPS_OF.json`, `docs/README.md`, `docs/READING-LIST.md`, `docs/DOC-ACCURACY-AUDIT.md` |
-| commit messages citing it | 1 (`613342a`) | **4** (`6270825`, `bfa01ab`, `3438c44`, `75d3edf`) |
+| commit messages citing it | 1 (`6618832`) | **4** (`d8f8736`, `fa7df14`, `ce90726`, `813927d`) |
 
 `R2-4153`, `R2-4154`, `R2-4155`, `R2-4156` appear in **exactly one file in
 either tree** — the log itself. Block C is cited by nothing outside the three
@@ -313,9 +313,9 @@ requires.
 
 Two passes wrote into `STAGING-R2-4021-to-R2-4080.md`:
 
-* **the chain-and-glass pass** — `R2-4030…R2-4063`, commit `08634c2`, at lines
+* **the chain-and-glass pass** — `R2-4030…R2-4063`, commit `4b70c64`, at lines
   461–659 and 1115–1917. Its numbering is contiguous across both stretches.
-* **the gates pass** — `R2-4039…R2-4055`, commit `ce369f2`, at lines 669–1113.
+* **the gates pass** — `R2-4039…R2-4055`, commit `6453650`, at lines 669–1113.
   A parallel agent; §7's line 1945 calls it *"a parallel agent"* in so many words.
 
 | | chain-and-glass pass | gates pass |
@@ -383,14 +383,14 @@ table to resolve them by.
 
 | commit | its message says | it actually means |
 |---|---|---|
-| `ce369f2` | *"R2-4039..4055: replace the eight gates that passed three rejected masters"* | **R2-4239…R2-4255** — the gates pass |
-| `08634c2` | *"R2-4030..4063: the shared chain and the glass breach"* | unchanged — the chain pass keeps its numbers |
-| `613342a` | *"#170: 27 duplicated IDs resolved -- R2-4091..4098/4121..4123/**4151..4157**/4181..4189"* | the `4151..4157` clause now reads **R2-4201…R2-4207** |
-| `1910065` | *"#170: the two staging citations the renumbering left pointing at the wrong entry"* | one of the two is block C's, now **R2-4201…R2-4207** |
-| `6270825` | *"R2-4151: the 8.38 dB was never in the mix"* | **unchanged** — the audio entry keeps R2-4151 |
-| `bfa01ab` | *"R2-4152: the engine was delivering 6.5x…"* | **unchanged** — the audio entry keeps R2-4152 |
-| `3438c44`, `75d3edf` | R2-4152 clip manifest / `watch/INDEX` | **unchanged** |
-| `59827f6` | *"**24 duplicated IDs** resolved -- log block C to R2-4201..4207, the gates pass to R2-4239..4255"* | **24 is the count of entries MOVED, not of IDs duplicated. 19 IDs were duplicated** (2 log-vs-staging + 17 staging-internal); 24 entries moved, because block C was moved whole and five of its seven members had not collided. Written wrong in my own commit message an hour after this file was committed to prevent exactly that; left standing because it cannot be rewritten, and recorded here because that is what this table is for |
+| `6453650` | *"R2-4039..4055: replace the eight gates that passed three rejected masters"* | **R2-4239…R2-4255** — the gates pass |
+| `4b70c64` | *"R2-4030..4063: the shared chain and the glass breach"* | unchanged — the chain pass keeps its numbers |
+| `6618832` | *"#170: 27 duplicated IDs resolved -- R2-4091..4098/4121..4123/**4151..4157**/4181..4189"* | the `4151..4157` clause now reads **R2-4201…R2-4207** |
+| `98a03b9` | *"#170: the two staging citations the renumbering left pointing at the wrong entry"* | one of the two is block C's, now **R2-4201…R2-4207** |
+| `d8f8736` | *"R2-4151: the 8.38 dB was never in the mix"* | **unchanged** — the audio entry keeps R2-4151 |
+| `fa7df14` | *"R2-4152: the engine was delivering 6.5x…"* | **unchanged** — the audio entry keeps R2-4152 |
+| `ce90726`, `813927d` | R2-4152 clip manifest / `watch/INDEX` | **unchanged** |
+| `d91838d` | *"**24 duplicated IDs** resolved -- log block C to R2-4201..4207, the gates pass to R2-4239..4255"* | **24 is the count of entries MOVED, not of IDs duplicated. 19 IDs were duplicated** (2 log-vs-staging + 17 staging-internal); 24 entries moved, because block C was moved whole and five of its seven members had not collided. Written wrong in my own commit message an hour after this file was committed to prevent exactly that; left standing because it cannot be rewritten, and recorded here because that is what this table is for |
 
 **Rule of thumb for a reader hitting a stale reference:** a commit dated
 2026-08-14 or later that says `R2-4151`/`R2-4152` means the **audio** entry,

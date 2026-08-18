@@ -8,14 +8,14 @@ measurement.
 
 ## The source delta is exactly two commits, and only one of them can move a vertex
 
-`assembly8.blend` was built 2026-08-03 19:38 at `2806c3c`-era source. Since then
+`assembly8.blend` was built 2026-08-03 19:38 at `1d034e7`-era source. Since then
 three commits have touched anything the assembler reads:
 
 | commit | file | can it move a vertex? |
 |---|---|---|
-| `54dd6b8` 22:06 | `world/build_architecture.py` | **YES — this is the point** |
-| `412d2e2` 22:42 | `world/world_contract.py` | **NO** |
-| `48dfa24` 22:43 | `render/world/assembly/r2/lib_probe.py` | not read by `assemble.py` |
+| `10442cd` 22:06 | `world/build_architecture.py` | **YES — this is the point** |
+| `29105eb` 22:42 | `world/world_contract.py` | **NO** |
+| `de64508` 22:43 | `render/world/assembly/r2/lib_probe.py` | not read by `assemble.py` |
 
 `build_surface.py`, `build_barriers.py`, `build_terrain.py` and
 `build_dressing.py` are **byte-identical to the ones assembly8 was built from**
@@ -24,7 +24,7 @@ three commits have touched anything the assembler reads:
 
 ### why `world_contract` cannot move anything
 
-`412d2e2` is +104/−7 and **every changed line is inside `selftest()` or is a
+`29105eb` is +104/−7 and **every changed line is inside `selftest()` or is a
 comment**: two `chk(...)` label strings renamed to "nobody DECLARES", the apron
 tie window derived instead of typed (R2-141), the `> 0.999` predicate corrected
 to `== 1` (R2-142), and a new overlap pin (R2-143). `__version__` is `1.2.1` in
@@ -34,7 +34,7 @@ geometric constant, no field function, no rectangle changed.**
 
 ## What MUST move: `ARCH_Paving_ApronPlatform`, and it is the only object
 
-`54dd6b8` changes two things, both inside the pit-exit apron:
+`10442cd` changes two things, both inside the pit-exit apron:
 
 1. `apron_clearance` — `d_out` becomes `inf` where the sample is inside the
    `apron` rectangle **and** inside none of `pit_lane` / `garages` / `paddock`.

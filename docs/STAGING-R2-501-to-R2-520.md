@@ -199,8 +199,8 @@ Three consequences worth stating plainly:
 "Deck slabs — were upside down" is two commits:
 
 ```
-d08eaa3  R2-182  slab_grid's walking surface faced down       world/items/marshal_post_deck.py
-93921d8  R2-179  both end caps of every extrusion faced INWARD world/items/marshal_post_deck.py
+2b7001c  R2-182  slab_grid's walking surface faced down       world/items/marshal_post_deck.py
+fda79d8  R2-179  both end caps of every extrusion faced INWARD world/items/marshal_post_deck.py
                                                               world/items/timing_stand.py
 ```
 
@@ -994,13 +994,13 @@ it is the bridge. The misnomer is the whole reason this took four entries.
 
 ```
 2026-08-04 02:02   frame 2972abcb3fa1.png rendered from film14_breach.blend
-2026-08-04 03:10   f9eb94b R2-256 lands: the truss-face lettering is DELETED
+2026-08-04 03:10   7dacd2b R2-256 lands: the truss-face lettering is DELETED
 2026-08-04 15:46   assembly10 built from that source
 2026-08-04 16:26   film16 built on assembly10
 ```
 
 **The delivered frame predates the fix by 68 minutes.** `assembly9` was built
-2026-08-03 23:09 and `film14` 23:42, both before `f9eb94b`, which is why every
+2026-08-03 23:09 and `film14` 23:42, both before `7dacd2b`, which is why every
 `film14*` scene still carries it. `assembly10` is the first world built after it,
 and `film16`/`film16_breach` are the first films that cannot show it — the
 lettering is not in the source any more, so there is nothing to collide with the
