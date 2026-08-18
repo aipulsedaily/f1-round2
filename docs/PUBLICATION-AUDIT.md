@@ -242,8 +242,8 @@ privacy question in this repository.
 
 ```
 $ git log master --pretty='%ae' | sort | uniq -c | sort -rn
-    567 alec200500600@gmail.com
-     34 alec300500600@gmail.com
+    567 <owner-personal-address-1>@gmail.com     [redacted in this document]
+     34 <owner-personal-address-2>@gmail.com     [redacted in this document]
      15 agent@local
      11 r2-3841@f1round2
       5 r2-3001@f1round2
@@ -254,8 +254,32 @@ $ git log master --pretty='%ae' | sort | uniq -c | sort -rn
 ```
 
 **601 of 638 commits on `master` carry one of two personal Gmail addresses** in
-the author or committer field. The addresses appear *only* in commit metadata —
-`git grep` finds them in **zero tracked files**, and zero blobs in history.
+the author or committer field. Before this audit the addresses appeared *only*
+in commit metadata: `git grep` found them in **zero tracked files**.
+
+> **Disclosure — this audit briefly made that worse, and the fix is incomplete.**
+> The first draft of this document pasted the `git log` output above verbatim,
+> with both addresses unredacted, and committed it. They are redacted in the
+> working tree now, but the earlier versions are already blobs in this
+> repository's history:
+>
+> ```
+> 1936f22b002f297e5dc58f947a484dbb4f0711c5   docs: full-history secret audit…
+> f7348f9dad171993ded70e2d6758a13de7141260   docs: correct the commit-identity…
+> ```
+>
+> History was **not** rewritten to remove them, because rewriting is the
+> owner's decision and this round was explicitly scoped not to. The practical
+> effect is small — the same addresses are already in 601 commit author fields,
+> so these two blobs disclose nothing that Option A does not disclose anyway —
+> but under **Option B or C the blob content must be scrubbed as well as the
+> author metadata**, or the redaction will be undone by two commits that were
+> supposed to be documenting the problem.
+>
+> It is recorded here rather than quietly fixed because this is the exact
+> failure this repository's `docs/BROKEN-INSTRUMENTS.md` exists to catalogue:
+> a check that reports clean while the thing it checks is broken. An audit that
+> leaks the data it is auditing is that, in miniature.
 
 Future commits are already safe. `.git/config` in both repositories now sets
 
