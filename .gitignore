@@ -257,3 +257,66 @@ work/lighting/*
 !work/r2100/
 work/r2100/*
 !work/r2100/measure_film_extra.py
+
+# THE 2026-08-18 PUBLICATION PASS: WHAT WAS DECIDED ABOUT THE 211.
+#
+# The block above says the untracked set is an OWNER DECISION PASS and not an
+# ignore-rule problem, and warns that a blanket rule over `audio/out/`,
+# `sim/out/`, `docs/*.json` or `tools/` would be WRONG because every one of
+# those is a class this project deliberately tracks. That reasoning held up.
+# The pass went file by file and resolved 162 of the 211:
+#
+#     84 committed as SOURCE     (b618ca1) -- every hand-written .py/.sh/.md
+#     78 promoted as EVIDENCE    (the commit above) -- named verdicts only
+#      2 ignored                 (this block)
+#     47 deliberately LEFT ALONE (untracked AND unignored -- see the bottom)
+#
+# Only TWO classes earned an ignore rule, and both had to clear the same bar:
+# ignoring it must lose nothing that could not be recreated identically.
+#
+# 1. STEM BOUNCES. `audio/out/**/stems/` holds STEMS_OF.json and
+#    render_stems.log, one set per audio render. This repository has tracked
+#    ZERO files matching `stems` in its entire history -- checked with
+#    `git log --all --diff-filter=A --name-only | grep -c stems` -> 0 -- so
+#    this is not a class that is promoted selectively, it is a class that has
+#    never once been promoted. There is nothing here for a blanket rule to kill
+#    off, which is exactly the test the block above sets.
+audio/out/**/stems/
+audio/out/**/stems_smoke/
+#
+# 2. `world/items/grandstand_seats.json`, 2.6 MB, the single largest untracked
+#    file. It is the OUTPUT of tracked `world/items/grandstand_seats.py`,
+#    written by that script through its own `OUT_DEFAULT` from a SEEDED RNG. So
+#    unlike `render/items/*/gate.json`, re-running does not produce "the
+#    verdict of a new run" -- it produces the same bytes. Regenerable in the
+#    strong sense, which is the only sense that justifies ignoring something.
+world/items/grandstand_seats.json
+#
+# WHAT WAS DELIBERATELY *NOT* IGNORED, AND WHY THAT IS NOT AN OVERSIGHT.
+#
+# 47 files are still untracked and still unignored after this pass. They were
+# looked at and left, not missed:
+#
+#   * ~19 per-run `render.log` / `verify.log` / `matrix_*.log` under
+#     `audio/out/*/`. The repository DOES track 20 `audio/out/*.log` files, so
+#     logs here are promoted selectively and a blanket `*.log` rule would
+#     silently stop the next promotion. Eleven near-identical `render.log`s are
+#     not worth keeping; the rule that would hide them is worth less.
+#   * ~16 `world/*.json` baked animation and camera-path snapshots, named
+#     `R2829_*`, `R21701_*`, `R2_3361_*`, `*_PRE_R2943_*`, `*_base_*`,
+#     `verify_world_a9_*`. Their current-generation siblings ARE tracked
+#     (`car_anim_car.json`, `camera_rig_path.json`, and now `car_anim_imp.json`
+#     and `car_anim_driver_imp.json`). These are per-experiment snapshots, and
+#     a pattern narrow enough to catch them without also catching the tracked
+#     generation would have to be maintained by hand for every future R-number.
+#   * `world/_b6_before_terrain.py` (241 KB), a "before" snapshot wearing a
+#     `.py` extension, referenced by nothing tracked.
+#   * `docs/instance_variety_SUPERSEDED_pre_R2_3721.json`, which says what it
+#     is in its own name.
+#
+# All 47 were scanned for credentials, home paths, emails and routable IPs
+# before this decision -- they are clean, so leaving them untracked risks
+# nothing being published. What protects them from a careless commit is what
+# has always protected this tree: **`git add` is path-scoped, never
+# `git add -A`, never `git add .`** -- now enforced by `tools/gitguard.py`
+# rather than only asserted.
