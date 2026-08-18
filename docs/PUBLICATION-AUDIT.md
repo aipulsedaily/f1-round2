@@ -257,9 +257,23 @@ $ git log master --pretty='%ae' | sort | uniq -c | sort -rn
 the author or committer field. The addresses appear *only* in commit metadata —
 `git grep` finds them in **zero tracked files**, and zero blobs in history.
 
-Future commits are already safe: `.git/config` in both repositories sets
-`user.email = noreply@users.noreply.github.com`. That fixes what comes next and
-changes nothing that already exists.
+Future commits are already safe. `.git/config` in both repositories now sets
+
+```
+user.name  = SuperComboGamer
+user.email = 36320904+SuperComboGamer@users.noreply.github.com
+```
+
+which is GitHub's standard `ID+username@users.noreply.github.com` privacy
+address — designed to be public, and the correct thing to commit under. It
+attributes commits to the account without exposing a personal mailbox. This
+fixes what comes next and changes nothing that already exists.
+
+*(Audit note: this setting changed during the audit — at 03:39 on 2026-08-18 it
+was still the generic `noreply@users.noreply.github.com` in both repos. The
+value above is the state at the time of writing. Re-check it with
+`git config --show-origin --get user.email` before publishing rather than
+trusting this document.)*
 
 Also present in tracked files, and not personal but identifying of the build
 machine: **322 tracked files contain the literal string `/home/zany`**. That is
